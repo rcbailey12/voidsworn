@@ -1,0 +1,394 @@
+{
+  "A18": {
+    "geometry": {
+      "ship": "A18",
+      "plates": 902,
+      "welded_edges": 1958,
+      "stacked": 190,
+      "triangles": 184156,
+      "fit": {
+        "CLASH": 0,
+        "MOUNT": 0,
+        "ARC": 0,
+        "SENSOR": 0,
+        "SWEEP": 0,
+        "EXHAUST": 0,
+        "EXIT": 0,
+        "LANE": 0
+      },
+      "weapon_match": "PASS",
+      "area_percentiles_world_squared": [
+        0.006955655349523518,
+        0.019367162255599944,
+        0.061455700345509005
+      ],
+      "angle_percentiles_degrees": [
+        -11.918275327403807,
+        -0.01902845506982631,
+        14.812963601844706
+      ],
+      "size_note": "Measured, for review; no visual cap. Material weights remain in the sheet."
+    },
+    "triangles": 185760,
+    "objects": 270,
+    "surfaces": 4,
+    "paint_device": "OPTIX",
+    "maps": 2048,
+    "paint_seconds": 68.6,
+    "stack_regression": "PASS",
+    "licences": "PASS",
+    "lights": "PASS",
+    "surface": {
+      "ok": true,
+      "totals": {
+        "room": 0,
+        "bare": 0
+      },
+      "views": {
+        "top": {
+          "stack": 103798,
+          "glow": 248,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "below": {
+          "stack": 103811,
+          "glow": 235,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "port": {
+          "stack": 65473,
+          "glow": 471,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "starboard": {
+          "stack": 65556,
+          "glow": 387,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "bow": {
+          "stack": 30452,
+          "glow": 137,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "stern": {
+          "stack": 26344,
+          "glow": 4245,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        }
+      },
+      "seen_from_outside": {},
+      "objects": {
+        "stack": 239,
+        "glow": 31,
+        "liner": 14
+      },
+      "res": 640
+    }
+  },
+  "A19": {
+    "geometry": {
+      "ship": "A19",
+      "plates": 1010,
+      "welded_edges": 2204,
+      "stacked": 205,
+      "triangles": 219150,
+      "fit": {
+        "CLASH": 0,
+        "MOUNT": 0,
+        "ARC": 0,
+        "SENSOR": 0,
+        "SWEEP": 0,
+        "EXHAUST": 0,
+        "EXIT": 0,
+        "LANE": 0
+      },
+      "weapon_match": "PASS",
+      "area_percentiles_world_squared": [
+        0.010315231938994893,
+        0.03441213305203767,
+        0.11037565982624122
+      ],
+      "angle_percentiles_degrees": [
+        -11.934639637772298,
+        0.04898827714972809,
+        11.917130789372546
+      ],
+      "size_note": "Measured, for review; no visual cap. Material weights remain in the sheet."
+    },
+    "triangles": 220738,
+    "objects": 263,
+    "surfaces": 4,
+    "paint_device": "OPTIX",
+    "maps": 2048,
+    "paint_seconds": 66.3,
+    "stack_regression": "PASS",
+    "licences": "PASS",
+    "lights": "PASS",
+    "surface": {
+      "ok": true,
+      "totals": {
+        "room": 0,
+        "bare": 0
+      },
+      "views": {
+        "top": {
+          "stack": 84115,
+          "glow": 248,
+          "liner": 190,
+          "room": 0,
+          "bare": 0
+        },
+        "below": {
+          "stack": 84372,
+          "glow": 168,
+          "liner": 11,
+          "room": 0,
+          "bare": 0
+        },
+        "port": {
+          "stack": 47398,
+          "glow": 300,
+          "liner": 15,
+          "room": 0,
+          "bare": 0
+        },
+        "starboard": {
+          "stack": 47320,
+          "glow": 373,
+          "liner": 20,
+          "room": 0,
+          "bare": 0
+        },
+        "bow": {
+          "stack": 16974,
+          "glow": 102,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "stern": {
+          "stack": 14593,
+          "glow": 2483,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        }
+      },
+      "seen_from_outside": {},
+      "objects": {
+        "stack": 230,
+        "glow": 33,
+        "liner": 16
+      },
+      "res": 640
+    }
+  },
+  "A20": {
+    "geometry": {
+      "ship": "A20",
+      "plates": 832,
+      "welded_edges": 1789,
+      "stacked": 178,
+      "triangles": 224454,
+      "fit": {
+        "CLASH": 0,
+        "MOUNT": 0,
+        "ARC": 0,
+        "SENSOR": 0,
+        "SWEEP": 0,
+        "EXHAUST": 0,
+        "EXIT": 0,
+        "LANE": 0
+      },
+      "weapon_match": "PASS",
+      "area_percentiles_world_squared": [
+        0.03600444841293833,
+        0.12124301357569812,
+        0.3584150977166533
+      ],
+      "angle_percentiles_degrees": [
+        -14.751393405456842,
+        -0.6882753740674463,
+        11.755305425335699
+      ],
+      "size_note": "Measured, for review; no visual cap. Material weights remain in the sheet."
+    },
+    "triangles": 226314,
+    "objects": 414,
+    "surfaces": 5,
+    "paint_device": "OPTIX",
+    "maps": 2048,
+    "paint_seconds": 92.5,
+    "stack_regression": "PASS",
+    "licences": "PASS",
+    "lights": "PASS",
+    "surface": {
+      "ok": true,
+      "totals": {
+        "room": 0,
+        "bare": 0
+      },
+      "views": {
+        "top": {
+          "stack": 120921,
+          "glow": 219,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "below": {
+          "stack": 121045,
+          "glow": 95,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "port": {
+          "stack": 54540,
+          "glow": 268,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "starboard": {
+          "stack": 54525,
+          "glow": 283,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "bow": {
+          "stack": 28133,
+          "glow": 36,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "stern": {
+          "stack": 25352,
+          "glow": 2816,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        }
+      },
+      "seen_from_outside": {},
+      "objects": {
+        "stack": 368,
+        "glow": 46,
+        "liner": 23
+      },
+      "res": 640
+    }
+  },
+  "KB1CC": {
+    "geometry": {
+      "ship": "KB1CC",
+      "plates": 151,
+      "welded_edges": 330,
+      "stacked": 72,
+      "triangles": 46712,
+      "fit": {
+        "CLASH": 0,
+        "MOUNT": 0,
+        "ARC": 0,
+        "SENSOR": 0,
+        "SWEEP": 0,
+        "EXHAUST": 0,
+        "EXIT": 0,
+        "LANE": 0
+      },
+      "weapon_match": "PASS",
+      "area_percentiles_world_squared": [
+        0.005934869931059359,
+        0.015984050997249737,
+        0.04165519482789708
+      ],
+      "angle_percentiles_degrees": [
+        -16.263324437674818,
+        0.505196721772772,
+        15.757645407907637
+      ],
+      "size_note": "Measured, for review; no visual cap. Material weights remain in the sheet."
+    },
+    "triangles": 48432,
+    "objects": 136,
+    "surfaces": 4,
+    "paint_device": "OPTIX",
+    "maps": 2048,
+    "paint_seconds": 51.6,
+    "stack_regression": "PASS",
+    "licences": "PASS",
+    "lights": "PASS",
+    "surface": {
+      "ok": true,
+      "totals": {
+        "room": 0,
+        "bare": 0
+      },
+      "views": {
+        "top": {
+          "stack": 180080,
+          "glow": 193,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "below": {
+          "stack": 180273,
+          "glow": 0,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "port": {
+          "stack": 56411,
+          "glow": 104,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "starboard": {
+          "stack": 56379,
+          "glow": 135,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "bow": {
+          "stack": 66844,
+          "glow": 37,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        },
+        "stern": {
+          "stack": 65345,
+          "glow": 1536,
+          "liner": 0,
+          "room": 0,
+          "bare": 0
+        }
+      },
+      "seen_from_outside": {},
+      "objects": {
+        "stack": 113,
+        "glow": 23,
+        "liner": 5
+      },
+      "res": 640
+    }
+  }
+}

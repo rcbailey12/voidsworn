@@ -34,6 +34,11 @@ SHEET = dict(version=3, round='issue 861: faceted hangar cheeks (R283)', date='2
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
 import math, random
+import os, importlib.util
+
+_ps = importlib.util.spec_from_file_location('hullbreaker_plating',
+    os.path.join(os.path.dirname(__file__), '..', '..', 'kits', 'hullbreakers', 'plating.py'))
+_plating = importlib.util.module_from_spec(_ps); _ps.loader.exec_module(_plating)
 
 HB = 3.2            # the body's half-beam (issue 651: was 2.75; broadened toward the beauty's slab, the length stays the class length)
 DECK, BELLY = 1.0, -1.05
@@ -110,7 +115,7 @@ def brick_sections(brick):
     x0, x1, z0, z1, w0, w1 = brick
     return [(x0, -(w0 - 0.65), w0, z0, z1, 0.28, 0.2),
             (x1, -(w1 - 0.65), w1, z0 + 0.08, z1 - 0.08, 0.28, 0.2)]
-PL = dict(keep3d=True, courses=True, size=(0.4, 0.9), thick=(0.035, 0.08), step=0.045, gap=0.03, over=0.22, skip=0.05, stack=0.22, rivets_share=0.3, mats={'soot': 4, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2, 'steel': 2})
+PL = dict(keep3d=True, size=(0.4, 0.9), thick=(0.035, 0.08), gap=0.03, skip=0.05, stack=0.22, rivets_share=0.3, mats={'soot': 4, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2, 'steel': 2})
 ENG = [('E1', -2.1, 0.46, 0.38, ''), ('E2', -1.06, 0.42, 0.33, ''), ('E3', 0.02, 0.44, 0.47, 'the largest'),
        ('E4', 1.1, 0.4, 0.35, 'in a violet Eclipse trophy housing'), ('E5', 2.12, 0.48, 0.4, '')]   # (id, y, z, r, note)
 THR = [(6.6, 1.61, -0.6), (6.6, -1.61, -0.6), (-6.55, HB, -0.1), (-6.55, -HB, -0.1)]
@@ -123,6 +128,7 @@ DECK_TIERS = [('D1 fore deck tier', 5.35, 2.05, -1.95, 0.9, 0.34), ('D2 mid deck
 def build(K):
     import bpy
     import kit as _k
+    _plating.install(K, _k.HP)
     from mathutils import Vector, Matrix
     HP = _k.HP
     sy = lambda x, side: _k.sec_at(HULL, x)[1 if side > 0 else 2] * side  # noqa: E731
@@ -449,8 +455,8 @@ def build(K):
     K.change('One pair of grabbers under the bow block and two heavy grapple arms folded flat under the stern quarters', 'designs.md (four bow arms become two, so the jaw is not A17\'s; the grapples drag prizes alongside)')
     K.change('Four attitude thrusters', 'a ship in space needs them to turn')
     K.change('The fore weld B-1 moved aft to x 2.3, behind the mouths\' back wall (issue 668; was 4.75)', 'with the mouths in the bow face a weld at 4.75 would cut through both mouths and the port fighter; the bow, both mouths and their craft now tear away as one piece (designs.md: the bay side tears first)')
-    K.change('Every face is plated in courses at the hull\'s plate size (0.4 to 0.9), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
-             'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
+    K.change('Issue 875 (R289): mixed-size, skewed slabs, overlapping patches, varied thickness and welded lap joints on every plated mass',
+             'The issue 633 course builder made ordered rows; the faction kit\'s plating.py restores the irregular A16/A17 character without changing the trophy mix or paint stack')
 
     K.fix('SENSOR: T1 aiming through the dishes D1 and D2, T2 through the antenna AN1', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): both turrets lifted onto barbettes (rings at deck height plus 1.05 fore and 0.92 aft), AN1 moved off the aft deck tier onto the deck beside it and cut from 1.3 to 1.0 tall')
     K.fix('R283 design check: port cheek wrap touching the L0 lamp', 'The third wrapping course sits aft of L0, with a clear gap; L0 and L3 mount on the new cheek skin. No sensor, weapon, bay or inside moves')
