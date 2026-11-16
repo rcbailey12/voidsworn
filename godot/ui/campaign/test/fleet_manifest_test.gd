@@ -38,7 +38,7 @@ func fixture(fac := "voidsworn", count := 12) -> void:
 	for i in count:
 		var tpl = C.equivHull(["penitent", "harrow", "warden"][i % 3], fac)
 		var ship = C.newShip(tpl); ship["name"] = names[i % names.size()] if i < 12 else "Sunward Martyr of the Ninth Pyre " + str(i)
-		if i in [1, 2]: ship["hp"] = float(C.derive(ship)["maxHp"]) * 0.3
+		if i in [1, 2]: ship["hp"] = round(float(C.derive(ship)["maxHp"]) * 0.3)   # whole hull, as real play stores it (issue 894)
 		C.RUN["fleet"].append(ship)
 	C.RUN["flagUid"] = C.RUN["fleet"][0]["uid"] if count > 0 else ""
 	C.fleetScreen("")
