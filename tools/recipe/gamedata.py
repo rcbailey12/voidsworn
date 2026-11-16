@@ -28,11 +28,18 @@ def weapons(ship_id, data_js=None):
     return out
 
 
-def ship_attr(ship_id, key, data_js=None, default=None):
+def ship_attr(ship_id, key, data_js=None, default=None, _seen=None):
     """a simple value from the ship's data.js entry (cls, fac, hangar and the like); default when the key is not there"""
     body = _block(ship_id, data_js)
+    seen = set(_seen or ())
+    if ship_id in seen:
+        raise ValueError(f'cyclic data.js base chain at {ship_id}')
+    seen.add(ship_id)
     m = re.search(r'(?<![A-Za-z0-9_])' + re.escape(key) + r'\s*:\s*(?:\'([^\']*)\'|"([^"]*)"|([0-9.]+)|(true|false))', body)
     if not m:
+        base = re.search(r"(?<![A-Za-z0-9_])base\s*:\s*'([^']*)'", body)
+        if key != 'base' and base:
+            return ship_attr(base.group(1), key, data_js, default, seen)
         return default
     v = m.group(1) if m.group(1) is not None else m.group(2) if m.group(2) is not None else m.group(3) if m.group(3) is not None else m.group(4)
     if v in ('true', 'false'):

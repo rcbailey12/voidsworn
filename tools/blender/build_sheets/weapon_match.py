@@ -46,7 +46,7 @@ FITS = {
     'spores': ({'spore'}, {'turret'}),                        # flak: the Chorus spore organ
     'gauss': ({'nullcannon'}, {'turret'}),                    # gauss: the Eclipse null cannon
     'nlance': ({'nullcannon'}, {'fixed'}),                    # gauss: the Eclipse null lance, the flare's one forward gun, fixed (issue 784, R256)
-    'doom': ({'corona_arc'}, {'fixed'}),                      # lance: the Eclipse corona arc projector, spinal
+    'doom': ({'corona_arc'}, {'fixed', 'turret'}),            # spinal, or the Turreted zenith's turning projector (issue 812)
     'torp': ({'rack', 'bow_launcher'}, {'launcher'}),         # torp: a rocket rack or a bow launcher
     'htorp': ({'rack', 'bow_launcher'}, {'launcher'}),        # torp
     'bioplasma': ({'throat'}, {'fixed'}),                     # bio: the Chorus throat, fixed forward
@@ -275,4 +275,6 @@ def run(K, game):
         stats[wk] = gamedata.weapon_stats(wk)
     ship = collect(K, weapons, stats)
     probs = check(ship)
-    return summary(ship, probs), probs
+    result = summary(ship, probs)
+    result.update(game_ship=game, variant=K.variant)
+    return result, probs

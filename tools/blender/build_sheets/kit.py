@@ -165,6 +165,8 @@ class Kit:
     def __init__(self, code, length):
         self.code = code
         self.length = length
+        self.game_ship = None  # set by variants.build; old direct sheet builds keep the base
+        self.variant = ''
         self.features = []      # feature table rows
         self.masses = []        # major masses
         self.inside = []        # inside rows (decks, bulkheads, spaces, armour, breaks)
@@ -673,7 +675,7 @@ class Kit:
         return Vector((math.cos(y) * math.cos(p), math.sin(y) * math.cos(p), math.sin(p)))
 
     def gun(self, fid, pos, yaw, pitch=0.0, barrels=1, cal=0.12, blen=2.0, mount='turret', normal=(0, 0, 1),
-            slot='', weapon='', src='picture', note='', size=1.0, inv=(), variant=0, band=None, kw=None, fixed=False):
+            slot='', weapon='', src='picture', note='', size=1.0, inv=(), variant=0, band=None, kw=None, fixed=False, part=None):
         """a gun from the kit. turret: on a deck (normal +Z) or the belly (-Z), rest aim yaw, barrels elevated pitch.
         casemate: on a flank (normal +-Y), the ball in the sponson's outer face, barrels trained yaw (from the bow)."""
         assert -100 < yaw < 100, fid + ' would aim aft'
@@ -683,14 +685,14 @@ class Kit:
         wk.update(kw or {})   # a kit's own options (the Chorus tendril count, the mane; issue 623)
         if abs(nrm.z) > 0.5:
             fwd = Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0))
-            part = HP.gun(barrels, cal, blen, size, 'turret', pitch=pitch, variant=variant, **wk)
+            part = part if part is not None else HP.gun(barrels, cal, blen, size, 'turret', pitch=pitch, variant=variant, **wk)
             M = HP.frame(p, fwd, nrm)
             kind = 'belly turret' if nrm.z < 0 else 'turret'
         else:
             # train: the angle from the flank normal toward the bow
             aim = self.aim_vec(yaw, pitch)
             train = math.degrees(math.acos(max(-1, min(1, aim.dot(nrm)))))
-            part = HP.gun(barrels, cal, blen, size, 'casemate', pitch=90 - train, variant=variant, **wk)
+            part = part if part is not None else HP.gun(barrels, cal, blen, size, 'casemate', pitch=90 - train, variant=variant, **wk)
             M = HP.frame(p, Vector((1, 0, 0)), nrm)
             kind = 'casemate'
         lo_, hi_ = ARCS.get(slot or 'T', (-180.0, 180.0))

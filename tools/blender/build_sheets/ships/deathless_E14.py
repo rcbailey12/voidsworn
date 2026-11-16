@@ -41,6 +41,17 @@ XL, LL, RL = 3.3, 1.45, 0.55             # the null lance: root on the gun heart
 XS, XH = 2.86, 3.2                       # the spokes run from the focus collar on the gun heart (XS) out to the hoop (XH)
 PANEL = (0.26, 0.4)                      # the even panel size (R243), as E13
 
+
+def build_guard(K):
+    K.gun('G1', (-3.1, 0.0, 0.7), 0, 6, barrels=2, cal=0.04, blen=0.6,
+          size=0.48, slot='T', weapon='gsentry', inv='guard_spire', src='designed',
+          note='Archive guard only: the null spire seated on the stern block roof, clear of the forward lance')
+    K.change('Archive guard adds a null spire on the stern block',
+             'data.js d_jackal_h adds gsentry T; the base flare keeps its single null lance')
+
+
+VARIANTS = {'d_jackal_h': build_guard}
+
 # the spar and the stern block (the hull loft): (x, half-beam port, starboard, bottom, top, top chamfer, bottom chamfer), bow first
 # R266 (Ryan: "the body being too thin with it just looking like a stick is a big one"): a chunky faceted body in steps, about
 # the beauty's mass: 1.0 across behind the core, 1.12 from midships, the stern block 1.44
