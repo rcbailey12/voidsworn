@@ -22,7 +22,7 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8c_2026_11/deathless_E12_sheet
 CONCEPT_VIEWS = dict(top=dict(box=(116, 40, 1376, 770), largest=False, flip=True), side=dict(box=(100, 850, 1395, 1080), largest=False, flip=True))
 CROPS = [('bow (fore arcs, emitter, fore battery)', (1150, 40, 2000, 1000)), ('midships (core and centre arcs)', (620, 40, 1300, 1000)),
          ('stern (engine block, aft arcs)', (150, 200, 780, 900))]
-SHEET = dict(version=4, round='fourth sheet (R221 weapons, pass 2)', date='2026-11-12', blend='opus532e\\w\\w3',
+SHEET = dict(version=5, round='R289 armoured reactor (issue 877)', date='2026-11-16', blend='issue-877 (rebuilt base and turreted variant)',
              alt_cameras=dict(fwd='best ring overlap (forward of the starboard beam, high): the ring layout lines up, the bells cannot show'),
              before='First full layout', before_note='The first complete E12 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): the sentry twin sweeping through the block roof thrusters (moved forward), a roof hatch on a '
@@ -138,7 +138,8 @@ def build(K):
                     inv='struts', note='truss from the spine to the %s %s arc' % (nm, 'port' if side > 0 else 'starboard'))
 
     # ---------------- the core, caged at the ring's centre ----------------
-    K.core('C1', (XC, 0.0, ZS), 0.85, inv='core', note='the trapped light core in gimbal rings; the spine enters its hubs')
+    K.core('C1', (XC, 0.0, ZS), 0.85, inv='core', part=_k.HP.reactor_core(0.85),
+           note='R289: faceted reactor, cooling rings and hot seams behind three courses of shade armour; about a quarter peeks through; the spine enters its hubs')
 
     # ---------------- weapons, by data.js slot ----------------
     # issue 618 (the Board's R224 pick): bulkier saddles, the concept's long hexagonal platforms: a wide sloped lower plinth
@@ -249,7 +250,8 @@ def build(K):
     K.change('The stern block is a faceted box: chamfered long edges, a stepped neck face where the spine enters (green light panel on its wedge), then a short facet wedge to the full block (issue 618)',
              'the Board\'s R224 pick for the build: the sheet\'s rounded block tapered over 1.4 units and read as a cone at the aft camera; the concept\'s block is a chamfered box that steps down to the spine')
     K.change('The stern block narrowed in plan to 1.44 (was 3.0), its side height kept (issue 618, the Board\'s massing round)', 'judged against the whole concept: its stern pod is about a third of the ring\'s half-height across; the sheet\'s block was twice that')
-    K.change('The core a whole sphere 1.26 across in a frame 1.63 across (was 1.11 and 1.44), the ring plane on the spine\'s axis (was 0.25 below it) (issue 618)', 'the concept\'s core is a full sphere in a ring frame that shows above and below the spine and the ring, which crosses it at its middle; the sheet\'s core read as a dome above the ring with a small arc below')
+    K.change('R289: faceted reactor with cooling bands and bright seams, mostly covered by eight ordered shade petals (issue 877)',
+             'Ryan: the core looked like a basic green bulb; only about 25 percent should peek out behind armour. The gimbal frame, hubs, core position and insides stay as before; both E12 versions use this kit part')
     K.change('Bulkier saddles: a long hexagonal plinth 1.7 by 1.04 under a stepped upper deck (issue 618)', 'the Board\'s R224 pick for the build: the concept seats each battery on a broad stepped platform; the sheet\'s 1.5 by 0.84 oval pads read thin beside the arcs')
     K.change('The block thrusters sit on the roof and belly chamfers at 4.3 (were at 4.0)', 'R226: at 4.0 they sat on B-2, where the block tears from the spine; a machine rides whole with one piece')
     K.change('Two boarding origins on the centre arcs\' outer walls (issue 618)', 'the game contract needs one a side on the mid hull (HARDPOINTS.md); the reclaim swarms leave the open arc bays')
