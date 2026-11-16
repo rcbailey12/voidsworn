@@ -26,5 +26,6 @@ checks, Muse for audits; part of the issue 788 plan.
 steps; contrib/opus/reviews/repo_memory_788_synthesis.md). Everything else queued or running is in LOOP's newest LATEST line
 and contrib/opus/OPEN_WORK.md (generated from GitHub).
 
-**Ryan's open picks.** The fleet screen (FL1 and FL2 hybrid, in Muse's chat). Looks to come: effects round 3 (815), the fog
-nebula (368 step 2).
+**Ryan's open picks.** FL5 The Manifest and CR4 The Honours Board are settled as the fleet and Career directions (R285, R286;
+builds 868, 869). Still open: effects round 3 (815) when it lands, the 368 storm look (717), the shield hit (855), how the 788
+librarian reports reach him, and the issue 211 Foley probe (close or keep).
