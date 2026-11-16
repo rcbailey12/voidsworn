@@ -99,16 +99,21 @@ def planet(width):
         cloud = np.clip((wisps-.65)*.45, 0, .68)*np.clip((h2-.18)*2, 0, 1)
         packed[y0:y0+len(v), :, 3] = (cloud*255+.5).astype(np.uint8)
     # Colour is sRGB. Relief/roughness/clouds are linear, not colour textures.
-    Image.fromarray(colour).save(OUT/'colour.png', compress_level=6)
-    Image.fromarray(packed).save(OUT/'relief.png', compress_level=6)
-    Image.fromarray(packed[:, :, 2]).save(OUT/'roughness.png', compress_level=6)
+    # Full PNGs are scratch inputs to the WebP resource packer. Never
+    # ship an oversized PNG or reduce the height field to meet a file limit.
+    raw = CACHE / 'r01_remix'
+    raw.mkdir(exist_ok=True)
+    Image.fromarray(colour).save(raw/'colour.png', compress_level=6)
+    Image.fromarray(packed).save(raw/'relief.png', compress_level=6)
+    Image.fromarray(packed[:, :, 2]).save(raw/'roughness.png', compress_level=6)
     metadata = {'code': 'R01', 'size': [width, height], 'source_receipt': '../SOURCES_369.json',
                 'source_datasets': ['LROC WAC natural colour mosaic', 'LRO LOLA gridded laser altimetry'],
                 'seed': [3.69, 8.17], 'script': 'tools/pc/jobs/planet369_remix.py',
                 'relief_channels': {'r': 'height high byte', 'g': 'height low byte', 'b': 'roughness', 'a': 'cloud opacity'},
                 'cold_remix_seconds': time.perf_counter()-start,
-                'files': {p.name: {'sha256': hashlib.sha256(p.read_bytes()).hexdigest(), 'bytes': p.stat().st_size}
-                          for p in OUT.glob('*.png')}}
+                'storage': 'Set by planet369_pack.bat after encoding',
+                'pack_script': 'tools/pc/jobs/planet369_pack.py and planet369_pack.gd',
+                'pixel_loss': 'Set by planet369_pack.bat after encoding', 'files': {}}
     (OUT/'bake.json').write_text(json.dumps(metadata, indent=2)+'\n', encoding='ascii')
     # One named image at <=720 high, each original beside the authored result.
     sheet = Image.new('RGB', (1280, 670), '#171717')

@@ -11,6 +11,8 @@ var args := {}
 var caption: Label
 
 func _initialize() -> void:
+	root.mode = Window.MODE_WINDOWED
+	root.size = Vector2i(1920,1080)
 	var a := OS.get_cmdline_user_args()
 	for i in range(0, a.size()-1, 2): args[a[i].trim_prefix("--")] = a[i+1]
 	out = str(args.get("out", ""))
@@ -43,7 +45,14 @@ func median(values: Array) -> float:
 	return float(values[values.size()/2]) if not values.is_empty() else -1.0
 
 func _run() -> void:
+	root.mode = Window.MODE_WINDOWED
+	root.size = Vector2i(1920,1080)
+	root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	Engine.max_fps = 0
+	OS.low_processor_usage_mode = false
+	AudioServer.set_bus_mute(0,true)
 	var overlay := CanvasLayer.new()
+	overlay.layer = 100
 	root.add_child(overlay)
 	caption = Label.new()
 	caption.add_theme_font_size_override("font_size",22)
@@ -53,7 +62,7 @@ func _run() -> void:
 	var b = BATTLE.instantiate()
 	b.external = true
 	b.args["no-tips"] = true
-	b.args["shots"] = true
+	b.args["quality"] = "max"
 	root.add_child(b)
 	var api = API.new()
 	if api.load_rules() != "":
@@ -94,6 +103,8 @@ func _run() -> void:
 			return
 		var t0 := Time.get_ticks_msec()
 		await PL.install_rocky(p,air,p.global_position+b.board.sun_dir.normalized()*100000.0)
+		# Include the first drawn frame, not only the queued texture uploads.
+		await RenderingServer.frame_post_draw
 		cold_ms = Time.get_ticks_msec()-t0
 		if p.get_meta("planet_code","") != "R01":
 			quit(1)
@@ -101,8 +112,11 @@ func _run() -> void:
 	await frames(180)
 	var home: Vector3 = b.cam.t
 	var home_beta: float = b.cam.b
+	b.cam.r = 170
+	b.cam.snap()
+	await shot("R01_home_c170")
 	for radius in [170.0,60.0,26.0]:
-		b.cam.t = home if radius == 170 else Vector3(p.position.x,p.position.y+(p.mesh as SphereMesh).radius,p.position.z)
+		b.cam.t = Vector3(p.position.x,0,p.position.z) if radius == 170 else Vector3(p.position.x,p.position.y+(p.mesh as SphereMesh).radius,p.position.z)
 		b.cam.r = radius
 		b.cam.snap()
 		await shot("R01_c%d" % int(radius))
@@ -116,11 +130,28 @@ func _run() -> void:
 	b.cam.t = Vector3(p.position.x,0,p.position.z)
 	b.cam.snap()
 	await shot("R01_planet",true)
-	await frames(240)
+	await create_timer(4.0).timeout
 	await shot("R01_cloud_motion",true)
+	if p.get_meta("planet_code", "") == "R01":
+		# Isolate the shadow's actual effect on the terrain, without the cloud
+		# shell covering it. Freeze its field for an exact on/off comparison.
+		var clouds := p.get_node("R01Clouds") as MeshInstance3D
+		var ground := p.material_override as ShaderMaterial
+		clouds.hide()
+		ground.set_shader_parameter("cloud_rate",0.0)
+		await shot("R01_shadows_on",true)
+		ground.set_shader_parameter("shadow_strength",0.0)
+		await shot("R01_shadows_off",true)
+		ground.set_shader_parameter("shadow_strength",0.64)
+		ground.set_shader_parameter("cloud_rate",0.009)
+		clouds.show()
 	# Additional planet-and-rock cost at 4K. The binding #207 gate is run by
 	# the wrapper as well; this scene does not pretend to replace that gate.
 	root.scaling_3d_scale = 2.0
+	if Vector2i(root.get_texture().get_size()) != Vector2i(1920,1080):
+		printerr("R01 requires an actual 1920x1080 viewport for its 4K measurement; got ",root.get_texture().get_size())
+		quit(1)
+		return
 	b.cam.r = 170.0
 	b.cam.b = home_beta
 	b.cam.t = home
@@ -138,14 +169,42 @@ func _run() -> void:
 		var now := Time.get_ticks_usec()
 		frame_times.append((now-last)/1000.0)
 		last = now
-	var report := {"seed":5,"ships":api.R.B.units.size(),"candidate":cold_ms >= 0,
-		"cold_decode_mip_upload_ms":cold_ms,"camera":170,"render_pixels":[3840,2160],
+	var report := {"seed":5,"entities":api.R.B.units.size(),"candidate":cold_ms >= 0,
+		"cold_decode_mip_upload_first_draw_ms":cold_ms,"camera":170,"render_pixels":[3840,2160],
 		"gpu_median_ms":median(times),"frame_median_ms":median(frame_times),
 		"texture_memory_bytes":Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED),
 		"video_memory_bytes":Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED),
 		"triangles":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),
 		"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 		"surface_gate":"Additional planet scene only; see gate/scene_gate.json for R116"}
+	var hulls := 0
+	var wings := 0
+	for u in api.view().units:
+		if u.squadron: wings += 1
+		else: hulls += 1
+	report["ship_hulls"] = hulls
+	report["squadron_entities"] = wings
+	# Also measure a pan onto the actual planet. A startup framing can put it
+	# outside the central crop, which would hide the surface's fill cost.
+	b.cam.t = Vector3(p.position.x,0,p.position.z)
+	b.cam.snap()
+	await frames(180)
+	times.clear()
+	frame_times.clear()
+	last = Time.get_ticks_usec()
+	for i in 360:
+		await RenderingServer.frame_post_draw
+		times.append(RenderingServer.viewport_get_measured_render_time_gpu(rid))
+		var now := Time.get_ticks_usec()
+		frame_times.append((now-last)/1000.0)
+		last = now
+	report["planet_focus"] = {"camera":170,"gpu_median_ms":median(times),
+		"frame_median_ms":median(frame_times),
+		"triangles":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),
+		"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)}
+	var gpu_memory := []
+	OS.execute("nvidia-smi", ["--query-gpu=memory.used,memory.total", "--format=csv,noheader,nounits"], gpu_memory)
+	report["gpu_board_memory_mib"] = gpu_memory
 	var f := FileAccess.open(out.path_join("R01_metrics.json"),FileAccess.WRITE)
 	f.store_string(JSON.stringify(report,"  "))
 	print("R01_PROBE_DONE ",JSON.stringify(report))

@@ -1,38 +1,224 @@
 {
   "code": "R01",
-  "size": [
-    8192,
-    4096
-  ],
-  "source_receipt": "../SOURCES_369.json",
-  "source_datasets": [
-    "LROC WAC natural colour mosaic",
-    "LRO LOLA gridded laser altimetry"
-  ],
+  "cold_encode_seconds": 65.2611710999627,
+  "cold_pack_seconds": 1.637,
+  "cold_remix_seconds": 26.3148922000546,
+  "files": {
+    "colour_0_0.res": {
+      "bytes": 269709,
+      "sha256": "6d797a0edc1e3d32d5d18a5b6cd586deeebcc8a6567d253bd490620069ccc931"
+    },
+    "colour_0_1.res": {
+      "bytes": 406003,
+      "sha256": "a25afe817b395164417b194b72dd39327272c187ee947175f481b48fe7a6ed77"
+    },
+    "colour_0_2.res": {
+      "bytes": 444138,
+      "sha256": "9d0507d40077b8c7c6385d8e28e2d59bbf8a870c778c77350a959b0819c36fe6"
+    },
+    "colour_0_3.res": {
+      "bytes": 339855,
+      "sha256": "a366dabf3b274a841b934d66ac75f06969f4dc39e6185433fc3e7a53459eceed"
+    },
+    "colour_1_0.res": {
+      "bytes": 257899,
+      "sha256": "f447ed3f67b5b8a411d92cde124aa565cdfdec5f963f0f327703304bfe26786c"
+    },
+    "colour_1_1.res": {
+      "bytes": 284453,
+      "sha256": "fb3afc8a37d5e2364108e87aacee939612c91426f07883b0f33c79dbcb15610a"
+    },
+    "colour_1_2.res": {
+      "bytes": 380563,
+      "sha256": "ced43f287c134157a202f73490232dda4c1f68e63f3d0b0ca029fbea1f5fe76d"
+    },
+    "colour_1_3.res": {
+      "bytes": 220801,
+      "sha256": "a1f2708a38e4999034c36c0ed9cb975aa50569dd9cc9907722c35b8d211e77dc"
+    },
+    "colour_2_0.res": {
+      "bytes": 255011,
+      "sha256": "5aa8e3f8e4076c8e0c0c412b8e8b57cd13f94ecaeef69a0a8f5d31c7d2db9496"
+    },
+    "colour_2_1.res": {
+      "bytes": 369671,
+      "sha256": "977ca3fe452da3ef7a1430b4a5395def422a7633e699475cf598964f9cd59409"
+    },
+    "colour_2_2.res": {
+      "bytes": 348235,
+      "sha256": "e74f2bf91a38004e3659e032b4cafd9cfcb4e4a21b86b7ecd84c222ab35812bd"
+    },
+    "colour_2_3.res": {
+      "bytes": 286209,
+      "sha256": "1d43f2d5896b7baa5d3a1ec4ab0512d66396e9c2990e938ea5c760ae133eacf0"
+    },
+    "colour_3_0.res": {
+      "bytes": 246085,
+      "sha256": "405e53cca9a8655de96897495ad6602207a3262945e9d995214b552998cc613d"
+    },
+    "colour_3_1.res": {
+      "bytes": 394204,
+      "sha256": "aaafd18c5f1c2c94a9c6525604a40880bd2898b8bc8656fe01cf4b6507546cc3"
+    },
+    "colour_3_2.res": {
+      "bytes": 419326,
+      "sha256": "e3d6d7c2ff348e4e958b3909dcf47ad37c4deb8e6898b1b93473d4a63cb1fc85"
+    },
+    "colour_3_3.res": {
+      "bytes": 328076,
+      "sha256": "bf3778d28ce1ee14eec199154d119e682646049fce8678ed4430fcb58c3d1bd0"
+    },
+    "relief_0_0.res": {
+      "bytes": 1449363,
+      "sha256": "442df8a6265384322c8f4247d7b5dc729384b3df54187e73be3f7859d23980ad"
+    },
+    "relief_0_1.res": {
+      "bytes": 1924003,
+      "sha256": "160dab20f6dfb128a55ae21fe401e6eb81590b72170670a707fb9ac779f342eb"
+    },
+    "relief_0_2.res": {
+      "bytes": 2104667,
+      "sha256": "eef49349a2efc9cf6afbff37c51cbbfd4fe79864d9fd4f7434d0d74255fea676"
+    },
+    "relief_0_3.res": {
+      "bytes": 1686089,
+      "sha256": "60b7b02121ed436131294e74d53ec3d9d4d83eeec3caaa9b5b09aa6247e7db0b"
+    },
+    "relief_1_0.res": {
+      "bytes": 1377479,
+      "sha256": "b65858eb45897bbde130f5b316267fa2d25388291313a8c819f1e78e3e69f50d"
+    },
+    "relief_1_1.res": {
+      "bytes": 1761099,
+      "sha256": "b47804d210dc646dac977b5c1cba7d20a5b6bcf801247ed797de1cce46607512"
+    },
+    "relief_1_2.res": {
+      "bytes": 2031859,
+      "sha256": "30deaa66a59bc48da8c14a5a5e5cb4ac3839e368e49cb1bfeffb1bfb7b306323"
+    },
+    "relief_1_3.res": {
+      "bytes": 1397241,
+      "sha256": "d0002120d0bf7431b0d8420897cdce9e9b662f66b7f025171f04f96cdcef0ed5"
+    },
+    "relief_2_0.res": {
+      "bytes": 1532835,
+      "sha256": "e390ebc1877df4a9e76d0bfdaf7aedd56ea8680b92999df91f5fd436da4acb77"
+    },
+    "relief_2_1.res": {
+      "bytes": 1975151,
+      "sha256": "ad30adb43305877ff00228b2c822e9b74e5484ee2baf0c522ab43945941e29cf"
+    },
+    "relief_2_2.res": {
+      "bytes": 2017335,
+      "sha256": "73a868a2f4670582ede2ed1499471bb23005201a2f65bbd3b0309f4b43ecc610"
+    },
+    "relief_2_3.res": {
+      "bytes": 1551048,
+      "sha256": "691d1369ac4e464a871fd40e73f2f5a4a2d5fa8bf4f2fcce86720290b190abbe"
+    },
+    "relief_3_0.res": {
+      "bytes": 1367895,
+      "sha256": "9d80720dee9e9885c544d7118249045da9c4e795e22fc917095eca0fd7844374"
+    },
+    "relief_3_1.res": {
+      "bytes": 2044915,
+      "sha256": "25a3acae1d7b56e6e6c196d9fd491245070f13bd3803eb09fa9d05e3a2c941d8"
+    },
+    "relief_3_2.res": {
+      "bytes": 2018064,
+      "sha256": "d43abfe4584228c5002035df070e446641242fbb6d2415fc9582ae3fd1828fbc"
+    },
+    "relief_3_3.res": {
+      "bytes": 1585945,
+      "sha256": "efd1acb6028a18c2efa7c1088b18899b1191445262881e8d07594eec52c36217"
+    },
+    "roughness_0_0.res": {
+      "bytes": 370882,
+      "sha256": "a61cba2f2df1c8b978924109d693612b28e1c048b2ae7db37e9fee2f3049a260"
+    },
+    "roughness_0_1.res": {
+      "bytes": 483781,
+      "sha256": "6ead378767ddbdde3ea9a53488e944c0136c20844d0576354590133782d31eb6"
+    },
+    "roughness_0_2.res": {
+      "bytes": 523101,
+      "sha256": "2ced5e50745bba6b28e463f57c3e265622a241a7e157893119b535e081a47b41"
+    },
+    "roughness_0_3.res": {
+      "bytes": 422219,
+      "sha256": "4b45c1e342e866565234746187da48251fa581c2324e995bd26355f56dddbc87"
+    },
+    "roughness_1_0.res": {
+      "bytes": 343057,
+      "sha256": "6b10d138cb676d332598658a7db3f8ce2a69c6dd1a7e88ff11047e165c01ddd3"
+    },
+    "roughness_1_1.res": {
+      "bytes": 408613,
+      "sha256": "a76c47e2f6051a8a61b9e5a57d036a881f3e44460ef52ef6a9cb842b3defa0ef"
+    },
+    "roughness_1_2.res": {
+      "bytes": 461361,
+      "sha256": "5bb056f700546ec14fc075680a95d5aa331925a94f3058d77ad0a21de6781686"
+    },
+    "roughness_1_3.res": {
+      "bytes": 310125,
+      "sha256": "62602e52713721e3e27f16d4986713281270ea53332839a4d41f09b5177baa9a"
+    },
+    "roughness_2_0.res": {
+      "bytes": 356519,
+      "sha256": "61498652b4a70f61bc58ae0a3c23fa6b0911ed9bf4fce6e7a0417b0f4e15c4de"
+    },
+    "roughness_2_1.res": {
+      "bytes": 456481,
+      "sha256": "b7c9d31ce781baa4ae365b9338719479e15bf3ce930e630adc6f851bad6e4113"
+    },
+    "roughness_2_2.res": {
+      "bytes": 466685,
+      "sha256": "c7825245ec744839426a5782c01a7ffcb77ef65dabf2492132b6a3aef36c998a"
+    },
+    "roughness_2_3.res": {
+      "bytes": 382517,
+      "sha256": "b88115382258ef738f9f809beae2b530a851780c9acde4b69d2d5193e3876a53"
+    },
+    "roughness_3_0.res": {
+      "bytes": 318467,
+      "sha256": "3321bf26637c8f98ec1fe1cfbd6138ef340aa9d498db5fedf7c79de7f4132af4"
+    },
+    "roughness_3_1.res": {
+      "bytes": 470279,
+      "sha256": "ec9e912a8cd74c094ce2335c574e60ae703856cd9c98c7a5cdd2cfa5f7923034"
+    },
+    "roughness_3_2.res": {
+      "bytes": 470340,
+      "sha256": "a195a9f8d5dec4b7488983429d3fa15a7c9d1199faaf4324111a0998c47efdd6"
+    },
+    "roughness_3_3.res": {
+      "bytes": 360453,
+      "sha256": "ae8970e61f027beaad7e8ff972a68b66f844f4ec6182a6ff9ad6ce69a5b7dcb0"
+    }
+  },
+  "pack_script": "tools/pc/jobs/planet369_pack.py and planet369_pack.gd",
+  "pixel_loss": "Colour: WebP quality 90. Height: rounded to 11 bits, maximum 16/65535 error. Roughness and clouds: rounded to six bits, maximum 2/255 error. No spatial reduction.",
+  "relief_channels": {
+    "a": "cloud opacity",
+    "b": "roughness",
+    "g": "height low byte",
+    "r": "height high byte"
+  },
+  "script": "tools/pc/jobs/planet369_remix.py",
   "seed": [
     3.69,
     8.17
   ],
-  "script": "tools/pc/jobs/planet369_remix.py",
-  "relief_channels": {
-    "r": "height high byte",
-    "g": "height low byte",
-    "b": "roughness",
-    "a": "cloud opacity"
-  },
-  "cold_remix_seconds": 27.151156299980357,
-  "files": {
-    "colour.png": {
-      "sha256": "60651940007c98a80041a54d40f1f72b5ee776be268b577136173e382161927a",
-      "bytes": 37658083
-    },
-    "relief.png": {
-      "sha256": "c560c7943c948604263999282a6f7a4ce14fc1b20f783383c9dc9e3535122b84",
-      "bytes": 74306361
-    },
-    "roughness.png": {
-      "sha256": "2144f2c6ef222aaf295b862543871277ce9aab33eae3c11f2e1cb12cb76b7679",
-      "bytes": 14395389
-    }
-  }
+  "size": [
+    8192.0,
+    4096.0
+  ],
+  "source_datasets": [
+    "LROC WAC natural colour mosaic",
+    "LRO LOLA gridded laser altimetry"
+  ],
+  "source_receipt": "../SOURCES_369.json",
+  "storage": "WebP payloads inside Godot Resources; sixteen tiles per 8K map",
+  "total_asset_bytes": 39680106
 }

@@ -15,6 +15,18 @@ func check(ok: bool, text: String) -> void:
 func _run() -> void:
 	var receipt = JSON.parse_string(FileAccess.get_file_as_string("res://world/rocks/SOURCES_369.json"))
 	check(receipt is Dictionary and receipt.sources.size() == 10, "ten source credit records")
+	var bake = JSON.parse_string(FileAccess.get_file_as_string(PL.R01_DIR + "bake.json"))
+	var files_ok: bool = bake.files.size() == 48
+	for file in bake.files:
+		var bytes := FileAccess.get_file_as_bytes(PL.R01_DIR + str(file))
+		var h := HashingContext.new()
+		h.start(HashingContext.HASH_SHA256)
+		h.update(bytes)
+		files_ok = files_ok and bytes.size() <= 8000000 and bytes.size() == int(bake.files[file].bytes) and h.finish().hex_encode() == str(bake.files[file].sha256)
+	check(files_ok, "all 48 shipped tiles match their hashes and the 8 MB file limit")
+	var total := 0
+	for entry in bake.files.values(): total += int(entry.bytes)
+	check(total > 0 and total <= 40000000, "complete R01 texture package below 40 MB: %d bytes" % total)
 	var scans = JSON.parse_string(FileAccess.get_file_as_string("res://world/rocks/scans.json"))
 	check(WR.scan_names().size() == 8, "eight complete scan pairs")
 	var mat := WR.material("stone", {})
@@ -40,11 +52,37 @@ func _run() -> void:
 		check(absf(radius - 1.0) < 0.001, str(entry.name) + " normalized unit radius")
 		check(arrays[Mesh.ARRAY_COLOR].size() == vertices.size(), str(entry.name) + " scan colour and AO per vertex")
 	var baker = WB.service(self)
-	var colour: Image = await baker.authored(PL.R01_DIR + "colour.png", PL.R01_SIZE)
-	var data: Image = await baker.authored(PL.R01_DIR + "relief.png", PL.R01_SIZE)
+	var colour: Image = await baker.authored(PL.R01_DIR + "colour.json", PL.R01_SIZE)
+	var data: Image = await baker.authored(PL.R01_DIR + "relief.json", PL.R01_SIZE, true)
 	check(colour != null and data != null, "two real 8K maps decoded by shared worker")
 	if colour != null and data != null:
+		for name in ["colour", "relief", "roughness"]:
+			var assembled: Image = await baker.authored(PL.R01_DIR + name + ".json", PL.R01_SIZE, name == "relief")
+			var desc = JSON.parse_string(FileAccess.get_file_as_string(PL.R01_DIR + name + ".json"))
+			var h := HashingContext.new()
+			h.start(HashingContext.HASH_SHA256)
+			var pixels := assembled.duplicate() as Image if assembled != null else null
+			if pixels != null:
+				pixels.clear_mipmaps()
+				pixels.convert(int(desc.format))
+				h.update(pixels.get_data())
+			check(pixels != null and h.finish().hex_encode() == str(desc.pixel_sha256), name + " assembled pixels match the encoded 8K reference")
 		check(colour.has_mipmaps() and data.has_mipmaps(), "both maps have mip chains")
+		check(data.get_format() == Image.FORMAT_RGBAF, "packed height uses float mipmaps instead of byte-rounded height steps")
+		var mip_size := data.get_size()/8
+		var offset := data.get_mipmap_offset(3)
+		var mip := Image.create_from_data(mip_size.x,mip_size.y,false,data.get_format(),data.get_data().slice(offset,offset+mip_size.x*mip_size.y*16))
+		var mip_error := 0.0
+		for y in range(19,mip_size.y-1,71):
+			for x in range(17,mip_size.x-1,113):
+				var average := 0.0
+				for dy in 8:
+					for dx in 8:
+						var v := data.get_pixel(x*8+dx,y*8+dy)
+						average += (v.r*65280.0+v.g*255.0)/65535.0/64.0
+				var v := mip.get_pixel(x,y)
+				mip_error = maxf(mip_error,absf((v.r*65280.0+v.g*255.0)/65535.0-average))
+		check(mip_error < 1.0/65535.0, "mip heights match the 64 source heights within one 16-bit step; error %.9f" % mip_error)
 		var min_h := 1.0
 		var max_h := 0.0
 		var clouds := 0

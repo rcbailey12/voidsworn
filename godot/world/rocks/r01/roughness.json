@@ -1,0 +1,159 @@
+{
+  "size": [
+    8192,
+    4096
+  ],
+  "format": 0,
+  "encoding": "webp_resource_v1",
+  "tiles": [
+    {
+      "file": "roughness_0_0.res",
+      "x": 0,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_1_0.res",
+      "x": 2048,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_2_0.res",
+      "x": 4096,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_3_0.res",
+      "x": 6144,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_0_1.res",
+      "x": 0,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_1_1.res",
+      "x": 2048,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_2_1.res",
+      "x": 4096,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_3_1.res",
+      "x": 6144,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_0_2.res",
+      "x": 0,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_1_2.res",
+      "x": 2048,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_2_2.res",
+      "x": 4096,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_3_2.res",
+      "x": 6144,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_0_3.res",
+      "x": 0,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_1_3.res",
+      "x": 2048,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_2_3.res",
+      "x": 4096,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "roughness_3_3.res",
+      "x": 6144,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    }
+  ],
+  "pixel_sha256": "fcbb0cbcc863ddb4afc3aa857b4e02fd5ac7b242ed56b842c8b655ec2cea48c2",
+  "source_pixel_sha256": "8b79ca72dc3582bf3d93c2cc93798e3ce922d9368f0459b13e9065ef8924a808",
+  "max_channel_error": [
+    2
+  ]
+}

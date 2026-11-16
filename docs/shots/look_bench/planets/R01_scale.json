@@ -1,0 +1,128 @@
+[
+  {
+    "class": "Frigate",
+    "hull_code": "V14_23",
+    "length": 10.4,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Destroyer",
+    "hull_code": "V15_37",
+    "length": 15.2,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Cruiser",
+    "hull_code": "V16_37",
+    "length": 23.2,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Carrier",
+    "hull_code": "V18_51",
+    "length": 26.4,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Battleship",
+    "hull_code": "V17_37",
+    "length": 33.6,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Dreadnought",
+    "hull_code": "V1b_r_23",
+    "length": 43.2,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Super-dreadnought",
+    "hull_code": "H4_11",
+    "length": 49.6,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Battle-barge",
+    "hull_code": "C19_51",
+    "length": 41.6,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Bio-titan",
+    "hull_code": "B16_23",
+    "length": 44.8,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Ark",
+    "hull_code": "I8_37",
+    "length": 41.6,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Tomb-ark",
+    "hull_code": "D22_23",
+    "length": 44.8,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Squadron",
+    "hull_code": "voidsworn|bomber",
+    "length": 3.84,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Squadron",
+    "hull_code": "voidsworn|bomber",
+    "length": 3.84,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Squadron",
+    "hull_code": "corsair|bomber",
+    "length": 3.84,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Squadron",
+    "hull_code": "corsair|bomber",
+    "length": 3.84,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Squadron",
+    "hull_code": "chorus|spore",
+    "length": 3.84,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Squadron",
+    "hull_code": "chorus|spore",
+    "length": 3.84,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  },
+  {
+    "class": "Squadron",
+    "hull_code": "chorus|spore",
+    "length": 3.84,
+    "rock_long_axis": 37.9132533073425,
+    "rock_scale": 20.0
+  }
+]
