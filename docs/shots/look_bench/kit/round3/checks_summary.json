@@ -1,0 +1,39 @@
+{
+ "standing": {
+  "passed": 51,
+  "known": 2,
+  "failed": 0,
+  "exit": 0
+ },
+ "load_all": {
+  "scripts": 191,
+  "scenes": 11,
+  "failed": 0
+ },
+ "recipe": {
+  "cases": 112,
+  "failures": 0,
+  "baseline_expected_failures": 120
+ },
+ "destruction": {
+  "exit": 0,
+  "gpu_box": true,
+  "gpu_fleet": true
+ },
+ "raster": {
+  "frames": 192,
+  "flight_and_impact_samples": 112,
+  "min_phone_peak": 255,
+  "min_tail_fraction": 0.46625202993068177
+ },
+ "captures": {
+  "cases": 54,
+  "stills_per_version": 108,
+  "cameras": [
+   170,
+   60
+  ],
+  "warnings": 0
+ },
+ "asset_files_verified": 252
+}

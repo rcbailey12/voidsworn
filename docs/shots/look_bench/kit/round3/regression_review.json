@@ -1,0 +1,18 @@
+[
+ {
+  "id": "p_lance_burn",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0012028130608117203,
+  "different_above_1": 3,
+  "max_delta": 2,
+  "frame": 7,
+  "time": 0.5667,
+  "crop": [
+   337,
+   69,
+   200,
+   200
+  ]
+ }
+]
