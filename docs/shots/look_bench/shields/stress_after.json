@@ -1,0 +1,29 @@
+{
+ "rows": [
+  {
+   "frame_median": 2.833,
+   "gpu_median": 2.53299999237061,
+   "mode": "rest",
+   "pixels": "1080p"
+  },
+  {
+   "frame_median": 3.231,
+   "gpu_median": 2.57100009918213,
+   "mode": "hit",
+   "pixels": "1080p"
+  },
+  {
+   "frame_median": 4.591,
+   "gpu_median": 4.18800020217896,
+   "mode": "rest",
+   "pixels": "4K"
+  },
+  {
+   "frame_median": 4.629,
+   "gpu_median": 4.22399997711182,
+   "mode": "hit",
+   "pixels": "4K"
+  }
+ ],
+ "ships": 20
+}

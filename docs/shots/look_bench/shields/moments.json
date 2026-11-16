@@ -1,0 +1,82 @@
+{
+ "about": "SH372: one torpedo on the same Sunward cruiser hull and shield; standing look bench, real cameras, one shot, 18 frames.",
+ "cameras": [
+  170,
+  60,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "60": [
+   768,
+   432
+  ],
+  "26": [
+   1152,
+   648
+  ]
+ },
+ "rows": [
+  {
+   "id": "w_torp_void_hull",
+   "group": "weapon on hull",
+   "label": "torpedo (voidsworn) on a hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     18
+    ]
+   ],
+   "key": 3,
+   "shots": 1
+  },
+  {
+   "id": "w_torp_void_shield",
+   "group": "weapon on shield",
+   "label": "torpedo (voidsworn) on a shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     18
+    ]
+   ],
+   "key": 3,
+   "shots": 1
+  }
+ ]
+}
