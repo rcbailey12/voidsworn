@@ -81,7 +81,7 @@ Stat tiles as shipped (battles won, flagships destroyed, enemy ships destroyed, 
 
 ### 3.9 NEXT RUN panel and exits
 
-NEXT RUN (win only, shipped panel): a card naming a suggested unwon faction with its blurb. The suggestion names the unwon faction with the most progress. Exits are abtn buttons bound to named shell actions (campaign_ui.gd:211), placed last: win gets "Play as (faction)" primary plus "Pick a faction" and "Title screen"; loss and abandon get "New run" primary plus "Title screen". Spend routing buttons sit with the rows they belong to (section 6), not in the exit row.
+NEXT RUN (win only, shipped panel): a card naming a suggested unwon faction with its blurb. The suggestion names the unwon faction with the most progress. Build reading, recorded by the Board for issue 728 as a build choice and not an owner ruling: "progress" means total mastery XP per faction, the investment reading, including shadow earnings accrued in that faction; ties break in RUN_FACTIONS order and the all-won fallback keeps the panel useful. Exits are abtn buttons bound to named shell actions (campaign_ui.gd:211), placed last: win gets "Play as (faction)" primary plus "Pick a faction" and "Title screen"; loss and abandon get "New run" primary plus "Title screen". Spend routing buttons sit with the rows they belong to (section 6), not in the exit row.
 
 ## 4. Exact copy
 
@@ -117,7 +117,7 @@ Under the panel header, one lead line. Win: "What this victory bought:" Loss: "W
 
 ### 4.5 Heir naming lines
 
-Prompt: "Name an heir to the (line) line?" Choice row per candidate: "(Admiral), (rank). Shadow (n) XP. Double earnings for this line." Current-heir line: "(Admiral) is the current heir." No-heir row: "No heir this run." Confirm line after naming: "Named: (Admiral). The (line) line earns double shadow until you name another."
+Prompt: "Name an heir to the (line) line?" Choice row per candidate: "(Admiral), (rank). Shadow (n) XP. Double earnings for this line." Current-heir line: "(Admiral) is the current heir." No-heir row: "No heir this run." Confirm line after naming: "Named: (Admiral). The (line) line earns double shadow until you name another." Build reading, recorded by the Board for issue 728 as a build choice and not an owner ruling: the heir row's rank is the office the candidate steps into. A name that already opens with a rank word keeps that word in the rank slot; a name without one shows the faction's top rank from the CAPTAINS table. This is the office reading, not the holder's rank.
 
 ### 4.6 Core sync lines
 
@@ -166,7 +166,7 @@ Reading order is interaction order. Nothing is modal and nothing is required; ev
 3. Spend routing: the doctrine row's foot carries a "Spend renown" button opening Progression on the tab holding the affordability line's named item; when the named item is an admiral unlock, the button reads "Unlock admirals" and routes to the admiral select screen, where unlocks are bought today (R77). Respec is not routed from here; it lives on the lineage screen.
 4. Exits (section 3.9), last.
 
-NEXT RUN suggestion (win only): the shipped panel, with the suggestion settled as the unwon faction with the most progress, so the forward hook points at the shortest path to a new win.
+NEXT RUN suggestion (win only): the shipped panel, with the suggestion settled as the unwon faction with the most progress, so the forward hook points at the shortest path to a new win. Build reading (Board's build choice, issue 728, not an owner ruling): progress is total mastery XP per faction, the investment reading, as recorded in section 3.9.
 
 ## 7. Playtest switch and abandon cases
 
