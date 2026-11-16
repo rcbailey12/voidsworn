@@ -9,7 +9,7 @@ import sys
 from pathlib import Path as _PicturePath
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
-from picture_provenance import Review
+from picture_provenance import Review, open_picture
 PICTURES = Review('paint proof')
 
 import argparse
@@ -77,15 +77,15 @@ def frame(out, variant, suffix, length, shot, height=1080):
 
 
 def mask_bounds(path, padding):
-    mask = PICTURES.open(path, reference=True).convert('L').point(lambda v: 255 if v > 127 else 0)
+    mask = open_picture(path).convert('L').point(lambda v: 255 if v > 127 else 0)
     x0, y0, x1, y1 = mask.getbbox()
     return (max(0, x0 - padding), max(0, y0 - padding), min(mask.width, x1 + padding), min(mask.height, y1 + padding))
 
 
 def metrics(out, variant, suffix, length, height):
     path = frame(out, variant, suffix, length, 'battle', height)
-    rgb = np.asarray(PICTURES.open(path.with_stem(path.stem + '_isolated')).convert('RGB')).astype(float)
-    mask = np.asarray(PICTURES.open(path.with_stem(path.stem + '_mask'), reference=True).convert('L')) > 127
+    rgb = np.asarray(open_picture(path.with_stem(path.stem + '_isolated'), required=True).convert('RGB')).astype(float)
+    mask = np.asarray(open_picture(path.with_stem(path.stem + '_mask')).convert('L')) > 127
     values = rgb[mask]
     luma = values @ LUMA
     r, g, b = values.T
@@ -133,19 +133,22 @@ def main():
                 label(sheet, (25, 95), 'BEFORE: approved detail shapes, rejected paint', 19)
                 right = sheet.width // 2 + 15
                 label(sheet, (right, 95), 'AFTER: metal repaint, Ryan review pending', 19)
+                sheet_sources = []
                 for col, suffix in enumerate(('before', 'detail')):
                     source = frame(out, variant, suffix, length, 'battle', height)
                     color = PICTURES.open(source.with_stem(source.stem + '_isolated')).convert('RGB')
                     mono = grey(color)
                     blur = mono.filter(ImageFilter.GaussianBlur(radius))
-                    PICTURES.save(blur, out / f'{variant}_{suffix}_{length}_blur_{height}p.png')
+                    color_sources = PICTURES.take_sources()
+                    sheet_sources.extend(color_sources)
+                    PICTURES.save(blur, out / f'{variant}_{suffix}_{length}_blur_{height}p.png', sources=color_sources)
                     for row, (image, text) in enumerate(((color, 'Colour'), (mono, 'Greyscale'), (blur, 'Blurred greyscale'))):
                         x, y = col * (sheet.width // 2) + 20, 145 + row * (cell + 50)
                         label(sheet, (x, y), text, 19)
                         sheet.paste(image.crop(bounds), (x + (sheet.width // 2 - 40 - width) // 2, y + 30))
                     report['measurements'].append(metrics(out, variant, suffix, length, height))
                 label(sheet, (25, sheet.height - 54), 'Structure review: large masses, calm open faces, accents kept small. S10 reference still pending.', 19)
-                PICTURES.save(sheet, out / f'{variant}_{length}_blur_{height}p.png')
+                PICTURES.save(sheet, out / f'{variant}_{length}_blur_{height}p.png', sources=sheet_sources)
             # Real ships remain in these shots. The battle row stays at native
             # 1080p pixels; larger close captures are fitted without upscaling.
             sheet = Image.new('RGB', (2000, 2010), BG)

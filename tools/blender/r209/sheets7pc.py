@@ -54,15 +54,17 @@ def text(lines, size=26, color=DIM):
     im = Image.new('RGB', (W, 20 + (size + 12) * len(lines)), BG); d = ImageDraw.Draw(im)
     for k, t in enumerate(lines): d.text((28, 10 + (size + 12) * k), t, font=F(size), fill=color)
     return im
-def stack(parts, name, q=86):
+def stack(parts, name, q=86, sources=()):
     h = sum(p.height for p in parts); out = Image.new('RGB', (W, h), BG); y = 0
     for p in parts: out.paste(p, ((W - p.width) // 2 if p.width < W else 0, y)); y += p.height
-    PICTURES.save(out, os.path.join(OUT, name), quality=q, optimize=True); print('wrote', name, out.size, flush=True)
+    PICTURES.save(out, os.path.join(OUT, name), sources=sources, quality=q, optimize=True); print('wrote', name, out.size, flush=True)
 def crop1024(im, b): s = im.width / 1024; return im.crop(tuple(int(v * s) for v in b))
 
-C = concept()
-a6, a7 = P(R6 + '/r', 'Ab6_concept_cl.png'), P(R7 + '/r', 'Ab7_concept_cl.png')
-a6s, a7s = P(R6 + '/r', 'Ab6_concept.png'), P(R7 + '/r', 'Ab7_concept.png')
+C = concept(); concept_sources = PICTURES.take_sources()
+a6 = P(R6 + '/r', 'Ab6_concept_cl.png'); older_sources = PICTURES.take_sources()
+a7 = P(R7 + '/r', 'Ab7_concept_cl.png'); newer_sources = PICTURES.take_sources()
+base_sources = concept_sources + older_sources + newer_sources
+a7s = P(R7 + '/r', 'Ab7_concept.png'); studio_sources = PICTURES.take_sources()
 thirds = json.load(open(os.path.join(SIL, 'outline_thirds.json')))['cells']
 whole = json.load(open(os.path.join(SIL, 'silhouette_scores.json')))
 
@@ -105,13 +107,13 @@ if pend: parts.append(row(pend + [Image.new('RGB', pend[0].size, BG)] * (6 - len
 parts.append(text(['Each region: concept, Ab6, Ab7 (concept rig), the white box is the sampled patch, the bar its mean colour.'], 23))
 json.dump({k: dict(concept=[round(x) for x in mc[k]], Ab6=[round(x) for x in m6[k]], Ab7=[round(x) for x in m7[k]]) for k in REG},
           open(os.path.join(OUT, 'paint_regions.json'), 'w'), indent=1)
-stack(parts, 'paint.jpg')
+stack(parts, 'paint.jpg', sources=base_sources + studio_sources)
 
 # ---- (c) hull side close
 hb = (60, 470, 520, 700)
 stack([head('Hull side, close', 'The bow side at the concept camera, where round 6 read as one flat red. 2x of the 1024 frame, then the 4x close-up renders.'),
        row([lab(crop1024(C, hb), 'Concept'), lab(crop1024(a6, hb), 'Ab6')]), row([lab(crop1024(a7, hb), 'Ab7, concept rig'), lab(crop1024(a7s, hb), 'Ab7, studio rig')]),
-       row([lab(P(R6 + '/close', 'Ab6_cas_concept.png'), 'Ab6, 4x render'), lab(P(R7 + '/close', 'Ab7_cas_concept.png'), 'Ab7, 4x render')])], 'hull_side.jpg')
+       row([lab(P(R6 + '/close', 'Ab6_cas_concept.png'), 'Ab6, 4x render'), lab(P(R7 + '/close', 'Ab7_cas_concept.png'), 'Ab7, 4x render')])], 'hull_side.jpg', sources=base_sources + studio_sources)
 
 # ---- (d) the bow
 bb = (0, 330, 640, 740)
@@ -134,9 +136,9 @@ stack([head('The bow', 'Concept camera (paint under the concept rig, then clay),
        row([lab(th('thirds_Ab6.png'), 'Ab6 outline'), lab(th('thirds_Ab7.png'), 'Ab7 outline')]),
        text(['Green both, red concept only, yellow model only; white lines split bow, midship and stern (x = +1/6 and -1/6 of the length).'], 23),
        row([lab(th('edges_Ab6.png'), 'Ab6 inner edges'), lab(th('edges_Ab7.png'), 'Ab7 inner edges')]),
-       text(['Cyan: the concept\'s edges. Magenta: the model\'s (flat-shaded, so paint does not count). White: both.'], 23)], 'bow.jpg')
+       text(['Cyan: the concept\'s edges. Magenta: the model\'s (flat-shaded, so paint does not count). White: both.'], 23)], 'bow.jpg', sources=base_sources)
 bl = [crop1024(C, bb), crop1024(a7, bb)]
-PICTURES.save(bl[0], os.path.join(OUT, 'bow_blink.gif'), save_all=True, append_images=[bl[1]], duration=700, loop=0); print('wrote bow_blink.gif')
+PICTURES.save(bl[0], os.path.join(OUT, 'bow_blink.gif'), sources=concept_sources + newer_sources, save_all=True, append_images=[bl[1]], duration=700, loop=0); print('wrote bow_blink.gif')
 
 # ---- (e) far side
 fs = [head('The far side, top and underside', 'Paint judged away from the concept camera too (R160). Studio rig, orthographic.')]
@@ -158,7 +160,7 @@ for k, (b, t) in CLOSE.items():
     ims = [lab(crop1024(C, b), 'concept', 26), lab(P(R6 + '/close', f'Ab6_{k}_concept.png'), 'Ab6', 26), lab(P(R7 + '/close', f'Ab7_{k}_concept.png'), 'Ab7', 26)]
     if cl: ims.append(lab(cl(R7, 'Ab7'), 'Ab7 clay', 26))
     wp.append(row(ims))
-stack(wp, 'weapons.jpg')
+stack(wp, 'weapons.jpg', sources=concept_sources)
 
 # ---- (g) overview
 ov = [head('Ab7 overview', 'Concept camera (concept rig), hero, side, top, below (studio rig); paint and clay.')]
@@ -166,7 +168,7 @@ ov.append(row([lab(a7.crop(VIEW), 'concept camera'), lab(P(R7 + '/r', 'Ab7_conce
 ov.append(row([lab(P(R7 + '/r', 'Ab7_hero.png'), 'hero'), lab(P(R7 + '/r', 'Ab7_hero_clay.png') if os.path.exists(R7 + '/r/Ab7_hero_clay.png') else P(R7 + '/r', 'Ab7_hero.png'), 'hero clay')]))
 for v in ('side', 'top', 'below'):
     ov.append(row([lab(P(R7 + '/r', f'Ab7_{v}.png').crop((0, 250, 2400, 950)), v), lab(P(R7 + '/r', f'Ab7_{v}_clay.png').crop((0, 250, 2400, 950)), v + ' clay')]))
-stack(ov, 'overview.jpg')
+stack(ov, 'overview.jpg', sources=newer_sources)
 
 # ---- (h) firing
 st = os.path.join(FIRE, 'stills'); S = lambda n: PICTURES.open(os.path.join(st, n)).convert('RGB')

@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[3]
@@ -26,6 +27,47 @@ def refused(action, label):
         print('PASS refused ' + label)
         return
     raise AssertionError('accepted ' + label)
+
+
+def review_outputs(folder, original):
+    paths = [folder / 'INPUT_A.png', folder / 'INPUT_B.png']
+    for path, revision in zip(paths, ('a' * 40, 'b' * 40)):
+        source = dict(source_commit=revision, source_dirty=False, source_diff_sha256='', stage='sheet built')
+        with patch('picture_provenance.revision', return_value=source):
+            save_picture(original, path, 'sheet built')
+    pictures = Review('paint proof')
+    for path in paths:
+        output = folder / ('OUTPUT_' + path.stem + '.png')
+        pictures.save(pictures.open(path), output)
+        record = verify(output)
+        assert [s['picture_name'] for s in record['inputs']] == [path.name], record['inputs']
+        assert record['source_commit'] == verify(path)['source_commit']
+        assert record['sources'] == verify(path)['sources']
+    print('PASS consecutive Review saves keep only their own input and revision')
+
+    cached = pictures.open(paths[0]).convert('RGB').crop((0, 0, 1000, 600))
+    shared_sources = pictures.take_sources()
+    for name in ('REUSED_A.png', 'REUSED_B.jpg'):
+        output = folder / name
+        pictures.save(cached.resize((1280, 720)), output, sources=shared_sources)
+        assert [s['picture_name'] for s in verify(output)['inputs']] == [paths[0].name]
+        assert verify(output)['source_commit'] == 'a' * 40
+    assert shared_sources and not pictures.sources
+    pictures.open(paths[1])
+    output = folder / 'SHARED_COMPOSITE.png'
+    pictures.save(original, output, sources=shared_sources + shared_sources)
+    assert [s['picture_name'] for s in verify(output)['inputs']] == [p.name for p in paths]
+    assert [s['source_commit'] for s in verify(output)['sources']] == ['a' * 40, 'b' * 40]
+    refused(lambda: pictures.save(original, folder / 'NO_INPUT.png'), 'save without new or explicitly reused inputs')
+    pictures.open(paths[1])
+    refused(lambda: pictures.save(original, folder / 'BAD_FORMAT.bmp'), 'unsupported output format')
+    pictures.save(original, folder / 'RETRY.png')
+    assert [s['picture_name'] for s in verify(folder / 'RETRY.png')['inputs']] == [paths[1].name]
+    for path in paths:
+        output = folder / ('COPY_' + path.name)
+        pictures.copy(path, output)
+        assert [s['picture_name'] for s in verify(output)['inputs']] == [path.name]
+    print('PASS cached inputs survive reuse, composite inputs deduplicate, retries retain inputs and copies stay separate')
 
 
 def run():
@@ -49,6 +91,7 @@ def run():
     assert not unstamped_saves, 'capture saves bypass the shared stamp: ' + ', '.join(unstamped_saves)
     print('PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer')
     original = Image.new('RGBA', (1280, 720), (15, 28, 44, 255))
+    review_outputs(folder, original)
     draw = ImageDraw.Draw(original)
     draw.text((48, 40), 'PROVENANCE_889 / picture label self-test', font=ImageFont.load_default(size=32), fill='white')
     draw.text((48, 105), 'Synthetic test image. The corner strip is written by the picture tool.', font=ImageFont.load_default(size=24), fill='#c4ccd8')
@@ -100,6 +143,23 @@ def run():
                         'file': 'moments/PROVENANCE_889__c170.png', 'cells': [{'t': 0}]}]}))
         (run_dir / 'moments.json').write_text(json.dumps({'cell': [400, 240],
             'rows': [{'id': 'PROVENANCE_889', 'label': 'Label self-test', 'group': 'provenance', 'key': 0}]}))
+        bench = json.loads((run_dir / 'bench.json').read_text())
+        moments = json.loads((run_dir / 'moments.json').read_text())
+        for part, identity, digit in (('moments', 'OTHER_889', 'c' if before else 'd'),
+                                      ('fleet', 'quiet', 'e' if before else 'f'),
+                                      ('fleet', 'storm', '1' if before else '2')):
+            name = identity + '.png'
+            source_revision = dict(source_commit=digit * 40, source_dirty=False, source_diff_sha256='')
+            with patch('picture_provenance.revision', return_value=source_revision):
+                save_picture(frame, run_dir / name, 'installed in game')
+            still = dict(part=part, id=identity, cam=170, file=name, cells=[{'t': 0}])
+            if part == 'fleet':
+                still.update(sky=identity, code='PROVENANCE_889')
+            else:
+                moments['rows'].append(dict(id=identity, label='Independent input', group='other', key=0))
+            bench['stills'].append(still)
+        (run_dir / 'bench.json').write_text(json.dumps(bench))
+        (run_dir / 'moments.json').write_text(json.dumps(moments))
     sheets = folder / 'sheets'
     result = subprocess.run([sys.executable, str(ROOT / 'tools/pc/jobs/look_bench_sheets.py'),
                              '--after', str(folder / 'after'), '--before', str(folder / 'before'), '--out', str(sheets)],
@@ -107,6 +167,17 @@ def run():
     assert result.returncode == 0, result.stdout + result.stderr
     assert json.loads((sheets / 'diffs.json').read_text())['stills'][0]['diff'] == 0
     assert len(verify(sheets / 'moments/PROVENANCE_889.jpg')['sources']) == 2
+    for name, inputs, commits in (
+            ('moments/PROVENANCE_889.jpg', {'PROVENANCE_889__c170.png'}, {'a' * 40, record['source_commit']}),
+            ('moments_overview_provenance.jpg', {'PROVENANCE_889__c170.png'}, {'a' * 40, record['source_commit']}),
+            ('moments/OTHER_889.jpg', {'OTHER_889.png'}, {'c' * 40, 'd' * 40}),
+            ('moments_overview_other.jpg', {'OTHER_889.png'}, {'c' * 40, 'd' * 40}),
+            ('fleet_quiet.jpg', {'quiet.png'}, {'e' * 40, 'f' * 40}),
+            ('fleet_storm.jpg', {'storm.png'}, {'1' * 40, '2' * 40})):
+        output = verify(sheets / name)
+        assert {s['picture_name'] for s in output['inputs']} == inputs, (name, output['inputs'])
+        assert {s['source_commit'] for s in output['sources']} == commits, (name, output['sources'])
+    print('PASS real look-bench moments, overviews and fleet skies isolate inputs while retaining reused captures')
     print('PASS real look-bench sheets retain both revisions and compare original pixels with zero label noise')
 
     raw = folder / 'UNSTAMPED.png'; original.save(raw)

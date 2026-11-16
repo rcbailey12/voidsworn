@@ -39,6 +39,7 @@ def font(n, bold=False):
 
 
 OFF = {}
+VIEW_SOURCES = {}
 # issue 769: a craft drawn at many px per unit keeps capital-ship label sizes (SHEET label_scale) and a shorter scale bar
 # (SHEET bar_units); every other sheet keeps label scale = px per unit / 40 and a 5 unit bar
 LS = float((M.get('sheet') or {}).get('label_scale') or 0)
@@ -47,7 +48,9 @@ PADS = {'side': (40, 70, 90), 'cutaway': (40, 70, 90), 'top': (110, 80, 90), 'un
 
 
 def flat(name):
-    im = PICTURES.open(os.path.join(RD, name + '.png')).convert('RGBA')
+    pictures = Review('sheet built')
+    im = pictures.open(os.path.join(RD, name + '.png')).convert('RGBA')
+    VIEW_SOURCES[name] = pictures.take_sources()
     sc_ = LS or M['views'].get(name, {}).get('px_per_unit', 40) / 40.0
     l_, t_, b_ = [int(v * sc_) for v in PADS.get(name, (0, 0, 0))]
     bg = Image.new('RGBA', (im.width + 2 * l_, im.height + t_ + b_), GREY + (255,)); bg.alpha_composite(im, (l_, t_))
@@ -295,9 +298,10 @@ scalebar(dr, 30 * SC, cut.size[1] - 44 * SC)
 # beauty and blockout three-quarter
 beauty = PICTURES.open(os.path.join(REPO, M['beauty']), reference=True).convert('RGB')
 tq, _ = flat('threequarter')
+base_sources = PICTURES.take_sources() + [s for sources in VIEW_SOURCES.values() for s in sources]
 
 for nm, im in (('side', side), ('top', top), ('underside', und), ('bow', bow), ('stern', stern), ('cutaway', cut), ('threequarter', tq)):
-    PICTURES.save(im, os.path.join(OUT, nm + '.png'))
+    PICTURES.save(im, os.path.join(OUT, nm + '.png'), sources=VIEW_SOURCES[nm])
 
 json.dump(checks, open(os.path.join(OUT, 'checks.json'), 'w'), indent=1)
 print(json.dumps(checks))
@@ -572,7 +576,8 @@ dr.text((xc, yy + 10), '- %d breach anchors (red diamonds), core (orange diamond
 dr.text((xc, yy + 50), 'Cyan rows: designed here, not shown in the picture.', font=f_s, fill=CYAN)
 sheet = sheet.crop((0, 0, SW, min(SH, max(yy + 120, y2 + 60 + LH * (len(F) + 3)))))
 pv = sheet.resize((int(sheet.width * 720 / sheet.height), 720), Image.LANCZOS)  # the preview is the main sheet, before the extras
-PICTURES.save(pv, os.path.join(OUT, 'preview.jpg'), quality=88)
+sheet_sources = base_sources + PICTURES.take_sources()
+PICTURES.save(pv, os.path.join(OUT, 'preview.jpg'), sources=sheet_sources, quality=88)
 extra = [PICTURES.open(os.path.join(OUT, n_)).convert('RGB') for n_ in ('fit_view.jpg', 'cells.jpg') if os.path.exists(os.path.join(OUT, n_))]
 if extra:
     ex_h = sum(int(e.height * min(1.0, (sheet.width - 2 * PAD) / e.width)) + PAD for e in extra)
@@ -581,5 +586,5 @@ if extra:
         k_ = min(1.0, (sheet.width - 2 * PAD) / e.width)
         e = e.resize((int(e.width * k_), int(e.height * k_))); s2.paste(e, (PAD, yy2)); yy2 += e.height + PAD
     sheet = s2
-PICTURES.save(sheet, os.path.join(OUT, 'sheet.jpg'), quality=90)
+PICTURES.save(sheet, os.path.join(OUT, 'sheet.jpg'), sources=sheet_sources, quality=90)
 print('sheet', sheet.size, 'preview', pv.size)

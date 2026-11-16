@@ -60,23 +60,26 @@ def concept_thirds(con, rwin):
     return out
 
 
-def pair(a, b, title, sub, out, w=640, maxh=660):
+def pair(a, b, title, sub, out, w=640, maxh=660, sources=()):
     h = min(maxh, int(w * a.height / a.width))
     img = Image.new('RGB', (2 * w, h + 60), BG); head(img, title, sub)
-    img.paste(fit(a, w - 4, h), (0, 60)); img.paste(fit(b, w - 4, h), (w + 4, 60)); PICTURES.save(img, out, quality=90); return out
+    img.paste(fit(a, w - 4, h), (0, 60)); img.paste(fit(b, w - 4, h), (w + 4, 60)); PICTURES.save(img, out, sources=sources, quality=90); return out
 
 
 def main():
     a = sys.argv[1:]; P, CON, SH, CODE, OUT = a[:5]
     kw = dict(x.split('=', 1) for x in a[5:] if '=' in x); N = kw.get('name', 'A16')
     os.makedirs(OUT, exist_ok=True)
-    con = PICTURES.open(CON, reference=True).convert('RGB'); bea = PICTURES.open(os.path.join(P, 'paint_beauty.png')).convert('RGB').resize(con.size)
+    con = PICTURES.open(CON, reference=True).convert('RGB')
+    concept_sources = PICTURES.take_sources()
+    bea = PICTURES.open(os.path.join(P, 'paint_beauty.png')).convert('RGB').resize(con.size)
+    pair_sources = concept_sources + PICTURES.take_sources()
     js0 = os.path.join(P, 'paint_shots.json')
     lift = __import__('json').load(open(js0)).get('lift', 1.25) if os.path.exists(js0) else 1.25
     stack, issue = kw.get('stack', 'Hullbreaker'), kw.get('issue', '601')
     made = [pair(con, bea, f'{N} paint: concept (left) and the painted build (right), same camera',
                  f'{stack} paint stack (issue {issue}): game light, battle lift {lift:g}; colours sampled from the concept, never projected',
-                 os.path.join(OUT, f'{N}_paint_full.jpg'))]
+                 os.path.join(OUT, f'{N}_paint_full.jpg'), sources=pair_sources)]
     W, H = con.size
     js = os.path.join(P, 'paint_shots.json')
     win = dict(WIN)
@@ -94,7 +97,7 @@ def main():
         cbox = square(cwin[k]) if cwin else box
         made.append(pair(con.crop(cbox), bea.crop(box), f'{N} paint, {k}: concept (left), painted build (right)',
                          'the same third of the ship on each side, at the same camera' if cwin else 'same camera, same window',
-                         os.path.join(OUT, f'{N}_paint_{k}.jpg')))
+                         os.path.join(OUT, f'{N}_paint_{k}.jpg'), sources=pair_sources))
     views = [('concept', None), ('side (port)', 'paint_side.png'), ('far side (starboard)', 'paint_side_s.png'), ('top', 'paint_top.png'),
              ('below', 'paint_below.png'), ('bow on', 'paint_bow.png'), ('stern on', 'paint_stern.png')]
     img = Image.new('RGB', (1280, 60 + 2 * 326), BG)
@@ -104,7 +107,7 @@ def main():
         if src is None: continue
         t = fit(src, 316, 300); x, y = (i % 4) * 321, 60 + (i // 4) * 326
         img.paste(t, (x, y + 22)); ImageDraw.Draw(img).text((x + 6, y + 2), lab, fill=DIM, font=font(14))
-    p = os.path.join(OUT, f'{N}_paint_views.jpg'); PICTURES.save(img, p, quality=90); made.append(p)
+    p = os.path.join(OUT, f'{N}_paint_views.jpg'); PICTURES.save(img, p, sources=concept_sources, quality=90); made.append(p)
     zs, bl = os.path.join(P, 'paint_stern_zoom.png'), os.path.join(P, 'paint_bell.png')
     if os.path.exists(zs) and os.path.exists(bl):      # the engines up close: every bell stern-on, and the biggest bell at a close camera
         img = Image.new('RGB', (1280, 60 + 600), BG)
@@ -135,7 +138,7 @@ def main():
             head(img, f'{N} in the game, camera {cam[3:]}: concept (left), the game at true pixels (right)',
                  f'{CODE}, a4_shots.gd set cams, the battle camera\'s angle; centre {cw} x {ch} of the 1920 x 1080 frame, not scaled')
             img.paste(fit(con, 392, 660), (0, 60)); img.paste(crop, (400, 60))
-            p = os.path.join(OUT, f'{N}_ingame_{cam}.jpg'); game_pictures.save(img, p, quality=90); made.append(p)
+            p = os.path.join(OUT, f'{N}_ingame_{cam}.jpg'); game_pictures.save(img, p, sources=concept_sources, quality=90); made.append(p)
     for m in made: print('[601] picture', m)
 
 

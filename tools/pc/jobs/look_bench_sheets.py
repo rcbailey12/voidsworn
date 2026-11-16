@@ -21,7 +21,7 @@ import sys
 from pathlib import Path as _PicturePath
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
-from picture_provenance import Review
+from picture_provenance import Review, open_picture
 PICTURES = Review('installed in game')
 
 import argparse
@@ -62,7 +62,8 @@ def load_run(d):
 
 def strip_cells(path, cell, n):
     im = PICTURES.open(path).convert("RGB")
-    return [im.crop((i * cell[0], 0, (i + 1) * cell[0], cell[1])) for i in range(min(n, im.width // cell[0]))]
+    cells = [im.crop((i * cell[0], 0, (i + 1) * cell[0], cell[1])) for i in range(min(n, im.width // cell[0]))]
+    return cells, PICTURES.take_sources()
 
 
 def diff(a, b):
@@ -76,7 +77,7 @@ def sky_level(paths):
     """Mean brightness (0-255, Rec. 601 luma) of the four 30x30 corners of every fleet cell: the sky behind the ships."""
     vals = []
     for p in paths:
-        im = PICTURES.open(p).convert("L")
+        im = open_picture(p, required=True).convert("L")
         w, h = im.size
         for box in [(0, 0, 30, 30), (w - 30, 0, w, 30), (0, h - 30, 30, h), (w - 30, h - 30, w, h)]:
             vals.append(ImageStat.Stat(im.crop(box)).mean[0])
@@ -88,7 +89,7 @@ def text(dr, xy, s, f=F, fill=FG):
 
 
 def moment_cells(run, rows_by_id, cell):
-    """{(id, cam): [cell images]} plus the cell times."""
+    """{(id, cam): (cell images, times, source records)}."""
     rep, _ = run
     out = {}
     for st in rep.get("stills", []):
@@ -97,7 +98,8 @@ def moment_cells(run, rows_by_id, cell):
         p = os.path.join(run_dir[id(run)], st["file"])
         if not os.path.exists(p):
             continue
-        out[(st["id"], int(st["cam"]))] = (strip_cells(p, cell, len(st.get("cells", []))), st.get("cells", []))
+        cells, sources = strip_cells(p, cell, len(st.get("cells", [])))
+        out[(st["id"], int(st["cam"]))] = (cells, st.get("cells", []), sources)
     return out
 
 
@@ -146,8 +148,12 @@ def main():
         dr = ImageDraw.Draw(sheet)
         text(dr, (8, 6), "%s   [%s]   %s" % (r["label"], r["group"], ("before %s (top) / after %s (bottom)" % (lb, la)) if before else la), FB)
         y = 34
+        sheet_sources = []
         for c in have:
-            ca, times = A[(rid, c)]
+            ca, times, sources = A[(rid, c)]
+            sheet_sources.extend(sources)
+            if before and (rid, c) in B:
+                sheet_sources.extend(B[(rid, c)][2])
             cb = B.get((rid, c), ([], []))[0] if before else []
             for which, cells in ([("before", cb), ("after", ca)] if before else [("", ca)]):
                 text(dr, (6, y + cell[1] // 2 - 18), "cam %d" % c, FB)
@@ -168,7 +174,7 @@ def main():
                             if d > a.tol:
                                 dr.rectangle((90 + i * cell[0], y, 90 + (i + 1) * cell[0] - 1, y + cell[1] - 1), outline=RED, width=3)
                 y += line_h
-        PICTURES.save(sheet, os.path.join(a.out, "moments", rid + ".jpg"), quality=a.quality)
+        PICTURES.save(sheet, os.path.join(a.out, "moments", rid + ".jpg"), sources=sheet_sources, quality=a.quality)
 
     # ---- overview: one row per moment, key cell at the three cameras (before and after pairs in compare mode)
     groups = []
@@ -188,6 +194,7 @@ def main():
                                                          ("  (each: before %s | after %s)" % (lb, la)) if before else ("   " + la))
         text(dr, (8, 8), hdr, FB)
         y = 40
+        sheet_sources = []
         for r in grow:
             k = int(r.get("key", 4))
             text(dr, (6, y + 2), r["label"], F)
@@ -197,6 +204,7 @@ def main():
                 for which, src in ([("b", B), ("a", A)] if before else [("a", A)]):
                     cells = src.get((r["id"], c), ([], []))[0]
                     if cells:
+                        sheet_sources.extend(src[(r["id"], c)][2])
                         im = cells[min(k, len(cells) - 1)]
                         sheet.paste(im, (x, y))
                         if which == "a" and before:
@@ -208,7 +216,7 @@ def main():
                 x += 8 if before else 0
             y += cell[1] + 4
         safe = g.replace(" ", "_").replace(",", "")
-        PICTURES.save(sheet, os.path.join(a.out, "moments_overview_%s.jpg" % safe), quality=a.quality)
+        PICTURES.save(sheet, os.path.join(a.out, "moments_overview_%s.jpg" % safe), sources=sheet_sources, quality=a.quality)
 
     # ---- fleet sheets: 1 to 1 pixels, 6 a row
     fa = [s for s in after[0].get("stills", []) if s.get("part") == "fleet"]

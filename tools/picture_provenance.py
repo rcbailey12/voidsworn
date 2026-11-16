@@ -202,6 +202,11 @@ def stamp_file(path, stage, repo=None, new_render=False):
 
 
 class Review:
+    """Collect inputs for one output at a time.
+
+    take_sources reserves inputs alongside cached pixels. Pass those records to
+    save(sources=...) whenever another output uses the same cached pictures.
+    """
     def __init__(self, stage):
         self.stage = stage
         self.sources = []
@@ -213,10 +218,20 @@ class Review:
                 self.sources.append(record)
         return open_picture(path)
 
-    def save(self, image, path, **options):
-        if not self.sources:
+    def take_sources(self):
+        sources, self.sources = self.sources, []
+        return sources
+
+    def save(self, image, path, sources=(), **options):
+        output_sources = []
+        for source in [*sources, *self.sources]:
+            if source not in output_sources:
+                output_sources.append(source)
+        if not output_sources:
             raise ValueError('review sheet needs stamped source pictures; rerun the capture, do not relabel an old picture')
-        return save_picture(image, path, self.stage, sources=self.sources, **options)
+        record = save_picture(image, path, self.stage, sources=output_sources, **options)
+        self.sources.clear()
+        return record
 
     def copy(self, source, destination):
         return self.save(self.open(source), destination)
