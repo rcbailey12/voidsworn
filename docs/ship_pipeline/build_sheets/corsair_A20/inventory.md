@@ -192,15 +192,15 @@ Concept counts read off the concept sheet by eye (A20 sheet: bow, the bow block,
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 3 | 10 | Base hull (the slab, its core between the two bow mouths); Bow block; Hangar sill, port; Hangar lintel, port; Hangar cheek, port; Hangar sill, starboard; Hangar lintel, starboard; Hangar cheek, starboard; Starboard brick 1; D1 fore deck tie |
-| bow/side | 4 | 6 | Base hull (the slab, its core between the two bow mouths); Bow block; Hangar sill, port; Hangar lintel, port; Hangar cheek, port; D1 fore deck tier |
-| bow/below | no view | 7 | Base hull (the slab, its core between the two bow mouths); Bow block; Hangar sill, port; Hangar cheek, port; Hangar sill, starboard; Hangar cheek, starboard; Starboard brick 1 |
-| mid/top | 3 | 11 | Base hull (the slab, its core between the two bow mouths); Hangar sill, port; Hangar lintel, port; Hangar cheek, port; Hangar sill, starboard; Hangar lintel, starboard; Hangar cheek, starboard; Starboard brick 2; Starboard brick 3; D1 fore  |
-| mid/side | 4 | 5 | Base hull (the slab, its core between the two bow mouths); Hangar sill, port; Hangar lintel, port; Hangar cheek, port; D1 fore deck tier |
-| mid/below | no view | 7 | Base hull (the slab, its core between the two bow mouths); Hangar sill, port; Hangar cheek, port; Hangar sill, starboard; Hangar cheek, starboard; Starboard brick 2; Starboard brick 3 |
-| stern/top | 3 | 7 | Base hull (the slab, its core between the two bow mouths); Starboard brick 3; Starboard brick 4; D2 mid deck tier; D3 aft deck tier; Stern frame; Violet bell housing |
-| stern/side | 3 | 4 | Base hull (the slab, its core between the two bow mouths); D3 aft deck tier; Stern frame; Violet bell housing |
-| stern/below | no view | 3 | Base hull (the slab, its core between the two bow mouths); Starboard brick 3; Starboard brick 4 |
+| bow/top | 3 | 10 | Base hull (faceted slab, recessed waist, core between bow mouths); Bow block; Hangar sill, port; Hangar lintel, port; Hangar cheek, port; Hangar sill, starboard; Hangar lintel, starboard; Hangar cheek, starboard; Starboard armour wedge 1; D |
+| bow/side | 4 | 6 | Base hull (faceted slab, recessed waist, core between bow mouths); Bow block; Hangar sill, port; Hangar lintel, port; Hangar cheek, port; D1 fore deck tier |
+| bow/below | no view | 7 | Base hull (faceted slab, recessed waist, core between bow mouths); Bow block; Hangar sill, port; Hangar cheek, port; Hangar sill, starboard; Hangar cheek, starboard; Starboard armour wedge 1 |
+| mid/top | 3 | 11 | Base hull (faceted slab, recessed waist, core between bow mouths); Hangar sill, port; Hangar lintel, port; Hangar cheek, port; Hangar sill, starboard; Hangar lintel, starboard; Hangar cheek, starboard; Starboard armour wedge 2; Starboard ar |
+| mid/side | 4 | 5 | Base hull (faceted slab, recessed waist, core between bow mouths); Hangar sill, port; Hangar lintel, port; Hangar cheek, port; D1 fore deck tier |
+| mid/below | no view | 7 | Base hull (faceted slab, recessed waist, core between bow mouths); Hangar sill, port; Hangar cheek, port; Hangar sill, starboard; Hangar cheek, starboard; Starboard armour wedge 2; Starboard armour wedge 3 |
+| stern/top | 3 | 7 | Base hull (faceted slab, recessed waist, core between bow mouths); Starboard armour wedge 3; Starboard armour wedge 4; D2 mid deck tier; D3 aft deck tier; Stern frame; Violet bell housing |
+| stern/side | 3 | 4 | Base hull (faceted slab, recessed waist, core between bow mouths); D3 aft deck tier; Stern frame; Violet bell housing |
+| stern/below | no view | 3 | Base hull (faceted slab, recessed waist, core between bow mouths); Starboard armour wedge 3; Starboard armour wedge 4 |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -209,6 +209,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 3.30 | 9.60 | 3.88 | 24.56 |
-| build | 2.35 | 3.63 | 2.45 | 5.87 |
+| build | 2.32 | 3.62 | 2.49 | 5.89 |
 
 Lines not present, shaped and detailed without a reason: 0.

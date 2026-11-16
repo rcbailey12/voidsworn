@@ -1,0 +1,475 @@
+{
+ "issue": 688,
+ "code": "corsair_A20",
+ "date": "2026-11-14",
+ "result": "PASS",
+ "device": "CPU",
+ "contract": {
+  "result": "PASS",
+  "checks": 12
+ },
+ "fit": {
+  "result": "PASS",
+  "counts": {
+   "CLASH": 0,
+   "MOUNT": 0,
+   "ARC": 0,
+   "SENSOR": 0,
+   "SWEEP": 0,
+   "EXHAUST": 0,
+   "EXIT": 0,
+   "LANE": 0
+  }
+ },
+ "inventory": {
+  "result": "PASS",
+  "failing": 0
+ },
+ "audit": {
+  "result": "PASS",
+  "problems": 0,
+  "machines_across_seams": 0
+ },
+ "audit_selftest": {
+  "result": "PASS",
+  "cases": 9
+ },
+ "export_check": {
+  "result": "PASS",
+  "unbaked": true
+ },
+ "export_selftest": {
+  "result": "PASS",
+  "cases": 18
+ },
+ "openings": [
+  {
+   "id": "I1",
+   "rays": 17,
+   "depths": [
+    2.26,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08
+   ],
+   "minimum_depth": 2.08,
+   "intact_depths": [
+    2.26,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08
+   ],
+   "pass_depth": true,
+   "interiors_clear": true
+  },
+  {
+   "id": "I2",
+   "rays": 17,
+   "depths": [
+    2.26,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08
+   ],
+   "minimum_depth": 2.08,
+   "intact_depths": [
+    2.26,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08,
+    2.08
+   ],
+   "pass_depth": true,
+   "interiors_clear": true
+  }
+ ],
+ "class_length": 16.5,
+ "extent_before": 16.50462818145752,
+ "extent_after": 16.50462818145752,
+ "triangles": {
+  "outside": 90450,
+  "inside": 708
+ },
+ "export_triangles": 91158,
+ "export_material_primitives": 14,
+ "draw_note": "14 base draws estimated for the unpainted export; painted draws and scene gate are for the Board GPU run",
+ "standing": {
+  "command": "node contrib/opus/tools/run_all_checks.js",
+  "node": "22.11.0",
+  "exit_code": 0,
+  "counts": {
+   "PASS": 48,
+   "KNOWN": 2,
+   "FAIL": 0,
+   "SKIP": 0
+  },
+  "rows": [
+   {
+    "check": "b1_tests",
+    "result": "PASS",
+    "seconds": 0.95,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "b3_tests",
+    "result": "PASS",
+    "seconds": 0.25,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "b4_tests",
+    "result": "PASS",
+    "seconds": 0.71,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "backlog_tests",
+    "result": "PASS",
+    "seconds": 0.2,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "build_manifest_tests",
+    "result": "PASS",
+    "seconds": 0.19,
+    "detail": "PASS build_manifest_tests: 9 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, deathless_E11, deathless_E12); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason"
+   },
+   {
+    "check": "campaign_start_test",
+    "result": "PASS",
+    "seconds": 0.38,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "capstone_mastery_tests",
+    "result": "PASS",
+    "seconds": 0.09,
+    "detail": "PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect."
+   },
+   {
+    "check": "checks_truth_tests",
+    "result": "PASS",
+    "seconds": 0.07,
+    "detail": "PASS: the checks runner result words behave as issue 358 requires"
+   },
+   {
+    "check": "chorus_eat_core_tests",
+    "result": "PASS",
+    "seconds": 0.1,
+    "detail": "PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15."
+   },
+   {
+    "check": "core_sync_tests",
+    "result": "PASS",
+    "seconds": 0.11,
+    "detail": "PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings."
+   },
+   {
+    "check": "doc_check_tests",
+    "result": "PASS",
+    "seconds": 0.51,
+    "detail": "PASS: 39 paths named in the entry documents exist, 52 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 280) or latest record, and the two stale entry-document claims stay gone"
+   },
+   {
+    "check": "effect_caps_tests",
+    "result": "PASS",
+    "seconds": 0.07,
+    "detail": "PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged."
+   },
+   {
+    "check": "env_reconcile_tests",
+    "result": "PASS",
+    "seconds": 0.13,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "free_exit_tests",
+    "result": "PASS",
+    "seconds": 0.16,
+    "detail": "PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save."
+   },
+   {
+    "check": "fx_death_spawn_tests",
+    "result": "PASS",
+    "seconds": 5.06,
+    "detail": "PASS: the death spawn behaviour check passed on the real hull"
+   },
+   {
+    "check": "fx_late_shader_tests",
+    "result": "PASS",
+    "seconds": 1.31,
+    "detail": "PASS: the late shader behaviour check passed"
+   },
+   {
+    "check": "hardpoint_contract_tests",
+    "result": "PASS",
+    "seconds": 1.01,
+    "detail": "PASS the hard point contract tables and standing gate behave"
+   },
+   {
+    "check": "heat_tests",
+    "result": "PASS",
+    "seconds": 0.16,
+    "detail": "PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool."
+   },
+   {
+    "check": "inheritance_tests",
+    "result": "PASS",
+    "seconds": 0.14,
+    "detail": "PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP."
+   },
+   {
+    "check": "ion_tests",
+    "result": "PASS",
+    "seconds": 0.12,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "lineage_tests",
+    "result": "PASS",
+    "seconds": 0.13,
+    "detail": "PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets."
+   },
+   {
+    "check": "nemesis_121_tests",
+    "result": "PASS",
+    "seconds": 0.13,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "nemesis_122_tests",
+    "result": "PASS",
+    "seconds": 0.77,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "nemesis_395_tests",
+    "result": "PASS",
+    "seconds": 0.22,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "nemesis_clash_tests",
+    "result": "PASS",
+    "seconds": 0.37,
+    "detail": "PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121)."
+   },
+   {
+    "check": "nemesis_teach_tests",
+    "result": "PASS",
+    "seconds": 0.11,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "r1_tests",
+    "result": "PASS",
+    "seconds": 99.7,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "reporting_238_tests",
+    "result": "PASS",
+    "seconds": 0.85,
+    "detail": "PASS MP8 danger bands"
+   },
+   {
+    "check": "shadow_xp_tests",
+    "result": "PASS",
+    "seconds": 0.45,
+    "detail": "PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP."
+   },
+   {
+    "check": "squadron_auto_tests",
+    "result": "PASS",
+    "seconds": 0.65,
+    "detail": "PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders."
+   },
+   {
+    "check": "story_beat3_tests",
+    "result": "PASS",
+    "seconds": 0.87,
+    "detail": "PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry."
+   },
+   {
+    "check": "ui_spec_tests",
+    "result": "PASS",
+    "seconds": 0.65,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "progression_telemetry_test",
+    "result": "PASS",
+    "seconds": 0.55,
+    "detail": "PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin."
+   },
+   {
+    "check": "tree_effects_test",
+    "result": "PASS",
+    "seconds": 166.6,
+    "detail": "PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says"
+   },
+   {
+    "check": "tree_handoff_test",
+    "result": "PASS",
+    "seconds": 0.7,
+    "detail": "PASS: real campaign picks reach the battle for all six factions (four skills each):"
+   },
+   {
+    "check": "tree_table_walk_test",
+    "result": "PASS",
+    "seconds": 1.76,
+    "detail": "PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked"
+   },
+   {
+    "check": "tree_last_rows_test",
+    "result": "PASS",
+    "seconds": 5.9,
+    "detail": "PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers"
+   },
+   {
+    "check": "oracle_copy_test",
+    "result": "PASS",
+    "seconds": 0.27,
+    "detail": "PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files"
+   },
+   {
+    "check": "nem_assign_enum",
+    "result": "PASS",
+    "seconds": 1.47,
+    "detail": "PASS: all issue 120 enumeration checks"
+   },
+   {
+    "check": "nem_direct_reads_report",
+    "result": "PASS",
+    "seconds": 1.56,
+    "detail": "PASS: report only, 190 direct save reads outside godot/campaign (main 9, render 7, scenes 47, story 41, tools 3, ui 81, world 2)"
+   },
+   {
+    "check": "naming_lint_game.test",
+    "result": "PASS",
+    "seconds": 1.83,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "naming_lint_game",
+    "result": "PASS",
+    "seconds": 103.92,
+    "detail": "PASS: naming lint within the baseline"
+   },
+   {
+    "check": "checks",
+    "result": "PASS",
+    "seconds": 0.83,
+    "detail": "PASS: within the pack baseline"
+   },
+   {
+    "check": "fleet_invariants",
+    "result": "PASS",
+    "seconds": 1.19,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "save_fuzz",
+    "result": "PASS",
+    "seconds": 0.69,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "softlock_sweep",
+    "result": "PASS",
+    "seconds": 36.48,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "table_xref",
+    "result": "PASS",
+    "seconds": 0.09,
+    "detail": "PASS: exit 0"
+   },
+   {
+    "check": "findings_tests",
+    "result": "KNOWN",
+    "seconds": 1.41,
+    "detail": "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5"
+   },
+   {
+    "check": "oracle_drift_guard",
+    "result": "KNOWN",
+    "seconds": 1.13,
+    "detail": "KNOWN: 12 constant difference(s) within the baseline"
+   },
+   {
+    "check": "fixture_check",
+    "result": "PASS",
+    "seconds": 0.39,
+    "detail": "PASS fixture corrupt2 pair"
+   }
+  ]
+ },
+ "weapon_match": {
+  "status": "not present in this checkout",
+  "coverage": "contract and export check both data turret slots and all 4 muzzle hard points"
+ },
+ "deferred": [
+  "GPU paint",
+  "installation",
+  "Godot game captures",
+  "painted density and scene gate"
+ ],
+ "evidence": [
+  "A20_bow_R244_before_after.jpg",
+  "A20_side_R244_before_after.jpg"
+ ],
+ "no_commit_or_push": true
+}

@@ -1,0 +1,44 @@
+{
+ "ok": true,
+ "rows": [
+  "ok   the outside is one ship length long (1.000000)",
+  "ok   the class length is the sheet's (16.5 = LENGTH 16.5)",
+  "ok   3 transverse seams at the sheet's stations",
+  "ok   0 longitudinal seams at the sheet's heights and spans",
+  "ok   4 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+  "ok   every data.js slot (2) has muzzles of its own",
+  "ok   2 turret pivots kept, each with its turning meshes and a data.js slot",
+  "ok   5 engine exits and bell radii are the sheet's",
+  "ok   23 inside objects are visible role interior",
+  "ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers",
+  "ok   a ship whose weapon list lacks a sheet weapon (turret T) was refused: T1: weapon 'turret' arc 'T' names 0 slots of the data.js list []",
+  "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-4.5 to -3.5) runs across the transverse seam B-3: one compartment each"
+ ],
+ "record": {
+  "sheet": "corsair_A20",
+  "model_length": 16.50463,
+  "scale": 0.06058906562484525,
+  "length_world": 16.5,
+  "t_lines": [
+   -0.24236,
+   -0.03332,
+   0.13754
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 4,
+  "guns": 2,
+  "engines": 5,
+  "bays": 2,
+  "points": 12,
+  "turrets": [
+   "T1_turret",
+   "T2_turret"
+  ],
+  "interior_objects": 23,
+  "slots": [
+   "0 turret T",
+   "1 turret T"
+  ]
+ }
+}
