@@ -1,0 +1,161 @@
+# corsair_KB1CC parts inventory (R218)
+
+Written from the concept before modelling, region by region (bow, midships, stern; top, side, below). Each line names the
+kit part type (tools/blender/kits/hullbreakers/parts.py), how many, the blob-sweep cells it shows in, and the sub-parts that
+make it read as that thing, and its job: what it does on the ship (R221: a part with no job is cut). Source:
+`tools/blender/build_sheets/ships/corsair_KB1CC_inv.py`.
+
+| ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
+|---|---|---|---|---:|---|---|---|
+| body | the craft's main body: the glacis armour over the crew, the lid over the reactor, the stern housing over the drives | hull | one wide low body: a continuous shallow glacis from the bow toe up to the lip, the flat lid, a step up to the stern housing; a flat belly with chines | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | the glacis slope and its step to the lid, the chamfers, the stern housing's step up | picture |
+| glacis_plates | the glacis and lid armour: scrap plate in uneven courses, patches over the joints | plate | patched plates in courses over the glacis, the lid and the flanks | 1 | bow/top, bow/side, mid/top, mid/side, stern/top | slabs with bevels, thickness steps, patches over joints, rivets on a share | picture |
+| belly_plates | the belly's armour | plate | patched plates over the flat belly (the concept shows no underside) | 1 | bow/below, mid/below, stern/below | slabs with bevels and steps | designed |
+| bomb_tubes | the bomb payload (data.js bombs T, 2 shots): the wing's only weapon, one tube a corner, both firing every volley | bomb_tube | two bomb tubes at the glacis's extreme corners, each in a dark armoured collar on an eight-sided drum (the concept's two round corner mouths) | 2 | bow/top, bow/side, bow/below | the dark collar with welded bolts, the bore, the bomb nose seated deep inside, the drum, two riveted bands, a welded patch (R221) | picture |
+| rails | the armoured edge frames that stiffen the glacis plate and guard the lid's edges | rib | a raised rail along each top edge of the body, from the bow toe up the glacis and along the lid, with bolted clamps (the concept's raised glacis edges) | 1 | bow/top, mid/top, stern/top | the rail, its clamp brackets | picture |
+| lip | the armoured lip that ends the glacis (against the ramp read) and carries the crew's vision slit | tier | a shallow armoured lip across the top of the glacis (the round 3 sheet (DeepSeek)) | 1 | bow/top, mid/top | its sloped face, its roof, the slit opening | picture |
+| vision_slit | the crew's view out (no canopy, R254): the bombardier aims the craft | slit | one vision slit in the lip's face, a little to port | 1 | bow/top | a welded frame round a dark pane | designed |
+| shoulders | the side bodies behind the corner pods: each holds a bomb row (the magazine) and its hoist | tier | a shoulder either side, its top sloping down and out to a thin edge; the starboard one a touch lower and shorter (lopsided) | 1 | bow/top, mid/top, mid/side, mid/below, stern/top, stern/side | the sloped top, the thin outer edge, the chamfered belly | picture |
+| shoulder_plates | the shoulders' armour | plate | patched plates in courses over the shoulders | 1 | mid/top, mid/side, stern/top | slabs with bevels, thickness steps, patches over joints | picture |
+| hoist_bays | the bomb hoists: they walk the next bomb from the magazine row into its tube, behind armoured doors | machbay | one machinery bay in each shoulder's sloped top, a door in a second tone over its fore part (the concept's recessed side bays with armoured doors) | 2 | mid/top, mid/side | a heavy frame, a dark back, pipes, the hoist block, the door on hinges (two-tone so it survives 32 px, Qwen) | picture |
+| drives | drive (sp 5): the stern thruster bank, nozzle clusters inside an armoured block (the owner's rule for craft) | engine | five mismatched salvaged bells, the centre one the largest | 5 | stern/top, stern/side, stern/below | a bell with a lip, an ember lining, a glowing throat and plug, a cooling ring, a drum with a collar and a band, gimbal struts | picture |
+| bank_recess | the armoured recess round the thruster bank | pylon | a hood over the bank, cheeks at its sides, a sill under it (the concept's recessed stern bank) | 1 | stern/top, stern/side | the welded web plates and their faces | picture |
+
+Kit sub-parts per type (what DETAILED checks):
+
+- bomb_tube: (hull shaping, checked by eye on the side-by-side)
+- engine: housing, collar, band, bell, lining, throat_glow, cone, cool, strut
+- hull: bevel, step, overhang
+- machbay: (hull shaping, checked by eye on the side-by-side)
+- plate: slab, step, bevel, rivet
+- pylon: web, plate
+- rib: rib
+- slit: frame, glass
+- tier: face, roof, opening
+
+Left as surface, and why:
+
+- The plate colours (rust, soot, dried blood, the trophy greys and violets), wear and the red running lights: the Hullbreaker paint stack (applied later); the sheet models the plates.
+- Dishes, claws, antennas and lamps: nothing hangs off (factions.md), and below what the battle camera shows on a 3.84 unit craft; not built.
+
+## Every built part has a job (R221)
+
+Built kit parts: 19; parts whose inventory id names no line with a job: 0.
+
+## Per cell: present, shaped, detailed (from the model, corsair_KB1CC_model.json)
+
+Y = yes, n = no. Counts are parts built with this inventory id against the count the concept shows.
+
+### bow/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
+| rails | a raised rail along each top edge of the body, from the bow toe up the | 1 / 1 | Y | Y | Y |
+| lip | a shallow armoured lip across the top of the glacis | 1 / 1 | Y | Y | Y |
+| vision_slit | one vision slit in the lip's face, a little to port | 1 / 1 | Y | Y | Y |
+| shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
+
+### bow/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
+
+### bow/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
+| bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
+
+### mid/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| rails | a raised rail along each top edge of the body, from the bow toe up the | 1 / 1 | Y | Y | Y |
+| lip | a shallow armoured lip across the top of the glacis | 1 / 1 | Y | Y | Y |
+| shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
+| shoulder_plates | patched plates in courses over the shoulders | 2 / 1 | Y | Y | Y |
+| hoist_bays | one machinery bay in each shoulder's sloped top, a door in a second to | 2 / 2 | Y | Y | Y |
+
+### mid/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
+| shoulder_plates | patched plates in courses over the shoulders | 2 / 1 | Y | Y | Y |
+| hoist_bays | one machinery bay in each shoulder's sloped top, a door in a second to | 2 / 2 | Y | Y | Y |
+
+### mid/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
+| shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
+
+### stern/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| rails | a raised rail along each top edge of the body, from the bow toe up the | 1 / 1 | Y | Y | Y |
+| shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
+| shoulder_plates | patched plates in courses over the shoulders | 2 / 1 | Y | Y | Y |
+| drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
+| bank_recess | a hood over the bank, cheeks at its sides, a sill under it | 1 / 1 | Y | Y | Y |
+
+### stern/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
+| drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
+| bank_recess | a hood over the bank, cheeks at its sides, a sill under it | 1 / 1 | Y | Y | Y |
+
+### stern/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
+| drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
+
+
+## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
+
+Concept counts read off the concept sheet by eye (KB1C-C render, by eye (no true views): bow, the glacis, its two rails and the two corner mouths; midships, the lid, the rails, the side bays and the shoulders; stern, the lid, the raised housing and the thruster row); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+
+| Cell | Concept | Build | Build masses |
+|---|---:|---:|---|
+| bow/top | 4 | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
+| bow/side | 3 | 2 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port |
+| bow/below | no view | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
+| mid/top | 4 | 4 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard; The armoured lip |
+| mid/side | 3 | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; The armoured lip |
+| mid/below | no view | 4 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard; The armoured lip |
+| stern/top | 3 | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
+| stern/side | 3 | 2 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port |
+| stern/below | no view | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
+
+## Proportions: length to beam and length to height, concept against build (the Board on round 3)
+
+Measured the same way on both: the concept sheet's top and side views and the blockout's top and side renders, bow left. Envelope: the whole outline. Hull: length over the median beam or height across the middle 60 percent of the length (dishes, guns and antennas sticking out at a few stations do not count).
+
+| | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
+|---|---:|---:|---:|---:|
+| concept | 2.10 | 2.10 | 2.54 | 2.54 |
+| build | 1.63 | 6.01 | 1.65 | 6.47 |
+
+Lines not present, shaped and detailed without a reason: 0.

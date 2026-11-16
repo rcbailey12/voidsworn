@@ -1,0 +1,155 @@
+{
+ "code": "corsair_KB1CC",
+ "sheet_version": 1,
+ "routes_note": "kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "W1",
+   "kind": "slit",
+   "what": "vision slit 0.11 x 0.007",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "vision_slit"
+   ]
+  },
+  {
+   "id": "BT1",
+   "kind": "launcher",
+   "what": "bomb tube in a corner pod, mouth 0.13 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bomb_tubes"
+   ]
+  },
+  {
+   "id": "BT2",
+   "kind": "launcher",
+   "what": "bomb tube in a corner pod, mouth 0.13 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bomb_tubes"
+   ]
+  },
+  {
+   "id": "Y1",
+   "kind": "bay",
+   "what": "hoist bay 0.34 x 0.11, armoured door",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hoist_bays"
+   ]
+  },
+  {
+   "id": "Y2",
+   "kind": "bay",
+   "what": "hoist bay 0.34 x 0.11, armoured door",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hoist_bays"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "E5",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the central body (the glacis, the lid, the stern housing)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Shoulder, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Shoulder, starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "The armoured lip",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 77.2 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "77.2 to 100.0 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

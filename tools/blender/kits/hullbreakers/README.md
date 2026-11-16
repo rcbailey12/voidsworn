@@ -37,3 +37,17 @@ leaves and their rails, for a mouth in a bow face with no face beside it, as A20
 length, 1.6). A sheet whose plates sit on small masses uses the sheet kit's `keep3d` plate option, so a keep-out clears only the
 plates it touches. From round 2 (issue 633) the three class sheets lay their plates in courses (the sheet kit's `courses` option: plates at
 the hull's plate size both ways, patches over joints and over plates, upward faces terraced; `rivet_r` sizes the rivets to the hull).
+
+## Squadron craft (issue 793: corsair_KB1CC, the bomber)
+
+The craft parts live in `craft.py`, not in `parts.py`: `parts.py` is hashed into the A16 fixture (tools/recipe/sheet_fixture_hash.py),
+so a part added there would mark the fixture stale. The craft's ship file calls `craft.install(HP)` on the kit module it was given;
+that adds the parts below beside the kit's own for that build only, and changes nothing the kit already builds (`rocket_rack` and
+`engine_bell` keep their behaviour unless called with the craft's own switches). Every size comes from the arguments.
+
+| Part | data.js | What it is |
+|---|---|---|
+| `bomb_mouth` (`rocket_rack(..., variant='bombN')`, type `bomb_tube`) | `bombs` T, Bomb payload, 2 shots | one bomb tube in a corner pod: a heavy dark armoured collar with welded bolts round the mouth, a dark bore with the next salvaged bomb's nose seated deep inside, an eight-sided armoured drum running back with two riveted bands and a welded patch; fixed forward (a machine) |
+| `craft_drive` (`engine_bell(..., craft=True, craft_len=)`) | | a salvaged bell with a red-orange glow: lip, ember lining, glowing throat and plug, one cooling ring, a short drum with a collar, a band and gimbal struts |
+| `machbay` | | a flank machinery bay (the bomb hoist): a heavy frame, a dark back, pipes and the hoist block inside, an armoured door in a second tone on hinges over the fore part |
+| `slit` | | the crew's vision slit: a welded iron frame round a dark pane |
