@@ -1,5 +1,13 @@
 # Weapon kit, issues 367, 800 and 815
 
+## T10: seeded uneven volleys (issue 823)
+
+Shot timing, size, brightness and spread now vary in clumps and gaps, with a
+standout stroke in a full salvo. Camera-170 before/after sheets, reduced flashing,
+motion, measured timings and checks are in [the T10 report](t10/REPORT.md).
+Rules parity passes all 281 scenarios. Broadside bench step median, without
+image readback: 1.648 ms before, 1.553 ms after. No #207 gate pass is claimed.
+
 ## Round 3: cinematic Doom, null tracer and shield crackle (issue 815, R271)
 
 Refs #815. The required PR 814 baseline was merged without committing. This
