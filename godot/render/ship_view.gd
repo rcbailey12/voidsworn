@@ -192,12 +192,14 @@ func _fit() -> void:
 		first = false
 	var k := L / maxf(box.size.x, 1e-3)
 	var yaw_fix := 0.0
-	if HT.AI_HULL_YAW.has(code) and not a4:
-		yaw_fix = -PI / 2.0 * float(HT.AI_HULL_YAW[code])
+	# A sheet variant (CODE__tpl) shares its base hull's yaw and lift (R266): look them up by the base code.
+	var base_code := code.get_slice("__", 0)
+	if HT.AI_HULL_YAW.has(base_code) and not a4:
+		yaw_fix = -PI / 2.0 * float(HT.AI_HULL_YAW[base_code])
 	var c := box.get_center()
 	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, k if a4 else -k)), Vector3.ZERO)
 	hull.position = -(hull.transform.basis * c)
-	hull_lift = float(HT.HULL_LIFT.get(code, 0.0))
+	hull_lift = float(HT.HULL_LIFT.get(base_code, 0.0))
 	hull.position.y += hull_lift
 	hull_base = hull.position
 	hull_basis = hull.transform.basis
