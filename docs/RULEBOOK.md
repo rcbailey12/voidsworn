@@ -33,8 +33,12 @@ never the guideline it cited (R187); Ryan wanted the audit to find "these weird 
 it, you know, more restricted and less realistic and cinematic than it should be". Set: Ryan, Nov 7 (R121: assumed gates stop
 binding until a measurement earns them back) and Nov 11 (R187: "Keep comfort, loosen rest").
 
-0.5 **Tidy is a fault on screen.** Even, straight, identical, instant, capped, on rails or one scale reads as staged. Why: the
-wrecks "feel like they're just getting sliced in half" (R186). Set: Ryan's complaint, Board's wording (R187).
+0.5 **Order follows the faction; motion and breaks never feel staged.** Hullbreaker armour is irregular patchwork. Eclipse
+panels are precise, dead even, ordered and aligned, with seams and slight relief (Ryan, Nov 13, R243: "make the eclipse panels
+actually panels and dead even and ordered to align"). Glasswrights are blown glass without panels; Chorus surfaces are grown,
+without plates. Sunward and Hegemony follow factions.md. Instant motion, identical beats, straight cuts and one scale still
+read as staged. Why: the wrecks "feel like they're just getting sliced in half" (R186); applying that to every faction's
+surface erased the Eclipse's machine precision. Set: Ryan's complaints, Board's wording (R187), corrected by Ryan (R243).
 
 0.6 **A rule that rests on a fact that can change names what ends it** (a model's version, a plan's limit, a tool that is
 down). Why: the Codex cloud ban, the Fable helper counts and the Kimi sentence outlived their facts. Set: Board, Nov 11 (Muse
@@ -51,14 +55,24 @@ the screens half of R218 written nowhere (issue 558). Set: Board, Nov 12 (R211, 
 0.9 **How a route is set up (any multi-step pipeline: ships, effects, captures, installs).** (a) A method change is done
 only when one real item has gone end to end through it into the game on Ryan's PC; each stage passing alone is not a pass.
 (b) Each fact has one home: the first step that decides it writes it, and every later step reads it from there instead of
-keeping its own copy. (c) A check tests what its rule says and reads the item's own numbers (length, seams, part shapes),
+keeping its own copy; a mirror refreshed from that home under a check (the oracle copies, 12.4) is not a second home. (c) A check tests what its rule says and reads the item's own numbers (length, seams, part shapes),
 never the shape of the first item it was written for. (d) Anything Ryan's PC runs (.bat launchers, installs, caches) gets
-one real run there before it counts as done. No new test or gate is added for this rule; it shapes how routes are built
+one real run there before it counts as done, within 3.3 (nothing deleted on the PC without Ryan's yes). No new test or gate is added for this rule; it shapes how routes are built
 and briefed. Why: Codex's A16 dry run (issue 587) found eight gaps from these four habits: the build sheet and the recipe
 kept separate copies of the same facts, three checks assumed the old C15s cruiser (its 14.5 length, an extra seam,
 closed engine bells), a launcher quoting bug and a stale game cache only show on Windows in a real install, and no ship
 had gone from sheet to game since the sheet method changed. Set: Board, Nov 12, on Ryan's ask to learn from the gaps at
 the level of design and setup, not patches (R225).
+
+
+0.10 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
+that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
+wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
+marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
+lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
+Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
+every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
 
 ## 1. Working with Ryan
 
@@ -120,27 +134,49 @@ agents-09.
 | Work | Seat | Why |
 |---|---|---|
 | Board: reviews, merges, specs, visual calls, picks put to Ryan | One Claude thread, Opus 5.5 | judgement is the bottleneck (R128, R194) |
-| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two at most while the Board runs | Ryan: "I think builds in blender should come from Opus" (R205); the five-hour limit was hit with three (R194) |
+| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two or three at once | Ryan: "I think builds in blender should come from Opus" (R205); "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) |
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
 | Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, one job at a time, while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
-| Ideation | Flash and Grok, through Muse | free and broad |
+| Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
 
-No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi was never fairly tested
-(only the pay-as-you-go tier, R164); Ryan took the Kimi Code plan on Nov 12, and it gets one head-to-head job against DeepSeek
-(arm kimicode, issue 597) before it holds a seat. Codex's weekly usage is watched at every board check (it was at 19 percent with
-six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
-keeps only what needs it. Ids: R128, R180e, R205, R206, R219, agents-12.
+The standing seat rules (rewritten Nov 15 from Muse's opus_check_719; dated seat state, such as whether this month's API
+credit is live, is status and lives in LOOP.md "The seats"):
+- Seat order (R242): "DeepSeek for cheap, sonnet for mid size, opus via api or helpers for blender or other large work. Codex
+  for others that only it can do and then Kimi depending on results."
+- Blender ship builds are Opus's (R205: "I think builds in blender should come from Opus"), back on from Nov 14 evening (R253).
+- Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
+- Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
+  continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
+- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to three local
+  lanes (R268). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
+  ended by R264 the same day).
+- The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
+  the different-model check of Opus work (R219).
+- The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
+  (R250).
+Superseded, kept so nobody follows them: "Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI
+arm; it stays (R250 item 4)" (SUPERSEDED by R257); "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
+short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R250) and "Codex is the main builder, Blender builds
+included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, R257, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
-model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
+model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews,
+because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Code-only
+jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
+If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
-use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75) and Nov 11 (R216). Ids: R75b, agents-07.
+use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
+Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
+read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
+pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
-agents-10, muse-07.
+agents-10, muse-07. Every Muse action (research, design, review and outside checks, and low-code fixes) runs legs from DeepSeek, Qwen,
+Grok and Google Flash, with Rey chairing. Why: "let's have muse use grok and Google flash LLMs in all its actions too" (Ryan,
+Nov 12, R231); more outside views, and no check runs on one leg when a model hits its cap.
 
 2.9 **A Muse issue is never edited once Ryan may have started it; new scope is a new issue.** Why: Rey kept to the version it
 had read and the Board's later edit was lost (R200). Set: Board, Nov 11.
@@ -161,8 +197,9 @@ not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
 
-2.14 **Effort follows the kind of job**: high for the Board, audits and design passes; medium for first builds judged by eye;
-low for well-specified code. Why: a miss on a look costs a whole extra round (R168). Set: Board.
+2.14 **Effort follows the kind of job** (an operating note, not a rule, under 0.10 and R251: the Board may change it in LOOP.md):
+high for the Board, audits and design passes; medium for first builds judged by eye; low for well-specified code. Why: a miss on
+a look costs a whole extra round (R168). Set: Board.
 
 2.15 **The repo is the record.** Rulings go to FINDINGS with Ryan's words and the problem he was reacting to; board state to
 LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan (project instructions; R189).
@@ -184,12 +221,25 @@ disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voids
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
 (project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
-3.4 **One GPU job at a time, and check Ryan is not using the GPU first.** Why: a long bake holds every later job, and he uses
-the GPU himself ("can we have codex pause gpu usage?", R173). Set: Ryan (R173); Board (queue). Ids: R173b, effects-09.
+3.4 **Up to two GPU jobs at once across the main lane and lane B; frame-time measurements run solo. Lane C stays code only.**
+The launchers take and release claims themselves: two shared slots, or a solo claim that waits for both slots to empty and
+blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU work starts
+unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is unchanged. Why: Ryan
+asked "can we run multiple jobs to speed things up?" and approved the Board's two-job, solo-measurement pick:
+"merge and make those changes to gpu jobs"
+(R276). The RTX 5080 has 16 GB: two jobs fit, three heavy jobs risk running out of graphics memory. Solo measurements keep
+speed numbers honest. Replaces the one-job limit (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 15 (R276).
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
-arguments.** Why: hung Godot windows blocked the queue for about three hours (G-3). Set: Board. Ids: G-3, feel-06,
-skill-pb-05.
+arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
+hours; CODEX_CAP and WORK_CAP override the ceiling in seconds). Progress is a changed file write time in the run repo,
+a new commit, or new bytes in log.txt (also stderr for workhorse runs). Git housekeeping does not count. A stall or ceiling
+stop writes its reason, changed files and last log lines to the out folder's resume.txt and the -partial commit message;
+the next run reads that note. timeouts.log records STALLED after N min or CEILING. Short queue commands and runner checks
+keep their explicit time limits. Why: hung Godot windows blocked the queue for about three hours (G-3), but the old two-hour
+agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do we need to get rid of that random 2 hour rule
+if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
+(G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
 
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
@@ -210,6 +260,13 @@ R111a, R111b, R113, R116, R121a, R121b.
 3.10 **The repo stays public.** Why: the outside tools (Muse and its models) read it without logins (R216). Set: Ryan (R10,
 R216).
 
+3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
+(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
+processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
+each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
+nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
+anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
+
 ## 4. Ships and concepts
 
 4.1 **Space ships, never sea ships, in the whole shape.** No boat profile, keel, raked prow, deck house, mast, funnel, crane,
@@ -218,8 +275,9 @@ obvious naval-looking ships. again, these are SPACE ships"; Nov 11: "I don't und
 as naval. We need to do a full pass across all ships and factions so not naval" (R185). Set: Ryan (Oct 22, Oct 24, R185). Ids:
 agents-19, agents-25, R8b, R185a, concepts-16. Detail: docs/playbooks/concepts_round2.md gate line 11.
 
-4.2 **No gun faces backward or into the ship.** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan. Ids: agents-17,
-blob-03.
+4.2 **No gun faces backward or into the ship at rest; a turret may turn aft only to follow a target its rules arc lets it hit
+(6.16, R222).** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan (Oct 22; the turret line Nov 12, R222).
+Ids: agents-17, blob-03, R222.
 
 4.3 **Parts look like they belong: snapped to the real hull on a visible mount, in matched pairs at sensible hard points; the
 Hullbreakers may be junky.** Why: bolt-ons on the AI hulls floated, sank or sat anywhere (Oct 21). Set: Ryan, Oct 21. Ids:
@@ -280,6 +338,10 @@ object, takes guns from the hull's data.js slots as batteries that make sense, c
 picture shows, and lists every change on the sheet. Why: "Use it to guide, not the very final exact design" (R207); "The guns
 look randomly placed and don't make sense... the builds look like square blocks basically" and "The concept should inform and
 guide but it's not a final play by play guide" (R213). Set: Ryan, Nov 11. Ids: R25 (concepts are inspiration), R207, R213.
+The Board (Opus) is the final designer and director; Muse concepts. Between an accepted concept and the build the Board makes
+the design calls, family distinctness included (a class that reads as a small copy of another class from above is changed in
+the build), lists them on the sheet and shows Ryan the result instead of asking first. Ryan's picks of concepts and his
+verdicts on pictures stand. Why: "You're the final designer and director. Muse is just concepting" (R233). Set: Ryan, Nov 12.
 
 5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull designed
 on the approved build sheet (5.1, 5.2), which the recipe builds as it is and never traces again (issue 592), with the stage 2
@@ -345,11 +407,16 @@ beside the concept. Feedback on one part becomes a rule for all parts. Why: "Eng
 to carry that through to the whole model. Don't just patch singular behavior or examples, use it for global learning and
 shaping the approach" (Ryan, Nov 11, R218). Set: Ryan, Nov 11 (R218). Ids: ships-2c.
 
-5.17 **A machine never crosses a seam; structure may.** Guns, turrets, casemates, launchers, engines, thrusters, claws and
-sensor masts ride whole with one piece: the seam moves, or kinks round them in plan; hull plating, frames, ribs, rails and
-openings such as a launch bay may tear across a seam. The stage 4 audit reads each part's kind from the build (the faction
-kit's MACHINES) and fails only a machine across a seam. Why: a cut gun reads as sliced, a torn plate as blown apart (R186,
-"blown apart, never sliced"). Set: Board, Nov 12 (R226). Ids: ships-2c.
+5.17 **A machine never crosses a seam; structure that crosses a seam is torn at it, insides included.** Guns, turrets,
+casemates, launchers, engines, thrusters, claws and sensor masts ride whole with one piece: the seam moves, or kinks round
+them in plan. Hull plating, frames, ribs, rails, openings such as a launch bay, and every inside (decks, bulkheads, rooms,
+the liner) tear across a seam, along the same ragged line as the plating over them: no inside panel stays whole across a
+break or sticks out past its piece's broken hull. The stage 4 audit reads each part's kind from the build (the faction kit's
+MACHINES) and fails only a machine across a seam; the export carries each seam's path and each machine's box, and the game's
+death cut reads them there (fx/test/death_seam_check.gd: zero machines split, zero insides outside their piece). Why: a cut
+gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never sliced"); whole deck and bulkhead slabs stuck out
+of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
+issue 600). Ids: ships-2c.
 
 ## 6. Battle look
 
@@ -398,9 +465,10 @@ always reads as a death.** Why: every faction died the same faint puff (deaths_a
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
 docs/playbooks/deaths_and_hits.md.
 
-6.11 **Shields in space keep their faction colours; at rest invisible, a faint edge glow on zoom, hover or a recent hit, a
-downed side a dark gap.** Why: his Oct 24 ruling (the cyan-only rule retired) and his yes to the Board's resting pick (R163).
-Set: Ryan (R3, R163). Ids: R3a, R163a, effects-04.
+6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
+sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
+Rim and Gap pick with Muse (R246). Set: Ryan (R3, R246). SUPERSEDED, kept so nobody follows it: "at rest invisible, a faint edge
+glow on zoom, hover or a recent hit" (R163, ended by R246). Ids: R3a, R163a, R246, effects-04.
 
 6.12 **Effects may spend the RTX 5080's headroom inside the scene gate, with a lower setting kept.** Set: Ryan (R88c). See
 3.9.

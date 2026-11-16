@@ -36,3 +36,35 @@ and rest_pitch, the turning meshes its children; the hex foot stays on the hull.
 Eclipse engines (faceted ribbed drums, vanes, a short bell, a pale corona ring round a black shade disc, no flame), the caged
 core, truss struts, the hex core port, octagonal hatches, shade-generator housings, heat slot panels, corona strip lights, slot
 thrusters, machine-cut plates with flush fasteners. Each part's docstring in parts.py says what it is.
+
+**Detail by size (issue 618, R224).** `panels()` lays plate courses on a part's flat faces at the hull's own plate size in world
+units (`PANEL`), so a part built large keeps the hull's detail density: the engine housings, the corona arc's breech collars,
+column and head carry them, and every engine bell gets stiffener rings by its length. The corona arc's hard point is its lens
+(the horns' meeting point ahead of it is open space, off the mesh).
+
+**The null lance (issue 782).** `spinal(kind='lance')` builds the flare's one fixed forward gun (data.js nlance, issue 784): a seat
+ring, an armoured eight-sided housing with a layer sleeve and panels, capacitor discs, four accelerator rails on yokes, and a
+recessed bore with a black shade disc and a glowing lens behind a thin green focus ring (designs.md). Its type is `nullcannon` on
+a fixed mount (weapon_match FITS `nlance`); its hard point is the lens, its firing lane starts at the mouth.
+Its bore (R266) steps in three stages with coil bands and two green focusing bands to a lit throat. `engine_bell(halo=R)`
+adds a free halo ring of pale light of radius R on four arms, forward of the exit plane (the E14 flare's ring at the end of the body).
+
+**Even panels (R243, issue 739).** `even_panels()` and `lay_panels()` lay a sheet ship's hull panels dead even and aligned
+(Ryan, Nov 13 2026: "make the eclipse panels actually panels and dead even and ordered to align"): each loft face split into equal
+panels at a world size, every panel the same thickness with a narrow even gap, the tone changing in ordered bands along each
+face, mounts' keep-outs honoured, two flush fasteners per panel. What the code does not promise (outside check opus_check_750
+condition 3): each face is split from its own size, so panel rows meet across sections only where neighbouring faces are the
+same size; panels run about half to one and a half times the nominal size by rounding; a face under half the size either way
+gets no panels. E13 and E14 use it; E11 and
+E12 keep their accepted plating (`kit._plates`).
+
+## Paint stack (issue 642)
+
+`stack.py` is the Eclipse paint stack for sheet ships (`"bake": "stack"`), on the shared machinery in
+`tools/blender/kits/shared/paint_stack.py`: the colours as tones to show under the game's battle lift (2.2, read from
+`godot/render/look.gd`), the layers, the patchwork families, the flush-fastener and machining-scratch trim sheet, the decals
+(eclipse sigil, archive glyphs, band ticks), the green-white corona and core, the engine ring (`ENGINE_GLOW`,
+`engine_glow_nodes`), the dark violet-black liner, and no added running lamps. The design lines and their reasons are in the
+file and in docs/playbooks/ships.md section 0 item 2 ("The Eclipse paint"). `glow_vertex` adds `ps_glow` and `ps_kind` before it
+writes either: a handle taken before another attribute is added points at freed memory, which crashed stage 5 on Blender 4.5
+(issue 642, runs 642 and 642b).

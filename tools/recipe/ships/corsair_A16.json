@@ -11,12 +11,12 @@
  "concept_camera": "",
  "hull": "sheet_hull",
  "tune": "",
- "bake": "none",
+ "bake": "stack",
  "cell": "A16",
  "outline_gate": 0.9,
  "outline_third_slack": 5.0,
  "lights": {},
  "light_min_px": 2.0,
- "notes": "Built from the approved build sheet docs/ship_pipeline/build_sheets/corsair_A16/ (design file tools/blender/build_sheets/ships/corsair_A16.py). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, seams, insides, hard points and the class length come from it through tools/blender/build_sheets/contract.py; this file only names the sheet, the game ids, the concept and the recipe settings. No parts list here: the sheet places every part. game_code C19_51 is the Battle-barge folder the game picks for corsair (godot/render/hull_table.gd AI_HULLS). Stage 3 does not trace or tune a sheet hull; it fits the concept camera and reports the outline.",
+ "notes": "Built from the approved build sheet docs/ship_pipeline/build_sheets/corsair_A16/ (design file tools/blender/build_sheets/ships/corsair_A16.py). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, seams, insides, hard points and the class length come from it through tools/blender/build_sheets/contract.py; this file only names the sheet, the game ids, the concept and the recipe settings. No parts list here: the sheet places every part. game_code C19_51 is the Battle-barge folder the game picks for corsair (godot/render/hull_table.gd AI_HULLS). Stage 3 does not trace or tune a sheet hull; it fits the concept camera and reports the outline. bake stack (issue 601): stage 5 paints it with the Hullbreaker kit's paint stack (tools/blender/kits/hullbreakers/stack.py, through tools/blender/r209/bake_sheet.py); the colour zones are the sheet's.",
  "parts": []
 }

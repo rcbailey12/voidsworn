@@ -1,5 +1,11 @@
 # corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3c, R221 clean-ups)
 
+**Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 29 machines, zero split, zero inside triangles beyond their piece. Budget: 151844 triangles, 21 surfaces, 18072 inside triangles. Costs reported; the scene gate was not measured.
+
+**Issue 676, PC verification (Nov 14, CPU).** The latest sheet and named [weapon picture](weapon_review.jpg) were rebuilt on this PC with Blender 4.5.14, Cycles CPU, 12 samples. [Weapon match](weapon_match.json): PASS, zero problems; the [feature table](feature_table.md) lists every data slot, its shots and its visible mounts. The outline comparison remains the earlier reported reference. This is an unpainted weapon proof; the Board queues the paint bake.
+
+**Issue 676 (R241): the casemates are cut; each broadside is its three twin turrets.** Ryan, Nov 13 2026 (R241): "all ships should have weapons that match their actual weapons in game, so they line up with firing, effects, turns, etc". The bow casemates PB and SB and the flank casemates PM and SM aimed outside the P and S arcs (bearing 20 and 29), and the sponson casemates P4, P5, S4 and S5 sat fixed on the same slot as turning turrets, so 13 muzzles shared scatter's 5 shots and most mounts fell silent on most volleys. Each broadside now shows its three matched twin turrets (P1 to P3, S1 to S3: 6 muzzles for 5 shots, every turret firing on every volley). Seam notes below that name the cut casemates are the history of where the seams were placed. The weapon-match check (tools/blender/build_sheets/weapon_match.py; `corsair_A16_weapon_match.json` from every build) passes on this sheet; the views on this page were re-rendered from the changed design file in the issue 676 sandbox (Blender 4.5, CPU); the outline check picture is unchanged.
+
 Ashfall Hullbreakers flagship, class Battle-barge, **26.0 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_boss).
 Version 3, 2026-11-11, after Ryan's review of round 2 (R217: tubes as circles, guns blocking the rockets and in front of an
 engine, engines and guns plain tubes) and his scaling rule (R218: whole-ship fidelity), with turrets that turn (R219).
@@ -44,6 +50,71 @@ found on this sheet:
      carries the bridge, T2, Q3, Q4, H4 and the engine block whole.
    - Structure still crossing: the bay B1, the deck boxes HB1 and HB2 (B-1), a lamp and two vents. The views on this page
      still show the old seams until the next PC render.
+3. **Rooms fitted inside the hull (issue 532, the A17 build).** About 150 inside triangles stood outside the intact
+   plating before any break (death_seam_check.gd on PR 608 counts them apart as a sheet matter): the lower corners of
+   the claw machinery, kennel decks, loot hold, hangar and engine room poked through the rounded belly, and the tops of
+   the two shell magazines through the rounded deck edge. Each room now fits the hull section at its corners with about
+   0.1 to spare, and the claw machinery starts at x 8.4, clear of the B-1 seam's path (a room face on the tear line left one
+   inside triangle outside its piece). Measured on the unpainted export with PR 608's check: 0 outside the whole ship and
+   0 outside their own piece (was 150 and 0); machines split 0 of 37. The feature table's room rows carry the new sizes; the
+   cutaway still shows the old rooms until the next PC render.
+4. **Front tubes and launch bay at the hull's detail level (R224).** The paint job (issue 601) measured the tubes at 0.45
+   and the bay at 0.18 of the hull's triangles per square unit. The Hullbreaker kit's launch tube now has three rings
+   stepping down inside the bore, a ring of bolts on the lip, eight stiffeners along the barrel and bolted clamp bands; the
+   bay has framed door leaves with five stiffeners each, guide rails on brackets down both sides, a door ram at each
+   hinge, end frames and a rivet row on the rim. Measured on the build (mesh half of tools/recipe/density.py, PR 601):
+   tubes 1.02 of the hull's triangles and 0.80 of its edge features per square unit (were 0.45 and 0.29), bay 1.64 and
+   1.61 (were 0.18 and 0.18). The fit check is still zero. The views on this page show the old tubes and bay until the
+   next PC render; [tubes_bay_r224.jpg](tubes_bay_r224.jpg) shows the new ones.
+5. **Every inside clear of the plating, seen from outside (PR 610's surface check).** The paint job's check saw rooms
+   reach the skin: the gun deck, warlord hall, shell magazines, bridge and engine room, and with them the gun deck floor
+   and the lower deck. Each is pulled in to sit inside its own tier with room to spare (feature table rows updated).
+   Measured on this branch: the surface check's six views at 1280 show 0 inside pixels (A17 also 0); no inside corner
+   stands outside the plating; death_seam_check's "outside the whole ship" count is 0.
+
+## Paint (issue 601, Nov 12 2026)
+
+A16 is the first ship painted by a faction paint stack (RECIPE.md "The paint stack for sheet ships"): `"bake": "stack"` in
+`tools/recipe/ships/corsair_A16.json`, the Hullbreaker stack `tools/blender/kits/hullbreakers/stack.py` on the shared machinery
+`tools/blender/kits/shared/paint_stack.py`. Masks are baked from this ship's own geometry; colours were sampled from
+the round 8 concept (`corsair_A16_beauty.jpg`; the method is in the stack's `CONCEPT`); the concept is never projected; the
+trim sheet and decals are drawn by the stack (own work, CC0). The colour zones are this sheet's own materials: nothing on
+the sheet's design changed. Nobody painted A16 by hand.
+
+Sandbox preview (Blender 5.3 on CPU, 1024 atlases, 12 samples; the PC run bakes 4096 at 64 samples):
+[full](paint/A16_paint_full.jpg), [bow](paint/A16_paint_bow.jpg), [midships](paint/A16_paint_midships.jpg),
+[stern](paint/A16_paint_stern.jpg), [flat views](paint/A16_paint_views.jpg). The game's own pictures (camera 170 and 60) come
+from the PC job `tools/pc/jobs/A16_RUN_601.bat`.
+
+**Changed from the picture (paint), the builder's calls:**
+- Decals the concept does not show at its scale, placed by the stack's rules on the ship's own surfaces: the hull code "C19"
+  on both flanks forward, a clan mark (a broken ring torn by three claw slashes, dried-blood red) on the bow deck, kill
+  tallies on both flanks aft of midships, faded bone and soot chevrons by the bow tubes, all half worn off. Why: the faction
+  sheet asks for a crude, scavenged look and these read as the crew's own marks; no navy yellow (the concept has none).
+- A share of the soot and iron hull plates carry a thin, worn maroon over-paint (red_share 0.12 to 0.20 per zone). Why: the
+  concept scatters red plates through the dark hull more than the sheet's zone weights (one blood plate in eighteen) give.
+- The launch bay mouth carries faded warning stripes (a trim sheet row). Why: a working opening; the concept cannot show
+  the belly.
+
+**R224 in paint (sandbox numbers, `paint/density_sandbox.json`; `tools/recipe/density.py`).** Every part type is at or above
+the hull on texels per square unit (1.63 to 1.84 of the hull) and on paint detail (1.09 to 2.19; the dishes lowest). No
+paint flag. Mesh flags (the build's, not the paint's): the front tubes (triangles 0.45, edge features 0.29 of the hull) and
+the launch bay (0.18 and 0.18) are smoother in mesh than the hull; the paint carries rivets, scuffs and stripes on them.
+
+**Pass 2 (Board review of PR 610; Ryan agreed, R228), all in the faction stack:** a plate patchwork (panel cells at the
+concept's plate size plus each modelled plate's own island, each picking soot, gun-metal, brick red or a bare scrape) with
+black seams; stronger cavities and worn edges; rust held a dark brick red under the 1.25 lift; running lights by the stack's rule as small round deep-red lamps (pass 3,
+the Board's correction: about 0.3 units, about 1 px at camera 170 and 3 at camera 60, brightness carries the read; 15 on A16
+along the flanks at the sheet's lamp row and at the deck edges), reported in the job's lights.json; engine glow left to the game (the export's hp_eng points with their bell radius drive the engine effect, fx_hull.gd; the sheet's
+throat and bell lining stay emissive). 
+
+**Pass 4 (Board's full pass over the first PC run; Ryan: "a white square near the back and another white square underneath"),
+all in the stack and the route:** the insides take the dark liner (room colours showed through the hull: gun deck, warlord
+hall, shell magazines, bridge, engine room reach outside it, which is sheet geometry for the A17/532 worker; the salmon bar
+aft was the shell magazine); stage 5's new surface check counts 6,844 such pixels before and 0 after
+([before](paint/surface_check_before.json), [after](paint/surface_check_after.json)); plates in two sizes with offset rows and
+a few overlaid patches; the close-range grain cut; part faces carry plates and seams; the engine throat a dimmer red-orange
+deep in the bell, the lining near dark. [Six views beside the concept](paint/A16_paint_views.jpg).
 
 ## R221 clean-ups (Ryan, Nov 12 2026)
 
@@ -73,7 +144,7 @@ found on this sheet:
 
 1. **A long, low slab** about 4 deep, with tier 2 and the castle as low steps (the whole ship about 5.7 tall, like the
    concept), the bow tapering in plan from the tube cluster (about 4.3 wide) and rounded by heavy chamfers.
-2. **Layered flank belts**: an upper armour belt, a recessed band carrying the lights, vents and bow casemates, a lower belt.
+2. **Layered flank belts**: an upper armour belt, a recessed band carrying the lights and vents (its bow casemates cut in issue 676, R241), a lower belt.
 3. **The two tubes are the face**: big, side by side across the nose, standing fully proud of a shortened brow and chin.
 4. **Curved pincers under the bow tip**; short grabbers under the stern instead of legs under midships; the engine pods
    brought in close to the hull.

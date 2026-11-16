@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 354 check: every picture a death spawns (vent, flash and any other baked kind) records its spawn with
 # fx.record_spawn, and the gas root sits on the real plating, not at the centre of a picture pushed out by a fixed share
 # of the ship's length. The test ship is the Eclipse cruiser, a disc with a tower, which does not fill its bounding box,
@@ -29,6 +30,7 @@ var band := "cruiser"
 
 
 func _init() -> void:
+	GUARD.arm(self, "death_spawn_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 
@@ -138,7 +140,9 @@ func _picture_root(node: Node3D) -> Vector3:
 	var is_vent: bool = (str(node.get_meta("fx_picture_kind", "")) == "vent") or String(node.name).begins_with("fx_baked_vent")
 	var m = node.material_override
 	if not is_vent and m is ShaderMaterial:
-		is_vent = float((m as ShaderMaterial).get_shader_parameter("directional")) > 0.5
+		# Godot 4.7 has no float(Variant) constructor for a Variant that may be null, so test the type first
+		var directional = (m as ShaderMaterial).get_shader_parameter("directional")
+		is_vent = (directional is float or directional is int) and float(directional) > 0.5
 	if is_vent and m is ShaderMaterial:
 		var up = (m as ShaderMaterial).get_shader_parameter("tear_normal")
 		var extent = (m as ShaderMaterial).get_shader_parameter("extent")

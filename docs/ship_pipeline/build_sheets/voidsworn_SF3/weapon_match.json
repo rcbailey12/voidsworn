@@ -1,0 +1,22 @@
+{
+ "code": "voidsworn_SF3",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "guns",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "G1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 3,
+     "muzzles": 3
+    }
+   ]
+  }
+ ]
+}

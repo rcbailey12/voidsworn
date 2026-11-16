@@ -1,0 +1,22 @@
+{
+ "ship": "chorus_C11",
+ "name": "The bladeback, the Chorus cruiser (The Chorus)",
+ "faction": "chorus",
+ "game_ship": "b_razor",
+ "game_code": "B21_11",
+ "sheet": "chorus_C11",
+ "concept": "contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "none",
+ "cell": "C11",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "Built from the approved build sheet docs/ship_pipeline/build_sheets/chorus_C11/ (design file tools/blender/build_sheets/ships/chorus_C11.py, the Chorus kit tools/blender/kits/chorus/). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, seams, insides, hard points and the ship length (LENGTH 14.5, the Cruiser class length) come from it through tools/blender/build_sheets/contract.py; this file only names the sheet, the game ids, the concept and the recipe settings. No parts list here: the sheet places every part. game_code B21_11 is the chorus|Cruiser folder the game picks (godot/render/hull_table.gd AI_HULLS); an install replaces the old hull there, copied aside first. bake none until the Chorus paint stack lands (a separate job after issue 623). Stage 3 does not trace or tune a sheet hull; it fits the concept camera and reports the outline.",
+ "parts": []
+}

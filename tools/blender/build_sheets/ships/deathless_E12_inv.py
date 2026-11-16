@@ -30,9 +30,9 @@ INVENTORY = [
     dict(id='core', job='the trapped light core: powers the ship and the reclaim (repair) ability', type='core', what='the caged green core at the centre of the ring', count=1, cells=['mid/top', 'mid/side', 'mid/below'],
          reads='hub collars, a bright sphere, gimbal rings, meridian bars', src='picture'),
     # ---------------- stern ----------------
-    dict(id='stern_block', job='holds the engines, the engine room and the sentry', type='tier', what='the stern block: a broad faceted block tapering forward into the spine, the engines in its face', count=1,
+    dict(id='stern_block', job='holds the engines, the engine room and the sentry', type='tier', what='the stern block: a narrow faceted block stepping down to the spine, the engines stacked on its face (issue 618)', count=1,
          cells=['stern/top', 'stern/side', 'stern/below'], reads='faceted faces, a stepped roof, openings (lights, vents, hatches)', src='picture'),
-    dict(id='engines', job='drive (sp 2): three eclipse-ring engines, no flame', type='engine', what='three engines side by side in the stern block', count=3, cells=['stern/top', 'stern/side', 'stern/below'],
+    dict(id='engines', job='drive (sp 2): three eclipse-ring engines, no flame', type='engine', what='three engines stacked one over another on the stern block (issue 618)', count=3, cells=['stern/top', 'stern/side', 'stern/below'],
          reads='faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame)', src='picture'),
     dict(id='sentry', job='the null spire (gsentry T): point defence against craft, standing high to see over the hull', type='spire', what='the small turret on the stern block roof with green sights (data.js gsentry T, the null spire)', count=1,
          cells=['stern/top', 'stern/side'], reads='a thin round foot, a tall slim round spire with banded collars and green sight slits, an oval head pod, a layered crescent fin with a corona crest, two thin needle rails with banded collars (R221)', src='picture'),

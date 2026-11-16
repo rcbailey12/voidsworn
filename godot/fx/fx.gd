@@ -241,6 +241,8 @@ func setup(opts := {}) -> void:
 	pools["stk"] = POOLS.Pool.new(16384 if big else 8192, _mat(SH.STREAK, 1), self, "fx_streaks", POOLS.streak_shape())
 	pools["rng"] = POOLS.Pool.new(2048, _mat(SH.RING, 0), self, "fx_rings", POOLS.quad_shape())
 	pools["rib"] = POOLS.Pool.new(192, _mat(SH.RIBBON, 1), self, "fx_ribbons", POOLS.ribbon_shape(32))
+	pools["arc"] = POOLS.Pool.new(64, _mat(SH.ECLIPSE_ARC, 0), self, "fx_eclipse_arcs", POOLS.ribbon_shape(96))
+	pools["null"] = POOLS.Pool.new(192, _mat(SH.NULL_SLUG, 1), self, "fx_null_slugs", POOLS.streak_shape())
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
 	pools["shd"] = POOLS.Pool.new(768 if big else 384, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
@@ -295,6 +297,17 @@ func _mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial
 	var m = ShaderMaterial.new()
 	m.shader = s
 	m.render_priority = prio
+	if code.contains("uniform vec3 eclipse_sheath"):
+		var shade: Color = faction_info("deathless")["weapon_sheath"]
+		m.set_shader_parameter("eclipse_sheath", Vector3(shade.r, shade.g, shade.b))
+	# Shared materials reuse the same imported masks, including attached
+	# engine batches. No textures are created per shot.
+	if code.contains("uniform sampler2D kit_flow"):
+		m.set_shader_parameter("kit_flow", load("res://fx/textures/beam_flow.png"))
+	if code.contains("uniform sampler2D kit_tail"):
+		m.set_shader_parameter("kit_tail", load("res://fx/textures/hot_tail.png"))
+	if code.contains("uniform sampler2D kit_flake"):
+		m.set_shader_parameter("kit_flake", load("res://fx/textures/lit_flake.png"))
 	return m
 
 
@@ -420,7 +433,7 @@ func _p(a0: Vector4, a1: Vector4, a2: Vector4, a3: Vector4, a4: Vector4) -> Pack
 	return POOLS.pack(a0, a1, a2, a3, a4)
 
 
-const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true}
+const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true, 27: true}
 
 
 # `px` (F3 round 2): this sprite's own minimum size on screen, in pixels on a 1080-line screen (0: the kind's floor).
@@ -454,8 +467,19 @@ func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0
 # `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
 func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
 		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
-	(pools["stk"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
+	var pool: POOLS.Pool = pools["null"] if kind == 5 else pools["stk"]
+	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
+
+
+# One head follows the real gauss flight; its deposited light cools for 0.70 s.
+# Unlike ordinary capped streaks, this history is measured against shot length.
+func null_trace(from: Vector3, to: Vector3, t: float, flight: float, col: Color, k: float) -> void:
+	var dv := to - from
+	var axis := dv.normalized()
+	(pools["null"] as POOLS.Pool).emit(POOLS.pack(Vector4(from.x, from.y, from.z, t),
+		Vector4(axis.x, axis.y, axis.z, flight + 0.70), Vector4(col.r, col.g, col.b, 5.0),
+		Vector4(dv.length(), 0.4 * k * unit, flight, 5.0), Vector4.ZERO))
 
 
 # `px` (F3 round 2): the ring's own final size on screen in pixels (shock rings and ripples, kinds 1 to 3); the floor
@@ -467,7 +491,8 @@ func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s
 
 
 func rib(p: Vector3, dir: Vector3, length: float, t: float, life: float, col: Color, i: float, w0: float, w1: float, kind: int) -> void:
-	(pools["rib"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, kind), Vector4(dir.x, dir.y, dir.z, length),
+	var pool: POOLS.Pool = pools["arc"] if kind == 10 else pools["rib"]
+	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, kind), Vector4(dir.x, dir.y, dir.z, length),
 		Vector4(col.r, col.g, col.b, i), Vector4(w0 * unit, w1 * unit, rng.randf(), 0.0), Vector4(t, life, 0.0, 0.0)))
 
 
@@ -1185,7 +1210,8 @@ func death(id: String, cause := "blast") -> float:
 		return 0.0
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
-	var tl_before = (ships[id] as SHIP).get_meta("death_timeline", null)
+	# has_meta first: get_meta with a null default logs an error on a ship's first death (issue 600)
+	var tl_before = (ships[id] as SHIP).get_meta("death_timeline") if (ships[id] as SHIP).has_meta("death_timeline") else null
 	var r: float = DEATH.death(self, ships[id], cause)
 	pend("death", t0)
 	var s: SHIP = ships[id]
@@ -1342,7 +1368,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		stk(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
 	for k in [0, 1, 2, 3, 4]:
 		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
-	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9]:
+	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
@@ -1354,7 +1380,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1), mat(DEATH.SLAG, 0),
+		mat(SH.RIBBON, 1), mat(SH.ECLIPSE_ARC, 0), mat(SH.NULL_SLUG, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1), mat(DEATH.SLAG, 0),
 		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
 	# Issue 569: a Glasswright sail is alpha blend, so its damage material is a different shader.
 	# Warm it too, or the first hurt sail compiles its pipeline in a fight.
@@ -1508,6 +1534,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
 		get_tree().create_timer(0.5).timeout.connect(free_effect.bind(weakref(rb)))
+	WEAP.warm_craft_trail(self, tmp)
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()

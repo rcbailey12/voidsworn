@@ -1,0 +1,13 @@
+sha256 7fdb5c969123d4c78bcb1767ee9a1ca0e888a0e18ff000f9df7e987cdcfd1cef
+tools/blender/build_sheets/ships/corsair_A16.py
+tools/blender/build_sheets/kit.py
+tools/blender/kits/hullbreakers/parts.py
+tools/blender/build_sheets/contract.py
+tools/recipe/export7.py
+tools/blender/r209/sheet_hull.py
+tools/recipe/ships/corsair_A16.json
+tools/blender/kits/shared/hardpoints.py
+tools/blender/kits/shared/turrets.py
+tools/recipe/gamedata.py
+# data.js entry c_boss: the fields the build reads (tools/recipe/gamedata.py), sorted keys, JSON
+{"cls":"Battle-barge","fac":"corsair","hangar":2,"weapons":[["scatter","P"],["scatter","S"],["htorp","F"],["flak","T"]]}

@@ -1,0 +1,54 @@
+{
+  "issue": 823,
+  "base_commit": "bcbddf102392dff26b73ca4a5e3176ced451dc86",
+  "source_sha256": "4b1d8d7a8f637cd67df69c9a71f282ff777795508368db988521bb3eb89b5daf",
+  "standing": {
+    "PASS": 56,
+    "KNOWN": 2,
+    "FAIL": 0,
+    "SKIP": 0
+  },
+  "rules_parity": {
+    "result": "PASS",
+    "battles": 281,
+    "prng_draws": 30000,
+    "math": "PASS",
+    "threat_maps": 3,
+    "threads": "PASS"
+  },
+  "load": "197 scripts, 11 scenes, 0 failed",
+  "focused": {
+    "t10-final.log": "failures=0",
+    "check_round3.log": "cases=112 failures=0",
+    "intercept-final.log": "INTERCEPT_CHECK failures=0",
+    "turret_check.log": "TURRET_CHECK PASS: 0 failures"
+  },
+  "destruction": {
+    "result": "PASS",
+    "pictures": 33,
+    "stray": 0,
+    "blocker_battles": 120,
+    "blocker_hexes": 3068,
+    "fleet": "DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.846 p99_ms=3.562 one_percent_low_fps=248.4 max_ms=4.965 fx_p99_ms=1.904 particles=901 wrecks=20"
+  },
+  "same_seed_kept_vs_warm": "Exact fire times and submitted broadside strokes on all three rows",
+  "source_hashes": {
+    "before": {
+      "fx\\fx.gd": "6b49b911e1503817a3e1703386c4dc1d3ebf79d4ee95be70fa98ddb4b614e7d6",
+      "fx\\fx_shaders.gd": "de2c36ab9c6f94ec5beea19e95da74dde4e437e2ba5c16463e9bb1fe53a8b3e5",
+      "fx\\fx_weapons.gd": "885abe0f56e8b4642c9a23231c8e3beb8b1cb3fbb9a96c7e9947ab91a5b058ee",
+      "fx\\faction_looks.json": "17eacdecede1845daebc4055dc585dab14d81fb882a7a627aa5a8efc630d8efc"
+    },
+    "after": {
+      "fx\\fx.gd": "6b49b911e1503817a3e1703386c4dc1d3ebf79d4ee95be70fa98ddb4b614e7d6",
+      "fx\\fx_shaders.gd": "de2c36ab9c6f94ec5beea19e95da74dde4e437e2ba5c16463e9bb1fe53a8b3e5",
+      "fx\\fx_weapons.gd": "4b1d8d7a8f637cd67df69c9a71f282ff777795508368db988521bb3eb89b5daf",
+      "fx\\faction_looks.json": "17eacdecede1845daebc4055dc585dab14d81fb882a7a627aa5a8efc630d8efc"
+    }
+  },
+  "notes": [
+    "Bench step times include explicit waits for damage workers.",
+    "Existing spawn_frame metadata warnings and PC certificate-store warning.",
+    "No full scene-207 gate claim."
+  ]
+}

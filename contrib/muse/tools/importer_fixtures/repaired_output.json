@@ -501,7 +501,9 @@
         "refit zzz_mod2",
         "credits",
         "relic zzz_relic2"
-      ]
+      ],
+      "eatenCore": null,
+      "eatCoreSeen": false
     },
     "recovered": false
   },

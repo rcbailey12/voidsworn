@@ -23,6 +23,7 @@ function Arm-Info($arm) {
     { $_ -in 'deepseek','deepseekpro' } { return @{ base = 'https://api.deepseek.com'; key = $env:DEEPSEEK_API_KEY; models = 'https://api.deepseek.com/models'; bal = 'https://api.deepseek.com/user/balance' } }
     'kimi'     { return @{ base = 'https://api.moonshot.ai/v1'; key = $env:MOONSHOT_API_KEY; models = 'https://api.moonshot.ai/v1/models'; bal = 'https://api.moonshot.ai/v1/users/me/balance' } }
     'kimicode' { return @{ base = 'https://api.kimi.com/coding/v1'; key = $env:KIMI_CODE_API_KEY; models = 'https://api.kimi.com/coding/v1/models'; bal = $null } }   # plan quota, no balance endpoint (issue 597)
+    { $_ -in 'sonnet','opus' } { return @{ base = 'https://api.anthropic.com/v1'; key = $env:VOIDSWORN_CLAUDE_API_KEY; models = 'https://api.anthropic.com/v1/models'; bal = $null; anthropic = $true } }   # Max plan API credits, no balance endpoint (issue 614)
     default    { throw "unknown arm $arm" }
   }
 }
@@ -91,7 +92,12 @@ function Save-Patch($out, $pre) { & git diff --cached --binary "--output=$(Join-
 
 if ($mode -eq 'prep') {
   $n = $args[1]; $arm = $args[2]; $repo = $args[3]; $out = $args[4]; $godot = $args[5]
-  $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  if ($env:PC_RUNNER_TEST -eq '1') {
+    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
+  } else {
+    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  }
+  $resume = Read-Txt (Join-Path $out 'resume.txt')
   $task = @"
 # Workhorse job: issue #$n, "$($i.title)"
 
@@ -99,11 +105,15 @@ You are the coding seat on the Voidsworn job board (github.com/rcbailey12/voidsw
 This folder is a fresh checkout of main on the branch work/issue-$n-$arm. Follow AGENTS.md and CLAUDE.md, except the
 "work in your own folder" rule: you are the main coding seat for this job, so edit the game files the job names.
 Nobody is watching this run and nobody can answer questions. Make the sensible call, say what you chose in your report, and keep going.
+$resume
 
 Rules:
 - Do exactly what the job below asks. Change nothing else. Read the brief it names first.
 - No em dashes in anything you write. Plain words, plain ASCII.
 - Do not commit and do not push: the runner does that after you finish.
+- GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. It takes one of two shared GPU slots;
+  frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
+  gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
 - Save the screenshots your report links to in $out\shots (create it). The reviewer sees that folder.
 - Finish with a short report: what you changed (files), each check you ran and its result (paste the PASS or FAIL lines),
@@ -155,7 +165,9 @@ elseif ($mode -eq 'keycheck') {
   $arm = $args[1]; $a = Arm-Info $arm
   if (-not $a.key) { Write-Host 'no key saved'; exit 1 }
   try {
-    $r = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers @{ Authorization = "Bearer $($a.key)" } -Uri $a.models
+    $h = @{ Authorization = "Bearer $($a.key)" }
+    if ($a.anthropic) { $h = @{ "x-api-key" = $a.key; "anthropic-version" = "2023-06-01" } }
+    $r = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers $h -Uri $a.models
     $ids = @($r.data | ForEach-Object { $_.id }) -join ', '
     Write-Host "key works; models: $ids"; exit 0
   } catch { Write-Host "key refused or no network: $($_.Exception.Message)"; exit 1 }
@@ -216,6 +228,7 @@ elseif ($mode -eq 'msg') {
   if (-not $checks) { $checks = '(the runner wrote no check output for this run; see the run folder on the PC)' }
   $fence = '```'
   $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
+  if (Read-Txt (Join-Path $out 'stop_reason.txt')) { $msg += "`n" + (Read-Txt (Join-Path $out 'resume.txt')) + "`n" }
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
 elseif ($mode -eq 'guard') {
@@ -308,7 +321,14 @@ elseif ($mode -eq 'commit') {
   $pre = Git-One rev-parse HEAD
   [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
   & git diff --cached --quiet 2>$null
-  if ($LASTEXITCODE -eq 0) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
+  if ($LASTEXITCODE -eq 0) {
+    $base = Read-Txt (Join-Path $out 'base_commit.txt')
+    $resumed = Read-Txt (Join-Path $out 'resume.txt')
+    & git diff --quiet $base HEAD 2>$null
+    $partial = Read-Txt (Join-Path $out 'partial.txt')
+    if (-not $partial -and (-not $resumed -or $LASTEXITCODE -eq 0)) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
+    Write-Host 'resumed work is already committed; carry it through the checked push'
+  }
   $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)
   Write-Lines (Join-Path $out 'diff_numstat.txt') $num
   Write-Lines (Join-Path $out 'diffstat.txt') @(Git-Lines -c core.quotepath=off diff --cached --stat --no-renames)
@@ -318,7 +338,8 @@ elseif ($mode -eq 'commit') {
   if ($gx -ne 0) { Write-Host "push stopped: could not read branch $br on GitHub, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   if ($ls.Count) {
     $want = ($ls[0] -split '\s+')[0]
-    & git fetch -q --depth 1 origin "+refs/heads/${br}:refs/remotes/origin/runner-prev" 2>$null
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'runner_common.ps1') fetch $repo $out "+refs/heads/${br}:refs/remotes/origin/runner-prev"
+    if ($LASTEXITCODE -ne 0) { Write-Host 'push stopped: earlier tip fetch failed after retries'; Save-Patch $out $pre; Pop-Location; exit 12 }
     $old = Git-One rev-parse -q --verify 'refs/remotes/origin/runner-prev^{commit}'
     if (-not $old) { Write-Host "push stopped: could not fetch the earlier tip $want of $br, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   }
@@ -412,6 +433,7 @@ elseif ($mode -eq 'confirm') {
     Pop-Location; exit 10
   }
   Write-Host "pushed diff checked: GitHub's $br ($($remote.Substring(0, 9))) carries exactly out\diffstat.txt ($($num.Count) files)"
+  [IO.File]::WriteAllText((Join-Path $out 'confirmed_commit.txt'), $remote, [Text.Encoding]::ASCII)
   Pop-Location; exit 0
 }
 elseif ($mode -eq 'tidy') {

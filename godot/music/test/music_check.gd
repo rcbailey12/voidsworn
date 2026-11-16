@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Headless check of the music player and its tracks (PC):
 #   godot --headless --path godot --script res://music/test/music_check.gd
 # Loads music.json, opens every track, then walks title -> map -> battle (intensity ramp up and down) -> victory,
@@ -10,6 +11,7 @@ var fails: Array = []
 
 
 func _init() -> void:
+	GUARD.arm(self, "music_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	call_deferred("_run")
 
 

@@ -289,6 +289,8 @@ uniform mat3 turn = mat3(1.0); // the battle's small turn of the whole sky
 uniform sampler2D pano : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform float has_pano = 0.0;
 uniform float sun_k = 1.0;
+uniform float dawn = 0.0;
+uniform vec3 dawn_dir = vec3(-0.6, 0.7, -0.2);
 
 float sh31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 vec3 sh33(vec3 p) { p = fract(p * vec3(0.1031, 0.103, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
@@ -351,6 +353,10 @@ void sky() {
 		float sa = acos(clamp(dot(EYEDIR, normalize(sun_dir)), -1.0, 1.0));
 		col += sun_k * sun_col * (smoothstep(0.012, 0.009, sa) * 30.0 + exp(-sa * sa / 0.0012) * 1.2 + 0.002 / (0.001 + sa * sa) * 0.12);
 	}
+	// A broad warm halo in the new sun's direction. Zero keeps every normal battle exactly as before.
+	float catch_light = pow(max(0.0, 0.5 + 0.5 * dot(EYEDIR, normalize(dawn_dir))), 2.0);
+	col = mix(col, col * vec3(1.18, 1.03, 0.84), dawn * 0.55);
+	col += vec3(0.10, 0.047, 0.016) * catch_light * dawn;
 	COLOR = col;
 }
 """

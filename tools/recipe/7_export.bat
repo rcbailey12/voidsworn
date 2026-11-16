@@ -20,13 +20,14 @@ set EX=%JOB%\export\%CODE%
 rem issue 592: a ship with no paint stack yet ("bake": "none") is exported and checked as an unbaked test export
 set UNB=
 if /i "%BAKE%"=="none" set UNB=unbaked=1
+if not "%STACK_NOTE%"=="" echo Stage 7: %STACK_NOTE%: an unbaked test export
 if not exist "%JOB%\%CELL%.blend" (echo Stage 7 FAILED: no baked ship at %JOB%\%CELL%.blend. Run stage 5 first. & goto bad)
 if not exist "%EX%" mkdir "%EX%"
 echo RUNNING > "%EX%\export_status.txt"
 "%BPY%" "%RC%\standing.py" all --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing_all.txt" 2>&1
 if errorlevel 1 (type "%JOB%\log_standing_all.txt" & echo Stage 7 FAILED: a standing ship check did not pass. See %JOB%\log_standing_all.txt & goto bad)
 type "%JOB%\log_standing_all.txt"
-"%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 %UNB% > "%JOB%\log_export.txt" 2>&1
+call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 %UNB% > "%JOB%\log_export.txt" 2>&1
 findstr /c:"[export7]" "%JOB%\log_export.txt"
 findstr /b /c:"WRITTEN" "%EX%\export_status.txt" > nul
 if errorlevel 1 (echo Stage 7 FAILED: the export was not written. See %JOB%\log_export.txt & goto bad)

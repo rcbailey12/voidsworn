@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 521 (R193 "Hold and slow"; R73): the slow-motion beat plays at the core flash of a cruiser, capital or flagship
 # kill once the battle turns it on (fx.kill_slowmo), never for a small hull, never while it is off (reduce motion), and a
 # key or a click (skip_death_slowmo) ends it and stops a queued one. Headless.
@@ -8,6 +9,7 @@ var failures := 0
 
 
 func _init() -> void:
+	GUARD.arm(self, "kill_slowmo_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

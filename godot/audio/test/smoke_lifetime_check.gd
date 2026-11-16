@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Force the smoke-test hazards without depending on exported hull assets.
 const FX := preload("res://fx/fx.gd")
 var errors := 0
@@ -9,6 +10,7 @@ class ErrorLog extends Logger:
 		if error_type != Logger.ERROR_TYPE_WARNING: n += 1
 
 func _init() -> void:
+	GUARD.arm(self, "smoke_lifetime_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	_run.call_deferred()
 
 func _run() -> void:

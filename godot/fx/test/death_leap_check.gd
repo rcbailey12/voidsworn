@@ -1,9 +1,11 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 137 contracts: timed sections, tiers, lifetime, cleanup and vacuum drift.
 const FX := preload("res://fx/fx.gd")
 var failures := 0
 
 func _init() -> void:
+	GUARD.arm(self, "death_leap_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func check(ok: bool, message: String) -> void:

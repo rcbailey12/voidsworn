@@ -1,0 +1,21 @@
+{
+ "az": 45.130711402409815,
+ "el": 36.60329308180212,
+ "roll": -0.17530996852449565,
+ "dist": 56.59443296179771,
+ "mm": 1480.8628232072986,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.05318245292401668,
+ "sy": -0.03880165393417198,
+ "res": [
+  1080,
+  720
+ ],
+ "iou": 0.8872,
+ "body_iou": 0.8883,
+ "note": "HF1D slim render (one three-quarter picture, no true views): a coarse grid over the view angles (contrib/opus/tools/issue738/grid.py), then fit.py refined all seven camera numbers (never the craft); concept mask: contrib/opus/tools/issue738/mask.py on the picture with its name label blanked"
+}

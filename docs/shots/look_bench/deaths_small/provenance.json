@@ -1,0 +1,22 @@
+{
+  "before_head": "51fe552c7e1aa787f4412cb6dc1cc3a1c9b9780b",
+  "settings": {
+    "camera": 170,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "renderer": "forward_plus",
+    "fixed_fps": 60,
+    "rng_seed": 11,
+    "global_seed": 2070,
+    "VS_FX_ATLAS": ""
+  },
+  "note": "The kept after folder combines second captures by row. Used rows are stored in moments.json; bench.json moments_sha256 names the default moments file in the existing bench.",
+  "final_files": {
+    "godot/fx/fx_death.gd": "3352aa3393f76fe78b2695729387e3e1161171226617cafd4d7c5a6f9cde79c1",
+    "godot/fx/fx_ship.gd": "c9485351b3c54c0905c26142aee26e11b697b52301427221ec2855d3b5ba3e73",
+    "godot/bench/look_moments_deaths_small.json": "0677fa0f74260b5fdd197210df1facbb305ecd18554de173b19e6ee612acc1c2",
+    "godot/bench/death_small_measure.gd": "4aab21393f681c92946ae555fc7a19ea5007b696d6aef226ea4dc8d3fa9e20e4"
+  }
+}

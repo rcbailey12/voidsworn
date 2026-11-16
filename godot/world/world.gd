@@ -25,6 +25,10 @@ const BL := preload("res://world/board_look.gd")
 const LIV := preload("res://world/world_living.gd")
 const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
 const BACKDROP_ROCK_ANGLE := 0.05
+# R78 Q18 (the run 5 finale): the board brightens sector by sector as the new sun catches. Six sectors, one per stage of
+# the fight's opening rounds; the last stage is full dawn.
+const FINALE_STAGES := 6
+const DAWN_COL := Color(1.0, 0.76, 0.46)
 
 var quality := "max"
 var notes: PackedStringArray = []
@@ -60,6 +64,22 @@ var _fac := "voidsworn"
 var _debris_ships: Array = []
 var _living = null              # world_living.gd: B's gas, storm, debris and well (built the first time a look needs it)
 var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
+# the run 5 finale (R78 Q18): real sunlight sweeps the board, and the sky and the Hollow Sun
+# disc brighten. Built only when opts["finale"] is true; finale_stage() moves it through FINALE_STAGES.
+var finale := false
+var _finale_stage := -1
+var _finale_env: Environment = null
+var _finale_sun: SpotLight3D = null
+var _dawn_projector: ImageTexture = null
+var _dawn_textures: Array[Texture2D] = []
+var _dawn_ambient := 0.0
+var _dawn_ambient_col := Color.WHITE
+var _dawn_neb_gain := 1.0
+var _dawn_disc_energy := 0.0
+var _dawn_from := 0.0           # world x the sweep starts at (the Hollow Sun's side when there is one)
+var _dawn_to := 0.0
+var _disc_mats: Array = []      # [{mat, key, gain}] the Hollow Sun's disc, haze and lens, for the dawn ramp
+var _disc_light: OmniLight3D = null
 var pending_bakes := 0
 
 
@@ -131,6 +151,10 @@ func step(dt: float) -> void:
 func build(view: Dictionary, opts: Dictionary) -> void:
 	var t0 := Time.get_ticks_usec()
 	_backdrop_angle_max = 0.0
+	finale = bool(opts.get("finale", false))
+	_finale_stage = -1
+	_disc_mats.clear()
+	_disc_light = null
 	quality = String(opts.get("quality", "max"))
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
@@ -228,6 +252,8 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_fac = fac
 	add_to_group("vs_world")
 	set_look()
+	if finale:
+		_build_dawn(env)
 
 
 # The board look trial (world/board_look.gd): the dark floor under the board, today's faint clouds, and B's living
@@ -250,6 +276,104 @@ func set_look() -> void:
 	if _living != null:
 		_living.visible = bool(sp["living"])
 		_living.set_gas_k(float(sp["gas_k"]))
+
+
+# ---------------------------------------------------------------- the run 5 finale (R78 Q18)
+
+# Light is projected onto the real hulls and terrain. There is no dawn mesh or extra grid.
+# The projector masks the new key light at a soft front in world space, including batched rocks and moving ships.
+func _build_dawn(env: Environment) -> void:
+	_finale_env = env
+	if env != null:
+		_dawn_ambient = env.ambient_light_energy
+		_dawn_ambient_col = env.ambient_light_color
+	if _sky_mat != null:
+		_dawn_neb_gain = float(_sky_mat.get_shader_parameter("neb_gain"))
+	if _disc_light != null:
+		_dawn_disc_energy = _disc_light.light_energy
+	_dawn_from = _lo.x
+	_dawn_to = _hi.x
+	if _well != Vector3.INF and _well.x > _center.x:
+		_dawn_from = _hi.x
+		_dawn_to = _lo.x
+	var side := -1.0 if _dawn_from < _dawn_to else 1.0
+	var extent := maxf((_hi - _lo).length(), 300.0)
+	var sun := SpotLight3D.new()
+	sun.name = "NewSun"
+	sun.light_color = DAWN_COL
+	sun.light_energy = 0.0
+	sun.spot_range = extent * 4.0
+	sun.spot_attenuation = 0.0
+	sun.spot_angle = 65.0
+	sun.spot_angle_attenuation = 0.15
+	sun.shadow_enabled = true
+	# Godot 4.7 needs a shadow matrix for projectors. The existing key supplies hull shadows;
+	# this broad dawn light uses the matrix only, avoiding distant spot-shadow self-occlusion.
+	# Engine issue 121615: revisit this workaround when upgrading Godot.
+	sun.shadow_opacity = 0.0
+	add_child(sun)
+	sun.position = _center + Vector3(side * extent * 0.8, extent * 0.9, -extent * 0.25)
+	sun.look_at(_center, Vector3.UP)
+	_finale_sun = sun
+	finale_stage(0)
+	notes.append("finale: real sunlight crosses the existing board in %d stages; no dawn floor" % FINALE_STAGES)
+
+
+# Each projector texel is a ray from the new sun. Intersect it with the board's plane to place the dawn's front.
+# The same light naturally catches ship edges, rock faces and wrecks, without replacing any of their materials.
+func _dawn_mask(p: float) -> void:
+	var size := 128
+	var img := Image.create(size, size, false, Image.FORMAT_RGB8)
+	var light := _finale_sun.global_transform
+	var cone := tan(deg_to_rad(_finale_sun.spot_angle))
+	var side := 1.0 if _dawn_to > _dawn_from else -1.0
+	var span := absf(_dawn_to - _dawn_from)
+	var soft := maxf(12.0, span * 0.04)
+	var front := lerpf(_dawn_from - side * soft, _dawn_to + side * soft, p)
+	for y in size:
+		for x in size:
+			var uv := (Vector2(x, y) + Vector2(0.5, 0.5)) / float(size)
+			var ray := light.basis * Vector3((uv.x * 2.0 - 1.0) * cone, (1.0 - uv.y * 2.0) * cone, -1.0)
+			var k := 0.0
+			if ray.y < -0.001:
+				var hit := light.origin + ray * ((_center.y - light.origin.y) / ray.y)
+				k = smoothstep(-soft, soft, (front - hit.x) * side)
+			img.set_pixel(x, y, Color(k, k, k))
+	# Reassign the texture so Godot refreshes its projector atlas at every stage.
+	_dawn_projector = ImageTexture.create_from_image(img)
+	_dawn_textures.append(_dawn_projector)
+	_finale_sun.light_projector = _dawn_projector
+
+
+# Stage 0 restores the actual battle baseline, rather than assuming fixed ambient or disc settings.
+func finale_stage(n: int) -> void:
+	if _finale_sun == null:
+		return
+	var stage := clampi(n, 0, FINALE_STAGES - 1)
+	if stage == _finale_stage:
+		return
+	_finale_stage = stage
+	var p := float(stage) / float(FINALE_STAGES - 1)
+	_dawn_mask(p)
+	_finale_sun.light_energy = 6.0 * sqrt(p)
+	if _finale_env != null:
+		_finale_env.ambient_light_energy = _dawn_ambient + 0.10 * p
+		_finale_env.ambient_light_color = _dawn_ambient_col.lerp(Color(1.0, 0.84, 0.68), 0.28 * p)
+	if _sky_mat != null:
+		_sky_mat.set_shader_parameter("dawn", p)
+		_sky_mat.set_shader_parameter("dawn_dir", (_finale_sun.position - _center).normalized())
+		_sky_mat.set_shader_parameter("neb_gain", _dawn_neb_gain * (1.0 + 0.20 * p))
+	for d in _disc_mats:
+		var mat: ShaderMaterial = d["mat"]
+		if is_instance_valid(mat):
+			mat.set_shader_parameter(str(d["key"]), float(d["gain"]) * (1.0 + 0.7 * p))
+	if _disc_light != null:
+		_disc_light.light_energy = _dawn_disc_energy * (1.0 + 0.35 * p)
+
+
+# The finale rises one sector a round: round 1 is still dark, round 6 is full dawn (then it holds).
+func finale_for_round(round_no: int) -> void:
+	finale_stage(round_no - 1)
 
 
 # The map's kind from what is on it (the rules do not hand the map name to the scene): planet, station, graveyard (wrecks),
@@ -585,6 +709,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	dm.set_shader_parameter("spin", 0.35)
 	dm.set_shader_parameter("gain", 0.62)
 	dm.set_shader_parameter("inner", 1.0)
+	_disc_mats.append({"mat": dm, "key": "gain", "gain": 0.62})
 	disc.material_override = dm
 	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	tilt.add_child(disc)
@@ -597,6 +722,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	dm2.shader = dsh2
 	for pn in ["r_in", "r_out", "spin", "gain"]:
 		dm2.set_shader_parameter(pn, dm.get_shader_parameter(pn))
+	_disc_mats.append({"mat": dm2, "key": "gain", "gain": 0.62})
 	dm2.render_priority = -10
 	disc2.material_override = dm2
 	disc2.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -638,6 +764,7 @@ func dead_star(c: Vector3, s: float) -> void:
 		lm.set_shader_parameter("spin", 0.35)
 		# F4: the lensed far side of the disc over the shadow a little stronger (it read faint and smeared in r1)
 		lm.set_shader_parameter("arc_gain", 1.15)
+		_disc_mats.append({"mat": lm, "key": "arc_gain", "gain": 1.15})
 		lm.render_priority = -30   # drawn first among the see-through things: it copies the opaque picture, so later effects (beams, trails in front of it) draw over it, not under it
 		lens.material_override = lm
 		lens.scale = Vector3.ONE * half
@@ -654,6 +781,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	l.omni_attenuation = 1.6
 	l.shadow_enabled = false
 	root.add_child(l)
+	_disc_light = l
 	notes.append("dead star: core, lensing %s, accretion disc" % ("on" if quality != "low" else "off"))
 
 
@@ -726,6 +854,14 @@ func _rand_axis(r: RandomNumberGenerator) -> Vector3:
 	return Vector3(r.randfn(), r.randfn(), r.randfn()).normalized()
 
 
+# The one scale table's rock sizes (issue 710, R247; docs/playbooks/scale.md): the library rock is 2 units long at
+# scale 1 (world/rocks/rocks.json ext).
+const BLOCKER_SCALE_MIN := 6.4
+const BLOCKER_SCALE_MAX := 7.6
+const DEBRIS_FIELD_SCALE_MIN := 0.35
+const DEBRIS_FIELD_SCALE_MAX := 1.95
+
+
 # A blocker on a rock hex: one big rock filling the hex, a few smaller ones round its foot. Obviously solid terrain: lit,
 # shadow-casting, the crispest rocks on screen, and nothing like a hex fill or outline.
 func blocker(p: Vector3, kind: String) -> void:
@@ -734,7 +870,7 @@ func blocker(p: Vector3, kind: String) -> void:
 		return
 	var mat := _hero_mat(kind)
 	# the longest half-length stays under the hex's inner radius (8.66), so a blocker never seems to fill a free neighbour
-	var s := _rng.randf_range(6.4, 7.6)
+	var s := _rng.randf_range(BLOCKER_SCALE_MIN, BLOCKER_SCALE_MAX)
 	var b := _rand_basis(_rng)
 	var crystal := kind == "crystal"
 	_batch.add(name, mat, true, Transform3D(b.scaled(Vector3.ONE * s), p + Vector3(0, _rng.randf_range(0.5, 2.5), 0)),
@@ -762,7 +898,7 @@ func debris_field(p: Vector3, kind: String) -> void:
 	for i in _rng.randi_range(8, 13):
 		var a := _rng.randf() * TAU
 		var rr := sqrt(_rng.randf()) * 7.5
-		var s := 0.35 + 1.6 * pow(_rng.randf(), 2.2)
+		var s := DEBRIS_FIELD_SCALE_MIN + (DEBRIS_FIELD_SCALE_MAX - DEBRIS_FIELD_SCALE_MIN) * pow(_rng.randf(), 2.2)
 		pieces.append({"mesh": _pick(kind, _rng), "shadow": false,
 			"xf": Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * s), p + Vector3(cos(a) * rr, _rng.randf_range(-2.5, 3.0), sin(a) * rr)),
 			"axis": _rand_axis(_rng), "rate": _rng.randf_range(0.06, 0.35), "seed": _rng.randf()})

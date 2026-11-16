@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Count actual player starts, not requests or pending timers. Keep all existing caps.
 const Sfx := preload("res://audio/sfx.gd")
 var fails: Array = []
@@ -8,6 +9,7 @@ var global_peak := 0
 var s: Node
 
 func _init() -> void:
+	GUARD.arm(self, "salvo_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	call_deferred("_run")
 
 func _ok(c: bool, message: String) -> void:

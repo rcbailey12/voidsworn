@@ -4,9 +4,11 @@ const HULL = preload("res://fx/fx_hull.gd")
 const DEATH = preload("res://fx/fx_death.gd")
 const BREACH = preload("res://fx/fx_breach.gd")
 const FX = preload("res://fx/fx.gd")
+const GUARD = preload("res://tools/ci/check_guard.gd")
 var failures := 0
 
 func _init() -> void:
+	GUARD.arm(self, "authored_interiors_check")
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func check(ok: bool, why: String) -> void:
@@ -74,25 +76,28 @@ func _run() -> void:
 	fx.add_ship("authored", ship, {"faction": "corsair", "cls": "Cruiser", "size": 0.8})
 	var s = fx.ship("authored")
 	check(s.hull.authored, "GLB extras reached hull reader")
-	check(s.hull.seams.size() == 3, "both transverse seams and bounded longitudinal seam survived")
+	# issue 532 (R225 (c): a check reads the ship's own numbers): the seams the ship carries, counted from its own
+	# voidsworn_destruct record, never the fixture's two transverse and one longitudinal (A17 has two transverse, A16 three)
+	var own_seams := 0
+	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
+		var ex = nd.get_meta("extras", {})
+		var dc = nd.get_meta("voidsworn_destruct", ex.get("voidsworn_destruct", {}) if ex is Dictionary else {})
+		if not dc is Dictionary or int(dc.get("version", 0)) != 1: continue
+		own_seams += (dc.get("seams", []) as Array).size()
+	check(own_seams > 0 and s.hull.seams.size() == own_seams, "every authored seam survived (%d of %d)" % [s.hull.seams.size(), own_seams])
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 190
 	var plan: Dictionary = DEATH.fracture_plan(fx, s, rng)
-	check(plan.n_main == 4, "piece count follows authored structure, not the legacy cruiser count")
+	# one main piece more than the transverse seams, plus one per longitudinal seam (fx_death.gd fracture_plan): seams + 1
+	check(plan.n_main == own_seams + 1, "piece count follows authored structure, not the legacy cruiser count (%d)" % plan.n_main)
 	check(plan.n_frag > 0 and not plan.bite.is_empty(), "authored seams retain missing bite and fragments")
-	var point: Vector3 = plan.breaks[0].at
-	# issue 592 (R225: a check reads the ship's own numbers): move the first seam by 0.14 of the length, or by half the gap to
-	# the next seam when they are closer (A16's castle seams are 0.08 apart), so it stays the first seam
-	var shift: float = s.hull.L * 0.14
-	if plan.breaks.size() > 1:
-		shift = minf(shift, 0.5 * (float(plan.breaks[1].at.x) - point.x))
-	var before: int = DEATH._plan_main(plan, point + Vector3.RIGHT * shift * 0.36)
-	s.hull.seams[0].at += Vector3.RIGHT * shift
-	rng.seed = 190
-	var moved: Dictionary = DEATH.fracture_plan(fx, s, rng)
-	check(absf(moved.breaks[0].at.x - point.x - shift) < 0.0001, "moving authored seam moves fracture anchor")
-	check(DEATH._plan_main(moved, point + Vector3.RIGHT * shift * 0.36) != before, "moving seam changes actual piece ownership")
-	s.hull.seams[0].at = point
+	# issue 632 (issue 618's PC run): a hull with no authored seam has no first seam or first break to move. That is a
+	# failure (counted above as "every authored seam survived"), never an index into an empty Array that stops this
+	# function before quit() and leaves the job waiting forever. The rest of the check still runs.
+	var breaks: Array = plan.get("breaks", [])
+	check(not breaks.is_empty() and not s.hull.seams.is_empty(), "the fracture plan has a seam break to move (%d breaks, %d seams)" % [breaks.size(), s.hull.seams.size()])
+	if not breaks.is_empty() and not s.hull.seams.is_empty():
+		_move_first_seam(fx, s, plan, rng)
 	var moving_mesh: MeshInstance3D = s.meshes[0]
 	var analysis_pose: Transform3D = ship.global_transform.affine_inverse() * moving_mesh.global_transform
 	moving_mesh.position.y += 0.4
@@ -103,17 +108,22 @@ func _run() -> void:
 	var job: Dictionary = s.get_meta("cut_job")
 	check(job.surfs[0].xf.is_equal_approx(analysis_pose), "authored seams stay aligned when ShipView bobs the mesh")
 	var interior_triangles := 0
-	var original_inside := 0
+	var original_area := 0.0
+	var piece_area := 0.0
 	for sd in job.surfs:
-		if sd.interior: original_inside += sd.arrays[Mesh.ARRAY_INDEX].size() / 3
+		if sd.interior: original_area += _area(sd.arrays[Mesh.ARRAY_VERTEX], sd.arrays[Mesh.ARRAY_INDEX], sd.xf)
 	for pc in job.out:
 		check(pc.authored, "authored cut bypasses full fallback caps")
 		for sd in pc.surfs:
 			if sd.interior:
 				interior_triangles += sd.arrays[Mesh.ARRAY_INDEX].size() / 3
+				piece_area += _area(sd.arrays[Mesh.ARRAY_VERTEX], sd.arrays[Mesh.ARRAY_INDEX], Transform3D.IDENTITY)
 				check(HULL.interior_material(sd.mat), "cut retains authored material")
 	check(interior_triangles > 0, "cut contains real interior triangles")
-	check(interior_triangles == original_inside, "every authored interior triangle reaches a wreck piece")
+	# issue 600: the insides tear with the hull (split along the tear, the strip it runs through blown away), so the pieces
+	# keep almost all of the authored inside area rather than every original triangle
+	check(piece_area >= original_area * 0.9 and piece_area <= original_area * 1.0001,
+		"the wreck pieces keep the authored insides (%.1f percent of their area)" % (100.0 * piece_area / maxf(original_area, 1e-9)))
 	var outline := PackedVector3Array([Vector3(0, -2, -3), Vector3(0, 2, -3), Vector3(0, 2, 3), Vector3(0, -2, 3)])
 	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
 	DEATH._cap_outline(cap, outline, AABB(Vector3(-5, -2, -3), Vector3(5, 4, 6)), 0.000001,
@@ -136,3 +146,35 @@ func _run() -> void:
 	world.queue_free()
 	print("AUTHORED_INTERIORS failures=%d interior_triangles=%d" % [failures, interior_triangles])
 	quit(1 if failures else 0)
+
+
+# issue 592 / 600 body, moved here by issue 632 so it runs only when there is a first seam and a first break to move.
+func _move_first_seam(fx, s, plan: Dictionary, rng: RandomNumberGenerator) -> void:
+	var point: Vector3 = plan.breaks[0].at
+	# issue 592 (R225: a check reads the ship's own numbers): move the first seam by 0.14 of the length, or by half the gap to
+	# the next seam when they are closer (A16's castle seams are 0.08 apart), so it stays the first seam
+	var shift: float = s.hull.L * 0.14
+	if plan.breaks.size() > 1:
+		shift = minf(shift, 0.5 * (float(plan.breaks[1].at.x) - point.x))
+	var before: int = DEATH._plan_main(plan, point + Vector3.RIGHT * shift * 0.36)
+	var seam0: Vector3 = s.hull.seams[0].at
+	var path0 = s.hull.seams[0].get("path")
+	s.hull.seams[0].at += Vector3.RIGHT * shift
+	if path0 != null:
+		# issue 600: a seam with a plan path moves with its path (the cut follows the path)
+		var moved_path := PackedVector2Array()
+		for q in (path0 as PackedVector2Array): moved_path.append(q + Vector2(shift, 0.0))
+		s.hull.seams[0].path = moved_path
+	rng.seed = 190
+	var moved: Dictionary = DEATH.fracture_plan(fx, s, rng)
+	check(absf(moved.breaks[0].at.x - point.x - shift) < 0.0001, "moving authored seam moves fracture anchor")
+	check(DEATH._plan_main(moved, point + Vector3.RIGHT * shift * 0.36) != before, "moving seam changes actual piece ownership")
+	s.hull.seams[0].at = seam0
+	if path0 != null: s.hull.seams[0].path = path0
+
+
+static func _area(v: PackedVector3Array, idx: PackedInt32Array, xf: Transform3D) -> float:
+	var a := 0.0
+	for t in range(0, idx.size() - 2, 3):
+		a += (xf * v[idx[t + 1]] - xf * v[idx[t]]).cross(xf * v[idx[t + 2]] - xf * v[idx[t]]).length() * 0.5
+	return a

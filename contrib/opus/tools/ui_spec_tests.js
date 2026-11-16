@@ -18,7 +18,7 @@ const K_MIN = +(/const K_MIN := ([\d.]+)/.exec(law) || [])[1];
 const MIN_TEXT = +(/const MIN_TEXT := (\d+)/.exec(law) || [])[1];
 check(/const DESIGN_HEIGHT := 1080\.0/.test(law), 'ui_scale.gd keeps the 1080 design height');
 check(K_MIN === 0.6 && K_MAX === 2.2, `ui_scale.gd floor and ceiling are the spec's provisional 0.6 and 2.2 (got ${K_MIN}, ${K_MAX}); change ui_spec.md 4.1 with them`);
-check(MIN_TEXT === 12, `ui_scale.gd text floor is the spec's 12 (got ${MIN_TEXT}); change ui_spec.md 4.3 with it`);
+check(MIN_TEXT === 17, `ui_scale.gd text floor is RULEBOOK 9.4's 17 (got ${MIN_TEXT}); change ui_spec.md 4.3 with it`);
 
 // 1. one law: no screen keeps its own height / 1080 clamp
 const files = diff.godotFiles();
@@ -79,14 +79,30 @@ const gs = diff.godotSizes(files);
 const low = gs.filter(r => r.v < MIN_TEXT && !(r.text && /^"[^\w\s]"$/.test(r.text)));
 for (const r of low) check(false, `text size ${r.v} under the ${MIN_TEXT} floor at ${r.at} (ui_spec.md 4.3)`);
 // #282 (N1): a real assertion that the scan read rows, so a regex that stops matching fails instead of passing silently
-check(gs.length >= 300, `text floor scan read ${gs.length} font size literals (expected at least 300; check godotSizes in ui_constants_diff.js)`);
+// (issue 652: the retired Lime builders left hud.gd, about 100 literals; the scan reads 284 now, so the guard is 250)
+check(gs.length >= 250, `text floor scan read ${gs.length} font size literals (expected at least 250; check godotSizes in ui_constants_diff.js)`);
 check(gs.some(r => r.at.startsWith('godot/ui/')) && gs.some(r => r.at.startsWith('godot/main/')), 'text floor scan covers font sizes in both godot/ui and godot/main');
 check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme default font size form (default_font_size = s(15), N1)');
+
+// 4b. issue 729: the Career screen's dim labels (BONE3) hold RULEBOOK 9.4's 4.5:1 on their card (IRON). The real labels
+// are measured by godot/ui/career/test/career_readability_test.gd; this is the standing source guard, with the same
+// luminance and contrast functions as ledger_readability_test.gd.
+{
+  const cs = read('godot/ui/career/career_screen.gd');
+  const hx = n => { const m = new RegExp('const ' + n + ' := Color\\("#([0-9a-fA-F]{6})"\\)').exec(cs); return m ? m[1] : ''; };
+  const lin = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  const lum = h => { const [r, g, b] = [0, 2, 4].map(i => lin(parseInt(h.slice(i, i + 2), 16) / 255)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+  const dim = hx('BONE3'), card = hx('IRON');
+  const c = dim && card ? ratio(dim, card) : 0;
+  check(!!dim && !!card && c >= 4.5, `Career dim labels (BONE3 #${dim}) are ${c.toFixed(2)}:1 on the card (IRON #${card}); RULEBOOK 9.4 needs 4.5 (issue 729)`);
+}
 
 // 5. HD9: one hull-low line in the port
 const campaignHull = read('godot/ui/campaign/campaign_ui.gd');
 const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...campaignHull.matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g), ...campaignHull.matchAll(/HULL_LOW if float\(s\["frac"\]\) < ([\d.]+)/g)].map(m => +m[1]);
-check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
+// (issue 652: the Lime roster row left hud.gd; the battle's fleet foot is drawn by ledger.gd with its own hull line)
+check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0.35: nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
 
 // 7. issue #344 (UI rollout 1): the campaign pages are in Lime Tactical, and the campaign map is the Briefing layout
 // (Ryan's pick, FINDINGS R165; docs/archive/briefs/campaign_map_briefing.md). These are code-structure checks: they read

@@ -17,7 +17,86 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    concept, for the outline score and the grime.
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto
-   the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1).
+   the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1). A ship built from a build
+   sheet is painted by its faction kit's paint stack (issue 601): the ship json says `"bake": "stack"`, the stack is written
+   once per faction (`tools/blender/kits/FACTION/stack.py`: colours sampled from the concept, the layers, the trim sheet, the
+   decal rules) on the shared machinery (`tools/blender/kits/shared/paint_stack.py`: masks baked from the ship's own geometry,
+   the bake), and the sheet's materials say where each colour zone sits. A faction with no stack yet stays unpainted
+   (RECIPE.md "The paint stack for sheet ships"). Nobody paints a ship by hand.
+   What the Hullbreaker stack must show (R228, Ryan, Nov 12 2026 14:21 CST, agreeing with the Board's review of A16 pass 1:
+   "Yep completely agree with your findings"), set in the faction stack for every Hullbreaker sheet ship, never on one ship:
+   (1) a plate patchwork at the concept's density, many small plates each with its own tone (soot, gun-metal, brick-red rust,
+   bare-steel scrapes, the purple trophy panels), driven by panel cells and the modelled plates' own islands (the stack's
+   PATCH_FAMILIES, patch_cell); (2) contrast: black seams and dark recesses, brighter worn edges and scrapes, never flat grey
+   at camera 170; (3) rust is a dark brick red, never pink, judged under the battle lift (1.25, R227); (4) red running lights
+   visible as small red points at battle size; brightness, not size, carries the read (the Board's correction of its first
+   call, Nov 12): small round lamps 0.0115 of the ship's length across (0.3 units on A16: about 1 px at camera 170, 3 px at
+   camera 60), on hull and deck edges only, never on a machine (turret, gun, launcher, engine), deep red
+   (#c41e14), emissive but under the game's glow threshold so no halo, about 16 in all: a row along each flank at the
+   sheet's lamp height plus deck-edge points, built by the stack's RUNNING_LIGHTS rule and reported in the job's lights.json
+   (point lights: the standing light check reports their size, the 2 px floor is for painted window and trim lights);
+   (5) engine glow is the
+   game's: the export marks each bell (hp_eng with its radius) and the game's engine effect draws the plume there, with the
+   sheet's own emissive throat and bell lining, a hot red-orange deep in the bell and a dimmer red lining so the dark rim and
+   lip read, never a flat peach cap; the paint never fakes a glow. And from the first PC run (Board and Ryan, Nov 12 16:32
+   CST): every surface seen from outside carries the stack, an inside seen through an opening reads as the dark liner, never a
+   room colour (stage 5's surface check, zero pixels allowed); plates come in large and small sizes, offset rows and a few
+   overlaid patches, never a regular grid (RULEBOOK 0.5); no salt-and-pepper grain at close range (edge wear, grime and plate
+   tone carry the look); big part faces carry the hull's plates and seams (R224 in paint). Pass 5 (Board, the two-ship
+   PC run): painted metal has a roughness floor (no white specular glare at the game's key light; bells and dishes matte, the
+   concept's metal is dull and grimy); light grey is for scrapes and small patches only, never whole big plates; the trophy
+   grey is weathered dark; grime goes over everything; in the game the stack's surfaces take the soft rim light (look.gd RIM
+   soft: the full rim specular flared white on them at the close cameras); the throat glow sits deep in the bell, the lip and rim stay dark, and (Ryan, Nov 12 19:16 CST: "more variation to the
+   engine glow so it's not so uniform, just disc color") it varies: a hot core in the centre of the throat (the plug cone glows hottest, never black) grading out to deeper red and orange, uneven hot
+   spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
+   the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
+   Issue 651 (A18 to A20, the Board as designer): only a lit engine glows; a cold spare bell (an engine with no throat glow
+    of its own, A20's on the deck) keeps its throat and plug dark. A parked craft takes its sheet zones and its nozzle joins
+   the engine glow, and a sheet zone the stack has no colour for gets one in the faction stack, sampled from the beauty that
+   shows it (the lilac trophy plate, from A20's); the list is in RECIPE.md "The paint stack for sheet ships".
+   R240 (Ryan, Nov 13 2026 18:03 CST, on the reshaped A18 to A20: "The armor plates and patchwork is sometimes super even and
+   ordered which doesn't make sense", and "some sort of weird paint pattern in the opening of the carrier"), in the
+   Hullbreaker stack for every Hullbreaker ship: the patchwork never reads even or ordered: plate sizes wander along every
+   axis, rows come in bands whose edges step every few columns, every column and strip shifts its own cells, a share of the
+   plates is split once more at a random place, so no tile repeats and no seam runs on across a face (stack LAYERS
+   patch_warp, patch_band, patch_split; shared paint_stack._grid; a stack without patch_warp keeps the even grid, so the
+   Eclipse stay precise and ordered, R243). A hangar mouth reads as a dark, deep bay with a few warm
+   deck lights and worn edging, nothing patterned inside it: no warning stripes (replaces issue 651's striped mouth), the
+   fit-out inside in the dark liner's zone, only the rim and its torn teeth in worn iron (stack zone iron_edge), a few small
+   warm lamps at uneven depths by the floor (glow zone lamp, amber, under the glow threshold).
+   **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
+   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
+   violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
+   lift, divided by it (read from look.gd), never lavender or grey; (2) separation by structure, not noise (Ryan, Nov 13 2026
+   11:06 CST, on the first E11 picture: "Not a ton of details elsewhere, it looks like grainy paint almost. Everything kind of
+   blends together"): clear value steps between big calm panels and plate families (near-black heat-shield plates most, deep
+   violet, a lighter dusk violet, a few mauve and cool dark gunmetal plates, rare pale plates on small plates only), dark seams
+   wide enough to read at camera 170, brighter worn edges on rims and plate lips, a different finish for the shade plates
+   (matte), the body behind them (satin) and the machines (worked metal), no fine mottle or grain and almost no per-island tone;
+   no rust or soot; a roughness floor of 0.50. R243 (Ryan, Nov 13): panels are dead even, ordered and aligned across the hull
+   and crescent, with recessed seams and slight relief; the stack bakes that relief into the hull's detail normal. E11's
+   accepted colour pairs stay unchanged. This order is the Eclipse's own, never the Hullbreakers' patchwork;
+   (3) the green is light, not paint (Ryan, same message: "that green looks so plain
+   and stark, just like neon paint"): the corona line on every shade rim is the faint green ring of a real eclipse, thin at rest,
+   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold green-white at
+   its hottest and deeper green where dim. R243: brighter through the same thin strip so it reads at camera 170, including
+   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot
+   only at its very centre, reading at camera 170; never green pooled in hollows, ribs or sockets. Every light is drawn on one
+   emission map; only the hull's rim trim material is marked hull_surface for breach clearance, never engines, core or lens.
+   (4) engines are an eclipse ring of pale light round a
+   black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
+   dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
+   core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts
+   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px;
+   (7) even side to side (Ryan, Nov 15 2026 07:02 CST, R256, on E13: "let's make sure that the paint actually is even on each
+   side, it's not consistent now"; issue 783): the paint mirrors across the centre line (stack LAYERS mirror: every pattern reads
+   (x, |y|, z), a plate and its mirror twin share one random, shared paint_stack.mirror_islands; the starboard marks copy the port
+   ones, the top mark on the centre line; the corona's arcs and breaks mirror), and the sheet and the kit build twins alike: a
+   mirrored part reads its corners, rows and strips the same way on both sides, never from ring point 0 or one edge of a plate
+   (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
+   half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
+   Each engine ring keeps its own pattern.
+   Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).
@@ -43,7 +122,76 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    the side-by-side judged by someone other than the builder before Ryan sees it (R218).
 10. **The route is proven by a ship in the game.** RULEBOOK 0.9 (R225): a change to how ships are built is done only when
    one ship has gone from its build sheet to the game on Ryan's PC; the sheet writes each fact once (masses, seams, insides,
-   mounts, length) and the recipe reads it; recipe checks read the ship's own entry, never C15s's shape.
+   mounts, length) and the recipe reads it; recipe checks read the ship's own entry, never a prior ship's shape (C15s's was the case that bit).
+
+11. **Visible weapons are the game's weapons (R241, Ryan, Nov 13).** Every visible gun, turret, launcher and weapon organ
+   belongs to a `data.js` weapon slot: its kind and mount fit that weapon (data.js carries no mount size, so size is judged by eye
+   against the class, and checked only between mounts of one slot), its registered muzzle becomes that slot's
+   `hp_w<slot>` at the visible weapon, and it faces the data arc. Turning pieces stay under their turret pivot. No extra or
+   decorative weapons. Ryan allows multiple mounts for one slot when they are consistent with its firing and turning:
+   matching kind, mount, barrel count and size, with their own muzzles and every mount firing on each volley under the
+   game's rotating muzzle order. `tools/blender/build_sheets/weapon_match.py` checks the built ship against `data.js`,
+   including its shot count. Every build mode and `contract.to_recipe` refuse a failure. The sheet carries the slot and
+   mount table (`weapon_match.json`) and lists each design change. Run `weapon_match_selftest.py` to prove the check rejects
+   broken inputs. Why: Ryan wants the visible weapons to line up with firing, effects and turns, including shared batteries. The SAME rule (one slot's mounts match in kind,
+   mount, barrels and size within x1.3) and SPLIT rule (every mount fires on every volley) are the Board's reading of Ryan's
+   "consistent and line up with the in game behavior" (Nov 15, ratified on PR 691), not his words: change them if he rules otherwise.
+   Squadron craft (issue 769, R253): a fighter's guns (data.js `guns`, arc T) turn on a traverse ring like any turret; a bomber's
+   bomb tubes (`bombs`, arc T) may sit fixed forward in a launcher, because a craft turns onto its target on a strafing run
+   (weapon_match.py FITS rows `guns` and `bombs`, with self-test faults). The Chorus spore swarm (data.js `spore`, `sporeb` arc T,
+   a bomber-role craft) shows its two acid sacs fixed on its flanks the same way (FITS row `sporeb`: type acid_sac on a launcher,
+   with self-test faults; issue 793). This is the Board's reading for craft, not Ryan's
+   words: change it if he rules otherwise. A craft sheet is LENGTH 1.6 (CLS_LEN Squadron, drawn 3.84, scale.md) and carries a
+   small inside only because the build contract needs one: the game shows a craft's death as a spark (fx_death.gd _wing_death).
+12. **Openings have depth; big flanks have shape (R244, Ryan, Nov 14 2026).** A round opening is a real recess with a lip,
+   depth and working detail (a tube, launcher or thruster throat, lit or dark as its job says), never a flat painted disc.
+   Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks
+   carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow
+   and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
+
+### Named variant parts (issue 812)
+
+A sheet can build a data.js variant without adding its weapons to the base hull. Its `VARIANTS` dictionary maps the exact
+data.js id to a callback, for example `{'d_jackal_h': build_guard}` in `ships/deathless_E14.py`. The common entry point is
+`tools/blender/build_sheets/variants.py`: it checks the variant's data.js base, sets `K.game_ship` and `K.variant`, calls the
+base `build(K)`, calls that variant's callback, then finishes the deferred plates. A missing or wrong-family variant fails
+before any build. Callbacks use the normal kit helpers, so the parts, turret nodes, fit records and hard points have one home.
+For a replacement, the base builder reads `K.variant` to omit the replaced weapon before the callback adds its replacement;
+never delete meshes after building and leave their muzzle or fit records behind.
+
+Preview a variant with `build.py deathless_E14 OUT fit --variant=d_jackal_h` inside Blender. Every build mode runs weapon
+matching against that selected id, and writes into `OUT/d_jackal_h/`, keeping the base sheet's output separate. `render` also
+renders it. A variant recipe JSON names the same `sheet`, its own `game_ship`, and a `game_code` equal to that data.js id.
+Use the normal seven recipe stages with that JSON: `sheet_hull` builds the selection, the contract writes its identity into
+the blend, and stage 7 refuses a blend for a different ship or a variant aimed at a base hull folder. Class, faction and
+hangar values inherit from the data.js base when absent on the variant. The existing paint stack paints the selected parts.
+
+Install the separate variant folder with stage 7 as usual. ShipView selects the installed folder by the unit's `tpl` id from
+the rules view, with no second variant table. If that folder is absent it keeps the faction/class hull. The variant inherits
+the base hull's board clearance, so the Archive guard's upright E14 ring stays above the board.
+
+Worked cases: `deathless_E14_guard.json` adds the Archive guard's stern null spire; `deathless_E13_sentinel.json` adds the
+Mote sentinel's belly spire opposite its dorsal cannon (a roof spire blocked traverse); `deathless_E12_turreted.json` replaces
+the fore cannon and fixed arc with the kit's existing corona arc on a turning foot on the fore saddle. Its aft cannon and
+spire remain. `variant_parts.py` assembles that foot and projector from the Eclipse kit, without copying their shapes. All
+three pass weapon matching, fit and sweep clearance, and their actual exported GLBs pass the export check. The E11 to E14
+base builds have identical evaluated world-space triangles to their pre-change snapshots, including insides and shell
+modifiers. These are geometry proofs with unbaked exports; full paint bakes and the normal installed scene gate still belong
+to the ship build that ships those assets.
+
+Reproduce the geometry and export proof with Blender:
+
+```
+blender -b -t 4 --python-exit-code 1 -P tools/blender/build_sheets/variant_selftest.py -- OUT --baseline=BEFORE.json
+```
+
+`BEFORE.json` is an optional pre-change snapshot from the self-test's `bases` triangle counts and SHA256 values (only
+`triangles` and `sha256` per sheet). The self-test builds E11 to E14 and all three variants, tests wrong selections, exports
+unbaked GLBs, and runs `check_export.py` on each. Set `VARIANT_EXPORTS=OUT`, then run Godot headless with
+`--path godot --script res://render/test/variant_ship_check.gd` to run the real GLB cache builder and load the variants through
+ShipView. Without the environment variable the same check uses small CI fixtures. `variant_review.py -- OUT SHOTS` inside
+Blender makes one labelled 1280 by 720 comparison per variant from those exported GLBs, on the CPU. Keep scratch in TEMP and
+review sheets in the job's shots folder. No test export is installed into the live game by these checks.
 
 ## 1. Target
 
@@ -61,7 +209,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    break lines, the three or four features that make it that ship). The table outranks every picture.
 3. A three-view concept sheet for the ship, to contrib/muse/design/concept_standard_2026_11/standard.md: side, top, front, one
    light, plain background. A generated sheet is an identity and proportion reference: it never settles counts.
-4. The faction's parts kit and paint (tools/blender/kits/FACTION/kit.py and paint.py). A faction's first hull builds them.
+4. The faction's parts kit and paint (tools/blender/kits/FACTION/kit.py and paint.py; for sheet ships, parts.py and the paint
+   stack stack.py). A faction's first hull builds them.
 5. A build sheet that passes standard.md (R203, Ryan: "good enough to actually hand build from in blender"): true side, top,
    underside and bow-on views of one design at one scale, rendered from one Blender blockout; the length from data.js; a
    scale bar; the feature table; an INSIDE section (below); and a "Changed from the picture" list (R207).
@@ -75,6 +224,15 @@ all of the other guidance we've discussed across the faction guides, lore, playb
 (mass, silhouette from above, character, palette, where the big features sit). The Opus builder corrects what would not work
 as a real built object and lists each change, with its reason, on the build sheet before the build. Questions go to Ryan only
 when the picture, the faction guide and the lore conflict, or a change would alter the ship's identity.
+Ryan, Nov 12 2026 (R233): "You're the final designer and director. Muse is just concepting." The Board makes the design
+calls between concept and build, family distinctness included, and shows Ryan the result rather than asking first. First
+case: the Eclipse flare (E14) carries one closed ring, so from above it never reads as a small zenith (E12, the split ring).
+Ryan, Nov 13 2026 (R236): "The muse concepts are inspiration. You are the final designer and builder. All ships should fit the
+design, lore bible and ship details from the game. We can revise or adjust the actual ships away from the concept, they're just
+a base." So what a ship must fit is, in order: the game's own ship entry (data.js: class, size, weapons and their arcs, hangar,
+speed), the faction guide and the lore bible, the playbooks; the concept is the starting base. Where they disagree, the game
+data and the lore win and the build moves away from the picture, listed on the build sheet with its reason. A concept that
+needs a data change (C12's forward gun, issue 649) is a data job first, never a silent build change.
 
 ## 2c. Parts that read and fit together (R217)
 
@@ -125,11 +283,20 @@ global learning and shaping the approach". So the method, for every ship of ever
 - Parts must not look like they conflict, not only not clash (R221: "There's a gun directly behind the rocket pods on a16
   which seems like it conflicts?"). The fit check adds each launcher's backblast cone and each rack's firing lane, and a
   gun whose barrel points at or sits in another weapon's lane or blast is a clash even when no mesh touches.
+- No gun behind or aiming through a sensor (R240, Ryan, Nov 13 2026 18:03 CST: "I still see some guns right behind or facing
+  satellite dishes and antennae"). The fit check's SENSOR test (clash.py check 3c) sweeps each gun's whole firing volume
+  (every bearing of its data.js slot arc, every elevation it can reach, out to 60 percent of the ship's length) against the
+  box of every dish, antenna and mast piece, padded by the gun's calibre; any hit fails the sheet, even where the barrel
+  would fire just over the dish. The fix is the designer's: lift the gun on a barbette, lower or move the sensor, or both,
+  listed on the sheet's fix table.
 - Weapons carry the hull's detail density, measured (R224: Ryan on the Eclipse weapons, "They also just look smoother and
   less detailed, maybe slightly less poly than the rest of the ship"). The fit check reports, per part type, triangles
   per square unit of surface and edge features (seams, steps, bevels, greebles) per square unit against the hull's own; a
   part type more than 25 percent under the hull on either is flagged on the sheet and fixed in the build. This applies to
-  every faction and every part type, not only weapons.
+  every faction and every part type, not only weapons. The paint carries it too (issue 601): the paint stack puts its
+  scuffs, rivet rows and wear on at ship scale, the same on a gun as on a hull plate, and stage 5 measures every part type's
+  texels and paint detail per square unit against the hull's beside the mesh numbers (tools/recipe/density.py, the job's
+  density.json; a part type under 0.75 of the hull is flagged).
 - Weapons are designed per faction from the lore (R221: "their turrets look the same as hullbreakers. We should have those
   be more unique per factions and fit the actual weapons they use per lore Bible and faction rules"). Each faction kit's
   guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
@@ -138,10 +305,30 @@ global learning and shaping the approach". So the method, for every ship of ever
 - Seams go round machines (R226, RULEBOOK 5.17): a gun, turret, casemate, launcher, engine, thruster, claw or sensor mast
   sits wholly in one piece, so the sheet moves or kinks each seam's plan path round them; plating, ribs, rails and openings
   such as a launch bay may tear across. The stage 4 audit tests each seam along its path and fails only a machine on it.
+  A longitudinal seam (a peel) is one level plane in the game: the sheet sets its height clear of every machine under it, one
+  per compartment, as many as the faction's breaking needs (issue 618: E11 peels its dorsal tiers and its crescent layers).
+  The plane takes everything above it, so the insides need a clear band just above it (E11's deck kept 0.5 below its peel);
+  a peel through decks, septa or rooms leaves their halves outside the torn hull (issue 623: C10's belly peel, 1512 triangles,
+  was dropped). A transverse path runs on straight past both flanks (E11 to 6.2 off the axis, C10 to 7.5): the game weighs the
+  tear's height by how far across the path a point is, so a path that stops at the flank tears the insides and the plating at
+  different places there (C11: 171 triangles outside, 0 once the paths ran on). death_seam_check counts both.
+- Detail scales with the part's size (issue 618, from R224 measured on E11): a kit part built large keeps the hull's detail
+  density only if its plate courses, rings and bands are laid at the hull's own plate size in world units, never as a fixed
+  count per part. The E11 projector at 7.6 long read 0.44 of the hull's triangles per square unit with the counts that served
+  E12's 1.05 emitter; the Eclipse kit now lays its plates by size (tools/blender/kits/eclipse/parts.py, panels).
+- Every face reads as stacked scrap where the faction's language is scrap brick (the Board on issue 633 round 1, Nov 13: the
+  Hullbreaker class builds read as big smooth grey faces with a few small greebles; R196, R197): plates laid in courses at the
+  hull's plate size in world units both ways, patches over joints and over plates, upward faces terraced in steps, never flat
+  lids (the sheet kit's courses plating, tools/blender/build_sheets/kit.py, opt-in per ship).
+- The outline from above is measured before dressing (the same review, R233): the plan's width at stations along the length,
+  off the concept sheet's top view, so the class's defining shape (a wedge prow, a tapering nose, a bow block) is carried by
+  the hull itself, never by a part bolted to the same box.
 - Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong
   massing is not a pass.
+- Build and judge from the whole concept and every sheet view first. A crop is only for close comparison after the whole
+  view matches (R229, Ryan Nov 12: the A17 grabbers were lost to a bow crop).
 - The builder never grades its own sheet alone: the Board (or another model) judges the side-by-side before Ryan sees it
   (RULEBOOK 2.2, R219).
 
@@ -195,6 +382,11 @@ hard points.
 
 ## 5. Traps
 
+- A model-space height is undone by ShipView's fit and centring. For board clearance use `HULL_LIFT` in
+  `godot/render/hull_table.gd`, in drawn game units after fitting (E14, D20_23: R266, issue 811). Unlisted hulls keep zero
+  lift. Keep the rules root on its hex; the hull, markers and visual centre carry the lift. Camera framing and fallback
+  effects use that visual centre; authored hard points, weapons and shields follow the fitted mesh. Check at camera 170
+  and at the lowest idle bob before changing the height.
 - One three-quarter concept is not enough: rounds 7 and 8 could not fit the bow from it (R162). Three views, always.
 - Generated sheets hold identity, palette and view angle, and never counts or aspect (Muse's C15s trial). Write the table first.
 - Sea-ship parts creep back in every generated picture: porthole rows, lattice masts, cranes, keel fins, stepped decks. Check
@@ -225,7 +417,7 @@ Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, th
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
-Paint stack: the faction paint by name (tools/blender/kits/FACTION/paint.py), its masks, trim sheets and decals (R96 Q1)
+Paint stack: the faction paint by name (sheet ships: tools/blender/kits/FACTION/stack.py, "bake": "stack"; traced hulls: paint.py), its masks, trim sheets and decals (R96 Q1)
 Budget: triangles, draw calls and surfaces reported; scene gate ms measured on the 5080 (R111)
 ```
 

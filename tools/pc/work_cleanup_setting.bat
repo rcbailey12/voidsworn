@@ -11,7 +11,7 @@ echo  Each workhorse run keeps a full copy of the game's code, 1 to 25 GB. With 
 echo  its work and passed the runner's push check removes its own copy afterwards. Its reports and pictures stay.
 echo  Runs that fail, or stop before a checked push, always keep everything.
 echo.
-if exist "%F%" (echo  Now: & findstr /b /c:"remove_repo_copy_after_push=" "%F%") else (echo  Now: off, never set)
+if exist "%F%" (echo  Now: & findstr /b /c:"remove_repo_copy_after_push=" "%F%" & findstr /b /c:"min_free_gb=" "%F%") else (echo  Now: off, never set)
 echo.
 set "ANS="
 set /p ANS= Type YES to turn it on, or NO to turn it off, then press Enter: 
@@ -19,9 +19,14 @@ set "V="
 if /i "%ANS%"=="YES" set "V=yes"
 if /i "%ANS%"=="NO" set "V=no"
 if not defined V (echo. & echo  Nothing changed. & pause & exit /b 1)
-> "%F%" echo # Workhorse runner settings (issue 377). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
+rem Issue 722: keep the free-space floor Ryan or the runner set; only the cleanup switch changes here.
+set "MB=60"
+if exist "%F%" for /f "tokens=1,2 delims==" %%a in ('type "%F%"') do if /i "%%a"=="min_free_gb" set "MB=%%b"
+> "%F%" echo # Workhorse runner settings (issue 377, issue 722). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
 >> "%F%" echo # remove_repo_copy_after_push=yes: after a push the runner has checked, it removes that run's repo copy and keeps out.
 >> "%F%" echo remove_repo_copy_after_push=%V%
+>> "%F%" echo # min_free_gb: the run refuses to start when the drive holding Downloads\voidsworn_test has less free space than this (issue 722).
+>> "%F%" echo min_free_gb=%MB%
 echo.
 echo  Done: remove_repo_copy_after_push=%V%
 echo  It applies from the next workhorse run. Old run folders are not touched.

@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 521 (R195): the main engine does the travelling. Headless. Builds real rules routes (the rules' step dictionaries:
 # ahead, slip, rev, rot), turns them into glide steps through battle.gd's own _glide_steps (and so _nose_first), flies
 # them through ShipView.play_glide at the battle's pace and 60 frames a second, and checks:
@@ -34,6 +35,7 @@ var SV
 
 
 func _init() -> void:
+	GUARD.arm(self, "nose_first_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	SV = load("res://render/ship_view.gd")
 	B = load("res://scenes/battle/battle.gd").new()
 	B.board = load("res://render/board.gd").new()

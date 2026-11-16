@@ -1,0 +1,2 @@
+name, driver_version, utilization.gpu [%], clocks.current.graphics [MHz], temperature.gpu, pstate
+NVIDIA GeForce RTX 5080, 617.42, 0 %, 225 MHz, 32, P8

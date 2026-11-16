@@ -1,0 +1,376 @@
+{
+ "note": "issue 756 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores shared with other workers (times are long and noisy); not the PC (Blender 4.5, GPU); re-baked for issue 781 (R258: the x1.85 column, WEAR_STEP 1.85 and IRON_STEP .60); budget_same_settings_1024_4_samples and rivet_ab are still issue 756's figures",
+ "baked_at_commit": "ace39d66f",
+ "S8_2048": {
+  "device": "CPU",
+  "samples": 6,
+  "decals": [
+   {
+    "rule": "half-sun crest",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.1654,
+     0.012,
+     0.0464
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "spine line",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.3234,
+     0.0,
+     0.0415
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "deck row numbers",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.1654,
+     0.0697,
+     -0.0273
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "deck row numbers",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.1654,
+     -0.0697,
+     -0.0273
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "heat-shed marks port",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     -0.1508,
+     0.07,
+     0.0333
+    ],
+    "room": 0.78
+   },
+   {
+    "rule": "heat-shed marks starboard",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     -0.1508,
+     -0.07,
+     0.0333
+    ],
+    "room": 0.78
+   }
+  ],
+  "bake_H_masks_s": 844.7,
+  "bake_H_albedo_s": 800.6,
+  "bake_H_orm_s": 334.1,
+  "bake_H_normal_s": 1943.6,
+  "zones_H": [
+   "siron",
+   "siron2",
+   "sworn"
+  ],
+  "bake_P_masks_s": 661.7,
+  "bake_P_albedo_s": 371.4,
+  "bake_P_orm_s": 54.3,
+  "zones_P": [
+   "dark",
+   "siron",
+   "siron2",
+   "siron2_engine",
+   "siron2_gun",
+   "siron2_radiator",
+   "siron_engine",
+   "siron_gun",
+   "siron_radiator",
+   "sworn",
+   "sworn_engine",
+   "sworn_gun",
+   "sworn_radiator"
+  ],
+  "bake_engine_glow_s": 10.6,
+  "engine_glow": {
+   "engines": 2,
+   "map": "S8_engine_emission.png",
+   "res": 1024
+  },
+  "glow_materials": [
+   "p3_frost",
+   "p3_glow",
+   "p3_vent",
+   "p3_window"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.3638,
+    "area": 1.14701,
+    "texels_per_unit2": 1330208.1
+   },
+   "parts": {
+    "uv_share": 0.3324,
+    "area": 0.51258,
+    "texels_per_unit2": 2719887.7
+   }
+  },
+  "stack_seconds": 5071.8,
+  "res": 2048
+ },
+ "budget_same_settings_1024_4_samples": {
+  "note": "S8 at the stack commit before the decal fix (same shader cost); E11 at main; same sandbox, same settings",
+  "S8": {
+   "device": "CPU",
+   "samples": 4,
+   "decals": [
+    {
+     "rule": "half-sun crest",
+     "side": "top",
+     "placed": true,
+     "pos": [
+      0.1654,
+      0.012,
+      0.0464
+     ],
+     "room": 1.0
+    },
+    {
+     "rule": "spine line",
+     "side": "top",
+     "placed": true,
+     "pos": [
+      0.3234,
+      0.01,
+      0.0349
+     ],
+     "room": 0.67
+    },
+    {
+     "rule": "deck row numbers",
+     "side": "port",
+     "placed": true,
+     "pos": [
+      0.1654,
+      0.0697,
+      -0.0273
+     ],
+     "room": 1.0
+    },
+    {
+     "rule": "deck row numbers",
+     "side": "stbd",
+     "placed": true,
+     "pos": [
+      0.1654,
+      -0.0697,
+      -0.0273
+     ],
+     "room": 1.0
+    },
+    {
+     "rule": "heat-shed marks port",
+     "side": "top",
+     "placed": true,
+     "pos": [
+      -0.1508,
+      0.07,
+      0.0333
+     ],
+     "room": 0.78
+    },
+    {
+     "rule": "heat-shed marks starboard",
+     "side": "top",
+     "placed": true,
+     "pos": [
+      -0.1508,
+      -0.07,
+      0.0333
+     ],
+     "room": 0.78
+    }
+   ],
+   "bake_H_masks_s": 34.3,
+   "bake_H_albedo_s": 33.3,
+   "bake_H_orm_s": 18.0,
+   "bake_H_normal_s": 101.8,
+   "zones_H": [
+    "siron",
+    "siron2",
+    "sworn"
+   ],
+   "bake_P_masks_s": 31.5,
+   "bake_P_albedo_s": 16.0,
+   "bake_P_orm_s": 2.9,
+   "zones_P": [
+    "dark",
+    "siron",
+    "siron2",
+    "siron2_engine",
+    "siron2_gun",
+    "siron2_radiator",
+    "siron_engine",
+    "siron_gun",
+    "siron_radiator",
+    "sworn",
+    "sworn_engine",
+    "sworn_gun",
+    "sworn_radiator"
+   ],
+   "bake_engine_glow_s": 0.7,
+   "engine_glow": {
+    "engines": 2,
+    "map": "S8_engine_emission.png",
+    "res": 512
+   },
+   "glow_materials": [
+    "p3_frost",
+    "p3_glow",
+    "p3_vent",
+    "p3_window"
+   ],
+   "texel_density": {
+    "hull": {
+     "uv_share": 0.3638,
+     "area": 1.14701,
+     "texels_per_unit2": 332552.0
+    },
+    "parts": {
+     "uv_share": 0.3324,
+     "area": 0.51258,
+     "texels_per_unit2": 679971.9
+    }
+   },
+   "stack_seconds": 257.8
+  },
+  "E11": {
+   "device": "CPU",
+   "samples": 4,
+   "decals": [
+    {
+     "rule": "eclipse sigil",
+     "side": "top",
+     "placed": true,
+     "pos": [
+      0.0277,
+      0.0,
+      0.0695
+     ],
+     "room": 1.0
+    },
+    {
+     "rule": "archive glyphs",
+     "side": "port",
+     "placed": true,
+     "pos": [
+      0.0911,
+      0.0858,
+      0.0065
+     ],
+     "room": 1.0
+    },
+    {
+     "rule": "archive glyphs",
+     "side": "stbd",
+     "placed": true,
+     "pos": [
+      0.0458,
+      -0.0885,
+      0.0065
+     ],
+     "room": 1.0
+    },
+    {
+     "rule": "band ticks",
+     "side": "port",
+     "placed": true,
+     "pos": [
+      -0.0991,
+      0.0803,
+      -0.0026
+     ],
+     "room": 1.0
+    },
+    {
+     "rule": "band ticks",
+     "side": "stbd",
+     "placed": true,
+     "pos": [
+      -0.1354,
+      -0.0764,
+      0.0247
+     ],
+     "room": 1.0
+    }
+   ],
+   "bake_H_masks_s": 42.8,
+   "bake_H_albedo_s": 12.8,
+   "bake_H_orm_s": 6.1,
+   "bake_H_normal_s": 48.5,
+   "zones_H": [
+    "gunv",
+    "iron",
+    "lilac",
+    "mauve",
+    "shade2",
+    "violet"
+   ],
+   "bake_P_masks_s": 33.3,
+   "bake_P_albedo_s": 6.8,
+   "bake_P_orm_s": 2.7,
+   "zones_P": [
+    "bell",
+    "dark",
+    "gunv",
+    "mauve",
+    "shade",
+    "shade2",
+    "steel",
+    "violet"
+   ],
+   "bake_engine_glow_s": 0.3,
+   "engine_glow": {
+    "engines": 3,
+    "map": "E11_engine_emission.png",
+    "res": 512
+   },
+   "glow_materials": [
+    "p3_glow",
+    "p3_glow_hull"
+   ],
+   "texel_density": {
+    "hull": {
+     "uv_share": 0.2291,
+     "area": 2.12931,
+     "texels_per_unit2": 112829.7
+    },
+    "parts": {
+     "uv_share": 0.3779,
+     "area": 0.37202,
+     "texels_per_unit2": 1065041.1
+    }
+   },
+   "stack_seconds": 164.6
+  }
+ },
+ "rivet_ab": {
+  "pitches": [
+   0.011,
+   0.013
+  ],
+  "camera": "true pixel size, 34 degrees, range 170",
+  "b170_mean_abs_diff_of_255": 0.0049,
+  "b170_max_diff": 4,
+  "battle_long_lens_mean_abs_diff": 0.043,
+  "pick": 0.011
+ }
+}

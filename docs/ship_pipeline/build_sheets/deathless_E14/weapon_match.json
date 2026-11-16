@@ -1,0 +1,22 @@
+{
+ "code": "deathless_E14",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "nlance",
+   "arc": "F",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "L1",
+     "type": "nullcannon",
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  }
+ ]
+}

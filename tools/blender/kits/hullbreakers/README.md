@@ -26,3 +26,28 @@ plate, patch, recoil sleeve, barrel and muzzle ring turn (`TURRET_TURN` in `kit.
 that list and writes each as its own `turret_<n>` node, so the game turns it to its target (tools/blender/kits/README.md "How a
 kit marks a turret"). Casemates, the bow battery and the drum racks are fixed guns and never turn. The build-sheet kit for A16
 and A17 (tools/blender/build_sheets/kit.py, issue 532) marks its turrets in the blend the same way, with an empty `<id>_turret`.
+
+Class family parts (issue 633, `parts.py`; used by the A18, A19 and A20 build sheets, built at the hull's detail level like the rest):
+`bow_launcher` (a rocket casemate set IN a bow face: armour plate, box housing with a brow, one long braced tube or a short fat
+cluster of three, lips, bands, bolts, bores and rocket noses; a machine, R226), `hangar_mouth` (the dressing of a flank hangar
+recess: a rim with torn plate teeth, armoured door leaves slid clear on railed brackets (the outer leaf patched with plates at the
+hull's plate size, round 2), and inside, all in the dark zone so the mouth reads as a dark deep bay (R240), launch rails,
+ceiling beams and wall ribs at uneven spacing, an inner blast door and three small warm deck lamps (`lamp`) at uneven depths; structure, it may tear across a seam; `doors=False` (issue 668, R239) leaves out the door
+leaves and their rails, for a mouth in a bow face with no face beside it, as A20's; its sub-part list is `hangar_open`) and `craft` (a cobbled fighter at the game's squadron
+length, 1.6). A sheet whose plates sit on small masses uses the sheet kit's `keep3d` plate option, so a keep-out clears only the
+plates it touches. From round 2 (issue 633) the three class sheets lay their plates in courses (the sheet kit's `courses` option: plates at
+the hull's plate size both ways, patches over joints and over plates, upward faces terraced; `rivet_r` sizes the rivets to the hull).
+
+## Squadron craft (issue 793: corsair_KB1CC, the bomber)
+
+The craft parts live in `craft.py`, not in `parts.py`: `parts.py` is hashed into the A16 fixture (tools/recipe/sheet_fixture_hash.py),
+so a part added there would mark the fixture stale. The craft's ship file calls `craft.install(HP)` on the kit module it was given;
+that adds the parts below beside the kit's own for that build only, and changes nothing the kit already builds (`rocket_rack` and
+`engine_bell` keep their behaviour unless called with the craft's own switches). Every size comes from the arguments.
+
+| Part | data.js | What it is |
+|---|---|---|
+| `bomb_mouth` (`rocket_rack(..., variant='bombN')`, type `bomb_tube`) | `bombs` T, Bomb payload, 2 shots | one bomb tube in a corner pod: a heavy dark armoured collar with welded bolts round the mouth, a dark bore with the next salvaged bomb's nose seated deep inside, an eight-sided armoured drum running back with two riveted bands and a welded patch; fixed forward (a machine) |
+| `craft_drive` (`engine_bell(..., craft=True, craft_len=)`) | | a salvaged bell with a red-orange glow: lip, ember lining, glowing throat and plug, one cooling ring, a short drum with a collar, a band and gimbal struts |
+| `machbay` | | a flank machinery bay (the bomb hoist): a heavy frame, a dark back, pipes and the hoist block inside, an armoured door in a second tone on hinges over the fore part |
+| `slit` | | the crew's vision slit: a welded iron frame round a dark pane |

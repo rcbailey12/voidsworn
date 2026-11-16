@@ -1,0 +1,759 @@
+{
+ "rows": [
+  {
+   "cell": "bow/top",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "bow_face",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "bridges",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "deck_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "canyon_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "ion_trench",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "sensor_fin",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "capbanks",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "trunks",
+   "built": 10,
+   "listed": 10,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "coolant_lines",
+   "built": 14,
+   "listed": 14,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "latches",
+   "built": 24,
+   "listed": 24,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "vents",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "hatches",
+   "built": 9,
+   "listed": 9,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "bow_face",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "flank_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "ion_trench",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "sensor_fin",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "thrusters",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "windows",
+   "built": 24,
+   "listed": 24,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "hatches",
+   "built": 9,
+   "listed": 9,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "bow_face",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "belly_panels",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "hatches",
+   "built": 9,
+   "listed": 9,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "bridges",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "deck_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "canyon_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "lances",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "bridge_lance",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "capbanks",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "exchangers",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "trunks",
+   "built": 10,
+   "listed": 10,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "coolant_lines",
+   "built": 14,
+   "listed": 14,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "latches",
+   "built": 24,
+   "listed": 24,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "vents",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "flank_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "lances",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "windows",
+   "built": 24,
+   "listed": 24,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "belly_panels",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "hatches",
+   "built": 9,
+   "listed": 9,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "bridges",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "deck_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "canyon_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "pickets",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "engines",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "exchangers",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "trunks",
+   "built": 10,
+   "listed": 10,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "coolant_lines",
+   "built": 14,
+   "listed": 14,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "latches",
+   "built": 24,
+   "listed": 24,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "vents",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "lift_heads",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "module_bands",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "blue_line",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "flank_panels",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "engines",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "thrusters",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "windows",
+   "built": 24,
+   "listed": 24,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "hatches",
+   "built": 9,
+   "listed": 9,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/below",
+   "id": "hull",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/below",
+   "id": "belly_panels",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/below",
+   "id": "hatches",
+   "built": 9,
+   "listed": 9,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  }
+ ],
+ "failing": 0,
+ "structure": [
+  {
+   "cell": "bow/top",
+   "concept": 3,
+   "build": 4
+  },
+  {
+   "cell": "bow/side",
+   "concept": null,
+   "build": 4
+  },
+  {
+   "cell": "bow/below",
+   "concept": null,
+   "build": 3
+  },
+  {
+   "cell": "mid/top",
+   "concept": 6,
+   "build": 4
+  },
+  {
+   "cell": "mid/side",
+   "concept": null,
+   "build": 4
+  },
+  {
+   "cell": "mid/below",
+   "concept": null,
+   "build": 2
+  },
+  {
+   "cell": "stern/top",
+   "concept": 5,
+   "build": 3
+  },
+  {
+   "cell": "stern/side",
+   "concept": null,
+   "build": 3
+  },
+  {
+   "cell": "stern/below",
+   "concept": null,
+   "build": 2
+  }
+ ],
+ "ratios": {
+  "concept": {
+   "env_LB": 2.33,
+   "env_LH": null,
+   "hull_LB": 2.33,
+   "hull_LH": null
+  },
+  "build": {
+   "env_LB": 2.45,
+   "env_LH": 6.97,
+   "hull_LB": 2.66,
+   "hull_LH": 7.88
+  }
+ }
+}

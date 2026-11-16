@@ -13,7 +13,8 @@
 #     from a constant) is not met: the number of hp_breach anchors is the class and faction count, they cover the sections
 #     (prow, mid, eng: extras.section) the count needs, the port and starboard sides stay within one of even (extras.side P or S,
 #     sitting on that side), each is at least BREACH_CLEAR (0.03, ship frame) from every part surface (the glb's surfaces other
-#     than <code>_hull), and +Y is the outward normal (pointing out of its own side: its z component along that side at least 0.5);
+#     than <code>_hull and root primitives whose own material marks hull_surface), and +Y is the outward normal (pointing out
+#     of its own side: its z component along that side at least 0.5). Sharing a light map never exempts an unmarked part;
 #   - the smallest required set of any class is not met: a weapon point per data.js weapon slot, hp_core, hp_eng, hp_rcs and
 #     hp_board (two each, one port and one starboard), and hp_bay when data.js gives the ship a hangar;
 #   - a hard point is not a child of the ship node (or, for a turret's muzzle, of its turret node), or a map the glb names is not
@@ -161,7 +162,9 @@ def main():
             if mat != code + '_inside_skin': rooms.append(pos[idx])
             continue
         T.append(pos[idx])
+        trim = 'material' in pr and (g['materials'][pr['material']].get('extras') or {}).get('hull_surface')
         if mat == code + '_hull' and M is None: hull_seen = True
+        elif trim and M is None: pass                 # issue 642: the hull's own glowing trim (the Eclipse rim line), marked by the paint stack
         else: PT.append(pos[idx])                     # every surface but the hull is a part surface (parts, glow, turrets)
     if not hull_seen: probs.append(f'no {code}_hull surface: the hull cannot be told from the parts, so breach clearance cannot be measured')
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)

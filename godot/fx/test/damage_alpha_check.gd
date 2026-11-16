@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 569: a see-through hull surface (the Glasswright sail membranes) stays see-through
 # after damage takes the surface over. The damage shader must carry the base material's
 # alpha; the opaque fleet must stay on the opaque shader.
@@ -9,6 +10,7 @@ var fx
 var world: Node3D
 
 func _init() -> void:
+	GUARD.arm(self, "damage_alpha_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func check(ok: bool, why: String) -> void:

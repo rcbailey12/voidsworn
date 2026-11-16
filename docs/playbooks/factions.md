@@ -19,7 +19,7 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
 - Space ships, not sea ships (owner, Oct 22 and Oct 24). No keels or keel fins, raked stems, porthole rows, lattice masts,
   cranes, crossbar masts, funnels, railings or stepped yacht decks. Use the space version: flat armoured bellies with chines,
   sensor housings, antenna arrays, heat radiators, engine bells, docking hatches.
-- No gun ever faces backward. Bow guns face forward, side guns face out.
+- No gun faces backward at rest; a turret may turn aft only to follow a target its arc allows (RULEBOOK 4.2, R222). Bow guns face forward, side guns face out.
 - Matched symmetric pairs at sensible hard points, on visible mounts. The Hullbreakers are the one exception.
 - The ship must read at the battle camera (camera 170): one clear silhouette, one main colour, one accent light. Detail that
   only shows up close is a bonus, never the identity.
@@ -30,6 +30,9 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
 - Breaks look blown apart, never sliced (R186; Ryan: "It's like straight lines and even halves. It doesn't feel like an
   explosion or major hit happened"). The faction's "How it breaks" line says where the hull gives way, not that it parts
   cleanly.
+- Squadron craft are per faction (R253, Ryan, Nov 14: "Own models per faction"): each launching faction has its own
+  fighter-role and bomber-role model in its own shape language (contrib/muse/design/squadrons_2026_11/), never one shared
+  shape repainted.
 - Hard points are not a fixed count (R164). Gun and engine points come from the hull's own weapon slots and engines. Breach
   anchors (where the hull opens when it dies) scale with class and follow the faction's own way of breaking, below.
 
@@ -101,10 +104,15 @@ class and faction (issue 363), never from a constant.
   off the ship: no loose chains, cages or dangling cargo; trophies and cargo are bolted flat (R185 (3); Ryan: "I don't
   understand the random things hanging off, it reads as naval"). Rocket racks sit on the top deck as big mismatched
   bolted-on launchers (R183 (4); Ryan: "rockets need to be on top to fit the scrapped together theme").
-- **Colours:** soot black, rust, dried-blood red, patches of trophy colour (pale Hegemony grey, violet Eclipse plate), dim
+- **Patch size (R252, Ryan, Nov 14: "agree"):** the trophy patches read big like the A20 concept, not small dark plates; still
+  uneven in size, rows and offsets (R240). **Their tone (R274, Ryan, Nov 15: "those should be a global rule for all of the bigger
+  paler patches too. The white looks unfinished"):** dark grey salvaged metal, clearly lighter than the soot plate, never white or
+  chalky; the violet Eclipse trophy plates stay. SUPERSEDED, kept so nobody follows it: "big and pale" (R252's tone, ended by R274). In the stack: `TROPHY` in `tools/blender/kits/hullbreakers/stack.py`
+  (issue 726; RECIPE.md, the paint stack).
+- **Colours:** soot black, rust, dried-blood red, patches of trophy colour (dark grey salvaged metal, R274; violet Eclipse plate), dim
   red running lights. No crystal shard: it came off A16 and A17 (R197; Ryan: "Not sure why there is a weird crystal in there
   but we can get rid of that").
-- **Guns sit:** wherever they could be bolted: mismatched calibres, off-centre, still never facing backward. Casemates in the
+- **Guns sit:** wherever they could be bolted: mismatched calibres, off-centre, never facing backward at rest (RULEBOOK 4.2). Casemates in the
   bow, tube racks on the deck.
 - **Engines:** mismatched bells with a red-orange glow, one often larger than the rest.
 - **How it breaks:** at the seams. Patch plates tear off first, then the hull parts where sections are welded together,
@@ -157,9 +165,17 @@ violet-white): the green stays, as the light of an eclipse.
   thin, cold green-white line along the rim of every shade plate, and the trapped light core seen through gaps. Never a
   pooled glow inside ribs or sockets, which reads as undead.
 - **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
-  faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring.
+  faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring. The shade sits over the ship
+  as a sunshade, the ship's heart and guns under and behind it, as E13 is built (R256, Ryan Nov 15). Guns never fire through
+  slots in a shade. E14 is the exception being redesigned: its ring stands upright as in the concept, built around one larger
+  gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
 - **Colours:** dark violet-black plates, the green-white corona line, a small bright core.
-- **Guns sit:** behind the shade's rim, firing through gaps between plates.
+- **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
+  slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
+  patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
+  green like the concept, white-hot only at its very centre, and reads at camera 170.
+- **Guns sit (R256, Ryan Nov 15):** clear of the shades: on mounts at the shade's heart or root firing over its plates (E13),
+  or at the centre of a ring (E14, being redesigned). This replaces "behind the shade's rim, firing through gaps between plates".
 - **Engines:** no flaming bells. An eclipse ring of pale light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,
   dark decks, the core's light. Breach anchors sit on the shade's bands.
@@ -210,8 +226,8 @@ from the current lore, direction first ("Direction first, then fleets"), and onl
 | Ashfall Hullbreakers | flagship (Warlord's Pyre-Barge) A16; cruiser (Pack Hunter) A17 | ACCEPTED (R201); build sheets round 2 running (issue 532) | contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg, corsair_A17_beauty.jpg (from round 1 corsair_A.jpg and corsair_B.jpg) | R197: "Yes! Scrap brick as the primary and pack hunter as like a cruiser or something." Round 1 sheets failed (R213: "The guns look randomly placed and don't make sense... the builds look like square blocks basically. It barely looks like the concepts."). A17: "Keep it lean" (length to beam about 3.0). |
 | Eclipse | flagship E11; ring cruiser E12 | ACCEPTED (R206); build sheets next | contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg, deathless_E12_beauty.jpg | Keep the Eclipse purple (E10 lost it, R201). The builder adds the struts the E12 ring arcs lack (R207: "Where there are gaps like eclipse rings not all having structural connections... you should build differently"). |
 | The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); build sheets next | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
-| Sunward Crusade | flagship, S8 shape | SHAPE SETTLED, style not reached; Opus build-sheet route | shape: contrib/codex/design/concept_round5_2026_11/voidsworn_S8_sheet.jpg | S8 settled in direction (R185: "Agree with other takes"). S9 and S10 failed the style (R201; R206: S10 "still close to the smooth drawing"). No more image rounds: an Opus build sheet locks the S8 shape and dresses it in the R197 style (R206 (2)). |
-| Hegemony Navy | flagship, H10 shape | SHAPE SETTLED, style not reached; Opus build-sheet route | shape: contrib/muse/design/concept_round7_2026_11/hegemony_H10_sheet.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." H12 failed (R204: "You're right on h12"). A well-kept navy, never rusty. Same route as Sunward (R204 (3)). |
+| Sunward Crusade | flagship, S8 shape; fighter SF3, bomber SB4 | FLAGSHIP SHEET ACCEPTED (R254); painted in the sandbox (PR 772), hull to come up a step lighter toward the concept's grey before the PC recipe run (R256); craft SF3 and SB4 confirmed (R256), sheets built (PR 776) | docs/ship_pipeline/build_sheets/voidsworn_S8/ (build sheet); craft: contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg, SB4.jpg | R254: "Everything for sunward flagship is good. The fighters and bombers need a ton of work, new concepts to come." R255: "Agree on sf3 and sb4". Round 1 craft read as jets (no canopies, aero wings or tail fins). |
+| Hegemony Navy | Dominion (h_dominion), H10 shape; Iron Mandate (h_boss), IM5 | BOTH SHEETS ACCEPTED (R256): Dominion (PR 767) and Iron Mandate (PR 775); the Hegemony paint stack is next | docs/ship_pipeline/build_sheets/hegemony_H10/ (build sheet); Iron Mandate: contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." R254: "Can we do a mix of im2 and im3"; R255: "Im5 is my preference". A well-kept navy, never rusty; guns low, sunk in and real (R185). |
 | The Glasswrights | flagship, G15 shape | SHAPE SETTLED, lenses not reached; Opus build-sheet route | shape: contrib/muse/design/concept_round7_2026_11/ithar_G15_sheet.jpg | R196: "I really like g15." Its lenses are grown into the hull (the faction sheet above). G17 and G18 failed on the lenses (R201, R206). Same route (R206 (2)). |
 | Station | Vesper Reach, damaged | ACCEPTED (R206: "T2 damaged"); build sheet, then issue 373 | contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg | Concept picture first, then the build (R201 (3)). |
 
@@ -250,7 +266,7 @@ Retired from this list: "Codex's built-in image tool is the tool for finals" (th
 style, R197 (3); concept rounds now run through Muse's image to image, and every Blender step is Opus's, R205).
 
 **Next.** The finished battle is Sunward against Eclipse (R180). Eclipse's flagship and cruiser are accepted; Sunward's
-flagship needs its build sheet. Then a fleet brief per faction (every class in data.js, each derived from the flagship's
+flagship sheet is accepted (R254) and painted (R258). Then a fleet brief per faction (every class in data.js, each derived from the flagship's
 grammar: what it keeps, what it drops, its weapons), pictures in the style, Ryan's yes, build sheets, then builds through
 tools/recipe (docs/playbooks/ships.md).
 

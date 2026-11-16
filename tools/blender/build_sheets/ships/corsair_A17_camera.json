@@ -1,21 +1,21 @@
 {
- "az": 53.5328734679381,
- "el": 27.295278485741864,
- "roll": -2.4780655057596306,
- "dist": 35.898897931676245,
- "mm": 84.10525232273683,
+ "az": 44.27327435531133,
+ "el": 18.42167390406086,
+ "roll": -5.0708275185005505,
+ "dist": 33.478904430726665,
+ "mm": 70.91409179684477,
  "target": [
+  0.8,
   0,
-  0,
-  0.5
+  0.3
  ],
- "sx": -0.0977941262464842,
- "sy": 0.08380952123424304,
+ "sx": -0.08544653591103064,
+ "sy": 0.09751494297755456,
  "res": [
   1920,
   1280
  ],
- "iou": 0.7292,
- "body_iou": 0.7269,
- "note": "round 3b: view angles held from the round 3 fit to the concept, framing refit to the round 3b blockout (concept mask: luminance over 28, closed, holes filled, largest shape only)"
+ "iou": 0.7379,
+ "body_iou": 0.7549,
+ "note": "A17 build (issue 532, Board on PR 611): refit from a hand start at the concept view (az 42, el 30, roll -6) so the bow is on screen; the round 3b fit (az 53.5, el 27.3) had framed the bow off the left edge. Concept mask: luminance over 28, closed, holes filled, largest shape only (the dark belly drops out, so the IoU is a lower bound). Old camera with the same mask: 0.6275. Rescored after R229 (grabber arms splayed, ears 1.6, length 14.6): 0.7379, same camera."
 }

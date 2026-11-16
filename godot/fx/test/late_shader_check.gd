@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 376: after the warm-up ends, a shader first built later names itself once, through _mat and the hull and death
 # helpers, and the counter a test reads moves with it. Logging and counting only: nothing on screen changes.
 const FX := preload("res://fx/fx.gd")
@@ -9,6 +10,7 @@ var failures := 0
 
 
 func _init() -> void:
+	GUARD.arm(self, "late_shader_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

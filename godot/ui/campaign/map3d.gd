@@ -24,6 +24,14 @@ const CamRig := preload("res://render/camera_rig.gd")
 # Sector framing lives in System.APPROACH; the route graph stays in RUN.
 const RING_R := 2.4          # the ring round each stop
 const SUN_R := 5.0           # the Hollow Sun's shadow (the black hole)
+# The campaign sector map's side of the one scale table (issue 710, R247; docs/playbooks/scale.md), map units.
+const TOKEN_FLAGSHIP_LEN := 8.5   # your fleet marker: the flagship's hull
+const TOKEN_ESCORT_LEN := 4.6     # and each of up to two escorts
+const SHIPYARD_LEN := 6.4         # the largest station node's structure (a shipyard gantry)
+const DRYDOCK_LEN := 5.2
+const FIELD_TENDER_LEN := 3.6
+const REGION_NEBULA_SPREAD := 10.0        # a nebula region's cloud bank
+const REGION_NEBULA_LANDMARK_SPREAD := 5.0
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
 const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop (above it, toward the camera)
 
@@ -352,10 +360,10 @@ func _build_region() -> void:
 				if i in [0, 3, 6]: sys.glow(field, Color(0.8, 0.24, 0.05), 0.8, Vector3(0, 0.4, 0), 3.0, 0.28, 0.25)
 		"nebula":
 			for i in 11:
-				var bank = sys.clouds(region_scenery, Color(0.32, 0.16, 0.65), Color(0.08, 0.32, 0.65), 3 if quality != "low" else 2, 10.0, _region_point(float(i) / 10.0, 1, 4), 0.55, 0.12)
+				var bank = sys.clouds(region_scenery, Color(0.32, 0.16, 0.65), Color(0.08, 0.32, 0.65), 3 if quality != "low" else 2, REGION_NEBULA_SPREAD, _region_point(float(i) / 10.0, 1, 4), 0.55, 0.12)
 				bank.position.y = -13
 				for cloud in bank.get_children(): cloud.material_override.set_shader_parameter("storm_rate", 0.45)
-			sys.clouds(landmark, Color(0.3, 0.2, 0.7), Color(0.12, 0.42, 0.8), 8 if quality != "low" else 4, 5.0, Vector3.ZERO, 0.6, 0.22)
+			sys.clouds(landmark, Color(0.3, 0.2, 0.7), Color(0.12, 0.42, 0.8), 8 if quality != "low" else 4, REGION_NEBULA_LANDMARK_SPREAD, Vector3.ZERO, 0.6, 0.22)
 			sys.glow(landmark, Color(0.28, 0.45, 0.85), 13, Vector3.ZERO, 3.5, 0.38, 0.1)
 			props.storm_core(landmark)
 		"world":
@@ -445,7 +453,7 @@ func _add_node(n: Dictionary) -> void:
 			"shipyard":
 				# a construction gantry round a hull being built, floodlit, welding sparks on the work
 				var PL = System.look(C.RUN["fac"])   # the gantry alone (no planet jammed in behind it)
-				var gy = props.gantry(obj, 6.4, 2.8, 3.0, Color(0.46, 0.47, 0.5), PL["main"]); gy.position = Vector3(0, 0.6, 0); gy.rotation_degrees = Vector3(0, -25, 0)
+				var gy = props.gantry(obj, SHIPYARD_LEN, 2.8, 3.0, Color(0.46, 0.47, 0.5), PL["main"]); gy.position = Vector3(0, 0.6, 0); gy.rotation_degrees = Vector3(0, -25, 0)
 				var hb = _hull(C.RUN["fac"], "Cruiser", 5.2)
 				if hb != null: hb.position = Vector3(0, 1.8, 0); gy.add_child(hb)
 				else: props.part(gy, props.box(4.6, 0.8, 1.2), props.hull_mat(Color(0.4, 0.4, 0.42), PL["main"]), Vector3(0, 1.2, 0))
@@ -454,7 +462,7 @@ func _add_node(n: Dictionary) -> void:
 			"drydock":
 				# a dock frame round a docked hull, work lights on it, drones at the plates
 				var DL = System.look(C.RUN["fac"])   # the dock alone
-				var df = props.dock_frame(obj, 5.2, 2.2, 2.6, Color(0.44, 0.46, 0.5), teal); df.position = Vector3(0, 1.8, 0); df.rotation_degrees = Vector3(0, -20, 0)
+				var df = props.dock_frame(obj, DRYDOCK_LEN, 2.2, 2.6, Color(0.44, 0.46, 0.5), teal); df.position = Vector3(0, 1.8, 0); df.rotation_degrees = Vector3(0, -20, 0)
 				var hk = _hull(C.RUN["fac"], "Frigate", 4.0)
 				_hull_fill(df, Vector3(0, 1.4, 2.2), 6.0)   # light the docked hull's shadow side
 				if hk != null: df.add_child(hk)
@@ -465,7 +473,7 @@ func _add_node(n: Dictionary) -> void:
 				# a repair tender: the hull, two lattice crane arms with floodlights, a swarm of drones, welding sparks
 				var green = Color("#7ddc6a"); var FL = System.look(C.RUN["fac"])
 				var tn = Node3D.new(); tn.position = Vector3(0, 1.8, 0); tn.rotation_degrees = Vector3(0, -30, 0); obj.add_child(tn)
-				var tend = _hull(C.RUN["fac"], "Frigate", 3.6)
+				var tend = _hull(C.RUN["fac"], "Frigate", FIELD_TENDER_LEN)
 				_hull_fill(tn, Vector3(0, 1.2, 2.4), 6.0)
 				if tend != null: tn.add_child(tend)
 				else: props.part(tn, props.box(3.0, 0.6, 0.8), props.hull_mat(Color(0.42, 0.43, 0.46), FL["main"]))
@@ -611,7 +619,7 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 	_engine_mounts.clear()
 	var fs = C.flagshipOf()
 	var h = null
-	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), 8.5)
+	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), TOKEN_FLAGSHIP_LEN)
 	if h != null:
 		t.add_child(h)
 		_add_engine_mounts(h)
@@ -625,7 +633,7 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 	var esc = C.RUN["fleet"].filter(func(x): return fs == null or x["uid"] != fs["uid"])
 	esc = C.ssort(esc, func(a, b): return float(C.or_(C.HULLS[b["tpl"]].get("cp"), 1)) - float(C.or_(C.HULLS[a["tpl"]].get("cp"), 1)))
 	for i in range(min(2, esc.size())):
-		var e = _hull(C.RUN["fac"], str(C.HULLS[esc[i]["tpl"]].get("cls", "Frigate")), 4.6)
+		var e = _hull(C.RUN["fac"], str(C.HULLS[esc[i]["tpl"]].get("cls", "Frigate")), TOKEN_ESCORT_LEN)
 		if e != null:
 			e.position = Vector3(-3.8, -0.4, 3.0 if i == 0 else -3.0); t.add_child(e)
 			_add_engine_mounts(e)

@@ -8,6 +8,23 @@ construction. The feature table is written by the same model, and on counts it o
 |---|---|---|
 | corsair_A16, Warlord's Pyre-Barge | [sheet](corsair_A16/sheet.jpg) | [feature_table.md](corsair_A16/feature_table.md) |
 | corsair_A17, Hullbreaker wrecker (Pack Hunter) | [sheet](corsair_A17/sheet.jpg) | [feature_table.md](corsair_A17/feature_table.md) |
+| chorus_C10, The Ninefold Maw (Chorus flagship) | [sheet](chorus_C10/sheet.jpg) | [feature_table.md](chorus_C10/feature_table.md) |
+| chorus_C11, the bladeback (Chorus cruiser) | [sheet](chorus_C11/sheet.jpg) | [feature_table.md](chorus_C11/feature_table.md) |
+| corsair_A18, Hullbreaker raider (the Sniffer), issue 633 | [sheet](corsair_A18/sheet.jpg) | [feature_table.md](corsair_A18/feature_table.md) |
+| corsair_A19, Hullbreaker gutship (the Mauler), issue 633 | [sheet](corsair_A19/sheet.jpg) | [feature_table.md](corsair_A19/feature_table.md) |
+| corsair_A20, Hullbreaker hulk-carrier (the Den), issue 633 | [sheet](corsair_A20/sheet.jpg) | [feature_table.md](corsair_A20/feature_table.md) |
+| deathless_E11, The Unsetting (Eclipse flagship), issue 532 | [sheet](deathless_E11/sheet.jpg) | [feature_table.md](deathless_E11/feature_table.md) |
+| deathless_E12, zenith (Eclipse ring cruiser), issue 532 | [sheet](deathless_E12/sheet.jpg) | [feature_table.md](deathless_E12/feature_table.md) |
+| deathless_E13, mote (Eclipse fan frigate), issue 739 | [sheet](deathless_E13/sheet.jpg) | [feature_table.md](deathless_E13/feature_table.md) |
+| deathless_E14, flare (Eclipse annulus destroyer), issue 739 | [sheet](deathless_E14/sheet.jpg) | [feature_table.md](deathless_E14/feature_table.md) |
+| voidsworn_S8, Daybreak-class dreadnought (Sunward flagship), issue 738 | [sheet](voidsworn_S8/sheet.jpg) | [feature_table.md](voidsworn_S8/feature_table.md) |
+| hegemony_H10, Dominion-class dreadnought (Hegemony line flagship), issue 759 | [sheet](hegemony_H10/sheet.jpg) | [feature_table.md](hegemony_H10/feature_table.md) |
+| hegemony_IM5, The Iron Mandate (Hegemony super-dreadnought, the boss), issue 768 | [sheet](hegemony_IM5/sheet.jpg) | [feature_table.md](hegemony_IM5/feature_table.md) |
+| hegemony_HF1D, Spined Shield (Hegemony fighter wing craft), issue 793 | [sheet](hegemony_HF1D/sheet.jpg) | [feature_table.md](hegemony_HF1D/feature_table.md) |
+| corsair_KB1CC, Wide Glacis (Hullbreaker bomber wing craft), issue 793 | [sheet](corsair_KB1CC/sheet.jpg) | [feature_table.md](corsair_KB1CC/feature_table.md) |
+| chorus_CS1BA2, Sealed Gills (Chorus spore swarm craft), issue 793 | [sheet](chorus_CS1BA2/sheet.jpg) | [feature_table.md](chorus_CS1BA2/feature_table.md) |
+
+The Eclipse fleet from above at one scale: [eclipse_lineup.jpg](eclipse_lineup.jpg) (`tools/blender/build_sheets/studies/eclipse_lineup.py`).
 
 How it is made (tools/blender/build_sheets/):
 

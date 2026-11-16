@@ -64,7 +64,7 @@ static func body_semi() -> Font:
 # the largest size up to max_size at which text fits in width pixels on one line
 static func fit_size(text: String, f: Font, max_size: int, width: float) -> int:
 	var sz := max_size
-	while sz > 12 and f.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x > width:
+	while sz > 17 and f.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x > width:
 		sz -= 2
 	return sz
 

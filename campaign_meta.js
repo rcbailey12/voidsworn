@@ -199,7 +199,7 @@ function helpScreen(){
     <h3 class="gilt" style="margin:18px 0 6px">Firing arcs</h3>
     <p>Weapons only fire into their arc. Prow weapons cover the 120\u00b0 in front, port and starboard broadsides each cover a wide 120\u00b0 cone to the side, and turrets fire anywhere. The tinted hexes around a selected ship show where its guns reach: amber for the prow, teal for broadsides. Click an enemy to fire everything that can reach it, or press a number key to fire a single weapon.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Shields and flanking</h3>
-    <p>Each ship has four shield facings: prow, port, starboard and rear. Damage hits the facing that points at the attacker, and shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; null weapons mostly ignore them.</p>
+    <p>Each ship has one shield pool that covers four sides: prow, port, starboard and rear. A hit drains the pool through the side that points at the attacker, and each side catches only its share (the prow the most, the rear the least). A side hit again draws extra power at a loss, and when the pool runs dry every side drops at once. Shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; null weapons mostly ignore them.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Different fights</h3>
     <p>Each fight on the sector map is labelled with its goal. Engagements and ambushes end when one fleet breaks. In <b>Hold the station</b> you keep enemies off a friendly station until round 6 ends. In a <b>Hunt</b> their flagship runs and jumps out after round 6. In an <b>Intercept</b> you destroy transports before they cross the field. In a <b>Breakthrough</b> you get half your fleet off the far edge. Missing a Hunt or Intercept still pays half; losing the station or a breakthrough means a retreat, not the end of the run. Tap the chip under the top bar in battle for the rules and the coloured hexes.</p>
     <p>Some fights change partway through: reinforcements for either side, or a solar flare that knocks out every shield for a round. You always get a round of warning.</p>
@@ -226,11 +226,29 @@ function runRecap(victory){ const s=RUN.stats, mins=RUN.t0?Math.max(1,Math.round
   const stand=best&&score(best)>0?`<p class="standout">Standout ship: <b class="gilt">${esc(best.name)}</b>, ${best.car.kills} kills and ${best.car.dealt} damage across ${best.car.battles} battle${best.car.battles>1?'s':''}.</p>`:'';
   const fleet=fl.length?`<h3 class="rhead">${victory?'The fleet that finished it':'Still flying'}</h3><div class="rfleet">${fl.sort((a,b)=>score(b)-score(a)).map(row).join('')}</div>`:'';
   return tiles+stand+fleet; }
-function nextFacPick(){ const won=(META.stats.wonFacs||[]), pool=RUN_FACTIONS.filter(f=>f!==RUN.fac&&!won.includes(f)); return pick(pool.length?pool:RUN_FACTIONS.filter(f=>f!==RUN.fac)); }
+function facProgress(fac){ let total=0; for(const id of Object.keys(ADMIRALS)) if((ADMIRALS[id].fac||'voidsworn')===fac) total+=masteryXP(id); return total; }
+function nextFacPick(){ const won=(META.stats.wonFacs||[]); let pool=RUN_FACTIONS.filter(f=>f!==RUN.fac&&!won.includes(f)); if(!pool.length) pool=RUN_FACTIONS.filter(f=>f!==RUN.fac); if(!pool.length) return null;
+  let best=pool[0], bestv=facProgress(best); for(const f of pool){ const v=facProgress(f); if(v>bestv){ best=f; bestv=v; } } return best; }
 // Shadow learning is per line. A full line sends its excess to the faction's
 // shadow balance; distribute it among uncapped benched lines, keeping any rest.
 function shadowAdmirals(fac, flown){ return Object.keys(ADMIRALS).filter(id=>(ADMIRALS[id].fac||'voidsworn')===fac&&id!==flown); }
 function shadowRate(id){ return META.heirs[(ADMIRALS[id].fac||'voidsworn')]===id?.5:.25; }
+// Design 4.5: the heir row names the candidate then their rank. A name that already opens with a
+// rank word keeps that word in the rank slot; otherwise the candidate holds their faction's top rank.
+let ADMIRAL_RANK_WORDS=null;
+function admiralRankWords(){
+  if(ADMIRAL_RANK_WORDS) return ADMIRAL_RANK_WORDS;
+  const out=[];
+  for(const f of Object.keys(CAPTAINS)) for(const r of CAPTAINS[f].ranks) if(!out.includes(r)) out.push(r);
+  for(const w of ['High Admiral','First Admiral','Line Admiral','Fleet Marshal','Oath-Captain','Admiral']) if(!out.includes(w)) out.push(w);
+  ADMIRAL_RANK_WORDS=out.sort((a,b)=>b.length-a.length); return ADMIRAL_RANK_WORDS;
+}
+function heirLabel(id){
+  const nm=ADMIRALS[id].n;
+  for(const w of admiralRankWords()) if(nm.indexOf(w+' ')===0) return nm.slice(w.length+1)+', '+w;
+  const ranks=CAPTAINS[ADMIRALS[id].fac||'voidsworn'].ranks;
+  return nm+', '+ranks[ranks.length-1];
+}
 function masteryCredit(id, xp){
   const cap=masteryXPCap(id), old=masteryXP(id), total=old+xp;
   META.mastery[id]=Math.max(old,Math.min(cap,total)); // a reset evolution keeps its earned XP even when the cap drops back to 230
@@ -249,14 +267,32 @@ function awardLineageXP(flown, fac, xp){
   META.shadowPool[fac]=pool;
   return {mxGain:active.xp,mxOverflow:active.overflow,shadow,shadowBank:pool};
 }
+let debriefHeirOpen=false, debriefHeirPick='', debriefHeirNamed='';
 function heirChoiceHtml(fac, flown){
-  return `<h3>Name an heir</h3><p class="dim">Benched lines of this faction earn 25% shadow XP. Your named heir earns 50% on future runs. You can replace this faction's heir after any run.</p>${shadowAdmirals(fac,flown).map(id=>`<button data-act="nameHeir" data-arg="${id}" ${META.heirs[fac]===id?'disabled':''}>${META.heirs[fac]===id?'Heir: ':'Name '}${esc(ADMIRALS[id].n)}</button>`).join(' ')}`;
+  const heir=META.heirs[fac], ids=shadowAdmirals(fac,flown), fmt=n=>Math.round(n*100)/100;
+  return `<h3>Heir to the line</h3><p>${heir?`${esc(ADMIRALS[heir].n)} is the current heir.`:'No heir named.'}</p>
+    ${debriefHeirNamed?`<p>Named: ${esc(ADMIRALS[debriefHeirNamed].n)}. The ${esc(FACTIONS[fac].n)} line earns double shadow until you name another.</p>`:''}
+    ${!ids.length?'<p>No benched admirals of this faction to name.</p>':`
+    ${heir?`<button onclick="debriefHeirOpen=true;refreshDebriefHeir()">Change heir</button>`:''}
+    <div ${heir&&!debriefHeirOpen?'hidden':''}><p>Name an heir to the ${esc(FACTIONS[fac].n)} line?</p>
+    ${ids.map(id=>`<button onclick="event.stopPropagation();debriefHeirPick='${id}';refreshDebriefHeir()" data-act="nameHeir" data-arg="${id}" ${heir===id?'disabled':''} aria-pressed="${debriefHeirPick===id}">${esc(heirLabel(id))}. Shadow ${fmt(masteryXP(id))} XP. Double earnings for this line.</button>`).join(' ')}
+    <button onclick="debriefHeirPick='';refreshDebriefHeir()">${heir?'Keep current heir.':'No heir this run.'}</button>
+    <button onclick="confirmDebriefHeir()">Confirm heir</button></div>`}`;
 }
+function refreshDebriefHeir(){ if(heirDebrief) document.getElementById('heirChoice').innerHTML=heirChoiceHtml(heirDebrief.fac,heirDebrief.admiral); }
 ACT.nameHeir=id=>{
   if(!heirDebrief||RUN||SAVED_RUN||!shadowAdmirals(heirDebrief.fac,heirDebrief.admiral).includes(id)) return;
   META.heirs[heirDebrief.fac]=id; Persist.save({meta:true});
-  document.getElementById('heirChoice').innerHTML=heirChoiceHtml(heirDebrief.fac,heirDebrief.admiral);
+  debriefHeirNamed=id; debriefHeirOpen=false; refreshDebriefHeir();
 };
+function confirmDebriefHeir(){
+  if(!heirDebrief||RUN||SAVED_RUN) return;
+  const id=debriefHeirPick;
+  if(id&&shadowAdmirals(heirDebrief.fac,heirDebrief.admiral).includes(id)){
+    ACT.nameHeir(id);
+  }
+  debriefHeirOpen=false; refreshDebriefHeir();
+}
 // Capture the paid profile once. Both debriefs read this receipt, not estimates.
 function inheritanceSummary(run){
   const cy=run.carry, balance=META.renown||0, affordable=[];
@@ -279,32 +315,78 @@ function inheritanceSummary(run){
 }
 // Job 7 step 7 (R85 Q5): the run debrief's Nemesis lesson row, one line per lesson the lost meeting recorded on the
 // commander who fought it. Rows never vanish: an empty row keeps the frame and says which empty state it is.
-function nemLessonHtml(nz){
-  nz=nz||{met:0,lessons:[]}; const ls=Array.isArray(nz.lessons)?nz.lessons:[];
-  const body=ls.length?ls.map(l=>{ const NW=typeof NEM_WEAK!=='undefined'?NEM_WEAK[l.w]:null;
-    return NW?`<p>Nemesis lesson: <b class="blood">${esc(l.name)}</b> beat you and taught you a weakness: <b class="gilt">${esc(NW.n)}</b>.</p><p class="muted">${esc(l.text||'')}</p>`
-      :`<p>Nemesis lesson: <b class="blood">${esc(l.name)}</b> beat you. <span class="muted">${esc(l.text||'')}</span></p>`; }).join('')
-    :`<p class="dim">${nz.met?'No weakness was taught this run.':'No Nemesis meeting this run.'}</p>`;
-  return `<h3>Nemesis lesson</h3>${body}`;
+function debriefNemName(entry){
+  const title=entry.title||'', full=entry.name||'', name=title&&full.startsWith(title+' ')?full.slice(title.length+1):full;
+  return name+(title?', '+title:'');
 }
-function inheritanceHtml(run){
-  const cy=run.carry, receipt=cy.inheritance, f=receipt.flown, fmt=n=>Math.round(n*100)/100;
-  return `<section class="nextfac" style="border-color:var(--gilt)"><h2>Your inheritance</h2><p class="muted">What this run leaves for the next generation.</p>
-    <p><b class="gilt num">+${cy.ren} renown</b>${cy.hl?` (Heat ${cy.hl}: +${cy.hl*10}%)`:''}. Balance: ${receipt.balance} renown.</p>
-    <h3>Affordable now</h3><p class="dim">Each reward can be bought on its own. Choose how to spend your renown in Progression.</p>
-    ${receipt.affordable.length?`<ul>${receipt.affordable.map(u=>`<li>${esc(u.n)}: ${u.cost} renown <span class="dim">(${esc(u.kind)})</span>${u.fresh?' <span class="gilt">Newly affordable</span>':''}</li>`).join('')}</ul>`:'<p class="dim">No unowned doctrine or hull reward is affordable yet. Your renown stays saved.</p>'}
-    <h3>${esc(ADMIRALS[f.id].n)}: ${f.tree?'lineage tree':'admiral line'}</h3><p>+${fmt(cy.mxGain)} XP. Level ${f.level}${cy.mx1>cy.mx0?` (was ${cy.mx0})`:''}.</p>
-    ${f.earned.map(perk=>`<p class="gilt">${esc(perk.n)} earned: ${esc(perk.d)}</p>`).join('')}
-    <p class="dim">${f.hasCap?(f.next==null?`${fmt(f.xp)} XP. This evolution is at full mastery.`:`${fmt(f.xp)} / ${f.next} XP. ${fmt(f.remaining)} XP to capstone mastery ${roman(f.capLevel+1)}.`):(f.next==null?`${fmt(f.xp)} XP. This line is at its current cap.`:`${fmt(f.xp)} / ${f.next} XP. ${fmt(f.remaining)} XP to level ${f.level+1}: ${esc(masteryPerk(f.level+1).n)}.`)}</p>
-    ${f.hasCap&&f.capLevel?`<p class="dim">Capstone mastery ${roman(f.capLevel)}/III. ${esc(CAPSTONE_MASTERY_PERKS[f.capLevel-1].d)}</p>`:''}
-    ${f.tree?`<p class="gilt">${f.pending} branch pick${f.pending===1?'':'s'} ready.${f.capstoneReady?' Command evolution ready.':''}</p><p class="dim">Recorded skills: ${f.chosen.length?f.chosen.map(esc).join(', '):'None yet'}.</p>`:''}
-    <h3>Shadow learning</h3>${receipt.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${fmt(row.xp)} shadow XP${row.rate===.5?' (heir rate)':''}. <span class="dim">Total ${fmt(row.total)} XP, level ${row.level}${row.next==null?(row.hasCap?', fully mastered':', at current cap'):(row.hasCap?`, ${fmt(row.remaining)} XP to capstone mastery ${roman(row.capLevel+1)}` : `, ${fmt(row.remaining)} XP to level ${row.level+1}`)}.</span></p>`).join('')}
-    ${cy.mxOverflow?`<p class="dim">${fmt(cy.mxOverflow)} XP past the flown line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="dim">${fmt(cy.shadowBank)} shadow XP saved for an uncapped benched line.</p>`:''}
-    ${receipt.cores.length?`<h3>Core sync</h3>${receipt.cores.map(row=>`<p><b style="color:${PATRONS[row.id].col}">${esc(PATRONS[row.id].n)}</b>: +${row.gain} sync. <b>${esc(FAVOUR_TIERS[row.tier].n)}</b>${row.tierUp?' <span class="gilt">(Tier up this run)</span>':''}.<br><span class="dim">${row.next==null?`${row.total} sync. Full sync reached.`:`${row.total} / ${row.next} sync. ${row.remaining} to ${esc(FAVOUR_TIERS[row.tier+1].n)}.`}</span></p>`).join('')}`:''}
-    ${nemLessonHtml(receipt.nem)}
-    <div class="row"><button data-act="progTab" data-arg="legacy">Choose doctrine</button><button data-act="progTab" data-arg="variants">Choose hull rewards</button><button data-act="${f.tree?'lineage':'progTab'}" data-arg="${f.tree?f.id:'mastery'}">View admiral line</button></div>
-    <div id="heirChoice">${heirChoiceHtml(run.fac,run.admiral)}</div></section>`;
+function nemLessonHtml(nz,run={}){
+  nz=nz||{met:0,lessons:[]}; const ls=Array.isArray(nz.lessons)?nz.lessons:[], lines=[];
+  for(const l of ls){ const w=NEM_WEAK[l.w];
+    lines.push(`<p>Nemesis lesson: ${l.taught===false?'you broke ':''}<span class="nem" title="${esc(l.name)}">${esc(debriefNemName(l))}</span>${l.taught===false?'. Weakness found: ':' beat you and taught you a weakness: '}${esc(w?w.n:"the hunter's tactics")}.</p>${l.text?`<p class="muted">${esc(l.text)}</p>`:''}`);
+  }
+  for(const N of Object.values(run.nems||{})){
+    if(!(N.met||N.beaten||N.scars)) continue;
+    const who=`<span class="nem">${esc(debriefNemName(N))}</span>`;
+    for(const w of N.revealed||[]) if(NEM_WEAK[w]&&!ls.some(l=>l.fac===N.fac&&l.w===w)) lines.push(`<p>Nemesis lesson: you broke ${who}. Weakness found: ${esc(NEM_WEAK[w].n)}.</p>`);
+    for(const ad of N.adapt||[]) lines.push(`<p>Nemesis lesson: ${who} adapted. ${esc(nemAdaptName(ad,N.fac))}: ${esc(nemAdaptWhyLine(ad,N))}.</p>`);
+    if(N.loot) lines.push(`<p>Raided: <span class="nem">${esc(N.name)}</span>'s Hullbreakers took ${N.loot} credits this run. One raider line crossed.</p>`);
+    if(N.dead) lines.push(`<p>Nemesis lesson: ${who} is dead. What he taught you is yours to keep.</p>`);
+  }
+  if(!ls.length&&nz.met) lines.unshift('<p class="muted">No weakness was taught this run.</p>');
+  return lines.join('')||'<p class="muted">No Nemesis meeting this run.</p>';
 }
+function debriefAffordability(run){
+  const cy=run.carry, balance=cy.inheritance.balance, before=balance-cy.ren, items=[];
+  for(const [id,u] of Object.entries(LEGACY)) if(!META.unlocked[id]&&(!u.req||META.unlocked[u.req])) items.push({n:u.n,cost:u.cost,tab:'legacy'});
+  for(const [id,u] of Object.entries(HULL_VARIANTS)) if(!u.arc&&!(META.variants||{})[id]) items.push({n:u.n,cost:u.cost,tab:'variants'});
+  for(const [id,u] of Object.entries(ADMIRALS)) if(u.cost>0&&!(META.admirals||{})[id]) items.push({n:u.n,cost:u.cost,tab:'admiral',fac:u.fac||'voidsworn'});
+  if(LINEAGE_TREES[run.admiral]) items.push({n:ADMIRALS[run.admiral].n+' line reset',cost:lineageRespecCost(run.admiral),tab:'mastery'});
+  items.sort((a,b)=>a.cost-b.cost); const fresh=items.filter(u=>u.cost>before&&u.cost<=balance), next=items.find(u=>u.cost>balance)||items[0];
+  const target=fresh[0]||next||{tab:'legacy'};
+  const text=META.opts&&META.opts.playtestAll?'Playtest: everything unlocked. Earnings recorded.':fresh.length?`Now affordable: ${esc(fresh[0].n)}, ${fresh[0].cost} renown${fresh.length>1?`, and ${fresh.length-1} more within reach.`:'.'}`:next?`Next: ${esc(next.n)} at ${next.cost}. ${Math.max(0,next.cost-balance)} more renown.`:'All rewards owned.';
+  return {text,tab:target.tab,fac:target.fac};
+}
+
+function inheritanceHtml(run,victory,abandoned){
+  const cy=run.carry, receipt=cy.inheritance, f=receipt.flown, s=run.stats, available=debriefAffordability(run), fmt=n=>Math.round(n*100)/100, playtest=META.opts&&META.opts.playtestAll;
+  const row=(name,body)=>`<section class="inherit-row"><h3>${name}</h3>${body}</section>`;
+  return `<section><h2>${abandoned?'Recorded':'WHAT THIS RUN BOUGHT'}</h2>${abandoned?'':`<p class="muted">What this ${victory?'victory':'death'} bought:</p>`}
+    ${row('Doctrine and renown',`<p>Renown: ${cy.ren} earned. ${receipt.balance} in the vault.</p>${cy.ren?'':'<p>No renown earned this run</p>'}
+    <p class="muted">${s.battles*2} from battles, ${s.elites*4} from elites, ${s.bosses*15} from flagships, ${Math.floor(s.kills/4)} from kills, ${(run.sector-1)*5} for sectors reached.</p>
+    ${cy.hl?`<p class="muted">Heat ${cy.hl}: renown paid at x${fmt(1+.1*cy.hl)}.</p>`:''}<p title="${esc(receipt.affordable.map(u=>u.n+': '+u.cost+' renown').join('\n'))}">${available.text}</p>
+    <div class="row"><button data-act="progTab" data-arg="legacy">${!playtest&&available.tab==='legacy'?'Spend renown':'View doctrine'}</button><button data-act="progTab" data-arg="variants">${!playtest&&available.tab==='variants'?'Spend renown':'View hull rewards'}</button>${available.tab==='admiral'?`<button onclick="ACT.newRunScreen();ACT.pickFaction('${available.fac}')">${playtest?'View admirals':'Unlock admirals'}</button>`:''}</div>`)}
+    ${row('Lineage',`<p>${esc(ADMIRALS[f.id].n)}: +${fmt(cy.mxGain)} XP. Level ${f.level}.</p><div class="mastery-track"><div style="width:${f.next==null?100:Math.min(100,f.xp/Math.max(1,f.next)*100)}%"></div></div>
+    ${cy.mxGain?'':'<p>No mastery earned this run</p>'}<p class="muted">${f.next==null?`${fmt(f.xp)} XP. ${f.hasCap?'This evolution is at full mastery.':'This line is at its current cap.'}`:`${fmt(f.xp)} of ${f.next} XP. ${fmt(f.remaining)} XP to ${f.hasCap?'capstone mastery '+roman(f.capLevel+1):'level '+(f.level+1)}.`}</p>
+    <button data-act="${f.tree?'lineage':'progTab'}" data-arg="${f.tree?f.id:'mastery'}" title="${esc('Recorded skills: '+(f.chosen.join(', ')||'None yet')+'. '+f.earned.map(p=>p.n+' earned: '+p.d).join(' '))}">${f.pending?`Choose ${esc(ADMIRALS[f.id].n)}'s level ${5+lineageBuild(f.id).picks.length} skill`:f.capstoneReady?'Choose Command evolution':'View admiral line'}</button>
+    ${receipt.shadow.filter(r=>r.xp>0).map(r=>`<p class="muted" title="Total ${fmt(r.total)} XP. ${r.next==null?'Fully mastered.':fmt(r.remaining)+' XP to '+(r.hasCap?'capstone mastery '+roman(r.capLevel+1):'level '+(r.level+1))+'.'}">${esc(ADMIRALS[r.id].n)}: +${fmt(r.xp)} shadow XP (Level ${r.level}).${r.rate===.5?' Heir: double rate.':''}</p>`).join('')}
+    ${cy.mxOverflow?`<p class="muted">${fmt(cy.mxOverflow)} XP past this line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="muted">${fmt(cy.shadowBank)} shadow XP saved for an uncapped benched line.</p>`:''}
+    ${cy.hl?`<p class="muted">Heat ${cy.hl} paid ${cy.hl*2} XP to ${esc(ADMIRALS[run.admiral].n)} and ${cy.hl} XP to the faction shadow pool.</p>`:''}`)}
+    ${row('Core sync',receipt.cores.length?receipt.cores.slice().sort((a,b)=>+b.tierUp-+a.tierUp).map(r=>`${r.tierUp?`<p><span style="color:${PATRONS[r.id].col}">${esc(PATRONS[r.id].n)}</span>: crossed into ${esc(FAVOUR_TIERS[r.tier].n)} this run at ${r.total} protocols.</p>`:''}<p class="muted"><span style="color:${PATRONS[r.id].col}">${esc(PATRONS[r.id].n)}</span>: ${r.next==null?`Full sync, ${r.total} protocols.`:`${r.total} of ${r.next} to ${esc(FAVOUR_TIERS[r.tier+1].n)}.`}</p>`).join(''):'<p class="muted">No protocols taken this run.</p>')}
+    ${row('Nemesis lesson',nemLessonHtml(receipt.nem,run))}
+    ${row('The record',`<p>${esc(STORY_BEAT3[run.fac].learning)}</p>${run.eatenCore&&PATRONS[run.eatenCore]?`<p class="muted">The swarm ate ${esc(PATRONS[run.eatenCore].n)}.</p>`:''}`)}</section>
+    <section id="heirChoice" class="inherit-row">${heirChoiceHtml(run.fac,run.admiral)}</section>`;
+}
+function debriefFirstLoss(run,victory,abandoned){
+  const first=!victory&&!abandoned&&META.stats.losses===1, crusade=run.fac==='voidsworn';
+  return {first,kicker:crusade?'THE FIRST CRUSADE FALLS. THE CHALK REMEMBERS.':'THE FIRST RUN ENDS. THE NEXT INHERITS.',
+    sub:`The last hull goes dark in sector ${roman(run.sector)}. `+(crusade?'The survivors will tell it differently, and the next crusade will read it in chalk before it chooses.':'This is not the end of the line. What this run earned is already on its way to the next fleet.'),
+    body:crusade?'No crusade wins the first dark. That is the oath working, not failing. What this run bought is already written: renown in the vault, mastery in the bloodline, and the weakness the enemy showed you at cost. The next crusade stands at this same dark and reads what you chose. Do not mourn the fleet. Read the record.':'You will lose runs. That is the design, not a verdict. Every death names what the next generation carries: renown in the vault, mastery in the bloodline, and a lesson the enemy taught you at cost. Read the panel below as an inheritance, not a score.'};
+}
+const debriefStyle=`<style>
+@font-face{font-family:DebriefBody;src:url("godot/ui/theme/fonts/Barlow-Regular.ttf")}
+@font-face{font-family:DebriefName;src:url("godot/ui/theme/fonts/BigShouldersDisplay-VF.ttf")}
+@font-face{font-family:DebriefNumber;src:url("godot/ui/theme/fonts/AzeretMono-VF.ttf")}
+.debrief{--gilt:#f0eade;--blood:#ff6050;--bone:#f0eade;--bone2:#c4beb0;--bone3:#c4beb0;--dk:#080908;--k:clamp(.6,calc(100vh / 1080px),2.2);background:radial-gradient(ellipse at center,#080908 55%,#10110e);color:#f0eade;font-family:DebriefBody,Barlow,sans-serif;font-size:calc(18px * var(--k));overflow-y:auto}
+.debrief .inner{width:calc(960px * var(--k));max-width:calc(100vw - 40px);text-align:left;margin:calc(20px * var(--k)) auto;padding:0}
+.debrief h1{font-family:DebriefName,Barlow,sans-serif;font-size:calc(62px * var(--k));line-height:1.1;text-align:center;text-transform:uppercase;color:#f0eade;margin:0 0 calc(10px * var(--k));text-shadow:none}
+.debrief .sub{font-size:calc(20px * var(--k));text-align:center;color:#c4beb0;margin:0 0 calc(10px * var(--k))}
+.debrief .storyline{font-size:calc(18px * var(--k));text-align:center;color:var(--gilt);margin:0 0 calc(10px * var(--k))}
+.debrief p{margin:calc(4px * var(--k)) 0;line-height:1.35}.debrief h2{font-size:calc(24px * var(--k));margin:calc(10px * var(--k)) 0}.debrief h3{font-size:calc(17px * var(--k));text-transform:uppercase;color:#c4beb0;margin:0 0 calc(4px * var(--k))}
+.debrief .muted,.debrief .dim{color:#c4beb0}.debrief .nem{color:#ff6050}.debrief .inherit-row{border-top:1px solid #48443c;padding-top:calc(10px * var(--k));margin-top:calc(10px * var(--k))}
+.debrief button{font-family:DebriefBody,Barlow,sans-serif;font-size:calc(17px * var(--k));border:0;border-radius:0;background:transparent;color:#f0eade;box-shadow:none;padding:calc(10px * var(--k));min-height:calc(40px * var(--k))}.debrief button:hover,.debrief button:focus-visible,.debrief button[aria-pressed=true]{text-decoration:underline;outline:1px solid #c4beb0}.debrief button.primary{border:2px solid #ff8a3a;color:#ff8a3a;min-height:calc(56px * var(--k));background:transparent}.debrief button.primary:hover{background:#ff8a3a;color:#100c08}
+.debrief .mastery-track{height:calc(6px * var(--k));background:#48443c}.debrief .mastery-track>div{height:100%;background:#c4beb0}.debrief .rtiles{display:flex;flex-wrap:wrap;gap:calc(8px * var(--k));margin-top:calc(10px * var(--k))}.debrief .rtile{min-width:calc(150px * var(--k));background:none;border:0;padding:calc(8px * var(--k))}.debrief .rtile b{font-family:DebriefNumber,monospace;font-size:calc(26px * var(--k));color:#f0eade}.debrief .rtile span{display:block;max-width:calc(134px * var(--k));overflow-wrap:normal;font-size:calc(17px * var(--k))}.debrief .rrow,.debrief .rrow.star,.debrief .nextfac{background:none;border:0;border-radius:0;color:#f0eade}.debrief .rrow .dim{font-size:calc(17px * var(--k))!important}.debrief .nextfac{padding:calc(12px * var(--k)) 0}.debrief .menu{display:flex;flex-wrap:wrap;justify-content:center}.debrief [hidden]{display:none}
+</style>`;
+function debriefStoryLine(){ try{ return typeof storyText==='function'?String(storyText()||''):''; }catch(e){ return ''; } }
 function endRun(victory, abandoned){
   if(!RUN||RUN.over) return;
   const s=RUN.stats;
@@ -326,16 +408,21 @@ function endRun(victory, abandoned){
   RUN.carry.inheritance=inheritanceSummary(RUN);
   RUN.over=true; SAVED_RUN=null; Persist.save();
   const nf=victory?nextFacPick():null, NF=nf&&FACTIONS[nf];
-  const lines=`<p class="gilt">${esc(STORY_BEAT3[RUN.fac].learning)}</p>${inheritanceHtml(RUN)}${runRecap(victory)}
+  debriefHeirOpen=false; debriefHeirPick=''; debriefHeirNamed='';
+  const first=debriefFirstLoss(RUN,victory,abandoned);
+  const story=debriefStoryLine(), payoff=STORY_BEAT3[RUN.fac].learning;
+  const lines=`${first.first?`<p>${first.body}</p>`:''}${inheritanceHtml(RUN,victory,abandoned)}${runRecap(victory)}
     ${RUN.fallen.length?`<p class="muted">Captains lost this run: ${RUN.fallen.map(f=>esc(f.name)).join(', ')}.</p>`:''}
     ${victory?`<p class="gilt num" style="font-size:18px">${META.stats.wins>1?`Victories so far: ${META.stats.wins}`:'Your first victory.'} Won with: ${(META.stats.wonFacs||[]).map(f=>esc(FACTIONS[f].n)).join(', ')}.</p>`:`<p class="gilt num" style="font-size:20px">${RUN.sector>prevBest?`New best: sector ${roman(RUN.sector)}`:`Best so far: sector ${roman(Math.min(3,META.stats.best))}`}</p>`}
-    ${NF?`<div class="nextfac"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Next run</div><b>Try the ${esc(NF.n.replace(/^The /,''))}</b><p class="muted" style="margin:4px 0 0">${esc(NF.blurb||'')}</p></div>`:''}`;
-  const sub=victory?`Three sectors broken, three flagships burning behind you. ${esc(ADMIRALS[RUN.admiral]?ADMIRALS[RUN.admiral].n:'Your admiral')} brings the ${esc(FACTIONS[RUN.fac]?FACTIONS[RUN.fac].n.replace(/^The /,''):'fleet')} home.`:abandoned?'The fleet stands down. Its deeds are recorded.':'The last hull goes dark in sector '+roman(RUN.sector)+'. The survivors will tell it differently.';
-  show(`<div class="screen title recap"><div class="inner" style="max-width:720px">
-    <h1 style="font-size:clamp(44px,8vw,104px)">${victory?(WIN_TITLE[RUN.fac]||'Victory'):abandoned?'Run abandoned':'The fleet is lost'}</h1>
+    ${NF?`<div class="nextfac"><h3>Next run</h3><b>Try the ${esc(NF.n.replace(/^The /,''))}</b><p class="muted" style="margin:4px 0 0">${esc(NF.blurb||'')}</p></div>`:''}`;
+  const sub=first.first?first.sub:victory?`Three sectors broken, three flagships burning behind you. ${esc(ADMIRALS[RUN.admiral]?ADMIRALS[RUN.admiral].n:'Your admiral')} brings the ${esc(FACTIONS[RUN.fac]?FACTIONS[RUN.fac].n.replace(/^The /,''):'fleet')} home.`:abandoned?'The fleet stands down. Its deeds are recorded.':'The last hull goes dark in sector '+roman(RUN.sector)+'. The survivors will tell it differently.';
+  show(`${debriefStyle}<div class="screen title recap debrief"><div class="inner">${first.first?`<p class="sub">${first.kicker}</p>`:''}
+    <h1>${victory?(WIN_TITLE[RUN.fac]||'Victory'):abandoned?'Run abandoned':'The fleet is lost'}</h1>
     <div class="sub">${sub}</div>
+    ${story&&story!==payoff?`<p class="storyline">${esc(story)}</p>`:''}
     ${lines}
     <div class="menu" style="margin-top:22px">${NF?`<button class="primary" data-act="nextFac" data-arg="${nf}">Play as ${esc(NF.n)}</button><button data-act="newRunScreen">Pick a faction</button>`:`<button class="primary" data-act="newRunScreen">New run</button>`}<button data-act="title">Title screen</button></div></div></div>`);
   heirDebrief={fac:RUN.fac,admiral:RUN.admiral}; RUN=null;
+  if(typeof requestAnimationFrame==='function') requestAnimationFrame(()=>{ const exit=document.querySelector('.debrief .menu .primary'); if(exit) exit.focus({preventScroll:true}); });
 }
 ACT.nextFac=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };

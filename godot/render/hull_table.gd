@@ -17,6 +17,9 @@ const AI_HULLS := {
 }
 # meshed side-on in the source (spike prow along z): +1 turns -z to the bow, -1 turns +z
 const AI_HULL_YAW := {"I14_23": 1, "I15_11": -1}
+# Height above the board after fitting, in drawn game units. R266: E14's upright ring must clear the board,
+# including the 0.25-unit idle bob. A model-space offset would be undone by ShipView's centring.
+const HULL_LIFT := {"D20_23": 5.15}
 # the six flagships have max-detail 8K versions (enginetest assets/hi); the barge is a shell plus a kit
 const HI_FILES := {"V1b_r_23": ["V1b_r_23.glb"], "H4_11": ["H4_11.glb"], "C19_51": ["C19_51_shell.glb", "C19_51_kit.glb"],
 	"B16_23": ["B16_23.glb"], "I8_37": ["I8_37.glb"], "D22_23": ["D22_23.glb"]}
@@ -24,6 +27,7 @@ const HI_FILES := {"V1b_r_23": ["V1b_r_23.glb"], "H4_11": ["H4_11.glb"], "C19_51
 # Ships draw SHIP_K times their class length on the board (owner read of the first Godot shots, Oct 26: a frigate should
 # fill most of its hex and capitals overhang, as the browser game's framing shows them)
 const SHIP_K := 1.6
+const SQUADRON_K := 1.5
 const CLS_LEN := {"Squadron": 1.6, "Transport": 11.0, "Frigate": 6.5, "Destroyer": 9.5, "Cruiser": 14.5, "Carrier": 16.5, "Battleship": 21.0,
 	"Dreadnought": 27.0, "Super-dreadnought": 31.0, "Battle-barge": 26.0, "Bio-titan": 28.0, "Ark": 26.0, "Tomb-ark": 28.0}
 

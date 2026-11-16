@@ -1,0 +1,7 @@
+[
+ {"name": "e320"},
+ {"name": "e260", "tune": {"read": {"deathless": {"lift": 2.6}}}},
+ {"name": "e220", "tune": {"read": {"deathless": {"lift": 2.2}}}},
+ {"name": "e180", "tune": {"read": {"deathless": {"lift": 1.8}}}},
+ {"name": "e220_rim27", "tune": {"read": {"deathless": {"lift": 2.2, "rim": 0.27}}}}
+]

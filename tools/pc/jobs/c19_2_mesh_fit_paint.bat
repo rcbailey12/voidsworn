@@ -20,13 +20,13 @@ goto :eof
 set T=%1
 set V=%IO%\mvC2\C19_51
 if not exist "%IO%\mesh\C19_51%T%_pixal_tex_00001_.glb" (echo no mesh %T% >> %L% & goto :eof)
-%BL% -b --factory-startup -P fitcam_render.py -- "%IO%\mesh\C19_51%T%_pixal_tex_00001_.glb" "%IO%\proj\sil%T%" -56 14 24 3 > "%IO%\proj\fit%T%_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P fitcam_render.py -- "%IO%\mesh\C19_51%T%_pixal_tex_00001_.glb" "%IO%\proj\sil%T%" -56 14 24 3 > "%IO%\proj\fit%T%_log.txt" 2>&1
 %PY% -s fitcam_fit.py "%IO%\proj\sil%T%" "%PK%\flux11_C19_51_cut.png" "%IO%\proj\%T%_concept" >> "%IO%\proj\fit%T%_log.txt" 2>&1
 set FR=
 if "%T%"=="E2" set FR="%V%_front.png|%V%_front_mask.png|-90|0|0.8"
-%BL% -b --factory-startup -P project_paint.py -- "%IO%\mesh\C19_51%T%_pixal_tex_00001_.glb" "%IO%\proj\%T%_albproj.png" 4096 "%V%_left.png|%V%_left_mask.png|0|0|1" "%V%_right.png|%V%_right_mask.png|180|0|1" "%IO%\proj\%T%_concept.png|%IO%\proj\%T%_concept_mask.png|@%IO%\proj\%T%_concept.json|0|1.2" %FR% > "%IO%\proj\proj%T%_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\mesh\C19_51%T%_pixal_tex_00001_.glb" "%IO%\proj\%T%_albproj.png" 4096 "%V%_left.png|%V%_left_mask.png|0|0|1" "%V%_right.png|%V%_right_mask.png|180|0|1" "%IO%\proj\%T%_concept.png|%IO%\proj\%T%_concept_mask.png|@%IO%\proj\%T%_concept.json|0|1.2" %FR% > "%IO%\proj\proj%T%_log.txt" 2>&1
 set ALB=%IO%\proj\%T%_albproj.png
-%BL% -b --factory-startup -P render_multi.py -- "%IO%\mesh\C19_51%T%_pixal_tex_00001_.glb" "%IO%\proj\%T%P_" "146 14;90 4;90 85;180 8;240 25;30 -35;150 30" > "%IO%\proj\render%T%_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P render_multi.py -- "%IO%\mesh\C19_51%T%_pixal_tex_00001_.glb" "%IO%\proj\%T%P_" "146 14;90 4;90 85;180 8;240 25;30 -35;150 30" > "%IO%\proj\render%T%_log.txt" 2>&1
 set ALB=
 echo finished %T% >> %L%
 goto :eof

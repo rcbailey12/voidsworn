@@ -1,0 +1,21 @@
+{
+ "az": 309.9696222547733,
+ "el": 52.660666434226236,
+ "roll": -17.215275909741514,
+ "dist": 63.68801204615649,
+ "mm": 103.38772593663694,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.013617610117255737,
+ "sy": 0.08365400013594429,
+ "res": [
+  1920,
+  1280
+ ],
+ "iou": 0.9346,
+ "body_iou": 0.9357,
+ "note": "H10 beauty: view angles from a coarse grid over azimuth, elevation and roll (contrib/opus/tools/issue738/grid.py: the blockout outline scaled onto the mask box), then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (edges or luminance over the blurred picture, closed, holes filled, largest shape: the small escort lower left left out)"
+}

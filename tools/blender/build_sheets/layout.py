@@ -30,12 +30,16 @@ def font(n, bold=False):
 
 
 OFF = {}
+# issue 769: a craft drawn at many px per unit keeps capital-ship label sizes (SHEET label_scale) and a shorter scale bar
+# (SHEET bar_units); every other sheet keeps label scale = px per unit / 40 and a 5 unit bar
+LS = float((M.get('sheet') or {}).get('label_scale') or 0)
+BAR = float((M.get('sheet') or {}).get('bar_units') or 5)
 PADS = {'side': (40, 70, 90), 'cutaway': (40, 70, 90), 'top': (110, 80, 90), 'underside': (20, 80, 90), 'bow': (20, 90, 20), 'stern': (20, 70, 20)}
 
 
 def flat(name):
     im = Image.open(os.path.join(RD, name + '.png')).convert('RGBA')
-    sc_ = M['views'].get(name, {}).get('px_per_unit', 40) / 40.0
+    sc_ = LS or M['views'].get(name, {}).get('px_per_unit', 40) / 40.0
     l_, t_, b_ = [int(v * sc_) for v in PADS.get(name, (0, 0, 0))]
     bg = Image.new('RGBA', (im.width + 2 * l_, im.height + t_ + b_), GREY + (255,)); bg.alpha_composite(im, (l_, t_))
     a = np.zeros((bg.height, bg.width), bool); a[t_:t_ + im.height, l_:l_ + im.width] = np.asarray(im)[..., 3] > 8
@@ -79,7 +83,7 @@ def label(dr, xy, s, fnt, fill=INK, box=True):
 
 
 k = V['side']['px_per_unit']
-SC = k / 40.0
+SC = LS or k / 40.0
 f_s, f_m, f_l, f_xl = font(int(20 * SC)), font(int(26 * SC)), font(int(36 * SC), True), font(int(56 * SC), True)
 LH = int(30 * SC)
 
@@ -180,14 +184,15 @@ for xx in (sx0, sx1):
     dr.line((xx, y0 - 10, xx, y0 + 10), fill=CYAN, width=2)
 label(dr, ((sx0 + sx1) / 2 - 150, y0 - 34), 'length %.2f units (game %.1f)' % (len_side, L), f_m, CYAN)
 dr.line((sx1 + 30, sz0, sx1 + 30, sz1), fill=CYAN, width=2)
-label(dr, (sx1 - 330 * SC, sz1 - 40 * SC), 'height %.2f (claw tip to turret); hull %.2f' % (height, checks['hull_depth']), f_s, CYAN)
+label(dr, (sx1 - 330 * SC, sz1 - 40 * SC), 'height %.2f overall; hull %.2f' % (height, checks['hull_depth']), f_s, CYAN)
 
 
 def scalebar(dr, x, y):
+    q = k * BAR / 5
     for i in range(5):
-        dr.rectangle((x + i * k, y, x + (i + 1) * k, y + 12), fill=INK if i % 2 == 0 else (90, 90, 90))
-    dr.rectangle((x, y, x + 5 * k, y + 12), outline=INK, width=1)
-    label(dr, (x, y + 16), '0', f_s, INK, box=False); label(dr, (x + 5 * k - 30, y + 16), '5 units', f_s, INK, box=False)
+        dr.rectangle((x + i * q, y, x + (i + 1) * q, y + 12), fill=INK if i % 2 == 0 else (90, 90, 90))
+    dr.rectangle((x, y, x + 5 * q, y + 12), outline=INK, width=1)
+    label(dr, (x, y + 16), '0', f_s, INK, box=False); label(dr, (x + 5 * q - 30, y + 16), '%g units' % BAR, f_s, INK, box=False)
 
 
 import importlib.util as _ilu
@@ -295,7 +300,11 @@ man = dict(code=CODE, sheet_version=SHT.get('version', 3), routes_note='kit = th
            turret_marking='R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).',
            parts=[], masses=[], break_pieces=[])
 KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster', 'hatch', 'hatchbox', 'vent', 'lamp', 'antenna', 'pipe', 'bay', 'slit',
-        'core', 'strut', 'corewin')
+        'core', 'strut', 'corewin', 'sac', 'brood', 'spine', 'chitin',
+        'hangar', 'craft', 'spare',  # issue 633: hangar_mouth, craft and the spare engine_bell are kit builders
+        'radiator',  # issue 738: the Sunward radiator spire is a kit builder (tools/blender/kits/voidsworn/parts.py)
+        'latch',  # issue 759: the Hegemony module latch row is a kit builder (tools/blender/kits/hegemony/parts.py)
+        'capbank', 'exchanger')  # issue 768: the Iron Mandate's canyon machinery are Hegemony kit builders
 for f in F:
     row = dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in KITK else 'hand-built',
                source=f['src'], inventory=f.get('inv', []))
@@ -334,11 +343,23 @@ def r2(v):
 
 lines = []
 lines.append('# %s: %s, build sheet\n' % (CODE, M['name']))
-lines.append('%s | class %s | version %s (%s), %s | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\%s\\%s\\%s_blockout.blend`\n' % (
-    M['faction'], M['cls'], SHT.get('version', 3), SHT.get('round', 'round 3'), SHT.get('date', '2026-11-11'), SHT.get('blend', 'opus532\\r3b'), CODE, CODE))
+if SHT.get('blend_where'):   # issue 738: a sheet rendered off the PC says where its blockout is instead of a PC path it never had
+    lines.append('%s | class %s | version %s (%s), %s | blockout: %s\n' % (M['faction'], M['cls'], SHT.get('version', 3), SHT.get('round', 'round 3'),
+                                                                        SHT.get('date', '2026-11-11'), SHT['blend_where']))
+else:
+    lines.append('%s | class %s | version %s (%s), %s | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\%s\\%s\\%s_blockout.blend`\n' % (
+        M['faction'], M['cls'], SHT.get('version', 3), SHT.get('round', 'round 3'), SHT.get('date', '2026-11-11'), SHT.get('blend', 'opus532\\r3b'), CODE, CODE))
 lines.append('**Length %.1f world units** (%s). Frame: +X bow, +Y port, +Z up; station %% from the prow tip; offset + port / - starboard; '
              'height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.\n' % (L, M['game']))
 lines.append('## Measured off the views\n')
+if M.get('weapon_match'):
+    wm = M['weapon_match']
+    lines.append('Weapon match (R241): **%s**, %d problems. [Full record](weapon_match.json).\n' % (wm['result'], len(wm['problems'])))
+    lines.append('| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |\n|---:|---|---|---:|---|')
+    for row in wm['slots']:
+        lines.append('| %d | %s | %s | %d | %s |' % (row['slot'], row['weapon'], row['arc'], row['shots'],
+                     ', '.join('%s (%d)' % (m['id'], m['muzzles']) for m in row['mounts'])))
+    lines.append('')
 lines.append('| Check | Value |\n|---|---|')
 for kk in ('model_length', 'length_side', 'length_top', 'length_disagreement_percent', 'beam_top', 'beam_bow', 'beam_disagreement_percent',
            'height_side', 'height_bow', 'height_disagreement_percent', 'widest_at_station_percent', 'hull_beam', 'hull_depth', 'L_to_B_hull', 'L_to_H_hull',
@@ -469,7 +490,7 @@ sheet.paste(beauty.resize((BW, BH)), (PAD, head + int(30 * SC)))
 sheet.paste(bcam.resize((BW, BH)), (2 * PAD + BW, head + int(30 * SC)))
 head = head + int(30 * SC) + BH + PAD
 if WEAP:
-    dr.text((PAD, head), 'WEAPONS: each weapon built from what it is (R221; lore bible 7, factions.md, data.js), shown alone at the same angle',
+    dr.text((PAD, head), 'WEAPONS: each weapon built from what it is (R221; the lore bible, factions.md, data.js), shown alone at the same angle',
             font=f_l, fill=INK)
     for i, w in enumerate(WEAP):
         x0 = PAD + i * (WR_W + PAD)

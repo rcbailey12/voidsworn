@@ -1,0 +1,183 @@
+ACCUMULATED: total: 65.139828
+0:res://fx/fx_ship.gd::944::<anonymous lambda>(lambda)
+	total: 31.958014/49 % 	self: 0.00001/0 % tcalls: 9
+1:res://fx/fx_breach.gd::822::compute
+	total: 31.957957/49 % 	self: 0.000583/0 % tcalls: 9
+2:res://fx/fx_breach.gd::954::_surface
+	total: 31.877926/48 % 	self: 30.276024/46 % tcalls: 24
+3:res://fx/fx_death.gd::1579::_seal_piece
+	total: 31.673126/48 % 	self: 0.779163/1 % tcalls: 7
+4:res://fx/fx_death.gd::1125::<anonymous lambda>(lambda)
+	total: 31.222088/47 % 	self: 0.000017/0 % tcalls: 3
+5:res://fx/fx_death.gd::1420::_cut
+	total: 31.103395/47 % 	self: 0.380383/0 % tcalls: 3
+6:res://bench/scene_gate.gd::700::_mode
+	total: 29.117566/44 % 	self: 29.112546/44 % tcalls: 1440
+7:res://fx/fx_breach.gd::571::_want_split
+	total: 1.923159/2 % 	self: 1.029387/1 % tcalls: 656369
+8:res://fx/fx_death.gd::1659::_cap_outline
+	total: 1.567882/2 % 	self: 0.1028/0 % tcalls: 7281
+9:res://fx/fx_breach.gd::598::_refine
+	total: 1.463578/2 % 	self: 0.143229/0 % tcalls: 24
+10:res://fx/fx_death.gd::1844::_cap_rib
+	total: 1.088006/1 % 	self: 0.157324/0 % tcalls: 37926
+11:res://fx/fx_death.gd::1835::_cap_tri
+	total: 1.020213/1 % 	self: 0.887224/1 % tcalls: 593254
+12:res://fx/fx_death.gd::763::_piece_at
+	total: 0.591652/0 % 	self: 0.025771/0 % tcalls: 132418
+13:res://scenes/battle/battle.gd::4658::_process
+	total: 0.502556/0 % 	self: 0.115994/0 % tcalls: 720
+14:res://fx/fx.gd::317::_process
+	total: 0.448685/0 % 	self: 0.000184/0 % tcalls: 720
+15:res://fx/fx.gd::323::step
+	total: 0.44812/0 % 	self: 0.010496/0 % tcalls: 720
+16:res://fx/fx_death.gd::781::_plan_assign
+	total: 0.439944/0 % 	self: 0.16846/0 % tcalls: 132418
+17:res://fx/fx_breach.gd::563::_seg_pt_d2
+	total: 0.408901/0 % 	self: 0.408901/0 % tcalls: 2049703
+18:res://render/squadron_wing.gd::57::_process
+	total: 0.325646/0 % 	self: 0.000309/0 % tcalls: 2880
+19:res://render/squadron_wing.gd::60::step
+	total: 0.323558/0 % 	self: 0.032468/0 % tcalls: 2880
+20:res://fx/fx_ship.gd::295::update
+	total: 0.301735/0 % 	self: 0.056287/0 % tcalls: 17280
+21:res://render/squadron_wing.gd::84::_draw_trail
+	total: 0.284463/0 % 	self: 0.265487/0 % tcalls: 11520
+22:res://ui/battle/hud.gd::2058::set_plate
+	total: 0.263565/0 % 	self: 0.244427/0 % tcalls: 17280
+23:res://fx/fx_death.gd::670::_break_f
+	total: 0.220286/0 % 	self: 0.069826/0 % tcalls: 127248
+24:res://fx/fx_death.gd::662::_wave_sum
+	total: 0.114362/0 % 	self: 0.114362/0 % tcalls: 155296
+25:res://fx/fx_ship.gd::335::_update_trails
+	total: 0.107359/0 % 	self: 0.043199/0 % tcalls: 17280
+26:res://fx/fx_death.gd::1203::_piece_geometry
+	total: 0.10478/0 % 	self: 0.000051/0 % tcalls: 4
+27:res://fx/fx_death.gd::1794::_section_structure
+	total: 0.098296/0 % 	self: 0.013396/0 % tcalls: 426
+28:res://render/ship_view.gd::1432::_process
+	total: 0.096655/0 % 	self: 0.062867/0 % tcalls: 17280
+29:res://ui/battle/hud.gd::2102::declutter_plates
+	total: 0.087508/0 % 	self: 0.069729/0 % tcalls: 720
+30:res://fx/fx_breach.gd::927::build_meshes
+	total: 0.074947/0 % 	self: 0.072375/0 % tcalls: 16
+31:res://fx/fx_ship.gd::604::_react_step
+	total: 0.064972/0 % 	self: 0.037039/0 % tcalls: 17280
+32:res://fx/fx.gd::396::_run_later
+	total: 0.050769/0 % 	self: 0.010056/0 % tcalls: 720
+33:res://fx/fx_death.gd::742::_machine_at
+	total: 0.046178/0 % 	self: 0.034098/0 % tcalls: 132418
+34:res://fx/fx.gd::819::_update_lights
+	total: 0.044214/0 % 	self: 0.040511/0 % tcalls: 720
+35:res://fx/fx_death.gd::1732::_loop_torn
+	total: 0.038836/0 % 	self: 0.011591/0 % tcalls: 2135
+36:res://fx/fx_breach.gd::349::buckle_at
+	total: 0.030157/0 % 	self: 0.022506/0 % tcalls: 7122
+37:res://fx/fx_breach.gd::512::_tri_in_overlay
+	total: 0.02833/0 % 	self: 0.004528/0 % tcalls: 13084
+38:res://fx/fx_ship.gd::680::_rcs
+	total: 0.024873/0 % 	self: 0.007501/0 % tcalls: 3440
+39:res://fx/fx_ship.gd::353::_trail_mesh
+	total: 0.023433/0 % 	self: 0.023433/0 % tcalls: 36000
+40:res://fx/fx_ship.gd::94::hull_motion
+	total: 0.022517/0 % 	self: 0.022517/0 % tcalls: 35369
+41:res://world/world_living.gd::575::_process
+	total: 0.02228/0 % 	self: 0.010154/0 % tcalls: 720
+42:res://fx/fx_ship.gd::209::xf
+	total: 0.020528/0 % 	self: 0.004812/0 % tcalls: 18085
+43:res://fx/fx_breach.gd::709::_mid
+	total: 0.019059/0 % 	self: 0.013069/0 % tcalls: 4696
+44:res://fx/fx_hull.gd::1074::jet
+	total: 0.018725/0 % 	self: 0.004137/0 % tcalls: 340
+45:res://fx/fx_ship.gd::168::_hide_placeholder_engines
+	total: 0.018173/0 % 	self: 0.018173/0 % tcalls: 17280
+46:res://render/ship_view.gd::1418::_puffs_step
+	total: 0.017586/0 % 	self: 0.016668/0 % tcalls: 3342
+47:res://bench/scene_gate.gd::125::_process
+	total: 0.017308/0 % 	self: 0.001031/0 % tcalls: 720
+48:res://bench/scene_gate.gd::140::_volley
+	total: 0.016264/0 % 	self: 0.000172/0 % tcalls: 10
+49:res://fx/fx.gd::1166::volley
+	total: 0.016049/0 % 	self: 0.000019/0 % tcalls: 10
+50:res://fx/fx_weapons.gd::126::volley
+	total: 0.016017/0 % 	self: 0.000006/0 % tcalls: 10
+51:res://fx/fx_weapons.gd::133::_volley_entry
+	total: 0.015986/0 % 	self: 0.000022/0 % tcalls: 10
+52:res://fx/fx_ship.gd::952::l_dmg_poll(lambda)
+	total: 0.015847/0 % 	self: 0.000042/0 % tcalls: 243
+53:res://fx/fx_weapons.gd::146::_volley
+	total: 0.015839/0 % 	self: 0.00029/0 % tcalls: 10
+54:res://fx/fx_ship.gd::949::_dmg_poll
+	total: 0.015685/0 % 	self: 0.000401/0 % tcalls: 254
+55:res://fx/fx_ship.gd::960::flush_damage
+	total: 0.014999/0 % 	self: 0.000039/0 % tcalls: 8
+56:res://fx/fx_breach.gd::494::_in_overlay
+	total: 0.014714/0 % 	self: 0.014714/0 % tcalls: 23913
+57:res://ui/battle/hud.gd::2109::<anonymous lambda>(lambda)
+	total: 0.014661/0 % 	self: 0.014661/0 % tcalls: 108129
+58:res://fx/faction_look.gd::63::of
+	total: 0.014451/0 % 	self: 0.005662/0 % tcalls: 11530
+59:res://fx/fx_death.gd::513::_extreme_points
+	total: 0.01416/0 % 	self: 0.01416/0 % tcalls: 8
+60:res://fx/fx_death.gd::485::_piece_hulls
+	total: 0.013874/0 % 	self: 0.000139/0 % tcalls: 2
+61:res://fx/fx_breach.gd::1631::apply
+	total: 0.013414/0 % 	self: 0.000672/0 % tcalls: 8
+62:res://fx/fx_death.gd::2959::update
+	total: 0.012937/0 % 	self: 0.002884/0 % tcalls: 720
+63:res://fx/fx_hull.gd::240::damage_material
+	total: 0.012338/0 % 	self: 0.004455/0 % tcalls: 124
+64:res://fx/fx_breach.gd::1717::_inside_overlay
+	total: 0.011914/0 % 	self: 0.001161/0 % tcalls: 8
+65:res://render/ship_view.gd::1316::_side_puffs
+	total: 0.011855/0 % 	self: 0.000011/0 % tcalls: 39
+66:res://render/ship_view.gd::1320::_jets
+	total: 0.011797/0 % 	self: 0.000067/0 % tcalls: 39
+67:res://render/ship_view.gd::1372::_puff
+	total: 0.011535/0 % 	self: 0.001789/0 % tcalls: 78
+68:res://ui/battle/hud.gd::2085::hud_blockers
+	total: 0.010851/0 % 	self: 0.008155/0 % tcalls: 720
+69:res://fx/fx_weapons.gd::484::l_burst(lambda)
+	total: 0.010406/0 % 	self: 0.001465/0 % tcalls: 77
+70:res://fx/fx_hull.gd::517::ray
+	total: 0.010046/0 % 	self: 0.010046/0 % tcalls: 390
+71:res://fx/fx_breach.gd::786::_otri
+	total: 0.009719/0 % 	self: 0.009719/0 % tcalls: 11113
+72:res://ui/battle/hud.gd::2405::_process
+	total: 0.009466/0 % 	self: 0.000547/0 % tcalls: 720
+73:res://fx/fx_hull.gd::923::surface
+	total: 0.009344/0 % 	self: 0.000202/0 % tcalls: 340
+74:res://fx/fx_weapons.gd::261::_shot
+	total: 0.009164/0 % 	self: 0.000137/0 % tcalls: 23
+75:res://fx/fx_death.gd::260::flipbook
+	total: 0.008626/0 % 	self: 0.00435/0 % tcalls: 77
+76:res://ui/battle/hud.gd::2435::_layout
+	total: 0.008295/0 % 	self: 0.004539/0 % tcalls: 720
+77:res://render/ship_view.gd::1360::jet_point
+	total: 0.007587/0 % 	self: 0.000131/0 % tcalls: 78
+78:res://ui/battle/hud.gd::1987::plate
+	total: 0.007503/0 % 	self: 0.00564/0 % tcalls: 17280
+79:res://fx/fx_ship.gd::1262::_update_damage_emitters
+	total: 0.007131/0 % 	self: 0.007131/0 % tcalls: 17280
+80:res://fx/fx.gd::944::_update_feel
+	total: 0.007093/0 % 	self: 0.00483/0 % tcalls: 720
+81:res://fx/fx_hull.gd::887::_took
+	total: 0.007068/0 % 	self: 0.001797/0 % tcalls: 363
+82:res://fx/fx_weapons.gd::1071::_impact
+	total: 0.006271/0 % 	self: 0.000143/0 % tcalls: 23
+83:res://ui/battle/hud.gd::1852::_column
+	total: 0.00555/0 % 	self: 0.002645/0 % tcalls: 1440
+84:res://ui/battle/hud.gd::1863::clear_shift
+	total: 0.005349/0 % 	self: 0.002107/0 % tcalls: 720
+85:res://fx/fx.gd::433::spr
+	total: 0.005125/0 % 	self: 0.000266/0 % tcalls: 1033
+86:res://fx/fx_hull.gd::339::_exterior
+	total: 0.004895/0 % 	self: 0.004149/0 % tcalls: 124
+87:res://scenes/battle/battle.gd::2866::_unit_at
+	total: 0.004627/0 % 	self: 0.004465/0 % tcalls: 720
+88:res://fx/fx_breach.gd::321::peel_at
+	total: 0.004626/0 % 	self: 0.004626/0 % tcalls: 7122
+89:res://fx/fx.gd::443::_emit_spr
+	total: 0.004334/0 % 	self: 0.001002/0 % tcalls: 1033
+90:res://fx/fx_hull.gd::938::guns
+	total: 0.004092/0 % 	self: 0.000081/0 % tcalls: 10

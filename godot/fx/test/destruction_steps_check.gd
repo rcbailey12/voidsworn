@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Geometry contract: every open edge of the existing triangle buckets is sealed,
 # including mirrored meshes, multiple surfaces and disconnected openings.
 const DEATH := preload("res://fx/fx_death.gd")
@@ -7,6 +8,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 var failures := 0
 
 func _init() -> void:
+	GUARD.arm(self, "destruction_steps_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func _run() -> void:

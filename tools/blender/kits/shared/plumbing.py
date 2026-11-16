@@ -182,7 +182,7 @@ def path_x(path, y0, y1):
     return min(xs), max(xs)
 
 
-def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None, t_paths=None):
+def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None, t_paths=None, l_lines=None):
     """common.audit's checks in one pass (a kit adds hundreds of small parts; the pairwise version rebuilt a tree per part):
     parts that neither intersect (or lie within .002 of) the hull nor intersect another part (floating), parts across a break line, guns aimed backward.
     Across a seam (R226, Board, Nov 12, from R186): a machine (a part whose objects carry machine=1, stamped from the faction
@@ -194,6 +194,7 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None, t_paths=None
     from mathutils.bvhtree import BVHTree
     import common as C
     t_lines = C.T_LINES if t_lines is None else t_lines; l_line = C.L_LINE if l_line is None else l_line   # an empty l_line: the build has none
+    LL = [tuple(v) for v in l_lines] if l_lines is not None else ([tuple(l_line)] if len(l_line) == 3 else [])   # l_lines, when given, holds every one
     probs = []; cross = []; into = 0
     for g in guns:      # (name, aim) or (name, aim, mount normal): with the normal the into-the-ship rule is tested too (aim_ok)
         nm, d = g[0], Vector(g[1]); nn = Vector(g[2]) if len(g) > 2 and g[2] is not None else None
@@ -225,7 +226,8 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None, t_paths=None
         for x, path in zip(t_lines, paths):
             x0, x1 = path_x(path, lo.y, hi.y) if path else (x, x)
             if lo.x < x1 - .002 and hi.x > x0 + .002: over = True
-        if len(l_line) == 3 and lo.x < l_line[2] and hi.x > l_line[1] and lo.z < l_line[0] - .002 < l_line[0] + .002 < hi.z: over = True   # () = no longitudinal seam
+        for ll in LL:   # every longitudinal seam (issue 618: a sheet may author one per compartment); () = none
+            if lo.x < ll[2] and hi.x > ll[1] and lo.z < ll[0] - .002 < ll[0] + .002 < hi.z: over = True
         if over: (cross if machine else structure).append(unit)
     for k, o in enumerate(allp):
         if grp[k] in held: continue

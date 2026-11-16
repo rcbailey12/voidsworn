@@ -4,6 +4,7 @@
 #   engine_bell   a bell with a throat, an inner cone, cooling rings, gimbal struts, a banded housing and a mount collar
 #   gun           a turret ring (or a flank sponson plate and ball), a faceted housing, a mantlet on trunnions, breeches,
 #                 barrels with recoil sleeves, muzzle brakes and dark bores
+#   claw_arm      an articulated grabber arm: shoulder hinge on a bracket, box segments, knuckles, rams, a forked pincer
 #   launch_tube   a tube with depth, a thick (optionally hooded) lip, a dark bore and clamp bands; optional grille
 #   rocket_rack   a framed box of cells, each a short tube with a rocket nose set back in it, on a trunnion yoke and ring
 # Pure geometry: mathutils only, no bpy, scale free (sizes are parameters), so the build-sheet kit (world units) and the
@@ -333,6 +334,33 @@ def launch_tube(r, depth, lip=0.18, hood=0.0, bands=2, grille=False, seg=24, wal
     for i in range(bands):
         x = -depth * (0.35 + 0.45 * i / max(1, bands - 1)) if bands > 1 else -depth * 0.5
         p.add('band%d' % i, 'mount', 'iron', ring_band(x, ro, r * 0.22, r * 0.08, seg))
+    # R224 and R217 (issue 532: A16's front tubes measured 0.45 of the hull's triangles per square unit and 0.29 of its edge
+    # features): the tube carries the hull's detail level. Rings stand inside the bore (stepped liners), a ring of bolts on
+    # the lip, and armour stiffeners run along the barrel between the clamp bands.
+    tr = r * 0.07
+    for i, f in enumerate((0.18, 0.42, 0.68)):
+        x = -depth * f
+        p.add('ring%d' % i, 'mount', 'iron', revolve([(x - r * 0.06, r + 0.005), (x - r * 0.06, r - tr), (x + r * 0.06, r - tr),
+                                                      (x + r * 0.06, r + 0.005)], seg, closed=True))
+    nb = max(10, int(seg * 0.75))
+    rb = ro + r * lip * 0.3
+    for i in range(nb):
+        a = 2 * math.pi * (i + 0.5) / nb
+        c, sn = math.cos(a), math.sin(a)
+        p.add('bolt%d' % i, 'mount', 'iron', rod((-r * 0.04, rb * c, rb * sn), (r * 0.06, rb * c, rb * sn), r * 0.045, 6))
+    for i in range(8):
+        a = 2 * math.pi * (i + 0.25) / 8
+        c, sn = math.cos(a), math.sin(a)
+        p.add('stiff%d' % i, 'mount', 'steel', rod((-depth * 0.97, (ro + r * 0.03) * c, (ro + r * 0.03) * sn),
+                                                  (-r * 0.3, (ro + r * 0.03) * c, (ro + r * 0.03) * sn), r * 0.05, 4))
+    # each clamp band is bolted: a bolt head between each pair of stiffeners, standing off the band
+    for i in range(bands):
+        x = -depth * (0.35 + 0.45 * i / max(1, bands - 1)) if bands > 1 else -depth * 0.5
+        rr = ro + r * 0.07         # the band stands r * 0.08 proud: each bolt head sits in its top face
+        for j in range(8):
+            a = 2 * math.pi * (j + 0.75) / 8
+            c, sn = math.cos(a), math.sin(a)
+            p.add('bolt_b%d_%d' % (i, j), 'mount', 'iron', rod((x, rr * c, rr * sn), (x, (rr + r * 0.05) * c, (rr + r * 0.05) * sn), r * 0.05, 6))
     if grille:
         n = 5
         for i in range(n):
@@ -407,15 +435,16 @@ def rocket_rack(rows, cols, cell=0.4, depth=1.8, yoke=True, variant=0, seg=12):
 # crosses a seam (a cut gun reads as sliced): it rides whole with one piece. Every other kind is structure (plates,
 # ribs, rails, hatches, vents, lamps, pipes, openings such as the launch bay) and may tear across a seam. The sheet kit
 # stamps each part's objects with part_kind and machine from here; the stage 4 audit reads them (tools/recipe/audit.py).
-MACHINES = ('gun', 'spinal', 'rack', 'tube', 'engine', 'thruster', 'claw', 'prong', 'antenna', 'dish')
+MACHINES = ('gun', 'spinal', 'rack', 'tube', 'engine', 'thruster', 'claw', 'claw_arm', 'prong', 'antenna', 'dish', 'bow_launcher')
 
 SUBPARTS = {
     'engine': ['housing', 'collar', 'band', 'bell', 'lining', 'throat_glow', 'cone', 'cool', 'strut'],
     'gun': ['ring|plate', 'housing', 'mantlet', 'breech', 'tube', 'clamp', 'bore', 'vent'],
-    'tube': ['tube', 'bore', 'band'],
+    'tube': ['tube', 'bore', 'band', 'ring', 'bolt', 'stiff'],
     'rack': ['box', 'frame', 'div', 'cell', 'nose', 'bore', 'cheek', 'yoke', 'ring'],
     'dish': ['bowl', 'rib', 'feed', 'strut', 'yoke', 'post', 'base'],
     'claw': ['hinge', 'arm', 'joint', 'ram', 'finger'],
+    'claw_arm': ['bracket', 'hinge', 'plate', 'pin', 'arm', 'rivet', 'ram', 'joint', 'wrist', 'finger'],
     'prong': ['knuckle', 'blade', 'spine', 'joint', 'hook'],
     'chain': ['link', 'lug'],
     'hatch': ['rim', 'door', 'seam', 'hinge'],
@@ -425,7 +454,11 @@ SUBPARTS = {
     'thruster': ['block', 'nozzle'],
     'antenna': ['base', 'mast', 'whip', 'pod'],
     'pipe': ['run', 'flange'],
-    'bay': ['rim', 'leaf', 'seam', 'hinge'],
+    'bay': ['rim', 'leaf', 'seam', 'hinge', 'ram', 'frame', 'stiff', 'rail', 'bracket', 'rivet'],
+    'bow_launcher': ['plate', 'housing', 'tube', 'bore', 'band', 'nose', 'bolt'],
+    'hangar': ['rim', 'tooth', 'door', 'stiff', 'rail', 'bracket', 'lrail', 'beam', 'lamp', 'inner', 'rib'],
+    'hangar_open': ['rim', 'tooth', 'lrail', 'beam', 'lamp', 'inner', 'rib'],     # issue 668: a hangar mouth with no door leaves (doors=False)
+    'craft': ['fuselage', 'canopy', 'wing', 'nozzle', 'glow', 'barrel', 'skid', 'patch'],
     'slit': ['frame', 'glass'],
     'plate': ['slab', 'step', 'bevel', 'rivet'],
     'patch': ['slab', 'lift', 'rivet'],
@@ -521,6 +554,69 @@ def claw(hinge_r, segs, w=0.45, fingers=3, ram=True):
             L = (u1 - u0).length
             p.add('finger%d%d' % (f, j), 'body', 'steel', moved(prism([(0.0, octa(w * t0, w * 0.1, w * 0.03)), (L, octa(max(0.005, w * t1), w * 0.06, 0.0))]), M))
     p.fit = dict(tip=P(pts[-1] + d * w * 1.2))
+    return p
+
+
+def claw_arm(segs, w=0.42, hook=1.0, fork=0.45, rivets=4):
+    """an articulated boarding grabber arm (R229, Ryan Nov 12 on A17: "the front claws or grabbers ... are more like 4
+    independent prongs"): the concept's arms are jointed machines, not blades. Origin at the shoulder hinge (axis across
+    the ship, local Y); segs: local points from the shoulder through each knuckle to the wrist. Sub-parts: a shoulder
+    hinge drum between two hinge plates on a mounting bracket; armoured box segments (tapered, bevelled) with a bolted top
+    plate; a knuckle at every joint (drum, side hinge plates, pin caps); a hydraulic ram (cylinder and rod) across each
+    joint; a forked pincer at the wrist, two hooked fingers that curl toward hook (+1 down, -1 up) in the arm's plane."""
+    p = Part('claw_arm')
+    th = w * 0.36
+    rh = th * 1.35
+    pts = [Vector((0, 0, 0))] + [Vector(q) for q in segs]
+    # shoulder: bracket behind the hinge (the mount), the hinge drum, a plate on each side with a pin cap
+    p.add('bracket', 'mount', 'iron', block(-rh * 2.2, -rh * 0.2, w * 0.75, rh * 1.05, rh * 0.3))
+    p.add('hinge', 'mount', 'iron', moved(revolve([(-w * 0.62, rh * 0.85), (-w * 0.58, rh), (w * 0.58, rh), (w * 0.62, rh * 0.85)], 16, cap0=True, cap1=True),
+                                          Matrix.Rotation(math.pi / 2, 4, 'Z')))
+    for s_ in (1, -1):
+        p.add('plate_s%d' % (s_ > 0), 'mount', 'steel', block(-rh * 1.3, rh * 1.1, w * 0.06, rh * 1.25, rh * 0.25, yo=s_ * w * 0.7))
+        p.add('pin_s%d' % (s_ > 0), 'mount', 'steel', rod((0, s_ * w * 0.76, 0), (0, s_ * w * 0.86, 0), rh * 0.45, 8))
+    n = len(pts) - 1
+    for i in range(n):
+        a, b = pts[i], pts[i + 1]
+        d = b - a; L = d.length
+        if L < 1e-6:
+            continue
+        k0 = 1.0 - 0.3 * i / n; k1 = 1.0 - 0.3 * (i + 1) / n
+        M = frame(a, d, (0, 0, 1) if abs(d.normalized().z) < 0.9 else (1, 0, 0))
+        p.add('arm%d' % i, 'body', 'steel', moved(prism([(rh * 0.6, octa(w * 0.45 * k0, th * k0, th * 0.4)), (L - rh * 0.5, octa(w * 0.42 * k1, th * k1, th * 0.35))]), M))
+        p.add('armplate%d' % i, 'body', 'soot', moved(block(L * 0.18, L * 0.78, w * 0.4 * k1, th * 0.22, th * 0.08, zo=th * k0 * 0.95), M))
+        for j in range(rivets):
+            x = L * (0.24 + 0.48 * j / max(1, rivets - 1))
+            for s_ in (1, -1):
+                p.add('rivet%d%d%d' % (i, j, s_ > 0), 'body', 'iron', moved(rod((x, s_ * w * 0.3 * k1, th * k0 * 1.12), (x, s_ * w * 0.3 * k1, th * k0 * 1.22), th * 0.13, 6), M))
+        # the ram: a cylinder on the segment's top, its rod reaching back across the joint behind it
+        r0 = M @ Vector((-rh * 0.4, 0, th * k0 * 1.9)); r1 = M @ Vector((L * 0.62, 0, th * k1 * 1.35))
+        p.add('ram_cyl%d' % i, 'body', 'iron', rod(r0.lerp(r1, 0.42), r1, th * 0.36, 10))
+        p.add('ram_rod%d' % i, 'body', 'steel', rod(r0, r0.lerp(r1, 0.46), th * 0.2, 8))
+        p.add('ram_lug%d' % i, 'body', 'steel', moved(block(L * 0.55, L * 0.7, th * 0.3, th * 0.45, th * 0.08, zo=th * k1 * 1.05), M))
+        if i < n - 1:
+            rk = rh * k1
+            p.add('joint%d' % i, 'body', 'iron', moved(revolve([(-w * 0.55, rk * 0.9), (-w * 0.5, rk), (w * 0.5, rk), (w * 0.55, rk * 0.9)], 14, cap0=True, cap1=True),
+                                                       Matrix.Translation(b) @ Matrix.Rotation(math.pi / 2, 4, 'Z')))
+            for s_ in (1, -1):
+                p.add('kplate%d%d' % (i, s_ > 0), 'body', 'steel', moved(block(-rk * 1.2, rk * 1.2, w * 0.05, rk * 1.1, rk * 0.3, yo=s_ * w * 0.6), Matrix.Translation(b)))
+                p.add('kpin%d%d' % (i, s_ > 0), 'body', 'steel', rod(b + Vector((0, s_ * w * 0.64, 0)), b + Vector((0, s_ * w * 0.74, 0)), rk * 0.4, 8))
+    # the pincer: a wrist block and two hooked fingers forking in the arm's vertical plane
+    d = (pts[-1] - pts[-2]).normalized()
+    up = Vector((0, 0, 1)) - d * d.z; up = up.normalized() if up.length > 1e-6 else Vector((1, 0, 0))
+    side = d.cross(up).normalized()
+    Mw = frame(pts[-1], d, up)
+    p.add('wrist', 'body', 'iron', moved(block(-th * 0.6, th * 0.8, w * 0.34, th * 0.95, th * 0.3), Mw))
+    for f, sg in enumerate((1, -1)):
+        a = pts[-1] + d * th * 0.7 + up * sg * th * 0.6
+        b = a + d * w * fork * 2.0 + up * sg * w * fork * 0.55
+        c = b + d * w * 0.75 - up * sg * w * 0.5 + up * (-hook) * w * 0.18
+        e = c - up * sg * w * 0.32 + d * w * 0.06
+        for j, (u0, u1, t0, t1) in enumerate(((a, b, 0.2, 0.16), (b, c, 0.16, 0.1), (c, e, 0.1, 0.02))):
+            M = frame(u0, u1 - u0, side)
+            L = (u1 - u0).length
+            p.add('finger%d%d' % (f, j), 'body', 'steel', moved(prism([(0.0, octa(w * 0.16, w * t0 * 0.8, w * 0.03)), (L, octa(w * 0.12, max(0.005, w * t1 * 0.8), 0.0))]), M))
+    p.fit = dict(tip=P(pts[-1] + d * w * 2.4))
     return p
 
 
@@ -681,6 +777,32 @@ def bay(w, l, leaves=2):
         x = -l / 2 + l * (i + 0.5) / 3
         for s in (1, -1):
             p.add('hinge%d%d' % (i, s > 0), 'body', 'iron', rod((x - 0.2, s * w / 2, 0.12), (x + 0.2, s * w / 2, 0.12), 0.06, 8))
+            # the door ram: from the rim, outboard of the hinge, to the leaf
+            p.add('ram%d%d' % (i, s > 0), 'body', 'steel', rod((x + 0.28, s * (w / 2 + 0.06), 0.1), (x + 0.28, s * (w / 2 - 0.35), 0.16), 0.035, 6))
+    # R224 (issue 532: A16's bay measured 0.18 of the hull's triangles per square unit): frames, rails and inner structure.
+    # Each leaf is a framed panel with stiffeners across it; guide rails run the length of both sides on brackets; the rim
+    # carries a row of rivets; a transverse frame closes each end of the well.
+    for i in range(leaves):
+        y0 = -w / 2 + w * i / leaves + 0.03; y1 = -w / 2 + w * (i + 1) / leaves - 0.03; yc = (y0 + y1) / 2; hw = (y1 - y0) / 2
+        for s in (1, -1):
+            p.add('frame%d%s' % (i, 'a' if s > 0 else 'b'), 'body', 'iron', block(-l / 2 + 0.06, l / 2 - 0.06, 0.05, 0.03, 0.01, yo=yc + s * (hw - 0.07), zo=0.15))
+        for k in range(5):
+            x = -l / 2 + l * (k + 0.5) / 5
+            p.add('stiff%d%d' % (i, k), 'body', 'steel', rod((x, y0 + 0.08, 0.15), (x, y1 - 0.08, 0.15), 0.035, 4))
+    for s in (1, -1):
+        yr = s * (w / 2 + 0.2)
+        p.add('rail%s' % ('a' if s > 0 else 'b'), 'body', 'iron', block(-l / 2 - 0.05, l / 2 + 0.05, 0.05, 0.05, 0.015, yo=yr, zo=0.14))
+        for k in range(6):
+            x = -l / 2 + l * (k + 0.5) / 6
+            p.add('bracket%d%s' % (k, 'a' if s > 0 else 'b'), 'body', 'steel', block(x - 0.06, x + 0.06, 0.07, 0.07, 0.01, yo=yr, zo=0.06))
+    for e in (1, -1):
+        p.add('endframe%s' % ('a' if e > 0 else 'b'), 'body', 'iron', block(e * (l / 2 - 0.02) - 0.05, e * (l / 2 - 0.02) + 0.05, w / 2 + 0.1, 0.05, 0.015, zo=0.12))
+    nr = max(8, int((l + w) / 0.25))
+    for k in range(nr):
+        f = (k + 0.5) / nr
+        for s in (1, -1):
+            for (x, y) in (((-l / 2 + l * f), s * (w / 2 + 0.07)), (s * (l / 2 + 0.07), (-w / 2 + w * f))):
+                p.add('rivet%d%s%d' % (k, 'a' if s > 0 else 'b', abs(x) > l / 2), 'body', 'iron', rod((x, y, 0.08), (x, y, 0.115), 0.025, 6))
     # rotate so +Z is out: the block axis (X) became Z above
     return p
 
@@ -748,4 +870,204 @@ def prong(length, width, thick, hook=0.35, joints=2, droop=0.0):
         M = frame(u0, u1 - u0, (0, 1, 0)); L = (u1 - u0).length
         p.add('hook%d' % k, 'body', 'steel', moved(prism([(0.0, octa(width * t0, thick * 0.6, thick * 0.2)), (L, octa(max(0.005, width * t1), thick * 0.4, 0.0))]), M))
     p.fit = dict(tip=P(a))
+    return p
+
+
+# ---------------------------------------------------------------------------------------------------- issue 633: the class family
+# Three parts the Hullbreaker class family (A18 Sniffer, A19 Mauler, A20 Den; issue 633) needs and every later Hullbreaker can use.
+def bow_launcher(tubes=1, r=0.14, reach=1.0, w=None, h=None, depth=0.55, variant=0, seg=18):
+    """a rocket casemate set IN a bow face (Ryan, Nov 12 on the Mauler: "the two mismatched casemates sit IN the bow face"):
+    an armoured plate bolted on the face, a box housing standing out of it with a sloped brow, and launch tubes coming out of
+    the housing's front, each a tube with a rolled lip, clamp bands, a dark bore and a rocket nose set back inside it.
+    tubes 1: one long tube reaching `reach` ahead of the housing on a brace (the long-barrelled one); tubes 3: a short fat
+    cluster of three, banded together (the short and fat one). Origin on the face at the casemate centre; +X out of the face
+    (the aim), +Z up, +Y left. Kind bow_launcher: a machine (R226), it rides whole with one piece."""
+    p = Part('bow_launcher')
+    if tubes == 1:
+        offs = [(0.0, 0.0)]
+    else:
+        offs = [(-r * 1.08, -r * 0.62), (r * 1.08, -r * 0.62), (0.0, r * 1.25)]
+    ext = max(abs(y) for y, _ in offs) + r * 1.5; ezt = max(abs(z) for _, z in offs) + r * 1.5
+    hw = (w or 2 * ext) / 2; hh = (h or 2 * ezt) / 2
+    pw, ph = hw + 0.08, hh + 0.08
+    p.add('plate', 'mount', 'iron', block(-0.22, 0.05, pw, ph, ph * 0.22))
+    # the housing: an octagonal box out of the plate, its front stepped back under a sloped brow
+    p.add('housing', 'body', 'soot', prism([(0.05, octa(hw, hh, hh * 0.2)), (depth * 0.7, octa(hw, hh, hh * 0.22)),
+                                            (depth, octa(hw * 0.94, hh * 0.86, hh * 0.24, 0, -hh * 0.1))]))
+    p.add('housing_brow', 'body', 'iron', prism([(depth * 0.35, [(hw * 1.02, hh * 0.86), (-hw * 1.02, hh * 0.86), (-hw * 1.02, hh * 1.06), (hw * 1.02, hh * 1.06)]),
+                                                 (depth * 1.05, [(hw * 0.98, hh * 0.72), (-hw * 0.98, hh * 0.72), (-hw * 0.98, hh * 0.82), (hw * 0.98, hh * 0.82)])]))
+    if variant % 2:
+        p.add('housing_patch', 'body', 'rust', block(depth * 0.2, depth * 0.62, 0.012, hh * 0.45, 0, yo=hw + 0.006, zo=-hh * 0.15))
+    exits = []
+    t = r * 0.16
+    x0 = depth - r * 0.6
+    L = reach if tubes == 1 else max(r * 1.6, reach)
+    for i, (yo, zo) in enumerate(offs):
+        M = Matrix.Translation((0, yo, zo))
+        xm = depth + L
+        prof = [(x0, r + t), (xm - r * 0.35, r + t), (xm - r * 0.25, r + t * 2.2), (xm, r + t * 2.0), (xm + 0.01, r), (x0 + r * 0.4, r)]
+        p.add('tube%d' % i, 'body', 'steel', moved(revolve(prof, seg, closed=True), M))
+        p.add('bore%d' % i, 'body', 'dark', moved(revolve([(x0 + r * 0.42, 0.001), (x0 + r * 0.42, r * 1.001), (xm - r * 1.2, r * 1.001)], seg), M))
+        # the rocket set back in its tube: a warhead nose (salvaged brass on the odd variant)
+        p.add('nose%d' % i, 'body', 'brass' if variant % 2 else 'warhead',
+              moved(revolve([(xm - r * 1.5, r * 0.82), (xm - r * 1.0, r * 0.8), (xm - r * 0.55, r * 0.42), (xm - r * 0.45, 0.001)], seg, cap0=True), M))
+        nb = 2 if L < r * 4 else 3
+        for j in range(nb):
+            xb = depth + (L - r * 0.6) * (j + 0.5) / nb
+            p.add('band%d_%d' % (i, j), 'body', 'iron', moved(ring_band(xb, r + t, r * 0.3, r * 0.12, seg), M))
+            for k in range(6):
+                a = 2 * math.pi * (k + 0.5) / 6; c, sn = math.cos(a), math.sin(a); rr = r + t + r * 0.1
+                p.add('bolt_b%d_%d_%d' % (i, j, k), 'body', 'iron', moved(rod((xb, rr * c, rr * sn), (xb, (rr + r * 0.08) * c, (rr + r * 0.08) * sn), r * 0.06, 6), M))
+        exits.append(dict(pos=P((xm + 0.01, yo, zo)), axis=D((1, 0, 0)), radius=r))
+    if tubes == 1:
+        # the long tube's brace: a strut from the housing brow to a clamp collar two thirds out, and a blast collar at the housing
+        xc = depth + L * 0.62
+        p.add('band_collar', 'body', 'iron', ring_band(depth + r * 0.5, r + t, r * 0.7, r * 0.22, seg))
+        p.add('housing_strut', 'body', 'steel', rod((depth * 0.95, 0, hh * 0.78), (xc, 0, r + t * 1.6), r * 0.16, 8))
+    else:
+        # the cluster's strap: a flat band round all three tubes
+        p.add('band_strap', 'body', 'iron', block(depth + r * 0.4, depth + r * 0.9, ext - r * 0.35, ezt - r * 0.4, r * 0.3, zo=0.0))
+    # a ring of bolts round the face plate
+    nb = 12
+    for k in range(nb):
+        f = (k + 0.5) / nb; ang = 2 * math.pi * f
+        y = (pw - 0.05) * max(-1.0, min(1.0, 1.4 * math.cos(ang))); z = (ph - 0.05) * max(-1.0, min(1.0, 1.4 * math.sin(ang)))
+        p.add('bolt%d' % k, 'mount', 'iron', rod((0.04, y, z), (0.08, y, z), 0.025, 6))
+    p.fit = dict(exits=exits, housing=dict(hw=hw, hh=hh, depth=depth))
+    return p
+
+
+def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7, doors=True):
+    """the dressing of a flank hangar mouth (issue 633, the Den: "two large, uneven open hangar mouths, dark rectangles framed in
+    torn plate with their armoured doors slid open"). The opening itself is the hull's own recess (the sheet leaves the flank
+    blocks out over it); this part frames it and fits it out so it reads as a launch bay with depth: a heavy rim round the
+    mouth with torn plate teeth on its edges, two armoured door leaves slid clear on guide rails (slide +1 forward, -1 aft),
+    launch rails on the floor running in to the back wall, ceiling beams with a dim red lamp, frame ribs on the side walls and
+    an inner blast door frame on the back wall (the way through to the hangar decks). Frame: origin at the mouth centre on
+    the flank face; +X forward, +Y out of the flank (a port mouth; mirror for starboard), +Z up. Kind hangar: structure (an
+    opening, R226), it may tear across a seam. doors=False (issue 668, a mouth in a bow face with no face beside it for the
+    leaves to slide onto): no door leaves and no door rails; the rim, teeth and the fit-out inside are the same.
+    R240 (Ryan, Nov 13 2026: "some sort of weird paint pattern in the opening of the carrier"): the inside reads as a dark, deep
+    bay with a few warm deck lights and worn edging, nothing patterned in it. The fit-out inside is dark (rails, beams, ribs and
+    the blast door frame in the dark liner's zone, so no stripes or plates catch the light in there), spaced unevenly, with no
+    rail ties (their even ladder read as a pattern); three small warm deck lights (material lamp) sit at uneven depths by the
+    floor's edge; only the rim and its torn teeth carry the worn iron edging."""
+    import random
+    rnd = random.Random(seed)
+    p = Part('hangar')
+    hl, hh = L / 2, H / 2
+    # the rim: four bars proud of the flank, sunk a little into it
+    for nm, (x0_, x1_, z0_, z1_) in (('top', (-hl - b, hl + b, hh, hh + b)), ('bot', (-hl - b, hl + b, -hh - b, -hh)),
+                                    ('fore', (hl, hl + b, -hh, hh)), ('aft', (-hl - b, -hl, -hh, hh))):
+        V, F = block(-0.08, 0.1, (x1_ - x0_) / 2, (z1_ - z0_) / 2, 0.025, yo=(x0_ + x1_) / 2, zo=(z0_ + z1_) / 2)
+        p.add('rim_%s' % nm, 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
+    # torn plate teeth on the rim's inner edges (ragged, uneven), each a thin slab lapping the opening
+    k = 0
+    for edge in ('top', 'bot'):
+        x = -hl + rnd.uniform(0.05, 0.25)
+        while x < hl - 0.2:
+            wd = rnd.uniform(0.18, 0.42); dz = rnd.uniform(0.05, 0.16)
+            z_in = hh - dz if edge == 'top' else -hh + dz
+            z_out = hh + b * 0.6 if edge == 'top' else -hh - b * 0.6
+            x1_ = min(hl - 0.05, x + wd)
+            V = [(x, 0.1, z_out), (x1_, 0.1, z_out), (x1_ - rnd.uniform(0.0, 0.08), 0.1, z_in), (x + rnd.uniform(0.0, 0.06), 0.1, z_in + (0.03 if edge == 'top' else -0.03))]
+            V = V + [(vx, 0.14, vz) for (vx, _, vz) in V]
+            F = [(0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)]
+            if edge == 'bot':
+                F = [tuple(reversed(f)) for f in F]
+            p.add('tooth%d' % k, 'mount', rnd.choice(['soot', 'rust', 'iron']), (V, F)); k += 1
+            x = x1_ + rnd.uniform(0.04, 0.2)
+    if doors:
+        # the two armoured door leaves, slid clear beside the mouth on the flank (outer leaf over the inner), and their rails
+        dl = hl + 0.08
+        xs = hl + b + 0.04 if slide > 0 else -hl - b - 0.04 - dl
+        for i, (y0_, y1_) in enumerate(((0.1, 0.2), (0.22, 0.32))):
+            xa = xs + (0.12 * i if slide > 0 else -0.12 * i)
+            V, F = block(y0_, y1_, dl / 2, hh + 0.04, 0.03, yo=xa + dl / 2, zo=0.0)
+            p.add('door%d' % i, 'mount', 'soot' if i else 'soot2', ([(y, x, z) for (x, y, z) in V], F))
+            for j in range(4):
+                xj = xa + dl * (j + 0.5) / 4
+                V, F = block(y1_, y1_ + 0.05, 0.035, hh * 0.9, 0.0, yo=xj, zo=0.0)
+                p.add('stiff%d_%d' % (i, j), 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
+            if i == 1:
+                # the outer leaf is scrap too (issue 633 round 2: a door leaf read as one big smooth face): patch plates of mixed
+                # size and colour bolted over it between the stiffeners, at the hull's plate size
+                zz = -hh
+                while zz < hh - 0.12:
+                    zh = min(hh - zz, rnd.uniform(0.28, 0.6)); xx = xa + 0.06
+                    while xx < xa + dl - 0.15:
+                        xw = min(xa + dl - xx, rnd.uniform(0.3, 0.75))
+                        if rnd.random() < 0.8:
+                            V, F = block(y1_, y1_ + rnd.uniform(0.025, 0.06), xw / 2 - 0.03, zh / 2 - 0.03, 0.01, yo=xx + xw / 2, zo=zz + zh / 2)
+                            p.add('dplate%d_%d_%d' % (i, int(xx * 100), int(zz * 100)), 'mount', rnd.choice(['soot', 'iron', 'rust', 'soot2', 'pale']),
+                                  ([(y, x, z) for (x, y, z) in V], F))
+                        xx += xw
+                    zz += zh
+        xr0 = min(-hl - b, xs) - 0.05; xr1 = max(hl + b, xs + dl + 0.15) + 0.05
+        for sg in (1, -1):
+            zr = sg * (hh + b + 0.07)
+            V, F = block(-0.02, 0.36, (xr1 - xr0) / 2, 0.05, 0.015, yo=(xr0 + xr1) / 2, zo=zr)
+            p.add('rail_%d' % (sg > 0), 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
+            for j in range(6):
+                xj = xr0 + (xr1 - xr0) * (j + 0.5) / 6
+                V, F = block(-0.05, 0.3, 0.05, 0.07, 0.01, yo=xj, zo=zr - sg * 0.06)
+                p.add('bracket_%d_%d' % (sg > 0, j), 'mount', 'steel', ([(y, x, z) for (x, y, z) in V], F))
+    # inside the mouth (R240): dark launch rails on the floor, dark ceiling beams and side wall ribs at uneven spacing, the dark
+    # inner blast door frame, and three small warm deck lights at uneven depths by the floor's edge; no ties, no stripes
+    for i, xl in enumerate((-hl * rnd.uniform(0.38, 0.5), hl * rnd.uniform(0.4, 0.52))):
+        p.add('lrail%d' % i, 'mount', 'dark', block(-depth + 0.05, 0.02, 0.045, 0.04, 0.01, yo=xl, zo=-hh + 0.04))
+        p.comps[-1]['verts'] = [Vector((v.y, v.x, v.z)) for v in p.comps[-1]['verts']]
+    for j, xb in enumerate((-hl * rnd.uniform(0.6, 0.78), hl * rnd.uniform(-0.12, 0.12), hl * rnd.uniform(0.55, 0.75))):
+        V, F = block(-depth + 0.05, 0.0, 0.07, 0.08, 0.02, yo=xb, zo=hh - 0.08)
+        p.add('beam%d' % j, 'mount', 'dark', ([(y, x, z) for (x, y, z) in V], F))
+    for j, (xs_, ys_) in enumerate(((-1, rnd.uniform(0.12, 0.2)), (1, rnd.uniform(0.38, 0.5)), (-1, rnd.uniform(0.7, 0.8)))):
+        xl_ = xs_ * (hl - 0.07)
+        p.add('lamp%d' % j, 'mount', 'lamp', block(xl_ - 0.025, xl_ + 0.025, 0.05, 0.018, 0.0, yo=-depth * ys_, zo=-hh + 0.03))
+    for sg in (1, -1):
+        y_ = -rnd.uniform(0.18, 0.4) * depth
+        for j in range(3):
+            V, F = block(-0.04, 0.06, 0.05, hh - 0.05, 0.01, yo=y_, zo=0.0)
+            p.add('rib_%d_%d' % (sg > 0, j), 'mount', 'dark', ([(sg * (hl - x), y, z) for (x, y, z) in V], F if sg > 0 else [tuple(reversed(f)) for f in F]))
+            y_ -= rnd.uniform(0.22, 0.36) * depth
+            if y_ < -depth + 0.15: break
+    fw, fh = hl * 0.62, hh * 0.72
+    for nm, (a0, a1, c0, c1) in (('top', (-fw, fw, fh - 0.1, fh)), ('bot', (-fw, fw, -hh, -hh + 0.1)), ('l', (-fw, -fw + 0.1, -hh, fh)), ('r', (fw - 0.1, fw, -hh, fh))):
+        V, F = block(-depth - 0.04, -depth + 0.08, (a1 - a0) / 2, (c1 - c0) / 2, 0.01, yo=(a0 + a1) / 2, zo=(c0 + c1) / 2)
+        p.add('inner_%s' % nm, 'mount', 'dark', ([(y, x, z) for (x, y, z) in V], F))
+    V, F = block(-depth - 0.02, -depth + 0.03, fw - 0.1, (fh + hh - 0.1) / 2, 0.0, zo=(fh - 0.1 - hh + 0.1) / 2)
+    p.add('inner_gap', 'mount', 'dark', ([(y, x, z) for (x, y, z) in V], F))
+    p.fit = dict(mouth=P((0, 0, 0)), axis=D((0, 1, 0)), L=L, H=H, depth=depth)
+    if not doors:
+        p.type = 'hangar_open'     # its own subpart list for the inventory's detail test (no door leaves, no door rails)
+    return p
+
+
+def craft(L=1.6, variant=0, seg=10):
+    """a cobbled Hullbreaker fighter (issue 633, the Den: "a cobbled fighter noses out of the forward mouth"; the game's squadron
+    is 1.6 long): an octagonal fuselage tapering to the nose, a dark canopy, two mismatched stub wings (one a salvaged plate in
+    another colour), a pair of small engine nozzles with a dim glow, two short nose guns, landing skids, a patch plate.
+    Origin on the floor under the craft's middle; +X the nose, +Z up. Kind craft: a parked craft, not one of the ship's machines."""
+    p = Part('craft')
+    s = L / 1.6
+    zc = 0.2 * s
+    p.add('fuselage', 'body', 'soot', prism([(-0.8 * s, octa(0.12 * s, 0.09 * s, 0.04 * s, 0, zc)), (-0.5 * s, octa(0.17 * s, 0.13 * s, 0.05 * s, 0, zc)),
+                                             (0.25 * s, octa(0.16 * s, 0.12 * s, 0.05 * s, 0, zc)), (0.8 * s, octa(0.05 * s, 0.04 * s, 0.015 * s, 0, zc - 0.02 * s))]))
+    p.add('canopy', 'body', 'dark', prism([(0.05 * s, octa(0.08 * s, 0.03 * s, 0.015 * s, 0, zc + 0.12 * s)), (0.38 * s, octa(0.05 * s, 0.02 * s, 0.01 * s, 0, zc + 0.1 * s))]))
+    for sg, span, m in ((1, 0.62, 'iron'), (-1, 0.5, 'rust' if variant % 2 == 0 else 'pale')):
+        V = [(-0.45 * s, sg * 0.14 * s, zc - 0.02 * s), (0.1 * s, sg * 0.14 * s, zc - 0.02 * s), (-0.25 * s, sg * span * s, zc - 0.05 * s), (-0.48 * s, sg * span * s, zc - 0.05 * s)]
+        V = V + [(x, y, z + 0.035 * s) for (x, y, z) in V]
+        F = [(0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)]
+        if sg < 0:
+            F = [tuple(reversed(f)) for f in F]
+        p.add('wing%d' % (sg > 0), 'body', m, (V, F))
+    for i, sg in enumerate((1, -1)):
+        M = Matrix.Translation((-0.8 * s, sg * 0.07 * s, zc))
+        p.add('nozzle%d' % i, 'body', 'steel', moved(revolve([(0.0, 0.045 * s), (-0.08 * s, 0.06 * s), (-0.08 * s, 0.045 * s), (0.0, 0.03 * s)], seg, closed=True), M))
+        p.add('glow%d' % i, 'body', 'ember', moved(revolve([(-0.02 * s, 0.001), (-0.02 * s, 0.035 * s)], seg), M))
+        p.add('barrel%d' % i, 'body', 'steel', rod((0.3 * s, sg * 0.1 * s, zc - 0.07 * s), (0.72 * s, sg * 0.1 * s, zc - 0.07 * s), 0.018 * s, 6))
+    for i, xk in enumerate((-0.4 * s, 0.25 * s)):
+        p.add('skid%d' % i, 'mount', 'iron', block(xk - 0.04 * s, xk + 0.04 * s, 0.12 * s, 0.05 * s, 0.01 * s, zo=0.05 * s))
+        p.add('skid_leg%d' % i, 'mount', 'steel', block(xk - 0.025 * s, xk + 0.025 * s, 0.03 * s, 0.07 * s, 0.0, zo=0.13 * s))
+    p.add('patch', 'body', 'rust' if variant % 2 else 'pale', block(-0.4 * s, -0.15 * s, 0.13 * s, 0.01 * s, 0.0, zo=zc + 0.13 * s))
+    p.fit = dict(nose=P((0.8 * s, 0, zc)), axis=D((1, 0, 0)))
     return p
