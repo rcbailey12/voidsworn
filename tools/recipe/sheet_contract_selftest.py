@@ -14,7 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.pa
 SHEETS = os.path.join(REPO, 'tools', 'blender', 'build_sheets'); sys.path.insert(0, SHEETS); sys.path.insert(0, HERE)
 import bpy
 from mathutils import Vector
-import kit, contract, gamedata
+import kit, contract, gamedata, variants
 
 a = sys.argv[sys.argv.index('--') + 1:]
 SHIP = json.load(open(a[0])); OUT = a[1]; os.makedirs(OUT, exist_ok=True)
@@ -30,7 +30,7 @@ def build():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sp = importlib.util.spec_from_file_location(SHIP['sheet'], os.path.join(SHEETS, 'ships', SHIP['sheet'] + '.py'))
     d = importlib.util.module_from_spec(sp); sp.loader.exec_module(d)
-    kit.use_kit(getattr(d, 'KIT', 'hullbreakers')); K = kit.Kit(SHIP['sheet'], d.LENGTH); d.build(K); K.finish(); bpy.context.view_layer.update()
+    K = variants.build(d, SHIP['game_ship']); bpy.context.view_layer.update()
     return d, K
 
 

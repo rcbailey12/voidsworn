@@ -40,3 +40,16 @@ Insides (R209): the sheet kit's `organ_room` (a lumpy organ, never a box that re
 following the hull) and `septum` (a membrane shelf, the Chorus deck), in tools/blender/build_sheets/kit.py.
 
 Every grown part is smooth shaded (`SMOOTH = True`).
+
+## Squadron craft (issue 793: chorus_CS1BA2, the spore swarm)
+
+A craft is about a seventeenth of the Ninefold Maw's length, so its parts take every size from their arguments. Ryan (R259): the
+closed hull, nothing open, no exposed fluid, amber as a matte translucent colour only, never a glow.
+
+| Part | data.js | What it is |
+|---|---|---|
+| `rocket_rack` (the acid sac, type `acid_sac`) | `sporeb` T, Acid sacs, 2 shots | a sealed gill bladder lying along the upper flank: a long swell of the flank (its outward axis the flank's own normal), raised gill bands across it, a muted matte amber blush in the valleys between them (the `amber` zone in this kit's `MATS`, merged by the ship file), a closed puckered sphincter at its front that squeezes the burst out; fixed (K.launcher asks every kit for `rocket_rack`), a machine |
+| `craft_vent` (`engine_bell(..., craft=True)`) | | one orifice of the muscle-ringed orifice cluster: a muscle cone into the hull, radial folds, a sphincter ring, an inner membrane iris, a dark throat, bile glow deep inside |
+
+`MACHINES` now carries `launcher` (an acid sac rides whole with one piece, R226); the C10 and C11 hulls carry no launcher, so they
+build as before.
