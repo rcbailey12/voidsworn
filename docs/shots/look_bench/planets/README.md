@@ -52,15 +52,15 @@ no close view uses a radius below 26.
 
 - [Battle camera 170](R01_compare_c170.jpg), [camera 60](R01_compare_c60.jpg),
   [camera 26](R01_compare_c26.jpg).
-- [Planet](R01_after_planet.png), [top-down board](R01_after_board_top.png).
+- [Planet](R01_after_planet.jpg), [top-down board](R01_after_board_top.jpg).
 - `after/run2/R01_planet.png` and `R01_cloud_motion.png` are four seconds apart.
   `R01_shadows_on.png` and `R01_shadows_off.png` hide the cloud shell and hold its
   field to expose the ground-shadow effect. The pair was inspected, with pixel
   differences recorded in `R01_visual_checks.json`.
 - Eight `R01_scan_*` images show each full scan beside its reduced mesh; five
-  `R01_biome_*` images show the tints. [One scan example](R01_scan_03.png).
+  `R01_biome_*` images show the tints. [One scan example](R01_scan_03.jpg).
 - `R01_scale_*` images show every real combat hull class and spawned wings at
-  cameras 170 and 60. [Frigate example](R01_scale_Frigate_c170.png): 10.4 units
+  cameras 170 and 60. [Frigate example](R01_scale_Frigate_c170.jpg): 10.4 units
   beside a proposed 37.91-unit rock. These larger sizes are a proposal, not the
   live field size. Raw class/rock/tint pictures are in `showcase/` in the PC packet.
 - `R01_sector_before_*` and `R01_sector_after_*` show the real campaign map and
@@ -128,3 +128,6 @@ Godot game checks. No workflow files were edited. Import-generated metadata was
 restored; no tracked changes remain outside scope.
 
 Refs #369. Refs #256. No commit or push was made.
+
+Board, Nov 16: the 51 captured PNGs in this folder were stored as JPEG quality 90 (same pixel size) to keep the repo small
+(44 MB to 11 MB); the capture scripts still write PNG, so convert after a rerun.
