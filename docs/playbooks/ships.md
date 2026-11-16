@@ -143,6 +143,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    with self-test faults; issue 793). This is the Board's reading for craft, not Ryan's
    words: change it if he rules otherwise. A craft sheet is LENGTH 1.6 (CLS_LEN Squadron, drawn 3.84, scale.md) and carries a
    small inside only because the build contract needs one: the game shows a craft's death as a spark (fx_death.gd _wing_death).
+12. **Openings have depth; big flanks have shape (R244, Ryan, Nov 14 2026).** A round opening is a real recess with a lip,
+   depth and working detail (a tube, launcher or thruster throat, lit or dark as its job says), never a flat painted disc.
+   Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks
+   carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow
+   and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
 
 ## 1. Target
 
