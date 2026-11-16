@@ -89,10 +89,9 @@ Newest first; roll into the summary above once there are about 15.
 
 Older items are in docs/archive/LOOP_history_2026-11-14.md and the FINDINGS rows that answered them (R254 to R268).
 
-- The fleet screen (FL1 and FL2 hybrid; Muse's chat, issue 794).
-- The issue 788 plan (synthesis on PR 801): the dot as nightly judge, build order, how reports reach him.
+- (answered R285 and R286: FL5 fleet screen and CR4 career screen settled; builds 868 and 869.)
 - (answered R270: 368 route A; merges held for his look; dot as nightly judge; all seven 788 steps.)
-- Effects round 3 look (issue 815) when it lands.
+- (Effects round 3, issue 815: merged and closed; the shield and storm follow-ups are 372 and 368.)
 
 ## Known traps
 - device_commit_files refuses files over about 25 MB (HTTP 400): split playtest zips into parts under 17 MB and unpack each (g2_pt_d32713f.bat shows how).
@@ -108,7 +107,7 @@ Older items are in docs/archive/LOOP_history_2026-11-14.md and the FINDINGS rows
 - GitHub failure emails that are not failures (found Nov 10 14:55 UTC): a pull request opened by auto_pr.yml is opened by github-actions[bot], so its `pull_request` run of checks.yml never starts a job and flips to 'failure' with zero jobs when the PR merges. The real checks are the workflow_dispatch run on the same commit. The check-runs API hides this (it shows the latest run per name); to see it list actions/runs?head_sha=<sha>. Before merging, read the workflow_dispatch run's jobs. The #359 helper is changing the triggers in PR #400 so each push gives exactly one real run.
 - The PC queue runs one job at a time: a long GPU job in queue\running\ (for example a helper's bake) holds every later .bat, including the workhorse launchers, until it ends. Check queue\running\ before assuming a workhorse run failed to start.
 
-- Jobs 1 to 5 of #305 left the campaign oracle copies alone or refreshed them by hand; #332 (running) was briefed before the audit and does not name godot/campaign/test/oracle or campaign_tables.json. When its PR lands, check those copies; #335 re-syncs them either way.
+- Jobs 1 to 5 of #305 left the campaign oracle copies alone or refreshed them by hand; #332 (closed) was briefed before the audit and does not name godot/campaign/test/oracle or campaign_tables.json. When its PR lands, check those copies; #335 re-syncs them either way.
 - A fresh workhorse checkout has no godot\gen hulls and no godot\assets\ships (both PC-built and ignored by git), so capture probes draw placeholder blocks (run 6 of #281 pushed with no new captures for this reason). Any capture job's brief must name a checkout to copy them from (for example work217\issue-281-deepseekpro\20261109_113656\repo\godot) and must say: if the probe shows blocks, stop and report.
 - A later push on codex/, muse/ or work/ now refreshes the PR text (PR 594). The docs README is still not rewritten by later runs: read the newest run's own last.md before judging what a run did.
 - A new Board thread starts with no PC folder (Nov 9, R152 handover): device_request_folder_access is refused in auto mode, and so is switching off another session's scheduled task. Ryan adds Downloads\voidsworn_test with the Add folder button in the desktop app. Ask for it in the first message of a handover.
