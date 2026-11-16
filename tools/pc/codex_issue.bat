@@ -125,6 +125,11 @@ if not errorlevel 1 set "PARTIAL=Codex left a merge unfinished"
 if defined PARTIAL set "PB=%BR%-partial"
 > "%O%\partial.txt" echo.%PARTIAL%
 if defined PARTIAL echo PARTIAL RUN, %PARTIAL%: the work goes to %PB%, which opens no pull request >> "%O%\result.txt"
+rem Issue 889: copy stamped, linked review pictures and use repo paths in the report.
+if not defined PARTIAL (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%review_evidence.ps1" prepare "%R%" "%O%" "docs/shots/issue-%N%-codex" >> "%O%\result.txt" 2>&1
+  if errorlevel 1 goto :guardfail
+)
 git add -A
 %PSW% guard %N% codex "%R%" "%O%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :guardfail

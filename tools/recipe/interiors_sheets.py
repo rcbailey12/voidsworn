@@ -1,3 +1,12 @@
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('installed in game')
+
 # Issue 557: label and arrange real Godot captures without rescaling their pixels.
 # python interiors_sheets.py SHOTS (contains legacy/authored/moved_*_camera*.png)
 import os, sys
@@ -13,12 +22,12 @@ def sheet(radius, names, title, filename):
     for col, (tag, label) in enumerate(names):
         draw.text((col * 640 + 16, 43), label, font=font, fill='#b7cfe2')
         for row, stage in enumerate(('wound', 'death')):
-            im = Image.open(os.path.join(out, f'{tag}_{stage}_camera{radius}.png')).convert('RGB')
+            im = PICTURES.open(os.path.join(out, f'{tag}_{stage}_camera{radius}.png')).convert('RGB')
             # Equal central crops, 1:1 pixels. The complete 1280x720 originals stay alongside this sheet.
             crop = im.crop((320, 220, 960, 520))
             canvas.paste(crop, (col * 640, 80 + row * 306))
     draw.text((16, 689), 'C15s_23 / Ab8 export fixture. Top: opened section. Bottom: death. Equal crops, original pixels.', font=small, fill='#c4cbd5')
-    canvas.save(os.path.join(out, filename))
+    PICTURES.save(canvas, os.path.join(out, filename))
 
 for radius in (170, 60):
     sheet(radius, [('legacy', 'Before: #167 runtime fallback'), ('authored', 'After: authored decks, frames, test machinery')],

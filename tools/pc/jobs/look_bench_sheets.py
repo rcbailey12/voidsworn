@@ -15,6 +15,15 @@ The difference number: the mean absolute difference of the two stills over every
 in 0 to 255 levels (0 means identical). A still "differs" when its number is over --tol.
 Needs Pillow (ComfyUI's portable Python has it; tools/pc/jobs/look_bench.bat finds it).
 """
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('installed in game')
+
 import argparse
 import csv
 import json
@@ -52,7 +61,7 @@ def load_run(d):
 
 
 def strip_cells(path, cell, n):
-    im = Image.open(path).convert("RGB")
+    im = PICTURES.open(path).convert("RGB")
     return [im.crop((i * cell[0], 0, (i + 1) * cell[0], cell[1])) for i in range(min(n, im.width // cell[0]))]
 
 
@@ -67,7 +76,7 @@ def sky_level(paths):
     """Mean brightness (0-255, Rec. 601 luma) of the four 30x30 corners of every fleet cell: the sky behind the ships."""
     vals = []
     for p in paths:
-        im = Image.open(p).convert("L")
+        im = PICTURES.open(p).convert("L")
         w, h = im.size
         for box in [(0, 0, 30, 30), (w - 30, 0, w, 30), (0, h - 30, 30, h), (w - 30, h - 30, w, h)]:
             vals.append(ImageStat.Stat(im.crop(box)).mean[0])
@@ -159,7 +168,7 @@ def main():
                             if d > a.tol:
                                 dr.rectangle((90 + i * cell[0], y, 90 + (i + 1) * cell[0] - 1, y + cell[1] - 1), outline=RED, width=3)
                 y += line_h
-        sheet.save(os.path.join(a.out, "moments", rid + ".jpg"), quality=a.quality)
+        PICTURES.save(sheet, os.path.join(a.out, "moments", rid + ".jpg"), quality=a.quality)
 
     # ---- overview: one row per moment, key cell at the three cameras (before and after pairs in compare mode)
     groups = []
@@ -199,7 +208,7 @@ def main():
                 x += 8 if before else 0
             y += cell[1] + 4
         safe = g.replace(" ", "_").replace(",", "")
-        sheet.save(os.path.join(a.out, "moments_overview_%s.jpg" % safe), quality=a.quality)
+        PICTURES.save(sheet, os.path.join(a.out, "moments_overview_%s.jpg" % safe), quality=a.quality)
 
     # ---- fleet sheets: 1 to 1 pixels, 6 a row
     fa = [s for s in after[0].get("stills", []) if s.get("part") == "fleet"]
@@ -220,7 +229,7 @@ def main():
         items = [s for s in fa if s["sky"] == sky]
         if not items:
             continue
-        im0 = Image.open(os.path.join(a.after, items[0]["file"]))
+        im0 = PICTURES.open(os.path.join(a.after, items[0]["file"]))
         cw, ch = im0.size
         per = 6 if not before else 3
         unit_w = cw * (2 if before else 1) + (6 if before else 0)
@@ -236,11 +245,11 @@ def main():
         for i, s in enumerate(items):
             x = (i % per) * (unit_w + 6)
             y = 40 + (i // per) * (ch + LABEL_H + 6)
-            ia = Image.open(os.path.join(a.after, s["file"])).convert("RGB")
+            ia = PICTURES.open(os.path.join(a.after, s["file"])).convert("RGB")
             what = s.get("what", "").replace("|", " ")
             lab = "%s  %s" % (s["code"], what)
             if before and (sky, s["code"]) in fb:
-                ib = Image.open(os.path.join(a.before, fb[(sky, s["code"])]["file"])).convert("RGB")
+                ib = PICTURES.open(os.path.join(a.before, fb[(sky, s["code"])]["file"])).convert("RGB")
                 sheet.paste(ib, (x, y + LABEL_H))
                 sheet.paste(ia, (x + cw + 6, y + LABEL_H))
                 d = diff(ib, ia)
@@ -250,7 +259,7 @@ def main():
             else:
                 sheet.paste(ia, (x, y + LABEL_H))
                 text(dr, (x + 4, y + 2), lab, F)
-        sheet.save(os.path.join(a.out, "fleet_%s.jpg" % sky), quality=92)
+        PICTURES.save(sheet, os.path.join(a.out, "fleet_%s.jpg" % sky), quality=92)
 
     # ---- numbers
     if before:

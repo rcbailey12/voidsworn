@@ -1,3 +1,12 @@
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('sheet built')
+
 # Build sheet layout (issue 532). Plain python with Pillow and numpy (no Blender).
 #   python layout.py <render dir> <repo root> <out dir>
 # Reads <render dir>/<code>_model.json and the renders build.py wrote, measures length, beam and height off the
@@ -38,7 +47,7 @@ PADS = {'side': (40, 70, 90), 'cutaway': (40, 70, 90), 'top': (110, 80, 90), 'un
 
 
 def flat(name):
-    im = Image.open(os.path.join(RD, name + '.png')).convert('RGBA')
+    im = PICTURES.open(os.path.join(RD, name + '.png')).convert('RGBA')
     sc_ = LS or M['views'].get(name, {}).get('px_per_unit', 40) / 40.0
     l_, t_, b_ = [int(v * sc_) for v in PADS.get(name, (0, 0, 0))]
     bg = Image.new('RGBA', (im.width + 2 * l_, im.height + t_ + b_), GREY + (255,)); bg.alpha_composite(im, (l_, t_))
@@ -284,11 +293,11 @@ label(dr, (14, 8), 'INSIDE: side section on the centreline (port half removed)',
 scalebar(dr, 30 * SC, cut.size[1] - 44 * SC)
 
 # beauty and blockout three-quarter
-beauty = Image.open(os.path.join(REPO, M['beauty'])).convert('RGB')
+beauty = PICTURES.open(os.path.join(REPO, M['beauty']), reference=True).convert('RGB')
 tq, _ = flat('threequarter')
 
 for nm, im in (('side', side), ('top', top), ('underside', und), ('bow', bow), ('stern', stern), ('cutaway', cut), ('threequarter', tq)):
-    im.save(os.path.join(OUT, nm + '.png'))
+    PICTURES.save(im, os.path.join(OUT, nm + '.png'))
 
 json.dump(checks, open(os.path.join(OUT, 'checks.json'), 'w'), indent=1)
 print(json.dumps(checks))
@@ -481,7 +490,7 @@ dr.text((PAD, int(110 * SC)), '%s  |  class %s  |  length %.1f world units (%s)'
 dr.text((PAD, int(150 * SC)), ('Build sheet v%s (%s, R217 to R219), %s. Every view' % (SHT.get('version', 3), SHT.get('round', 'round 3'), SHT.get('date', '2026-11-11'))) + ': an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
 dr.text((PAD, int(190 * SC)), 'Orange rings: feature-table IDs. Grey rings, dashed: far side. Station % from the prow tip. Counts in the table outrank the pictures.', font=f_m, fill=DIM)
 # FIRST: the accepted beauty beside the blockout at the camera fitted to it (R213)
-bcam = Image.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA'); bgc = Image.new('RGBA', bcam.size, GREY + (255,)); bgc.alpha_composite(bcam)
+bcam = PICTURES.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA'); bgc = Image.new('RGBA', bcam.size, GREY + (255,)); bgc.alpha_composite(bcam)
 bcam = bgc.convert('RGB')
 BW = (SW - 3 * PAD) // 2; BH = int(BW * beauty.height / beauty.width)
 dr.text((PAD, head - int(10 * SC)), 'ACCEPTED BEAUTY (identity: finish, colour, character)', font=f_m, fill=INK)
@@ -494,7 +503,7 @@ if WEAP:
             font=f_l, fill=INK)
     for i, w in enumerate(WEAP):
         x0 = PAD + i * (WR_W + PAD)
-        im = Image.open(os.path.join(RD, w['image'])).convert('RGBA')
+        im = PICTURES.open(os.path.join(RD, w['image'])).convert('RGBA')
         bg_ = Image.new('RGBA', im.size, GREY + (255,)); bg_.alpha_composite(im)
         sheet.paste(bg_.convert('RGB').resize((WR_W, WR_IH)), (x0, head + int(60 * SC)))
         ty = head + int(60 * SC) + WR_IH + int(20 * SC)
@@ -563,8 +572,8 @@ dr.text((xc, yy + 10), '- %d breach anchors (red diamonds), core (orange diamond
 dr.text((xc, yy + 50), 'Cyan rows: designed here, not shown in the picture.', font=f_s, fill=CYAN)
 sheet = sheet.crop((0, 0, SW, min(SH, max(yy + 120, y2 + 60 + LH * (len(F) + 3)))))
 pv = sheet.resize((int(sheet.width * 720 / sheet.height), 720), Image.LANCZOS)  # the preview is the main sheet, before the extras
-pv.save(os.path.join(OUT, 'preview.jpg'), quality=88)
-extra = [Image.open(os.path.join(OUT, n_)).convert('RGB') for n_ in ('fit_view.jpg', 'cells.jpg') if os.path.exists(os.path.join(OUT, n_))]
+PICTURES.save(pv, os.path.join(OUT, 'preview.jpg'), quality=88)
+extra = [PICTURES.open(os.path.join(OUT, n_)).convert('RGB') for n_ in ('fit_view.jpg', 'cells.jpg') if os.path.exists(os.path.join(OUT, n_))]
 if extra:
     ex_h = sum(int(e.height * min(1.0, (sheet.width - 2 * PAD) / e.width)) + PAD for e in extra)
     s2 = Image.new('RGB', (sheet.width, sheet.height + ex_h), (44, 44, 46)); s2.paste(sheet, (0, 0)); yy2 = sheet.height
@@ -572,5 +581,5 @@ if extra:
         k_ = min(1.0, (sheet.width - 2 * PAD) / e.width)
         e = e.resize((int(e.width * k_), int(e.height * k_))); s2.paste(e, (PAD, yy2)); yy2 += e.height + PAD
     sheet = s2
-sheet.save(os.path.join(OUT, 'sheet.jpg'), quality=90)
+PICTURES.save(sheet, os.path.join(OUT, 'sheet.jpg'), quality=90)
 print('sheet', sheet.size, 'preview', pv.size)

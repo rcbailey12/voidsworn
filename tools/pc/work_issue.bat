@@ -310,9 +310,10 @@ if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_after.txt") else (%PS% balance 
 %PS% stats %N% %ARM% "%O%" > nul
 move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul
 if "%PC_RUNNER_TEST%"=="1" if "%PC_TEST_STOP_BEFORE_PUBLISH%"=="1" goto :testfinish
-if exist "%O%\shots\*.png" (
-  if not exist "docs\shots\issue-%N%-%ARM%" mkdir "docs\shots\issue-%N%-%ARM%"
-  copy /y "%O%\shots\*.png" "docs\shots\issue-%N%-%ARM%\" > nul
+rem Issue 889: validate and copy linked pictures with sidecars, including JPG, WebP and GIF.
+if not defined PARTIAL (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%T%review_evidence.ps1" prepare "%R%" "%O%" "docs/shots/issue-%N%-%ARM%" >> "%O%\result.txt" 2>&1
+  if errorlevel 1 goto :guardfail
 )
 rem #357 / R144: a capture run can re-save tracked .import files; restore them before the commit.
 for /f "usebackq delims=" %%F in (`git ls-files "*.import"`) do git checkout -q -- "%%F"

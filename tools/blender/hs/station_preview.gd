@@ -103,7 +103,7 @@ func _run() -> void:
 					var name := "%s_godot_%d_%d_%s_4k.png" % [variant, int(size), facing, "battle" if distance == 170.0 else "close"]
 					var image := viewport.get_texture().get_image()
 					_require(image != null and image.get_size() == Vector2i(3840, 2160), "4K viewport capture failed")
-					_require(image.save_png(out.path_join(name)) == OK, "Screenshot save failed")
+					_require(preload("../../../godot/tools/picture_provenance.gd").save_png(image, out.path_join(name), "paint proof") == OK, "Screenshot save failed")
 					records.append({"image": name, "station_length": size, "lift": 3,
 						"facing_degrees": facing, "camera_radius": distance,
 						"camera_beta": 0.98, "camera_fov": camera.fov,

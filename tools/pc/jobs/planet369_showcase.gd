@@ -30,7 +30,7 @@ func shot(name: String, text: String) -> void:
 	if PG.stop_if_any(): return
 	var img := root.get_texture().get_image()
 	# 1280x720 viewport: every picture is a full frame at actual pixels.
-	img.save_png(out.path_join(name + ".png"))
+	preload("../../../godot/tools/picture_provenance.gd").save_png(img, out.path_join(name + ".png"))
 	print("R01_SHOWCASE ", name)
 
 func _run() -> void:

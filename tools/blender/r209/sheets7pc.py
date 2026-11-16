@@ -1,3 +1,12 @@
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('paint proof')
+
 # Issue 209 round 7: the sheets from the PC renders (out7 Ab7, out6f Ab6), the round 7 battle capture (out7b) and the far side
 # stills (out7c), about 2000 px wide, battle camera first (outside audit pass 2, finding 4).
 #   battle.jpg     (a) the game's own camera at true pixel size (Ab7 in the game, r 170, 1920x1080), then the studio battle camera
@@ -26,8 +35,8 @@ VIEW = (0, 250, 1024, 800)
 
 def flat(im, bg=BG):
     im = im.convert('RGBA'); b = Image.new('RGBA', im.size, bg + (255,)); b.alpha_composite(im); return b.convert('RGB')
-def P(d, n): return flat(Image.open(os.path.join(d, n)))
-def concept(bg=BG): return flat(Image.open(CONCEPT), bg).resize((1024, 1024), Image.LANCZOS)
+def P(d, n): return flat(PICTURES.open(os.path.join(d, n)))
+def concept(bg=BG): return flat(PICTURES.open(CONCEPT, reference=True), bg).resize((1024, 1024), Image.LANCZOS)
 def head(title, sub, lines=()):
     h = 130 + 34 * len(lines); im = Image.new('RGB', (W, h), BG); d = ImageDraw.Draw(im)
     d.text((28, 18), title, font=F(46, True), fill=FG); d.text((28, 80), sub, font=F(27), fill=DIM)
@@ -48,7 +57,7 @@ def text(lines, size=26, color=DIM):
 def stack(parts, name, q=86):
     h = sum(p.height for p in parts); out = Image.new('RGB', (W, h), BG); y = 0
     for p in parts: out.paste(p, ((W - p.width) // 2 if p.width < W else 0, y)); y += p.height
-    out.save(os.path.join(OUT, name), quality=q, optimize=True); print('wrote', name, out.size, flush=True)
+    PICTURES.save(out, os.path.join(OUT, name), quality=q, optimize=True); print('wrote', name, out.size, flush=True)
 def crop1024(im, b): s = im.width / 1024; return im.crop(tuple(int(v * s) for v in b))
 
 C = concept()
@@ -58,8 +67,8 @@ thirds = json.load(open(os.path.join(SIL, 'outline_thirds.json')))['cells']
 whole = json.load(open(os.path.join(SIL, 'silhouette_scores.json')))
 
 # ---- (a) battle distance
-g0 = Image.open(os.path.join(FIRE, 'raw_after_game', 'frame_00000.jpg')).convert('RGB')
-gs = Image.open(os.path.join(FIRE, 'stills', 'after_game_fire0_smoke.png')).convert('RGB')
+g0 = PICTURES.open(os.path.join(FIRE, 'raw_after_game', 'frame_00000.jpg')).convert('RGB')
+gs = PICTURES.open(os.path.join(FIRE, 'stills', 'after_game_fire0_smoke.png')).convert('RGB')
 cx, cy = 940, 560
 g1 = g0.crop((cx - 480, cy - 270, cx + 480, cy + 270))             # 1:1, true pixel size
 g2 = gs.crop((cx - 240, cy - 135, cx + 240, cy + 135)).resize((960, 540), Image.LANCZOS)
@@ -115,7 +124,7 @@ tab = ['Outline overlap per third at the concept camera (gate 90):  ' + '   '.jo
 sd6, sd7 = P(R6 + '/r', 'Ab6_side.png'), P(R7 + '/r', 'Ab7_side.png')
 sc6, sc7 = P(R6 + '/r', 'Ab6_side_clay.png'), P(R7 + '/r', 'Ab7_side_clay.png')
 sb = (160, 300, 1100, 950)
-th = lambda n: Image.open(os.path.join(SIL, n)).convert('RGB').crop(bb)
+th = lambda n: PICTURES.open(os.path.join(SIL, n)).convert('RGB').crop(bb)
 stack([head('The bow', 'Concept camera (paint under the concept rig, then clay), then straight from the side. Bow on the left.', ['By the numbers the bow is not closer than Ab6; see the outline and edge rows.']),
        row([lab(crop1024(C, bb), 'Concept'), lab(crop1024(a6, bb), 'Ab6'), lab(crop1024(a7, bb), 'Ab7')]),
        row([lab(crop1024(P(R6 + '/r', 'Ab6_concept_clay.png'), bb), 'Ab6 clay'), lab(crop1024(P(R7 + '/r', 'Ab7_concept_clay.png'), bb), 'Ab7 clay'),
@@ -127,7 +136,7 @@ stack([head('The bow', 'Concept camera (paint under the concept rig, then clay),
        row([lab(th('edges_Ab6.png'), 'Ab6 inner edges'), lab(th('edges_Ab7.png'), 'Ab7 inner edges')]),
        text(['Cyan: the concept\'s edges. Magenta: the model\'s (flat-shaded, so paint does not count). White: both.'], 23)], 'bow.jpg')
 bl = [crop1024(C, bb), crop1024(a7, bb)]
-bl[0].save(os.path.join(OUT, 'bow_blink.gif'), save_all=True, append_images=[bl[1]], duration=700, loop=0); print('wrote bow_blink.gif')
+PICTURES.save(bl[0], os.path.join(OUT, 'bow_blink.gif'), save_all=True, append_images=[bl[1]], duration=700, loop=0); print('wrote bow_blink.gif')
 
 # ---- (e) far side
 fs = [head('The far side, top and underside', 'Paint judged away from the concept camera too (R160). Studio rig, orthographic.')]
@@ -160,7 +169,7 @@ for v in ('side', 'top', 'below'):
 stack(ov, 'overview.jpg')
 
 # ---- (h) firing
-st = os.path.join(FIRE, 'stills'); S = lambda n: Image.open(os.path.join(st, n)).convert('RGB')
+st = os.path.join(FIRE, 'stills'); S = lambda n: PICTURES.open(os.path.join(st, n)).convert('RGB')
 rep = [l.strip() for l in open(os.path.join(U, 'out7b', 'fire', 'fire_report.txt')) if 'SMOKE_OFFSET' in l][:1]
 fr = [head('Ab7 firing its port casemates (step 5)', 'The game\'s own effects, unchanged. Two broadsides at a Hegemony destroyer. Game camera first, then close.',
            ['Where the smoke starts: on the deck near the centreline, about 6.4 world units (a quarter of the ship\'s length) inboard',

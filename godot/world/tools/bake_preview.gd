@@ -49,7 +49,7 @@ func _run() -> void:
 				"steps": 40, "lamp": PackedVector4Array(SKY.lamps(st)), "gal": PackedVector4Array(SKY.galaxies(st))}
 			var img: Image = await baker.bake("sky_" + s[0], SKY.bake_code(), params, Vector2i(w, w / 2), 4)
 			if img != null:
-				img.save_png(out.path_join("sky_%s.png" % s[0]))
+				preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("sky_%s.png" % s[0]))
 				print("saved sky ", s[0])
 		if only != "sky" and not s[3]:
 			var P: Dictionary = st["planet"]
@@ -57,6 +57,6 @@ func _run() -> void:
 				var pp := {"seed": float(int(st["seed"]) % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": pass_id}
 				var img2: Image = await baker.bake("pl_%s_%d" % [s[0], pass_id], PL.bake_code(), pp, Vector2i(w, w / 2), 2)
 				if img2 != null:
-					img2.save_png(out.path_join("planet_%s_%d.png" % [s[0], pass_id]))
+					preload("res://tools/picture_provenance.gd").save_png(img2, out.path_join("planet_%s_%d.png" % [s[0], pass_id]))
 		print("done ", s[0])
 	quit(0)
