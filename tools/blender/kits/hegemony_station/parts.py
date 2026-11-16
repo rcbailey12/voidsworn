@@ -105,6 +105,11 @@ class Parts:
             for i in range(steps):
                 a=j*steps+i; b=j*steps+(i+1)%steps
                 ff.append((a,b,b+rings*steps,a+rings*steps))
+        # Missing bowl cells and their inner/outer skins expose pitted dishes.
+        # Keep the feed and rim as machinery, rather than painting dark spots.
+        ff=[face for face in ff if not (len(face)==4 and
+            any((index%steps) in (5,6,19) and (index//steps)%rings in (2,3)
+                for index in face))]
         self.mesh('dish',vv,ff,'edge')
         for a in (0,TAU/3,TAU*2/3):
             self.rod((radius*0.8*math.cos(a),radius*0.8*math.sin(a),radius*.3),
@@ -152,6 +157,75 @@ class Parts:
             self.box((radius*math.cos(a),radius*math.sin(a),depth*.5),(.20,.24,.36),'plate2',rotation=a)
         # Segmented closed pressure door, well inside the dark bore.
         self.band(.02,radius*.71,-1.64,-1.57,steps=48,zone='recess',inside=True)
+        self.matrix=old
+
+    def damaged_drum(self, radius, bottom, height, hole=None, top_tear=False):
+        """Open thick shell with irregular missing cells and exposed deck structure.
+
+        The holes remove plates AND liner. Nothing closes them with a dark disc.
+        Sizes and positions come from the design, not a damage-coloured overlay.
+        """
+        centre=math.radians(hole[0] if hole else -70)
+        width=hole[1] if hole else 4.8
+        def missing(a, z):
+            delta=abs(math.atan2(math.sin(a-centre),math.cos(a-centre)))
+            if top_tear:
+                return delta*radius < width*.5*(.85+.18*math.sin(a*29)) and z>bottom+height*.28
+            return hole and (delta*radius/(width*.5))**2+((z-bottom-height*.53)/(height*.43))**2 < 1.0+.17*math.sin(a*41+z*13)
+        steps=80; tiers=6
+        for j in range(steps):
+            a0=TAU*j/steps; a1=TAU*(j+1)/steps
+            a=(a0+a1)/2
+            for k in range(tiers):
+                lo=bottom+k*height/tiers; hi=bottom+(k+1)*height/tiers
+                if missing(a,(lo+hi)/2): continue
+                self.band(radius-.22,radius,lo,hi,a0,a1,1,'liner',True)
+                self.band(radius,radius+.075,lo+.025,hi-.025,a0+.003,a1-.003,1,
+                          'plate2' if j%7==0 else 'plate')
+            for z in (bottom,bottom+height):
+                if missing(a,z): continue
+                self.band(radius-.25,radius+.14,z-.07,z+.07,a0,a1,1,'edge')
+            # Thin inward deck strips, with the top tear also cut through the deck lip.
+            if not (top_tear and missing(a,bottom+height)):
+                self.band(.9,radius-.24,bottom+.11,bottom+.22,a0,a1,1,'deck',True)
+        self.band(.7,.9,bottom+.12,bottom+height-.1,steps=32,zone='liner',inside=True)
+        for j in range(16):
+            a=TAU*j/16
+            self.rod((1.0*math.cos(a),1.0*math.sin(a),bottom+.3),
+                     ((radius-.35)*math.cos(a),(radius-.35)*math.sin(a),bottom+.3),.085,'frame',inside=True)
+            self.rod(((radius-.42)*math.cos(a),(radius-.42)*math.sin(a),bottom+.25),
+                     ((radius-.42)*math.cos(a),(radius-.42)*math.sin(a),bottom+height-.2),.085,'frame',inside=True)
+            self.box(((radius-1.0)*math.cos(a),(radius-1.0)*math.sin(a),bottom+.65),
+                     (.45,.65,.85),'rack',True,a)
+        if hole or top_tear:
+            # Peeled teeth are thickness-bearing panels, with narrow bent ribs behind.
+            for side in (-1,1):
+                a=centre+side*width*.49/radius
+                old=self.matrix.copy()
+                self.matrix=old @ Matrix.Translation(Vector((radius*math.cos(a),radius*math.sin(a),bottom+height*.7))) @ Matrix.Rotation(a,4,'Z') @ Matrix.Rotation(side*.65,4,'Y')
+                self.box((.35,0,0),(.9,.45,.13),'edge')
+                self.matrix=old
+            if top_tear:
+                for j in range(5):
+                    a=centre+(j-2)*.12
+                    self.rod(((radius-.6)*math.cos(a),(radius-.6)*math.sin(a),bottom+.5),
+                             ((radius+.4+j*.16)*math.cos(a),(radius+.4+j*.16)*math.sin(a),bottom+height+.5+j*.2),.09,'frame')
+
+    def bent_stub(self, length, width):
+        """Half arm with a sideways kink and a stripped, open frame at its end."""
+        first=length*.58
+        self.arm(first,width,2,cap=False)
+        old=self.matrix.copy()
+        self.matrix=old @ Matrix.Translation(Vector((first,0,-.15))) @ Matrix.Rotation(math.radians(24),4,'Z') @ Matrix.Rotation(.16,4,'Y')
+        tail=length-first
+        self.box((tail*.5,0,-width*.22),(tail,width*.88,.13),'deck',True)
+        for side in (-1,1):
+            for zz in (-width*.24,width*.24):
+                self.rod((0,side*width*.45,zz),(tail+.25,side*width*.5,zz+.22*side),.10,'frame',inside=True)
+            for j in range(4):
+                x=j*tail/3
+                self.rod((x,side*width*.45,-width*.24),(x,side*width*.45,width*.24),.08,'frame',inside=True)
+            self.box((tail*.18,side*width*.48,0),(tail*.36,.12,width*.55),'edge')
         self.matrix=old
 
     def arm(self, length, width, modules, broken=False, cap=True):
