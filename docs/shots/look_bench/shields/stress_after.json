@@ -1,26 +1,26 @@
 {
  "rows": [
   {
-   "frame_median": 2.833,
-   "gpu_median": 2.53299999237061,
+   "frame_median": 2.712,
+   "gpu_median": 2.42600011825562,
    "mode": "rest",
    "pixels": "1080p"
   },
   {
-   "frame_median": 3.231,
-   "gpu_median": 2.57100009918213,
+   "frame_median": 2.976,
+   "gpu_median": 2.54399991035461,
    "mode": "hit",
    "pixels": "1080p"
   },
   {
-   "frame_median": 4.591,
-   "gpu_median": 4.18800020217896,
+   "frame_median": 4.429,
+   "gpu_median": 4.06199979782104,
    "mode": "rest",
    "pixels": "4K"
   },
   {
-   "frame_median": 4.629,
-   "gpu_median": 4.22399997711182,
+   "frame_median": 4.584,
+   "gpu_median": 4.15700006484985,
    "mode": "hit",
    "pixels": "4K"
   }

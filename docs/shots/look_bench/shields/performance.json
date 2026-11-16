@@ -1,39 +1,40 @@
 {
-  "baseline_commit": "d32713f288",
+  "baseline_commit": "c6a46385803dde6e656756d7e25cceb80372969c",
+  "after_revision": "tree-4fd9819f",
   "adapter": "NVIDIA GeForce RTX 5080",
   "renderer": "forward_plus",
-  "method": "second full launch; median of three session medians; warmup 120 frames, measure 720 frames",
+  "method": "exclusive GPU claim; second complete launch; median of three session medians; warmup 120 frames, measured 720 frames",
   "gate_ms": 12.5,
   "scene_207": [
     {
       "measurement": "1080p frame",
-      "before_ms": 5.819,
-      "after_ms": 4.43,
-      "delta_ms": -1.389,
+      "before_ms": 5.794,
+      "after_ms": 5.782,
+      "delta_ms": -0.012,
       "binding_gate": true,
       "within_12_5_ms": true
     },
     {
       "measurement": "1080p GPU",
-      "before_ms": 2.494,
-      "after_ms": 2.504,
-      "delta_ms": 0.01,
+      "before_ms": 2.511,
+      "after_ms": 2.518,
+      "delta_ms": 0.007,
       "binding_gate": false,
       "within_12_5_ms": true
     },
     {
       "measurement": "4K frame",
-      "before_ms": 6.257,
-      "after_ms": 6.182,
-      "delta_ms": -0.075,
+      "before_ms": 7.573,
+      "after_ms": 6.595,
+      "delta_ms": -0.978,
       "binding_gate": false,
       "within_12_5_ms": true
     },
     {
       "measurement": "4K GPU",
-      "before_ms": 5.674,
-      "after_ms": 5.696,
-      "delta_ms": 0.022,
+      "before_ms": 5.549,
+      "after_ms": 5.616,
+      "delta_ms": 0.067,
       "binding_gate": true,
       "within_12_5_ms": true
     }
@@ -42,26 +43,26 @@
     "before": {
       "rows": [
         {
-          "frame_median": 2.827,
-          "gpu_median": 2.52999997138977,
+          "frame_median": 2.718,
+          "gpu_median": 2.4300000667572,
           "mode": "rest",
           "pixels": "1080p"
         },
         {
-          "frame_median": 3.078,
-          "gpu_median": 2.5789999961853,
+          "frame_median": 2.876,
+          "gpu_median": 2.48900008201599,
           "mode": "hit",
           "pixels": "1080p"
         },
         {
-          "frame_median": 4.62,
-          "gpu_median": 4.18100023269653,
+          "frame_median": 4.458,
+          "gpu_median": 4.0479998588562,
           "mode": "rest",
           "pixels": "4K"
         },
         {
-          "frame_median": 4.648,
-          "gpu_median": 4.26599979400635,
+          "frame_median": 4.513,
+          "gpu_median": 4.14499998092651,
           "mode": "hit",
           "pixels": "4K"
         }
@@ -71,31 +72,89 @@
     "after": {
       "rows": [
         {
-          "frame_median": 2.833,
-          "gpu_median": 2.53299999237061,
+          "frame_median": 2.712,
+          "gpu_median": 2.42600011825562,
           "mode": "rest",
           "pixels": "1080p"
         },
         {
-          "frame_median": 3.231,
-          "gpu_median": 2.57100009918213,
+          "frame_median": 2.976,
+          "gpu_median": 2.54399991035461,
           "mode": "hit",
           "pixels": "1080p"
         },
         {
-          "frame_median": 4.591,
-          "gpu_median": 4.18800020217896,
+          "frame_median": 4.429,
+          "gpu_median": 4.06199979782104,
           "mode": "rest",
           "pixels": "4K"
         },
         {
-          "frame_median": 4.629,
-          "gpu_median": 4.22399997711182,
+          "frame_median": 4.584,
+          "gpu_median": 4.15700006484985,
           "mode": "hit",
           "pixels": "4K"
         }
       ],
       "ships": 20
     }
+  },
+  "late_shaders": {
+    "before": {
+      "base": [
+        [
+          "exterior_alpha frame 479 33807.5 ms"
+        ],
+        [
+          "exterior_alpha frame 5806 124016.6 ms"
+        ],
+        [
+          "exterior_alpha frame 7636 150312.2 ms"
+        ]
+      ],
+      "res_2160": [
+        [
+          "exterior_alpha frame 2493 63137.7 ms"
+        ],
+        [
+          "exterior_alpha frame 4126 93348.0 ms"
+        ],
+        [
+          "exterior_alpha frame 9468 178496.5 ms"
+        ]
+      ]
+    },
+    "after": {
+      "base": [
+        [
+          "exterior_alpha frame 555 33606.2 ms"
+        ],
+        [
+          "exterior_alpha frame 6056 119529.3 ms"
+        ],
+        [
+          "exterior_alpha frame 7860 149671.1 ms"
+        ]
+      ],
+      "res_2160": [
+        [
+          "exterior_alpha frame 2624 62179.3 ms"
+        ],
+        [
+          "exterior_alpha frame 4292 89707.5 ms"
+        ],
+        [
+          "exterior_alpha frame 9709 177711.4 ms"
+        ]
+      ]
+    }
+  },
+  "sources_before": {
+    "godot/fx/fx_ship.gd": "2a791e8cba056cce0b877105b3bcbcf23f29c756bfe741390f5ea6678d8ec14d",
+    "godot/fx/fx_shaders.gd": "2639d853fbfae41a558b52dac0574d1cef5683f026f8096e9dd85f605f900eba"
+  },
+  "sources_after": {
+    "godot/fx/fx_ship.gd": "67a4bde08ce25d2373994b1f28c92012dbaa80d54258a19888112689cae1313c",
+    "godot/fx/fx_shaders.gd": "9cdbb0c22e3e5d78851ae49f3faee33fb7c7aa3ff3f642cc408a5b360d83b8d1"
   }
 }

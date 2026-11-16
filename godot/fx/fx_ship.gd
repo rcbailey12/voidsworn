@@ -49,6 +49,7 @@ var _shield_mi: MeshInstance3D = null
 var _shield_mat: ShaderMaterial = null
 var _shield_rest_mat: ShaderMaterial = null
 var _shield_tm: TriangleMesh = null
+var _shield_gap := 0.0
 var _shield_levels := Vector4.ONE
 var _shield_routing := Vector4.ZERO
 var _hit_i = 0
@@ -442,7 +443,10 @@ func _shield_skin() -> ArrayMesh:
 	var a: Array = sph.surface_get_arrays(0)
 	var positions: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
 	var extent: float = hull.box.size.length() * 2.0 + 2.0
-	var gap := clampf(hull.W * 0.025, 0.15, 0.5)
+	# Run 4: a separate energy layer, visible outside the plating at camera 170.
+	# Small hulls need a larger share of their beam to keep the gap readable.
+	var gap := maxf(hull.W * 0.16, 1.8)
+	_shield_gap = gap
 	var missing := 0
 	for i in positions.size():
 		var direction := positions[i].normalized()
@@ -455,6 +459,30 @@ func _shield_skin() -> ArrayMesh:
 	if missing > 0:
 		# A missing core ray is an explicit exception, never a silent bubble default.
 		push_warning("SHIELD_SKIN %s: %d/%d core rays missed; those directions use the enclosing radii" % [hull.code, missing, positions.size()])
+	# Round plate ridges into one energy envelope, rather than duplicating the
+	# plating's little facets. Keep at least half the stand-off on every core ray.
+	var neighbors: Array = []
+	var radii := PackedFloat32Array()
+	for p in positions:
+		neighbors.append([])
+		radii.append(p.length())
+	var minimum := radii.duplicate()
+	var indices: PackedInt32Array = a[Mesh.ARRAY_INDEX]
+	for face in range(0, indices.size(), 3):
+		for corner in 3:
+			var i: int = indices[face + corner]
+			for other in 3:
+				var j: int = indices[face + other]
+				if i != j and not neighbors[i].has(j): neighbors[i].append(j)
+	for pass_i in 6:
+		var rounded := radii.duplicate()
+		for i in radii.size():
+			var total: float = radii[i] * 2.0
+			for j in neighbors[i]: total += radii[j]
+			rounded[i] = total / (neighbors[i].size() + 2.0)
+		radii = rounded
+	for i in positions.size():
+		positions[i] = positions[i].normalized() * maxf(radii[i], minimum[i] - gap * 0.5)
 	a[Mesh.ARRAY_VERTEX] = positions
 	var raw := ArrayMesh.new()
 	raw.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
@@ -469,8 +497,12 @@ func _shield_skin() -> ArrayMesh:
 
 func _shield_material(material: ShaderMaterial) -> void:
 	var sc: Color = fac["shield"]
+	# Shared linear RGB ceiling after tint and fx_gain, before tonemapping.
+	# The brighter boundary shares this cap; face-on light is limited separately.
+	material.set_shader_parameter("light_cap", 3.0)
 	material.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	material.set_shader_parameter("rad", hull.shield_radii())
+	material.set_shader_parameter("hull_gap", _shield_gap)
 	material.set_shader_parameter("style", int(fac["shield_style"]))
 	material.set_shader_parameter("stb_sign", hull.stb_z)
 	material.set_shader_parameter("levels", _shield_levels)

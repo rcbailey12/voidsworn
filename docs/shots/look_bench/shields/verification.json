@@ -1,4 +1,10 @@
 {
+  "revision": "tree-4fd9819f",
+  "stage": "in-game bench; Ryan approval pending",
+  "production_sources": {
+    "godot/fx/fx_ship.gd": "67a4bde08ce25d2373994b1f28c92012dbaa80d54258a19888112689cae1313c",
+    "godot/fx/fx_shaders.gd": "9cdbb0c22e3e5d78851ae49f3faee33fb7c7aa3ff3f642cc408a5b360d83b8d1"
+  },
   "standing_checks": {
     "exit": 0,
     "known_findings": [
@@ -10,9 +16,31 @@
       "NEM-6",
       "UI-5"
     ],
-    "known_oracle_constant_differences": 12
+    "known_oracle_constant_differences": 12,
+    "command": "node contrib/opus/tools/run_all_checks.js"
   },
-  "destruction_suite": {
+  "godot_load_all": {
+    "scripts": 202,
+    "scenes": 12,
+    "failed": 0,
+    "exit": 0
+  },
+  "shield_pool_twin": {
+    "coverage_rows": 33,
+    "sequences": 3,
+    "steps": 23,
+    "failures": 0,
+    "exit": 0
+  },
+  "attach_check": {
+    "real_hulls": 36,
+    "fixtures": 3,
+    "failures": 0,
+    "effects_skipped": 0,
+    "exit": 0
+  },
+  "destruction_batch": {
+    "command": "godot/fx/test/check_destruction.bat",
     "exit": 0,
     "headless": [
       "destruction_steps_check",
@@ -25,70 +53,176 @@
       "playtest_batch1_check",
       "world/test_blockers"
     ],
-    "gpu": [
-      "fx_inside_probe (box)",
-      "destruction_fleet_probe (20 ships)"
-    ]
-  },
-  "real_shield_state": {
-    "exit": 0,
-    "failures": 0,
-    "factions": 4,
-    "via": "BattleAPI.new_battle_scenario, applyHit, startSideTurn, view"
-  },
-  "surface_capture": {
-    "warm_exit": 0,
-    "kept_exit": 0,
-    "readability_cases": 12,
-    "interior_samples_pass": 144,
-    "edge_samples_pass": 96,
-    "cap_linear_rgb": 0.65
-  },
-  "low_shader": {
-    "voidsworn": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
+    "gpu_probes": [
+      "fx_inside_probe",
+      "destruction_fleet_probe"
+    ],
+    "other_error_lines": 0,
+    "death_spawn_warning": "Both main and run 4 log two missing spawn_frame metadata ERROR lines under the same uncapped headless invocation. Both exit 0, every recorded picture is on the hull, and stray spawns are zero. Not counted as a clean pass.",
+    "main_exact": {
+      "mode": "death_check",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_death_main_exact",
+      "exit": 0,
+      "seconds": 4.66,
+      "errors": [
+        "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'.",
+        "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'."
+      ],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_death_main_exact.log"
     },
-    "hegemony": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
-    },
-    "corsair": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
-    },
-    "ithar": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
+    "after_exact": {
+      "mode": "death_check",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_death_exact",
+      "exit": 0,
+      "seconds": 4.5,
+      "errors": [
+        "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'.",
+        "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'."
+      ],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_death_exact.log"
     }
   },
-  "scene_gate": {
-    "warm_exit": 0,
-    "kept_exit": 0,
-    "modes": [
-      "base",
-      "res_2160"
-    ],
-    "sessions": 3
+  "surface": {
+    "states": 4,
+    "captures": 12,
+    "production_light_cap": 3.0,
+    "all_12_readability_cases_pass": true,
+    "hull_geometry_masks_exclude_engine_glow_and_bloom": true,
+    "cap_masks_match_the_stress_pose_and_exposure": true
   },
-  "hit_pair_capture": {
-    "script_failures": 0,
-    "stills": 6,
-    "frames_per_strip": 18,
-    "native_exit": -1073741819,
-    "native_exit_hex": "0xC0000005",
-    "unchanged_production_files_same_native_exit": true,
-    "baseline_capture": "baseline_hit_shutdown",
-    "kept_capture": "hit_kept",
-    "not_counted_as_passed_process": true
+  "captures_and_timings": {
+    "run4_proof": {
+      "mode": "surface",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_proof",
+      "exit": 0,
+      "seconds": 17.44,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_proof.log"
+    },
+    "run4_delivered_hit": {
+      "mode": "bursts",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_delivered_hit",
+      "exit": 0,
+      "seconds": 67.72,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_delivered_hit.log"
+    },
+    "run4_phone_main": {
+      "mode": "bursts",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_phone_main",
+      "exit": 0,
+      "seconds": 63.94,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_phone_main.log"
+    },
+    "run4_phone_run3": {
+      "mode": "bursts",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_phone_run3",
+      "exit": 0,
+      "seconds": 72.78,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_phone_run3.log"
+    },
+    "run4_low": {
+      "mode": "surface",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_low",
+      "exit": 0,
+      "seconds": 16.94,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_low.log"
+    },
+    "run4_stress_main": {
+      "mode": "stress",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_stress_main",
+      "exit": 0,
+      "seconds": 31.53,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_stress_main.log"
+    },
+    "run4_stress": {
+      "mode": "stress",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_stress",
+      "exit": 0,
+      "seconds": 32.72,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_stress.log"
+    },
+    "run4_gate_main": {
+      "mode": "gate",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_gate_main",
+      "exit": 0,
+      "seconds": 192.8,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_gate_main.log"
+    },
+    "run4_gate": {
+      "mode": "gate",
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-372\\shots\\run4_gate",
+      "exit": 0,
+      "seconds": 191.05,
+      "errors": [],
+      "log": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\sh372_run4\\run4_gate.log"
+    }
   },
-  "not_run": {
-    "full_rules_and_campaign_parity": "No rules, saves, tables or oracle files changed. CI still runs the full parity job."
+  "ship_files": {
+    "source": "C:/Users/rcbai/Downloads/voidsworn_test/build/godot",
+    "manifest_files": 252,
+    "mismatches": 0,
+    "placeholders_accepted": 0
   },
-  "pending": [
-    "Ryan visual approval",
-    "issue 256 outside check"
-  ],
-  "committed": false,
-  "pushed": false
+  "crackle_bake": {
+    "seed": 372,
+    "frames": 16,
+    "cell": 256,
+    "rebaked_pixels_equal": true
+  },
+  "frame_gate": {
+    "gate_ms": 12.5,
+    "1080p_frame_ms": 5.782,
+    "4K_gpu_ms": 5.616,
+    "pass": true,
+    "late_shader": "exterior_alpha is logged once per session/mode on both main and run 4; no new late shield shader"
+  },
+  "not_run_here": {
+    "full_rules_and_campaign_parity": "No rules, browser files, tables, saves or UI changed. The fresh-export/oracle-copy guard passes; the runner and GitHub handle the parity suites.",
+    "outside_check_256": "Pending the Board and a different model.",
+    "Ryan_visual_approval": "Pending; main has more free patterned surface and the Sunward V16_37 remains pale at peak impact."
+  },
+  "git": {
+    "head_unchanged": "2ce54122",
+    "worker_commits": 0,
+    "worker_pushes": 0,
+    "worker_merges": 0
+  },
+  "r129": {
+    "callers": "shield_point and shield_hit signatures and returned hit dictionary retained; drawing and hit BVH use the same final skin",
+    "saves": "unchanged",
+    "rules_twins_and_oracles": "unchanged; no refresh due",
+    "UI": "unchanged",
+    "future_GitHub_checks": [
+      "standing checks",
+      "Godot rules parity",
+      "Godot game checks"
+    ]
+  },
+  "restored_import_metadata": [
+    "godot/fx/atlases/death/capital/cool_flow.png.import",
+    "godot/fx/atlases/death/capital/cool_thickness.png.import",
+    "godot/fx/atlases/death/capital/flash_flow.png.import",
+    "godot/fx/atlases/death/capital/flash_thickness.png.import",
+    "godot/fx/atlases/death/capital/vent_flow.png.import",
+    "godot/fx/atlases/death/capital/vent_thickness.png.import",
+    "godot/fx/atlases/death/cruiser/cool_flow.png.import",
+    "godot/fx/atlases/death/cruiser/cool_thickness.png.import",
+    "godot/fx/atlases/death/cruiser/flash_flow.png.import",
+    "godot/fx/atlases/death/cruiser/flash_thickness.png.import",
+    "godot/fx/atlases/death/cruiser/vent_flow.png.import",
+    "godot/fx/atlases/death/cruiser/vent_thickness.png.import",
+    "godot/fx/atlases/death/small/cool_flow.png.import",
+    "godot/fx/atlases/death/small/cool_thickness.png.import",
+    "godot/fx/atlases/death/small/flash_flow.png.import",
+    "godot/fx/atlases/death/small/flash_thickness.png.import",
+    "godot/fx/atlases/death/small/vent_flow.png.import",
+    "godot/fx/atlases/death/small/vent_thickness.png.import"
+  ]
 }

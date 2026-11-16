@@ -963,15 +963,18 @@ uniform vec3 brk_dir = vec3(1.0, 0.0, 0.0);
 uniform float regen_t = -100.0;
 uniform int edge_mode = 0;
 uniform vec3 edge_col = vec3(1.0);
+uniform float pulse_gain = 1.0;
 varying vec3 vL;
 varying vec3 vW;
 varying vec3 vN;
 varying vec3 vLocalN;
+varying vec3 vEnvelopeN;
 void vertex() {
 	vL = VERTEX;
 	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vN = MODEL_NORMAL_MATRIX * NORMAL;
 	vLocalN = NORMAL;
+	vEnvelopeN = MODEL_NORMAL_MATRIX * (VERTEX / max(rad * rad, vec3(0.0001)));
 }
 vec4 facing_weights(vec3 p) {
 	// The same 50/130 degree boundaries as rules.gd shieldQuad, softly joined.
@@ -982,32 +985,33 @@ vec4 facing_weights(vec3 p) {
 	float side = max(0.0, 1.0 - bow - rear);
 	return vec4(bow, angle >= 0.0 ? side : 0.0, rear, angle < 0.0 ? side : 0.0);
 }
-// x core, y ripple, z local pattern, w lingering local rim. No whole-skin term.
+// x impact, y travelling ripple, z brief whole-shell pulse, w struck-side rim.
 vec4 shield_field(vec3 p, vec3 n, float wpx) {
-	float radius = max(max(rad.x, rad.y), rad.z);
 	vec4 field = vec4(0.0);
 	for (int i = 0; i < 6; i++) {
 		float age = scene_t - hits[i].w;
 		float life = max(hitw[i].y, 0.001);
 		if (age < 0.0 || age >= life) { continue; }
-		vec3 hn = snorm(hits[i].xyz / max(rad * rad, vec3(0.0001)));
 		vec3 delta = p - hits[i].xyz;
 		float d = length(delta);
-		float reach = max(radius * 0.28, min(wpx * 14.0, radius * 0.45));
-		float mask = 1.0 - smoothstep(reach * 0.22, reach, d);
-		mask *= smoothstep(-0.05, 0.3, dot(n, hn));
+		float power = min(hitw[i].x, 3.0);
+		float reach = max(hitw[i].z, wpx * 22.0);
+		float mask = 1.0 - smoothstep(reach * 0.35, reach, d);
 		float fade = spow(1.0 - age / life, 2.0) * smoothstep(0.0, mix(0.025, 0.10, fx_calm), age);
-		float core = exp(-spow(d / max(radius * 0.06, wpx * 1.5), 2.0));
+		float core = exp(-spow(d / max(0.6 + power * 0.25, wpx * 2.5), 2.0));
+		core *= (1.0 - age / life) * mix(1.0, 0.4, fx_calm);
 		float ripple = 0.0;
-		for (int j = 0; j < 3; j++) {
+		for (int j = 0; j < 2; j++) {
 			float a = age - float(j) * 0.08;
-			if (a > 0.0 && a < 0.55) {
-				float width = max(radius * 0.02, wpx);
-				ripple += exp(-spow((d - a * radius * 0.8) / width, 2.0)) * (1.0 - a / 0.55);
+			if (a > 0.0) {
+				float width = max(0.10 + a * 0.35, wpx * 0.8);
+				ripple += exp(-spow((d - a * reach * 1.6) / width, 2.0)) * (j == 0 ? 1.2 : 0.6);
 			}
 		}
-		float power = min(hitw[i].x, 2.5);
-		field += vec4(core * power, ripple, power, 1.0) * mask * fade;
+		float pulse_age = clamp(age / min(life, 0.75), 0.0, 1.0);
+		float pulse = spow(1.0 - pulse_age, 2.0) * smoothstep(0.0, mix(0.04, 0.12, fx_calm), age);
+		pulse *= 0.28 * mix(1.0, 0.6, fx_calm) * pulse_gain;
+		field += vec4(core * fade, ripple * mask * (0.6 + 0.4 * power) * fade, pulse, mask * fade) * power;
 	}
 	return field;
 }
@@ -1020,6 +1024,11 @@ render_mode unshaded, blend_mix, depth_draw_never, cull_back, shadows_disabled, 
 uniform sampler2D splash : filter_linear, repeat_disable;
 uniform float contact_gain = 1.0;
 uniform float bend_gain = 1.0;
+uniform float hull_gap = 0.0;
+uniform float boundary_gain = 1.0;
+uniform float crackle_gain = 1.0;
+// Linear RGB after tint and fx_gain. Shared by all hits and overlapping folds.
+uniform float light_cap;
 #ifndef COMPAT
 #ifndef REST
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear, repeat_disable;
@@ -1028,24 +1037,24 @@ uniform sampler2D screen_tex : hint_screen_texture, filter_linear, repeat_disabl
 #endif
 float faction_mask(vec3 p) {
 	if (style == 0) {
-		// Sunward: the existing ridged crackle, used only as a local mask.
-		return spow(1.0 - abs(fbm(p.xy * 0.6 + p.zx * 0.4 + scene_t * 0.4) * 2.0 - 1.0), 8.0);
+		// Main's ridged gold veil, visible across the skin during the pulse.
+		return 0.12 + 1.8 * spow(1.0 - abs(fbm(p.xy * 0.6 + p.zx * 0.4 + scene_t * 0.4) * 2.0 - 1.0), 8.0);
 	} else if (style == 1) {
-		// Hegemony: the existing hex cells, without their old filled interiors.
+		// Main's hex lattice and faint cell interiors.
 		vec2 hp = vec2(atan(p.z, p.y) * 0.5 * (rad.y + rad.z), p.x) / 1.5;
 		const vec2 hs = vec2(1.0, 1.7320508);
 		vec4 hcc = floor(vec4(hp, hp - vec2(0.5, 1.0)) / hs.xyxy) + 0.5;
 		vec4 hh = vec4(hp - hcc.xy * hs, hp - (hcc.zw + 0.5) * hs);
 		vec2 hq = abs(dot(hh.xy, hh.xy) < dot(hh.zw, hh.zw) ? hh.xy : hh.zw);
 		float hd = 0.5 - max(dot(hq, hs * 0.5), hq.x);
-		return 1.0 - smoothstep(0.0, 0.07, hd);
+		return 0.04 + 1.7 * (1.0 - smoothstep(0.0, 0.07, hd));
 	} else if (style == 2) {
 		// Hullbreakers: the existing irregular patch mask, with calm breathing.
 		float fl = mix(step(0.3, vnoise(vec2(scene_t * 28.0, 3.0))), 0.8, fx_calm);
-		return smoothstep(0.35, 0.65, fbm(p.xz * 0.35 + p.y * 0.2 + scene_t * 0.7)) * mix(0.5, 1.0, fl);
+		return mix(0.35, 1.2, smoothstep(0.35, 0.65, fbm(p.xz * 0.35 + p.y * 0.2 + scene_t * 0.7))) * mix(0.5, 1.0, fl);
 	}
 	// Glasswrights: the existing smooth prismatic bands.
-	return 0.6 + 0.4 * sin(p.x * 0.8 + p.y * 0.6 + scene_t * 1.4);
+	return 0.7 + 0.5 * (0.6 + 0.4 * sin(p.x * 0.8 + p.y * 0.6 + scene_t * 1.4));
 }
 void fragment() {
 	vec4 weights = facing_weights(vL);
@@ -1053,7 +1062,8 @@ void fragment() {
 	if (live <= 0.001) { discard; }
 	vec3 N = normalize(vN);
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
-	float fres = spow(1.0 - abs(dot(N, V)), 3.0);
+	// Smooth envelope normals carry a continuous boundary across small hull ridges.
+	float fres = max(spow(1.0 - abs(dot(N, V)), 2.0), spow(1.0 - abs(dot(normalize(vEnvelopeN), V)), 3.0));
 	float wpx = px_world(1.0, -VERTEX.z, PROJECTION_MATRIX);
 #ifdef REST
 	vec4 field = vec4(0.0);
@@ -1061,6 +1071,10 @@ void fragment() {
 	vec4 field = shield_field(vL, normalize(vLocalN), wpx);
 #endif
 	vec3 C = col;
+	if (style == 0) {
+		// Gold-white stored energy, separated from the hull hit's ember core.
+		C = mix(col, edge_col * max(max(col.r, col.g), col.b), 0.4);
+	}
 	if (style == 3) {
 		float hue = fract(dot(N, vec3(0.3, 0.5, 0.2)) + scene_t * 0.1);
 		C = mix(col, clamp(abs(fract(hue + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0), 0.3);
@@ -1070,48 +1084,79 @@ void fragment() {
 		float eh = fract(dot(N, vec3(0.5, 0.3, 0.7)) * 1.5 + fres * 0.8);
 		edge = mix(edge_col, clamp(abs(fract(eh + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0), 0.45);
 	}
-	float pat = field.z > 0.001 ? faction_mask(vL) : 0.0;
-	vec3 core = clamp(mix(C, vec3(1.0), 0.3) * field.x * 0.35 + C * pat * field.z * 0.30, vec3(0.0), vec3(0.55));
-	vec3 ripple = clamp(C * field.y * 0.30, vec3(0.0), vec3(0.30));
+	float pat = field.x + field.y + field.z > 0.001 ? faction_mask(vL) : 0.0;
+	// The surface carries the pattern; the outline and moving wave carry the hit.
+	// Stronger light belongs outside the hull silhouette, never over its plating.
+	float veil = pat * (0.24 + 0.35 * fres);
+	vec3 core = edge * field.x * 0.35 + C * field.z * veil;
+	vec3 ripple = mix(C, edge, 0.25) * field.y * (0.05 + pat * 0.28);
 	// A baked discharge on the skin, separate from the weapon's booked point sparks.
 	float radius = max(max(rad.x, rad.y), rad.z);
 	vec3 crackle = vec3(0.0);
 #ifndef REST
 	for (int i = 0; i < 6; i++) {
 		float age = scene_t - hits[i].w;
-		if (age < 0.0 || age >= 0.18) { continue; }
+		if (age < 0.0 || age >= 0.24) { continue; }
 		vec3 hn = snorm(hits[i].xyz / max(rad * rad, vec3(0.0001)));
 		vec3 tangent = snorm(cross(hn, abs(hn.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
 		vec3 delta = vL - hits[i].xyz;
 		vec2 uv = vec2(dot(delta, tangent), dot(delta, cross(hn, tangent))) / max(radius * 0.36, wpx * 12.0) + 0.5;
 		if (min(uv.x, uv.y) < 0.0 || max(uv.x, uv.y) > 1.0 || length(delta) > radius * 0.3 || dot(normalize(vLocalN), hn) < 0.0) { continue; }
-		float frame = floor(clamp(age / 0.18, 0.0, 0.999) * 16.0);
+		float frame = floor(clamp(age / 0.24, 0.0, 0.999) * 16.0);
 		vec2 cell = vec2(mod(frame, 4.0), floor(frame / 4.0));
 		vec2 ink = texture(splash, (cell + clamp(uv, vec2(0.004), vec2(0.996))) * 0.25).rg;
 		float rise = smoothstep(0.0, mix(0.025, 0.10, fx_calm), age);
-		crackle += (mix(C, vec3(1.0), 0.65) * ink.r + C * ink.g * 0.35) * rise;
+		crackle += (mix(C, edge, 0.75) * ink.r * 1.6 + C * ink.g * 0.18) * rise;
 	}
 #endif
-	core = clamp(core + crackle, vec3(0.0), vec3(0.55));
+	core += crackle * crackle_gain;
 	float regen = scene_t - regen_t;
 	float seam = regen > 0.0 && regen < 0.65 ? sin(regen / 0.65 * 3.14159265) * 0.12 : 0.0;
-	vec3 rim = clamp(edge * fres * (0.12 + min(field.w, 1.0) * 0.08 + dot(weights, routing) * 0.06 + seam), vec3(0.0), vec3(0.35));
+	vec3 rim = edge * fres * (0.12 + (min(field.w, 1.0) * 2.2 + min(field.z * 3.0, 1.0) * 2.0) * boundary_gain + dot(weights, routing) * 0.06 + seam);
 	vec3 contact = vec3(0.0);
-	float solid_surface = 1.0 - smoothstep(0.10, 0.85, fres);
+	float face_visibility = 1.0;
+	float gap_band = 1.0;
 #ifndef COMPAT
 #ifndef REST
 	float scene_z = -scene_view_pos(SCREEN_UV, INV_PROJECTION_MATRIX).z;
 	float gap = abs(scene_z + VERTEX.z);
+	// Leave dark space between the hull silhouette and the energy boundary.
+	// Only the edge and moving wave should be strong over distant scenery.
+	face_visibility = mix(1.0, 0.10, smoothstep(max(3.0, hull_gap * 4.0), max(6.0, hull_gap * 6.0), gap));
+	if (face_visibility < 0.5) {
+		// Keep a few real screen pixels dark beside the plating. These reads are
+		// only on the exposed shell, never on its much larger face over the hull.
+		vec2 step_uv = vec2(4.0 * VIEWPORT_SIZE.y / 1080.0) / VIEWPORT_SIZE;
+		for (int j = 0; j < 8; j++) {
+			float angle = float(j) * 0.78539816;
+			vec2 at = clamp(SCREEN_UV + vec2(cos(angle), sin(angle)) * step_uv, vec2(0.001), vec2(0.999));
+			float near_z = -scene_view_pos(at, INV_PROJECTION_MATRIX).z;
+			gap_band = min(gap_band, smoothstep(max(3.0, hull_gap * 4.0), max(6.0, hull_gap * 6.0), abs(near_z + VERTEX.z)));
+		}
+	}
 	float touch = 1.0 - smoothstep(0.0, 0.35, gap);
-	solid_surface *= 1.0 - smoothstep(0.35, 1.5, gap);
-	contact = clamp(edge * touch * min(field.z, 1.0) * contact_gain * 0.18, vec3(0.0), vec3(0.30));
+	contact = clamp(edge * touch * min(field.w, 1.0) * contact_gain * 0.18, vec3(0.0), vec3(0.30));
 #endif
 #endif
 	// Caps are linear RGB, after faction tint and fx_gain, before blend and tonemap.
-	// Six overlapping hits, routing, contact and regen share this one 0.65 ceiling.
+	// Six overlapping hits, routing, contact and regen share the same ceiling.
 	// Coverage dims the resting rim. A caught hit still has a readable energy core;
 	// an empty pool was discarded above, so open sides never light up.
-	vec3 contribution = clamp(((core + ripple) * solid_surface + contact + rim * clamp(live, 0.0, 1.0)) * fx_gain, vec3(0.0), vec3(0.65));
+	vec3 contribution = max((core * face_visibility + ripple * mix(face_visibility, 1.0, 0.6) + contact + rim * gap_band * clamp(live, 0.0, 1.0)) * fx_gain, vec3(0.0));
+	// Scale RGB together so red-orange discharges never clip into a pink wash.
+	// A 0.55 face cap preserves hull detail; grazing boundary light may reach 3.0.
+	float surface_cap = mix(0.55, light_cap, smoothstep(0.12, 0.75, fres));
+#ifdef COMPAT
+	// The fallback has no depth reads; alpha keeps its total light below 0.35.
+	surface_cap = min(surface_cap, 1.0);
+#endif
+#ifndef COMPAT
+#ifndef REST
+	// Even a grazing fold over opaque plating must keep the hull readable.
+	surface_cap = min(surface_cap, mix(light_cap, 0.35, step(0.5, face_visibility)));
+#endif
+#endif
+	contribution *= min(1.0, surface_cap / max(max(max(contribution.r, contribution.g), contribution.b), 0.00001));
 	if (max(max(contribution.r, contribution.g), contribution.b) < 0.001 && field.y < 0.001) { discard; }
 #ifdef REST
 	// Mix a faint edge only. Repeated concave faces cannot add up beyond the rim colour.
@@ -1119,22 +1164,22 @@ void fragment() {
 	ALPHA = clamp(fres * live * (0.12 + dot(weights, routing) * 0.06 + seam), 0.0, 0.35);
 #else
 #ifdef COMPAT
-	// Low tier: no depth or screen texture. Bounded alpha keeps the hull readable.
+	// Low tier keeps the pulse and cap without screen or depth reads.
 	ALBEDO = contribution;
 	ALPHA = min(0.35, max(max(contribution.r, contribution.g), contribution.b) * 2.0);
 #else
 	// Compose against the opaque scene once per fragment, rather than adding
-	// every folded skin face. Self-overlap can never exceed the shared 0.65 cap.
+	// every folded skin face. Self-overlap cannot exceed the shared light cap.
 	vec2 offset = vec2(0.0);
 	float envelope = 0.0;
 	for (int i = 0; i < 6; i++) {
 		float age = scene_t - hits[i].w;
-		if (age < 0.0 || age >= 0.35) { continue; }
+		if (age < 0.0 || age >= 0.65) { continue; }
 		vec3 delta = vL - hits[i].xyz;
-		float reach = max(radius * 0.28, min(wpx * 14.0, radius * 0.45));
+		float reach = max(hitw[i].z, wpx * 22.0);
 		float mask = 1.0 - smoothstep(reach * 0.22, reach, length(delta));
 		float rise = smoothstep(0.0, mix(0.025, 0.10, fx_calm), age);
-		float fade = (1.0 - age / 0.35) * rise * mask;
+		float fade = (1.0 - age / 0.65) * rise * mask;
 		vec2 direction = (VIEW_MATRIX * MODEL_MATRIX * vec4(delta, 0.0)).xy;
 		direction /= max(length(direction), 0.0001);
 		offset += direction * fade * min(field.y, 1.0) * mix(0.010, 0.004, clamp(length(delta) / reach, 0.0, 1.0));
@@ -1143,7 +1188,7 @@ void fragment() {
 	float magnitude = length(offset);
 	offset *= min(1.0, 0.010 / max(magnitude, 0.00001)) * bend_gain;
 	// Bend distant scenery, while keeping nearby hull detail and contact edges crisp.
-	float scenery = smoothstep(0.35, 1.0, gap);
+	float scenery = smoothstep(max(0.35, hull_gap * 2.0), max(1.0, hull_gap * 3.0), gap);
 	vec2 candidate = clamp(SCREEN_UV + offset, vec2(0.001), vec2(0.999));
 	float candidate_z = -scene_view_pos(candidate, INV_PROJECTION_MATRIX).z;
 	scenery *= 1.0 - smoothstep(0.5, 1.5, abs(candidate_z - scene_z));
@@ -1153,7 +1198,7 @@ void fragment() {
 	float bend_alpha = min(0.45, envelope * min(field.y, 1.0) * live * 0.45) * bend_gain;
 	ALBEDO = mix(original, refracted, bend_alpha) + contribution;
 	// Feather faint light instead of re-resolving the opaque hull's silhouette.
-	// Every target colour is still bounded by scene + 0.65, even when faces overlap.
+	// Every target colour is bounded by scene + light_cap, even when faces overlap.
 	ALPHA = clamp(max(max(contribution.r, contribution.g), contribution.b) * 8.0 + bend_alpha, 0.0, 1.0);
 #endif
 #endif
