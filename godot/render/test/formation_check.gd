@@ -79,10 +79,13 @@ func replace_meshes(wing: Node3D, dimensions: Vector3, offset := Vector3.ZERO) -
 
 func _run() -> void:
 	# Every craft kind the factory can draw, not only the faction defaults.
+	# Counts 3 and 6 are the arrowhead Ryan asked for (R280); 4 stays covered
+	# because setup accepts any count.
 	for fac in CRAFT.DEFAULT_KIND:
 		for kind in ["fighter", "bomber", "spore"]:
-			var wing := make_wing(fac, kind, 3.84, 6 if fac == "chorus" else 4, 2.731)
-			exercise(wing, fac + "|" + kind)
+			for count in [3, 4, 6]:
+				var wing := make_wing(fac, kind, 3.84, count, 2.731)
+				exercise(wing, "%s|%s count %d" % [fac, kind, count])
 	# Read the accepted sheets' own measurements instead of copying their sizes.
 	var sheets := ProjectSettings.globalize_path("res://../docs/ship_pipeline/build_sheets")
 	for code in ["voidsworn_SF3", "voidsworn_SB4"]:

@@ -84,7 +84,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		hull = WING.new()
 		hull.name = "hull"
 		add_child(hull)
-		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 4, bob_seed)
+		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 3, bob_seed)
 		_collect(hull)
 		_ring()
 		position = world_pos
