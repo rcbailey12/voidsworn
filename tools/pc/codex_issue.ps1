@@ -12,6 +12,11 @@ if ($mode -eq 'prep') {
     $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-codex-board' } `
       -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
   }
+  $body = [string]$i.body
+  $bodyFile = Join-Path $out 'issue_body.txt'
+  [IO.File]::WriteAllText($bodyFile, $body, $utf8)
+  & (Join-Path $PSScriptRoot 'runner_common.ps1') base $repo $out $bodyFile
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   $resume = ''; $rp = Join-Path $out 'resume.txt'
   if (Test-Path -LiteralPath $rp) { $resume = [IO.File]::ReadAllText($rp) }
   $body = [string]$i.body
@@ -31,6 +36,7 @@ Rules:
   Godot, if a check needs it: $godot (use --headless).
 - No em dashes in anything you write. Plain words.
 - Do not commit and do not push: the runner does that after you finish.
+- The runner handles Base and resume merges before you start. Do not run git merge; report a missing base in your report.
 - GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. It takes one of two shared GPU slots;
   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
   gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
