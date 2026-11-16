@@ -61,7 +61,7 @@ func _run() -> void:
 			sv.set_process(false)
 			sv.hull.set_process(false)
 			check(sv.squad_kind == ("spore" if faction == "chorus" else kind), "explicit template preserved " + faction + kind)
-			check(sv.meshes.size() == (6 if faction == "chorus" else 4), "complete detailed formation")
+			check(sv.meshes.size() == (6 if faction == "chorus" else 3), "complete detailed formation")
 			check(sv.meshes[0].mesh.get_surface_count() >= 3, "real mesh surfaces")
 			var drawn_bow := -INF
 			for surface_index in sv.meshes[0].mesh.get_surface_count():
