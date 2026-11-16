@@ -29,9 +29,16 @@ for name in ('side', 'top', 'underside', 'bow', 'stern', 'cutaway', 'threequarte
     Image.open(OUT / (name + '.png')).convert('RGB').save(OUT / (name + '.jpg'), quality=92)
 Image.open(AFTER / 'weapon_turret.png').convert('RGB').save(OUT / 'weapon_turret.jpg', quality=92)
 for src, dst in (('corsair_A20_fit.json', 'fit.json'), ('corsair_A20_model.json', 'model.json'),
+                 ('corsair_A20_weapon_match.json', 'weapon_match.json'),
                  ('R244_geometry.json', 'R244_geometry.json')):
     shutil.copy2(AFTER / src, OUT / dst)
 shutil.copy2(BEFORE / 'R244_geometry.json', OUT / 'R244_before_geometry.json')
+# Keep the full construction sheet below the runner's 8 MB file limit.
+# This is the current R244 sheet, never a fallback to the previous ship.
+sheet = Image.open(OUT / 'sheet.jpg').convert('RGB')
+sheet.save(OUT / 'sheet.jpg', quality=85, optimize=True)
+if (OUT / 'sheet.jpg').stat().st_size >= 8_000_000:
+    raise RuntimeError('R244 sheet.jpg exceeds the 8 MB delivery limit')
 
 # Re-score at the existing concept camera. Its saved IoU belongs to an older hull.
 beauty = Image.open(REPO / 'contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg').convert('RGB')
@@ -96,7 +103,7 @@ for view in ('bow', 'side'):
     d.text((866, 367), 'Intake detail' if view == 'bow' else 'Plan / bow left', fill=DIM, font=font(18))
     notes(d, 442, 610, 'Bores closed after 0.14 units.' if view == 'bow' else 'Straight walls and a constant-width slab.')
     notes(d, 866, 610, '2.08 units clear to the rear baffles; stepped rings and rolled lips.' if view == 'bow' else 'Broad shoulder facets, lower chines, a recessed waist and stepped armour.')
-    d.text((18, 686), 'Same cameras and light. Geometry proof in sheet colours; GPU paint and in-game review follow with the Board.', fill=DIM, font=font(18))
+    d.text((18, 686), 'Same cameras and light. Sheet colours show geometry; painted and in-game views are separate.', fill=DIM, font=font(18))
     canvas.save(OUT / ('A20_' + view + '_R244_before_after.jpg'), quality=94)
 
 for name in ('bow_detail', 'flank_detail', 'flank_starboard'):
@@ -111,6 +118,6 @@ d.text((18, 76), 'ACCEPTED CONCEPT', fill=ACCENT, font=font(21))
 d.text((658, 76), 'AFTER / CPU BUILD SHEET', fill=ACCENT, font=font(21))
 paste(canvas, beauty, (12, 112, 616, 520))
 paste(canvas, Image.open(AFTER / 'beauty_cam.png'), (652, 112, 616, 520))
-d.text((18, 678), 'R244 geometry proof. Same concept camera; the accepted Hullbreaker paint stack is queued separately by the Board.', fill=DIM, font=font(18))
+d.text((18, 678), 'R244 geometry proof at the same concept camera. Separate paint views use the shared Hullbreaker stack.', fill=DIM, font=font(18))
 canvas.save(OUT / 'beauty_vs_blockout.jpg', quality=94)
 print('R244 sheet and labeled 1280 x 720 comparisons:', OUT)

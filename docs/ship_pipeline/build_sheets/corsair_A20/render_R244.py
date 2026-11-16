@@ -2,8 +2,8 @@
 
 blender -b -t 6 -P render_R244.py -- corsair_A20 TEMP_OUTPUT render
 Set SHIP_FILE to an earlier design file for the before captures.
-The shared sheet renderer is executed unchanged except its GPU setup is replaced
-in memory. This job must never use the GPU reserved for the Board's paint run.
+The shared sheet renderer reads SHEET_DEVICE; this script sets it to CPU so
+geometry captures leave the GPU free for the separate paint run.
 """
 from pathlib import Path
 import json

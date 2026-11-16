@@ -7,9 +7,9 @@
  "cls": "Carrier",
  "band": "L",
  "expected_breach": 7,
- "unbaked": true,
- "maps": 0,
- "triangles": 88306,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 89978,
  "turret_triangles": 2852,
  "turrets": [
   {
@@ -81,7 +81,7 @@
    "arc_frame": "bearing from the bow, + to port"
   }
  ],
- "surfaces": 12,
+ "surfaces": 15,
  "destruction": {
   "version": 1,
   "seams": [
@@ -952,7 +952,7 @@
    "radius": 0.0,
    "section": "mid",
    "side": "P",
-   "clear": 0.0917
+   "clear": 0.0461
   },
   {
    "name": "hp_breach_3",
@@ -1178,19 +1178,67 @@
   "turrets": 2,
   "files": {
    "C16s_23.glb": {
-    "bytes": 4847624,
-    "sha256": "a8e4f5a3d72fcbad9d2565698a2962053ef7841e1ebe5c978326f5d39a975785"
+    "bytes": 8068376,
+    "sha256": "3c1867cccec53743b04426f0d01a3f0ea58b0f2f8e4ac536013f13a0b24888b1"
+   },
+   "C16s_23_base.jpg": {
+    "bytes": 1394693,
+    "sha256": "6d228e840a979cbe19c5825a2df0d2f9d1f687358003227c67b4cca688c6d9f2"
+   },
+   "C16s_23_glow_emission.jpg": {
+    "bytes": 228677,
+    "sha256": "5b212d3e191a898a9e4b556cf5afbfe3908218551309c626b3c6af55567dddba"
+   },
+   "C16s_23_normal.jpg": {
+    "bytes": 180270,
+    "sha256": "2088cc2354fdcd664b992e77faecbc6301420e90e0a21ece8a7dc135ff1a5449"
+   },
+   "C16s_23_orm.jpg": {
+    "bytes": 1952341,
+    "sha256": "9935800aa8ba19ec849a87563fa540cf6b3c86da3a2213f4d46ec19f79f5bd13"
+   },
+   "C16s_23_parts_base.jpg": {
+    "bytes": 1168637,
+    "sha256": "06fef821339cc51a3206ba8c2a6ca6560bc46d7b9eaa1a1775901779cbd546b4"
+   },
+   "C16s_23_parts_orm.jpg": {
+    "bytes": 1694329,
+    "sha256": "5a40a5d71a91024ce20e853a4f70ade7d39b7ff991404fd040cb8b2b37bb2bbf"
    }
   },
   "pc_path": "godot/assets/ships/C16s_23/"
  },
  "files": {
   "C16s_23.glb": {
-   "bytes": 4847624,
-   "sha256": "a8e4f5a3d72fcbad9d2565698a2962053ef7841e1ebe5c978326f5d39a975785"
+   "bytes": 8068376,
+   "sha256": "3c1867cccec53743b04426f0d01a3f0ea58b0f2f8e4ac536013f13a0b24888b1"
+  },
+  "C16s_23_base.jpg": {
+   "bytes": 1394693,
+   "sha256": "6d228e840a979cbe19c5825a2df0d2f9d1f687358003227c67b4cca688c6d9f2"
+  },
+  "C16s_23_glow_emission.jpg": {
+   "bytes": 228677,
+   "sha256": "5b212d3e191a898a9e4b556cf5afbfe3908218551309c626b3c6af55567dddba"
+  },
+  "C16s_23_normal.jpg": {
+   "bytes": 180270,
+   "sha256": "2088cc2354fdcd664b992e77faecbc6301420e90e0a21ece8a7dc135ff1a5449"
+  },
+  "C16s_23_orm.jpg": {
+   "bytes": 1952341,
+   "sha256": "9935800aa8ba19ec849a87563fa540cf6b3c86da3a2213f4d46ec19f79f5bd13"
+  },
+  "C16s_23_parts_base.jpg": {
+   "bytes": 1168637,
+   "sha256": "06fef821339cc51a3206ba8c2a6ca6560bc46d7b9eaa1a1775901779cbd546b4"
+  },
+  "C16s_23_parts_orm.jpg": {
+   "bytes": 1694329,
+   "sha256": "5a40a5d71a91024ce20e853a4f70ade7d39b7ff991404fd040cb8b2b37bb2bbf"
   }
  },
- "seconds": 2.0,
+ "seconds": 11.3,
  "not_written": [
   "<CODE>_wreck.glb (the death pieces)",
   "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",

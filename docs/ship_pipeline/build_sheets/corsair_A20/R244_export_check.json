@@ -3,7 +3,7 @@
  "problems": [],
  "notes": [
   "authored interiors: 896 triangles, 10 surfaces; authored seams: 3",
-  "90262 triangles (46192 on part surfaces), box x -0.500 to 0.500, y -0.109 to 0.167, z -0.212 to 0.218",
+  "91934 triangles (47864 on part surfaces), box x -0.500 to 0.500, y -0.109 to 0.167, z -0.212 to 0.218",
   "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
   "turrets: 2 written (turret_0 T1, turret_1 T2); marked by the kit: ['T1', 'T2']"
  ],
@@ -48,7 +48,14 @@
   "rcs": 2,
   "gun": 4
  },
- "maps": [],
+ "maps": [
+  "C16s_23_parts_orm.jpg",
+  "C16s_23_parts_base.jpg",
+  "C16s_23_normal.jpg",
+  "C16s_23_orm.jpg",
+  "C16s_23_base.jpg",
+  "C16s_23_glow_emission.jpg"
+ ],
  "tolerance": 0.011999999642372132,
  "tolerance_of_length": 0.012,
  "ship_length": 0.9999999701976776,
@@ -168,7 +175,7 @@
     0.0,
     -1.0
    ],
-   "clear": 0.0917
+   "clear": 0.0461
   },
   {
    "name": "hp_breach_3",
