@@ -6,11 +6,10 @@ $ErrorActionPreference = 'Stop'
 $mode = $args[0]; $n = $args[1]; $repo = $args[2]; $out = $args[3]
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 if ($mode -eq 'prep') {
-  if ($env:PC_RUNNER_TEST -eq '1') {
-    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
-  } else {
-    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-codex-board' } `
-      -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  $i = Get-Content -LiteralPath (Join-Path $out 'validated_issue.json') -Raw | ConvertFrom-Json
+  $state = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+  if ($i.number -ne $n -or $i.run -ne $state.run -or $state.instruction_run -ne $state.run -or $state.status -ne 'running') {
+    throw 'job preparation refused: no validated current instruction for this run; no agent started'
   }
   $body = [string]$i.body
   $bodyFile = Join-Path $out 'issue_body.txt'

@@ -8,15 +8,21 @@ const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const zlib = require('zlib');
-const { spawnSync } = require('child_process');
+const { spawnSync, spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner846 proof '));
+const gh = require('../../../tools/pc/runner_claim_fixture')(root);
 const write = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
 const read = p => fs.readFileSync(p, 'utf8');
 for (const name of ['codex_issue', 'work_issue']) {
   const bat = read(path.join(pc, name + '.bat'));
   const prep = read(path.join(pc, name + '.ps1'));
   assert(bat.includes('%COMMON% announce '));
+  assert(bat.indexOf('%COMMON% announce ') < bat.indexOf('%COMMON% checkout '), 'claim before checkout');
+  assert(bat.indexOf('%COMMON% announce ') < bat.indexOf('%COMMON% preflight '), 'claim before any model call');
+  assert(/%COMMON% announce [^\r\n]+\r?\nif errorlevel 1 exit \/b 14/.test(bat), 'claim failures must stop the runner');
+  assert(prep.includes("'validated_issue.json'"), 'prep uses the validated snapshot');
+  assert(!prep.includes('Invoke-RestMethod -UseBasicParsing -Headers'), 'prep cannot fetch a different brief');
   assert(bat.indexOf('%COMMON% announce ') < bat.indexOf('call "%T' + (name === 'codex_issue' ? 'P' : '') + '%tmo.bat"'));
   assert(prep.includes("'runner_common.ps1') base $repo $out $bodyFile"));
   assert(prep.includes('Do not run git merge'));
@@ -47,33 +53,7 @@ write(path.join(upstream, 'HEAD'), 'ref: refs/heads/main\n');
 for (const [name, id] of Object.entries({ main, 'work/issue-800': clean, fast, conflict })) {
   write(path.join(upstream, 'refs/heads', name), id + '\n');
 }
-write(path.join(root, 'fake gh.ps1'), `
-$ErrorActionPreference = 'Stop'
-$words = @($args)
-if ($words[0] -ne 'api') { throw 'Only gh api REST is allowed' }
-$method = $words[2]; $endpoint = $words[3]
-$payload = $null
-if ($words -contains '--input') { $payload = Get-Content -LiteralPath $words[([array]::IndexOf($words, '--input') + 1)] -Raw | ConvertFrom-Json }
-$call = @{ words = $words; method = $method; endpoint = $endpoint; payload = $payload }
-Add-Content -LiteralPath $env:PC_TEST_GH_TRACE -Value ($call | ConvertTo-Json -Depth 10 -Compress)
-if ($env:PC_TEST_GH_FAIL -eq '*' -or $env:PC_TEST_GH_FAIL -eq $method) { Write-Output 'fake gh failure'; exit 55 }
-$db = Get-Content -LiteralPath $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
-if ($endpoint -match '/labels/running$' -and $method -eq 'GET') {
-  if (-not $db.label) { Write-Output 'label missing'; exit 1 }
-  Write-Output '{}'
-} elseif ($endpoint -match '/labels$' -and $method -eq 'POST') { $db.label = $true; Write-Output '{}' }
-elseif ($endpoint -match '/comments\\?') {
-  if (-not ($words -contains '--paginate') -or -not ($words -contains '--slurp')) { throw 'Must find status beyond the first page' }
-  Write-Output ('[[{"id":1,"body":"unrelated"}],' + (ConvertTo-Json -InputObject @($db.comments) -Depth 8 -Compress) + ']')
-} elseif ($endpoint -match '/comments$' -and $method -eq 'POST') {
-  $db.comments = @($db.comments) + @(@{ id = 77; body = $payload.body })
-  Write-Output '{"id":77}'
-} elseif ($method -eq 'PATCH') {
-  $db.comments[0].body = $payload.body; Write-Output '{}'
-} else { Write-Output '{}' }
-[IO.File]::WriteAllText($env:PC_TEST_GH_DB, ($db | ConvertTo-Json -Depth 10))
-exit 0
-`);
+write(path.join(root, 'gh-default.json'), JSON.stringify(gh.database(846, main)));
 write(path.join(root, 'probes.ps1'), `
 $ErrorActionPreference = 'Stop'
 $pc = $args[0]; $root = $args[1]; $upstream = Join-Path $root 'upstream.git'
@@ -91,7 +71,7 @@ function Init($name, $branch = 'codex/issue-846') {
   $script:out = Join-Path $root $name
   $null = New-Item -ItemType Directory -Path $out
   $env:PC_TEST_GH_TRACE = Join-Path $out 'gh.jsonl'; Put $env:PC_TEST_GH_TRACE ''
-  $env:PC_TEST_GH_DB = Join-Path $out 'gh-db.json'; Put $env:PC_TEST_GH_DB '{"label":false,"comments":[]}'
+  $env:PC_TEST_GH_DB = Join-Path $out 'gh-db.json'; Put $env:PC_TEST_GH_DB ([IO.File]::ReadAllText((Join-Path $root 'gh-default.json')))
   Shared @('init',$out,$branch)
 }
 function New-Repo($name) {
@@ -145,18 +125,88 @@ Init 'patch-failure'; Announce; $env:PC_TEST_GH_FAIL = 'PATCH'; Finish '0' 'CEIL
 Assert ((Calls)[-1].method -eq 'DELETE') 'label clear after failed comment edit'
 Assert ((Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json).status -eq 'partial') 'report failure cannot change run outcome'
 Pass 'failed comment edit is logged and label removal still runs'
-$env:PC_TEST_GH_FAIL = '*'; Init 'all-gh-failure'; Announce; Finish '8'
+$env:PC_TEST_GH_FAIL = '*'; Init 'all-gh-failure'
+& $common announce $out 846 codex $repo 21600 'codex_issue.bat 846' real
+Assert ($LASTEXITCODE -eq 14) 'cannot start without validating and claiming'
+Finish '8'
 Assert ([IO.File]::ReadAllText((Join-Path $out 'result.txt')).Contains('WARNING: GitHub status')) 'gh failures logged'
-Assert ((Calls)[-1].method -eq 'DELETE') 'clear attempted despite every API failing'
-Pass 'all gh failures leave the run outcome intact'
+Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) 'a refused start cannot clear another claim'
+Pass 'start fails closed on GitHub errors without modifying claims'
 $env:PC_TEST_GH_FAIL = ''; $fake = $env:PC_TEST_GH; $env:PC_TEST_GH = Join-Path $root 'missing-gh'
-Init 'missing-gh'; Announce; Finish '8'
-Pass 'missing gh is nonfatal'
-$env:PC_TEST_GH = $fake; Init 'dry-run'; $env:PC_RUNNER_TEST = '0'
+Init 'missing-gh'
+& $common announce $out 846 codex $repo 21600 'codex_issue.bat 846' real
+Assert ($LASTEXITCODE -eq 14) 'missing gh refuses before work'
+Pass 'missing gh fails closed at start'
+$env:PC_TEST_GH = $fake; Init 'dry-run'
 Shared @('announce',$out,'846','codex',$repo,'21600','codex_issue.bat 846','dry')
-Assert ((Get-Item $env:PC_TEST_GH_TRACE).Length -eq 0) 'dry run must never contact GitHub'
+Assert (@(Calls).Count -gt 0) 'fixture dry run validates through fake gh'
+Finish '8'
+Pass 'test dry runs use the fake GitHub service'
+Init 'real-dry-run'
+# A local function stands in for gh while exercising the production (non-test) dry path. Still no live network.
+function gh { & $env:PC_TEST_GH @args }
+$env:PC_RUNNER_TEST = '0'
+Shared @('announce',$out,'846','codex',$repo,'21600','codex_issue.bat 846','dry')
+Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) 'production dry run must remain read-only'
+Assert (-not (Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json).running) 'production dry run cannot claim'
 $env:PC_RUNNER_TEST = '1'
-Pass 'dry runs do not report to live GitHub'
+Remove-Item Function:\gh
+Pass 'production dry runs validate the current brief without labels or comments'
+# The job checks exercise the shared start contract on every CI host; runner_selftest also drives real Windows .bat files.
+foreach ($case in @('closed','running','pr','linked-pr','branch','missing','duplicate','empty','missing-field','old-first','old-not-done')) {
+  Init ("refuse-" + $case)
+  $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+  switch ($case) {
+    'closed' { $db.issue.state = 'closed' }
+    'running' { $db.running = $true }
+    'pr' { $db.pulls = @(@{ number = 999; head = @{ ref = 'work/issue-846-deepseek' } }) }
+    'linked-pr' { $db.pulls = @(@{ number = 999; title = 'Other branch'; body = 'Refs #846'; head = @{ ref = 'review/another-seat' } }) }
+    'branch' { $db.branches += @(@{ name = 'opus/issue-846' }) }
+    'missing' { $db.issue.body = $db.issue.body.Replace('THIS IS THE JOB NOW','An old brief') }
+    'duplicate' { $db.issue.body += "\n## Run 2 (THIS IS THE JOB NOW)\nSecond brief" }
+    'empty' { $db.issue.body = $db.issue.body.Substring(0, $db.issue.body.IndexOf('Finish the current fixture job.')) }
+    'missing-field' { $db.issue.body = $db.issue.body.Replace('Brief: below','') }
+    'old-first' { $db.issue.body = $db.issue.body.Replace('## THIS IS THE JOB NOW', "## Run 1 (DONE)\nOld instructions\n## THIS IS THE JOB NOW") }
+    'old-not-done' { $db.issue.body = $db.issue.body.Replace('Earlier run (DONE)','Run 1') }
+  }
+  Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+  & $common announce $out 846 codex $repo 21600 'codex_issue.bat 846' real
+  Assert ($LASTEXITCODE -eq 14) "must refuse $case"
+  $s = Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+  Assert ($s.status -eq 'failed' -and $s.reason.Contains('no agent started')) "clear refusal $case"
+  Finish '14'
+  Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) "refusal cannot mutate GitHub: $case"
+  Pass ("job refused without writes: " + $case)
+}
+foreach ($endpoint in @('GET repos/rcbailey12/voidsworn/pulls?state=open&per_page=100',
+  'GET repos/rcbailey12/voidsworn/branches?per_page=100', 'GET repos/rcbailey12/voidsworn/issues/846/comments?per_page=100',
+  'POST repos/rcbailey12/voidsworn/issues/846/labels', 'POST repos/rcbailey12/voidsworn/issues/846/comments')) {
+  Init ('api-' + [guid]::NewGuid().ToString('N'))
+  $env:PC_TEST_GH_FAIL = $endpoint
+  & $common announce $out 846 codex $repo 21600 'codex_issue.bat 846' real
+  Assert ($LASTEXITCODE -eq 14) "start requires $endpoint"
+  $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+  Assert (-not $db.running) 'failed claim must release only the label it acquired'
+  $env:PC_TEST_GH_FAIL = ''
+}
+Pass 'unreadable dispatch state or failed label/comment claim stops before work'
+Init 'replaced-claim'; Announce
+$db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+$db.comments[0].body = $db.comments[0].body.Replace('- Run:', '- Previous run:')
+Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+Finish '8'
+Assert ((Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json).running) 'cannot clear a newer claim'
+Assert (@(Calls | Where-Object { $_.method -eq 'DELETE' }).Count -eq 0) 'newer claim preserved'
+Pass 'finish cannot edit or clear a status comment now owned by another run'
+Init 'current-sections'
+$db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+$db.issue.body = $db.issue.body.Replace('Finish the current fixture job.', "Finish the current fixture job.\n## Checks\nKEEP CURRENT CHECKS\n~~~text\n## THIS IS THE JOB NOW\n~~~\n> ## THIS IS THE JOB NOW")
+Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+Announce
+$snapshot = Get-Content (Join-Path $out 'validated_issue.json') -Raw | ConvertFrom-Json
+Assert ($snapshot.body.Contains('KEEP CURRENT CHECKS') -and -not $snapshot.body.Contains('OLD BRIEF')) 'keep current peer sections, omit completed runs'
+Finish '8'
+Pass 'current block preserves peer sections and ignores fenced or quoted marker examples'
 Init 'base-clean'; Put (Join-Path $out 'resume.txt') 'Resumed by merging earlier partial.'
 Put (Join-Path $out 'base_commit.txt') '${main}'
 Base "Owner: codex\r\n  Base: work/issue-800  \r\nDone when: works"
@@ -169,8 +219,13 @@ $resume = [IO.File]::ReadAllText((Join-Path $out 'resume.txt'))
 Assert ($resume.Contains('Resumed by merging earlier partial.') -and $resume.Contains('Base already merged by the runner: origin/work/issue-800')) 'preserve partial context and add base note'
 Pass 'Base parses CRLF and commits a real merge while preserving resume context'
 # Prep is the production caller for both seats. Use the same already-merged base, no extra commit.
-$env:PC_TEST_ISSUE = Join-Path $out 'issue.json'
-Put $env:PC_TEST_ISSUE '{"title":"Fixture","body":"Base: work/issue-800"}'
+$db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+$db.issue.body = $db.issue.body.Replace('Brief: below', "Brief: below\nBase: work/issue-800")
+Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+Announce
+# Later GitHub edits cannot change the brief that this run validated and claimed.
+$db.issue.body = 'AN UNVALIDATED REPLACEMENT BRIEF'
+Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
 foreach ($seat in @('codex','work')) {
   $helper = Join-Path $pc ($seat + '_issue.ps1')
   if ($seat -eq 'codex') { & $helper prep 846 $repo $out }
@@ -178,8 +233,20 @@ foreach ($seat in @('codex','work')) {
   Assert ($LASTEXITCODE -eq 0) "$seat prep"
   $task = [IO.File]::ReadAllText((Join-Path $repo ($seat.ToUpper() + '_TASK.md')))
   Assert ($task.Contains('Base already merged by the runner') -and $task.Contains('Do not run git merge')) "$seat prompt must say base is already in"
+  Assert (-not $task.Contains('OLD BRIEF MUST NOT REACH AGENT')) "$seat omits completed briefs"
+  Assert (-not $task.Contains('AN UNVALIDATED REPLACEMENT BRIEF')) "$seat uses only the validated snapshot"
 }
 Pass 'both real prep helpers merge Base and tell the agent it is committed'
+Finish '8'
+Shared @('init',$out,'codex/issue-846')
+foreach ($seat in @('codex','work')) {
+  try {
+    if ($seat -eq 'codex') { & (Join-Path $pc 'codex_issue.ps1') prep 846 $repo $out }
+    else { & (Join-Path $pc 'work_issue.ps1') prep 846 deepseek $repo $out 'godot' }
+    throw 'STALE SNAPSHOT WAS ACCEPTED'
+  } catch { Assert ($_.Exception.Message.Contains('no validated current instruction')) 'old snapshot must refuse' }
+}
+Pass 'both prep helpers refuse an earlier run snapshot after init'
 $repo = New-Repo 'fast-repo'; Init 'base-fast'; Base 'Base: fast'
 $parents = (& $script:git -C $repo rev-list --parents -n 1 HEAD) -split ' '
 Assert ($parents.Count -eq 3 -and $parents[2] -eq '${fast}') 'fast-forward base still gets runner merge commit'
@@ -204,7 +271,7 @@ Write-Output "PASS runner job checks ($script:passed groups)"
 const ps = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
 r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'probes.ps1'), pc, root], {
   encoding: 'utf8', windowsHide: true, timeout: 90000,
-  env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: path.join(root, 'fake gh.ps1'), PC_TEST_GH_FAIL: '',
+  env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '',
     // The Windows prep helper builds its Godot path from USERPROFILE, which Linux does not provide.
     USERPROFILE: root,
     PC_TEST_GIT: '', PC_TEST_RETRY_SECONDS: '0',
@@ -214,3 +281,31 @@ r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.joi
 // Standing checks show only the first 15 lines on failure. Keep the actual exception ahead of earlier PASS output.
 assert.equal(r.status, 0, (r.stderr || '') + String(r.error || '') + '\nEvidence: ' + root + '\n' + (r.stdout || ''));
 console.log(r.stdout.trim());
+// Race two actual PowerShell processes against the same issue and fake REST database, just like two PC lanes.
+(async () => {
+  const race = path.join(root, 'claim-race'); fs.mkdirSync(race);
+  const database = path.join(race, 'gh-db.json'), trace = path.join(race, 'gh.jsonl');
+  write(database, JSON.stringify(gh.database(846, main))); write(trace, '');
+  const env = { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_DB: database,
+    PC_TEST_GH_TRACE: trace, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '1' };
+  const common = path.join(pc, 'runner_common.ps1');
+  const args = words => ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', common, ...words];
+  const outs = ['codex', 'deepseek'].map(seat => {
+    const out = path.join(race, seat); fs.mkdirSync(out);
+    const init = spawnSync(ps, args(['init', out, seat + '/issue-846']), { env, encoding: 'utf8', windowsHide: true });
+    assert.equal(init.status, 0, init.stderr); return out;
+  });
+  const results = await Promise.all(outs.map((out, n) => new Promise((resolve, reject) => {
+    const child = spawn(ps, args(['announce', out, '846', n ? 'deepseek' : 'codex', path.join(out, 'repo'), '21600', 'resume', 'real']), { env, windowsHide: true });
+    let output = ''; child.stdout.on('data', b => output += b); child.stderr.on('data', b => output += b);
+    child.on('error', reject); child.on('close', code => resolve({ code, output, out }));
+  })));
+  assert.deepEqual(results.map(r => r.code).sort((a, b) => a - b), [0, 14], JSON.stringify(results));
+  assert(results.find(r => r.code === 14).output.includes('already carries running'), JSON.stringify(results));
+  const calls = read(trace).trim().split(/\r?\n/).map(l => JSON.parse(l));
+  assert.equal(calls.filter(c => c.method === 'POST' && /\/issues\/846\/labels$/.test(c.endpoint)).length, 1);
+  assert.equal(JSON.parse(read(database)).comments.length, 1);
+  const finish = spawnSync(ps, args(['finish', results.find(r => r.code === 0).out, '8', '', 'real', '0']), { env, encoding: 'utf8', windowsHide: true });
+  assert.equal(finish.status, 0, finish.stderr); assert(!JSON.parse(read(database)).running);
+  console.log('PASS simultaneous Codex and work starts yield exactly one claim; losing run cannot clear it');
+})().catch(e => { console.error(e.stack); process.exitCode = 1; });

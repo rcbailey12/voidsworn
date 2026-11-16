@@ -139,7 +139,7 @@ The PC runner merges `origin/<branch>` from the optional Base line and commits t
 a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
 also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on
 retries and at the end), naming seat, machine, lane folder, branch, start time, ceiling, last commit and how to resume.
-It clears running at the end; a GitHub reporting failure is logged and never fails the job. Why: merge-left partials
+Before checkout or model calls, every PC runner refuses closed or claimed jobs, an existing delivery branch or open PR for the job, and any body without exactly one `THIS IS THE JOB NOW` heading first below the fixed block; validation and the label plus status-comment claim must succeed, while later reporting failures are logged without changing the job result (R291, issue 888). It clears its own running claim at the end. Why: merge-left partials
 on 800, 815 and 44, and jobs with no visible running seat. Set: Ryan R270, issue 846 (788 step 3).
 
 One current instruction. A job's current run brief sits at the top of its issue body, under the fixed block, marked as the
