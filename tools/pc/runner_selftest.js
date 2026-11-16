@@ -38,6 +38,15 @@ assert(/function Log\(\$line\) \{\s*try \{ Add-Content[^\n]*-ErrorAction Stop \}
 assert(/\$exe = 'git\.exe'/.test(read(path.join(here, 'runner_common.ps1'))) && !/\$exe = 'git'[;\s]/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Git helper must run git.exe');
 assert(/\$limit = 600\.0/.test(read(path.join(here, 'runner_common.ps1'))), 'checkout preservation must allow ten minutes');
 pass('shared runner contract, chain launcher and issue 722 start checks');
+// Issue 914: lookup order and logging belong to Invoke-Gh, including the board audit.
+const shared = read(path.join(here, 'runner_common.ps1'));
+const ghLookup = shared.slice(shared.indexOf('function Invoke-Gh('), shared.indexOf('function Status-Body('));
+assert(ghLookup.indexOf('Get-Command $exe') < ghLookup.indexOf("relative = 'GitHub CLI/gh.exe'"));
+assert(ghLookup.indexOf("relative = 'GitHub CLI/gh.exe'") < ghLookup.indexOf("relative = 'Programs/GitHub CLI/gh.exe'"));
+assert(ghLookup.includes('if (-not $command -and -not $test)'), 'test gh must never fall through to a real install');
+assert(ghLookup.includes('Log "GitHub CLI: $exe"'), 'log the selected executable');
+assert(ghLookup.includes('GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs'));
+pass('GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the missing-tool refusal');
 if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
