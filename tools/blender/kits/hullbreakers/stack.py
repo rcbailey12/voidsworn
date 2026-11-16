@@ -182,24 +182,18 @@ _SHIP_ZONES = deepcopy(ZONES)
 _SHIP_BARE = BARE
 _SHIP_ZONE_BY_KIND = deepcopy(ZONE_BY_KIND)
 
-# Issue 853 run 2: KB1CC's accepted concept is red armour with dark iron framing.
-# Tones sampled by eye from the broad red plate interiors in KB1CC.jpg (excluding the name,
-# grey trophies, seams and highlights). The sheet already models its large,
-# irregular plates: adding the capital shader's grids subdivided them into a
-# grey mosaic. Keep their real seams and each modelled plate's own tone instead.
-CRAFT_PLATES = dict(
-    soot=((100, 38, 27), (153, 59, 39)),
-    soot2=((83, 31, 24), (130, 48, 34)),
-    rust=((113, 41, 27), (170, 67, 42)),
-    blood=((100, 30, 24), (153, 47, 32)),
-    violet=((104, 36, 27), (150, 54, 36)),
-    pale=CONCEPT['trophy_grey'],
-)
+# R292, issue 875 run 2: the craft's separate bright-red palette also painted
+# its soot skin red. It lost the dark iron and weathered value of the capitals.
+# Read the faction palette here too; the sheet owns the mix of real plates.
+# Keep real seams instead of subdividing the craft with the capital grid.
+CRAFT_PLATES = {name: CONCEPT[name] for name in ('soot', 'soot2', 'rust', 'blood', 'violet')}
+CRAFT_PLATES['pale'] = CONCEPT['trophy_grey']
+CRAFT_ACTIVE = False
 
 
 def configure_size(length=None):
     """Select craft pattern sizes from the sheet length; reset before every bake."""
-    global BARE
+    global BARE, CRAFT_ACTIVE
     length = float(bpy.context.scene.get('r209_length_world', 0) if length is None else length)
     LAYERS.clear(); LAYERS.update(deepcopy(_SHIP_LAYERS))
     TROPHY.clear(); TROPHY.update(deepcopy(_SHIP_TROPHY))
@@ -207,6 +201,7 @@ def configure_size(length=None):
     ZONE_BY_KIND.clear(); ZONE_BY_KIND.update(deepcopy(_SHIP_ZONE_BY_KIND))
     BARE = _SHIP_BARE
     craft = 0 < length <= CRAFT_SIZE['max_length'] + 1e-6
+    CRAFT_ACTIVE = craft
     if craft:
         for key in ('patch_big', 'patch_small', 'patch_over'):
             LAYERS[key] = tuple(v * CRAFT_SIZE['patches'] for v in LAYERS[key])
@@ -220,10 +215,11 @@ def configure_size(length=None):
             LAYERS[key] /= CRAFT_SIZE['marks']
         LAYERS['wear'] = CRAFT_SIZE['wear']
         ZONES['pale']['wear'] = CRAFT_SIZE['grey_wear']
-        # Broad red plate faces, with no purple, pale scrape or trophy overlay.
+        # Real plate faces, with no extra shader tiles, scrapes or trophy grid.
         # Pale is the sheet's name for its few salvaged dark grey plates.
-        LAYERS.update(plate_var=.16, island_tone=.9, mottle=.18, scuff=.28,
-                      ao_dark=.65, side_dark=.18)
+        LAYERS.update(plate_var=.40, island_tone=.80, mottle=.18, scuff=.55,
+                      ao_dark=.88, side_dark=.25, ao_short=.006, ao_long=.035,
+                      edge_radius=.0020, wear_lo=.26, wear_hi=.50)
         for name, zone in ZONES.items():
             if name == 'dark':
                 continue
@@ -234,15 +230,15 @@ def configure_size(length=None):
                 zone['lo'], zone['hi'] = map(lin, CRAFT_PLATES[name])
                 zone.update(plate_var=.16, metal=.25, rough=.78)
                 if name != 'pale':
-                    # R289: shallow relief plus the craft's low wear/variation
-                    # made the red slabs read as fresh paper squares. Keep the
-                    # accepted red pairs, but give them salvaged plate tone and
-                    # broken bare edges. Grey trophy paint keeps R274's low
-                    # wear so it cannot wash white; its colour/share stay put.
-                    zone.update(plate_var=.40, wear=.65, scuff=.45)
+                    # R292: dirt in physical seams, chipped rims and broad
+                    # weathered tone changes, with the faction's own colours.
+                    # R274 grey trophy tones, wear and share stay unchanged.
+                    zone.update(plate_var=.55, wear=.90, scuff=.65, grime=.85,
+                                rust=_SHIP_ZONES[name].get('rust', .4), patchwork=1.0)
             elif name in ('iron', 'iron_bay', 'iron_edge', 'steel', 'bell'):
                 zone['lo'], zone['hi'] = pair('iron')
-                zone.update(plate_var=.12, metal=.45, rough=.68)
+                zone.update(plate_var=.35, metal=.45, rough=.68,
+                            grime=.85, wear=.65, scuff=.50, patchwork=1.0, patchwork_parts=1.0)
         # Bright bare-metal wear was washing small armour plates grey.
         BARE = lin((100, 91, 82))
         # craft.py authors the bomb collar and bore in soot2, the same sheet
@@ -253,10 +249,26 @@ def configure_size(length=None):
 
 
 def panel_nodes(c, col, amount, families=None, cells=None):
-    """the shared patchwork as every Hullbreaker ship had it (shared/paint_stack.patchwork, unchanged), then, on the hull atlas,
-    the trophy patches (TROPHY above). Returns the colour and the seam mask, as the shared patchwork does."""
+    """Physical craft wear, or the unchanged capital patchwork and trophy layers.
+
+    Returns the colour and seam mask through the shared stack's panel hook.
+    """
     from types import SimpleNamespace
     from paint_stack import node, math_, mixc, mulc, ramp, patchwork, _grid, _seams
+    if CRAFT_ACTIVE:
+        # The craft already has real plate islands. Use the panel-layer entry
+        # point for physical wear only, never the shader's tile/trophy grids.
+        # Broad paint loss exposes iron; broken bright chips follow actual
+        # convex rims. Ordinary wear alone was almost invisible on these faces.
+        nt = c.nt
+        loss = math_(nt, 'MULTIPLY', ramp(nt, c.noise(24, 3, .65), .46, .66), .60)
+        iron = mixc(nt, *pair('iron'), ramp(nt, c.noise(12, 2), .3, .7))
+        col = mixc(nt, col, iron, loss)
+        edge = c.bevel_edge(.0045, 24.0)
+        chips = math_(nt, 'MULTIPLY', edge, ramp(nt, c.noise(115, 2, .7), .43, .60), clamp=True)
+        chips = math_(nt, 'MULTIPLY', chips, ramp(nt, c.noise(11, 2), .32, .64), clamp=True)
+        col = mixc(nt, col, lin(CONCEPT['bare'][0]), chips)
+        return col, None
     T = TROPHY; nt = c.nt
     own = ZONES.get(_zone_of(nt), {}).get('trophy_share') if cells is None else None
     if own is None:

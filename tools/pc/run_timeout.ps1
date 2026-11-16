@@ -64,6 +64,97 @@ function Save-RunResume($Repo, $Out, $Logs, $Reason, $Base) {
   [IO.File]::WriteAllText((Join-Path $Out 'resume.txt'), $note, $utf8)
   [IO.File]::WriteAllText((Join-Path $Out 'stop_reason.txt'), $Reason, $utf8)
 }
+# taskkill /T uses process enumeration that can be denied in the Codex sandbox, even for our own children.
+# Toolhelp needs no WMI access. Keep process handles, not just PIDs, so a reused PID can never target another job.
+function Initialize-RunTree {
+  if ('RunnerProcessSnapshot' -as [type]) { return }
+  Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+public static class RunnerProcessSnapshot {
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+  struct Entry {
+    public uint size, usage, id; public UIntPtr heap; public uint module, threads, parent;
+    public int priority; public uint flags;
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string exe;
+  }
+  [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint id);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool Process32FirstW(IntPtr h, ref Entry e);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool Process32NextW(IntPtr h, ref Entry e);
+  [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+  public static Dictionary<int, int> Parents() {
+    IntPtr h = CreateToolhelp32Snapshot(2, 0);
+    if (h == new IntPtr(-1)) throw new Win32Exception();
+    try {
+      var result = new Dictionary<int, int>();
+      var e = new Entry(); e.size = (uint)Marshal.SizeOf(typeof(Entry));
+      if (!Process32FirstW(h, ref e)) throw new Win32Exception();
+      do { result[(int)e.id] = (int)e.parent; } while (Process32NextW(h, ref e));
+      if (Marshal.GetLastWin32Error() != 18) throw new Win32Exception();
+      return result;
+    } finally { CloseHandle(h); }
+  }
+}
+'@
+}
+function Update-RunTree($Tree) {
+  $parents = [RunnerProcessSnapshot]::Parents()
+  do {
+    $added = $false
+    foreach ($childId in $parents.Keys) {
+      $parentId = $parents[$childId]
+      if ($Tree.ContainsKey($childId) -or -not $Tree.ContainsKey($parentId)) { continue }
+      $parent = $Tree[$parentId]
+      # A retained handle keeps the original process identity after exit. StartTime also rejects reused parent PIDs.
+      try {
+        $child = [Diagnostics.Process]::GetProcessById($childId)
+        $null = $child.Handle
+        if ($child.StartTime -lt $parent.StartTime) { $child.Dispose(); continue }
+        if ($parent.HasExited -and $child.StartTime -gt $parent.ExitTime) { $child.Dispose(); continue }
+        $Tree[$childId] = $child; $added = $true
+      } catch [ArgumentException] { } # The child already exited between snapshot and open.
+    }
+  } while ($added)
+}
+function Write-KillLog($Log, $Line) {
+  Write-Output "run_timeout: $Line"
+  try { "$(Get-Date -Format s) $Line" | Out-File -LiteralPath $Log -Append -Encoding utf8 }
+  catch { Write-Output "run_timeout: could not append kill log: $($_.Exception.Message)" }
+}
+function Stop-RunTree($Process, $Tree, $Log) {
+  Update-RunTree $Tree
+  $ea = $ErrorActionPreference
+  $killer = 'taskkill.exe'
+  if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_TASKKILL) { $killer = $env:PC_TEST_TASKKILL }
+  try {
+    $ErrorActionPreference = 'Continue'
+    $reply = @(& $killer /PID $Process.Id /T /F 2>&1)
+    $code = $LASTEXITCODE
+  } finally { $ErrorActionPreference = $ea }
+  Write-KillLog $Log "taskkill PID $($Process.Id) exit ${code}: $($reply -join ' ')"
+  $deadline = [DateTime]::UtcNow.AddSeconds(15)
+  do {
+    # Discover children before stopping their parents, and repeat in case one spawned during taskkill.
+    Update-RunTree $Tree
+    $live = @($Tree.Values | Where-Object { -not $_.HasExited } | Sort-Object StartTime -Descending)
+    foreach ($child in $live) {
+      try { $child.Kill() }
+      catch { if (-not $child.HasExited) { Write-KillLog $Log "handle kill PID $($child.Id) failed: $($_.Exception.Message)" } }
+    }
+    foreach ($child in $live) { $null = $child.WaitForExit(100) }
+    Update-RunTree $Tree
+    $live = @($Tree.Values | Where-Object { -not $_.HasExited })
+    if (-not $live.Count) {
+      Write-KillLog $Log "kill verified: all $($Tree.Count) processes gone (PIDs $((@($Tree.Keys) | Sort-Object) -join ', '))"
+      return
+    }
+  } while ([DateTime]::UtcNow -lt $deadline)
+  $failure = "KILL FAILED: surviving PIDs $(($live | ForEach-Object { $_.Id }) -join ', '); checkout kept"
+  Write-KillLog $Log $failure
+  throw $failure
+}
 if ($LibraryOnly) { return }
 $raw = $env:TMO_ARGS
 if (-not $raw) { Write-Output 'usage: tmo.bat <seconds> <exe> [args ...]'; exit 125 }
@@ -138,6 +229,7 @@ if ($gpuMode) {
 # A forced claim applies to this command only, never a nested watchdog.
 $env:PC_GPU_MODE = ''
 $env:PC_GPU_WEIGHT = ''
+Initialize-RunTree
 $timer = [Diagnostics.Stopwatch]::StartNew()
 $lastProgress = 0.0
 $scanEvery = 60.0
@@ -154,11 +246,15 @@ try {
   exit 125
 }
 $null = $p.Handle   # keeps the exit code readable after the process ends
+$tree = @{ }; $tree[$p.Id] = $p
+$completed = $false
+try {
 $poll = 5000
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_POLL_MS) { $poll = [int]$env:PC_TEST_POLL_MS }
 while ($true) {
+  Update-RunTree $tree
   $remaining = [Math]::Max(1, [Math]::Min($poll, ($Seconds - $timer.Elapsed.TotalSeconds) * 1000))
-  if ($p.WaitForExit([int]$remaining)) { $p.WaitForExit(); exit $p.ExitCode }
+  if ($p.WaitForExit([int]$remaining)) { $p.WaitForExit(); $completed = $true; exit $p.ExitCode }
   if ($watch) {
     # Scan the checkout once a minute, not every poll: a full walk of a big checkout every 5 s would load Ryan's PC for hours,
     # and a 30 minute stall window does not need finer steps (Board review, Nov 15).
@@ -172,15 +268,23 @@ while ($true) {
   } else {
     $reason = if ($timer.Elapsed.TotalSeconds -ge $Seconds) { 'CEILING' } else { '' }
   }
-  if ($p.HasExited) { $p.WaitForExit(); exit $p.ExitCode }
+  if ($p.HasExited) { $p.WaitForExit(); $completed = $true; exit $p.ExitCode }
   if ($reason) { break }
 }
 $secs = [int]$timer.Elapsed.TotalSeconds
-& taskkill.exe /PID $p.Id /T /F | Out-Null
+Stop-RunTree $p $tree $log
 if ($watch) { Save-RunResume $watchRepo $watchOut $logs $reason $base }
-"$(Get-Date -Format s) TIMEOUT $reason after $secs s (ceiling $Seconds s), killed tree of PID $($p.Id): $Exe $argLine" | Out-File $log -Append -Encoding utf8
+"$(Get-Date -Format s) TIMEOUT $reason after $secs s (ceiling $Seconds s), verified dead tree of PID $($p.Id): $Exe $argLine" | Out-File $log -Append -Encoding utf8
 Write-Output "run_timeout: TIMEOUT $reason after $secs s, killed $Exe (PID $($p.Id)) and its children"
 exit 124
+} finally {
+  # Reap on an unexpected watchdog error too. A successful queue launcher may deliberately start background jobs.
+  if (-not $completed) {
+    Update-RunTree $tree
+    if (@($tree.Values | Where-Object { -not $_.HasExited }).Count) { Stop-RunTree $p $tree $log }
+  }
+  foreach ($child in $tree.Values) { $child.Dispose() }
+}
 } finally {
   if ($gpuToken) {
     & $gpuNode $gpuHelper release $gpuRoot $gpuToken
