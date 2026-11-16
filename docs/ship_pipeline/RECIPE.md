@@ -145,6 +145,12 @@ R225: one home per fact):
 5. bakes albedo and ORM for both atlases and the hull's detail normal (the layers' height through a bump), then puts the
    textured materials on the ship (`export7.py` reads them as before) and keeps glow, ember and light as their own emissive
    surfaces; the insides keep the sheet's own materials;
+   The normal bake temporarily connects that same bump normal to a simple surface, restoring the original surface links
+   afterward. This removes unused colour, roughness and metal branches from that pass. The large Hullbreaker normal graph
+   can still overflow Cycles' SVM stack on Blender 4.5: issue 726 run 3 reproduced it on A20 even after removing every node
+   outside the normal input. The normal-only proposal is therefore not yet a full repair. Stage 5 rejects compile errors, including
+   `out of SVM stack space`, even if Blender exits zero; the albedo and ORM passes can finish while the detail normal
+   may lose those zones' bump. Albedo, ORM and the faction stacks are unchanged by this normal-only switch.
 6. gives every inside the faction's dark liner (`inside_material`: one material per room, the liner's dark with a faint tint, the
    core keeps its light), so an inside seen through an opening or a gap never shows a sheet room colour (R99 Q1);
 7. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square

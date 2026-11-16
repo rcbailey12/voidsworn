@@ -19,6 +19,10 @@ echo Stage 5: no paint stack for this ship yet ^(bake none^): the unpainted stag
 goto baked
 :bake
 call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -P "%R%\%BAKE%" -- "%JOB%" "%B0%" none %CELL% 4096 64 > "%JOB%\log_bake.txt" 2>&1
+if errorlevel 1 (echo Stage 5 FAILED: Blender returned an error. See %JOB%\log_bake.txt & goto bad)
+rem Issue 726: Cycles can fail shader compilation while Blender still exits zero and writes the completion marker.
+findstr /i /c:"out of SVM stack space" /c:"failed to compile" /c:"shader compilation failed" /c:"shader compilation error" /c:"shader compile error" /c:"error compiling" "%JOB%\log_bake.txt" > nul
+if not errorlevel 1 (echo Stage 5 FAILED: Cycles could not compile a bake shader. See %JOB%\log_bake.txt & goto bad)
 findstr /L /c:"[209] %CELL% {" "%JOB%\log_bake.txt" > nul || (echo Stage 5 FAILED: the bake ^(%BAKE%^) wrote nothing. See %JOB%\log_bake.txt & goto bad)
 rem issue 601: every surface seen from outside carries the stack: no inside room colour and no unpainted surface in six views
 if /i "%BAKE%"=="bake_sheet.py" call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\surface_check.py" -- "%JOB%\surface" > "%JOB%\log_surface.txt" 2>&1
