@@ -7,18 +7,18 @@ set IO=%USERPROFILE%\Downloads\voidsworn_test\comfy_io\C19_51
 set V=%IO%\mvC2\C19_51
 set CONCEPT=%USERPROFILE%\Downloads\voidsworn_meshes\picks\flux11_C19_51_cut.png
 echo --- kit v11: audit fixes, Rey armour + mast, joint paint gain, shared detail layer --- >> %L%
-%BL% -b --factory-startup -P c19_kit.py -- "%IO%\mesh\C19_51E2_pixal_tex_00001_.glb" "%IO%\kit\E2" > "%IO%\kit\kit_log.txt" 2>&1
-%BL% -b --factory-startup -P lod_make.py -- "%IO%\kit\E2_cut.glb" "%IO%\kit\E2cut" 250000 > "%IO%\kit\lod_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P c19_kit.py -- "%IO%\mesh\C19_51E2_pixal_tex_00001_.glb" "%IO%\kit\E2" > "%IO%\kit\kit_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P lod_make.py -- "%IO%\kit\E2_cut.glb" "%IO%\kit\E2cut" 250000 > "%IO%\kit\lod_log.txt" 2>&1
 set OCC=%IO%\kit\E2_cut.glb
 set EXPORT=%IO%\kit\E2_kit_painted.glb
 set "KEEP=0.125,0.305,-0.095,0.095,0.03,0.2;-0.1,0.055,-0.06,0.06,0.104,0.25"
-%BL% -b --factory-startup -P project_paint.py -- "%IO%\kit\E2_kit.glb" "%IO%\kit\kit_albproj.png" 4096 "%V%_left.png|%V%_left_mask.png|0|0|1" "%V%_right.png|%V%_right_mask.png|180|0|1" "%IO%\proj\E2_concept.png|%IO%\proj\E2_concept_mask.png|@%IO%\proj\E2_concept.json|0|1.2" "%V%_front.png|%V%_front_mask.png|-90|0|0.8" > "%IO%\kit\kitproj_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\kit\E2_kit.glb" "%IO%\kit\kit_albproj.png" 4096 "%V%_left.png|%V%_left_mask.png|0|0|1" "%V%_right.png|%V%_right_mask.png|180|0|1" "%IO%\proj\E2_concept.png|%IO%\proj\E2_concept_mask.png|@%IO%\proj\E2_concept.json|0|1.2" "%V%_front.png|%V%_front_mask.png|-90|0|0.8" > "%IO%\kit\kitproj_log.txt" 2>&1
 set OCC=
 set EXPORT=
 set KEEP=
 set ALB=%IO%\proj\E2_albproj.png
 set EXTRA=%IO%\kit\E2_kit_painted.glb
-%BL% -b --factory-startup -P render_multi.py -- "%IO%\kit\E2_cut.glb" "%IO%\kit\K11_" "146 14;90 4;90 85;180 8;240 25;150 30;120 12;160 22;20 20;90 -40;0 10" > "%IO%\kit\render_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P render_multi.py -- "%IO%\kit\E2_cut.glb" "%IO%\kit\K11_" "146 14;90 4;90 85;180 8;240 25;150 30;120 12;160 22;20 20;90 -40;0 10" > "%IO%\kit\render_log.txt" 2>&1
 set EXTRA=
 set KIT=%IO%\kit\E2_kit_painted.glb
 %PY% -s pixal_to_game.py "%IO%\kit\E2_cut.glb" hulls_hi C19_51 left 4096 >> %L% 2>&1

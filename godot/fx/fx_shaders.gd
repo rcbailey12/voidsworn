@@ -2077,7 +2077,8 @@ void fragment() {
 	float broad = vnoise(vec2(advect * 0.28, vSeed * 21.0));
 	float grain = vnoise(vec2(advect * 2.3, y * 0.42 + vSeed * 9.0));
 	float wisps = texture(kit_flow, vec2(s * 8.0 - t * 1.6, y * 0.035 + vSeed)).b;
-	float radius = 5.0 + broad * 10.0;
+	// R277: the hot braids sit inside a wider, noise-eroded violet body.
+	float radius = 10.0 + broad * 13.0;
 	float edge = radius - abs(y) + (grain - 0.5) * 8.0 + (wisps - 0.5) * 5.0;
 	float sheath = smoothstep(-2.0, 3.0, edge) * (0.55 + grain * 0.4);
 	float haze = exp(-y*y / (radius*radius*1.8)) * (0.18 + wisps * 0.12);
@@ -2103,9 +2104,11 @@ void fragment() {
 	branch += sin(q * 27.0 + lane) * 1.5;
 	float fork = exp(-pow((y - branch) / 0.65, 2.0)) * (1.0 - smoothstep(0.32, 0.65, q)) * alive;
 	vec3 green = vCol.rgb;
+	// Keep green-white confined to hot strands; the surrounding flow is violet.
+	vec3 violet = eclipse_sheath / max(max(eclipse_sheath.r, eclipse_sheath.g), max(eclipse_sheath.b, 0.0001));
 	vec3 colour = eclipse_sheath * (0.45 + grain * 1.3);
-	colour += green * sheath * (0.08 + grain * 0.25) * (0.5 + wisps);
-	colour += green * (glow * 0.5 + filaments * (2.0 + pulse * 1.5) + fork * 2.0 + haze * 0.15);
+	colour += violet * (sheath * (0.18 + wisps * 0.28 + grain * 0.22) + haze * 0.22);
+	colour += green * (glow * 0.5 + filaments * (2.0 + pulse * 1.5) + fork * 2.0);
 	colour += vec3(0.90, 1.0, 0.94) * white * (0.5 + pulse * 0.8);
 	ALBEDO = colour * fx_gain;
 	ALPHA = clamp((sheath * 0.85 + haze + filaments + fork) * env * ends * min(vCol.a, 1.0), 0.0, 0.98);

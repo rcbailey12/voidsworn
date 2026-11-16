@@ -69,6 +69,7 @@ headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test 
 headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes of ships, fighters, station, terrain, planet, wrecks, explosions and the campaign map and fails when any object leaves its target range in docs/playbooks/scale.md
 headless|render/test/formation_check.gd|-|-|issue 843: no projected wingmate footprints overlap through flight for every factory craft kind, sheet-sized Sunward hulls and wide, long, tall, nested and breathing mesh regressions
 headless|render/test/hull_lift_check.gd|-|-|issue 811: only E14 lifts after fitting; movement and revival keep its height; markers, camera, hard points and shields follow
+headless|render/test/variant_ship_check.gd|-|-|issue 812: named variant hull selection, base fallback, inherited scale and board clearance; VARIANT_EXPORTS adds real GLB cache readback
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged

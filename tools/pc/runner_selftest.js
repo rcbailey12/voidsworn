@@ -287,7 +287,7 @@ function job(arm, label, extra = {}) {
   pass('a low-disk run stops before the mirror, the model probe and the agent');
   // The Board writes work217\runner_hashes.txt with hashwrite after copying the runner and watchdog files; hashcheck then
   // guards the running copies. A mismatch or a missing file is a warning, never a stop.
-  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'run_timeout.ps1', 'tmo.bat'];
+  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js'];
   const hashesGood = path.join(root, 'board_hashes_good.txt');
   write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
@@ -296,7 +296,7 @@ function job(arm, label, extra = {}) {
   assert.equal(ps(['hashwrite', here, hashesWritten], defaults).code, 0);
   assert.equal(read(hashesWritten), read(hashesGood));
   assert.equal(ps(['hashcheck', hashOut, here, hashesGood], defaults).code, 0);
-  assert(read(path.join(hashOut, 'result.txt')).includes('runner files match the Board hashes (7 checked)'));
+  assert(read(path.join(hashOut, 'result.txt')).includes(`runner files match the Board hashes (${runnerFiles.length} checked)`));
   pass('hashwrite and hashcheck agree on the runner and watchdog files');
   const hashesBad = path.join(root, 'board_hashes_bad.txt');
   write(hashesBad, read(hashesGood).split('\n').map(l => l.endsWith('runner_common.ps1') ? '0'.repeat(64) + '  runner_common.ps1' : l).join('\n'));

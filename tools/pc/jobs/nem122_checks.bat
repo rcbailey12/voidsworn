@@ -16,17 +16,17 @@ echo Issue 122 checks, %date% %time% > "%S%"
 call "%ROOT%tools\pc\parity.bat" nopause > "%OUT%\parity_log.txt" 2>&1
 findstr /b /c:"PASS" /c:"FAIL" "%OUT%\parity_log.txt" >> "%S%"
 "%NODE%" "%ROOT%godot\campaign\test\node\nem_scenarios.js" "%OUT%\nem_js.txt" > "%OUT%\nem_js_log.txt" 2>&1
-"%G%" --headless --path "%ROOT%godot" --script res://campaign/test/nem_scenarios.gd -- "%OUT%\nem_gd.txt" > "%OUT%\nem_gd_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --headless --path "%ROOT%godot" --script res://campaign/test/nem_scenarios.gd -- "%OUT%\nem_gd.txt" > "%OUT%\nem_gd_log.txt" 2>&1
 fc /b "%OUT%\nem_js.txt" "%OUT%\nem_gd.txt" > nul && (echo PASS: Nemesis scenarios identical >> "%S%") || (echo FAIL: Nemesis scenarios differ, see nem_js.txt and nem_gd.txt >> "%S%")
 "%NODE%" "%ROOT%contrib\opus\tools\nemesis_clash_tests.js" "%OUT%\clash.json" >> "%S%" 2>&1
-"%G%" --headless --path "%ROOT%godot" --script res://campaign/test/nemesis_clash_test.gd -- "%OUT%\clash.json" > "%OUT%\clash_gd_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --headless --path "%ROOT%godot" --script res://campaign/test/nemesis_clash_test.gd -- "%OUT%\clash.json" > "%OUT%\clash_gd_log.txt" 2>&1
 findstr /c:"PASS" /c:"FAIL" "%OUT%\clash_gd_log.txt" >> "%S%"
-"%G%" --path "%ROOT%godot" --resolution 1920x1080 --script res://campaign/test/nem_panel_shots.gd -- "%OUT%\after" --no-tips > "%OUT%\shots_after_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path "%ROOT%godot" --resolution 1920x1080 --script res://campaign/test/nem_panel_shots.gd -- "%OUT%\after" --no-tips > "%OUT%\shots_after_log.txt" 2>&1
 findstr /c:"shot " "%OUT%\shots_after_log.txt" >> "%S%"
 if "%~1"=="" goto :done
 if not exist "%OUT%\before" mkdir "%OUT%\before"
 copy /y "%ROOT%godot\campaign\test\nem_panel_shots.gd" "%~1\godot\campaign\test\nem_panel_shots.gd" > nul
-"%G%" --path "%~1\godot" --resolution 1920x1080 --script res://campaign/test/nem_panel_shots.gd -- "%OUT%\before" --no-tips > "%OUT%\shots_before_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path "%~1\godot" --resolution 1920x1080 --script res://campaign/test/nem_panel_shots.gd -- "%OUT%\before" --no-tips > "%OUT%\shots_before_log.txt" 2>&1
 findstr /c:"shot " "%OUT%\shots_before_log.txt" >> "%S%"
 :done
 echo done >> "%S%"

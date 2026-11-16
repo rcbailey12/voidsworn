@@ -31,6 +31,9 @@ Rules:
   Godot, if a check needs it: $godot (use --headless).
 - No em dashes in anything you write. Plain words.
 - Do not commit and do not push: the runner does that after you finish.
+- GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. It takes one of two shared GPU slots;
+  frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
+  gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp checks) in %TEMP%, not in this folder.
 - Save the screenshots, sheets and recordings your report links to in $out\shots (create it). Opus can only see that folder,
   not %TEMP%; link them there in your report.

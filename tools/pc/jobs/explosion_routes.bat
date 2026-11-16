@@ -11,8 +11,8 @@ rem       repack no bakes: pack the bakes of an earlier run (BAKESRC, its OUT fo
 rem              FIREPASS (fire, firelo or firehi; default fire) picks which route A fire render is packed.
 rem OUT   the output folder (status.txt, times.txt, bake_a, bake_b, atlases_a, atlases_b, bench_*, gate_*, done.txt)
 rem Runs from this checkout (tools\pc\jobs\ inside it). Needs the PC-built hulls: copied (copy only) from FX_SHIPS, default
-rem Downloads\voidsworn_test\bench351\repo\godot. One GPU job at a time: waits until the card is idle (up to 60 minutes)
-rem before the bakes and before the benches. Nothing is deleted. done.txt is written whatever happens.
+rem Downloads\voidsworn_test\bench351\repo\godot. Two GPU jobs may run at once; the watchdog takes shared
+rem claims for bakes and captures, solo for frame-time benches. Nothing is deleted. done.txt is written whatever happens.
 rem Every look is benched twice and the second run is kept (the first goes to OUT\first\; docs/shots/look_bench/README.md).
 setlocal enabledelayedexpansion
 set "MODE=%~1"
@@ -31,7 +31,8 @@ for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "SHA=%%H"
 set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 set "BL=%VT%\blender\blender-4.5.14-windows-x64\blender.exe"
 set "PY=%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.exe"
-set "TMO=%R%\tools\pc\tmo.bat"
+rem Use the installed watchdog, never the old checkout being measured.
+set "TMO=%~dp0..\tmo.bat"
 if "%FX_SHIPS%"=="" set "FX_SHIPS=%VT%\bench351\repo\godot"
 if "%FIREPASS%"=="" set "FIREPASS=fire"
 set "RA=256" & set "RB=128" & set "TILE=512" & set "LIM=5400"
@@ -55,7 +56,6 @@ set "BB=%BAKESRC%\bake_b"
 echo repack from %BAKESRC% >> "%ST%"
 goto pack
 :bakes
-call :gpuwait
 echo bakes start %date% %time% >> "%ST%"
 for %%K in (impact flash) do (
   echo A %%K start !date! !time! >> "%TM%"
@@ -75,7 +75,6 @@ echo pack b exit %ERRORLEVEL% >> "%ST%"
 echo pack end %date% %time% >> "%TM%"
 
 rem ---- the two moments in all five looks (VS_FX_ATLAS is the bench-only switch; empty draws the shipped look)
-call :gpuwait
 set "ONLY=w_torp_void_hull,d_cruiser"
 call :bench today ""
 call :bench a_flash "%O%\atlases_a\flash"
@@ -128,19 +127,4 @@ echo bench %~1 exit %ERRORLEVEL% %date% %time% >> "%ST%"
 findstr /c:"LOOK_BENCH placeholder hull" "%O%\bench_%~1_log.txt" > nul && echo PLACEHOLDER HULL in bench %~1 >> "%ST%"
 findstr /c:"LOOK_BENCH_DONE" "%O%\bench_%~1_log.txt" > nul && echo bench %~1 LOOK_BENCH_DONE >> "%ST%"
 set "VS_FX_ATLAS="
-exit /b 0
-
-rem ---------------------------------------------------------------- :gpuwait (under 15 percent, up to 60 minutes)
-:gpuwait
-set /a GW=0
-:gpuloop
-set U=0
-for /f %%U in ('nvidia-smi --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits 2^>nul') do set U=%%U
-if %U% LSS 15 goto gpufree
-set /a GW+=1
-if %GW% GEQ 60 goto gpufree
-timeout /t 60 /nobreak > nul
-goto gpuloop
-:gpufree
-echo gpu free after %GW% min %date% %time% >> "%ST%"
 exit /b 0

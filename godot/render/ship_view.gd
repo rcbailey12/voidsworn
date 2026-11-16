@@ -75,6 +75,11 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	var cls := str(u.get("cls", "Frigate")) if u.get("cls") != null else "Frigate"
 	L = HT.CLS_LEN.get(cls, 10.0) * HT.SHIP_K
 	code = HT.code_for(fac, cls)
+	# Named variant exports use their data.js id as their folder code. Until installed,
+	# an old save or a partial asset set keeps its normal faction/class hull.
+	var variant_code := str(u.get("tpl", ""))
+	if manifest().get("ships", {}).has(variant_code):
+		code = variant_code
 	var squad := cls == "Squadron" or bool(u.get("squadron", false))
 	if squad:
 		squad_kind = CRAFT.kind_for(u)
@@ -192,7 +197,10 @@ func _fit() -> void:
 	var c := box.get_center()
 	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, k if a4 else -k)), Vector3.ZERO)
 	hull.position = -(hull.transform.basis * c)
-	hull_lift = float(HT.HULL_LIFT.get(code, 0.0))
+	var variant_lift := 0.0
+	if code == str(u.get("tpl", "")):
+		variant_lift = float(HT.HULL_LIFT.get(HT.code_for(fac, str(u.get("cls", ""))), 0.0))
+	hull_lift = float(HT.HULL_LIFT.get(code, variant_lift))
 	hull.position.y += hull_lift
 	hull_base = hull.position
 	hull_basis = hull.transform.basis

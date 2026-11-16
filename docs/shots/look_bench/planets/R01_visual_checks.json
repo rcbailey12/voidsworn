@@ -1,0 +1,18 @@
+{
+  "cloud_motion": {
+    "changed_pixels_below_caption": 108657,
+    "max_channel_difference": 208,
+    "inputs": [
+      "after/run2/R01_planet.png",
+      "after/run2/R01_cloud_motion.png"
+    ]
+  },
+  "isolated_shadow": {
+    "changed_pixels_below_caption": 47530,
+    "max_channel_difference": 124,
+    "inputs": [
+      "after/run2/R01_shadows_on.png",
+      "after/run2/R01_shadows_off.png"
+    ]
+  }
+}

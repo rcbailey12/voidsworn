@@ -28,13 +28,13 @@ set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
 set B=%V%\blender\blender-4.5.14-windows-x64\blender.exe
 set BPY=%V%\blender\blender-4.5.14-windows-x64\4.5\python\bin\python.exe
 cd /d "%C%"
-"%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
 rem each ship in a fresh cmd: the variables its stages set end with it
 cmd /c ""%~f0" ship corsair_A18 A18 C13s_23"
 cmd /c ""%~f0" ship corsair_A19 A19 C14s_23"
 cmd /c ""%~f0" ship corsair_A20 A20 C16s_23"
-"%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs corsair --sets battle,close,cams --codes C13s_23,C14s_23,C16s_23 > "%O%\log_shots.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs corsair --sets battle,close,cams --codes C13s_23,C14s_23,C16s_23 > "%O%\log_shots.txt" 2>&1
 echo shots exit %ERRORLEVEL% >> "%RES%"
 for %%S in (A18:C13s_23 A19:C14s_23 A20:C16s_23) do call :compare %%S
 echo done %DATE% %TIME% >> "%RES%"
@@ -64,13 +64,13 @@ if defined FAILED (
   exit /b 1
 )
 findstr /c:"surface check" "%JOBX%\log_surface.txt" >> "%RES%" 2>&1
-"%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
 echo %SHIP% gpu readback exit %ERRORLEVEL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
 echo %SHIP% authored interiors exit %ERRORLEVEL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
 echo %SHIP% death seam exit %ERRORLEVEL% >> "%RES%"
-"%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%O%\%CELLX%\paint" %SHIP% "%C%\contrib\muse\design\class_family_corsair_2026_11\%SHIP%_beauty.jpg" lift=1.25 samples=64 scale=1.0 gpu=1 > "%O%\log_%SHIP%_paint_sheet.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%O%\%CELLX%\paint" %SHIP% "%C%\contrib\muse\design\class_family_corsair_2026_11\%SHIP%_beauty.jpg" lift=1.25 samples=64 scale=1.0 gpu=1 > "%O%\log_%SHIP%_paint_sheet.txt" 2>&1
 echo %SHIP% paint sheet exit %ERRORLEVEL% >> "%RES%"
 for %%F in (density.json %CELLX%.json licences.json lights.json log_surface.txt) do copy /y "%JOBX%\%%F" "%O%\%CELLX%\" > nul
 if not exist "%O%\%CELLX%\surface" mkdir "%O%\%CELLX%\surface"

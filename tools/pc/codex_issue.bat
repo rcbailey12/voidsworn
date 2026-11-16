@@ -33,6 +33,11 @@ set "R=%ROOT%\board\repo"
 set "O=%ROOT%\board\issue-%N%"
 set "BR=codex/issue-%N%"
 set "PUSHMODE=real"
+rem R276: all nested GPU launchers inherit the issue and the code-only lane.
+set "PC_GPU_ISSUE=%N%"
+set "PC_GPU_LANE="
+echo %R%| findstr /i /c:"board_c" >nul
+if not errorlevel 1 set "PC_GPU_LANE=C"
 if not defined CODEX_TEST_ROOT goto :setup
 set "B=%CODEX_TEST_ROOT%"
 set "R=%CODEX_TEST_ROOT%\repo"

@@ -1,5 +1,10 @@
 # The ship recipe
 
+GPU launches use `tools/pc/tmo.bat`: Blender and TRELLIS take one of two shared slots; stage 6's frame-time bench takes
+solo automatically and releases straight after that run (R276). A solo waiter blocks new GPU work until both slots empty.
+Every claim still waits for `gpu_go.txt` to say `GPU cleared`. Lane C stays code only. For a new timing script set
+`PC_GPU_MODE=solo` before its tmo call. Never launch a GPU executable directly or claim a slot for the whole recipe.
+
 Ryan, Nov 9 2026 (FINDINGS R150, R151): turn issue 209 rounds 1 to 5 into a repeatable recipe now, prove it on Ab5 (the C15s
 Hullbreaker cruiser), then redo the concepts and run every ship through it. Parts are not one shared kit: every faction has its own
 parts kit with its own shape language; only invisible plumbing is shared.

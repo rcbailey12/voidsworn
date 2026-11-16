@@ -28,13 +28,13 @@ set RECIPE_NOPAUSE=1
 set INSTALL_TO=%C%\godot
 set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
 cd /d "%C%"
-"%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
 rem each ship in a fresh cmd: the variables its stages set end with it
 cmd /c ""%~f0" ship corsair_A18 C13s_23"
 cmd /c ""%~f0" ship corsair_A19 C14s_23"
 cmd /c ""%~f0" ship corsair_A20 C16s_23"
-"%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs corsair --sets battle,close --codes C13s_23,C14s_23,C16s_23 > "%O%\log_shots.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs corsair --sets battle,close --codes C13s_23,C14s_23,C16s_23 > "%O%\log_shots.txt" 2>&1
 echo shots exit %ERRORLEVEL% >> "%RES%"
 echo done %DATE% %TIME% >> "%RES%"
 exit /b 0
@@ -51,13 +51,13 @@ if defined FAILED (
   echo %SHIP% checks SKIPPED: stage %FAILED% failed, so the installed glb is not this run's >> "%RES%"
   exit /b 1
 )
-"%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% gpu readback exit %EL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% authored interiors exit %EL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% death seam exit %EL% >> "%RES%"
 exit /b 0
