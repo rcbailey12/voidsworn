@@ -15,6 +15,7 @@
 # Where each colour zone sits on a ship is the build sheet's decision (its materials soot, rust, iron, blood, pale, violet, ...);
 # this file says what each zone is made of.
 import os, sys, json, math
+from copy import deepcopy
 import numpy as np
 import bpy
 
@@ -169,6 +170,79 @@ TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(2.2, .45, 1.55), warp
 # gain: the later layers (grime, rust, ambient occlusion, side darkening) take a plate's value down after the patchwork; at gain 1
 # the sandbox render of A20 showed the then pale patches at a median value of 141 against the concept's 172 (contrib/opus/tools/
 # issue726/measure.py), so the trophy tones are painted lighter by this factor (linear albedo) to read as the concept's.
+
+# Issue 853: the capital pattern made tiny tiles on KB1CC and its edge wear washed
+# the grey trophy plates pale. The build contract supplies the sheet's LENGTH.
+# All larger ships retain the original dictionaries, including the A16 fixture.
+CRAFT_SIZE = dict(max_length=1.6, patches=3.0, trophies=1.5, marks=2.0,
+                  trophy_gain=1.0, wear=.18, grey_wear=.18)
+_SHIP_LAYERS = deepcopy(LAYERS)
+_SHIP_TROPHY = deepcopy(TROPHY)
+_SHIP_ZONES = deepcopy(ZONES)
+_SHIP_BARE = BARE
+_SHIP_ZONE_BY_KIND = deepcopy(ZONE_BY_KIND)
+
+# Issue 853 run 2: KB1CC's accepted concept is red armour with dark iron framing.
+# Tones sampled by eye from the broad red plate interiors in KB1CC.jpg (excluding the name,
+# grey trophies, seams and highlights). The sheet already models its large,
+# irregular plates: adding the capital shader's grids subdivided them into a
+# grey mosaic. Keep their real seams and each modelled plate's own tone instead.
+CRAFT_PLATES = dict(
+    soot=((100, 38, 27), (153, 59, 39)),
+    soot2=((83, 31, 24), (130, 48, 34)),
+    rust=((113, 41, 27), (170, 67, 42)),
+    blood=((100, 30, 24), (153, 47, 32)),
+    violet=((104, 36, 27), (150, 54, 36)),
+    pale=CONCEPT['trophy_grey'],
+)
+
+
+def configure_size(length=None):
+    """Select craft pattern sizes from the sheet length; reset before every bake."""
+    global BARE
+    length = float(bpy.context.scene.get('r209_length_world', 0) if length is None else length)
+    LAYERS.clear(); LAYERS.update(deepcopy(_SHIP_LAYERS))
+    TROPHY.clear(); TROPHY.update(deepcopy(_SHIP_TROPHY))
+    ZONES.clear(); ZONES.update(deepcopy(_SHIP_ZONES))
+    ZONE_BY_KIND.clear(); ZONE_BY_KIND.update(deepcopy(_SHIP_ZONE_BY_KIND))
+    BARE = _SHIP_BARE
+    craft = 0 < length <= CRAFT_SIZE['max_length'] + 1e-6
+    if craft:
+        for key in ('patch_big', 'patch_small', 'patch_over'):
+            LAYERS[key] = tuple(v * CRAFT_SIZE['patches'] for v in LAYERS[key])
+        LAYERS['patch_parts'] = tuple(tuple(v * CRAFT_SIZE['patches'] for v in cell)
+                                     for cell in LAYERS['patch_parts'])
+        TROPHY['cell'] = tuple(v * CRAFT_SIZE['trophies'] for v in TROPHY['cell'])
+        TROPHY['gain'] = CRAFT_SIZE['trophy_gain']
+        for key in ('scuff_size', 'rivet_pitch'):
+            LAYERS[key] *= CRAFT_SIZE['marks']
+        for key in ('mottle_scale', 'rust_blot', 'wear_scale'):
+            LAYERS[key] /= CRAFT_SIZE['marks']
+        LAYERS['wear'] = CRAFT_SIZE['wear']
+        ZONES['pale']['wear'] = CRAFT_SIZE['grey_wear']
+        # Broad red plate faces, with no purple, pale scrape or trophy overlay.
+        # Pale is the sheet's name for its few salvaged dark grey plates.
+        LAYERS.update(plate_var=.16, island_tone=.9, mottle=.18, scuff=.28,
+                      ao_dark=.65, side_dark=.18)
+        for name, zone in ZONES.items():
+            if name == 'dark':
+                continue
+            zone.update(patchwork=0.0, patchwork_parts=0.0, red_share=0.0,
+                        scuff=.28, wear=CRAFT_SIZE['wear'], grime=.48, rust=.32)
+            zone.pop('trophy_share', None)
+            if name in CRAFT_PLATES:
+                zone['lo'], zone['hi'] = map(lin, CRAFT_PLATES[name])
+                zone.update(plate_var=.16, metal=.25, rough=.78)
+            elif name in ('iron', 'iron_bay', 'iron_edge', 'steel', 'bell'):
+                zone['lo'], zone['hi'] = pair('iron')
+                zone.update(plate_var=.12, metal=.45, rough=.68)
+        # Bright bare-metal wear was washing small armour plates grey.
+        BARE = lin((100, 91, 82))
+        # craft.py authors the bomb collar and bore in soot2, the same sheet
+        # zone used by red armour. Keep this machinery's dark iron assignment.
+        ZONE_BY_KIND[('launcher', 'soot2')] = 'iron_edge'
+    print('[853] Hullbreaker paint size:', 'craft' if craft else 'ship', 'sheet length', length, flush=True)
+    return craft
 
 
 def panel_nodes(c, col, amount, families=None, cells=None):
@@ -411,6 +485,9 @@ def _tile_noise(n, k, rng):
 def trim_sheet():
     """the faction's trim tiles, each RGBA in 0..1 (alpha is the tile's mask and height): drawn here (own work). Written to the job
     as one trim sheet image, rows top to bottom in this order."""
+    # The shared bake asks for trim first, after building the sheet and before
+    # masks or materials read LAYERS. Keep size selection inside this faction.
+    configure_size()
     rng = np.random.default_rng(209)
     T = {}
     # rivets: one domed rivet head per tile, a dark ring of grime round it
