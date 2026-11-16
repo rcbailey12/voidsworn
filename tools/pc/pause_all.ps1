@@ -39,8 +39,11 @@ foreach ($f in Get-ChildItem -LiteralPath $V -Filter '*.txt' | Where-Object { $_
 # (3) end the agents; keep ending any new ones (a queued job's preflight) until the window closes
 $end = (Get-Date).AddMinutes($Minutes); $quiet = 0
 while ((Get-Date) -lt $end) {
-  $hit = @(Get-Process -Name codex, opencode -ErrorAction SilentlyContinue)
-  foreach ($p in $hit) { Log ("ending {0} pid {1}" -f $p.Name, $p.Id); & taskkill /F /T /PID $p.Id | Out-Null }
+  # Only the Board's own agents: a codex or opencode process whose command line names the voidsworn_test job folders.
+  # Ryan's own Codex app (or anything else he runs) never matches and is never touched (Nov 15 19:39: the first version
+  # ended every codex process, and his Codex app kept restarting and being ended again).
+  $hit = @(Get-CimInstance Win32_Process | Where-Object { ($_.Name -match '^(codex|opencode)(\.exe)?$') -and ($_.CommandLine -match 'voidsworn_test') })
+  foreach ($p in $hit) { Log ("ending {0} pid {1}" -f $p.Name, $p.ProcessId); & taskkill /F /T /PID $p.ProcessId | Out-Null }
   if ($hit.Count -eq 0) { $quiet++ } else { $quiet = 0 }
   # quiet for 3 minutes and no runner still pushing (git) under the voidsworn folders: done
   $git = @(Get-CimInstance Win32_Process -Filter "Name='git.exe'" | Where-Object { $_.CommandLine -match 'voidsworn_test' })
