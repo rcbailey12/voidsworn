@@ -142,28 +142,64 @@ async function test(){
     let row=lane(p.snapshot(r,NOW),'main');assert.equal(row.state,'quiet');assert(row.stale);assert.match(row.reason,/process not confirmed/);assert.equal(lane(p.snapshot(r,NOW-1),'main').state,'running');
     const claim=path.join(base,'claim');write(path.join(claim,'codex_chain_a.txt'),'1 start 16:19:00');write(path.join(claim,'codex_chain_a.bat'),'for %%N in (1) do call :one %%N');row=lane(p.snapshot(claim,NOW),'main');assert(row.claim.amber);assert.match(row.reason,/Claim not confirmed/);
   });
-  const repo=path.join(base,'pictures'),photoOut=path.join(base,'picture-run'),commit='a'.repeat(40),later='b'.repeat(40);
-  write(path.join(photoOut,'base_commit.txt'),commit,NOW-50000);
-  function picture(name,{date=NOW-10000,source=commit,dirty=false,hash=true,side=true}={}){
+  const photoRoot=path.join(base,'picture-run'),repo=path.join(photoRoot,'board/repo'),photoOut=path.join(photoRoot,'board/issue-1');
+  const commit='a'.repeat(40),later='b'.repeat(40),photoStart=NOW-31*60000;
+  write(path.join(photoOut,'status.json'),JSON.stringify({run:RUN,status:'running',branch:'codex/issue-1',started:iso(photoStart)}),photoStart);
+  write(path.join(photoOut,'base_commit.txt'),commit,photoStart+1000);
+  write(path.join(photoRoot,'board/issue-2/base_commit.txt'),commit,photoStart-60000);
+  function picture(name,{date=NOW-10000,source=commit,dirty=false,hash=true,side=true,extra={}}={}){
     const file=path.join(repo,'docs/shots',name),bytes=Buffer.from('picture fixture '+name);write(file,bytes,NOW-1000);
-    if(side)write(file+'.provenance.json',JSON.stringify({schema:1,stage:'installed in game',date:iso(date),source_commit:source,source_dirty:dirty,image_sha256:hash?createHash('sha256').update(bytes).digest('hex'):'0'.repeat(64)}),NOW-1000);
+    if(side)write(file+'.provenance.json',JSON.stringify({schema:1,stage:'installed in game',date:iso(date),source_commit:source,source_dirty:dirty,image_sha256:hash?createHash('sha256').update(bytes).digest('hex'):'0'.repeat(64),...extra}),NOW-1000);
   }
-  picture('current.png',{dirty:true});picture('old.jpg',{date:NOW-120000});picture('unlinked.webp',{source:'c'.repeat(40)});picture('bad.png',{hash:false});picture('missing.png',{side:false});picture('excluded.gif');picture('later.png',{source:later});picture('diff.png',{source:'d'.repeat(40)});picture('large.png');write(path.join(repo,'docs/shots/large.png'),Buffer.alloc(3*1024*1024+1),NOW);
-  write(path.join(photoOut,'diffstat.txt'),' docs/shots/diff.png | Bin 0 -> 100 bytes\n',NOW-1000);
-  const pi={folder:photoOut,started:NOW-60000,job:{branch:'codex/issue-1'},status:{branch:'codex/issue-1'}},gitRead=(repo,args)=>args[0]==='symbolic-ref'?'codex/issue-1':args[0]==='log'?later:'';
+  picture('shared-base.png',{dirty:true});
+  check('a fresh shared-base picture stays unverified and cannot revive a quiet run',()=>{
+    const row=lane(p.snapshot(photoRoot,NOW),'main');
+    assert.equal(row.pictures.length,1);
+    assert.equal(row.pictures[0].association,'association unverified');
+    assert.equal(row.state,'quiet');
+  });
+  picture('old.jpg',{date:photoStart-60000});picture('unlinked.webp',{source:'c'.repeat(40)});picture('bad.png',{hash:false});picture('missing.png',{side:false});picture('excluded.gif');picture('later.png',{source:later});picture('diff.png',{source:'d'.repeat(40)});picture('large.png');write(path.join(repo,'docs/shots/large.png'),Buffer.alloc(3*1024*1024+1),NOW);
+  write(path.join(photoOut,'diffstat.txt'),' docs/shots/diff.png | Bin 0 -> 100 bytes\n docs/shots/old.jpg | Bin 0 -> 100 bytes\n',NOW-1000);
+  const pi=p.jobInfo(photoOut,1,'main',new p.Reader());
+  const gitRead=(repo,args)=>args[0]==='symbolic-ref'?'codex/issue-1':args[0]==='log'?`${later} ${(photoStart+1000)/1000}\n${commit} ${(photoStart+1000)/1000}\n${'c'.repeat(40)} ${photoStart/1000}`:'';
   check('pictures require allowed type, size, sidecar and matching hash',()=>assert.equal(p.pictureIndex(repo,pi,new p.Reader(),gitRead).length,5));
-  check('picture links need base commit, run branch or diff; old dates and stages stay explicit',()=>{
-    const pics=p.pictureIndex(repo,pi,new p.Reader(),gitRead);assert.equal(pics.filter(x=>x.association==='this run').length,3);assert.equal(pics.filter(x=>x.association==='older').length,1);assert.equal(pics.filter(x=>x.association==='association unverified').length,1);
+  check('run branch and diff prove links; old dates and stages stay explicit',()=>{
+    const pics=p.pictureIndex(repo,pi,new p.Reader(),gitRead);assert.deepEqual(pics.filter(x=>x.association==='this run').map(x=>x.evidence).sort(),['run branch commit','run diff']);assert.equal(pics.filter(x=>x.association==='older').length,1);assert.equal(pics.filter(x=>x.association==='association unverified').length,2);
     assert.equal(pics.find(x=>x.revision.includes('working tree')).revision,'a'.repeat(12)+' + working tree');assert(pics.every(x=>x.installedOnPC==='not tracked' && x.acceptedByRyan==='not tracked' && /^[a-f0-9]{64}$/.test(x.id)));assert(!JSON.stringify(pics).includes(repo));
   });
   check('another branch cannot prove a run picture link',()=>assert.equal(p.pictureIndex(repo,pi,new p.Reader(),()=> 'codex/issue-999').filter(x=>x.evidence==='run branch commit').length,0));
   check('cached picture hashes are rechecked after image bytes change',()=>{
     const reader=new p.Reader();assert.equal(p.pictureIndex(repo,pi,reader,gitRead).length,5);
-    write(path.join(repo,'docs/shots/current.png'),'changed bytes',NOW);
+    write(path.join(repo,'docs/shots/shared-base.png'),'changed bytes',NOW);
     assert.equal(p.pictureIndex(repo,pi,reader,gitRead).length,4);
+  });
+  check('sidecars can prove the run or issue, with an exact run id when given',()=>{
+    picture('run.png',{extra:{run:RUN}});
+    picture('issue.png',{extra:{issue:1}});
+    picture('other-run.png',{extra:{run:OLD,issue:1}});
+    picture('other-issue.png',{extra:{issue:2}});
+    const pics=p.pictureIndex(repo,pi,new p.Reader());
+    assert.deepEqual(pics.filter(x=>x.association==='this run').map(x=>x.evidence).sort(),['run diff','sidecar issue','sidecar run id']);
+    assert.equal(lane(p.snapshot(photoRoot,NOW),'main').state,'running');
+  });
+  check('the first-parent diff of a confirmed push proves a picture link',()=>{
+    const pushed='e'.repeat(40),source='f'.repeat(40);
+    picture('pushed.png',{source});
+    const pushedRun={...pi,status:{...pi.status,status:'unverified',commit:pushed}};
+    const readGit=(repo,args)=>{
+      if(args[0]==='show')return String((photoStart+1000)/1000);
+      if(args[0]!=='diff')return '';
+      assert(args.includes(pushed+'^1'));
+      return 'docs/shots/pushed.png\0';
+    };
+    const readPicture=()=>p.pictureIndex(repo,pushedRun,new p.Reader(),readGit).find(x=>x.revision===source.slice(0,12));
+    assert.equal(readPicture().association,'association unverified');
+    write(path.join(photoOut,'confirmed_commit.txt'),pushed,NOW-1000);
+    assert.equal(readPicture().evidence,'run diff');
   });
   check('scans preserve fixture sources and cache repeated bounded reads',()=>{const r=new p.Reader();p.snapshot(root,real.now,r);const bytes=r.readBytes;p.snapshot(root,real.now+1000,r);assert.equal(r.readBytes,bytes);assert.deepEqual(fingerprints(root),before);});
   await budgetTests(check);
+  await paginationTests(check);
   check('privacy removes paths, users, secrets, raw logs, folder, marker and full run ids',()=>{
     const r=path.join(base,'privacy');write(path.join(r,'board/issue-1/status.json'),JSON.stringify({run:RUN,status:'failed',started:iso(NOW-60000),folder:'C:\\Users\\PrivatePerson',marker:'PRIVATE-MARKER',title:'C:\\Users\\PrivatePerson ghp_FIXTURESECRET',reason:'runner exit 14 RAW-LOG-SENTINEL',github:{folder:'PRIVATE',marker:'PRIVATE'}}));write(path.join(r,'board/issue-1/log.txt'),'RAW-LOG-SENTINEL ghp_FIXTURESECRET');
     const json=JSON.stringify(p.snapshot(r,NOW));assert(!/C:\\\\|PrivatePerson|\brcbai\b|ghp_|github_pat_|RAW-LOG-SENTINEL|PRIVATE-MARKER|"folder"|"marker"/.test(json));assert(!json.includes(RUN));assert.match(json,/Runner exit 14/);if(process.env.USERNAME)assert.match(p.cleanTitle(process.env.USERNAME+' private notes',1),/withheld/);
@@ -217,6 +253,55 @@ async function budgetTests(check){
   });
   check('GitHub crew stays dated, issue state is kept, comments remain private',()=>{const g=githubFixture(true);assert(g.crew.artoo && g.crew.muse && g.crew.claude);assert(!JSON.stringify(g).includes('Private fixture comment'));assert(g.issues.every(i=>['open','closed','unknown'].includes(i.state)));});
   check('Ryan questions require open state, label and an unfenced marker',()=>{const issue={number:1,title:'Question',state:'open',labels:['ryan'],body:'Ask Ryan: Pick this? | Picture: https://github.com/rcbailey12/voidsworn/issues/1'};assert.equal(p.githubData([issue],[],[],p.emptyGithub(),NOW).needsRyan.length,1);for(const extra of [{state:'closed'},{labels:[]},{body:'```\n'+issue.body+'\n```'}])assert.equal(p.githubData([{...issue,...extra}],[],[],p.emptyGithub(),NOW).needsRyan.length,0);});
+}
+async function paginationTests(check){
+  const fixture=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/github.json'),'utf8'));
+  for(const name of ['issues','comments']){
+    const comments=name==='comments';
+    const start=NOW+(comments?3:1)*60000, finish=start+60000, updatedAt=iso(start+30000);
+    const existing={...fixture[name][0],updated_at:iso(start-500)};
+    const late={...existing,updated_at:updatedAt,...(comments?{id:124,issue_url:existing.issue_url.replace('/937','/996')}:{number:989,title:'Update during sweep'})};
+    const duplicate=comments?{...existing,id:125,issue_url:existing.issue_url.replace('/937','/998'),updated_at:iso(start-250)}:existing;
+    const repeated=comments?{...duplicate,body:'Ordinary edited comment',updated_at:iso(start+10000)}:{...duplicate,title:'Earlier title',updated_at:iso(start-750)};
+    const nextPage={Link:'<https://api.github.com/fixed>; rel="next"'};
+    let pages=0;
+    const reader=new p.GithubReader(async raw=>{
+      const url=new URL(raw);
+      const endpoint=url.pathname.endsWith(comments?'/issues/comments':'/issues');
+      if(!endpoint || !url.searchParams.has('since'))return new Response('[]');
+      const page=Number(url.searchParams.get('page'));
+      const since=Date.parse(url.searchParams.get('since'));
+      pages++;
+      if(pages<=4){
+        // The new record moves into page one after we have read it. Page four repeats a record shifted by that insert.
+        const items=page===1?(comments?[existing,duplicate]:[existing]):page===4?[repeated]:[];
+        return new Response(JSON.stringify(items),{headers:page<4?nextPage:{}});
+      }
+      return new Response(JSON.stringify([late,existing,repeated].filter(item=>Date.parse(item.updated_at)>since)));
+    });
+    for(let now=NOW;now<=start;now+=60000)await reader.update(now);
+    assert.equal(pages,3);
+    assert.equal(reader.data.sources[name].complete,false);
+    await reader.update(finish);
+    assert.equal(pages,4);
+    assert.equal(reader.data.sources[name].lastSuccessfulReadAt,iso(finish));
+    check(`the ${name} sweep keeps the newest version when pages repeat an id`,()=>{
+      if(comments)assert.equal(reader.data.crew.artoo.number,937);
+      else assert.deepEqual(reader.data.issues.filter(x=>x.number===existing.number).map(x=>x.title),[existing.title]);
+    });
+    const next=finish+reader.data.sources[name].intervalSeconds*1000;
+    await reader.update(next);
+    if(pages===4)await reader.update(next+60000);
+    check(`the next ${name} sweep recovers an update that landed between pages one and four`,()=>{
+      assert.equal(pages,5);
+      if(comments)assert.deepEqual([reader.data.crew.artoo.number,reader.data.crew.artoo.at],[996,updatedAt]);
+      else {
+        assert.equal(reader.data.issues.find(x=>x.number===989)?.updatedAt,updatedAt);
+        assert.deepEqual(reader.data.issues.filter(x=>x.number===existing.number).map(x=>x.title),[existing.title]);
+      }
+      assert(reader.data.sources[name].complete);
+    });
+  }
 }
 async function httpTests(check,base,root){
   const reserve=http.createServer();await new Promise(r=>reserve.listen(0,'127.0.0.1',r));const port=reserve.address().port;await new Promise(r=>reserve.close(r));

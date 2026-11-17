@@ -61,11 +61,11 @@ Each entry carries an opaque SHA-256 id, stage, capture time, write time, revisi
 
 **This run** needs a capture after the run started and one of:
 
-- The image path is in this run's fresh `diffstat.txt`, or in its recorded commit's diff.
-- The sidecar's `source_commit` equals the run's fresh `base_commit.txt`.
-- That revision is on this run's currently checked-out branch and was committed after the run started.
+- The image path is in this run's fresh `diffstat.txt` or in the diff of its confirmed push.
+- The sidecar gives the full matching `run` id or, when no `run` id is supplied, the matching numeric `issue`.
+- The sidecar's `source_commit` is on the first-parent history of the run's checked-out branch and was committed after the run started.
 
-Both Codex and DeepSeek use `runner_common.ps1` checkout mode, which records `base_commit.txt` before partial/Base merges. Codex keeps it in `board*/issue-N/base_commit.txt`; DeepSeek keeps it in `work217/issue-N-deepseek/<stamp>/out/base_commit.txt`. Later run-branch merge commits can provide the third form of evidence. `pre_commit.txt` is written at delivery time; it is not the starting revision. Shared checkout location and a recent timestamp alone are insufficient.
+`runner_common.ps1` records `base_commit.txt` before partial or Base merges. The publisher excludes that starting commit and its history from branch evidence. Runs can share a starting commit and Codex lane checkout. A new image linked only to the shared starting revision is **association unverified**, and its write time contributes no run activity. Later run-branch merges can provide branch evidence.
 
 A capture before the run start is **older**, even when its path occurs in the diff. Other unlinked captures are **association unverified**. Missing evidence is never promoted into a current picture. A stage of **installed in game** means captured in the game build. Installed on Ryan's PC and accepted by Ryan both remain **not tracked**.
 
@@ -76,15 +76,15 @@ One `Budget` instance guards every scheduled request, extra page and retry. Read
 | Source | Interval | Read |
 | --- | --- | --- |
 | questions | 10 minutes | Open issues with `ryan`, every page |
-| issues | 10 minutes | All states changed since its last successful read, every page |
-| pulls | 10 minutes | All states sorted by update, through the previous successful-read boundary |
-| comments | 30 minutes | Repository comments since its last successful read, every page |
+| issues | 10 minutes | All states changed since the query watermark, every page |
+| pulls | 10 minutes | All states sorted by update, through the query watermark |
+| comments | 30 minutes | Repository comments since the query watermark, every page |
 
 Cold reads start at minutes 0, 1, 2 and 3, questions first. The recurring first pages cost about 20 requests an hour, leaving room around the planned 24 and a hard ceiling of 30 in a rolling hour. Every page costs one request; retrying a failed source also spends from that same object. A three-request minute ceiling also covers cold pagination. A paused paginated read keeps its next page internally and remains incomplete until resumed; it does not restart page one every minute. A Link header can only advance a page on the fixed repository endpoint.
 
 At `x-ratelimit-remaining <= 15`, all reads pause until `x-ratelimit-reset`. A 403 or 429 pauses until reset plus a minute. Missing reset information uses a conservative hour plus a minute. Source failures back off 10, 20, 40 and then 60 minutes. Restarting a publisher starts a new local counter; the server's shared-IP remaining/reset headers still apply.
 
-Each `github.sources` record has last successful read, last attempt, completeness, reason, next attempt, interval and staleness. A failed or partial read retains last good values and their original date. A questions query that fails on page two remains **not fully checked**. Legacy `coverageComplete` follows that dedicated query, so the current page never reports zero questions from an incomplete read. The aggregate last-read time is the oldest successful source time once all four have completed at least once.
+Each `github.sources` record has last successful read, last attempt, completeness, reason, next attempt, interval and staleness. The displayed last successful read is the sweep's completion time. Internally, each completed sweep saves a query watermark one second before its first page. The next sweep rereads that overlap to catch updates that moved onto an already-read page. Repeated records within a sweep are deduplicated by issue or pull number or by comment id, keeping the newest update. A failed or partial read retains last good values, display time and query watermark. A questions query that fails on page two remains **not fully checked**. Legacy `coverageComplete` follows that dedicated query, so the current page never reports zero questions from an incomplete read. The aggregate last-read time is the oldest successful source time once all four have completed at least once.
 
 A Ryan question still needs both the `ryan` label and an unfenced issue-body line `Ask Ryan: <question> | Picture: <link>`. Dispatch locks are not questions. Titles and that one question line are cleaned; raw bodies and comments never escape. Picture links accept only HTTPS within this GitHub repository, without credentials, queries or fragments.
 
@@ -112,7 +112,7 @@ Ryan's eight findings, checked against local files and runner code:
 | 4. Runner-managed wait | `runner_common.ps1` requires checked_push and commit; changed/other terminal runs stop it | No such wait is inferred without matching run evidence |
 | 5. Old wait wording | Old lane/chain forms and exact-file forms resolve; bat Path takes precedence | Missing or ambiguous target files stay unknown |
 | 6. DeepSeek | Selected timestamped run, full status id, untagged result, events activity | Result has no intrinsic run id; location is its evidence |
-| 7. Codex | Full status/result id match; shared lane checkout; base_commit and run diff/branch proof for pictures | Unlinked pictures and conflicting run evidence stay unverified |
+| 7. Codex | Full status/result id match; shared lane checkout; run diff, sidecar or branch proof for pictures | Shared-base pictures without a run link and conflicting run evidence stay unverified |
 | 8. Deployed version | Live read at 17:34 UTC was schema 1 with no build block, but now had GitHub data; build hashing and restart offer detect drift | Exact loaded code of that old process cannot be recovered from schema 1 |
 
 This run does not deploy or restart Mission Control, change the Tailscale setup, run GPU work, or add the run 2 page/picture route. The Board's PC deployment and Ryan's Pixel check remain later steps.

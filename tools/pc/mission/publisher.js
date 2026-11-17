@@ -274,6 +274,7 @@ function enrichJob(job, github) {
 class GithubReader {
   constructor(fetcher = fetch, initial = emptyGithub(), budget = new Budget()) {
     this.fetcher = fetcher; this.data = initial; this.budget = budget; this.busy = false; this.started = null; this.pending = {};
+    this.watermarks = {};
     this.data.sources ||= Object.fromEntries(Object.keys(SOURCE_INTERVAL_MS).map(n=>[n,sourceRecord(n)]));
   }
   async request(url, now) {
@@ -290,8 +291,10 @@ class GithubReader {
     const hasNext = /<[^>]+>;\s*rel="next"/.test(res.headers.get('link') || '');
     return {items, hasNext};
   }
-  async update(now = Date.now()) {
+  async update(at) {
     if (this.busy) return this.data;
+    const clock = at === undefined ? Date.now : () => at;
+    const now = clock();
     this.busy = true; this.started ??= now;
     const names = Object.keys(SOURCE_INTERVAL_MS), base = 'https://api.github.com/repos/rcbailey12/voidsworn/';
     try {
@@ -300,17 +303,24 @@ class GithubReader {
         const due = record.nextAttemptAt ? time(record.nextAttemptAt) : this.started + index*60000;
         if (now < due || !this.budget.canSpend(now)) continue;
         record.lastAttemptAt = iso(now); record.complete = false; record.reason = 'not fully checked';
-        const since = record.lastSuccessfulReadAt || iso(now-7*86400000);
+        const watermark = this.watermarks[name];
+        const since = iso(watermark ?? now-7*86400000);
         const query = name === 'questions' ? 'issues?state=open&labels=ryan&per_page=100' : name === 'issues' ? 'issues?state=all&sort=updated&direction=desc&per_page=100&since='+encodeURIComponent(since) :
           name === 'pulls' ? 'pulls?state=all&sort=updated&direction=desc&per_page=100' : 'issues/comments?sort=updated&direction=desc&per_page=100&since='+encodeURIComponent(since);
-        const pending = this.pending[name] ||= {query, items:[], page:1};
+        const pending = this.pending[name] ||= {query, startedAt:clock(), items:new Map(), page:1};
+        const idField = name === 'comments' ? 'id' : 'number';
         let complete = false;
         try {
           while (this.budget.canSpend(now)) {
             const result = await this.request(base+pending.query+'&page='+pending.page,now);
-            pending.items.push(...result.items);
+            for (const item of result.items) {
+              const id = item?.[idField];
+              if (!issueNumber(id)) continue;
+              const previous = pending.items.get(id);
+              if (!previous || time(item.updated_at) >= time(previous.updated_at)) pending.items.set(id,item);
+            }
             pending.page++;
-            const reachedPrevious = name === 'pulls' && record.lastSuccessfulReadAt && result.items.some(x=>time(x.updated_at)<=time(record.lastSuccessfulReadAt));
+            const reachedPrevious = name === 'pulls' && watermark && result.items.some(x=>time(x.updated_at) && time(x.updated_at)<watermark);
             if (!result.hasNext || reachedPrevious) { complete = true; break; }
           }
           if (!complete) {
@@ -318,13 +328,16 @@ class GithubReader {
             record.nextAttemptAt = iso(this.budget.nextAvailableAt(now));
             continue;
           }
-          const items = pending.items;
+          const completedAt = clock(), items = [...pending.items.values()];
           const knownQuestions = this.data.needsRyan;
-          const merged = githubData(name==='issues' || name==='questions' ? items : [], name==='pulls' ? items : [], name==='comments' ? items : [],this.data,now);
+          const merged = githubData(name==='issues' || name==='questions' ? items : [], name==='pulls' ? items : [], name==='comments' ? items : [],this.data,completedAt);
           const sources = this.data.sources;
           this.data = {...merged, sources};
-          this.data.needsRyan = name==='questions' ? githubData(items,[],[],emptyGithub(),now).needsRyan : knownQuestions;
-          record.lastSuccessfulReadAt = iso(now); record.complete = true; record.reason = null; record.failures = 0;
+          this.data.needsRyan = name==='questions' ? githubData(items,[],[],emptyGithub(),completedAt).needsRyan : knownQuestions;
+          // A record can move onto a page already read. Replay from the first page's start,
+          // with a second of overlap for GitHub timestamps at the start boundary.
+          this.watermarks[name] = pending.startedAt-1000;
+          record.lastSuccessfulReadAt = iso(completedAt); record.complete = true; record.reason = null; record.failures = 0;
           record.nextAttemptAt = iso(now + SOURCE_INTERVAL_MS[name]);
           delete this.pending[name];
         } catch (_) {
@@ -372,6 +385,11 @@ function compatiblePage(body) {
   // Run 1 may not edit index.html. Widen only its schema guard in the served copy.
   return String(body).replace('v.schemaVersion!==1','![1,2].includes(v.schemaVersion)');
 }
+function sidecarRunLink(sidecar, info) {
+  if (!info || (sidecar.issue != null && sidecar.issue !== info.issue)) return null;
+  if (sidecar.run != null) return info.run && runId(sidecar.run) === info.run ? 'sidecar run id' : null;
+  return issueNumber(sidecar.issue) ? 'sidecar issue' : null;
+}
 function pictureIndex(repo, info, reader, gitRead = git) {
   const pictures = [], runStart = info?.started || 0;
   const base = info ? reader.read(path.join(info.folder,'base_commit.txt'),256) : {text:'',mtime:0};
@@ -379,15 +397,23 @@ function pictureIndex(repo, info, reader, gitRead = git) {
   const diff = info ? reader.read(path.join(info.folder,'diffstat.txt'),256*1024) : {text:'',mtime:0};
   const diffPaths = new Set(diff.mtime >= runStart ? diff.text.split(/\r?\n/).map(l=>/^\s*(.+?)\s+\|/.exec(l)?.[1].replace(/\\/g,'/')).filter(Boolean) : []);
   const branch = info && gitRead(repo,['symbolic-ref','--short','HEAD']);
-  let commits = new Set();
+  const commits = new Set();
   if (info && runStart && branch === info.job.branch) {
-    commits = new Set(gitRead(repo,['log','--since='+new Date(runStart).toISOString(),'--format=%H',info.job.branch]).split(/\r?\n/).filter(sha));
+    const args = ['log','--first-parent','--since='+iso(runStart),'--format=%H%x20%ct',info.job.branch];
+    if (baseCommit) args.push('^'+baseCommit);
+    for (const line of gitRead(repo,[...args,'--']).split(/\r?\n/)) {
+      const [revision,seconds] = line.split(' ');
+      const hash = sha(revision);
+      if (hash && hash !== baseCommit && +seconds*1000 > runStart) commits.add(hash);
+    }
   }
   const pushed = info && sha(info.status?.commit);
-  if (pushed && runStart) {
-    const meta = gitRead(repo,['show','-s','--format=%ct',pushed]);
-    if (+meta*1000 >= runStart && info.status?.branch === info.job.branch) {
-      for (const name of gitRead(repo,['diff-tree','--no-commit-id','--name-only','-r',pushed]).split(/\r?\n/)) diffPaths.add(name);
+  if (pushed && runStart && info.status.branch === info.job.branch) {
+    const confirmation = reader.read(path.join(info.folder,'confirmed_commit.txt'),256);
+    const confirmed = info.status.status === 'checked_push' || confirmation.mtime >= runStart && sha(confirmation.text.trim()) === pushed;
+    if (confirmed && +gitRead(repo,['show','-s','--format=%ct',pushed])*1000 >= runStart) {
+      // The runner verifies the diff against the first parent, including on rerun merge commits.
+      for (const name of gitRead(repo,['diff','--name-only','--no-renames','-z',pushed+'^1',pushed,'--']).split('\0')) diffPaths.add(name);
     }
   }
   function walk(dir) {
@@ -399,13 +425,14 @@ function pictureIndex(repo, info, reader, gitRead = git) {
       if (!stat || stat.size > 3*1024*1024) continue;
       let sidecar;
       try { sidecar=JSON.parse(reader.read(file+'.provenance.json',512*1024).text); } catch (_) { continue; }
-      if (!/^[a-f0-9]{64}$/i.test(sidecar.image_sha256 || '') || !sha(sidecar.source_commit) || !time(sidecar.date) ||
+      const stampedRevision = sha(sidecar?.source_commit);
+      if (!stampedRevision || !/^[a-f0-9]{64}$/i.test(sidecar.image_sha256 || '') || !time(sidecar.date) ||
         !['sheet built','paint proof','installed in game','Ryan accepted'].includes(sidecar.stage)) continue;
       const imageHash = reader.imageHash(file, stat);
       if (!imageHash) continue;
       if (imageHash !== sidecar.image_sha256.toLowerCase()) continue;
       const date = time(sidecar.date), relative = path.relative(repo,file).replace(/\\/g,'/');
-      const link = diffPaths.has(relative) ? 'run diff' : baseCommit === sidecar.source_commit ? 'starting commit' : commits.has(sidecar.source_commit) ? 'run branch commit' : null;
+      const link = diffPaths.has(relative) ? 'run diff' : sidecarRunLink(sidecar,info) || (commits.has(stampedRevision) ? 'run branch commit' : null);
       const association = runStart && date < runStart ? 'older' : runStart && date > runStart && link ? 'this run' : 'association unverified';
       pictures.push({id:createHash('sha256').update(repo+'\0'+relative+'\0'+imageHash).digest('hex'),stage:sidecar.stage,
         revision:sidecar.source_commit.slice(0,12)+(sidecar.source_dirty ? ' + working tree' : ''),capturedAt:iso(date),
