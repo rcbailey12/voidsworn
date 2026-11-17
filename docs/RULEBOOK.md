@@ -255,9 +255,17 @@ Ryan pays for it again. Set: Ryan, Nov 5 and 11 (R216).
 
 ## 3. PC and tools
 
-3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser game is frozen as the rules oracle** (changed only
-for rules fixes, so the parity check has something true to compare against). Why: "Godot seems way better. It's very
-noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a, agents-02.
+3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
+campaign files) are a live reference copy: every rules change goes into both until Ryan approves their retirement.** The browser
+game and pages ship nothing. Parity runs in full on every push, never skipped and never cut (no skip rule), made faster by
+running battles in parallel workers (issue 978), and a Godot-only safety net runs beside it (issue 979, then saved Godot
+results with a changed-battles review on rules PRs, piloted for whether its review cost is worth it). Ten rules PRs is a
+progress checkpoint, not approval to retire parity. The browser rules stay until the replacement data home, a Godot balance
+simulator, the ported tests and the PC tools work and are verified; retirement is then a separate recommendation to Ryan.
+Why: "Godot seems way better. It's very noticeable now." (R32); PC-only (Oct 24); "Let's go with Path D ... Don't implement
+the skip rule or reduce coverage ... Keep the browser rules until the replacement data, balance simulator, relevant tests and
+tools are working and verified, and bring me a separate retirement recommendation then." (R312). The old "frozen" wording was
+wrong: every new rule since went into both copies (round 2 review, Nov 17). Set: Ryan. Ids: R32, R33a, agents-02, R312.
 
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
