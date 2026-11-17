@@ -1,86 +1,118 @@
-# MC-951: Mission Control
+﻿# Mission Control: schema 2 data contract
 
-A read-only phone page for the five PC lanes. The layout follows the approved Mission Control mockups: feed times, counts, Attention, compact lane cards, a lane details sheet, then Crew. The page uses the game's Chakra Petch, Barlow and Azeret Mono fonts and the approved static Artoo droid.
+Issue 989, run 1. The publisher reads evidence from the five PC lanes and public GitHub metadata. The current phone layout remains in place. Run 2 owns the new layout and the picture route.
 
-## Start, phone link and stop
+## Start and phone link
 
-1. Double-click `tools\pc\mission\start.bat` in this checkout. Keep its window open and visit **http://127.0.0.1:8918** on the PC.
-2. For the Pixel, keep Tailscale installed, signed in to the same account and connected on both devices. Double-click `tools\pc\mission\PHONE_ON.bat`, then open the printed private HTTPS address on the phone. Its existing Serve and first-use HTTPS steps are unchanged.
-3. `PHONE_OFF.bat` disables only this private Serve endpoint. The local page and Tailscale sign-in stay available. Close the publisher window or press Ctrl+C to stop the publisher itself.
+Double-click `tools\pc\mission\start.bat` and keep its window open. The PC page is **http://127.0.0.1:8918**. Node 22 is already installed; no npm install, key or GPU is needed.
 
-Node 22 is already installed on the PC. No npm install, API key or GPU is needed. This change does not install or restart the live publisher. Run the launcher from the updated checkout after Board review to use this version.
+For the Pixel, keep Tailscale connected on both devices and double-click `PHONE_ON.bat`. Its private Serve endpoint and first-use HTTPS steps are unchanged. `PHONE_OFF.bat` disables only that endpoint. It leaves the publisher and Tailscale sign-in running.
 
-The existing phone setup refuses public Funnel and conflicting Serve settings. Its endpoint remains `tailscale serve --bg --https=443 http://127.0.0.1:8918`. Host and proxy-header checks, loopback binding, port and phone launchers are unchanged. No public status upload or remote control is provided.
+PHONE_ON accepts schema 1 and 2. A schema 1 publisher, a missing build block, a different content hash or `build.stale` causes an offer to restart. Only an explicit Y permits the restart. It identifies exactly one `node.exe` whose script argument is this folder's exact `publisher.js`, checks that identity again, then stops only that PID. A different folder, an agent process, an unknown port owner or multiple matches are refused. No process tree is stopped. These changes do not restart or deploy the live publisher by themselves.
 
-## What the page means
+Run 1 is forbidden to edit `index.html`. The publisher therefore widens its schema check in the served HTML copy only. All existing snapshot fields remain, and the served page reads either schema. The disk HTML and its design are unchanged. Opening that HTML directly bypasses this compatibility step; use the publisher. Run 2 can replace the adapter with the page's own schema support.
 
-The PC feed shows the snapshot time and age. GitHub check shows its own successful read time and age. After a failed or rate-limited read it says **GitHub check: not read since HH:MM**, retaining the last good information and its time. With no successful read, **For you: not checked** appears and the tally is `?`.
+## Queue evidence
 
-Attention comes before the lanes. **Needs you** means the Board marked a question for Ryan. Failed, Blocked, Stale, Leftover record and Ended without a push each explain what happened and what it means for him. The Board handles technical failures; the page does not ask Ryan to repair a runner. An empty Attention list never prints an all-clear claim.
+`queue.js` contains pure parsing and resolution functions. A chain's `.txt` and matching `.bat` provide its assignment and issue order; neither proves a process is alive.
 
-Each lane shows its role, status, short title, small issue number, start or end time, last activity and one Next line. Tap anywhere on the card to open the sheet: full title, issue and PR links, actual runner state, log time, chain, all queued titles and source evidence. Escape or Close returns focus to the lane. Minute refreshes preserve the open sheet, its scroll and keyboard focus.
+States are decided in this order:
 
-| Word | Evidence |
+1. Its last nonblank line says cancelled or paused by the Board, or stopped: `cancelled` or `paused`.
+2. It wrote `all done`: `ended`.
+3. It wrote its own start: `started`.
+4. It explicitly says `superseded by <file>.txt`, or a newer bat on the same lane shares an issue and has a `rem replaces <file>.txt` line: `superseded`.
+5. Otherwise resolve its wait. The bat's `Select-String -Path` wins over the log. Exact filenames and the older `lane C32` and `chain 16F` forms are supported. Every matching target is retained; zero means target not found, multiple means ambiguous, and cycles remain unknown for the resolution.
+
+A started or waiting predecessor gives `linked`. An ended predecessor gives `starting`; after three minutes the waiter remains listed, amber, saying the waiting window may be closed. A cancelled or paused predecessor gives `stuck: waits on a cancelled chain`. Cancellation does not release this text wait. Two waiters on one predecessor both remain, with the branching note. Separate chains have no implied order.
+
+`lane.queue.groups` preserves each chain, its jobs in bat order, targets, wait source, state and reason. `lane.queue.history` records ended, cancelled, paused and explicitly superseded chains. A newer start selects the lane's latest assignment; it never cancels an older chain or removes its remaining jobs. Earlier start records remain evidence. If equally recent starts disagree, the current assignment is unknown. Any unknown chain or unreadable active issue list makes the lane queue unknown. Legacy `next` is a compatibility listing of the groups, not a promise of order between separate chains.
+
+Closed GitHub issues stay listed in running and waiting chains, marked **closed on GitHub; the chain still lists it**. Issue state is last seen on GitHub and has its own source age.
+
+Board bats release on the words `all done`, regardless of checked-push status. In the real Nov 17 file set, #978 ended unverified at 16:42 UTC and C33 started #985 at 16:43. `pause_all.ps1` step 2 closes waiting windows and appends a pause line. It leaves a running chain window open while ending its agent, allowing the runner to preserve partial work. That chain can then write `all done`, releasing an open successor within its roughly one-minute polling interval. Pause also closes successors already waiting when it runs; the data does not assert that a window is still open.
+
+Runner-managed waits (`chain_issue.bat`, `PC_WAIT_FOR`, `runner_common.ps1`) are separate: they release only on `checked_push` plus a commit and stop on another terminal status or changed run. Matching result evidence reports this mechanism only when it occurs. The publisher does not impose it on Board text chains.
+
+## One result belongs to one run
+
+Internally, run ids are compared as all 32 characters. Only the first eight escape into the snapshot. The Codex result's `job claimed: ... run ...` line must match `status.json`. Untagged conflicting results mean unknown. A differing tag with evidence of an earlier start is previous-run evidence and never changes the current state. A differing tag without proof that it is earlier stays unknown. A result can prove failure without a status; text alone never proves a checked push.
+
+DeepSeek is different: `latest.txt` must name an existing timestamped direct child, and that child's `out/status.json` selects the run. Its result has no run-id line on the inspected PC. A result in that selected run's `out` can describe the run by location, explicitly labelled that way. Invalid or missing pointers give unknown; they never fall back to another run. Codex's lane checkout is shared across jobs, so location alone cannot associate its result.
+
+Activity is a status, matching result, log, checks, events or verified current-run picture write newer than the selected run's start. Old checks, old logs and old pictures do not revive it. `events.jsonl` counts, including DeepSeek runs with no `log.txt`. Activity proves a write, not process liveness. After 30 minutes the state is **quiet N min, process not confirmed**, amber through the legacy page's stale flag. It never becomes idle or working solely because time passed.
+
+Named thresholds live once in the data implementation and are published under `thresholds`:
+
+| Name | Threshold |
 | --- | --- |
-| Working | The selected runner says running, with activity younger than 30 minutes. |
-| Waiting | A live chain is waiting on its predecessor, or the runner explicitly reports a predecessor wait. |
-| Idle | The displayed job finished with a checked push, or the chain and terminal retry output prove the run ended. The sheet keeps the exact runner state. |
-| Failed / Blocked | A known failure, refusal, usage limit, stopped predecessor or unverified result. None means Ryan must answer. |
-| Stale | An active job has no activity write for at least 30 minutes. It may be hung or quietly working. |
-| Leftover record | A different running job folder is outside the live chain's issue list and has no activity for 30 minutes. It does not replace the chain's current job. |
-| Ended without a push | DeepSeek's chain wrote `all done` and its selected retry output ended with clone failed, push stopped or all done. This proves an end, never a checked success. A matching merged PR is reported separately. |
-| Unknown | Evidence is missing, unreadable or conflicting. The page does not infer a successful finish. |
+| PC feed | Over 3 minutes since snapshot generation |
+| Claim without matching runner | 10 minutes |
+| Work activity | 30 minutes without a qualifying write |
+| GitHub source age | Over twice that source's interval |
 
-After three minutes without a new PC snapshot, **PC FEED LOST** appears. Last-known lane styling and the old report time remain. A lost fetch never erases the last good report. Power off, sleep, a stopped publisher and a lost link look the same to this page. A new phone visit still needs the PC awake and reachable.
+The old page retains its existing labels and aggregate feed presentation until run 2. In particular, its stale label represents the new quiet data state.
 
-Crew shows **NO LIVE FEED** on Claude, Muse and Artoo. These are last records from GitHub, not claims that another agent is currently working. Claude records opus branch updates and Board merge commits visible on PRs; Muse records muse branch updates/merges; Artoo records comments starting exactly `Artoo (technical review):`. Comment bodies are never displayed. Direct Board commits with no PR are not available through the three permitted endpoints.
+## Picture index
 
-## Sources and privacy
+The publisher indexes only `.png`, `.jpg` and `.webp` images at most 3 MiB under each lane checkout's `repo/docs/shots` or `repo/docs/ship_pipeline`. Junctions and symbolic links are excluded. Each image needs a parseable `<file>.provenance.json`, recognized stage, capture date, source revision and matching `image_sha256`. Unstamped or changed images are excluded.
 
-The publisher reads only the existing top-level lane `.txt` files, matching `.bat` issue lists and fixed files under the five job roots. It does not walk checkouts, shots, queues or archives, execute scripts, inspect processes or write to any source. Paused-by-the-Board and stopped chains feed no queue and never count as waiting. A newer waiting chain cannot hide a started chain. A started chain's current issue wins over an unrelated newer job folder. In a gap, the ended job and remaining queue stay visible until a newer run replaces them.
+Each entry carries an opaque SHA-256 id, stage, capture time, write time, revision (12 characters, plus `+ working tree` when dirty), association and evidence. No filesystem path or picture filename escapes. There is no picture-serving route in this run.
 
-Activity is the newest write time of `status.json`, `log.txt`, `result.txt`, `checks_node.txt` and `checks_parity.txt`. A publisher refresh or chain text write cannot revive a runner. DeepSeek's valid `latest.txt` selects a direct timestamped child only. A pointer to the job folder, a missing pointer or an invalid pointer compares the newest timestamped run's `out` with the top-level `out`, using their activity write times. Arbitrary pointer paths are never followed. An older runner writing only `events.jsonl` can still appear stale; adding that source or changing runners is outside this brief.
+**This run** needs a capture after the run started and one of:
 
-Every five minutes the publisher makes at most three unauthenticated, read-only GET requests to the public repository:
+- The image path is in this run's fresh `diffstat.txt`, or in its recorded commit's diff.
+- The sidecar's `source_commit` equals the run's fresh `base_commit.txt`.
+- That revision is on this run's currently checked-out branch and was committed after the run started.
 
-- Issues: `state=all`, sorted by updated descending, 100 per page, including titles and labels.
-- Pulls: `state=all`, sorted by updated descending, 100 per page; PR state is matched to the exact delivery branch and repository, excluding forks.
-- Repository issue comments: sorted by updated descending, since the last successful read; the initial window is seven days.
+Both Codex and DeepSeek use `runner_common.ps1` checkout mode, which records `base_commit.txt` before partial/Base merges. Codex keeps it in `board*/issue-N/base_commit.txt`; DeepSeek keeps it in `work217/issue-N-deepseek/<stamp>/out/base_commit.txt`. Later run-branch merge commits can provide the third form of evidence. `pre_commit.txt` is written at delivery time; it is not the starting revision. Shared checkout location and a recent timestamp alone are insufficient.
 
-There are no extra pages, retries or token lookups in a round. Requests are bounded by a timeout and response size. Overlapping refreshes share one reader. A failed round keeps the last successful data and timestamp. Titles fall back to GitHub only when runner titles are unavailable or withheld, and always pass through `cleanTitle`.
+A capture before the run start is **older**, even when its path occurs in the diff. Other unlinked captures are **association unverified**. Missing evidence is never promoted into a current picture. A stage of **installed in game** means captured in the game build. Installed on Ryan's PC and accepted by Ryan both remain **not tracked**.
 
-The one-page limit matters: a full first issues page may omit older questions. In that case For you stays **not checked**, even after a successful read. Known marked questions still appear, and their original update times remain visible. PRs or Crew activity outside the read window may be unavailable; the sheet offers a branch search instead of claiming there is no PR. The current public repository fills this window. This deliberate unknown avoids a false zero without exceeding Ryan's three-request budget.
+## GitHub reads and budget
 
-The needs-Ryan contract is RULEBOOK 2.4: an open issue must have both the `ryan` label and an unfenced body line `Ask Ryan: <one question> | Picture: <link>`. Removing either removes the question on the next successful read of that issue. Dispatch `blocked` labels never become personal questions. Only the question line escapes the body. Picture links accept HTTPS links within this repository on GitHub or raw.githubusercontent.com; unsafe links are withheld. The page links to pictures without fetching external thumbnails.
+One `Budget` instance guards every scheduled request, extra page and retry. Reads use unauthenticated GET requests only, with response size and time limits. No token, cookie, GraphQL call or phone-side GitHub request is used.
 
-Published fields are fixed metadata: issue numbers, cleaned titles/questions, fixed GitHub links, PR state, recognized status reasons, logical source filenames and timestamps. No absolute PC paths, account or machine names, raw logs/results/comments, command lines or credentials are copied. GitHub is read by the PC publisher; the phone makes no GitHub API calls.
+| Source | Interval | Read |
+| --- | --- | --- |
+| questions | 10 minutes | Open issues with `ryan`, every page |
+| issues | 10 minutes | All states changed since its last successful read, every page |
+| pulls | 10 minutes | All states sorted by update, through the previous successful-read boundary |
+| comments | 30 minutes | Repository comments since its last successful read, every page |
 
-The server has fixed routes for the page, sanitized `status.json`, `artoo.svg` and the three bundled fonts. Font licenses sit beside them in the checkout. It has no directory, log, upload, fixture or arbitrary-file endpoint. The derived snapshot is local; never commit a live snapshot.
+Cold reads start at minutes 0, 1, 2 and 3, questions first. The recurring first pages cost about 20 requests an hour, leaving room around the planned 24 and a hard ceiling of 30 in a rolling hour. Every page costs one request; retrying a failed source also spends from that same object. A three-request minute ceiling also covers cold pagination. A paused paginated read keeps its next page internally and remains incomplete until resumed; it does not restart page one every minute. A Link header can only advance a page on the fixed repository endpoint.
 
-For a read-only operator check:
+At `x-ratelimit-remaining <= 15`, all reads pause until `x-ratelimit-reset`. A 403 or 429 pauses until reset plus a minute. Missing reset information uses a conservative hour plus a minute. Source failures back off 10, 20, 40 and then 60 minutes. Restarting a publisher starts a new local counter; the server's shared-IP remaining/reset headers still apply.
 
-```powershell
-node tools/pc/mission/publisher.js --root "C:\path\to\voidsworn_test" --out "$env:TEMP\mission-local" --once
-```
+Each `github.sources` record has last successful read, last attempt, completeness, reason, next attempt, interval and staleness. A failed or partial read retains last good values and their original date. A questions query that fails on page two remains **not fully checked**. Legacy `coverageComplete` follows that dedicated query, so the current page never reports zero questions from an incomplete read. The aggregate last-read time is the oldest successful source time once all four have completed at least once.
 
-Output inside job, build or queue folders, or through a junction, is refused. **Open a status file** imports a saved snapshot in the browser. Imported data ages in real time and says Saved PC snapshot; Refresh reconnects to the publisher.
+A Ryan question still needs both the `ryan` label and an unfenced issue-body line `Ask Ryan: <question> | Picture: <link>`. Dispatch locks are not questions. Titles and that one question line are cleaned; raw bodies and comments never escape. Picture links accept only HTTPS within this GitHub repository, without credentials, queries or fragments.
 
-Endpoint contracts: [repository issues](https://docs.github.com/en/rest/issues/issues#list-repository-issues), [pull requests](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests), [repository comments](https://docs.github.com/en/rest/issues/comments#list-issue-comments-for-a-repository). Existing phone setup: [Tailscale Serve](https://tailscale.com/docs/reference/tailscale-cli/serve).
+Claude, Muse and Artoo are **last seen on GitHub**, kept separate from PC activity. Records cover opus/muse PR updates, merge commits visible on PRs and comments starting `Artoo (technical review):`. Direct Board commits without a PR are not read. Neither these records nor GitHub running labels prove that a worker is alive.
 
-## Checks and pictures
+## Running version and privacy
 
-`tools\pc\mission\selftest.bat nopause` exercises real publisher scans over temporary copies of committed fixtures, the public-read adapter with fake responses, read-only source fingerprints, privacy, request budgets, failed-read retention, fixed HTTP routes, process shutdown and the existing phone setup tests. No real lane or Tailscale configuration is changed. The test's publisher processes use fake GitHub responses.
+`build.id` hashes the runtime files at module load; `build.diskId` hashes them again at each snapshot. `stale` is true if they differ. `RUNTIME_FILES` includes publisher, queue, budget, phone, tailscale, page, all fixed served fonts/art and the optional build manifest. The page body is captured when serving starts. `build.startedAt` dates the loaded module; `sourceRevision` is separate, from `build.json` (`{"revision":"<full commit>"}`) or the checkout's local Git revision when known. A Git revision does not imply a clean working tree or replace the content hash.
 
-`node tools/pc/mission/browser_test.js [shots folder]` uses installed Edge headlessly with GPU disabled. It checks all states, exact issue/queue links, sheets, escaping, offline aging after a failed fetch, GitHub uncertainty, Crew tags/art, focus retention and overflow at 320 and 412 px with larger type. Its profile, payloads and logs stay in TEMP. Ordinary publishers expose no fixture routes.
+The snapshot is an allowlist of metadata. It excludes PC paths, PC account/machine names, credentials, raw logs/results/comments and the status file's `folder` and `marker` fields. Runner reasons are recognized fixed messages. Source files are read-only. The HTTP server keeps only the existing page, status, art and font routes, loopback bind and Host/Funnel checks. It has no uploads, job controls, directory listing, public exposure or picture route.
 
-The Nov 16 22:38 fixture uses real publisher inputs: main chain 16B on #928, the newer #944 stub, paused 15H/15Z/16A and B23/B25, lane B's #936, and DeepSeek #932's ended top-level retry. It must show #928 Working, Next **929 912 930 920 921**, #944 as a leftover, nothing next on B and DeepSeek Idle/ended with merged PR 937 separate from the failed run.
+## Checks and observed differences
 
-All pictures are **412 x 720 fixture proof**, MC-951 revision r1 from the working tree, with revision/stage sidecars. They are compared against the approved mockups, not claimed as Ryan's visual acceptance. The implementation adds explicit Close and picture/issue links, retains lane D, and leaves the full queue and source rows scrollable within the sheet. The question card uses a picture link instead of an externally fetched thumbnail.
+Run `tools\pc\mission\selftest.bat nopause` or `node tools/pc/mission/selftest.js`, then `node tools/pc/mission/browser_test.js`. All test fixtures and scratch output use TEMP; no live lane files or Tailscale configuration are changed. The browser runs Edge headlessly with GPU disabled. Its display fixtures are generated through the publisher's real state functions. They exercise schema 2, schema 1 compatibility, every old page state, focus, escaping, feed loss and 320/412 px overflow. The standing command is `node contrib/opus/tools/run_all_checks.js`.
 
-Views: [Now](../shots/mission/MC-951-night.png), [lanes](../shots/mission/MC-951-lanes.png), [details](../shots/mission/MC-951-detail.png), [full queue and sources](../shots/mission/MC-951-detail-queue.png), [Crew](../shots/mission/MC-951-crew.png).
+`fixtures/nov17.json` contains 132 real PC chain text/bat shapes and five scrubbed current-run excerpts. Later events were cut off at 16:45 UTC on Nov 17; later terminal statuses were restored to their then-running state. This is a reconstruction from file evidence, not a claim that a historical snapshot was saved then. Tests show main #982 and nothing after it, B #975 without #903 or #922, C #985, D #984 and DeepSeek #983. Older chain starts without end lines remain evidence, not silently superseded. The actual D12 file records #984 starting at 16:40 UTC, later than D11; this differs from the brief's chain name but confirms its issue assignment.
 
-States: [overview](../shots/mission/MC-951-overview.png), [running](../shots/mission/MC-951-running.png), [waiting](../shots/mission/MC-951-waiting.png), [blocked](../shots/mission/MC-951-blocked.png), [failed](../shots/mission/MC-951-failed.png), [finished](../shots/mission/MC-951-finished.png), [between jobs](../shots/mission/MC-951-gap.png), [stale](../shots/mission/MC-951-stale.png), [leftover record](../shots/mission/MC-951-leftover.png), [ended without push](../shots/mission/MC-951-ended.png), [PC offline](../shots/mission/MC-951-offline.png), [unknown](../shots/mission/MC-951-unknown.png), [GitHub not read](../shots/mission/MC-951-github-unread.png), [needs Ryan](../shots/mission/MC-951-needs-ryan.png), [no marked question](../shots/mission/MC-951-no-needs-ryan.png).
+Ryan's eight findings, checked against local files and runner code:
 
-Live read, Nov 17 05:54 UTC: main #929, Next 912/930/920/921; B #936, Next 922/368; C #951; D #957; DeepSeek #953 with stale recorded activity. The chain files confirm each current issue and queue. LOOP's 04:55 line has main on #928 before its 22:55 local end/start transition to #929; the newer C/D chains likewise supersede LOOP's older jobs. GitHub's three public reads succeeded, supplied all six checked titles and PR 955 for the ended #928 run, plus Crew records. Old #944 and #945 main-lane stubs appear as leftovers. No needs-Ryan marker was found in the latest 100 issues, so For you stays not checked. The live JSON stays in TEMP and is not published in this PR.
+| Point | Checked and now represented | Still unknown |
+| --- | --- | --- |
+| 1. Board text waits | `Select-String` path, `all done`, #978 unverified and C33 #985 start; success is not a release condition | Whether any particular waiting window remains open |
+| 2. Cancelled waiting window | Stop/pause log endings; predecessor cancellation leaves a successor stuck | A silent closed window without a log marker |
+| 3. Pause running jobs | Pause closes waiting windows, keeps running chain windows; `all done` can still release an open successor after partial work | Whether that successor was also closed during the pause |
+| 4. Runner-managed wait | `runner_common.ps1` requires checked_push and commit; changed/other terminal runs stop it | No such wait is inferred without matching run evidence |
+| 5. Old wait wording | Old lane/chain forms and exact-file forms resolve; bat Path takes precedence | Missing or ambiguous target files stay unknown |
+| 6. DeepSeek | Selected timestamped run, full status id, untagged result, events activity | Result has no intrinsic run id; location is its evidence |
+| 7. Codex | Full status/result id match; shared lane checkout; base_commit and run diff/branch proof for pictures | Unlinked pictures and conflicting run evidence stay unverified |
+| 8. Deployed version | Live read at 17:34 UTC was schema 1 with no build block, but now had GitHub data; build hashing and restart offer detect drift | Exact loaded code of that old process cannot be recovered from schema 1 |
 
-Verification for this working tree: the Windows publisher self-test passes 55 checks. The headless Edge check passes all 16 state fixtures and behavior checks and saves 20 views, including lane, sheet, queue and Crew captures. The standing suite result is included in the delivery report. The real Pixel link was not reconfigured or exercised in this code-only job.
+This run does not deploy or restart Mission Control, change the Tailscale setup, run GPU work, or add the run 2 page/picture route. The Board's PC deployment and Ryan's Pixel check remain later steps.

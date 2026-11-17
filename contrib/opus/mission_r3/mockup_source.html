@@ -1,0 +1,332 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Chakra;src:url(ChakraPetch-SemiBold.ttf);font-weight:600}
+@font-face{font-family:Chakra;src:url(ChakraPetch-Medium.ttf);font-weight:500}
+@font-face{font-family:Barlow;src:url(Barlow-Regular.ttf);font-weight:400}
+@font-face{font-family:Barlow;src:url(Barlow-Medium.ttf);font-weight:500}
+@font-face{font-family:Mono;src:url(AzeretMono-VF.ttf)}
+@font-face{font-family:Shoulders;src:url(BigShouldersDisplay-VF.ttf)}
+:root{--ink:#090c09;--iron:#111611;--iron2:#182019;--iron3:#283228;--bone:#e8eee0;--bone2:#a7b09d;--bone3:#7c8674;
+--gilt:#c8f53a;--ongilt:#0d1200;--verd:#59d6a8;--ember:#ffb23e;--blood:#ff8a72;--shield:#4fc4ff;
+--claude:#e4c79a;--codex:#7fb6c9;--deep:#8ea6f0;--muse:#c3a6f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;font-family:Barlow;color:var(--bone);display:flex;flex-wrap:wrap;gap:20px;padding:20px}
+.phone{width:412px;height:720px;position:relative;overflow:hidden;
+ background:radial-gradient(120% 60% at 80% 0%,#18231a 0%,transparent 60%),radial-gradient(90% 50% at 0% 100%,#121a13 0%,transparent 70%),var(--ink)}
+.phone::before{content:"";position:absolute;inset:0;opacity:.07;pointer-events:none;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48.5'%3E%3Cpath d='M14 0l14 8.08v16.17L14 32.33 0 24.25V8.08z M14 32.33v16.17' fill='none' stroke='%23c8f53a' stroke-width='.8'/%3E%3C/svg%3E")}
+.sample{position:absolute;left:50%;transform:translateX(-50%);top:4px;z-index:20;font:600 10px Chakra;letter-spacing:.14em;color:var(--ongilt);background:var(--gilt);padding:2px 6px;border-radius:2px;opacity:.92}
+/* header */
+.hdr{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:relative;z-index:2}
+.brand{font-family:Shoulders;font-weight:700;font-size:19px;letter-spacing:.16em;color:var(--bone)}
+.brand small{display:block;font:500 9.5px Chakra;letter-spacing:.24em;color:var(--bone3);margin-top:-2px}
+.pips{display:flex;gap:10px}
+.pip{font:500 11px Mono;color:var(--bone2);display:flex;align-items:center;gap:5px}
+.pip i{width:7px;height:7px;border-radius:50%;background:var(--verd);box-shadow:0 0 6px var(--verd)}
+.pip.warn{color:var(--ember)}.pip.warn i{background:var(--ember);box-shadow:0 0 6px var(--ember)}
+.pip.bad{color:var(--blood)}.pip.bad i{background:var(--blood);box-shadow:none}
+.ticks{height:6px;margin:0 14px;background:repeating-linear-gradient(90deg,var(--iron3) 0 1px,transparent 1px 8px);opacity:.9;position:relative;z-index:2}
+.ticks::after{content:"";position:absolute;left:0;top:0;width:38%;height:1px;background:var(--gilt);opacity:.6}
+/* attention ribbon */
+.calm{margin:8px 14px 0;display:flex;gap:9px;align-items:center;font-size:13.5px;color:var(--bone2);position:relative;z-index:2}
+.calm b{color:var(--bone);font-weight:500}
+.diamond{width:9px;height:9px;transform:rotate(45deg);border:1.5px solid var(--bone3);flex:none}
+/* hero */
+.hero{margin:8px 0 0;position:relative;height:196px;z-index:2}
+.hero img{width:100%;height:100%;object-fit:cover;display:block}
+.hero .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,12,9,.55) 0%,rgba(9,12,9,0) 28%,rgba(9,12,9,0) 45%,rgba(9,12,9,.92) 88%,var(--ink) 100%)}
+.chip{font:500 10.5px Mono;letter-spacing:.02em;color:var(--bone);background:rgba(9,12,9,.72);border:1px solid rgba(232,238,224,.18);padding:3px 7px;border-radius:2px;backdrop-filter:blur(4px)}
+.chip.stage{border-color:rgba(89,214,168,.55);color:var(--verd)}
+.chip.paint{border-color:rgba(255,178,62,.55);color:var(--ember)}
+.hero .tl{position:absolute;left:12px;top:10px}
+.hero .tr{position:absolute;right:12px;top:10px;text-align:right}
+.hero .cap{position:absolute;left:14px;right:14px;bottom:10px}
+.kicker{font:600 10.5px Chakra;letter-spacing:.2em;color:var(--verd);display:flex;align-items:center;gap:7px}
+.kicker .live{width:7px;height:7px;border-radius:50%;background:var(--verd);box-shadow:0 0 0 3px rgba(89,214,168,.18)}
+.title{font:600 23px/1.1 Chakra;color:#f4f8ee;margin-top:4px;text-shadow:0 1px 8px #000}
+.sub{font-size:13.5px;color:var(--bone2);margin-top:3px}
+.sub b{color:var(--bone);font-weight:500}
+/* stage track */
+.track{margin:6px 14px 0;position:relative;z-index:2}
+.steps{display:flex;gap:3px}
+.steps span{flex:1;height:4px;background:var(--iron3);border-radius:1px}
+.steps .done{background:var(--verd);opacity:.55}.steps .now{background:var(--verd);box-shadow:0 0 8px var(--verd)}
+.steps .nt{background:repeating-linear-gradient(90deg,var(--iron3) 0 3px,transparent 3px 6px)}
+.steplbl{display:flex;gap:3px;margin-top:4px}
+.steplbl span{flex:1;font:500 10px Chakra;letter-spacing:.06em;color:var(--bone3);text-transform:uppercase}
+.steplbl .now{color:var(--verd)}
+.next{margin:5px 14px 0;font-size:13.5px;color:var(--bone2);position:relative;z-index:2}
+.next b{color:var(--gilt);font:600 11px Chakra;letter-spacing:.16em;margin-right:6px}
+/* crew */
+.sec{margin:9px 14px 5px;display:flex;justify-content:space-between;align-items:baseline;position:relative;z-index:2}
+.sec h3{font:600 11px Chakra;letter-spacing:.24em;color:var(--bone3)}
+.sec em{font-style:normal;font-size:11px;color:var(--bone3)}
+.crew{display:flex;justify-content:space-between;padding:0 10px;position:relative;z-index:2}
+.mate{width:76px;text-align:center}
+.ring{width:46px;height:46px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;border:2px solid var(--verd);background:radial-gradient(circle,#1a241b,#0e130e);position:relative}
+.ring.dash{border:2px dashed #55604f}
+.ring.amber{border-color:var(--ember)}
+.ring.grey{border:2px dashed #3a4236;opacity:.6}
+.ring svg{width:24px;height:24px}
+.ring img{width:30px;height:34px}
+.ring .n{position:absolute;right:-4px;bottom:-3px;font:600 10px Chakra;background:var(--verd);color:#04140d;border-radius:8px;padding:0 5px}
+.mate b{display:block;font:600 12px Chakra;margin-top:5px;color:var(--bone)}
+.mate small{display:block;font-size:11px;line-height:1.25;color:var(--bone2)}
+.mate small.dim{color:var(--bone3)}
+/* rows */
+.rows{margin:2px 14px 0;position:relative;z-index:2}
+.row{display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px solid rgba(232,238,224,.08)}
+.thumb{width:62px;height:40px;flex:none;border-radius:2px;overflow:hidden;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.empty{background:repeating-linear-gradient(135deg,#141a14 0 6px,#10150f 6px 12px);border:1px solid var(--iron3);display:flex;align-items:center;justify-content:center;font:500 8.5px/1.1 Chakra;letter-spacing:.08em;color:var(--bone3);text-align:center;text-transform:uppercase}
+.code{width:62px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;font:500 11px Mono;color:var(--codex);border-left:2px solid var(--codex);background:linear-gradient(90deg,rgba(127,182,201,.10),transparent)}
+.rt{flex:1;min-width:0}
+.rt b{display:block;font:500 14.5px/1.2 Barlow;color:var(--bone);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt small{font-size:12px;color:var(--bone3)}
+.st{font:600 11px Chakra;letter-spacing:.08em;text-align:right;flex:none;text-transform:uppercase}
+.st small{display:block;font:400 11px Barlow;letter-spacing:0;text-transform:none;color:var(--bone3)}
+.ok{color:var(--verd)}.amb{color:var(--ember)}.red{color:var(--blood)}.gilt{color:var(--gilt)}.dimc{color:var(--bone3)}
+/* nav */
+.nav{position:absolute;left:0;right:0;bottom:0;height:54px;display:flex;border-top:1px solid rgba(232,238,224,.1);background:rgba(9,12,9,.94);z-index:10}
+.nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font:600 11px Chakra;letter-spacing:.16em;color:var(--bone3);gap:3px}
+.nav a.on{color:var(--bone)}
+.nav a.on::before{content:"";width:22px;height:2px;background:var(--gilt);margin-bottom:3px}
+.nav a small{font:400 10.5px Barlow;letter-spacing:0;color:var(--bone3)}
+.upnext{margin:4px 14px 0;font-size:13px;color:var(--bone2);position:relative;z-index:2;border-top:1px solid rgba(232,238,224,.08);padding-top:7px}
+.upnext b{font:600 10.5px Chakra;letter-spacing:.18em;color:var(--bone3);margin-right:6px}
+/* task view */
+.back{height:44px;display:flex;align-items:center;gap:10px;padding:0 14px;font:600 13px Chakra;letter-spacing:.08em;color:var(--bone2);position:relative;z-index:2}
+.back .arrow{font-size:18px;color:var(--bone)}
+.back .num{margin-left:auto;font:500 12px Mono;color:var(--bone3)}
+.pic{position:relative;height:218px;z-index:2}
+.pic img{width:100%;height:100%;object-fit:cover}
+.prov{display:flex;gap:6px;flex-wrap:wrap;padding:7px 14px 0;position:relative;z-index:2;font:500 10.5px Mono;color:var(--bone3)}
+.prov .chip{backdrop-filter:none}
+.dots{position:absolute;bottom:8px;left:0;right:0;display:flex;gap:5px;justify-content:center}
+.dots i{width:6px;height:6px;border-radius:50%;background:rgba(232,238,224,.35)}.dots i:first-child{background:var(--bone)}
+.thead{padding:8px 14px 0;position:relative;z-index:2}
+.thead .title{font-size:22px;text-shadow:none}
+.state{display:flex;align-items:baseline;gap:8px;margin-top:6px}
+.state b{font:600 15px Chakra;letter-spacing:.14em}
+.state span{font-size:13px;color:var(--bone2)}
+.tl2{margin:10px 14px 0;position:relative;z-index:2}
+.tl2 li{list-style:none;display:flex;gap:10px;align-items:flex-start;position:relative;padding-bottom:7px}
+.tl2 li::before{content:"";position:absolute;left:5px;top:13px;bottom:-1px;width:1px;background:var(--iron3)}
+.tl2 li:last-child::before{display:none}
+.tl2 .m{width:11px;height:11px;border-radius:50%;flex:none;margin-top:3px;border:1.5px solid var(--bone3);background:var(--ink);position:relative;z-index:1}
+.tl2 .m.d{background:var(--verd);border-color:var(--verd);opacity:.7}
+.tl2 .m.n{background:var(--verd);border-color:var(--verd);box-shadow:0 0 0 4px rgba(89,214,168,.2)}
+.tl2 .m.x{border-style:dashed}
+.tl2 b{font:500 13.5px Barlow;color:var(--bone);min-width:108px}
+.tl2 span{font-size:12.5px;color:var(--bone3)}
+.facts{margin:4px 14px 0;position:relative;z-index:2}
+.fact{display:grid;grid-template-columns:78px 1fr;gap:8px;padding:6px 0;border-top:1px solid rgba(232,238,224,.08);font-size:13.5px;color:var(--bone)}
+.fact i{font:600 10.5px Chakra;font-style:normal;letter-spacing:.16em;color:var(--bone3);padding-top:2px}
+.evid{margin:6px 14px 0;padding:9px 12px;border:1px solid rgba(232,238,224,.12);display:flex;justify-content:space-between;align-items:center;font:500 12px Chakra;letter-spacing:.1em;color:var(--bone2);position:relative;z-index:2;background:rgba(17,22,17,.6)}
+.evid small{font:400 11px Mono;letter-spacing:0;color:var(--bone3)}
+.evlist{margin:0 14px;padding:4px 12px 8px;border:1px solid rgba(232,238,224,.12);border-top:0;font:400 11px/1.6 Mono;color:var(--bone2);position:relative;z-index:2;background:rgba(17,22,17,.6)}
+.evlist div{display:flex;justify-content:space-between;gap:8px}
+.evlist span{color:var(--bone3)}
+/* decision */
+.ask{margin:8px 10px 0;position:relative;z-index:2;border-left:3px solid var(--gilt);background:linear-gradient(90deg,rgba(200,245,58,.09),rgba(200,245,58,.02));padding:10px 12px 10px}
+.ask .k{font:600 11px Chakra;letter-spacing:.2em;color:var(--gilt);display:flex;justify-content:space-between}
+.ask .k span{font:400 11.5px Barlow;letter-spacing:0;color:var(--bone2)}
+.ask .q{font:600 19px/1.2 Chakra;color:#f4f8ee;margin-top:6px}
+.ab{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.opt{position:relative;height:150px;border-radius:2px;overflow:hidden}
+.opt img{width:100%;height:100%;object-fit:cover}
+.opt .lab{position:absolute;left:0;top:0;background:var(--ink);padding:5px 10px 5px 8px;font:600 14px Chakra;color:var(--bone)}
+.opt .lab b{color:var(--gilt);margin-right:6px}
+.ask .src{font:400 10.5px Mono;color:var(--bone3);margin-top:6px}
+.ask .how{font-size:12.5px;color:var(--bone2);margin-top:4px}
+.mini{display:flex;gap:10px;align-items:center;margin:8px 14px 0;position:relative;z-index:2}
+.mini img{width:72px;height:44px;object-fit:cover;border-radius:2px}
+/* failure */
+.fail{margin:8px 10px 0;position:relative;z-index:2;border-left:3px solid var(--blood);background:linear-gradient(90deg,rgba(255,138,114,.10),rgba(255,138,114,.02));padding:10px 12px}
+.fail .k{font:600 11px Chakra;letter-spacing:.2em;color:var(--blood);display:flex;justify-content:space-between}
+.fail .k span{font:400 11.5px Barlow;letter-spacing:0;color:var(--bone2)}
+.fail .t{font:600 19px/1.2 Chakra;margin-top:5px}
+.fail p{font-size:13.5px;color:var(--bone);margin-top:5px;line-height:1.35}
+.fail p.d{color:var(--bone2)}
+.failpic{position:relative;height:120px;margin-top:8px;overflow:hidden}
+.failpic img{width:100%;height:100%;object-fit:cover;filter:saturate(.55) brightness(.8)}
+.failpic .old{position:absolute;left:0;bottom:0;right:0;background:rgba(9,12,9,.85);font:400 10.5px Mono;color:var(--bone2);padding:4px 8px}
+.failpic .old b{color:var(--ember);font-weight:500}
+/* outage */
+.banner{margin:8px 10px 0;position:relative;z-index:2;padding:9px 12px;border:1px solid rgba(255,178,62,.45);background:repeating-linear-gradient(135deg,rgba(255,178,62,.07) 0 8px,rgba(255,178,62,.02) 8px 16px)}
+.banner b{font:600 11px Chakra;letter-spacing:.18em;color:var(--ember)}
+.banner p{font-size:13px;color:var(--bone);margin-top:4px;line-height:1.35}
+.hatch{position:relative}
+.hatch::after{content:"";position:absolute;inset:-2px -4px;background:repeating-linear-gradient(135deg,rgba(255,178,62,.08) 0 6px,transparent 6px 12px);pointer-events:none}
+.calm.amberq .diamond{border-color:var(--ember)}
+.offline .hero img,.offline .thumb img{filter:grayscale(1) brightness(.6)}
+.offline .kicker,.offline .kicker .live{color:var(--bone3)}
+.offline .kicker .live{background:var(--bone3);box-shadow:none}
+.lk{position:absolute;right:14px;bottom:56px;z-index:3;font-family:Shoulders;font-weight:800;font-size:38px;letter-spacing:.12em;color:rgba(255,138,114,.13);transform:rotate(-8deg);transform-origin:right bottom;pointer-events:none}
+.stalebar{margin:0 0 0;position:relative;z-index:2;padding:9px 14px;background:linear-gradient(90deg,rgba(255,138,114,.16),rgba(255,138,114,.04));border-bottom:1px solid rgba(255,138,114,.35)}
+.stalebar b{font:600 11px Chakra;letter-spacing:.18em;color:var(--blood)}
+.stalebar p{font-size:13px;color:var(--bone);margin-top:3px;line-height:1.3}
+.ver{font:400 10px Mono;color:var(--bone3);position:absolute;left:14px;bottom:60px;z-index:3}
+</style></head><body>
+
+<!-- glyph defs -->
+<svg width="0" height="0" style="position:absolute">
+ <symbol id="g-claude" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="none" stroke="#e4c79a" stroke-width="1.8"/><g stroke="#e4c79a" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></g></symbol>
+ <symbol id="g-codex" viewBox="0 0 24 24"><path d="M12 2.5l8.2 4.75v9.5L12 21.5l-8.2-4.75v-9.5z" fill="none" stroke="#7fb6c9" stroke-width="1.8"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z" fill="#7fb6c9"/></symbol>
+ <symbol id="g-deep" viewBox="0 0 24 24"><g fill="none" stroke="#8ea6f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l7 4.5L19 5"/><path d="M5 10.5l7 4.5 7-4.5"/><path d="M5 16l7 4.5 7-4.5"/></g></symbol>
+ <symbol id="g-muse" viewBox="0 0 24 24"><path d="M15.5 3.5a8.5 8.5 0 1 0 5 13.6A7 7 0 0 1 15.5 3.5z" fill="none" stroke="#c3a6f0" stroke-width="1.8"/><circle cx="17.5" cy="8" r="1.6" fill="#c3a6f0"/></symbol>
+</svg>
+
+<!-- ============ NEW OVERVIEW (normal) ============ -->
+<section class="phone" id="overview">
+ <div class="hdr"><div class="brand">EMBERS OPS<small>MISSION CONTROL</small></div>
+  <div class="pips"><span class="pip"><i></i>PC 15:58</span><span class="pip"><i></i>GH 15:55</span></div></div>
+ <div class="ticks"></div>
+ <div class="calm"><span class="diamond"></span><span><b>Nothing waiting on you.</b> Questions checked 15:55, all pages.</span></div>
+ <div class="hero"><img src="img/im5.jpg"><div class="shade"></div>
+    <div class="tr"><span class="chip stage">#970 · rev 23a9f63 · INSTALLED IN GAME</span></div>
+  <div class="cap"><div class="kicker"><span class="live"></span>WORKING · LOG 2 MIN AGO</div>
+   <div class="title">Iron Mandate: bow ion gun</div>
+   <div class="sub"><b>Codex</b> · Main lane (GPU) · run 2 since 15:51</div></div></div>
+ <div class="track"><div class="steps"><span class="done"></span><span class="now"></span><span></span><span></span><span class="nt"></span></div>
+  <div class="steplbl"><span>Claimed</span><span class="now">Working</span><span>Pushed</span><span>Review</span><span>Installed?</span></div></div>
+ <div class="next"><b>NEXT</b>Runner pushes, then the Board reviews.</div>
+ <div class="sec"><h3>CREW</h3><em>solid ring: PC files · dashed: GitHub only</em></div>
+ <div class="crew">
+  <div class="mate"><div class="ring"><svg><use href="#g-codex"/></svg><span class="n">4</span></div><b>Codex</b><small>3 working<br><span class="amb">1 quiet</span></small></div>
+  <div class="mate"><div class="ring"><svg><use href="#g-deep"/></svg></div><b>DeepSeek</b><small>working<br>#983</small></div>
+  <div class="mate"><div class="ring dash"><svg><use href="#g-claude"/></svg></div><b>Claude</b><small class="dim">PR 980<br>12 min ago</small></div>
+  <div class="mate"><div class="ring dash"><svg><use href="#g-muse"/></svg></div><b>Muse · Rey</b><small class="dim">PR 958<br>2 h ago</small></div>
+  <div class="mate"><div class="ring dash"><img src="img/artoo.svg"></div><b>Artoo</b><small class="dim">review #972<br>40 min ago</small></div>
+ </div>
+ <div class="sec" style="margin-top:6px"><h3>ALSO MOVING</h3><em>3 lanes</em></div>
+ <div class="rows">
+  <div class="row"><div class="thumb empty">no picture<br>yet</div><div class="rt"><b>Station T2: paint and fine detail</b><small>Lane B · #975 · art</small></div><div class="st ok">Working<small>log 1 min</small></div></div>
+  <div class="row"><div class="code">&lt;/&gt;</div><div class="rt"><b>Parity speed-up: parallel battles</b><small>Lane C · #978 · code</small></div><div class="st ok">Working<small>log 2 min</small></div></div>
+  <div class="row"><div class="code">&lt;/&gt;</div><div class="rt"><b>Rules safety net: cache check</b><small>Lane D · #979 · code</small></div><div class="st amb">Quiet<small>34 min, no writes</small></div></div>
+ </div>
+ <div class="upnext"><b>UP NEXT</b>Main: #982 storm map cost at 4K · open</div>
+ <span class="sample">SAMPLE · r3</span>
+ <nav class="nav"><a class="on">NOW</a><a>QUEUE<small>6 waiting</small></a><a>CREW<small>last seen</small></a></nav>
+</section>
+
+<!-- ============ TASK VIEW ============ -->
+<section class="phone" id="task">
+ <div class="back"><span class="arrow">‹</span>NOW<span class="num">#970 · Main lane</span></div>
+ <div class="pic"><img src="img/im5.jpg"><div class="dots"><i></i><i></i><i></i></div></div>
+ <div class="prov"><span class="chip stage">INSTALLED IN GAME</span><span class="chip">rev 23a9f63</span><span class="chip">captured 10:31</span><span class="chip">#970</span></div>
+ <div class="thead"><div class="title">Iron Mandate: bow ion gun</div>
+  <div class="state"><b class="ok">WORKING</b><span>Codex · last log write 2 min ago</span></div></div>
+ <ul class="tl2">
+  <li><span class="m d"></span><b>Claimed 15:51</b><span>chain started, GitHub label set</span></li>
+  <li><span class="m n"></span><b>Working</b><span>runner and run id match, log 15:56</span></li>
+  <li><span class="m"></span><b>Pushed</b><span>not yet</span></li>
+  <li><span class="m"></span><b>Board review</b><span>not yet</span></li>
+  <li><span class="m x"></span><b>On your PC / your OK</b><span>not tracked</span></li>
+ </ul>
+ <div class="facts">
+  <div class="fact"><i>CHANGED</i><span>Run 2 brief: light the bow ion gun in game paint. Nothing reported yet.</span></div>
+  <div class="fact"><i>NEXT</i><span>Runner pushes, then the Board reviews the PR.</span></div>
+  <div class="fact"><i>BLOCKERS</i><span>None reported.</span></div>
+ </div>
+ <div class="evid">EVIDENCE<small>run 2399d27b · 5 sources ›</small></div>
+ <span class="sample">SAMPLE · r3</span>
+ <nav class="nav"><a class="on">NOW</a><a>QUEUE<small>6 waiting</small></a><a>CREW<small>last seen</small></a></nav>
+</section>
+
+<!-- ============ DECISION ============ -->
+<section class="phone" id="decision">
+ <div class="hdr"><div class="brand">EMBERS OPS<small>MISSION CONTROL</small></div>
+  <div class="pips"><span class="pip"><i></i>PC 15:58</span><span class="pip"><i></i>GH 15:55</span></div></div>
+ <div class="ticks"></div>
+ <div class="ask">
+  <div class="k">FOR YOU · 1 QUESTION<span>asked 41 min ago on #929</span></div>
+  <div class="q">Hullbreaker shields: keep the egg as the default, or switch to the fitted skin?</div>
+  <div class="ab">
+   <div class="opt"><img src="img/egg.jpg"><div class="lab"><b>A</b>Default egg</div></div>
+   <div class="opt"><img src="img/fit.jpg"><div class="lab"><b>B</b>Fitted skin</div></div>
+  </div>
+  <div class="src">#929 · rev d5ee38b + working · INSTALLED IN GAME · same hit, +0.1 s</div>
+  <div class="how">Tap a picture for full size. Answer the Board in chat; this page is read-only.</div>
+ </div>
+ <div class="mini"><img src="img/im5.jpg"><div class="rt"><b>Iron Mandate: bow ion gun</b><small>Main · Codex · #970</small></div><div class="st ok">Working<small>log 2 min</small></div></div>
+ <span class="sample">SAMPLE · r3</span>
+ <nav class="nav"><a class="on">NOW</a><a>QUEUE<small>6 waiting</small></a><a>CREW<small>last seen</small></a></nav>
+</section>
+
+<!-- ============ FAILURE ============ -->
+<section class="phone" id="failure">
+ <div class="hdr"><div class="brand">EMBERS OPS<small>MISSION CONTROL</small></div>
+  <div class="pips"><span class="pip"><i></i>PC 15:58</span><span class="pip"><i></i>GH 15:55</span></div></div>
+ <div class="ticks"></div>
+ <div class="fail">
+  <div class="k">FAILED · LANE B<span>ended 15:48</span></div>
+  <div class="t">Hull hit redo, run 3</div>
+  <p>The run ended with no changes pushed. Nothing new reached main.</p>
+  <p class="d">GitHub still shows the running label. That label is only a claim; the runner's own files say it ended.</p>
+  <div class="failpic"><img src="img/hh.jpg"><div class="old"><b>OLDER PICTURE</b> · run 2 · rev 67aa441 · installed in game · not this run</div></div>
+  <div class="fact" style="border:0;margin-top:6px"><i>NEXT</i><span>The Board decides on a rerun. Not yours unless the Board asks.</span></div>
+ </div>
+ <div class="evid" style="border-bottom:0">EVIDENCE<small>open</small></div>
+ <div class="evlist">
+  <div>runner result<span>no changes pushed · 15:48</span></div>
+  <div>runner status<span>ended · run 7c1e04b2 matches</span></div>
+  <div>GitHub label<span>running (claim only)</span></div>
+  <div>game checks<span>not run</span></div>
+ </div>
+ <div class="mini"><img src="img/im5.jpg"><div class="rt"><b>Iron Mandate: bow ion gun</b><small>Main · Codex · #970</small></div><div class="st ok">Working<small>log 2 min</small></div></div>
+ <span class="sample">SAMPLE · r3</span>
+ <nav class="nav"><a class="on">NOW</a><a>QUEUE<small>6 waiting</small></a><a>CREW<small>last seen</small></a></nav>
+</section>
+
+<!-- ============ GITHUB DOWN ============ -->
+<section class="phone" id="ghdown">
+ <div class="hdr"><div class="brand">EMBERS OPS<small>MISSION CONTROL</small></div>
+  <div class="pips"><span class="pip"><i></i>PC 15:58</span><span class="pip warn"><i></i>GH 15:10</span></div></div>
+ <div class="ticks"></div>
+ <div class="banner"><b>GITHUB NOT READ SINCE 15:10</b><p>Rate limit reached; next try 16:00. Lanes below still come live from the PC. Striped parts are last known from GitHub.</p></div>
+ <div class="calm amberq hatch" style="margin-top:10px"><span class="diamond"></span><span><b>Questions not fully checked.</b> At 15:10 there were none.</span></div>
+ <div class="hero" style="height:180px"><img src="img/im5.jpg"><div class="shade"></div>
+    <div class="tr"><span class="chip stage">#970 · rev 23a9f63 · INSTALLED IN GAME</span></div>
+  <div class="cap"><div class="kicker"><span class="live"></span>WORKING · LOG 2 MIN AGO</div>
+   <div class="title">Iron Mandate: bow ion gun</div>
+   <div class="sub"><b>Codex</b> · Main lane · from PC files</div></div></div>
+ <div class="sec"><h3>CREW</h3><em>GitHub-only crew: unknown since 15:10</em></div>
+ <div class="crew">
+  <div class="mate"><div class="ring"><svg><use href="#g-codex"/></svg><span class="n">4</span></div><b>Codex</b><small>3 working<br><span class="amb">1 quiet</span></small></div>
+  <div class="mate"><div class="ring"><svg><use href="#g-deep"/></svg></div><b>DeepSeek</b><small>working<br>#983</small></div>
+  <div class="mate"><div class="ring grey"><svg><use href="#g-claude"/></svg></div><b>Claude</b><small class="dim">unknown<br>since 15:10</small></div>
+  <div class="mate"><div class="ring grey"><svg><use href="#g-muse"/></svg></div><b>Muse · Rey</b><small class="dim">unknown<br>since 15:10</small></div>
+  <div class="mate"><div class="ring grey"><img src="img/artoo.svg"></div><b>Artoo</b><small class="dim">unknown<br>since 15:10</small></div>
+ </div>
+ <div class="rows" style="margin-top:8px">
+  <div class="row"><div class="code">&lt;/&gt;</div><div class="rt"><b>Parity speed-up: parallel battles</b><small>Lane C · #978</small></div><div class="st ok">Working<small>log 2 min</small></div></div>
+ </div>
+ <div class="upnext hatch"><b>UP NEXT</b>Main: #982 · open at 15:10, not rechecked</div>
+ <span class="sample">SAMPLE · r3</span>
+ <nav class="nav"><a class="on">NOW</a><a>QUEUE<small>6 waiting</small></a><a>CREW<small>last seen</small></a></nav>
+</section>
+
+<!-- ============ PC OFFLINE ============ -->
+<section class="phone offline" id="offline">
+ <div class="hdr"><div class="brand">EMBERS OPS<small>MISSION CONTROL</small></div>
+  <div class="pips"><span class="pip bad"><i></i>PC lost</span><span class="pip warn"><i></i>GH 15:55</span></div></div>
+ <div class="stalebar"><b>PC FEED LOST · 19 MIN</b><p>The PC may be asleep, off, or the link dropped. Everything below is last known from 15:58. Silence is not idle.</p></div>
+ <div class="calm amberq" style="margin-top:10px"><span class="diamond"></span><span><b>Questions not checked since 15:55.</b> The PC does the reading.</span></div>
+ <div class="hero" style="height:180px"><img src="img/im5.jpg"><div class="shade"></div>
+    <div class="tr"><span class="chip">#970 · rev 23a9f63 · INSTALLED IN GAME</span></div>
+  <div class="cap"><div class="kicker"><span class="live"></span>LAST KNOWN 15:58 · WAS WORKING</div>
+   <div class="title">Iron Mandate: bow ion gun</div>
+   <div class="sub"><b>Codex</b> · Main lane · state now unknown</div></div></div>
+ <div class="sec"><h3>LAST KNOWN</h3><em>at 15:58</em></div>
+ <div class="rows">
+  <div class="row"><div class="thumb empty">no picture<br>yet</div><div class="rt"><b>Station T2: paint and fine detail</b><small>Lane B · #975</small></div><div class="st dimc">Was working<small>log 15:57</small></div></div>
+  <div class="row"><div class="code">&lt;/&gt;</div><div class="rt"><b>Parity speed-up: parallel battles</b><small>Lane C · #978</small></div><div class="st dimc">Was working<small>log 15:56</small></div></div>
+  <div class="row"><div class="code">&lt;/&gt;</div><div class="rt"><b>Rules safety net: cache check</b><small>Lane D · #979</small></div><div class="st dimc">Was quiet<small>log 15:24</small></div></div>
+ </div>
+ <span class="sample">SAMPLE · r3</span>
+ <nav class="nav"><a class="on">NOW</a><a>QUEUE<small>6 waiting</small></a><a>CREW<small>last seen</small></a></nav>
+</section>
+
+</body></html>
