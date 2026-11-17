@@ -3,6 +3,7 @@
 const assert=require('assert/strict');
 const fs=require('fs'),os=require('os'),path=require('path'),http=require('http');
 const {createHash}=require('crypto');
+const {EventEmitter}=require('events');
 const p=require('./publisher'),q=require('./queue');
 const {Budget}=require('./budget');
 const NOW=new Date(2026,10,16,16,30).getTime(),iso=n=>new Date(n).toISOString();
@@ -21,30 +22,125 @@ function githubFixture(needs=false,now=NOW){
   if(!needs)raw.issues=raw.issues.filter(x=>x.number!==855);
   return p.githubData(raw.issues,raw.pulls,raw.comments,p.emptyGithub(),now);
 }
-function makeCases(base,revision='working tree'){
-  const cases={};
-  for(const name of ['overview','running','waiting','blocked','failed','finished','gap','stale','offline','unknown','leftover','ended','github-unread','needs-ryan','no-needs-ryan','night']){
-    const root=path.join(base,'display-'+name),night=name==='night',issue=night?928:918;
-    const next=night?[929,912,930,920,921]:[920,921];
-    write(path.join(root,'codex_chain_fixture.txt'),'start Mon 11/16/2026 16:15:00\n'+issue+' start 16:15:00\n'+(name==='gap'?issue+' end 16:29:00\n':''));
-    write(path.join(root,'codex_chain_fixture.bat'),'for %%N in ('+[issue,...next].join(' ')+') do call :one %%N');
-    if(!night){write(path.join(root,'codex_chain_next.txt'),'waiting for codex_chain_fixture.txt');write(path.join(root,'codex_chain_next.bat'),'for %%N in (923) do call :one %%N');}
-    write(path.join(root,'codex_lane_b.txt'),'waiting for codex_chain_fixture.txt');write(path.join(root,'codex_lane_b.bat'),'for %%N in (922) do call :one %%N');
-    for(const [folder,n,state,age,title] of [['board',issue,name==='gap'?'checked_push':'running',15,night?'Hull hit redo: no floating ring':'Mission Control publisher'],['board_c',914,name==='failed'?'failed':'blocked',15,'Stopped predecessor'],['board_d',889,'checked_push',15,'Finished job']]){
-      write(path.join(root,folder,'issue-'+n,'status.json'),name==='unknown' && folder==='board'?'{broken':JSON.stringify({run:RUN,status:state,started:iso(NOW-age*60000),reason:state==='blocked'?'chain stopped: predecessor ended unverified':state==='failed'?'runner exit 8':''}));
-      write(path.join(root,folder,'issue-'+n,'log.txt'),'Codex job: issue #'+n+', "'+title+'"\nagent running');
+function makeCases(base) {
+  const deck = require('./fixtures/deck.json');
+  const now = Date.parse(deck.now), minute = 60000, repo = path.resolve(__dirname,'../../..');
+  const nowText = timestamp => new Date(timestamp).toTimeString().slice(0,8);
+  const raw = require('./fixtures/github.json');
+  const sourceNames = ['questions','issues','pulls','comments'];
+  const outageCases = sourceNames.map(name=>'github-'+name);
+  const values = ['overview','task','decision','failure','offline','unknown','no-picture','missing-picture','queue','crew',
+    'blocked','quiet','checked-push','ended','leftover','claim','claim-old','github-unread','legacy','no-build','old-build',
+    'starting','long-title','privacy',...outageCases];
+  const cases = {};
+  for (const name of values) {
+    const root = path.join(base,'display-'+name);
+    const put = (file,contents,at=now-minute) => write(path.join(root,file),contents,at);
+    function chainFile(file, log, issues, at = now-minute) {
+      put(file+'.txt',log,at);
+      put(file+'.bat','for %%N in ('+issues.join(' ')+') do call :one %%N',at);
     }
-    const ds='work217/issue-916-deepseek/20261116_120000/out',ended=name==='ended';
-    write(path.join(root,'work217/issue-916-deepseek/latest.txt'),path.join(root,path.dirname(ds)));
-    write(path.join(root,ds,'status.json'),JSON.stringify({run:RUN,status:ended?'unverified':'running',started:iso(NOW-45*60000)}),NOW-31*60000);
-    write(path.join(root,ds,'events.jsonl'),'Workhorse job: issue #916, "Stage 5 self-test repair"',NOW-31*60000);
-    if(ended)write(path.join(root,ds,'result.txt'),'all done 16:29:00',NOW-60000);
-    if(name==='leftover')write(path.join(root,'board/issue-944/status.json'),JSON.stringify({run:OLD,status:'running',started:iso(NOW-120*60000)}),NOW-90*60000);
-    const snap=p.snapshot(root,NOW,new p.Reader(),name==='github-unread'?p.emptyGithub():githubFixture(name==='needs-ryan'));
-    if(name==='offline')snap.generatedAt=iso(NOW-180001);
-    snap.fixtureNow=iso(NOW);snap.fixtureRevision=revision;cases[name]=snap;
+    function runner(folder, issue, title, state, start, reason = '', last = now-minute) {
+      const prefix = folder+'/issue-'+issue+'/';
+      put(prefix+'status.json',JSON.stringify({title,run:RUN,status:state,started:iso(start),reason,
+        finished:state==='running' ? null : iso(last)}),last);
+      put(prefix+'log.txt','agent running',last);
+    }
+    function fixturePicture(folder,key) {
+      const {file,issue,decisionOption} = deck.pictures[key], original = path.join(repo,file);
+      const destination = folder+'/repo/'+file;
+      const stamp = JSON.parse(fs.readFileSync(original+'.provenance.json','utf8'));
+      put(destination,fs.readFileSync(original));
+      put(destination+'.provenance.json',JSON.stringify({...stamp,issue,decisionOption}));
+    }
+    const start = Date.parse('2026-11-17T10:21:00Z'), claimStart = now-(name==='claim-old' ? 11 : 9)*minute;
+    const chainStart = name.startsWith('claim') ? claimStart : start;
+    const chainLog = '970 start '+nowText(chainStart)+(name==='queue' ? '\n970 end '+nowText(now-40*minute)+'\nall done '+nowText(now-40*minute) : '');
+    chainFile('codex_chain_fixture',chainLog,[970,982],chainStart);
+    for (const [file,log,list] of [
+      ['codex_chain_next','waiting for codex_chain_fixture.txt',[982,923]],
+      ['codex_chain_split','waiting for codex_chain_fixture.txt',[921]],
+      ['codex_lane_b25','waiting for codex_chain_fixture.txt\ncancelled by the Board',[922]],
+      ['codex_lane_d11','waiting for codex_chain_fixture.txt',[984]]
+    ]) chainFile(file,log,list);
+    if (name==='queue') chainFile('codex_lane_d12','waiting for codex_lane_b25.txt',[985]);
+    if (name==='queue' || name==='unknown') chainFile('codex_lane_d13','waiting for codex_lane_d99.txt',[986]);
+    const title = name==='long-title' ? 'L'.repeat(240) : name==='privacy' ?
+      (process.env.USERNAME || 'PrivatePerson')+' C:\\Users\\PrivatePerson\\log.txt' : 'Iron Mandate: bow ion gun';
+    if (name==='unknown') {
+      put('board/issue-970/status.json','{broken');
+      put('board/issue-970/log.txt','Codex job: issue #970, "Iron Mandate: bow ion gun"');
+    } else if (!name.startsWith('claim')) {
+      runner('board',970,title,['checked-push','queue'].includes(name) ? 'checked_push' : 'running',start);
+    }
+    if (name==='failure') {
+      runner('board_b',928,'Hull hit redo', 'failed', now-18*minute,'runner exit 8',now-10*minute);
+      fixturePicture('board_b','hull');
+    } else runner('board_b',975,'Station T2: paint and fine detail','running',now-8*minute);
+    runner('board_c',978,'Parity speed-up: parallel battles',name==='blocked' ? 'blocked' : 'running',now-10*minute,
+      'chain stopped: predecessor ended unverified',now-2*minute);
+    runner('board_d',979,'Rules safety net: cache check','running',now-60*minute,'',now-34*minute);
+    if (!['no-picture','long-title','privacy','unknown'].includes(name)) {
+      fixturePicture('board','hero');
+      fixturePicture('board','unlinked');
+    }
+    if (name==='decision') {
+      fixturePicture('board','egg');
+      fixturePicture('board','fitted');
+    }
+    if (name==='leftover') runner('board',944,'Earlier run','running',now-120*minute,'',now-90*minute);
+    if (name==='ended') {
+      put('work217/issue-916-deepseek/latest.txt','20261117_120000');
+      put('work217/issue-916-deepseek/20261117_120000/out/status.json',
+        JSON.stringify({title:'Stage 5 self-test repair',run:RUN,status:'unverified',started:iso(now-45*minute),finished:iso(now-minute)}));
+      put('work217/issue-916-deepseek/20261117_120000/out/result.txt','all done '+nowText(now-minute));
+    } else {
+      put('work217/issue-916-deepseek/latest.txt','20261117_120000');
+      put('work217/issue-916-deepseek/20261117_120000/out/status.json',
+        JSON.stringify({title:'Stage 5 self-test repair',run:RUN,status:'running',started:iso(now-15*minute)}),now-2*minute);
+    }
+    const issues = raw.issues.filter(issue=>issue.number!==855 && issue.number!==929).concat(
+      {number:982,title:'Measure storm map cost at 4K',state:'closed',updated_at:iso(now-20*minute)},
+      {number:970,title:'Iron Mandate: bow ion gun',state:'open',updated_at:iso(now-20*minute)},
+      {number:929,title:'Shield hit look',state:'open',labels:name==='decision' ? ['ryan'] : [],
+        updated_at:iso(now-41*minute),body:'Ask Ryan: Keep the egg shield as the default, or switch to the fitted skin? | Picture: https://github.com/rcbailey12/voidsworn/issues/929'}
+    );
+    if (name==='privacy') {
+      issues.find(issue=>issue.number===970).title = (process.env.USERNAME || 'PrivatePerson')+' C:\\Users\\PrivatePerson\\status.json';
+      const folder = 'board/issue-970/';
+      const status = JSON.parse(fs.readFileSync(path.join(root,folder,'status.json'),'utf8'));
+      put(folder+'status.json',JSON.stringify({...status,folder:'C:\\Private\\FOLDER-SENTINEL',marker:'MARKER-SENTINEL'}));
+      put(folder+'log.txt','RAW-LOG-SENTINEL');
+    }
+    const github = p.githubData(issues,raw.pulls,raw.comments,p.emptyGithub(),now);
+    for (const source of sourceNames) {
+      const incomplete = name==='github-'+source;
+      Object.assign(github.sources[source],{
+        complete:!incomplete,
+        lastSuccessfulReadAt:iso(now-minute*(incomplete ? 65 : 3)),
+        lastAttemptAt:iso(now-3*minute),nextAttemptAt:iso(now+7*minute),
+        reason:incomplete ? 'source not fully checked' : null
+      });
+    }
+    github.lastReadAt = iso(now-3*minute);
+    github.budget = {requestsPastHour:12,ceilingPerHour:30};
+    const reader = new p.Reader();
+    reader.pictureFiles = new Map();
+    let data = p.snapshot(root,now,reader,name==='github-unread' ? p.emptyGithub() : github);
+    if (name==='legacy') {
+      data.schemaVersion = 1;
+      delete data.github.sources;
+      for (const lane of data.lanes) { delete lane.queue; delete lane.pictures; }
+    }
+    if (name==='legacy' || name==='no-build') delete data.build;
+    if (name==='old-build') data.build.stale = true;
+    if (name==='starting') data = {schemaVersion:2,state:'starting',generatedAt:null,lanes:[],build:data.build};
+    cases[name] = {data,pictures:name==='missing-picture' ? new Map() : reader.pictureFiles};
+    if (name==='offline') cases[name].now = now+19*minute;
   }
-  return cases;
+  const record = nov17(path.join(base,'display-nov17'));
+  cases.nov17 = {data:record.snapshot,pictures:new Map(),now:record.now};
+  return {cases,now};
 }
 function fingerprints(root){
   const out={};function walk(dir){for(const d of fs.readdirSync(dir,{withFileTypes:true})){const f=path.join(dir,d.name);if(d.isDirectory())walk(f);else out[path.relative(root,f)]=createHash('sha256').update(fs.readFileSync(f)).digest('hex')+':'+fs.statSync(f).mtimeMs;}}walk(root);return out;
@@ -211,8 +307,9 @@ async function test(){
   check('output paths refuse job roots and junctions',()=>{
     for(const folder of ['board','board_c/issue-1','queue','build_b/tools','work217'])assert.throws(()=>p.options(['--root',base,'--out',path.join(base,folder)]));const link=path.join(base,'link');fs.symlinkSync(root,link,process.platform==='win32'?'junction':'dir');assert.throws(()=>p.writeSnapshot(link,real.snapshot));
   });
-  const originalFetch=global.fetch;
-  try{global.fetch=async()=>new Response('[]');await httpTests(check,base,root);await require('./phone_selftest').test(check,base,root);}finally{global.fetch=originalFetch;}
+  await startupTests(check,base);
+  await httpTests(check,base);
+  await require('./phone_selftest').test(check,base,root);
   console.log('PASS mission r3: '+count+' checks; fixtures and logs kept in '+base);return {base,cases:makeCases(base)};
 }
 async function budgetTests(check){
@@ -303,15 +400,126 @@ async function paginationTests(check){
     });
   }
 }
-async function httpTests(check,base,root){
-  const reserve=http.createServer();await new Promise(r=>reserve.listen(0,'127.0.0.1',r));const port=reserve.address().port;await new Promise(r=>reserve.close(r));
-  const server=p.serve(p.options(['--root',root,'--out',path.join(base,'served'),'--port',String(port)]),()=>({host:null}));await new Promise((resolve,reject)=>{server.once('listening',resolve);server.once('error',reject);});
-  const request=(route,headers={})=>new Promise((resolve,reject)=>{http.get({host:'127.0.0.1',port,path:route,headers},res=>{let text='';res.on('data',d=>text+=d);res.on('end',()=>resolve({code:res.statusCode,text,headers:res.headers}));}).on('error',reject);});
+const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
+async function startupTests(check,base) {
+  const stalled = new EventEmitter();
+  let scans = 0;
+  stalled.postMessage = () => { scans++; };
+  stalled.terminate = () => {};
+  const delayedGithub = {data:p.emptyGithub(),update:()=>new Promise(()=>{})};
+  const began = Date.now();
+  const opts = {root:base,out:path.join(base,'startup'),port:0};
+  const server = p.serve(opts,()=>({host:null}),delayedGithub,()=>stalled);
+  await new Promise((resolve,reject)=>{server.once('listening',resolve);server.once('error',reject);});
+  try {
+    const url = 'http://127.0.0.1:'+server.address().port;
+    const boot = await (await fetch(url+'/status.json',{signal:AbortSignal.timeout(3000)})).json();
+    check('first listener stays responsive while the PC scan and GitHub read are both stalled',()=>{
+      assert(Date.now()-began<30000);
+      assert.equal(scans,1);
+      assert.equal(boot.schemaVersion,2);
+      assert.equal(boot.state,'starting');
+      assert.equal(boot.generatedAt,null);
+      assert.deepEqual(boot.lanes,[]);
+      assert.equal(boot.build.id,p.buildHash());
+      assert(!fs.existsSync(path.join(opts.out,'status.json')));
+    });
+  } finally { await new Promise(resolve=>server.close(resolve)); }
+}
+async function httpTests(check,base){
+  const root = path.join(base,'http-pictures');
+  const repo = path.join(root,'board/repo');
+  const out = path.join(base,'served');
+  const source = path.resolve(__dirname,'../../../docs/ship_pipeline/build_sheets/hegemony_IM5/ion_installed_cam170.jpg');
+  const jpeg = fs.readFileSync(source);
+  const indexed = path.join(repo,'docs/shots/review.jpg');
+  const stamp = path.join(indexed+'.provenance.json');
+  const unindexed = path.join(repo,'docs/private.jpg');
+  const {source_commit,stage,date} = JSON.parse(fs.readFileSync(source+'.provenance.json','utf8'));
+  const makeStamp = bytes => JSON.stringify({source_commit,stage,date,image_sha256:createHash('sha256').update(bytes).digest('hex')});
+  const stampBody = makeStamp(jpeg);
+  function put(file, bytes = jpeg, sidecar = makeStamp(bytes)) { write(file,bytes); if (sidecar) write(file+'.provenance.json',sidecar); }
+  put(indexed);
+  put(unindexed);
+  put(path.join(repo,'docs/shots/unstamped.jpg'),jpeg,false);
+  put(path.join(repo,'docs/shots/malformed.jpg'),jpeg,'{broken');
+  put(path.join(repo,'docs/shots/oversized.jpg'),Buffer.alloc(3*1024*1024+1));
+  put(path.join(repo,'docs/shots/not-image.jpg'),Buffer.from('Plain text'));
+  put(path.join(repo,'docs/shots/no.svg'));
+  const other = path.join(base,'outside-pictures');
+  put(path.join(other,'inside.jpg'));
+  fs.symlinkSync(other,path.join(repo,'docs/shots/linked'),process.platform==='win32'?'junction':'dir');
+  const github = {data:p.emptyGithub(),update:()=>new Promise(()=>{})};
+  const server = p.serve({root,out,port:0},()=>({host:null}),github);
+  await new Promise((resolve,reject)=>{server.once('listening',resolve);server.once('error',reject);});
+  const port = server.address().port;
+  const request=(route,headers={},method='GET')=>new Promise((resolve,reject)=>{
+    http.request({host:'127.0.0.1',port,path:route,headers,method},res=>{
+      const chunks=[];res.on('data',chunk=>chunks.push(chunk));
+      res.on('end',()=>resolve({code:res.statusCode,bytes:Buffer.concat(chunks),headers:res.headers}));
+    }).on('error',reject).end();
+  });
+  const idFor = file => {
+    const relative = path.relative(repo,file).replace(/\\/g,'/');
+    const hash = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    return createHash('sha256').update(repo+'\0'+relative+'\0'+hash).digest('hex');
+  };
   try{
-    const status=await request('/status.json'),page=await request('/');
-    check('loopback server serves schema 2 and the compatibility page accepts both schemas',()=>{assert.equal(JSON.parse(status.text).schemaVersion,2);assert.match(page.text,/!\[1,2\]\.includes\(v.schemaVersion\)/);assert.equal(status.headers['cache-control'],'no-store');assert.equal(server.address().address,'127.0.0.1');});
-    for(const route of ['/pic/anything','/../board/issue-1/log.txt','/fixtures/nov17.json'])assert.equal((await request(route)).code,404);check('there is no picture route or arbitrary file route',()=>{});
-    assert.equal((await request('/',{Host:'outsider.example'})).code,403);for(const name of ['artoo.svg','ChakraPetch-SemiBold.ttf','Barlow-Regular.ttf','AzeretMono-VF.ttf'])assert.equal((await request('/'+name)).code,200);check('fixed assets render and host checks remain enforced',()=>{});
+    let response, status;
+    for (let attempt=0; attempt<80; attempt++) {
+      response=await request('/status.json'); status=JSON.parse(response.bytes);
+      if (status.lanes.length) break;
+      await pause(100);
+    }
+    const pic = '/pic/'+idFor(indexed);
+    const main = lane(status,'main');
+    const page = await request('/');
+    check('the full PC snapshot and page arrive while the first GitHub read is pending',()=>{
+      assert.equal(main.pictures.length,2);
+      assert(main.pictures.some(picture=>'/pic/'+picture.id===pic));
+      assert.equal(status.github.lastReadAt,null);
+      assert.equal(response.headers['cache-control'],'no-store');
+      assert.equal(server.address().address,'127.0.0.1');
+      assert.match(page.bytes.toString(),/EMBERS OPS/);
+      assert(!response.bytes.toString().includes('review.jpg'));
+      assert.deepEqual(status,JSON.parse(fs.readFileSync(path.join(out,'status.json'))));
+    });
+    const picture = await request(pic);
+    check('indexed stamped picture uses fixed content and privacy headers',()=>{
+      assert.equal(picture.code,200);
+      assert.equal(picture.headers['content-type'],'image/jpeg');
+      assert.equal(picture.headers['content-length'],String(jpeg.length));
+      assert.equal(picture.headers['cache-control'],'no-store');
+      assert.equal(picture.headers['x-content-type-options'],'nosniff');
+      assert.equal(picture.headers['referrer-policy'],'no-referrer');
+      assert.equal(picture.headers['content-disposition'],undefined);
+      assert.deepEqual(picture.bytes,jpeg);
+    });
+    const refused = ['..','%2e%2e','%2f'+pic.slice(5),'%5c'+pic.slice(5),'0'.repeat(64),'','../status.json',
+      ...[unindexed,...['unstamped.jpg','malformed.jpg','oversized.jpg','not-image.jpg','no.svg','linked/inside.jpg'].map(file=>path.join(repo,'docs/shots',file))].map(idFor)];
+    for (const route of ['/pic',pic+'?x=1',pic+'?',pic+'#fragment','/fixtures/nov17.json',...refused.map(value=>'/pic/'+value)]) {
+      assert.equal((await request(route)).code,404,route);
+    }
+    assert.equal((await request(pic,{},'POST')).code,404);
+    assert.equal((await request(pic,{},'HEAD')).code,404);
+    assert.equal((await request('/status.json',{},'POST')).code,405);
+    check('pictures reject unknown ids, files outside the index, invalid stamps, bad image types, links, traversal, queries and writes',()=>{});
+    // Keep the same id in the served snapshot while replacing its on-disk bytes or stamp.
+    write(stamp,'{broken');
+    assert.equal((await request(pic)).code,404);
+    write(stamp,stampBody);
+    write(indexed,Buffer.concat([jpeg,Buffer.from('changed')]));
+    assert.equal((await request(pic)).code,404);
+    put(indexed);
+    const activePath = path.dirname(indexed), kept = activePath+'-kept';
+    fs.renameSync(activePath,kept);
+    fs.symlinkSync(kept,activePath,process.platform==='win32'?'junction':'dir');
+    assert.equal((await request(pic)).code,404);
+    check('indexed files are refused if the image, sidecar or checkout path changes between scans',()=>{});
+    assert.equal((await request(pic,{Host:'outsider.example'})).code,403);
+    assert.equal((await request(pic,{'Tailscale-Funnel-Request':'?1'})).code,403);
+    for (const name of Object.keys(p.ASSETS)) assert.equal((await request(name)).code,200);
+    check('fixed font and crew assets render with the existing private host checks',()=>{});
   }finally{await new Promise(r=>server.close(r));}
 }
 module.exports={NOW,copyFixture,makeCases,test};
