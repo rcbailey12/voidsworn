@@ -246,6 +246,7 @@ func setup(opts := {}) -> void:
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
 	pools["shd"] = POOLS.Pool.new(768 if big else 384, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
+	pools["plate"] = POOLS.Pool.new(384 if big else 192, _hit_plate_material(), self, "fx_torn_plates", _hit_plate_shape(srng), func() -> Array: return _hit_plate_shape(srng))
 	if big:
 		pools["dst"] = POOLS.Pool.new(256, _mat(SH.DISTORT, -20), self, "fx_distort", POOLS.quad_shape())
 	for k in (64 if big else (24 if rich else 8)):
@@ -500,6 +501,47 @@ func shd(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: flo
 	var ax = rdir()
 	(pools["shd"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, 0.0, tint, drag), Vector4(heat, rng.randf(), 0.0, 0.0)))
+
+
+# R303: thin, bent plates use a separate bounded pool. Death chips retain their original shape and material.
+func hit_plate(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin: float, drag: float, glass := false) -> void:
+	var ax := rdir()
+	(pools["plate"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
+		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, 0, 4.0 if glass else 3.0, drag), Vector4(heat, rng.randf(), 0, 0)))
+
+
+func _hit_plate_material() -> ShaderMaterial:
+	var code: String = SH.SHARD.replace("render_mode cull_back;", "render_mode cull_disabled, depth_prepass_alpha;")
+	code = code.replace("varying float vTint;", "varying float vTint;\nvarying float vFade;")
+	code = code.replace("vHeat = 0.0; vSeed", "vFade = 0.0; vHeat = 0.0; vSeed")
+	code = code.replace("float t = age / life;", "float t = age / life; vFade = 1.0 - smoothstep(0.55, 1.0, t);")
+	code = code.replace("METALLIC = 0.5;", "ALPHA = vFade; METALLIC = 0.5;")
+	return _mat(code, 0, "", "hit torn plates")
+
+
+func _hit_plate_shape(r: RandomNumberGenerator) -> Array:
+	var rim: Array[Vector3] = []
+	var count := 6   # every slot has the same vertex stride; its torn outline still varies
+	for i in count:
+		var a: float = TAU * float(i) / count
+		var rad: float = r.randf_range(0.32, 0.6)
+		rim.append(Vector3(cos(a) * rad, r.randf_range(-0.07, 0.07), sin(a) * rad * 0.65))
+	var verts := PackedVector3Array()
+	var norms := PackedVector3Array()
+	var indices := PackedInt32Array()
+	for side in [1.0, -1.0]:
+		for i in count:
+			var a: Vector3 = rim[i] + Vector3.UP * 0.025 * side
+			var b: Vector3 = rim[(i + 1) % count] + Vector3.UP * 0.025 * side
+			var c := Vector3(0, 0.08 * side, 0)
+			if side > 0.0:
+				var swap := a; a = b; b = swap
+			var normal: Vector3 = (b - a).cross(c - a).normalized()
+			var start := verts.size()
+			verts.append_array(PackedVector3Array([a, b, c]))
+			norms.append_array(PackedVector3Array([normal, normal, normal]))
+			indices.append_array(PackedInt32Array([start, start + 1, start + 2]))
+	return [verts, norms, indices]
 
 
 func dst(p: Vector3, t: float, life: float, s0: float, s1: float, kind: int, strength: float) -> void:
@@ -1371,6 +1413,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
+	hit_plate(at, T, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	var tmp = Node3D.new()
@@ -1414,6 +1457,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		wgas.set_shader_parameter("intensity", 0.01)
 		mats.append(wgas)
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
+		if rel.begins_with("weapons/"):
+			var hit := WEAP.hull_impact_material(self, rel)
+			hit.set_shader_parameter("born", now)
+			hit.set_shader_parameter("intensity", 0.01)
+			mats.append(hit)
 		for variant in 3:
 			var production := DEATH.route_material(self, SH.DEATH_FLIPBOOK, rel, true, variant)
 			production.set_shader_parameter("born", now)
