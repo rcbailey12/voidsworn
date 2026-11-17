@@ -208,8 +208,9 @@ glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces o
 an old hull 0 pixels changed). Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's throat and bell lining, which the
 stack gives one emissive surface with the plug cone, with its own map (`bake_engine_glow`: the hot core on the axis, the plug
-hottest, to deep red at the wall, each engine its own reach, hot spots, soot streaks, the lining
-dark toward the lip, each engine its own; written by stage 7 as `<code>_glow_emission.jpg`).
+hottest, to deep red at the wall, hot spots, soot streaks and the lining dark toward the lip;
+R308: one colour, strength, core reach and normalized pattern shared by every engine on a ship,
+scaled to bell size, as ships.md section 0 specifies; written by stage 7 as `<code>_glow_emission.jpg`).
 
 Kinds and zones a new sheet ship may bring (issue 651, A18 to A20; each is a kit rule, never a ship rule):
 - a flank hangar mouth (part kind `hangar`) reads as a dark, deep bay (R240, replacing issue 651's warning stripes): its rim
@@ -256,7 +257,7 @@ and E12 (and every later Eclipse sheet ship) on the same shared machinery. What 
   hottest and deeper green dim. Round 3 raises its brightness to read at camera 170. The core and lens: green with a small
   green-white centre.
   The engine ring: pale light in the game's Eclipse engine colour (`faction_looks.json` deathless `engine`, paled, a touch of
-  its `accent`) with hot spots and dim gaps, each engine its own, round the black shade disc; no flame. The map is half the
+  its `accent`) with hot spots and dim gaps shared by every engine on one ship (R308), round the black shade disc; no flame. The map is half the
   atlas size (`res_frac`). Round 3 (R243): the same thin rim strip emits more light over a broader soft profile so it reads
   at camera 170; the core is bright green across its face, white-hot only within its central 0.18 radius. Because the light
   map also carries the hull's own rim line, `GLOW_HULL` gives only that trim its own copied material, marked `hull_surface`.

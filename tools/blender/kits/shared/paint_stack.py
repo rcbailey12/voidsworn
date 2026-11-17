@@ -867,35 +867,39 @@ def add_running_lights(S, hull, others, decals):
 def bake_engine_glow(S, objs, out, cell, res, samples):
     """the engine throat glow (Ryan, Nov 12 19:16 CST: "more variation to the engine glow so it's not so uniform, just disc
     color"): each engine's throat disc and bell lining get an emission map, a hot core grading out to deeper red and orange,
-    uneven hot spots and soot streaks across the throat, the lining dark toward the lip, and each engine a little dimmer, more
-    orange or more red than its neighbours. The game's moving plume sits on top; this paints no flame. Per vertex the stack
+    uneven hot spots and soot streaks across the throat, the lining dark toward the lip. R308: engines on one ship share
+    colour, strength, core reach and a pattern scaled to their own radius. The game's moving plume sits on top; this paints no flame. Per vertex the stack
     writes, in the colour attribute ps_glow: R the distance from the engine's axis over the throat radius, G the engine's own
-    random, B the depth into the bell (1 at the throat, 0 at the lip), A the angle round the axis."""
+    shared random, B the depth into the bell (1 at the throat, 0 at the lip), A the angle round the axis.
+    ps_glow_pos stores normalized bell coordinates, so translated and larger bells get the same hot spots."""
     E = S.ENGINE_GLOW; groups = {}; ek = E.get('kind'); extra = []
     for o in objs:
         if ek is not None and o.get('part_kind') != ek and o.get('emissive_zone') != 'plug':
             extra.append(o); continue        # issue 642: a stack's other lights (the Eclipse rim lines and core) share the map
         groups.setdefault(o.get('grp') or o.name.split('_')[0], []).append(o)
     for o in extra: S.glow_vertex(o)
-    rng = np.random.default_rng(601)
+    rnd = float(np.random.default_rng(601).random())
     for gname, members in sorted(groups.items()):
-        rnd = float(rng.random())
         W = [o.matrix_world @ v.co for o in members for v in o.data.vertices]
         disc = [o for o in members if glow_zone(o) in E.get('disc', ('glow',))]
         core = disc + [o for o in members if o.get('emissive_zone') == 'plug']      # the throat disc and the plug: the core's surfaces
         Dv = [o.matrix_world @ v.co for o in (disc or members) for v in o.data.vertices]
-        cy = sum(v.y for v in Dv) / len(Dv); cz = sum(v.z for v in Dv) / len(Dv)
+        cy = (min(v.y for v in Dv) + max(v.y for v in Dv)) / 2
+        cz = (min(v.z for v in Dv) + max(v.z for v in Dv)) / 2
         rmax = max(math.hypot(v.y - cy, v.z - cz) for v in Dv) or 1.0
         x0 = min(v.x for v in W); x1 = max(v.x for v in W)
         for o in members:
             me = o.data; ca = me.color_attributes.get('ps_glow') or me.color_attributes.new('ps_glow', 'FLOAT_COLOR', 'POINT')
+            pos = me.color_attributes.get('ps_glow_pos') or me.color_attributes.new('ps_glow_pos', 'FLOAT_COLOR', 'POINT')
             is_disc = o in core
             for i, v in enumerate(me.vertices):
                 w = o.matrix_world @ v.co
                 r = min(1.0, math.hypot(w.y - cy, w.z - cz) / rmax) if is_disc else 1.0
                 d = 1.0 if is_disc else (w.x - x0) / max(x1 - x0, 1e-6)
-                ang = (math.atan2(w.z - cz, w.y - cy) / (2 * math.pi)) % 1.0
+                dy, dz = w.y - cy, w.z - cz
+                ang = 0.0 if math.hypot(dy, dz) < rmax * 1e-7 else (math.atan2(dz, dy) / (2 * math.pi)) % 1.0
                 ca.data[i].color = (r, rnd, d, ang)
+                pos.data[i].color = ((w.y - cy) / rmax * .025, (w.z - cz) / rmax * .025, d * .025, 1.0)
     for o in objs: o.hide_render = False
     unwrap(objs, .004)
     J = bake_copy(objs, f'{cell}_E_bake'); hid = {o.name: o.hide_render for o in objs}
@@ -932,23 +936,24 @@ def _throat_glow(nt, E, r, e, d, a, tc, noise):
     """the Hullbreaker throat (issue 601): a hot core on the axis grading out to deep red, hot spots, soot streaks, the lining
     dark toward the lip; returns the emission colour socket"""
     # heat: the core (hot at the axis) on the throat disc, the lining by its depth (dark at the lip, R228 item 5)
-    # the core: hottest on the axis (the plug's tip, the throat's centre), falling off toward the wall, each engine its own reach
+    # the core: hottest on the axis, falling off toward the wall with the ship's shared core reach
     e2 = math_(nt, 'FRACT', math_(nt, 'MULTIPLY', e, 7.31))
     reach = math_(nt, 'ADD', E['core_reach'][0], math_(nt, 'MULTIPLY', e2, E['core_reach'][1] - E['core_reach'][0]))
     corev = math_(nt, 'POWER', math_(nt, 'SUBTRACT', 1, ramp(nt, r, 0.0, 1.0)), reach)
     lining = math_(nt, 'MULTIPLY', ramp(nt, r, .98, 1.0), math_(nt, 'MULTIPLY', math_(nt, 'POWER', d, E['lining_falloff']), E['lining_gain']))
     heat = math_(nt, 'ADD', math_(nt, 'MULTIPLY', corev, math_(nt, 'SUBTRACT', 1, ramp(nt, r, .98, 1.0))), lining)
-    # uneven hot spots (each engine's own pattern), and soot streaks running out from the axis
+    # Uneven hot spots in normalized bell coordinates, with the same pattern on every engine.
     hn = node(nt, 'ShaderNodeTexNoise'); hn.noise_dimensions = '4D'; hn.inputs['Scale'].default_value = E['hotspot_scale']
     hn.inputs['Detail'].default_value = 4; hn.inputs['Roughness'].default_value = .6
-    nt.links.new(tc.outputs['Object'], hn.inputs['Vector']); nt.links.new(math_(nt, 'MULTIPLY', e, 13.0), hn.inputs['W'])
+    local = node(nt, 'ShaderNodeAttribute'); local.attribute_type = 'GEOMETRY'; local.attribute_name = 'ps_glow_pos'
+    nt.links.new(local.outputs['Color'], hn.inputs['Vector']); nt.links.new(math_(nt, 'MULTIPLY', e, 13.0), hn.inputs['W'])
     hs = ramp(nt, hn.outputs['Fac'], E['hotspot'][0], E['hotspot'][1])
     heat = math_(nt, 'ADD', heat, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', hs, d), E['hotspot_gain']))
     av = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'MULTIPLY', a, E['streaks']), av.inputs[0]); nt.links.new(math_(nt, 'MULTIPLY', e, 31.0), av.inputs[1])
     nt.links.new(math_(nt, 'MULTIPLY', r, 1.5), av.inputs[2])
     soot = ramp(nt, noise(av.outputs[0], 1.0, 2, .5), E['soot'][0], E['soot'][1])
     heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', soot, E['soot_gain'])), clamp=True)
-    # each engine its own: brightness and hue (more orange or more red)
+    # One brightness and hue for every engine, driven by the shared ship random.
     heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'ADD', E['bright'][0], math_(nt, 'MULTIPLY', e, E['bright'][1] - E['bright'][0])))
     cr = node(nt, 'ShaderNodeValToRGB')
     for i_, (pos, col) in enumerate(E['ramp']):

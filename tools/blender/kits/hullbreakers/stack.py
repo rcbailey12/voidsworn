@@ -147,11 +147,17 @@ RUST = lin(CONCEPT['rust_streak'][1]); RUST_DARK = lin(CONCEPT['rust_streak'][0]
 GRIME = lin(CONCEPT['grime'][0])
 RED_PLATE = pair('red_plate')    # a zone's red_share of its plates carry this worn red over-paint (the concept's scattered red plates)
 # the patchwork families (a hull zone with patchwork > 0): (share of panels, colour pair). The rest keep the zone's own tones.
-# Shares read off the concept's hull pixels (the k-means above): dark soot most, then gun-metal grey, brick red, a few scrapes.
+# R306: rust and dried blood carry 85 percent of the armour family weight;
+# gunmetal and scrapes stay a minority. configure_register supplies the ship's tones.
 # a family marked 'small' only takes small plates (pass 5: light grey scrapes are small; the big pale plates are the trophy layer below, R252)
-PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red_plate')), (.025, pair('scrape'), 'small')]
-# on part faces (R224 in paint): the same kind of plates, mostly metal, a little soot and rust, rare scrapes
-PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.25, pair('soot2')), (.08, pair('red_plate')), (.015, pair('scrape'), 'small')]
+def armour_families(rust, blood, scrape):
+    """The R306 balance has one home, shared by hull and part armour."""
+    return [(.48, rust), (.37, blood), (.06, pair('gunmetal')), (.015, scrape, 'small')]
+
+
+PATCH_FAMILIES = armour_families(pair('rust'), pair('blood'), pair('scrape'))
+# Part armour follows the hull (R224); the bell and machinery zones keep their dark metal.
+PATCH_FAMILIES_PARTS = list(PATCH_FAMILIES)
 
 # The trophy patches (issue 726; R252, Ryan Nov 14 2026: "agree" that the patch plates read bigger like the A20 concept, not small
 # dark plates; R274, Nov 15: dark grey salvaged metal, not pale, "The white looks unfinished"; R240: still uneven, no repeated
@@ -173,7 +179,7 @@ TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(2.2, .45, 1.55), warp
 
 # Issue 853: the capital pattern made tiny tiles on KB1CC and its edge wear washed
 # the grey trophy plates pale. The build contract supplies the sheet's LENGTH.
-# All larger ships retain the original dictionaries, including the A16 fixture.
+# Larger ships keep their pattern sizes; R306's colour register applies at every length.
 CRAFT_SIZE = dict(max_length=1.6, patches=3.0, trophies=1.5, marks=2.0,
                   trophy_gain=1.0, wear=.18, grey_wear=.18)
 _SHIP_LAYERS = deepcopy(LAYERS)
@@ -189,6 +195,48 @@ _SHIP_ZONE_BY_KIND = deepcopy(ZONE_BY_KIND)
 CRAFT_PLATES = {name: CONCEPT[name] for name in ('soot', 'soot2', 'rust', 'blood', 'violet')}
 CRAFT_PLATES['pale'] = CONCEPT['trophy_grey']
 CRAFT_ACTIVE = False
+
+# R306/R307: concept register per ship, in the faction stack. These are sRGB
+# targets sampled from each accepted beauty's red, violet and exposed pale
+# metal pixels, graded for saturated rust under battle light. review.py records
+# the sampling masks and source hashes beside these working colour targets.
+# R274 grey trophy metal and R252 trophy cell sizes remain unchanged. Near-white
+# belongs to exposed metal and scrapes; the large stolen grey patches stay grey.
+CONCEPT_REGISTERS = {
+    'A16': dict(rust=((92,17,9),(157,45,34)), blood=((72,15,11),(123,36,38)),
+                violet=((64,45,101),(120,83,147)), bare=((165,155,148),(204,194,189))),
+    'A17': dict(rust=((100,36,27),(174,69,56)), blood=((67,20,22),(124,43,40)),
+                violet=((43,31,50),(62,49,72)), bare=((167,162,157),(204,201,196))),
+    'A18': dict(rust=((88,20,11),(159,49,37)), blood=((72,16,12),(130,37,36)),
+                violet=((69,47,103),(128,97,163)), bare=((162,154,150),(199,190,187))),
+    'A19': dict(rust=((99,36,27),(165,72,61)), blood=((81,26,27),(136,63,64)),
+                violet=((99,77,130),(134,109,166)), bare=((154,147,144),(188,182,178))),
+    'A20': dict(rust=((84,33,25),(153,62,51)), blood=((69,28,24),(137,62,58)),
+                violet=((54,47,73),(115,99,138)), bare=((166,163,159),(190,187,184))),
+}
+
+
+def configure_register():
+    """Rust underpaint and 85 percent red families, with concept colour targets."""
+    global BARE, RED_PLATE, PATCH_FAMILIES, PATCH_FAMILIES_PARTS
+    code = bpy.context.scene.get('r209_sheet', '').removeprefix('corsair_')
+    target = CONCEPT_REGISTERS.get(code, CONCEPT_REGISTERS['A16'])
+    rust, blood = (tuple(map(lin, target[k])) for k in ('rust', 'blood'))
+    for name, tones in (('soot', rust), ('soot2', blood), ('iron', rust),
+                        ('rust', rust), ('blood', blood)):
+        ZONES[name].update(lo=tones[0], hi=tones[1], red_share=0.0)
+    for name in ('violet', 'lilac'):
+        ZONES[name]['lo'], ZONES[name]['hi'] = map(lin, target['violet'])
+    # R307 grades the capitals. Keep the craft's accepted, darker chip colour
+    # (R292), which prevents bright edge wear washing its small plates grey.
+    if not CRAFT_ACTIVE:
+        BARE = lin(target['bare'][1])
+    RED_PLATE = blood
+    families = armour_families(rust, blood, tuple(map(lin, target['bare'])))
+    PATCH_FAMILIES = families
+    PATCH_FAMILIES_PARTS = list(families)
+    TROPHY['families'] = [(.65, pair('trophy_grey')),
+                          (.35, tuple(map(lin, target['violet'])))]
 
 
 def configure_size(length=None):
@@ -244,6 +292,7 @@ def configure_size(length=None):
         # craft.py authors the bomb collar and bore in soot2, the same sheet
         # zone used by red armour. Keep this machinery's dark iron assignment.
         ZONE_BY_KIND[('launcher', 'soot2')] = 'iron_edge'
+    configure_register()
     print('[853] Hullbreaker paint size:', 'craft' if craft else 'ship', 'sheet length', length, flush=True)
     return craft
 
@@ -315,10 +364,11 @@ GLOW = ('glow', 'ember', 'light', 'lamp')     # lamp: the warm deck lights insid
 # a hot red-orange deep in the bell, the lining a dimmer deep red toward the lip, so the dark rim and lip read; never blown out
 # Ryan, Nov 12 19:16 CST: "more variation to the engine glow so it's not so uniform, just disc color". The throat and lining
 # carry an emission map (shared/paint_stack.bake_engine_glow): a hot core grading out to deeper red and orange, uneven hot spots,
-# soot streaks out from the axis, the lining dark toward the lip, each engine a little different. The plume is the game's.
+# soot streaks out from the axis, the lining dark toward the lip. R308: every engine
+# on one ship shares its colour, strength and normalized pattern. The plume is the game's.
 # Board, pass 5 review: the core sits IN THE CENTRE of the throat, and the plug cone there glows hottest (never black); each
-# engine differs in brightness, in how far its core reaches (core_reach: the exponent of the fall-off from the axis) and in where
-# its hot spots sit; the lining glows dimly near the throat and is dark at the lip.
+# engine shares its core reach and hot spots; the lining glows dimly near the
+# throat and is dark at the lip. Bigger bells enlarge the pattern, not its strength.
 ENGINE_GLOW = dict(ramp=[(0.0, (.08, .006, .002)), (.25, (.45, .04, .010)), (.50, (.90, .15, .030)), (.72, (1.0, .38, .08)),
                          (.88, (1.0, .62, .25)), (1.0, (1.0, .88, .60))],
                    core_reach=(.55, 1.8), lining_gain=.32, lining_falloff=3.0, hotspot_scale=700.0, hotspot=(.56, .70),
