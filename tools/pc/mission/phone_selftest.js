@@ -103,6 +103,30 @@ async function test(check, base, root) {
   await assert.rejects(phone.main('on',{...deps,probe:async headers=>{if(headers) throw Error('Old publisher');}}),/restart/);
   check('phone setup explains missing sign-in, occupied ports and an old publisher', () => assert.equal(starts,1));
 
+  // Reproduce the slow first Windows background start without real waits or Serve.
+  let elapsed = 0, slowStarts = 0;
+  const slow = {...deps, now: () => elapsed, delay: async ms => { elapsed += ms; },
+    startPublisher: async () => { slowStarts++; return 'slow fixture log'; },
+    probe: async () => {
+      if (elapsed < 61000) throw Object.assign(Error('Starting'), {code:'ECONNREFUSED'});
+    }};
+  await phone.main('on',slow);
+  check('PHONE_ON waits for a cold Windows start longer than one minute', () => {
+    assert.equal(slowStarts,1); assert.equal(elapsed,61000);
+  });
+  elapsed = 0;
+  const changesBefore = calls.filter(args => args[1] !== 'status').length;
+  await assert.rejects(phone.main('on',{...slow, probe: async () => {
+    // Include a slow refused reply in the overall startup deadline.
+    elapsed += 1500;
+    throw Object.assign(Error('Not ready'), {code:'ECONNREFUSED'});
+  }}), /did not start/);
+  check('PHONE_ON bounds failed startup including slow probes and never enables Serve', () => {
+    // Includes the first local probe and at most one final slow polling reply.
+    assert(elapsed >= 90000 && elapsed < 94000);
+    assert.equal(calls.filter(args => args[1] !== 'status').length,changesBefore);
+  });
+
   // Real HTTP listener with deterministic status discovery, never real Serve.
   const reserve = http.createServer();
   await new Promise(resolve=>reserve.listen(0,'127.0.0.1',resolve));

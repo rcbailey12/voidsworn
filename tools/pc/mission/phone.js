@@ -80,7 +80,10 @@ async function ensurePublisher(host, deps) {
     const log = await deps.startPublisher();
     console.log('Mission control started in the background. Log: ' + log);
     let ready = false;
-    for (let attempt = 0; attempt < 40; attempt++) {
+    // A cold Windows launch can take over a minute. Bound the whole wait,
+    // including slow HTTP replies, rather than counting only short sleeps.
+    const deadline = deps.now() + 90000;
+    while (deps.now() < deadline) {
       await deps.delay(250);
       try { await deps.probe(); ready = true; break; } catch (_) { /* Wait for the local scan and bind. */ }
     }
@@ -95,7 +98,7 @@ async function ensurePublisher(host, deps) {
 
 async function main(mode, overrides = {}) {
   const deps = { discover: tailscale.discover, command, probe, startPublisher,
-    delay: ms => new Promise(resolve => setTimeout(resolve, ms)), ...overrides };
+    now: Date.now, delay: ms => new Promise(resolve => setTimeout(resolve, ms)), ...overrides };
   if (!['on', 'off'].includes(mode)) throw Error('Use PHONE_ON.bat or PHONE_OFF.bat.');
   const { executable, host } = deps.discover();
   if (!executable) throw Error('Install Tailscale on this PC and the Pixel: https://tailscale.com/download\nSign in with the same account on both devices, then try again.');
