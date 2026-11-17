@@ -1,0 +1,42 @@
+{
+    "run":  "https://github.com/rcbailey12/voidsworn/actions/runs/44105588767",
+    "head":  "fda538f6fafddafe0b9c1f1f377b39d8ee0e4007",
+    "jobs":  [
+                 {
+                     "name":  "Godot game checks",
+                     "seconds":  516,
+                     "completed_at":  "2026-11-17T14:48:35Z",
+                     "rules_steps":  [
+
+                                     ],
+                     "conclusion":  "success",
+                     "started_at":  "2026-11-17T14:39:59Z"
+                 },
+                 {
+                     "name":  "Godot rules parity",
+                     "seconds":  1244,
+                     "completed_at":  "2026-11-17T15:00:43Z",
+                     "rules_steps":  [
+                                         {
+                                             "conclusion":  "success",
+                                             "completed_at":  "2026-11-17T14:59:43Z",
+                                             "name":  "Rules parity against the browser game",
+                                             "seconds":  1133,
+                                             "started_at":  "2026-11-17T14:40:50Z"
+                                         }
+                                     ],
+                     "conclusion":  "success",
+                     "started_at":  "2026-11-17T14:39:59Z"
+                 },
+                 {
+                     "name":  "Standing checks (rules, text, saves)",
+                     "seconds":  214,
+                     "completed_at":  "2026-11-17T14:43:33Z",
+                     "rules_steps":  [
+
+                                     ],
+                     "conclusion":  "success",
+                     "started_at":  "2026-11-17T14:39:59Z"
+                 }
+             ]
+}

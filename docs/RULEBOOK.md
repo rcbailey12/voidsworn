@@ -138,6 +138,7 @@ Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route pe
 pick up a job without asking, and main stays reviewed. Set: Ryan, Nov 2 and 4 (R75, R102). Ids: agents-04, agents-05,
 agents-09. A run brief for a PC job goes into the issue body (under the fixed block, marked as the job now): the runner
 builds the task from the body only and never reads comments (R281).
+When the Board needs Ryan's answer on a job, it adds the `ryan` label and one issue-body line `Ask Ryan: <one question> | Picture: <link>`, then removes both when he answers; Mission Control reads only this marker so it cannot mistake a dispatch lock for a question (Ryan, Nov 17, issue 951).
 The PC runner merges `origin/<branch>` from the optional Base line and commits that merge before starting the agent;
 a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
 also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on
@@ -321,8 +322,16 @@ R216).
 (now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
 processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
 each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
-nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
-anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
+nothing is deleted. The pause waits for each lane's runner (main, B, C, D and DeepSeek work217) to leave running, then checks
+its status.json, run_commit.txt and confirmed_commit.txt against GitHub with git ls-remote. pc_pause.txt reports each job as
+done (finished and its delivery branch holds its confirmed commit), checkpoint verified (its -partial branch holds the
+runner's confirmed commit), or unresolved (anything else, including checks still running, a failed verification or a timeout).
+Leftover running records are listed with their last activity, not counted in the wait or unresolved jobs, and never changed.
+Only the final "safe to restart" line in pc_pause.txt means a restart is safe; any unresolved job instead gives
+"NOT safe to restart: <jobs>". On Ryan's go the Board restarts every paused job from its verified -partial branch and recovers
+unresolved work before restarting the PC. Why: "I don't want to cause anything to get lost or deleted with the pauses as well,
+so let's bake that in" (R272); quiet agent processes did not prove a runner in final checks had pushed (R309, issue 944).
+Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
 
 ## 4. Ships and concepts
 

@@ -170,7 +170,8 @@ public static class Fake873 {
       if ((Environment.GetEnvironmentVariable("FAKE_GODOT_NO_OUT") ?? "") != "bench" + counter) {
         string outDir = Arg(a, "--out");
         Directory.CreateDirectory(outDir);
-        File.WriteAllText(Path.Combine(outDir, "results.txt"), "fake results\\n");
+        if ((Environment.GetEnvironmentVariable("FAKE_GODOT_EMPTY_OUT") ?? "") != "bench" + counter)
+          File.WriteAllText(Path.Combine(outDir, "scene_gate.json"), "{}\\n");
       }
     }
     return 0;
@@ -402,7 +403,7 @@ r = runBat(benchBat, b.env);
 check(r.code === 0, 'bench 207 success case exited ' + r.code + '. Output: ' + r.text);
 check(!r.text.includes('FAILED:'), 'bench 207 success case printed a FAILED line. Output: ' + r.text);
 for (const run of ['run1', 'run2', 'run3_res']) {
-  check(fs.existsSync(path.join(b.out, run, 'results.txt')), 'bench 207 success case: ' + run + ' has no output');
+  check(fs.existsSync(path.join(b.out, run, 'scene_gate.json')), 'bench 207 success case: ' + run + ' has no report');
 }
 pass('bench 207 success case: import, build_assets and all three bench runs finish and the job exits 0');
 
@@ -429,7 +430,62 @@ expectFail('bench 207 bench run2 failure stops the job', r, ['FAILED: bench run2
 b = benchHome('noout', '', {});
 write(path.join(b.vt, 'bench207_settings.txt'), benchSettings(b));
 r = runBat(benchBat, Object.assign({}, b.env, { FAKE_GODOT_NO_OUT: 'bench2' }));
-expectFail('bench 207 bench run2 missing output stops the job', r, ['FAILED: bench run2 wrote no output at']);
+expectFail('bench 207 bench run2 missing output stops the job', r, ['FAILED: bench run2 wrote no fresh scene_gate.json at']);
+
+// Issue 952: a successful process must write this step's real report after its marker.
+const benchRuns = ['run1', 'run2', 'run3_res'];
+for (const [index, run] of benchRuns.entries()) {
+  for (const fixture of ['empty', 'stale']) {
+    b = benchHome(fixture + '-' + run, '', {});
+    write(path.join(b.vt, 'bench207_settings.txt'), benchSettings(b));
+    const outDir = path.join(b.out, run);
+    fs.mkdirSync(outDir, { recursive: true });
+    let report;
+    const oldTime = new Date('2000-01-01T00:00:00Z');
+    if (fixture === 'stale') {
+      report = path.join(outDir, 'scene_gate.json');
+      write(report, '{"earlier_run":true}\n');
+      fs.utimesSync(report, oldTime, oldTime);
+      // A reused marker must be refreshed too, or the stale report could still be newer.
+      const marker = path.join(b.out, run + '_started.txt');
+      write(marker, 'earlier marker\n');
+      const olderTime = new Date('1999-01-01T00:00:00Z');
+      fs.utimesSync(marker, olderTime, olderTime);
+    }
+    const noWrite = fixture === 'empty' ? 'FAKE_GODOT_EMPTY_OUT' : 'FAKE_GODOT_NO_OUT';
+    r = runBat(benchBat, { ...b.env, [noWrite]: 'bench' + (index + 1) });
+    const failure = 'FAILED: bench ' + run + ' wrote no fresh scene_gate.json at';
+    expectFail('bench 207 ' + run + ' rejects zero exit with ' + fixture + ' output', r, [failure]);
+    const status = read(path.join(b.out, 'status.txt'));
+    check(status.includes(failure) && !/^done /m.test(status), 'bench 207 must log the failed step and stop before done');
+    check(read(path.join(b.env.FAKE_STATE, 'bench.txt')).trim() === String(index + 1),
+      'bench 207 must stop before the next bench step');
+    check(fs.existsSync(outDir), 'bench 207 must keep the old output folder');
+    if (report) {
+      check(read(report) === '{"earlier_run":true}\n' && fs.statSync(report).mtimeMs === oldTime.getTime(),
+        'bench 207 must leave the stale report unchanged');
+    }
+  }
+}
+
+// A new report replacing an earlier run's report passes in each reused folder.
+b = benchHome('fresh-over-stale', '', {});
+write(path.join(b.vt, 'bench207_settings.txt'), benchSettings(b));
+for (const run of benchRuns) {
+  const report = path.join(b.out, run, 'scene_gate.json');
+  write(report, '{"earlier_run":true}\n');
+  const oldTime = new Date('2000-01-01T00:00:00Z');
+  fs.utimesSync(report, oldTime, oldTime);
+}
+r = runBat(benchBat, b.env);
+check(r.code === 0 && !r.text.includes('FAILED:'), 'bench 207 rejected fresh reports in reused folders: ' + r.text);
+for (const run of benchRuns) {
+  const report = path.join(b.out, run, 'scene_gate.json');
+  const marker = path.join(b.out, run + '_started.txt');
+  check(read(report) === '{}\n' && fs.statSync(report).mtimeMs > fs.statSync(marker).mtimeMs,
+    'bench 207 ' + run + ' must have a fresh scene_gate.json newer than its marker');
+}
+pass('bench 207 accepts fresh scene_gate.json reports in all three reused output folders');
 
 b = benchHome('nohi', '', {});
 write(path.join(b.vt, 'bench207_settings.txt'), 'env=' + b.envDir + '\r\n');

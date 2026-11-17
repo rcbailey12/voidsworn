@@ -1,0 +1,900 @@
+{
+  "issue": 930,
+  "paint": {
+    "resolution": 4096,
+    "parts_resolution": 4096,
+    "emission_resolution": 2048,
+    "samples": 64,
+    "stage": "tools/blender/r209/bake_sheet.py",
+    "device": "OPTIX"
+  },
+  "geometry": {
+    "cell": "IM5",
+    "geometry_unchanged": true,
+    "painted": {
+      "mesh_objects": 559,
+      "triangles": 113936,
+      "sha256": "3b2e7585708cf414a64ab5ef5e587a62994c3e9bec96407ebb0f7acaeca57ed6"
+    },
+    "unpainted_sheet": {
+      "mesh_objects": 559,
+      "triangles": 113936,
+      "sha256": "3b2e7585708cf414a64ab5ef5e587a62994c3e9bec96407ebb0f7acaeca57ed6"
+    },
+    "ion_zones": [
+      {
+        "object": "I1_body_hblue",
+        "zone": "hblue",
+        "material": "p3_glow",
+        "kinds": [
+          1
+        ]
+      },
+      {
+        "object": "I1_body_hlining",
+        "zone": "hlining",
+        "material": "p3_glow",
+        "kinds": [
+          2
+        ]
+      }
+    ]
+  },
+  "other_faction": {
+    "ship": "voidsworn_S8",
+    "resolution": 512,
+    "samples": 8,
+    "before": [
+      "p3_frost",
+      "p3_glow",
+      "p3_vent",
+      "p3_window"
+    ],
+    "after": [
+      "p3_frost",
+      "p3_glow",
+      "p3_vent",
+      "p3_window"
+    ],
+    "same": true,
+    "engine_map_identical": true
+  },
+  "surface": {
+    "ok": true,
+    "totals": {
+      "room": 0,
+      "bare": 0
+    },
+    "views": {
+      "top": {
+        "stack": 107405,
+        "glow": 494,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "below": {
+        "stack": 107419,
+        "glow": 480,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "port": {
+        "stack": 37996,
+        "glow": 679,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "starboard": {
+        "stack": 37996,
+        "glow": 679,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "bow": {
+        "stack": 15536,
+        "glow": 825,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "stern": {
+        "stack": 13495,
+        "glow": 2866,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      }
+    },
+    "seen_from_outside": {},
+    "objects": {
+      "stack": 413,
+      "glow": 76,
+      "liner": 70
+    },
+    "res": 640
+  },
+  "export_check": {
+    "ok": true,
+    "problems": [],
+    "notes": [
+      "authored interiors: 14604 triangles, 12 surfaces; authored seams: 4",
+      "99332 triangles (45676 on part surfaces), box x -0.497 to 0.503, y -0.070 to 0.074, z -0.204 to 0.204",
+      "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+      "turrets: 4 written (turret_0 F1, turret_1 HP, turret_2 HS, turret_3 T1); marked by the kit: ['F1', 'HP', 'HS', 'T1']"
+    ],
+    "cls": "Super-dreadnought",
+    "faction": "hegemony",
+    "expected_breach": 8,
+    "required": {
+      "weapon_slots": 5,
+      "core": 1,
+      "engine": 1,
+      "bay": 0,
+      "breach": 8,
+      "rcs": 2,
+      "board": 2
+    },
+    "weapons": [
+      {
+        "slot": 0,
+        "weapon": "hturbo",
+        "arc": "P",
+        "hard_points": [
+          "hp_w0_hturbo_P_0",
+          "hp_w0_hturbo_P_1"
+        ]
+      },
+      {
+        "slot": 1,
+        "weapon": "hturbo",
+        "arc": "S",
+        "hard_points": [
+          "hp_w1_hturbo_S_0",
+          "hp_w1_hturbo_S_1"
+        ]
+      },
+      {
+        "slot": 2,
+        "weapon": "turbo",
+        "arc": "T",
+        "hard_points": [
+          "hp_w2_turbo_T_0",
+          "hp_w2_turbo_T_1"
+        ]
+      },
+      {
+        "slot": 3,
+        "weapon": "ion",
+        "arc": "F",
+        "hard_points": [
+          "hp_w3_ion_F_0"
+        ]
+      },
+      {
+        "slot": 4,
+        "weapon": "flak",
+        "arc": "T",
+        "hard_points": [
+          "hp_w4_flak_T_0",
+          "hp_w4_flak_T_1"
+        ]
+      }
+    ],
+    "hardpoints": {
+      "board": 2,
+      "breach": 8,
+      "core": 1,
+      "engine": 6,
+      "rcs": 4,
+      "gun": 9
+    },
+    "maps": [
+      "H4_11_parts_orm.jpg",
+      "H4_11_parts_base.jpg",
+      "H4_11_glow_emission.jpg",
+      "H4_11_normal.jpg",
+      "H4_11_orm.jpg",
+      "H4_11_base.jpg"
+    ],
+    "tolerance": 0.011999999284744264,
+    "tolerance_of_length": 0.012,
+    "ship_length": 0.9999999403953552,
+    "breach_clearance": 0.03,
+    "rows": [
+      {
+        "name": "hp_board_0",
+        "p": [
+          -0.0769,
+          -0.008,
+          -0.2028
+        ],
+        "fwd": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "hp_board_1",
+        "p": [
+          -0.0769,
+          -0.008,
+          0.2028
+        ],
+        "fwd": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "hp_breach_0",
+        "p": [
+          0.3269,
+          0.0007,
+          -0.1317
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "clear": 0.0342
+      },
+      {
+        "name": "hp_breach_1",
+        "p": [
+          0.2903,
+          -0.0343,
+          0.1346
+        ],
+        "fwd": [
+          1.0,
+          -0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          0.0,
+          -0.779,
+          0.627
+        ],
+        "clear": 0.0352
+      },
+      {
+        "name": "hp_breach_2",
+        "p": [
+          0.1951,
+          0.0001,
+          -0.1612
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "clear": 0.0315
+      },
+      {
+        "name": "hp_breach_3",
+        "p": [
+          0.0385,
+          0.0,
+          0.1835
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "clear": 0.0565
+      },
+      {
+        "name": "hp_breach_4",
+        "p": [
+          0.0018,
+          -0.035,
+          -0.189
+        ],
+        "fwd": [
+          1.0,
+          -0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          -0.0,
+          -0.707,
+          -0.707
+        ],
+        "clear": 0.0692
+      },
+      {
+        "name": "hp_breach_5",
+        "p": [
+          -0.0226,
+          0.01,
+          0.1986
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "clear": 0.0335
+      },
+      {
+        "name": "hp_breach_6",
+        "p": [
+          -0.2051,
+          0.0,
+          -0.1979
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "clear": 0.0308
+      },
+      {
+        "name": "hp_breach_7",
+        "p": [
+          -0.3654,
+          0.0,
+          0.1817
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "off_mesh": 0.0,
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "clear": 0.0528
+      },
+      {
+        "name": "hp_core",
+        "p": [
+          -0.109,
+          -0.0321,
+          0.0
+        ],
+        "fwd": [
+          0.0,
+          0.0,
+          -1.0
+        ]
+      },
+      {
+        "name": "hp_eng_0",
+        "p": [
+          -0.4968,
+          -0.008,
+          -0.1202
+        ],
+        "fwd": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0136,
+        "bell": {
+          "radius": 0.0225,
+          "rim_sectors": 12,
+          "throat_vertices": 119,
+          "exhaust_vertices": 0,
+          "ok": true,
+          "why": ""
+        }
+      },
+      {
+        "name": "hp_eng_1",
+        "p": [
+          -0.4968,
+          -0.008,
+          -0.0721
+        ],
+        "fwd": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0136,
+        "bell": {
+          "radius": 0.0225,
+          "rim_sectors": 12,
+          "throat_vertices": 119,
+          "exhaust_vertices": 0,
+          "ok": true,
+          "why": ""
+        }
+      },
+      {
+        "name": "hp_eng_2",
+        "p": [
+          -0.4968,
+          -0.008,
+          -0.024
+        ],
+        "fwd": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0136,
+        "bell": {
+          "radius": 0.0225,
+          "rim_sectors": 12,
+          "throat_vertices": 119,
+          "exhaust_vertices": 0,
+          "ok": true,
+          "why": ""
+        }
+      },
+      {
+        "name": "hp_eng_3",
+        "p": [
+          -0.4968,
+          -0.008,
+          0.024
+        ],
+        "fwd": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0136,
+        "bell": {
+          "radius": 0.0225,
+          "rim_sectors": 12,
+          "throat_vertices": 119,
+          "exhaust_vertices": 0,
+          "ok": true,
+          "why": ""
+        }
+      },
+      {
+        "name": "hp_eng_4",
+        "p": [
+          -0.4968,
+          -0.008,
+          0.0721
+        ],
+        "fwd": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0136,
+        "bell": {
+          "radius": 0.0225,
+          "rim_sectors": 12,
+          "throat_vertices": 119,
+          "exhaust_vertices": 0,
+          "ok": true,
+          "why": ""
+        }
+      },
+      {
+        "name": "hp_eng_5",
+        "p": [
+          -0.4968,
+          -0.008,
+          0.1202
+        ],
+        "fwd": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0136,
+        "bell": {
+          "radius": 0.0225,
+          "rim_sectors": 12,
+          "throat_vertices": 119,
+          "exhaust_vertices": 0,
+          "ok": true,
+          "why": ""
+        }
+      },
+      {
+        "name": "hp_rcs_0",
+        "p": [
+          0.4967,
+          -0.0112,
+          -0.0834
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "hp_rcs_1",
+        "p": [
+          -0.4135,
+          0.0256,
+          -0.1688
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "hp_rcs_2",
+        "p": [
+          0.4967,
+          -0.0112,
+          0.0834
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "hp_rcs_3",
+        "p": [
+          -0.4135,
+          0.0256,
+          0.1688
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "hp_w3_ion_F_0",
+        "p": [
+          0.4639,
+          -0.0096,
+          0.0
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "hp_w4_flak_T_0",
+        "p": [
+          -0.2654,
+          0.0667,
+          0.0031
+        ],
+        "fwd": [
+          0.985,
+          0.174,
+          -0.0
+        ],
+        "turret": "turret_0",
+        "off_mesh": 0.0009
+      },
+      {
+        "name": "hp_w4_flak_T_1",
+        "p": [
+          -0.2654,
+          0.0667,
+          -0.0031
+        ],
+        "fwd": [
+          0.985,
+          0.174,
+          -0.0
+        ],
+        "turret": "turret_0",
+        "off_mesh": 0.0009
+      },
+      {
+        "name": "hp_w0_hturbo_P_0",
+        "p": [
+          -0.0725,
+          0.0532,
+          -0.1838
+        ],
+        "fwd": [
+          0.5,
+          0.0,
+          -0.866
+        ],
+        "turret": "turret_1",
+        "off_mesh": 0.0025
+      },
+      {
+        "name": "hp_w0_hturbo_P_1",
+        "p": [
+          -0.0852,
+          0.0532,
+          -0.1911
+        ],
+        "fwd": [
+          0.5,
+          0.0,
+          -0.866
+        ],
+        "turret": "turret_1",
+        "off_mesh": 0.0025
+      },
+      {
+        "name": "hp_w1_hturbo_S_0",
+        "p": [
+          -0.0852,
+          0.0532,
+          0.1911
+        ],
+        "fwd": [
+          0.5,
+          0.0,
+          0.866
+        ],
+        "turret": "turret_2",
+        "off_mesh": 0.0025
+      },
+      {
+        "name": "hp_w1_hturbo_S_1",
+        "p": [
+          -0.0725,
+          0.0532,
+          0.1838
+        ],
+        "fwd": [
+          0.5,
+          0.0,
+          0.866
+        ],
+        "turret": "turret_2",
+        "off_mesh": 0.0025
+      },
+      {
+        "name": "hp_w2_turbo_T_0",
+        "p": [
+          -0.0629,
+          0.0651,
+          0.0056
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "turret": "turret_3",
+        "off_mesh": 0.002
+      },
+      {
+        "name": "hp_w2_turbo_T_1",
+        "p": [
+          -0.0629,
+          0.0651,
+          -0.0056
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "turret": "turret_3",
+        "off_mesh": 0.002
+      }
+    ],
+    "turrets": [
+      {
+        "name": "turret_0",
+        "id": "F1",
+        "socket": "F1",
+        "p": [
+          -0.2885,
+          0.0577,
+          0.0
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "axis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "arc": [
+          -180.0,
+          180.0
+        ],
+        "muzzles": [
+          "hp_w4_flak_T_0",
+          "hp_w4_flak_T_1"
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "turret_1",
+        "id": "HP",
+        "socket": "HP",
+        "p": [
+          -0.109,
+          0.0442,
+          -0.1353
+        ],
+        "fwd": [
+          0.5,
+          0.0,
+          -0.866
+        ],
+        "axis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "arc": [
+          30.0,
+          150.0
+        ],
+        "muzzles": [
+          "hp_w0_hturbo_P_0",
+          "hp_w0_hturbo_P_1"
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "turret_2",
+        "id": "HS",
+        "socket": "HS",
+        "p": [
+          -0.109,
+          0.0442,
+          0.1353
+        ],
+        "fwd": [
+          0.5,
+          0.0,
+          0.866
+        ],
+        "axis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "arc": [
+          -150.0,
+          -30.0
+        ],
+        "muzzles": [
+          "hp_w1_hturbo_S_0",
+          "hp_w1_hturbo_S_1"
+        ],
+        "off_mesh": 0.0
+      },
+      {
+        "name": "turret_3",
+        "id": "T1",
+        "socket": "T1",
+        "p": [
+          -0.109,
+          0.0577,
+          0.0
+        ],
+        "fwd": [
+          1.0,
+          0.0,
+          -0.0
+        ],
+        "axis": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "arc": [
+          -180.0,
+          180.0
+        ],
+        "muzzles": [
+          "hp_w2_turbo_T_0",
+          "hp_w2_turbo_T_1"
+        ],
+        "off_mesh": 0.0
+      }
+    ]
+  },
+  "installed": false,
+  "standing_checks": {
+    "exit_code": 0,
+    "baseline_exceptions": [
+      "findings_tests: 7 known",
+      "oracle_drift_guard: 12 known constant differences"
+    ]
+  },
+  "budget": {
+    "triangles": 105500,
+    "turret_triangles": 8436,
+    "hardpoints": {
+      "gun": 9,
+      "engine": 6,
+      "bay": 0,
+      "breach": 8,
+      "core": 1,
+      "rcs": 4,
+      "board": 2
+    },
+    "length_world": 31.0
+  },
+  "glow_materials": [
+    "p3_glow",
+    "p3_glow_hull",
+    "p3_hlens",
+    "p3_hwin"
+  ],
+  "export_selftest": {
+    "pass_": false,
+    "log_tail": [
+      "\u0000F\u0000A\u0000I\u0000L\u0000 \u0000t\u0000h\u0000e\u0000 \u0000e\u0000x\u0000p\u0000o\u0000r\u0000t\u0000 \u0000c\u0000h\u0000e\u0000c\u0000k\u0000 \u0000l\u0000e\u0000t\u0000 \u0000a\u0000 \u0000b\u0000r\u0000o\u0000k\u0000e\u0000n\u0000 \u0000e\u0000x\u0000p\u0000o\u0000r\u0000t\u0000 \u0000t\u0000h\u0000r\u0000o\u0000u\u0000g\u0000h\u0000 \u0000(\u0000o\u0000r\u0000 \u0000r\u0000e\u0000f\u0000u\u0000s\u0000e\u0000d\u0000 \u0000a\u0000 \u0000g\u0000o\u0000o\u0000d\u0000 \u0000o\u0000n\u0000e\u0000)\u0000",
+      "\u0000",
+      "\u0000"
+    ]
+  },
+  "baseline_selftest": {
+    "paint_source": "HEAD, both paint modules loaded without edits",
+    "resolution": 512,
+    "samples": 8,
+    "check_pass": true,
+    "failed_case": "bell_plane",
+    "log_tail": [
+      "\u0000F\u0000A\u0000I\u0000L\u0000 \u0000t\u0000h\u0000e\u0000 \u0000e\u0000x\u0000p\u0000o\u0000r\u0000t\u0000 \u0000c\u0000h\u0000e\u0000c\u0000k\u0000 \u0000l\u0000e\u0000t\u0000 \u0000a\u0000 \u0000b\u0000r\u0000o\u0000k\u0000e\u0000n\u0000 \u0000e\u0000x\u0000p\u0000o\u0000r\u0000t\u0000 \u0000t\u0000h\u0000r\u0000o\u0000u\u0000g\u0000h\u0000 \u0000(\u0000o\u0000r\u0000 \u0000r\u0000e\u0000f\u0000u\u0000s\u0000e\u0000d\u0000 \u0000a\u0000 \u0000g\u0000o\u0000o\u0000d\u0000 \u0000o\u0000n\u0000e\u0000)\u0000",
+      "\u0000",
+      "\u0000"
+    ]
+  },
+  "not_installed_reason": "The normal export rejection self-test accepts the deliberately broken bell_plane copy, also with the unchanged paint code. No check or geometry was changed to bypass it."
+}

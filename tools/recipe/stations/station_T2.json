@@ -1,0 +1,26 @@
+{
+  "asset": "station_T2",
+  "kind": "fleet station",
+  "faction": "hegemony",
+  "state": "damaged, abandoned",
+  "kit": "tools/blender/kits/hegemony_station",
+  "design": "tools/blender/kits/hegemony_station/design.py",
+  "concept": "contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg",
+  "concept_plan": "contrib/muse/design/station_concept_2026_11/station_T2_scale.jpg",
+  "design_pack": "contrib/muse/design/station_pack_2026_11/pack.md",
+  "sheet": "docs/shots/look_bench/station",
+  "status": "build sheet awaiting Board review",
+  "recipe_stages": {
+    "1": "accepted T2 beauty and plan named above",
+    "2": "pending: accepted concept AI shape reference; CPU-only Blender run",
+    "3": "sheet design is authority, never trace the sheet again",
+    "4": "run 5 T2 kit: upright spread towers; habitat airlocks and hatches, connected pipes, berth clamps and dark guide lenses, cargo cranes and bay door, tower sensors, trussed solar wings and cold radiators, ring thruster quads and EVA rails; one large observation pane; uniform 99.2-unit span and run 3 breaks retained; source footprint and 49 poses checked; production fit and seam export pending",
+    "5": "pending: production geometry-mask and trim bake after sheet approval",
+    "6": "review GLB cost in cost.json; CPU sheets plus Godot GPU studio comparisons for every combat class at camera170 and partial detail at camera60; production station-map scene gate pending after approval",
+    "7": "review GLB only; no install before gate and Ryan look"
+  },
+  "install": false,
+  "notes": "A station is not a data.js ship. Do not pass this entry to the ship launchers or invent weapon, engine or RCS hard points. This review entry records the same ship-recipe gates at station scale; it does not claim that the ship export contract already supports stations. T1 is a later state of this kit; refinery T3 is separate.",
+  "motion": "One cold radiator hanging open on one hinge swings +/-3 degrees in 240 seconds. Ring seized; all other parts static.",
+  "review_run": 4
+}

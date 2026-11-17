@@ -154,7 +154,9 @@ function buildChecks() {
     'ui_spec_tests', 'weapon_match_tests',
   ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
-  // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md).
+  // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
+  // and report_paths_tests.js (#953: both runner commit messages turn checkout paths into GitHub links and home paths into
+  // %USERPROFILE%\...). The glob below runs each one once; a second add() line would run it twice.
   fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f, [], 'normal', 300, false, FAST_AUTO.has(path.basename(f, '.js'))));
   add(OPUS + 'progression_telemetry_test.js', [], 'normal', 300, false, true); // #27 step 11: per run XP by line and the F1 play log report
   add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick
@@ -163,6 +165,7 @@ function buildChecks() {
   add(OPUS + 'tree_last_rows_test.js', [], 'normal', 300, false, true); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
   add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
   add('tools/pc/runner_selftest.js', [], 'normal', 600, false, true); // #687: free PC runner fault tests; static contract check on other hosts
+  add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
   add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600, false, true); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
   add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
   add(OPUS + 'nem_direct_reads_report.js', [], 'normal', 300, false, true); // #364: report only, the count of direct save reads outside godot/campaign/
@@ -183,6 +186,11 @@ function fastSelected(checks) {
 }
 
 // ---------- running ----------
+
+function printRow(row) {
+  console.log(row.result + ': ' + row.check + ' (' + row.seconds.toFixed(2) + ' s) | ' + row.detail);
+  if (row.result === 'FAIL') console.log('\nFAIL ' + row.check + ' (first 15 output lines):\n' + row.output.split(/\r?\n/).slice(0, 15).join('\n'));
+}
 
 async function execute(c, baseline) {
   const start = Date.now();
@@ -265,19 +273,18 @@ async function main() {
       const row = { check: c.name, result: 'SKIP', seconds: 0, detail: 'SKIP: fast', output: '' };
       report.push(row);
       console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
-      console.log(row.detail);
+      printRow(row);
       continue;
     }
     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
     const row = await execute(c, baseline);
     if (c.gate && row.result === 'SKIP') { row.result = 'FAIL'; row.detail = 'FAIL: gating row would skip: ' + row.detail; }
     report.push(row);
-    console.log(row.detail);
+    printRow(row);
   }
   console.log('\ncheck | result | seconds | detail');
   console.log('--- | --- | --- | ---');
   for (const r of report) console.log(`${r.check} | ${r.result} | ${r.seconds.toFixed(2)} | ${r.detail}`);
-  for (const r of report.filter(r => r.result === 'FAIL')) console.log('\nFAIL ' + r.check + ' (first 15 output lines):\n' + r.output.split(/\r?\n/).slice(0, 15).join('\n'));
   const skipped = report.filter(r => r.result === 'SKIP').map(r => r.check);
   if (skipped.length) console.log('\nSKIP: ' + skipped.join(', '));
   if (args.includes('--json')) fs.writeFileSync(path.join(ROOT, 'checks_report.json'), JSON.stringify(report, null, 2) + '\n');

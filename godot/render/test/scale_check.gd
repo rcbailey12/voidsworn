@@ -47,8 +47,6 @@ const KNOWN := {
 	"station (one hex)": "issue 373 (station T2, PR 700)",
 	"station (5+ hexes)": "issue 373 (station T2, PR 700)",
 	"map station node": "issue 373 (the station on the sector map, R249)",
-	"nebula (one hex cloud)": "issue 368 (nebula and storm hexes)",
-	"ion storm (one hex cloud)": "issue 368 (nebula and storm hexes)",
 	"asteroid field biggest rock": "issue 369 (board planet and rocks)",
 }
 
@@ -148,8 +146,10 @@ func _run() -> void:
 	row("station (5+ hexes)", station_big, 2.0 * largest_ship, 6.0 * largest_ship, "dwarfs every ship class")
 
 	# 3. Terrain on the board.
-	var nebula := 2.0 * float(WL.GAS_PUFF_REACH) + float(WL.GAS_PUFF_MAX)
-	var veil := float(WL.GAS_VEIL_MAX)
+	var gas := WL.new()
+	var nebula: float = gas.cloud_span()
+	gas.free()
+	var veil := float(WL.GAS_VEIL_MAX) * float(WL.GAS_CLOUD_SCALE)
 	var gas_lo := 1.5 * largest_ship
 	var gas_hi := 6.0 * largest_ship
 	row("nebula (one hex cloud)", nebula, gas_lo, gas_hi, "much larger than any ship, spilling past its hex")

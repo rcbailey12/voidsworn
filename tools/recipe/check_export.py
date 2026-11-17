@@ -97,18 +97,21 @@ def tri_dist(p, A, B, C):
 
 def open_bell(p, fwd, R, V, tol):
     """is p the centre of an open engine bell of radius R exhausting along fwd? (issue 592; RECIPE.md stage 7)
-    rim:    mesh vertices on the exit plane (within tol along the axis) at the recorded radius (0.7 R to 1.15 R off the axis)
+    rim:    mesh vertices on the exit plane (within min(tol, 0.25 R) along the axis) at the recorded radius (0.7 R to 1.15 R off the axis)
             in at least 10 of 12 sectors round the axis: the bell is there, at that size, facing that way;
     throat: mesh inside 0.9 R of the axis upstream of the plane (within 2 R): the bell has a throat behind its mouth;
     clear:  no mesh inside 0.6 R of the axis downstream of the plane (tol to 2 R): nothing plugs the exhaust."""
     if R <= 0: return dict(ok=False, why='no extras.radius')
     f = np.asarray(fwd, float); f = f / np.linalg.norm(f); q = V - p; ax = q @ f; rad = np.linalg.norm(q - np.outer(ax, f), axis=1)
     u = np.cross(f, [0, 1, 0] if abs(f[1]) < .9 else [1, 0, 0]); u /= np.linalg.norm(u); w = np.cross(f, u)
-    rim = (np.abs(ax) <= tol) & (rad >= .7 * R) & (rad <= 1.15 * R)
+    # Issue 967: the whole-ship mesh tolerance can exceed half a small bell's radius (IM5).
+    # Keep the mouth's plane local to the bell, so moving the point down the exhaust cannot reuse its old rim.
+    plane_tol = min(tol, .25 * R)
+    rim = (np.abs(ax) <= plane_tol) & (rad >= .7 * R) & (rad <= 1.15 * R)
     sectors = len(set((np.floor((np.arctan2(q[rim] @ w, q[rim] @ u) + np.pi) / (2 * np.pi) * 12).astype(int) % 12).tolist()))
     throat = int(((ax < -tol * .25) & (ax > -2 * R) & (rad < .9 * R)).sum())
     plug = int(((ax > tol) & (ax < 2 * R) & (rad < .6 * R)).sum())
-    out = dict(radius=round(R, 4), rim_sectors=sectors, throat_vertices=throat, exhaust_vertices=plug)
+    out = dict(radius=round(R, 4), plane_tolerance=round(plane_tol, 6), rim_sectors=sectors, throat_vertices=throat, exhaust_vertices=plug)
     why = [] if sectors >= 10 else [f'its rim at radius {R:.4f} on the exit plane covers {sectors} of 12 sectors']
     if not throat: why.append('no throat upstream of the exit')
     if plug: why.append(f'{plug} mesh points in the exhaust path')

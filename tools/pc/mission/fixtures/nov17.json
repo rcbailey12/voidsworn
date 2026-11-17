@@ -1,0 +1,1139 @@
+{
+  "now": "2026-11-17T16:45:00.000Z",
+  "description": "Real PC chain text and bat shapes, cut off at Nov 17 16:45 UTC; current status excerpts with later finishes removed. Paths scrubbed.",
+  "chains": [
+    {
+      "name": "codex_chain_14.txt",
+      "text": "start Sat 11/14/2026  6:56:38.39 \n687 start Sat 11/14/2026  6:56:38.39 \n687 end Sat 11/14/2026  6:56:38.39 \n676 start Sat 11/14/2026  6:56:38.39 \n676 end Sat 11/14/2026  6:56:38.39 \n642 start Sat 11/14/2026  6:56:38.39 \n642 end Sat 11/14/2026  6:56:38.39 \nall done Sat 11/14/2026  8:07:37.25\n",
+      "bat": "@echo off\r\ntitle Codex chain Nov 14: 687 runners, then 676 weapon match, then 642 Eclipse round 3\r\nrem Board, Nov 14: Codex has a full week. Runs one after another (one Codex at a time). A job cut by the 60 minute cap pushes a\r\nrem -partial branch and the chain moves on; the Board reruns it to finish. Log: codex_chain_14.txt\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_14.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nfor %%N in (687 676 642) do (\r\n  echo %%N start %DATE% %TIME% >> \"%L%\"\r\n  call \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %%N\r\n  echo %%N end %DATE% %TIME% >> \"%L%\"\r\n)\r\necho all done %DATE% %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794665257255.5686,
+      "batMtime": 1794660994767.3784,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_14b.txt",
+      "text": "start Sat 11/14/2026  7:03:44.15 \n688 start Sat 11/14/2026  8:07:44.17 \n688 end Sat 11/14/2026  8:07:44.17 \n373 start Sat 11/14/2026  8:07:44.17 \n373 end Sat 11/14/2026  8:07:44.17 \nall done Sat 11/14/2026  8:50:26.83\n",
+      "bat": "@echo off\r\ntitle Codex chain Nov 14 B: waits for chain A, then 688 A20 carrier, then 373 station\r\nrem Board, Nov 14: one Codex at a time. Waits (checking every 2 minutes, up to 6 hours) for codex_chain_14.txt to say all done.\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_14b.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset /a N=0\r\n:wait\r\nfindstr /c:\"all done\" \"%V%\\codex_chain_14.txt\" >nul 2>&1\r\nif not errorlevel 1 goto go\r\nset /a N+=1\r\nif %N% GEQ 180 (echo chain A never finished, gave up %TIME% >> \"%L%\" & goto :eof)\r\ntimeout /t 120 /nobreak >nul\r\ngoto wait\r\n:go\r\nfor %%N in (688 373) do (\r\n  echo %%N start %DATE% %TIME% >> \"%L%\"\r\n  call \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %%N\r\n  echo %%N end %DATE% %TIME% >> \"%L%\"\r\n)\r\necho all done %DATE% %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794667826832.7563,
+      "batMtime": 1794661419394.026,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_14d.txt",
+      "text": "waiting from  9:09:06.68 \n373 start 11:39:06.14 \n373 end 11:58:03.53 \n463 start 11:58:03.54 \n463 end 12:46:10.70 \n92 start 12:46:10.71 \n92 end 13:06:52.47 \nall done 13:06:52.48\n",
+      "bat": "@echo off\r\ntitle Codex chain D: waits for the Codex limit to reset at 11:37 AM, then 373, 463, 92\r\nrem Board, Nov 14 09:12 CST: Codex hit its 5 hour usage limit at 8:37 (373 failed at once; chain C's 463 and 92 too). Reruns them\r\nrem after the reset, one at a time. Log: codex_chain_14d.txt\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_14d.txt\"\r\necho waiting from %TIME% > \"%L%\"\r\ntimeout /t 9000 /nobreak >nul\r\nfor %%N in (373 463 92) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit again >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794683212484.6501,
+      "batMtime": 1794668940157.0603,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_14f.txt",
+      "text": "wait for 538 13:58:28.16 \n367 start 13:58:28.18 \n367 end 13:58:33.02 \n367 hit the usage limit \n368 start 13:58:33.03 \n368 end 13:58:40.27 \n368 hit the usage limit \nall done 13:58:40.29\n",
+      "bat": "@echo off\r\ntitle Codex chain F: after 538, then 367 trails and beams, then 368 nebula hexes\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_14f.txt\"\r\necho wait for 538 %TIME% > \"%L%\"\r\n:w\r\nfindstr /c:\"538 done\" \"%V%\\codex_538.txt\" >nul 2>&1\r\nif errorlevel 1 (timeout /t 120 /nobreak >nul & goto w)\r\nfor %%N in (367 368) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794686320293.7283,
+      "batMtime": 1794686305262.934,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_14g.txt",
+      "text": "wait for chain F 14:00:48.48 \n369 start 14:00:48.49 \n369 end 14:00:52.94 \n369 hit the usage limit \nall done 14:00:52.95\n",
+      "bat": "@echo off\r\ntitle Codex chain G: after chain F, 369 board planet and rocks (R245)\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_14g.txt\"\r\necho wait for chain F %TIME% > \"%L%\"\r\n:w\r\nfindstr /c:\"all done\" \"%V%\\codex_chain_14f.txt\" >nul 2>&1\r\nif errorlevel 1 (timeout /t 120 /nobreak >nul & goto w)\r\nfor %%N in (369) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794686452956.731,
+      "batMtime": 1794686443699.205,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_14h.txt",
+      "text": "waiting from 14:43:34.22 \nstopped 15:15:53.78\n",
+      "bat": "@echo off\r\ntitle Codex chain H: waits for the Codex reset at 4:39 PM, then 538, 367, 368, 369\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_14h.txt\"\r\necho waiting from %TIME% > \"%L%\"\r\ntimeout /t 7000 /nobreak >nul\r\nfor %%N in (538 367 368 369) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794690953780.3455,
+      "batMtime": 1794689010625.5044,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_14h2.txt",
+      "text": "waiting from 16:04:39.29 \n538 start 16:40:39.16 \n538 end 17:35:17.54 \n367 start 17:35:17.55 \n367 end 17:44:02.53 \n368 start 17:44:02.54 \n368 end 18:01:32.09 \n369 start 18:01:32.10 \n369 end 18:25:47.74 \nall done 18:25:47.75\n",
+      "bat": "@echo off\r\ntitle Codex chain H2: waits for the Codex reset at 4:39 PM, then 538, 367, 368, 369\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_14h2.txt\"\r\necho waiting from %TIME% > \"%L%\"\r\ntimeout /t 2160 /nobreak >nul\r\nfor %%N in (538 367 368 369) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794702347756.4436,
+      "batMtime": 1794693875703.0276,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15a.txt",
+      "text": "waiting from 18:46:36.48 \n367 start 21:42:38.94 \n367 end 23:12:46.67 \n367 hit the usage limit \n368 start 23:12:46.68 \n368 end 23:13:00.44 \n368 hit the usage limit \n373 start 23:13:00.45 \n373 end 23:13:14.02 \n373 hit the usage limit \n726 start 23:13:14.03 \n726 end 23:13:25.85 \n726 hit the usage limit \nall done 23:13:25.86\n",
+      "bat": "@echo off\r\nrem Board, Nov 15: Codex chain after its 9:39 PM reset; GPU cleared by Ryan for the night (gpu_go.txt).\r\ntitle Board: Codex chain 15A: 367, 368, 373, 726 after 9:42 PM\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15a.txt\"\r\necho waiting from %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"$t=(Get-Date).Date.AddHours(21).AddMinutes(42); while((Get-Date) -lt $t){Start-Sleep 60}\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (367 368 373 726) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794719605871.404,
+      "batMtime": 1794704640935.118,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15b.txt",
+      "text": "waiting from 19:07:56.64 \n367 start  2:45:01.40 \n367 end  4:45:32.45 \n726 start  4:45:32.47 \n726 end  5:40:46.60 \n726 hit the usage limit \n373 start  5:40:46.61 \n373 end  5:41:15.66 \n373 hit the usage limit \n368 start  5:41:16.08 \n368 end  5:41:40.95 \n368 hit the usage limit \n369 start  5:41:40.97 \n369 end  5:42:04.57 \n369 hit the usage limit \n688 start  5:42:05.20 \n688 end  5:42:26.40 \n688 hit the usage limit \n728 start  5:42:26.41 \n728 end  5:42:49.82 \n728 hit the usage limit \nall done  5:42:49.83\n",
+      "bat": "@echo off\r\nrem Board, Nov 15: Codex chain 15B for the next Codex window (after 2:45 AM and after chain 15A says \"all done\"): 369, 688, 728.\r\ntitle Board: Codex chain 15B: 369, 688, 728 after 2:45 AM\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15b.txt\"\r\necho waiting from %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"$t=(Get-Date).Date.AddDays(1).AddHours(2).AddMinutes(45); if((Get-Date).Hour -lt 12){$t=(Get-Date).Date.AddHours(2).AddMinutes(45)}; while((Get-Date) -lt $t -or -not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15a.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (367 726 373 368 369 688 728) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794742969841.3574,
+      "batMtime": 1794722021481.294,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15c.txt",
+      "text": "start Sun 11/15/2026  7:47:38.93 \n367 start  7:47:38.93 \n367 end  8:04:22.20 \n368 start  8:04:22.20 \n368 end  8:20:12.72 \nall done  8:20:12.72\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 07:50: Codex chain 15C, its last session this week (R257): 367 (resumes codex/issue-367-partial), then 368.\r\ntitle Board: Codex chain 15C: 367, 368\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15c.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (367 368) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >/dev/null 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794752412732.5662,
+      "batMtime": 1794750453880.323,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15e.txt",
+      "text": "start Sun 11/15/2026  8:44:29.41 \n367 start  8:44:29.41 \n367 end 10:20:32.45 \n368 start 10:20:32.45 \n368 end 10:55:02.16 \n788 start 10:55:02.16 \n788 end 10:55:04.64 \nall done 10:55:04.64\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 08:55: Codex chain 15E. 15C ran 367 and 368 CPU-only because gpu_go.txt still said \"not cleared\" (the Boards 06:51 overwrite never reached the PC; fixed and read back at 08:53). Now 367, 368 with the GPU, then the 788 review leg (15D lost a mirror lock).\r\ntitle Board: Codex chain 15E: 367, 368, 788\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15e.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (367 368) do call :one %%N\r\nset \"CODEX_CAP=3600\"\r\ncall :one 788\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >/dev/null 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794761704646.246,
+      "batMtime": 1794753866229.334,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15f.txt",
+      "text": "start Sun 11/15/2026 11:34:26.30 \n800 start 11:34:26.30 \n800 end 13:34:19.19 \n368 start 13:34:19.20 \n368 end 15:43:01.14 \n369 start 15:43:01.15 \n369 end 16:43:26.56 \n688 start 16:43:26.57 \n688 end 16:43:44.82 \n373 start 16:43:44.82 \n373 end 17:12:56.87 \nall done 17:12:56.87\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 11:40: Codex on the Pro plan (Ryan). Chain 15F: 800 (effects kit round 2, R263), 368 (resumes its -partial), 369, 688, 373.\r\ntitle Board: Codex chain 15F: 800, 368, 369, 688, 373\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15f.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (800 368 369 688 373) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >/dev/null 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794784376879.02,
+      "batMtime": 1794764060745.944,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15g.txt",
+      "text": "waiting for 15F from Sun 11/15/2026 16:34:10.86 \nstart Sun 11/15/2026 17:13:11.64 \n815 start 17:13:11.65 \n815 end 19:13:07.41 \n368 start 19:13:07.43 \n368 end 19:25:16.16 \nall done 19:25:16.17\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 16:40 CST: Codex chain 15G, after chain 15F says \"all done\": 815 (effects round 3, Ryan R271), then 368 step 2 (route A, fog, R270).\r\ntitle Board: Codex chain 15G: 815, 368 after 15F\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15g.txt\"\r\necho waiting for 15F from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15f.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (815 368) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794792316172.271,
+      "batMtime": 1794782035552.5159,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15h.txt",
+      "text": "waiting for codex_chain_15g.txt from Sun 11/15/2026 17:18:35.83 \npaused by the Board 19:25: not started, nothing to save\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 17:30 CST: Codex main chain after 15G (815, 368): 823 (shots off the metronome, audit item 10).\r\ntitle Board: CODEX_CHAIN_15H\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15h.txt\"\r\necho waiting for codex_chain_15g.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15g.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (823) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794792304049.2517,
+      "batMtime": 1794784701943.615,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15i.txt",
+      "text": "start Sun 11/15/2026 21:17:15.62 \n368 start 21:17:15.62 \n368 end 22:16:31.30 \n688 start 22:16:31.31 \n688 end 22:19:57.44 \nall done 22:19:57.45\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 21:20 CST, after Ryan's \"cpu and gpu are yours again\": main chain 15I: 368 (resumes its -partial from the 19:25 pause), then 688 (A20 bow; codex/issue-688 now carries the partial and main).\r\ntitle Board: Codex chain 15I: 368, 688\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15i.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (368 688) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794802797456.0396,
+      "batMtime": 1794799022771.6328,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15j.txt",
+      "text": "waiting for codex_chain_15i.txt from Sun 11/15/2026 22:01:36.64 \nstart Sun 11/15/2026 22:20:37.22 \n372 start 22:20:37.22 \n372 end  0:21:05.30 \nall done  0:21:05.31\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 22:05 CST: Codex main chain after 15I (368, 688): 372 (the shield look; 371 merged as PR 821).\r\ntitle Board: CODEX_CHAIN_15J\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15j.txt\"\r\necho waiting for codex_chain_15i.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15i.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (372) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794810065315.719,
+      "batMtime": 1794801680734.9805,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15k.txt",
+      "text": "waiting for codex_chain_15j.txt from Sun 11/15/2026 22:17:21.62 \nstart Mon 11/16/2026  0:21:23.55 \n369 start  0:21:23.55 \n369 end  1:07:10.83 \nall done  1:07:10.84\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 22:45 CST: Codex main chain after 15J (372): 369 again (store the planet compressed, Board review of PR 725).\r\ntitle Board: CODEX_CHAIN_15K\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15k.txt\"\r\necho waiting for codex_chain_15j.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15j.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (369) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794812830843.016,
+      "batMtime": 1794802632440.308,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15l.txt",
+      "text": "waiting for codex_chain_15k.txt from Sun 11/15/2026 22:19:06.86 \nstart Mon 11/16/2026  1:08:09.37 \n849 start  1:08:09.37 \n849 end  2:54:48.37 \nall done  2:54:48.38\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 22:55 CST: Codex main chain after 15K (369): 849 (doom arc violet sheath, R277).\r\ntitle Board: CODEX_CHAIN_15L\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15l.txt\"\r\necho waiting for codex_chain_15k.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15k.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (849) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794819288389.2026,
+      "batMtime": 1794802739586.353,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15m.txt",
+      "text": "waiting for codex_chain_15l.txt from Mon 11/16/2026  1:12:13.82 \nstart Mon 11/16/2026  2:55:15.38 \n688 start  2:55:15.39 \n688 end  3:36:52.08 \n823 start  3:36:52.10 \n823 end  4:16:41.78 \n853 start  4:16:41.79 \n853 end  4:59:36.40 \nall done  4:59:36.41\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 01:15 CST: Codex main chain after 15L (849): 688 rerun (partial fast-forwarded), 823 (volley timing), 853 (KB1CC paint, R279).\r\ntitle Board: CODEX_CHAIN_15M\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15m.txt\"\r\necho waiting for codex_chain_15l.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15l.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (688 823 853) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794826776418.6536,
+      "batMtime": 1794813110350.646,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15o.txt",
+      "text": "waiting for codex_chain_15m.txt from Mon 11/16/2026  5:06:42.61 \nstart Mon 11/16/2026  5:06:43.00 \n372 start  5:06:43.00 \n372 end  5:56:45.99 \n368 start  5:56:46.00 \n368 end  7:00:55.04 \nall done  7:00:55.05\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:10 CST: Codex main chain after 15M (853): 372 run 3 (main shield look back, R282), 368 run 3 (storm redo, R282).\r\ntitle Board: CODEX_CHAIN_15O\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15o.txt\"\r\necho waiting for codex_chain_15m.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15m.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (372 368) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794834055057.1384,
+      "batMtime": 1794826760394.9985,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15p.txt",
+      "text": "waiting for codex_chain_15o.txt from Mon 11/16/2026  5:41:10.64 \nstart Mon 11/16/2026  6:56:31.78 \nstopped by the Board 11/16/2026 06:56:31: jobs already done or waiting on 861\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:50 CST: Codex main chain after 15O: 726 (Hullbreaker A16 to A20 dark grey paint), 824 (Hegemony sheet re-render), 780 (Hegemony paint). Moved from Opus (R278, R279).\r\ntitle Board: CODEX_CHAIN_15P\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15p.txt\"\r\necho waiting for codex_chain_15o.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15o.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (726 824 780) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794833791789.4055,
+      "batMtime": 1794829237649.4006,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15q.txt",
+      "text": "waiting for codex_chain_15o.txt from Mon 11/16/2026  7:03:42.02 \nstart Mon 11/16/2026  7:03:42.40 \n868 start  7:03:42.41 \n868 end  7:41:04.77 \n870 start  7:41:04.78 \n870 end  7:41:07.35 \n869 start  7:41:07.36 \n869 end  7:41:09.42 \nall done  7:41:09.43\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 07:15 CST: Codex main chain after 15O: 868 (FL5 fleet screen, R285), 870 (Dominion ion cannon, R287), 869 (CR4 career screen, R286).\r\ntitle Board: CODEX_CHAIN_15Q\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15q.txt\"\r\necho waiting for codex_chain_15o.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15o.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (868 870 869) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794836469431.787,
+      "batMtime": 1794834203059.489,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15r.txt",
+      "text": "waiting for codex_chain_15q.txt from Mon 11/16/2026  7:55:06.84 \nstart Mon 11/16/2026  7:55:07.22 \n372 start  8:00:07.11 \n372 end  8:00:09.46 \n368 start  8:05:09.15 \n368 end  8:05:12.06 \n870 start  8:10:12.13 \n870 end  8:10:15.00 \n869 start  8:15:15.14 \n869 end  8:15:17.31 \nall done  8:15:17.32\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 07:55 CST: Codex main chain after 15Q: 372 run 4 (shield visible as its own layer, R289), 368 run 4 (nebula calm, storm the only one with lightning, R289), then 870 and 869 again (both died in 2 s on a file still held by the job before; 5 minute gap now).\r\ntitle Board: CODEX_CHAIN_15R\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15r.txt\"\r\necho waiting for codex_chain_15q.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15q.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (372 368 870 869) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\ntimeout /t 300 /nobreak >nul\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794838517321.4744,
+      "batMtime": 1794837301791.6914,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15s.txt",
+      "text": "waiting for codex_chain_15r.txt from Mon 11/16/2026  9:56:05.04 \nstart Mon 11/16/2026  9:56:05.44 \n876 start  9:56:05.44 \n876 end  9:56:09.14 \n875 start  9:56:09.15 \n875 end  9:56:11.31 \n372 start  9:56:11.32 \n372 end  9:56:13.55 \n368 start  9:56:13.56 \n368 end  9:56:16.07 \n870 start  9:56:16.08 \n870 end  9:56:18.22 \n869 start  9:56:18.23 \n869 end  9:56:20.35 \nall done  9:56:20.36\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 10:05 CST: Codex main chain, first run on the fixed runner (PR 887 hot install): 876 run 2 (A17 spine), 875 run 2 (KB1CC darker), 372 run 4 (shield), 368 run 4 (storm), 870 (Dominion and IM5), 869 (CR4).\r\ntitle Board: CODEX_CHAIN_15S\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15s.txt\"\r\necho waiting for codex_chain_15r.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15r.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (876 875 372 368 870 869) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794844580366.781,
+      "batMtime": 1794844557609.0886,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15t.txt",
+      "text": "waiting 90 s for the guard to clear leftover test agents Mon 11/16/2026 10:12:11.12 \nstart Mon 11/16/2026 10:13:41.21 \n876 start 10:13:41.21 \n876 end 10:41:38.06 \n875 start 10:41:38.08 \n875 end 11:09:10.02 \n372 start 11:09:10.03 \n372 end 12:32:15.73 \n368 start 12:32:15.74 \n368 end 14:01:15.46 \n870 start 14:01:15.47 \n870 end 14:30:35.91 \n869 start 14:30:35.93 \n869 end 15:07:42.07 \nall done 15:07:42.09\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 10:25 CST: Codex main chain 15T, the 15S jobs again after the leftover runner818 test agents were cleared (15S died in seconds on a pinned board\\repo): 876 run 2, 875 run 2, 372 run 4, 368 run 4, 870, 869.\r\ntitle Board: CODEX_CHAIN_15T\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15t.txt\"\r\necho waiting 90 s for the guard to clear leftover test agents %DATE% %TIME% > \"%L%\"\r\ntimeout /t 90 /nobreak >nul\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (876 875 372 368 870 869) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794863262090.208,
+      "batMtime": 1794845370140.286,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15u.txt",
+      "text": "waiting for codex_chain_15t.txt from Mon 11/16/2026 12:54:14.83 \nstart Mon 11/16/2026 15:08:17.16 \n908 start 15:08:17.16 \n908 end 16:22:18.20 \nall done 16:22:18.22\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 12:58 CST: Codex main chain 15U. After 15T ends: 908 (shield back to the egg look without smoke, hull hit pictures; Ryan R297).\r\ntitle Board: CODEX_CHAIN_15U\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15u.txt\"\r\necho waiting for codex_chain_15t.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15t.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (908) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794867738222.825,
+      "batMtime": 1794855240131.563,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15v.txt",
+      "text": "waiting for codex_chain_15u.txt from Mon 11/16/2026 14:37:39.88 \nstart Mon 11/16/2026 16:22:42.07 \n870 start 16:22:42.09 \n870 end 17:11:45.81 \nall done 17:11:45.82\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 14:40 CST: Codex main chain 15V. After 15U ends: 870 run 2 (H10 and IM5 bow ion gun lit blue and readable at the whole-ship camera).\r\ntitle Board: CODEX_CHAIN_15V\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15v.txt\"\r\necho waiting for codex_chain_15u.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15u.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (870) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794870705823.268,
+      "batMtime": 1794861433037.1118,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15w.txt",
+      "text": "waiting for codex_chain_15v.txt from Mon 11/16/2026 15:05:39.82 \nstart Mon 11/16/2026 17:12:41.53 \n912 start 17:12:41.54 \n912 end 17:58:25.57 \nall done 17:58:25.58\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:10 CST: Codex main chain 15W. After 15V ends: 912 (Glasswright flagship CD5 build sheet; R298).\r\ntitle Board: CODEX_CHAIN_15W\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15w.txt\"\r\necho waiting for codex_chain_15v.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15v.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (912) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794873505585.1055,
+      "batMtime": 1794863116019.1172,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15x.txt",
+      "text": "waiting for codex_chain_15w.txt from Mon 11/16/2026 16:21:03.87 \nstart Mon 11/16/2026 17:59:05.37 \n920 start 17:59:05.37 \n920 end 18:39:38.01 \n921 start 18:39:38.03 \n921 end 19:29:44.75 \nall done 19:29:44.76\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 16:25 CST: Codex main chain 15X. After 15W ends: 920 (SF3 low back fin) and 921 (C10 maws and flesh); R302.\r\ntitle Board: CODEX_CHAIN_15X\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15x.txt\"\r\necho waiting for codex_chain_15w.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15w.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (920 921) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794878984769.726,
+      "batMtime": 1794867646852.9219,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15y.txt",
+      "text": "waiting for codex_chain_15x.txt from Mon 11/16/2026 18:01:49.90 \nstart Mon 11/16/2026 19:29:53.18 \n928 start 19:29:53.18 \n928 end 19:43:33.24 \n929 start 19:43:33.26 \n929 end 19:44:04.01 \nall done 19:44:04.02\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 18:10 CST: Codex main chain 15Y. After 15X ends: 928 (hull hit redo) then 929 (fitted shield, Base 928); R303.\r\ntitle Board: CODEX_CHAIN_15Y\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15y.txt\"\r\necho waiting for codex_chain_15x.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15x.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (928 929) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794879844024.4443,
+      "batMtime": 1794873685292.449,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_15z.txt",
+      "text": "waiting for codex_chain_15y.txt from Mon 11/16/2026 18:05:19.61 \npaused by the Board 19:43: not started, nothing to save\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 18:30 CST: Codex main chain 15Z. After 15Y ends: 912 run 2 (Glasswright CD5) then 930 (Hegemony bow gun keeps its glow through paint).\r\ntitle Board: CODEX_CHAIN_15Z\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_15z.txt\"\r\necho waiting for codex_chain_15y.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15y.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (912 930) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794879809850.943,
+      "batMtime": 1794873891867.882,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_16a.txt",
+      "text": "waiting for codex_chain_15z.txt from Mon 11/16/2026 19:23:24.57 \npaused by the Board 19:43: not started, nothing to save\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 19:30 CST: Codex main chain 16A. After 15Z ends: 920 run 2 (SF3 visible low back fin, readable sheet).\r\ntitle Board: CODEX_CHAIN_16A\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_16a.txt\"\r\necho waiting for codex_chain_15z.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_chain_15z.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (920) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794879810163.1226,
+      "batMtime": 1794878579012.8628,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_16b.txt",
+      "text": "start Mon 11/16/2026 20:46:59.65 \n928 start 20:46:59.65 \n928 end 22:55:34.96 \n929 start 22:55:34.97 \n929 end  0:09:25.96 \n912 start  0:09:25.97 \n912 end  0:52:35.66 \n930 start  0:52:35.67 \n930 end  1:25:27.17 \n920 start  1:25:27.18 \n920 end  2:07:35.40 \n921 start  2:07:35.41 \n921 end  2:38:19.35 \nall done  2:38:19.36\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 20:50 CST: Codex main chain 16B: 928, 929 (Base 928), 912 run 2, 930, 920 run 2, 921 run 2. Resumed on Ryan's go after the pause; 922 and 934 resume from their -partial branches (runner_common resume).\r\ntitle Board: CODEX_CHAIN_16B\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_16b.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (928 929 912 930 920 921) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794904699361.061,
+      "batMtime": 1794883606878.7493,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_16c.txt",
+      "text": "waiting for codex_chain_16b.txt from Tue 11/17/2026  2:29:08.64 \nstart Tue 11/17/2026  2:39:09.96 \n912 start  2:39:09.96 \n912 end  2:39:14.89 \nall done  2:39:14.90\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 02:55 CST: main chain 16C. Waits for chain 16B (921) to end, installs the merged runner on the main lane\r\nrem (build_b tools from runner_src_1117, old copy backed up, nothing deleted), then 912 run 3 (CD5 twisted strands). GPU lane.\r\ntitle Board: Codex chain 16C: runner install, 912 run 3\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_16c.txt\"\r\nset \"I=%V%\\install_runner_main.txt\"\r\necho waiting for codex_chain_16b.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\codex_chain_16b.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\install_runner_cd2.txt') -Pattern 'all done|refused|FAILED')){Start-Sleep 30}\"\r\necho start %DATE% %TIME% > \"%I%\"\r\nset \"S=%V%\\runner_src_1117\"\r\nset \"K=%V%\\runner_backup_1117m\"\r\nif exist \"%K%\" (echo refused: %K% already exists >> \"%I%\" & goto :stop)\r\nrobocopy \"%V%\\build_b\\tools\" \"%K%\\build_b_tools\" /E /NFL /NDL /NP /R:1 /W:1 > nul\r\nif errorlevel 8 (echo refused: backup of build_b tools failed >> \"%I%\" & goto :stop)\r\ngit -C \"%S%\" log -1 --format=\"main %%H\" >> \"%I%\"\r\nrobocopy \"%S%\\tools\" \"%V%\\build_b\\tools\" /E /NFL /NDL /NP /R:1 /W:1 > nul\r\nif errorlevel 8 (echo FAILED: copy into build_b >> \"%I%\" & goto :stop)\r\nfindstr /c:\"LANEDIR\" \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" >nul || (echo FAILED: build_b runner has no lane mapping >> \"%I%\" & goto :stop)\r\nfindstr /c:\"1800 node contrib\" \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" >nul || (echo FAILED: build_b runner has no 1800 s cap >> \"%I%\" & goto :stop)\r\necho install done %TIME% >> \"%I%\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (912) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:stop\r\necho stopped: runner install did not verify, see install_runner_main.txt %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794904754907.8054,
+      "batMtime": 1794904131780.33,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_16d.txt",
+      "text": "start Tue 11/17/2026  4:06:33.52 \n970 start  4:06:33.52 \n970 end  4:44:04.30 \nall done  4:44:04.31\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 04:20 CST: main chain 16D: 970 (install IM5 with its blue bow ion gun paint). GPU lane, new runner.\r\ntitle Board: Codex chain 16D: 970\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_16d.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (970) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794912244318.6472,
+      "batMtime": 1794909977005.7039,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_16e.txt",
+      "text": "waiting for cleanup_kept.txt from Tue 11/17/2026  6:51:01.65 \nstart Tue 11/17/2026  6:53:05.50 \n975 start  6:53:05.50 \n975 end  8:39:57.28 \nall done  8:39:57.29\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 07:00 CST: main chain 16E. Waits for the kept-copy cleanup, refreshes the runner on all four lanes to main\r\nrem (PR 974: Python caches no longer force a kept copy; backups runner_backup_1117e, nothing deleted), then 975 (station T2\r\nrem paint and close-zoom detail, Ryan Nov 17). GPU lane.\r\ntitle Board: Codex chain 16E: runner refresh, 975\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_16e.txt\"\r\nset \"I=%V%\\install_runner_16e.txt\"\r\necho waiting for cleanup_kept.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\cleanup_kept.txt') -Pattern 'all done')){Start-Sleep 30}\"\r\necho start %DATE% %TIME% > \"%I%\"\r\nset \"S=%V%\\runner_src_1117\"\r\nset \"K=%V%\\runner_backup_1117e\"\r\nif exist \"%K%\" (echo refused: %K% exists >> \"%I%\" & goto :run)\r\nfor %%T in (build_b build_c build_d build_e) do robocopy \"%V%\\%%T\\tools\" \"%K%\\%%T_tools\" /E /NFL /NDL /NP /R:1 /W:1 > nul\r\ngit -C \"%S%\" fetch --depth 1 origin main >> \"%I%\" 2>&1\r\nif errorlevel 1 (echo refused: fetch failed, lanes keep their runner >> \"%I%\" & goto :run)\r\ngit -C \"%S%\" checkout -q --detach FETCH_HEAD >> \"%I%\" 2>&1\r\nif errorlevel 1 (echo refused: checkout failed, lanes keep their runner >> \"%I%\" & goto :run)\r\ngit -C \"%S%\" log -1 --format=\"main %%H\" >> \"%I%\"\r\nfindstr /c:\"PYTHONDONTWRITEBYTECODE\" \"%S%\\tools\\pc\\codex_issue.bat\" >nul || (echo refused: source lacks PR 974 >> \"%I%\" & goto :run)\r\nfor %%T in (build_b build_c build_d build_e) do (\r\n  robocopy \"%S%\\tools\" \"%V%\\%%T\\tools\" /E /NFL /NDL /NP /R:1 /W:1 > nul\r\n  findstr /c:\"PYTHONDONTWRITEBYTECODE\" \"%V%\\%%T\\tools\\pc\\codex_issue.bat\" >nul && echo %%T refreshed >> \"%I%\" || echo %%T MISSING PR 974 >> \"%I%\"\r\n)\r\necho all done %TIME% >> \"%I%\"\r\n:run\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=14400\"\r\nfor %%N in (975) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794926397297.104,
+      "batMtime": 1794919844819.1328,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_16f.txt",
+      "text": "start Tue 11/17/2026  9:27:31.03 \n863 start  9:27:31.04 \n863 end 10:16:50.37 \nall done 10:16:50.38\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 09:35 CST: Codex main chain 16F: 863 (station debris on the painted station).\r\ntitle Board: Codex main chain 16F: 863\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_16f.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=14400\"\r\nfor %%N in (863) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794932210386.3367,
+      "batMtime": 1794929229623.0405,
+      "missingBat": false
+    },
+    {
+      "name": "codex_chain_16g.txt",
+      "text": "waiting for chain 16F from Tue 11/17/2026  9:33:22.91 \nstart Tue 11/17/2026 10:17:23.79 \n982 start 10:17:23.80\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 10:05 CST: main chain 16G: 982 (storm map cost at 4K, low tier slower than max). Waits for chain 16F (863) to end.\r\ntitle Board: Codex chain 16G: 982\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_chain_16g.txt\"\r\necho waiting for chain 16F from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\codex_chain_16f.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=14400\"\r\nfor %%N in (982) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_b\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794932243803.477,
+      "batMtime": 1794929585957.9558,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b.txt",
+      "text": "start Sun 11/15/2026 13:14:45.19 \n805 start 13:14:45.20 \n805 end 14:03:04.99 \nall done 14:03:05.00\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 13:25: Codex lane B, its own tools copy (build_c), repo (board_b\\repo) and mirror (repo-mirror-b.git), so it never touches the main chains board\\repo. 805 (after-run screen as DB1).\r\ntitle Board: Codex lane B: 805\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b.txt\"\r\nif not exist \"%V%\\board_b\" mkdir \"%V%\\board_b\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (805) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >/dev/null 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794772985010.7546,
+      "batMtime": 1794770072432.5286,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b10.txt",
+      "text": "waiting for codex_lane_b9.txt from Mon 11/16/2026  5:18:38.66 \nstart Mon 11/16/2026  5:27:39.23 \n861 start  5:27:39.24 \n861 end  5:56:19.63 \n853 start  5:56:19.64 \n853 end  6:29:06.05 \nall done  6:29:06.06\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:20 CST: Codex lane B10: 861 (A20 hangar mouth armour, R283), then 853 run 2 (KB1CC paint to the concept).\r\ntitle Board: Codex lane B10: 861, 853\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b10.txt\"\r\necho waiting for codex_lane_b9.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b9.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (861 853) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794832146063.4683,
+      "batMtime": 1794827874009.1426,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b11.txt",
+      "text": "waiting for codex_lane_b10.txt from Mon 11/16/2026  5:41:15.64 \nstart Mon 11/16/2026  6:29:16.68 \n373 start  6:29:16.69 \n373 end  7:01:25.54 \n783 start  7:01:25.56 \n783 end  7:10:56.79 \n781 start  7:10:56.80 \n781 end  7:11:42.65 \nall done  7:11:42.66\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:50 CST: Codex lane B11: 373 run 4 (station fine clutter, spread towers, R284), 783 (E13 paint even), 781 (S8 paint lighter).\r\ntitle Board: Codex lane B11: 373, 783, 781\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b11.txt\"\r\necho waiting for codex_lane_b10.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b10.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (373 783 781) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794834702664.646,
+      "batMtime": 1794829237840.4824,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b13.txt",
+      "text": "waiting for codex_lane_b11.txt from Mon 11/16/2026  7:05:08.42 \nstart Mon 11/16/2026  7:12:08.89 \n726 start  7:12:08.89 \n726 end  7:53:51.31 \nall done  7:53:51.32\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:50 CST: Codex lane B13: 726 (Hullbreaker A16 to A20 PC paint run, dark grey R274; A20 new hangar geometry merged in PR 866).\r\ntitle Board: Codex lane B13: 726\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b13.txt\"\r\necho waiting for codex_lane_b11.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b11.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (726) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794837231323.73,
+      "batMtime": 1794834303856.3384,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b14.txt",
+      "text": "waiting for codex_lane_b13.txt from Mon 11/16/2026  7:54:51.03 \nstart Mon 11/16/2026  7:54:51.39 \n875 start  7:54:51.40 \n875 end  8:32:26.24 \n876 start  8:32:26.25 \n876 end  8:59:09.58 \n877 start  8:59:09.60 \n877 end  9:34:49.45 \nall done  9:34:49.46\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:50 CST: Codex lane B14: 875 (Hullbreaker patchwork to match A16, R289), 876 (A17 rocket section), 877 (E12 core). 726 waits for 875.\r\ntitle Board: Codex lane B14: 875, 876, 877\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b14.txt\"\r\necho waiting for codex_lane_b13.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b13.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (875 876 877) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794843289464.3975,
+      "batMtime": 1794837279830.3408,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b15.txt",
+      "text": "waiting for codex_lane_b14.txt from Mon 11/16/2026  8:05:06.82 \nstart Mon 11/16/2026  9:35:08.14 \n373 start  9:35:08.14 \n373 end 10:15:25.68 \nall done 10:15:25.69\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:50 CST: Codex lane B15: 373 run 5 (station details that make sense, upright towers, R290).\r\ntitle Board: Codex lane B15: 373\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b15.txt\"\r\necho waiting for codex_lane_b14.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b14.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (373) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794845725695.2026,
+      "batMtime": 1794837902654.1062,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b16.txt",
+      "text": "waiting for codex_lane_b15.txt from Mon 11/16/2026  9:44:39.34 \nstart Mon 11/16/2026 10:15:39.97 \n888 start 10:15:39.97 \n888 end 10:44:31.69 \n889 start 10:44:31.71 \n889 end 11:33:06.12 \nall done 11:33:06.13\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:50 CST: Codex lane B16: 888 (runner contract), 889 (picture provenance). Lane B is the only lane whose runner starts today.\r\ntitle Board: Codex lane B16: 888, 889\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b16.txt\"\r\necho waiting for codex_lane_b15.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b15.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (888 889) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794850386136.243,
+      "batMtime": 1794843874406.4128,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b17.txt",
+      "text": "waiting for codex_lane_b16.txt from Mon 11/16/2026 11:07:35.68 \nstart Mon 11/16/2026 11:33:36.34 \ninstall hash C28A1D13360ADFEA659A675897DA5BBBDEE2749931099AACCA289D63D5040933\n888 start 11:33:36.80 \n888 end 12:09:55.80 \nall done 12:09:55.81\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 11:20 CST: lane B17. After B16 (888 run 1, 889) ends: install the PR 887 log fix on build_c (Ryan: \"put the runner fix on build_c once lane B is idle\"; the old file is copied to runner_backup_1116 first, nothing deleted), then 888 run 2.\r\ntitle Board: Codex lane B17: 887 install on build_c, 888 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b17.txt\"\r\necho waiting for codex_lane_b16.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b16.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nif not exist \"%V%\\runner_backup_1116\\build_c_runner_common.ps1\" copy /y \"%V%\\build_c\\tools\\pc\\runner_common.ps1\" \"%V%\\runner_backup_1116\\build_c_runner_common.ps1\" >nul\r\ncopy /y \"%V%\\runner_common_laneb_887.ps1\" \"%V%\\build_c\\tools\\pc\\runner_common.ps1\" >nul\r\npowershell -NoProfile -Command \"'install hash ' + (Get-FileHash ($env:V+'\\build_c\\tools\\pc\\runner_common.ps1')).Hash\" >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (888) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794852595818.406,
+      "batMtime": 1794848844760.7104,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b18.txt",
+      "text": "waiting for codex_lane_b17.txt from Mon 11/16/2026 12:29:17.58 \nstart Mon 11/16/2026 12:29:17.98 \n726 start 12:29:17.98 \n726 end 13:33:41.10 \n903 start 13:33:41.13 \n903 end 14:10:45.87 \nall done 14:10:45.88\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 12:40 CST: lane B18. After B17 (888 run 2) ends: 726 run 3 (Hullbreaker capitals paint and install, GPU), then 903 (KB1CC shape, Ryan R294). Ryan: \"Yes and yes\" (12:27 CST).\r\ntitle Board: Codex lane B18: 726 run 3, 903\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b18.txt\"\r\necho waiting for codex_lane_b17.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b17.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (726 903) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794859845889.353,
+      "batMtime": 1794853740517.4243,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b19.txt",
+      "text": "waiting for codex_lane_b18.txt from Mon 11/16/2026 14:00:59.62 \nstart Mon 11/16/2026 14:11:00.24 \n726 start 14:11:00.25 \n726 end 17:23:42.29 \nall done 17:23:42.30\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 14:10 CST: lane B19. After B18 (726 run 3, 903) ends: 726 run 4 (A20 normal bake via OSL on CPU or a height map; then the five capitals paint and install).\r\ntitle Board: Codex lane B19: 726 run 4\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b19.txt\"\r\necho waiting for codex_lane_b18.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b18.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (726) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794871422303.8086,
+      "batMtime": 1794859248156.1516,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b2.txt",
+      "text": "start Sun 11/15/2026 16:41:15.60 \n811 start 16:41:15.60 \n811 end 17:12:40.56 \nall done 17:12:40.58\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 16:50 CST: Codex lane B (build_c, board_b\\repo, repo-mirror-b.git): 811 (E14 lift, Ryan R266). Light Godot job, one battle-cam capture.\r\ntitle Board: Codex lane B2: 811\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b2.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (811) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794784360580.577,
+      "batMtime": 1794782460934.1348,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b20.txt",
+      "text": "waiting for codex_lane_b19.txt from Mon 11/16/2026 15:05:33.11 \nstart Mon 11/16/2026 17:24:35.97 \n903 start 17:24:35.98 \n903 end 18:05:02.17 \nall done 18:05:02.19\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:10 CST: lane B20. After B19 (726 run 4) ends: 903 run 2 (KB1CC bomb tubes back, redder paint; R299).\r\ntitle Board: Codex lane B20: 903 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b20.txt\"\r\necho waiting for codex_lane_b19.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b19.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (903) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794873902190.5134,
+      "batMtime": 1794863115782.8652,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b21.txt",
+      "text": "waiting for codex_lane_b20.txt from Mon 11/16/2026 15:07:04.89 \nstart Mon 11/16/2026 18:05:09.20 \n368 start 18:05:09.21 \n368 end 19:16:22.21 \nall done 19:16:22.22\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:10 CST: lane B21. After B20 (903 run 2) ends: 368 run 5 (storm lightning strong; R300).\r\ntitle Board: Codex lane B21: 368 run 5\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b21.txt\"\r\necho waiting for codex_lane_b20.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b20.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (368) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794878182225.2104,
+      "batMtime": 1794863212481.469,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b22.txt",
+      "text": "waiting for codex_lane_b21.txt from Mon 11/16/2026 16:21:08.66 \nstart Mon 11/16/2026 19:17:13.24 \n922 start 19:17:13.24 \n922 end 19:43:37.65 \nall done 19:43:37.66\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 16:25 CST: lane B22. After B21 (368 run 5) ends: 922 (A18 dish and engine glow; R302).\r\ntitle Board: Codex lane B22: 922\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b22.txt\"\r\necho waiting for codex_lane_b21.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b21.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (922) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794879817665.4553,
+      "batMtime": 1794867647068.4746,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b23.txt",
+      "text": "waiting for codex_lane_b22.txt from Mon 11/16/2026 18:20:54.62 \npaused by the Board 19:43: not started, nothing to save\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 18:25 CST: lane B23. After B22 (922) ends: 903 run 3 (KB1CC bomb tubes run into the ship; R304).\r\ntitle Board: Codex lane B23: 903 run 3\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b23.txt\"\r\necho waiting for codex_lane_b22.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b22.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (903) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794879810453.3875,
+      "batMtime": 1794874835308.5432,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b24.txt",
+      "text": "start Mon 11/16/2026 20:46:59.66 \n922 start 20:46:59.66 \n922 end 21:37:43.33 \n903 start 21:37:43.34 \n903 end 22:33:51.72 \n936 start 22:33:51.74 \n936 end  1:15:43.48 \nall done  1:15:43.50\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 20:50 CST: Codex lane B24: 922 (resume), 903 run 3, 936 (after 922). Resumed on Ryan's go after the pause; 922 and 934 resume from their -partial branches (runner_common resume).\r\ntitle Board: Codex lane B24\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b24.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (922 903 936) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794899743501.4915,
+      "batMtime": 1794883607129.101,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b25.txt",
+      "text": "waiting for codex_lane_b24.txt from Mon 11/16/2026 21:46:47.69 \ncancelled by the Board 21:50: not started, nothing to save (922 run 2 not needed)\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 21:55 CST: Codex lane B25. After B24 (903, 936) ends: 922 run 2 (A18 dish removed entirely, hot engines; R307).\r\ntitle Board: Codex lane B25: 922 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b25.txt\"\r\necho waiting for codex_lane_b24.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b24.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (922) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794887450050.3125,
+      "batMtime": 1794887195731.5393,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b26.txt",
+      "text": "waiting for codex_lane_b24.txt from Mon 11/16/2026 22:52:56.65 \nstart Tue 11/17/2026  1:15:59.07 \n368 start  1:15:59.08 \n368 end  2:26:08.84 \nall done  2:26:08.85\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:55 CST: Codex lane B26. After B24 (936) ends: 368 run 6 (storm lightning forks, cyan-violet glow, several strikes; Board check of run 5).\r\ntitle Board: Codex lane B26: 368 run 6\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b26.txt\"\r\necho waiting for codex_lane_b24.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b24.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=21600\"\r\nfor %%N in (368) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794903968850.2537,
+      "batMtime": 1794891159635.6968,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b27.txt",
+      "text": "start Tue 11/17/2026  4:06:33.53 \n912 start  4:06:33.53 \n912 end  4:44:24.32 \nall done  4:44:24.33\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 04:20 CST: Codex lane B27: 912 run 3 (CD5 twisted strands). The main lane's new runner refused 912 over the old merged opus/issue-912-docs branch (fix: 969); lane B still has the old runner.\r\ntitle Board: Codex lane B27: 912 run 3\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b27.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (912) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794912264332.9185,
+      "batMtime": 1794909977252.8047,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b28.txt",
+      "text": "waiting for chain 16E runner refresh from Tue 11/17/2026  6:55:01.98 \nstart Tue 11/17/2026  6:55:02.33 \n100 start  6:55:02.33 \n100 end  8:29:06.61 \nall done  8:29:06.63\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 07:00 CST: Codex lane B28: 100 run 1 (terrain fx 2: debris, dead star well, old clouds, quality ladder). Waits until chain 16E has refreshed the runners (its log's \"start\" line).\r\ntitle Board: Codex lane B28: 100\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b28.txt\"\r\necho waiting for chain 16E runner refresh from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\codex_chain_16e.txt') -Pattern '^start ')){Start-Sleep 30}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=14400\"\r\nfor %%N in (100) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794925746630.3816,
+      "batMtime": 1794920085975.8206,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b29.txt",
+      "text": "start Tue 11/17/2026  9:31:17.15 \n975 start  9:31:17.15 \n975 end  9:33:08.10 \nall done  9:33:08.11\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 09:55 CST: Codex lane B29: 975 run 2 (station paint: colour, lit windows, wear; geometry kept).\r\ntitle Board: Codex lane B29: 975\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b29.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=14400\"\r\nfor %%N in (975) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794929588113.962,
+      "batMtime": 1794929461907.1868,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b3.txt",
+      "text": "waiting for B2 from Sun 11/15/2026 17:08:20.71 \nstart Sun 11/15/2026 17:13:21.18 \n812 start 17:13:21.18 \n812 end 17:46:36.57 \nall done 17:46:36.58\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 17:20 CST: Codex lane B (build_c, board_b\\repo, repo-mirror-b.git), after lane B2 (811) says all done: 812 (per-variant ship parts). Ryan: use all Codex lanes.\r\ntitle Board: Codex lane B3: 812 after B2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b3.txt\"\r\necho waiting for B2 from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b2.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (812) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794786396583.7847,
+      "batMtime": 1794784086676.1826,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b30.txt",
+      "text": "start Tue 11/17/2026  9:51:13.00 \n975 start  9:51:13.01 \n",
+      "bat": "@echo off\r\nrem Board, Nov 17 10:00 CST: Codex lane B30: 975 run 2 rerun with its Base (station paint: colour, lit windows, wear; geometry kept).\r\ntitle Board: Codex lane B30: 975\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b30.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=14400\"\r\nfor %%N in (975) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794933900000,
+      "batMtime": 1794930656121.678,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b4.txt",
+      "text": "waiting for codex_lane_b3.txt from Sun 11/15/2026 17:18:30.57 \nstart Sun 11/15/2026 17:47:31.29 \n44 start 17:47:31.29 \n44 end 19:03:17.01 \nall done 19:03:17.03\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 17:30 CST: Codex lane B after B3 (812): 44 (finale dawn, fix PR 705 per the Board review).\r\ntitle Board: CODEX_LANE_B4\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b4.txt\"\r\necho waiting for codex_lane_b3.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b3.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (44) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794790997030.3713,
+      "batMtime": 1794784701776.4636,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b5.txt",
+      "text": "start Sun 11/15/2026 21:29:42.00 \n843 start 21:29:42.00 \n843 end 22:14:20.46 \nall done 22:14:20.48\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 21:35 CST: Codex lane B: 843 (squadron spacing by craft size).\r\ntitle Board: CODEX_LANE_B5\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b5.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (843) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794802460482.8552,
+      "batMtime": 1794799772896.0613,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b6.txt",
+      "text": "waiting for codex_lane_b5.txt from Sun 11/15/2026 22:31:41.64 \nstart Sun 11/15/2026 22:31:42.41 \n812 start 22:31:42.47 \n812 end 23:06:25.63 \nall done 23:06:25.64\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 22:50 CST: Codex lane B after B5 (843): 812 again (rerun the variant proofs on the merged branch, Board review of PR 829).\r\ntitle Board: Codex lane B6: 812 after B5\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b6.txt\"\r\necho waiting for codex_lane_b5.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b5.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (812) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794805585648.8262,
+      "batMtime": 1794803490717.5898,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b7.txt",
+      "text": "waiting for codex_lane_b6.txt from Mon 11/16/2026  1:12:08.09 \nstart Mon 11/16/2026  1:12:08.48 \n373 start  1:12:08.49 \n373 end  2:02:28.67 \nall done  2:02:28.68\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 01:15 CST: Codex lane B7 (idle since B6): 373 run 3, the station toward T2 (Ryan R279). Blender CPU.\r\ntitle Board: Codex lane B7: 373 station T2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b7.txt\"\r\necho waiting for codex_lane_b6.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b6.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nset \"SHEET_DEVICE=CPU\"\r\nfor %%N in (373) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794816148688.9812,
+      "batMtime": 1794813110192.5022,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b8.txt",
+      "text": "waiting for codex_lane_b7.txt from Mon 11/16/2026  4:28:32.62 \nstart Mon 11/16/2026  4:28:33.05 \n373 start  4:28:33.05 \n373 end  5:03:29.74 \nall done  5:03:29.75\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 04:40 CST: Codex lane B8: 373 run 3 again (B7 missed it: the brief was a comment; now in the issue body). Station toward T2 (R279).\r\ntitle Board: Codex lane B8: 373 station T2 run 3\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b8.txt\"\r\necho waiting for codex_lane_b7.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b7.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nset \"SHEET_DEVICE=CPU\"\r\nfor %%N in (373) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794827009750.417,
+      "batMtime": 1794824899036.485,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_b9.txt",
+      "text": "waiting for codex_lane_b8.txt from Mon 11/16/2026  5:06:32.66 \nstart Mon 11/16/2026  5:06:33.04 \n373 start  5:06:33.04 \n373 end  5:27:06.14 \nall done  5:27:06.15\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:15 CST: Codex lane B9: 373 run 3 again (B8 ran with the disk full; 0 files). Station toward T2 (R279).\r\ntitle Board: Codex lane B9: 373 station T2 run 3\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_b9.txt\"\r\necho waiting for codex_lane_b8.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_b8.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nset \"SHEET_DEVICE=CPU\"\r\nfor %%N in (373) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_c\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_b\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794828426159.5503,
+      "batMtime": 1794827168580.4167,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c.txt",
+      "text": "start Sun 11/15/2026 13:52:50.52 \n733 start 13:52:50.52 \n733 end 14:13:33.89 \nall done 14:13:33.89\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 13:55: Codex lane C (code-only, no GPU; R268): its own tools copy (build_d), repo (board_c\\repo) and mirror (repo-mirror-c.git). 733.\r\ntitle Board: Codex lane C: 733\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c.txt\"\r\nif not exist \"%V%\\board_c\" mkdir \"%V%\\board_c\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (733) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >/dev/null 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794773613901.5442,
+      "batMtime": 1794772354262.2388,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c10.txt",
+      "text": "waiting for codex_lane_c9.txt from Mon 11/16/2026  5:07:03.10 \nstart Mon 11/16/2026  5:07:03.50 \n860 start  5:07:03.50 \n860 end  5:07:05.64 \nall done  5:07:05.65\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:15 CST: Codex lane C10: 860 (runner keeps at most 2 repo-kept copies). Code only.\r\ntitle Board: Codex lane C10: 860 kept copies\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c10.txt\"\r\necho waiting for codex_lane_c9.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c9.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (860) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794827225656.6836,
+      "batMtime": 1794827209563.4731,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c11.txt",
+      "text": "waiting for codex_lane_c10.txt from Mon 11/16/2026  5:34:26.21 \nstart Mon 11/16/2026  5:34:26.60 \n846 start  5:36:26.19 \n846 end  5:36:30.43 \n860 start  5:38:30.16 \n860 end  5:38:32.63 \nall done  5:38:32.65\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:15 CST: Codex lane C11: 846 run 2 and 860 again (C9 and C10 hit a mirror lock at start). Code only.\r\ntitle Board: Codex lane C11: 846, 860\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c11.txt\"\r\necho waiting for codex_lane_c10.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c10.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (846 860) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\ntimeout /t 120 /nobreak >nul\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794829112651.0706,
+      "batMtime": 1794828790752.4636,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c12.txt",
+      "text": "waiting for codex_lane_c11.txt from Mon 11/16/2026  5:46:16.03 \nstart Mon 11/16/2026  5:46:16.45 \n846 start  5:48:16.20 \n846 end  6:21:31.71 \n860 start  6:23:31.12 \n860 end  6:23:35.05 \nall done  6:23:35.06\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:15 CST: Codex lane C12: 846 run 2 and 860 again (two stale self-test agents were holding board_c files; stopped). Code only.\r\ntitle Board: Codex lane C12: 846, 860\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c12.txt\"\r\necho waiting for codex_lane_c11.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c11.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (846 860) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\ntimeout /t 120 /nobreak >nul\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794831815062.811,
+      "batMtime": 1794829571665.5144,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c13.txt",
+      "text": "waiting for codex_lane_c12.txt from Mon 11/16/2026  7:03:27.15 \nstart Mon 11/16/2026  7:03:27.53 \n873 start  7:13:27.15 \n873 end  7:19:31.38 \n860 start  7:29:31.39 \n860 end  7:29:38.18 \nall done  7:29:39.16\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:15 CST: Codex lane C13: 873 (failure reporting in stage 5 and the 207 gate), 860 again (its start keeps hitting a file in use right after the previous job; 10 minute gap now). Code only.\r\ntitle Board: Codex lane C13: 873, 860\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c13.txt\"\r\necho waiting for codex_lane_c12.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c12.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (873 860) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\ntimeout /t 600 /nobreak >nul\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794835779225.5852,
+      "batMtime": 1794834202890.3347,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c14.txt",
+      "text": "waiting for codex_lane_c13.txt from Mon 11/16/2026  8:09:02.32 \nstart Mon 11/16/2026  8:09:03.05 \n882 start  8:19:03.27 \n882 end  8:19:06.31 \nall done  8:19:06.36\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:15 CST: Codex lane C14: 882 (runner waits and retries on a held file at start). Code only.\r\ntitle Board: Codex lane C14: 882\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c14.txt\"\r\necho waiting for codex_lane_c13.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c13.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (882) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\ntimeout /t 600 /nobreak >nul\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794838746370.0378,
+      "batMtime": 1794838136706.2622,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c15.txt",
+      "text": "start Mon 11/16/2026 11:02:35.55 \n882 start 11:02:35.55 \n882 end 11:33:06.87 \n896 start 11:33:06.88 \n896 end 11:57:17.20 \nall done 11:57:17.21\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 11:05 CST: Codex lane C15: 882 run 2 (the real cause: leftover runner818 test agents and the repo rename), then 896 (GPU slots sized by load, R293). Code only.\r\ntitle Board: Codex lane C15: 882, 896\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c15.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (882 896) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794851837210.1885,
+      "batMtime": 1794848539826.456,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c16.txt",
+      "text": "waiting for codex_lane_c15.txt from Mon 11/16/2026 12:42:13.79 \nstart Mon 11/16/2026 12:42:14.21 \n889 start 12:42:14.21 \n889 end 13:24:29.30 \nall done 13:24:29.31\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 12:50 CST: Codex lane C16: after C15, 889 run 2 (per-output picture provenance, Artoo on PR 904). Code only.\r\ntitle Board: Codex lane C16: 889 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c16.txt\"\r\necho waiting for codex_lane_c15.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c15.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (889) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794857069316.694,
+      "batMtime": 1794854514502.473,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c17.txt",
+      "text": "waiting for codex_lane_c16.txt from Mon 11/16/2026 12:43:50.58 \nstart Mon 11/16/2026 13:24:51.52 \n888 start 13:24:51.53 \n888 end 14:00:57.07 \nall done 14:00:57.08\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 13:00 CST: Codex lane C17: after C16, 888 run 3 (runner contract: merge main, no-marker single briefs, live dry run). Code only.\r\ntitle Board: Codex lane C17: 888 run 3\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c17.txt\"\r\necho waiting for codex_lane_c16.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c16.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (888) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794859257088.5183,
+      "batMtime": 1794854620347.3914,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c18.txt",
+      "text": "waiting for codex_lane_c17.txt from Mon 11/16/2026 15:07:54.72 \nstart Mon 11/16/2026 15:07:55.20 \n914 start 15:07:55.21 \n914 end 15:42:50.23 \nall done 15:42:50.24\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:15 CST: Codex lane C18: after C17, 914 (runner finds gh in its install folder when PATH is stale). Code only.\r\ntitle Board: Codex lane C18: 914\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c18.txt\"\r\necho waiting for codex_lane_c17.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c17.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (914) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794865370247.8462,
+      "batMtime": 1794863264117.2002,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c19.txt",
+      "text": "waiting for codex_lane_c18.txt from Mon 11/16/2026 15:40:32.85 \nstart Mon 11/16/2026 15:43:34.35 \n860 start 15:43:34.35 \n860 end 16:20:21.55 \nall done 16:20:21.56\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:45 CST: Codex lane C19: after C18, 860 (runner keeps at most 2 repo-kept copies per board folder). Code only.\r\ntitle Board: Codex lane C19: 860\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c19.txt\"\r\necho waiting for codex_lane_c18.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c18.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (860) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794867621567.265,
+      "batMtime": 1794865210964.4932,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c2.txt",
+      "text": "start Sun 11/15/2026 17:08:15.56 \n818 start 17:08:15.56 \n818 end 17:34:16.84 \n732 start 17:34:16.84 \n732 end 17:53:05.32 \nall done 17:53:05.32\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 17:15 CST: Codex lane C (build_d, board_c\\repo, repo-mirror-c.git): 818 (runner stall check), then 732 (CI lint and bot seeds); Ryan Nov 15. Code only, no GPU.\r\ntitle Board: Codex lane C2: 818, 732\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c2.txt\"\r\nif not exist \"%V%\\board_c\" mkdir \"%V%\\board_c\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (818 732) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >/dev/null 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794786785332.8718,
+      "batMtime": 1794784086473.9988,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c20.txt",
+      "text": "waiting for codex_lane_c19.txt from Mon 11/16/2026 15:48:41.70 \nstart Mon 11/16/2026 16:20:42.58 \n918 start 16:20:42.58 \n918 end 17:10:04.76 \nall done 17:10:04.77\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:45 CST: Codex lane C20: after C19, 918 (mission control pilot: live phone page of the PC lanes). Code only.\r\ntitle Board: Codex lane C20: 918\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c20.txt\"\r\necho waiting for codex_lane_c19.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c19.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (918) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794870604771.678,
+      "batMtime": 1794865707844.3083,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c21.txt",
+      "text": "waiting for codex_lane_c20.txt from Mon 11/16/2026 18:05:14.84 \nstart Mon 11/16/2026 18:05:15.38 \n918 start 18:05:15.38 \n918 end 18:39:31.83 \nall done 18:39:31.84\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 18:30 CST: Codex lane C21: after C20, 918 run 2 (mission control: keep the rest of the queue between jobs; Artoo on PR 926). Code only.\r\ntitle Board: Codex lane C21: 918\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c21.txt\"\r\necho waiting for codex_lane_c20.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c20.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (918) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794875971848.024,
+      "batMtime": 1794873891662.6948,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c22.txt",
+      "text": "waiting for codex_lane_c21.txt from Mon 11/16/2026 19:33:39.65 \nstart Mon 11/16/2026 19:33:40.10 \n934 start 19:33:40.10 \n934 end 19:43:37.89 \nall done 19:43:37.90\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 19:35 CST: Codex lane C22: after C21, 934 (mission control on the Pixel through Tailscale; R305). Code only.\r\ntitle Board: Codex lane C22: 934\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c22.txt\"\r\necho waiting for codex_lane_c21.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c21.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (934) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794879817904.719,
+      "batMtime": 1794879202346.27,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c23.txt",
+      "text": "start Mon 11/16/2026 20:46:59.67 \n934 start 20:46:59.67 \n934 end 21:26:56.14 \nall done 21:26:56.16\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 20:50 CST: Codex lane C23: 934 (resume). Code only. Resumed on Ryan's go after the pause; 922 and 934 resume from their -partial branches (runner_common resume).\r\ntitle Board: Codex lane C23\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c23.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (934) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794886016160.3699,
+      "batMtime": 1794883607351.2004,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c24.txt",
+      "text": "start Mon 11/16/2026 21:58:05.60 \n944 start 21:58:05.61\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:10 CST: Codex lane C24: 944 (per-job pause report). First jobs on main's runner (audit fix A, R309). Code only.\r\ntitle Board: Codex lane C24: 944\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c24.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (944) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794887885635.2937,
+      "batMtime": 1794887874737.3794,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c25.txt",
+      "text": "start Mon 11/16/2026 22:03:42.89 \n944 start 22:03:42.90 \n944 end 22:34:18.24 \nall done 22:34:18.27\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:10 CST: Codex lane C25: 944 (per-job pause report), back on the lane C runner copy after C24 was stopped. Code only.\r\ntitle Board: Codex lane C25: 944\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c25.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (944) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794890058272.621,
+      "batMtime": 1794888208506.7305,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c26.txt",
+      "text": "start Mon 11/16/2026 22:43:54.60 \n951 start 22:43:54.61\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:50 CST: Codex lane C26: 951 (mission control keeps the chain job during checks). Code only.\r\ntitle Board: Codex lane C26: 951\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c26.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (951) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794890634614.766,
+      "batMtime": 1794890620311.4922,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c27.txt",
+      "text": "start Mon 11/16/2026 22:46:30.71 \n944 start 22:46:30.72 \n944 end 23:25:19.40 \nall done 23:25:19.41\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:55 CST: Codex lane C27: 944 run 2 (pause report ignores leftover records). Code only.\r\ntitle Board: Codex lane C27: 944\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c27.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (944) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794893119416.5867,
+      "batMtime": 1794890779079.1765,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c28.txt",
+      "text": "start Mon 11/16/2026 23:41:33.15 \n951 start 23:41:33.15 \n951 end  0:24:49.87 \nall done  0:24:49.88\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 23:45 CST: Codex lane C28: 951 (mission control phone redesign; Ryan approved Nov 17). Code only.\r\ntitle Board: Codex lane C28: 951\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c28.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (951) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794896689885.8286,
+      "batMtime": 1794894077191.1345,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c29.txt",
+      "text": "start Tue 11/17/2026  0:49:35.41 \n962 start  0:49:35.41 \n962 end  1:18:07.92 \nall done  1:18:07.93\n",
+      "bat": "",
+      "mtime": 1794899887935.0906,
+      "batMtime": 0,
+      "missingBat": true
+    },
+    {
+      "name": "codex_lane_c3.txt",
+      "text": "start Sun 11/15/2026 19:59:25.69 \n838 start 19:59:25.69 \n838 end 20:27:33.15 \nall done 20:27:33.17\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 20:05 CST: Codex lane C (build_d, board_c\\repo, repo-mirror-c.git): 838 (generated OPEN_WORK, issue 788 step 5). Code only, low priority.\r\ntitle Board: Codex lane C3: 838\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c3.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (838) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794796053170.846,
+      "batMtime": 1794794353171.9167,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c30.txt",
+      "text": "start Tue 11/17/2026  4:06:33.51 \n969 start  4:06:33.51 \n969 end  4:37:40.75 \nall done  4:37:40.76\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 04:20 CST: Codex lane C30: 969 (runner: old seat branches already in main do not block a job). Code only.\r\ntitle Board: Codex lane C30: 969\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c30.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (969) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794911860764.0867,
+      "batMtime": 1794909976782.7246,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c31.txt",
+      "text": "start Tue 11/17/2026  5:42:05.01 \n973 start  5:42:05.02 \n973 end  6:02:38.96 \nall done  6:02:38.97\n",
+      "bat": "",
+      "mtime": 1794916958971.205,
+      "batMtime": 0,
+      "missingBat": true
+    },
+    {
+      "name": "codex_lane_c32.txt",
+      "text": "start Tue 11/17/2026  9:27:36.09 \n978 start  9:27:36.09 \n978 end 10:42:21.12 \nall done 10:42:21.13\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 09:35 CST: Codex lane C32: 978 (parity speed-up, Path D step 1).\r\ntitle Board: Codex lane C32: 978\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c32.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (978) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794933741132.5093,
+      "batMtime": 1794929229858.2864,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c33.txt",
+      "text": "waiting for lane C32 from Tue 11/17/2026  9:59:17.57 \nstart Tue 11/17/2026 10:43:18.39 \n985 start 10:43:18.40\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 10:05 CST: Codex lane C33: 985 (OpenAI workhorse arm). Waits for lane C32 (978).\r\ntitle Board: Codex lane C33: 985\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c33.txt\"\r\necho waiting for lane C32 from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\codex_lane_c32.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (985) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794933798405.6326,
+      "batMtime": 1794931139692.2888,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c4.txt",
+      "text": "start Sun 11/15/2026 21:29:42.01 \n844 start 21:29:42.01 \n844 end 21:50:12.26 \nall done 21:50:12.28\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 21:35 CST: Codex lane C: 844 (paint_sheet beauty shot clip distance). Code only.\r\ntitle Board: CODEX_LANE_C4\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c4.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (844) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794801012281.3706,
+      "batMtime": 1794799773063.2139,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c5.txt",
+      "text": "waiting for codex_lane_c4.txt from Sun 11/15/2026 21:57:01.75 \nstart Sun 11/15/2026 21:57:02.17 \n846 start 21:57:02.18 \n846 end 22:20:42.48 \nall done 22:20:42.49\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 22:00 CST: Codex lane C after C4 (844): 846 (running label, status comment, Base line; 788 step 3). Code only.\r\ntitle Board: Codex lane C5: 846 after C4\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c5.txt\"\r\necho waiting for codex_lane_c4.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c4.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (846) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794802842499.88,
+      "batMtime": 1794801409318.3157,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c6.txt",
+      "text": "waiting for codex_lane_c5.txt from Sun 11/15/2026 22:01:31.61 \nstart Sun 11/15/2026 22:21:32.19 \n847 start 22:21:32.19 \n847 end 22:59:49.43 \nall done 22:59:49.45\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 22:05 CST: Codex lane C after C5 (846): 847 (two GPU jobs at once, solo speed tests, R276). Code only.\r\ntitle Board: CODEX_LANE_C6\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c6.txt\"\r\necho waiting for codex_lane_c5.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c5.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (847) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794805189453.8904,
+      "batMtime": 1794801680566.8274,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c7.txt",
+      "text": "waiting for codex_lane_c6.txt from Mon 11/16/2026  1:23:38.95 \nstart Mon 11/16/2026  1:23:39.41 \n372 start  1:23:39.41 \n372 end  1:52:33.97 \nall done  1:52:33.98\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 01:15 CST: Codex lane C7 (idle since C6): 372 resume (its first run hit the 2 h cap; partial on codex/issue-372-partial). GPU allowed beside the main chain (R276).\r\ntitle Board: Codex lane C7: 372 shield look resume\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c7.txt\"\r\necho waiting for codex_lane_c6.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c6.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (372) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794815553985.3684,
+      "batMtime": 1794813808061.0312,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c8.txt",
+      "text": "waiting for codex_lane_c7.txt from Mon 11/16/2026  4:37:49.67 \nstart Mon 11/16/2026  4:37:50.18 \n846 start  4:37:50.18 \n846 end  4:37:56.63 \nall done  4:37:56.64\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:05 CST: Codex lane C8: 846 run 2 (runner_job_tests on Linux pwsh). Code only.\r\ntitle Board: Codex lane C8: 846 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c8.txt\"\r\necho waiting for codex_lane_c7.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c7.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (846) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794825476648.833,
+      "batMtime": 1794825457925.7478,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_c9.txt",
+      "text": "waiting for codex_lane_c8.txt from Mon 11/16/2026  5:06:37.59 \nstart Mon 11/16/2026  5:06:37.98 \n846 start  5:06:37.98 \n846 end  5:06:47.60 \nall done  5:06:47.61\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:15 CST: Codex lane C9: 846 run 2 again (C8 died with the disk full) (runner_job_tests on Linux pwsh). Code only.\r\ntitle Board: Codex lane C9: 846 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_c9.txt\"\r\necho waiting for codex_lane_c8.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_c8.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (846) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_d\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_c\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794827207614.033,
+      "batMtime": 1794827168754.11,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d1.txt",
+      "text": "setup Mon 11/16/2026 15:51:18.69 \n-------------------------------------------------------------------------------\n   ROBOCOPY     ::     Robust File Copy for Windows                              \n-------------------------------------------------------------------------------\n  Started : Monday, November 16, 2026 3:51:18 PM\n   Source : %V%\\build_d\\tools\\\n     Dest : %V%\\build_e\\tools\\\n    Files : *.*\n  Options : *.* /NDL /NFL /S /E /DCOPY:DA /COPY:DAT /NP /R:1 /W:1 \n------------------------------------------------------------------------------\n------------------------------------------------------------------------------\n               Total    Copied   Skipped  Mismatch    FAILED    Extras\n    Dirs :         2         2         0         0         0         0\n   Files :         6         6         0         0         0         0\n   Bytes :    61.6 k    61.6 k         0         0         0         0\n   Times :   0:00:00   0:00:00                       0:00:00   0:00:00\n   Speed :            12622000 Bytes/sec.\n   Speed :             722.236 MegaBytes/min.\n   Ended : Monday, November 16, 2026 3:51:18 PM\nlines naming a board folder in build_e: \n%V%\\build_e\\tools\\pc\\codex_issue.bat:25:set \"R=%ROOT%\\board_d\\repo\"\n%V%\\build_e\\tools\\pc\\codex_issue.bat:26:set \"O=%ROOT%\\board_d\\issue-%N%\"\nstart Mon 11/16/2026 15:51:19.59 \n914 start 15:51:19.59 \n914 end 16:39:50.45 \nall done 16:39:50.47\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:55 CST: Codex lane D1 (Ryan: a fourth code-only lane). First run only: make build_e\\tools as a copy of lane C's build_d\\tools\r\nrem (copy only, nothing deleted) with its job folder board_d. Then 914 run 2 (runner gh lookup test passes on Linux CI). Code only.\r\ntitle Board: Codex lane D1: 914 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d1.txt\"\r\necho setup %DATE% %TIME% > \"%L%\"\r\nif exist \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" (echo build_e already there, not copied >> \"%L%\") else (robocopy \"%V%\\build_d\\tools\" \"%V%\\build_e\\tools\" /E /NP /NDL /NFL /R:1 /W:1 >> \"%L%\" 2>&1)\r\nif not exist \"%V%\\board_d\" mkdir \"%V%\\board_d\"\r\npowershell -NoProfile -Command \"$f=$env:V+'\\build_e\\tools\\pc\\codex_issue.bat'; $t=[IO.File]::ReadAllText($f); [IO.File]::WriteAllText($f,$t.Replace('\\board_c\\','\\board_d\\'))\"\r\necho lines naming a board folder in build_e: >> \"%L%\"\r\nfindstr /s /n /i /c:\"board_c\" /c:\"board_d\" \"%V%\\build_e\\tools\\pc\\*.bat\" \"%V%\\build_e\\tools\\pc\\*.ps1\" >> \"%L%\" 2>&1\r\nfindstr /c:\"\\board_d\\repo\" \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" >nul || (echo SETUP FAILED: codex_issue.bat does not point at board_d >> \"%L%\" & echo all done %TIME% >> \"%L%\" & goto :eof)\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (914) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794868790475.953,
+      "batMtime": 1794865862461.5264,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d10.txt",
+      "text": "start Tue 11/17/2026  9:27:41.99 \n979 start  9:27:41.99 \n979 end 10:19:57.12 \nall done 10:19:57.13\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 09:35 CST: Codex lane D10: 979 (rules safety net, Path D step 2).\r\ntitle Board: Codex lane D10: 979\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d10.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (979) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794932397139.6062,
+      "batMtime": 1794929230112.8418,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d11.txt",
+      "text": "waiting for lane D10 from Tue 11/17/2026  9:51:57.65 \nstart Tue 11/17/2026 10:19:58.42 \n984 start 10:19:58.43 \n984 end 10:20:02.17 \nall done 10:20:02.18\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 10:05 CST: Codex lane D11: 984 (runner: a prose \"Run 1\" line cut 975's brief). Waits for lane D10 (979) to end.\r\ntitle Board: Codex lane D11: 984\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d11.txt\"\r\necho waiting for lane D10 from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\codex_lane_d10.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (984) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794932402185.715,
+      "batMtime": 1794930700611.2156,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d12.txt",
+      "text": "start Tue 11/17/2026 10:40:32.63 \n984 start 10:40:32.63 \n",
+      "bat": "@echo off\r\nrem Board, Nov 17 10:50 CST: Codex lane D12: 984 (runner brief cut fix), rerun after its body quoted the marker twice.\r\ntitle Board: Codex lane D12: 984\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d12.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=7200\"\r\nfor %%N in (984) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794933900000,
+      "batMtime": 1794933610152.5173,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d2.txt",
+      "text": "waiting for codex_lane_d1.txt from Mon 11/16/2026 16:24:00.64 \nstart Mon 11/16/2026 16:40:02.65 \n860 start 16:40:02.66 \n860 end 17:18:07.52 \nall done 17:18:07.53\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 16:30 CST: Codex lane D2. After D1 (914 run 2) ends: 860 run 2 (no deletion: reuse a clean, pushed checkout in place). Code only.\r\ntitle Board: Codex lane D2: 860 run 2\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d2.txt\"\r\necho waiting for codex_lane_d1.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_d1.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (860) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794871087532.019,
+      "batMtime": 1794867822951.4907,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d3.txt",
+      "text": "waiting for codex_lane_d2.txt from Mon 11/16/2026 18:06:14.62 \nstart Mon 11/16/2026 18:06:15.02 \n860 start 18:06:15.02 \n860 end 18:40:22.86 \nall done 18:40:22.87\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 18:40 CST: Codex lane D3. After D2 ends: 860 run 3 (no reset on reuse; stop if the checkout changed). Code only.\r\ntitle Board: Codex lane D3: 860 run 3\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d3.txt\"\r\necho waiting for codex_lane_d2.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_d2.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (860) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794876022880.2024,
+      "batMtime": 1794873955795.4932,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d4.txt",
+      "text": "waiting for codex_lane_d3.txt from Mon 11/16/2026 18:07:39.91 \nstart Mon 11/16/2026 18:40:40.59 \n726 start 18:40:40.59 \n726 end 19:18:16.11 \nall done 19:18:16.12\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 18:45 CST: Codex lane D4. After D3 ends: 726 run 5 (merge main, reconcile stage 5, fix scale check; no bake). Code only.\r\ntitle Board: Codex lane D4: 726 run 5\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d4.txt\"\r\necho waiting for codex_lane_d3.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\codex_lane_d3.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (726) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794878296123.5764,
+      "batMtime": 1794874041591.1545,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d5.txt",
+      "text": "start Mon 11/16/2026 21:58:05.66 \n945 start 21:58:05.67\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:10 CST: Codex lane D5: 945 (runner self-test time on the PC). First jobs on main's runner (audit fix A, R309). Code only.\r\ntitle Board: Codex lane D5: 945\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d5.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (945) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794887885684.338,
+      "batMtime": 1794887874956.3965,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d6.txt",
+      "text": "start Mon 11/16/2026 22:03:42.90 \n945 start 22:03:42.91 \n945 end 22:34:18.54 \nall done 22:34:18.55\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:10 CST: Codex lane D6: 945 (runner self-test time on the PC), back on the lane D runner copy after D5 was stopped. Code only.\r\ntitle Board: Codex lane D6: 945\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d6.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (945) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794890058559.8826,
+      "batMtime": 1794888208738.9429,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d7.txt",
+      "text": "start Mon 11/16/2026 22:48:03.61 \n952 start 22:48:03.61 \n952 end 23:35:59.20 \nall done 23:35:59.21\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:58 CST: Codex lane D7: 952 (scene gate 207 needs fresh results; Artoo on PR 910). Code only.\r\ntitle Board: Codex lane D7: 952\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d7.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (952) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794893759219.9307,
+      "batMtime": 1794890869301.8535,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d8.txt",
+      "text": "start Mon 11/16/2026 23:41:33.36 \n957 start 23:41:33.36 \n957 end  0:08:52.15 \nall done  0:08:52.16\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 23:45 CST: Codex lane D8: 957 (picture stamps per output; Artoo on PR 904). Code only.\r\ntitle Board: Codex lane D8: 957\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d8.txt\"\r\necho start %DATE% %TIME% > \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\nfor %%N in (957) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" %1\r\necho %1 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-%1\\result.txt\" >nul 2>&1 && echo %1 hit the usage limit >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794895732162.8467,
+      "batMtime": 1794894077419.3416,
+      "missingBat": false
+    },
+    {
+      "name": "codex_lane_d9.txt",
+      "text": "waiting for install_runner_cd2.txt from Tue 11/17/2026  2:29:08.63 \nstart Tue 11/17/2026  2:29:08.97 \n967 start  2:29:08.97 \n967 end  3:00:53.60 \nall done  3:00:53.62\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 02:55 CST: Codex lane D9: 967 (IM5 engine check self-test). Waits for the lane C/D runner refresh. Code only.\r\ntitle Board: Codex lane D9: 967\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\codex_lane_d9.txt\"\r\necho waiting for install_runner_cd2.txt from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\install_runner_cd2.txt') -Pattern 'all done|refused|FAILED')){Start-Sleep 30}\"\r\necho start %DATE% %TIME% >> \"%L%\"\r\nset \"CODEX_CAP=10800\"\r\necho 967 start %TIME% >> \"%L%\"\r\ncall \"%V%\\build_e\\tools\\pc\\codex_issue.bat\" 967\r\necho 967 end %TIME% >> \"%L%\"\r\nfindstr /c:\"usage limit\" \"%V%\\board_d\\issue-967\\result.txt\" >nul 2>&1 && echo 967 hit the usage limit >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794906053621.7678,
+      "batMtime": 1794904109031.3875,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15a.txt",
+      "text": "start Sat 11/14/2026 18:49:55.84 \n720 start 18:49:55.84 \n720 end 19:36:18.42 exit 0 \n721 start 19:36:18.42 \n721 end 20:33:48.26 exit 0 \n729 start 20:33:48.26 \n729 end 21:49:00.75 exit 0 \nall done 21:49:00.75\n",
+      "bat": "",
+      "mtime": 1794714540762.174,
+      "batMtime": 0,
+      "missingBat": true
+    },
+    {
+      "name": "ds_15d.txt",
+      "text": "waiting from Sat 11/14/2026 19:33:42.05 \n737 start 21:49:43.58 \n737 end 22:46:51.70 exit 0 \nall done 22:46:51.70\n",
+      "bat": "@echo off\r\nrem Board, Nov 15: next DeepSeek jobs after lane 15A (720, 721, 729) says all done: 737.\r\ntitle Board: DeepSeek 15D (737) after 15A\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15d.txt\"\r\nset \"WORK_CAP=7200\"\r\necho waiting from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\ds_15a.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\nfor %%N in (737) do call :one %%N\r\necho all done %TIME% >> \"%L%\"\r\ngoto :eof\r\n:one\r\necho %1 start %TIME% >> \"%L%\"\r\ncall \"%V%\\work217\\tools\\work_issue.bat\" %1 deepseek\r\necho %1 end %TIME% exit %ERRORLEVEL% >> \"%L%\"\r\ngoto :eof\r\n",
+      "mtime": 1794718011707.9177,
+      "batMtime": 1794706416985.537,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15e.txt",
+      "text": "waiting from Sat 11/14/2026 21:53:07.10 \n755 start 22:47:07.97 \n755 end 23:37:41.56 exit 0 \nall done 23:37:41.56\n",
+      "bat": "@echo off\r\nrem Board, Nov 15: DeepSeek 755 after lane 15D (737) says all done.\r\ntitle Board: DeepSeek 15E (755) after 15D\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15e.txt\"\r\nset \"WORK_CAP=7200\"\r\necho waiting from %DATE% %TIME% > \"%L%\"\r\npowershell -NoProfile -Command \"while(-not (Select-String -Quiet -Path ($env:V+'\\ds_15d.txt') -Pattern 'all done')){Start-Sleep 60}\"\r\necho 755 start %TIME% >> \"%L%\"\r\ncall \"%V%\\work217\\tools\\work_issue.bat\" 755 deepseek\r\necho 755 end %TIME% exit %ERRORLEVEL% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794721061570.3325,
+      "batMtime": 1794714784845.0625,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15f.txt",
+      "text": "771 start Sun 11/15/2026  0:16:39.46 \n771 end  1:42:59.43 \nall done  1:42:59.43\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 00:45: DeepSeek 771 (sound weight, audit build 4b).\r\ntitle Board: DeepSeek 15F (771)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15f.txt\"\r\nset \"WORK_CAP=7200\"\r\necho 771 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 771 deepseek 7200\r\necho 771 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794728579443.673,
+      "batMtime": 1794723397328.7222,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15g.txt",
+      "text": "728 start Sun 11/15/2026  7:18:33.64 \n728 end  8:59:35.28 \nall done  8:59:35.28\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 07:20: DeepSeek 728 (debrief follow-up, moved from Codex).\r\ntitle Board: DeepSeek 15G (728)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\necho 728 start %DATE% %TIME% > \"%V%\\ds_15g.txt\"\r\ncall \"%V%\\RUN_RETRY.bat\" 728 deepseek 7200\r\necho 728 end %TIME% >> \"%V%\\ds_15g.txt\"\r\necho all done %TIME% >> \"%V%\\ds_15g.txt\"\r\n",
+      "mtime": 1794754775293.0735,
+      "batMtime": 1794748706698.313,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15h.txt",
+      "text": "waiting for 15G Sun 11/15/2026  7:26:54.26 \n41 start  7:26:54.26 \n41 end  9:28:26.36 \n371 start  9:28:26.43 \n371 end 11:29:58.37 \nall done 11:29:58.37\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 07:30: DeepSeek 41 then 371 (moved from Kimi, which Ryan cancelled), after DS_15G (728) says all done.\r\ntitle Board: DeepSeek 15H (41, 371 after 728)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15h.txt\"\r\necho waiting for 15G %DATE% %TIME% > \"%L%\"\r\n:wait\r\nfindstr /c:\"all done\" \"%V%\\ds_15g.txt\" >/dev/null 2>&1\r\nif not errorlevel 1 goto go\r\ntimeout /t 120 /nobreak >nul\r\ngoto wait\r\n:go\r\necho 41 start %TIME% >> \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 41 deepseek 7200\r\necho 41 end %TIME% >> \"%L%\"\r\necho 371 start %TIME% >> \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 371 deepseek 7200\r\necho 371 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794763798383.0078,
+      "batMtime": 1794749208698.7349,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15i.txt",
+      "text": "waiting for 15H Sun 11/15/2026 11:21:30.93 \n788 start 11:21:30.93 \n788 end 12:08:41.01 \n41 start 12:08:41.01 \n41 end 13:51:30.55 \nall done 13:51:30.56\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 11:15: after DS_15H (41, 371) says all done: DeepSeek 788 review leg (Codex hit its weekly limit), then 41 run 2 (resumes work/issue-41-deepseek-partial).\r\ntitle Board: DeepSeek 15I (788, 41 run 2)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15i.txt\"\r\necho waiting for 15H %DATE% %TIME% > \"%L%\"\r\n:wait\r\nfindstr /c:\"all done\" \"%V%\\ds_15h.txt\" >/dev/null 2>&1\r\nif not errorlevel 1 goto go\r\ntimeout /t 120 /nobreak >nul\r\ngoto wait\r\n:go\r\necho 788 start %TIME% >> \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 788 deepseek 3600\r\necho 788 end %TIME% >> \"%L%\"\r\necho 41 start %TIME% >> \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 41 deepseek 7200\r\necho 41 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794772290567.6252,
+      "batMtime": 1794762226302.735,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15j.txt",
+      "text": "waiting for 15I Sun 11/15/2026 13:27:06.26 \n371 start 13:27:06.37 \n371 end 15:28:43.96 \nall done 15:28:43.96\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 13:35: after DS_15I (788 leg, 41 run 2) says all done: DeepSeek 371 run 2 (resumes work/issue-371-deepseek-partial; brief rewritten clean).\r\ntitle Board: DeepSeek 15J (371)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15j.txt\"\r\necho waiting for 15I %DATE% %TIME% > \"%L%\"\r\n:wait\r\nfindstr /c:\"all done\" \"%V%\\ds_15i.txt\" >/dev/null 2>&1\r\nif not errorlevel 1 goto go\r\ntimeout /t 120 /nobreak >nul\r\ngoto wait\r\n:go\r\necho 371 start %TIME% >> \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 371 deepseek 7200\r\necho 371 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794778123969.4216,
+      "batMtime": 1794770822037.8875,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15k.txt",
+      "text": "817 start Sun 11/15/2026 16:59:13.81 \n817 end 17:45:00.29 \nall done 17:45:00.29\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 17:10 CST: DeepSeek 817 (record and test fixes from Muse checks 786, 789, 787).\r\ntitle Board: DeepSeek 15K (817)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15k.txt\"\r\necho 817 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 817 deepseek 3600\r\necho 817 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794786300297.7236,
+      "batMtime": 1794783541057.3306,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15l.txt",
+      "text": "837 start Sun 11/15/2026 19:59:25.69 \n837 end 20:52:43.50 \nall done 20:52:43.50\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 20:05 CST: DeepSeek 837 (memory lint, issue 788 step 2). Code only, started at low priority while Ryan plays.\r\ntitle Board: DeepSeek 15L (837)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15l.txt\"\r\necho 837 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 837 deepseek 3600\r\necho 837 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794797563514.4219,
+      "batMtime": 1794794352986.7573,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15m.txt",
+      "text": "841 start Sun 11/15/2026 21:23:31.10 \n841 end 22:28:04.00 \nall done 22:28:04.00\n",
+      "bat": "@echo off\r\nrem Board, Nov 15 21:40 CST: DeepSeek 841 (seed of the words log, 788 step 1). Text only.\r\ntitle Board: DeepSeek 15M (841)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15m.txt\"\r\necho 841 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 841 deepseek 3600\r\necho 841 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794803284015.3027,
+      "batMtime": 1794799394706.5664,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15n.txt",
+      "text": "858 start Mon 11/16/2026  4:21:30.76 \n858 end  5:23:09.65 \nall done  5:23:09.65\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 04:25 CST: DeepSeek 858 (squadrons of three, Ryan R280). Code only.\r\ntitle Board: DeepSeek 15N (858)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15n.txt\"\r\necho 858 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 858 deepseek 3600\r\necho 858 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794828189657.847,
+      "batMtime": 1794824478761.6501,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15o.txt",
+      "text": "865 start Mon 11/16/2026  5:50:25.90 \n865 end  7:01:28.95 \nall done  7:01:28.96\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 05:58 CST: DeepSeek 865 (memory lint KNOWN items, R281 into RULEBOOK 2.4). Text only.\r\ntitle Board: DeepSeek 15O (865)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15o.txt\"\r\necho 865 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 865 deepseek 3600\r\necho 865 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794834088963.051,
+      "batMtime": 1794829822957.7837,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15p.txt",
+      "text": "872 start Mon 11/16/2026  7:03:38.21 \n872 end  7:55:24.71 \nall done  7:55:24.71\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 07:15 CST: DeepSeek 872 (Nov 15 afternoon check conditions, HANDOFF stale pick). Text and one test.\r\ntitle Board: DeepSeek 15P (872)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15p.txt\"\r\necho 872 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 872 deepseek 3600\r\necho 872 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794837324718.5498,
+      "batMtime": 1794834203241.6545,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15q.txt",
+      "text": "873 start Mon 11/16/2026 12:27:56.58 \n873 end 14:14:10.27 \nall done 14:14:10.27\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 12:35 CST: DeepSeek 873 (failure reporting in stage 5 paint bake and the 207 scene gate; Codex prompt line). Code only, no GPU.\r\ntitle Board: DeepSeek 15Q (873)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15q.txt\"\r\necho 873 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 873 deepseek 7200\r\necho 873 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794860050279.639,
+      "batMtime": 1794853659697.093,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15r.txt",
+      "text": "916 start Mon 11/16/2026 15:40:26.13 \n916 end 16:49:22.22 \nall done 16:49:22.23\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 15:45 CST: DeepSeek 916 (stage 5 self-test success case fails on the PC; is the real bake check wrong). Code only, no GPU.\r\ntitle Board: DeepSeek 15R (916)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15r.txt\"\r\necho 916 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 916 deepseek 7200\r\necho 916 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794869362236.218,
+      "batMtime": 1794865210677.458,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15s.txt",
+      "text": "932 start Mon 11/16/2026 18:48:05.72 \n932 end 19:58:06.90 \nall done 19:58:06.90\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 18:50 CST: DeepSeek 932 (whole hull numbers on every Godot screen). Code only, no GPU.\r\ntitle Board: DeepSeek 15S (932)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15s.txt\"\r\necho 932 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 932 deepseek 7200\r\necho 932 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794880686905.3726,
+      "batMtime": 1794876464365.6924,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15t.txt",
+      "text": "953 start Mon 11/16/2026 22:48:03.60 \n953 end  0:51:19.88 \nall done  0:51:19.88\n",
+      "bat": "@echo off\r\nrem Board, Nov 16 22:58 CST: DeepSeek 953 (PR pages link to GitHub files, no PC paths; Artoo on PR 924). Code only, no GPU.\r\ntitle Board: DeepSeek 15T (953)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15t.txt\"\r\necho 953 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 953 deepseek 7200\r\necho 953 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794898279886.4038,
+      "batMtime": 1794890869540.069,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15u.txt",
+      "text": "953 start Tue 11/17/2026  2:25:38.89 \n953 end  3:41:23.88 \nall done  3:41:23.88\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 02:35 CST: DeepSeek 953 run 2 (PR 963: path rewrite must match either separator; Linux CI failed). Code only, no GPU.\r\ntitle Board: DeepSeek 15U (953 run 2)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15u.txt\"\r\necho 953 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 953 deepseek 7200\r\necho 953 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794908483888.1675,
+      "batMtime": 1794903912321.2788,
+      "missingBat": false
+    },
+    {
+      "name": "ds_15v.txt",
+      "text": "983 start Tue 11/17/2026  9:37:22.83\n",
+      "bat": "@echo off\r\nrem Board, Nov 17 09:40 CST: DeepSeek 15V: 983 (the big station blocks the 19 hexes it covers, R314). Code only, no GPU.\r\ntitle Board: DeepSeek 15V (983)\r\nsetlocal\r\nset \"V=%USERPROFILE%\\Downloads\\voidsworn_test\"\r\nset \"L=%V%\\ds_15v.txt\"\r\necho 983 start %DATE% %TIME% > \"%L%\"\r\ncall \"%V%\\RUN_RETRY.bat\" 983 deepseek 7200\r\necho 983 end %TIME% >> \"%L%\"\r\necho all done %TIME% >> \"%L%\"\r\n",
+      "mtime": 1794929842838.2678,
+      "batMtime": 1794929828286.3467,
+      "missingBat": false
+    }
+  ],
+  "jobs": [
+    {
+      "lane": "main",
+      "issue": 982,
+      "out": "board/issue-982",
+      "status": {
+        "run": "2f7d421d7a7f4aa0b4f6f6d9ecd58ccc",
+        "started": "2026-11-17T16:17:24.1881557Z",
+        "status": "running",
+        "finished": "",
+        "reason": "",
+        "branch": "codex/issue-982",
+        "commit": ""
+      },
+      "result": "job claimed: issue #982 by codex, run 2f7d421d7a7f4aa0b4f6f6d9ecd58ccc; current instruction validated\nagent running\n"
+    },
+    {
+      "lane": "b",
+      "issue": 975,
+      "out": "board_b/issue-975",
+      "status": {
+        "run": "2399d27b4eb74e3588a7e8242dae9961",
+        "started": "2026-11-17T15:51:13.5926299Z",
+        "status": "running",
+        "finished": "",
+        "reason": "",
+        "branch": "codex/issue-975",
+        "commit": ""
+      },
+      "result": "job claimed: issue #975 by codex, run 2399d27b4eb74e3588a7e8242dae9961; current instruction validated\nagent running\n"
+    },
+    {
+      "lane": "c",
+      "issue": 985,
+      "out": "board_c/issue-985",
+      "status": {
+        "run": "3f42ec9b307e497bb7e3633f26789890",
+        "started": "2026-11-17T16:43:18.7776162Z",
+        "status": "running",
+        "finished": "",
+        "reason": "",
+        "branch": "codex/issue-985",
+        "commit": ""
+      },
+      "result": "job claimed: issue #985 by codex, run 3f42ec9b307e497bb7e3633f26789890; current instruction validated\nagent running\n"
+    },
+    {
+      "lane": "d",
+      "issue": 984,
+      "out": "board_d/issue-984",
+      "status": {
+        "run": "5ea2b307e8b9417fbc99afa682b2894f",
+        "started": "2026-11-17T16:40:33.0899589Z",
+        "status": "running",
+        "finished": "",
+        "reason": "",
+        "branch": "codex/issue-984",
+        "commit": ""
+      },
+      "result": "job claimed: issue #984 by codex, run 5ea2b307e8b9417fbc99afa682b2894f; current instruction validated\nagent running\n"
+    },
+    {
+      "lane": "deepseek",
+      "issue": 983,
+      "out": "work217/issue-983-deepseek/20261117_093725/out",
+      "status": {
+        "run": "5e8e4a7d5830400384b8189c1b73150f",
+        "started": "2026-11-17T15:37:26.6112061Z",
+        "status": "running",
+        "finished": "",
+        "reason": "",
+        "branch": "work/issue-983-deepseek",
+        "commit": ""
+      },
+      "result": "started Tue 11/17/2026  9:37:25.71 ()\nagent running  9:38:07.31\n"
+    }
+  ]
+}

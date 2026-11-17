@@ -258,7 +258,7 @@ try {
   Remove-Item Function:\\Invoke-RestMethod
 }
 # The job checks exercise the shared start contract on every CI host; runner_selftest also drives real Windows .bat files.
-foreach ($case in @('closed','running','pr','linked-pr','branch','other-partial','missing','duplicate','empty','missing-field','missing-effort','quoted-marker','two-fixed','earlier-run','old-numbered-run')) {
+foreach ($case in @('closed','running','pr','linked-pr','branch','other-partial','missing','duplicate','empty','run-label-only','run-label-before-history','missing-field','missing-effort','quoted-marker','two-fixed','earlier-run','old-numbered-run')) {
   Init ("refuse-" + $case)
   $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
   switch ($case) {
@@ -271,6 +271,14 @@ foreach ($case in @('closed','running','pr','linked-pr','branch','other-partial'
     'missing' { $db.issue.body = $db.issue.body.Replace('THIS IS THE JOB NOW','An old brief') }
     'duplicate' { $db.issue.body += "\n## Run 2 (THIS IS THE JOB NOW)\nSecond brief" }
     'empty' { $db.issue.body = $db.issue.body.Substring(0, $db.issue.body.IndexOf('Finish the current fixture job.')) }
+    'run-label-only' {
+      $db.issue.body = $db.issue.body.Substring(0, $db.issue.body.IndexOf('Finish the current fixture job.')).Replace(
+        '## THIS IS THE JOB NOW', '## THIS IS THE JOB NOW (run 2, Board, Nov 17)')
+    }
+    'run-label-before-history' {
+      $db.issue.body = $db.issue.body.Replace('## THIS IS THE JOB NOW', '## THIS IS THE JOB NOW (run 2, Board, Nov 17)').Replace(
+        "Finish the current fixture job.\n\n## Earlier run (DONE)", '## Run 1 (Board, Nov 16): DONE')
+    }
     'missing-field' { $db.issue.body = $db.issue.body.Replace('Brief: below','') }
     'missing-effort' { $db.issue.body = $db.issue.body.Replace("Effort (Codex): high\n",'') }
     'quoted-marker' { $db.issue.body += "\n> THIS IS THE JOB NOW\n" }
@@ -290,9 +298,62 @@ foreach ($case in @('closed','running','pr','linked-pr','branch','other-partial'
   Assert ($LASTEXITCODE -eq 14) "must refuse $case"
   $s = Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
   Assert ($s.status -eq 'failed' -and $s.reason.Contains('no agent started')) "clear refusal $case"
+  if ($case -like 'run-label-*') { Assert ($s.reason.Contains('current instruction refused: the current block is empty')) 'a run label is not instruction content' }
   Finish '14'
   Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) "refusal cannot mutate GitHub: $case"
   Pass ("job refused without writes: " + $case)
+}
+# Issue 969: compare the other seat's tip to main, not a branch name that could move.
+foreach ($status in @('behind','identical','ahead','diverged','unknown','missing','read-failure','open-pr','mixed')) {
+  Init ('other-seat-compare-' + $status)
+  $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+  $oldBranch = 'opus/issue-846-docs'
+  $tip = if ($status -eq 'identical') { '${main}' } elseif ($status -eq 'ahead') { '${fast}' } elseif ($status -eq 'diverged') { '${conflict}' } else { '${ancestor}' }
+  $db.branches += @(@{ name = $oldBranch; commit = @{ sha = $tip } })
+  $answer = if ($status -eq 'missing') { @{} } elseif ($status -in @('read-failure','open-pr','mixed')) { @{ status = 'behind' } } else { @{ status = $status } }
+  $db.comparisons | Add-Member -NotePropertyName $tip -NotePropertyValue $answer
+  if ($status -eq 'identical') {
+    $db.branches[-1].name = 'muse/issue-846'
+    $oldBranch = $db.branches[-1].name
+  }
+  if ($status -eq 'mixed') {
+    $db.branches += @(@{ name = 'work/issue-846-deepseek'; commit = @{ sha = '${fast}' } })
+    $db.comparisons | Add-Member -NotePropertyName '${fast}' -NotePropertyValue @{ status = 'ahead' }
+  }
+  if ($status -eq 'open-pr') { $db.pulls = @(@{ number = 999; head = @{ ref = $oldBranch } }) }
+  Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+  $endpoint = "repos/rcbailey12/voidsworn/compare/main...$tip"
+  if ($status -eq 'read-failure') { $env:PC_TEST_GH_FAIL = "GET $endpoint" }
+  & $common announce $out 846 codex $repo 21600 'codex_issue.bat 846' real
+  $code = $LASTEXITCODE; $env:PC_TEST_GH_FAIL = ''
+  $log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+  $comparisons = @(Calls | Where-Object { $_.endpoint -match '/compare/' })
+  if ($status -in @('behind','identical')) {
+    Assert ($code -eq 0) "finished other-seat branch must allow a job: $status"
+    Assert ($log.Contains("finished work: delivery branch $oldBranch tip $tip is already in main ($status)")) 'log names finished branch'
+    Assert ((Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json).running) 'accepted job acquires claim'
+    Finish '8'
+  } else {
+    Assert ($code -eq 14) "unverified or active other-seat work must block: $status"
+    $s = Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+    Assert ($s.status -eq 'failed' -and $s.reason.Contains('no agent started')) 'clear refusal before work'
+    if ($status -eq 'read-failure') {
+      Assert ($s.reason.Contains("GET compare/main...$tip failed")) 'compare failure names unreadable REST endpoint'
+    } elseif ($status -eq 'open-pr') {
+      Assert ($s.reason.Contains("open PR #999 from other seat $oldBranch")) 'open PR still blocks even with a finished tip'
+    } else {
+      $blocked = if ($status -eq 'mixed') { 'work/issue-846-deepseek' } else { $oldBranch }
+      Assert ($s.reason.Contains("delivery branch $blocked from another seat exists")) 'active or unknown compare answer keeps branch refusal'
+    }
+    Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) 'branch or compare refusal cannot mutate GitHub'
+  }
+  if ($status -eq 'open-pr') {
+    Assert ($comparisons.Count -eq 0) 'open PR blocks before branch comparison'
+  } else {
+    $count = if ($status -eq 'mixed') { 2 } else { 1 }
+    Assert ($comparisons.Count -eq $count -and $comparisons[0].method -eq 'GET' -and $comparisons[0].endpoint -eq $endpoint) 'REST compare uses main and branch tip SHA'
+  }
+  Pass ("other-seat branch comparison: " + $status)
 }
 foreach ($endpoint in @('GET repos/rcbailey12/voidsworn/pulls?state=open&per_page=100',
   'GET repos/rcbailey12/voidsworn/branches?per_page=100', 'GET repos/rcbailey12/voidsworn/issues/846/comments?per_page=100',
@@ -338,6 +399,25 @@ foreach ($form in @('## Run 2: THIS IS THE JOB NOW','**Run 2: THIS IS THE JOB NO
   Finish '8'
 }
 Pass 'heading, bold and plain current lines allow same-prefix branches and open PR reruns'
+# Issue 984: issue 975's run 2 starts with prose about run 1, followed by numbered instructions.
+foreach ($boundary in @('## Run 1 (Board, Nov 16): DONE', '**Run 1 (Board, Nov 16): DONE**', 'Run 1 (Board, Nov 16): DONE',
+  ('## Run 1: DONE ' + ('old label ' * 10)), ('**Run 1: DONE ' + ('old label ' * 10) + '**'))) {
+  Init ('prose-run-' + [guid]::NewGuid().ToString('N'))
+  $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+  $fixed = $db.issue.body.Substring(0, $db.issue.body.IndexOf("\n\n## THIS IS THE JOB NOW"))
+  $current = "## THIS IS THE JOB NOW (run 2, Board, Nov 17)\n\nRun 1 (PR 977) passed every check, but the station still needs its paint and close zoom work before this run is done.\n\n" +
+    "Run 1 passed every check.\n\nRun 1: " + ('this prose continues well beyond a short label. ' * 3) + "\n\n" +
+    "1. Keep the station paint instructions.\n2. Keep the close zoom checks."
+  $db.issue.body = $fixed + "\n\n" + $current + "\n\n" + $boundary + "\nOLD BRIEF MUST NOT REACH AGENT\n"
+  if ($boundary.StartsWith('**')) { $db.issue.body = $db.issue.body.Replace("\n", "\r\n") }
+  Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+  Announce
+  $snapshot = Get-Content (Join-Path $out 'validated_issue.json') -Raw | ConvertFrom-Json
+  $expected = $fixed + "\n\n" + $current
+  Assert ($snapshot.body.Replace("\r\n", "\n") -eq $expected) '975 body keeps all prose and numbered items, ending only at a run label'
+  Finish '8'
+}
+Pass '975 run 2 keeps long and short Run 1 prose; heading, bold and short plain labels still end the brief'
 foreach ($seat in @('deepseek','kimi','kimicode','opus')) {
   $seatPrefix = if ($seat -eq 'opus') { 'opus' } else { 'work' }
   Init ('no-effort-' + $seat) ($seatPrefix + '/issue-846')

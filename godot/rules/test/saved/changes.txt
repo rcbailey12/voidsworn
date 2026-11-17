@@ -1,0 +1,4 @@
+Saved manifest before: <initial baseline>
+Saved manifest after: b9054be8a2ee3a67b6fcef2f0f59767bf74ad2f1cfd82d800775dc54cb95e2b4
+
+Initial saved results: 281 battles and 8 other files. No earlier saved baseline.

@@ -134,7 +134,9 @@ func run_enemy() -> void: # the enemy side's steps, timed without the hash recor
 func batch(file: String, outdir: String) -> int:
 	var all = JSON.parse_string(FileAccess.get_file_as_string(file)); var worst := 0; var k := 0
 	for name in all.keys():
+		print("batch start ", name)
 		var c := scenario(name, outdir.path_join(name + ".jsonl"), -1, file); worst = max(worst, c); k += 1
+		print("batch result ", name, " exit ", c)
 	print("batch ", k, " battles -> ", outdir)
 	return worst
 # threat <scenario> <out>: api.threat_map at the start of each round up to round 3, for golden.js threat (ui3d.js computeThreat)

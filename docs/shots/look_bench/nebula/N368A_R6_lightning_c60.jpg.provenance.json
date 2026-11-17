@@ -1,0 +1,94 @@
+{
+  "source_commit": "c56f44523c58d25054cc7dd933d6ef8ca221d78f",
+  "source_diff_sha256": "9963cf7855abf144b767710c039b22d5dd4074cebaa5e05ff8ef67929e51bf98",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "N368A_R6_lightning_c60.jpg",
+  "date": "2026-11-17T08:09:33Z",
+  "sources": [
+    {
+      "source_commit": "c56f44523c58d25054cc7dd933d6ef8ca221d78f",
+      "source_diff_sha256": "9963cf7855abf144b767710c039b22d5dd4074cebaa5e05ff8ef67929e51bf98",
+      "source_dirty": true,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "storm_c60_peak.png",
+      "source_commit": "c56f44523c58d25054cc7dd933d6ef8ca221d78f",
+      "source_dirty": true,
+      "source_diff_sha256": "9963cf7855abf144b767710c039b22d5dd4074cebaa5e05ff8ef67929e51bf98",
+      "stage": "installed in game",
+      "date": "2026-11-17T00:29:17Z",
+      "image_sha256": "135b60382c8617ba8229e88a6773de8dec86fb1a0c1e65f1cde647cf68143d1c",
+      "sources": [
+        {
+          "source_commit": "c56f44523c58d25054cc7dd933d6ef8ca221d78f",
+          "source_diff_sha256": "9963cf7855abf144b767710c039b22d5dd4074cebaa5e05ff8ef67929e51bf98",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "storm_c60_peak.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:34Z",
+      "image_sha256": "eaaf9dce259c2d0c68f5ef56d297fb46b69c14fe1897938f14d7de9e077ca5af",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "neb_c60_peak.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:24Z",
+      "image_sha256": "7d022869b71bde303fa2850b8ca6f0af9118aa2218d735cd8e948f888ea7c5f1",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "7475eda907a5868c807c5641f5d9fcab36869f9dac9ac119820bf6422ae19c68"
+  ],
+  "stamp_template_sha256": "8655dd7e1f56fcf221497ab4c6317f0fc4f6e97d1d4037bcb7f4226f6e3fcd9a",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACAklEQVR4nO3XsQ3AIADEQEiLaNh/2EyBC3S3wJfWz7XPAADu+4INAEB0AaDj6QJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQAQXQB4i6cLABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAFgNH5XLgEihsPw9gAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "0f9298fbac78390718383a2598861ec615125faa17445bc472efa746915443ed"
+}

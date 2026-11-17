@@ -1,0 +1,72 @@
+Voidsworn rules parity: 3 battles, 1 workers
+Records and log: <proof>\result-crash
+[1/5] Exporting the game data tables for Godot...
+  data export: PASS
+[2/5] Random numbers: first 10,000 draws from 3 seeds...
+  seed 1001: PASS
+  seed 7: PASS
+  seed 4242424242: PASS
+[3/5] Math functions on all 316,090 inputs...
+  math: PASS (math 316090 values, differences from Node: none)
+[4/5] Seeded battles, every action compared (state hash, PRNG state)...
+  worker 0: finished 3 battles (Godot exit 3221225501)
+  worker 0: FAIL (batch exit 3221225501; see <proof>\result-crash\workers\godot0.log)
+  battle s5: FAIL (never ran in its batch; fails alone too, exit 3221225501)
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: planted crash
+   at: crash (core/core_bind.cpp:349)
+   GDScript backtrace (most recent call first):
+       [0] scenario (res://rules/test/parity_main.gd:177)
+       [1] _init (res://rules/test/parity_main.gd:19)
+
+================================================================
+CrashHandlerException: Program crashed with signal 4
+Engine version: Godot Engine v4.7.2.stable.official (ed1daf0bf001b61586d9930840f2f1394092c079)
+Dumping the backtrace. Please include this when reporting the bug on: https://github.com/godotengine/godot/issues
+Load address: 7ff69ed60000
+
+[1] 7ff7e2e34d03 (main+40d4d03) - no debug info in PE/COFF executable
+[2] 7ff80a45ce45 (ntdll.dll+8ce45) - no debug info in PE/COFF executable
+[3] 7ff80a47296e (ntdll.dll+a296e) - no debug info in PE/COFF executable
+[4] 7ff80a422553 (ntdll.dll+52553) - no debug info in PE/COFF executable
+[5] 7ff80a47147d (ntdll.dll+a147d) - no debug info in PE/COFF executable
+[6] 7ff7e2614afd (main+38b4afd) - no debug info in PE/COFF executable
+[7] 7ff7df3b6a49 (main+656a49) - no debug info in PE/COFF executable
+[8] 7ff7df294797 (main+534797) - no debug info in PE/COFF executable
+[9] 7ff7e2b7803e (main+3e1803e) - no debug info in PE/COFF executable
+[10] 7ff7e28fc471 (main+3b9c471) - no debug info in PE/COFF executable
+[11] 7ff7df3b3b25 (main+653b25) - no debug info in PE/COFF executable
+[12] 7ff7df29eccc (main+53eccc) - no debug info in PE/COFF executable
+[13] 7ff7df29f3e9 (main+53f3e9) - no debug info in PE/COFF executable
+[14] 7ff7e2b86416 (main+3e26416) - no debug info in PE/COFF executable
+[15] 7ff7deddf9bc (main+7f9bc) - no debug info in PE/COFF executable
+[16] 7ff7dedb2ac4 (main+52ac4) - no debug info in PE/COFF executable
+[17] 7ff7dedb2b7d (main+52b7d) - no debug info in PE/COFF executable
+[18] 7ff7ded610c8 (main+10c8) - no debug info in PE/COFF executable
+[19] 7ff7ded613f5 (main+13f5) - no debug info in PE/COFF executable
+[20] 7ff808547373 (kernel32.dll+17373) - no debug info in PE/COFF executable
+[21] 7ff80a41cc90 (ntdll.dll+4cc90) - no debug info in PE/COFF executable
+[22] -1 (main+-7ff7ded60001) - no debug info in PE/COFF executable
+-- END OF C++ BACKTRACE --
+================================================================
+GDScript backtrace (most recent call first):
+    [0] scenario (res://rules/test/parity_main.gd:177)
+    [1] _init (res://rules/test/parity_main.gd:19)
+-- END OF GDSCRIPT BACKTRACE --
+================================================================
+  battle s1: FAIL (never ran in its batch; passes alone, exit 0)
+  battle s2: FAIL (never ran in its batch; passes alone, exit 0)
+[4b] Threat overlay, rounds 1 to 3...
+  threat map s4: PASS
+  threat map s19: PASS
+  threat map s23: PASS
+[4c] Threads and the hard stop (s4, s23)...
+  threads: PASS
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 984 events, 60 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 10, 1810 events, 102 reads during enemy steps on a worker)
+[5/5] Enemy think time (report only; game bar: worst under about 0.5 s)...
+  timing records s5: FAIL (missing file)
+Whole rules parity step: 268.217 s
+FAIL: 5 check(s) differ.

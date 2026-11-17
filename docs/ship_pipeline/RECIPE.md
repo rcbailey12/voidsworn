@@ -208,8 +208,9 @@ glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces o
 an old hull 0 pixels changed). Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's throat and bell lining, which the
 stack gives one emissive surface with the plug cone, with its own map (`bake_engine_glow`: the hot core on the axis, the plug
-hottest, to deep red at the wall, each engine its own reach, hot spots, soot streaks, the lining
-dark toward the lip, each engine its own; written by stage 7 as `<code>_glow_emission.jpg`).
+hottest, to deep red at the wall, hot spots, soot streaks and the lining dark toward the lip;
+R308: one colour, strength, core reach and normalized pattern shared by every engine on a ship,
+scaled to bell size, as ships.md section 0 specifies; written by stage 7 as `<code>_glow_emission.jpg`).
 
 Kinds and zones a new sheet ship may bring (issue 651, A18 to A20; each is a kit rule, never a ship rule):
 - a flank hangar mouth (part kind `hangar`) reads as a dark, deep bay (R240, replacing issue 651's warning stripes): its rim
@@ -256,7 +257,7 @@ and E12 (and every later Eclipse sheet ship) on the same shared machinery. What 
   hottest and deeper green dim. Round 3 raises its brightness to read at camera 170. The core and lens: green with a small
   green-white centre.
   The engine ring: pale light in the game's Eclipse engine colour (`faction_looks.json` deathless `engine`, paled, a touch of
-  its `accent`) with hot spots and dim gaps, each engine its own, round the black shade disc; no flame. The map is half the
+  its `accent`) with hot spots and dim gaps shared by every engine on one ship (R308), round the black shade disc; no flame. The map is half the
   atlas size (`res_frac`). Round 3 (R243): the same thin rim strip emits more light over a broader soft profile so it reads
   at camera 170; the core is bright green across its face, white-hot only within its central 0.18 radius. Because the light
   map also carries the hull's own rim line, `GLOW_HULL` gives only that trim its own copied material, marked `hull_surface`.
@@ -462,8 +463,9 @@ ship a hangar); the breach count is not the class and faction count, the anchors
 sides are more than one apart; a hard point is more than 0.012 of the ship's length off the mesh (the length is the x extent of the
 glb's mesh box, so the limit scales with the ship; `hp_core` must be inside the hull's box). An engine point is the centre of
 its bell's exit, and an open bell has no mesh there: an engine point over the limit passes only when the authored bell is there
-(`open_bell`, issue 592): mesh on its exit plane (within the limit along the axis) at 0.7 to 1.15 of `extras.radius` from the
-axis in at least 10 of 12 sectors round it, a throat upstream (mesh inside 0.9 of the radius within two radii forward), and
+(`open_bell`, issues 592, 967): mesh on its exit plane (within the smaller of the mesh limit and 0.25 of `extras.radius`
+along the axis) at 0.7 to 1.15 of `extras.radius` from the axis in at least 10 of 12 sectors round it, a throat upstream
+(mesh inside 0.9 of the radius within two radii forward), and
 nothing in the exhaust path (no mesh inside 0.6 of the radius within two radii aft). The limit is not loosened for any point; a weapon rests aimed backward, a port
 mount sits to starboard or the other way round, a forward weapon does not point forward, an engine does not point aft; a weapon
 point lacks one of the eight extras in the table above or its extras slot, weapon or arc disagree with its name; a breach anchor
@@ -476,7 +478,7 @@ where the turret puts it. `check_export_selftest.py` then breaks copies of the r
 export (a slot's points removed, a point moved 0.05 of the ship's length off the hull, a gun turned aft, a port point mirrored to
 starboard (a port weapon point, or on a ship with no port arc its port boarding origin, issue 618), `hp_core` removed, a weapon's `extras.socket` removed, an engine, rcs and board origin removed, a breach anchor removed,
 a breach anchor moved onto a muzzle, a breach anchor turned to face in; on an export with turrets, the turrets folded back into
-the ship mesh and the turning meshes taken away; on an export with an open bell, that engine's radius doubled and its point
+the ship mesh and the turning meshes taken away; for each open bell identified by a fresh check, that engine's radius doubled and its point
 moved half a radius down its exhaust) and the check must refuse every copy, each for its own reason. `contract_selftest.py` proves the same check on the round 7 ship (C15s_23) in the sandbox, with its real `data.js` weapon
 list and the 5 anchors the cruiser of the Hullbreakers gets from the table. An `unbaked=1` test export names its surfaces
 `<code>_hull` and `<code>_parts` too, so the clearance is measured in the sandbox as on a baked ship.
