@@ -266,6 +266,14 @@ disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voids
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
 (project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
+Before setting aside an earlier checkout, the runner reuses it only when its working tree, including ignored files outside
+Godot's `.godot` and `.import` caches, is clean and all local history (including reflogs) is in the freshly fetched mirror.
+It fetches and switches to the new branch, leaving ignored caches in place; a cache collision or an uncertain
+check keeps the earlier checkout beside repo instead. More than two `repo-kept-*` copies triggers a warning naming each
+copy and its size, never deletion. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
+unique ignored work (issue 860, run 2, Board Nov 16). The no-deletion rule in 3.3 still applies.
+A checkout that changes while the runner starts is never reset; the job stops instead.
+
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
 side, heavy bakes and Blender renders take more of it, and nothing is started that would run the card out of its 16 GB of
