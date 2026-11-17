@@ -75,7 +75,9 @@ async function test(check, base, root) {
 
   const calls = [];
   let active = false, starts = 0, probes = 0, running = false;
+  const modern = () => ({schemaVersion:2,lanes:Array.from({length:5},()=>({})),build:{id:'fixture-hash',stale:false}});
   const deps = {
+    buildHash: () => 'fixture-hash', confirmRestart: async () => { throw Error('Unexpected restart'); }, stopPublisher: () => { throw Error('Unexpected stop'); },
     discover: () => ({executable:'fixture.exe',host:HOST}), delay: async () => {},
     command: (exe,args) => {
       assert.equal(exe,'fixture.exe'); calls.push(args);
@@ -83,7 +85,7 @@ async function test(check, base, root) {
       assert.deepEqual(args, ['serve', ...phone.FLAGS, phone.TARGET, ...(args.at(-1)==='off'?['off']:[])]);
       active = args.at(-1) !== 'off';
     },
-    probe: async headers => { probes++; if (!running) throw Object.assign(Error('Not running'),{code:'ECONNREFUSED'}); if (headers) assert.deepEqual(headers,{Host:HOST,'X-Forwarded-Host':HOST,'X-Forwarded-Proto':'https','X-Forwarded-For':'100.64.0.1'}); },
+    probe: async headers => { probes++; if (!running) throw Object.assign(Error('Not running'),{code:'ECONNREFUSED'}); if (headers) assert.deepEqual(headers,{Host:HOST,'X-Forwarded-Host':HOST,'X-Forwarded-Proto':'https','X-Forwarded-For':'100.64.0.1'}); return modern(); },
     startPublisher: async () => { starts++; running=true; return 'fixture log'; }
   };
   await phone.main('on',deps);
@@ -100,7 +102,7 @@ async function test(check, base, root) {
   await assert.rejects(phone.main('on',{...deps,discover:()=>({executable:null,host:null})}),/https:\/\/tailscale.com\/download/);
   await assert.rejects(phone.main('on',{...deps,discover:()=>({executable:'fixture.exe',host:null})}),/sign in/);
   await assert.rejects(phone.main('on',{...deps,probe:async()=>{throw Error('Occupied');}}),/Occupied/);
-  await assert.rejects(phone.main('on',{...deps,probe:async headers=>{if(headers) throw Error('Old publisher');}}),/restart/);
+  await assert.rejects(phone.main('on',{...deps,probe:async headers=>{if(headers) throw Error('Old publisher'); return modern();}}),/restart/);
   check('phone setup explains missing sign-in, occupied ports and an old publisher', () => assert.equal(starts,1));
 
   // Reproduce the slow first Windows background start without real waits or Serve.
@@ -109,6 +111,7 @@ async function test(check, base, root) {
     startPublisher: async () => { slowStarts++; return 'slow fixture log'; },
     probe: async () => {
       if (elapsed < 61000) throw Object.assign(Error('Starting'), {code:'ECONNREFUSED'});
+      return modern();
     }};
   await phone.main('on',slow);
   check('PHONE_ON waits for a cold Windows start longer than one minute', () => {
@@ -126,6 +129,35 @@ async function test(check, base, root) {
     assert(elapsed >= 90000 && elapsed < 94000);
     assert.equal(calls.filter(args => args[1] !== 'status').length,changesBefore);
   });
+
+  for (const old of [{schemaVersion:1}, {schemaVersion:2}, {...modern(),build:{id:'old'}}, {...modern(),build:{id:'fixture-hash',stale:true}}]) {
+    let accepted=0, stopped=0, launched=0, upgraded=false;
+    const restart={...deps,probe:async()=>upgraded?modern():old,confirmRestart:async()=>{accepted++;return true;},
+      stopPublisher:async()=>{assert.equal(accepted,1);stopped++;},startPublisher:async()=>{assert.equal(stopped,1);launched++;upgraded=true;return 'restart fixture';}};
+    await phone.ensurePublisher(HOST,{now:Date.now,delay:async()=>{},...restart});
+    assert.equal(launched,1); assert.equal(stopped,1);
+  }
+  check('schema 1, missing build, mismatched hash and stale disk each offer a restart after Y',()=>{});
+  let touched=false;
+  await assert.rejects(phone.ensurePublisher(HOST,{...deps,probe:async()=>({schemaVersion:1}),confirmRestart:async()=>false,stopPublisher:async()=>{touched=true;}}),/kept/);
+  check('declining the restart stops nothing',()=>assert.equal(touched,false));
+  check('process matching selects only node executing this folder publisher',()=>{
+    const target=path.join(base,'mission','publisher.js');
+    const processes=[{Name:'node.exe',ProcessId:123,CommandLine:'"C:/Program Files/nodejs/node.exe" "'+target+'"'},
+      {Name:'node.exe',ProcessId:124,CommandLine:'node "'+path.join(base,'other','publisher.js')+'"'},
+      {Name:'codex.exe',ProcessId:125,CommandLine:'codex "'+target+'"'},
+      {Name:'node.exe',ProcessId:126,CommandLine:'node -e "'+target+'"'}];
+    assert.deepEqual(phone.matchingPublishers(processes,target).map(p=>p.ProcessId),[123]);
+  });
+
+  let schema=1;
+  const probeServer=http.createServer((req,res)=>res.end(JSON.stringify({schemaVersion:schema,lanes:Array.from({length:5},()=>({})),build:{id:'test'}})));
+  await new Promise(resolve=>probeServer.listen(0,'127.0.0.1',resolve));
+  try {
+    for(schema of [1,2])assert.equal((await phone.probe({},'http://127.0.0.1:'+probeServer.address().port)).schemaVersion,schema);
+    schema=3;await assert.rejects(phone.probe({},'http://127.0.0.1:'+probeServer.address().port),/another page/);
+    check('phone HTTP probe reads schema 1 and 2 and refuses other schemas',()=>{});
+  } finally { await new Promise(resolve=>probeServer.close(resolve)); }
 
   // Real HTTP listener with deterministic status discovery, never real Serve.
   const reserve = http.createServer();

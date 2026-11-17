@@ -5,6 +5,7 @@ const fs=require('fs'), path=require('path'), os=require('os'), http=require('ht
 const {spawn,spawnSync}=require('child_process');
 const assert=require('assert/strict');
 const {makeCases}=require('./selftest');
+const {compatiblePage}=require('./publisher');
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function run(){
   const base=fs.mkdtempSync(path.join(os.tmpdir(),'mission-phone-'));
@@ -12,7 +13,7 @@ async function run(){
   const revision=spawnSync('git',['rev-parse','--short=12','HEAD'],{encoding:'utf8',windowsHide:true}).stdout.trim()+' + working tree';
   const cases=makeCases(base,revision);
   let live=cases.overview;
-  const page=fs.readFileSync(path.join(__dirname,'../../../docs/mission/index.html'));
+  const page=compatiblePage(fs.readFileSync(path.join(__dirname,'../../../docs/mission/index.html'),'utf8'));
   const assets={'/artoo.svg':'image/svg+xml','/ChakraPetch-SemiBold.ttf':'font/ttf','/Barlow-Regular.ttf':'font/ttf','/AzeretMono-VF.ttf':'font/ttf'};
   const server=http.createServer((req,res)=>{
     const m=/^\/fixtures\/([a-z-]+)\.json$/.exec(req.url.split('?')[0]);
@@ -50,7 +51,7 @@ async function run(){
       await goto('?fixture='+name);
       if(selected[name])await evaluate(`document.getElementById('lane-${selected[name]}').scrollIntoView({block:'start'});window.scrollBy(0,-52)`);
       const state=await evaluate(`document.getElementById('lane-${selected[name] || 'main'}').dataset.state`);
-      if(selected[name])assert.equal(state,({gap:'finished',ended:'idle'})[name] || name);
+      if(selected[name])assert.equal(state,({gap:'finished',ended:'blocked'})[name] || name);
       if(name==='gap') {
         await evaluate("document.querySelector('#lane-main button').click()");
         assert.match(await evaluate("document.querySelector('#sheet-content').textContent"),/Checked push confirmed/);
@@ -68,6 +69,9 @@ async function run(){
       await screenshot(name);
       console.log('PASS phone fixture '+name+' at 412 x 720');
     }
+    live=structuredClone(cases.overview);live.schemaVersion=1;delete live.build;live.generatedAt=new Date().toISOString();
+    await goto('');assert.equal(await evaluate("document.querySelectorAll('.lane').length"),5);
+    console.log('PASS compatibility page also renders schema 1');
     await goto('?fixture=night');
     await evaluate("document.getElementById('lane-b').scrollIntoView({block:'start'});window.scrollBy(0,-52)");await screenshot('lanes');
     await evaluate("document.getElementById('crew-heading').scrollIntoView({block:'start'});window.scrollBy(0,-52)");await screenshot('crew');
