@@ -14,7 +14,11 @@ const here = __dirname;
 const read = p => fs.readFileSync(p, 'utf8');
 const write = (p, s) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, s); };
 let passed = 0;
-function pass(s) { passed++; console.log('PASS ' + s); }
+const started = Date.now();
+function pass(s) {
+  passed++;
+  console.log('PASS ' + s + ' (elapsed ' + ((Date.now() - started) / 1000).toFixed(2) + ' s)');
+}
 // Run on every CI host: both entry points must use all five shared steps, and the task must carry resume context.
 for (const name of ['work_issue', 'codex_issue']) {
   const bat = read(path.join(here, name + '.bat'));
@@ -57,12 +61,48 @@ const testChildren = [];
 const testPidFiles = [];
 const gh = require('./runner_claim_fixture')(root);
 console.log('Evidence: ' + root);
+const timings = [];
+function recordTiming(step, start, code) {
+  const timing = { step, seconds: (Date.now() - start) / 1000, code };
+  timings.push(timing);
+  fs.appendFileSync(path.join(root, 'timings.jsonl'), JSON.stringify(timing) + '\n');
+}
 function run(exe, args, env = {}, cwd = root) {
+  const start = Date.now();
   const p = spawnSync(exe, args, { cwd, env: { ...process.env, ...env }, encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: /cmd\.exe$/i.test(exe), timeout: 90000 });
+  const script = args.indexOf('-File');
+  const step = script >= 0 ? path.basename(args[script + 1]) + ':' + args[script + 2] :
+    /^git(?:\.exe)?$/i.test(path.basename(exe)) ? 'git:' + (args[0] === '-C' ? args[2] : args[0]) : path.basename(exe);
+  recordTiming(step, start, p.status);
   if (p.error) throw p.error;
   return { code: p.status, text: (p.stdout || '') + (p.stderr || '') };
 }
 const ps = (args, env) => run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'runner_common.ps1'), ...args], env);
+function runEntryPoint(cmd, env) {
+  const start = Date.now();
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.env.COMSPEC, ['/d', '/s', '/c', cmd], {
+      cwd: root, env: { ...process.env, ...env }, windowsHide: true, windowsVerbatimArguments: true, timeout: 90000
+    });
+    testChildren.push(child);
+    let text = '', error;
+    child.stdout.on('data', b => text += b); child.stderr.on('data', b => text += b);
+    child.once('error', e => { error = e; });
+    child.once('close', code => {
+      recordTiming('runner entry point', start, code);
+      if (error) reject(error); else resolve({ code, text });
+    });
+  });
+}
+// Each arm owns its job folders and fake GitHub database. The real mirror lock still protects shared Git data.
+// Settle the whole batch before throwing so failure cleanup cannot race a runner that is still writing evidence.
+async function parallelArms(items, check) {
+  for (let i = 0; i < items.length; i += 4) {
+    const results = await Promise.allSettled(items.slice(i, i + 4).map(check));
+    const failed = results.find(r => r.status === 'rejected');
+    if (failed) throw failed.reason;
+  }
+}
 const source = path.join(root, 'upstream.git');
 assert.equal(run('git', ['init', '--bare', '-q', source]).code, 0);
 function object(type, value) {
@@ -147,7 +187,7 @@ const gitPath = run('where.exe', ['git.exe']).text.trim().split(/\r?\n/)[0];
 const mirror = path.join(root, 'shared mirror.git');
 const defaults = {
   PC_RUNNER_TEST: '1', PC_TEST_SOURCE: source, PC_TEST_MIRROR: mirror,
-  PC_TEST_PREFLIGHT: agent, PC_TEST_GIT: gitStub, PC_REAL_GIT: gitPath, PC_TEST_RETRY_SECONDS: '0',
+  PC_TEST_PREFLIGHT: agent, PC_TEST_GIT: gitPath, PC_REAL_GIT: gitPath, PC_TEST_RETRY_SECONDS: '0',
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
@@ -157,10 +197,15 @@ const defaults = {
   PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '',
   GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.invalid', GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.invalid'
 };
-function job(arm, label, extra = {}) {
+// Most scenarios need real Git only. Avoid a cmd + Node + Git process tree for every harmless Git call.
+// Keep the wrapper for every injected Git fault, late edit/status race and deliberate fetch hold.
+function gitEnvironment(env) {
+  return { ...env, PC_TEST_GIT: env.STUB_GIT_FAULT || env.STUB_CHECKOUT_EDIT || env.STUB_RECHECK_FAIL || env.STUB_FETCH_HOLD ? gitStub : gitPath };
+}
+async function job(arm, label, extra = {}) {
   const home = path.join(root, arm + '-' + label); fs.mkdirSync(home, { recursive: true });
-  const env = { ...defaults, WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
-    PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra };
+  const env = gitEnvironment({ ...defaults, WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
+    PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra });
   testPidFiles.push(env.PC_TEST_TRACE + '.pid');
   if (!fs.existsSync(env.PC_TEST_GH_DB)) {
     const db = gh.database(687, base);
@@ -187,7 +232,7 @@ function job(arm, label, extra = {}) {
   }
   const bat = path.join(here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
-  const r = run(process.env.COMSPEC, ['/d', '/s', '/c', cmd], env);
+  const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
   assert(fs.existsSync(path.join(home, arm === 'codex' ? 'issue-687/status.json' : 'dryrun-687-' + arm + '/latest.txt')), r.text);
   const runHome = arm === 'codex' ? home : read(path.join(home, 'dryrun-687-' + arm, 'latest.txt')).trim();
@@ -196,6 +241,8 @@ function job(arm, label, extra = {}) {
   write(path.join(home, 'console.txt'), r.text);
   return { ...r, out, repo, env, result: read(path.join(out, 'result.txt')), state: JSON.parse(read(path.join(out, 'status.json'))) };
 }
+const fixtureSetupSeconds = (Date.now() - started) / 1000;
+console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny shared source and stubs; retry delay 0 s)');
 (async () => { try {
   // Issue 860 run 2: exercise the real checkout with local Git data, never publish or discard fixture files.
   function checkoutFixture(label, prepare = () => {}, expectedKeep = false, options = {}) {
@@ -209,7 +256,7 @@ function job(arm, label, extra = {}) {
     const existing = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-'));
     const oldGit = fs.statSync(path.join(repo, '.git'));
     assert.equal(ps(['init', out, 'fixture/reuse'], defaults).code, 0);
-    const env = { ...defaults, STUB_CHECKOUT_MARKER: path.join(home, 'switch-hook.txt'), ...options.env };
+    const env = gitEnvironment({ ...defaults, STUB_CHECKOUT_MARKER: path.join(home, 'switch-hook.txt'), ...options.env });
     const r = ps(['checkout', repo, out, 'fixture/reuse', ''], env);
     if (options.changed) {
       assert.equal(r.code, 14, r.text);
@@ -322,11 +369,11 @@ function job(arm, label, extra = {}) {
     assert.equal(read(path.join(collision.repo, 'godot')), 'incoming tracked file\n');
     pass('incoming tracked path that collides with an ignored cache keeps the old checkout and cache intact');
   } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
-  for (const arm of ['codex', 'deepseek', 'kimi', 'kimicode']) {
+  await parallelArms(['codex', 'deepseek', 'kimi', 'kimicode'], async arm => {
     for (const [scenario, reason] of [['closed', 'not an open job'], ['claimed', 'already carries running'],
       ['other-pr', 'open PR #700'], ['other-branch', 'delivery branch opus/issue-687'], ['no-current', 'found 0'], ['two-current', 'found 2'],
       ['two-fixed', 'fixed blocks: 2']]) {
-      const r = job(arm, scenario);
+      const r = await job(arm, scenario);
       assert.equal(r.code, 14, r.text + '\n' + r.result);
       assert.equal(r.state.status, 'failed'); assert(r.result.includes(reason), r.result);
       assert(!fs.existsSync(r.repo), 'refusal before checkout');
@@ -336,7 +383,7 @@ function job(arm, label, extra = {}) {
       assert.equal(JSON.parse(read(r.env.PC_TEST_GH_DB)).running, scenario === 'claimed');
       pass(arm + ': ' + scenario + ' refuses before checkout, probe or agent, with no GitHub writes');
     }
-    const rerun = job(arm, 'same-seat');
+    const rerun = await job(arm, 'same-seat');
     assert.equal(rerun.code, 0, rerun.text + '\n' + rerun.result);
     assert(fs.existsSync(path.join(rerun.repo, 'agent_started.txt')), rerun.result);
     const task = read(path.join(rerun.out, arm === 'codex' ? 'CODEX_TASK.md' : 'WORK_TASK.md'));
@@ -345,28 +392,28 @@ function job(arm, label, extra = {}) {
     assert(calls.some(c => c.method === 'POST' && /\/labels$/.test(c.endpoint)), 'successful claim sets running');
     assert(calls.some(c => c.payload?.body?.includes('claimed before checkout and model calls')), 'successful claim writes its status comment');
     pass(arm + ': same-seat branch and PR rerun starts with a bold marker, current brief only and Codex-only Effort');
-    const fresh = job(arm, 'new-job');
+    const fresh = await job(arm, 'new-job');
     assert.equal(fresh.code, 0, fresh.text + '\n' + fresh.result);
     assert(fs.existsSync(path.join(fresh.repo, 'agent_started.txt')), fresh.result);
     const freshTask = read(path.join(fresh.out, arm === 'codex' ? 'CODEX_TASK.md' : 'WORK_TASK.md'));
     assert(freshTask.includes('Finish the new fixture job.') && !freshTask.includes('THIS IS THE JOB NOW'), freshTask);
     assert(!JSON.parse(read(fresh.env.PC_TEST_GH_DB)).running, 'finished new job releases its claim');
     pass(arm + ': a new job with one fixed block and no run history runs its whole body without a marker');
-  }
-  const effortMissing = job('codex', 'no-effort');
+  });
+  const effortMissing = await job('codex', 'no-effort');
   assert.equal(effortMissing.code, 14); assert(!fs.existsSync(effortMissing.repo));
   assert(effortMissing.result.includes('Codex fixed block needs Effort'), effortMissing.result);
   pass('Codex alone refuses a missing Effort line before checkout');
   for (const arm of ['codex', 'deepseek', 'kimicode']) {
-    const failure = job(arm, 'claim-failure', { PC_TEST_GH_FAIL: 'POST repos/rcbailey12/voidsworn/issues/687/comments' });
+    const failure = await job(arm, 'claim-failure', { PC_TEST_GH_FAIL: 'POST repos/rcbailey12/voidsworn/issues/687/comments' });
     assert.equal(failure.code, 14, failure.text + failure.result);
     assert(!fs.existsSync(failure.repo)); assert(!fs.existsSync(failure.env.PC_TEST_TRACE));
     assert(!JSON.parse(read(failure.env.PC_TEST_GH_DB)).running, 'failed comment claim rolls back its label');
     assert(failure.result.includes('cannot validate or claim job'), failure.result);
     pass(arm + ': failed status-comment claim stops before checkout or model calls and releases only its label');
   }
-  for (const arm of arms) {
-    const r = job(arm, 'resume');
+  await parallelArms(arms, async arm => {
+    const r = await job(arm, 'resume');
     assert.equal(r.code, 0, r.text + '\n' + r.result);
     assert(fs.existsSync(path.join(r.repo, 'agent_started.txt')), r.result);
     assert(read(path.join(r.out, arm === 'codex' ? 'CODEX_TASK.md' : 'WORK_TASK.md')).includes('Resumed by merging'));
@@ -382,28 +429,28 @@ function job(arm, label, extra = {}) {
     assert(!JSON.parse(read(r.env.PC_TEST_GH_DB)).running, 'finished run releases its claim');
     pass(arm + ': claim before probe and agent, only current brief, partial resumed, model stamped, claim released, no publish');
     const why = arm === 'kimicode' ? 'provider managed:kimi-code has no credential configured (expired login)' : arm === 'codex' ? 'quota exhausted' : 'credit balance is too low';
-    const bad = job(arm, 'auth', { STUB_AUTH_FAIL: '1', STUB_REASON: why });
+    const bad = await job(arm, 'auth', { STUB_AUTH_FAIL: '1', STUB_REASON: why });
     assert.notEqual(bad.code, 0); assert(bad.result.includes(why), bad.result);
     assert(!fs.existsSync(path.join(bad.repo, 'agent_started.txt')));
     assert.equal(bad.state.status, 'failed');
     pass(arm + ': provider error with exit 0 stops before agent and keeps the reason');
-    const dead = job(arm, 'fetchdead', { STUB_GIT_FAULT: 'fetch-dead' });
+    const dead = await job(arm, 'fetchdead', { STUB_GIT_FAULT: 'fetch-dead' });
     assert.notEqual(dead.code, 0); assert(dead.result.includes('failed after 3 attempts'), dead.result);
     assert(!fs.existsSync(dead.env.PC_TEST_TRACE));
     assert.equal(read(dead.env.PC_TEST_COUNTER + '-fetch'), '3');
-    const stopped = job(arm, 'chain', { PC_WAIT_FOR: path.join(dead.out, 'status.json') });
+    const stopped = await job(arm, 'chain', { PC_WAIT_FOR: path.join(dead.out, 'status.json') });
     assert.notEqual(stopped.code, 0); assert(stopped.result.includes('chain stopped: predecessor ended failed'), stopped.result);
     assert(!fs.existsSync(stopped.repo)); assert(!fs.existsSync(stopped.env.PC_TEST_TRACE));
     pass(arm + ': three failed fetch attempts, then chain stops before clone or model');
-  }
+  });
   for (const fault of ['fetch-two', 'clone-two', 'clone-dead']) {
-    const r = job('deepseek', fault, { STUB_GIT_FAULT: fault });
+    const r = await job('deepseek', fault, { STUB_GIT_FAULT: fault });
     assert.equal(r.code, fault === 'clone-dead' ? 14 : 0, r.text + r.result);
     const op = fault.split('-')[0]; assert.equal(read(r.env.PC_TEST_COUNTER + '-' + op), '3');
     if (op === 'clone') assert.equal(fs.readdirSync(path.dirname(r.repo)).filter(n => n.startsWith('repo-clone-failed-')).length, fault === 'clone-dead' ? 3 : 2);
     pass(fault + ': retry count and failed checkout preservation');
   }
-  const rerun = job('codex','resume');
+  const rerun = await job('codex','resume');
   const kept = fs.readdirSync(path.dirname(rerun.repo)).filter(n => n.startsWith('repo-kept-'));
   assert.equal(rerun.code,0); assert.equal(kept.length,1);
   assert(fs.existsSync(path.join(path.dirname(rerun.repo),kept[0],'agent_started.txt')));
@@ -459,7 +506,7 @@ function job(arm, label, extra = {}) {
   pass('rename wait expires cleanly with failed status and the original checkout intact');
   // A conflicting partial stops before preflight and leaves MERGE_HEAD and conflicted files intact.
   write(path.join(source, 'refs/heads/main'), conflicting + '\n');
-  const conflict = job('codex', 'conflict');
+  const conflict = await job('codex', 'conflict');
   assert.notEqual(conflict.code, 0); assert(conflict.result.includes('resume merge failed'));
   assert(fs.existsSync(path.join(conflict.repo, '.git/MERGE_HEAD'))); assert(!fs.existsSync(conflict.env.PC_TEST_TRACE));
   write(path.join(source, 'refs/heads/main'), base + '\n');
@@ -493,7 +540,7 @@ function job(arm, label, extra = {}) {
   assert.equal(ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json'), PC_WAIT_RUN: 'older-run' }).code, 14);
   pass('unfinished predecessor times out; a stale run id stops the chain');
   const deniedKiller = path.join(root, 'denied taskkill.bat'); write(deniedKiller, '@echo off\r\necho Access denied\r\nexit /b 5\r\n');
-  const slow = job('codex', 'preflight-timeout', { STUB_PROBE_TIMEOUT: '1', PC_TEST_PREFLIGHT_SECONDS: '1', PC_TEST_TASKKILL: deniedKiller });
+  const slow = await job('codex', 'preflight-timeout', { STUB_PROBE_TIMEOUT: '1', PC_TEST_PREFLIGHT_SECONDS: '1', PC_TEST_TASKKILL: deniedKiller });
   assert.equal(slow.code, 14); assert(slow.result.includes('timed out after 1 seconds')); assert(!fs.existsSync(path.join(slow.repo, 'agent_started.txt')));
   assert(read(path.join(slow.out, 'preflight_kill_log.txt')).includes('kill verified:'), slow.result);
   const slowPid = Number(read(slow.env.PC_TEST_TRACE + '.pid'));
@@ -504,7 +551,7 @@ function job(arm, label, extra = {}) {
   async function concurrentCheckout(n) {
     const home = path.join(root, 'concurrent-' + n); fs.mkdirSync(home); const out = path.join(home, 'out'); fs.mkdirSync(out); write(path.join(out, 'result.txt'), '');
     assert.equal(ps(['init', out, 'fixture/concurrent-' + n], defaults).code, 0);
-    const env = { ...process.env, ...defaults, STUB_FETCH_HOLD: '1' };
+    const env = { ...process.env, ...gitEnvironment({ ...defaults, STUB_FETCH_HOLD: '1' }) };
     const args = ['-NoProfile','-ExecutionPolicy','Bypass','-File',path.join(here,'runner_common.ps1'),'checkout',path.join(home,'repo'),out,'fixture/concurrent-' + n,''];
     return new Promise((resolve, reject) => {
       const p = spawn('powershell.exe', args, { cwd: root, env, windowsHide: true }); let text = '';
@@ -530,7 +577,7 @@ function job(arm, label, extra = {}) {
   // ---- Issue 722 (audit 706 findings 6 and 7): model stamp, free-space floor, Board hashes ----
   // The stamp warns when the resolved model differs from the arm default, whatever the provider: a same-provider
   // WORK_MODEL override passes the provider guard silently, so the warning must come from the stamp itself.
-  const overridden = job('deepseek', 'model-override', { WORK_MODEL: 'deepseek/deepseek-v4-pro' });
+  const overridden = await job('deepseek', 'model-override', { WORK_MODEL: 'deepseek/deepseek-v4-pro' });
   assert.equal(overridden.code, 0, overridden.text + '\n' + overridden.result);
   assert(overridden.result.includes('model: deepseek/deepseek-v4-pro'), overridden.result);
   assert(overridden.result.includes('WARNING: resolved model deepseek/deepseek-v4-pro differs from the arm default deepseek/deepseek-flash'), overridden.result);
@@ -558,7 +605,7 @@ function job(arm, label, extra = {}) {
   assert.equal(ps(['space', spaceOut, path.join(root, 'space_settings_low.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '2000' }).code, 0);
   assert.equal(ps(['space', spaceOut, path.join(root, 'missing_settings.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '100' }).code, 14);
   pass('free-space floor refuses below min_free_gb, honors the tuning value, defaults to 60');
-  const noStart = job('deepseek', 'nofreespace', { PC_TEST_SPACE_FREE_MB: '100' });
+  const noStart = await job('deepseek', 'nofreespace', { PC_TEST_SPACE_FREE_MB: '100' });
   assert.equal(noStart.code, 14, noStart.text + '\n' + noStart.result);
   assert.equal(noStart.state.status, 'failed');
   assert(noStart.result.includes('refusing to start: drive'), noStart.result);
@@ -585,7 +632,7 @@ function job(arm, label, extra = {}) {
   assert.equal(ps(['hashcheck', hashOut, here, path.join(root, 'no_such_hashes.txt')], defaults).code, 0);
   assert(read(path.join(hashOut, 'result.txt')).includes('WARNING: no Board hashes file'));
   pass('a hash mismatch and a missing hashes file warn without stopping');
-  const hashWarn = job('deepseek', 'hashwarn', { PC_TEST_HASHES: hashesBad });
+  const hashWarn = await job('deepseek', 'hashwarn', { PC_TEST_HASHES: hashesBad });
   assert.equal(hashWarn.code, 0, hashWarn.text + '\n' + hashWarn.result);
   assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
   assert(hashWarn.result.includes('WARNING: these runner files differ'), hashWarn.result);
@@ -604,4 +651,14 @@ finally {
       await new Promise(resolve => child.once('exit', resolve));
     }
   }
+  const totals = {};
+  for (const t of timings) {
+    const total = totals[t.step] ||= { calls: 0, seconds: 0 };
+    total.calls++; total.seconds += t.seconds;
+  }
+  const timingNote = 'Timing: ' + ((Date.now() - started) / 1000).toFixed(2) + ' s wall time; cumulative child times below overlap in parallel batches\n' +
+    'Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (includes static checks and Git init)\n' +
+    Object.entries(totals).map(([step, t]) => step + ': ' + t.calls + ' calls, ' + t.seconds.toFixed(2) + ' s').join('\n') + '\n';
+  write(path.join(root, 'timings.txt'), timingNote);
+  console.log(timingNote.trim());
 } })();
