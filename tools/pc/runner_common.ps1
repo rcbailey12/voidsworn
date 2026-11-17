@@ -396,6 +396,13 @@ function Validate-Job($i, $issue, $prefix, $pulls, $branches) {
   }
   foreach ($branch in $branches) {
     if ($branch.name -match $jobBranch -and ([string]$branch.name -split '/')[0] -ne $prefix) {
+      $tip = [string]$branch.commit.sha
+      if ($tip -notmatch '^[0-9a-f]{40,64}$') { throw "job refused: cannot verify tip of delivery branch $($branch.name) for issue #$issue; no agent started" }
+      $compare = Require-Gh 'GET' "compare/main...$tip"
+      if ($compare.status -in @('behind','identical')) {
+        Log "finished work: delivery branch $($branch.name) tip $tip is already in main ($($compare.status)); does not block issue #$issue"
+        continue
+      }
       throw "job refused: delivery branch $($branch.name) from another seat exists for issue #$issue; no agent started"
     }
   }
