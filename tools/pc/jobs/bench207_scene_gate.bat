@@ -15,6 +15,7 @@ rem Issue 873: the hi and env folders are not guessed. %VT%\bench207_settings.tx
 rem   hi=<folder with the 8K flagship glb files>
 rem   env=<folder with sky_deadstar_8k.png>
 rem A missing settings file, a missing key or a missing folder is a clear FAILED before the clone (no silent fallback).
+rem Issue 952: keep old output folders. Before each bench, refresh a marker and require scene_gate.json to be newer.
 setlocal
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "W=%VT%\opus207"
@@ -75,24 +76,41 @@ copy /y "%R%\godot\gen\manifest.json" "%O%\gen_manifest.json" >nul 2>&1
 set "Q=--query-gpu=name,driver_version,utilization.gpu,clocks.gr,clocks.mem,temperature.gpu,power.draw,pstate,memory.used"
 nvidia-smi %Q% --format=csv > "%O%\gpu_state.txt" 2>&1
 echo bench run1 %time% >> "%O%\status.txt"
+call :bench_start run1
+if errorlevel 1 goto fail
 call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://bench/scene_gate.tscn -- --out "%O%\run1" > "%O%\run1_log.txt" 2>&1
 if errorlevel 1 (set "FAILMSG=bench run1 failed; see %O%\run1_log.txt" & goto fail)
-if not exist "%O%\run1" (set "FAILMSG=bench run1 wrote no output at %O%\run1; see %O%\run1_log.txt" & goto fail)
+call :bench_report run1
+if errorlevel 1 goto fail
 nvidia-smi %Q% --format=csv,noheader >> "%O%\gpu_state.txt" 2>&1
 echo bench run2 %time% >> "%O%\status.txt"
+call :bench_start run2
+if errorlevel 1 goto fail
 call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://bench/scene_gate.tscn -- --out "%O%\run2" > "%O%\run2_log.txt" 2>&1
 if errorlevel 1 (set "FAILMSG=bench run2 failed; see %O%\run2_log.txt" & goto fail)
-if not exist "%O%\run2" (set "FAILMSG=bench run2 wrote no output at %O%\run2; see %O%\run2_log.txt" & goto fail)
+call :bench_report run2
+if errorlevel 1 goto fail
 nvidia-smi %Q% --format=csv,noheader >> "%O%\gpu_state.txt" 2>&1
 echo bench run3_res %time% >> "%O%\status.txt"
+call :bench_start run3_res
+if errorlevel 1 goto fail
 call "%TMO%" 1800 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://bench/scene_gate.tscn -- --out "%O%\run3_res" --modes base,res_1440,res_2160 > "%O%\run3_res_log.txt" 2>&1
 if errorlevel 1 (set "FAILMSG=bench run3_res failed; see %O%\run3_res_log.txt" & goto fail)
-if not exist "%O%\run3_res" (set "FAILMSG=bench run3_res wrote no output at %O%\run3_res; see %O%\run3_res_log.txt" & goto fail)
+call :bench_report run3_res
+if errorlevel 1 goto fail
 nvidia-smi %Q% --format=csv,noheader >> "%O%\gpu_state.txt" 2>&1
 nvidia-smi > "%O%\gpu_after.txt" 2>&1
 echo done %date% %time% >> "%O%\status.txt"
 dir /b /s "%O%" > "%O%\files.txt"
 cd /d "%VT%\build"
+exit /b 0
+:bench_start
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; Set-Content -LiteralPath (Join-Path $env:O '%~1_started.txt') -Value 'bench %~1 started'"
+if errorlevel 1 (set "FAILMSG=bench %~1 could not write its fresh run marker at %O%\%~1_started.txt" & exit /b 1)
+exit /b 0
+:bench_report
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $marker=Get-Item -LiteralPath (Join-Path $env:O '%~1_started.txt'); $report=Get-Item -LiteralPath (Join-Path $env:O '%~1\scene_gate.json'); if ($report.PSIsContainer -or $report.LastWriteTimeUtc -le $marker.LastWriteTimeUtc) { exit 1 }"
+if errorlevel 1 (set "FAILMSG=bench %~1 wrote no fresh scene_gate.json at %O%\%~1; report must be newer than %~1_started.txt; see %O%\%~1_log.txt" & exit /b 1)
 exit /b 0
 :fail
 echo FAILED: %FAILMSG%
