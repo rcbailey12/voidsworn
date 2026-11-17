@@ -6,6 +6,9 @@
 #   work_issue.ps1 lasttext <events.jsonl>                        prints the agent's final text
 #   work_issue.ps1 stats   <n> <arm> <out>                        reads events.jsonl, balances and times; writes stats.txt and last.md
 #   work_issue.ps1 msg     <n> <arm> <out>                        writes commit.txt (becomes the PR description)
+#   work_issue.ps1 openai-key <out>                              checks the run's isolated credential, no network
+#   work_issue.ps1 openai-budget <out> <root> <settings> <model> <dry 0|1>   refuses spent budgets and unpriced models
+#   work_issue.ps1 openai-spend <n> <out> <root> <settings> <model> <dry 0|1> records emitted usage once per run
 # Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
 #   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
@@ -74,6 +77,7 @@ function Arm-Info($arm) {
     'kimi'     { return @{ base = 'https://api.moonshot.ai/v1'; key = $env:MOONSHOT_API_KEY; models = 'https://api.moonshot.ai/v1/models'; bal = 'https://api.moonshot.ai/v1/users/me/balance' } }
     'kimicode' { return @{ base = 'https://api.kimi.com/coding/v1'; key = $env:KIMI_CODE_API_KEY; models = 'https://api.kimi.com/coding/v1/models'; bal = $null } }   # plan quota, no balance endpoint (issue 597)
     { $_ -in 'sonnet','opus' } { return @{ base = 'https://api.anthropic.com/v1'; key = $env:VOIDSWORN_CLAUDE_API_KEY; models = 'https://api.anthropic.com/v1/models'; bal = $null; anthropic = $true } }   # Max plan API credits, no balance endpoint (issue 614)
+    'openai' { return @{ base = 'https://api.openai.com/v1'; key = $env:VOIDSWORN_OPENAI_API_KEY; models = 'https://api.openai.com/v1/models'; bal = $null } }
     default    { throw "unknown arm $arm" }
   }
 }
@@ -95,6 +99,126 @@ function Last-Text($ev) {
 }
 
 function Read-Txt($p) { if (Test-Path $p) { return ([IO.File]::ReadAllText($p)).Trim() } else { return '' } }
+
+# Issue 985: one price table, USD per million tokens (Board's standard rates, Nov 17 2026).
+# OpenCode step_finish input excludes cache reads; its visible output and reasoning are separate counts.
+$openaiPrices = @{
+  'openai/gpt-6.1-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
+  'openai/gpt-6.1-terra' = @{ input = [decimal]1; cached = [decimal]0.05; output = [decimal]5 }
+}
+function OpenAI-Budget($settings) {
+  $budget = [decimal]94
+  foreach ($line in ((Read-Txt $settings) -split '\r?\n')) {
+    if ($line -match '^\s*openai_budget_usd\s*=(.*)$') {
+      if (-not [decimal]::TryParse($Matches[1].Trim(), [Globalization.NumberStyles]::AllowDecimalPoint,
+        [Globalization.CultureInfo]::InvariantCulture, [ref]$budget) -or $budget -lt 0) { throw 'invalid openai_budget_usd in runner_settings.txt' }
+    }
+  }
+  return $budget
+}
+function OpenAI-Lock($root) {
+  $path = Join-Path $root 'openai_spend.txt'
+  for ($attempt = 0; $attempt -lt 100; $attempt++) {
+    try { return [IO.File]::Open($path, [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None) }
+    catch [IO.IOException] { Start-Sleep -Milliseconds 100 }
+  }
+  throw 'OpenAI spend ledger is busy; retry accounting before another run'
+}
+function OpenAI-Rows($stream) {
+  $stream.Position = 0
+  $reader = New-Object IO.StreamReader($stream, $utf8, $true, 1024, $true)
+  try { $raw = $reader.ReadToEnd() } finally { $reader.Dispose() }
+  foreach ($line in ($raw -split '\r?\n' | Where-Object { $_.Trim() })) {
+    try {
+      $row = $line | ConvertFrom-Json
+      if (-not $row.run -or $row.date -notmatch '^\d{4}-\d{2}-\d{2}T' -or
+        $null -eq $row.estimated_usd -or [decimal]$row.estimated_usd -lt 0 -or $row.status -notin @('estimated','unknown')) { throw 'bad row' }
+    } catch { throw 'OpenAI spend ledger is invalid; reconcile openai_spend.txt before another run' }
+    $row
+  }
+}
+function OpenAI-Total($rows, $month) {
+  $total = [decimal]0
+  foreach ($row in $rows) { if ($row.date.StartsWith($month)) { $total += [decimal]$row.estimated_usd } }
+  return $total
+}
+function OpenAI-Usage($out) {
+  $inputTokens = [decimal]0; $cached = [decimal]0; $outputTokens = [decimal]0; $steps = 0
+  foreach ($file in @('preflight_log.txt','events.jsonl')) {
+    foreach ($e in (Read-Events (Join-Path $out $file))) {
+      if ($e.type -ne 'step_finish') { continue }
+      $k = $e.part.tokens
+      if ($null -eq $k.input -or $null -eq $k.output -or $null -eq $k.cache.read) { throw 'OpenAI token counts missing in OpenCode stats' }
+      foreach ($v in @($k.input, $k.output, $k.reasoning, $k.cache.read)) {
+        if ([decimal]$v -lt 0) { throw 'invalid OpenAI token counts in OpenCode stats' }
+      }
+      $inputTokens += [decimal]$k.input; $cached += [decimal]$k.cache.read
+      $outputTokens += [decimal]$k.output + [decimal]$k.reasoning; $steps++
+    }
+  }
+  return @{ input = $inputTokens; cached = $cached; output = $outputTokens; steps = $steps }
+}
+function OpenAI-Note($out, $row, $dry) {
+  $note = 'OpenAI estimate USD: {0}; running total {1} / budget {2}; input {3}, cached input {4}, output {5}' -f
+    $row.estimated_usd, $row.running_total_usd, $row.budget_usd, $row.input, $row.cached_input, $row.output
+  if ($dry) { $note += '; dry run, no spend recorded' }
+  if ($row.status -eq 'unknown') { $note += '; UNKNOWN usage: reconcile ledger before another paid run' }
+  [IO.File]::WriteAllText((Join-Path $out 'openai_estimate.txt'), $note + "`n", $utf8)
+  Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value $note -Encoding UTF8
+}
+
+if ($mode -in @('openai-key','openai-budget','openai-spend')) {
+  # These commands never call a provider. No credential or prompt belongs in an accounting file or error.
+  $out = if ($mode -eq 'openai-spend') { $args[2] } else { $args[1] }
+  $stream = $null
+  try {
+    if ($mode -eq 'openai-key') {
+      if (-not $env:VOIDSWORN_OPENAI_API_KEY) { throw 'no OpenAI API key saved: run OPENAI_API_KEY.bat' }
+      exit 0
+    }
+    if ($mode -eq 'openai-budget') {
+      $root = $args[2]; $settings = $args[3]; $model = $args[4]; $dry = $args[5] -eq '1'
+    } else {
+      $n = $args[1]; $root = $args[3]; $settings = $args[4]; $model = $args[5]; $dry = $args[6] -eq '1'
+      # Setup/checkout failures have no usage. A failed paid probe still has its log and must be counted.
+      if (-not (Test-Path (Join-Path $out 'preflight_log.txt')) -and -not (Test-Path (Join-Path $out 'events.jsonl'))) { exit 0 }
+    }
+    if (-not $openaiPrices.ContainsKey($model)) { throw 'OpenAI model has no spend price: add its named rates to openaiPrices before running' }
+    $budget = OpenAI-Budget $settings
+    $month = [datetime]::UtcNow.ToString('yyyy-MM')
+    $rows = @(); $total = [decimal]0
+    if (-not $dry) { $stream = OpenAI-Lock $root; $rows = @(OpenAI-Rows $stream); $total = OpenAI-Total $rows $month }
+    if ($mode -eq 'openai-budget') {
+      if (@($rows | Where-Object { $_.date.StartsWith($month) -and $_.status -eq 'unknown' }).Count) { throw 'OpenAI usage unknown: reconcile openai_spend.txt before another run' }
+      if (-not $dry -and $total -ge $budget) { throw "OpenAI budget reached: USD $total / $budget; no paid call started" }
+      exit 0
+    }
+    # Idempotent even when the runner regenerates stats or reaches finish after recording the run.
+    $run = [IO.Path]::GetFullPath($out)
+    $existing = @($rows | Where-Object { $_.run -eq $run })
+    if ($existing.Count) {
+      if (-not (Test-Path (Join-Path $out 'openai_estimate.txt'))) { OpenAI-Note $out $existing[0] $false }
+      if ($existing[0].status -eq 'unknown') { exit 3 }
+      exit 0
+    }
+    try { $usage = OpenAI-Usage $out } catch { $usage = @{ input = 0; cached = 0; output = 0; steps = 0 } }
+    $price = $openaiPrices[$model]
+    $cost = [decimal]::Round(($usage.input * $price.input + $usage.cached * $price.cached + $usage.output * $price.output) / 1000000, 8)
+    $row = [ordered]@{ date = [datetime]::UtcNow.ToString('s') + 'Z'; issue = $n; model = $model;
+      input = $usage.input; cached_input = $usage.cached; output = $usage.output; estimated_usd = $cost;
+      running_total_usd = $total + $cost; budget_usd = $budget; status = $(if ($usage.steps) { 'estimated' } else { 'unknown' }); run = $run }
+    if (-not $dry) {
+      $bytes = $utf8.GetBytes(($row | ConvertTo-Json -Compress) + "`n")
+      $stream.Position = $stream.Length; $stream.Write($bytes, 0, $bytes.Length); $stream.Flush($true)
+    }
+    OpenAI-Note $out ([pscustomobject]$row) $dry
+    if ($row.status -eq 'unknown' -and -not $dry) { exit 3 }
+    exit 0
+  } catch {
+    Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value $_.Exception.Message -Encoding UTF8
+    exit 3
+  } finally { if ($stream) { $stream.Dispose() } }
+}
 
 # ---- Runner 2 helpers (issue 377) ----
 # git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
@@ -271,6 +395,7 @@ balance before: $b0
 balance after: $b1
 real charge (balance before minus after): $charge
 "@
+  if ($arm -eq 'openai') { $s += "`n" + (Read-Txt (Join-Path $out 'openai_estimate.txt')) }
   [IO.File]::WriteAllText((Join-Path $out 'stats.txt'), $s, $utf8)
   Write-Host $s
 }

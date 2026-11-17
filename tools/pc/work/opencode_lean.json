@@ -18,6 +18,22 @@
     }
   },
   "provider": {
+    "openai": {
+      "options": {
+        "baseURL": "https://api.openai.com/v1",
+        "apiKey": "{env:VOIDSWORN_OPENAI_API_KEY}"
+      },
+      "models": {
+        "gpt-6.1-sol": {
+          "name": "GPT 6.1 Sol (issue 985)",
+          "limit": { "context": 1050000, "output": 128000 }
+        },
+        "gpt-6.1-terra": {
+          "name": "GPT 6.1 Terra (issue 985)",
+          "limit": { "context": 1050000, "output": 128000 }
+        }
+      }
+    },
     "kimicode": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "Kimi Code plan (issue 597)",
