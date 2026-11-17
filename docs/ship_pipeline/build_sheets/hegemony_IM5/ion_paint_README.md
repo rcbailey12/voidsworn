@@ -27,7 +27,7 @@ only its recorded findings_tests and oracle_drift_guard baseline exceptions rema
 Budget from export7: 105,500 main mesh triangles plus 8,436 turning mesh triangles; class length
 31. Export format, hard points and authored interiors are unchanged.
 
-Not installed. The real export passes check_export.py, but check_export_selftest.py accepts the deliberately broken `bell_plane` copy. The same case fails with both paint modules loaded unchanged from HEAD (512 maps, 8 samples). The normal installation gate is therefore still blocked by this existing engine-check problem. No geometry or export check was changed to bypass it; the currently installed H4_11 was left in place.
+Issue 930 did not install IM5: its export self-test accepted the deliberately broken `bell_plane` copy, also with both paint modules loaded unchanged from HEAD (512 maps, 8 samples). PR 968 corrected that check. [Issue 970 installed the merged paint on both PC projects](ion_install_README.md), after a fresh bake, passing export readback and all 33 self-test cases. The sheet and geometry remain unchanged.
 
 Earlier geometry and concept-generation stages were not rerun: this job changes paint only and the evaluated sheet geometry
 is unchanged. No performance claim or new scene-gate measurement is made. Logs and temporary blends remain in TEMP;

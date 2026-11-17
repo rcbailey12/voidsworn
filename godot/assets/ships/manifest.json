@@ -775,52 +775,53 @@
    "damage_preview": "previews/H10_23_damage.jpg"
   },
   "H4_11": {
-   "name": "Dominion dreadnought",
+   "name": "The Iron Mandate, super-dreadnought, the Hegemony flagship and boss (Hegemony Navy)",
    "faction": "hegemony",
    "cls": "Super-dreadnought",
    "band": "XL",
-   "length_world": 31,
+   "game_ship": "h_boss",
+   "length_world": 31.0,
    "hardpoints": {
     "gun": 9,
-    "engine": 3,
-    "breach": 10,
-    "core": 1
+    "engine": 6,
+    "breach": 8,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 10,
-   "skins": 21,
+   "breaches": 8,
+   "turrets": 4,
    "files": {
     "H4_11.glb": {
-     "bytes": 5113708,
-     "sha256": "4aeef64c4176c56d1ae7a9f2c55d90f02e4f8c04194414eebee36c15ea44834a"
+     "bytes": 11139232,
+     "sha256": "5dd513f6d362abe4f9ccc8fab42e236bc1cf52624b1c304eaad5ade44da0a33e"
     },
     "H4_11_base.jpg": {
-     "bytes": 3936353,
-     "sha256": "22a2761bb3cc4da41f476161dfcdc58aaa5ee383858814289927eb9e327a056d"
+     "bytes": 1497629,
+     "sha256": "d5e21d198616d63d3667d1f8e27c385141fc72ea30ae418c395b15de191c0750"
     },
-    "H4_11_damage.glb": {
-     "bytes": 18164236,
-     "sha256": "c836a32a53764984867ad6738a6a0cdecd63d8472e820dc9e81da0cf83201b76"
-    },
-    "H4_11_emissive.jpg": {
-     "bytes": 189476,
-     "sha256": "bbed727fd3f00dd5bef62100a3c6d825fee3aac5128a05e8a05501495e0fbc7c"
+    "H4_11_glow_emission.jpg": {
+     "bytes": 714452,
+     "sha256": "6c09cc7417d25bc332b00480781e361072166e3dbf756e205da0d2c7e71cdd68"
     },
     "H4_11_normal.jpg": {
-     "bytes": 10394616,
-     "sha256": "acac6e68e733ccbbf394af90fcdf60611f50a9675ad89689dd6f22f487486b23"
+     "bytes": 280516,
+     "sha256": "9be476f5f8c3d0d6968156e4ab090a65b7b5b8b578aa9a74f6ffb3937b567108"
     },
     "H4_11_orm.jpg": {
-     "bytes": 1929761,
-     "sha256": "d7893f60dba49fc4883d719a7450f2c0002fe990e9f4c099da8ba3c471df333c"
+     "bytes": 1935718,
+     "sha256": "31989f153781bef2ad996c69376bdcdc5989b194e4accc8d2800a696e507ce9e"
     },
-    "H4_11_wreck.glb": {
-     "bytes": 3477364,
-     "sha256": "4f8dac880258e2d27a5759f7da1cb53bc6a34a37ce535d16dcee6121e7a1f61c"
+    "H4_11_parts_base.jpg": {
+     "bytes": 1275087,
+     "sha256": "f7d93c04a0968f2fd59ea702ea33145cc38b2c6260743d98b684d889c93aad0b"
+    },
+    "H4_11_parts_orm.jpg": {
+     "bytes": 1528592,
+     "sha256": "9c5a35b94ca1234aa1b47f1ede234cbe9a3e2a10a72b1b5071dadcdff21b811a"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\H4_11\\",
-   "preview": "previews/H4_11.jpg",
-   "damage_preview": "previews/H4_11_damage.jpg"
+   "pc_path": "godot/assets/ships/H4_11/"
   },
   "H7_23": {
    "name": "Hegemony picket",
