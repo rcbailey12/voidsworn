@@ -51,11 +51,12 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     let j = {};
     try { j = b ? JSON.parse(b) : {}; } catch (e) { }
-    const msgs = j.messages || [];
+    const responses = req.url.includes('/responses');
+    const msgs = j.messages || (j.input || []).map(m => m.type === 'function_call_output' ? { role: 'tool', content: m.output } : m);
     const toolMsgs = msgs.filter(m => m.role === 'tool');
     if (toolMsgs.length) say('tool result: ' + JSON.stringify(toolMsgs[toolMsgs.length - 1].content).slice(0, 1500));
     say(req.method + ' ' + req.url + ' model=' + j.model + ' tools=' + (j.tools || []).length + ' messages=' + msgs.length);
-    if (!req.url.includes('chat/completions')) { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"object":"list","data":[]}'); }
+    if (!responses && !req.url.includes('chat/completions')) { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"object":"list","data":[]}'); }
     let delta, fin;
     const step = toolMsgs.length;
     if (msgs.some(m => m.role === 'user' && JSON.stringify(m.content).includes('Reply with exactly RUNNER_READY.'))) {
@@ -70,6 +71,34 @@ const server = http.createServer((req, res) => {
       delta = { role: 'assistant', content: scenario === 'default' ? 'Dry run report: the stand-in model ran the fixed script (look around, write a file, standing checks, parity, a refused push, a refused chained push, a refused delete). No game files were changed.' : 'Dry run report (issue 377, scenario ' + scenario + '): the stand-in model ran its fixed script. ' + SCRIPT.map(x => x.d).join('; ') + '.' };
       fin = 'stop';
       setTimeout(() => { say('script finished, quitting'); process.exit(0); }, 15000);
+    }
+    if (responses) {
+      // The OpenAI provider uses Responses, including in dryrun. Keep the same fixed script as Chat Completions.
+      const call = delta.tool_calls && delta.tool_calls[0];
+      const item = call ? { type: 'function_call', id: 'fc_' + step, call_id: call.id, name: call.function.name,
+        arguments: call.function.arguments, status: 'completed' } : { type: 'message', id: 'msg_' + step, role: 'assistant',
+        status: 'completed', content: [{ type: 'output_text', text: delta.content, annotations: [] }] };
+      const reply = { id: 'resp_mock_' + step, object: 'response', created_at: 1, model: j.model, status: 'completed',
+        output: [item], usage: { input_tokens: 1000, output_tokens: 100, total_tokens: 1100,
+          input_tokens_details: { cached_tokens: 100 }, output_tokens_details: { reasoning_tokens: 10 } } };
+      if (!j.stream) { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify(reply)); }
+      res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+      let sequence = 0;
+      const send = (type, fields) => res.write('event: ' + type + '\ndata: ' + JSON.stringify({ type, sequence_number: sequence++, ...fields }) + '\n\n');
+      send('response.created', { response: { ...reply, status: 'in_progress', output: [], usage: null } });
+      send('response.output_item.added', { output_index: 0, item: { ...item, status: 'in_progress', ...(call ? { arguments: '' } : { content: [] }) } });
+      if (call) {
+        send('response.function_call_arguments.delta', { item_id: item.id, output_index: 0, delta: item.arguments });
+        send('response.function_call_arguments.done', { item_id: item.id, output_index: 0, arguments: item.arguments });
+      } else {
+        send('response.content_part.added', { item_id: item.id, output_index: 0, content_index: 0, part: { type: 'output_text', text: '', annotations: [] } });
+        send('response.output_text.delta', { item_id: item.id, output_index: 0, content_index: 0, delta: delta.content });
+        send('response.output_text.done', { item_id: item.id, output_index: 0, content_index: 0, text: delta.content });
+        send('response.content_part.done', { item_id: item.id, output_index: 0, content_index: 0, part: item.content[0] });
+      }
+      send('response.output_item.done', { output_index: 0, item });
+      send('response.completed', { response: reply });
+      return res.end();
     }
     const usage = { prompt_tokens: 1000, completion_tokens: 100, total_tokens: 1100 };
     const chunk = (d, f, u) => 'data: ' + JSON.stringify(Object.assign({ id: 'mock', object: 'chat.completion.chunk', created: 1, model: j.model, choices: [{ index: 0, delta: d, finish_reason: f }] }, u ? { usage: u } : {})) + '\n\n';

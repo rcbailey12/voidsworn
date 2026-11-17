@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet, opus or openai> [dryrun]
 rem WORK_MODEL overrides an OpenCode model within its provider. kimicode uses Kimi CLI and WORK_KIMI_MODEL.
 rem PC_WAIT_FOR names the predecessor's status.json; only a checked non-partial push with passing checks releases it.
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
@@ -61,7 +61,8 @@ rem sonnet: Claude Sonnet 5.5 on the Max plan's monthly API credits (Ryan, Nov 1
 if /i "%ARM%"=="sonnet" set "MODEL=anthropic/claude-sonnet-5-5"
 rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use it as another opus worker")
 if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
-if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-or-opus [dryrun] & exit /b 2)
+if /i "%ARM%"=="openai" set "MODEL=openai/gpt-6.1-sol"
+if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-opus-or-openai [dryrun] & exit /b 2)
 rem The arm default, captured before WORK_MODEL below: issue 722 stamps the resolved model and warns when it differs.
 set "DEFAULT_MODEL=%MODEL%"
 rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
@@ -166,6 +167,11 @@ rem (722) Stamp the resolved model before the wait so every later state of the r
 %COMMON% model "%O%" "%RESOLVED%" "%DEFAULT_MODEL%"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
+rem Refuse unpriced models and spent budgets before checkout or any paid probe. Dry runs never touch the ledger.
+if /i "%ARM%"=="openai" (
+  %PS% openai-budget "%O%" "%WORK_ROOT%" "%SETF%" "%RESOLVED%" "%DRY%"
+  if errorlevel 1 goto :setupfail
+)
 rem Every work arm, including Kimi, validates and claims before tools, checkout or model calls (issue 888).
 %COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
@@ -183,17 +189,22 @@ set "SHELL=C:\Program Files\Git\bin\bash.exe"
 set "OPENCODE_GIT_BASH_PATH=C:\Program Files\Git\bin\bash.exe"
 set "OPENCODE_DISABLE_AUTOUPDATE=1"
 set "OPENCODE_DISABLE_MODELS_FETCH=1"
+rem Keep OpenCode's bundled ChatGPT OAuth plugin from replacing this arm's explicit API key and endpoint.
+if /i "%ARM%"=="openai" set "OPENCODE_DISABLE_DEFAULT_PLUGINS=1"
 rem one shell command may run 30 minutes (parity takes several; the default is 2 minutes)
 set "OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS=1800000"
 set "OPENCODE_CONFIG=%T%work\opencode.json"
 rem kimicode: its own config with no helper agents (issue 597: five parallel helpers spent the plan's 5-hour window in 9 minutes); sonnet uses it too, to keep API credit spend linear
 if /i "%ARM%"=="kimicode" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="sonnet" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+if /i "%ARM%"=="openai" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="opus" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 rem deepseek arms too (Ryan, Nov 12: "$20 at DeepSeek API in like a week ... not super sustainable"): one agent, no helpers
 if /i "%ARM%"=="deepseek" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="deepseekpro" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
+rem OpenAI reads only this user setting, cleared first so an inherited value cannot override the saved key.
+if /i "%ARM%"=="openai" goto :openaikey
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
 call :getkey KIMI_CODE_API_KEY
@@ -206,12 +217,19 @@ if /i "%ARM%"=="kimicode" goto :clone
 if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & goto :setupfail)
 if /i "%ARM%"=="kimi" if not defined MOONSHOT_API_KEY (echo no Moonshot key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & goto :setupfail)
 goto :clone
+:openaikey
+set "VOIDSWORN_OPENAI_API_KEY="
+call :getkey VOIDSWORN_OPENAI_API_KEY
+%PS% openai-key "%O%"
+if errorlevel 1 goto :setupfail
+goto :clone
 :drysetup
 if "%PC_RUNNER_TEST%"=="1" goto :clone
 set "DEEPSEEK_API_KEY=dry"
 set "MOONSHOT_API_KEY=dry"
 set "KIMI_CODE_API_KEY=dry"
 set "VOIDSWORN_CLAUDE_API_KEY=dry"
+set "VOIDSWORN_OPENAI_API_KEY=dry"
 set "OPENCODE_CONFIG=%T%work\opencode_mock.json"
 powershell -NoProfile -Command "$dq=[char]34; Start-Process -WindowStyle Hidden -FilePath 'C:\Program Files\nodejs\node.exe' -ArgumentList ($dq+$env:T+'work\mock_llm.js'+$dq+' 8765 '+$dq+$env:O+'\mock_log.txt'+$dq+' '+$env:WORK_DRY_SCENARIO)"
 rem wait until the stand-in is listening (an earlier one may still hold the port for a few seconds)
@@ -312,6 +330,10 @@ if defined PARTIAL echo PARTIAL RUN, %PARTIAL%: the work goes to %PB%, which ope
 rem give the provider a minute to book the charge before reading the balance again
 if /i not "%MODE%"=="dryrun" timeout /t 60 /nobreak > nul
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_after.txt") else (%PS% balance %ARM% "%O%\balance_after.txt" > nul)
+if /i "%ARM%"=="openai" (
+  %PS% openai-spend "%N%" "%O%" "%WORK_ROOT%" "%SETF%" "%RESOLVED%" "%DRY%"
+  if errorlevel 1 goto :probefail
+)
 %PS% stats %N% %ARM% "%O%" > nul
 move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul
 if "%PC_RUNNER_TEST%"=="1" if "%PC_TEST_STOP_BEFORE_PUBLISH%"=="1" goto :testfinish
@@ -378,6 +400,8 @@ exit /b 0
 >> "%SETF%" echo remove_repo_copy_after_push=no
 >> "%SETF%" echo # min_free_gb: the run refuses to start when the drive holding Downloads\voidsworn_test has less free space than this (issue 722).
 >> "%SETF%" echo min_free_gb=60
+>> "%SETF%" echo # OpenAI monthly estimate budget in USD. November 2026 starts with 94 left.
+>> "%SETF%" echo openai_budget_usd=94
 exit /b 0
 :testfinish
 rem Free integration proof: keep the agent's files but never create a commit or push.
@@ -412,6 +436,11 @@ goto :finish
 %COMMON% finish "%O%" 3 "" "%PUSHMODE%" 0
 exit /b 3
 :finish
+rem Include failed probes and partial runs too. The ledger uses the run folder as an id, so this cannot charge twice.
+if /i "%ARM%"=="openai" (
+  %PS% openai-spend "%N%" "%O%" "%WORK_ROOT%" "%SETF%" "%RESOLVED%" "%DRY%"
+  if errorlevel 1 set "RC=14"
+)
 popd
 %COMMON% finish "%O%" "%RC%" "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%"
 if errorlevel 1 set "RC=14"
