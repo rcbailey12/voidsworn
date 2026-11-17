@@ -18,6 +18,56 @@ $ErrorActionPreference = 'Stop'
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $mode = $args[0]
 
+# Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
+# GitHub link on the delivery branch, so it opens on a phone; every other path under the user's home folder becomes
+# %USERPROFILE%\..., so no PC folder name reaches a public pull request. Everything else is left exactly as written.
+function Path-Pattern([string]$p) {
+  if (-not $p) { return '' }
+  # Either separator matches, whatever the host wrote: every joined separator is [\\/]+, and a leading
+  # separator (a Unix absolute path) is part of the match so none is left in front of the replacement.
+  $lead = ''
+  if ($p -match '^[\\/]') { $lead = '[\\/]+' }
+  $segs = @($p -split '[\\/]+' | Where-Object { $_ -ne '' })
+  if (-not $segs.Count) { return '' }
+  return $lead + (@($segs | ForEach-Object { [regex]::Escape($_) }) -join '[\\/]+')
+}
+function Profile-Root {
+  if ($env:USERPROFILE) { return $env:USERPROFILE }
+  if ($env:HOME) { return $env:HOME }
+  return ''
+}
+function Rewrite-ReportPaths([string]$text, [string]$repo, [string]$branch, [string]$profileRoot) {
+  if (-not $text) { return $text }
+  $repoPat = Path-Pattern $repo
+  if ($repoPat) {
+    $tail = '([\\/][^\s\)\]\>"' + [char]39 + [char]96 + ',;]*)'
+    $rx = New-Object System.Text.RegularExpressions.Regex ('(?i)' + $repoPat + $tail)
+    $text = $rx.Replace($text, [System.Text.RegularExpressions.MatchEvaluator]{
+      param($m)
+      $rel = $m.Groups[1].Value -replace '\\', '/'
+      $trail = ''
+      $t2 = [regex]::Match($rel, '^(.*?)([.,;:]+)$')
+      if ($t2.Success) { $rel = $t2.Groups[1].Value; $trail = $t2.Groups[2].Value }
+      return 'https://github.com/rcbailey12/voidsworn/blob/' + $branch + $rel + $trail
+    })
+  }
+  $homePat = Path-Pattern $profileRoot
+  if ($homePat) {
+    $homeTail = '([\\/][^\s\)\]\>"' + [char]39 + [char]96 + ',;]*)?'
+    $hx = New-Object System.Text.RegularExpressions.Regex ('(?i)' + $homePat + $homeTail)
+    $text = $hx.Replace($text, [System.Text.RegularExpressions.MatchEvaluator]{
+      param($m)
+      $rest = $m.Groups[1].Value
+      if ($rest) { $rest = $rest.Substring(1) }
+      $trail = ''
+      $t2 = [regex]::Match($rest, '^(.*?)([.,;:]+)$')
+      if ($t2.Success) { $rest = $t2.Groups[1].Value; $trail = $t2.Groups[2].Value }
+      if ($rest) { return '%USERPROFILE%\' + $rest + $trail } else { return '%USERPROFILE%' + $trail }
+    })
+  }
+  return $text
+}
+
 function Arm-Info($arm) {
   switch ($arm) {
     { $_ -in 'deepseek','deepseekpro' } { return @{ base = 'https://api.deepseek.com'; key = $env:DEEPSEEK_API_KEY; models = 'https://api.deepseek.com/models'; bal = 'https://api.deepseek.com/user/balance' } }
@@ -236,6 +286,11 @@ elseif ($mode -eq 'msg') {
   $fence = '```'
   $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
   if (Read-Txt (Join-Path $out 'stop_reason.txt')) { $msg += "`n" + (Read-Txt (Join-Path $out 'resume.txt')) + "`n" }
+  # Issue 953: this runner's own checkout is the sibling repo folder of out; a partial run takes -partial.
+  $repo = Join-Path (Split-Path -Parent $out) 'repo'
+  $branch = "work/issue-$n-$arm"
+  if (Read-Txt (Join-Path $out 'partial.txt')) { $branch += '-partial' }
+  $msg = Rewrite-ReportPaths $msg $repo $branch (Profile-Root)
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
 elseif ($mode -eq 'guard') {
