@@ -1,23 +1,32 @@
-# voidsworn_SF3 build sheet: the Spire Dart, the Sunward Crusade fighter wing craft (first sheet)
+# voidsworn_SF3 build sheet: Spire Dart, R302 raised low fin, run 2
 
 Issue 769. Sunward fighter, data.js `fighter` (cls Squadron, `guns` T: Interceptor guns, 3 shots; hp 18, sp 6). Concept of
 record: SF3 (contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg; Ryan, Nov 14 23:57 CST, R255: "Agree on sf3
 and sb4"). The notes' own ruling block (design_notes_757.md) names SF4 at 23:51; R255 and the issue name SF3 six minutes later,
 so SF3 is built. Designer of record: the Opus builder; the Board is the final designer and SF3 is a base (R233, R236).
-Rendered in the issue 769 sandbox (Blender 5.3, Cycles CPU, 16 samples). No paint stack (issue 756 applies the Sunward stack
-later) and no PC recipe run in this job. Its partner sheet is [voidsworn_SB4](../voidsworn_SB4/README.md).
+Issue 920 revises only radiator R1, following Ryan's R302 call to shrink the tower into a low swept fin and remove the
+zigzag. Run 2 raises the fin above the roof again: a swept panel with lit side slats, 0.0496 units above the bare roof,
+28 percent of the original tower's exposed height. Rebuilt on Ryan's PC with Blender 4.5.14, Cycles CPU, 16 samples. Sheet built, unpainted; no recipe export or game
+install. Its partner sheet is [voidsworn_SB4](../voidsworn_SB4/README.md).
 
 ![voidsworn_SF3 overview](voidsworn_SF3_sheet_overview.jpg)
 
-Start here: [the overview](voidsworn_SF3_sheet_overview.jpg), [the whole concept beside the build](voidsworn_SF3_compare_SF3.jpg)
-(R229), [both craft beside the S8 flagship at true game scale](voidsworn_SF3_SB4_true_scale.jpg), [both craft at the battle
-camera, game size](voidsworn_SF3_SB4_battle_cam.jpg), [the weapon review](weapon_review.jpg) (R241), then the full
-[sheet](sheet.jpg), [side_by_side.jpg](side_by_side.jpg), [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg) (the concept is
+Start here: [concept / main before / after](voidsworn_SF3_compare_SF3.jpg), [side profile](SF3_R302_side.jpg),
+[camera 170](SF3_R302_camera170.jpg), [the overview](voidsworn_SF3_sheet_overview.jpg), [the weapon review](weapon_review.jpg), then the full
+[sheet page 1](sheet.jpg), [sheet page 2](sheet_02.jpg), [side_by_side.jpg](side_by_side.jpg), [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg) (the concept is
 one three-quarter picture with no true views, so cells.jpg shows it in place of the top and side views).
+
+Separate proof frames: [accepted concept](SF3_R302_concept.jpg), [main before](SF3_R302_before_concept.jpg),
+[R302 after](SF3_R302_after_concept.jpg). Before is main `3bdea48f56dc`; after carries its working source digest.
+Both sheet pages are 1280 x 720; page 1 keeps side, top and cutaway at one scale. No tall sheet is reduced to a narrow strip.
+Every current picture carries its revision and stage and is at most 720 pixels high. The old issue 769
+`voidsworn_SF3_SB4_true_scale.jpg` and `voidsworn_SF3_SB4_battle_cam.jpg` remain historical, before R302.
 
 Files: design `tools/blender/build_sheets/ships/voidsworn_SF3.py`, inventory `voidsworn_SF3_inv.py`, beauty camera
 `voidsworn_SF3_camera.json`, recipe entry `tools/recipe/ships/voidsworn_SF3.json` (bake none), the Sunward kit's craft parts in
-`tools/blender/kits/voidsworn/` (its README, "Squadron craft"), the sandbox helpers in `contrib/opus/tools/issue769/`.
+`tools/blender/kits/voidsworn/` (unchanged). [proof_920.py](proof_920.py) reproduces the review images and records.
+R1's swept panel is authored in the SF3 design file, using the Sunward materials and socket, so its manifest route is
+hand-built. The other fittings keep their kit routes. [model.json](model.json) is the rebuilt model record.
 
 ## Size (scale.md wins)
 
@@ -35,8 +44,10 @@ lit edge), so a craft is about a twelfth of the flagship.
    reactor and the drives.
 3. **The interceptor guns** (guns T): three short barrels in one emitter cluster on a shallow traverse ring, sunk in an armoured
    well on the blade's back near the bow (the concept's dorsal recess). They turn all round and elevate to 45.
-4. **One radiator spire** on the stern block: upright, square-topped, four ember fins a side, an ember glow at its root: the
-   flagship's spire line reduced to one, and never a tail fin.
+4. **One raised low swept radiator**: a small panel on the stern roof, with orange side slats and a thin swept cap.
+   Peak z 0.19520, 0.04960 above the bare stern roof's 0.14560. This is 28 percent of the old tower's exposed height,
+   and far shorter than the stern roof's 0.432 length. The reactor socket stays in place. No tower or zigzag.
+   The fin reads more flush with the roof than the concept, especially at its high camera; the exposing side view shows it.
 5. **Two drives**: deep bells sunk in eight-sided armoured cowls in the stern face, smaller and dimmer than the concept's.
 6. **No canopy**: the pilot looks out through one armoured ember slit in the block's sloping face. Heat louvres on the block's
    flanks (the concept's glowing slats).
@@ -54,24 +65,26 @@ lit edge), so a craft is about a twelfth of the flagship.
 Weapon match (`weapon_match.json`): **PASS**, 0 problems. Slot 0 guns T, 3 shots: G1, three muzzles, every barrel fires every
 volley. No dish, antenna or mast (0 sensor pairs).
 
-## Checks (sandbox, Nov 15 2026)
+## Checks (Ryan's PC, Nov 17 2026, issue 920 run 2)
 
 | Check | Result |
 |---|---|
-| Fit check (clash.py) | 0 of every kind; 56 objects, 7 parts, 114 rays, 1 turret swept all round ([fit_report.md](fit_report.md)) |
-| Weapon match and `weapon_match_selftest.py` | PASS; self-test PASS (25 planted faults, 4 of them craft faults) |
+| Fit check (clash.py) | 0 of every kind; 56 objects, 7 parts, 110 rays, 1 turret swept all round ([fit_report.md](fit_report.md)) |
+| Weapon match | PASS, 0 problems ([weapon_match.json](weapon_match.json)) |
 | Build contract (`sheet_contract_selftest.py`) | PASS: length 1.6, 1 transverse seam, 3 muzzles in slot 0, 1 turret pivot, 2 engines, 4 inside objects, the skin |
-| Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 37 parts, none across the seam, the gun not into the craft; self-test PASS |
+| Build manifest | PASS; R1 hand-built, all other fitting routes unchanged ([manifest.json](manifest.json)) |
+| Standing checks (`node contrib/opus/tools/run_all_checks.js`) | PASS, exit 0; existing findings and oracle-drift baseline exceptions only |
+| Geometry preservation | PASS: all 54 objects outside R1 unchanged, including hull plates, guns, engines and insides; exposed fin height reduced 72.1 percent ([geometry_920.json](geometry_920.json)) |
 | Inventory (R218, R221) | 0 failing; every built part has a job ([inventory.md](inventory.md)) |
-| Outline overlap at the camera fitted to SF3 | 90.8 percent, mass outline 91.1 (reported, not a bar; [outline_check.jpg](outline_check.jpg)) |
-| Detail density, mesh (R224, `contrib/opus/tools/issue738/density_mesh.py`) | flagged: radiator 0.23 and 0.20 of the hull, the louvres 0.45 and 0.37, the drives' edges 0.53 ([density_mesh.json](density_mesh.json)); the hull's plating is dense for a craft (see Budget) |
+| Outline overlap at the unchanged SF3 camera | 91.2 percent, mass outline 91.3; rescored, camera never refitted ([outline_check.jpg](outline_check.jpg)) |
+| Detail density, mesh (R224) | flagged: radiator triangles 0.65 and edges 0.57 of hull, drive edges 0.59, louvres triangles 0.50 and edges 0.41 ([density_mesh.json](density_mesh.json)); reported, other parts unchanged |
 
-## Budget (the stage 4 sheet_hull build)
+## Budget (rebuilt sheet)
 
-18,606 triangles outside, 112 inside; 7 outside materials (black iron, darker iron, worked iron, dark, ember fins, bell lining,
-throat glow), so about 7 draw calls a craft once joined by material, against 5 surfaces for today's code-built craft. A wing of
-four: about 74,900 triangles. The forged plating is 12,462 of the 18,606. Reported, not capped; the scene gate is not measured
-here.
+18,606 triangles outside, 112 inside, 18,718 total. Seven outside materials, seven surfaces and about seven draw calls per
+craft once joined by material. Main before: 18,606 outside and 112 inside. All 12,462 plating triangles remain unchanged.
+Reported, not capped. No scene gate, paint bake, recipe export, stage 4 audit or game install was run for this sheet-only
+revision. Camera 170 uses the game's projection, formation and craft scale with sheet materials; it is not an installed-game capture.
 
 ## Changed from SF3 (every change, with its reason)
 
