@@ -39,9 +39,9 @@ live constants and the glbs, not estimated). "Target" is the R247 range the chec
 | Squadron | Bomber | 3.84 | 2.00 to 6.00 | same wing frame as a fighter, only its load differs |
 | Station | Station, one hex | 26.00 | 99.20 to 297.60 | must dwarf every ship class, so at least twice the super-dreadnought |
 | Station | Station, five or more hexes | 46.00 | 99.20 to 297.60 | the big cluster must dwarf the fleet too |
-| Terrain | Nebula, one-hex cloud | 46.00 | 74.40 to 297.60 | much larger than any ship and spilling past its hex |
-| Terrain | Nebula, tying veil | 46.00 | 20.00 to 297.60 | the faint high veil still spans more than a hex |
-| Terrain | Ion storm, one-hex cloud | 46.00 | 74.40 to 297.60 | a dark vast mass, not a puff the size of a frigate |
+| Terrain | Nebula, one-hex cloud | 83.00 | 74.40 to 297.60 | much larger than any ship and spilling past its hex |
+| Terrain | Nebula, tying veil | 138.00 | 20.00 to 297.60 | the faint high veil still spans more than a hex |
+| Terrain | Ion storm, one-hex cloud | 83.00 | 74.40 to 297.60 | a dark vast mass, not a puff the size of a frigate |
 | Terrain | Asteroid field, biggest rock | 15.20 | 20.80 to 83.20 | the biggest rock dwarfs a frigate |
 | Terrain | Debris, biggest piece | 5.60 | 1.00 to 10.40 | rubble and torn plate stay smaller than the smallest hull |
 | Terrain | Board planet, diameter | 100.00 | 80.00 to 992.00 | a world cap reads bigger than the fleet beside it |
@@ -80,8 +80,11 @@ How today's values are read (the check reads the same constants):
 - Ships: `CLS_LEN[class] * SHIP_K`; fighters and bombers `CLS_LEN["Squadron"] * SHIP_K * SQUADRON_K`
   (godot/render/hull_table.gd, godot/render/ship_view.gd).
 - Station: `STATION_BASE_LEN + STATION_PER_HEX * hexes` or `STATION_BIG_LEN` (godot/render/board.gd).
-- Nebula and storm: `2 * GAS_PUFF_REACH + GAS_PUFF_MAX` for a one-hex cloud, `GAS_VEIL_MAX` for the veil
-  (godot/world/world_living.gd).
+- Nebula and storm: `cloud_span()` samples the actual isolated-hex soft footprint at mask alpha above 0.001,
+  rather than the enclosing card rectangle. Default max volumes and high/low cards share this 83-unit mask.
+  `GAS_VEIL_MAX * GAS_CLOUD_SCALE` is the enclosing veil width (godot/world/world_living.gd).
+  The fog box is 96 units wide and 38.5 high, from y -7 to 31.5 (about two hex corner diameters).
+  Route A is the default after Ryan's R270 pick. `VS_NEBULA_ROUTE=today` is historical bench reproduction only.
 - Asteroid: `BLOCKER_SCALE_MAX * rock long axis`; the rock library's longest axis is 2.0 (godot/world/world.gd,
   godot/world/rocks/rocks.json).
 - Debris: `DEBRIS_ROCK_MAX * rock long axis` (godot/world/world_living.gd).
@@ -103,8 +106,6 @@ naming its job), so the check stays green and guards every other row; every othe
 |---|---|---|---|
 | Station, one hex | 26.00 | 99.20 to 297.60 | issue 373 (the station) |
 | Station, five or more hexes | 46.00 | 99.20 to 297.60 | issue 373 (the station) |
-| Nebula, one-hex cloud | 46.00 | 74.40 to 297.60 | issue 368 (nebula and storm) |
-| Ion storm, one-hex cloud | 46.00 | 74.40 to 297.60 | issue 368 (nebula and storm) |
 | Asteroid field, biggest rock | 15.20 | 20.80 to 83.20 | issue 369 (planet and rocks) |
 | Map station node, shipyard | 6.40 | 12.75 to 51.00 | issue 373 (the station) |
 
