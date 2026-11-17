@@ -1028,11 +1028,16 @@ void fragment() {
 		float rg = 0.0;
 		for (int j = 0; j < 3; j++) {
 			float aj = age - float(j) * 0.08;
-			if (aj > 0.0) { float rd = (d - aj * spread * 1.6) / max(0.5 + aj * 2.0, wpx * 3.0); rg += exp(-rd * rd) * (j == 0 ? 1.7 : 0.8); }
+			if (aj > 0.0) {
+				// R303: the moving band is evaluated only on this shield surface.
+				float rd = (d - aj / life * spread) / max(0.35 + aj * 0.6, wpx * 1.5);
+				rg += exp(-rd * rd) * (j == 0 ? 1.7 : 0.8);
+			}
 		}
 		float ga = clamp(age / min(life, 0.55), 0.0, 1.0);
 		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
-		I += ((core + rg * mask * (0.6 + 0.4 * S)) * fade + glow_all) * S;
+		float ripple_fade = pow(1.0 - f, 1.3) * smoothstep(0.0, 0.025, age);
+		I += (core * fade + rg * mask * (0.6 + 0.4 * S) * ripple_fade + glow_all) * S;
 	}
 	// regen shimmer: a band sweeping the bubble from stern to bow
 	float ra = scene_t - regen_t;

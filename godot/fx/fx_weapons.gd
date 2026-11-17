@@ -1465,7 +1465,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	# asked at the row's size less the bloom, like every hull hit, so it draws (and books) at its row (Muse's check of 524)
 	_shield_crackle(fx, p, n, T, k, sc, spx, 3 if light else (8 if torp else 5), torp)
 	_note(fx, "flash", "shield", Vector3.ZERO, n, 0.30, spx)
-	fx.ring(p,n,T,0.55 if not torp else 0.9,sc,1.4,0.5*k,(5.0 if not torp else 14.0)*k,2,0.0,0.0,rpx)
+	# R303: hits[] draws the travelling ripple on the shield, without a flat disc.
 	_note(fx, "ripple", "shield", Vector3.ZERO, n, 0.9, rpx)
 	_throw_sparks(fx,p,n,n,T,k,sc,6 if light else (16 if torp else 10),12.0,0.8,"shield")
 	if beam:
