@@ -22,6 +22,7 @@ extends RefCounted
 #   sq:      guns, bombs, sporeb: craft on a strafing run
 
 const POOLS := preload("res://fx/fx_pool.gd")
+const FRAGMENTS := preload("res://fx/fx_fragments.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
@@ -1234,7 +1235,8 @@ static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 		_note(fx, "spark", fam, v, n, life)
 
 
-# Debris: torn plate and slag chips, hot for a moment (the chip shader cools them), then dark pieces drifting on.
+# Solid ejecta leaves the same contact as the sparks. The tips of the plume are small and fast;
+# the larger pieces peel off slowly along the surface, with a few loose pieces between them.
 static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, count: int, speed: float, size: float,
 		heat: float, fam: String, substance := "metal") -> void:
 	if substance == "chorus":
@@ -1246,13 +1248,37 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 			fx.spr(p, T + j * 0.015, life, tissue, 0.8, size * k * 1.5, size * k, 15, v, 0.5)
 			_note(fx, "drop", fam, v, n, life)
 		return
-	var glass: bool = substance == "ithar"
-	for j in (_amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)):
-		var d := _outward(n, fx.rcone(axis, 0.65), 0.25)
-		var v: Vector3 = d * fx.rng.randf_range(speed * 0.35, speed) * k
+	var paint: Color = fx.faction_info(substance).fragment_paint
+	var pieces := _amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)
+	for j in pieces:
+		# Preserve the draw order of the old chips so the shared hit RNG still places the soot and embers.
+		var jitter: Vector3 = fx.rdir()
+		var motion: float = fx.rng.randf()
 		var life: float = fx.rng.randf_range(DEBRIS_LIFE.x, DEBRIS_LIFE.y)
-		fx.hit_plate(p + n * 0.06 * k, T + fx.rng.randf() * 0.025, life, v, fx.rng.randf_range(1.8, 3.4) * size * k, heat,
-			fx.rng.randf_range(4.0, 11.0), 0.09, glass)
+		var born: float = T + fx.rng.randf() * 0.025
+		var variant: int = int(fx.rng.randf() >= 0.5)
+		var turn: float = fx.rng.randf()
+		var lead := j == 0 or (j == 1 and pieces >= 6)
+		var quick := j >= 2 and j % 3 != 0
+		var rib := j == 1 or (j > 2 and j % 3 == 0)
+		var profile := FRAGMENTS.RIB if rib else FRAGMENTS.PLATE
+		if substance == "ithar":
+			profile = FRAGMENTS.GLASS
+		var scale := 3.9 if j == 0 else (3.1 if j == 1 else (1.45 if quick else 2.25))
+		var tangent := jitter.slide(n)
+		var aim := axis + jitter * 0.25
+		var speed_share := lerpf(0.72, 1.0, motion)
+		var drag := 0.09
+		var spin := lerpf(4.8, 9.0, absf(turn * 2.0 - 1.0))
+		if not quick:
+			aim = axis * (0.3 if lead else 0.53) + tangent * 0.72 + n * 0.12
+			speed_share = lerpf(0.09, 0.20, motion) if lead else lerpf(0.23, 0.42, motion)
+			drag = 0.58 if lead else 0.24
+			spin = lerpf(0.75, 2.35, absf(turn * 2.0 - 1.0))
+		var v: Vector3 = _outward(n, aim, 0.24) * speed * speed_share * k
+		var origin := p + (n * 0.15 + tangent * (0.26 if lead else 0.11)) * k
+		fx.hit_fragment(origin, born, life, v, scale * (1.0 - 0.14 * variant) * size * k, heat,
+			spin if turn >= 0.5 else -spin, drag, paint, profile + variant, lead)
 		_note(fx, "debris", fam, v, n, life)
 
 
@@ -1718,12 +1744,11 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 	_staged_hit(fx, Tg, p, T, true, gk * rk, n)
 	_note(fx, "flash", "torp", Vector3.ZERO, n, 0.16, ladder_px(lk, 3, tg))
 	var organic: bool = Tg != null and Tg.faction == "chorus"
-	var glass: bool = Tg != null and Tg.faction == "ithar"
 	var debris_col: Color = Tg.fac.damage_glow if organic else tint.lerp(Color(0.93,0.48,0.20),0.5)
 	var m: float = gk * rk
 	_throw_sparks(fx, p + n * 0.2 * k, n, n, T, k, debris_col, int(round(28.0 * m)), 38.0, 0.75, "torp")
 	if not organic:
-		_throw_debris(fx, p, n, n, T, k, int(round(9.0 * m)), 18.0, 0.28, 0.9, "torp", "ithar" if glass else "metal")
+		_throw_debris(fx, p, n, n, T, k, int(round(9.0 * m)), 18.0, 0.28, 0.9, "torp", Tg.faction if Tg != null else "metal")
 		_embers(fx, p + n * 0.2 * k, n, T + 0.1, k, int(round(10.0 * m)), "torp")
 	else:
 		for j in 8:
