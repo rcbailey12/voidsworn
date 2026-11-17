@@ -9011,5 +9011,81 @@
    ],
    "capstone": null
   }
+ },
+ "s983_station_defend": {
+  "note": "R314 station footprint: the big map station blocks every hex within 2 of its centre (19 hexes). Defend measures from the station edge: guard ring at 4, guns at 7, damage within 4, so the Hegemony attackers must come one more ring in",
+  "seed": 98311,
+  "sector": 2,
+  "admiral": "vex",
+  "obj": "defend",
+  "map": "station",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "fac": "hegemony",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "s983_station_plain": {
+  "note": "R314 station footprint: a plain station battle with the 19-hex station body blocking movement and line of fire, and the debris ring moved out to distance 3 and 4",
+  "seed": 98322,
+  "sector": 2,
+  "admiral": "vex",
+  "obj": "rout",
+  "map": "station",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "fac": "corsair",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ]
+ },
+ "s983_teaching_station_defend": {
+  "note": "R314 edge-feature teaching station: the first-fight 3-hex station measures from its own edge (radius 1), so the teaching fight keeps its scale",
+  "seed": 98333,
+  "sector": 1,
+  "admiral": "vex",
+  "obj": "defend",
+  "map": "station",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "edgeFeature": true,
+  "fac": "hegemony",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ]
  }
 }
