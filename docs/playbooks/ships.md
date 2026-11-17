@@ -25,8 +25,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (RECIPE.md "The paint stack for sheet ships"). Nobody paints a ship by hand.
    What the Hullbreaker stack must show (R228, Ryan, Nov 12 2026 14:21 CST, agreeing with the Board's review of A16 pass 1:
    "Yep completely agree with your findings"), set in the faction stack for every Hullbreaker sheet ship, never on one ship:
-   (1) a plate patchwork at the concept's density, many small plates each with its own tone (soot, gun-metal, brick-red rust,
-   bare-steel scrapes, the purple trophy panels), driven by panel cells and the modelled plates' own islands (the stack's
+   (1) a plate patchwork at the concept's density, many small plates each with its own tone (brick-red rust and dried blood
+   most, soot, gun-metal, bare-steel scrapes and purple trophy panels), driven by panel cells and the modelled plates' own islands (the stack's
    PATCH_FAMILIES, patch_cell); (2) contrast: black seams and dark recesses, brighter worn edges and scrapes, never flat grey
    at camera 170; (3) rust is a dark brick red, never pink, judged under the battle lift (1.25, R227); (4) red running lights
    visible as small red points at battle size; brightness, not size, carries the read (the Board's correction of its first
@@ -48,7 +48,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    grey is weathered dark; grime goes over everything; in the game the stack's surfaces take the soft rim light (look.gd RIM
    soft: the full rim specular flared white on them at the close cameras); the throat glow sits deep in the bell, the lip and rim stay dark, and (Ryan, Nov 12 19:16 CST: "more variation to the
    engine glow so it's not so uniform, just disc color") it varies: a hot core in the centre of the throat (the plug cone glows hottest, never black) grading out to deeper red and orange, uneven hot
-   spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
+   spots and soot streaks across the throat. R308 (Ryan, Nov 17): every engine on one ship shares its colour, strength, core
+   reach and hot-spot pattern, scaled to its bell radius; bigger bells glow over a bigger area, never brighter. Every faction
+   gets this through the shared stack, baked into
    the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
    Issue 651 (A18 to A20, the Board as designer): only a lit engine glows; a cold spare bell (an engine with no throat glow
     of its own, A20's on the deck) keeps its throat and plug dark. A parked craft takes its sheet zones and its nozzle joins
@@ -64,6 +66,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    deck lights and worn edging, nothing patterned inside it: no warning stripes (replaces issue 651's striped mouth), the
    fit-out inside in the dark liner's zone, only the rim and its torn teeth in worn iron (stack zone iron_edge), a few small
    warm lamps at uneven depths by the floor (glow zone lamp, amber, under the glow threshold).
+   R306/R307 (Ryan, Nov 16, issue 936): rust red and dried blood are the main armour tones, like KB1CC run 2; grey salvage is
+   a clear minority. The faction stack gives armour rust underpaint and 85 percent rust/blood patch-family weight; machinery,
+   seams, soot and wear stay weathered. Per-ship colour registers, sampled and graded from the accepted A16 to A20 concepts,
+   live in `CONCEPT_REGISTERS` in the stack: saturated brick rust, brighter worn metal and the concept's violet strength.
+   Near-white is exposed metal and small scrapes; R274's larger grey trophy plates remain dark salvaged metal, at R252 size.
+   Plate geometry and tiling scale are unchanged in this run; report the painted-output plate measure for review.
    **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
    ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
    violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
@@ -84,7 +92,7 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    only at its very centre, reading at camera 170; never green pooled in hollows, ribs or sockets. Every light is drawn on one
    emission map; only the hull's rim trim material is marked hull_surface for breach clearance, never engines, core or lens.
    (4) engines are an eclipse ring of pale light round a
-   black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
+   black shade disc, in the game's Eclipse engine colour paled toward white, with shared brightness, tint, hot spots and
    dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
    core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts
    carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px;
@@ -95,7 +103,7 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    mirrored part reads its corners, rows and strips the same way on both sides, never from ring point 0 or one edge of a plate
    (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
    half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
-   Each engine ring keeps its own pattern.
+   Each engine ring shares the ship's normalized pattern (R308).
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
