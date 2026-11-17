@@ -1,7 +1,7 @@
 @echo off
 rem Work one job-board issue with Codex on Ryan's PC (queued by codex_board.ps1 as a lane B job).
 rem Usage: codex_issue.bat <issue number>
-rem Fresh checkout of main in Downloads\voidsworn_test\board\repo on branch codex/issue-<n>, Codex runs at the effort
+rem Fresh checkout of main in the lane's Downloads\voidsworn_test\board*\repo (issue 947) on branch codex/issue-<n>, Codex runs at the effort
 rem the issue names (high by default), then the change is committed and pushed. GitHub opens the PR and runs the checks.
 rem If the push fails, the change is saved as build_b\cx_issue<n>.patch for Opus instead.
 rem Everything for the job (log, Codex's report, result) lands in Downloads\voidsworn_test\board\issue-<n>\.
@@ -29,8 +29,19 @@ set "TP=%~dp0"
 rem %TPC% is %TP% without its trailing backslash, for passing the tools folder as a bare quoted argument (issue 722:
 rem cmd merges "%TP%" with the next quoted argument because of the backslash before the quote).
 set "TPC=%TP:~0,-1%"
-set "R=%ROOT%\board\repo"
-set "O=%ROOT%\board\issue-%N%"
+rem Issue 947: each lane runs its own tools copy and its own board folder (build_b main: board, build_c lane B: board_b,
+rem build_d lane C: board_c, build_e lane D: board_d). The folder comes from where this file sits, so one runner file
+rem serves every lane. On Nov 17 a single hard-coded board\repo sent lanes C and D at the main chain's live checkout.
+for %%I in ("%TP%..\..") do set "LANEDIR=%%~fI"
+for %%I in ("%LANEDIR%") do set "LANEDIR=%%~nxI"
+set "BOARD="
+if /i "%LANEDIR%"=="build_b" set "BOARD=board"
+if /i "%LANEDIR%"=="build_c" set "BOARD=board_b"
+if /i "%LANEDIR%"=="build_d" set "BOARD=board_c"
+if /i "%LANEDIR%"=="build_e" set "BOARD=board_d"
+if not defined CODEX_TEST_ROOT if not defined BOARD (echo job refused: this runner copy is in %LANEDIR%, which is not a lane tools folder ^(build_b to build_e^); no agent started & exit /b 2)
+set "R=%ROOT%\%BOARD%\repo"
+set "O=%ROOT%\%BOARD%\issue-%N%"
 set "BR=codex/issue-%N%"
 set "PUSHMODE=real"
 rem R276: all nested GPU launchers inherit the issue and the code-only lane.

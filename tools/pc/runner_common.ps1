@@ -306,8 +306,7 @@ Runner status: $label
 
 - Seat: $($g.seat)
 - Run: $($s.run)
-- Machine: $($g.machine)
-- Lane folder: $($g.folder)
+- Lane: $($g.lane)
 - Branch: $branch
 - Started (UTC): $($g.started)
 - Ceiling: $($g.ceiling) seconds
@@ -616,7 +615,9 @@ try {
       # Dry runs validate read-only. Only fixture tests may write to their fake GitHub.
       if ($args[7] -ne 'real' -and -not $test) { Log "job validated: issue #$issue (dry run, no claim written)"; exit 0 }
       $head = @($branches | Where-Object { $_.name -eq 'main' } | ForEach-Object { $_.commit.sha }) -join ''
-      $g = @{ issue = $issue; seat = $args[3]; folder = $repo; machine = [Environment]::MachineName;
+      # Issue 947: the public status comment names the lane, never the machine or a PC path (folder stays in local state only).
+      $lane = switch ((Split-Path -Leaf (Split-Path -Parent $repo)).ToLowerInvariant()) { 'board' { 'main' } 'board_b' { 'B' } 'board_c' { 'C' } 'board_d' { 'D' } default { 'other' } }
+      $g = @{ issue = $issue; seat = $args[3]; folder = $repo; lane = $lane;
         started = [DateTime]::UtcNow.ToString('o'); ceiling = $args[5]; resume = $args[6]; comment = 0;
         start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
       $s | Add-Member -NotePropertyName github -NotePropertyValue $g -Force

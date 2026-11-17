@@ -95,8 +95,8 @@ Init 'normal'
 Announce
 $start = @(Calls | Where-Object { $_.endpoint -match '/comments$' })[0]
 $text = $start.payload.body
-foreach ($field in @('Seat: codex','Machine:','Lane folder:','Branch: codex/issue-846','Started (UTC):','Ceiling: 21600 seconds','Last commit:','How to resume: codex_issue.bat 846','Runner status: running')) { Assert ($text.Contains($field)) "missing $field" }
-Assert ($text.Contains($repo)) 'lane folder value'
+foreach ($field in @('Seat: codex','Lane: other','Branch: codex/issue-846','Started (UTC):','Ceiling: 21600 seconds','Last commit:','How to resume: codex_issue.bat 846','Runner status: running')) { Assert ($text.Contains($field)) "missing $field" }
+Assert (-not $text.Contains($repo) -and -not $text.Contains([Environment]::MachineName) -and -not $text.Contains('Machine:')) 'issue 947: the public status comment carries no PC path or machine name'
 Assert ($text.Contains('${main}')) 'start commit value'
 $calls = Calls
 Assert (@($calls | Where-Object { $_.endpoint -eq 'repos/rcbailey12/voidsworn/labels' -and $_.payload.name -eq 'running' -and $_.payload.color -eq '1D76DB' }).Count -eq 1) 'label created'
