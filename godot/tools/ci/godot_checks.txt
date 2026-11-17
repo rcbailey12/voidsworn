@@ -34,6 +34,7 @@ headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|sh
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices and records; its optional shots folder is not used here
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
+headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
 headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh in its own step
