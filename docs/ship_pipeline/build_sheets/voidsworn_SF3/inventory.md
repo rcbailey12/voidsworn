@@ -3,7 +3,7 @@
 Written from the concept before modelling, region by region (bow, midships, stern; top, side, below). Each line names the
 kit part type (tools/blender/kits/voidsworn/parts.py), how many, the blob-sweep cells it shows in, and the sub-parts that
 make it read as that thing, and its job: what it does on the ship (R221: a part with no job is cut). Source:
-`tools/blender/build_sheets/ships/voidsworn_SF3_inv.py`.
+`tools/blender/build_sheets/ships/voidsworn_SF3_inv.py`; R302 updates R1 from the current model written by `voidsworn_SF3.py`.
 
 | ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
 |---|---|---|---|---:|---|---|---|
@@ -13,7 +13,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | stern_block | the armoured block the blade thickens into: it holds the pilot, the reactor and the drives | hull | a raised armoured block on the blade's stern, a sloping forward face, chamfered shoulders, upright flanks | 1 | mid/top, mid/side, stern/top, stern/side | the sloping face, the shoulder chamfers, the flanks | picture |
 | block_plates | armour over the stern block | plate | forged plates over the block's top and flanks | 1 | mid/top, stern/top, stern/side | slabs with bevels, reinforcing steps and rivet lines | picture |
 | sensor_slit | the pilot's view out: no canopy (Ryan, R254), an armoured slit at most | slit | one ember-lit armoured slit in the stern block's sloping face (replaces any canopy; the concept's dark slot near the bow is the gun well) | 1 | mid/top | a forged frame round a recessed ember pane, a brow | designed |
-| spire | sheds the drive reactor's heat (a hot reactor in vacuum must shed it, lore 2.5): the flagship's spire row reduced to one | radiator | one short radiator spire on the stern block, square-topped, four ember fins a side | 1 | mid/top, mid/side, stern/top | a forged root socket with an ember glow at its foot, a column (iron posts round a dark core), the ember fins, a forged cap, gusset braces | picture |
+| spire | sheds the drive reactor's heat (a hot reactor in vacuum must shed it, lore 2.5): the flagship's spire row reduced to one | radiator | low swept radiator fin, peak z 0.14496, below stern roof, no zigzag | 1 | mid/top, mid/side, stern/top | a forged root socket, one swept ember panel per side, dark channels, a thin cap and root braces (R302) | picture |
 | drives | drive (sp 6): two deep bells, nozzle clusters inside armoured blocks (the owner's rule for craft) | engine | two deep bells sunk in eight-sided armoured cowls in the stern face | 2 | stern/top, stern/side, stern/below | an eight-sided cowl with a riveted face, a band and a collar, the bell sunk in it with a lip and a stiffener ring, an ember lining, a hot throat, a glowing plug cone | picture |
 | louvres | the drive room's heat louvres | vent | one heat louvre on each flank of the stern block (the concept's glowing flank slats) | 2 | stern/side | a forged frame, slanted slats over an ember-lit recess | picture |
 
@@ -73,7 +73,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | stern_block | a raised armoured block on the blade's stern, a sloping forward face,  | 1 / 1 | Y | Y | Y |
 | block_plates | forged plates over the block's top and flanks | 1 / 1 | Y | Y | Y |
 | sensor_slit | one ember-lit armoured slit in the stern block's sloping face | 1 / 1 | Y | Y | Y |
-| spire | one short radiator spire on the stern block, square-topped, four ember | 1 / 1 | Y | Y | Y |
+| spire | low swept radiator fin, peak z 0.14496, below stern roof, no zigzag | 1 / 1 | Y | Y | Y |
 
 ### mid/side
 
@@ -82,7 +82,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | blade | one narrow forged blade: a low spine strip, the deck, upper facets slo | 1 / 1 | Y | Y | Y |
 | blade_plates | forged plates over the deck, the facets and the belly | 5 / 1 | Y | Y | Y |
 | stern_block | a raised armoured block on the blade's stern, a sloping forward face,  | 1 / 1 | Y | Y | Y |
-| spire | one short radiator spire on the stern block, square-topped, four ember | 1 / 1 | Y | Y | Y |
+| spire | low swept radiator fin, peak z 0.14496, below stern roof, no zigzag | 1 / 1 | Y | Y | Y |
 
 ### mid/below
 
@@ -97,7 +97,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | stern_block | a raised armoured block on the blade's stern, a sloping forward face,  | 1 / 1 | Y | Y | Y |
 | block_plates | forged plates over the block's top and flanks | 1 / 1 | Y | Y | Y |
-| spire | one short radiator spire on the stern block, square-topped, four ember | 1 / 1 | Y | Y | Y |
+| spire | low swept radiator fin, peak z 0.14496, below stern roof, no zigzag | 1 / 1 | Y | Y | Y |
 | drives | two deep bells sunk in eight-sided armoured cowls in the stern face | 2 / 2 | Y | Y | Y |
 
 ### stern/side
@@ -127,12 +127,12 @@ Concept counts read off the concept sheet by eye (SF3 beauty, by eye (no true vi
 | bow/top | 2 | 1 | Hull: the forged blade |
 | bow/side | 2 | 1 | Hull: the forged blade |
 | bow/below | no view | 1 | Hull: the forged blade |
-| mid/top | 4 | 1 | Hull: the forged blade |
+| mid/top | 4 | 2 | Hull: the forged blade; Low dorsal radiator R1 |
 | mid/side | 3 | 1 | Hull: the forged blade |
-| mid/below | no view | 1 | Hull: the forged blade |
-| stern/top | 4 | 2 | Hull: the forged blade; Radiator spire R1 |
-| stern/side | 4 | 2 | Hull: the forged blade; Radiator spire R1 |
-| stern/below | no view | 2 | Hull: the forged blade; Radiator spire R1 |
+| mid/below | no view | 2 | Hull: the forged blade; Low dorsal radiator R1 |
+| stern/top | 4 | 2 | Hull: the forged blade; Low dorsal radiator R1 |
+| stern/side | 4 | 1 | Hull: the forged blade |
+| stern/below | no view | 2 | Hull: the forged blade; Low dorsal radiator R1 |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -141,6 +141,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.25 | 2.25 | 4.35 | 4.35 |
-| build | 4.30 | 4.30 | 4.81 | 15.48 |
+| build | 4.30 | 8.09 | 4.81 | 15.65 |
 
 Lines not present, shaped and detailed without a reason: 0.

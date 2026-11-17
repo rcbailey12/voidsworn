@@ -25,9 +25,9 @@ CONCEPT_SHEET = BEAUTY
 CONCEPT_VIEWS = dict(top=dict(box=(120, 170, 940, 590)), side=dict(box=(120, 170, 940, 590)))
 CROPS = [('bow (the blade and the gun well)', (120, 170, 520, 470)), ('midships (the spire and the stern block)', (440, 230, 840, 530)),
          ('stern (the drives)', (600, 330, 960, 600))]
-SHEET = dict(version=1, round='first sheet', date='2026-11-15', blend='opus769', px_per_unit=900, view_pad=0.12, label_scale=1.5, bar_units=0.5,
-             blend_where='rendered in the issue 769 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py voidsworn_SF3 <out> render` rebuilds it from this file',
-             before='First full layout', before_note='The first complete layout, built with the Sunward kit\'s new craft parts and run through the fit check before any fix.',
+SHEET = dict(version=2, round='R302 low radiator fin', date='2026-11-16', blend='issue920', px_per_unit=900, view_pad=0.12, label_scale=1.5, bar_units=0.5,
+             blend_where='rendered on Ryan\'s PC (Blender 4.5.14, Cycles CPU); `build.py voidsworn_SF3 <out> render` rebuilds it from this file',
+             before='Main before R302', before_note='Issue 920 replaces only R1\'s tall radiator tower and its zigzag fins with a low swept radiator on the same mount.',
              during='The table above is every finding, in the order the check made them. Beyond the fit check, the sheet\'s own looks sent back: '
                     'the first plating (small plates, many rivets) read as a shrunken capital ship, so the plates were made larger and the rivets smaller; the heat louvre\'s ember '
                     'back plate stood in front of its slats on so small a louvre (the kit now keeps it behind them).')
@@ -103,6 +103,47 @@ def top_z(n, y=0.0):
     return U(h[3][1])
 
 
+def radiator_fin(HP, station):
+    """SF3's R302 profile, using the Sunward socket and materials; no shared kit change."""
+    old = HP.craft_spire(U(0.115), U(0.075), U(0.012), U(0.04), fins=4)
+    # Preserve the original plate keep-out exactly, so the surrounding armour does not change.
+    keep_r = max(v.length for c in old.comps if c['role'] == 'mount' for v in c['verts']) * 1.05
+    part = HP.craft_spire(U(0.035), U(0.075), U(0.012), U(0.04), fins=4)
+    part.comps = [c for c in part.comps if c['name'] in ('root', 'rootstep')]
+    for component in part.comps:
+        for vertex in component['verts']:
+            vertex.z -= U(0.008)  # the original reactor socket now sits within the roof
+
+    def slab(profile, half_width, offset=0.0):
+        verts = [(U(x - station), U(offset + side * half_width), U(z) - top_z(station))
+                 for side in (-1, 1) for x, z in profile]
+        n = len(profile)
+        faces = [tuple(range(n - 1, -1, -1)), tuple(range(n, 2 * n))]
+        faces += [(i, (i + 1) % n, (i + 1) % n + n, i + n) for i in range(n)]
+        return verts, faces
+
+    # The shoe follows the block's forward slope. Its raked panel meets the roof aft,
+    # below the stern block's 0.091 crown, instead of adding a new highest point.
+    profile = [(-0.153, 0.078), (-0.166, 0.0895), (-0.222, 0.090),
+               (-0.222, 0.0895), (-0.175, 0.0889), (-0.166, 0.0854)]
+    shoe = [(n, top_z(n) / LENGTH - 0.001) for n in (-0.15, -0.166, -0.175, -0.222)]
+    shoe += [(n, z + 0.002) for n, z in reversed(shoe)]
+    part.add('brace', 'mount', 'siron2', slab(shoe, 0.006))
+    part.add('bar', 'body', 'siron2', slab(profile, 0.0035))
+    panel = [(-0.1555, 0.0795), (-0.1668, 0.0883), (-0.172, 0.0887), (-0.166, 0.086)]
+    for side in (-1, 1):
+        part.add('fin', 'body', 'embar', slab(panel, 0.0003, side * 0.0037))
+        # Dark vertical channels break up the heat panel without any projecting zigzag sheets.
+        for x in (-0.16, -0.164, -0.168):
+            zbase = top_z(x) / LENGTH + 0.003
+            ztop = 0.0883 + (-x - 0.1668) / 0.0052 * 0.0004
+            rib = [(x - 0.0003, zbase), (x + 0.0003, zbase), (x + 0.0003, ztop), (x - 0.0003, ztop)]
+            part.add('column', 'body', 'siron', slab(rib, 0.0004, side * 0.0041))
+    cap = [(-0.1655, 0.089), (-0.223, 0.0895), (-0.223, 0.0906), (-0.1655, 0.0901)]
+    part.add('cap', 'body', 'sworn', slab(cap, 0.0048))
+    return part, keep_r
+
+
 def build(K):
     import bpy
     import kit as _k
@@ -137,12 +178,13 @@ def build(K):
           band=(0, 10, 20, 30, 45),
           note='the interceptor guns (data.js guns T, 3 shots): three barrels in one emitter cluster on a traverse ring in an armoured well; every volley fires all three')
 
-    # ---------------- the spire: one radiator spire on the stern block, the flagship's spire line reduced to one ----------------
+    # ---------------- R302: one low swept dorsal radiator, on the existing stern-block mount ----------------
     SX = -0.25
-    part = HP.craft_spire(U(0.115), U(0.075), U(0.012), U(0.04), fins=4)
-    K.organ('R1', part, (U(SX), 0.0, top_z(SX)), (0, 0, 1), fwd=(1, 0, 0), inv='spire', what='radiator spire, %.2f tall, four ember fins a side' % U(0.115),
-            kind='radiator', note='sheds the drive reactor\'s heat: a square-topped column of iron posts round a dark core, ember fins reaching out to each side')
-    K.mass('Radiator spire R1', bpy.data.objects['R1_body_embar'], 'ember fins on iron', note='the fighter\'s one spire (SF3)')
+    part, keep_r = radiator_fin(HP, SX)
+    K.organ('R1', part, (U(SX), 0.0, top_z(SX)), (0, 0, 1), fwd=(1, 0, 0), inv='spire', what='low swept radiator fin, peak z %.5f, below stern roof, no zigzag' % U(0.0906),
+            kind='radiator_fin', keep_r=keep_r,
+            note='R302: one low swept dorsal heat panel, dark channels and a thin cap; the mounting shoe follows the forward slope into the roof; same reactor socket, no tower or zigzag')
+    K.mass('Low dorsal radiator R1', bpy.data.objects['R1_body_embar'], 'ember panels on iron', note='SF3 R302, one swept heat fin, not a tower')
 
     # ---------------- the pilot's sensor slit in the stern block's sloping face (no canopy) ----------------
     n0, n1 = -0.095, -0.175
@@ -207,14 +249,14 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
     K.change('Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as the bomber, not the notes\' 3.2 units',
              'docs/playbooks/scale.md, Squadron rows, binding (it wins over the design notes): "same wing frame as a fighter, only its load differs"; the fighter reads apart by its slim outline, not its length')
-    K.change('The spire is an upright, square-topped radiator with four ember fins reaching out to each side, standing on the stern block, not the concept\'s raked fin',
-             'Ryan (R254): no tail fins; the council flagged spires drifting into stabiliser reads (design_notes_757.md); factions.md: the spires are radiators. A raked blade on the stern reads as a tail fin; fins out to the sides read as a radiator from the battle camera and from above')
+    K.change('R1 is a low swept dorsal radiator on the stern block\'s forward slope, its peak below the stern roof, with no zigzag',
+             'Ryan (R302, issue 920): shrink the radiator tower into the concept\'s low back fin, no longer the tallest thing. The shoe extends forward from the original reactor socket so its panel sweeps back into the roofline; the reactor and all other parts are unchanged')
     K.change('The two drives are deep bells sunk in eight-sided armoured cowls in the stern face, smaller (0.077 across) and dim, not two big protruding drums with bright bells',
              'the production notes: SF3\'s bells render oversized and brighter than banked coals, the sheet dims and shrinks them (R55); the owner\'s rule for craft: drives are nozzle clusters inside armoured blocks')
     K.change('The interceptor guns turn on a shallow traverse ring in an armoured well on the blade\'s back near the bow (the concept\'s dorsal bow recess), three barrels in one emitter cluster',
              'data.js guns fires all round (arc T): the fit check sweeps the guns through every bearing, which a gun in the nose face cannot do; the notes let the sheet pick the dorsal recess or the nose face, and DeepSeek\'s traverse ring is in the callout (R241, ships.md rule 11)')
     K.change('The guns elevate to 45 degrees (the fit check\'s band 0 to 45)',
-             'interceptor guns engage craft above and below the wing; dead astern the line clears the spire from 30 degrees up (the ARC test)')
+             'interceptor guns engage craft above and below the wing; the fit check tests the same 0 to 45 degree band against the low radiator')
     K.change('An armoured sensor slit for the pilot in the stern block\'s sloping face',
              'Ryan (R254): no canopy, an armoured slit at most; one unaugmented pilot, no AI (lore 2.5), so the pilot needs a view out')
     K.change('The concept\'s glowing flank slats are the drive room\'s heat louvres; its glyph decals and small panels are not modelled',

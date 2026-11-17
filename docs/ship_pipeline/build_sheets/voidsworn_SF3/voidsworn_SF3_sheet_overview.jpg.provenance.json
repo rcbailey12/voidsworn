@@ -1,0 +1,105 @@
+{
+  "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+  "source_dirty": true,
+  "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "voidsworn_SF3_sheet_overview.jpg",
+  "date": "2026-11-17T00:21:15Z",
+  "sources": [
+    {
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "side.png",
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+      "stage": "sheet built",
+      "date": "2026-11-17T00:17:54Z",
+      "image_sha256": "fb3eca10cb693b969e44aaa674470299807e1968814975a3ab2eb79844351d6c",
+      "sources": [
+        {
+          "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "top.png",
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+      "stage": "sheet built",
+      "date": "2026-11-17T00:18:08Z",
+      "image_sha256": "3a7d1c06259ac81b8d81261dea3dabcfe3dc4df22884063828be651163be3087",
+      "sources": [
+        {
+          "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "cutaway.png",
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+      "stage": "sheet built",
+      "date": "2026-11-17T00:18:01Z",
+      "image_sha256": "17ec8c1341b395f7c97541cd94adfcd17f0ea83efc3bbef7e4c9e21e49f8c0f1",
+      "sources": [
+        {
+          "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "threequarter.png",
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+      "stage": "sheet built",
+      "date": "2026-11-17T00:18:26Z",
+      "image_sha256": "0c132ea884eb2dfa3624715f6c104a68f5e39e72e13af02a01482fb50b6642f7",
+      "sources": [
+        {
+          "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "d129c4537bc2ec232c88bcc209b00f0d6694a782bba34f36c3fcfefd08059541"
+  ],
+  "stamp_template_sha256": "7639994fc6a727adc3760cc86620f73b72eca66198fbef88bdf0ca0c803d505e",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEALwb9Efgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBMCouTtbATLSKgvHAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "bfd4b39c73e9fb189f78a5779c45a7e26f6d3ffcd415d82878fe4ae0c2742673"
+}

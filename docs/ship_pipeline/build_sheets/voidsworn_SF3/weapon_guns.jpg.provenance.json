@@ -1,0 +1,54 @@
+{
+  "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+  "source_dirty": true,
+  "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_guns.jpg",
+  "date": "2026-11-17T00:21:12Z",
+  "sources": [
+    {
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_guns.png",
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+      "stage": "sheet built",
+      "date": "2026-11-17T00:18:33Z",
+      "image_sha256": "a89bc07a58e2200e88b3f274e93aea73b2b3dfc1241ea1565acedb590bc02f96",
+      "sources": [
+        {
+          "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b7164ed88e5c0c7003f85cd8610d0751dc379384a14e1b5a9f61c4dd6f05b1",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    511,
+    282,
+    560
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "1d68895b85dd56dfeb08bb2896fe9a2e8f0320a68e1a172ad8af2048b61bd325"
+  ],
+  "stamp_template_sha256": "31456c187ca5d208045bc1b50bb0972d0b7e23d2a6745af028ce83250fe973f6",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VQREAIAwDwYKsDv51YeKeuwLyu8nZfQMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXwmXQES5Wm6rgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "8073ffa35fcf9e4654a7b674c3c3a000a0f121970a2de00b7c21acd888d8036a"
+}

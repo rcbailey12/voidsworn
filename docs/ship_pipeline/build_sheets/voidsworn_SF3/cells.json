@@ -300,7 +300,7 @@
   {
    "cell": "mid/top",
    "concept": 4,
-   "build": 1
+   "build": 2
   },
   {
    "cell": "mid/side",
@@ -310,7 +310,7 @@
   {
    "cell": "mid/below",
    "concept": null,
-   "build": 1
+   "build": 2
   },
   {
    "cell": "stern/top",
@@ -320,7 +320,7 @@
   {
    "cell": "stern/side",
    "concept": 4,
-   "build": 2
+   "build": 1
   },
   {
    "cell": "stern/below",
@@ -337,9 +337,9 @@
   },
   "build": {
    "env_LB": 4.3,
-   "env_LH": 4.3,
+   "env_LH": 8.09,
    "hull_LB": 4.81,
-   "hull_LH": 15.48
+   "hull_LH": 15.65
   }
  }
 }

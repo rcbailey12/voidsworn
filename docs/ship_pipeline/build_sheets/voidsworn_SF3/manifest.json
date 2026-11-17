@@ -1,6 +1,6 @@
 {
  "code": "voidsworn_SF3",
- "sheet_version": 1,
+ "sheet_version": 2,
  "routes_note": "kit = the Voidsworn parts kit (tools/blender/kits/voidsworn/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
@@ -21,10 +21,10 @@
   },
   {
    "id": "R1",
-   "kind": "radiator",
-   "what": "radiator spire, 0.18 tall, four ember fins a side",
+   "kind": "radiator_fin",
+   "what": "low swept radiator fin, peak z 0.14496, below stern roof, no zigzag",
    "count": 1,
-   "route": "kit",
+   "route": "hand-built",
    "source": "picture",
    "inventory": [
     "spire"
@@ -92,7 +92,7 @@
    "route": "hand-built"
   },
   {
-   "name": "Radiator spire R1",
+   "name": "Low dorsal radiator R1",
    "route": "hand-built"
   }
  ],

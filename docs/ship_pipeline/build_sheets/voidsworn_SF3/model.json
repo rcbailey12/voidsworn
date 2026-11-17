@@ -1,0 +1,970 @@
+{
+ "code": "voidsworn_SF3",
+ "name": "Spire Dart fighter (Sunward Crusade fighter wing craft)",
+ "faction": "Sunward Crusade (voidsworn)",
+ "cls": "Squadron",
+ "length": 1.6,
+ "game": "data.js fighter (cls 'Squadron', the Sunward wing: voidsworn sq 'fighter'); length from godot/render/hull_table.gd CLS_LEN['Squadron'] = 1.6 (drawn x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84 on the board, docs/playbooks/scale.md)",
+ "game_ship": "fighter",
+ "variant": "",
+ "beauty": "contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg",
+ "model_length": 1.6,
+ "x_tip": 0.8,
+ "lo": [
+  -0.8,
+  -0.186,
+  -0.048
+ ],
+ "hi": [
+  0.8,
+  0.186,
+  0.15
+ ],
+ "views": {
+  "side": {
+   "cam": "side",
+   "res": [
+    1656,
+    394
+   ],
+   "px_per_unit": 900,
+   "right": [
+    -1,
+    0,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.00015360116958618164,
+    0.0,
+    0.05124356783926487
+   ],
+   "w_units": 1.8396928215026855,
+   "h_units": 0.43794486090540885
+  },
+  "cutaway": {
+   "cam": "cutaway",
+   "res": [
+    1656,
+    394
+   ],
+   "px_per_unit": 900,
+   "right": [
+    -1,
+    0,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.00015360116958618164,
+    0,
+    0.05124356783926487
+   ],
+   "w_units": 1.8396928215026855,
+   "h_units": 0.43794486090540885
+  },
+  "top": {
+   "cam": "top",
+   "res": [
+    550,
+    1656
+   ],
+   "px_per_unit": 900,
+   "right": [
+    0,
+    -1,
+    0
+   ],
+   "up": [
+    1,
+    0,
+    0
+   ],
+   "centre": [
+    0.00015360116958618164,
+    0.0,
+    0.05124356783926487
+   ],
+   "w_units": 0.6111999952793121,
+   "h_units": 1.8396928215026855
+  },
+  "underside": {
+   "cam": "underside",
+   "res": [
+    550,
+    1656
+   ],
+   "px_per_unit": 900,
+   "right": [
+    0,
+    1,
+    0
+   ],
+   "up": [
+    1,
+    0,
+    0
+   ],
+   "centre": [
+    0.00015360116958618164,
+    0.0,
+    0.05124356783926487
+   ],
+   "w_units": 0.6111999952793121,
+   "h_units": 1.8396928215026855
+  },
+  "bow": {
+   "cam": "bow",
+   "res": [
+    550,
+    394
+   ],
+   "px_per_unit": 900,
+   "right": [
+    0,
+    1,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.00015360116958618164,
+    0.0,
+    0.05124356783926487
+   ],
+   "w_units": 0.6111999952793121,
+   "h_units": 0.43794486090540885
+  },
+  "stern": {
+   "cam": "stern",
+   "res": [
+    550,
+    394
+   ],
+   "px_per_unit": 900,
+   "right": [
+    0,
+    -1,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.00015360116958618164,
+    0.0,
+    0.05124356783926487
+   ],
+   "w_units": 0.6111999952793121,
+   "h_units": 0.43794486090540885
+  }
+ },
+ "features": [
+  {
+   "id": "G1",
+   "kind": "gun",
+   "what": "interceptor guns, triple turret",
+   "count": 3,
+   "pos": [
+    0.336,
+    0.0,
+    0.038
+   ],
+   "aim": [
+    0.0,
+    5.0
+   ],
+   "slot": "T",
+   "weapon": "guns",
+   "src": "picture",
+   "note": "the interceptor guns (data.js guns T, 3 shots): three barrels in one emitter cluster on a traverse ring in an armoured well; every volley fires all three",
+   "muzzle": [
+    [
+     0.448,
+     0.0,
+     0.075
+    ],
+    [
+     0.449,
+     -0.008,
+     0.061
+    ],
+    [
+     0.449,
+     0.008,
+     0.061
+    ]
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "inv": [
+    "guns"
+   ],
+   "station": 29.0
+  },
+  {
+   "id": "R1",
+   "kind": "radiator_fin",
+   "what": "low swept radiator fin, peak z 0.14496, below stern roof, no zigzag",
+   "count": 1,
+   "pos": [
+    -0.4,
+    0.0,
+    0.144
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "R302: one low swept dorsal heat panel, dark channels and a thin cap; the mounting shoe follows the forward slope into the roof; same reactor socket, no tower or zigzag",
+   "inv": [
+    "spire"
+   ],
+   "station": 75.0
+  },
+  {
+   "id": "W1",
+   "kind": "slit",
+   "what": "armoured sensor slit 0.054 x 0.013",
+   "count": 1,
+   "pos": [
+    -0.222,
+    0.0,
+    0.105
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "the pilot looks out through an ember-lit armoured slit in the stern block's sloping face: no canopy, no glass bubble",
+   "inv": [
+    "sensor_slit"
+   ],
+   "station": 63.9
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "pos": [
+    -0.785,
+    0.064,
+    0.038
+   ],
+   "aim": [
+    180.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "port drive: a deep bell sunk in an eight-sided armoured cowl, ember lining and plug, dim like banked coals",
+   "exit": [
+    -0.785,
+    0.064,
+    0.038
+   ],
+   "radius": 0.0434688,
+   "inv": [
+    "drives"
+   ],
+   "station": 99.1
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "pos": [
+    -0.785,
+    -0.064,
+    0.038
+   ],
+   "aim": [
+    180.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "starboard drive: a deep bell sunk in an eight-sided armoured cowl, ember lining and plug, dim like banked coals",
+   "exit": [
+    -0.785,
+    -0.064,
+    0.038
+   ],
+   "radius": 0.0434688,
+   "inv": [
+    "drives"
+   ],
+   "station": 99.1
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "what": "heat louvre 0.144 x 0.051",
+   "count": 1,
+   "pos": [
+    -0.528,
+    0.126,
+    0.077
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "the drive room's heat louvre: slanted slats over an ember-lit recess (the concept's glowing flank slats)",
+   "inv": [
+    "louvres"
+   ],
+   "station": 83.0
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "what": "heat louvre 0.144 x 0.051",
+   "count": 1,
+   "pos": [
+    -0.528,
+    -0.126,
+    0.077
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "the drive room's heat louvre: slanted slats over an ember-lit recess (the concept's glowing flank slats)",
+   "inv": [
+    "louvres"
+   ],
+   "station": 83.0
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the forged blade",
+   "obj": "voidsworn_SF3_hull",
+   "role": "black iron plate",
+   "src": "picture",
+   "note": "one narrow forged blade: a low spine strip, the deck, upper facets out to a thin knife edge, lower facets, a flat belly; thickened at the stern into the armoured block",
+   "st": [
+    0.0,
+    94.5
+   ],
+   "y": [
+    -0.19,
+    0.19
+   ],
+   "z": [
+    -0.04,
+    0.15
+   ]
+  },
+  {
+   "name": "Low dorsal radiator R1",
+   "obj": "R1_body_embar",
+   "role": "ember panels on iron",
+   "src": "picture",
+   "note": "SF3 R302, one swept heat fin, not a tower",
+   "st": [
+    65.6,
+    67.2
+   ],
+   "y": [
+    -0.01,
+    0.01
+   ],
+   "z": [
+    0.13,
+    0.14
+   ]
+  }
+ ],
+ "inside": [
+  {
+   "kind": "colour",
+   "name": "black iron plate, frost-white oath stripe along the blade edge (paint stage)",
+   "x": [
+    0.8,
+    -0.8
+   ],
+   "where": "whole hull",
+   "note": ""
+  },
+  {
+   "kind": "colour",
+   "name": "ember glow (the spire's fins, the drive throats, the sensor slit, the louvres)",
+   "x": [
+    -0.16000000000000003,
+    -0.8
+   ],
+   "where": "the spire, the bells, the slit",
+   "note": ""
+  },
+  {
+   "kind": "colour",
+   "name": "no rust anywhere, no blue light, no canopy glass",
+   "x": [
+    0.8,
+    -0.8
+   ],
+   "where": "factions.md Never; Ryan R254",
+   "note": ""
+  },
+  {
+   "kind": "space",
+   "name": "gun_feed",
+   "mat": "magazine",
+   "x": [
+    0.096,
+    0.256
+   ],
+   "y": [
+    -0.048,
+    0.048
+   ],
+   "z": [
+    -0.019200000000000002,
+    0.022400000000000003
+   ],
+   "note": "the interceptor guns' ammunition drum and feed, behind the gun well"
+  },
+  {
+   "kind": "space",
+   "name": "pilot",
+   "mat": "crew",
+   "x": [
+    -0.36000000000000004,
+    -0.256
+   ],
+   "y": [
+    -0.048,
+    0.048
+   ],
+   "z": [
+    0.0512,
+    0.09920000000000001
+   ],
+   "note": "the pilot's cell: a prone couch under the sensor slit (one unaugmented pilot, no AI, lore 2.5)"
+  },
+  {
+   "kind": "space",
+   "name": "reactor",
+   "mat": "core",
+   "x": [
+    -0.48,
+    -0.376
+   ],
+   "y": [
+    -0.072,
+    0.072
+   ],
+   "z": [
+    0.0512,
+    0.12
+   ],
+   "note": "the drive reactor under the spire: its heat goes up into the spire"
+  },
+  {
+   "kind": "space",
+   "name": "drive_room",
+   "mat": "engroom",
+   "x": [
+    -0.6480000000000001,
+    -0.496
+   ],
+   "y": [
+    -0.08965948717948719,
+    0.08965948717948719
+   ],
+   "z": [
+    -0.024,
+    0.12
+   ],
+   "note": "the drive room and the two drives' feeds"
+  },
+  {
+   "kind": "armour",
+   "name": "stern block",
+   "t": 0.005600000000000001,
+   "note": "over the pilot, the reactor and the drives"
+  },
+  {
+   "kind": "armour",
+   "name": "blade",
+   "t": 0.005600000000000001,
+   "note": ""
+  },
+  {
+   "kind": "break",
+   "name": "B-1",
+   "x": -0.16000000000000003,
+   "note": "the stern block tears from the blade at the block's toe (only for the recipe's records: the game never breaks a craft)",
+   "path": [
+    [
+     -0.16000000000000003,
+     0.32000000000000006
+    ],
+    [
+     -0.16000000000000003,
+     0.096
+    ],
+    [
+     -0.14880000000000002,
+     0.032
+    ],
+    [
+     -0.1664,
+     -0.032
+    ],
+    [
+     -0.15680000000000002,
+     -0.096
+    ],
+    [
+     -0.16000000000000003,
+     -0.32000000000000006
+    ]
+   ],
+   "orient": "trans"
+  },
+  {
+   "kind": "note",
+   "name": "insides",
+   "note": "A craft: the game shows its death as a spark and hides it (godot/fx/fx_death.gd _wing_death); nothing breaks open. These few rooms are here because the build contract needs an inside (tools/blender/build_sheets/contract.py); they cost few triangles."
+  }
+ ],
+ "points": [
+  {
+   "kind": "core",
+   "name": "hp_core",
+   "pos": [
+    -0.416,
+    0.0,
+    0.08
+   ],
+   "side": "",
+   "section": "",
+   "note": "",
+   "dir": null,
+   "station": 76.0
+  }
+ ],
+ "changes": [
+  [
+   "Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as the bomber, not the notes' 3.2 units",
+   "docs/playbooks/scale.md, Squadron rows, binding (it wins over the design notes): \"same wing frame as a fighter, only its load differs\"; the fighter reads apart by its slim outline, not its length"
+  ],
+  [
+   "R1 is a low swept dorsal radiator on the stern block's forward slope, its peak below the stern roof, with no zigzag",
+   "Ryan (R302, issue 920): shrink the radiator tower into the concept's low back fin, no longer the tallest thing. The shoe extends forward from the original reactor socket so its panel sweeps back into the roofline; the reactor and all other parts are unchanged"
+  ],
+  [
+   "The two drives are deep bells sunk in eight-sided armoured cowls in the stern face, smaller (0.077 across) and dim, not two big protruding drums with bright bells",
+   "the production notes: SF3's bells render oversized and brighter than banked coals, the sheet dims and shrinks them (R55); the owner's rule for craft: drives are nozzle clusters inside armoured blocks"
+  ],
+  [
+   "The interceptor guns turn on a shallow traverse ring in an armoured well on the blade's back near the bow (the concept's dorsal bow recess), three barrels in one emitter cluster",
+   "data.js guns fires all round (arc T): the fit check sweeps the guns through every bearing, which a gun in the nose face cannot do; the notes let the sheet pick the dorsal recess or the nose face, and DeepSeek's traverse ring is in the callout (R241, ships.md rule 11)"
+  ],
+  [
+   "The guns elevate to 45 degrees (the fit check's band 0 to 45)",
+   "interceptor guns engage craft above and below the wing; the fit check tests the same 0 to 45 degree band against the low radiator"
+  ],
+  [
+   "An armoured sensor slit for the pilot in the stern block's sloping face",
+   "Ryan (R254): no canopy, an armoured slit at most; one unaugmented pilot, no AI (lore 2.5), so the pilot needs a view out"
+  ],
+  [
+   "The concept's glowing flank slats are the drive room's heat louvres; its glyph decals and small panels are not modelled",
+   "every part has a job (R221); the decals are generator noise (production notes); fine greeble reads as a shrunken capital ship at this size (both design legs)"
+  ],
+  [
+   "No hatches, lamps or attitude thrusters",
+   "below what the battle camera shows on a 3.84 unit craft (about 30 px long); the drives turn the craft; bold and simple (production notes)"
+  ],
+  [
+   "A small inside: the gun feed, the pilot's cell, the reactor under the spire, the drive room; one seam (B-1)",
+   "the game shows a craft's death as a spark and hides it (fx_death.gd _wing_death), so nothing breaks open; the build contract needs an inside and a seam (tools/blender/build_sheets/contract.py)"
+  ]
+ ],
+ "tbd": [
+  "The frost-white oath stripe along the blade edge, the trim and the ember lines are paint: the Sunward stack (issue 756) applies later",
+  "How a sheet craft reaches the game: the game builds every craft in code today (godot/render/squadron_craft.gd), so no stage 7 export or install here"
+ ],
+ "kit": "voidsworn",
+ "sheet": {
+  "version": 2,
+  "round": "R302 low radiator fin",
+  "date": "2026-11-16",
+  "blend": "issue920",
+  "px_per_unit": 900,
+  "view_pad": 0.12,
+  "label_scale": 1.5,
+  "bar_units": 0.5,
+  "blend_where": "rendered on Ryan's PC (Blender 4.5.14, Cycles CPU); `build.py voidsworn_SF3 <out> render` rebuilds it from this file",
+  "before": "Main before R302",
+  "before_note": "Issue 920 replaces only R1's tall radiator tower and its zigzag fins with a low swept radiator on the same mount.",
+  "during": "The table above is every finding, in the order the check made them. Beyond the fit check, the sheet's own looks sent back: the first plating (small plates, many rivets) read as a shrunken capital ship, so the plates were made larger and the rivets smaller; the heat louvre's ember back plate stood in front of its slats on so small a louvre (the kit now keeps it behind them)."
+ },
+ "concept_sheet": "contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg",
+ "concept_views": {
+  "top": {
+   "box": [
+    120,
+    170,
+    940,
+    590
+   ]
+  },
+  "side": {
+   "box": [
+    120,
+    170,
+    940,
+    590
+   ]
+  }
+ },
+ "crops": [
+  [
+   "bow (the blade and the gun well)",
+   [
+    120,
+    170,
+    520,
+    470
+   ]
+  ],
+  [
+   "midships (the spire and the stern block)",
+   [
+    440,
+    230,
+    840,
+    530
+   ]
+  ],
+  [
+   "stern (the drives)",
+   [
+    600,
+    330,
+    960,
+    600
+   ]
+  ]
+ ],
+ "parts": [
+  {
+   "id": "blade",
+   "kind": "hull",
+   "inv": [
+    "blade"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "facet",
+    "step",
+    "chamfer"
+   ]
+  },
+  {
+   "id": "stern_block",
+   "kind": "hull",
+   "inv": [
+    "stern_block"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "facet",
+    "step",
+    "chamfer"
+   ]
+  },
+  {
+   "id": "G1",
+   "kind": "gun",
+   "type": "gun",
+   "inv": [
+    "guns"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "barrel",
+    "bore",
+    "housing",
+    "housingband",
+    "jacket",
+    "mantlet",
+    "muzzle",
+    "ring",
+    "sight",
+    "well",
+    "wellstud"
+   ]
+  },
+  {
+   "id": "R1",
+   "kind": "radiator",
+   "type": "radiator",
+   "inv": [
+    "spire"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "bar",
+    "brace",
+    "cap",
+    "column",
+    "fin",
+    "root",
+    "rootstep"
+   ]
+  },
+  {
+   "id": "W1",
+   "kind": "slit",
+   "type": "slit",
+   "inv": [
+    "sensor_slit"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "brow",
+    "frame",
+    "glass"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "drives"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "bellring",
+    "collar",
+    "facestud",
+    "housing",
+    "housingback",
+    "lining",
+    "plug",
+    "throat"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "drives"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "bellring",
+    "collar",
+    "facestud",
+    "housing",
+    "housingback",
+    "lining",
+    "plug",
+    "throat"
+   ]
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "type": "vent",
+   "inv": [
+    "louvres"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "back",
+    "frame",
+    "slat"
+   ]
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "type": "vent",
+   "inv": [
+    "louvres"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "back",
+    "frame",
+    "slat"
+   ]
+  },
+  {
+   "id": "SF3_deck_plates",
+   "kind": "plate",
+   "type": "plate",
+   "inv": [
+    "blade_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "SF3_facet_plates",
+   "kind": "plate",
+   "type": "plate",
+   "inv": [
+    "blade_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "SF3_facet_aft_plates",
+   "kind": "plate",
+   "type": "plate",
+   "inv": [
+    "blade_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "SF3_lower_plates",
+   "kind": "plate",
+   "type": "plate",
+   "inv": [
+    "blade_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "SF3_belly_plates",
+   "kind": "plate",
+   "type": "plate",
+   "inv": [
+    "blade_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "SF3_block_plates",
+   "kind": "plate",
+   "type": "plate",
+   "inv": [
+    "block_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  }
+ ],
+ "weapons": [
+  {
+   "name": "Interceptor guns",
+   "rules": "data.js guns: 3 shots, 4 damage, range 1 (k sq), 82 aim, x2.2 against squadrons, x0.5 against capitals",
+   "lore": "The wing's only weapon (lore 2.5: unaugmented crews, no AI: a pilot aims it). Battle look: guns (craft on a strafing run).",
+   "design": "Three short barrels in one tight emitter cluster on a shallow traverse ring, sunk in an armoured well on the blade's back near the bow: a low faceted housing, a block mantlet, the three muzzles flared with dark bores. It turns (data.js arc T, the fit check sweeps it all round) and sits low, so nothing on the fighter reads as a turret on a jet.",
+   "id": "guns",
+   "example": "G1",
+   "mounts": [
+    "G1"
+   ],
+   "slot": "T",
+   "image": "weapon_guns.png"
+  }
+ ],
+ "fit_counts": {
+  "CLASH": 0,
+  "MOUNT": 0,
+  "ARC": 0,
+  "SENSOR": 0,
+  "SWEEP": 0,
+  "EXHAUST": 0,
+  "EXIT": 0,
+  "LANE": 0
+ },
+ "weapon_match": {
+  "code": "voidsworn_SF3",
+  "result": "PASS",
+  "problems": [],
+  "slots": [
+   {
+    "slot": 0,
+    "weapon": "guns",
+    "arc": "T",
+    "shots": 3,
+    "mounts": [
+     {
+      "id": "G1",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 3,
+      "muzzles": 3
+     }
+    ]
+   }
+  ],
+  "game_ship": "fighter",
+  "variant": ""
+ }
+}

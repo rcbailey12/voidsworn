@@ -1,4 +1,4 @@
-# voidsworn_SF3 fit report (first sheet; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# voidsworn_SF3 fit report (R302 low radiator fin; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -28,8 +28,14 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
+## Main before R302, checked (before)
 
-## How first sheet fixed them
+Issue 920 replaces only R1's tall radiator tower and its zigzag fins with a low swept radiator on the same mount. Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0.
+
+| Check | Part | Against | Hits | What |
+|---|---|---|---:|---|
+
+## How R302 low radiator fin fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -39,7 +45,7 @@ The table above is every finding, in the order the check made them. Beyond the f
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 56 objects, 7 parts, 75 close pairs, 114 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 2 cones, 3 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 56 objects, 7 parts, 96 close pairs, 108 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 2 cones, 3 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
