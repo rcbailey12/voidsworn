@@ -1,0 +1,54 @@
+{
+  "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+  "source_dirty": true,
+  "source_diff_sha256": "30ba25f67d00e60dd14f6349da132694e74f11f31844651b211610013afc01e3",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "weapon_autocannon.jpg",
+  "date": "2026-11-17T03:19:20Z",
+  "sources": [
+    {
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "30ba25f67d00e60dd14f6349da132694e74f11f31844651b211610013afc01e3",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_autocannon.png",
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "30ba25f67d00e60dd14f6349da132694e74f11f31844651b211610013afc01e3",
+      "stage": "sheet built",
+      "date": "2026-11-17T02:59:09Z",
+      "image_sha256": "96b3732155f548e983dd8fbf9550b02d303f7379d471ff0cd350a5294bbf2b51",
+      "sources": [
+        {
+          "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+          "source_dirty": true,
+          "source_diff_sha256": "30ba25f67d00e60dd14f6349da132694e74f11f31844651b211610013afc01e3",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    231,
+    282,
+    280
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "a9510e7ec36aa5fa878d3fc5d6cbb9a59223209bc8c9474f7288fcc49fec7906"
+  ],
+  "stamp_template_sha256": "223d97bdd4f1c379de34cb013f5ed291de8f4d20663218ae3d0481a60531c6b4",
+  "covered_pixels": [
+    "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"
+  ],
+  "image_sha256": "1b04326dc0740b866b4dd6010aa3df9076ac712e8d95202517df4d5f77b42c47"
+}

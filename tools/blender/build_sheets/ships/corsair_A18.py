@@ -25,7 +25,7 @@ CONCEPT_VIEWS = dict(top=dict(box=(250, 30, 1650, 480), largest=True, flip=False
 CROPS = [('bow (wedge, face, chin, grabbers)', (60, 380, 1000, 1220)), ('midships (spine and flank)', (500, 120, 1400, 900)),
          ('stern (engine block and drums)', (1050, 40, 1920, 640))]
 SHEET = dict(version=2, round='dish and engine correction (issue 922)', date='2026-11-16', blend='issue922\\corsair_A18',
-             before='First full layout', before_note='The first complete A18 layout, built with the Hullbreaker kit and run through the check before any fix.',
+             before='Main before issue 922', before_note='The large raised dish and closed engine jackets, with issue 726 paint unchanged.',
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
 import math, random
