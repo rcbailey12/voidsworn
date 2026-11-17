@@ -1,6 +1,6 @@
 {
  "code": "corsair_KB1CC",
- "sheet_version": 2,
+ "sheet_version": 4,
  "routes_note": "kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
@@ -18,45 +18,71 @@
   {
    "id": "BT1",
    "kind": "launcher",
-   "what": "bomb tube in a corner pod, mouth 0.13 across",
+   "what": "bomb tube in a corner pod, mouth 0.20 across",
    "count": 1,
-   "route": "kit",
+   "route": "hand-built",
    "source": "picture",
    "inventory": [
     "bomb_tubes"
-   ]
+   ],
+   "builder": "tools/blender/build_sheets/ships/corsair_KB1CC.py: corner_bomb, kit collar and deeper red-lined bore"
   },
   {
    "id": "BT2",
    "kind": "launcher",
-   "what": "bomb tube in a corner pod, mouth 0.13 across",
+   "what": "bomb tube in a corner pod, mouth 0.20 across",
    "count": 1,
-   "route": "kit",
+   "route": "hand-built",
    "source": "picture",
    "inventory": [
     "bomb_tubes"
-   ]
+   ],
+   "builder": "tools/blender/build_sheets/ships/corsair_KB1CC.py: corner_bomb, kit collar and deeper red-lined bore"
   },
   {
    "id": "Y1",
    "kind": "bay",
-   "what": "hoist bay 0.34 x 0.21, armoured door",
+   "what": "sunken machinery well, pipes and bomb hoist",
    "count": 1,
-   "route": "kit",
+   "route": "hand-built",
    "source": "picture",
    "inventory": [
     "hoist_bays"
-   ]
+   ],
+   "builder": "tools/blender/build_sheets/ships/corsair_KB1CC.py: sunken machinery well"
   },
   {
    "id": "Y2",
    "kind": "bay",
-   "what": "hoist bay 0.34 x 0.21, armoured door",
+   "what": "sunken machinery well, pipes and bomb hoist",
+   "count": 1,
+   "route": "hand-built",
+   "source": "picture",
+   "inventory": [
+    "hoist_bays"
+   ],
+   "builder": "tools/blender/build_sheets/ships/corsair_KB1CC.py: sunken machinery well"
+  },
+  {
+   "id": "E6",
+   "kind": "engine",
+   "what": "engine, bell 0.3 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
    "inventory": [
-    "hoist_bays"
+    "nacelles"
+   ]
+  },
+  {
+   "id": "E7",
+   "kind": "engine",
+   "what": "engine, bell 0.3 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "nacelles"
    ]
   },
   {

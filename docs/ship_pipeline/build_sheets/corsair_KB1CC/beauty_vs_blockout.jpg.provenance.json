@@ -1,0 +1,54 @@
+{
+  "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+  "source_dirty": true,
+  "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "beauty_vs_blockout.jpg",
+  "date": "2026-11-16T23:49:37Z",
+  "sources": [
+    {
+      "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+      "source_dirty": true,
+      "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "beauty_cam.png",
+      "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+      "source_dirty": true,
+      "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+      "stage": "sheet built",
+      "date": "2026-11-16T23:46:00Z",
+      "image_sha256": "8ace2151d330fa62431ab29885425dba78e17bbba130d79755d3d6c67d742280",
+      "sources": [
+        {
+          "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+          "source_dirty": true,
+          "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "715a6f1900a7bebfe6f37862bc67d40e90c529a27bfd79f19eb7bb0e39a24b5e"
+  ],
+  "stamp_template_sha256": "4204152f93ae0984f959cf4e132ee02b7455635bf4da37924efb6dfbb9d6cb95",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEAPwb88fgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBMCouQEuAUr6b/UqAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "4d35ccfa788986a0c6b68d9e408755f56fe695c1ad8ff8b3027aa6f5ca47be04"
+}
