@@ -32,6 +32,31 @@ static func _scene(code: String) -> Node3D:
 
 # the station across a cluster of station hexes, `size` world units across (the board's 46 for a big cluster), in its own paint
 static func station(size: float) -> Node3D:
+	# Refs #975. The T2 kit is authored in world units, unlike normalized A4 hulls.
+	# Its install is optional on a fresh checkout, with the old station fallback.
+	var t2_path := "res://gen/ships/station_T2.scn"
+	if ResourceLoader.exists(t2_path):
+		var t2 := (load(t2_path) as PackedScene).instantiate() as Node3D
+		t2.set_meta("station_T2", true)
+		# Refs #863. Separate kit/cache leaves PR 977's painted station intact.
+		var debris_path := "res://gen/ships/station_T2_debris.scn"
+		if ResourceLoader.exists(debris_path):
+			var debris := (load(debris_path) as PackedScene).instantiate() as Node3D
+			debris.name = "station_T2_debris"
+			debris.set_script(load("res://render/station_debris.gd"))
+			t2.add_child(debris)
+		var look = load("res://render/look.gd")
+		for child in t2.find_children("*", "MeshInstance3D", true, false):
+			for i in child.mesh.get_surface_count():
+				child.set_surface_override_material(i, look.hull(child.get_active_material(i), "hegemony", true))
+		for player in t2.find_children("*", "AnimationPlayer", true, false):
+			var names: PackedStringArray = player.get_animation_list()
+			for anim in names:
+				if anim != "RESET":
+					player.get_animation(anim).loop_mode = Animation.LOOP_LINEAR
+					player.play(anim)
+					break
+		return t2
 	var n := _scene("O1_37")
 	if n == null:
 		return null

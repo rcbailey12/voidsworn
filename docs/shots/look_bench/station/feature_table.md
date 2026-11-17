@@ -1,4 +1,33 @@
-# station_T2: run 5 purposeful station systems
+# station_T2: production paint and preserved feature inventory
+
+Issue 975 changes the finish and installation route, preserving PR 700's complete shape and working fittings.
+The accepted design remains `tools/blender/kits/hegemony_station/design.py`; neither it nor `parts.py` changes.
+The production route is `tools/recipe/station_paint.bat`, using `production.py`, `production_check.py` and `install.gd`.
+The [current paint method, measurements and review evidence](README.md) describe the delivered finish.
+
+| Production measurement | Value |
+|---|---|
+| Evaluated triangles retained | 697,088, including 110,428 inside |
+| Exported surfaces / materials / mesh nodes | 12 / 9 / 2 |
+| Uniform scale and dimensions | 1.919133; 99.200 x 70.211 x 69.281 game units |
+| PBR detail tiles | Five 2048 sets; two game units per repeat |
+| Lowest material mean texture density | 862.88 texels per game unit |
+| Actual C15s_23 comparison cruiser | 42.30 mean; 191.86 finest triangle, texels per game unit |
+| Smallest new surface features | Vent slots, flush screw slots and cover seams in normal/roughness |
+| Existing silhouette fittings | Hatches, rails, pipes, window frames, docking jaws and tower arrays retained |
+| Local wear | Real mesh cavity rays, bevel normals and damaged-side grime; no rust added |
+| Measured station visible draw-call delta | 12, by hiding the station in the GPU studio |
+| Station-map 1080p frame medians | 4.112 / 4.113 / 4.143 ms |
+| Station-map 4K GPU medians | 6.639 / 6.569 / 6.565 ms |
+| Additional lit glazing | Six existing outer window faces beside the authored core light clusters |
+| Accepted-export shape comparison | Every world-space triangle matches PR 700 at 0.0001-unit precision |
+
+## PR 700 shape inventory, before production paint
+
+The run 5 inventory below remains the record of the approved geometry. Its pending-paint and review-only wording
+describes that earlier stage; issue 975 authorizes production paint and local installation.
+
+## station_T2: run 5 purposeful station systems
 
 Refs #373. Fleet station first. Review only; production paint and live swap remain pending.
 
