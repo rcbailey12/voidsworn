@@ -1300,11 +1300,13 @@ const CLOUD_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + "%NOISE%" + """
-uniform vec3 c_a = vec3(0.4, 0.3, 0.7);
-uniform vec3 c_b = vec3(0.2, 0.4, 0.8);
+uniform vec3 c_dark = vec3(0.006, 0.002, 0.014);
+uniform vec3 c_shadow = vec3(0.055, 0.012, 0.14);
+uniform vec3 c_lit = vec3(0.43, 0.20, 0.80);
+uniform vec3 c_glow = vec3(0.88, 0.72, 1.0);
 uniform float gain = 0.3;
 uniform float storm = 0.0;
-uniform vec3 bolt = vec3(0.75, 0.85, 1.0);
+uniform vec3 bolt = vec3(1.0, 0.82, 0.27);
 varying vec4 vI;
 varying vec2 vQ;
 void vertex() {
@@ -1322,7 +1324,11 @@ void fragment() {
 	vec2 p = vQ * 1.6 + vI.y * 37.0 + vec2(TIME * 0.015, TIME * 0.008);
 	float n = wfbm(p * 1.3 + wfbm(p * 0.8 + 3.0) * 1.5);
 	float a = smoothstep(1.0, 0.15, r) * smoothstep(0.3, 0.75, n) * vI.z;
-	vec3 c = mix(c_a, c_b, smoothstep(0.35, 0.7, wfbm(p * 0.7 + 9.0)));
+	float density = clamp((n - 0.18) / 0.72, 0.0, 1.0);
+	vec3 c = mix(c_dark, c_shadow, smoothstep(0.0, 0.3, density));
+	c = mix(c, c_lit, smoothstep(0.3, 0.6, density));
+	c = mix(c, c_glow, smoothstep(0.6, 0.9, density));
+	c += c_glow * smoothstep(0.67, 0.85, n) * 0.22;
 	vec3 col = c * a * gain;
 	if (storm > 0.5) {
 		// ion storm: now and then a cloud lights from inside, a branching flash
@@ -1394,13 +1400,15 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 	m.shader = sh
 	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
 	if t == "storm":
-		m.set_shader_parameter("c_a", Vector3(0.22, 0.26, 0.55))
-		m.set_shader_parameter("c_b", Vector3(0.42, 0.3, 0.7))
+		m.set_shader_parameter("c_dark", Vector3(0.008, 0.004, 0.018))
+		m.set_shader_parameter("c_shadow", Vector3(0.045, 0.016, 0.11))
+		m.set_shader_parameter("c_lit", Vector3(0.24, 0.10, 0.48))
+		m.set_shader_parameter("c_glow", Vector3(1.0, 0.82, 0.27))
 		m.set_shader_parameter("storm", 1.0)
 		m.set_shader_parameter("gain", 0.2)
 	else:
-		m.set_shader_parameter("c_a", b[1])
-		m.set_shader_parameter("c_b", (b[2] as Vector3) * 0.7)
+		m.set_shader_parameter("c_lit", Vector3(0.43, 0.20, 0.80))
+		m.set_shader_parameter("c_glow", Vector3(0.88, 0.72, 1.0).lerp(b[2], 0.25))
 		m.set_shader_parameter("gain", 0.19)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

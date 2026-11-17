@@ -1,0 +1,71 @@
+{
+  "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+  "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "well_ship_guard.jpg",
+  "date": "2026-11-17T14:10:26Z",
+  "sources": [
+    {
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "well_guard_on.jpg",
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_dirty": true,
+      "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+      "stage": "installed in game",
+      "date": "2026-11-17T14:04:12Z",
+      "image_sha256": "42916a18fee857d023a398526804a95806999518a86c6ab9b15cbf6e3042fad4",
+      "sources": [
+        {
+          "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+          "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "well_guard_off.jpg",
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_dirty": true,
+      "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+      "stage": "installed in game",
+      "date": "2026-11-17T14:04:13Z",
+      "image_sha256": "b06d990e4e6c2eb0dce38b7d7c824003bf39eac6b35cc22c3f5ed22972656d00",
+      "sources": [
+        {
+          "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+          "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "ac940365c99795f53ccc617b98c94f8cc52ff4a42191afaeb10d9d61d7cd0f40"
+  ],
+  "stamp_template_sha256": "da22486204a359b3d57830f926c7b71e58cfb4db96caa785c8dfa64e6d26dfe8",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMUABCyv+ZaKCnxIDHf8697kDAPhvBRsAgOgCQMfTBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARuMB+h8BB2CM+58AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "fcfeba945158f5184727a2cbace39564fe8852a34592e78d2ae8b93549fe2b17"
+}
