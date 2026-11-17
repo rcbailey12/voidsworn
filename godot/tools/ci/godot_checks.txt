@@ -37,7 +37,7 @@ headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the
 headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
 headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
-headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh in its own step
+headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
