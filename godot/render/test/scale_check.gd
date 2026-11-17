@@ -95,8 +95,11 @@ func _run() -> void:
 		var lo := 0.4 * across_corner
 		var hi := 5.0 * across_corner
 		row("ship %s" % c, float(drawn[c]), lo, hi, "a class length in hexes; capitals overhang their hex")
+	for code in HT.HULL_LEN:
+		row("ship hull %s" % code, float(HT.HULL_LEN[code]) * float(HT.SHIP_K), 0.4 * across_corner,
+			5.0 * across_corner, "approved hull length; its export must match below")
 
-	# every hull in the table must exist in the manifest at the same class length
+	# Every hull must exist in the manifest at the length ShipView uses, including approved hull overrides.
 	var manifest_bad := 0
 	for key in HT.AI_HULLS.keys():
 		var code := str(HT.AI_HULLS[key])
@@ -108,9 +111,10 @@ func _run() -> void:
 			print("[scale] hull %s (%s) is missing from the glb manifest" % [code, key])
 			continue
 		var lw := float((ships[code] as Dictionary).get("length_world", -1.0))
-		if absf(lw - float(HT.CLS_LEN[cls])) > 0.01:
+		var expected := HT.length_for(code, cls)
+		if absf(lw - expected) > 0.01:
 			manifest_bad += 1
-			print("[scale] hull %s says length_world %.2f, the hull table says %s = %.2f" % [code, lw, cls, float(HT.CLS_LEN[cls])])
+			print("[scale] hull %s says length_world %.2f, the hull table says %s = %.2f" % [code, lw, cls, expected])
 	checks += 1
 	if manifest_bad == 0:
 		print("[scale] %-34s every hull's glb length matches the hull table  PASS" % "hull table vs glbs")
