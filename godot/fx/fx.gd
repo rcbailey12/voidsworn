@@ -9,6 +9,7 @@ extends Node3D
 const BREACH := preload("res://fx/fx_breach.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
+const FRAGMENTS := preload("res://fx/fx_fragments.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
@@ -246,7 +247,10 @@ func setup(opts := {}) -> void:
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
 	pools["shd"] = POOLS.Pool.new(768 if big else 384, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
-	pools["plate"] = POOLS.Pool.new(384 if big else 192, _hit_plate_material(), self, "fx_torn_plates", _hit_plate_shape(srng), func() -> Array: return _hit_plate_shape(srng))
+	var fragment_mat := _mat(SH.HIT_FRAGMENT, 0, "", "hit fragments")
+	fragment_mat.set_shader_parameter("fragment_meshes", FRAGMENTS.atlas())
+	fragment_mat.set_shader_parameter("fragment_stride", FRAGMENTS.VERTICES)
+	pools["plate"] = POOLS.Pool.new(384 if big else 192, fragment_mat, self, "fx_hit_fragments", FRAGMENTS.templates()[0])
 	if big:
 		pools["dst"] = POOLS.Pool.new(256, _mat(SH.DISTORT, -20), self, "fx_distort", POOLS.quad_shape())
 	for k in (64 if big else (24 if rich else 8)):
@@ -503,45 +507,13 @@ func shd(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: flo
 		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, 0.0, tint, drag), Vector4(heat, rng.randf(), 0.0, 0.0)))
 
 
-# R303: thin, bent plates use a separate bounded pool. Death chips retain their original shape and material.
-func hit_plate(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin: float, drag: float, glass := false) -> void:
+# Hull ejecta shares one bounded ring. A negative profile key gives a lead piece the full screen-size floor.
+func hit_fragment(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin: float, drag: float,
+		paint: Color, profile: int, lead: bool) -> void:
 	var ax := rdir()
 	(pools["plate"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
-		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, 0, 4.0 if glass else 3.0, drag), Vector4(heat, rng.randf(), 0, 0)))
-
-
-func _hit_plate_material() -> ShaderMaterial:
-	var code: String = SH.SHARD.replace("render_mode cull_back;", "render_mode cull_disabled, depth_prepass_alpha;")
-	code = code.replace("varying float vTint;", "varying float vTint;\nvarying float vFade;")
-	code = code.replace("vHeat = 0.0; vSeed", "vFade = 0.0; vHeat = 0.0; vSeed")
-	code = code.replace("float t = age / life;", "float t = age / life; vFade = 1.0 - smoothstep(0.55, 1.0, t);")
-	code = code.replace("METALLIC = 0.5;", "ALPHA = vFade; METALLIC = 0.5;")
-	return _mat(code, 0, "", "hit torn plates")
-
-
-func _hit_plate_shape(r: RandomNumberGenerator) -> Array:
-	var rim: Array[Vector3] = []
-	var count := 6   # every slot has the same vertex stride; its torn outline still varies
-	for i in count:
-		var a: float = TAU * float(i) / count
-		var rad: float = r.randf_range(0.32, 0.6)
-		rim.append(Vector3(cos(a) * rad, r.randf_range(-0.07, 0.07), sin(a) * rad * 0.65))
-	var verts := PackedVector3Array()
-	var norms := PackedVector3Array()
-	var indices := PackedInt32Array()
-	for side in [1.0, -1.0]:
-		for i in count:
-			var a: Vector3 = rim[i] + Vector3.UP * 0.025 * side
-			var b: Vector3 = rim[(i + 1) % count] + Vector3.UP * 0.025 * side
-			var c := Vector3(0, 0.08 * side, 0)
-			if side > 0.0:
-				var swap := a; a = b; b = swap
-			var normal: Vector3 = (b - a).cross(c - a).normalized()
-			var start := verts.size()
-			verts.append_array(PackedVector3Array([a, b, c]))
-			norms.append_array(PackedVector3Array([normal, normal, normal]))
-			indices.append_array(PackedInt32Array([start, start + 1, start + 2]))
-	return [verts, norms, indices]
+		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, rng.randf(), -1 - profile if lead else profile, drag),
+		Vector4(paint.r, paint.g, paint.b, heat)))
 
 
 func dst(p: Vector3, t: float, life: float, s0: float, s1: float, kind: int, strength: float) -> void:
@@ -1413,7 +1385,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
-	hit_plate(at, T, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1)
+	hit_fragment(at, T, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1, c, FRAGMENTS.PLATE, false)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	var tmp = Node3D.new()
