@@ -47,6 +47,7 @@ assert(ghLookup.includes('if (-not $command -and -not $test)'), 'test gh must ne
 assert(ghLookup.includes('Log "GitHub CLI: $exe"'), 'log the selected executable');
 assert(ghLookup.includes('GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs'));
 pass('GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the missing-tool refusal');
+assert(!/['"](?:reset|clean|--force)['"]/.test(shared), 'checkout reuse must never discard working tree bytes');
 if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
@@ -121,6 +122,14 @@ write(gitStub, '@echo off\r\n"' + process.execPath + '" "' + path.join(root, 'gi
 write(path.join(root, 'git.js'), `
 const fs = require('fs'), path = require('path'), cp = require('child_process');
 const a = process.argv.slice(2), mode = process.env.STUB_GIT_FAULT || '';
+// This hook runs after reuse eligibility, immediately before the real branch switch.
+if (a.includes('checkout') && a.includes('-B') && process.env.STUB_CHECKOUT_EDIT) {
+  fs.writeFileSync(path.join(a[a.indexOf('-C') + 1], 'progress.txt'), process.env.STUB_CHECKOUT_EDIT);
+  fs.writeFileSync(process.env.STUB_CHECKOUT_MARKER, 'edit injected before switch');
+}
+if (a.includes('status') && process.env.STUB_RECHECK_FAIL === '1' && fs.existsSync(process.env.STUB_CHECKOUT_MARKER)) {
+  console.error('stub status failure after branch switch'); process.exit(55);
+}
 const op = a.includes('fetch') ? 'fetch' : a[0] === 'clone' ? 'clone' : '';
 if (op === 'fetch' && process.env.STUB_FETCH_HOLD === '1') Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,800);
 if (op && mode.startsWith(op)) {
@@ -141,7 +150,7 @@ const defaults = {
   PC_TEST_PREFLIGHT: agent, PC_TEST_GIT: gitStub, PC_REAL_GIT: gitPath, PC_TEST_RETRY_SECONDS: '0',
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
-  STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '',
+  STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
@@ -188,6 +197,131 @@ function job(arm, label, extra = {}) {
   return { ...r, out, repo, env, result: read(path.join(out, 'result.txt')), state: JSON.parse(read(path.join(out, 'status.json'))) };
 }
 (async () => { try {
+  // Issue 860 run 2: exercise the real checkout with local Git data, never publish or discard fixture files.
+  function checkoutFixture(label, prepare = () => {}, expectedKeep = false, options = {}) {
+    const home = path.join(root, 'reuse-' + label), repo = path.join(home, 'repo'), out = path.join(home, 'out');
+    fs.mkdirSync(home, { recursive: true }); write(path.join(out, 'result.txt'), '');
+    assert.equal(run('git', ['clone', '-q', '-c', 'core.autocrlf=false', source, repo]).code, 0);
+    const git = args => {
+      const r = run('git', ['-C', repo, ...args]); assert.equal(r.code, 0, r.text); return r.text.trim();
+    };
+    prepare(repo, git);
+    const existing = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-'));
+    const oldGit = fs.statSync(path.join(repo, '.git'));
+    assert.equal(ps(['init', out, 'fixture/reuse'], defaults).code, 0);
+    const env = { ...defaults, STUB_CHECKOUT_MARKER: path.join(home, 'switch-hook.txt'), ...options.env };
+    const r = ps(['checkout', repo, out, 'fixture/reuse', ''], env);
+    if (options.changed) {
+      assert.equal(r.code, 14, r.text);
+      assert(r.text.includes('checkout changed while starting; kept as is'), r.text);
+      assert.equal(JSON.parse(read(path.join(out, 'status.json'))).status, 'failed');
+      assert(fs.existsSync(env.STUB_CHECKOUT_MARKER), 'the edit hook ran between eligibility and the switch');
+      assert.equal(fs.statSync(path.join(repo, '.git')).ino, oldGit.ino);
+      assert.equal(fs.readdirSync(home).filter(n => n.startsWith('repo-kept-')).length, 0);
+      assert(!r.text.includes('local clone attempt') && !r.text.includes('earlier checkout reused in place'), r.text);
+      assert(!fs.existsSync(path.join(out, 'base_commit.txt')), 'stop before resume or agent work');
+      assert.equal(read(path.join(repo, 'progress.txt')), env.STUB_CHECKOUT_EDIT, 'late tracked edit bytes survive');
+      return { home, repo, text: r.text };
+    }
+    assert.equal(r.code, 0, r.text);
+    const kept = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-') && !existing.includes(n));
+    for (const name of existing) assert(fs.existsSync(path.join(home, name)), 'existing kept copy survives');
+    assert.equal(kept.length, expectedKeep ? 1 : 0, r.text);
+    assert.equal(git(['symbolic-ref', '--short', 'HEAD']), 'fixture/reuse');
+    assert.equal(git(['rev-parse', 'HEAD']), read(path.join(source, 'refs/heads/main')).trim());
+    assert.equal(git(['remote', 'get-url', 'origin']), source);
+    assert.equal(read(path.join(repo, 'progress.txt')), 'base\n');
+    if (!expectedKeep) {
+      assert.equal(fs.statSync(path.join(repo, '.git')).ino, oldGit.ino, 'reuse keeps the Git directory');
+      assert(r.text.includes('earlier checkout reused in place'), r.text);
+      assert(!r.text.includes('local clone attempt'), r.text);
+    }
+    return { home, repo, old: expectedKeep ? path.join(home, kept[0]) : repo, text: r.text };
+  }
+  const refreshedMain = fixtureCommit({ 'progress.txt': 'base\n', 'upstream.txt': 'fresh upstream\n' }, base);
+  let clean;
+  try {
+    clean = checkoutFixture('clean-pushed', (repo, git) => {
+      git(['checkout', '-q', '-b', 'fixture/old-pushed', partial]);
+      write(path.join(source, 'refs/heads/main'), refreshedMain + '\n');
+      // These stand in for existing kept checkouts. Every byte must remain after the warning.
+      for (let i = 0; i < 3; i++) write(path.join(path.dirname(repo), 'repo-kept-old-' + i, 'proof.txt'), 'preserved-' + i);
+    });
+  } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
+  assert.equal(read(path.join(clean.repo, 'upstream.txt')), 'fresh upstream\n');
+  assert(clean.text.includes('WARNING:') && clean.text.includes('3 repo-kept-* copies'), clean.text);
+  for (let i = 0; i < 3; i++) {
+    const copy = path.join(clean.home, 'repo-kept-old-' + i);
+    assert.equal(read(path.join(copy, 'proof.txt')), 'preserved-' + i);
+    assert(clean.text.includes(copy + ': 11 logical bytes'), clean.text);
+  }
+  pass('clean pushed checkout reuses the Git directory, switches from old branch to main, warns with kept names and sizes, removes nothing');
+  const ignored = checkoutFixture('unique-ignored', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'unique work.blend\n');
+    write(path.join(repo, 'unique work.blend'), 'unique ignored work');
+  }, true);
+  assert.equal(read(path.join(ignored.old, 'unique work.blend')), 'unique ignored work');
+  pass('unique ignored file is kept aside and its bytes survive');
+  const cache = checkoutFixture('cache-only', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'godot/.godot/\ngodot/*.import\n');
+    write(path.join(repo, 'godot/.godot/imported/cached.bin'), 'cached import');
+    write(path.join(repo, 'godot/texture.png.import'), 'import settings');
+  });
+  assert.equal(read(path.join(cache.repo, 'godot/.godot/imported/cached.bin')), 'cached import');
+  assert.equal(read(path.join(cache.repo, 'godot/texture.png.import')), 'import settings');
+  pass('cache-only ignored files allow reuse and both cache files survive');
+  const lateEdit = 'tracked edit written during startup\r\n';
+  const changed = checkoutFixture('late-tracked-edit', () => {}, false, {
+    changed: true, env: { STUB_CHECKOUT_EDIT: lateEdit }
+  });
+  assert.equal(run('git', ['-C', changed.repo, 'symbolic-ref', '--short', 'HEAD']).text.trim(), 'fixture/reuse');
+  pass('tracked edit after eligibility survives the branch switch and stops the job with failed status');
+  checkoutFixture('late-status-failure', () => {}, false, {
+    changed: true, env: { STUB_CHECKOUT_EDIT: lateEdit, STUB_RECHECK_FAIL: '1' }
+  });
+  pass('unreadable status after the branch switch fails closed and keeps late edit bytes');
+  try {
+    checkoutFixture('late-edit-blocks-switch', () => write(path.join(source, 'refs/heads/main'), conflicting + '\n'), false, {
+      changed: true, env: { STUB_CHECKOUT_EDIT: lateEdit }
+    });
+    pass('late tracked edit that blocks the branch switch survives and stops with the same clear message');
+  } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
+  const privateTip = fixtureCommit({ 'progress.txt': 'private commit\n' }, base);
+  const unpushed = checkoutFixture('unpushed', (repo, git) => {
+    git(['fetch', '-q', source, privateTip]);
+    git(['checkout', '-q', '-b', 'fixture/private', privateTip]);
+  }, true);
+  assert.equal(read(path.join(unpushed.old, 'progress.txt')), 'private commit\n');
+  assert.equal(run('git', ['-C', unpushed.old, 'rev-parse', 'HEAD']).text.trim(), privateTip);
+  pass('unpushed commit is kept aside with its branch and work intact');
+  const abandoned = checkoutFixture('reflog-only', (repo, git) => {
+    git(['fetch', '-q', source, privateTip]);
+    git(['checkout', '-q', '--detach', privateTip]);
+    git(['checkout', '-q', 'main']);
+  }, true);
+  assert(run('git', ['-C', abandoned.old, 'reflog', '--format=%H']).text.includes(privateTip));
+  pass('unpushed history reachable only from the reflog is kept aside');
+  const dirty = checkoutFixture('dirty-tracked', repo => write(path.join(repo, 'progress.txt'), 'uncommitted edits\n'), true);
+  assert.equal(read(path.join(dirty.old, 'progress.txt')), 'uncommitted edits\n');
+  pass('dirty tracked file is kept aside with edits intact');
+  const hidden = checkoutFixture('hidden-tracked', (repo, git) => {
+    git(['update-index', '--assume-unchanged', 'progress.txt']);
+    write(path.join(repo, 'progress.txt'), 'hidden edits\n');
+  }, true);
+  assert.equal(read(path.join(hidden.old, 'progress.txt')), 'hidden edits\n');
+  pass('index flags that hide tracked edits cause the checkout to be kept');
+  const collisionTip = fixtureCommit({ 'godot': 'incoming tracked file\n', 'progress.txt': 'base\n' }, base);
+  write(path.join(source, 'refs/heads/main'), collisionTip + '\n');
+  try {
+    const collision = checkoutFixture('cache-collision', (repo, git) => {
+      git(['checkout', '-q', '--detach', base]);
+      write(path.join(repo, '.git/info/exclude'), 'godot/.godot/\n');
+      write(path.join(repo, 'godot/.godot/cache.bin'), 'cache must survive collision');
+    }, true);
+    assert.equal(read(path.join(collision.old, 'godot/.godot/cache.bin')), 'cache must survive collision');
+    assert.equal(read(path.join(collision.repo, 'godot')), 'incoming tracked file\n');
+    pass('incoming tracked path that collides with an ignored cache keeps the old checkout and cache intact');
+  } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
   for (const arm of ['codex', 'deepseek', 'kimi', 'kimicode']) {
     for (const [scenario, reason] of [['closed', 'not an open job'], ['claimed', 'already carries running'],
       ['other-pr', 'open PR #700'], ['other-branch', 'delivery branch opus/issue-687'], ['no-current', 'found 0'], ['two-current', 'found 2'],
@@ -456,7 +590,7 @@ function job(arm, label, extra = {}) {
   assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
   assert(hashWarn.result.includes('WARNING: these runner files differ'), hashWarn.result);
   pass('a run whose tools folder drifts from the Board hashes still starts and warns');
-  const note = 'PASS runner687+722: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
+  const note = 'PASS runner687+722+860: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
   write(path.join(root, 'summary.txt'), note); console.log(note.trim());
 } catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; }
 finally {

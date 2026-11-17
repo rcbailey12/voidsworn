@@ -158,6 +158,78 @@ function Keep-Repo($repo, $tag) {
   }
   Log "earlier checkout kept beside repo as $name"
 }
+function Warn-KeptRepos($repo) {
+  $board = Split-Path -Parent ([IO.Path]::GetFullPath($repo))
+  try { $copies = @(Get-ChildItem -LiteralPath $board -Directory -Force | Where-Object { $_.Name -like 'repo-kept-*' }) }
+  catch { Log "WARNING: kept checkout sizes unavailable in ${board}: $($_.Exception.Message)"; return }
+  if ($copies.Count -le 2) { return }
+  Log "WARNING: $board has $($copies.Count) repo-kept-* copies; all left in place for the Board to report to Ryan"
+  foreach ($copy in $copies) {
+    try {
+      if ($copy.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'linked checkout; total unavailable' }
+      $bytes = 0L; $pending = New-Object 'Collections.Generic.Stack[string]'; $pending.Push($copy.FullName)
+      while ($pending.Count) {
+        foreach ($item in (Get-ChildItem -LiteralPath $pending.Pop() -Force -ErrorAction Stop)) {
+          if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'size excludes a linked path; total unavailable' }
+          if ($item.PSIsContainer) { $pending.Push($item.FullName) } else { $bytes += $item.Length }
+        }
+      }
+      Log "WARNING: kept checkout $($copy.FullName): $bytes logical bytes ($([Math]::Round($bytes / 1GB, 3)) GiB)"
+    } catch { Log "WARNING: kept checkout $($copy.FullName): size unavailable ($($_.Exception.Message))" }
+  }
+}
+function Reuse-Caches($repo) {
+  $status = @(Git @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
+  if ($gitExit -ne 0) { throw 'working tree status not verified' }
+  foreach ($line in $status) {
+    # Only these Godot-generated caches are rebuildable. Unknown or quoted paths count as work.
+    if ($line -notmatch '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import)$') { throw "working tree needs keeping: $line" }
+    $line.Substring(3)
+  }
+}
+function Can-ReuseRepo($repo, $mirror, $sparse) {
+  if (-not (Test-Path -LiteralPath $repo)) { return $false }
+  try {
+    if ((Get-Item -LiteralPath $repo -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout is a linked path' }
+    if (-not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container)) { throw 'not a standalone checkout' }
+    $top = @(Git @('-C',$repo,'rev-parse','--show-toplevel'))
+    if ($gitExit -ne 0 -or [IO.Path]::GetFullPath($top[0]) -ne [IO.Path]::GetFullPath($repo)) { throw 'checkout root not verified' }
+    # Changing sparse patterns can discard ignored files. Preserve these checkouts instead.
+    $oldSparse = @(Git @('-C',$repo,'config','--bool','core.sparseCheckout'))
+    if ($gitExit -notin @(0,1)) { throw 'sparse checkout setting not verified' }
+    if ($sparse -or ($oldSparse.Count -and $oldSparse[0] -eq 'true')) { throw 'sparse checkout needs keeping' }
+    $shallow = @(Git @('-C',$repo,'rev-parse','--is-shallow-repository'))
+    if ($gitExit -ne 0 -or $shallow[0] -ne 'false') { throw 'complete local history not verified' }
+    $flags = @(Git @('-C',$repo,'ls-files','-v'))
+    if ($gitExit -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
+    $caches = @(Reuse-Caches $repo)
+    $local = @(Git @('-C',$repo,'rev-list','--all','--reflog','HEAD'))
+    if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
+    $remote = @(Git @('--git-dir',$mirror,'rev-list','--all'))
+    if ($gitExit -ne 0 -or -not $remote.Count) { throw 'fetched history not verified' }
+    $pushed = New-Object 'Collections.Generic.HashSet[string]'
+    foreach ($id in $remote) { $null = $pushed.Add($id) }
+    foreach ($id in $local) { if (-not $pushed.Contains($id)) { throw "local history not in fetched mirror: $id" } }
+    # Keep the whole checkout when a cache obstructs the incoming tree.
+    $paths = @(Git @('--git-dir',$mirror,'-c','core.quotePath=false','ls-tree','-r','--name-only','refs/heads/main'))
+    if ($gitExit -ne 0) { throw 'incoming paths not verified' }
+    $files = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $dirs = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($path in $paths) {
+      $null = $files.Add($path); $parent = $path
+      while ($parent.Contains('/')) { $parent = $parent.Substring(0, $parent.LastIndexOf('/')); $null = $dirs.Add($parent) }
+    }
+    foreach ($cache in $caches) {
+      $path = $cache.TrimEnd('/')
+      if ($dirs.Contains($path)) { throw "cache would obstruct incoming directory: $cache" }
+      while ($path) {
+        if ($files.Contains($path)) { throw "cache would be overwritten by incoming file: $cache" }
+        if (-not $path.Contains('/')) { break }; $path = $path.Substring(0, $path.LastIndexOf('/'))
+      }
+    }
+    return $true
+  } catch { Log "checkout needs keeping: $($_.Exception.Message)"; return $false }
+}
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
 # Final reporting is best effort. Start validation and claiming must fail closed.
@@ -393,6 +465,7 @@ try {
   }
   elseif ($mode -eq 'checkout') {
     $repo = $args[1]; $script:out = $args[2]; $br = $args[3]; $sparse = $args[4]
+    if ([IO.Path]::GetFileName([IO.Path]::GetFullPath($repo).TrimEnd('\','/')) -ne 'repo') { throw "unexpected checkout path $repo" }
     $source = 'https://github.com/rcbailey12/voidsworn'
     $mirror = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\repo-mirror.git'
     if ($test) {
@@ -420,11 +493,16 @@ try {
       Retry-Git 'mirror fetch' @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch','--prune','origin')
       # The remote default branch may not yet be set by init --bare.
       Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
+      $reuse = Can-ReuseRepo $repo $mirror $sparse
+      if ($reuse) {
+        Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags',$mirror,'+refs/heads/*:refs/remotes/origin/*')
+      }
     } finally { $lock.Dispose() }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
-    Keep-Repo $repo 'kept'
+    if (-not $reuse) { Keep-Repo $repo 'kept' }
+    Warn-KeptRepos $repo
     $delay = 120; if ($test -and $env:PC_TEST_RETRY_SECONDS) { $delay = [int]$env:PC_TEST_RETRY_SECONDS }
-    for ($attempt = 1; $attempt -le 3; $attempt++) {
+    for ($attempt = 1; -not $reuse -and $attempt -le 3; $attempt++) {
         Log "local clone attempt $attempt/3"
         # Reacquire around each local clone: mirror fetch and hardlink cloning must still serialize.
         $lock = $null
@@ -445,7 +523,15 @@ try {
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
     if ($sparse) { Must-Git (@('-C',$repo,'sparse-checkout','set','--no-cone') + @($sparse -split '\s+')) }
-    Must-Git @('-C',$repo,'checkout','-q','-B',$br,'refs/remotes/origin/main')
+    $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,'refs/remotes/origin/main')
+    $switchExit = $gitExit
+    if ($reuse) {
+      # A writer may have changed the checkout after eligibility. Stop without discarding its bytes.
+      try { $null = Reuse-Caches $repo }
+      catch { throw "checkout changed while starting; kept as is: $($_.Exception.Message)" }
+    }
+    if ($switchExit -ne 0) { throw "git checkout failed (exit $switchExit); see git_log.txt" }
+    if ($reuse) { Log 'earlier checkout reused in place; ignored cache files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
     $partial = "refs/remotes/origin/$br-partial"
