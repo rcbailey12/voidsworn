@@ -515,7 +515,7 @@
   {
    "cell": "bow/side",
    "concept": 4,
-   "build": 6
+   "build": 7
   },
   {
    "cell": "bow/below",
@@ -553,18 +553,5 @@
    "build": 1
   }
  ],
- "ratios": {
-  "concept": {
-   "env_LB": 3.08,
-   "env_LH": 3.18,
-   "hull_LB": 5.74,
-   "hull_LH": 6.21
-  },
-  "build": {
-   "env_LB": 3.99,
-   "env_LH": 3.32,
-   "hull_LB": 4.61,
-   "hull_LH": 6.19
-  }
- }
+ "ratios": null
 }

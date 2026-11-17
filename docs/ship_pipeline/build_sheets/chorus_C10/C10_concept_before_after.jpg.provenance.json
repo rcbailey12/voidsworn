@@ -1,0 +1,111 @@
+{
+  "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "C10_concept_before_after.jpg",
+  "date": "2026-11-17T01:10:31Z",
+  "sources": [
+    {
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": true,
+      "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "concept.png",
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-17T01:06:50Z",
+      "image_sha256": "c6ec5f7146d5945bca10849385737740c184fd2e343cb33651f8cf815ca6d1ac",
+      "sources": [
+        {
+          "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "maw_close.png",
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-17T01:06:58Z",
+      "image_sha256": "7129f2a9935a981836efcbb274c9e58a1e7ded603b7edf96764a91e2d7cefdda",
+      "sources": [
+        {
+          "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "concept.png",
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": true,
+      "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+      "stage": "sheet built",
+      "date": "2026-11-17T01:00:22Z",
+      "image_sha256": "94134fd8326a172eabc0d4b5cba401313d4b22b65d6c1e5b44f10f1cbc8e50c7",
+      "sources": [
+        {
+          "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+          "source_dirty": true,
+          "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "maw_close.png",
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": true,
+      "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+      "stage": "sheet built",
+      "date": "2026-11-17T01:00:31Z",
+      "image_sha256": "97ae990cc0c589aa3679a3c6c7d555398c99a01612f03bf35a592b2dcb23074b",
+      "sources": [
+        {
+          "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+          "source_dirty": true,
+          "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    124
+  ],
+  "strip_sha256": [
+    "b33828a0d34b9143a3492d0ed8493a79100f09f1ead50c615ae3bd6953545bde"
+  ],
+  "stamp_template_sha256": "32d46f024a5211a1b7b933c1645d5798e0e18f5de41a6e9e5f744866669b80bf",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAAB8CAIAAADxfb18AAAB80lEQVR4nO3VIQEAIQDAQPgSKCz9I76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYBR8wPdoQFSl3/8tAAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "d3b1d09a438bfc4d09b2ff38fa104c56faced0671feaa961ac1f6fdb1dfd9c6a"
+}

@@ -1,0 +1,54 @@
+{
+  "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+  "source_dirty": true,
+  "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_tendril.jpg",
+  "date": "2026-11-17T01:10:31Z",
+  "sources": [
+    {
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": true,
+      "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_tendril.png",
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": true,
+      "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+      "stage": "sheet built",
+      "date": "2026-11-17T01:01:43Z",
+      "image_sha256": "ebe36a925c822a83ad087be0998335af0448c5473a46873dd1295fe622ef266f",
+      "sources": [
+        {
+          "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+          "source_dirty": true,
+          "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "e1493f083c3baa9f0fe909aa967ec5ede7b194f14e175ab820634347543685e8"
+  ],
+  "stamp_template_sha256": "78325c2d7e785a55b25b5406e184a66e96faaed142b2f6f79244806c6f79f84e",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgSKCz9I76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/lnEBHsBulogAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "fb0d87affacd7451d3eebe944d859e34e4d64fab70eeeae60edff574cd75139b"
+}

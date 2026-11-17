@@ -1,0 +1,54 @@
+{
+  "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+  "source_dirty": true,
+  "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "fit_view.jpg",
+  "date": "2026-11-17T01:10:30Z",
+  "sources": [
+    {
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": true,
+      "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "fit_view.jpg",
+      "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+      "source_dirty": true,
+      "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+      "stage": "sheet built",
+      "date": "2026-11-17T01:02:35Z",
+      "image_sha256": "a7340d1a9be95eb3410335ee5f7bd6f92247433f20d84d15da3a60bca89f62af",
+      "sources": [
+        {
+          "source_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+          "source_dirty": true,
+          "source_diff_sha256": "3e1f31a253b92780c76bb00ca8a163e64b410200a1efb779d4b3e313b53fa112",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "fe1f13d53ed299105c2fa7c41310d06ca50492750dfac5e1b7ffe0990e878429"
+  ],
+  "stamp_template_sha256": "326e4ab504846ae1ccb956e48a5c5c31ddb5d97237f6b64e821f2a556069b814",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgSKCz9I76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/lnEBHsBulogAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "b2b8764251fcb1933465d5a96289410a748649ff2624a0d5e12c91fc851eee2d"
+}

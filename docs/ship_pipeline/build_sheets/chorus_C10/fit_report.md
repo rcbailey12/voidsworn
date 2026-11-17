@@ -1,4 +1,4 @@
-# chorus_C10 fit report (the recipe (issue 623); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# chorus_C10 fit report (open maws and flesh relief (issue 921, R302); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -28,8 +28,14 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
+## Main 4716fd96, before R302, checked (before)
 
-## How the recipe (issue 623) fixed them
+The unchanged main design, rebuilt on the same PC at the same cameras and light. Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0.
+
+| Check | Part | Against | Hits | What |
+|---|---|---|---:|---|
+
+## How open maws and flesh relief (issue 921, R302) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -41,7 +47,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 169 objects, 19 parts, 534 close pairs, 581 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 236 objects, 19 parts, 162 close pairs, 582 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

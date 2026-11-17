@@ -1,0 +1,252 @@
+{
+  "issue": 921,
+  "stage": "sheet built, unpainted CPU proof",
+  "sheet_version": 6,
+  "base_commit": "4716fd96c0a87989213bb1b43454fbc7bafff867",
+  "design_sha256": "46f2837640cf3d4591c9028eae43722ef5ea40604d0fa98636a28092f5f1b8fe",
+  "budget": {
+    "triangles": 346354,
+    "surfaces": 16,
+    "estimated_draw_calls_per_single_pass": 16,
+    "materials": 12,
+    "authored_inside_triangles": 13900,
+    "scene_gate_measured": false
+  },
+  "fit": {
+    "CLASH": 0,
+    "MOUNT": 0,
+    "ARC": 0,
+    "SENSOR": 0,
+    "SWEEP": 0,
+    "EXHAUST": 0,
+    "EXIT": 0,
+    "LANE": 0
+  },
+  "weapon_match": "PASS",
+  "contract": {
+    "ok": true,
+    "rows": [
+      "ok   the outside is one ship length long (1.000000)",
+      "ok   the class length is the sheet's (28.0 = LENGTH 28.0)",
+      "ok   3 transverse seams at the sheet's stations",
+      "ok   0 longitudinal seams at the sheet's heights and spans",
+      "ok   8 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+      "ok   every data.js slot (4) has muzzles of its own",
+      "ok   4 turret pivots kept, each with its turning meshes and a data.js slot",
+      "ok   3 engine exits and bell radii are the sheet's",
+      "ok   35 inside objects are visible role interior",
+      "ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers",
+      "ok   a ship whose weapon list lacks a sheet weapon (bioplasma F) was refused: M1: weapon 'bioplasma' arc 'F' names 0 slots of the data.js list [('tendril', 'T'), ('spores', 'T')]",
+      "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-6.9 to -5.9) runs across the transverse seam B-3: one compartment each",
+      "ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)"
+    ],
+    "record": {
+      "sheet": "chorus_C10",
+      "game_ship": "b_boss",
+      "variant": "",
+      "model_length": 28.10679,
+      "scale": 0.03557859082075777,
+      "length_world": 28.0,
+      "t_lines": [
+        -0.2277,
+        -0.05693,
+        0.25617
+      ],
+      "l_line": [],
+      "l_lines": [],
+      "muzzles": 8,
+      "guns": 6,
+      "engines": 3,
+      "bays": 6,
+      "points": 16,
+      "turrets": [
+        "G1_turret",
+        "G2_turret",
+        "G3_turret",
+        "T1_turret"
+      ],
+      "interior_objects": 35,
+      "slots": [
+        "0 bioplasma F",
+        "1 bioplasma F",
+        "2 tendril T",
+        "3 spores T"
+      ]
+    }
+  },
+  "audit": {
+    "problems": [],
+    "parts": 128,
+    "crossing_break_lines": [],
+    "structure_across_seams": [],
+    "guns_with_normals": 6,
+    "guns_into_ship": 0,
+    "guns": 6,
+    "break_lines": {
+      "t_lines": [
+        -0.2277029812528497,
+        -0.05692574531321243,
+        0.25616585390945595
+      ],
+      "l_line": [],
+      "l_lines": []
+    },
+    "result": "PASS"
+  },
+  "export_check": {
+    "ok": true,
+    "problems": [],
+    "hardpoints": {
+      "bay": 6,
+      "board": 2,
+      "breach": 9,
+      "core": 1,
+      "engine": 3,
+      "rcs": 4,
+      "gun": 8
+    }
+  },
+  "preserved": {
+    "inside": true,
+    "tendril": true,
+    "unmodified_outline_parts": true
+  },
+  "geometry_fingerprints": {
+    "inside": {
+      "triangles": 13900,
+      "objects": 35,
+      "sha256": "8c966c47aeeea893626c7bb2b363ac71e7f14b13ca9d9abd911d71a8aa3c39f5"
+    },
+    "tendril": {
+      "triangles": 10021,
+      "objects": 7,
+      "sha256": "dfadcc9bb2bdfd2896f5c66455444c694beb040f6b659f37ade46a425aa41c21"
+    },
+    "unmodified_outline_parts": {
+      "triangles": 74787,
+      "objects": 110,
+      "sha256": "b6b54076c04edfa49eb438e5ec026e7e753067d6700b9a753ba4b59d1ec4e947"
+    }
+  },
+  "maw_read": {
+    "before": {
+      "M1": {
+        "sample_circle_diameter": 2.0,
+        "rays": 1257,
+        "median_first_surface_depth": 0.593,
+        "fraction_reaching_0_5_depth": 0.5171
+      },
+      "M2": {
+        "sample_circle_diameter": 2.0,
+        "rays": 1257,
+        "median_first_surface_depth": 0.498,
+        "fraction_reaching_0_5_depth": 0.498
+      }
+    },
+    "after": {
+      "M1": {
+        "sample_circle_diameter": 2.0,
+        "rays": 1257,
+        "median_first_surface_depth": 1.654,
+        "fraction_reaching_0_5_depth": 0.996
+      },
+      "M2": {
+        "sample_circle_diameter": 2.0,
+        "rays": 1255,
+        "median_first_surface_depth": 1.646,
+        "fraction_reaching_0_5_depth": 0.996
+      }
+    },
+    "note": "Axial rays through a 2-unit diameter circle at each actual mouth; depth starts at the foremost lip. These are measurements, not arbitrary gates."
+  },
+  "outline": 77.77,
+  "mesh_density": {
+    "rule": "R224: a part kind more than 25 percent under the hull is flagged (mesh half; the paint half is stage 5)",
+    "types": {
+      "hull": {
+        "area": 487.65,
+        "triangles": 135535,
+        "tris_per_unit2": 277.9,
+        "edges_per_unit2": 74.4
+      },
+      "spinal": {
+        "area": 162.61,
+        "triangles": 29976,
+        "tris_per_unit2": 184.3,
+        "edges_per_unit2": 51.9,
+        "tris_per_unit2_vs_hull": 0.66,
+        "edges_per_unit2_vs_hull": 0.7
+      },
+      "gun": {
+        "area": 75.56,
+        "triangles": 15631,
+        "tris_per_unit2": 206.9,
+        "edges_per_unit2": 121.1,
+        "tris_per_unit2_vs_hull": 0.74,
+        "edges_per_unit2_vs_hull": 1.63
+      },
+      "brood": {
+        "area": 166.98,
+        "triangles": 49020,
+        "tris_per_unit2": 293.6,
+        "edges_per_unit2": 169.4,
+        "tris_per_unit2_vs_hull": 1.06,
+        "edges_per_unit2_vs_hull": 2.28
+      },
+      "thruster": {
+        "area": 4.12,
+        "triangles": 2304,
+        "tris_per_unit2": 559.5,
+        "edges_per_unit2": 252.5,
+        "tris_per_unit2_vs_hull": 2.01,
+        "edges_per_unit2_vs_hull": 3.39
+      },
+      "engine": {
+        "area": 20.77,
+        "triangles": 7832,
+        "tris_per_unit2": 377.1,
+        "edges_per_unit2": 192.1,
+        "tris_per_unit2_vs_hull": 1.36,
+        "edges_per_unit2_vs_hull": 2.58
+      }
+    },
+    "mesh_flags": [
+      "spinal: tris_per_unit2 184.3 is 0.66 of the hull's 277.9",
+      "spinal: edges_per_unit2 51.9 is 0.70 of the hull's 74.4",
+      "gun: tris_per_unit2 206.9 is 0.74 of the hull's 277.9"
+    ]
+  },
+  "limits": [
+    "No Chorus paint stack, game install or GPU frame-time measurement in this sheet-only job.",
+    "Optional inventory concept-sheet proportions omitted because SciPy is absent; per-cell inventory checks pass and orthographic agreement was measured."
+  ],
+  "standing_checks": {
+    "command": "node contrib/opus/tools/run_all_checks.js",
+    "exit_code": 0,
+    "counts": {
+      "PASS": 60,
+      "KNOWN": 2,
+      "FAIL": 0,
+      "SKIP": 0
+    },
+    "known": [
+      {
+        "check": "findings_tests",
+        "result": "KNOWN",
+        "detail": "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5"
+      },
+      {
+        "check": "oracle_drift_guard",
+        "result": "KNOWN",
+        "detail": "KNOWN: 12 constant difference(s) within the baseline"
+      }
+    ]
+  },
+  "build_manifest": "PASS: current feature table, explicit hand-built maw routes, four full-interior pieces",
+  "inventory": "PASS: zero missing, unshaped or undetailed per-cell lines; optional SciPy proportions omitted",
+  "pictures": {
+    "count": 24,
+    "max_height": 720,
+    "provenance": "PASS"
+  }
+}

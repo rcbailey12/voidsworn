@@ -1,6 +1,6 @@
 # chorus_C10: The Ninefold Maw (Chorus flagship), build sheet
 
-The Chorus (chorus) | class Bio-titan | version 5 (the recipe (issue 623)), 2026-11-13 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus623\chorus_C10\chorus_C10\chorus_C10_blockout.blend`
+The Chorus (chorus) | class Bio-titan | version 6 (open maws and flesh relief (issue 921, R302)), 2026-11-16 | blockout: Rebuild from tools/blender/build_sheets/ships/chorus_C10.py on CPU; current checks are in issue921_proof.json
 
 **Length 28.0 world units** (data.js b_boss (cls 'Bio-titan'); length from godot/render/hull_table.gd CLS_LEN['Bio-titan'] = 28.0). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -17,49 +17,47 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 
 | Check | Value |
 |---|---|
-| model length | 28.0 |
-| length side | 28.025 |
-| length top | 28.025 |
+| model length | 28.107 |
+| length side | 28.15 |
+| length top | 28.15 |
 | length disagreement percent | 0.0 |
-| beam top | 6.962 |
+| beam top | 6.975 |
 | beam bow | 7.05 |
-| beam disagreement percent | 0.31 |
-| height side | 8.45 |
-| height bow | 8.45 |
+| beam disagreement percent | 0.27 |
+| height side | 8.475 |
+| height bow | 8.475 |
 | height disagreement percent | 0.0 |
-| widest at station percent | 31.7 |
-| hull beam | 6.12 |
-| hull depth | 5.47 |
-| L to B hull | 4.58 |
-| L to H hull | 5.12 |
-| prow overhang | 2.3 |
-| outline iou percent | 76.4 |
-| mass outline iou percent | 75.1 |
+| widest at station percent | 32.0 |
+| hull beam | 6.39 |
+| hull depth | 5.61 |
+| L to B hull | 4.38 |
+| L to H hull | 4.99 |
+| prow overhang | 2.4 |
 | PASS | True |
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
 
-| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
-|---|---|---:|---:|---:|---:|---|---|---|---|
-| M1 | spine volley, throat (fixed) | 1 barrel | 9.9 | 1.36 | -0.30 | forward | F bioplasma | picture | port throat of the double mouth: rolled fold lips, an inner sphincter, a ring of spines, the bile gland glowing deep inside |
-| M2 | spine volley, throat (fixed) | 1 barrel | 9.9 | -1.36 | -0.30 | forward | F bioplasma | picture | starboard throat of the double mouth: rolled fold lips, an inner sphincter, a ring of spines, the bile gland glowing deep inside |
-| T1 | boarding tendrils, crown of 13 hooked tendrils (turns) | 3 barrels | 44.1 | 0.00 | 1.79 | forward | T tendril | picture | boarding tendrils: a crown of fourteen hooked tendrils on a muscle mound; it leans toward its prey (turns) |
-| G1 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 32.7 | 0.00 | -1.96 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
-| G2 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 49.5 | 0.00 | -1.56 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
-| G3 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 68.4 | 0.00 | -0.69 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
-| B1p | brood sac, 2.5 across, birth slit | 1 | 32.1 | 2.01 | -1.39 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
-| B1s | brood sac, 2.5 across, birth slit | 1 | 32.1 | -1.93 | -1.34 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
-| B2p | brood sac, 2.0 across, birth slit | 1 | 48.9 | 1.53 | -1.04 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
-| B2s | brood sac, 2.0 across, birth slit | 1 | 48.9 | -1.67 | -1.14 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
-| B3p | brood sac, 1.5 across, birth slit | 1 | 63.0 | 1.19 | -0.61 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
-| B3s | brood sac, 1.5 across, birth slit | 1 | 63.0 | -1.22 | -0.64 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
-| Q1p | attitude thruster quad | 1 | 19.4 | 2.71 | -1.10 | - | - | designed | siphon behind the mouth: swings the head |
-| Q2p | attitude thruster quad | 1 | 76.6 | 0.74 | 0.83 | - | - | designed | siphon on the tail: swings the stern |
-| Q1s | attitude thruster quad | 1 | 19.4 | -2.65 | -1.08 | - | - | designed | siphon behind the mouth: swings the head |
-| Q2s | attitude thruster quad | 1 | 76.6 | -0.85 | 0.89 | - | - | designed | siphon on the tail: swings the stern |
-| E1 | pulse vent, mouth 0.4 across | 1 | 87.5 | 0.00 | 0.82 | exhaust aft | - | picture | pulse vent with 3 trailing membrane veils, splayed away from the crown's centre |
-| E2 | pulse vent, mouth 0.3 across | 1 | 87.5 | 0.30 | 0.42 | exhaust aft | - | picture | pulse vent with 2 trailing membrane veils, splayed away from the crown's centre |
-| E3 | pulse vent, mouth 0.3 across | 1 | 87.5 | -0.30 | 0.42 | exhaust aft | - | picture | pulse vent with 2 trailing membrane veils, splayed away from the crown's centre |
+| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note | Route |
+|---|---|---:|---:|---:|---:|---|---|---|---| --- |
+| M1 | spine volley, held-open round maw (fixed) | 1 barrel | 10.3 | 1.45 | -0.30 | forward | F bioplasma | picture | port great open round maw: an outward rolled lip, open sphincter, recessed spines and a bile gland 1.6 units down the wet throat | hand-built |
+| M2 | spine volley, held-open round maw (fixed) | 1 barrel | 10.3 | -1.45 | -0.30 | forward | F bioplasma | picture | starboard great open round maw: an outward rolled lip, open sphincter, recessed spines and a bile gland 1.6 units down the wet throat | hand-built |
+| T1 | boarding tendrils, crown of 13 hooked tendrils (turns) | 3 barrels | 44.3 | 0.00 | 1.79 | forward | T tendril | picture | boarding tendrils: a crown of fourteen hooked tendrils on a muscle mound; it leans toward its prey (turns) | kit |
+| G1 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 32.9 | 0.00 | -1.96 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores | kit |
+| G2 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 49.6 | 0.00 | -1.56 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores | kit |
+| G3 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 68.5 | 0.00 | -0.69 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores | kit |
+| B1p | brood sac, 2.5 across, birth slit | 1 | 32.3 | 2.01 | -1.39 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit | kit |
+| B1s | brood sac, 2.5 across, birth slit | 1 | 32.3 | -1.93 | -1.34 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit | kit |
+| B2p | brood sac, 2.0 across, birth slit | 1 | 49.1 | 1.53 | -1.04 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit | kit |
+| B2s | brood sac, 2.0 across, birth slit | 1 | 49.1 | -1.67 | -1.14 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit | kit |
+| B3p | brood sac, 1.5 across, birth slit | 1 | 63.1 | 1.19 | -0.61 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit | kit |
+| B3s | brood sac, 1.5 across, birth slit | 1 | 63.1 | -1.22 | -0.64 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit | kit |
+| Q1p | attitude thruster quad | 1 | 19.8 | 2.71 | -1.10 | - | - | designed | siphon behind the mouth: swings the head | kit |
+| Q2p | attitude thruster quad | 1 | 76.7 | 0.74 | 0.83 | - | - | designed | siphon on the tail: swings the stern | kit |
+| Q1s | attitude thruster quad | 1 | 19.8 | -2.65 | -1.08 | - | - | designed | siphon behind the mouth: swings the head | kit |
+| Q2s | attitude thruster quad | 1 | 76.7 | -0.85 | 0.89 | - | - | designed | siphon on the tail: swings the stern | kit |
+| E1 | pulse vent, mouth 0.4 across | 1 | 87.5 | 0.00 | 0.82 | exhaust aft | - | picture | pulse vent with 3 trailing membrane veils, splayed away from the crown's centre | kit |
+| E2 | pulse vent, mouth 0.3 across | 1 | 87.5 | 0.30 | 0.42 | exhaust aft | - | picture | pulse vent with 2 trailing membrane veils, splayed away from the crown's centre | kit |
+| E3 | pulse vent, mouth 0.3 across | 1 | 87.5 | -0.30 | 0.42 | exhaust aft | - | picture | pulse vent with 2 trailing membrane veils, splayed away from the crown's centre | kit |
 
 Totals: 6 gun mounts with 8 barrels; 0 launcher tubes; 3 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
@@ -68,65 +66,65 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Zone | From % | To % | Where | Note |
 |---|---:|---:|---|---|
-| dark olive flesh, callused olive hide (paint stage) | 0.2 | 86.6 | whole body |  |
-| ochre chitin | 20.9 | 78.7 | the edge of each flank fold |  |
-| bile yellow-green light | 0.2 | 7.3 | the throat glands, deep in the mouths |  |
+| dark olive flesh, callused olive hide (paint stage) | 0.5 | 86.6 | whole body |  |
+| ochre chitin | 21.2 | 78.8 | the edge of each flank fold |  |
+| bile yellow-green light | 0.5 | 7.7 | the throat glands, deep in the mouths |  |
 | bile yellow-green light | 86.6 | 100.0 | the vents and the light in the membranes |  |
-| dim bile | 12.3 | 48.7 | the veins, the sac windows, the acid pores |  |
-| pale regrowing scar | 17.0 | 71.6 | scar patches |  |
+| dim bile | 12.6 | 48.9 | the veins, the sac windows, the acid pores |  |
+| pale regrowing scar | 17.3 | 71.7 | scar patches |  |
 
 ## Major masses
 
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
-| Hull: the long body | 8.2 to 86.4 | -3.02 to 3.10 | -2.95 to 2.52 | dark olive flesh | broad flat back, rounder belly, tapering to a tail that rises to the back line |
-| Mouth, port throat | 2.1 to 11.0 | 0.26 to 2.48 | -1.40 to 0.82 | flesh folds | the port lobe of the double mouth |
-| Mouth, starboard throat | 2.1 to 11.0 | -2.47 to -0.21 | -1.45 to 0.81 | flesh folds | the starboard lobe |
-| Tendril crown | 41.0 to 47.2 | -0.86 to 0.87 | 1.42 to 2.05 | flesh mound, tendrils | a muscle mound with radial welts, the crown on it |
-| Spore gland 1 | 30.5 to 34.4 | -0.51 to 0.50 | -3.55 to -2.40 | flesh sac | hanging on its neck under the belly |
-| Spore gland 2 | 47.3 to 51.2 | -0.50 to 0.52 | -3.14 to -2.00 | flesh sac | hanging on its neck under the belly |
-| Spore gland 3 | 66.2 to 70.1 | -0.52 to 0.52 | -2.27 to -1.13 | flesh sac | hanging on its neck under the belly |
-| Brood sac 1 (port) | 27.8 to 36.5 | 1.02 to 3.47 | -3.75 to -0.70 | flesh sac | bulging out and down from the lower flank |
-| Brood sac 1 (starboard) | 27.9 to 36.7 | -3.45 to -0.96 | -3.65 to -0.64 | flesh sac | bulging out and down from the lower flank |
-| Brood sac 2 (port) | 45.5 to 52.6 | 0.74 to 2.74 | -2.88 to -0.46 | flesh sac | bulging out and down from the lower flank |
-| Brood sac 2 (starboard) | 45.6 to 52.6 | -2.84 to -0.90 | -3.01 to -0.57 | flesh sac | bulging out and down from the lower flank |
-| Brood sac 3 (port) | 60.6 to 65.9 | 0.61 to 2.09 | -2.01 to -0.19 | flesh sac | bulging out and down from the lower flank |
-| Brood sac 3 (starboard) | 60.6 to 65.9 | -2.11 to -0.64 | -2.02 to -0.21 | flesh sac | bulging out and down from the lower flank |
-| Vent crown | 83.7 to 87.6 | -0.26 to 0.26 | 0.57 to 1.07 | flesh | three pulse vents at the tail's end |
-| Flank fold (port) | 20.9 to 79.0 | 0.76 to 3.35 | -0.23 to 0.66 | flesh fold, ochre edge | the raised membrane fold down the flank |
-| Flank fold (starboard) | 20.9 to 79.0 | -3.47 to -0.79 | -0.23 to 0.66 | flesh fold, ochre edge | the raised membrane fold down the flank |
-| Head folds (port) | 6.8 to 22.8 | 0.03 to 3.22 | -1.88 to 2.61 | flesh folds | fold rolls running back over the head |
-| Head folds (starboard) | 6.9 to 22.8 | -3.24 to -0.03 | -1.99 to 2.48 | flesh folds | fold rolls running back over the head |
+| Hull: the long body | 8.6 to 86.5 | -3.16 to 3.23 | -3.02 to 2.59 | dark olive flesh | broad flat back, rounder belly, tapering to a tail that rises to the back line |
+| Mouth, port throat | 1.1 to 12.9 | -0.41 to 3.31 | -2.14 to 1.58 | flesh folds | the port lobe of the double mouth |
+| Mouth, starboard throat | 1.1 to 12.9 | -3.31 to 0.41 | -2.14 to 1.58 | flesh folds | the starboard lobe |
+| Tendril crown | 41.2 to 47.4 | -0.86 to 0.87 | 1.42 to 2.05 | flesh mound, tendrils | a muscle mound with radial welts, the crown on it |
+| Spore gland 1 | 30.8 to 34.6 | -0.51 to 0.50 | -3.55 to -2.40 | flesh sac | hanging on its neck under the belly |
+| Spore gland 2 | 47.5 to 51.4 | -0.50 to 0.52 | -3.14 to -2.00 | flesh sac | hanging on its neck under the belly |
+| Spore gland 3 | 66.3 to 70.2 | -0.52 to 0.52 | -2.27 to -1.13 | flesh sac | hanging on its neck under the belly |
+| Brood sac 1 (port) | 28.0 to 36.8 | 1.02 to 3.47 | -3.75 to -0.70 | flesh sac | bulging out and down from the lower flank |
+| Brood sac 1 (starboard) | 28.2 to 37.0 | -3.45 to -0.96 | -3.65 to -0.64 | flesh sac | bulging out and down from the lower flank |
+| Brood sac 2 (port) | 45.7 to 52.8 | 0.74 to 2.74 | -2.88 to -0.46 | flesh sac | bulging out and down from the lower flank |
+| Brood sac 2 (starboard) | 45.8 to 52.7 | -2.84 to -0.90 | -3.01 to -0.57 | flesh sac | bulging out and down from the lower flank |
+| Brood sac 3 (port) | 60.8 to 66.1 | 0.61 to 2.09 | -2.01 to -0.19 | flesh sac | bulging out and down from the lower flank |
+| Brood sac 3 (starboard) | 60.7 to 66.1 | -2.11 to -0.64 | -2.02 to -0.21 | flesh sac | bulging out and down from the lower flank |
+| Vent crown | 83.8 to 87.7 | -0.26 to 0.26 | 0.57 to 1.07 | flesh | three pulse vents at the tail's end |
+| Flank fold (port) | 21.2 to 79.1 | 0.73 to 3.39 | -0.23 to 0.66 | flesh fold, ochre edge | the raised membrane fold down the flank |
+| Flank fold (starboard) | 21.2 to 79.0 | -3.44 to -0.80 | -0.23 to 0.66 | flesh fold, ochre edge | the raised membrane fold down the flank |
+| Head folds (port) | 9.0 to 24.2 | 0.26 to 3.26 | -1.98 to 2.67 | flesh folds | fold rolls running back over the head |
+| Head folds (starboard) | 9.0 to 24.2 | -3.30 to -0.26 | -2.09 to 2.60 | flesh folds | fold rolls running back over the head |
 
 ## INSIDE (R98, R209): what each break reveals
 
 Deck levels (height): lower deck -0.90 (13% to 55%); upper deck 0.85 (14% to 75%).
 
-Bulkhead and frame stations: F0 12.3%, F1 18.4%, F2 28.0%, F3 34.5%, F4 40.9%, F5 47.3%, F6 52.3%, F7 59.1%, F8 65.2%, F9 69.5%, F10 76.6%, F11 81.6%.
+Bulkhead and frame stations: F0 12.6%, F1 18.7%, F2 28.3%, F3 34.7%, F4 41.1%, F5 47.5%, F6 52.5%, F7 59.3%, F8 65.3%, F9 69.6%, F10 76.7%, F11 81.7%.
 
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
-| bile gland p (gland) | 11.1 to 17.1 | 0.40 to 1.60 | -0.95 to 0.25 | the port throat's bile gland: the shot's magazine |
-| bile gland s (gland) | 11.1 to 17.1 | -1.60 to -0.40 | -0.95 to 0.25 | the starboard throat's bile gland |
-| ganglion (ganglion) | 18.0 to 23.0 | -0.55 to 0.55 | 0.33 to 1.17 | the Node: the knot of nerve that steers the body (no bridge) |
-| regrowth fore p (organ) | 23.2 to 28.6 | 0.93 to 1.77 | 0.57 to 1.33 | regrowth tissue: knits the hull back (regen) |
-| regrowth fore s (organ) | 23.2 to 28.6 | -1.77 to -0.93 | 0.57 to 1.33 | regrowth tissue |
-| gut fore (gut) | 28.0 to 41.6 | -1.05 to 1.05 | -0.45 to 0.95 | the gut: it eats anything, wrecks and the dead included |
-| brood chamber 1p (brood) | 29.2 to 35.0 | 0.45 to 1.45 | -1.15 to -0.35 | brood chamber feeding the sac beside it (hangar 3) |
-| brood chamber 1s (brood) | 29.2 to 35.0 | -1.45 to -0.45 | -1.15 to -0.35 | brood chamber feeding the sac beside it (hangar 3) |
-| brood chamber 2p (brood) | 46.6 to 51.3 | 0.39 to 1.27 | -0.92 to -0.22 | brood chamber feeding the sac beside it (hangar 3) |
-| brood chamber 2s (brood) | 46.6 to 51.3 | -1.27 to -0.39 | -0.92 to -0.22 | brood chamber feeding the sac beside it (hangar 3) |
-| brood chamber 3p (brood) | 61.2 to 64.8 | 0.33 to 1.09 | -0.69 to -0.09 | brood chamber feeding the sac beside it (hangar 3) |
-| brood chamber 3s (brood) | 61.2 to 64.8 | -1.09 to -0.33 | -0.69 to -0.09 | brood chamber feeding the sac beside it (hangar 3) |
-| spore store 1 (gland) | 30.7 to 34.6 | -0.42 to 0.42 | -1.63 to -1.03 | spore store over the gland below |
-| spore store 2 (gland) | 47.5 to 51.4 | -0.42 to 0.42 | -1.24 to -0.64 | spore store over the gland below |
-| spore store 3 (gland) | 66.4 to 70.3 | -0.42 to 0.42 | -0.41 to 0.19 | spore store over the gland below |
-| tendril muscle (organ) | 41.6 to 46.6 | -0.60 to 0.60 | 0.65 to 1.35 | the crown's root muscle |
-| heart vat (vat) | 45.7 to 53.9 | -0.90 to 0.90 | -0.80 to 0.70 | the heart vat: the core (hp_core), lit bile-green |
-| gut aft (gut) | 54.8 to 66.2 | -0.95 to 0.95 | -0.30 to 1.00 | the second stomach |
-| regrowth aft p (organ) | 66.1 to 70.0 | 0.22 to 0.82 | 0.32 to 0.88 | regrowth tissue |
-| regrowth aft s (organ) | 66.1 to 70.0 | -0.82 to -0.22 | 0.32 to 0.88 | regrowth tissue |
-| pulse bladder (engroom) | 74.5 to 81.6 | -0.40 to 0.40 | 0.30 to 0.94 | the pulse bladder: fills and squeezes the vents (the engine room) |
+| bile gland p (gland) | 11.4 to 17.4 | 0.40 to 1.60 | -0.95 to 0.25 | the port throat's bile gland: the shot's magazine |
+| bile gland s (gland) | 11.4 to 17.4 | -1.60 to -0.40 | -0.95 to 0.25 | the starboard throat's bile gland |
+| ganglion (ganglion) | 18.3 to 23.3 | -0.55 to 0.55 | 0.33 to 1.17 | the Node: the knot of nerve that steers the body (no bridge) |
+| regrowth fore p (organ) | 23.5 to 28.8 | 0.93 to 1.77 | 0.57 to 1.33 | regrowth tissue: knits the hull back (regen) |
+| regrowth fore s (organ) | 23.5 to 28.8 | -1.77 to -0.93 | 0.57 to 1.33 | regrowth tissue |
+| gut fore (gut) | 28.3 to 41.8 | -1.05 to 1.05 | -0.45 to 0.95 | the gut: it eats anything, wrecks and the dead included |
+| brood chamber 1p (brood) | 29.5 to 35.2 | 0.45 to 1.45 | -1.15 to -0.35 | brood chamber feeding the sac beside it (hangar 3) |
+| brood chamber 1s (brood) | 29.5 to 35.2 | -1.45 to -0.45 | -1.15 to -0.35 | brood chamber feeding the sac beside it (hangar 3) |
+| brood chamber 2p (brood) | 46.8 to 51.5 | 0.39 to 1.27 | -0.92 to -0.22 | brood chamber feeding the sac beside it (hangar 3) |
+| brood chamber 2s (brood) | 46.8 to 51.5 | -1.27 to -0.39 | -0.92 to -0.22 | brood chamber feeding the sac beside it (hangar 3) |
+| brood chamber 3p (brood) | 61.4 to 64.9 | 0.33 to 1.09 | -0.69 to -0.09 | brood chamber feeding the sac beside it (hangar 3) |
+| brood chamber 3s (brood) | 61.4 to 64.9 | -1.09 to -0.33 | -0.69 to -0.09 | brood chamber feeding the sac beside it (hangar 3) |
+| spore store 1 (gland) | 31.0 to 34.9 | -0.42 to 0.42 | -1.63 to -1.03 | spore store over the gland below |
+| spore store 2 (gland) | 47.7 to 51.6 | -0.42 to 0.42 | -1.24 to -0.64 | spore store over the gland below |
+| spore store 3 (gland) | 66.5 to 70.5 | -0.42 to 0.42 | -0.41 to 0.19 | spore store over the gland below |
+| tendril muscle (organ) | 41.8 to 46.8 | -0.60 to 0.60 | 0.65 to 1.35 | the crown's root muscle |
+| heart vat (vat) | 45.9 to 54.1 | -0.90 to 0.90 | -0.80 to 0.70 | the heart vat: the core (hp_core), lit bile-green |
+| gut aft (gut) | 55.0 to 66.4 | -0.95 to 0.95 | -0.30 to 1.00 | the second stomach |
+| regrowth aft p (organ) | 66.2 to 70.1 | 0.22 to 0.82 | 0.32 to 0.88 | regrowth tissue |
+| regrowth aft s (organ) | 66.2 to 70.1 | -0.82 to -0.22 | 0.32 to 0.88 | regrowth tissue |
+| pulse bladder (engroom) | 74.6 to 81.7 | -0.40 to 0.40 | 0.30 to 0.94 | the pulse bladder: fills and squeezes the vents (the engine room) |
 
 | Armour zone | Thickness (units) | Note |
 |---|---:|---|
@@ -138,9 +136,9 @@ Bulkhead and frame stations: F0 12.3%, F1 18.4%, F2 28.0%, F3 34.5%, F4 40.9%, F
 
 | Break line | Station % | What it opens |
 |---|---|---|
-| B-1 | 24.5 (seam wanders 23.0 to 25.9) | behind the head: the mouth mass tears away, opening the glands and the Node |
-| B-2 | 55.9 (seam wanders 55.2 to 57.1) | behind the tendril crown: the body tears open across the heart vat's aft end and the second stomach |
-| B-3 | 73.0 (seam wanders 72.0 to 74.1) | ahead of the tail: the tail and the vent crown tear free, opening the pulse bladder |
+| B-1 | 24.7 (seam wanders 23.3 to 26.2) | behind the head: the mouth mass tears away, opening the glands and the Node |
+| B-2 | 56.1 (seam wanders 55.3 to 57.3) | behind the tendril crown: the body tears open across the heart vat's aft end and the second stomach |
+| B-3 | 73.1 (seam wanders 72.1 to 74.2) | ahead of the tail: the tail and the vent crown tear free, opening the pulse bladder |
 
 Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, then the body tears open along ragged lines (R186).
 
@@ -149,32 +147,32 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 | Point | Station % | Offset | Height | Side | Section | Note |
 |---|---:|---:|---:|---|---|---|
-| hp_core | 49.8 | 0.00 | -0.05 |  |  |  |
-| hp_breach_0 | 15.9 | 2.84 | -1.05 | port | prow | open hide beside a sac or the trim |
-| hp_breach_1 | 21.6 | -2.65 | -1.02 | stbd | prow | open hide beside a sac or the trim |
-| hp_breach_2 | 26.6 | 1.88 | 1.72 | port | prow | open hide beside a sac or the trim |
-| hp_breach_3 | 39.8 | -2.68 | -0.24 | stbd | mid | open hide beside a sac or the trim |
-| hp_breach_4 | 53.8 | 2.12 | -0.17 | port | mid | open hide beside a sac or the trim |
-| hp_breach_5 | 58.0 | -1.39 | 1.30 | stbd | mid | open hide beside a sac or the trim |
-| hp_breach_6 | 67.7 | 1.57 | 0.21 | port | eng | open hide beside a sac or the trim |
-| hp_breach_7 | 75.2 | -1.00 | 0.94 | stbd | eng | open hide beside a sac or the trim |
+| hp_core | 50.0 | 0.00 | -0.05 |  |  |  |
+| hp_breach_0 | 16.2 | 2.84 | -1.05 | port | prow | open hide beside a sac or the trim |
+| hp_breach_1 | 21.9 | -2.65 | -1.02 | stbd | prow | open hide beside a sac or the trim |
+| hp_breach_2 | 26.9 | 1.88 | 1.72 | port | prow | open hide beside a sac or the trim |
+| hp_breach_3 | 40.0 | -2.68 | -0.24 | stbd | mid | open hide beside a sac or the trim |
+| hp_breach_4 | 53.9 | 2.12 | -0.17 | port | mid | open hide beside a sac or the trim |
+| hp_breach_5 | 58.2 | -1.39 | 1.30 | stbd | mid | open hide beside a sac or the trim |
+| hp_breach_6 | 67.8 | 1.57 | 0.21 | port | eng | open hide beside a sac or the trim |
+| hp_breach_7 | 75.3 | -1.00 | 0.94 | stbd | eng | open hide beside a sac or the trim |
 | hp_breach_8 | 82.0 | 0.65 | 0.29 | port | eng | open hide beside a sac or the trim |
-| hp_rcs_0 | 19.5 | 2.76 | -1.13 | port |  |  |
-| hp_rcs_1 | 19.5 | -2.69 | -1.10 | stbd |  |  |
-| hp_rcs_2 | 76.6 | 0.78 | 0.86 | port |  |  |
-| hp_rcs_3 | 76.6 | -0.89 | 0.92 | stbd |  |  |
-| hp_bay_0 | 32.4 | 2.56 | -3.71 | port |  | brood sac birth slit |
-| hp_bay_1 | 32.4 | -2.53 | -3.64 | stbd |  | brood sac birth slit |
-| hp_bay_2 | 49.3 | 2.05 | -2.87 | port |  | brood sac birth slit |
-| hp_bay_3 | 49.3 | -2.15 | -2.98 | stbd |  | brood sac birth slit |
-| hp_bay_4 | 63.4 | 1.56 | -1.99 | port |  | brood sac birth slit |
-| hp_bay_5 | 63.4 | -1.59 | -2.02 | stbd |  | brood sac birth slit |
-| hp_board_0 | 43.0 | 2.43 | 0.77 | port |  |  |
-| hp_board_1 | 43.0 | -2.52 | 0.80 | stbd |  |  |
+| hp_rcs_0 | 19.8 | 2.76 | -1.13 | port |  |  |
+| hp_rcs_1 | 19.8 | -2.69 | -1.10 | stbd |  |  |
+| hp_rcs_2 | 76.7 | 0.78 | 0.86 | port |  |  |
+| hp_rcs_3 | 76.7 | -0.89 | 0.92 | stbd |  |  |
+| hp_bay_0 | 32.7 | 2.56 | -3.71 | port |  | brood sac birth slit |
+| hp_bay_1 | 32.7 | -2.53 | -3.64 | stbd |  | brood sac birth slit |
+| hp_bay_2 | 49.5 | 2.05 | -2.87 | port |  | brood sac birth slit |
+| hp_bay_3 | 49.5 | -2.15 | -2.98 | stbd |  | brood sac birth slit |
+| hp_bay_4 | 63.6 | 1.56 | -1.99 | port |  | brood sac birth slit |
+| hp_bay_5 | 63.6 | -1.59 | -2.02 | stbd |  | brood sac birth slit |
+| hp_board_0 | 43.3 | 2.43 | 0.77 | port |  |  |
+| hp_board_1 | 43.3 | -2.52 | 0.80 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 169 objects, 19 parts, 534 close pairs, 581 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 236 objects, 19 parts, 162 close pairs, 582 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -183,6 +181,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 ## Changed from the picture (R207)
 
 - **Colour: bile yellow-green light over dark olive flesh and ochre chitin.** R204 and the lore: the colour is fixed in the build; the picture came out grey with amber light (README 8b).
+- **R302: the two maws stay open, with 2.6-unit mouth bores and the bile glands recessed 1.6 units.** Issue 921: replace the constricting coils with outward rolled, creased flesh lips; keep the two forward weapon slots and their real muzzles. The mouth centres spread 0.09 units each; firing lanes begin past the actual front of the lips.
+- **R302: continuous wrinkled hide, gathered head folds and puckered regrowth scars are modelled relief.** Issue 921: remove the separate callus-pad layer. Preserve the original loft curve, tendrils, sacs, vents, mounts and insides. The future Chorus stack owns fine pore grain, mottling, wetness, scar colour and final maw emission, and must preserve the open voids and relief.
 - **The two mouths are the two bile spitters (bioplasma F, F).** data.js b_boss carries two Spine volleys forward; a weapon is an organ (factions.md). Each throat gets an inner sphincter, a ring of chitin spines (the spines it spits) and its glowing bile gland; the picture shows only the glow.
 - **The tendril cluster is the boarding tendrils (tendril T), a crown on a muscle mound that turns.** the slot is all round; the profile (the view of record for anatomy, README 8b) curls them up, the plan splays them flat; built as the profile with the tips splayed.
 - **The belly row is three spore glands (spores T) on necks, spouts forward.** the picture's small hanging sacs; spaced so the B-2 seam passes behind the crown and between two glands (R226).
@@ -205,3 +205,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - Q2p (attitude thruster quad): siphon on the tail: swings the stern.
 - Q1s (attitude thruster quad): siphon behind the mouth: swings the head.
 - Q2s (attitude thruster quad): siphon on the tail: swings the stern.
+
+## Issue 921 surface ownership
+
+The continuous wrinkled hide replaces the old pad layer. Broad folds, regrowth recesses and puckered scar lips are modelled here. Fine pore grain, mottling, wetness, scar colour and final maw emission await the Chorus stack. M1 and M2 are fixed, hand-built open maws assembled from the existing Chorus throat organs.

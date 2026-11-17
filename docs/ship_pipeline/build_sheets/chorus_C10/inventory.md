@@ -18,7 +18,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | veins | carry bile from the heart vat to the throat glands and the sacs; their dim light is the lore's light inside the body | vein | branching vein runs along both flanks (the C9 tracery the round 8b pass faded (README); built back faintly) | 2 | bow/side, mid/side | a raised vein, branches | picture |
 | scars | regrowth (regen 20, the Mending): wounds knitting shut | scar | pale scarred patches on the back and flanks | 8 | bow/top, mid/top, mid/side, stern/top | a raised irregular patch, knit ridges across it | picture |
 | body | the body: holds the organs, the heart vat and the brood chambers | hull | the long body: broad flat back, rounder belly, tapering to the tail | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | the shoulder ridges, fold wrinkles, pore fields | picture |
-| hide | the hide: callused armour pads with sense pores, the first thing a hit tears | plate | the hide over the whole body | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | callus pads (irregular low domes), sense pores on them | picture |
+| hide | the hide: continuous folded hide with sense pores, the first thing a hit tears | hull | the hide over the whole body | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | continuous modelled wrinkle folds and the retained sense-pore fields | picture |
 | tail_folds | the muscle that squeezes the vent crown (the pulse) | welt | wrinkle folds converging on the tail end | 1 | stern/top, stern/side | raised welts | picture |
 | vents | drive (sp 2): pulse vents push the body; no nozzles (factions.md) | engine | the tail's glowing end with streaming membranes (the picture draws a spike with three or four glow points and long wisps; the build makes them a crown of three vents) | 3 | stern/top, stern/side, stern/below | a muscle cone into the body, radial folds, a sphincter mouth, a dark throat, bile glow, trailing membrane veils | picture |
 
@@ -159,7 +159,7 @@ Concept counts read off the concept sheet by eye (C10 sheet: bow = the two mouth
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
 | bow/top | 4 | 10 | Hull: the long body; Mouth, port throat; Mouth, starboard throat; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard); Flank fold (port); Flank fold (starboard); Head folds (port); Head folds (starboard) |
-| bow/side | 4 | 6 | Hull: the long body; Mouth, port throat; Spore gland 1; Brood sac 1 (port); Flank fold (port); Head folds (port) |
+| bow/side | 4 | 7 | Hull: the long body; Mouth, port throat; Mouth, starboard throat; Spore gland 1; Brood sac 1 (port); Flank fold (port); Head folds (port) |
 | bow/below | 3 | 4 | Hull: the long body; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard) |
 | mid/top | 6 | 13 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (port); Brood sac 2 (starboard); Brood sac 3 (port); Brood sac 3 (starboard); Flank fold (port); Flank |
 | mid/side | 7 | 9 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 2 (port); Brood sac 3 (port); Flank fold (port) |
@@ -168,13 +168,6 @@ Concept counts read off the concept sheet by eye (C10 sheet: bow = the two mouth
 | stern/side | 3 | 4 | Hull: the long body; Spore gland 3; Vent crown; Flank fold (port) |
 | stern/below | 2 | 1 | Hull: the long body |
 
-## Proportions: length to beam and length to height, concept against build (the Board on round 3)
-
-Measured the same way on both: the concept sheet's top and side views and the blockout's top and side renders, bow left. Envelope: the whole outline. Hull: length over the median beam or height across the middle 60 percent of the length (dishes, guns and antennas sticking out at a few stations do not count).
-
-| | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
-|---|---:|---:|---:|---:|
-| concept | 3.08 | 3.18 | 5.74 | 6.21 |
-| build | 3.99 | 3.32 | 4.61 | 6.19 |
-
 Lines not present, shaped and detailed without a reason: 0.
+
+Issue 921 / R302: this v6 output supersedes the old hide-pad description in the concept inventory. Large wrinkles and sunk scars are geometry. Only fine pore grain, wetness, mottling and scar colour wait for surfacing. Optional concept-sheet proportion analysis was not run because SciPy is absent; the real orthographic view agreement is in checks.json.
