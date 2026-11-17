@@ -1,0 +1,308 @@
+[
+  {
+    "map": "nebula",
+    "route": "today",
+    "frame_1080p_ms": 4.725,
+    "gpu_4k_ms": 6.21999979019165,
+    "frame_delta_ms": 0.0,
+    "gpu_delta_ms": 0.0,
+    "gate_ms": 12.5,
+    "gate_pass": true,
+    "frame_sessions": [
+      3.988,
+      4.725,
+      4.746
+    ],
+    "gpu_sessions": [
+      6.24599981307983,
+      6.21999979019165,
+      6.20800018310547
+    ],
+    "draw_calls": 402,
+    "visible_primitives": 7936226,
+    "vram_mb": 3458.8348236084,
+    "patches": {
+      "neb": {
+        "hexes": 6,
+        "patches": [
+          1,
+          4,
+          1
+        ]
+      },
+      "storm": {
+        "hexes": 0,
+        "patches": []
+      }
+    },
+    "camera": {
+      "near": 0.5,
+      "r": 367.755004882813,
+      "t": [
+        2.16506457328796,
+        0.0,
+        15.0
+      ]
+    },
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\nebula_today_keep\\scene_gate.json",
+    "adapter_sha256": "0620645fb7f09ec341af321e73a55d2c426c5a2da7f5f62f9fe72db3295398e1",
+    "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538"
+  },
+  {
+    "map": "nebula",
+    "route": "fog",
+    "frame_1080p_ms": 5.498,
+    "gpu_4k_ms": 6.67999982833862,
+    "frame_delta_ms": 0.7730000000000006,
+    "gpu_delta_ms": 0.46000003814697,
+    "gate_ms": 12.5,
+    "gate_pass": true,
+    "frame_sessions": [
+      4.255,
+      7.007,
+      5.498
+    ],
+    "gpu_sessions": [
+      6.63199996948242,
+      6.82000017166138,
+      6.67999982833862
+    ],
+    "draw_calls": 409,
+    "visible_primitives": 7969164,
+    "vram_mb": 3579.18835449219,
+    "patches": {
+      "neb": {
+        "hexes": 6,
+        "patches": [
+          1,
+          4,
+          1
+        ]
+      },
+      "storm": {
+        "hexes": 0,
+        "patches": []
+      }
+    },
+    "camera": {
+      "near": 15.0,
+      "r": 367.755004882813,
+      "t": [
+        2.16506457328796,
+        0.0,
+        15.0
+      ]
+    },
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\nebula_fog_final_keep\\scene_gate.json",
+    "adapter_sha256": "85a558904aa3f338bda3aba53876396de561aad29db79f839d4a51fe51e06db3",
+    "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538"
+  },
+  {
+    "map": "nebula",
+    "route": "cards",
+    "frame_1080p_ms": 4.12,
+    "gpu_4k_ms": 6.73400020599365,
+    "frame_delta_ms": -0.6049999999999995,
+    "gpu_delta_ms": 0.5140004158019993,
+    "gate_ms": 12.5,
+    "gate_pass": true,
+    "frame_sessions": [
+      4.11,
+      4.47,
+      4.12
+    ],
+    "gpu_sessions": [
+      6.73400020599365,
+      6.73400020599365,
+      6.73999977111816
+    ],
+    "draw_calls": 406,
+    "visible_primitives": 7957498,
+    "vram_mb": 3489.54150390625,
+    "patches": {
+      "neb": {
+        "hexes": 6,
+        "patches": [
+          1,
+          4,
+          1
+        ]
+      },
+      "storm": {
+        "hexes": 0,
+        "patches": []
+      }
+    },
+    "camera": {
+      "near": 15.0,
+      "r": 367.755004882813,
+      "t": [
+        2.16506457328796,
+        0.0,
+        15.0
+      ]
+    },
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\nebula_cards_final_keep\\scene_gate.json",
+    "adapter_sha256": "85a558904aa3f338bda3aba53876396de561aad29db79f839d4a51fe51e06db3",
+    "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538"
+  },
+  {
+    "map": "storm",
+    "route": "today",
+    "frame_1080p_ms": 5.053,
+    "gpu_4k_ms": 5.6710000038147,
+    "frame_delta_ms": 0.0,
+    "gpu_delta_ms": 0.0,
+    "gate_ms": 12.5,
+    "gate_pass": true,
+    "frame_sessions": [
+      4.887,
+      5.544,
+      5.053
+    ],
+    "gpu_sessions": [
+      5.6710000038147,
+      5.61700010299683,
+      5.71700000762939
+    ],
+    "draw_calls": 431,
+    "visible_primitives": 3996196,
+    "vram_mb": 3584.32624816895,
+    "patches": {
+      "neb": {
+        "hexes": 4,
+        "patches": [
+          4
+        ]
+      },
+      "storm": {
+        "hexes": 23,
+        "patches": [
+          13,
+          5,
+          5
+        ]
+      }
+    },
+    "camera": {
+      "near": 0.5,
+      "r": 367.755004882813,
+      "t": [
+        2.16506457328796,
+        0.0,
+        15.0
+      ]
+    },
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\storm_today_keep\\scene_gate.json",
+    "adapter_sha256": "0620645fb7f09ec341af321e73a55d2c426c5a2da7f5f62f9fe72db3295398e1",
+    "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538"
+  },
+  {
+    "map": "storm",
+    "route": "fog",
+    "frame_1080p_ms": 4.183,
+    "gpu_4k_ms": 7.5310001373291,
+    "frame_delta_ms": -0.8700000000000001,
+    "gpu_delta_ms": 1.8600001335143999,
+    "gate_ms": 12.5,
+    "gate_pass": true,
+    "frame_sessions": [
+      3.584,
+      4.275,
+      4.183
+    ],
+    "gpu_sessions": [
+      7.5149998664856,
+      7.63399982452393,
+      7.5310001373291
+    ],
+    "draw_calls": 428,
+    "visible_primitives": 3993192,
+    "vram_mb": 3689.9856262207,
+    "patches": {
+      "neb": {
+        "hexes": 4,
+        "patches": [
+          4
+        ]
+      },
+      "storm": {
+        "hexes": 23,
+        "patches": [
+          13,
+          5,
+          5
+        ]
+      }
+    },
+    "camera": {
+      "near": 15.0,
+      "r": 367.755004882813,
+      "t": [
+        2.16506457328796,
+        0.0,
+        15.0
+      ]
+    },
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\storm_fog_final_keep\\scene_gate.json",
+    "adapter_sha256": "85a558904aa3f338bda3aba53876396de561aad29db79f839d4a51fe51e06db3",
+    "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538"
+  },
+  {
+    "map": "storm",
+    "route": "cards",
+    "frame_1080p_ms": 5.704,
+    "gpu_4k_ms": 16.1569995880127,
+    "frame_delta_ms": 0.6509999999999998,
+    "gpu_delta_ms": 10.485999584197998,
+    "gate_ms": 12.5,
+    "gate_pass": false,
+    "frame_sessions": [
+      5.704,
+      5.818,
+      5.703
+    ],
+    "gpu_sessions": [
+      16.1569995880127,
+      16.2110004425049,
+      16.1499996185303
+    ],
+    "draw_calls": 438,
+    "visible_primitives": 3996657,
+    "vram_mb": 3759.46827697754,
+    "patches": {
+      "neb": {
+        "hexes": 4,
+        "patches": [
+          4
+        ]
+      },
+      "storm": {
+        "hexes": 23,
+        "patches": [
+          13,
+          5,
+          5
+        ]
+      }
+    },
+    "camera": {
+      "near": 15.0,
+      "r": 367.755004882813,
+      "t": [
+        2.16506457328796,
+        0.0,
+        15.0
+      ]
+    },
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\storm_cards_final_keep\\scene_gate.json",
+    "adapter_sha256": "85a558904aa3f338bda3aba53876396de561aad29db79f839d4a51fe51e06db3",
+    "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538"
+  }
+]

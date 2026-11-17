@@ -346,6 +346,9 @@ func _build_world() -> void:
 # the Graphics setting: max (everything), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
+	# Issue 368, R270: the selected volume at max, cards at high and low.
+	if load("res://world/world_living.gd").selected_route() == "fog" and q == "max":
+		RenderingServer.environment_set_volumetric_fog_volume_size(128, 128)
 	match q:
 		"low":
 			vp.msaa_3d = Viewport.MSAA_DISABLED
@@ -362,6 +365,16 @@ func _apply_quality(q: String) -> void:
 
 
 func _post_quality(q: String) -> void:
+	if load("res://world/world_living.gd").selected_route() == "fog" and q == "max":
+		env.volumetric_fog_enabled = true
+		env.volumetric_fog_density = 0.0001
+		env.volumetric_fog_length = maxf(250.0, cam.r + 200.0)
+		env.volumetric_fog_temporal_reprojection_enabled = false
+		# Short electrical flashes must not leave temporal ghosts.
+		if not has_node("NebulaHulls"):
+			var policy: Node = load("res://world/nebula_hulls.gd").new()
+			policy.name = "NebulaHulls"
+			add_child(policy)
 	if q == "low":
 		env.ssao_enabled = false
 		env.ssil_enabled = false
@@ -369,6 +382,7 @@ func _post_quality(q: String) -> void:
 		env.glow_enabled = true
 	elif q == "high":
 		env.ssil_enabled = false
+		env.volumetric_fog_enabled = false
 
 
 func _build_arrow() -> void:
