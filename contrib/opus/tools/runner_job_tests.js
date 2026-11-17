@@ -294,6 +294,58 @@ foreach ($case in @('closed','running','pr','linked-pr','branch','other-partial'
   Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) "refusal cannot mutate GitHub: $case"
   Pass ("job refused without writes: " + $case)
 }
+# Issue 969: compare the other seat's tip to main, not a branch name that could move.
+foreach ($status in @('behind','identical','ahead','diverged','unknown','missing','read-failure','open-pr','mixed')) {
+  Init ('other-seat-compare-' + $status)
+  $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+  $oldBranch = 'opus/issue-846-docs'
+  $tip = if ($status -eq 'identical') { '${main}' } elseif ($status -eq 'ahead') { '${fast}' } elseif ($status -eq 'diverged') { '${conflict}' } else { '${ancestor}' }
+  $db.branches += @(@{ name = $oldBranch; commit = @{ sha = $tip } })
+  $answer = if ($status -eq 'missing') { @{} } elseif ($status -in @('read-failure','open-pr','mixed')) { @{ status = 'behind' } } else { @{ status = $status } }
+  $db.comparisons | Add-Member -NotePropertyName $tip -NotePropertyValue $answer
+  if ($status -eq 'identical') {
+    $db.branches[-1].name = 'muse/issue-846'
+    $oldBranch = $db.branches[-1].name
+  }
+  if ($status -eq 'mixed') {
+    $db.branches += @(@{ name = 'work/issue-846-deepseek'; commit = @{ sha = '${fast}' } })
+    $db.comparisons | Add-Member -NotePropertyName '${fast}' -NotePropertyValue @{ status = 'ahead' }
+  }
+  if ($status -eq 'open-pr') { $db.pulls = @(@{ number = 999; head = @{ ref = $oldBranch } }) }
+  Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+  $endpoint = "repos/rcbailey12/voidsworn/compare/main...$tip"
+  if ($status -eq 'read-failure') { $env:PC_TEST_GH_FAIL = "GET $endpoint" }
+  & $common announce $out 846 codex $repo 21600 'codex_issue.bat 846' real
+  $code = $LASTEXITCODE; $env:PC_TEST_GH_FAIL = ''
+  $log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+  $comparisons = @(Calls | Where-Object { $_.endpoint -match '/compare/' })
+  if ($status -in @('behind','identical')) {
+    Assert ($code -eq 0) "finished other-seat branch must allow a job: $status"
+    Assert ($log.Contains("finished work: delivery branch $oldBranch tip $tip is already in main ($status)")) 'log names finished branch'
+    Assert ((Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json).running) 'accepted job acquires claim'
+    Finish '8'
+  } else {
+    Assert ($code -eq 14) "unverified or active other-seat work must block: $status"
+    $s = Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+    Assert ($s.status -eq 'failed' -and $s.reason.Contains('no agent started')) 'clear refusal before work'
+    if ($status -eq 'read-failure') {
+      Assert ($s.reason.Contains("GET compare/main...$tip failed")) 'compare failure names unreadable REST endpoint'
+    } elseif ($status -eq 'open-pr') {
+      Assert ($s.reason.Contains("open PR #999 from other seat $oldBranch")) 'open PR still blocks even with a finished tip'
+    } else {
+      $blocked = if ($status -eq 'mixed') { 'work/issue-846-deepseek' } else { $oldBranch }
+      Assert ($s.reason.Contains("delivery branch $blocked from another seat exists")) 'active or unknown compare answer keeps branch refusal'
+    }
+    Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) 'branch or compare refusal cannot mutate GitHub'
+  }
+  if ($status -eq 'open-pr') {
+    Assert ($comparisons.Count -eq 0) 'open PR blocks before branch comparison'
+  } else {
+    $count = if ($status -eq 'mixed') { 2 } else { 1 }
+    Assert ($comparisons.Count -eq $count -and $comparisons[0].method -eq 'GET' -and $comparisons[0].endpoint -eq $endpoint) 'REST compare uses main and branch tip SHA'
+  }
+  Pass ("other-seat branch comparison: " + $status)
+}
 foreach ($endpoint in @('GET repos/rcbailey12/voidsworn/pulls?state=open&per_page=100',
   'GET repos/rcbailey12/voidsworn/branches?per_page=100', 'GET repos/rcbailey12/voidsworn/issues/846/comments?per_page=100',
   'POST repos/rcbailey12/voidsworn/issues/846/labels', 'POST repos/rcbailey12/voidsworn/issues/846/comments')) {
