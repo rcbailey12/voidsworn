@@ -10,6 +10,11 @@ Mockup base, stated plainly: the pictures are drawn over the Board's own 1080p b
 
 BUILD NOTE on the mockups, read before building: the faint vertical join visible in the pictures around x=700, where the reconstruction meets the capture, is an artifact of the mockup method and is NOT a design element. No concept has a vertical veil, band, seam, or divider anywhere. In the build the board renders continuously behind the top and bottom veils, exactly as it does behind today's rail. Likewise the KEEL mockup's column depths are a drawing, balanced in the redraw as noted below; the placement table governs what goes where, not the pixel depths of the drawing.
 
+## Ryan's notes, Nov 17, 2026 (for the build; these supersede the legs where they conflict)
+
+1. Shield readout: ONE pool, no four-way cross. Ryan ruled the shield strength model on Nov 14, 2026: one universal shield pool per ship, not four independent facing strengths; armor and hull stay side-specific, each side carries a coverage value, and the ship routes shield power toward the side under fire at an efficiency loss. The four-facing cross in the mockups (and in today's build, ledger.gd's _shield_plan) is the pre-ruling readout, carried into this study only because the mockups copy the E1 capture; the Board has not built the pooled readout yet. In every concept, replace the cross with a single pooled readout in the ship block, up with the hull line: the pool figure in Glacier with a slim bar under it (the redrawn KEEL mockup shows it: "Shield 80 / 80", the E1 ship's four 20s summed). Per-side coverage and routing state are expert detail and live behind hover (SAY LESS), not as four standing numbers. The odds line's wording follows the same ruling: "to its prow shield" is pre-ruling text; under the pool it reads "to shields", and how coverage modifies that figure is a Board numbers question, not settled here.
+2. No keyboard shortcut labels on the HUD face. The key letters come off the FIRE box, the orders and Command rows, the log header, and the menu label, in every concept. The keys themselves keep working; the full list lives under Controls in the menu. The redrawn KEEL mockup shows the shelf without them. One discovery path for new players is still needed (first-battle hints, or a show-key-hints option in Controls); that choice is a Board follow-up, not a blocker.
+
 ## Recommendation: KEEL (DeepSeek's leg, chaired as drawn)
 
 Build KEEL. One bottom decision shelf, two small top clusters, no full-width top bar, the log folded into the shelf's right end. It is the only leg that placed every rail item at coordinate level, kept the status line visible, priced its own screen share honestly (hard veil and fade counted separately), and named its real weakness (small windows) instead of waving at it. The full-width top bar in Grok's and Qwen's variants veils the top edge of the board along its whole width to hold two lines of context; KEEL holds the same context in a 560 px cluster and leaves the top middle clear, which is also where its phase banner goes. From WATERLINE, take one detail: at low scale factors the damage-split line collapses behind a hover on the odds figure (SAY LESS), which is KEEL's compact-mode answer for short windows alongside the taller shelf.
@@ -41,12 +46,12 @@ Placement (every rail item):
 3. Ship name: shelf column A, Big Shoulders 34 px.
 4. Ship class: column A, under the name.
 5. Hull and Move: column A; hull on its own line, Move carried on the class line (the redrawn mockup's balance pass; either grouping is within the concept).
-6. Shield cross: at the ship block's right, four facings at 20, Glacier only.
+6. Shields: the pooled readout (see Ryan's notes): "Shield 80 / 80" in Glacier at the ship block's right, level with the hull line, slim bar under the figure.
 7. Status line: on the shelf's second row under the guns group, one line at 17 to 18 px, visible (not hover).
 8. Guns table: column B, one row per weapon (three rows in the capture).
 9. Target: column C, name in Nemesis red when the target is the Nemesis.
 10. Odds and damage split: column C under the target.
-11. FIRE box: column D, the one box, ember outline, key Enter.
+11. FIRE box: column D, the one box, ember outline, no key label (see Ryan's notes).
 12. Orders row: column D under the FIRE box.
 13. Command row: column D under orders.
 14. Fleet: the shelf's foot strip, one horizontal line, acting ship ember-marked.
