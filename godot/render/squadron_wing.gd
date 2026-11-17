@@ -11,6 +11,11 @@ const BANK := Vector3(0.22, 0.12, 0.065)
 const SPORE_BANK := 0.29
 const BREATH := 0.025
 const CLEARANCE := 0.04 # visible air between swept hull bounds, in craft lengths
+const PATROL_RATE := TAU / 8.5
+const PATROL_ASPECT := 0.72
+const PATROL_BANK := 0.23
+const PATROL_ROLL := 0.07
+const PATROL_WEAVE := Vector3(0.0, 0.055, 0.035)
 var craft: Array = []
 var trails: Array = []
 var rests: Array = []
@@ -19,6 +24,13 @@ var phase := 0.0
 var length := 3.84
 var faction := "hegemony"
 var active := true
+var patrol_limit := 0.0 # battle wings opt in; strike and intercept effects keep their original weave
+var patrol_target := 0.0
+var _patrol_rests: Array[Vector3] = []
+var _patrol_radius := 0.0
+var _patrol_blend := 0.0
+var _patrol_gain := 0.0
+var _patrol_yaw := 0.0
 var sample_t := 0.0
 var trail_mat: ShaderMaterial
 # issue 221: the ribbon's ageing (drift back along the craft's wake, widening, fading) runs in the vertex shader from
@@ -77,6 +89,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		ribbon.global_transform = Transform3D.IDENTITY
 		trails.append({"node": ribbon, "hist": []})
 	fit_formation()
+	_patrol_blend = patrol_target
 	step(0.0)
 
 # Measure in each craft's local frame, including nested mesh transforms and
@@ -170,6 +183,59 @@ func fit_formation() -> void:
 	for i in rests.size():
 		rests[i].z *= width_k
 		rests[i].x *= depth_k
+	if patrol_limit > 0.0 and not rests.is_empty():
+		_fit_patrol(radii)
+
+
+func _fit_patrol(radii: Array[Vector3]) -> void:
+	# Tuck in the arrowhead for turns, keeping each hull at its full size.
+	# The six-craft wedge stacks its middle row above the others to fit.
+	var weave := length * PATROL_WEAVE
+	var pad := CLEARANCE * length
+	var roll := sin(PATROL_ROLL)
+	var swept: Array[Vector3] = []
+	var extent := Vector3.ZERO
+	for r in radii:
+		var bound := r + Vector3(0.0, r.z * roll, r.y * roll) + weave
+		swept.append(bound)
+		extent = extent.max(bound)
+	var stacked := faction == "chorus" and rests.size() == 6
+	var depth := (extent.x * 2.0 + pad) * (0.65 if stacked else 1.0)
+	var width := extent.z * 2.0 + pad
+	_patrol_rests.clear()
+	var row := 0
+	while _patrol_rests.size() < rests.size():
+		for j in row + 1:
+			if _patrol_rests.size() == rests.size(): break
+			var rise := (extent.y * 2.0 + pad) if stacked and row == 1 else 0.0
+			_patrol_rests.append(Vector3(-row * depth, rise, (0.5 * row - j) * width))
+		row += 1
+	var lo := Vector3.INF
+	var hi := -Vector3.INF
+	for i in rests.size():
+		lo = lo.min(_patrol_rests[i] - swept[i])
+		hi = hi.max(_patrol_rests[i] + swept[i])
+	var center := (lo + hi) * 0.5
+	center.y = 0.0
+	var radius := 0.0
+	for i in rests.size():
+		_patrol_rests[i] -= center
+		# Reserve room for the parked weave and the shared bank at any heading.
+		var p := _patrol_rests[i].abs() + swept[i]
+		radius = maxf(radius, Vector2(p.x, p.z + p.y * sin(PATROL_BANK)).length())
+	_patrol_radius = clampf(patrol_limit - radius, 0.0, 3.6)
+
+
+func _patrol_frame(dt: float) -> Transform3D:
+	_patrol_blend = maxf(patrol_target, _patrol_blend - 2.0 * dt)
+	_patrol_gain = smoothstep(0.0, 1.0, _patrol_blend)
+	var p := clock * PATROL_RATE + phase
+	var yaw := atan2(-PATROL_ASPECT * cos(p), -sin(p))
+	_patrol_yaw = lerp_angle(_patrol_yaw, yaw if patrol_target > 0.0 else 0.0, 1.0 - exp(-10.0 * dt))
+	var turn := PATROL_BANK * (0.68 + 0.32 * cos(p) * cos(p)) * _patrol_gain
+	var frame := Basis(Vector3.UP, _patrol_yaw) * Basis(Vector3.RIGHT, turn)
+	var orbit := _patrol_radius * Vector3(cos(p), 0.0, PATROL_ASPECT * sin(p))
+	return Transform3D(frame, orbit * _patrol_gain)
 
 func _process(dt: float) -> void:
 	step(dt)
@@ -180,16 +246,21 @@ func step(dt: float) -> void:
 	var sample := sample_t >= 1.0 / 30.0
 	if sample: sample_t = 0.0
 	trail_mat.set_shader_parameter("clock_now", clock)
+	var flight := _patrol_frame(dt) if active and patrol_limit > 0.0 else Transform3D.IDENTITY
 	for i in craft.size():
 		var n: Node3D = craft[i]
 		if active:
 			var t := clock * (1.8 if faction == "chorus" else 1.25) + phase + i * 1.73
 			var sway := SPORE_SWAY if faction == "chorus" else WEAVE.z
-			n.position = rests[i] + length * Vector3(sin(t * 0.77) * WEAVE.x, sin(t * 1.19) * WEAVE.y, sin(t) * sway)
+			var pos: Vector3 = rests[i] + length * Vector3(sin(t * 0.77) * WEAVE.x, sin(t * 1.19) * WEAVE.y, sin(t) * sway)
 			# Bow follows the weave; roll anticipates the next turn.
-			n.rotation = Vector3(-cos(t) * (SPORE_BANK if faction == "chorus" else BANK.x), -cos(t) * BANK.y, cos(t * 1.19) * BANK.z)
-			if faction == "chorus":
-				n.scale = Vector3.ONE * length * (0.83 if i % 2 else 1.0) * (1.0 + BREATH * sin(t * 2.0))
+			var bank := Vector3(-cos(t) * (SPORE_BANK if faction == "chorus" else BANK.x), -cos(t) * BANK.y, cos(t * 1.19) * BANK.z)
+			if _patrol_gain > 0.0:
+				var offset := length * PATROL_WEAVE * Vector3(0.0, sin(t * 1.19), sin(t))
+				pos = pos.lerp(_patrol_rests[i] + offset, _patrol_gain)
+				bank = bank.lerp(Vector3(-cos(t) * PATROL_ROLL, 0.0, 0.0), _patrol_gain)
+			var size := length * ((0.83 if i % 2 else 1.0) * (1.0 + BREATH * sin(t * 2.0)) if faction == "chorus" else 1.0)
+			n.transform = flight * Transform3D(Basis.from_euler(bank).scaled(Vector3.ONE * size), pos)
 		var tr: Dictionary = trails[i]
 		var hist: Array = tr.hist
 		var stern := n.to_global(Vector3(-0.47, 0.0, 0.0))
