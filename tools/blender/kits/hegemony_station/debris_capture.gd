@@ -3,7 +3,6 @@ extends SceneTree
 const PROPS = preload("res://assets/ships/a4_props.gd")
 const CAM = preload("res://render/camera_rig.gd")
 const LOOK = preload("res://render/look.gd")
-const PROVENANCE = preload("res://tools/picture_provenance.gd")
 
 func _init() -> void:
 	process_frame.connect(_run,CONNECT_ONE_SHOT)
@@ -60,7 +59,7 @@ func _run() -> void:
 		for i in 60: await process_frame
 		await RenderingServer.frame_post_draw
 		var frame := viewport.get_texture().get_image()
-		if PROVENANCE.save_png(frame,args[0].path_join(view.name+".png")) != OK: quit(1); return
+		if preload("res://tools/picture_provenance.gd").save_png(frame,args[0].path_join(view.name+".png")) != OK: quit(1); return
 		report.append({"name":view.name,"radius":view.radius,"target":[camera.t.x,camera.t.y,camera.t.z],
 			"beta":view.beta,"alpha":view.alpha,"seconds":view.time,
 			"debris_centre_pixel":camera.unproject_position(Vector3(0,-34,38))})
