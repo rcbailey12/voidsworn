@@ -1,4 +1,4 @@
-"""Issue 889: real image saves, inherited revisions, and runner PR refusals.
+"""Issues 889 and 957: image saves, per-output revisions, and runner PR refusals.
 
 All test files and the isolated git index stay in TEMP. No commits or pushes.
 """
@@ -70,6 +70,56 @@ def review_outputs(folder, original):
     print('PASS cached inputs survive reuse, composite inputs deduplicate, retries retain inputs and copies stay separate')
 
 
+def publish_outputs(folder, original):
+    """Run the real publisher with a different source revision for every input."""
+    fixture = folder / 'publisher'
+    renders, layout, repo = [fixture / name for name in ('renders', 'layout', 'repo')]
+    ships = repo / 'tools/blender/build_sheets/ships'
+    for directory in (renders, layout, ships):
+        directory.mkdir(parents=True)
+    code = 'PROVENANCE_957'
+    (ships / (code + '.py')).write_text("BEAUTY = 'concept.png'\n")
+    match = dict(result='PASS', slots=[dict(slot=0, weapon='ion', arc='F', shots=1,
+                                          mounts=[dict(id='I1', muzzles=1)])])
+    (renders / (code + '_weapon_match.json')).write_text(json.dumps(match))
+    (renders / (code + '_fit.json')).write_text('{}')
+    for name in ('feature_table.md', 'checks.json', 'manifest.json', 'fit_report.md', 'cells.json', 'inventory.md'):
+        (layout / name).write_text('{}' if name.endswith('.json') else 'Publisher test fixture\n')
+
+    views = ('side', 'top', 'underside', 'bow', 'stern', 'cutaway', 'threequarter')
+    copies = ('sheet.jpg', 'preview.jpg', 'fit_view.jpg', 'side_by_side.jpg', 'cells.jpg')
+    inputs = [layout / (name + '.png') for name in views] + [layout / name for name in copies]
+    inputs += [fixture / 'overlay.jpg', repo / 'concept.png', renders / 'beauty_cam.png']
+    inputs += [renders / ('weapon_' + weapon + '.png') for weapon in ('ion', 'rail')]
+    revisions = {}
+    for number, path in enumerate(inputs, 1):
+        revision = format(number, '040x')
+        revisions[path] = revision
+        source = dict(source_commit=revision, source_dirty=False, source_diff_sha256='')
+        with patch('picture_provenance.revision', return_value=source):
+            save_picture(original, path, 'sheet built')
+    result = subprocess.run([sys.executable, str(ROOT / 'tools/blender/build_sheets/publish.py'),
+                             code, str(renders), str(layout), str(fixture / 'overlay.jpg'), str(repo)],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+    expected = {name + '.jpg': [layout / (name + '.png')] for name in views}
+    expected.update({name: [layout / name] for name in copies})
+    expected['outline_check.jpg'] = [fixture / 'overlay.jpg']
+    for name in ('beauty_vs_blockout.jpg', 'weapon_review.jpg'):
+        expected[name] = [repo / 'concept.png', renders / 'beauty_cam.png']
+    for weapon in ('ion', 'rail'):
+        expected['weapon_' + weapon + '.jpg'] = [renders / ('weapon_' + weapon + '.png')]
+    published = repo / 'docs/ship_pipeline/build_sheets' / code
+    assert {path.name for path in published.glob('*.jpg')} == set(expected)
+    for name, paths in expected.items():
+        record = verify(published / name)
+        assert [s['picture_name'] for s in record['inputs']] == [p.name for p in paths], (name, record['inputs'])
+        assert [s['source_commit'] for s in record['sources']] == [revisions[p] for p in paths], (name, record['sources'])
+        assert record['source_commit'] == revisions[paths[0]], (name, record['source_commit'])
+    print('PASS real build-sheet publisher isolates every copy and retains both composite input revisions')
+
+
 def run():
     folder = Path(tempfile.mkdtemp(prefix='picture889-'))
     # Deliberately kept for diagnosis, following the PC no-deletion rule.
@@ -92,6 +142,7 @@ def run():
     print('PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer')
     original = Image.new('RGBA', (1280, 720), (15, 28, 44, 255))
     review_outputs(folder, original)
+    publish_outputs(folder, original)
     draw = ImageDraw.Draw(original)
     draw.text((48, 40), 'PROVENANCE_889 / picture label self-test', font=ImageFont.load_default(size=32), fill='white')
     draw.text((48, 105), 'Synthetic test image. The corner strip is written by the picture tool.', font=ImageFont.load_default(size=24), fill='#c4ccd8')
