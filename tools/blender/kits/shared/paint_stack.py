@@ -57,6 +57,11 @@ def split(scene=None):
 GLOW_ZONES = set()      # filled by use(stack): the zones the faction stack keeps as glowing surfaces
 
 
+def glow_zone(o, fallback='glow'):
+    """The sheet's explicit zone wins over a private or copied material name."""
+    return o.get('emissive_zone') or (o.data.materials[0].name if o.data.materials else fallback)
+
+
 def unwrap(objs, margin):
     """one atlas for these objects: smart projection, islands packed together at one texel density"""
     bpy.ops.object.select_all(action='DESELECT')
@@ -876,7 +881,7 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
     for gname, members in sorted(groups.items()):
         rnd = float(rng.random())
         W = [o.matrix_world @ v.co for o in members for v in o.data.vertices]
-        disc = [o for o in members if o.data.materials and o.data.materials[0].name in E.get('disc', ('glow',))]
+        disc = [o for o in members if glow_zone(o) in E.get('disc', ('glow',))]
         core = disc + [o for o in members if o.get('emissive_zone') == 'plug']      # the throat disc and the plug: the core's surfaces
         Dv = [o.matrix_world @ v.co for o in (disc or members) for v in o.data.vertices]
         cy = sum(v.y for v in Dv) / len(Dv); cz = sum(v.z for v in Dv) / len(Dv)
@@ -1030,15 +1035,15 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     # it names when it names one (issue 642: the Eclipse engine ring is the corona zone, which is also every shade rim's line)
     ez = S.ENGINE_GLOW.get('zones', ('glow', 'ember')) if hasattr(S, 'ENGINE_GLOW') else (); ek = S.ENGINE_GLOW.get('kind') if hasattr(S, 'ENGINE_GLOW') else None
     ex = S.ENGINE_GLOW.get('extra_zones', ()) if hasattr(S, 'ENGINE_GLOW') else ()      # issue 642: lights of any part kind on the same map
-    eng = [o for o in G if ((o.data.materials[0].name if o.data.materials else '') in ez and (ek is None or o.get('part_kind') == ek))
-           or (o.data.materials[0].name if o.data.materials else '') in ex or o.get('emissive_zone') == 'plug'] if hasattr(S, 'ENGINE_GLOW') else []
+    eng = [o for o in G if (glow_zone(o) in ez and (ek is None or o.get('part_kind') == ek))
+           or glow_zone(o) in ex or o.get('emissive_zone') == 'plug'] if hasattr(S, 'ENGINE_GLOW') else []
     if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
         glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, int(res * S.ENGINE_GLOW.get('res_frac', .25))), samples); glow['engine']['rim_soft'] = 1
         hull_glow = getattr(S, 'GLOW_HULL', ())
         if hull_glow:
             # One emission image, separate materials: only the hull's own listed trim is exempt from breach clearance.
             # The engine rings, core and lens keep the unmarked material even when they use that same image.
-            trim = [o for o in eng if o.get('role') == 'hull' and o.data.materials and o.data.materials[0].name in hull_glow]
+            trim = [o for o in eng if o.get('role') == 'hull' and glow_zone(o) in hull_glow]
             if trim:
                 glow['engine_hull'] = glow['engine'].copy(); glow['engine_hull'].name = 'p3_glow_hull'
                 glow['engine_hull']['hull_surface'] = 1
@@ -1048,7 +1053,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
             o.data.materials.clear(); o.data.materials.append(glow['engine_hull'] if o in trim else glow['engine'])
     for o in G:
         if o in eng: continue
-        z = o.data.materials[0].name if o.data.materials else 'glow'
+        z = glow_zone(o)
         # issue 642: a glow zone the stack lists in GLOW_HULL that the sheet puts on the hull itself (the Eclipse corona line on a
         # shade rim) is hull trim, not a part: its own material, marked hull_surface, so the export check measures breach
         # clearance from the parts and not from the hull's own rim line

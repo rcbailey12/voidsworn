@@ -1,0 +1,36 @@
+{
+  "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+  "source_dirty": true,
+  "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "ion_installed_bow.jpg",
+  "date": "2026-11-17T07:12:09Z",
+  "sources": [
+    {
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "b13d46d47dd4155e8572dcd01c22f327f5f88d9f81034123899d8c4719b450dd"
+  ],
+  "stamp_template_sha256": "554ef745f2aac26ba4ec5708886e6fb143d5618c5417d4f3274bd9212e0bf6e4",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABiklEQVR4nO3VQQEAMAgAIV3/0KbYvaAEu/sGAPjPuAAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAwjQMYdwDIQo873AAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "400ba3886b89c027d58d3e1f0ea55c0a291e56d61c779a6e737484a04bf806e1"
+}
