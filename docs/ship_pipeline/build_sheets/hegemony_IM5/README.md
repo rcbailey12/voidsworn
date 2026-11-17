@@ -10,6 +10,34 @@ Dominion sheet (hegemony_H10, PR 767) plus this sheet's additions. Rendered in t
 paint stack and no PC recipe run in this job: the Board reviews the pictures, then Ryan, before either. IM5 has a three-quarter
 and a top view only: no side, front or underside view, so the heights and the underside are designed here.
 
+## Issue 870, run 2: a visible blue bow gun
+
+Current proof: [concept, main before, after](ion_weapon_before_after.jpg),
+[camera 170 at native pixels](ion_weapon_cam170.jpg), [bow detail](weapon_ion.jpg),
+[checks and contract](ion_weapon_checks.json). These replace run 1's pale-lens evidence.
+The other pictures below show the original sheet.
+
+The bow uses the Dominion accelerator from `hegemony_H10.py`: a broad blue lens block,
+eight stepped metal capacitor rings, fainter blue field contacts and an inset muzzle lip.
+The lens sits further forward inside the existing 2.6 by 1.25 opening, so the bow roof no
+longer hides it at the concept camera. The beam origin follows the lens. The canyon,
+outline, bridge decks, other lights and all 70 interior objects stay unchanged; evaluated
+interior geometry hashes match main. IM5 has no hangar. The Dominion's drone doors stay dark.
+
+Method: build sheet, Blender 4.5.14, Cycles CPU, 24 samples. The Hegemony hblue and hlining
+zones get ion-only source light materials: dark bases, blue emission strengths 4.0 and 1.5.
+Both states use identical light, Standard view transform and a fog-glow compositor, with
+no capture-only light boost. Before is main 67ac3ab86616, not run 1. Current count:
+**105,992 outside + 7,944 inside = 113,936 triangles**. Contract and weapon match pass;
+clash, mount, arc, sensor, sweep, exhaust, exit and lane each report zero. The stored record
+includes the full contract and interior hashes.
+
+This is a sheet correction. The existing painted export, game install and scene performance
+have not been rebuilt or measured. The port-beam camera cannot face the forward lens; the
+camera 170 sheet also shows a bow-quarter view at the same range and native scale.
+The bake scripts are `tools/blender/build_sheets/studies/ion870.py` and
+`ion870_compose.py`; the [Dominion method](../hegemony_H10/README.md) gives their order.
+
 ![hegemony_IM5 overview](hegemony_IM5_sheet_overview.jpg)
 
 Start here: [the overview](hegemony_IM5_sheet_overview.jpg), [the whole concept beside the build](hegemony_IM5_compare_IM5.jpg)
@@ -36,8 +64,9 @@ turned so the bow is on the left for the sheet tools (they crop and flip only): 
    cannon forward, four heat exchangers for the reactor and the drives, two armoured power trunks along the floor, coolant lines
    on both ledges, the engine room's control windows at the canyon's aft end. The banks and exchangers are machines and sit whole
    in one module; the trunks and lines are structure and stop at flanged couplings short of every module band.
-5. **The ion trench** (ion F): a 2.6 by 1.25 emitter trench recessed 2.5 deep in the blunt bow face at the canyon's mouth, under
-   the low bow deck, coil-lined, a blue lens on the emitter block at its back (R183 (1)). Retro thrusters either side of it.
+5. **The ion trench** (ion F): a 2.6 by 1.25 opening in the 2.5-deep bow module at the canyon's mouth, under the low bow deck;
+   a broad blue emissive lens at the accelerator's back, eight stepped capacitor rings, fainter field contacts and an inset
+   muzzle lip (R289, R287 run 2). Retro thrusters either side of it.
 6. **The heavy plasma lances** (hturbo P and S): low twin turrets sunk in shoulder pits on the ridges' outer shoulders at -3.4,
    abreast of the midships bridge; roofs 0.06 over the deck, barrels at deck level (R185 (4)); each turns through its own
    broadside arc.
@@ -93,7 +122,7 @@ checks); the rest are the repo's own tools.
 | Outline overlap at the camera fitted to the IM5 three-quarter | 91.9 percent, mass outline 91.9 (reported, not a bar; [outline_check.jpg](outline_check.jpg)) |
 | H10 unchanged by the kit additions | `build.py hegemony_H10 <out> fit`: 355 objects, 80 parts, 0 clashes, weapon match PASS, as committed |
 
-## Budget (the stage 4 sheet_hull build, before the export)
+## Original budget (the first stage 4 sheet_hull build, before the export)
 
 104,912 triangles outside, 7,944 inside (112,856 in all; * budget.py); 11 outside materials, 11 inside; 488 outside objects. The
 same measure on the other sheets: hegemony_H10 (Battleship, 21.0) 53,556 outside, 5,432 inside, 11 materials, 355 objects;

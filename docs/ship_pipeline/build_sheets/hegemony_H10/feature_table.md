@@ -39,88 +39,88 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
 
-| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
-|---|---|---:|---:|---:|---:|---|---|---|---|
-| I1 | ion cannon, emitter trench in the bow face (fixed) | 1 barrel | 6.5 | 0.00 | -0.17 | forward | F ion | picture | the ion cannon (ion F, 1 shot): an emitter trench recessed in the blunt bow face, coil-lined walls, a blue lens on the emitter block at its back |
-| B1 | flush armoured drone doors 3.2 x 1.0 | 1 | 61.9 | 0.00 | 0.50 | - | - | picture | data.js hangar 1: the drone bay's flush armoured doors, a seam line only on the intact ship (R232); the drones launch up out of the trough |
-| E1 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 2.66 | -0.36 | exhaust aft | - | picture | port rail, outer nozzle: a rectangular nozzle pod, blue-white throat |
-| E2 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 1.24 | -0.36 | exhaust aft | - | picture | port rail, inner nozzle: a rectangular nozzle pod, blue-white throat |
-| E3 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -1.24 | -0.36 | exhaust aft | - | picture | starboard rail, inner nozzle: a rectangular nozzle pod, blue-white throat |
-| E4 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -2.66 | -0.36 | exhaust aft | - | picture | starboard rail, outer nozzle: a rectangular nozzle pod, blue-white throat |
-| HP | heavy plasma lance, twin turret | 2 barrels | 40.0 | 2.90 | 0.68 | 55 deg off the bow to port | P hturbo | picture | port shoulder lance turret: the heavy plasma lance (hturbo P, 3 shots), a low wide mount sunk in the shoulder terrace, two short thick barrels |
-| HS | heavy plasma lance, twin turret | 2 barrels | 40.0 | -2.90 | 0.68 | 55 deg off the bow to starboard | S hturbo | picture | starboard shoulder lance turret: the heavy plasma lance (hturbo S, 3 shots), a low wide mount sunk in the shoulder terrace, two short thick barrels |
-| A1 | sensor fin, 0.4 tall, 2.4 long | 1 | 42.8 | 0.00 | 1.02 | - | - | picture | the one low sensor fin on the centreline: sensor windows and a lens strip; the command deck is under it |
-| F1 | picket lasers, twin belly turret | 2 barrels | 30.1 | 1.35 | -1.97 | 40 deg off the bow to port, +10 elev | T flak | picture | port picket laser turret on the belly (flak T: the pair is the one slot, 3 shots over 4 emitters, both fire every volley) |
-| F2 | picket lasers, twin belly turret | 2 barrels | 30.1 | -1.35 | -1.97 | 40 deg off the bow to starboard, +10 elev | T flak | picture | starboard picket laser turret on the belly (flak T: the pair is the one slot, 3 shots over 4 emitters, both fire every volley) |
-| Q1p | retro thruster, two rectangular nozzles | 1 | 0.8 | 1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
-| Q2p | attitude thruster, two rectangular nozzles | 1 | 12.6 | 2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet |
-| Q3p | attitude thruster, two rectangular nozzles | 1 | 86.9 | 3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank |
-| W1p | vision slit 0.4 x 0.09 | 1 | 8.4 | 2.75 | 0.16 | - | - | picture | blue-white window of the forward crew decks |
-| W2p | vision slit 0.4 x 0.09 | 1 | 11.7 | 2.89 | 0.17 | - | - | picture | blue-white window of the forward crew decks |
-| W3p | vision slit 0.4 x 0.09 | 1 | 15.0 | 3.02 | 0.19 | - | - | picture | blue-white window of the forward crew decks |
-| W4p | vision slit 0.5 x 0.09 | 1 | 57.9 | 3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks |
-| W5p | vision slit 0.5 x 0.09 | 1 | 70.7 | 3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks |
-| V1p | louvre panel 0.3 x 1.2 | 1 | 58.4 | 1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks |
-| V2p | louvre panel 0.3 x 1.2 | 1 | 70.7 | 1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks |
-| V3p | louvre panel 0.3 x 1.2 | 1 | 82.9 | 1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the engine room |
-| V6p | louvre panel 1.5 x 0.2 | 1 | 58.4 | 3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) |
-| V7p | louvre panel 1.5 x 0.2 | 1 | 70.7 | 3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) |
-| V8p | louvre panel 1.5 x 0.2 | 1 | 81.5 | 3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) |
-| H60p | square hatch 0.5 | 1 | 62.2 | 3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms |
-| H61p | square hatch 0.5 | 1 | 74.4 | 3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms |
-| H62p | square hatch 0.5 | 1 | 86.7 | 3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms |
-| H70p | square hatch 0.6 | 1 | 35.3 | 3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| H71p | square hatch 0.6 | 1 | 44.7 | 3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| V4p | louvre panel 0.3 x 1.2 | 1 | 22.5 | 0.85 | 0.95 | - | - | picture | heat louvre over the lance capacitor rooms |
-| V5p | louvre panel 0.3 x 0.9 | 1 | 45.7 | 0.80 | 1.02 | - | - | picture | heat louvre over the reactor |
-| LW0pf | module latch row (4 clamps) | 1 | 15.8 | 1.20 | 0.86 | - | - | picture | locks the two wedge modules together across the band |
-| LW0pa | module latch row (4 clamps) | 1 | 18.9 | 1.20 | 0.90 | - | - | picture | locks the two wedge modules together across the band |
-| LW1pf | module latch row (4 clamps) | 1 | 26.5 | 1.20 | 0.98 | - | - | picture | locks the two wedge modules together across the band |
-| LW1pa | module latch row (4 clamps) | 1 | 29.5 | 1.20 | 1.02 | - | - | picture | locks the two wedge modules together across the band |
-| LR0pf | module latch row (4 clamps) | 1 | 63.0 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR0pa | module latch row (4 clamps) | 1 | 66.0 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR1pf | module latch row (4 clamps) | 1 | 75.3 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR1pa | module latch row (4 clamps) | 1 | 78.3 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR2pf | module latch row (4 clamps) | 1 | 87.5 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR2pa | module latch row (4 clamps) | 1 | 90.6 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| Q1s | retro thruster, two rectangular nozzles | 1 | 0.8 | -1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
-| Q2s | attitude thruster, two rectangular nozzles | 1 | 12.6 | -2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet |
-| Q3s | attitude thruster, two rectangular nozzles | 1 | 86.9 | -3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank |
-| W1s | vision slit 0.4 x 0.09 | 1 | 8.4 | -2.75 | 0.16 | - | - | picture | blue-white window of the forward crew decks |
-| W2s | vision slit 0.4 x 0.09 | 1 | 11.7 | -2.89 | 0.17 | - | - | picture | blue-white window of the forward crew decks |
-| W3s | vision slit 0.4 x 0.09 | 1 | 15.0 | -3.02 | 0.19 | - | - | picture | blue-white window of the forward crew decks |
-| W4s | vision slit 0.5 x 0.09 | 1 | 57.9 | -3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks |
-| W5s | vision slit 0.5 x 0.09 | 1 | 70.7 | -3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks |
-| V1s | louvre panel 0.3 x 1.2 | 1 | 58.4 | -1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks |
-| V2s | louvre panel 0.3 x 1.2 | 1 | 70.7 | -1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks |
-| V3s | louvre panel 0.3 x 1.2 | 1 | 82.9 | -1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the engine room |
-| V6s | louvre panel 1.5 x 0.2 | 1 | 58.4 | -3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) |
-| V7s | louvre panel 1.5 x 0.2 | 1 | 70.7 | -3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) |
-| V8s | louvre panel 1.5 x 0.2 | 1 | 81.5 | -3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) |
-| H60s | square hatch 0.5 | 1 | 62.2 | -3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms |
-| H61s | square hatch 0.5 | 1 | 74.4 | -3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms |
-| H62s | square hatch 0.5 | 1 | 86.7 | -3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms |
-| H70s | square hatch 0.6 | 1 | 35.3 | -3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| H71s | square hatch 0.6 | 1 | 44.7 | -3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| V4s | louvre panel 0.3 x 1.2 | 1 | 22.5 | -0.85 | 0.95 | - | - | picture | heat louvre over the lance capacitor rooms |
-| V5s | louvre panel 0.3 x 0.9 | 1 | 45.7 | -0.80 | 1.02 | - | - | picture | heat louvre over the reactor |
-| LW0sf | module latch row (4 clamps) | 1 | 15.8 | -1.20 | 0.86 | - | - | picture | locks the two wedge modules together across the band |
-| LW0sa | module latch row (4 clamps) | 1 | 18.9 | -1.20 | 0.90 | - | - | picture | locks the two wedge modules together across the band |
-| LW1sf | module latch row (4 clamps) | 1 | 26.5 | -1.20 | 0.98 | - | - | picture | locks the two wedge modules together across the band |
-| LW1sa | module latch row (4 clamps) | 1 | 29.5 | -1.20 | 1.02 | - | - | picture | locks the two wedge modules together across the band |
-| LR0sf | module latch row (4 clamps) | 1 | 63.0 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR0sa | module latch row (4 clamps) | 1 | 66.0 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR1sf | module latch row (4 clamps) | 1 | 75.3 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR1sa | module latch row (4 clamps) | 1 | 78.3 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR2sf | module latch row (4 clamps) | 1 | 87.5 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| LR2sa | module latch row (4 clamps) | 1 | 90.6 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| H1 | square hatch 0.7 | 1 | 12.6 | 0.00 | 0.82 | - | - | picture | deck hatch over the forward crew deck |
-| H2 | square hatch 0.6 | 1 | 33.4 | 0.00 | 1.02 | - | - | picture | deck hatch to the command deck |
-| H3 | square hatch 0.8 | 1 | 36.7 | 0.00 | -1.98 | - | - | picture | belly hatch on the armour step: stores |
-| H4 | square hatch 0.8 | 1 | 45.2 | 0.00 | -1.98 | - | - | picture | belly hatch on the armour step: the reactor's service hatch |
-| H5p | square hatch 0.7 | 1 | 70.7 | 1.95 | -1.72 | - | - | picture | rail belly hatch: the engine room's stores |
-| H5s | square hatch 0.7 | 1 | 70.7 | -1.95 | -1.72 | - | - | picture | rail belly hatch: the engine room's stores |
-| HB1 | framed deck box 1.1 x 0.9 | 1 | 21.6 | 0.00 | 0.93 | - | - | picture | the bow lift head: stores up to the forward decks |
+| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note  | Route |
+|---|---|---:|---:|---:|---:|---|---|---|---|---|
+| I1 | ion cannon, stepped accelerator and blue emitter (fixed) | 1 barrel | 6.5 | 0.00 | -0.08 | forward | F ion | designed | R287, R289 run 2: lit blue lens, fainter field contacts, metal coils and muzzle lip; beam origin on the lens | hand-built |
+| B1 | flush armoured drone doors 3.2 x 1.0 | 1 | 61.9 | 0.00 | 0.50 | - | - | picture | data.js hangar 1: the drone bay's flush armoured doors, a seam line only on the intact ship (R232); the drones launch up out of the trough | kit |
+| E1 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 2.66 | -0.36 | exhaust aft | - | picture | port rail, outer nozzle: a rectangular nozzle pod, blue-white throat | kit |
+| E2 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 1.24 | -0.36 | exhaust aft | - | picture | port rail, inner nozzle: a rectangular nozzle pod, blue-white throat | kit |
+| E3 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -1.24 | -0.36 | exhaust aft | - | picture | starboard rail, inner nozzle: a rectangular nozzle pod, blue-white throat | kit |
+| E4 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -2.66 | -0.36 | exhaust aft | - | picture | starboard rail, outer nozzle: a rectangular nozzle pod, blue-white throat | kit |
+| HP | heavy plasma lance, twin turret | 2 barrels | 40.0 | 2.90 | 0.68 | 55 deg off the bow to port | P hturbo | picture | port shoulder lance turret: the heavy plasma lance (hturbo P, 3 shots), a low wide mount sunk in the shoulder terrace, two short thick barrels | kit |
+| HS | heavy plasma lance, twin turret | 2 barrels | 40.0 | -2.90 | 0.68 | 55 deg off the bow to starboard | S hturbo | picture | starboard shoulder lance turret: the heavy plasma lance (hturbo S, 3 shots), a low wide mount sunk in the shoulder terrace, two short thick barrels | kit |
+| A1 | sensor fin, 0.4 tall, 2.4 long | 1 | 42.8 | 0.00 | 1.02 | - | - | picture | the one low sensor fin on the centreline: sensor windows and a lens strip; the command deck is under it | kit |
+| F1 | picket lasers, twin belly turret | 2 barrels | 30.1 | 1.35 | -1.97 | 40 deg off the bow to port, +10 elev | T flak | picture | port picket laser turret on the belly (flak T: the pair is the one slot, 3 shots over 4 emitters, both fire every volley) | kit |
+| F2 | picket lasers, twin belly turret | 2 barrels | 30.1 | -1.35 | -1.97 | 40 deg off the bow to starboard, +10 elev | T flak | picture | starboard picket laser turret on the belly (flak T: the pair is the one slot, 3 shots over 4 emitters, both fire every volley) | kit |
+| Q1p | retro thruster, two rectangular nozzles | 1 | 0.8 | 1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) | kit |
+| Q2p | attitude thruster, two rectangular nozzles | 1 | 12.6 | 2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet | kit |
+| Q3p | attitude thruster, two rectangular nozzles | 1 | 86.9 | 3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank | kit |
+| W1p | vision slit 0.4 x 0.09 | 1 | 8.4 | 2.75 | 0.16 | - | - | picture | blue-white window of the forward crew decks | kit |
+| W2p | vision slit 0.4 x 0.09 | 1 | 11.7 | 2.89 | 0.17 | - | - | picture | blue-white window of the forward crew decks | kit |
+| W3p | vision slit 0.4 x 0.09 | 1 | 15.0 | 3.02 | 0.19 | - | - | picture | blue-white window of the forward crew decks | kit |
+| W4p | vision slit 0.5 x 0.09 | 1 | 57.9 | 3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks | kit |
+| W5p | vision slit 0.5 x 0.09 | 1 | 70.7 | 3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks | kit |
+| V1p | louvre panel 0.3 x 1.2 | 1 | 58.4 | 1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks | kit |
+| V2p | louvre panel 0.3 x 1.2 | 1 | 70.7 | 1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks | kit |
+| V3p | louvre panel 0.3 x 1.2 | 1 | 82.9 | 1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the engine room | kit |
+| V6p | louvre panel 1.5 x 0.2 | 1 | 58.4 | 3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) | kit |
+| V7p | louvre panel 1.5 x 0.2 | 1 | 70.7 | 3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) | kit |
+| V8p | louvre panel 1.5 x 0.2 | 1 | 81.5 | 3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) | kit |
+| H60p | square hatch 0.5 | 1 | 62.2 | 3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms | kit |
+| H61p | square hatch 0.5 | 1 | 74.4 | 3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms | kit |
+| H62p | square hatch 0.5 | 1 | 86.7 | 3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms | kit |
+| H70p | square hatch 0.6 | 1 | 35.3 | 3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| H71p | square hatch 0.6 | 1 | 44.7 | 3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| V4p | louvre panel 0.3 x 1.2 | 1 | 22.5 | 0.85 | 0.95 | - | - | picture | heat louvre over the lance capacitor rooms | kit |
+| V5p | louvre panel 0.3 x 0.9 | 1 | 45.7 | 0.80 | 1.02 | - | - | picture | heat louvre over the reactor | kit |
+| LW0pf | module latch row (4 clamps) | 1 | 15.8 | 1.20 | 0.86 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LW0pa | module latch row (4 clamps) | 1 | 18.9 | 1.20 | 0.90 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LW1pf | module latch row (4 clamps) | 1 | 26.5 | 1.20 | 0.98 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LW1pa | module latch row (4 clamps) | 1 | 29.5 | 1.20 | 1.02 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LR0pf | module latch row (4 clamps) | 1 | 63.0 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR0pa | module latch row (4 clamps) | 1 | 66.0 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR1pf | module latch row (4 clamps) | 1 | 75.3 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR1pa | module latch row (4 clamps) | 1 | 78.3 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR2pf | module latch row (4 clamps) | 1 | 87.5 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR2pa | module latch row (4 clamps) | 1 | 90.6 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| Q1s | retro thruster, two rectangular nozzles | 1 | 0.8 | -1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) | kit |
+| Q2s | attitude thruster, two rectangular nozzles | 1 | 12.6 | -2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet | kit |
+| Q3s | attitude thruster, two rectangular nozzles | 1 | 86.9 | -3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank | kit |
+| W1s | vision slit 0.4 x 0.09 | 1 | 8.4 | -2.75 | 0.16 | - | - | picture | blue-white window of the forward crew decks | kit |
+| W2s | vision slit 0.4 x 0.09 | 1 | 11.7 | -2.89 | 0.17 | - | - | picture | blue-white window of the forward crew decks | kit |
+| W3s | vision slit 0.4 x 0.09 | 1 | 15.0 | -3.02 | 0.19 | - | - | picture | blue-white window of the forward crew decks | kit |
+| W4s | vision slit 0.5 x 0.09 | 1 | 57.9 | -3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks | kit |
+| W5s | vision slit 0.5 x 0.09 | 1 | 70.7 | -3.28 | -0.55 | - | - | picture | blue-white window of the rails' crew decks | kit |
+| V1s | louvre panel 0.3 x 1.2 | 1 | 58.4 | -1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks | kit |
+| V2s | louvre panel 0.3 x 1.2 | 1 | 70.7 | -1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the crew decks | kit |
+| V3s | louvre panel 0.3 x 1.2 | 1 | 82.9 | -1.95 | 1.00 | - | - | picture | heat louvre on the rail deck over the engine room | kit |
+| V6s | louvre panel 1.5 x 0.2 | 1 | 58.4 | -3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) | kit |
+| V7s | louvre panel 1.5 x 0.2 | 1 | 70.7 | -3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) | kit |
+| V8s | louvre panel 1.5 x 0.2 | 1 | 81.5 | -3.28 | 0.55 | - | - | picture | heat louvre on the rail's upper tier (H10's long flank slots) | kit |
+| H60s | square hatch 0.5 | 1 | 62.2 | -3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms | kit |
+| H61s | square hatch 0.5 | 1 | 74.4 | -3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms | kit |
+| H62s | square hatch 0.5 | 1 | 86.7 | -3.28 | -0.85 | - | - | picture | rail flank hatch on the lower tier: access to the plant rooms | kit |
+| H70s | square hatch 0.6 | 1 | 35.3 | -3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| H71s | square hatch 0.6 | 1 | 44.7 | -3.28 | -1.21 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| V4s | louvre panel 0.3 x 1.2 | 1 | 22.5 | -0.85 | 0.95 | - | - | picture | heat louvre over the lance capacitor rooms | kit |
+| V5s | louvre panel 0.3 x 0.9 | 1 | 45.7 | -0.80 | 1.02 | - | - | picture | heat louvre over the reactor | kit |
+| LW0sf | module latch row (4 clamps) | 1 | 15.8 | -1.20 | 0.86 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LW0sa | module latch row (4 clamps) | 1 | 18.9 | -1.20 | 0.90 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LW1sf | module latch row (4 clamps) | 1 | 26.5 | -1.20 | 0.98 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LW1sa | module latch row (4 clamps) | 1 | 29.5 | -1.20 | 1.02 | - | - | picture | locks the two wedge modules together across the band | kit |
+| LR0sf | module latch row (4 clamps) | 1 | 63.0 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR0sa | module latch row (4 clamps) | 1 | 66.0 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR1sf | module latch row (4 clamps) | 1 | 75.3 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR1sa | module latch row (4 clamps) | 1 | 78.3 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR2sf | module latch row (4 clamps) | 1 | 87.5 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| LR2sa | module latch row (4 clamps) | 1 | 90.6 | -1.95 | 1.00 | - | - | picture | locks two rail modules together across the band | kit |
+| H1 | square hatch 0.7 | 1 | 12.6 | 0.00 | 0.82 | - | - | picture | deck hatch over the forward crew deck | kit |
+| H2 | square hatch 0.6 | 1 | 33.4 | 0.00 | 1.02 | - | - | picture | deck hatch to the command deck | kit |
+| H3 | square hatch 0.8 | 1 | 36.7 | 0.00 | -1.98 | - | - | picture | belly hatch on the armour step: stores | kit |
+| H4 | square hatch 0.8 | 1 | 45.2 | 0.00 | -1.98 | - | - | picture | belly hatch on the armour step: the reactor's service hatch | kit |
+| H5p | square hatch 0.7 | 1 | 70.7 | 1.95 | -1.72 | - | - | picture | rail belly hatch: the engine room's stores | kit |
+| H5s | square hatch 0.7 | 1 | 70.7 | -1.95 | -1.72 | - | - | picture | rail belly hatch: the engine room's stores | kit |
+| HB1 | framed deck box 1.1 x 0.9 | 1 | 21.6 | 0.00 | 0.93 | - | - | picture | the bow lift head: stores up to the forward decks | kit |
 
 Totals: 5 gun mounts with 9 barrels; 0 launcher tubes; 4 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
@@ -252,3 +252,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - Q1s (retro thruster, two rectangular nozzles): retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap).
 - Q2s (attitude thruster, two rectangular nozzles): bow attitude thruster on the upper facet.
 - Q3s (attitude thruster, two rectangular nozzles): stern attitude thruster on the rail's outer flank.
+
+## Issue 870, run 2
+
+- **H10's glowing bow panel becomes a recessed ion accelerator: a broad blue lens block at the back, stepped octagonal capacitor rings, an emitter glow skirt and a thick inner muzzle lip** Ryan R287 run 2: open the face to 1.8 by 1.05 and cut an upper field window within the bow module so the blue lens reads at the whole-ship camera; R289: the same accelerator on IM5. The muzzle follows the lens; the wedge outline and insides stay unchanged

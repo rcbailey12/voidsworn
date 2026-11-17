@@ -50,7 +50,7 @@ The table above is every finding, in the order the check made them. Beyond the f
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 355 objects, 80 parts, 615 close pairs, 398 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 10 cones, 43 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 356 objects, 80 parts, 616 close pairs, 398 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 10 cones, 43 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
