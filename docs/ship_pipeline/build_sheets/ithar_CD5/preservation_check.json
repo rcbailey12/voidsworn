@@ -1,0 +1,132 @@
+{
+  "result": "PASS",
+  "baseline_commit": "23f61877e5db14ecbbdaa3dcc503c50ac5ab4029",
+  "design_sha256": "711e7b5bfffcb2c97f1bc99d6526d6a8ff5d3ba1a6c6c576e830e56566ead13e",
+  "compared": "World vertices, faces, parents, materials and full shader inputs, feature and fit records",
+  "lance_function_ast_identical": true,
+  "optical_groups": {
+    "L1": {
+      "identical": true,
+      "run2": {
+        "sha256": "5b94ca4f794bf208e58d87ef21ce05bf8c8d50f9bd9aab0844d4b75469fd9804",
+        "meshes": 6,
+        "vertices": 9556
+      },
+      "run3": {
+        "sha256": "5b94ca4f794bf208e58d87ef21ce05bf8c8d50f9bd9aab0844d4b75469fd9804",
+        "meshes": 6,
+        "vertices": 9556
+      }
+    },
+    "L2": {
+      "identical": true,
+      "run2": {
+        "sha256": "7b092ff3747e9892eea7378ca670675592a6afd398807de5d40b8651a7b09bf1",
+        "meshes": 6,
+        "vertices": 9556
+      },
+      "run3": {
+        "sha256": "7b092ff3747e9892eea7378ca670675592a6afd398807de5d40b8651a7b09bf1",
+        "meshes": 6,
+        "vertices": 9556
+      }
+    },
+    "O1": {
+      "identical": true,
+      "run2": {
+        "sha256": "be4f4e01d7632f9b436d9843a96a93daa80eb9421b6f291f9ea3f3929de51ded",
+        "meshes": 3,
+        "vertices": 5568
+      },
+      "run3": {
+        "sha256": "be4f4e01d7632f9b436d9843a96a93daa80eb9421b6f291f9ea3f3929de51ded",
+        "meshes": 3,
+        "vertices": 5568
+      }
+    },
+    "O2": {
+      "identical": true,
+      "run2": {
+        "sha256": "996c89e28afe91a3eec0cadeff4d28fea76e39cbe295b5b6b2124b310b984d20",
+        "meshes": 3,
+        "vertices": 5568
+      },
+      "run3": {
+        "sha256": "996c89e28afe91a3eec0cadeff4d28fea76e39cbe295b5b6b2124b310b984d20",
+        "meshes": 3,
+        "vertices": 5568
+      }
+    },
+    "O3": {
+      "identical": true,
+      "run2": {
+        "sha256": "523cd364a149072a5f40db444d0693f8fbb9391b4508cebb554cc333fc08051c",
+        "meshes": 3,
+        "vertices": 5568
+      },
+      "run3": {
+        "sha256": "523cd364a149072a5f40db444d0693f8fbb9391b4508cebb554cc333fc08051c",
+        "meshes": 3,
+        "vertices": 5568
+      }
+    },
+    "E1": {
+      "identical": true,
+      "run2": {
+        "sha256": "42f0f05a6a152e58d185252943012498f8b663956e35f3f04fe7e7e681b9b029",
+        "meshes": 14,
+        "vertices": 8877
+      },
+      "run3": {
+        "sha256": "42f0f05a6a152e58d185252943012498f8b663956e35f3f04fe7e7e681b9b029",
+        "meshes": 14,
+        "vertices": 8877
+      }
+    },
+    "E2": {
+      "identical": true,
+      "run2": {
+        "sha256": "4ecf54da15cba598bbb080241a720e5822632f8cdf2818b68ef54fd0f069450b",
+        "meshes": 15,
+        "vertices": 8901
+      },
+      "run3": {
+        "sha256": "4ecf54da15cba598bbb080241a720e5822632f8cdf2818b68ef54fd0f069450b",
+        "meshes": 15,
+        "vertices": 8901
+      }
+    },
+    "E3": {
+      "identical": true,
+      "run2": {
+        "sha256": "7b67d0419955d8982e441b9c89fc0433b7d85032b1882f5de03a9e9cbbb78666",
+        "meshes": 14,
+        "vertices": 8877
+      },
+      "run3": {
+        "sha256": "7b67d0419955d8982e441b9c89fc0433b7d85032b1882f5de03a9e9cbbb78666",
+        "meshes": 14,
+        "vertices": 8877
+      }
+    }
+  },
+  "preserved_manifest_fields": {
+    "code": true,
+    "game_ship": true,
+    "cls": true,
+    "length_world": true,
+    "parts": true,
+    "masses": true,
+    "break_pieces": true,
+    "whole_optics": true,
+    "hull_fractures": true,
+    "insides": true,
+    "turret_marking": true,
+    "stage": true,
+    "paint_stack": true
+  },
+  "skin_depth": {
+    "run2": 6.037384271621704,
+    "run3": 6.489996910095215
+  }
+}
