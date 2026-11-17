@@ -48,6 +48,8 @@ var _moving = 0.0
 var _shield_mi: MeshInstance3D = null
 var _shield_mat: ShaderMaterial = null
 var _shield_tm: TriangleMesh = null
+# Cache plain vertex arrays, not GPU resources that outlive the render server.
+static var _shield_skin_arrays: Dictionary = {}
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
@@ -453,66 +455,158 @@ func _build_shield(fx) -> void:
 
 
 func _shield_skin() -> ArrayMesh:
-	# One closed, low-detail envelope sampled from the actual hull BVH. Unlike an
-	# offset of every armour plate, this does not layer light over interior faces.
-	# The collision BVH below uses these very same vertices, so hits sit on the skin.
-	var sph = SphereMesh.new()
-	sph.radius = 1.0
-	sph.height = 2.0
-	sph.radial_segments = 64
-	sph.rings = 32
-	var a: Array = sph.surface_get_arrays(0)
-	var positions: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
-	var extent: float = hull.box.size.length() * 2.0 + 2.0
-	# Run 4: a separate energy layer, visible outside the plating at camera 170.
-	# Small hulls need a larger share of their beam to keep the gap readable.
-	var gap := maxf(hull.W * 0.16, 1.8)
-	var missing := 0
-	for i in positions.size():
-		var direction := positions[i].normalized()
-		var hit: Dictionary = hull.ray(hull.core + direction * extent, -direction)
-		if hit.is_empty():
-			missing += 1
-			positions[i] *= hull.shield_radii()
-		else:
-			positions[i] = direction * ((hit["p"] as Vector3).distance_to(hull.core) + gap)
-	if missing > 0:
-		# A missing core ray is an explicit exception, never a silent bubble default.
-		push_warning("SHIELD_SKIN %s: %d/%d core rays missed; those directions use the enclosing radii" % [hull.code, missing, positions.size()])
-	# Round plate ridges into one energy envelope, rather than duplicating the
-	# plating's little facets. Keep at least half the stand-off on every core ray.
-	var neighbors: Array = []
-	var radii := PackedFloat32Array()
-	for p in positions:
-		neighbors.append([])
-		radii.append(p.length())
-	var minimum := radii.duplicate()
-	var indices: PackedInt32Array = a[Mesh.ARRAY_INDEX]
-	for face in range(0, indices.size(), 3):
-		for corner in 3:
-			var i: int = indices[face + corner]
-			for other in 3:
-				var j: int = indices[face + other]
-				if i != j and not neighbors[i].has(j): neighbors[i].append(j)
-	for pass_i in 6:
-		var rounded := radii.duplicate()
-		for i in radii.size():
-			var total: float = radii[i] * 2.0
-			for j in neighbors[i]: total += radii[j]
-			rounded[i] = total / (neighbors[i].size() + 2.0)
-		radii = rounded
-	for i in positions.size():
-		positions[i] = positions[i].normalized() * maxf(radii[i], minimum[i] - gap * 0.5)
-	a[Mesh.ARRAY_VERTEX] = positions
+	# R303: offset sampled hull surfaces, rather than stretching a sphere from the
+	# core. Uniform cells along the whole hull preserve waists and open ring holes.
+	# Only the outside of the offset volume is meshed, never interior armour skins.
+	var key := str([hull.code, hull.box, hull.core, hull.tri_count])
+	if _shield_skin_arrays.has(key):
+		var cached := ArrayMesh.new()
+		cached.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, _shield_skin_arrays[key])
+		_shield_tm = TriangleMesh.new()
+		_shield_tm.create_from_faces(cached.get_faces())
+		return cached
+	var step := maxf(hull.L / 128.0, minf(hull.L / 96.0, minf(hull.W, hull.H) / 12.0))
+	var gap := maxf(minf(hull.W, hull.H) * 0.08, step * 1.5)
+	var margin := gap + step * 3.0
+	var origin: Vector3 = hull.box.position - Vector3.ONE * margin
+	var size := Vector3i((hull.box.size + Vector3.ONE * margin * 2.0) / step) + Vector3i.ONE * 2
+	var stride := Vector3i(1, size.x, size.x * size.y)
+	var field := PackedFloat32Array()
+	field.resize(size.x * size.y * size.z)
+	field.fill(pow(gap / step + 2.0, 2.0))
+	var sampled := PackedByteArray()
+	sampled.resize(field.size())
+	# Each sweep visits every intersection, including the inside edge of a ring.
+	# The three axes also sample faces edge-on to either of the other two sweeps.
+	for axis in 3:
+		var u := (axis + 1) % 3
+		var v := (axis + 2) % 3
+		var direction := Vector3.ZERO
+		direction[axis] = 1.0
+		for a in size[u]:
+			for b in size[v]:
+				var start := origin
+				start[u] += a * step
+				start[v] += b * step
+				for crossing in 128:
+					var hit: Dictionary = hull.ray(start, direction)
+					if hit.is_empty(): break
+					var p: Vector3 = (hit["p"] - origin) / step
+					var cell := Vector3i(p).clamp(Vector3i.ZERO, size - Vector3i.ONE)
+					var sample_i := cell.x + cell.y * stride.y + cell.z * stride.z
+					if sampled[sample_i] == 0:
+						sampled[sample_i] = 1
+						_shield_sample(field, size, stride, p, gap / step + 1.5)
+					start = hit["p"] + direction * step * 0.04
+	# Signed distance to the sampled surface. Flood from empty space, filling only
+	# sealed cavities. A ring's through-hole remains connected to outside space.
+	var threshold := (gap / step) * (gap / step)
+	for i in field.size():
+		var value := field[i] - threshold
+		# Keep crossings away from exact grid corners, where float rounding can
+		# collapse distinct edge vertices into zero-area triangles.
+		field[i] = value if absf(value) > 0.001 else (0.001 if value >= 0.0 else -0.001)
+	var outside := PackedByteArray()
+	outside.resize(field.size())
+	var queue := PackedInt32Array([0])
+	outside[0] = 1
+	var head := 0
+	while head < queue.size():
+		var i := queue[head]
+		head += 1
+		var cell := Vector3i(i % size.x, (i / size.x) % size.y, i / stride.z)
+		for axis in 3:
+			for sign_i in [-1, 1]:
+				if cell[axis] + sign_i < 0 or cell[axis] + sign_i >= size[axis]: continue
+				var j: int = i + stride[axis] * sign_i
+				if outside[j] == 0 and field[j] > 0.0:
+					outside[j] = 1
+					queue.append(j)
+	for i in field.size():
+		if outside[i] == 0 and field[i] > 0.0: field[i] = -threshold
+	# Marching tetrahedra share every edge vertex, including cell diagonals. This
+	# removes the ambiguous saddle faces that can leave seams at thin hull details.
+	var corners := [Vector3i(0,0,0), Vector3i(1,0,0), Vector3i(0,1,0), Vector3i(1,1,0), Vector3i(0,0,1), Vector3i(1,0,1), Vector3i(0,1,1), Vector3i(1,1,1)]
+	var tetrahedra := [[0,1,3,7],[0,3,2,7],[0,2,6,7],[0,6,4,7],[0,4,5,7],[0,5,1,7]]
+	var vertices := PackedVector3Array()
+	var indices := PackedInt32Array()
+	var shared := {}
+	for z in range(size.z - 1):
+		for y in range(size.y - 1):
+			for x in range(size.x - 1):
+				var base := x + y * stride.y + z * stride.z
+				var nodes := PackedInt32Array()
+				var mask := 0
+				for k in 8:
+					var c: Vector3i = corners[k]
+					var node := base + c.x + c.y * stride.y + c.z * stride.z
+					nodes.append(node)
+					if field[node] <= 0.0: mask |= 1 << k
+				if mask == 0 or mask == 255: continue
+				for tet in tetrahedra:
+					var inside := []
+					var air := []
+					var outward := Vector3.ZERO
+					for k in tet:
+						if field[nodes[k]] <= 0.0: inside.append(k)
+						else: air.append(k)
+					if inside.is_empty() or air.is_empty(): continue
+					for k in air: outward += Vector3(corners[k]) / air.size()
+					for k in inside: outward -= Vector3(corners[k]) / inside.size()
+					var quad := PackedInt32Array()
+					if inside.size() == 2:
+						for pair in [[inside[0],air[0]],[inside[0],air[1]],[inside[1],air[1]],[inside[1],air[0]]]:
+							quad.append(_shield_vertex(nodes[pair[0]], nodes[pair[1]], field, size, stride, origin, step, shared, vertices))
+					else:
+						var one: int = inside[0] if inside.size() == 1 else air[0]
+						for other in (air if inside.size() == 1 else inside):
+							quad.append(_shield_vertex(nodes[one], nodes[other], field, size, stride, origin, step, shared, vertices))
+					_shield_face(quad[0], quad[1], quad[2], outward, vertices, indices)
+					if quad.size() == 4: _shield_face(quad[0], quad[2], quad[3], outward, vertices, indices)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
 	var raw := ArrayMesh.new()
-	raw.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+	raw.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	var st := SurfaceTool.new()
 	st.create_from(raw, 0)
 	st.generate_normals()
 	var skin := st.commit()
+	_shield_skin_arrays[key] = skin.surface_get_arrays(0)
 	_shield_tm = TriangleMesh.new()
 	_shield_tm.create_from_faces(skin.get_faces())
 	return skin
+
+
+func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, stride: Vector3i, origin: Vector3, step: float, shared: Dictionary, vertices: PackedVector3Array) -> int:
+	var key := mini(a,b) * field.size() + maxi(a,b)
+	if shared.has(key): return shared[key]
+	var pa := Vector3(a % size.x, (a / size.x) % size.y, a / stride.z)
+	var pb := Vector3(b % size.x, (b / size.x) % size.y, b / stride.z)
+	var t := clampf(field[a] / (field[a] - field[b]), 0.0, 1.0)
+	var index := vertices.size()
+	shared[key] = index
+	vertices.append(origin + pa.lerp(pb,t) * step - hull.shield_centre())
+	return index
+
+
+func _shield_face(a: int, b: int, c: int, outward: Vector3, vertices: PackedVector3Array, indices: PackedInt32Array) -> void:
+	# Godot front faces wind clockwise.
+	if (vertices[c] - vertices[a]).cross(vertices[b] - vertices[a]).dot(outward) < 0.0:
+		indices.append_array(PackedInt32Array([a,c,b]))
+	else:
+		indices.append_array(PackedInt32Array([a,b,c]))
+
+
+func _shield_sample(field: PackedFloat32Array, size: Vector3i, stride: Vector3i, p: Vector3, reach: float) -> void:
+	var lo := Vector3i(p - Vector3.ONE * reach).max(Vector3i.ZERO)
+	var hi := (Vector3i(p + Vector3.ONE * reach) + Vector3i.ONE).min(size - Vector3i.ONE)
+	for z in range(lo.z, hi.z + 1):
+		for y in range(lo.y, hi.y + 1):
+			for x in range(lo.x, hi.x + 1):
+				var i := x + y * stride.y + z * stride.z
+				field[i] = minf(field[i], Vector3(x,y,z).distance_squared_to(p))
 
 
 # Where a shot from `from_world` meets the bubble (world point and outward normal).
@@ -525,7 +619,28 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 	if _shield_tm != null:
 		var hit := _shield_tm.intersect_ray(o, d)
 		if hit.is_empty():
-			hit = _shield_tm.intersect_ray(o, -o.normalized())
+			# A ray at the centre can pass through a ring hole. Aim at real hull
+			# instead; never return an invisible egg contact for a fitted skin.
+			var nearest := Vector3.ZERO
+			var best := INF
+			for p in hull.sp:
+				var q: Vector3 = p - hull.shield_centre()
+				if q.distance_squared_to(o) < best:
+					best = q.distance_squared_to(o)
+					nearest = q
+			d = (nearest - o).normalized()
+			hit = _shield_tm.intersect_ray(o, d)
+		if hit.is_empty():
+			# Degenerate aim or an origin inside the skin: a mesh corner is still
+			# on the visible surface. Keep its actual face normal.
+			var faces := _shield_tm.get_faces()
+			var best := INF
+			for i in range(0, faces.size(), 3):
+				for corner in 3:
+					var p := faces[i + corner]
+					if p.distance_squared_to(o) < best:
+						best = p.distance_squared_to(o)
+						hit = {"position": p, "normal": (faces[i+2] - faces[i]).cross(faces[i+1] - faces[i]).normalized()}
 		if not hit.is_empty():
 			var hp: Vector3 = hit["position"]
 			var hn: Vector3 = hit["normal"]
@@ -568,13 +683,15 @@ func shield_break(fx, quad: int) -> void:
 	_shield_mat.set_shader_parameter("brk_dir", qd)
 	_shield_until = maxf(_shield_until, T + 1.45)
 	var rad = hull.shield_radii()
-	var lp: Vector3 = shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))["local"] if _shield_tm != null else qd * rad
-	var wp = to_world(lp + hull.shield_centre())
-	var wn = dir_world(qd)
+	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.8 / fx.unit, 0.9)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
-	fx.pop(wp, T, sc.lerp(Color.WHITE, 0.4), 9.0 * k, 8.0, wn, 0.2)
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.4), 9.0 * k, 8.0, 0.2)
 	fx.light(wp + wn * 2.0, T, 0.6, 7.0, sc, 0)
 	fx.shake(T, 0.18, wp)
 	match st:
@@ -586,20 +703,17 @@ func shield_break(fx, quad: int) -> void:
 					0.08, 0.14, 1, tang * (8 + fx.rng.randf() * 16) * k, 1.8)
 			for i in 24:
 				fx.spr(wp + fx.rdir() * 4.0 * k, T + fx.rng.randf() * 0.5, 0.9 + fx.rng.randf() * 0.6, sc, 2.0, 0.25 * k, 0.1 * k, 19, fx.rcone(wn, 1.0) * 3.0 * k, 0.5)
-			fx.ring(wp, wn, T, 0.9, sc, 1.0, 2.0 * k, 16.0 * k, 1)
 		1:
 			# Hegemony: the hex lattice shatters into cells that fly apart
-			fx.ring(wp, wn, T, 0.8, sc.lerp(Color.WHITE, 0.3), 1.4, 2.0 * k, 18.0 * k, 3)
 			for i in 36:
 				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.15, 0.6 + fx.rng.randf() * 0.5, sc, 3.0, 0.5 * k, 0.3 * k, 16,
 					fx.rcone(wn, 0.9) * (6 + fx.rng.randf() * 10) * k, 0.8)
-			fx.ring(wp, wn, T + 0.03, 0.7, sc, 0.8, 1.0 * k, 12.0 * k, 3)
 		2:
 			# Corsair: it sputters, flickers and dies in patches, with sparks only (R297).
 			for j in 5:
 				var tj = T + j * 0.12 + fx.rng.randf() * 0.05
 				var pj = wp + fx.rdir() * 4.0 * k
-				fx.pop(pj, tj, sc.lerp(Color(1, 0.6, 0.3), 0.4), 3.0 * k, 4.0, wn, 0.1)
+				_shield_flash(fx, pj, tj, sc.lerp(Color(1, 0.6, 0.3), 0.4), 3.0 * k, 4.0, 0.1)
 				for i in 8:
 					fx.stk(pj, tj, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rcone(wn, 1.0) * (8 + fx.rng.randf() * 12) * k, 2.0)
 		_:
@@ -607,8 +721,15 @@ func shield_break(fx, quad: int) -> void:
 			for i in 30:
 				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.5, 1.2 + fx.rng.randf() * 0.8, sc, 2.2, 0.7 * k, 0.2 * k, 16,
 					fx.rcone(wn, 1.2) * (2 + fx.rng.randf() * 4) * k, 0.4, 1.5)
-			fx.ring(wp, wn, T, 1.0, sc, 1.0, 2.0 * k, 20.0 * k, 3)
 			fx.spr(wp, T, 1.0, sc, 1.6, 6.0 * k, 14.0 * k, 18)
+
+
+# Match pop's comfort booking and soft fallback, without its free-standing disc.
+func _shield_flash(fx, p: Vector3, T: float, col: Color, size: float, intensity: float, life: float) -> void:
+	if not fx.reduce_flashing and fx.flash_at(p, T, size, 0.0, life):
+		fx._emit_spr(p, T, life, col, intensity, size * 0.6, size, 0)
+	else:
+		fx.spr(p, T, maxf(life * 3.0, 0.4), col, minf(intensity, 3.0) * 0.4, size * 0.5, size * 1.2, 18)
 
 
 func _regen(fx) -> void:
