@@ -1,3 +1,11 @@
+
+# Issue 889: stamp every newly rendered picture at its save step.
+from pathlib import Path as _PicturePath
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import stamp_file as _stamp_picture
+
 # Issue 209 round 6: weapon close-ups at the concept's own camera, so a crop of the concept and the same crop of each cell line up
 # pixel for pixel (same angle, same zoom). The concept camera is rendered 4x larger (4096 px) with a render border round each weapon
 # region; the sheet crops the concept at the same pixels and scales it 4x.
@@ -49,7 +57,7 @@ for nm, (x0, y0, x1, y1) in REGIONS.items():
     for look in ('studio', 'concept', 'clay'):
         rig('studio' if look == 'clay' else look)
         bpy.context.view_layer.material_override = bpy.data.materials.get('clay') if look == 'clay' else None
-        sc.render.filepath = os.path.join(OUT, f'{CELL}_{nm}_{look}.png'); bpy.ops.render.render(write_still=True)
+        sc.render.filepath = os.path.join(OUT, f'{CELL}_{nm}_{look}.png'); bpy.ops.render.render(write_still=True); _stamp_picture(sc.render.filepath, 'paint proof', new_render=True)
         print('[209] close', CELL, nm, look, flush=True)
 bpy.context.view_layer.material_override = None
 print('[209] CLOSE DONE', CELL, flush=True)

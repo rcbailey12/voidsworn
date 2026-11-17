@@ -3,7 +3,7 @@
 // A normal row in contrib/opus/tools/run_all_checks.js (the runner picks up every *_tests.js).
 // It reads repo text files only: no game, tool or document file is changed by it.
 //
-// Checks on every push (the first three can FAIL; the fourth is a report only):
+// Checks on every push (checks 1 to 3 and 5 can FAIL; check 4 is a report only):
 //   1. every ruling id R<n> cited in docs/RULEBOOK.md, docs/playbooks/*.md, HANDOFF.md and
 //      AGENTS.md has a row in contrib/opus/FINDINGS.md;
 //   2. a citation of a row whose FINDINGS status column starts with SUPERSEDED is flagged
@@ -12,10 +12,13 @@
 //      a range goes stale as soon as the next ruling lands);
 //   4. report only, never FAIL: HANDOFF section 0 line count (target about one page) and
 //      LOOP.md's number of LATEST lines (target 15 or fewer).
+//   5. every FINDINGS row from R281 on says where the ruling landed: "landed in <repo path>"
+//      naming a file that exists (docs/RULEBOOK.md, AGENTS.md, a playbook, contrib/opus/LOOP.md),
+//      or the words "one-off job decision" (issue 890, Ryan R291: global fixes).
 //
 // Each FAIL prints the file, line and id. A planted fixture pair under
 // contrib/opus/tools/fixtures/memory_lint/ (bad and good) proves checks 1 to 3 fire on a
-// bad file and stay quiet on a good one, and that check 4 reports without failing.
+// bad file and stay quiet on a good one, and that check 4 reports without failing (check 5 too).
 //
 // A KNOWN baseline holds the citations and ranges that are already on main (listed in the
 // pull request body). A baseline entry that stops firing is an error until it is removed,
@@ -30,17 +33,11 @@ const FIXTURES = path.join(__dirname, 'fixtures', 'memory_lint');
 const FINDINGS = 'contrib/opus/FINDINGS.md';
 const HANDOFF_TARGET = 50; // "about one page" of markdown
 const LOOP_TARGET = 15;
+const LANDING_FROM = 281; // check 5 starts at R281 (issue 890)
 
-// On main today (Nov 15 2026). Each is listed in the pull request body with its reason.
-const KNOWN_BASELINE = [
-  // R267 was withdrawn by R268 the same hour; RULEBOOK 2.7 still names it in its Set line.
-  'superseded|docs/RULEBOOK.md|R267',
-  // Historical or descriptive ranges in prose, not live "these rules are in force" pointers.
-  'range|docs/RULEBOOK.md|R201 to R218',
-  'range|docs/RULEBOOK.md|R154 to R161',
-  'range|docs/playbooks/concepts_round2.md|R192 to R207',
-  'range|docs/playbooks/factions.md|R172 to R206',
-];
+// Empty: the five known items were cleared by issue 865 (Nov 16 2026). A baseline entry
+// that stops firing is an error, so the list can only shrink.
+const KNOWN_BASELINE = [];
 
 function readIf(root, rel) {
   const full = path.join(root, rel);
@@ -161,6 +158,34 @@ function scanRanges(root) {
   return fails;
 }
 
+// Check 5: a row from R281 on names the document it landed in, or says it was a one-off job call.
+function scanLandings(root, findingsText) {
+  const fails = [];
+  let checked = 0;
+  const lines = findingsText.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^\|\s*R(\d+)\s*\|/.exec(lines[i]);
+    if (!m || Number(m[1]) < LANDING_FROM) continue;
+    const id = 'R' + m[1];
+    const line = lines[i];
+    checked++;
+    if (/one-off job decision/i.test(line)) continue;
+    const landed = /landed in ([^|]*)/i.exec(line);
+    const paths = landed ? [...landed[1].matchAll(/[\w./-]+\.(?:md|js|ps1|bat|yml|gd|py|json)\b/g)].map(p => p[0]) : [];
+    if (paths.some(p => fs.existsSync(path.join(root, p)))) continue;
+    const why = paths.length
+      ? 'its "landed in" path (' + paths.join(', ') + ') is not a file in the repo'
+      : 'it names no document it landed in';
+    fails.push({
+      check: 'landing', file: FINDINGS, line: i + 1, id,
+      key: 'landing|' + id,
+      message: FINDINGS + ':' + (i + 1) + ' row ' + id + ': ' + why
+        + '; add "landed in <repo path>" or "one-off job decision" (issue 890)',
+    });
+  }
+  return { fails, checked };
+}
+
 function buildReports(root) {
   const reports = [];
   const handoff = readIf(root, 'HANDOFF.md');
@@ -212,6 +237,8 @@ function lint(root) {
       key: 'setup|docs', message: 'no scanned documents were found; check docFiles()',
     });
   }
+  const landings = findingsText === null ? { fails: [], checked: 0 } : scanLandings(root, findingsText);
+  for (const f of landings.fails) fails.push(f);
   const cites = scanCitations(root, rows);
   for (const f of cites.fails) fails.push(f);
   for (const f of scanRanges(root)) fails.push(f);
@@ -219,6 +246,7 @@ function lint(root) {
     fails,
     cited: cites.cited,
     rowCount: rows.size,
+    landingRows: landings.checked,
     reports: buildReports(root),
   };
 }
@@ -276,6 +304,12 @@ function runSelfTest() {
   assert('fixture check 3 stays quiet on a good file',
     !hasFail(good, 'range'), 'the good fixture reported a ruling range');
 
+  const landing = planted.fails.filter(f => f.check === 'landing').map(f => f.id).sort().join(',');
+  assert('fixture check 5 fires on rows with no landing document or a missing path',
+    landing === 'R281,R283', 'expected R281 (nothing named) and R283 (missing path), got "' + landing + '"');
+  assert('fixture check 5 stays quiet on a landed row and a one-off row',
+    !hasFail(good, 'landing'), 'the good fixture reported a landing failure');
+
   const plantedHandoff = planted.reports.find(r => r.name === 'handoff-section-0');
   const goodHandoff = good.reports.find(r => r.name === 'handoff-section-0');
   assert('fixture check 4 reports the HANDOFF section 0 count without failing',
@@ -319,6 +353,7 @@ function main() {
   const handoff = result.reports.find(r => r.name === 'handoff-section-0');
   const loop = result.reports.find(r => r.name === 'loop-latest');
   console.log('PASS: ' + result.cited.size + ' cited ruling ids all have a ' + FINDINGS + ' row; '
+    + result.landingRows + ' rows from R' + LANDING_FROM + ' on name where they landed; '
     + known.length + ' known baseline item(s); ' + self.checks + ' fixture assertions pass; '
     + 'HANDOFF section 0 ' + handoff.value + ' lines (target about ' + handoff.target + '); '
     + 'LOOP ' + loop.value + ' LATEST lines (target ' + loop.target + ' or fewer)');

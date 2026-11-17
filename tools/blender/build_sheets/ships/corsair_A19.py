@@ -30,6 +30,11 @@ SHEET = dict(version=1, round='first sheet (issue 633)', date='2026-11-12', blen
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
 import math, random
+import os, importlib.util
+
+_ps = importlib.util.spec_from_file_location('hullbreaker_plating',
+    os.path.join(os.path.dirname(__file__), '..', '..', 'kits', 'hullbreakers', 'plating.py'))
+_plating = importlib.util.module_from_spec(_ps); _ps.loader.exec_module(_plating)
 
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer): the blunt bow face (the two casemates sit
 # in it), the sloped chin, the long body, the taper into the stern block
@@ -46,7 +51,7 @@ HULL = [
     (-3.1, 0.86 + WIDEN, 0.86 + WIDEN, -0.5, 0.34, 0.14, 0.15),
     (-3.6, 0.79 + WIDEN, 0.79 + WIDEN, -0.46, 0.32, 0.13, 0.14),
 ]
-PL = dict(keep3d=True, courses=True, size=(0.2, 0.46), thick=(0.025, 0.06), step=0.03, gap=0.02, over=0.2, skip=0.04, stack=0.2, rivets_share=0.25, rivet_r=0.026, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
+PL = dict(keep3d=True, size=(0.2, 0.46), thick=(0.025, 0.06), gap=0.02, skip=0.04, stack=0.2, rivets_share=0.25, rivet_r=0.026, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), gaps between them
 SPINE = [
     ('M1 fore spine block', 1.7, 0.55, 0.64, 0.58, 0.2, 0.02),
@@ -85,6 +90,7 @@ def face_launcher(K, fid, pos, tubes, r, reach, depth, variant, inv, note):
 
 def build(K):
     import kit as _k
+    _plating.install(K, _k.HP)
     from mathutils import Vector
     sy = lambda x, side: _k.sec_at(HULL, x)[1 if side > 0 else 2] * side  # noqa: E731
     K.mass('Base hull (blunt bow, chin, long body)', K.hull(HULL, 'soot', shell=0.1, plates=dict(PL, seed=19, inv=['hull_plates', 'belly_plates'])),
@@ -243,8 +249,8 @@ def build(K):
              'Ryan, Nov 13 2026: "a18 and a19 are much slimmer than concept. It\'s not a huge deal but it\'d add some variety." The beauty reads a broad flat slab; the build moves toward it so the family varies in width, not only length. The wedge prow keeps its blunt point and the casemates their narrow face')
     K.change('The bow is an arrow-head from above: the broad flat bow plate runs from a blunt point 0.4 across to the full beam over the first third, overhanging a narrow bow face (1.24 across, 0.52 tall) that holds the two casemates; the hull\'s flanks widen back behind it',
              'the Board on round 1 (Nov 13, R233): the build had a blunt square bow; the picture\'s defining shape is the wedge prow (the concept sheet: 0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length). The face stays blunt and narrow, not a thin edge: the casemates need a face to sit in (designs.md)')
-    K.change('Every face is plated in courses at the hull\'s plate size (0.2 to 0.46), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
-             'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
+    K.change('Issue 875 (R289): mixed-size, skewed slabs, overlapping patches, varied thickness and welded lap joints on every plated mass',
+             'The issue 633 course builder made ordered rows; the faction kit\'s plating.py restores the irregular A16/A17 character without changing the trophy mix or paint stack')
 
     K.change('The whole scatter battery on the starboard side: two spine turrets resting to starboard',
              'data.js c_reaver: scatter S (one starboard battery); the picture\'s pods on both flanks and its foredeck guns have no other slot (R221)')

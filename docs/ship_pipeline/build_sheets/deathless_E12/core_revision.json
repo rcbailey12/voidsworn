@@ -1,0 +1,269 @@
+{
+ "issue": 877,
+ "rule": "R289",
+ "method": "build sheet, Cycles CPU; Eclipse stack bake, unchanged colours; fixed beauty camera and camera-170 game-light previews",
+ "paint": {
+  "atlas": 2048,
+  "bake_samples": 32,
+  "view_samples": 64,
+  "lift": 2.2
+ },
+ "core_visibility": {
+  "beauty": {
+   "projected_reactor_samples": 29172,
+   "exposed_samples": 6269,
+   "exposed_percent": 21.49
+  },
+  "cam170": {
+   "projected_reactor_samples": 28100,
+   "exposed_samples": 6254,
+   "exposed_percent": 22.26
+  }
+ },
+ "scope_and_budget": {
+  "d_harvester": {
+   "checks": {
+    "objects": true,
+    "inside": true,
+    "points": true,
+    "fit": true
+   },
+   "before_triangles": 51990,
+   "after_triangles": 55006,
+   "before_core_triangles": 2200,
+   "after_core_triangles": 5216,
+   "noncore_meshes": 493
+  },
+  "d_harvester_t": {
+   "checks": {
+    "objects": true,
+    "inside": true,
+    "points": true,
+    "fit": true
+   },
+   "before_triangles": 47386,
+   "after_triangles": 50402,
+   "before_core_triangles": 2200,
+   "after_core_triangles": 5216,
+   "noncore_meshes": 484
+  }
+ },
+ "outline_note": "Earlier 45.5 percent beauty-camera reference retained. Core change leaves every non-core mesh identical; outline was not refitted.",
+ "limits": [
+  "Painted Blender game-light previews; no game install or frame-time measurement in this sheet-only job.",
+  "The base-only inventory probe reports six variant rows for the already accepted turreted weapon replacement and its existing detail tag; selected weapon match, fit, contract and variant export self-test pass."
+ ],
+ "d_harvester": {
+  "painted_exterior_triangles": 54610,
+  "merged_surfaces": 4,
+  "merged_material_draws": 4,
+  "fit": {
+   "CLASH": 0,
+   "MOUNT": 0,
+   "ARC": 0,
+   "SENSOR": 0,
+   "SWEEP": 0,
+   "EXHAUST": 0,
+   "EXIT": 0,
+   "LANE": 0
+  },
+  "audit": {
+   "problems": [],
+   "parts": 132,
+   "crossing_break_lines": [],
+   "structure_across_seams": [
+    "C1"
+   ],
+   "guns_with_normals": 4,
+   "guns_into_ship": 0,
+   "guns": 4,
+   "break_lines": {
+    "t_lines": [
+     -0.24724461862255773,
+     0.06661868890663361
+    ],
+    "l_line": [],
+    "l_lines": []
+   },
+   "result": "PASS"
+  },
+  "surface": {
+   "ok": true,
+   "totals": {
+    "room": 0,
+    "bare": 0
+   },
+   "views": {
+    "top": {
+     "stack": 72518,
+     "glow": 1800,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "below": {
+     "stack": 73975,
+     "glow": 344,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "port": {
+     "stack": 23174,
+     "glow": 627,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "starboard": {
+     "stack": 23181,
+     "glow": 617,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "bow": {
+     "stack": 10749,
+     "glow": 490,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "stern": {
+     "stack": 10878,
+     "glow": 361,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    }
+   },
+   "seen_from_outside": {},
+   "objects": {
+    "stack": 459,
+    "glow": 28,
+    "liner": 13
+   },
+   "res": 640
+  }
+ },
+ "d_harvester_t": {
+  "painted_exterior_triangles": 50006,
+  "merged_surfaces": 4,
+  "merged_material_draws": 4,
+  "fit": {
+   "CLASH": 0,
+   "MOUNT": 0,
+   "ARC": 0,
+   "SENSOR": 0,
+   "SWEEP": 0,
+   "EXHAUST": 0,
+   "EXIT": 0,
+   "LANE": 0
+  },
+  "audit": {
+   "problems": [],
+   "parts": 123,
+   "crossing_break_lines": [],
+   "structure_across_seams": [
+    "C1"
+   ],
+   "guns_with_normals": 3,
+   "guns_into_ship": 0,
+   "guns": 3,
+   "break_lines": {
+    "t_lines": [
+     -0.24724461862255773,
+     0.06661868890663361
+    ],
+    "l_line": [],
+    "l_lines": []
+   },
+   "result": "PASS"
+  },
+  "surface": {
+   "ok": true,
+   "totals": {
+    "room": 0,
+    "bare": 0
+   },
+   "views": {
+    "top": {
+     "stack": 71373,
+     "glow": 1780,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "below": {
+     "stack": 72810,
+     "glow": 344,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "port": {
+     "stack": 24331,
+     "glow": 619,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "starboard": {
+     "stack": 24339,
+     "glow": 609,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "bow": {
+     "stack": 10835,
+     "glow": 494,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    },
+    "stern": {
+     "stack": 10968,
+     "glow": 361,
+     "liner": 0,
+     "room": 0,
+     "bare": 0
+    }
+   },
+   "seen_from_outside": {},
+   "objects": {
+    "stack": 451,
+    "glow": 27,
+    "liner": 13
+   },
+   "res": 640
+  }
+ },
+ "checks": {
+  "standing_command": "node contrib/opus/tools/run_all_checks.js",
+  "standing_exit": 0,
+  "standing_rows": {
+   "PASS": 58,
+   "KNOWN": 2
+  },
+  "standing_known": [
+   "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5",
+   "KNOWN: 12 constant difference(s) within the baseline"
+  ],
+  "sheet_contracts": "PASS both E12 versions",
+  "variant_contract_fit_export_readback": "PASS",
+  "base_inventory": "PASS, zero failing lines",
+  "syntax_json_links_image_dimensions": "PASS",
+  "git_diff_check": "PASS",
+  "density": {
+   "deathless_E12": {
+    "mesh_flags": 0,
+    "paint_flags": 0
+   },
+   "deathless_E12_turreted": {
+    "mesh_flags": 0,
+    "paint_flags": 0
+   }
+  }
+ }
+}

@@ -11,8 +11,8 @@ rem       repack no bakes: pack the bakes of an earlier run (BAKESRC, its OUT fo
 rem              FIREPASS (fire, firelo or firehi; default fire) picks which route A fire render is packed.
 rem OUT   the output folder (status.txt, times.txt, bake_a, bake_b, atlases_a, atlases_b, bench_*, gate_*, done.txt)
 rem Runs from this checkout (tools\pc\jobs\ inside it). Needs the PC-built hulls: copied (copy only) from FX_SHIPS, default
-rem Downloads\voidsworn_test\build\godot. Two GPU jobs may run at once; the watchdog takes shared
-rem claims for bakes and captures, solo for frame-time benches. Nothing is deleted. done.txt is written whatever happens.
+rem Downloads\voidsworn_test\build\godot. The watchdog reads shared capacity from gpu_slots.json and takes
+rem weight 2 for Blender bakes, 1 for captures, solo for frame-time benches. Nothing is deleted. done.txt is written whatever happens.
 rem Every look is benched twice and the second run is kept (the first goes to OUT\first\; docs/shots/look_bench/README.md).
 setlocal enabledelayedexpansion
 set "MODE=%~1"

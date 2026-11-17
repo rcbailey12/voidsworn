@@ -30,6 +30,13 @@ const SHIP_K := 1.6
 const SQUADRON_K := 1.5
 const CLS_LEN := {"Squadron": 1.6, "Transport": 11.0, "Frigate": 6.5, "Destroyer": 9.5, "Cruiser": 14.5, "Carrier": 16.5, "Battleship": 21.0,
 	"Dreadnought": 27.0, "Super-dreadnought": 31.0, "Battle-barge": 26.0, "Bio-titan": 28.0, "Ark": 26.0, "Tomb-ark": 28.0}
+# R229: A17's approved claw-tip-to-stern length is 14.6 (its sheet and installed manifest).
+# scale_check checks these hull lengths against the exports; other hulls keep their class length.
+const HULL_LEN := {"C15s_23": 14.6}
+
+
+static func length_for(code: String, cls: String) -> float:
+	return float(HULL_LEN.get(code, CLS_LEN.get(cls, 10.0)))
 
 # hull base colour (sRGB hex), metal, roughness per faction (the A2 test's finish)
 const FINISH := {

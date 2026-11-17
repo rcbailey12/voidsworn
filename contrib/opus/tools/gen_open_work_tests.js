@@ -1,5 +1,5 @@
 'use strict';
-// Refs #838. Offline replay of saved REST replies, including both auth routes.
+// Refs #838, #890. Offline replay of saved REST replies, including both auth routes.
 const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
@@ -18,10 +18,20 @@ function replyPage(endpoint, data, perPage, calls) {
   assert.equal(url.origin, 'https://api.github.com');
   const match = /^\/repos\/rcbailey12\/voidsworn\/(pulls|issues)$/.exec(url.pathname);
   assert.ok(match, 'REST endpoint belongs to this repo');
-  assert.equal(url.searchParams.get('state'), 'open');
-  assert.equal(url.searchParams.get('per_page'), String(perPage));
   const page = Number(url.searchParams.get('page'));
   assert.ok(Number.isInteger(page) && page > 0);
+  if (url.searchParams.get('state') === 'closed') {
+    // Recent closed PRs: one page of 100, newest update first.
+    assert.equal(match[1], 'pulls');
+    assert.equal(url.searchParams.get('per_page'), '100');
+    assert.equal(url.searchParams.get('sort'), 'updated');
+    assert.equal(url.searchParams.get('direction'), 'desc');
+    assert.equal(page, 1);
+    calls.push('closed:1');
+    return data.closed_pulls || [];
+  }
+  assert.equal(url.searchParams.get('state'), 'open');
+  assert.equal(url.searchParams.get('per_page'), String(perPage));
   calls.push(match[1] + ':' + page);
   return data[match[1]].slice((page - 1) * perPage, page * perPage);
 }
@@ -31,7 +41,8 @@ function assertPageVisits(calls, data, perPage) {
   for (const resource of ['pulls', 'issues']) {
     for (let i = 1; i <= Math.floor(data[resource].length / perPage) + 1; i++) expected.push(resource + ':' + i);
   }
-  assert.deepEqual(calls, expected, 'both endpoints are read through the final page');
+  expected.push('closed:1');
+  assert.deepEqual(calls, expected, 'both open lists are read through the final page, then one closed page');
 }
 
 async function check(name, test) {
@@ -97,15 +108,50 @@ async function main() {
     assertPageVisits(calls, edges, 2); // Exactly full PR page requires a final empty page.
   });
 
-  await check('empty endpoints still produce both table headers', async () => {
-    const calls = [];
-    const output = await generateOpenWork({
-      env: { GH_TOKEN: 'test-token' }, now,
-      fetchImpl: async url => ({ ok: true, json: async () => replyPage(url, { pulls: [], issues: [] }, 100, calls) }),
-    });
-    assert.equal(output, renderOpenWork([], [], now));
+  await check('empty lists still render both table headers', async () => {
+    const output = renderOpenWork([], [], now);
     assert.equal(output.split('\n').filter(line => line.startsWith('|')).length, 4);
-    assert.deepEqual(calls, ['pulls:1', 'issues:1']);
+    assert.ok(output.includes('- codex: no open jobs.'));
+    assert.equal(output.split('\n').filter(line => line === '- none').length, 2);
+  });
+
+  await check('no open issues from GitHub fails loudly (a token without issues: read, Nov 16)', async () => {
+    const calls = [];
+    // Without issues: read the issues list holds only pull requests; the page must not say every seat is empty.
+    const onlyPulls = [{ number: 12, title: 'A PR', labels: [], pull_request: {} }];
+    await assert.rejects(generateOpenWork({
+      env: { GH_TOKEN: 'test-token' }, now,
+      fetchImpl: async url => ({ ok: true, json: async () => replyPage(url, { pulls: [], issues: onlyPulls }, 100, calls) }),
+    }), /no open issues came back: the token cannot read issues/);
+    assert.deepEqual(calls, ['pulls:1', 'issues:1', 'closed:1']);
+  });
+
+  await check('live status: seats, running, Board queue and merged-PR issues', async () => {
+    const output = renderOpenWork(edges.pulls, edges.issues, now, edges.closed_pulls);
+    const live = output.slice(output.indexOf('## Live status'), output.indexOf('## Open pull requests'));
+    assert.ok(output.indexOf('## Live status') < output.indexOf('## Open pull requests'), 'live status comes first');
+    assert.ok(live.includes('- codex: 2 open. Running now: 9. Not running: 3.'));
+    assert.ok(live.includes('- muse: no open jobs.'));
+    assert.ok(live.includes('- opus: 1 open. Running now: none. Not running: 5.'));
+    assert.ok(live.includes('- ryan: 1 open.'));
+    // PR 9 waits on its running issue, PR 14 is a draft.
+    assert.ok(live.includes('- PR 12: Pipe | title second line'));
+    assert.ok(live.includes('- PR 15: Ready-for review'));
+    assert.ok(!/- PR (9|14):/.test(live));
+    // 3 by title (any case), 7 by body; not 5 (unmerged), 9 ("#9" in a title), 12 (a PR), 70 (not open).
+    assert.ok(live.includes('- Issue 3: A | B-C next word (merged PR 19, 20)'));
+    assert.ok(live.includes('- Issue 7: Unlabelled (merged PR 22)'));
+    assert.ok(!/- Issue (5|9|12|70):/.test(live));
+    assert.ok(!live.includes('\u2014'));
+  });
+
+  await check('closed PR failure rejects the whole page', async () => {
+    await assert.rejects(generateOpenWork({
+      env: { GH_TOKEN: 'test-token' },
+      fetchImpl: async url => url.includes('state=closed')
+        ? { ok: false, status: 502 }
+        : { ok: true, json: async () => [] },
+    }), /closed pulls page 1: HTTP 502/);
   });
 
   await check('later-page HTTP failure rejects the whole page', async () => {

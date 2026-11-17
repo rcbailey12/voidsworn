@@ -135,22 +135,41 @@ func fit_formation() -> void:
 		var r := box.position.abs().max(box.end.abs()) * scale_k * (1.0 + BREATH if faction == "chorus" else 1.0)
 		radii.append(r)
 		extents.append(_flight_extent(r))
-	for i in craft.size():
-		var off := Vector3.ZERO
-		if i > 0:
-			var row := 1 + (i - 1) / 2
-			off = Vector3(-0.95 * row * row_length, (0.12 if i % 2 else -0.09) * length,
-				(0.95 if i % 2 else -1.02) * row * length)
-		rests.append(off)
+	# A symmetric arrowhead (R280): the leader at the origin, then row 1 holds
+	# two craft, row 2 three, and so on, every row centred on the leader's line
+	# and spread by the same lateral step. Counts 3 and 6 read as a clean
+	# triangle; any other count fills the rows in order (setup accepts any).
+	rests.resize(craft.size())
+	rests.fill(Vector3.ZERO)
+	var idx := 1
+	var row := 1
+	while idx < craft.size():
+		var in_row := row + 1
+		for k in in_row:
+			if idx >= craft.size():
+				break
+			var lateral := (float(in_row - 1) * 0.5 - float(k)) * 1.9 * length
+			rests[idx] = Vector3(-0.95 * float(row) * row_length,
+				(0.12 if idx % 2 else -0.09) * length, lateral)
+			idx += 1
+		row += 1
 	var width_k := 1.0
+	var depth_k := 1.0
 	for i in craft.size():
 		for j in i:
 			var apart: Vector3 = (rests[i] - rests[j]).abs()
-			if apart.x < extents[i].x + extents[j].x + (2.0 * WEAVE.x + CLEARANCE) * length:
+			var need_x: float = extents[i].x + extents[j].x + (2.0 * WEAVE.x + CLEARANCE) * length
+			if is_zero_approx(apart.z):
+				# Same lateral line: the leader against an even row's centre
+				# craft (R280's wedge). Only more depth can separate them.
+				if apart.x > 1e-6:
+					depth_k = maxf(depth_k, need_x / apart.x)
+			elif apart.x < need_x:
 				var reach := _side_reach(radii[i], radii[j], (j - i) * 1.73)
 				width_k = maxf(width_k, (reach + CLEARANCE * length) / apart.z)
 	for i in rests.size():
 		rests[i].z *= width_k
+		rests[i].x *= depth_k
 
 func _process(dt: float) -> void:
 	step(dt)

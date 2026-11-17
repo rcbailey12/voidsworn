@@ -254,7 +254,7 @@ func bench(label: String) -> Dictionary:
 func snap(name: String) -> void:
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
-	img.save_png(out.path_join(name + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(img, out.path_join(name + ".png"), "paint proof")
 
 
 func one_ship_view(d: float) -> void:

@@ -15,7 +15,14 @@ call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b "%JOB%\%CELL%.blend" -P "%R%\expor
 findstr /L /c:"[209] export" "%JOB%\log_lod.txt" > nul || (echo Stage 6 FAILED: the LOD export wrote nothing. See %JOB%\log_lod.txt & goto bad)
 copy /y "%R%\godot\project.godot" "%JOB%\godot\proj\" > nul
 copy /y "%R%\godot\bench209r3.gd" "%JOB%\godot\proj\" > nul
+rem The isolated LOD project is a paint preview, not an installed-game capture.
+if not exist "%JOB%\godot\proj\tools" mkdir "%JOB%\godot\proj\tools"
+copy /y "%REPO%\godot\tools\picture_provenance.gd" "%JOB%\godot\proj\tools\" > nul
+set "PICTURE_SOURCE_REPO=%REPO%"
+set "PICTURE_STAMP_TOOL=%REPO%\tools\picture_provenance.py"
+set "PICTURE_PYTHON=%BPY%"
 call "%REPO%\tools\pc\tmo.bat" 1800 "%GD%" --path "%JOB%\godot\proj" --resolution 1920x1080 --script res://bench209r3.gd -- "%JOB%\glb" "%JOB%\godot" %CELL% 2 length=%LEN% > "%JOB%\log_godot.txt" 2>&1
+if errorlevel 1 (echo Stage 6 FAILED: the preview or its picture stamps failed. See %JOB%\log_godot.txt & goto bad)
 findstr /L /c:"BENCH DONE" "%JOB%\log_godot.txt" > nul || (echo Stage 6 FAILED: the Godot bench did not finish. See %JOB%\log_godot.txt & goto bad)
 echo Stage 6 done: %JOB%\glb\%CELL%.glb and %JOB%\godot
 if "%RECIPE_NOPAUSE%"=="" pause

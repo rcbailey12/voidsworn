@@ -89,7 +89,16 @@ check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme 
 // luminance and contrast functions as ledger_readability_test.gd.
 {
   const cs = read('godot/ui/career/career_screen.gd');
-  const hx = n => { const m = new RegExp('const ' + n + ' := Color\\("#([0-9a-fA-F]{6})"\\)').exec(cs); return m ? m[1] : ''; };
+  // CR4 takes the orders-sheet colours from the shared theme. Resolve aliases so
+  // the source guard still measures the same live colours as the Godot check.
+  const theme = read('godot/ui/theme/glass_shell.gd');
+  const hx = (n, source = cs, depth = 0) => {
+    if (depth > 4) return '';
+    const m = new RegExp('const ' + n + ' := Color\\("#([0-9a-fA-F]{6})"\\)').exec(source);
+    if (m) return m[1];
+    const alias = new RegExp('const ' + n + ' := (GS\\.)?([A-Z_0-9]+)').exec(source);
+    return alias ? hx(alias[2], alias[1] ? theme : source, depth + 1) : '';
+  };
   const lin = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
   const lum = h => { const [r, g, b] = [0, 2, 4].map(i => lin(parseInt(h.slice(i, i + 2), 16) / 255)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
   const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
@@ -112,6 +121,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   const cui = read('godot/ui/campaign/campaign_ui.gd'), m3 = read('godot/ui/campaign/map3d.gd'), mi = read('godot/ui/campaign/map_intel.gd');
   const cb = read('godot/ui/campaign/choice_button.gd'), gsh2 = read('godot/ui/theme/glass_shell.gd'), view = read('godot/campaign/campaign_view.gd');
   const msh = read('godot/ui/campaign/map3d_shaders.gd');
+  const fleet = read('godot/ui/campaign/fleet_manifest.gd');
   check(/const GS = preload\("res:\/\/ui\/theme\/glass_shell\.gd"\)/.test(cui) && /const GILT := GS\.GILT/.test(cui), 'campaign_ui.gd takes its palette from glass_shell.gd (ui_style.md 8)');
   check(!/Color\("#[0-9a-fA-F]{6}"\)/.test(cui), 'campaign_ui.gd writes no colour hex of its own (new colours go into glass_shell.gd first)');
   check(!/Color\("#[0-9a-fA-F]{6}"\)/.test(mi), 'map_intel.gd writes no colour hex of its own');
@@ -121,7 +131,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(!/modulate\.a = 0\.5/.test(cb) && /tagl\("Locked", BONE3\)/.test(cui), 'a disabled choice dims its words and says LOCKED, not a 50% fade (MN12, ui_style.md 3)');
   check(/draw_style_box\(ring/.test(cb) && /b\.ring = GS\.focus_ring\(k\)/.test(cui), 'campaign choices draw the shared focus ring when focused');
   check((cui.match(/\bfin\(/g) || []).length >= 14 && !/abtn\([^\n]*, true, false, acts\)/.test(cui), 'every dialog finishes on the one lime slab (fin), none on a second filled button (R148)');
-  check(/func _page_finish\(/.test(cui) && /"fleet": b = fin\("Done"/.test(cui) && /"shipyard": b = fin\("Leave shipyard"/.test(cui), 'fleet and shipyard keep their finishing action fixed bottom right (ui_style.md 7)');
+  check(/"fleet": body = _fleet/.test(cui) && /Rect2\(sheet_x, height - 80, sheet_w, 56\)/.test(fleet) && /GS\.sheet_jump_boxes/.test(fleet) && /"shipyard": b = fin\("Leave shipyard"/.test(cui), 'FL5 Done and the shipyard finishing action stay fixed bottom right');
   check(/func _well_text\(/.test(cui) && /_well_text\(v\)/.test(cui), 'dialog words are gathered onto wells (every line on a backing, ui_style.md 3)');
 
   // the Briefing layout: the map screen's own section of campaign_ui.gd
@@ -145,7 +155,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/font_num, 19/.test(fn('_fleet_line')) && /_sheet_name\(s\["name"\], 28/.test(fn('_fleet_line')) && !/thin_bar|flagship.*tl\(/.test(fn('_fleet_line')), 'fleet names and hull figures have separate space, Azeret figures and a diamond flagship mark');
   check(/mini\(7, fleet.size\(\)\)/.test(orders) && /FleetScroll/.test(orders) && /OrdersScroll/.test(orders), 'large fleets and extreme route cases scroll without shrinking text');
   check(/for r in _routes:/.test(fn('_briefing_column')) && /if on:/.test(fn('_route_row')) && /_jump_button\(\)/.test(fn('_route_row')) && !/\["then"\]/.test(fn('_route_row')), 'routes stay in number order, expand in place and keep the action directly below the selection');
-  check(/_action_line\(FA\)/.test(cui.slice(cui.indexOf('func _fleet('), cui.indexOf('func _shipyard'))) && !/_action_line|faction_action/.test(fn('_briefing_column')) && /C\.act\("factionVerb"/.test(fn('_action_line')), 'the unchanged faction purchase action lives in Fleet and refits');
+  check(/FleetManifest\.new/.test(cui) && /View\.faction_action\(C\)/.test(fleet) && /C\.act\("factionVerb"/.test(fleet) && !/_action_line|faction_action/.test(fn('_briefing_column')), 'the unchanged faction purchase action lives in FL5 Fleet and refits');
   check(/GS\.sheet_pips/.test(fn('_route_row')) && /GS\.sheet_pips/.test(fn('_nemesis_block')) && !/persona_d/.test(fn('_nemesis_block')), 'danger and hunt use square pips; the trait sentence stays in the Dossier');
   check(/View\.routes\(C\)/.test(sec) && /View\.nemesis\(C\)/.test(sec) && /View\.nem_dossier\(C\)/.test(sec) && /View\.sector_notes\(C\)/.test(sec) && /View\.fleet_rows\(C\)/.test(sec) && /View\.purse\(C\)/.test(sec), 'the map screen reads routes, the Nemesis, the sector, the fleet and the purse through the view');
   check(!/\bR\[|C\.RUN\[|C\.RUN\.get\(|\bR\.get\(/.test(sec), 'the map screen reads no save field by name (everything comes through campaign_view.gd)');

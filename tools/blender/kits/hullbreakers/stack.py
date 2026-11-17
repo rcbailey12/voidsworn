@@ -15,6 +15,7 @@
 # Where each colour zone sits on a ship is the build sheet's decision (its materials soot, rust, iron, blood, pale, violet, ...);
 # this file says what each zone is made of.
 import os, sys, json, math
+from copy import deepcopy
 import numpy as np
 import bpy
 
@@ -170,12 +171,104 @@ TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(2.2, .45, 1.55), warp
 # the sandbox render of A20 showed the then pale patches at a median value of 141 against the concept's 172 (contrib/opus/tools/
 # issue726/measure.py), so the trophy tones are painted lighter by this factor (linear albedo) to read as the concept's.
 
+# Issue 853: the capital pattern made tiny tiles on KB1CC and its edge wear washed
+# the grey trophy plates pale. The build contract supplies the sheet's LENGTH.
+# All larger ships retain the original dictionaries, including the A16 fixture.
+CRAFT_SIZE = dict(max_length=1.6, patches=3.0, trophies=1.5, marks=2.0,
+                  trophy_gain=1.0, wear=.18, grey_wear=.18)
+_SHIP_LAYERS = deepcopy(LAYERS)
+_SHIP_TROPHY = deepcopy(TROPHY)
+_SHIP_ZONES = deepcopy(ZONES)
+_SHIP_BARE = BARE
+_SHIP_ZONE_BY_KIND = deepcopy(ZONE_BY_KIND)
+
+# R292, issue 875 run 2: the craft's separate bright-red palette also painted
+# its soot skin red. It lost the dark iron and weathered value of the capitals.
+# Read the faction palette here too; the sheet owns the mix of real plates.
+# Keep real seams instead of subdividing the craft with the capital grid.
+CRAFT_PLATES = {name: CONCEPT[name] for name in ('soot', 'soot2', 'rust', 'blood', 'violet')}
+CRAFT_PLATES['pale'] = CONCEPT['trophy_grey']
+CRAFT_ACTIVE = False
+
+
+def configure_size(length=None):
+    """Select craft pattern sizes from the sheet length; reset before every bake."""
+    global BARE, CRAFT_ACTIVE
+    length = float(bpy.context.scene.get('r209_length_world', 0) if length is None else length)
+    LAYERS.clear(); LAYERS.update(deepcopy(_SHIP_LAYERS))
+    TROPHY.clear(); TROPHY.update(deepcopy(_SHIP_TROPHY))
+    ZONES.clear(); ZONES.update(deepcopy(_SHIP_ZONES))
+    ZONE_BY_KIND.clear(); ZONE_BY_KIND.update(deepcopy(_SHIP_ZONE_BY_KIND))
+    BARE = _SHIP_BARE
+    craft = 0 < length <= CRAFT_SIZE['max_length'] + 1e-6
+    CRAFT_ACTIVE = craft
+    if craft:
+        for key in ('patch_big', 'patch_small', 'patch_over'):
+            LAYERS[key] = tuple(v * CRAFT_SIZE['patches'] for v in LAYERS[key])
+        LAYERS['patch_parts'] = tuple(tuple(v * CRAFT_SIZE['patches'] for v in cell)
+                                     for cell in LAYERS['patch_parts'])
+        TROPHY['cell'] = tuple(v * CRAFT_SIZE['trophies'] for v in TROPHY['cell'])
+        TROPHY['gain'] = CRAFT_SIZE['trophy_gain']
+        for key in ('scuff_size', 'rivet_pitch'):
+            LAYERS[key] *= CRAFT_SIZE['marks']
+        for key in ('mottle_scale', 'rust_blot', 'wear_scale'):
+            LAYERS[key] /= CRAFT_SIZE['marks']
+        LAYERS['wear'] = CRAFT_SIZE['wear']
+        ZONES['pale']['wear'] = CRAFT_SIZE['grey_wear']
+        # Real plate faces, with no extra shader tiles, scrapes or trophy grid.
+        # Pale is the sheet's name for its few salvaged dark grey plates.
+        LAYERS.update(plate_var=.40, island_tone=.80, mottle=.18, scuff=.55,
+                      ao_dark=.88, side_dark=.25, ao_short=.006, ao_long=.035,
+                      edge_radius=.0020, wear_lo=.26, wear_hi=.50)
+        for name, zone in ZONES.items():
+            if name == 'dark':
+                continue
+            zone.update(patchwork=0.0, patchwork_parts=0.0, red_share=0.0,
+                        scuff=.28, wear=CRAFT_SIZE['wear'], grime=.48, rust=.32)
+            zone.pop('trophy_share', None)
+            if name in CRAFT_PLATES:
+                zone['lo'], zone['hi'] = map(lin, CRAFT_PLATES[name])
+                zone.update(plate_var=.16, metal=.25, rough=.78)
+                if name != 'pale':
+                    # R292: dirt in physical seams, chipped rims and broad
+                    # weathered tone changes, with the faction's own colours.
+                    # R274 grey trophy tones, wear and share stay unchanged.
+                    zone.update(plate_var=.55, wear=.90, scuff=.65, grime=.85,
+                                rust=_SHIP_ZONES[name].get('rust', .4), patchwork=1.0)
+            elif name in ('iron', 'iron_bay', 'iron_edge', 'steel', 'bell'):
+                zone['lo'], zone['hi'] = pair('iron')
+                zone.update(plate_var=.35, metal=.45, rough=.68,
+                            grime=.85, wear=.65, scuff=.50, patchwork=1.0, patchwork_parts=1.0)
+        # Bright bare-metal wear was washing small armour plates grey.
+        BARE = lin((100, 91, 82))
+        # craft.py authors the bomb collar and bore in soot2, the same sheet
+        # zone used by red armour. Keep this machinery's dark iron assignment.
+        ZONE_BY_KIND[('launcher', 'soot2')] = 'iron_edge'
+    print('[853] Hullbreaker paint size:', 'craft' if craft else 'ship', 'sheet length', length, flush=True)
+    return craft
+
 
 def panel_nodes(c, col, amount, families=None, cells=None):
-    """the shared patchwork as every Hullbreaker ship had it (shared/paint_stack.patchwork, unchanged), then, on the hull atlas,
-    the trophy patches (TROPHY above). Returns the colour and the seam mask, as the shared patchwork does."""
+    """Physical craft wear, or the unchanged capital patchwork and trophy layers.
+
+    Returns the colour and seam mask through the shared stack's panel hook.
+    """
     from types import SimpleNamespace
     from paint_stack import node, math_, mixc, mulc, ramp, patchwork, _grid, _seams
+    if CRAFT_ACTIVE:
+        # The craft already has real plate islands. Use the panel-layer entry
+        # point for physical wear only, never the shader's tile/trophy grids.
+        # Broad paint loss exposes iron; broken bright chips follow actual
+        # convex rims. Ordinary wear alone was almost invisible on these faces.
+        nt = c.nt
+        loss = math_(nt, 'MULTIPLY', ramp(nt, c.noise(24, 3, .65), .46, .66), .60)
+        iron = mixc(nt, *pair('iron'), ramp(nt, c.noise(12, 2), .3, .7))
+        col = mixc(nt, col, iron, loss)
+        edge = c.bevel_edge(.0045, 24.0)
+        chips = math_(nt, 'MULTIPLY', edge, ramp(nt, c.noise(115, 2, .7), .43, .60), clamp=True)
+        chips = math_(nt, 'MULTIPLY', chips, ramp(nt, c.noise(11, 2), .32, .64), clamp=True)
+        col = mixc(nt, col, lin(CONCEPT['bare'][0]), chips)
+        return col, None
     T = TROPHY; nt = c.nt
     own = ZONES.get(_zone_of(nt), {}).get('trophy_share') if cells is None else None
     if own is None:
@@ -411,6 +504,9 @@ def _tile_noise(n, k, rng):
 def trim_sheet():
     """the faction's trim tiles, each RGBA in 0..1 (alpha is the tile's mask and height): drawn here (own work). Written to the job
     as one trim sheet image, rows top to bottom in this order."""
+    # The shared bake asks for trim first, after building the sheet and before
+    # masks or materials read LAYERS. Keep size selection inside this faction.
+    configure_size()
     rng = np.random.default_rng(209)
     T = {}
     # rivets: one domed rivet head per tile, a dark ring of grime round it

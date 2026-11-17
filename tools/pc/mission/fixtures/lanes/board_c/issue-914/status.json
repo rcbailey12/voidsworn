@@ -1,0 +1,7 @@
+{
+  "status": "failed",
+  "reason": "chain stopped: predecessor ended partial: agent exit 124",
+  "started": "@STARTED@",
+  "finished": "@FINISHED@",
+  "branch": "codex/issue-914"
+}

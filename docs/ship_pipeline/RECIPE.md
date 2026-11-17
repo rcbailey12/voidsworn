@@ -113,6 +113,17 @@ For CPU-only review renders on Windows set `SHEET_DEVICE=CPU` before running `bu
 uses the stage 4 build unchanged at stage 5, exports the stage 6 LOD chain, then runs the stage 7 unbaked export and
 readback/self-test. It does not replace the faction's queued paint bake or the measured scene gate.
 
+Every review picture is stamped at its save step by `tools/picture_provenance.py` (Godot uses
+`godot/tools/picture_provenance.gd`): its name, full source commit in the `.provenance.json` sidecar, short revision on the
+picture, working-change digest when needed, stage (`sheet built`, `paint proof`, or `installed in game`) and UTC date.
+The stage 6 LOD studio preview is `paint proof`; only captures of the installed game say `installed in game`.
+Sheet helpers read stamped inputs and keep their source revisions, including both sides of a comparison; they refuse
+unstamped captures rather than relabel old files. The sidecar preserves the corner pixels hidden by the strip, so sheet
+measurements use `open_picture`/`Review.open` and retain their original alpha and dimensions. Keep each review picture and
+its sidecar in the PR and link by relative repo path. The PC runners can copy linked, stamped files from the run's `shots`
+folder and rewrite those links; before committing they refuse PC/web picture links, missing stamps, altered pictures, and
+picture/sidecar pairs absent from the staged PR tree. Rerun a capture with its source revision to replace missing evidence.
+
 ## The paint stack for sheet ships (issue 601; ships.md section 0 item 2)
 
 The method is R96 Q1, binding: procedural materials driven by masks baked from the ship's own geometry, plus a trim sheet and
@@ -145,6 +156,28 @@ R225: one home per fact):
 5. bakes albedo and ORM for both atlases and the hull's detail normal (the layers' height through a bump), then puts the
    textured materials on the ship (`export7.py` reads them as before) and keeps glow, ember and light as their own emissive
    surfaces; the insides keep the sheet's own materials;
+   For a ship with a large normal input, the normal bake connects the existing bump normal to a simple surface and restores the original links in
+   `finally`. A20's normal input alone still exceeds Cycles' SVM stack (issue 726 run 3). Run 4 tried CPU OSL first: its
+   4096-pixel control baked, but a retry crashed in Windows LLVM. The retained route bakes the existing labelled patchwork
+   height term per large trophy material to a Raw, single-channel 16-bit PNG, reloads it as Non-Color, then samples it on the same
+   UVs for one combined normal pass. Only a hull material whose stack has the trophy layer opts in (`ps_height_bake`);
+   other factions keep their original path regardless of graph size. The 800 reachable-node budget selects this route; it is not a shader
+   validity test. Other height detail (rivets, wear, scuffs, decals) stays procedural. Smaller materials keep their original
+   normal inputs. A ship with no large input keeps the original full-surface bake, including Eclipse. Inactive materials
+   target a disposable image during each height pass, so no material's padding can
+   overwrite a neighbour's normal. The original image targets, surface and height links, and clear setting are restored
+   even on failure. Heights stay in TEMP; their paths, bit depths and times are recorded in the ship's paint report.
+   Albedo, ORM, faction stacks and Cycles device/shading settings are unchanged.
+   Stage 5 rejects compile errors, including `out of SVM stack space`, even if Blender exits zero and writes its completion
+   marker. Never install a bake that failed this guard. The repeatable OSL, height and restoration diagnostics are in
+   `contrib/codex/issue726/`; the five-ship PC route is `tools/pc/jobs/HB_PAINT_726.bat`.
+   Sheet-ship stage 5 selects concept, hero, side, top, below and battle views explicitly. The old four-piece break preview
+   assumes a longitudinal cut and cannot represent these authored seam layouts; the installed interior and death-seam
+   checks prove their actual breaks. All three paint render calls still have to finish, each with its own exit-code check
+   and `RENDER DONE` marker in `log_render.txt`, `log_render_concept.txt` and `log_render_far.txt`. The issue 726 helper
+   checks one completion in each log. Every Blender call, including the surface check and close-ups, rejects positive
+   and negative nonzero exits; Python exceptions also fail the call. `tools/recipe/stage5_fail_selftest.js` proves the
+   guards and the helper's log reader with fake executables and TEMP fixtures, without a Blender run.
 6. gives every inside the faction's dark liner (`inside_material`: one material per room, the liner's dark with a faint tint, the
    core keeps its light), so an inside seen through an opening or a gap never shows a sheet room colour (R99 Q1);
 7. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square
@@ -161,13 +194,13 @@ and trim lights. Plate patchwork, seams and brick rust (R228) are the faction st
 axis, lays rows in bands whose edges step every few columns, shifts every column and strip by its own amount and splits a share
 of the cells once more; the faction stack sets how much (`patch_warp`, `patch_band`, `patch_split` in `LAYERS`; zero for all
 three gives the old even grid). Over that patchwork the Hullbreaker stack lays its trophy patches (issue 726, R252: big like
-the A20 concept; R274: dark grey salvaged metal, never white): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `panel_nodes` hook, which runs the shared patchwork
-unchanged first. One more uneven grid at the concept's trophy plate size (`cell`, about 0.13 by 0.085 ship lengths, warped, banded
+the A20 concept; R274: dark grey salvaged metal, never white): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `panel_nodes` hook. `panel_nodes` runs the shared patchwork
+unchanged first on the ordinary hull zones; the exception is a zone with its own `trophy_share` (the sheet's `pale` zone), where the patchwork call is skipped and the trophy layer mixes over the zone's own colour. One more uneven grid at the concept's trophy plate size (`cell`, about 0.13 by 0.085 ship lengths, warped, banded
 and split as above); a share of its cells (`share` times the zone's patchwork amount, more in some broad regions, `cluster`) takes
 dark grey salvaged metal or violet Eclipse plate (`families`, sampled from the KB1C-C and A20 concepts), one colour per trophy cell, never per mesh
-island; parts keep the plain patchwork. The sheet's `pale` zone keeps its own
+island; parts keep the plain patchwork. The sheet's `pale` zone is the trophy layer (R252, dark grey under R274): it keeps its own
 dark grey with no dark plate families over it, and the trophy layer covers about 65 percent of it (`trophy_share`), a third of
-that in violet, so a sheet-placed pale patch reads dark grey metal or violet (the zone itself is a weathered dark grey with a little metallic sheen, R274). The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
+that in violet, so a sheet-placed pale patch reads dark grey metal or violet (the zone itself is a weathered dark grey with a little metallic sheen, R274). The pale entry was retuned with `trophy_share` in PR 791: rust .25 to .20, `plate_var` .30 to .22, grime 1.0 to .70 and patchwork .5 to 1.0 (rough .74 and metal .25 unchanged), so the zone's read is not the trophy layer alone. The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
 cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
 glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
 `RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe
@@ -469,6 +502,10 @@ reads the ship back the way the game draws it (`render/test/installed_ship_check
 installed files, no old damage or wreck entry, and ShipView loads the ship with every hard point and turret node of the glb).
 Either failing fails the stage. `render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
 damage and wreck, then a new one installed over it).
+The target's install check also needs `tools/ci/check_guard.gd`, even when the playable build otherwise omits CI tools.
+The issue 726 paint helper supplies that file only when missing and verifies its copied hash before installation.
+It also backs up and refreshes the test-only `a4_shots.gd` and its scene in the playable build, so the requested camera 170
+capture cannot silently fall back to an older harness's close views. Gameplay scripts are retained.
 
 ### Authored insides and weak seams (issue 557)
 

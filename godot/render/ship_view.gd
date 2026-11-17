@@ -89,7 +89,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		hull = WING.new()
 		hull.name = "hull"
 		add_child(hull)
-		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 4, bob_seed)
+		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 3, bob_seed)
 		_collect(hull)
 		_ring()
 		position = world_pos
@@ -98,6 +98,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		return
 	if u.has("code"):
 		code = str(u["code"])
+	L = HT.length_for(code, cls) * HT.SHIP_K
+	if u.has("code"):
 		L = float(u.get("L", L))
 	bob_seed = randf() * 10.0
 	hull = Node3D.new()

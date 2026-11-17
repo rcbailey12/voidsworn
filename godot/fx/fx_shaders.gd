@@ -958,6 +958,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_back, shadows_disabled, 
 """ + COMMON + """
 uniform vec3 col = vec3(1.0);
 uniform vec3 rad = vec3(1.0);
+uniform bool fitted_shape = false;
 uniform int style = 0;
 uniform vec4 hits[6];
 uniform vec4 hitw[6];
@@ -971,9 +972,10 @@ varying vec3 vL;
 varying vec3 vW;
 varying vec3 vN;
 void vertex() {
-	vL = VERTEX;
+	// The fitted mesh is in hull units; the egg keeps its original unit-sphere coordinates.
+	vL = fitted_shape ? VERTEX / rad : VERTEX;
 	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	vN = snorm((MODEL_MATRIX * vec4(NORMAL / rad, 0.0)).xyz);
+	vN = fitted_shape ? snorm(MODEL_NORMAL_MATRIX * NORMAL) : snorm((MODEL_MATRIX * vec4(NORMAL / rad, 0.0)).xyz);
 }
 float hexcell(vec2 q) {
 	vec2 h = vec2(q.x * 1.1547, q.y + q.x * 0.57735);

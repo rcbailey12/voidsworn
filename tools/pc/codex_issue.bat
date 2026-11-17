@@ -73,6 +73,10 @@ if errorlevel 1 exit /b 14
 %COMMON% model "%O%" "gpt-6.1-sol" "gpt-6.1-sol"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
+rem Validate and claim before checkout, Base/resume merges, preflight or agent work (issue 888).
+if not defined CODEX_CAP set "CODEX_CAP=21600"
+%COMMON% announce "%O%" "%N%" codex "%R%" "%CODEX_CAP%" "codex_issue.bat %N%" "%PUSHMODE%"
+if errorlevel 1 exit /b 14
 set "SPARSE="
 if defined CODEX_TEST_ROOT set "SPARSE=%CODEX_TEST_SPARSE%"
 %COMMON% checkout "%R%" "%O%" "%BR%" "%SPARSE%"
@@ -124,13 +128,18 @@ if not errorlevel 1 set "PARTIAL=Codex left a merge unfinished"
 if defined PARTIAL set "PB=%BR%-partial"
 > "%O%\partial.txt" echo.%PARTIAL%
 if defined PARTIAL echo PARTIAL RUN, %PARTIAL%: the work goes to %PB%, which opens no pull request >> "%O%\result.txt"
+rem Issue 889: copy stamped, linked review pictures and use repo paths in the report.
+if not defined PARTIAL (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%review_evidence.ps1" prepare "%R%" "%O%" "docs/shots/issue-%N%-codex" >> "%O%\result.txt" 2>&1
+  if errorlevel 1 goto :guardfail
+)
 git add -A
 %PSW% guard %N% codex "%R%" "%O%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
 if defined PARTIAL goto :haschange
-findstr /c:"Resumed by merging" "%O%\resume.txt" >nul
+findstr /c:"Resumed by merging" /c:"Base already merged" "%O%\resume.txt" >nul
 if errorlevel 1 goto :nochange
 :haschange
 rem A chain needs green runner checks as well as a confirmed non-partial push.

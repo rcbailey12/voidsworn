@@ -1,0 +1,49 @@
+{
+ "name": "Hullbreaker raider, the Sniffer (Ashfall Hullbreakers)",
+ "faction": "corsair",
+ "cls": "Frigate",
+ "band": "S",
+ "game_ship": "c_raider",
+ "length_world": 6.5,
+ "hardpoints": {
+  "gun": 2,
+  "engine": 3,
+  "breach": 3,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 3,
+ "turrets": 1,
+ "files": {
+  "C13s_23.glb": {
+   "bytes": 17273528,
+   "sha256": "3ecb19eac5cc9b95922408268b43f6ad10a51dbd6e6c3a5b51f52975ae0c7efd"
+  },
+  "C13s_23_base.jpg": {
+   "bytes": 1469252,
+   "sha256": "b9354d9bad8e29d43a768fb05a618f807658a3d3cc486f8528525f7cf4dd9a2f"
+  },
+  "C13s_23_glow_emission.jpg": {
+   "bytes": 75817,
+   "sha256": "f5b8503ecad6417b0f913b3e04138c168332bcf0d0d2727f4283f00ae7fb795e"
+  },
+  "C13s_23_normal.jpg": {
+   "bytes": 424421,
+   "sha256": "14d48d9f4d5712feaa57bfa051c9b2ea1bacc64e3ccac6cdf2c6b725d8350431"
+  },
+  "C13s_23_orm.jpg": {
+   "bytes": 2184683,
+   "sha256": "836882968fb6fe2467196bca7a01cc3e0fe3445acafa317fe271e5529294d8c1"
+  },
+  "C13s_23_parts_base.jpg": {
+   "bytes": 1283247,
+   "sha256": "3ee688483beeac4d5de713b5a3e1d07c9e0a25186a44f76cfb3ca7889c35002e"
+  },
+  "C13s_23_parts_orm.jpg": {
+   "bytes": 1428544,
+   "sha256": "1aa3a6b6890abd50de77ced300ad1bab418737a6585151e83268b2242bf2706c"
+  }
+ },
+ "pc_path": "godot/assets/ships/C13s_23/"
+}

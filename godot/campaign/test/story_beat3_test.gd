@@ -17,6 +17,11 @@ func text_of(node: Node) -> String:
 	for child in node.get_children(): text += text_of(child)
 	return text
 
+func all_text(n: Node) -> String:
+	var t = str(n.text) + "\n" if n is Label or n is RichTextLabel or n is Button else ""
+	for child in n.get_children(): t += all_text(child)
+	return t
+
 # the words the orders sheet lays out (the battle HUD's only screen since issue 578)
 func sheet_text(h) -> String:
 	h.ledger.layout()
@@ -29,7 +34,7 @@ func shot(name_: String) -> void:
 	await process_frame
 	await process_frame
 	await RenderingServer.frame_post_draw
-	root.get_texture().get_image().save_png(screenshot_dir.path_join(name_ + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), screenshot_dir.path_join(name_ + ".png"))
 
 func settle() -> void:
 	for i in range(4): await process_frame
@@ -189,7 +194,8 @@ func _initialize() -> void:
 			await shot(str(fac) + ("_win" if won else "_loss"))
 			# DB1 (R261, issue 805) moved the story payoff off the after-run page into The record (key R).
 			ui.debrief.open_detail("record"); await settle()
-			check(text_of(ui).contains(row["learning"]), str(fac) + " learning renders in The record after " + str(won))
+			check(is_instance_valid(ui.debrief.overlay), str(fac) + " The record opens after " + str(won))
+			check(all_text(ui.debrief.overlay).contains(row["learning"]), str(fac) + " learning renders in The record after " + str(won))
 			ui.debrief.close_detail(); await settle()
 	await reward_checks(c, ui)
 	ui.queue_free()

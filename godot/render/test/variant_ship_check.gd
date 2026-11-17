@@ -97,6 +97,28 @@ func _run() -> void:
 		sv = spawn(row[0], row[1], row[2])
 		check(sv.code == row[2], "explicit code override still wins")
 		sv.free()
+	if not real_assets:
+		# R229 / issue 726: A17's approved claw-tip length survives the real ShipView fit.
+		man["ships"]["C15s_23"] = fixture("C15s_23")
+		var unit := {"id": "A17-scale", "fac": "corsair", "cls": "Cruiser", "facing": 0}
+		var sv := SV.new()
+		root.add_child(sv)
+		sv.setup(unit, Vector3.ZERO)
+		check(sv.code == "C15s_23" and is_equal_approx(sv.L, 23.36), "A17 uses its approved 14.6 length times SHIP_K")
+		var mesh := sv.meshes[0] as MeshInstance3D
+		var box := mesh.global_transform * mesh.get_aabb()
+		check(is_equal_approx(box.size.x, 23.36), "A17's fitted mesh spans 23.36 board units")
+		sv.free()
+		sv = spawn("missing-cruiser", "Cruiser")
+		check(is_equal_approx(sv.L, 23.2), "other cruisers keep their 14.5 class length")
+		sv.free()
+		unit["code"] = "C15s_23"
+		unit["L"] = 12.0
+		sv = SV.new()
+		root.add_child(sv)
+		sv.setup(unit, Vector3.ZERO)
+		check(is_equal_approx(sv.L, 12.0), "explicit capture length still overrides the hull length")
+		sv.free()
 	_done()
 
 

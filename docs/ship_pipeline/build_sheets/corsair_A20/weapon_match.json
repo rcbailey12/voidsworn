@@ -33,5 +33,7 @@
     }
    ]
   }
- ]
+ ],
+ "game_ship": "c_hulk",
+ "variant": ""
 }

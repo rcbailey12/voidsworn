@@ -1,4 +1,4 @@
-﻿extends SceneTree
+extends SceneTree
 # Issue 463: isolate the real production flash/body calls at camera 170, at 60 Hz, against black.
 # godot --path godot --fixed-fps 60 --script res://bench/death_small_measure.gd -- OUT
 const FX := preload("res://fx/fx.gd")
@@ -126,7 +126,7 @@ func _run() -> void:
 						if node is MeshInstance3D and node.has_meta("fx_picture_kind") and node.get_meta("fx_picture_kind") != "flash": node.visible = false
 				await process_frame
 				await RenderingServer.frame_post_draw
-				vp.get_texture().get_image().get_region(Rect2i(640, 300, 640, 480)).save_png(folder.path_join("%03d.png" % frame))
+				preload("res://tools/picture_provenance.gd").save_png(vp.get_texture().get_image().get_region(Rect2i(640, 300, 640, 480)), folder.path_join("%03d.png" % frame))
 			fx.release()
 			if measured_ship != null: measured_ship.queue_free()
 			world.remove_child(fx)

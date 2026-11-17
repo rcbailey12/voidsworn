@@ -1,0 +1,567 @@
+{
+  "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+  "source_diff_sha256": "f198c1cdd3981263bd375f566473a34c970a80fa1844260a7ee6892cd11f0afb",
+  "source_files": {
+    "fx_ship.gd": "8a21d322e07d47647b84f09b518719a6ca62a821eb0be70625de2bdb9a494d7e",
+    "fx_shaders.gd": "6281b778bd87faf35713fd716afa5e6c7ae6d1914877c593deae35bfb860e0b8"
+  },
+  "pixel_comparison": {
+    "voidsworn_shield__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "voidsworn_shield__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "voidsworn_hull__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "voidsworn_hull__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "hegemony_shield__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "hegemony_shield__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "hegemony_hull__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "hegemony_hull__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "corsair_shield__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "corsair_shield__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "corsair_hull__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "corsair_hull__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "ithar_shield__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "ithar_shield__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "ithar_hull__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "ithar_hull__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "whole_ithar_shield__c170.png": {
+      "mean": 0.0,
+      "max": 0
+    },
+    "whole_ithar_shield__c60.png": {
+      "mean": 0.0,
+      "max": 0
+    }
+  },
+  "repeatability": {
+    "main_valid": {
+      "strips": 18,
+      "max_difference": 0
+    },
+    "egg": {
+      "strips": 18,
+      "max_difference": 0
+    },
+    "fitted": {
+      "strips": 8,
+      "max_difference": 0
+    },
+    "main_wide": {
+      "strips": 2,
+      "max_difference": 0
+    },
+    "egg_wide": {
+      "strips": 2,
+      "max_difference": 0
+    },
+    "fitted_wide": {
+      "strips": 2,
+      "max_difference": 0
+    }
+  },
+  "frame_gate": {
+    "main": {
+      "base": [
+        {
+          "gpu_ms": 2.53500008583069,
+          "frame_ms": 4.264
+        }
+      ],
+      "res_2160": [
+        {
+          "gpu_ms": 5.59299993515015,
+          "frame_ms": 6.036
+        }
+      ]
+    },
+    "egg": {
+      "base": [
+        {
+          "gpu_ms": 2.53200006484985,
+          "frame_ms": 4.598
+        },
+        {
+          "gpu_ms": 2.52099990844727,
+          "frame_ms": 6.553
+        },
+        {
+          "gpu_ms": 2.58400011062622,
+          "frame_ms": 6.308
+        }
+      ],
+      "res_2160": [
+        {
+          "gpu_ms": 5.55800008773804,
+          "frame_ms": 6.45
+        },
+        {
+          "gpu_ms": 5.58300018310547,
+          "frame_ms": 7.569
+        },
+        {
+          "gpu_ms": 5.55200004577637,
+          "frame_ms": 6.331
+        }
+      ]
+    },
+    "fitted": {
+      "base": [
+        {
+          "gpu_ms": 2.51699995994568,
+          "frame_ms": 6.287
+        },
+        {
+          "gpu_ms": 2.49900007247925,
+          "frame_ms": 5.94
+        },
+        {
+          "gpu_ms": 2.57399988174438,
+          "frame_ms": 5.719
+        }
+      ],
+      "res_2160": [
+        {
+          "gpu_ms": 5.55499982833862,
+          "frame_ms": 6.328
+        },
+        {
+          "gpu_ms": 5.53900003433228,
+          "frame_ms": 7.743
+        },
+        {
+          "gpu_ms": 5.57200002670288,
+          "frame_ms": 6.246
+        }
+      ]
+    }
+  },
+  "standing_checks": {
+    "passed": 60,
+    "known": 2,
+    "failed": 0,
+    "rows": [
+      [
+        "b1_tests",
+        "PASS",
+        "0.16",
+        "PASS: exit 0\r"
+      ],
+      [
+        "b3_tests",
+        "PASS",
+        "0.20",
+        "PASS: exit 0\r"
+      ],
+      [
+        "b4_tests",
+        "PASS",
+        "0.70",
+        "PASS: exit 0\r"
+      ],
+      [
+        "backlog_tests",
+        "PASS",
+        "0.26",
+        "PASS: exit 0\r"
+      ],
+      [
+        "build_manifest_tests",
+        "PASS",
+        "0.13",
+        "PASS build_manifest_tests: 19 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, voidsworn_S8, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason\r"
+      ],
+      [
+        "campaign_start_test",
+        "PASS",
+        "0.23",
+        "PASS: exit 0\r"
+      ],
+      [
+        "capstone_mastery_tests",
+        "PASS",
+        "0.13",
+        "PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect.\r"
+      ],
+      [
+        "checks_truth_tests",
+        "PASS",
+        "0.09",
+        "PASS: the checks runner result words behave as issue 358 requires\r"
+      ],
+      [
+        "chorus_eat_core_tests",
+        "PASS",
+        "0.12",
+        "PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15.\r"
+      ],
+      [
+        "cinder_prizes_tests",
+        "PASS",
+        "0.16",
+        "PASS: exit 0\r"
+      ],
+      [
+        "core_sync_tests",
+        "PASS",
+        "0.14",
+        "PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings.\r"
+      ],
+      [
+        "doc_check_tests",
+        "PASS",
+        "0.23",
+        "PASS: 136 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 82 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 281) or latest record, and the two stale entry-document claims stay gone\r"
+      ],
+      [
+        "effect_caps_tests",
+        "PASS",
+        "0.09",
+        "PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.\r"
+      ],
+      [
+        "env_reconcile_tests",
+        "PASS",
+        "0.07",
+        "PASS: exit 0\r"
+      ],
+      [
+        "free_exit_tests",
+        "PASS",
+        "0.22",
+        "PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.\r"
+      ],
+      [
+        "fx_death_spawn_tests",
+        "PASS",
+        "4.18",
+        "PASS: the death spawn behaviour check passed on the real hull\r"
+      ],
+      [
+        "fx_late_shader_tests",
+        "PASS",
+        "1.14",
+        "PASS: the late shader behaviour check passed\r"
+      ],
+      [
+        "gen_open_work_tests",
+        "PASS",
+        "0.15",
+        "PASS: 13 open work generator tests (offline)\r"
+      ],
+      [
+        "gpu_slots_tests",
+        "PASS",
+        "14.83",
+        "PASS GPU slot checks (11 groups)\r"
+      ],
+      [
+        "hardpoint_contract_tests",
+        "PASS",
+        "0.21",
+        "PASS the hard point contract tables and standing gate behave\r"
+      ],
+      [
+        "heat_tests",
+        "PASS",
+        "0.11",
+        "PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool.\r"
+      ],
+      [
+        "inheritance_tests",
+        "PASS",
+        "0.11",
+        "PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.\r"
+      ],
+      [
+        "ion_tests",
+        "PASS",
+        "0.13",
+        "PASS: exit 0\r"
+      ],
+      [
+        "lineage_tests",
+        "PASS",
+        "0.13",
+        "PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets.\r"
+      ],
+      [
+        "memory_lint_tests",
+        "PASS",
+        "0.11",
+        "PASS: 170 cited ruling ids all have a contrib/opus/FINDINGS.md row; 17 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 15 LATEST lines (target 15 or fewer)\r"
+      ],
+      [
+        "nemesis_121_tests",
+        "PASS",
+        "0.15",
+        "PASS: exit 0\r"
+      ],
+      [
+        "nemesis_122_tests",
+        "PASS",
+        "0.14",
+        "PASS: exit 0\r"
+      ],
+      [
+        "nemesis_395_tests",
+        "PASS",
+        "0.15",
+        "PASS: exit 0\r"
+      ],
+      [
+        "nemesis_clash_tests",
+        "PASS",
+        "0.33",
+        "PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).\r"
+      ],
+      [
+        "nemesis_teach_tests",
+        "PASS",
+        "0.12",
+        "PASS: exit 0\r"
+      ],
+      [
+        "paint_sheet_camera_tests",
+        "PASS",
+        "0.37",
+        "PASS paint sheet camera: 19 saved cameras and clip edge cases\r"
+      ],
+      [
+        "picture_provenance_tests",
+        "PASS",
+        "5.37",
+        "PASS picture provenance self-test; artifacts kept in C:\\Users\\rcbai\\AppData\\Local\\Temp\\picture889-pnu3rwhu\r"
+      ],
+      [
+        "r1_tests",
+        "PASS",
+        "84.59",
+        "PASS: exit 0\r"
+      ],
+      [
+        "reporting_238_tests",
+        "PASS",
+        "0.32",
+        "PASS MP8 danger bands\r"
+      ],
+      [
+        "runner_job_tests",
+        "PASS",
+        "19.46",
+        "PASS simultaneous Codex and work starts yield exactly one claim; losing run cannot clear it\r"
+      ],
+      [
+        "runner_stall_tests",
+        "PASS",
+        "24.90",
+        "PASS runner stall checks (11 groups)\r"
+      ],
+      [
+        "shadow_xp_tests",
+        "PASS",
+        "0.48",
+        "PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.\r"
+      ],
+      [
+        "shield_pool_tests",
+        "PASS",
+        "0.56",
+        "PASS: exit 0\r"
+      ],
+      [
+        "squadron_auto_tests",
+        "PASS",
+        "0.32",
+        "PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders.\r"
+      ],
+      [
+        "story_beat3_tests",
+        "PASS",
+        "0.32",
+        "PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry.\r"
+      ],
+      [
+        "ui_spec_tests",
+        "PASS",
+        "0.22",
+        "PASS: exit 0\r"
+      ],
+      [
+        "weapon_match_tests",
+        "PASS",
+        "0.26",
+        "PASS weapon match self-test (36 planted faults, 19 sheet ships in the table)\r"
+      ],
+      [
+        "progression_telemetry_test",
+        "PASS",
+        "0.11",
+        "PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin.\r"
+      ],
+      [
+        "tree_effects_test",
+        "PASS",
+        "133.04",
+        "PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says\r"
+      ],
+      [
+        "tree_handoff_test",
+        "PASS",
+        "0.12",
+        "PASS: real campaign picks reach the battle for all six factions (four skills each):\r"
+      ],
+      [
+        "tree_table_walk_test",
+        "PASS",
+        "0.57",
+        "PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked\r"
+      ],
+      [
+        "tree_last_rows_test",
+        "PASS",
+        "3.26",
+        "PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers\r"
+      ],
+      [
+        "oracle_copy_test",
+        "PASS",
+        "0.24",
+        "PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files\r"
+      ],
+      [
+        "runner_selftest",
+        "PASS",
+        "524.09",
+        "PASS runner687+722: 81 checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\r"
+      ],
+      [
+        "stage5_fail_selftest",
+        "PASS",
+        "52.30",
+        "PASS stage5_fail_selftest: 16 checks, fake executables only, no GPU, no network.\r"
+      ],
+      [
+        "nem_assign_enum",
+        "PASS",
+        "0.67",
+        "PASS: all issue 120 enumeration checks\r"
+      ],
+      [
+        "nem_direct_reads_report",
+        "PASS",
+        "0.50",
+        "PASS: report only, 202 direct save reads outside godot/campaign (main 9, render 7, scenes 48, story 41, tools 3, ui 92, world 2)\r"
+      ],
+      [
+        "naming_lint_game.test",
+        "PASS",
+        "0.38",
+        "PASS: exit 0\r"
+      ],
+      [
+        "naming_lint_game",
+        "PASS",
+        "58.34",
+        "PASS: naming lint within the baseline\r"
+      ],
+      [
+        "checks",
+        "PASS",
+        "0.13",
+        "PASS: within the pack baseline\r"
+      ],
+      [
+        "fleet_invariants",
+        "PASS",
+        "0.46",
+        "PASS: exit 0\r"
+      ],
+      [
+        "save_fuzz",
+        "PASS",
+        "0.10",
+        "PASS: exit 0\r"
+      ],
+      [
+        "softlock_sweep",
+        "PASS",
+        "23.40",
+        "PASS: exit 0\r"
+      ],
+      [
+        "table_xref",
+        "PASS",
+        "0.08",
+        "PASS: exit 0\r"
+      ],
+      [
+        "findings_tests",
+        "KNOWN",
+        "1.09",
+        "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5\r"
+      ],
+      [
+        "oracle_drift_guard",
+        "KNOWN",
+        "0.61",
+        "KNOWN: 12 constant difference(s) within the baseline\r"
+      ],
+      [
+        "fixture_check",
+        "PASS",
+        "0.24",
+        "PASS fixture corrupt2 pair\r"
+      ]
+    ]
+  },
+  "destruction": "Batch exit 0; geometry, plane, staging, smoke, flash area, hit recipe, spawn, playtest, blockers, inside and fleet probes passed.",
+  "shield_probe": "Both settings, four real cruisers, 32 fitted collider rays; no impact or collapse gas/smoke sprites; hit strength/life/spread preserved.",
+  "existing_error": "death_spawn_check.gd:132 logs two missing spawn_frame metadata errors. Reproduced on unchanged main; both runs report 31 pictures, 31 recorded, 0 stray, 0 check errors and PASS.",
+  "capture_notes": "Second runs retained. One exterior_alpha late-shader log exists in main and both variants; no capture errors or placeholder hulls. All source .gd files match the tested final backups."
+}

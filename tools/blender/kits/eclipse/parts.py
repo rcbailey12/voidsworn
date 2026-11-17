@@ -49,6 +49,7 @@ SUBPARTS = {
     'spire': ['ring|plate', 'spire', 'band', 'sight', 'head', 'shade', 'corona', 'needle', 'collar'],
     'corona_arc': ['breech', 'segment', 'capacitor', 'conduit', 'emitter', 'shade', 'corona', 'lens', 'horn'],
     'core': ['hub', 'sphere', 'gimbal', 'bar'],
+    'reactor_core': ['hub', 'facet', 'gimbal', 'bar', 'armour', 'vent', 'seam'],
     'strut': ['rail', 'web', 'lug'],
     'corewin': ['rim', 'glass', 'bar'],
     'hatch': ['rim', 'door', 'seam', 'hinge'],
@@ -640,6 +641,67 @@ def _torus(R, rs, axis, n=32, m=6):
             a = i * m + j; b = i * m + (j + 1) % m; c = ((i + 1) % n) * m + (j + 1) % m; d = ((i + 1) % n) * m + j
             F.append((a, b, c, d))
     return V, F
+
+
+def reactor_core(r):
+    """E12's R289 core: a faceted reactor behind ordered shade petals, with narrow viewing slots.
+    The existing hubs and gimbals keep the spine connection. Three plate courses close over the
+    reactor; recessed cooling bands and bright seam rings show through the slots. Other cores
+    keep core_cage(). Colours and emission come from the unchanged Eclipse paint stack.
+    """
+    p = Part('core'); p.type = 'reactor_core'
+    hr = r * 0.42
+    profile = [(-.62 * r, .32 * r), (-.38 * r, .65 * r), (0, .74 * r),
+               (.38 * r, .65 * r), (.62 * r, .32 * r)]
+    vertices, faces = revolve(profile, 16, cap0=True, cap1=True, phase=math.pi / 16)
+    thermal_faces = []
+    for face in faces:
+        if len(face) != 4:
+            thermal_faces.append(face)
+            continue
+        centre = sum((Vector(vertices[i]) for i in face), Vector()) / 4
+        ci = len(vertices); vertices.append(tuple(centre))
+        thermal_faces.extend((face[i], face[(i + 1) % 4], ci) for i in range(4))
+    # Each flat facet has its own centre vertex. The stack reads this topology to bake cool
+    # facet centres and hot seams, without adding a colour or changing any other ship's glow.
+    p.add('reactor_facet', 'reactor', 'ecore', (vertices, thermal_faces))
+    for sign in (-1, 1):
+        prof = [(sign * r * .55, hr * 1.25), (sign * r * 1.12, hr * 1.25),
+                (sign * r * 1.12, hr * .8), (sign * r * .55, hr * .8)]
+        p.add('hub%d' % (sign > 0), 'mount', 'mauve', revolve(prof if sign > 0 else prof[::-1], 8, closed=True, phase=math.pi / 8))
+    p.add('gimbal0', 'body', 'gunv', _torus(r * .96, r * .07, 'X', 36, 6))
+    p.add('gimbal1', 'body', 'gunv', _torus(r * .9, r * .06, 'Z', 36, 6))
+
+    # Concentric cooling bands interrupt the light; their narrow outer seams catch the hot glow.
+    for j, (x, radius) in enumerate(((-.29, .671), (0, .747), (.29, .671))):
+        p.add('cooling%d_vent' % j, 'body', 'gunv', moved(_torus(r * radius, r * .025, 'X', 32, 6), Matrix.Translation((r * x, 0, 0))))
+        p.add('cooling%d_seam' % j, 'body', 'corona', moved(_torus(r * (radius + .012), r * .009, 'X', 32, 6), Matrix.Translation((r * (x + .027), 0, 0))))
+
+    def shell(phi, angle):
+        return Vector((r * .88 * math.sin(phi), r * .88 * math.cos(phi) * math.cos(angle),
+                       r * .88 * math.cos(phi) * math.sin(angle)))
+
+    # Eight identical petals, three aligned bevelled panels each, with a real gap between petals.
+    # Opening width is a visual tuning value; the report measures the visible reactor at both cameras.
+    half_width = math.radians(15)
+    for k in range(8):
+        a = k * math.pi / 4
+        for j, (lo, hi) in enumerate(((-60, -21), (-19, 19), (21, 60))):
+            ph0, ph1 = math.radians(lo), math.radians(hi)
+            base = [shell(ph0, a - half_width), shell(ph0, a + half_width),
+                    shell(ph1, a + half_width), shell(ph1, a - half_width)]
+            normal = Vector((math.sin((ph0 + ph1) / 2), math.cos((ph0 + ph1) / 2) * math.cos(a),
+                             math.cos((ph0 + ph1) / 2) * math.sin(a)))
+            slab, fasteners = plate_slab(base, normal, r * .035, rivets=True, rr=r * .012)
+            p.add('petal%d_%d_armour' % (k, j), 'body', ('shade2', 'violet', 'shade2')[j], slab)
+            p.add('petal%d_%d_fastener' % (k, j), 'body', 'steel', fasteners)
+        # The outer load rail joins the plates to the hub and leaves the viewing slot clear.
+        pts = [shell(math.radians(t), a) + Vector((0, math.cos(a), math.sin(a))) * r * .055
+               for t in (-65, -40, 0, 40, 65)]
+        for j, (u, v) in enumerate(zip(pts, pts[1:])):
+            p.add('petal%d_%d_bar' % (k, j), 'body', 'gunv', rod(u, v, r * .025, 6))
+    p.fit = dict(centre=P((0, 0, 0)), radius=r)
+    return p
 
 
 def core_cage(r, hub_r=None, seg=24):
