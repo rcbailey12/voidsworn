@@ -131,15 +131,12 @@ function buildChecks() {
   const add = (file, extra = [], kind = 'normal', timeout = 300, gate = false, fast = false) => {
     checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout, gate, fast });
   };
-  // Issue 946: --fast runs the rows that are actually fast. A row is marked fast in its
-  // add() line below (or in FAST_AUTO for the auto-discovered rows) from a timed normal
-  // run, never from its limit: on Nov 16, 2026 a full run on the Muse seat timed every
-  // row, and each marked row finished under 30 s (most under 1 s). Not marked: the rows
-  // that timed over 30 s (r1_tests 89 s, tree_effects_test 180 s, naming_lint_game 74 s,
-  // softlock_sweep 30 s) and the two rows that failed on the timing host
-  // (picture_provenance_tests, runner_job_tests), which stay unmarked until a clean run
-  // times them. Re-time and move the mark when a row's cost changes; fast_selection_test.js
-  // holds the selection to exactly the marked rows plus the gate.
+  // Issue 946: mark fast rows in add() or FAST_AUTO using a complete run under 30 s.
+  // A timing must include any platform-specific work. On Windows issue 962 timed
+  // runner_selftest at 205 s and stage5_fail_selftest at 126 s, so both stay unmarked.
+  // The same run timed the Windows gpu_slots and runner_stall probes under 15 s.
+  // Issue 975 timed fx_death_spawn_tests under 5 s with the real hull.
+  // Re-time when a row's cost changes. Gate rows always run.
   const FAST_AUTO = new Set([
     'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
     'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
@@ -164,9 +161,9 @@ function buildChecks() {
   add(OPUS + 'tree_table_walk_test.js', [], 'normal', 300, false, true); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
   add(OPUS + 'tree_last_rows_test.js', [], 'normal', 300, false, true); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
   add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
-  add('tools/pc/runner_selftest.js', [], 'normal', 600, false, true); // #687: free PC runner fault tests; static contract check on other hosts
+  add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
-  add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600, false, true); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
+  add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
   add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
   add(OPUS + 'nem_direct_reads_report.js', [], 'normal', 300, false, true); // #364: report only, the count of direct save reads outside godot/campaign/
   add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
