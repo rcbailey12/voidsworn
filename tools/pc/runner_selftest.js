@@ -150,8 +150,10 @@ const base = fixtureCommit({ 'progress.txt': 'base\n' });
 const partial = fixtureCommit({ 'progress.txt': 'from partial\n' }, base,
   '\n## Runner resume note (issue 818)\nStop reason: STALLED after 30 min\nChanged files: progress.txt\nLast log lines: saved work before stopping\n## End runner resume note\n');
 const conflicting = fixtureCommit({ 'progress.txt': 'conflicting main\n' }, base);
+const otherSeatTip = fixtureCommit({ 'progress.txt': 'base\n', 'other-seat.txt': 'from the other seat\n' }, base);
 write(path.join(source, 'HEAD'), 'ref: refs/heads/main\n');
 write(path.join(source, 'refs/heads/main'), base + '\n');
+write(path.join(source, 'refs/heads/opus/issue-687'), otherSeatTip + '\n');
 const arms = ['opus', 'sonnet', 'openai', 'deepseek', 'kimi', 'kimicode', 'codex'];
 for (const arm of arms) write(path.join(source, 'refs/heads', (arm === 'codex' ? 'codex/issue-687' : 'work/issue-687-' + arm) + '-partial'), partial + '\n');
 const agent = path.join(root, 'stub agent.bat');
@@ -265,8 +267,13 @@ async function job(arm, label, extra = {}) {
     if (label === 'same-seat') db.issue.body = db.issue.body.replace('## THIS IS THE JOB NOW', '**Run 2: THIS IS THE JOB NOW.** Inline instructions.').replace('## Earlier run (DONE)', 'Run 1 (DONE):');
     if (label === 'closed') db.issue.state = 'closed';
     if (label === 'claimed') db.running = true;
-    if (label === 'other-pr') db.pulls = [{ number: 700, head: { ref: 'opus/issue-687' } }];
-    if (label === 'other-branch') db.branches.push({ name: 'opus/issue-687' });
+    if (['other-pr', 'other-branch', 'other-branch-base'].includes(label)) {
+      const branch = 'opus/issue-687';
+      db.branches.push({ name: branch, commit: { sha: otherSeatTip } });
+      db.comparisons[otherSeatTip] = { status: 'ahead' };
+      if (label !== 'other-branch') db.issue.body = db.issue.body.replace('Done when:', `Base: ${branch}\nDone when:`);
+      if (label === 'other-pr') db.pulls = [{ number: 700, head: { ref: branch } }];
+    }
     if (label === 'no-effort') db.issue.body = db.issue.body.replace('Effort (Codex): high\n', '');
     if (label === 'new-job') db.issue.body = db.issue.body.split('\n\n## THIS IS THE JOB NOW')[0] + '\n\nFinish the new fixture job.\n';
     if (label === 'two-fixed') {
@@ -590,7 +597,7 @@ try {
   } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
   await parallelArms(['codex', 'deepseek', 'kimi', 'kimicode'], async arm => {
     for (const [scenario, reason] of [['closed', 'not an open job'], ['claimed', 'already carries running'],
-      ['other-pr', 'open PR #700'], ['other-branch', 'delivery branch opus/issue-687'], ['no-current', 'found 0'], ['two-current', 'found 2'],
+      ['other-pr', 'open PR #700'], ['other-branch', 'delivery branch opus/issue-687 from another seat exists'], ['no-current', 'found 0'], ['two-current', 'found 2'],
       ['two-fixed', 'fixed blocks: 2']]) {
       const r = await job(arm, scenario);
       assert.equal(r.code, 14, r.text + '\n' + r.result);
@@ -602,6 +609,12 @@ try {
       assert.equal(JSON.parse(read(r.env.PC_TEST_GH_DB)).running, scenario === 'claimed');
       pass(arm + ': ' + scenario + ' refuses before checkout, probe or agent, with no GitHub writes');
     }
+    const fromBase = await job(arm, 'other-branch-base');
+    assert.equal(fromBase.code, 0, fromBase.text + '\n' + fromBase.result);
+    assert(fromBase.result.includes("Base branch opus/issue-687 from another seat is this job's Base; does not block issue #687"), fromBase.result);
+    assert.equal(read(path.join(fromBase.repo, 'other-seat.txt')), 'from the other seat\n');
+    assert(fs.existsSync(path.join(fromBase.repo, 'agent_started.txt')), fromBase.result);
+    pass(arm + ': other-seat branch named as Base passes validation, merges and starts the agent');
     const rerun = await job(arm, 'same-seat');
     assert.equal(rerun.code, 0, rerun.text + '\n' + rerun.result);
     assert(fs.existsSync(path.join(rerun.repo, 'agent_started.txt')), rerun.result);

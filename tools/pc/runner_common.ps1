@@ -391,6 +391,9 @@ function Seat-Prefix($seat, $branch) {
   if ($seat -in @('codex','opus','muse')) { return $seat }
   return 'work'
 }
+function Find-BaseLines($body) {
+  [regex]::Matches($body, '(?im)^[ \t]*Base:[ \t]*([^\r\n]*)')
+}
 function Validate-Job($i, $issue, $prefix, $pulls, $branches) {
   if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
   if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
@@ -402,8 +405,14 @@ function Validate-Job($i, $issue, $prefix, $pulls, $branches) {
       if (($ref -split '/')[0] -ne $prefix) { throw "job refused: open PR #$($pr.number) from other seat $ref covers issue #$issue; no agent started" }
     }
   }
+  $baseLines = @(Find-BaseLines $body)
+  $base = if ($baseLines.Count -eq 1) { $baseLines[0].Groups[1].Value.Trim() }
   foreach ($branch in $branches) {
     if ($branch.name -match $jobBranch -and ([string]$branch.name -split '/')[0] -ne $prefix) {
+      if ([string]::Equals($branch.name, $base, [StringComparison]::Ordinal)) {
+        Log "Base branch $($branch.name) from another seat is this job's Base; does not block issue #$issue"
+        continue
+      }
       $tip = [string]$branch.commit.sha
       if ($tip -notmatch '^[0-9a-f]{40,64}$') { throw "job refused: cannot verify tip of delivery branch $($branch.name) for issue #$issue; no agent started" }
       $compare = Require-Gh 'GET' "compare/main...$tip"
@@ -565,7 +574,7 @@ try {
   elseif ($mode -eq 'base') {
     $repo = $args[1]; $script:out = $args[2]
     $body = [IO.File]::ReadAllText($args[3])
-    $lines = [regex]::Matches($body, '(?im)^[ \t]*Base:[ \t]*([^\r\n]*)')
+    $lines = @(Find-BaseLines $body)
     if ($lines.Count -eq 0) { exit 0 }
     if ($lines.Count -ne 1) { throw 'Base merge stopped: use one Base: <branch> line; no agent started' }
     $base = $lines[0].Groups[1].Value.Trim()
