@@ -55,7 +55,8 @@ const server = http.createServer((req, res) => {
     const msgs = j.messages || (j.input || []).map(m => m.type === 'function_call_output' ? { role: 'tool', content: m.output } : m);
     const toolMsgs = msgs.filter(m => m.role === 'tool');
     if (toolMsgs.length) say('tool result: ' + JSON.stringify(toolMsgs[toolMsgs.length - 1].content).slice(0, 1500));
-    say(req.method + ' ' + req.url + ' model=' + j.model + ' tools=' + (j.tools || []).length + ' messages=' + msgs.length);
+    const effort = responses ? ' reasoning.effort=' + (j.reasoning?.effort ?? 'unset') : '';
+    say(req.method + ' ' + req.url + ' model=' + j.model + effort + ' tools=' + (j.tools || []).length + ' messages=' + msgs.length);
     if (!responses && !req.url.includes('chat/completions')) { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"object":"list","data":[]}'); }
     let delta, fin;
     const step = toolMsgs.length;

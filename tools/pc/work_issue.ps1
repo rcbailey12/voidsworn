@@ -103,6 +103,7 @@ function Read-Txt($p) { if (Test-Path $p) { return ([IO.File]::ReadAllText($p)).
 # Issue 985: one price table, USD per million tokens (Board's standard rates, Nov 17 2026).
 # OpenCode step_finish input excludes cache reads; its visible output and reasoning are separate counts.
 $openaiPrices = @{
+  'openai/gpt-6.2-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
   'openai/gpt-6.1-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
   'openai/gpt-6.1-terra' = @{ input = [decimal]1; cached = [decimal]0.05; output = [decimal]5 }
 }

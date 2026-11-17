@@ -10,9 +10,18 @@ each live run and passes it through its local environment. It never reads or cha
 setting, so Codex keeps its ChatGPT sign-in. Ryan sets a monthly budget in the OpenAI platform settings too.
 
 The Board runs `RUN_RETRY.bat <issue> openai 7200` using its installed retry launcher, or
-`work_issue.bat <issue> openai` directly (`WORK_CAP=7200` for the same two-hour ceiling). Default OpenCode id:
-`openai/gpt-6.1-sol`. `WORK_MODEL=openai/gpt-6.1-terra` selects the cheaper review model; another provider is ignored.
-Other OpenAI models need a named entry in `openaiPrices` in `work_issue.ps1` before use so spend cannot go unpriced.
+`work_issue.bat <issue> openai` directly (`WORK_CAP=7200` for the same two-hour ceiling). Code jobs default to
+`openai/gpt-6.2-sol` at high effort. For a review, set both `WORK_MODEL=openai/gpt-6.1-terra` and
+`WORK_EFFORT=medium` in the job's launcher. The OpenAI arm accepts `low`, `medium`, `high` or `max` in any case.
+An invalid value falls back to high with an ignored-setting message. The existing provider guard ignores a
+`WORK_MODEL` from another provider. Add a named entry in `openaiPrices` in `work_issue.ps1` and configure the
+model and its variants in OpenCode before using another OpenAI model.
+
+The runner passes `--variant <effort>` to the preflight and the agent, and stamps it in `out\model.txt`,
+`out\status.json` and `out\result.txt`. OpenCode 1.19.5 merges the selected model variant's
+`reasoningEffort` into the provider options. The OpenAI Responses request carries it as `reasoning.effort`.
+[OpenCode 1.19.5 request source](https://github.com/anomalyco/opencode/blob/v1.19.5/packages/opencode/src/session/llm/request.ts#L71-L82)
+
 The arm uses `opencode_lean.json` with helper tasks disabled and the same preflight, guards, model stamp, partial pushes
 and standing checks as Sonnet. It disables bundled plugins for the run so an OpenCode ChatGPT OAuth login cannot replace
 the API endpoint. Deploy `openai_api_key.bat`, `work/mock_llm.js` and both changed OpenCode configs with the runner files.
@@ -39,18 +48,20 @@ the lock is free. Rerun the `openai-budget` helper to confirm the ledger and rem
 `out\openai_estimate.txt`, `result.txt` and `stats.txt` carry the run estimate. Counts come from OpenCode's emitted
 `step_finish` stats for the preflight and agent, including cache reads. OpenCode input is uncached input; output
 and reasoning are separate, so the ledger adds both at the output rate. The single price table uses the brief's USD per million
-tokens: Sol input 2.00, cached input 0.10, output 10.00; Terra 1.00, 0.05, 5.00
+tokens: 6.2 Sol and 6.1 Sol each use 2.00 input, 0.10 cached input and 10.00 output. 6.1 Terra uses 1.00, 0.05 and 5.00
 ([OpenAI pricing](https://developers.openai.com/api/docs/pricing)). These are estimates from emitted usage, not a billing
 balance: hidden title calls or interrupted responses without final usage may be absent, and long-context or service-tier
 surcharges are not included in the brief's flat rates. An in-flight run can cross the
 budget, and simultaneous starts can both pass it; the check stops later starts. The platform budget is Ryan's separate setting.
 
 Free proof: `tools\pc\runner_selftest.bat` includes the OpenAI arm with stub agents, no key and no network. It checks
-model resolution/stamps, missing-key refusal, provider overrides, spend arithmetic, repeat recording, month rollover and
-budget refusal. Missing token fields, an invalid ledger and a busy ledger lock each prove that agent changes reach the
+model and effort in the preflight and agent commands and run records, ignored settings on other arms, missing-key
+refusal, provider overrides, spend arithmetic, repeat recording, month rollover and budget refusal. Missing token
+fields, an invalid ledger and a busy ledger lock each prove that agent changes reach the
 partial branch and the next paid start is refused. Those fault cases commit and push only to tiny local TEMP remotes.
-Ordinary `work_issue.bat <issue> openai dryrun` uses the local stand-in provider in `opencode_mock.json`;
-it never loads the saved OpenAI key or adds spend to the real ledger. Like the older arms' dry runs it still uses GitHub
+Ordinary `work_issue.bat <issue> openai dryrun` uses the local stand-in provider in `opencode_mock.json`, which logs
+the request's `reasoning.effort` in `out\mock_log.txt`. It never loads the saved OpenAI key or adds spend to the
+real ledger. Like the older arms' dry runs it still uses GitHub
 for checkout and push validation. The selftest isolates those too and never publishes to GitHub.
 
 Ryan's two double-click files (copies sit in Downloads\voidsworn_test; the scripts they call are in Downloads\voidsworn_test\work217\tools\):
@@ -199,14 +210,14 @@ hashwrite/hashcheck agreement, mismatch, missing file, and a full run that start
 Test-only knobs: PC_TEST_SETTINGS (settings file), PC_TEST_SPACE_FREE_MB (fake free space in MB), PC_TEST_HASHES
 (hashes file). Never set these on a real job.
 
-## Reasoning effort (issue 656, Opus, Nov 13 2026)
+## Legacy Kimi reasoning effort (issue 656, Opus, Nov 13 2026)
 
 Live kimicode jobs now use Kimi Code CLI (issue 687). WORK_EFFORT and the OpenCode variants below apply to the legacy
 OpenCode dry-run path only; the CLI uses its own saved settings and WORK_KIMI_MODEL. This patch adds no CLI effort flag.
 
 - `WORK_EFFORT=low`, `high` or `max` (any case) before calling work_issue.bat adds `--variant <effort>` to the OpenCode run.
-  Unset, nothing is added and every arm runs as before. Only the kimicode arm takes it; on any other arm, or with any other
-  value, the runner prints "WORK_EFFORT ... ignored" and runs at the default. The effort shows in out\model.txt and the
+  Leaving it unset uses the default. The legacy kimicode path and the OpenAI arm above accept `WORK_EFFORT`.
+  Other arms ignore it with a message. The effort shows in out\model.txt and the
   "model:" line of stats.txt (for example `kimicode/kimi-for-coding --variant low`).
 - The variants live in opencode_lean.json (and the stand-in copy in opencode_mock.json): each kimicode model has
   `variants.low/high/max = { "reasoningEffort": "<effort>" }`, which OpenCode 1.19.5 sends to the API as the body field

@@ -61,26 +61,28 @@ rem sonnet: Claude Sonnet 5.5 on the Max plan's monthly API credits (Ryan, Nov 1
 if /i "%ARM%"=="sonnet" set "MODEL=anthropic/claude-sonnet-5-5"
 rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use it as another opus worker")
 if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
-if /i "%ARM%"=="openai" set "MODEL=openai/gpt-6.1-sol"
+if /i "%ARM%"=="openai" set "MODEL=openai/gpt-6.2-sol"
 if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-opus-or-openai [dryrun] & exit /b 2)
 rem The arm default, captured before WORK_MODEL below: issue 722 stamps the resolved model and warns when it differs.
 set "DEFAULT_MODEL=%MODEL%"
 rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
 rem queue watcher's window, and three later opus-arm runs ran on Kimi and stopped on its quota); one from another provider is ignored
 if defined WORK_MODEL for /f "tokens=1 delims=/" %%P in ("%MODEL%") do for /f "tokens=1 delims=/" %%Q in ("%WORK_MODEL%") do if /i "%%P"=="%%Q" (set "MODEL=%WORK_MODEL%") else (echo WORK_MODEL %WORK_MODEL% ignored: arm %ARM% runs on %%P)
-rem WORK_EFFORT (issue 656, Opus, Nov 13 2026): optional reasoning effort for the run, low, high or max. It becomes OpenCode's
-rem "--variant <effort>", which picks the model's variant in work\opencode_lean.json (variant low sends reasoning_effort "low" to
-rem the API; proof: contrib/opus/reviews/kimi_effort_smoke_656.md). Unset, nothing is added and every arm runs exactly as before.
-rem Only the kimicode arm takes it (its models are the ones with variants written and measured); on any other arm it is ignored
-rem with a line, so a WORK_EFFORT left in the queue watcher's window cannot change an opus or deepseek run (the WORK_MODEL trap).
-set "VARIANT="
+rem OpenAI defaults to high. Legacy kimicode OpenCode dry runs keep the issue 656 variants.
+rem Other arms ignore WORK_EFFORT so a setting left in the queue watcher's window cannot change them.
+set "EFFORT="
+set "EFFORT_LEVELS="
+if /i "%ARM%"=="kimicode" set "EFFORT_LEVELS=low high max"
+if /i "%ARM%"=="openai" set "EFFORT_LEVELS=low medium high max"
 if not defined WORK_EFFORT goto :effortset
-echo %WORK_EFFORT%| findstr /i /x "low high max" > nul
-if errorlevel 1 (echo WORK_EFFORT %WORK_EFFORT% ignored: use low, high or max & goto :effortset)
-if /i not "%ARM%"=="kimicode" (echo WORK_EFFORT %WORK_EFFORT% ignored: only the kimicode arm takes an effort & goto :effortset)
-rem written in lower case: OpenCode's variant names are case sensitive
-for %%L in (low high max) do if /i "%WORK_EFFORT%"=="%%L" set "VARIANT=--variant %%L"
+if not defined EFFORT_LEVELS (echo WORK_EFFORT ignored: only openai and legacy kimicode take an effort & goto :effortset)
+rem OpenCode variant names are case sensitive. Stamp and pass the same lowercase value.
+for %%L in (%EFFORT_LEVELS%) do if /i "%WORK_EFFORT%"=="%%L" set "EFFORT=%%L"
+if not defined EFFORT echo WORK_EFFORT ignored: use one of %EFFORT_LEVELS%
 :effortset
+if /i "%ARM%"=="openai" if not defined EFFORT set "EFFORT=high"
+set "VARIANT="
+if defined EFFORT set "VARIANT=--variant %EFFORT%"
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
 rem The same bundled Node 22 for the runner's own check step (a quoted full path survives the time-limit wrapper)
@@ -115,6 +117,7 @@ if /i "%ARM%"=="kimicode" if "%PC_RUNNER_TEST%"=="1" set "KHARNESS=1"
 if defined KHARNESS set "RESOLVED=%KMODEL%"
 if defined KHARNESS set "DEFAULT_MODEL=kimi-code/kimi-for-coding"
 set "OC=%APPDATA%\npm\opencode.cmd"
+if "%PC_RUNNER_TEST%"=="1" if /i "%ARM%"=="openai" set "OC=%WORK_TEST_AGENT%"
 set "BR=work/issue-%N%-%ARM%"
 rem How the run ends: real pushes to GitHub; dry is "git push --dry-run"; test pushes for real to WORK_TEST_BRANCH.
 set "PUSHMODE=real"
@@ -165,6 +168,11 @@ rem (722) The Board's hashes guard the running copies; a mismatch warns and the 
 %COMMON% hashcheck "%O%" "%TC%" "%HASHF%"
 rem (722) Stamp the resolved model before the wait so every later state of the run names it.
 %COMMON% model "%O%" "%RESOLVED%" "%DEFAULT_MODEL%"
+if /i "%ARM%"=="openai" (
+  %COMMON% effort "%O%" "%EFFORT%"
+  if errorlevel 1 goto :setupfail
+  echo %MODEL% %VARIANT%> "%O%\model.txt"
+)
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
 rem Refuse unpriced models and spent budgets before checkout or any paid probe. Dry runs never touch the ledger.
@@ -175,7 +183,9 @@ if /i "%ARM%"=="openai" (
 rem Every work arm, including Kimi, validates and claims before tools, checkout or model calls (issue 888).
 %COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
-if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
+if /i not "%ARM%"=="openai" (
+  if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
+)
 if "%PC_RUNNER_TEST%"=="1" goto :toolsready
 if /i "%ARM%"=="kimicode" goto :toolsready
 if not exist "%OC%" (echo OpenCode is not installed: run WORKHORSE_SETUP.bat first >> "%O%\result.txt" & goto :setupfail)
@@ -275,6 +285,7 @@ set "TMO_REPO=%R%"
 set "TMO_OUT=%O%"
 set "TMO_LOG=%O%\log.txt"
 set "TMO_ERR_LOG=%O%\stderr.txt"
+if /i "%ARM%"=="openai" goto :agent_oc
 if "%PC_RUNNER_TEST%"=="1" goto :testagent
 if /i "%MODE%"=="dryrun" goto :agent_oc
 rem The kimicode arm uses Kimi Code CLI and the PC user's plan login, matching its preflight.

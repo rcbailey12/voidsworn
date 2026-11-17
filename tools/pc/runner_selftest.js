@@ -55,15 +55,23 @@ pass('GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the
 const workBat = read(path.join(here, 'work_issue.bat'));
 const lean = JSON.parse(read(path.join(here, 'work/opencode_lean.json')));
 const mock = JSON.parse(read(path.join(here, 'work/opencode_mock.json')));
-assert(workBat.includes('"MODEL=openai/gpt-6.1-sol"'));
+const openaiDefault = 'openai/gpt-6.2-sol';
+const openaiReview = 'openai/gpt-6.1-terra';
+assert(workBat.includes('"MODEL=' + openaiDefault + '"'));
 assert(workBat.includes('if /i "%ARM%"=="openai" set "OPENCODE_CONFIG=%T%work\\opencode_lean.json"'));
 assert(workBat.includes('if /i "%ARM%"=="openai" set "OPENCODE_DISABLE_DEFAULT_PLUGINS=1"'));
 assert.equal(lean.provider.openai.options.baseURL, 'https://api.openai.com/v1');
 assert.equal(lean.provider.openai.options.apiKey, '{env:VOIDSWORN_OPENAI_API_KEY}');
 assert.equal(lean.tools.task, false);
 assert.equal(mock.provider.openai.options.baseURL, 'http://127.0.0.1:8765/v1');
-assert.equal(mock.provider.openai.npm, '@ai-sdk/openai');
-assert(mock.provider.openai.models['gpt-6.1-sol']);
+assert.equal(lean.provider.openai.npm, '@ai-sdk/openai');
+assert.equal(mock.provider.openai.npm, lean.provider.openai.npm);
+assert.deepEqual(mock.provider.openai.models, lean.provider.openai.models);
+for (const id of [openaiDefault, 'openai/gpt-6.1-sol', openaiReview]) {
+  const model = lean.provider.openai.models[id.split('/')[1]];
+  assert.equal(model.reasoning, true);
+  for (const effort of ['low', 'medium', 'high', 'max']) assert.equal(model.variants[effort].reasoningEffort, effort);
+}
 assert(!/(?:getkey|setx|set)\s+"?OPENAI_API_KEY\b/i.test(workBat));
 const openaiKeyBat = read(path.join(here, 'openai_api_key.bat'));
 assert(openaiKeyBat.includes('setx VOIDSWORN_OPENAI_API_KEY "%K%"'));
@@ -171,6 +179,7 @@ if (probe) {
   else if (a[0] === 'exec') { fs.writeFileSync(a[a.indexOf('-o') + 1], 'RUNNER_READY'); console.log('stub codex'); }
   else console.log('RUNNER_READY');
 } else {
+  if (process.env.ARM === 'openai') fs.writeFileSync(process.env.PC_TEST_TRACE + '.agent', JSON.stringify(a));
   const task = fs.existsSync('CODEX_TASK.md') ? 'CODEX_TASK.md' : 'WORK_TASK.md';
   if (fs.readFileSync(task,'utf8').includes('OLD BRIEF MUST NOT REACH AGENT')) process.exit(35);
   if (!fs.readFileSync(task,'utf8').includes('Resumed by merging')) process.exit(31);
@@ -232,7 +241,7 @@ const defaults = {
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
   PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '',
-  VOIDSWORN_OPENAI_API_KEY: '', WORK_MODEL: '', WORK_EFFORT: '',
+  VOIDSWORN_OPENAI_API_KEY: '', OPENAI_API_KEY: '', WORK_MODEL: '', WORK_EFFORT: '',
   GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.invalid', GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.invalid'
 };
 // Most scenarios need real Git only. Avoid a cmd + Node + Git process tree for every harmless Git call.
@@ -288,8 +297,8 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   const spendSettings = path.join(spendRoot, 'runner_settings.txt');
   const ledger = path.join(spendRoot, 'openai_spend.txt');
   const workPS = args => run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'work_issue.ps1'), ...args], { ...defaults });
-  const budget = (model = 'openai/gpt-6.1-sol', dry = '0') => workPS(['openai-budget', spendOut, spendRoot, spendSettings, model, dry]);
-  const spend = (out = spendOut, model = 'openai/gpt-6.1-sol', dry = '0') => workPS(['openai-spend', '985', out, spendRoot, spendSettings, model, dry]);
+  const budget = (model = openaiDefault, dry = '0') => workPS(['openai-budget', spendOut, spendRoot, spendSettings, model, dry]);
+  const spend = (out = spendOut, model = openaiDefault, dry = '0') => workPS(['openai-spend', '985', out, spendRoot, spendSettings, model, dry]);
   const rows = () => read(ledger).trim().split(/\r?\n/).filter(Boolean).map(s => JSON.parse(s));
   assert.equal(workPS(['openai-key', spendOut]).code, 3);
   assert(read(path.join(spendOut, 'result.txt')).includes('no OpenAI API key saved: run OPENAI_API_KEY.bat'));
@@ -298,6 +307,7 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   write(path.join(spendOut, 'events.jsonl'), event(1000000, 2000000, 3000000));
   write(path.join(spendOut, 'preflight_log.txt'), event(100000, 100000, 100000));
   assert.equal(spend().code, 0);
+  assert.equal(rows()[0].model, openaiDefault);
   assert.equal(rows().length, 1); assert.equal(rows()[0].estimated_usd, 35.41);
   assert.equal(rows()[0].running_total_usd, 35.41); assert.equal(rows()[0].budget_usd, 94);
   assert.equal(rows()[0].input, 1100000); assert.equal(rows()[0].cached_input, 2100000); assert.equal(rows()[0].output, 3300000);
@@ -306,6 +316,7 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   write(spendSettings, 'openai_budget_usd=35.41\n');
   assert.equal(budget().code, 3); assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI budget reached'));
   assert.equal(budget('openai/gpt-6.1-sol', '1').code, 0, 'dry run ignores real spend');
+  assert.equal(budget('openai/gpt-6.1-sol').code, 3, 'legacy model stays priced and shares the same budget');
   write(spendSettings, 'openai_budget_usd=36\n'); assert.equal(budget().code, 0);
   write(spendSettings, 'openai_budget_usd=oops\n'); assert.equal(budget().code, 3);
   write(spendSettings, 'openai_budget_usd=94\n'); assert.equal(budget('openai/unpriced').code, 3);
@@ -313,10 +324,10 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   write(spendSettings, 'openai_budget_usd=1\n'); assert.equal(budget().code, 0, 'previous month does not spend this month');
   const terraOut = path.join(spendRoot, 'terra'); write(path.join(terraOut, 'result.txt'), '');
   write(path.join(terraOut, 'events.jsonl'), event(1000000, 2000000, 3000000));
-  assert.equal(spend(terraOut, 'openai/gpt-6.1-terra').code, 0);
+  assert.equal(spend(terraOut, openaiReview).code, 0);
   assert.equal(rows()[1].estimated_usd, 16.6); assert.equal(rows()[1].running_total_usd, 16.6);
   assert.equal(budget().code, 3, 'run crossing budget stops the next start');
-  const beforeDry = read(ledger); assert.equal(spend(terraOut, 'openai/gpt-6.1-terra', '1').code, 0);
+  const beforeDry = read(ledger); assert.equal(spend(terraOut, openaiReview, '1').code, 0);
   assert.equal(read(ledger), beforeDry);
   const unknownOut = path.join(spendRoot, 'unknown'); write(path.join(unknownOut, 'result.txt'), '');
   write(path.join(unknownOut, 'preflight_log.txt'), '{"type":"error","error":{"message":"fixture failed probe"}}\n');
@@ -378,17 +389,28 @@ try {
     write(path.join(source, 'refs/heads', branch), partial + '\n');
     pass('OpenAI ' + fault + ' accounting: guarded partial push retains agent changes, never checked, next paid start refused');
   }
-  const openaiOverride = await job('openai', 'override', { WORK_MODEL: 'openai/gpt-6.1-terra' });
+  function assertOpenAIEffort(r, model, effort) {
+    assert.equal(r.state.model, model);
+    assert.equal(r.state.effort, effort);
+    assert(r.result.includes('effort: ' + effort), r.result);
+    assert.equal(read(path.join(r.out, 'model.txt')).trim(), model + ' --variant ' + effort);
+    for (const trace of [r.env.PC_TEST_TRACE, r.env.PC_TEST_TRACE + '.agent']) {
+      const args = JSON.parse(read(trace));
+      assert.deepEqual(args.slice(args.indexOf('-m'), args.indexOf('-m') + 2), ['-m', model]);
+      assert.deepEqual(args.slice(args.indexOf('--variant'), args.indexOf('--variant') + 2), ['--variant', effort]);
+    }
+  }
+  const openaiOverride = await job('openai', 'override', { WORK_MODEL: openaiReview, WORK_EFFORT: 'MeDiUm' });
   assert.equal(openaiOverride.code, 0, openaiOverride.text + openaiOverride.result);
-  assert.equal(openaiOverride.state.model, 'openai/gpt-6.1-terra');
-  assert(openaiOverride.result.includes('differs from the arm default openai/gpt-6.1-sol'));
+  assertOpenAIEffort(openaiOverride, openaiReview, 'medium');
+  assert(openaiOverride.result.includes('differs from the arm default ' + openaiDefault));
   const wrongProvider = await job('openai', 'provider', { WORK_MODEL: 'anthropic/claude-opus-5-5' });
   assert.equal(wrongProvider.code, 0, wrongProvider.text + wrongProvider.result);
-  assert.equal(wrongProvider.state.model, 'openai/gpt-6.1-sol');
+  assert.equal(wrongProvider.state.model, openaiDefault);
   const unpriced = await job('openai', 'unpriced', { WORK_MODEL: 'openai/unpriced' });
   assert.equal(unpriced.code, 3, unpriced.text + unpriced.result);
   assert(!fs.existsSync(unpriced.env.PC_TEST_TRACE)); assert(!fs.existsSync(unpriced.repo));
-  pass('OpenAI same-provider override stamped, other provider ignored and unpriced model refused before checkout/probe');
+  pass('OpenAI medium review effort reaches probe and agent and is stamped, other provider ignored and unpriced model refused');
   // Issue 860 run 2: exercise the real checkout with local Git data, never publish or discard fixture files.
   function checkoutFixture(label, prepare = () => {}, expectedKeep = false, options = {}) {
     const home = path.join(root, 'reuse-' + label), repo = path.join(home, 'repo'), out = path.join(home, 'out');
@@ -610,7 +632,7 @@ try {
     pass(arm + ': failed status-comment claim stops before checkout or model calls and releases only its label');
   }
   await parallelArms(arms, async arm => {
-    const r = await job(arm, 'resume');
+    const r = await job(arm, 'resume', arm === 'sonnet' ? { WORK_EFFORT: 'medium' } : {});
     assert.equal(r.code, 0, r.text + '\n' + r.result);
     assert(fs.existsSync(path.join(r.repo, 'agent_started.txt')), r.result);
     assert(read(path.join(r.out, arm === 'codex' ? 'CODEX_TASK.md' : 'WORK_TASK.md')).includes('Resumed by merging'));
@@ -619,16 +641,29 @@ try {
     const probe = JSON.parse(read(r.env.PC_TEST_TRACE).trim());
     assert.equal(probe[0], arm === 'codex' ? 'exec' : arm === 'kimicode' ? '-m' : 'run');
     assert.equal(r.state.status, 'unverified');
-    const expectModel = arm === 'codex' ? 'gpt-6.2-sol' : arm === 'kimicode' ? 'kimi-code/kimi-for-coding' : arm === 'kimi' ? 'moonshotai/kimi-k3.1-pro' : arm === 'opus' ? 'anthropic/claude-opus-5-5' : arm === 'sonnet' ? 'anthropic/claude-sonnet-5-5' : 'deepseek/deepseek-flash';
+    const expectModel = {
+      codex: 'gpt-6.2-sol', kimicode: 'kimi-code/kimi-for-coding', kimi: 'moonshotai/kimi-k3.1-pro',
+      opus: 'anthropic/claude-opus-5-5', sonnet: 'anthropic/claude-sonnet-5-5',
+      openai: openaiDefault, deepseek: 'deepseek/deepseek-flash'
+    }[arm];
     assert(r.result.includes('model: ' + expectModel), r.result);
     assert.equal(r.state.model, expectModel);
     if (arm === 'codex') { assert(r.result.includes('effort: high'), r.result); assert.equal(r.state.effort, 'high'); }
     assert(!r.result.includes('differs from the arm default'), r.result);
     assert(!JSON.parse(read(r.env.PC_TEST_GH_DB)).running, 'finished run releases its claim');
     if (arm === 'openai') {
+      assertOpenAIEffort(r, openaiDefault, 'high');
       assert(r.result.includes('dry run, no spend recorded'), r.result);
       assert(read(path.join(r.out, 'stats.txt')).includes('OpenAI estimate USD:'));
       assert(!fs.existsSync(path.join(r.env.WORK_ROOT, 'openai_spend.txt')));
+      pass('OpenAI default model and high effort reach probe and agent and are stamped');
+    }
+    if (arm === 'sonnet') {
+      assert(r.text.includes('WORK_EFFORT ignored'), r.text);
+      assert(!probe.includes('--variant'));
+      assert.equal(r.state.effort, undefined);
+      assert(!r.result.includes('effort:'));
+      pass('Sonnet ignores a leftover WORK_EFFORT setting');
     }
     pass(arm + ': claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish');
     const why = arm === 'kimicode' ? 'provider managed:kimi-code has no credential configured (expired login)' : arm === 'codex' ? 'quota exhausted' : 'credit balance is too low';
