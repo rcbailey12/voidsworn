@@ -112,7 +112,7 @@ async function run(names = process.argv.slice(2)) {
   const retrySeconds = positive('PARITY_RETRY_SECONDS', 300);
   if (!names.length) names = Object.keys(S);
   if (new Set(names).size !== names.length || names.some(n => !Object.hasOwn(S, n) || !/^[a-zA-Z0-9_]+$/.test(n))) throw new Error('unknown or duplicate battle name');
-  root = process.env.PARITY_RUN_ROOT ? path.resolve(process.env.PARITY_RUN_ROOT) : fs.mkdtempSync(path.join(os.tmpdir(), 'voidsworn-parity-'));
+  root = process.env.PARITY_RUN_ROOT ? path.resolve(process.env.PARITY_RUN_ROOT) : fs.mkdtempSync(path.join(process.env.RUNNER_TEMP || os.tmpdir(), 'voidsworn-parity-'));
   fs.mkdirSync(root, { recursive: true });
   if (fs.readdirSync(root).length) throw new Error(`PARITY_RUN_ROOT must be empty: ${root}`);
   for (const dir of ['golden', 'out', 'workers']) fs.mkdirSync(path.join(root, dir));
@@ -171,9 +171,15 @@ async function run(names = process.argv.slice(2)) {
     say(read(log).trim());
     if (!cleanExit(r)) checked(`timing report ${name}`, false);
   }
+  // Path D step 3: use these very same Godot records. This never replaces a parity comparison.
+  const parityFailures = failures;
+  say('[saved] Checking Godot results against the reviewed results in the repo...');
+  const saved = require('../saved/check').check(root, { names, print: say });
+  failures += saved.failures;
   const elapsed = (Date.now() - started) / 1000;
   say(`Whole rules parity step: ${elapsed.toFixed(3)} s`);
-  fs.writeFileSync(path.join(root, 'summary.json'), JSON.stringify({ battles: names.length, workers: manifest.workers.length, failures, started_at: new Date(started).toISOString(), completed_at: new Date().toISOString(), seconds: elapsed }, null, 2));
+  fs.writeFileSync(path.join(root, 'summary.json'), JSON.stringify({ battles: names.length, workers: manifest.workers.length, failures, parity_failures: parityFailures, saved_failures: saved.failures, saved_seconds: saved.seconds, started_at: new Date(started).toISOString(), completed_at: new Date().toISOString(), seconds: elapsed }, null, 2));
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\nWhole rules parity and saved-results step: ${elapsed.toFixed(3)} s (saved comparison: ${saved.seconds.toFixed(3)} s).\n`);
   say(failures ? `FAIL: ${failures} check(s) differ.` : "PASS: the Godot port matches the game's rules exactly.");
   return failures ? 1 : 0;
 }
@@ -183,5 +189,5 @@ async function verify(savedRoot) {
   await verifyBattles(JSON.parse(read(path.join(root, 'batches.json'))));
   return failures ? 1 : 0;
 }
-module.exports = { run, verify };
+module.exports = { run, verify, execute, isolated };
 if (require.main === module) run().then(c => { process.exitCode = c; }).catch(e => { console.error('FAIL: ' + e.stack); process.exitCode = 1; });
