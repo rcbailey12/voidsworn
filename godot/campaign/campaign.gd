@@ -151,6 +151,10 @@ func numstr(n) -> String: # a JS number as the browser prints it in text
 	var f = float(n)
 	if f == floor(f) and absf(f) < 1e15: return str(int(f))
 	return str(f)
+static func hull_text(n) -> String: # a hull figure as a whole number, rounded up so a live ship never reads 0 (issue 932)
+	var f = float(n)
+	if f <= 0.0: return "0"
+	return str(int(ceil(f)))
 func toast(msg: String) -> void: toasts.append(msg)
 func tel(ev: String, d: Dictionary = {}) -> void:
 	var e = {"t": now_ms(), "ev": ev, "sector": RUN["sector"] if RUN != null else 0}

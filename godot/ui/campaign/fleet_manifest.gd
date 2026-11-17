@@ -128,7 +128,7 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	b.custom_minimum_size.y = ui.px(rh); parent.add_child(b)
 	b.pressed.connect(func(): select_ship(str(ship["uid"])))
 	var ability = C.ABILITIES.get(hull.get("ab"), {})
-	b.tooltip_text = str(ship["name"]) + "\n" + str(hull["n"]) + " Mk " + C.roman(ship["mk"]) + "\nHull " + C.numstr(ship["hp"]) + " / " + C.numstr(derived["maxHp"]) + "\n" + str(ability.get("n", "")) + ": " + str(ability.get("d", ""))
+	b.tooltip_text = str(ship["name"]) + "\n" + str(hull["n"]) + " Mk " + C.roman(ship["mk"]) + "\nHull " + C.hull_text(ship["hp"]) + " / " + C.hull_text(derived["maxHp"]) + "\n" + str(ability.get("n", "")) + ": " + str(ability.get("d", ""))
 	picture(ship, Rect2(22, 5, 150, 40), b)
 	head(ship["name"], Rect2(188, 0, available if wrap_class else name_w + 2, name_height), 28, b)
 	words(hull["n"], Rect2(188 if wrap_class else 206 + name_w, name_height - 4 if wrap_class else 9, available if wrap_class else cls_w + 3, 26), 17, GS.TEXT2, null, b)
@@ -136,7 +136,7 @@ func row(ship: Dictionary, damaged: bool, parent: Control) -> void:
 	if damaged:
 		var y = name_height + (24 if wrap_class else 0)
 		meter(b, Rect2(188, y + 9, 130, 5), ship["hp"], derived["maxHp"], GS.HULL_LOW)
-		words(C.numstr(ship["hp"]) + " / " + C.numstr(derived["maxHp"]), Rect2(334, y - 2, 210, 28), 17, GS.HULL_LOW, GS.num(), b)
+		words(C.hull_text(ship["hp"]) + " / " + C.hull_text(derived["maxHp"]), Rect2(334, y - 2, 210, 28), 17, GS.HULL_LOW, GS.num(), b)
 	b.draw.connect(func():
 		if state["uid"] == ship["uid"]: b.draw_rect(Rect2(Vector2(0, 18) * k, Vector2(10, 10) * k), GS.TEXT))
 	rows.append({"ship": ship, "button": b, "damaged": damaged})
@@ -224,7 +224,7 @@ func specification(ship: Dictionary) -> void:
 	v.add_child(body(str(ship["name"]).to_upper(), 32, GS.TEXT, GS.sheet_name()))
 	v.add_child(body("Mk " + C.roman(ship["mk"]) + " · " + str(hull["n"]) + " · " + C.numstr(hull["cp"]) + " CP", 17))
 	if C.jt(ship.get("ripped")): v.add_child(body("Captured prize, links ripped out.", 17))
-	v.add_child(body(C.numstr(ship["hp"]) + " / " + C.numstr(d["maxHp"]), 30, GS.HULL_LOW if float(ship["hp"]) < float(d["maxHp"]) else GS.TEXT, GS.num_bold()))
+	v.add_child(body(C.hull_text(ship["hp"]) + " / " + C.hull_text(d["maxHp"]), 30, GS.HULL_LOW if float(ship["hp"]) < float(d["maxHp"]) else GS.TEXT, GS.num_bold()))
 	var hp = Control.new(); hp.custom_minimum_size.y = ui.px(10); v.add_child(hp); meter(hp, Rect2(0, 0, sheet_w - 14, 8), ship["hp"], d["maxHp"])
 	v.add_child(body("Shields " + C.numstr(d["shMax"]) + "  +" + C.numstr(d["regen"]) + "/turn", 17, GS.GLACIER, GS.num()))
 	v.add_child(body("Armor " + C.pct(d["armor"]) + "   Speed " + C.numstr(d["speed"]) + "\nTurns " + C.numstr(d["turns"]) + "   Evasion " + C.numstr(d["ev"]), 17))

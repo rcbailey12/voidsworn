@@ -986,11 +986,11 @@ func _fleet_line(s: Dictionary, rh: float) -> Control:
 	if s["flagship"]:
 		var diamond = Control.new(); diamond.custom_minimum_size = Vector2(px(10), px(rh)); diamond.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		diamond.draw.connect(func(): GS.diamond(diamond, Vector2(px(5), px(rh) * 0.5), px(5), GS.MAP_EMBER)); h.add_child(diamond)
-	var hp = C.numstr(s["hp"]) + " / " + C.numstr(s["max_hp"])
+	var hp = C.hull_text(s["hp"]) + " / " + C.hull_text(s["max_hp"])
 	var hw = ceil(font_num.get_string_size(hp, HORIZONTAL_ALIGNMENT_LEFT, -1, px(19)).x)
 	var available = COL_W - COL_PAD * 2 - 16 - hw / k - (26 if s["flagship"] else 0)
 	h.add_child(_sheet_name(s["name"], 28, available, 3))
-	var figures = _baseline_row([[C.numstr(s["hp"]), font_num, 19, (HULL_LOW if float(s["frac"]) < 0.35 else HULL) if float(s["frac"]) < 0.999 else GS.TEXT], [" / " + C.numstr(s["max_hp"]), font_num, 19, GS.TEXT]], rh)
+	var figures = _baseline_row([[C.hull_text(s["hp"]), font_num, 19, (HULL_LOW if float(s["frac"]) < 0.35 else HULL) if float(s["frac"]) < 0.999 else GS.TEXT], [" / " + C.hull_text(s["max_hp"]), font_num, 19, GS.TEXT]], rh)
 	figures.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(figures)
 	h.tooltip_text = _wrap_words(s["name"] + ", " + s["cls"] + " Mk " + s["mk"] + "\n" + s["captain"] + ("\nPromotion ready" if s["promotion"] else ""))
 	return h
@@ -1209,7 +1209,7 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 17, BONE2, font_caps, false)); v.add_child(r0)
 	v.add_child(lbl(t["n"], 18, BONE2))
 	if C.jt(s.get("ripped")): v.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-	var r1 = hbox(); r1.add_child(lbl("Hull " + C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
+	var r1 = hbox(); r1.add_child(lbl("Hull " + C.hull_text(s["hp"]) + "/" + C.hull_text(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
 	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
 	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 17))
 	if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]): v.add_child(rich(c(esc(C.ABILITIES[t["ab"]]["n"]) + ".", VERD) + " " + c(esc(C.ABILITIES[t["ab"]]["d"]), BONE3), 17))
@@ -1282,7 +1282,7 @@ func _shipyard() -> Control:
 		var cv = card(false, 320); var cvv = cv[1]
 		cvv.add_child(rich("[b]" + esc(t["n"]) + "[/b]" + (" " + c("Variant", VERD) if C.jt(t.get("variant")) else ""), 20))
 		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 17, VERD))
-		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
+		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
 		var ws = []
 		for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 		cvv.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
@@ -1301,7 +1301,7 @@ func _shipyard() -> Control:
 			var cv3 = card(false, 320); var cvv3 = cv3[1]
 			cvv3.add_child(rich("[b]" + esc(t2["n"]) + "[/b]", 20))
 			cvv3.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.numstr(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
+			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.hull_text(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
 			var ws2 = []
 			for e in t2["w"]: ws2.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 			cvv3.add_child(lbl(", ".join(PackedStringArray(ws2)) + ".", 17, BONE2))
@@ -1368,7 +1368,7 @@ func _legacy() -> Control:
 					var cv = card(own, 320); cv[1].add_child(lbl(hv["n"], 20, BONE, font_semi)); cv[1].add_child(lbl("Variant of the " + str(C.HULLS[hv["base"]]["n"]), 17, BONE3)); cv[1].add_child(lbl(hv["d"], 18, BONE2))
 					var ws = []
 					for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
-					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
+					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
 					if own: cv[1].add_child(lbl("In your shipyards", 18, VERD))
 					elif C.jt(hv.get("arc")): cv[1].add_child(lbl("Finish the " + str(C.FACTIONS[hv["arc"]]["n"]) + " story to unlock", 17, BONE3))
 					else: add(cv[1], abtn("Unlock for " + C.numstr(hv["cost"]) + " renown", "buyVariant", vid))

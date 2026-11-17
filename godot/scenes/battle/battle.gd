@@ -18,6 +18,7 @@ signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance
 signal wings_together(n: int)   # F1: your strike craft just started their moves together (the trace films it)
 
 const API := preload("res://rules/battle_api.gd")
+const Campaign := preload("res://campaign/campaign.gd")
 const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
@@ -3674,7 +3675,7 @@ func _legend() -> void:
 func _ship_tip(u: Dictionary) -> String:
 	var col := "#52f0c4" if u["side"] == "player" else "#c4a4ff"
 	var d: Dictionary = disp.get(u["id"], {"hp": u["hp"], "sh": u["sh"]})
-	var t := "[b][color=%s]%s%s[/color][/b]\n[color=#a7b09d]%s[/color]\nHull [color=#ffad3b]%d/%d[/color]" % [col, "★ " if u["flagship"] else "", str(u["name"]), str(u["cls"]), int(d["hp"]), int(u["maxHp"])]
+	var t := "[b][color=%s]%s%s[/color][/b]\n[color=#a7b09d]%s[/color]\nHull [color=#ffad3b]%s/%s[/color]" % [col, "★ " if u["flagship"] else "", str(u["name"]), str(u["cls"]), Campaign.hull_text(d["hp"]), Campaign.hull_text(u["maxHp"])]
 	if float(u["shMax"]) > 0:
 		var parts: Array = []
 		for i in 4:
@@ -3733,7 +3734,7 @@ func _attack_tip(t_id: String) -> String:
 		elif not tg.get("los", false):
 			right = "[color=#7c8674]blocked[/color]"
 		rows += "%s  %s\n" % [str(vw["name"]), right]
-	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
+	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %s/%s, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), Campaign.hull_text(tv["hp"]), Campaign.hull_text(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
 	if float(tv["shMax"]) > 0:
 		t += "Hits the [color=#92b8e8][b]%s shield[/b][/color] (pool [color=#92b8e8]%d[/color]/%d, this side catches %d)%s." % [QUAD_NAME[quad], int(_z0(tu.get("shp"))), int(tv["shMax"]), int(tv["sh"][quad]), " [color=#ffad3b]down, straight to hull[/color]" if float(_z0(tu.get("shp"))) < 1 else ""]
 	else:
@@ -4341,7 +4342,7 @@ func _panel_info() -> Dictionary:
 	var d: Dictionary = disp.get(id, {"hp": u["hp"], "sh": u["sh"]})
 	var info := {"name": u["name"], "cls": u["cls"], "side": u["side"], "flag": u["flagship"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"]}
 	var mleft := int(u.get("moveLeft", u["mp"])) if u.get("moveLeft") != null else int(u["mp"])
-	var stats := "Hull [color=#ffad3b]%d/%d[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [int(d["hp"]), int(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
+	var stats := "Hull [color=#ffad3b]%s/%s[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [Campaign.hull_text(d["hp"]), Campaign.hull_text(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
 	if u.get("fired", false) and mleft < int(u["mp"]):
 		stats += "\n[color=#7c8674]Fired: ships move, then fire.%s[/color]" % (" Half the movement left to slip away." if mleft > 0 else "")
 	if u.get("crew") != null:

@@ -20,6 +20,7 @@ signal act(name: String, arg: Variant)
 signal hover_tip(bb: String, at: Vector2)   # "" hides
 
 const GS := preload("res://ui/theme/glass_shell.gd")
+const Campaign := preload("res://campaign/campaign.gd")
 
 const EMBER := GS.MAP_EMBER
 const TEXT := GS.TEXT
@@ -476,8 +477,8 @@ static func keyword_tip(line: String) -> String:
 
 
 func _hull_fig(x: float, y: float, hp: float, mx: float, size := 26.0) -> void:
-	var a := str(int(round(hp)))
-	var bb := " / %d" % int(round(mx))
+	var a := Campaign.hull_text(hp)
+	var bb := " / " + Campaign.hull_text(mx)
 	var ww := _w("Hull ", f_body, 19)
 	t(x, y + px(size - 19) * 0.7, "Hull", f_body, 19, TEXT3, 0, "join")
 	var wa := t(x + ww, y, a, f_num, size, TEXT if hp >= mx - 0.5 else DMG, 0, "figure")
@@ -595,7 +596,7 @@ func _focus(x: float, y: float, cw: float) -> float:
 func _target_tip() -> String:
 	var hp := float(target.get("hp", 0))
 	var eh := float(target.get("exp_hull", 0))
-	var s := "Hull %d / %d" % [int(round(hp)), int(round(float(target.get("maxHp", 0))))]
+	var s := "Hull %s / %s" % [Campaign.hull_text(hp), Campaign.hull_text(target.get("maxHp", 0))]
 	if eh > 0.5:
 		s += ", to about %d after the volley" % int(round(maxf(0.0, hp - eh)))
 	s += "."
@@ -736,7 +737,7 @@ func _fleet(x: float, y_min: float, w: float, H: float) -> void:
 		for r in live:
 			if str(r.get("status", "")) in ["Ready", "Up", "Acting"]:
 				pend += 1
-			names.append("%s %s" % [str(r.get("name", "")), "lost" if str(r.get("status", "")) == "Lost" else str(int(round(float(r.get("hp", 0)))))])
+			names.append("%s %s" % [str(r.get("name", "")), "lost" if str(r.get("status", "")) == "Lost" else Campaign.hull_text(r.get("hp", 0))])
 		var fw0 := t(x + px(24), fy1 + px(5), "Fleet", f_body, 19, TEXT3, 0, "join")
 		var fw1 := t(x + px(24) + fw0 + px(10), fy1 + px(4), "%d ships, %d to act" % [n, pend], f_med, 20, TEXT)
 		hit(Rect2(x + px(20), fy1, fw0 + fw1 + px(18), px(gap)), "next", null, ", ".join(names) + ".\nClick or press Tab for the next ship to act.")
@@ -790,7 +791,7 @@ func _fleet(x: float, y_min: float, w: float, H: float) -> void:
 		if lost:
 			t(nx + nw, yy + px(5), "lost", f_body, 19, TEXT2, 1)
 		else:
-			t(nx + nw, yy + px(28 * 0.22), str(int(round(hp))), f_num, 19, (TEXT if hp >= mx - 0.5 else DMG) if not done else TEXT2, 1, "figure")
+			t(nx + nw, yy + px(28 * 0.22), Campaign.hull_text(hp), f_num, 19, (TEXT if hp >= mx - 0.5 else DMG) if not done else TEXT2, 1, "figure")
 		hit(Rect2(nx - px(36), yy, nw + px(36), px(gap)), "pick", r.get("id"), _row_tip(r))
 		yy += px(gap)
 		if _w(up, f_name, nm_fs) > nw - fw:
@@ -798,7 +799,7 @@ func _fleet(x: float, y_min: float, w: float, H: float) -> void:
 	if not rest.is_empty():
 		var names := PackedStringArray()
 		for r in rest:
-			names.append("%s %d" % [str(r.get("name", "")), int(round(float(r.get("hp", 0))))])
+			names.append("%s %s" % [str(r.get("name", "")), Campaign.hull_text(r.get("hp", 0))])
 		var lw := t(nx, yy + px(5), "and %d more" % rest.size(), f_body, 19, TEXT2)
 		hit(Rect2(nx - px(4), yy, lw + px(8), px(gap)), "", null, ", ".join(names) + ".")
 	fleet_fit = {"shown": shown.size(), "total": n, "gap": gap, "fit": fit}
@@ -808,7 +809,7 @@ func _row_tip(r: Dictionary) -> String:
 	var st := str(r.get("status", ""))
 	var s := "%s. %s." % [str(r.get("cls", "")), {"Up": "Up now", "Acting": "Acting now", "Ready": "Ready to act", "Done": "Has acted this round", "Lost": "Lost"}.get(st, st)]
 	if st != "Lost":
-		s += " Hull %d / %d." % [int(round(float(r.get("hp", 0)))), int(round(float(r.get("maxHp", 0))))]
+		s += " Hull %s / %s." % [Campaign.hull_text(r.get("hp", 0)), Campaign.hull_text(r.get("maxHp", 0))]
 		var f := float(r.get("hp", 0)) / maxf(float(r.get("maxHp", 1)), 1.0)
 		if f < 0.35:
 			s += " Hull below 35%."
