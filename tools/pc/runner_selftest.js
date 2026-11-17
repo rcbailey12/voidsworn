@@ -477,7 +477,7 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
     const probe = JSON.parse(read(r.env.PC_TEST_TRACE).trim());
     assert.equal(probe[0], arm === 'codex' ? 'exec' : arm === 'kimicode' ? '-m' : 'run');
     assert.equal(r.state.status, 'unverified');
-    const expectModel = arm === 'codex' ? 'gpt-6.1-sol' : arm === 'kimicode' ? 'kimi-code/kimi-for-coding' : arm === 'kimi' ? 'moonshotai/kimi-k3.1-pro' : arm === 'opus' ? 'anthropic/claude-opus-5-5' : arm === 'sonnet' ? 'anthropic/claude-sonnet-5-5' : 'deepseek/deepseek-flash';
+    const expectModel = arm === 'codex' ? 'gpt-6.2-sol' : arm === 'kimicode' ? 'kimi-code/kimi-for-coding' : arm === 'kimi' ? 'moonshotai/kimi-k3.1-pro' : arm === 'opus' ? 'anthropic/claude-opus-5-5' : arm === 'sonnet' ? 'anthropic/claude-sonnet-5-5' : 'deepseek/deepseek-flash';
     assert(r.result.includes('model: ' + expectModel), r.result);
     assert.equal(r.state.model, expectModel);
     assert(!r.result.includes('differs from the arm default'), r.result);

@@ -13,11 +13,13 @@ rem  needs no force; GitHub's branch must then carry exactly out\diffstat.txt, o
 rem Runner 3 (issue 722, audit 706 findings 6 and 7), the same start checks as work_issue.bat: refuse to start below
 rem the min_free_gb free-space floor (work217\runner_settings.txt, default 60), warn in result.txt when this tools
 rem folder's runner and watchdog files differ from the Board's work217\runner_hashes.txt, and stamp the resolved model
-rem (gpt-6.1-sol) into out\status.json and result.txt.
+rem (CODEX_MODEL, default gpt-6.2-sol since Nov 17 2026) into out\status.json and result.txt.
 rem Test mode (for the Board's dry runs): CODEX_TEST_ROOT moves repo and out folders there, CODEX_TEST_AGENT is a .bat run
 rem in place of Codex (no Codex usage), CODEX_TEST_BRANCH is the branch pushed to (it must not start with codex/, muse/,
 rem work/ or opus/), CODEX_TEST_SPARSE lists the only folders a lean test clone checks out.
 setlocal
+rem The one Codex model pin (Ryan, Nov 17 2026: fresh work on gpt-6.2-sol). Change it here only.
+if not defined CODEX_MODEL set "CODEX_MODEL=gpt-6.2-sol"
 set "PYTHONDONTWRITEBYTECODE=1"
 set "N=%~1"
 if "%N%"=="" (echo usage: codex_issue.bat ^<issue number^> & exit /b 2)
@@ -84,7 +86,7 @@ set "HASHF=%ROOT%\work217\runner_hashes.txt"
 %COMMON% space "%O%" "%SETF%" "%ROOT%"
 if errorlevel 1 exit /b 14
 %COMMON% hashcheck "%O%" "%TPC%" "%HASHF%"
-%COMMON% model "%O%" "gpt-6.1-sol" "gpt-6.1-sol"
+%COMMON% model "%O%" "%CODEX_MODEL%" "%CODEX_MODEL%"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
 rem Validate and claim before checkout, Base/resume merges, preflight or agent work (issue 888).
@@ -101,7 +103,7 @@ if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
 set "PROBE=%APPDATA%\npm\codex.cmd"
 if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
-%COMMON% preflight "%O%" "%R%" codex "%PROBE%" gpt-6.1-sol ""
+%COMMON% preflight "%O%" "%R%" codex "%PROBE%" %CODEX_MODEL% ""
 if errorlevel 1 goto :probefail
 rem Progress watch applies only to the agent, never preflight or the runner's own checks.
 set "TMO_REPO=%R%"
@@ -111,7 +113,7 @@ set "TMO_ERR_LOG="
 rem CODEX_CAP is a hard ceiling in seconds; STALL_MIN defaults to 30 in the watchdog.
 if not defined CODEX_CAP set "CODEX_CAP=21600"
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT goto :testagent
-call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
+call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec -m %CODEX_MODEL% -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 set "CX=%ERRORLEVEL%"
 goto :ran
 :testagent
