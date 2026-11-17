@@ -101,6 +101,7 @@ pushd "%R%"
 %PS% prep %N% "%R%" "%O%"
 if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
+%COMMON% effort "%O%" "%EFF%"
 set "PROBE=%APPDATA%\npm\codex.cmd"
 if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
 %COMMON% preflight "%O%" "%R%" codex "%PROBE%" %CODEX_MODEL% ""

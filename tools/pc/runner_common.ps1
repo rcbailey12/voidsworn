@@ -803,6 +803,17 @@ try {
     Log "model: $resolved"
     if ($resolved -ne $default) { Log "WARNING: resolved model $resolved differs from the arm default $default" }
   }
+  elseif ($mode -eq 'effort') {
+    # Ryan, Nov 17 2026: the reasoning effort is the same on every model; stamp it beside the model so each run shows it.
+    $script:out = $args[1]; $effort = $args[2]
+    $p = Join-Path $script:out 'status.json'
+    $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
+    $s | Add-Member -NotePropertyName effort -NotePropertyValue $effort -Force
+    $tmp = "$p.$([guid]::NewGuid().ToString('N')).tmp"
+    Put $tmp ($s | ConvertTo-Json)
+    [IO.File]::Replace($tmp, $p, "$tmp.previous")
+    Log "effort: $effort"
+  }
   elseif ($mode -eq 'finish') {
     $script:out = $args[1]; $code = $args[2]; $partial = $args[3]; $push = $args[4]; $checks = $args[5]
     $old = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
