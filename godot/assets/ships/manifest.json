@@ -288,245 +288,251 @@
    "preview": "previews/B23_51.jpg"
   },
   "C13s_23": {
-   "name": "Hullbreaker raider",
+   "name": "Hullbreaker raider, the Sniffer (Ashfall Hullbreakers)",
    "faction": "corsair",
    "cls": "Frigate",
    "band": "S",
+   "game_ship": "c_raider",
    "length_world": 6.5,
    "hardpoints": {
-    "gun": 1,
+    "gun": 2,
     "engine": 3,
-    "breach": 4,
-    "core": 1
+    "breach": 3,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 4,
-   "skins": 9,
+   "breaches": 3,
+   "turrets": 1,
    "files": {
     "C13s_23.glb": {
-     "bytes": 7573592,
-     "sha256": "ebc95f2bf7f61dbf8b84e4d135ca709160c90828f482780b02039d5712a1146b"
+     "bytes": 17277280,
+     "sha256": "bb681ce0c77651cc1d67fb0ba468f34c6ca54dbf51c9e2f6cc5f60cda768436f"
     },
     "C13s_23_base.jpg": {
-     "bytes": 1357184,
-     "sha256": "d37700d34768cbcd9a0985e0e322c64e5d1f087e32cf6aca5cbb312cfa4b05fd"
+     "bytes": 1617195,
+     "sha256": "64afb159d2d82b80eef54e87609526dd6119128557edf4dbbeff84098fe8d0e0"
     },
-    "C13s_23_damage.glb": {
-     "bytes": 16815348,
-     "sha256": "68a076e406bcba9c2ac5e20a3c9e6873e7e9d0ce0c1cd3e22b19c353471579ad"
-    },
-    "C13s_23_emissive.jpg": {
-     "bytes": 146778,
-     "sha256": "a6b300bf79739fb60032a02bd7b75a2125d134d9181e6995694b02334760c477"
+    "C13s_23_glow_emission.jpg": {
+     "bytes": 198224,
+     "sha256": "f3f49367a628b886b21bf87cf0bf2ea2ff736f863c52af4b2a9558cb8a2c8fe7"
     },
     "C13s_23_normal.jpg": {
-     "bytes": 2919880,
-     "sha256": "bb39df3bd564b25033eb954b0a723ae9642c811ece9a7110b6db5c76c2c89a31"
+     "bytes": 483187,
+     "sha256": "11c0dd3ab18c8ad96adc426d95c3c2ab41511c9c2db66fa0a83f4302bac12761"
     },
     "C13s_23_orm.jpg": {
-     "bytes": 2372674,
-     "sha256": "76e6cced9ec77315d04f64776719c7d4f4bf2de82b6e1675dad31f2f8576d770"
+     "bytes": 2502253,
+     "sha256": "561162ca6fa4f64a2e46416386867fa87cc2a258787c27568ed6525350de46ae"
     },
-    "C13s_23_wreck.glb": {
-     "bytes": 4328052,
-     "sha256": "4c307d5b87e393ee7d3e895c96f9087e855a29a32456be534dd0f15c3afa7fd5"
+    "C13s_23_parts_base.jpg": {
+     "bytes": 1197395,
+     "sha256": "23304a9c504e4c7ba6581c70463194a6f6ebca35e1ceaca1e0ac5f4d73bbf0f1"
+    },
+    "C13s_23_parts_orm.jpg": {
+     "bytes": 1581496,
+     "sha256": "d7915f4940d23e4c035207299bb38034d760f495e9ae65d3d3bdf37676a310e9"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\C13s_23\\",
-   "preview": "previews/C13s_23.jpg",
-   "damage_preview": "previews/C13s_23_damage.jpg"
+   "pc_path": "godot/assets/ships/C13s_23/"
   },
   "C14s_23": {
-   "name": "Hullbreaker gutship",
+   "name": "Hullbreaker gutship, the Mauler (Ashfall Hullbreakers)",
    "faction": "corsair",
    "cls": "Destroyer",
    "band": "M",
+   "game_ship": "c_reaver",
    "length_world": 9.5,
    "hardpoints": {
-    "gun": 2,
+    "gun": 7,
     "engine": 3,
-    "breach": 6,
-    "core": 1
+    "breach": 4,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 4,
+   "turrets": 2,
    "files": {
     "C14s_23.glb": {
-     "bytes": 6424452,
-     "sha256": "3e9407672fcd2b6f2beca7d321b3835df04f237d76e665ff6bc6525c1c5741ce"
+     "bytes": 20382540,
+     "sha256": "40f6a14982a97924e431f29c11c32812e9394665bcec3c31aa52785df94284f8"
     },
     "C14s_23_base.jpg": {
-     "bytes": 1320837,
-     "sha256": "346371ca42ef8d768ce2d22d33663c095f9e2a4591fb228e1ca3e6cbd9aae919"
+     "bytes": 1552908,
+     "sha256": "d3ebf2aac1ee54648803e67577dbc768a3d0c8e1c395162ac83f99bd9563527b"
     },
-    "C14s_23_damage.glb": {
-     "bytes": 18633260,
-     "sha256": "c074b0ad6d08940cbcb81d3a7d0adbdaa59293f63450d864321bf0d4e63d95a1"
-    },
-    "C14s_23_emissive.jpg": {
-     "bytes": 156220,
-     "sha256": "095bd50db27006e34d312e7845fbb9340db6b118a48cfacb9800135c9bc7511c"
+    "C14s_23_glow_emission.jpg": {
+     "bytes": 193687,
+     "sha256": "8b3d10cc6fe23be5efc1a3706e80a6c98571c0de89a92d55a832061c96872756"
     },
     "C14s_23_normal.jpg": {
-     "bytes": 2997210,
-     "sha256": "ef9d25de887db44bf78ea0bdd6cd35de8052423997186e42fbe24bd880872aed"
+     "bytes": 476984,
+     "sha256": "1bf27de2738b44cd38e1107ff8ec103e520d4b3da5d1006dfa959f0cd74d477e"
     },
     "C14s_23_orm.jpg": {
-     "bytes": 2473058,
-     "sha256": "ad743331e40fbd5fa23dce7b0d893e46273d1defed5c3675c2252e01ee964b15"
+     "bytes": 2529429,
+     "sha256": "ab81b96768f3eaa282682ebb340202e23809252d0be0c9d401d5ff064c0fc11a"
     },
-    "C14s_23_wreck.glb": {
-     "bytes": 3796284,
-     "sha256": "8dd8f762b1e2c9d6810882faf2792e9623a9805d91b5998a961497706a9a8ce2"
+    "C14s_23_parts_base.jpg": {
+     "bytes": 1143033,
+     "sha256": "95dac374f4bb35c5746ac9e4ac366989da70277a51383e71817820e795f0f185"
+    },
+    "C14s_23_parts_orm.jpg": {
+     "bytes": 1532590,
+     "sha256": "c47d3be6600cd172969f72faf652841f46cd4443ee11a069480a62cff4276d7f"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\C14s_23\\",
-   "preview": "previews/C14s_23.jpg",
-   "damage_preview": "previews/C14s_23_damage.jpg"
+   "pc_path": "godot/assets/ships/C14s_23/"
   },
   "C15s_23": {
-   "name": "Hullbreaker wrecker",
+   "name": "Hullbreaker wrecker, the Pack Hunter (Ashfall Hullbreakers)",
    "faction": "corsair",
    "cls": "Cruiser",
    "band": "M",
-   "length_world": 14.5,
+   "game_ship": "c_marauder",
+   "length_world": 14.6,
    "hardpoints": {
-    "gun": 4,
-    "engine": 3,
-    "breach": 6,
-    "core": 1
+    "gun": 18,
+    "engine": 6,
+    "breach": 5,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 5,
+   "turrets": 6,
    "files": {
     "C15s_23.glb": {
-     "bytes": 7545564,
-     "sha256": "6f87458f7aba44169d93974470a78570c71048da84db64850e14c642476ac77e"
+     "bytes": 7144412,
+     "sha256": "0b5d6c6da890fa62c92de4f3425f4b62e42a762bc20b25233c36dae5b04b23e5"
     },
     "C15s_23_base.jpg": {
-     "bytes": 1360081,
-     "sha256": "6d69489d491babfc8afb64cbe8e099c6bacca0ec800087beeca99345ebe20728"
+     "bytes": 1229604,
+     "sha256": "99ec81321c5e50671e5d67d8deba22579cdfb1cdc29c77cb5868abdc8ba17e50"
     },
-    "C15s_23_damage.glb": {
-     "bytes": 25160336,
-     "sha256": "8ab3d2ba3d5510beb76384539c794d2fb265f5703399cba41858d0bb17c6343a"
-    },
-    "C15s_23_emissive.jpg": {
-     "bytes": 164520,
-     "sha256": "691cbabc61ab57163a11e6c3774e662f7a0e2a69e130fb8f417a2181428aac1c"
+    "C15s_23_glow_emission.jpg": {
+     "bytes": 243808,
+     "sha256": "f0f88f447cc1e4b38e996146530282f16ea962a9081c5c82f4ce1442b16ea2c8"
     },
     "C15s_23_normal.jpg": {
-     "bytes": 2858678,
-     "sha256": "66c500653d150ca0042cc1b11ab8c3878a500d8f5d444f1c90a9ecd1748a5193"
+     "bytes": 645658,
+     "sha256": "7a5f5b988b942d2eedd4e779e8f0aa859700738bb5445e68672667747176fa76"
     },
     "C15s_23_orm.jpg": {
-     "bytes": 2544730,
-     "sha256": "e7fcb9adba8c7a8eb8fd21400034d7361373c6d79fb445503ebd776e5d58c774"
+     "bytes": 1446098,
+     "sha256": "a15b8b87353140d51d99045cc803a76adb3a33beab3c5300da11ab7e8099d48f"
     },
-    "C15s_23_wreck.glb": {
-     "bytes": 4488192,
-     "sha256": "3004c7eceae55c1617a6c6f91d62889785cd39b5364974869561351b30b92ec8"
+    "C15s_23_parts_base.jpg": {
+     "bytes": 1286660,
+     "sha256": "d65eaef9dcfaa8d1d086a030ae90cfa22ee28d2875f77c0c0c5c33d825140168"
+    },
+    "C15s_23_parts_orm.jpg": {
+     "bytes": 1849743,
+     "sha256": "951217d82190916ba4d51828325b12ade2584c4ce72da3b08093b04334ee29a3"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\C15s_23\\",
-   "preview": "previews/C15s_23.jpg",
-   "damage_preview": "previews/C15s_23_damage.jpg"
+   "pc_path": "godot/assets/ships/C15s_23/"
   },
   "C16s_23": {
-   "name": "Hullbreaker hulk-carrier",
+   "name": "Hullbreaker hulk-carrier, the Den (Ashfall Hullbreakers)",
    "faction": "corsair",
    "cls": "Carrier",
    "band": "L",
+   "game_ship": "c_hulk",
    "length_world": 16.5,
    "hardpoints": {
-    "gun": 2,
+    "gun": 4,
+    "engine": 5,
     "bay": 2,
-    "engine": 3,
-    "breach": 8,
-    "core": 1
+    "breach": 7,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 8,
-   "skins": 17,
+   "breaches": 7,
+   "turrets": 2,
    "files": {
     "C16s_23.glb": {
-     "bytes": 10043864,
-     "sha256": "6d129b9a0701de2f8e7a36bb9a1477b1777c34629352c780a619fa5c764c5118"
+     "bytes": 21463356,
+     "sha256": "c2d60f28246c0f1b6152cce9cc50923977766c3ce9aa75832f6d46b71439465f"
     },
     "C16s_23_base.jpg": {
-     "bytes": 4339757,
-     "sha256": "ce25cb8f4617f3c68185358007cf76ba331d4de1f57d4cf0bd599f1b33def9c9"
+     "bytes": 1412633,
+     "sha256": "62e813d5499d2340f586cbf0fe3021f74007cc46d2c89318faf867c719d47064"
     },
-    "C16s_23_damage.glb": {
-     "bytes": 19872704,
-     "sha256": "de2bbbdb85dde1ca41d4d2bd5bf96dbe36437415005865e17ff0416901199213"
-    },
-    "C16s_23_emissive.jpg": {
-     "bytes": 159565,
-     "sha256": "187115b98587ab0884a5e8480a5a02cefca267479e661ee110440157edaf4475"
+    "C16s_23_glow_emission.jpg": {
+     "bytes": 228661,
+     "sha256": "633776c3ad4762c0d1b6d16d901835b6b8e6bbfa1e5f52b1d99e5cf16b56bef1"
     },
     "C16s_23_normal.jpg": {
-     "bytes": 11003842,
-     "sha256": "70e2199b2bbbd349fd7078d1ecb1e59b4f614f2eb5559045201def3f9b7e143d"
+     "bytes": 462075,
+     "sha256": "6394c461b1163137837593abf39564c5ce61472a0695d775c543c7736df7142e"
     },
     "C16s_23_orm.jpg": {
-     "bytes": 2568860,
-     "sha256": "dd92a3aa41b594db7f89394dd4233c6ec001f0fa6fe4b1dfe6ee372a3a220024"
+     "bytes": 2699865,
+     "sha256": "6fdaf64df348b4be16a374711cd13f929768a98f58c0c6c0fbb31691b212b5ab"
     },
-    "C16s_23_wreck.glb": {
-     "bytes": 6112800,
-     "sha256": "75116861b3990dc6233f4dbec2ba5565cf5547fb56582983352dd791a707866e"
+    "C16s_23_parts_base.jpg": {
+     "bytes": 1169456,
+     "sha256": "dee5ceedcabe58639c4b347695a5236006be0c1a7358a646a94bce054abbae0a"
+    },
+    "C16s_23_parts_orm.jpg": {
+     "bytes": 1694668,
+     "sha256": "4157776be1e6d326104124b37f9fcf42d8398f43b40cd7564ef98ce5a5792f4a"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\C16s_23\\",
-   "preview": "previews/C16s_23.jpg",
-   "damage_preview": "previews/C16s_23_damage.jpg"
+   "pc_path": "godot/assets/ships/C16s_23/"
   },
   "C19_51": {
-   "name": "Warlord's Pyre-Barge",
+   "name": "Warlord's Pyre-Barge (Ashfall Hullbreakers)",
    "faction": "corsair",
    "cls": "Battle-barge",
    "band": "L",
-   "length_world": 26,
+   "game_ship": "c_boss",
+   "length_world": 26.0,
    "hardpoints": {
-    "gun": 7,
+    "gun": 26,
     "engine": 6,
-    "breach": 8,
-    "core": 1
+    "bay": 1,
+    "breach": 7,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 8,
-   "skins": 17,
+   "breaches": 7,
+   "turrets": 8,
    "files": {
     "C19_51.glb": {
-     "bytes": 12321976,
-     "sha256": "377b19d16283e795be44e2ab11e6398660abe47cbe5e4c06be13314216e41751"
+     "bytes": 13257164,
+     "sha256": "6111b6705eeee114582dd49eed5101c49398617dd9bd24773417aec33d51f764"
     },
     "C19_51_base.jpg": {
-     "bytes": 5354545,
-     "sha256": "9940c64a194e66fc57add22f38bb6fbc0094f50270a88aa407bf30237acb2212"
+     "bytes": 1522480,
+     "sha256": "867121afe8552356e1932aced6a6a0ce461479be492c8ff5f52df7f9efa7e578"
     },
-    "C19_51_damage.glb": {
-     "bytes": 14432304,
-     "sha256": "bdf550dbc267f39d41e85a11d110c362f51af5bf8309d72d2fa91733d1dbd9a0"
-    },
-    "C19_51_emissive.jpg": {
-     "bytes": 168692,
-     "sha256": "380fb4b8269cb34e8ac04810438a6f8ebc486b2d3eb9d4ce0e9ef4995ecb096a"
+    "C19_51_glow_emission.jpg": {
+     "bytes": 228748,
+     "sha256": "61fa8ff3ce7adbb436b9a9a01faaa99e630fc3ea728ae2bb4d56e524e9f3a852"
     },
     "C19_51_normal.jpg": {
-     "bytes": 11888878,
-     "sha256": "5067bd3dd5d560fe223a1c5efb200b4af8e2ce39deee6cb70a6e7cd0860e0e14"
+     "bytes": 602149,
+     "sha256": "b00200485404cecb98c00fa6d36c0f42c3592c641a7c974f605f18adde7dc501"
     },
     "C19_51_orm.jpg": {
-     "bytes": 2855389,
-     "sha256": "c2bc327f07e35164ac51cf8936d7d955ea6c4cecdc4df4e279cd86f011e616a1"
+     "bytes": 1858732,
+     "sha256": "6d233d9d7ae4c927ead6950b96c2c471ef1df4785d528cc2408af6f7de252908"
     },
-    "C19_51_wreck.glb": {
-     "bytes": 7126464,
-     "sha256": "aa8170889e8bdaee3231a41d63f18110d4682c54faf87c16bf59caba8d4cded0"
+    "C19_51_parts_base.jpg": {
+     "bytes": 1259815,
+     "sha256": "7e65fcf3c79fcaa0546e0cea497ed0ed2648ba581ac5c930149c3d096f101670"
+    },
+    "C19_51_parts_orm.jpg": {
+     "bytes": 1816516,
+     "sha256": "0cdcd0b2ca3c2b09bcdf893a93a60f92e7a23793d7216733d0a2db1654d63aed"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\C19_51\\",
-   "preview": "previews/C19_51.jpg",
-   "damage_preview": "previews/C19_51_damage.jpg"
+   "pc_path": "godot/assets/ships/C19_51/"
   },
   "D20_23": {
    "name": "Eclipse flare",

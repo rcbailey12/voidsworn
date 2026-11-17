@@ -120,10 +120,20 @@ public static class Fake873 {
     if (name.Contains("bake")) {
       if (Env("FAKE_BAKE_FAIL", "") == "1") { Console.Error.WriteLine("fake blender: bake failed"); return FailCode(); }
       Console.WriteLine("[209] " + Env("FAKE_SHIP_CELL", "C873") + " {");
+      Console.WriteLine(Env("FAKE_BAKE_MESSAGE", ""));
+      return 0;
+    }
+    if (name == "surface_check.py") {
+      Console.WriteLine("PASS surface check");
+      if (Env("FAKE_SURFACE_FAIL", "") == "1") return FailCode();
       return 0;
     }
     if (name == "render.py") {
       int n = Count("render");
+      if (n == 1 && Env("FAKE_SHEET_VIEWS", "") == "1" && !a.Contains("--views=concept,hero,side,top,below,battle")) {
+        Console.Error.WriteLine("fake blender: sheet paint views missing");
+        return 8;
+      }
       if ((Environment.GetEnvironmentVariable("FAKE_RENDER_FAIL") ?? "") == n.ToString()) {
         Console.Error.WriteLine("fake blender: render pass " + n + " failed");
         return FailCode();
@@ -261,6 +271,73 @@ s5.env.FAKE_BAKE_FAIL = '1';
 s5.env.FAKE_FAIL_CODE = '6';
 r = runBat(stage5Bat, s5.env);
 expectFail('stage 5 bake exit code stops the stage', r, ['Stage 5 FAILED: the bake (bakeAb6.py) exited code 6']);
+
+for (const message of ['out of SVM stack space', 'failed to compile', 'shader compilation failed',
+  'shader compilation error', 'shader compile error', 'error compiling']) {
+  s5 = stage5Home('compile-' + message);
+  s5.env.FAKE_BAKE_MESSAGE = message.toUpperCase();
+  r = runBat(stage5Bat, s5.env);
+  expectFail('stage 5 rejects zero-exit compile error: ' + message, r,
+    ['Stage 5 FAILED: Cycles could not compile a bake shader']);
+}
+for (const step of ['bake', 'render', 'surface', 'close']) {
+  s5 = stage5Home('negative-' + step);
+  s5.env.FAKE_FAIL_CODE = '-1073741819';
+  if (step === 'render') s5.env.FAKE_RENDER_FAIL = '1';
+  else s5.env['FAKE_' + step.toUpperCase() + '_FAIL'] = '1';
+  if (step === 'surface') s5.env.FAKE_SHIP_BAKE = 'bake_sheet.py';
+  r = runBat(stage5Bat, s5.env);
+  expectFail('stage 5 rejects negative ' + step + ' exit', r, ['Stage 5 FAILED:', 'exited code -1073741819']);
+}
+s5 = stage5Home('surfacefail');
+s5.env.FAKE_SHIP_BAKE = 'bake_sheet.py';
+s5.env.FAKE_SURFACE_FAIL = '1';
+s5.env.FAKE_FAIL_CODE = '7';
+r = runBat(stage5Bat, s5.env);
+expectFail('stage 5 surface exit fails even with a PASS marker', r, ['Stage 5 FAILED: the surface check exited code 7']);
+
+s5 = stage5Home('sheetviews');
+s5.env.FAKE_SHIP_BAKE = 'bake_sheet.py';
+s5.env.FAKE_SHIP_SHEET = 'corsair_A17';
+s5.env.FAKE_SHEET_VIEWS = '1';
+r = runBat(stage5Bat, s5.env);
+check(r.code === 0 && r.text.includes('Stage 5 done'), 'sheet paint views failed: ' + r.text);
+pass('stage 5 sheet ships select the paint views and finish all three passes');
+
+// Exercise the exact log reader used by the issue 726 helper, without entering its GPU route.
+const helperSource = read(path.join(ROOT, 'tools/pc/jobs/hb_paint_726.ps1'));
+check(helperSource.includes(". (Join-Path $PSScriptRoot 'hb_paint_726_logs.ps1')") &&
+  helperSource.includes('Assert-Hb726Stage5Logs -Job $job -Cell $cell'), 'issue 726 helper must use the tested log reader');
+const helperFixture = path.join(root, 'helper-logs.ps1');
+const helperModule = path.join(ROOT, 'tools/pc/jobs/hb_paint_726_logs.ps1').replace(/'/g, "''");
+write(helperFixture, "param([string]$Job)\r\n$ErrorActionPreference='Stop'\r\n. '" + helperModule +
+  "'\r\ntry { Assert-Hb726Stage5Logs -Job $Job -Cell 'A20'; Write-Output 'PASS helper logs' } catch { Write-Output $_.Exception.Message; exit 1 }\r\n");
+const renderLogs = ['log_render.txt', 'log_render_concept.txt', 'log_render_far.txt'];
+function helperLogs(label, overrides = {}) {
+  const job = path.join(root, 'helper-' + label);
+  const logs = { 'log_bake.txt': '[209] A20 {\n', 'log_surface.txt': 'PASS surface check\n' };
+  for (const log of renderLogs) logs[log] = 'RENDER DONE\n';
+  Object.assign(logs, overrides);
+  for (const [log, contents] of Object.entries(logs)) if (contents !== null) write(path.join(job, log), contents);
+  const result = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', helperFixture, '-Job', job], {
+    cwd: root, encoding: 'utf8', timeout: 30000, windowsHide: true
+  });
+  if (result.error) throw result.error;
+  return { code: result.status, text: (result.stdout || '') + (result.stderr || '') };
+}
+r = helperLogs('good');
+check(r.code === 0 && r.text.includes('PASS helper logs'), 'helper rejected three good render logs: ' + r.text);
+pass('issue 726 helper accepts one completion in each of three good logs');
+for (const log of renderLogs) {
+  r = helperLogs('missing-' + log, { [log]: null });
+  expectFail('issue 726 helper rejects missing ' + log, r, ['missing render pass log ' + log]);
+  r = helperLogs('silent-' + log, { [log]: 'render started\n' });
+  expectFail('issue 726 helper rejects incomplete ' + log, r, ['expected one RENDER DONE in ' + log + ', got 0']);
+}
+r = helperLogs('pooled', { 'log_render.txt': 'RENDER DONE\nRENDER DONE\nRENDER DONE\n', 'log_render_concept.txt': '' });
+expectFail('issue 726 helper rejects pooled completions', r, ['expected one RENDER DONE in log_render.txt, got 3']);
+r = helperLogs('compile', { 'log_bake.txt': '[209] A20 {\nERROR: out of SVM stack space\n' });
+expectFail('issue 726 helper rejects a bake shader failure', r, ['Cycles could not compile a bake shader']);
 
 // ---- Issue 207 scene gate fault matrix ----
 function git(args, cwd, extraEnv) {

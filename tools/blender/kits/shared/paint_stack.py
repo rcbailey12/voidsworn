@@ -463,7 +463,9 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['ao_dark'], math_(nt, 'MULTIPLY', cav, L['ao_dark'])))
     if seam is not None:       # black seams between the panels
         col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, L.get('seam_dark', .8))))
-        height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5)))
+        panel_height = math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5))
+        panel_height.node.label = 'NORMAL_PATCHWORK_HEIGHT'
+        height = math_(nt, 'SUBTRACT', height, panel_height)
         rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', seam, .1))
     # 5. decals (hull atlas): before the wear, so the wear eats into them
     wear = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', c.edge, ramp(nt, c.noise(L['wear_scale'], 6, .6), L.get('wear_lo', .38), L.get('wear_hi', .62))), wear_amt)
@@ -490,6 +492,9 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     else: nt.links.new(metal, orm.inputs[2])
     alb = node(nt, 'ShaderNodeMix', data_type='RGBA'); alb.label = 'ALBEDO'; alb.inputs[0].default_value = 0; nt.links.new(col, alb.inputs[6])
     m['ps_zone'] = zone; m['ps_group'] = group
+    # Only the trophy layer needs this repair. Other factions retain their
+    # original bake path even if a later ship adds more nodes or decals.
+    m['ps_height_bake'] = group == 'H' and bool((getattr(S, 'TROPHY', None) or {}).get('share'))
     return m
 
 
@@ -533,7 +538,110 @@ def bake(obj, kind, margin):
     rb.use_selected_to_active = False; rb.margin = margin; rb.target = 'IMAGE_TEXTURES'
     bpy.ops.object.select_all(action='DESELECT'); obj.select_set(True); bpy.context.view_layer.objects.active = obj
     t0 = time.time()
-    if kind == 'NORMAL': bpy.ops.object.bake(type='NORMAL', normal_space='TANGENT')
+    if kind == 'NORMAL':
+        # Compile only the existing normal. Large patchwork inputs are cut at
+        # their labelled height term, baked per material to 16-bit PNG, then
+        # sampled by a small UV graph. Rivets, wear and decals stay procedural.
+        restore, temporary_nodes, temporary_images, height_links = [], [], [], []
+        materials = {slot.material for slot in obj.material_slots if slot.material}
+        old_clear = rb.use_clear
+        try:
+            for mat in sorted(materials, key=lambda m: m.name):
+                nt = mat.node_tree
+                bs = next(n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED')
+                out = next(n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL')
+                surface = out.inputs['Surface']; sources = [link.from_socket for link in surface.links]
+                normal = [link.from_socket for link in bs.inputs['Normal'].links]
+                pending = [socket.node for socket in normal]; ancestors = set(pending)
+                while pending:
+                    for socket in pending.pop().inputs:
+                        for link in socket.links:
+                            if link.from_node not in ancestors:
+                                ancestors.add(link.from_node); pending.append(link.from_node)
+                target = nt.nodes.active
+                restore.append((mat, surface, sources, None, target, target.image, len(ancestors)))
+            # 800 is a conservative routing budget measured against A20, not
+            # a test of SVM validity. Simpler materials retain their old path.
+            heavy = [item for item in restore if item[0].get('ps_height_bake', False) and item[-1] > 800]
+            if heavy:
+                # Leave every smaller ship's bake entirely on its original
+                # surface, including Eclipse. Only a large input needs proxies.
+                for index, item in enumerate(restore):
+                    mat, surface, sources, _, target, atlas, count = item
+                    nt = mat.node_tree
+                    proxy = nt.nodes.new('ShaderNodeBsdfDiffuse'); temporary_nodes.append((nt, proxy))
+                    bs = next(n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED')
+                    for link in bs.inputs['Normal'].links: nt.links.new(link.from_socket, proxy.inputs['Normal'])
+                    nt.links.new(proxy.outputs[0], surface)
+                    restore[index] = (mat, surface, sources, proxy, target, atlas, count)
+                heavy = [item for item in restore if item[0].get('ps_height_bake', False) and item[-1] > 800]
+                import tempfile
+                from pathlib import Path
+                directory = Path(tempfile.mkdtemp(prefix='voidsworn_normal_height_'))
+                dummy = bpy.data.images.new('ps_height_inactive', 1, 1, alpha=False)
+                temporary_images.append(dummy)
+                emissions = {}
+                for mat, surface, _, _, _, _, _ in restore:
+                    emission = mat.node_tree.nodes.new('ShaderNodeEmission')
+                    emissions[mat] = emission; temporary_nodes.append((mat.node_tree, emission))
+                # Raw avoids display transforms. PNG is genuinely 16-bit and
+                # is reloaded before the normal pass, so its precision is tested.
+                writer = bpy.data.scenes.new('ps_height_writer')
+                try:
+                    writer.view_settings.view_transform = 'Raw'
+                    settings = writer.render.image_settings
+                    settings.file_format = 'PNG'; settings.color_mode = 'BW'; settings.color_depth = '16'
+                    rows = []
+                    for active in heavy:
+                        mat, _, _, _, _, atlas, count = active
+                        nt = mat.node_tree
+                        cut = next((n for n in nt.nodes if n.label == 'NORMAL_PATCHWORK_HEIGHT'), None)
+                        if cut is None: raise ValueError(mat.name + ': large normal input has no patchwork height cut')
+                        source = cut.outputs[0]
+                        destinations = [link.to_socket for link in source.links]
+                        height = bpy.data.images.new('ps_patchwork_height', *atlas.size, alpha=False, float_buffer=True)
+                        height.colorspace_settings.name = 'Non-Color'; temporary_images.append(height)
+                        for other, surface, _, _, target, _, _ in restore:
+                            emission = emissions[other]; tree = other.node_tree
+                            for link in list(emission.inputs['Color'].links): tree.links.remove(link)
+                            emission.inputs['Color'].default_value = (0, 0, 0, 1)
+                            if other == mat: tree.links.new(source, emission.inputs['Color'])
+                            target.image = height if other == mat else dummy
+                            tree.links.new(emission.outputs[0], surface)
+                        rb.use_clear = True
+                        started = time.time(); bpy.ops.object.bake(type='EMIT')
+                        path = directory / (mat.name + '_height16.png')
+                        height.save_render(str(path), scene=writer)
+                        with open(path, 'rb') as encoded:
+                            if encoded.read(25)[24] != 16: raise ValueError('Patchwork height was not saved at 16 bits')
+                        loaded = bpy.data.images.load(str(path), check_existing=False)
+                        loaded.colorspace_settings.name = 'Non-Color'; temporary_images.append(loaded)
+                        uv = nt.nodes.new('ShaderNodeUVMap'); temporary_nodes.append((nt, uv))
+                        texture = nt.nodes.new('ShaderNodeTexImage'); temporary_nodes.append((nt, texture))
+                        texture.image = loaded; texture.interpolation = 'Linear'; texture.extension = 'EXTEND'
+                        nt.links.new(uv.outputs[0], texture.inputs['Vector'])
+                        for destination in destinations:
+                            height_links.append((nt, source, destination))
+                            nt.links.new(texture.outputs['Color'], destination)
+                        row = dict(material=mat.name, input_nodes=count, path=str(path), bits=16,
+                                   seconds=round(time.time() - started, 1))
+                        rows.append(row); print('NORMAL HEIGHT', row, flush=True)
+                    INFO['normal_height_maps'] = rows
+                finally:
+                    bpy.data.scenes.remove(writer)
+                for mat, surface, _, proxy, target, atlas, _ in restore:
+                    target.image = atlas; mat.node_tree.links.new(proxy.outputs[0], surface)
+            rb.use_clear = old_clear
+            bpy.ops.object.bake(type='NORMAL', normal_space='TANGENT')
+        finally:
+            rb.use_clear = old_clear
+            for nt, source, destination in height_links: nt.links.new(source, destination)
+            for mat, surface, sources, _, target, atlas, _ in restore:
+                target.image = atlas
+                for link in list(surface.links): mat.node_tree.links.remove(link)
+                for source in sources: mat.node_tree.links.new(source, surface)
+            for nt, temporary in reversed(temporary_nodes): nt.nodes.remove(temporary)
+            for temporary in temporary_images: bpy.data.images.remove(temporary)
     else: bpy.ops.object.bake(type=kind)
     return round(time.time() - t0, 1)
 

@@ -98,6 +98,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		return
 	if u.has("code"):
 		code = str(u["code"])
+	L = HT.length_for(code, cls) * HT.SHIP_K
+	if u.has("code"):
 		L = float(u.get("L", L))
 	bob_seed = randf() * 10.0
 	hull = Node3D.new()

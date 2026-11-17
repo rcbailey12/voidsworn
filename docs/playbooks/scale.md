@@ -9,10 +9,11 @@ their hex." This file is the single table every board object is sized against. T
 ## 1. The unit
 
 - One board unit is one world unit. `HEX_S = 10` is the corner radius (godot/render/hull_table.gd).
-- A hex is 20.00 across its corners and 17.32 across its flats. A ship is drawn at its class length (hull table
-  `CLS_LEN`) times `SHIP_K = 1.6`; a wing craft adds `SQUADRON_K = 1.5`.
+- A hex is 20.00 across its corners and 17.32 across its flats. A ship is drawn at its hull length (hull table
+  `length_for`: `HULL_LEN` when present, else `CLS_LEN`) times `SHIP_K = 1.6`; a wing craft adds `SQUADRON_K = 1.5`.
 - The glb manifest (godot/assets/ships/manifest.json) carries each hull's `length_world`. The check proves every hull's
-  `length_world` equals its `CLS_LEN`, so the hull table and the glbs agree and the drawn length below is the real one.
+  `length_world` equals its hull-table length, so the table and the glbs agree and the drawn length below is the real one.
+  A17 (`C15s_23`) is 14.6, claw tip to stern, as approved in R229 and recorded in its build sheet; other cruisers keep 14.5.
 - Sizes are the object's long axis (length or diameter) on the board, or on the campaign map where the row says map.
   Map units are a separate scale and are only compared with each other, never with board units.
 
@@ -27,6 +28,7 @@ live constants and the glbs, not estimated). "Target" is the R247 range the chec
 | Ship | Frigate | 10.40 | 8.00 to 100.00 | fills most of its hex, the baseline small hull |
 | Ship | Destroyer | 15.20 | 8.00 to 100.00 | a third longer than a frigate |
 | Ship | Cruiser | 23.20 | 8.00 to 100.00 | overhangs its hex, the first capital frame |
+| Ship | A17 Hullbreaker cruiser | 23.36 | 8.00 to 100.00 | R229's approved claw-tip-to-stern length, matching the installed export |
 | Ship | Carrier | 26.40 | 8.00 to 100.00 | a cruiser's hull with a flight deck |
 | Ship | Battleship | 33.60 | 8.00 to 100.00 | a capital that clearly outweighs a cruiser |
 | Ship | Dreadnought | 43.20 | 8.00 to 100.00 | a heavy capital, the largest common line |
@@ -77,7 +79,7 @@ live constants and the glbs, not estimated). "Target" is the R247 range the chec
 
 How today's values are read (the check reads the same constants):
 
-- Ships: `CLS_LEN[class] * SHIP_K`; fighters and bombers `CLS_LEN["Squadron"] * SHIP_K * SQUADRON_K`
+- Ships: `length_for(code, class) * SHIP_K`; fighters and bombers `CLS_LEN["Squadron"] * SHIP_K * SQUADRON_K`
   (godot/render/hull_table.gd, godot/render/ship_view.gd).
 - Station: `STATION_BASE_LEN + STATION_PER_HEX * hexes` or `STATION_BIG_LEN` (godot/render/board.gd).
 - Nebula and storm: `2 * GAS_PUFF_REACH + GAS_PUFF_MAX` for a one-hex cloud, `GAS_VEIL_MAX` for the veil
