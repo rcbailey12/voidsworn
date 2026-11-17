@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { randomUUID } = require('crypto');
+const { isIP } = require('net');
+const tailscale = require('./tailscale');
 
 const REPO = 'https://github.com/rcbailey12/voidsworn';
 const SEATS = [
@@ -302,17 +304,32 @@ function options(args) {
   return opts;
 }
 
-function serve(opts) {
+function allowedHost(req, port, tailnetHost) {
+  if (req.headers['tailscale-funnel-request'] !== undefined) return false;
+  if ([`127.0.0.1:${port}`, `localhost:${port}`].includes(req.headers.host)) return true;
+  const host = req.headers.host;
+  const forwarded = req.headers['x-forwarded-for'];
+  const tailnetIP = typeof forwarded === 'string' && (
+    (isIP(forwarded) === 4 && /^100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(forwarded)) ||
+    (isIP(forwarded) === 6 && /^fd7a:115c:a1e0:/i.test(forwarded)));
+  // Serve connects over loopback and replaces these proxy headers. Local processes
+  // remain trusted; these headers are not authentication against software on this PC.
+  return Boolean(tailnetHost && [tailnetHost, `${tailnetHost}:443`].includes(host) &&
+    req.socket.remoteAddress === '127.0.0.1' &&
+    req.headers['x-forwarded-host'] === host && req.headers['x-forwarded-proto'] === 'https' && tailnetIP);
+}
+
+function serve(opts, discover = tailscale.discover) {
   const reader = new Reader();
   const publish = () => writeSnapshot(opts.out, snapshot(opts.root, Date.now(), reader));
   publish();
   if (opts.once) return null;
+  const tailnetHost = discover().host;
   const page = path.resolve(__dirname, '../../../docs/mission/index.html');
   const server = http.createServer((req, res) => {
     // A fixed two-file surface, never a directory server or an upload endpoint.
     const route = req.url.split('?')[0];
-    const allowedHost = new Set([`127.0.0.1:${opts.port}`, `localhost:${opts.port}`]);
-    if (!allowedHost.has(req.headers.host)) { res.writeHead(403).end('Local host required'); return; }
+    if (!allowedHost(req, opts.port, tailnetHost)) { res.writeHead(403).end('Local host required'); return; }
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405).end(); return; }
     const file = route === '/' || route === '/index.html' ? page : route === '/status.json' ? path.join(opts.out, 'status.json') : null;
     if (!file) { res.writeHead(404).end(); return; }
@@ -332,7 +349,7 @@ function serve(opts) {
   return server;
 }
 
-module.exports = { Reader, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, writeSnapshot, options, serve };
+module.exports = { Reader, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, writeSnapshot, options, serve, allowedHost };
 if (require.main === module) {
   try { serve(options(process.argv.slice(2))); }
   catch (_) { console.error('Mission control could not read or write its local folders. Check arguments and folder access.'); process.exitCode = 1; }
