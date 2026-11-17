@@ -8,6 +8,8 @@ Method: one evidence pack (evidence_pack.md) carrying today's full rail inventor
 
 Mockup base, stated plainly: the pictures are drawn over the Board's own 1080p battle capture (docs/shots/ui_battle_ember/full_1080/E1_ledger_1080.png). In that capture the board's left flank sits under the rail veil, so the region the rail vacates is reconstructed as scene (dark starfield and a soft nebula wash from the capture's own centre nebula). Ship positions in the freed region are indicative, not captured. Everything from x=700 right is the untouched capture, including the real top-right cluster and, where a concept keeps it, the real log.
 
+BUILD NOTE on the mockups, read before building: the faint vertical join visible in the pictures around x=700, where the reconstruction meets the capture, is an artifact of the mockup method and is NOT a design element. No concept has a vertical veil, band, seam, or divider anywhere. In the build the board renders continuously behind the top and bottom veils, exactly as it does behind today's rail. Likewise the KEEL mockup's column depths are a drawing, balanced in the redraw as noted below; the placement table governs what goes where, not the pixel depths of the drawing.
+
 ## Recommendation: KEEL (DeepSeek's leg, chaired as drawn)
 
 Build KEEL. One bottom decision shelf, two small top clusters, no full-width top bar, the log folded into the shelf's right end. It is the only leg that placed every rail item at coordinate level, kept the status line visible, priced its own screen share honestly (hard veil and fade counted separately), and named its real weakness (small windows) instead of waving at it. The full-width top bar in Grok's and Qwen's variants veils the top edge of the board along its whole width to hold two lines of context; KEEL holds the same context in a 560 px cluster and leaves the top middle clear, which is also where its phase banner goes. From WATERLINE, take one detail: at low scale factors the damage-split line collapses behind a hover on the odds figure (SAY LESS), which is KEEL's compact-mode answer for short windows alongside the taller shelf.
@@ -38,9 +40,9 @@ Placement (every rail item):
 2. Objective: under the turn header, same veil.
 3. Ship name: shelf column A, Big Shoulders 34 px.
 4. Ship class: column A, under the name.
-5. Hull and Move: column A, one line under the class.
-6. Shield cross: column A under hull, four facings at 20, Glacier only.
-7. Status line: column A under the cross, two lines at 17 px, visible (not hover).
+5. Hull and Move: column A; hull on its own line, Move carried on the class line (the redrawn mockup's balance pass; either grouping is within the concept).
+6. Shield cross: at the ship block's right, four facings at 20, Glacier only.
+7. Status line: on the shelf's second row under the guns group, one line at 17 to 18 px, visible (not hover).
 8. Guns table: column B, one row per weapon (three rows in the capture).
 9. Target: column C, name in Nemesis red when the target is the Nemesis.
 10. Odds and damage split: column C under the target.
@@ -57,7 +59,7 @@ Decision order: context at top left, then the eye drops to the shelf's left and 
 
 1440p and 4K: shares are resolution-independent under the scale law; at 1440p the shelf is about 287 px rendered, at 4K about 432 px, and fine detail (the shield cross at about 80 px at 4K) gets easier. The binding case is the small window near k=0.6, where the 17 px floor stops the shelf shrinking with the window: KEEL needs the compact mode named above (damage split behind hover, or orders and Command in a second small veil). The Board should rule the compact mode as part of adopting KEEL, not discover it later.
 
-Costs: the shelf veils the board's lower edge across the full width (today the left flank pays instead); the shelf is dense, and long target or damage strings wrap at 17 px in column C; the log loses width (320 px inside the shelf against the roughly 600 px strip it has today), so the visible log lines truncate sooner, with the full log still one key away as today. The leg's own coordinates put the status line's second line 4 px into the fleet strip; the mockup resolves it by tightening the status leading, and a build should give the shelf's foot 8 px more.
+Costs: the shelf veils the board's lower edge across the full width (today the left flank pays instead); the shelf is dense, and long target or damage strings wrap at 17 px in column C; the log loses width (320 px inside the shelf against the roughly 600 px strip it has today), so the visible log lines truncate sooner, with the full log still one key away as today. The leg's own coordinates stacked the whole ship block in column A, which left that column running far deeper than the guns and target columns and dead space under them; Ryan flagged the same imbalance in the first mockup (Nov 17, 2026). The chair's redraw balances the shelf into two rows: the ship block compacts to three lines with the shield cross at its right, and the status line moves to the second row under the guns group, level with orders and Command. A build should hold that two-row balance: no column runs much deeper than the others, and the second row is filled by the status line, orders, and Command rather than left empty. The leg's coordinates also put the status line 4 px into the fleet strip; a build should give the shelf's foot 8 px more.
 
 ## Concept 2: WATERLINE (Qwen's leg)
 
