@@ -23,6 +23,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / 'shared'))
 sys.path.insert(0, str(REPO / 'tools/blender/r209'))
 import review
+import production_finish as finish
 from scale import contract
 import paint_stack as PS
 
@@ -34,7 +35,7 @@ RES = 2048
 TILE_WORLD = 2.0
 ZONE = dict(plate='hgrey', plate2='hpanel', trim='htrim', edge='hmetal',
             frame='hmetal', deck='dark', liner='dark', rack='dark',
-            recess='dark', glazing='dark', frost='hpanel')
+            recess='dark', frost='hpanel')
 
 
 def write(path, value):
@@ -165,6 +166,11 @@ def fine_details(maps, out):
         h = np.asarray(height, dtype=np.float32)
         gy, gx = np.gradient(h, TILE_WORLD / RES)
         mark = np.asarray(marking, dtype=np.float32) / 255
+        # Fine residue runs down the metal, with broad world-space soot added
+        # from the real geometry below. This is sparse streaking, not grain.
+        yy, xx = np.mgrid[0:RES, 0:RES].astype(np.float32) / RES
+        streak = np.maximum(0, np.cos(xx*math.tau*13 + .3*np.sin(yy*math.tau)))**24
+        streak *= (.5 + .5*np.cos(yy*math.tau*2 + xx*3))**2 * .24
         detailed = {}
         for channel, im in source.items():
             pixels = np.empty(RES*RES*4, np.float32)
@@ -179,10 +185,10 @@ def fine_details(maps, out):
                 pixels[...,:3] = v * .5 + .5
             elif channel == 'albedo':
                 recess = (h[::-1] < -.001).astype(np.float32) * .23
-                pixels[...,:3] *= 1 - recess[...,None]
+                pixels[...,:3] *= (1 - recess[...,None]) * (1 - streak[...,None])
                 pixels[...,:3] = pixels[...,:3]*(1-mark[::-1,...,None]) + np.array(H.CAP_LIN)*mark[::-1,...,None]
             else:
-                pixels[...,1] = np.maximum(pixels[...,1], .52 + (h[::-1] < 0)*.1)
+                pixels[...,1] = np.maximum(pixels[...,1], .52 + (h[::-1] < 0)*.1 + streak*.35)
             final = PS.new_image('T2_detail_'+zone+'_'+channel, RES, channel == 'albedo')
             final.pixels.foreach_set(pixels.ravel())
             PS.save(final, str(out), final.name)
@@ -224,6 +230,7 @@ def uv_and_masks(objs, uniform_scale, out):
         me.color_attributes.active_color = ca
         colours = np.ones((len(me.loops), 4), dtype=np.float32)
         uvs = np.zeros((len(me.loops), 2), dtype=np.float32)
+        roots, tones = finish.island_tones(me, ob['module'], ob['zone'])
         for p in me.polygons:
             n = p.normal
             axis = max(range(3), key=lambda k: abs(n[k]))
@@ -241,16 +248,17 @@ def uv_and_masks(objs, uniform_scale, out):
                 if tree.ray_cast(centre + normal * .012, direction, .65)[0] is not None:
                     hits += 1
             # Darken cavities and the damaged/stub side. No rust on Hegemony.
-            abandoned = max(0, min(1, (-centre.y - 4) / 20))
             cavity = 1 - hits * .11
+            tone = tones[roots[p.vertices[0]]]
             for li in p.loop_indices:
                 co = me.vertices[me.loops[li].vertex_index].co * uniform_scale
                 uvs[li] = [co[axes[0]] / TILE_WORLD,
                            co[axes[1]] / TILE_WORLD * (1 if n[axis] > 0 else -1)]
                 # Bevel faces expose lighter worn edges in the same palette.
                 edge = 1 - max(abs(n.x), abs(n.y), abs(n.z))
-                wear = min(1, cavity * (1 - .27 * abandoned) + edge * .22)
-                colours[li, :3] = wear
+                world = ob.matrix_world @ me.vertices[me.loops[li].vertex_index].co
+                if ob['zone'] in ZONE:
+                    colours[li, :3] = finish.weather(world, n, cavity, edge, tone)
         uv.data.foreach_set('uv', uvs.ravel())
         ca.data.foreach_set('color', colours.ravel())
         actual_uv = np.empty_like(uvs)
@@ -323,6 +331,7 @@ def main():
     textures.mkdir(exist_ok=True)
     PS.gpu(16)
     print('T2 BAKE DEVICE', bpy.context.scene.cycles.device, flush=True)
+    paint_direction = finish.configure(H)
     cruiser = cruiser_density(project)
     if a.reuse_tiles:
         maps = {zone: {channel: bpy.data.images.load(str(textures/('T2_'+zone+'_'+channel+'.png')))
@@ -333,6 +342,7 @@ def main():
     else:
         maps = tile_maps(textures, cruiser['length_world'])
     maps = fine_details(maps, textures)
+    glass = finish.glass_materials(H, PS, textures, RES, TILE_WORLD)
     licences = json.loads((out/'licences.json').read_text())
     known = {r['file'] for r in licences['textures']}
     for image in textures.glob('T2_*.png'):
@@ -357,36 +367,24 @@ def main():
     after = signature(objs)
     if before != after: raise RuntimeError('Paint changed PR 700 geometry')
     materials = {zone: finish_material(zone, m) for zone, m in maps.items()}
-    window_light = H.glow_material('hwin')
-    window_light.name = 'T2_window_lights'
-    window_faces = 0
+    window_counts = []
     for ob in objs:
         zone = ob['zone']
         if zone in ZONE:
             ob.data.materials.clear()
             ob.data.materials.append(materials[ZONE[zone]])
-            if zone == 'glazing' and ob['module'].startswith('core_'):
-                deck = int(ob['module'].split('_')[1])-1
-                clusters = [c for c in review.D.LIGHT_CLUSTERS if c['kind'] == 'core' and c['deck'] == deck]
-                if clusters:
-                    ob.data.materials.append(window_light)
-                    radii = [math.hypot(v.co.x,v.co.y) for v in ob.data.vertices]
-                    glass_mid_radius = (min(radii)+max(radii))*.5
-                    for polygon in ob.data.polygons:
-                        angle = math.atan2(polygon.center.y,polygon.center.x)
-                        facing = polygon.normal.x*math.cos(angle)+polygon.normal.y*math.sin(angle)
-                        cell = int((angle % math.tau)/math.tau*80)
-                        near = any(abs(math.atan2(math.sin(angle-math.radians(c['angle'])),
-                                  math.cos(angle-math.radians(c['angle'])))) < math.radians(12) for c in clusters)
-                        # The accepted two-sided glass shell keeps its original
-                        # winding. Pick the actual outer face by its radius.
-                        if near and abs(facing) > .6 and math.hypot(polygon.center.x,polygon.center.y) > glass_mid_radius and cell % 2 == 0:
-                            polygon.material_index = 1
-                            window_faces += 1
-        elif zone in ('blue', 'viewport'):
+        elif zone in ('glazing', 'viewport'):
+            window_counts.append(dict(module=ob['module'], zone=zone,
+                                      **finish.assign_glazing(ob, glass)))
+        elif zone == 'blue':
             bs = ob.data.materials[0].node_tree.nodes.get('Principled BSDF')
             rgb = H.window_rgb()
-            bs.inputs['Emission Color'].default_value = (*(v*.60/max(rgb) for v in rgb), 1)
+            # Keep all 90 markers and their peak, but make the lens dark and
+            # blue-filtered like the glazing. The old pale diffuse lens caught
+            # the key as a white rectangle beside the observation window.
+            bs.inputs['Base Color'].default_value = (.003, .009, .025, 1)
+            bs.inputs['Emission Color'].default_value = (
+                *(v*f*.60/max(rgb) for v,f in zip(rgb,(.12,.52,1))), 1)
             bs.inputs['Emission Strength'].default_value = 1
     write(out/'shape_preservation.json', dict(pass_unchanged=before == after, objects=after,
           triangles=sum(v['triangles'] for v in after.values()),
@@ -397,14 +395,17 @@ def main():
           bounds=review.bounds(objs), uniform_scale=uniform_scale, modules=rows,
           details=details, joints=joints,
           drums=review.D.DRUMS, light_clusters=review.D.LIGHT_CLUSTERS,
-          lit_window_faces=window_faces,
+          lit_window_faces=sum(r['lit_faces'] for r in window_counts),
+          windows=window_counts, paint_direction=paint_direction,
           paint_stack='tools/blender/kits/hegemony/stack.py',
           maps=dict(resolution=RES, tile_world=TILE_WORLD, texels_per_unit=RES/TILE_WORLD),
           source_hashes={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                         for p in [HERE/'production.py', HERE/'design.py', HERE/'parts.py', HERE/'review.py',
+                         for p in [HERE/'production.py', HERE/'production_finish.py', HERE/'design.py', HERE/'parts.py', HERE/'review.py',
                                    HERE.parent/'hegemony/stack.py', HERE.parent/'shared/paint_stack.py']}))
     bpy.ops.wm.save_as_mainfile(filepath=str(out/'station_T2_painted.blend'))
-    review.export(root, move, objs, out)
+    # Blender's material-inferred export can insert a white COLOR_0 and put
+    # the real wear in COLOR_1. glTF/Godot multiply COLOR_0 only. Name it.
+    review.export(root, move, objs, out, vertex_colour='T2_geometry_wear')
     (out/'station_T2.glb').write_bytes((out/'station_T2_review.glb').read_bytes())
     print('T2 PRODUCTION COMPLETE', flush=True)
 

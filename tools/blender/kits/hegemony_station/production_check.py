@@ -32,6 +32,8 @@ def inspect(path):
     # All exported mesh nodes share the kit's uniform scale at the root.
     scale = next(n['scale'][0] for n in doc['nodes'] if n.get('name') == 'station_T2')
     density = []
+    paint_colours = []
+    glass = []
     resolutions = {}
     def texture_size(index):
         image_index = doc['textures'][index]['source']
@@ -43,12 +45,23 @@ def inspect(path):
         return resolutions[image_index]
     for p in primitives:
         mat = doc['materials'][p['material']]
+        if mat['name'].startswith('T2_glass_'):
+            assert 'baseColorTexture' in mat['pbrMetallicRoughness'], 'blank glass albedo'
+            assert 'metallicRoughnessTexture' in mat['pbrMetallicRoughness'], 'lost reflective glazing'
+            assert 'emissiveTexture' in mat, 'lost framed room/interior emission'
+            glass.append(dict(material=mat['name'], triangles=doc['accessors'][p['indices']]['count']//3))
         if not mat['name'].startswith('T2_painted_'): continue
         pbr = mat['pbrMetallicRoughness']
         assert 'baseColorTexture' in pbr, 'lost albedo: '+mat['name']
         assert 'metallicRoughnessTexture' in pbr, 'lost ORM: '+mat['name']
         assert 'normalTexture' in mat, 'lost detail normal: '+mat['name']
         assert 'COLOR_0' in p['attributes'], 'lost geometry wear: '+mat['name']
+        colours = values(p['attributes']['COLOR_0'])[:,:3]
+        if colours.dtype.kind == 'u': colours = colours / np.iinfo(colours.dtype).max
+        assert not np.allclose(colours, 1), 'lost paint: white substitute COLOR_0 on '+mat['name']
+        paint_colours.append(dict(material=mat['name'],
+            vertex_rgb_p10=np.percentile(colours,10,axis=0).tolist(),
+            vertex_rgb_p90=np.percentile(colours,90,axis=0).tolist()))
         width,height = texture_size(pbr['baseColorTexture']['index'])
         xyz = values(p['attributes']['POSITION']) * scale
         uv = values(p['attributes']['TEXCOORD_0'])
@@ -68,7 +81,7 @@ def inspect(path):
     return dict(triangles=triangles,surfaces=len(primitives),materials=len(doc['materials']),
                 glb_sha256=hashlib.sha256(raw).hexdigest(),
                 mesh_nodes=sum('mesh' in n for n in doc['nodes']),bytes=path.stat().st_size,
-                bounds=exported_bounds(doc),density=density,
+                bounds=exported_bounds(doc),density=density, glass=glass, paint_colours=paint_colours,
                 animations=[a.get('name') for a in doc.get('animations',[])])
 
 
@@ -132,6 +145,9 @@ def main():
         assert hashlib.sha256(source.read_bytes()).hexdigest() == expected, 'stale painted source: '+name
     cruiser = json.loads((out/'cruiser_density.json').read_text())
     assert shape['pass_unchanged'], 'changed evaluated geometry'
+    assert report['glass'], 'missing textured station glazing'
+    report['windows'] = manifest['windows']
+    report['paint_direction'] = manifest['paint_direction']
     assert report['triangles'] == shape['triangles'] == baseline['triangles'], 'lost source triangles'
     assert report['animations'], 'lost hanging-radiator motion'
     # Compare like measurements: surface-area weighted density on every material

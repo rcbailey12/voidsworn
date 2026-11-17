@@ -109,6 +109,30 @@
       "used": "repeating PBR paint tile; no downloaded image or projected concept"
     },
     {
+      "file": "T2_glass_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_glass_emission.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_glass_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_glass_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
       "file": "T2_hgrey_albedo.png",
       "licence": "CC0",
       "source": "own work: Hegemony procedural stack and station service-detail drawing",

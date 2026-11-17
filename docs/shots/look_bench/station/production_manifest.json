@@ -95875,7 +95875,238 @@
       "count": 20
     }
   ],
-  "lit_window_faces": 6,
+  "lit_window_faces": 4424,
+  "windows": [
+    {
+      "module": "core_01",
+      "zone": "glazing",
+      "lit_faces": 387,
+      "dark_faces": 93
+    },
+    {
+      "module": "core_02",
+      "zone": "glazing",
+      "lit_faces": 378,
+      "dark_faces": 102
+    },
+    {
+      "module": "core_03",
+      "zone": "glazing",
+      "lit_faces": 371,
+      "dark_faces": 79
+    },
+    {
+      "module": "core_04",
+      "zone": "glazing",
+      "lit_faces": 356,
+      "dark_faces": 124
+    },
+    {
+      "module": "core_05",
+      "zone": "glazing",
+      "lit_faces": 375,
+      "dark_faces": 69
+    },
+    {
+      "module": "core_06",
+      "zone": "glazing",
+      "lit_faces": 338,
+      "dark_faces": 70
+    },
+    {
+      "module": "core_07",
+      "zone": "glazing",
+      "lit_faces": 366,
+      "dark_faces": 84
+    },
+    {
+      "module": "core_08",
+      "zone": "glazing",
+      "lit_faces": 340,
+      "dark_faces": 98
+    },
+    {
+      "module": "core_09",
+      "zone": "glazing",
+      "lit_faces": 338,
+      "dark_faces": 88
+    },
+    {
+      "module": "observation_window",
+      "zone": "viewport",
+      "lit_faces": 41,
+      "dark_faces": 25
+    },
+    {
+      "module": "habitat_1_slot_00",
+      "zone": "glazing",
+      "lit_faces": 59,
+      "dark_faces": 55
+    },
+    {
+      "module": "habitat_1_slot_01",
+      "zone": "glazing",
+      "lit_faces": 48,
+      "dark_faces": 66
+    },
+    {
+      "module": "habitat_2_slot_02",
+      "zone": "glazing",
+      "lit_faces": 98,
+      "dark_faces": 16
+    },
+    {
+      "module": "habitat_2_slot_03",
+      "zone": "glazing",
+      "lit_faces": 98,
+      "dark_faces": 16
+    },
+    {
+      "module": "habitat_3_slot_04",
+      "zone": "glazing",
+      "lit_faces": 99,
+      "dark_faces": 15
+    },
+    {
+      "module": "habitat_3_slot_05",
+      "zone": "glazing",
+      "lit_faces": 105,
+      "dark_faces": 9
+    },
+    {
+      "module": "habitat_4_slot_06",
+      "zone": "glazing",
+      "lit_faces": 103,
+      "dark_faces": 11
+    },
+    {
+      "module": "habitat_4_slot_07",
+      "zone": "glazing",
+      "lit_faces": 99,
+      "dark_faces": 15
+    },
+    {
+      "module": "habitat_5_slot_08",
+      "zone": "glazing",
+      "lit_faces": 108,
+      "dark_faces": 6
+    },
+    {
+      "module": "habitat_5_slot_09",
+      "zone": "glazing",
+      "lit_faces": 81,
+      "dark_faces": 33
+    },
+    {
+      "module": "habitat_6_slot_10",
+      "zone": "glazing",
+      "lit_faces": 60,
+      "dark_faces": 54
+    },
+    {
+      "module": "arm_1",
+      "zone": "glazing",
+      "lit_faces": 60,
+      "dark_faces": 12
+    },
+    {
+      "module": "arm_2",
+      "zone": "glazing",
+      "lit_faces": 63,
+      "dark_faces": 9
+    },
+    {
+      "module": "arm_3",
+      "zone": "glazing",
+      "lit_faces": 53,
+      "dark_faces": 19
+    },
+    {
+      "module": "service_finger_1",
+      "zone": "glazing",
+      "lit_faces": 0,
+      "dark_faces": 120
+    },
+    {
+      "module": "service_finger_3",
+      "zone": "glazing",
+      "lit_faces": 0,
+      "dark_faces": 120
+    },
+    {
+      "module": "service_finger_6",
+      "zone": "glazing",
+      "lit_faces": 0,
+      "dark_faces": 120
+    }
+  ],
+  "paint_direction": {
+    "palette_srgb": {
+      "hgrey": [
+        [
+          166,
+          160,
+          147
+        ],
+        [
+          198,
+          193,
+          180
+        ]
+      ],
+      "hpanel": [
+        [
+          139,
+          131,
+          113
+        ],
+        [
+          181,
+          173,
+          152
+        ]
+      ],
+      "hmetal": [
+        [
+          113,
+          122,
+          129
+        ],
+        [
+          162,
+          169,
+          173
+        ]
+      ],
+      "htrim": [
+        [
+          38,
+          48,
+          60
+        ],
+        [
+          70,
+          82,
+          96
+        ]
+      ],
+      "dark": [
+        [
+          12,
+          18,
+          26
+        ],
+        [
+          27,
+          35,
+          44
+        ]
+      ]
+    },
+    "source": "accepted station_T2 beauty; station-only Hegemony overrides",
+    "rust": 0,
+    "window_source": "hegemony.stack.glow_material(hwin)"
+  },
   "paint_stack": "tools/blender/kits/hegemony/stack.py",
   "maps": {
     "resolution": 2048,
@@ -95883,10 +96114,11 @@
     "texels_per_unit": 1024.0
   },
   "source_hashes": {
-    "production.py": "98dd65f3f28669d4ae91f669633e3a14756d997c8ec6b2297628460d1c12df10",
+    "production.py": "a97df0deb4e634f6b07a0301a35775320f3ef036f2a1a93265d8d75b417ea2ee",
+    "production_finish.py": "f2a87e8ef79b1aa10d4f3377f6132c7eef337c39d9c15e326ffadee40d84cd70",
     "design.py": "427919c5f4bf9ecbdc12658fa212844e2fddc043625be9c4cf2d47112dfc06b1",
     "parts.py": "97d4c63ff76482dfa66c5b1a2a21e71ad03a97bdcce748d708003c11e56d5b2c",
-    "review.py": "bdb2bfdb8178f194959f7d5f5d91fff3d0ab170a38e68147ef1c8f3cc1843956",
+    "review.py": "93446086316fab7b922ad420dc64d8e6776a2d2543c3073e0ed868e081c9411f",
     "stack.py": "39f9f01c9e54a953e40f8e44b5195ca42c70256fb93bc7acd90e128e39bf1f9e",
     "paint_stack.py": "b9dd20dbc293373e02f942cf20d12a0bea1a7dfdf9d647bf5bc33d10366bd75f"
   }

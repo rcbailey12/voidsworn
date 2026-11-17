@@ -3,8 +3,9 @@ rem Refs #975. Station-specific recipe stages 5-7, captures and station-map gate
 setlocal
 for %%I in ("%~dp0..\..\..\..") do set "REPO=%%~fI"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
-set "OUT=%VT%\board\issue-975\shots"
-set "RAW=%TEMP%\station975_native"
+for %%I in ("%REPO%\..") do set "BOARD=%%~fI"
+set "OUT=%BOARD%\issue-975\shots"
+set "RAW=%TEMP%\station975_run2_native"
 set "GD=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 set "B=%VT%\blender\blender-4.5.14-windows-x64\blender.exe"
 set "PY=%VT%\blender\blender-4.5.14-windows-x64\4.5\python\bin\python.exe"

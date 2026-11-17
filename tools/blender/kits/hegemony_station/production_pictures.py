@@ -1,4 +1,4 @@
-"""Refs #975. Native-pixel close crops and concept comparisons, stamped."""
+"""Refs #975. Native crops, concept and run-1/run-2 comparisons, stamped."""
 import json
 from pathlib import Path
 import shutil
@@ -44,8 +44,21 @@ def main():
         label(sheet,'station_T2 | CAMERA '+str(radius)+' / INSTALLED PAINT BESIDE ACCEPTED CONCEPT',
               'Left: game lighting and C15s_23 cruiser | Right: accepted T2 beauty, direction matched by eye')
         review.save(sheet,out/('station_T2_compare'+str(radius)+'.png'))
+    for name in ('closest_docking','closest_habitat','closest_arrays','compare170','compare60'):
+        review = Review('installed in game')
+        filename = 'station_T2_' + name + '.png'
+        before = review.open(REPO/'docs/shots/look_bench/station/run1'/filename).convert('RGB')
+        after = review.open(out/filename).convert('RGB')
+        # Keep native close pixels and the original camera/concept layouts.
+        # Wide evidence can be opened at 1:1; no sheet exceeds 720px high.
+        pair = Image.new('RGB', (before.width + after.width,720),'#080c12')
+        pair.paste(before,(0,0))
+        pair.paste(after,(before.width,0))
+        label(pair,'station_T2 | '+name.upper()+' / RUN 1 BEFORE (LEFT) / RUN 2 AFTER (RIGHT)',
+              'Same installed camera, scale and light | Paint and windows only | Close views retain native 1080p pixels')
+        review.save(pair,out/('station_T2_before_after_'+name+'.png'))
     shutil.copy2(raw/'production_captures.json',out/'production_captures.json')
-    print('T2 PICTURES PASS: three native crops, two concept comparisons')
+    print('T2 PICTURES PASS: three native crops, two concept comparisons, five before/after pairs')
 
 
 if __name__ == '__main__': main()

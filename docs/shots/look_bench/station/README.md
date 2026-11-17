@@ -1,82 +1,87 @@
-# station_T2: production paint, issue 975
+# station_T2: run 2 paint and lights, issue 975
 
-Ryan approved PR 700's T2 shape on Nov 17. Issue 975 takes that exact kit through recipe stages 5 to 7.
-`design.py`, `parts.py`, towers, ring, arms, authored joints, damage and insides are unchanged. The production check
-compares every evaluated vertex and triangle before and after painting, then reads the exported GLB independently.
-It also compares all 697,088 world-space triangles against PR 700's actual review GLB at 0.0001 game-unit precision;
-they match exactly, despite the new UV, colour and material splits.
+Ryan returned PR 977's paint because it read as grey clay. This run retains PR 700's shape and the run 1 live swap,
+then changes the finish: worn pale and warm metal, darker structural bands, a minority of blue panels, lit blue
+window bands and cold damaged-side grime. [Build sheet and retained inventory](feature_table.md).
 
-Method: the real [Hegemony stack](../../../../tools/blender/kits/hegemony/stack.py) and shared paint machinery bake
-five repeating PBR material sets, each with albedo, roughness/metalness and tangent-space detail normal. Each 2048-pixel
-tile covers two game units, rather than stretching one atlas across the 99.2-unit station. Geometry-derived cavity
-rays and bevel normals supply local wear, with stronger cold grime toward the damaged side. The station adapter adds
-recessed service covers, flush screws, small vent slots, handling scratches and low-contrast maintenance stencils in
-the normal, roughness and albedo maps. Existing hatches, pipes, window frames, docking jaws, cranes, rails and arrays
-remain real geometry. No generated concept paint, random boxes or shape simplification is used.
-New procedural tiles and drawn service markings are own work dedicated CC0; the bake writes their licence inventory.
-Six existing outer glass faces beside the two authored core light clusters take the Hegemony `hwin` emission.
-Most glazing stays dark; the one large observation pane and all 90 original marker lights remain.
+The missing local variation had an export cause. Blender's material-inferred export inserted a white `COLOR_0`
+and stored the real geometry wear in `COLOR_1`. Godot uses `COLOR_0`. The station export now explicitly names
+`T2_geometry_wear`; the independent GLB check rejects a white substitute. The actual run 1 GLB is rejected by that
+check. The painted GLB now retains the measured RGB range, not only the presence of a colour attribute.
 
-Measured production cost: **697,088 triangles**, including **110,428 inside**, **12 exported surfaces**, nine materials
-and two mesh nodes. Full detail ships; no geometry LOD is substituted. The approved uniform 1.919133 scale retains
-the 99.200 x 70.211-unit plan and 69.281-unit height. The new optional scene cache is loaded by the actual board prop
-path; the old O1_37 asset remains available as the fallback. The local cache install verifies the board's readback.
+Method: [production_finish.py](../../../../tools/blender/kits/hegemony_station/production_finish.py) configures a
+privately loaded [Hegemony stack](../../../../tools/blender/kits/hegemony/stack.py) for the accepted T2 beauty's
+pale/warm metal direction. The shared PBR bake, ordered grid, no-rust treatment and Hegemony hwin emission stay.
+The fleet stack is unchanged. Connected mesh islands receive stable panel tones, including their bevel faces.
+Real station cavity rays, retained bevels and directional world-space soot vary the finish over the damaged side;
+finer streaks also enter the albedo and roughness tiles. Service-cover seams, flush screws, vent slots, scratches
+and maintenance stencils remain. All new maps are procedural own work, dedicated CC0; no concept is projected.
 
-Texture density is measured from the actual exported UV and world triangle areas, not map size divided by span.
-Every painted surface has a surface-area weighted density of at least **862.88 texels per game unit**. The real
-installed C15s_23 cruiser, fitted by its current 23.36-unit game length, averages **42.30 texels per game unit**;
-its finest triangle is **191.86**. Thus even the lowest station material mean is 20.40 times the cruiser mean and
-4.50 times its finest triangle. Individual original bevel slivers can have lower triangle minima; these and every
-material's measurements remain in the report. This is texture resolution, not a claim that every point contains
-unique detail. The PBR tiles deliberately repeat, while modelled modules and local wear vary over the actual structure.
+Existing glazing now carries reflective blue glass and framed room/sill masks in hwin emission. Most bands are lit,
+with more dark gaps on the damaged side: 4,424 lit and 1,168 dark original glazing faces, across the drums,
+observation pane, ring and docking lenses. Counts include the skins and edges, not individual rooms. The broad
+observation pane has the same window treatment. Solar-cell glazing stays dark. All 90 original marker lights remain
+in place, with dark blue lenses and the original 0.60 peak filtered blue so the key no longer turns them into white
+cards. The original five battery strips, insides, damage, joints and hanging-radiator motion remain.
 
-Reproduce by double-clicking `tools/recipe/station_paint.bat` after preparing the existing PC game assets.
-It stops on a failed bake, geometry/density check, install readback, capture or station-map gate. It preserves replaced
-T2 assets and caches, never deletes files, and puts scratch logs and native captures in TEMP. GPU work goes through
-the watchdog; the real 20-ship scene gate uses `--map station`, 1080p frame medians and 4K GPU medians with a solo claim.
-The launcher's final pass requires three sessions at each resolution below 12.5 ms and an actual installed T2 instance.
+Measured installed cost: **697,088 triangles**, including **110,428 inside**, **12 surfaces**,
+**9 materials** and **2 mesh nodes**. Full detail ships; no geometry LOD is substituted.
+The station adds **12 visible draw calls** in the same-camera visibility probe. Scale remains uniformly 1.919133,
+with a 99.200 x 70.211-unit plan and 69.281-unit height. Every world-space triangle and authored joint matches PR 700's
+actual review GLB at 0.0001 game-unit precision. No geometry, board cells, rules or footprint code is changed.
+Ryan's 19-cell footprint choice is separate work in issue 983.
 
-Final station-map gate: three 1080p frame medians **4.112 / 4.113 / 4.143 ms** and three 4K GPU medians
-**6.639 / 6.569 / 6.565 ms**, all below 12.5 ms. The real 20-ship battle loads one installed T2, with effects, world,
-HUD, MSAA 4x and full geometry. The studio visibility comparison measures **12 added visible draw calls** for the
-station; the full station-map scene reports its own visible and shadow draw counts separately. The earlier cold-import
-measurement is superseded by this completed-import run. Late `exterior_alpha` shader registration remains one per
-mode in the existing effects path and is recorded in the gate report.
+Five 2048 PBR tile sets still repeat every two game units. Actual exported UV/world triangle areas give a lowest
+material mean of **862.88 texels per game unit**, against the real fitted C15s_23
+cruiser's **42.30** mean and **191.86**
+finest triangle. The station's lowest material mean is 20.40 times the cruiser mean.
+Individual bevel sliver minima remain reported. These are repeating detail tiles, not unique station-wide atlases.
 
-Review evidence:
+Final 20-ship station-map gate, solo GPU claim: 1080p frame medians **8.082 / 9.822 / 9.124 ms**;
+4K GPU medians **7.136 / 7.201 / 7.296 ms**. All six pass 12.5 ms, with one installed T2, effects, world, HUD and MSAA 4x.
+An earlier run missed at 12.508 ms at 1080p; its [retained report](station_gate_contention.json) is preserved.
+The unchanged gate was rerun after a separate headless import finished. The scene report includes visible and shadow draw counts. Existing late `exterior_alpha` registration is recorded
+separately; it is not counted as a new station shader. Prepared rock caches are present for this final measurement.
 
-- [Docking arm end, closest battle camera](station_T2_closest_docking.png).
-- [Habitat drum, framed window band and authored lights](station_T2_closest_habitat.png).
-- [Tower top and actual dish arrays](station_T2_closest_arrays.png).
-- [Camera 170 beside the accepted T2 concept](station_T2_compare170.png).
-- [Camera 60 beside the accepted T2 concept](station_T2_compare60.png).
+Review the same cameras beside run 1, with each source revision and stage retained:
 
-The three close pictures are 1920 x 720 crops from native 1920 x 1080 renders, with no resizing. The camera is at the
-game's actual minimum radius, 26, at pitch 0.98. The habitat view orbits 40 degrees away from the light cluster's
-radial bearing to clear the intervening dish tower. A crop of the actual C15s_23 cruiser stays in the same frame at the same target depth. The wide
-170 view shows the full cruiser. The 1280 x 720 overview sheets include the accepted concept as a reference;
-its lens is not calibrated. The finish follows the Hegemony palette and ordered panel language and is darker and
-more regular than the concept's worn pale metal. This is a visual difference for the Board's review.
+- [Camera 170 before and after, each beside the accepted concept](station_T2_before_after_compare170.png).
+- [Camera 60 before and after, each beside the accepted concept](station_T2_before_after_compare60.png).
+- [Docking arm end, closest battle camera](station_T2_before_after_closest_docking.png).
+- [Habitat drum and window bands, closest battle camera](station_T2_before_after_closest_habitat.png).
+- [Tower top and arrays, closest battle camera](station_T2_before_after_closest_arrays.png).
 
-Measured files: [production manifest](production_manifest.json), [geometry and density checks](production_checks.json),
-[complete retained geometry](shape_preservation.json), [per-object density](station_density.json),
-[camera and GPU draw measurements](production_captures.json), [station-map gate](station_gate.json),
-and [texture licences](production_licences.json). The editable blend, production GLB and PBR maps stay in the task's
-PC shots folder, following the existing ship-asset policy.
+The close comparisons are 3840 x 720: two 1920 x 720 crops, with native 1080p pixels retained 1:1. No close image is
+resized. Camera radius 26, pitch 0.98, targets, orbit angles, battle lighting and same-depth cruiser placement are
+unchanged. Overview pairs are 2560 x 720. The five stamped [run 1 pictures](run1/station_T2_compare60.png) remain
+under `run1/`. Current single views are [docking](station_T2_closest_docking.png),
+[habitat](station_T2_closest_habitat.png), [arrays](station_T2_closest_arrays.png),
+[camera 170](station_T2_compare170.png) and [camera 60](station_T2_compare60.png).
 
-Validation: 63 standing PASS rows and two existing KNOWN rows; Godot loads 214 scripts and 16 scenes with zero failed;
-scale check passes 54 objects outside four existing KNOWN rows; C15s_23 install readback passes; T2 board readback
-passes. The double-click production route passes, including a source-verified stage-7 resume after capture target
-correction. Two final capture passes retain the second set. No commit or push.
+Compared with the accepted concept, the paint now has pale/warm panel families, dark bands and visible blue glazing.
+The preserved model still has broader regular rims and a more ordered panel pattern than the concept. Its key-lit
+rim metal is cleaner than the concept's most battered surfaces. These are visual limits for the Board's and Ryan's
+review, not a claim of visual acceptance.
 
-PC inputs: 246 ship files matched the tracked manifest. Six listed H10_23 files had no matching PC copy, so validation
-used the current local Dominion assets/cache. The scene-gate fleet does not use H10_23. The comparison C15s_23 matches
-its source manifest and installed-cache readback. No Dominion source or tracked manifest is changed by this job.
+Reproduce with `tools/recipe/station_paint.bat`: stages 5 to 7, independent export/density/shape checks, preservation
+of replaced assets, board-loader readback, two capture passes retaining the second, stamped comparisons and the
+station-map gate. Output goes to the checkout parent's `issue-975/shots`; logs and native renders stay in TEMP.
+The editable blend, production GLB and maps remain PC assets under the existing ship-asset policy.
 
-Ryan's final paint judgement and the Board's outside review remain owed. The logical seven-cell station footprint is
-unchanged; the approved shape's
-previously reported visual overhang remains. This paint job does not change the rules, add a debris field or certify
-new tearing behavior.
+Evidence: [production manifest](production_manifest.json), [independent checks](production_checks.json),
+[retained geometry](shape_preservation.json), [per-object density](station_density.json),
+[cameras and draw measurements](production_captures.json), [station-map gate](station_gate.json),
+and [CC0 texture inventory](production_licences.json).
+
+Validation: production route passes, including the corrected named-colour export and source-hash checks; old run 1
+export rejected for lost wear; 63 standing PASS rows and two existing KNOWN rows; Godot loads 214 scripts and 16 scenes
+with zero failures. The initial diagnostic captures exposed the lost-colour export and were replaced by the corrected
+second-pass evidence. No commit or push.
+
+PC inputs: 246 ship files match the tracked manifest. The same six H10_23 files as run 1 have no matching PC copy;
+current local Dominion assets/cache are used, and the scene-gate fleet does not use H10_23. C15s_23 matches the source
+manifest and supplies the measured cruiser comparison. No tracked ship manifest is changed. Editor-generated import
+setting edits were preserved in TEMP and restored, keeping this delivery within the paint job.
 
 ## PR 700 geometry record
 

@@ -2,9 +2,9 @@
   "triangles": 697088,
   "surfaces": 12,
   "materials": 9,
-  "glb_sha256": "079a1a186a97f018e7ddc80eadc5d222aeeac47fa04c7c9bc8145c14882f3ed1",
+  "glb_sha256": "98cd281603e5de01dbaf6e4f78fbeda48529dc050fb274308e7a593876b9c31f",
   "mesh_nodes": 2,
-  "bytes": 73928036,
+  "bytes": 69955688,
   "bounds": [
     99.19999060741884,
     69.28070757174817,
@@ -43,12 +43,12 @@
     },
     {
       "material": "T2_painted_dark",
-      "surface_area": 43125.3515625,
+      "surface_area": 41797.73828125,
       "texture_resolution": [
         2048,
         2048
       ],
-      "texels_per_unit": 992.2327422815148,
+      "texels_per_unit": 992.5462537503129,
       "minimum_triangle_texels_per_unit": 64.38096618652344
     },
     {
@@ -92,9 +92,356 @@
       "minimum_triangle_texels_per_unit": 0.0
     }
   ],
+  "glass": [
+    {
+      "material": "T2_glass_dark",
+      "triangles": 3056
+    },
+    {
+      "material": "T2_glass_lit",
+      "triangles": 8848
+    }
+  ],
+  "paint_colours": [
+    {
+      "material": "T2_painted_htrim",
+      "vertex_rgb_p10": [
+        0.26832990005340657,
+        0.2765011062790875,
+        0.280849927519646
+      ],
+      "vertex_rgb_p90": [
+        0.7998168917372397,
+        0.8114900434882124,
+        0.8175020981155108
+      ]
+    },
+    {
+      "material": "T2_painted_hmetal",
+      "vertex_rgb_p10": [
+        0.3350850690470741,
+        0.3437872892347601,
+        0.3484168764782178
+      ],
+      "vertex_rgb_p90": [
+        0.8478461890592812,
+        0.858710612649729,
+        0.8643045700770581
+      ]
+    },
+    {
+      "material": "T2_painted_dark",
+      "vertex_rgb_p10": [
+        0.3058213168535897,
+        0.31306172274357214,
+        0.31689936675059127
+      ],
+      "vertex_rgb_p90": [
+        0.4092317082475013,
+        0.4175631342030976,
+        0.4219501029983978
+      ]
+    },
+    {
+      "material": "T2_painted_dark",
+      "vertex_rgb_p10": [
+        0.2686198214694438,
+        0.2786037994964523,
+        0.28383306630045013
+      ],
+      "vertex_rgb_p90": [
+        0.692988479438468,
+        0.6968032349126421,
+        0.6987258716716258
+      ]
+    },
+    {
+      "material": "T2_painted_hpanel",
+      "vertex_rgb_p10": [
+        0.20318913557640955,
+        0.24467689021133746,
+        0.2643625543602655
+      ],
+      "vertex_rgb_p90": [
+        0.6328709849698636,
+        0.6320607309071489,
+        0.6136034180209053
+      ]
+    },
+    {
+      "material": "T2_painted_hmetal",
+      "vertex_rgb_p10": [
+        0.25680933852140075,
+        0.2672922865644312,
+        0.2729365987640192
+      ],
+      "vertex_rgb_p90": [
+        0.7648889906157015,
+        0.769695582513161,
+        0.7725947966735333
+      ]
+    },
+    {
+      "material": "T2_painted_hgrey",
+      "vertex_rgb_p10": [
+        0.23724727244983596,
+        0.2729076066224155,
+        0.28088807507438773
+      ],
+      "vertex_rgb_p90": [
+        0.6547493705653468,
+        0.6422827496757458,
+        0.6188143739986267
+      ]
+    },
+    {
+      "material": "T2_painted_htrim",
+      "vertex_rgb_p10": [
+        0.3043106736858167,
+        0.3151140611886778,
+        0.32098878461890595
+      ],
+      "vertex_rgb_p90": [
+        0.7821774624246586,
+        0.7900053406576638,
+        0.7943266956588093
+      ]
+    }
+  ],
   "animations": [
     "T2_radiator_swing"
   ],
+  "windows": [
+    {
+      "module": "core_01",
+      "zone": "glazing",
+      "lit_faces": 387,
+      "dark_faces": 93
+    },
+    {
+      "module": "core_02",
+      "zone": "glazing",
+      "lit_faces": 378,
+      "dark_faces": 102
+    },
+    {
+      "module": "core_03",
+      "zone": "glazing",
+      "lit_faces": 371,
+      "dark_faces": 79
+    },
+    {
+      "module": "core_04",
+      "zone": "glazing",
+      "lit_faces": 356,
+      "dark_faces": 124
+    },
+    {
+      "module": "core_05",
+      "zone": "glazing",
+      "lit_faces": 375,
+      "dark_faces": 69
+    },
+    {
+      "module": "core_06",
+      "zone": "glazing",
+      "lit_faces": 338,
+      "dark_faces": 70
+    },
+    {
+      "module": "core_07",
+      "zone": "glazing",
+      "lit_faces": 366,
+      "dark_faces": 84
+    },
+    {
+      "module": "core_08",
+      "zone": "glazing",
+      "lit_faces": 340,
+      "dark_faces": 98
+    },
+    {
+      "module": "core_09",
+      "zone": "glazing",
+      "lit_faces": 338,
+      "dark_faces": 88
+    },
+    {
+      "module": "observation_window",
+      "zone": "viewport",
+      "lit_faces": 41,
+      "dark_faces": 25
+    },
+    {
+      "module": "habitat_1_slot_00",
+      "zone": "glazing",
+      "lit_faces": 59,
+      "dark_faces": 55
+    },
+    {
+      "module": "habitat_1_slot_01",
+      "zone": "glazing",
+      "lit_faces": 48,
+      "dark_faces": 66
+    },
+    {
+      "module": "habitat_2_slot_02",
+      "zone": "glazing",
+      "lit_faces": 98,
+      "dark_faces": 16
+    },
+    {
+      "module": "habitat_2_slot_03",
+      "zone": "glazing",
+      "lit_faces": 98,
+      "dark_faces": 16
+    },
+    {
+      "module": "habitat_3_slot_04",
+      "zone": "glazing",
+      "lit_faces": 99,
+      "dark_faces": 15
+    },
+    {
+      "module": "habitat_3_slot_05",
+      "zone": "glazing",
+      "lit_faces": 105,
+      "dark_faces": 9
+    },
+    {
+      "module": "habitat_4_slot_06",
+      "zone": "glazing",
+      "lit_faces": 103,
+      "dark_faces": 11
+    },
+    {
+      "module": "habitat_4_slot_07",
+      "zone": "glazing",
+      "lit_faces": 99,
+      "dark_faces": 15
+    },
+    {
+      "module": "habitat_5_slot_08",
+      "zone": "glazing",
+      "lit_faces": 108,
+      "dark_faces": 6
+    },
+    {
+      "module": "habitat_5_slot_09",
+      "zone": "glazing",
+      "lit_faces": 81,
+      "dark_faces": 33
+    },
+    {
+      "module": "habitat_6_slot_10",
+      "zone": "glazing",
+      "lit_faces": 60,
+      "dark_faces": 54
+    },
+    {
+      "module": "arm_1",
+      "zone": "glazing",
+      "lit_faces": 60,
+      "dark_faces": 12
+    },
+    {
+      "module": "arm_2",
+      "zone": "glazing",
+      "lit_faces": 63,
+      "dark_faces": 9
+    },
+    {
+      "module": "arm_3",
+      "zone": "glazing",
+      "lit_faces": 53,
+      "dark_faces": 19
+    },
+    {
+      "module": "service_finger_1",
+      "zone": "glazing",
+      "lit_faces": 0,
+      "dark_faces": 120
+    },
+    {
+      "module": "service_finger_3",
+      "zone": "glazing",
+      "lit_faces": 0,
+      "dark_faces": 120
+    },
+    {
+      "module": "service_finger_6",
+      "zone": "glazing",
+      "lit_faces": 0,
+      "dark_faces": 120
+    }
+  ],
+  "paint_direction": {
+    "palette_srgb": {
+      "hgrey": [
+        [
+          166,
+          160,
+          147
+        ],
+        [
+          198,
+          193,
+          180
+        ]
+      ],
+      "hpanel": [
+        [
+          139,
+          131,
+          113
+        ],
+        [
+          181,
+          173,
+          152
+        ]
+      ],
+      "hmetal": [
+        [
+          113,
+          122,
+          129
+        ],
+        [
+          162,
+          169,
+          173
+        ]
+      ],
+      "htrim": [
+        [
+          38,
+          48,
+          60
+        ],
+        [
+          70,
+          82,
+          96
+        ]
+      ],
+      "dark": [
+        [
+          12,
+          18,
+          26
+        ],
+        [
+          27,
+          35,
+          44
+        ]
+      ]
+    },
+    "source": "accepted station_T2 beauty; station-only Hegemony overrides",
+    "rust": 0,
+    "window_source": "hegemony.stack.glow_material(hwin)"
+  },
   "cruiser": {
     "code": "C15s_23",
     "length_world": 23.36,
@@ -116,14 +463,14 @@
   "frame_gate": {
     "pass_": true,
     "frame1080_ms": [
-      4.112,
-      4.113,
-      4.143
+      8.082,
+      9.822,
+      9.124
     ],
     "gpu4k_ms": [
-      6.63899993896484,
-      6.56899976730347,
-      6.56500005722046
+      7.13600015640259,
+      7.20100021362305,
+      7.2960000038147
     ],
     "source": "gate/scene_gate.json"
   }
