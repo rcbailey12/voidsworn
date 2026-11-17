@@ -1,0 +1,225 @@
+Running b1_tests (limit 300 s)...
+PASS: b1_tests (0.36 s) | PASS: exit 0
+Running b3_tests (limit 300 s)...
+PASS: b3_tests (0.33 s) | PASS: exit 0
+Running b4_tests (limit 300 s)...
+PASS: b4_tests (1.14 s) | PASS: exit 0
+Running backlog_tests (limit 300 s)...
+PASS: backlog_tests (0.30 s) | PASS: exit 0
+Running build_manifest_tests (limit 300 s)...
+PASS: build_manifest_tests (0.43 s) | PASS build_manifest_tests: 20 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, ithar_CD5, voidsworn_S8, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason
+Running campaign_start_test (limit 300 s)...
+PASS: campaign_start_test (0.46 s) | PASS: exit 0
+Running capstone_mastery_tests (limit 300 s)...
+PASS: capstone_mastery_tests (0.11 s) | PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect.
+Running checks_truth_tests (limit 300 s)...
+PASS: checks_truth_tests (0.09 s) | PASS: the checks runner result words behave as issue 358 requires
+Running chorus_eat_core_tests (limit 300 s)...
+PASS: chorus_eat_core_tests (0.13 s) | PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15.
+Running cinder_prizes_tests (limit 300 s)...
+PASS: cinder_prizes_tests (0.16 s) | PASS: exit 0
+Running core_sync_tests (limit 300 s)...
+PASS: core_sync_tests (0.14 s) | PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings.
+Running doc_check_tests (limit 300 s)...
+PASS: doc_check_tests (0.97 s) | PASS: 139 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 85 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 281) or latest record, and the two stale entry-document claims stay gone
+Running effect_caps_tests (limit 300 s)...
+PASS: effect_caps_tests (0.10 s) | PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.
+Running env_reconcile_tests (limit 300 s)...
+PASS: env_reconcile_tests (0.18 s) | PASS: exit 0
+Running free_exit_tests (limit 300 s)...
+PASS: free_exit_tests (0.21 s) | PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.
+Running fx_death_spawn_tests (limit 300 s)...
+PASS: fx_death_spawn_tests (1.72 s) | PASS: every fx_death picture records its spawn and the vent uses the hull ray
+Running fx_late_shader_tests (limit 300 s)...
+PASS: fx_late_shader_tests (1.26 s) | PASS: the late shader behaviour check passed
+Running gen_open_work_tests (limit 300 s)...
+PASS: gen_open_work_tests (0.23 s) | PASS: 13 open work generator tests (offline)
+Running gpu_slots_tests (limit 300 s)...
+FAIL: gpu_slots_tests (8.18 s) | FAIL: exit 1
+
+FAIL gpu_slots_tests (first 15 output lines):
+PASS fake processes: exactly two slots, holder issue/start, missing and withdrawn go block
+PASS fake processes: solo drains both, blocks arrivals, releases, and reclaims dead slots and waiters
+PASS gaming gate also blocks solo admission
+PASS weighted load: no partial admission, live raised capacity, lowered capacity, solo across all slots, dead weighted claims
+PASS invalid capacity and weights fail closed
+PASS launch classification: capture shared, timing scene and known benches solo, headless and code skip
+PASS real concurrent clients: two slots, solo priority/exclusion, pause on wait, stale PID, token-safe release, lane C and D refusal
+PASS real concurrent clients: mixed weights fill capacity, a setting increase admits a waiter, solo drains every slot
+PASS lane selection: main and B take GPU work, C and D refuse; each tools copy maps to its own board folder
+PASS runner context, generated task guidance, watchdog release and look bench wiring
+Error: EPERM: operation not permitted, link '<home>\Downloads\voidsworn_test\node\node.exe' -> '<home>\AppData\Local\Temp\gpu847 kqyUgl\watchdog\blender.exe'
+    at Object.linkSync (node:fs:1846:11)
+    at windowsWatchdog (<repo>\contrib\opus\tools\gpu_slots_tests.js:280:6)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async main (<repo>\contrib\opus\tools\gpu_slots_tests.js:235:37)
+Running hardpoint_contract_tests (limit 300 s)...
+PASS: hardpoint_contract_tests (0.23 s) | PASS the hard point contract tables and standing gate behave
+Running heat_tests (limit 300 s)...
+PASS: heat_tests (0.13 s) | PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool.
+Running inheritance_tests (limit 300 s)...
+PASS: inheritance_tests (0.13 s) | PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.
+Running ion_tests (limit 300 s)...
+PASS: ion_tests (0.16 s) | PASS: exit 0
+Running lineage_tests (limit 300 s)...
+PASS: lineage_tests (0.18 s) | PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets.
+Running memory_lint_tests (limit 300 s)...
+PASS: memory_lint_tests (0.21 s) | PASS: 179 cited ruling ids all have a contrib/opus/FINDINGS.md row; 31 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 15 LATEST lines (target 15 or fewer)
+Running nemesis_121_tests (limit 300 s)...
+PASS: nemesis_121_tests (0.18 s) | PASS: exit 0
+Running nemesis_122_tests (limit 300 s)...
+PASS: nemesis_122_tests (0.22 s) | PASS: exit 0
+Running nemesis_395_tests (limit 300 s)...
+PASS: nemesis_395_tests (0.18 s) | PASS: exit 0
+Running nemesis_clash_tests (limit 300 s)...
+PASS: nemesis_clash_tests (0.34 s) | PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).
+Running nemesis_teach_tests (limit 300 s)...
+PASS: nemesis_teach_tests (0.14 s) | PASS: exit 0
+Running paint_sheet_camera_tests (limit 300 s)...
+PASS: paint_sheet_camera_tests (0.67 s) | PASS paint sheet camera: 19 saved cameras and clip edge cases
+Running picture_provenance_tests (limit 300 s)...
+FAIL: picture_provenance_tests (2.36 s) | FAIL: exit 1
+
+FAIL picture_provenance_tests (first 15 output lines):
+Traceback (most recent call last):
+  File "<repo>\contrib\opus\tools\picture_provenance_selftest.py", line 315, in <module>
+    run()
+  File "<repo>\contrib\opus\tools\picture_provenance_selftest.py", line 141, in run
+    assert not unstamped_saves, 'capture saves bypass the shared stamp: ' + ', '.join(unstamped_saves)
+           ^^^^^^^^^^^^^^^^^^^
+AssertionError: capture saves bypass the shared stamp: tools\blender\kits\hegemony_station\capture.gd:169, tools\blender\kits\hegemony_station\capture.gd:203
+
+Running r1_tests (limit 300 s)...
+PASS: r1_tests (110.90 s) | PASS: exit 0
+Running report_paths_tests (limit 300 s)...
+PASS: report_paths_tests (0.76 s) | PASS report_paths_tests: both runner message steps rewrite checkout and home paths, and no real home folder text remains
+Running reporting_238_tests (limit 300 s)...
+PASS: reporting_238_tests (0.30 s) | PASS MP8 danger bands
+Running run_all_checks_live_tests (limit 300 s)...
+PASS: run_all_checks_live_tests (2.04 s) | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+Running runner_job_tests (limit 300 s)...
+PASS: runner_job_tests (30.30 s) | PASS simultaneous Codex and work starts yield exactly one claim; losing run cannot clear it
+Running runner_stall_tests (limit 300 s)...
+PASS: runner_stall_tests (14.38 s) | PASS runner stall checks (11 groups)
+Running shadow_xp_tests (limit 300 s)...
+PASS: shadow_xp_tests (0.10 s) | PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.
+Running shield_pool_tests (limit 300 s)...
+PASS: shield_pool_tests (0.21 s) | PASS: exit 0
+Running squadron_auto_tests (limit 300 s)...
+PASS: squadron_auto_tests (0.19 s) | PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders.
+Running story_beat3_tests (limit 300 s)...
+PASS: story_beat3_tests (0.31 s) | PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry.
+Running ui_spec_tests (limit 300 s)...
+PASS: ui_spec_tests (0.27 s) | PASS: exit 0
+Running weapon_match_tests (limit 300 s)...
+PASS: weapon_match_tests (0.34 s) | PASS weapon match self-test (36 planted faults, 20 sheet ships in the table)
+Running progression_telemetry_test (limit 300 s)...
+PASS: progression_telemetry_test (0.16 s) | PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin.
+Running tree_effects_test (limit 300 s)...
+PASS: tree_effects_test (173.55 s) | PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says
+Running tree_handoff_test (limit 300 s)...
+PASS: tree_handoff_test (0.54 s) | PASS: real campaign picks reach the battle for all six factions (four skills each):
+Running tree_table_walk_test (limit 300 s)...
+PASS: tree_table_walk_test (1.71 s) | PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked
+Running tree_last_rows_test (limit 300 s)...
+PASS: tree_last_rows_test (7.99 s) | PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers
+Running oracle_copy_test (limit 300 s)...
+PASS: oracle_copy_test (0.80 s) | PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files
+Running runner_selftest (limit 600 s)...
+PASS: runner_selftest (377.61 s) | PASS runner687+722+860: 103 checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.
+Running pause_all_selftest (limit 300 s)...
+PASS: pause_all_selftest (7.55 s) | PASS pause_all Windows fixture matrix
+Running stage5_fail_selftest (limit 600 s)...
+PASS: stage5_fail_selftest (133.69 s) | PASS stage5_fail_selftest: 44 checks, fake executables only, no GPU, no network.
+Running nem_assign_enum (limit 300 s)...
+PASS: nem_assign_enum (0.82 s) | PASS: all issue 120 enumeration checks
+Running nem_direct_reads_report (limit 300 s)...
+PASS: nem_direct_reads_report (0.25 s) | PASS: report only, 202 direct save reads outside godot/campaign (main 9, render 7, scenes 48, story 41, tools 3, ui 92, world 2)
+Running naming_lint_game.test (limit 300 s)...
+PASS: naming_lint_game.test (0.46 s) | PASS: exit 0
+Running naming_lint_game (limit 300 s)...
+PASS: naming_lint_game (75.76 s) | PASS: naming lint within the baseline
+Running checks (limit 300 s)...
+PASS: checks (0.17 s) | PASS: within the pack baseline
+Running fleet_invariants (limit 300 s)...
+PASS: fleet_invariants (0.62 s) | PASS: exit 0
+Running save_fuzz (limit 300 s)...
+PASS: save_fuzz (0.13 s) | PASS: exit 0
+Running softlock_sweep (limit 300 s)...
+PASS: softlock_sweep (27.30 s) | PASS: exit 0
+Running table_xref (limit 300 s)...
+PASS: table_xref (0.11 s) | PASS: exit 0
+Running findings_tests (limit 300 s)...
+KNOWN: findings_tests (1.42 s) | KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5
+Running oracle_drift_guard (limit 300 s)...
+KNOWN: oracle_drift_guard (0.28 s) | KNOWN: 12 constant difference(s) within the baseline
+Running fixture_check (limit 300 s)...
+PASS: fixture_check (0.37 s) | PASS fixture corrupt2 pair
+
+check | result | seconds | detail
+--- | --- | --- | ---
+b1_tests | PASS | 0.36 | PASS: exit 0
+b3_tests | PASS | 0.33 | PASS: exit 0
+b4_tests | PASS | 1.14 | PASS: exit 0
+backlog_tests | PASS | 0.30 | PASS: exit 0
+build_manifest_tests | PASS | 0.43 | PASS build_manifest_tests: 20 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, ithar_CD5, voidsworn_S8, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason
+campaign_start_test | PASS | 0.46 | PASS: exit 0
+capstone_mastery_tests | PASS | 0.11 | PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect.
+checks_truth_tests | PASS | 0.09 | PASS: the checks runner result words behave as issue 358 requires
+chorus_eat_core_tests | PASS | 0.13 | PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15.
+cinder_prizes_tests | PASS | 0.16 | PASS: exit 0
+core_sync_tests | PASS | 0.14 | PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings.
+doc_check_tests | PASS | 0.97 | PASS: 139 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 85 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 281) or latest record, and the two stale entry-document claims stay gone
+effect_caps_tests | PASS | 0.10 | PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.
+env_reconcile_tests | PASS | 0.18 | PASS: exit 0
+free_exit_tests | PASS | 0.21 | PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.
+fx_death_spawn_tests | PASS | 1.72 | PASS: every fx_death picture records its spawn and the vent uses the hull ray
+fx_late_shader_tests | PASS | 1.26 | PASS: the late shader behaviour check passed
+gen_open_work_tests | PASS | 0.23 | PASS: 13 open work generator tests (offline)
+gpu_slots_tests | FAIL | 8.18 | FAIL: exit 1
+hardpoint_contract_tests | PASS | 0.23 | PASS the hard point contract tables and standing gate behave
+heat_tests | PASS | 0.13 | PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool.
+inheritance_tests | PASS | 0.13 | PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.
+ion_tests | PASS | 0.16 | PASS: exit 0
+lineage_tests | PASS | 0.18 | PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets.
+memory_lint_tests | PASS | 0.21 | PASS: 179 cited ruling ids all have a contrib/opus/FINDINGS.md row; 31 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 15 LATEST lines (target 15 or fewer)
+nemesis_121_tests | PASS | 0.18 | PASS: exit 0
+nemesis_122_tests | PASS | 0.22 | PASS: exit 0
+nemesis_395_tests | PASS | 0.18 | PASS: exit 0
+nemesis_clash_tests | PASS | 0.34 | PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).
+nemesis_teach_tests | PASS | 0.14 | PASS: exit 0
+paint_sheet_camera_tests | PASS | 0.67 | PASS paint sheet camera: 19 saved cameras and clip edge cases
+picture_provenance_tests | FAIL | 2.36 | FAIL: exit 1
+r1_tests | PASS | 110.90 | PASS: exit 0
+report_paths_tests | PASS | 0.76 | PASS report_paths_tests: both runner message steps rewrite checkout and home paths, and no real home folder text remains
+reporting_238_tests | PASS | 0.30 | PASS MP8 danger bands
+run_all_checks_live_tests | PASS | 2.04 | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+runner_job_tests | PASS | 30.30 | PASS simultaneous Codex and work starts yield exactly one claim; losing run cannot clear it
+runner_stall_tests | PASS | 14.38 | PASS runner stall checks (11 groups)
+shadow_xp_tests | PASS | 0.10 | PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.
+shield_pool_tests | PASS | 0.21 | PASS: exit 0
+squadron_auto_tests | PASS | 0.19 | PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders.
+story_beat3_tests | PASS | 0.31 | PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry.
+ui_spec_tests | PASS | 0.27 | PASS: exit 0
+weapon_match_tests | PASS | 0.34 | PASS weapon match self-test (36 planted faults, 20 sheet ships in the table)
+progression_telemetry_test | PASS | 0.16 | PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin.
+tree_effects_test | PASS | 173.55 | PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says
+tree_handoff_test | PASS | 0.54 | PASS: real campaign picks reach the battle for all six factions (four skills each):
+tree_table_walk_test | PASS | 1.71 | PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked
+tree_last_rows_test | PASS | 7.99 | PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers
+oracle_copy_test | PASS | 0.80 | PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files
+runner_selftest | PASS | 377.61 | PASS runner687+722+860: 103 checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.
+pause_all_selftest | PASS | 7.55 | PASS pause_all Windows fixture matrix
+stage5_fail_selftest | PASS | 133.69 | PASS stage5_fail_selftest: 44 checks, fake executables only, no GPU, no network.
+nem_assign_enum | PASS | 0.82 | PASS: all issue 120 enumeration checks
+nem_direct_reads_report | PASS | 0.25 | PASS: report only, 202 direct save reads outside godot/campaign (main 9, render 7, scenes 48, story 41, tools 3, ui 92, world 2)
+naming_lint_game.test | PASS | 0.46 | PASS: exit 0
+naming_lint_game | PASS | 75.76 | PASS: naming lint within the baseline
+checks | PASS | 0.17 | PASS: within the pack baseline
+fleet_invariants | PASS | 0.62 | PASS: exit 0
+save_fuzz | PASS | 0.13 | PASS: exit 0
+softlock_sweep | PASS | 27.30 | PASS: exit 0
+table_xref | PASS | 0.11 | PASS: exit 0
+findings_tests | KNOWN | 1.42 | KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5
+oracle_drift_guard | KNOWN | 0.28 | KNOWN: 12 constant difference(s) within the baseline
+fixture_check | PASS | 0.37 | PASS fixture corrupt2 pair
