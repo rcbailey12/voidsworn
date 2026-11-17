@@ -47,6 +47,7 @@ rem WORK_TEST_BRANCH pushes for real to that branch (it must not start with code
 rem WORK_SKIP_CHECKS=1 skips the runner checks; WORK_DRY_SPARSE lists the only folders a lean test clone checks out;
 rem WORK_TEST_FAULT=skipcommit leaves the change uncommitted, as the issue 541 run did. WORK_ROOT moves the run folders.
 setlocal
+set "PYTHONDONTWRITEBYTECODE=1"
 set "N=%~1"
 set "ARM=%~2"
 set "MODE=%~3"

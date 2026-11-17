@@ -18,6 +18,7 @@ rem Test mode (for the Board's dry runs): CODEX_TEST_ROOT moves repo and out fol
 rem in place of Codex (no Codex usage), CODEX_TEST_BRANCH is the branch pushed to (it must not start with codex/, muse/,
 rem work/ or opus/), CODEX_TEST_SPARSE lists the only folders a lean test clone checks out.
 setlocal
+set "PYTHONDONTWRITEBYTECODE=1"
 set "N=%~1"
 if "%N%"=="" (echo usage: codex_issue.bat ^<issue number^> & exit /b 2)
 set "PATH=C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"

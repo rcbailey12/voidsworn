@@ -22,6 +22,7 @@ function pass(s) {
 // Run on every CI host: both entry points must use all five shared steps, and the task must carry resume context.
 for (const name of ['work_issue', 'codex_issue']) {
   const bat = read(path.join(here, name + '.bat'));
+  assert(/setlocal\r?\nset "PYTHONDONTWRITEBYTECODE=1"/.test(bat), name + ' must disable Python bytecode before runner and agent steps');
   for (const step of ['init', 'wait', 'announce', 'checkout', 'preflight', 'finish']) assert(bat.includes('%COMMON% ' + step + ' '), name + ' missing ' + step);
   assert(bat.indexOf('%COMMON% announce ') < bat.indexOf('%COMMON% checkout '), name + ' must claim before checkout');
   for (const step of ['space', 'hashcheck', 'model']) assert(bat.includes('%COMMON% ' + step + ' '), name + ' missing issue 722 step ' + step);
@@ -134,6 +135,7 @@ write(agent, '@echo off\r\n"' + process.execPath + '" "' + path.join(root, 'agen
 write(path.join(root, 'agent.js'), `
 const fs = require('fs'), path = require('path');
 const a = process.argv.slice(2), probe = a.some(s => s.includes('Reply with exactly RUNNER_READY.'));
+if (process.env.PYTHONDONTWRITEBYTECODE !== '1') process.exit(36);
 const db = JSON.parse(fs.readFileSync(process.env.PC_TEST_GH_DB, 'utf8'));
 if (!db.running || !db.comments.some(c => c.body.includes('Runner status: running') && c.body.includes('- Run: '))) process.exit(34);
 if (probe) {
@@ -186,6 +188,7 @@ const p = cp.spawnSync(process.env.PC_REAL_GIT,a,{stdio:'inherit',windowsHide:tr
 const gitPath = run('where.exe', ['git.exe']).text.trim().split(/\r?\n/)[0];
 const mirror = path.join(root, 'shared mirror.git');
 const defaults = {
+  PYTHONDONTWRITEBYTECODE: '0', // Both launchers must override this for the probe and agent children.
   PC_RUNNER_TEST: '1', PC_TEST_SOURCE: source, PC_TEST_MIRROR: mirror,
   PC_TEST_PREFLIGHT: agent, PC_TEST_GIT: gitPath, PC_REAL_GIT: gitPath, PC_TEST_RETRY_SECONDS: '0',
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
@@ -317,6 +320,40 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   assert.equal(read(path.join(cache.repo, 'godot/.godot/imported/cached.bin')), 'cached import');
   assert.equal(read(path.join(cache.repo, 'godot/texture.png.import')), 'import settings');
   pass('cache-only ignored files allow reuse and both cache files survive');
+  const pythonCaches = {
+    '__pycache__/root.cpython-312.pyc': 'root bytecode',
+    'tools/blender/build_sheets/__pycache__/weapon_match.cpython-312.pyc': 'nested bytecode',
+    'tools/__pycache__/nested/cache.bin': 'cache folder contents',
+    'module.pyc': 'standalone bytecode',
+    'tools/compiled/module.pyc': 'nested standalone bytecode'
+  };
+  const python = checkoutFixture('python-caches', (repo, git) => {
+    git(['checkout', '-q', '-b', 'fixture/old-pushed', partial]);
+    write(path.join(repo, '.git/info/exclude'), '__pycache__/\n*.pyc\n');
+    for (const [name, bytes] of Object.entries(pythonCaches)) write(path.join(repo, name), bytes);
+  });
+  for (const [name, bytes] of Object.entries(pythonCaches)) assert.equal(read(path.join(python.repo, name)), bytes);
+  pass('pushed checkout with only ignored Python caches reuses in place and preserves every cache byte');
+  for (const [label, name, exclude] of [
+    ['untracked-pyc', 'module.pyc', ''],
+    ['untracked-pycache', 'tools/__pycache__/module.pyc', ''],
+    ['other-ignored', 'notes.txt', 'notes.txt\n'],
+    ['other-untracked', 'notes.txt', ''],
+    ['pycache-lookalike', 'tools/__pycache__backup/module.bin', '__pycache__backup/\n'],
+    ['pyc-lookalike', 'module.pyc.backup', '*.backup\n'],
+    ['quoted-pyc', 'tools/folder with spaces/module.pyc', '*.pyc\n']
+  ]) {
+    const kept = checkoutFixture(label, repo => {
+      write(path.join(repo, '.git/info/exclude'), label.startsWith('untracked-') ? 'tools/__pycache__/safe.pyc\n' : '__pycache__/\n*.pyc\n' + exclude);
+      write(path.join(repo, 'tools/__pycache__/safe.pyc'), 'ignored cache');
+      write(path.join(repo, name), 'unique work');
+    }, true);
+    assert.equal(read(path.join(kept.old, name)), 'unique work');
+    assert.equal(read(path.join(kept.old, 'tools/__pycache__/safe.pyc')), 'ignored cache');
+    assert(kept.text.includes('working tree needs keeping:'), kept.text);
+    if (label.startsWith('untracked-')) assert(kept.text.includes('?? ' + name), kept.text);
+    pass(label + ': checkout and all bytes kept aside even beside a Python cache');
+  }
   const lateEdit = 'tracked edit written during startup\r\n';
   const changed = checkoutFixture('late-tracked-edit', () => {}, false, {
     changed: true, env: { STUB_CHECKOUT_EDIT: lateEdit }
@@ -333,6 +370,24 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
     });
     pass('late tracked edit that blocks the branch switch survives and stops with the same clear message');
   } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
+  for (const [label, incoming, cachePath] of [
+    ['python-file-collision', 'module.pyc', 'module.pyc'],
+    ['python-parent-collision', 'tools', 'tools/__pycache__/module.pyc']
+  ]) {
+    const tip = fixtureCommit({ [incoming]: 'incoming tracked file\n', 'progress.txt': 'base\n' }, base);
+    write(path.join(source, 'refs/heads/main'), tip + '\n');
+    try {
+      const collision = checkoutFixture(label, (repo, git) => {
+        git(['checkout', '-q', '--detach', base]);
+        write(path.join(repo, '.git/info/exclude'), '__pycache__/\n*.pyc\n');
+        write(path.join(repo, cachePath), 'Python cache must survive collision');
+      }, true);
+      assert.equal(read(path.join(collision.old, cachePath)), 'Python cache must survive collision');
+      assert.equal(read(path.join(collision.repo, incoming)), 'incoming tracked file\n');
+      assert(collision.text.includes('cache would be overwritten by incoming file:'), collision.text);
+      pass(label + ': incoming tracked collision keeps the checkout and Python cache intact');
+    } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
+  }
   const privateTip = fixtureCommit({ 'progress.txt': 'private commit\n' }, base);
   const unpushed = checkoutFixture('unpushed', (repo, git) => {
     git(['fetch', '-q', source, privateTip]);
@@ -427,7 +482,7 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
     assert.equal(r.state.model, expectModel);
     assert(!r.result.includes('differs from the arm default'), r.result);
     assert(!JSON.parse(read(r.env.PC_TEST_GH_DB)).running, 'finished run releases its claim');
-    pass(arm + ': claim before probe and agent, only current brief, partial resumed, model stamped, claim released, no publish');
+    pass(arm + ': claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish');
     const why = arm === 'kimicode' ? 'provider managed:kimi-code has no credential configured (expired login)' : arm === 'codex' ? 'quota exhausted' : 'credit balance is too low';
     const bad = await job(arm, 'auth', { STUB_AUTH_FAIL: '1', STUB_REASON: why });
     assert.notEqual(bad.code, 0); assert(bad.result.includes(why), bad.result);
