@@ -182,8 +182,8 @@ function Reuse-Caches($repo) {
   $status = @(Git @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
   if ($gitExit -ne 0) { throw 'working tree status not verified' }
   foreach ($line in $status) {
-    # Only these Godot-generated caches are rebuildable. Unknown or quoted paths count as work.
-    if ($line -notmatch '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import)$') { throw "working tree needs keeping: $line" }
+    # Only ignored Godot and Python bytecode caches are rebuildable. Unknown or quoted paths count as work.
+    if ($line -notmatch '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import|([^"\r\n]*/)?__pycache__/[^"\r\n]+|[^"\r\n]+\.pyc)$') { throw "working tree needs keeping: $line" }
     $line.Substring(3)
   }
 }
