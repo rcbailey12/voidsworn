@@ -1,0 +1,7 @@
+{
+  "status": "checked_push",
+  "reason": "non-partial push confirmed and runner checks passed",
+  "started": "@STARTED@",
+  "finished": "@FINISHED@",
+  "branch": "codex/issue-889"
+}

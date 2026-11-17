@@ -1,0 +1,2 @@
+# Codex job: issue #918, "Mission control: live PC lanes"
+Fixture progress. No real log text.
