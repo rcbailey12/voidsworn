@@ -105,17 +105,18 @@ async function test(check, base, root) {
   await assert.rejects(phone.main('on',{...deps,probe:async headers=>{if(headers) throw Error('Old publisher'); return modern();}}),/restart/);
   check('phone setup explains missing sign-in, occupied ports and an old publisher', () => assert.equal(starts,1));
 
-  // Reproduce the slow first Windows background start without real waits or Serve.
+  // A modern publisher can accept the private link while its first scan is pending.
+  const starting = () => ({schemaVersion:2,state:'starting',generatedAt:null,lanes:[],build:modern().build});
   let elapsed = 0, slowStarts = 0;
   const slow = {...deps, now: () => elapsed, delay: async ms => { elapsed += ms; },
     startPublisher: async () => { slowStarts++; return 'slow fixture log'; },
     probe: async () => {
-      if (elapsed < 61000) throw Object.assign(Error('Starting'), {code:'ECONNREFUSED'});
-      return modern();
+      if (elapsed < 1000) throw Object.assign(Error('Starting'), {code:'ECONNREFUSED'});
+      return starting();
     }};
   await phone.main('on',slow);
-  check('PHONE_ON waits for a cold Windows start longer than one minute', () => {
-    assert.equal(slowStarts,1); assert.equal(elapsed,61000);
+  check('PHONE_ON accepts the running version before its first full scan', () => {
+    assert.equal(slowStarts,1); assert.equal(elapsed,1000);
   });
   elapsed = 0;
   const changesBefore = calls.filter(args => args[1] !== 'status').length;
@@ -126,7 +127,7 @@ async function test(check, base, root) {
   }}), /did not start/);
   check('PHONE_ON bounds failed startup including slow probes and never enables Serve', () => {
     // Includes the first local probe and at most one final slow polling reply.
-    assert(elapsed >= 90000 && elapsed < 94000);
+    assert(elapsed >= 30000 && elapsed < 34000);
     assert.equal(calls.filter(args => args[1] !== 'status').length,changesBefore);
   });
 
@@ -151,12 +152,18 @@ async function test(check, base, root) {
   });
 
   let schema=1;
-  const probeServer=http.createServer((req,res)=>res.end(JSON.stringify({schemaVersion:schema,lanes:Array.from({length:5},()=>({})),build:{id:'test'}})));
+  let boot;
+  const probeServer=http.createServer((req,res)=>res.end(JSON.stringify(boot ??
+    {schemaVersion:schema,lanes:Array.from({length:5},()=>({})),build:{id:'test'}})));
   await new Promise(resolve=>probeServer.listen(0,'127.0.0.1',resolve));
   try {
     for(schema of [1,2])assert.equal((await phone.probe({},'http://127.0.0.1:'+probeServer.address().port)).schemaVersion,schema);
     schema=3;await assert.rejects(phone.probe({},'http://127.0.0.1:'+probeServer.address().port),/another page/);
-    check('phone HTTP probe reads schema 1 and 2 and refuses other schemas',()=>{});
+    boot = starting();
+    assert.equal((await phone.probe({},'http://127.0.0.1:'+probeServer.address().port)).state,'starting');
+    boot = {...boot,build:null};
+    await assert.rejects(phone.probe({},'http://127.0.0.1:'+probeServer.address().port),/another page/);
+    check('phone HTTP probe reads schema 1, schema 2 and honest startup, and refuses other schemas',()=>{});
   } finally { await new Promise(resolve=>probeServer.close(resolve)); }
 
   // Real HTTP listener with deterministic status discovery, never real Serve.
@@ -165,7 +172,8 @@ async function test(check, base, root) {
   const port = reserve.address().port;
   await new Promise(resolve=>reserve.close(resolve));
   const server = publisher.serve(publisher.options(['--root',root,'--out',path.join(base,'tailnet-served'),'--port',String(port)]),
-    () => tailscale.discover(() => ({status:0,stdout:JSON.stringify(STATUS)}),'fixture.exe'));
+    () => tailscale.discover(() => ({status:0,stdout:JSON.stringify(STATUS)}),'fixture.exe'),
+    new publisher.GithubReader(async()=>new Response('[]')));
   try {
     await new Promise((resolve,reject)=>{server.once('listening',resolve);server.once('error',reject);});
     const get = headers => new Promise((resolve,reject)=>{

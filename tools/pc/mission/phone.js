@@ -46,7 +46,9 @@ function probe(headers = {}, target = TARGET) {
         if (res.statusCode !== 200) { reject(Error('Mission control refused the request.')); return; }
         try {
           const data = JSON.parse(text);
-          if (![1,2].includes(data.schemaVersion) || !Array.isArray(data.lanes) || data.lanes.length !== 5) throw Error();
+          const starting = data.schemaVersion===2 && data.state==='starting' && data.generatedAt===null && data.build?.id &&
+            Array.isArray(data.lanes) && data.lanes.length===0;
+          if (!starting && (![1,2].includes(data.schemaVersion) || !Array.isArray(data.lanes) || data.lanes.length!==5)) throw Error();
           resolve(data);
         } catch (_) { reject(Error('Port 8918 is being used by another page.')); }
       });
@@ -117,11 +119,11 @@ async function ensurePublisher(host, deps) {
   if (start) {
     const log=await deps.startPublisher();
     console.log('Mission control started in the background. Log: '+log);
-    const deadline=deps.now()+90000;
+    const deadline=deps.now()+30000;
     let ready=false;
     while (deps.now()<deadline) {
       await deps.delay(250);
-      try { data=await deps.probe(); if (!needsRestart(data,deps.buildHash())) { ready=true; break; } } catch (_) { /* Await the local scan and bind. */ }
+      try { data=await deps.probe(); if (!needsRestart(data,deps.buildHash())) { ready=true; break; } } catch (_) { /* Await the local listener. */ }
     }
     if (!ready) throw Error('Mission control did not start. Check its log above.');
   }

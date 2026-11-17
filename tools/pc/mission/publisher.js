@@ -5,6 +5,7 @@ const path = require('path');
 const http = require('http');
 const { randomUUID, createHash } = require('crypto');
 const { spawnSync } = require('child_process');
+const { Worker, isMainThread, workerData, parentPort } = require('worker_threads');
 const queue = require('./queue');
 const { Budget, sourceRecord, backoff, SOURCE_INTERVAL_MS } = require('./budget');
 const { isIP } = require('net');
@@ -360,8 +361,14 @@ class GithubReader {
 }
 
 const PAGE = path.resolve(__dirname,'../../../docs/mission/index.html');
+const ASSETS = Object.fromEntries([
+  'artoo.svg','crew/artoo.svg','crew/claude.svg','crew/codex.svg','crew/deepseek.svg','crew/muse.svg',
+  'ChakraPetch-SemiBold.ttf','Barlow-Regular.ttf','AzeretMono-VF.ttf',
+  'fonts/BigShouldersDisplay-VF.ttf','fonts/ChakraPetch-Medium.ttf','fonts/ChakraPetch-Bold.ttf',
+  'fonts/Barlow-Medium.ttf','fonts/AzeretMono-VF.ttf'
+].map(file => ['/'+file,file.endsWith('.svg') ? 'image/svg+xml' : 'font/ttf']));
 const RUNTIME_FILES = ['publisher.js','queue.js','budget.js','phone.js','tailscale.js','../../../docs/mission/index.html',
-  '../../../docs/mission/artoo.svg','../../../docs/mission/ChakraPetch-SemiBold.ttf','../../../docs/mission/Barlow-Regular.ttf','../../../docs/mission/AzeretMono-VF.ttf','build.json'];
+  ...Object.keys(ASSETS).map(route=>'../../../docs/mission'+route),'build.json'];
 function buildHash(base = __dirname) {
   const hash = createHash('sha256');
   for (const name of RUNTIME_FILES) {
@@ -379,11 +386,19 @@ function sourceRevision() {
   try { const manifest=JSON.parse(fs.readFileSync(path.join(__dirname,'build.json'),'utf8')); return sha(manifest.revision); } catch (_) { return sha(git(path.resolve(__dirname,'../../..'),['rev-parse','HEAD'])); }
 }
 // Captured during module load, before the first scan. Disk checks never replace the loaded hash.
-const LOADED_BUILD = {id:buildHash(),startedAt:iso(Date.now()),sourceRevision:sourceRevision()};
+const LOADED_BUILD = !isMainThread && workerData?.missionScan ? workerData.build :
+  {id:buildHash(),startedAt:iso(Date.now()),sourceRevision:sourceRevision()};
 function buildInfo(loaded = LOADED_BUILD, base = __dirname) { const diskId=buildHash(base); return {...loaded,diskId,stale:diskId!==loaded.id}; }
-function compatiblePage(body) {
-  // Run 1 may not edit index.html. Widen only its schema guard in the served copy.
-  return String(body).replace('v.schemaVersion!==1','![1,2].includes(v.schemaVersion)');
+const PICTURE_TYPES = {'.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'};
+const PICTURE_LIMIT = 3*1024*1024;
+const STAMP_LIMIT = 512*1024;
+const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+
+function pictureStamp(text) {
+  let stamp;
+  try { stamp = JSON.parse(text); } catch (_) { return null; }
+  return sha(stamp?.source_commit) && /^[a-f0-9]{64}$/i.test(stamp.image_sha256 || '') && time(stamp.date) &&
+    ['sheet built','paint proof','installed in game','Ryan accepted'].includes(stamp.stage) ? stamp : null;
 }
 function sidecarRunLink(sidecar, info) {
   if (!info || (sidecar.issue != null && sidecar.issue !== info.issue)) return null;
@@ -420,21 +435,25 @@ function pictureIndex(repo, info, reader, gitRead = git) {
     for (const d of reader.dirs(dir)) {
       const file = path.join(dir,d.name);
       if (d.isDirectory()) { walk(file); continue; }
-      if (!d.isFile() || !/\.(png|jpg|webp)$/i.test(d.name)) continue;
+      const type = PICTURE_TYPES[path.extname(d.name).toLowerCase()];
+      if (!d.isFile() || !type) continue;
       const stat = reader.stat(file);
-      if (!stat || stat.size > 3*1024*1024) continue;
-      let sidecar;
-      try { sidecar=JSON.parse(reader.read(file+'.provenance.json',512*1024).text); } catch (_) { continue; }
-      const stampedRevision = sha(sidecar?.source_commit);
-      if (!stampedRevision || !/^[a-f0-9]{64}$/i.test(sidecar.image_sha256 || '') || !time(sidecar.date) ||
-        !['sheet built','paint proof','installed in game','Ryan accepted'].includes(sidecar.stage)) continue;
+      if (!stat || stat.size > PICTURE_LIMIT) continue;
+      const stampFile = reader.read(file+'.provenance.json',STAMP_LIMIT);
+      const sidecar = stampFile.size <= STAMP_LIMIT && pictureStamp(stampFile.text);
+      if (!sidecar) continue;
+      const stampedRevision = sha(sidecar.source_commit);
       const imageHash = reader.imageHash(file, stat);
       if (!imageHash) continue;
       if (imageHash !== sidecar.image_sha256.toLowerCase()) continue;
       const date = time(sidecar.date), relative = path.relative(repo,file).replace(/\\/g,'/');
       const link = diffPaths.has(relative) ? 'run diff' : sidecarRunLink(sidecar,info) || (commits.has(stampedRevision) ? 'run branch commit' : null);
       const association = runStart && date < runStart ? 'older' : runStart && date > runStart && link ? 'this run' : 'association unverified';
-      pictures.push({id:createHash('sha256').update(repo+'\0'+relative+'\0'+imageHash).digest('hex'),stage:sidecar.stage,
+      const id = digest(repo+'\0'+relative+'\0'+imageHash);
+      const pictureIssue = association==='this run' ? info.issue : issueNumber(sidecar.issue) ? sidecar.issue : null;
+      reader.pictureFiles?.set(id,{file,type,imageHash,stampHash:digest(stampFile.text)});
+      pictures.push({id,stage:sidecar.stage,issue:pictureIssue,
+        decisionOption:pictureIssue===sidecar.issue && ['A','B'].includes(sidecar.decisionOption) ? sidecar.decisionOption : null,
         revision:sidecar.source_commit.slice(0,12)+(sidecar.source_dirty ? ' + working tree' : ''),capturedAt:iso(date),
         association,evidence:association==='this run' ? link : association==='older' ? 'captured before run start' : 'no run link proved',
         writtenAt:iso(stat.mtimeMs),installedOnPC:'not tracked',acceptedByRyan:'not tracked'});
@@ -476,7 +495,7 @@ function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyG
     if (current && !info) verdict.reason=claimOld ? 'Claim not confirmed; no matching runner status after 10 minutes.' : 'Claimed, not started; no matching runner status.';
     const groups = own.filter(c=>['started','linked','starting','stuck','unknown'].includes(c.state)).map(c=>({
       chain:c.name,state:c.state,reason:c.reason,after:c.targets.length===1 ? c.targets[0] : null,targets:c.targets,
-      waitSource:c.waitSource,readyAt:iso(c.readyAt),amber:!!c.amber,notes:c.notes,
+      waitSource:c.waitSource,sourceAt:iso(maxTime(c.mtime,c.batMtime)),readyAt:iso(c.readyAt),amber:!!c.amber,notes:c.notes,
       jobs:(c.state==='started' ? c.issues.slice(c.cursor+(c.current ? 1 : 0)) : c.issues).map(n=>({...jobFor(n,jobs)}))}));
     const unknown = own.filter(c=>c.state==='unknown' || c.state==='started' && (c.missingBat || c.unreadable));
     for (const c of unknown) c.reason ||= c.missingBat ? 'chain script missing' : 'source unreadable';
@@ -495,7 +514,7 @@ function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyG
       run:info?.run?.slice(0,8) || null,startedAt:iso(started),finishedAt:iso(info?.finished || chain?.endedAt),logAt:iso(info?.logAt),lastActivityAt:iso(activity),reason:verdict.reason,
       claim:{state:info?.status ? 'runner recorded' : claimOld ? 'not confirmed' : current ? 'claimed, not started' : 'unknown',amber:claimOld},
       next,queue:{state:queueState,label:unknown.length ? 'queue unknown' : 'recorded chains; separate chains have no implied order',reason:unknown.length ? [...new Set(unknown.map(c=>c.reason))].join('; ') : null,groups,
-        history:own.filter(c=>['ended','cancelled','paused','superseded'].includes(c.state)).map(c=>({chain:c.name,state:c.state,reason:c.reason,endedAt:iso(c.endedAt)}))},
+        history:own.filter(c=>['ended','cancelled','paused','superseded'].includes(c.state)).map(c=>({chain:c.name,state:c.state,reason:c.reason,endedAt:iso(c.endedAt),sourceAt:iso(maxTime(c.mtime,c.batMtime))}))},
       pictures,evidence:info?.evidence || [],source:{lanes:own.map(c=>c.name),runner:info ? seat[1]+' runner, issue #'+info.issue : null,files:info?.files || [],updatedAt:iso(sourceAt),refreshedAt:iso(now)},warnings};
   });
   for (const lane of lanes) for (const job of [lane.current,...lane.next,...lane.queue.groups.flatMap(g=>g.jobs),...lane.leftovers.map(x=>x.job)].filter(Boolean)) {
@@ -556,42 +575,136 @@ function allowedHost(req, port, tailnetHost) {
     req.headers['x-forwarded-host'] === host && req.headers['x-forwarded-proto'] === 'https' && tailnetIP);
 }
 
-function serve(opts, discover = tailscale.discover, githubReader = new GithubReader()) {
+async function readPictureFile(file, limit) {
+  checkOutputParents(file);
+  const handle = await fs.promises.open(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+  try {
+    const stat = await handle.stat();
+    if (!stat.isFile() || stat.size > limit) throw Error('Picture file unavailable');
+    const bytes = Buffer.alloc(stat.size+1);
+    let length = 0;
+    while (length < bytes.length) {
+      const {bytesRead} = await handle.read(bytes,length,bytes.length-length,length);
+      if (!bytesRead) break;
+      length += bytesRead;
+    }
+    const current = await fs.promises.lstat(file);
+    checkOutputParents(file);
+    if (!current.isFile() || current.dev!==stat.dev || current.ino!==stat.ino || length!==stat.size) throw Error('Picture changed');
+    return bytes.subarray(0,length);
+  } finally { await handle.close(); }
+}
+
+function imageMatchesType(bytes, type) {
+  if (type==='image/png') return bytes.subarray(0,8).toString('hex')==='89504e470d0a1a0a';
+  if (type==='image/jpeg') return bytes.subarray(0,3).toString('hex')==='ffd8ff';
+  return bytes.toString('ascii',0,4)==='RIFF' && bytes.toString('ascii',8,12)==='WEBP';
+}
+
+const readHeaders = { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff', 'Referrer-Policy':'no-referrer' };
+async function servePicture(req, res, index) {
+  const id = /^\/pic\/([a-f0-9]{64})$/.exec(req.url)?.[1];
+  const entry = req.method==='GET' && index.get(id);
+  if (!entry) { res.writeHead(404).end(); return; }
+  try {
+    const stamp = (await readPictureFile(entry.file+'.provenance.json',STAMP_LIMIT)).toString('utf8').replace(/^\uFEFF/,'');
+    if (digest(stamp)!==entry.stampHash) { res.writeHead(404).end(); return; }
+    const bytes = await readPictureFile(entry.file,PICTURE_LIMIT);
+    if (!imageMatchesType(bytes,entry.type) || digest(bytes)!==entry.imageHash) { res.writeHead(404).end(); return; }
+    res.writeHead(200,{...readHeaders,'Content-Type':entry.type,'Content-Length':bytes.length}).end(bytes);
+  } catch (_) { res.writeHead(404).end(); }
+}
+
+function startScanWorker(opts) {
+  return new Worker(__filename,{workerData:{missionScan:true,opts,build:LOADED_BUILD}});
+}
+
+function scanInWorker() {
+  const {root,out} = workerData.opts;
   const reader = new Reader();
-  const publish = () => writeSnapshot(opts.out, snapshot(opts.root, Date.now(), reader, githubReader.data));
-  publish();
-  const update = async () => { await githubReader.update(); try { publish(); } catch (_) { console.error('Snapshot failed; last good snapshot kept.'); } };
-  if (opts.once) return update();
-  void update();
+  parentPort.on('message', github => {
+    reader.pictureFiles = new Map();
+    try {
+      const data = snapshot(root,Date.now(),reader,github);
+      writeSnapshot(out,data);
+      parentPort.postMessage({data,pictures:reader.pictureFiles});
+    } catch (_) { parentPort.postMessage({}); }
+  });
+}
+
+async function publishOnce(opts, githubReader) {
+  const reader = new Reader();
+  writeSnapshot(opts.out,snapshot(opts.root,Date.now(),reader,githubReader.data));
+  await githubReader.update();
+  writeSnapshot(opts.out,snapshot(opts.root,Date.now(),reader,githubReader.data));
+}
+
+function serve(opts, discover = tailscale.discover, githubReader = new GithubReader(), createScanner = startScanWorker) {
+  if (opts.once) return publishOnce(opts,githubReader);
   const tailnetHost = discover().host;
-  const page = PAGE;
-  const loadedPage = Buffer.from(compatiblePage(fs.readFileSync(page,'utf8')));
+  const loadedPage = fs.readFileSync(PAGE);
+  const assets = Object.fromEntries(Object.keys(ASSETS).map(route=>[route,fs.readFileSync(path.join(path.dirname(PAGE),route.slice(1)))]));
+  let status = Buffer.from(JSON.stringify({schemaVersion:2,state:'starting',generatedAt:null,build:buildInfo(),lanes:[]}));
+  let pictures = new Map(), scanner, busy = false, queued = false, closed = false, timer;
+  function scan() {
+    if (closed) return;
+    if (busy) { queued = true; return; }
+    if (!scanner) {
+      scanner = createScanner(opts);
+      scanner.on('message', result => {
+        busy = false;
+        if (result.data) {
+          status = Buffer.from(JSON.stringify(result.data));
+          pictures = result.pictures;
+        } else console.error('Snapshot failed; last good snapshot kept.');
+        if (queued) { queued = false; scan(); }
+      });
+      scanner.on('error', () => console.error('Snapshot reader failed; last good snapshot kept.'));
+      scanner.on('exit', () => { scanner = null; busy = false; queued = false; });
+    }
+    busy = true;
+    scanner.postMessage(githubReader.data);
+  }
+  function refresh() {
+    scan();
+    void githubReader.update().then(scan, () => console.error('GitHub read failed; last good data kept.'));
+  }
   const server = http.createServer((req, res) => {
     // Fixed routes only, never a directory server or an upload endpoint.
     const route = req.url.split('?')[0];
-    if (!allowedHost(req, opts.port, tailnetHost)) { res.writeHead(403).end('Local host required'); return; }
+    if (!allowedHost(req, server.address().port, tailnetHost)) { res.writeHead(403).end('Local host required'); return; }
+    if (route==='/pic' || route.startsWith('/pic/')) { void servePicture(req,res,pictures); return; }
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405).end(); return; }
-    const assets = {'/artoo.svg':'image/svg+xml','/ChakraPetch-SemiBold.ttf':'font/ttf','/Barlow-Regular.ttf':'font/ttf','/AzeretMono-VF.ttf':'font/ttf'};
-    const file = route === '/' || route === '/index.html' ? page : route === '/status.json' ? path.join(opts.out, 'status.json') : Object.hasOwn(assets,route) ? path.join(path.dirname(page),route.slice(1)) : null;
-    if (!file) { res.writeHead(404).end(); return; }
-    try {
-      const body = file === page ? loadedPage : fs.readFileSync(file);
-      res.writeHead(200, { 'Content-Type': assets[route] || (route === '/status.json' ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8'),
-        'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
-      res.end(req.method === 'HEAD' ? undefined : body);
-    } catch (_) { res.writeHead(503).end('Local snapshot unavailable'); }
+    let body, type;
+    if (route==='/' || route==='/index.html') { body=loadedPage; type='text/html; charset=utf-8'; }
+    else if (route==='/status.json') { body=status; type='application/json; charset=utf-8'; }
+    else if (Object.hasOwn(assets,route)) { body=assets[route]; type=ASSETS[route]; }
+    else { res.writeHead(404).end(); return; }
+    res.writeHead(200,{...readHeaders,'Content-Type':type}).end(req.method==='HEAD' ? undefined : body);
   });
-  const timer = setInterval(() => { try { publish(); void update(); } catch (_) { console.error('Snapshot failed; last good snapshot kept.'); } }, 60000);
-  const stop = () => { clearInterval(timer); server.close(); };
-  server.on('close', () => clearInterval(timer));
-  server.on('error', () => { clearInterval(timer); console.error('Local server could not start. Check whether its port is in use.'); process.exitCode = 1; });
-  process.once('SIGINT', stop); process.once('SIGTERM', stop);
-  server.listen(opts.port, '127.0.0.1', () => console.log(`Mission control: http://127.0.0.1:${opts.port}\nLocal only. Close this window or press Ctrl+C to stop. Refresh: once a minute.`));
+  const stop = () => server.close();
+  server.on('close', () => {
+    closed = true;
+    clearInterval(timer);
+    void scanner?.terminate();
+    process.off('SIGINT',stop); process.off('SIGTERM',stop);
+  });
+  server.listen(opts.port, '127.0.0.1', () => {
+    console.log(`Mission control: http://127.0.0.1:${server.address().port}\nLocal only. Close this window or press Ctrl+C to stop. Refresh: once a minute.`);
+    process.once('SIGINT',stop); process.once('SIGTERM',stop);
+    timer = setInterval(refresh,60000);
+    refresh();
+  });
   return server;
 }
 
-module.exports = { Reader, GithubReader, emptyGithub, githubData, cleanTitle, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, jobInfo, readJobs, readChain, pictureIndex, buildHash, buildInfo, compatiblePage, RUNTIME_FILES, writeSnapshot, options, serve, allowedHost };
-if (require.main === module) {
-  try { serve(options(process.argv.slice(2))); }
-  catch (_) { console.error('Mission control could not read or write its local folders. Check arguments and folder access.'); process.exitCode = 1; }
+module.exports = { Reader, GithubReader, emptyGithub, githubData, cleanTitle, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, jobInfo, readJobs, readChain, pictureIndex, buildHash, buildInfo, ASSETS, RUNTIME_FILES, writeSnapshot, options, serve, allowedHost, servePicture };
+if (!isMainThread && workerData?.missionScan) scanInWorker();
+else if (require.main === module) {
+  const failed = () => { console.error('Mission control could not start or write its local snapshot. Check the port and folder access.'); process.exitCode = 1; };
+  try {
+    const result = serve(options(process.argv.slice(2)));
+    if (result instanceof Promise) void result.catch(failed);
+    else result.once('error',failed);
+  } catch (_) { failed(); }
 }
