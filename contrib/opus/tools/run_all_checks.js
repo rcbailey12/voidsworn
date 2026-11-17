@@ -128,33 +128,61 @@ function buildChecks() {
   const OPUS = 'contrib/opus/tools/';
   const MUSE = 'contrib/muse/tools/';
   const checks = [];
-  const add = (file, extra = [], kind = 'normal', timeout = 300, gate = false) => {
-    checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout, gate });
+  const add = (file, extra = [], kind = 'normal', timeout = 300, gate = false, fast = false) => {
+    checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout, gate, fast });
   };
+  // Issue 946: --fast runs the rows that are actually fast. A row is marked fast in its
+  // add() line below (or in FAST_AUTO for the auto-discovered rows) from a timed normal
+  // run, never from its limit: on Nov 16, 2026 a full run on the Muse seat timed every
+  // row, and each marked row finished under 30 s (most under 1 s). Not marked: the rows
+  // that timed over 30 s (r1_tests 89 s, tree_effects_test 180 s, naming_lint_game 74 s,
+  // softlock_sweep 30 s) and the two rows that failed on the timing host
+  // (picture_provenance_tests, runner_job_tests), which stay unmarked until a clean run
+  // times them. Re-time and move the mark when a row's cost changes; fast_selection_test.js
+  // holds the selection to exactly the marked rows plus the gate.
+  const FAST_AUTO = new Set([
+    'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
+    'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
+    'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
+    'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
+    'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
+    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_tests',
+    'lineage_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
+    'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
+    'paint_sheet_camera_tests', 'reporting_238_tests', 'runner_stall_tests',
+    'shadow_xp_tests', 'shield_pool_tests', 'squadron_auto_tests', 'story_beat3_tests',
+    'ui_spec_tests', 'weapon_match_tests',
+  ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
   // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
   // and report_paths_tests.js (#953: both runner commit messages turn checkout paths into GitHub links and home paths into
   // %USERPROFILE%\...). The glob below runs each one once; a second add() line would run it twice.
-  fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f));
-  add(OPUS + 'progression_telemetry_test.js'); // #27 step 11: per run XP by line and the F1 play log report
+  fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f, [], 'normal', 300, false, FAST_AUTO.has(path.basename(f, '.js'))));
+  add(OPUS + 'progression_telemetry_test.js', [], 'normal', 300, false, true); // #27 step 11: per run XP by line and the F1 play log report
   add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick
-  add(OPUS + 'tree_handoff_test.js'); // #335: a tree pick made through the real campaign reaches the battle in both twins
-  add(OPUS + 'tree_table_walk_test.js'); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
-  add(OPUS + 'tree_last_rows_test.js'); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
-  add(OPUS + 'oracle_copy_test.js'); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
-  add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
+  add(OPUS + 'tree_handoff_test.js', [], 'normal', 300, false, true); // #335: a tree pick made through the real campaign reaches the battle in both twins
+  add(OPUS + 'tree_table_walk_test.js', [], 'normal', 300, false, true); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
+  add(OPUS + 'tree_last_rows_test.js', [], 'normal', 300, false, true); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
+  add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
+  add('tools/pc/runner_selftest.js', [], 'normal', 600, false, true); // #687: free PC runner fault tests; static contract check on other hosts
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
-  add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
-  add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
-  add(OPUS + 'nem_direct_reads_report.js'); // #364: report only, the count of direct save reads outside godot/campaign/
-  add(OPUS + 'naming_lint_game.test.js');
+  add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600, false, true); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
+  add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
+  add(OPUS + 'nem_direct_reads_report.js', [], 'normal', 300, false, true); // #364: report only, the count of direct save reads outside godot/campaign/
+  add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
   add(OPUS + 'naming_lint_game.js', [], 'naming');
-  add(OPUS + 'checkpack/checks.js', [], 'pack');
-  for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT]);
-  add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings');
-  add(MUSE + 'oracle_drift/oracle_drift_guard.js', [ROOT], 'drift');
-  add(MUSE + 'cutover_gate/fixture_check.js', [ROOT, path.join(ROOT, MUSE, 'importer_fixtures'), path.join(ROOT, MUSE, 'harness/game_loader.js')], 'optional');
+  add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
+  add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row
+  for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT], 'normal', 300, false, file !== 'softlock_sweep.js');
+  add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings', 300, false, true);
+  add(MUSE + 'oracle_drift/oracle_drift_guard.js', [ROOT], 'drift', 300, false, true);
+  add(MUSE + 'cutover_gate/fixture_check.js', [ROOT, path.join(ROOT, MUSE, 'importer_fixtures'), path.join(ROOT, MUSE, 'harness/game_loader.js')], 'optional', 300, false, true);
   return checks;
+}
+
+// Issue 946: under --fast a row runs when it is marked fast or it is the gate.
+function fastSelected(checks) {
+  return checks.filter(c => c.fast || c.gate);
 }
 
 // ---------- running ----------
@@ -240,7 +268,8 @@ async function main() {
   const report = [];
   for (const c of checks.filter(c => !only || c.name === only || c.file === only)) {
     // A gating row is never downgraded to SKIP: --fast still runs it, and a SKIP that still happens is a FAIL.
-    if (args.includes('--fast') && c.timeout > 120 && !c.gate) {
+    // Issue 946: --fast selects by the fast mark from the timed run, not by the limit.
+    if (args.includes('--fast') && !c.fast && !c.gate) {
       const row = { check: c.name, result: 'SKIP', seconds: 0, detail: 'SKIP: fast', output: '' };
       report.push(row);
       console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
@@ -266,4 +295,4 @@ if (require.main === module) {
   main().catch(e => { console.error(ascii(e.stack)); process.exitCode = 1; });
 }
 
-module.exports = { classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, buildChecks, ROOT };
+module.exports = { classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT, buildChecks, fastSelected };
