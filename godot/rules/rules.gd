@@ -771,7 +771,7 @@ func genTerrain(map, shape, opt) -> Dictionary:
 					if not onBoard(h.q + dq, h.r + dr): return false
 			for o in (VOID.get("holes") if VOID.has("holes") else []):
 				for qr in o["cells"]:
-					if hdist(h, {"q": qr[0], "r": qr[1]}) <= 2: return false
+					if hdist(h, {"q": qr[0], "r": qr[1]}) <= 4: return false
 			return true
 		var c
 		if okSite.call(want): c = want
