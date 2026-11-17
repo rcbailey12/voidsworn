@@ -24,6 +24,7 @@ var _chunk_task := -1
 var _chunk_job := {}
 var _wreck_slots: Array = []  # one replaceable kit slot per hex for issue 49's painted hull chunks
 var _hull_spin: Array = []
+var _legacy_debris_mats: Array[ShaderMaterial] = []
 var W = null                 # the world (world.gd)
 var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
@@ -201,23 +202,35 @@ void fragment() {
 
 const DUST_SHADER := """
 shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform vec3 col = vec3(0.6, 0.56, 0.5);
-uniform float gain_a = 1.0;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// Linear #d4bf86, with actual alpha rather than the old grey additive specks.
+uniform vec3 col = vec3(0.658, 0.521, 0.238);
 varying vec2 vQ;
-varying float vA;
+varying vec3 vW;
+varying flat vec2 vHex;
+varying flat float vA;
 void vertex() {
-	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float depth = max(-c.z, 1.0);
-	float s = max(INSTANCE_CUSTOM.x, depth * 0.0011);
-	vA = INSTANCE_CUSTOM.y * clamp(INSTANCE_CUSTOM.x / s, 0.25, 1.0);
+	vHex = INSTANCE_CUSTOM.zw;
+	vec3 origin = MODEL_MATRIX[3].xyz;
+	// 20 percent of the recorded gas drift (0.193 u/s). Wrap only behind a faded footprint edge.
+	origin.xz = vHex + mod(origin.xz - vHex + vec2(0.032, 0.018667) * TIME + 10.0, 20.0) - 10.0;
+	origin.y = mod(origin.y + 0.010667 * TIME + 5.0, 7.0) - 5.0;
+	vec4 c = VIEW_MATRIX * vec4(origin, 1.0);
+	vA = INSTANCE_CUSTOM.y;
 	vQ = VERTEX.xy * 2.0;
-	c.xy += VERTEX.xy * s;
+	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
+	vW = (INV_VIEW_MATRIX * c).xyz;
 	POSITION = PROJECTION_MATRIX * c;
 }
 void fragment() {
 	float r = length(vQ);
-	ALBEDO = col * exp(-r * r * 4.0) * vA * gain_a;
+	if (r > 1.0) { discard; }
+	vec2 p = abs(vW.xz - vHex);
+	float edge = 8.660254 - max(p.x, p.x * 0.5 + p.y * 0.8660254);
+	if (edge <= 0.0) { discard; }
+	float high = smoothstep(-4.0, 2.0, vW.y);
+	ALBEDO = col * mix(0.38, 0.85, high);
+	ALPHA = vA * exp(-r * r * 4.0) * smoothstep(0.0, 0.9, edge) * mix(1.0, 0.25, high);
 }
 """
 
@@ -230,33 +243,81 @@ uniform vec3 well = vec3(0.0);
 uniform float r_in = 60.0;
 uniform float r_out = 120.0;
 uniform float k = 1.0;
+uniform float chroma_px = 1.5;
 varying vec3 vW;
 varying vec4 vWell;
 void vertex() {
 	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vWell = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(well, 1.0));
 }
+// Test the destination AND all three source samples. A ship must neither bend nor be copied into the background.
+bool foreground(vec2 uv, mat4 inv_projection, mat4 inv_view) {
+	float depth = texture(depth_tex, uv).r;
+	vec4 v = inv_projection * vec4(uv * 2.0 - 1.0, depth, 1.0);
+	vec3 world = (inv_view * vec4(v.xyz / v.w, 1.0)).xyz;
+	return depth > 0.000001 && world.y > -20.0;
+}
 void fragment() {
 	float d = distance(vW.xz, well.xz);
 	float w = smoothstep(r_in, r_in + 22.0, d) * (1.0 - smoothstep(r_out - 34.0, r_out, d));
-	if (w <= 0.001) { discard; }
+	float rim = 1.0 - smoothstep(0.25, 0.65, abs(d - r_in - 2.0));
+	float age = mod(TIME, 3.5);
+	float travel = clamp(age / 2.0, 0.0, 1.0);
+	float ripple = (1.0 - smoothstep(0.4, 1.15, abs(d - mix(r_out, r_in, travel)))) * (1.0 - travel);
+	vec2 radial = vW.xz - well.xz;
+	float angle = atan(radial.y, radial.x) - TIME * 0.13962634; // 45 s per turn
+	float acc = smoothstep(22.0, 28.0, d) * (1.0 - smoothstep(54.0, r_in, d));
+	acc *= 0.55 + 0.45 * sin(angle * 3.0 + d * 0.16);
+	if (max(w, max(rim, max(ripple, acc))) <= 0.001 || foreground(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) { discard; }
 	vec2 cs = vWell.xy / vWell.w * 0.5 + 0.5;
 	vec2 dv = SCREEN_UV - cs;
 	// pushed outward like a lens, and dragged slowly round
 	float s = 0.075 * w * (r_in + 22.0) / max(d, 1.0);
-	float an = 0.06 * w + 0.04 * w * sin(TIME * 0.17);
+	float an = 0.06 * w + 0.04 * w * sin(TIME * 0.20943951); // 30 s slow twist
 	mat2 R = mat2(vec2(cos(an), sin(an)), vec2(-sin(an), cos(an)));
 	vec2 suv = clamp(cs + R * dv * (1.0 - s), vec2(0.001), vec2(0.999));
-	// never pull in something that stands in front of this layer (a ship above it): keep the plain view there
-	float dsrc = texture(depth_tex, suv).r;
-	vec4 vs = INV_PROJECTION_MATRIX * vec4(suv * 2.0 - 1.0, dsrc, 1.0);
-	if (-vs.z / vs.w < -VERTEX.z - 0.5) { suv = SCREEN_UV; }
-	vec3 c = textureLod(screen_tex, suv, 0.0).rgb;
-	float rip = 0.5 + 0.5 * sin(d * 0.42 + TIME * 1.5);
-	c *= 1.0 + 0.12 * w * rip;
-	c += vec3(0.035, 0.02, 0.07) * w * (0.4 + 0.6 * rip);
+	vec2 shift = normalize(dv + vec2(0.000001)) / vec2(textureSize(screen_tex, 0)) * chroma_px * rim;
+	vec2 red_uv = clamp(suv + shift, vec2(0.001), vec2(0.999));
+	vec2 blue_uv = clamp(suv - shift, vec2(0.001), vec2(0.999));
+	if (foreground(suv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(red_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX) || foreground(blue_uv, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX)) {
+		suv = SCREEN_UV; red_uv = SCREEN_UV; blue_uv = SCREEN_UV;
+	}
+	vec3 c = vec3(textureLod(screen_tex, red_uv, 0.0).r, textureLod(screen_tex, suv, 0.0).g, textureLod(screen_tex, blue_uv, 0.0).b);
+	vec3 warm = mix(vec3(0.15, 0.012, 0.005), vec3(0.55, 0.25, 0.10), 1.0 - smoothstep(24.0, r_in, d));
+	c += warm * acc * 0.15;
+	c += vec3(0.18, 0.085, 0.045) * ripple * 0.12;
+	c += vec3(0.32, 0.40, 0.48) * rim;
 	ALBEDO = c;
-	ALPHA = w * k;
+	ALPHA = max(w, max(rim * 0.35, max(ripple * 0.12, acc * 0.15))) * k;
+}
+"""
+
+const INFALL_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec3 well = vec3(0.0);
+uniform float r_out = 87.0;
+varying vec2 vQ;
+varying float fade;
+void vertex() {
+	float inner = 20.0;
+	float cycle = r_out * 0.5 * log((3.0 * r_out - 2.0 * inner) / r_out);
+	float phase = fract(TIME / cycle + INSTANCE_CUSTOM.y);
+	float radius = r_out * 1.5 - r_out * 0.5 * exp(2.0 * phase * cycle / r_out);
+	// dr/dt = -(3 - 2r/R); the tangential speed is one fifth of the inward speed.
+	float angle = INSTANCE_CUSTOM.z * 6.2831853 + 0.2 * log(r_out / radius);
+	vec3 p = well + vec3(cos(angle) * radius, 9.0 + INSTANCE_CUSTOM.w * 3.0, sin(angle) * radius);
+	vec4 c = VIEW_MATRIX * vec4(p, 1.0);
+	vQ = VERTEX.xy * 2.0;
+	c.xy += VERTEX.xy * INSTANCE_CUSTOM.x;
+	POSITION = PROJECTION_MATRIX * c;
+	fade = smoothstep(0.0, 0.08, phase) * (1.0 - smoothstep(0.85, 1.0, phase));
+}
+void fragment() {
+	float r = length(vQ);
+	if (r > 1.0) { discard; }
+	ALBEDO = vec3(0.32, 0.17, 0.12);
+	ALPHA = 0.15 * fade * exp(-r * r * 4.0);
 }
 """
 
@@ -765,9 +826,56 @@ func _process(dt: float) -> void:
 
 # ---------------------------------------------------------------- debris: dense rock and wreck clusters
 
+static var _piece_radii := {}
+
+static func _piece_radius(mesh: Mesh) -> float:
+	var id := mesh.get_instance_id()
+	if not _piece_radii.has(id):
+		var radius := 0.0
+		for surface in mesh.get_surface_count():
+			for vertex in mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]:
+				radius = maxf(radius, (vertex as Vector3).length())
+		_piece_radii[id] = radius
+	return float(_piece_radii[id])
+
+
+# Reserve every hex centre, including the six neighbours. A ship entering a debris hex
+# gets the same four-unit gap as a ship already there, without moving any scenery.
+static func _clear_of_hexes(offset: Vector3, radius: float) -> bool:
+	var point := Vector2(offset.x, offset.z)
+	if point.length() < 4.0 + radius: return false
+	for k in 6:
+		var neighbour := Vector2(cos(k * TAU / 6.0), sin(k * TAU / 6.0)) * 17.320508
+		if point.distance_to(neighbour) < 4.0 + radius: return false
+	return true
+
+
+func _clump_pose(p: Vector3, clump: Vector3, radius: float, raised: bool) -> Vector3:
+	var offset := Vector3.ZERO
+	for attempt in 64:
+		var angle := atan2(clump.z, clump.x) + rng.randf_range(-0.20, 0.20)
+		var reach := clampf(clump.length() + rng.randf_range(-1.0, 1.0), 4.15 + radius, maxf(8.6, 4.15 + radius))
+		offset = Vector3(cos(angle) * reach, 0.0, sin(angle) * reach)
+		if _clear_of_hexes(offset, radius): break
+	assert(_clear_of_hexes(offset, radius), "Debris could not preserve the ship clear zone")
+	# A sphere bounds the complete tumble. Only one anchor per patch can rise above the midline.
+	offset.y = -radius * 0.3 if raised else -radius - rng.randf_range(0.25, 1.4)
+	return p + offset
+
+
 func _debris(ps: Array) -> void:
+	# world.gd also built the old scatter through add_debris_rocks. Its own material
+	# flag lets the two looks share meshes without leaving hidden rocks in the ship gaps.
+	for child in W.get_children():
+		if child is MultiMeshInstance3D and child.material_override is ShaderMaterial:
+			var old: ShaderMaterial = child.material_override
+			if old.get_shader_parameter("legacy_debris") == true and old not in _legacy_debris_mats:
+				_legacy_debris_mats.append(old)
+	_sync_legacy_debris()
 	var kind: String = W._rock_kind
-	var mat: Material = W._mat(kind)
+	var mat: ShaderMaterial = W._mat(kind).duplicate()
+	mat.set_shader_parameter("debris_glint", 1.0)
+	mat.set_shader_parameter("sun_v", W.SUN)
 	var batch = WR.Batch.new()
 	var low: bool = W.quality == "low"
 	var shard_meshes := _shard_meshes()
@@ -780,43 +888,80 @@ func _debris(ps: Array) -> void:
 	hot.set_shader_parameter("hot", 1.0)
 	for wm in [metal, hot]:
 		(wm as ShaderMaterial).set_shader_parameter("tumble_k", TUMBLE_K if tumble_mode == "cap" else 1000.0)
+		(wm as ShaderMaterial).set_shader_parameter("sun_v", W.SUN)
+		(wm as ShaderMaterial).set_shader_parameter("detail_k", 0.0 if low else 1.0)
+	var hot_materials := {}
+	for mk in shard_meshes.size():
+		var hm := hot.duplicate() as ShaderMaterial
+		var points := _hot_points(shard_meshes[mk])
+		for i in 3: hm.set_shader_parameter("hot_p%d" % i, points[i])
+		hot_materials[mk] = hm
 	var shards := {}     # "mesh|mat" -> [{xf, cd}]
 	var slots: Array = []
-	var n_dust := 0
+	var dust: Array = []
+	var raised := {}
+	for patch in _patches(ps): raised[patch[0]] = true
 	for p in ps:
+		var clumps: Array[Vector3] = []
+		var phase := rng.randf() * TAU
+		var count := rng.randi_range(2, 3)
+		for j in count:
+			var angle := phase + j * TAU / count + rng.randf_range(-0.15, 0.15)
+			clumps.append(Vector3(cos(angle), 0, sin(angle)) * rng.randf_range(6.5, 7.8))
+		var orbiting := false
+		if W._well != Vector3.INF:
+			var dr := roundi(((p as Vector3).z - W._well.z) / 15.0)
+			var dq := roundi(((p as Vector3).x - W._well.x) / 17.320508 - dr * 0.5)
+			var ring := (absi(dq) + absi(dr) + absi(dq + dr)) / 2
+			orbiting = ring >= 3 and ring <= 4
+		var tangent := Vector3.ZERO
+		if orbiting:
+			var radial: Vector3 = (p as Vector3) - W._well
+			tangent = Vector3(-radial.z, 0, radial.x).normalized()
 		var rocks: Array = []
 		for i in (rng.randi_range(8, 12) if low else rng.randi_range(15, 22)):
-			var a := rng.randf() * TAU
-			var rr := sqrt(rng.randf()) * 8.6
 			var s := DEBRIS_ROCK_MIN + (DEBRIS_ROCK_MAX - DEBRIS_ROCK_MIN) * pow(rng.randf(), 2.4)
 			var nm: String = W._pick(kind, rng)
 			if nm == "":
 				break
+			var radius := _piece_radius(WR.mesh(nm)) * s
+			var basis: Basis = W._rand_basis(rng)
+			if orbiting: basis = Basis.from_euler(Vector3(rng.randf_range(-0.2, 0.2), atan2(-tangent.z, tangent.x), rng.randf_range(-0.2, 0.2)))
 			rocks.append({"mesh": nm, "shadow": s > 1.8,
-				"xf": Transform3D(W._rand_basis(rng).scaled(Vector3.ONE * s), (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-3.5, 4.0), sin(a) * rr)),
-				"axis": W._rand_axis(rng), "rate": rng.randf_range(0.05, 0.3), "seed": rng.randf()})
+				"xf": Transform3D(basis.scaled(Vector3.ONE * s), _clump_pose(p, clumps[i % count], radius, false)),
+				"axis": basis.inverse() * Vector3.UP if orbiting else W._rand_axis(rng), "rate": rng.randf_range(0.05, 0.3), "seed": rng.randf()})
 		add_debris_rocks(batch, rocks, mat)
 		# step 2: wreckage that reads as wreckage: mostly mid-size pieces, and often one big one that carries the patch's
 		# silhouette at battle distance
 		var last_slot := {}
 		for i in rng.randi_range(3, 5) + (1 if rng.randf() < 0.55 else 0):
-			var a := rng.randf() * TAU
-			var rr := sqrt(rng.randf()) * 7.0
 			var mk := rng.randi() % shard_meshes.size()
 			var mt := 1 if rng.randf() < 0.22 else 0
 			var key := "%d|%d" % [mk, mt]
 			if not shards.has(key):
 				shards[key] = []
 			var sc := rng.randf_range(1.3, 2.6) if i > 0 else rng.randf_range(2.6, 3.8)
+			if i == 0:
+				var size_v: Vector3 = (shard_meshes[mk] as Mesh).get_aabb().size
+				sc = maxf(sc, 4.0 / maxf(size_v.x, maxf(size_v.y, size_v.z)))
 			var b := Basis.from_euler(Vector3(rng.randf() * TAU, rng.randf() * TAU, rng.randf() * TAU)).scaled(Vector3.ONE * sc)
-			var xf := Transform3D(b, (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-2.5, 3.0), sin(a) * rr))
+			if orbiting:
+				b = Basis.from_euler(Vector3(rng.randf_range(-0.25, 0.25), atan2(-tangent.z, tangent.x), rng.randf_range(-0.25, 0.25))).scaled(Vector3.ONE * sc)
+			var radius := _piece_radius(shard_meshes[mk]) * sc
+			var xf := Transform3D(b, _clump_pose(p, clumps[i % count], radius, i == 0 and raised.has(p)))
 			# Derive the animation from the pose, without changing the seeded layout.
 			var spin := wreck_tumble(sc, xf.origin)
-			var axis := b.x.normalized() * spin
-			last_slot = {"key": key, "index": shards[key].size(), "xf": xf, "scale": sc, "axis": axis, "rate": spin}
-			shards[key].append({"xf": xf, "cd": Color(axis.x, axis.y, axis.z, float(mk) / 6.0)})
+			var axis := (b.orthonormalized().inverse() * Vector3.UP if orbiting else b.x.normalized()) * spin
+			last_slot = {"key": key, "index": shards[key].size(), "xf": xf, "scale": sc, "axis": axis, "rate": spin, "orbiting": orbiting}
+			shards[key].append({"xf": xf, "cd": Color(axis.x, axis.y, axis.z, 0.0 if orbiting else float(mk) / 6.0)})
 		slots.append(last_slot)
-		n_dust += 0 if low else 48
+		for j in (16 if low else 48):
+			var clump: Vector3 = clumps[j % count]
+			var at: Vector3 = p + clump + Vector3(rng.randf_range(-1.5, 1.5), rng.randf_range(-4.0, 1.0), rng.randf_range(-1.5, 1.5))
+			dust.append({"at": at, "size": rng.randf_range(0.15, 0.42), "alpha": rng.randf_range(0.06, 0.10), "hex": p})
+		# The same sparse tan haze on both tiers. Particle count is reduced before presence.
+		for clump in clumps:
+			dust.append({"at": p + clump + Vector3(0, -2.5, 0), "size": 4.5, "alpha": 0.06, "hex": p})
 	var n := batch.build(self, Callable(WR, "mesh"))
 	var instances := {}
 	for key in shards:
@@ -834,7 +979,7 @@ func _debris(ps: Array) -> void:
 		mmi.name = "WreckKit_%s_%s" % [WRECK_NAMES[int(parts[0])], parts[1]]
 		mmi.set_meta("wreck_piece", WRECK_NAMES[int(parts[0])])
 		mmi.multimesh = mm
-		mmi.material_override = hot if parts[1] == "1" else metal
+		mmi.material_override = hot_materials[int(parts[0])] if parts[1] == "1" else metal
 		mmi.extra_cull_margin = 8.0     # the shader tumbles each piece about its middle
 		add_child(mmi)
 		instances[key] = mmi
@@ -842,28 +987,60 @@ func _debris(ps: Array) -> void:
 	for slot in slots:
 		slot["mmi"] = instances[slot.key]
 		_wreck_slots.append(slot)
-	if n_dust > 0:
-		var mm := _quad_mm(n_dust)
-		var i := 0
-		for p in ps:
-			for k in 48:
-				var a := rng.randf() * TAU
-				var rr := sqrt(rng.randf()) * 9.0
-				mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-3.0, 4.5), sin(a) * rr)))
-				mm.set_instance_custom_data(i, Color(rng.randf_range(0.08, 0.25), rng.randf_range(0.3, 0.9), 0, 0))
-				i += 1
+	if not dust.is_empty():
+		var mm := _quad_mm(dust.size())
+		for i in dust.size():
+			var particle: Dictionary = dust[i]
+			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, particle.at))
+			mm.set_instance_custom_data(i, Color(particle.size, particle.alpha, particle.hex.x, particle.hex.z))
 		var mi := MultiMeshInstance3D.new()
+		mi.name = "DebrisDust"
 		mi.multimesh = mm
 		var m := ShaderMaterial.new()
 		var sh := Shader.new()
 		sh.code = DUST_SHADER
 		m.shader = sh
-		m.set_shader_parameter("col", Vector3(0.62, 0.57, 0.5))
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mi.extra_cull_margin = 10.0
 		add_child(mi)
 	W.notes.append("living debris: %d rocks and wreck pieces on %d hexes" % [n, ps.size()])
+	W.notes.append("debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust %d, sun glints, three hot points per heated kit piece" % dust.size())
+	W.notes.append("legacy debris: %d materials hidden in living/cine and restored in today/holo" % _legacy_debris_mats.size())
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_VISIBILITY_CHANGED:
+		_sync_legacy_debris()
+
+
+func _sync_legacy_debris() -> void:
+	for mat in _legacy_debris_mats:
+		mat.set_shader_parameter("living_terrain", is_visible_in_tree())
+
+
+# Pick three separated points on the kit's authored torn edges, once per mesh.
+# The shader intersects these small disjoint spheres with vertex alpha, never lights an entire edge.
+static func _hot_points(mesh: Mesh) -> Array[Vector3]:
+	var candidates: Array[Vector3] = []
+	for surface in mesh.get_surface_count():
+		var arrays := mesh.surface_get_arrays(surface)
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+		for i in vertices.size():
+			if colors.size() > i and colors[i].a > 0.5: candidates.append(vertices[i])
+	var points: Array[Vector3] = []
+	for i in 3:
+		var best := -1.0
+		var picked := Vector3(100, 100, 100)
+		for candidate in candidates:
+			var nearest := candidate.length_squared() if points.is_empty() else INF
+			for point in points: nearest = minf(nearest, point.distance_squared_to(candidate))
+			if nearest > best:
+				best = nearest
+				picked = candidate
+		points.append(picked)
+	return points
 
 
 # Six Blender ship-kit pieces. RGB stores paint; alpha marks hot torn edges.
@@ -874,6 +1051,11 @@ render_mode cull_disabled;
 uniform float hot = 0.0;
 uniform vec3 hot_col = vec3(1.0, 0.42, 0.12);
 uniform float tumble_k = 0.10;   // TUMBLE_K, the #230 figure of record; the periods capture variant lifts it
+uniform vec3 sun_v = vec3(0.45, 0.70, 0.55);
+uniform float detail_k = 1.0;
+uniform vec3 hot_p0 = vec3(100.0);
+uniform vec3 hot_p1 = vec3(100.0);
+uniform vec3 hot_p2 = vec3(100.0);
 varying vec3 lp;
 
 void vertex() {
@@ -896,7 +1078,7 @@ void fragment() {
 	if (!FRONT_FACING) { NORMAL = -NORMAL; }
 	float g = wfbm3(lp * 2.3);
 	float dirt = wfbm3(lp * 19.0 + 7.1);
-	float pits = wfbm3(lp * 83.0);
+	float pits = detail_k > 0.5 ? wfbm3(lp * 83.0) : 0.5;
 	// panel seams on the plates, and grime and wear
 	vec3 q = abs(fract(lp * vec3(1.6, 1.25, 1.6)) - 0.5);
 	float seam = 1.0 - 0.38 * (1.0 - smoothstep(0.0, 0.035, 0.5 - max(max(q.x, q.y), q.z)));
@@ -913,8 +1095,15 @@ void fragment() {
 	vec3 bumped = abs(det) * NORMAL - sign(det) * (dFdx(height) * rx + dFdy(height) * ry);
 	if (dot(bumped, bumped) > 0.000000000001) { NORMAL = normalize(bumped); }
 	METALLIC = 0.6;
-	ROUGHNESS = clamp(0.48 + 0.3 * dirt + pits * 0.12 * fine_k, 0.0, 1.0);
-	EMISSION = hot_col * COLOR.a * hot * (0.5 + 0.9 * g) * 2.2;
+	float worn = smoothstep(0.52, 0.78, dirt);
+	ROUGHNESS = mix(0.68, 0.24, worn);
+	float hot_radius = min(0.12, min(distance(hot_p0, hot_p1), min(distance(hot_p1, hot_p2), distance(hot_p2, hot_p0))) * 0.3);
+	float near_hot = min(distance(lp, hot_p0), min(distance(lp, hot_p1), distance(lp, hot_p2)));
+	float points = 1.0 - smoothstep(hot_radius * 0.4, max(hot_radius, 0.0001), near_hot);
+	vec3 sun = normalize((VIEW_MATRIX * vec4(sun_v, 0.0)).xyz);
+	float glint = pow(max(dot(NORMAL, normalize(sun + VIEW)), 0.0), 96.0) * max(dot(NORMAL, sun), 0.0);
+	EMISSION = hot_col * COLOR.a * hot * points * (0.5 + 0.9 * g) * 2.2;
+	EMISSION += vec3(0.65, 0.52, 0.35) * glint * worn;
 }
 """
 
@@ -958,6 +1147,15 @@ static func wreck_tumble(scale_v: float, at: Vector3) -> float:
 # Rank each hex by its full mesh's actual long axis, not spawn order or a size
 # threshold. Keep the three largest at blocker detail even on the low setting.
 static func add_debris_rocks(batch, pieces: Array, mat: Material) -> void:
+	# Both paths already use this helper. Split only the legacy material, so far
+	# rocks sharing the world's original material never disappear with the scatter.
+	if mat is ShaderMaterial and mat.get_shader_parameter("debris_glint") != 1.0:
+		var id := mat.get_instance_id()
+		if not batch.legacy_debris_materials.has(id):
+			var legacy := mat.duplicate() as ShaderMaterial
+			legacy.set_shader_parameter("legacy_debris", true)
+			batch.legacy_debris_materials[id] = legacy
+		mat = batch.legacy_debris_materials[id]
 	for piece in pieces:
 		var size_v := WR.mesh(piece.mesh).get_aabb().size
 		piece["span"] = maxf(size_v.x, maxf(size_v.y, size_v.z)) * piece.xf.basis.get_scale().x
@@ -1013,6 +1211,26 @@ func _well(c: Vector3) -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.position = Vector3(c.x, -1.5, c.z)
 	add_child(mi)
+	# Low keeps the same rim, warm hint and ripples. Reduce independent dust first.
+	var count := 91 * (1 if W.quality == "low" else 2)
+	var mm := _quad_mm(count)
+	for i in count:
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3.ZERO))
+		mm.set_instance_custom_data(i, Color(rng.randf_range(0.5, 1.0), rng.randf(), rng.randf(), rng.randf()))
+	var dust := MultiMeshInstance3D.new()
+	dust.name = "WellInfall"
+	dust.multimesh = mm
+	var dm := ShaderMaterial.new()
+	var ds := Shader.new()
+	ds.code = INFALL_SHADER
+	dm.shader = ds
+	dm.set_shader_parameter("well", c)
+	dm.render_priority = -24
+	dust.material_override = dm
+	dust.custom_aabb = AABB(Vector3(c.x - 90, -4, c.z - 90), Vector3(180, 12, 180))
+	dust.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(dust)
+	W.notes.append("well: background-only lens, 3.5 s inward ripples, cold inner rim, 45 s warm hint, %d infall motes" % count)
 
 
 func use_ship_debris(ships: Array) -> void:
@@ -1031,6 +1249,11 @@ func _install_chunks() -> void:
 	WorkerThreadPool.wait_for_task_completion(_chunk_task)
 	_chunk_task = -1
 	var meshes := HD.meshes(_chunk_job.chunks)
+	# These are old, weathered board wrecks, not fresh deaths. Keep their cut caps
+	# cold; only the kit's three bounded torn-edge points carry residual heat.
+	for chunk in _chunk_job.chunks:
+		if chunk.get("cap_mat") is ShaderMaterial:
+			(chunk.cap_mat as ShaderMaterial).set_shader_parameter("heat", 0.0)
 	_chunk_job = {}
 	if meshes.is_empty(): return
 	var holder := Node3D.new()
@@ -1063,7 +1286,7 @@ func _install_chunks() -> void:
 		var id: int = slot.mmi.get_instance_id()
 		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
 		replaced[id].indices.append(int(slot.index))
-		_hull_spin.append([pivot, (slot.axis as Vector3).normalized(), float(slot.get("rate", tumble_rate(float(slot.scale))))])
+		_hull_spin.append([pivot, Vector3.UP if slot.get("orbiting", false) else (slot.axis as Vector3).normalized(), float(slot.get("rate", tumble_rate(float(slot.scale))))])
 	# Compact each affected draw once. Do not hide a replaced slot with a zero
 	# scale: a singular normal matrix can feed NaNs into lighting and bloom.
 	for group in replaced.values():
@@ -1084,6 +1307,8 @@ func _install_chunks() -> void:
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
 
 func _exit_tree() -> void:
+	for mat in _legacy_debris_mats:
+		mat.set_shader_parameter("living_terrain", false)
 	if _chunk_task >= 0:
 		WorkerThreadPool.wait_for_task_completion(_chunk_task)
 		_chunk_task = -1
