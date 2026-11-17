@@ -111,9 +111,10 @@ SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: 
 TONE_AT = 1.0
 LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0012, edge_gain=16.0,
-    # hegemony.md 1: the lowest variation of any faction (plate_var .07, island_tone .10), no mottle and no grain
-    patch_scale=4.0, plate_var=.07, island_tone=.10, side_dark=.08, grain_scale=260.0, mottle_scale=40.0, mottle=0.0, grain=0.0,
+    side_dark=.08, grain_scale=260.0, mottle_scale=40.0, grain=0.0,
     rough=.58, metal=.45, wear=.45, grime=.30, ao_dark=.88, red_tone=0.0,
+    # A fitting's small pieces stay in one steel range. The ORM and normal still carry full cavity and seam depth.
+    parts_ao_dark=.56, parts_seam_dark=.70,
     rough_floor=.52,     # hegemony.md 3: the roughness floor in every zone
     # hegemony.md 1: the two module sizes (patch_big on the body modules, patch_small on the small module plates and every part),
     # identical on every ship in ship lengths; over-plates (patch_over, a share of .05 of their cells) at the module joints only
@@ -173,16 +174,24 @@ for _kind in ('engine', 'thruster'):
         _BASE[_nz] = 'nozzle'; _AT[_nz] = .45 if _zn == 'hgrey2' else TONE_AT
         ZONE_BY_KIND[(_kind, _zn)] = _nz
 for _k, _z in ZONES.items():
-    _z['lo'], _z['hi'] = slice_(_BASE[_k], _AT[_k], LAYERS['plate_var'])
+    _z['lo'], _z['hi'] = slice_(_BASE[_k], _AT[_k], .07)
 FALLBACK = 'hgrey'
+MODULE_TONES = dict(body=1.0, steel=.95, machinery=.97)
+HULL_FAMILIES = ('body', 'steel')
+PART_FAMILIES = dict(engine='machinery', thruster='machinery', gun='machinery', spinal='machinery')
+SURFACE_DUTIES = dict(hgrey='panel', hpanel='panel', hgrey2='recess', htrim='band', hmetal='edge', dark='recess')
+for _nozzle_zone in ZONE_BY_KIND.values():
+    SURFACE_DUTIES[_nozzle_zone] = 'recess' if _nozzle_zone.endswith('_hgrey2') else 'machinery'
+# Exposed housings, mounts and bands are all casts of the same steel blue.
+# Recesses are the quiet step. The bright ring finish belongs to the hull bands.
+_STEEL = pair('hull')[1]
+PART_DUTY_TONES = {
+    duty: tuple(min(channel * step, cap) for channel, cap in zip(_STEEL, CAP_LIN))
+    for duty, step in dict(panel=1.0, band=1.05, edge=1.04, machinery=.98, recess=.82).items()
+}
 BARE = CAP_LIN                                 # the wear tone: dulled pale edges at the value cap, never past it
 GRIME = lin(CONCEPT['hull_shade'][0])          # grime and the nozzles' light soot: the deep shadow tone
 RUST = RUST_DARK = GRIME                       # read by the shared rust layer only where a zone has rust, and no Hegemony zone has
-RED_PLATE = pair('hull')                       # read only where a zone has a red_share, and no Hegemony zone has
-# the plate families (share of plates, (lo, hi)): one value step inside the steel-blue grey (R237), the rest keep the zone's own
-# tone. The fleet is identical by doctrine, so the step is small and the same on every ship (the grid is anchored to the ship).
-PATCH_FAMILIES = [(.10, slice_('hull_step', TONE_AT, LAYERS['plate_var']))]
-PATCH_FAMILIES_PARTS = [(.08, slice_('hull_step', TONE_AT, LAYERS['plate_var']))]
 
 
 def _zone_of(nt):
@@ -225,20 +234,24 @@ def module_bands():
     return out
 
 
+def paint_joints():
+    global _BANDS
+    _BANDS = None
+    return [(band[6] + band[7]) / 2 for band in module_bands()]
+
+
 def panel_nodes(c, col, amount, families=None, cells=None):
     """hegemony.md 1 and R243: the even grid. Flush rectangles on one straight grid anchored to the ship (x along the hull, the
     beam measured out from the centreline so port and starboard are mirror images, z up), no stagger, no warp, no split: the same
     module on every sister ship. Two module sizes: patch_big on the body modules (zone hgrey), patch_small on the small module
-    plates and recessed fields (hpanel, hgrey2) and on every part. Each plate cell takes one calm tone (a family or the zone's
-    own narrow slice); never per mesh island (R237: grain). The module bands (module_bands()) carry the joint: the band's own
+    plates and recessed fields (hpanel, hgrey2) and on every part. The module bands (module_bands()) carry the joint: the band's own
     seam dark all across and a one-sided seam where each ring meets the plating, darker (band_dark), an AO-driven recess and a little more grime; over-plates
     (patch_over, share .05) sit only beside the bands. Returns the colour and the seam mask (the shared stack darkens the seams by
     seam_dark and bakes their relief into the hull normal)."""
     from paint_stack import node, math_, mixc, ramp
     nt = c.nt; L = LAYERS
-    hull = cells is None; families = list(families or PATCH_FAMILIES)
+    hull = cells is None
     zone = _zone_of(nt); z = ZONES.get(zone, ZONES[FALLBACK])
-    families.append((max(0.0, 1.0 - sum(f[0] for f in families)) + 1e-3, (z['lo'], z['hi'])))
     nx = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(c.geo.outputs['Normal'], nx.inputs[0])
     nrm = [math_(nt, 'ABSOLUTE', nx.outputs[k]) for k in range(3)]
     ay = math_(nt, 'ABSOLUTE', c.y)          # the beam from the centreline: the grid mirrors port to starboard
@@ -263,22 +276,10 @@ def panel_nodes(c, col, amount, families=None, cells=None):
             seam = e if seam is None else math_(nt, 'MAXIMUM', seam, e)
         return cid.outputs[0], seam
 
-    def pick(cid, w, col):
-        wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cid, wn.inputs['Vector'])
-        sp = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sp.inputs[0])
-        lo = 0.0
-        for share, (flo, fhi) in families:
-            hi = lo + share
-            on = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', wn.outputs['Value'], lo - 1e-4), math_(nt, 'LESS_THAN', wn.outputs['Value'], hi))
-            col = mixc(nt, col, mixc(nt, flo, fhi, sp.outputs[1]), math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', on, w), amount))
-            lo = hi
-        return col
-
     kind = z.get('grid', 'small') if hull else 'small'
     size = L['patch_big'] if kind == 'big' else (L['patch_small'] if hull else cells[0])
-    cid, gseam = grid(size, 11.0 if kind == 'big' else 37.0)
+    _, gseam = grid(size, 11.0 if kind == 'big' else 37.0)
     if hull: gseam = math_(nt, 'MULTIPLY', gseam, z.get('grid_seam', 1.0))
-    col = pick(cid, 1.0, col)
     seam = gseam if kind is not None else None
     if not hull:
         return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
@@ -311,7 +312,6 @@ def panel_nodes(c, col, amount, families=None, cells=None):
         oid, oseam = grid(L['patch_over'], 71.0)
         ow = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(oid, ow.inputs['Vector'])
         on = math_(nt, 'MULTIPLY', math_(nt, 'LESS_THAN', ow.outputs['Value'], L['patch_over_share']), math_(nt, 'MULTIPLY', W, math_(nt, 'SUBTRACT', 1, B)))
-        col = pick(oid, on, col)
         seam = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', seam, math_(nt, 'SUBTRACT', 1, on)), math_(nt, 'MULTIPLY', oseam, on))
     # inside a band: the grid's own seams give way to the band's (the band is one machined ring), the recess darkens with the
     # short occlusion, a little more grime gathers in it, and the band seam reaches band_dark (the shared stack darkens every seam
