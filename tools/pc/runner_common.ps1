@@ -329,6 +329,8 @@ function Gh-Pages($endpoint) {
 function Current-Body($body, $prefix) {
   # A marker is a line, not a heading or an occurrence: bold and plain run lines work too.
   $current = @(); $runs = @(); $fence = ''; $offset = 0
+  $runLabel = '(?:run[ \t]+[0-9]+|(?:earlier|previous|old)[ \t-]+runs?)\b'
+  $plainRun = '^[ \t]*' + $runLabel + '(?:[ \t]*\([^()]*\))?[ \t]*(?:[:.-][ \t]*.*)?$'
   foreach ($line in ([regex]::Split($body, '(?<=\n)'))) {
     $text = $line.TrimEnd("`r", "`n")
     if ($text -match '^ {0,3}(`{3,}|~{3,})') {
@@ -338,7 +340,10 @@ function Current-Body($body, $prefix) {
     } elseif (-not $fence) {
       $entry = @{ start = $offset; end = $offset + $line.Length; text = $text }
       if ($text.Contains('THIS IS THE JOB NOW')) { $current += $entry }
-      if ($text -match '(?i)^[ \t#*_]*(run[ \t]+[0-9]+|(?:earlier|previous|old)[ \t-]+runs?)\b') { $runs += $entry }
+      # Headings and whole bold labels are explicit; plain labels must be short and use label punctuation.
+      if ($text -match ('^ {0,3}#{1,6}[ \t]+' + $runLabel) -or
+          $text -match ('^[ \t]*\*\*' + $runLabel + '.*\*\*[ \t]*$') -or
+          ($text.Trim().Length -le 80 -and $text -match $plainRun)) { $runs += $entry }
     }
     $offset += $line.Length
   }
@@ -370,7 +375,10 @@ function Current-Body($body, $prefix) {
   }
   $fixedMatch = [regex]::Match($body, [regex]::Escape($fixed))
   if ($h.start -lt $fixedMatch.Index) { throw 'current instruction refused: put the fixed block before the current run; no agent started' }
-  $inline = $h.text -creplace '^.*?THIS IS THE JOB NOW[\W_]*', ''
+  $inline = $h.text -creplace '^.*?THIS IS THE JOB NOW', ''
+  # The marker's run/date suffix identifies the brief, but is not an instruction.
+  $inline = $inline -ireplace '^[ \t#*_:.,;-]*\([ \t]*run[ \t]+[0-9]+\b[^()]*\)', ''
+  $inline = $inline -replace '^[\W_]*', ''
   if (-not $inline.Trim() -and -not $body.Substring($h.end, $end - $h.end).Trim()) { throw 'current instruction refused: the current block is empty; no agent started' }
   if ($h.start -lt $fixedMatch.Index + $fixed.Length) {
     # Some current jobs put their marker and the entire instruction on Done when itself.

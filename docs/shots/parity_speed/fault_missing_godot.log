@@ -1,0 +1,4 @@
+Withheld out/s1.jsonl in a throwaway output folder.
+  battle s1: FAIL (never ran in its batch; passes alone, exit 0)
+  battle s2: PASS (148 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+Exit: 1

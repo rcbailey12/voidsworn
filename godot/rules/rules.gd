@@ -205,7 +205,7 @@ var _lw := {}      # evalThreatVet: each foe's live guns inside a scoring window
 var _slot := {}    # unit id -> small number, for the packed cache keys
 var _runfx = null
 func eval_begin() -> void:
-	_evc = true; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear(); _ev.clear()
+	_evc = OS.get_environment("VS_NO_MEMO") != "1"; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear(); _ev.clear()
 	if B != null:
 		for i in range(B["units"].size()): _slot[B["units"][i]["id"]] = i
 func eval_end() -> void:
