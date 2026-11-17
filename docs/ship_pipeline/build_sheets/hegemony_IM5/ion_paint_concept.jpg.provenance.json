@@ -1,0 +1,54 @@
+{
+  "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+  "source_dirty": true,
+  "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "ion_paint_concept.jpg",
+  "date": "2026-11-17T07:09:13Z",
+  "sources": [
+    {
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "close.png",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "paint proof",
+      "date": "2026-11-17T07:06:41Z",
+      "image_sha256": "759cfec7460afe52382618d1580816773a4da4270b5b342d768bdb0997fb34c2",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "aace4697b1a26d2845e7cd10462da0da8dc92f5350b266c6071c96fa10bbea1d"
+  ],
+  "stamp_template_sha256": "3f4b5e0b3425d7ebef59c48a2b33cc699f7251e8c8a5a1599b005ac02ed35b70",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgEOCz9U76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/edgBC1NSCHcAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "114120183a7195420562de5f888416e64f0dd5fc9bc030b362f6b9a7b79962a6"
+}

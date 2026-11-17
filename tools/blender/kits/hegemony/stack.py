@@ -340,7 +340,7 @@ LENS_PEAK = .65        # the sensor fin's tip lens (hegemony.md 5: about 0.65), 
 WINDOW_PEAK = .60      # the blue-white window slits (the builder's call: under the strips, never a second line)
 LINING_PEAK = .50      # a retro thruster's inner walls (the builder's call: dim, so the dark lip reads)
 # The nozzle throats and linings of the engines share one emission map (shared/paint_stack.bake_engine_glow: the shared throat
-# drawing in the game's Hegemony engine colour, its top held to NOZZLE_PEAK); every other light is a flat light.
+# drawing in the game's Hegemony engine colour, its top held to NOZZLE_PEAK). The ion emitter and blue strips share that map.
 GLOW = ('hblue', 'hlens', 'hnozzle', 'hlining', 'hwin')
 # The blue line's strips that the sheet puts on the hull itself are hull trim, not parts (issue 642, the Eclipse corona line):
 # their own material, marked hull_surface, so the export check measures breach clearance from the parts and not from them.
@@ -410,16 +410,62 @@ def _ramp_to(col, peak, stops):
 # The lining glows almost evenly from the throat to the lip (lining_falloff .5, lining_gain .85), the throat plate at the top: the
 # pod's trim bands are open rings since R262 (kits/hegemony/parts.py engine_bell), so the camera sees the throat, the vanes and
 # the lit lining round them, the whole nozzle face blue (PR 796's first bake saw only the lining, behind solid bands)
-ENGINE_GLOW = dict(kind='engine', zones=('hnozzle', 'hlining'), disc=('hnozzle',), plug=(), res_frac=.5,
+ENGINE_GLOW = dict(kind='engine', zones=('hnozzle', 'hlining'), disc=('hnozzle',), plug=(), extra_zones=('hblue', 'hlining'), res_frac=.5,
                    core_reach=(.55, .65), lining_gain=.85, lining_falloff=.5, hotspot_scale=700.0, hotspot=(.60, .72),
-                   hotspot_gain=.08, streaks=14.0, soot=(.55, .70), soot_gain=.15, bright=(.97, 1.0), hue_shift=0.0, strength=1.0,
+                   hotspot_gain=.08, streaks=14.0, soot=(.55, .70), soot_gain=.15, bright=(.97, 1.0), hue_shift=0.0, strength=4.0,
                    base=(.006, .010, .020),
                    ramp=_ramp_to(engine_rgb(), NOZZLE_PEAK, [(0.0, .02), (.25, .30), (.50, .62), (.75, .86), (1.0, 1.0)]))
 
 
+def glow_vertex(o):
+    """Issue 930: lens coordinates and light identity, preserved through the shared map's bake copy. No new geometry."""
+    from paint_stack import glow_zone
+    zone = glow_zone(o)
+    ion = o.get('grp') == 'I1' and o.get('part_kind') == 'spinal'
+    kind = (1 if zone == 'hblue' else 2) if ion else (3 if zone == 'hblue' else 4)
+    me = o.data
+    at = me.attributes.get('ps_kind') or me.attributes.new('ps_kind', 'FLOAT', 'POINT')
+    at.data.foreach_set('value', np.full(len(me.vertices), kind, np.float32))
+    ca = me.color_attributes.get('ps_ion') or me.color_attributes.new('ps_ion', 'FLOAT_COLOR', 'POINT')
+    coords = np.array([tuple(o.matrix_world @ v.co) for v in me.vertices])
+    lo, hi = coords.min(0), coords.max(0)
+    coords = (coords - lo) / np.maximum(hi - lo, 1e-6)
+    for i, xyz in enumerate(coords): ca.data[i].color = (*xyz, 1)
+
+
+def engine_glow_nodes(nt, r, e, d, a, tc, H):
+    """One exportable map: original engine/strip light, graded ion lens and dimmer blue field contacts (R304)."""
+    from paint_stack import _throat_glow
+    node, math_, ramp, mixc, mulc = (H[k] for k in ('node', 'math_', 'ramp', 'mixc', 'mulc'))
+    original = _throat_glow(nt, ENGINE_GLOW, r, e, d, a, tc, H['noise'])
+    attr = node(nt, 'ShaderNodeAttribute'); attr.attribute_name = 'ps_ion'
+    sep = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(attr.outputs['Color'], sep.inputs[0])
+    # The recessed front and open-roof top both show a core grading out toward their own edges.
+    xyz = [math_(nt, 'SUBTRACT', math_(nt, 'MULTIPLY', v, 2), 1) for v in sep.outputs]
+    normal = node(nt, 'ShaderNodeNewGeometry')
+    ns = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(normal.outputs['Normal'], ns.inputs[0])
+    along = math_(nt, 'GREATER_THAN', math_(nt, 'ABSOLUTE', ns.outputs[0]), .5)
+    u = xyz[1]
+    v = math_(nt, 'ADD', math_(nt, 'MULTIPLY', xyz[2], along),
+              math_(nt, 'MULTIPLY', xyz[0], math_(nt, 'SUBTRACT', 1, along)))
+    radius = math_(nt, 'SQRT', math_(nt, 'ADD', math_(nt, 'MULTIPLY', u, u), math_(nt, 'MULTIPLY', v, v)))
+    heat = math_(nt, 'SUBTRACT', 1, ramp(nt, radius, .08, 1.1))
+    # Dark frame lines split the optic into segments. Metal coils and the worn muzzle keep the normal parts atlas.
+    lines = math_(nt, 'MULTIPLY', ramp(nt, math_(nt, 'ABSOLUTE', u), .016, .035),
+                  ramp(nt, math_(nt, 'ABSOLUTE', v), .016, .035))
+    lens = mixc(nt, (.0005, .008, .12), (.008, .30, 1.0), heat)
+    lens = mulc(nt, lens, math_(nt, 'ADD', .025, math_(nt, 'MULTIPLY', lines, .975)))
+    field = mixc(nt, (.001, .014, .20), (.002, .07, .375), H['noise'](attr.outputs['Color'], 5, 2))
+    col = mulc(nt, original, 1 / ENGINE_GLOW['strength'])
+    for kind, value in ((1, lens), (2, field),
+                        (3, tuple(c / 4 for c in GLOW_FLAT['hblue'][1]())),
+                        (4, tuple(c / 4 for c in GLOW_FLAT['hlining'][1]()))):
+        col = mixc(nt, col, value, math_(nt, 'COMPARE', H['kind'], kind))
+    return col
+
+
 def emissive_audit(job_dir, cell):
-    """hegemony.md 5 and 6: nothing on the intact ship over the glow threshold, and no warm emissive (red over blue). Reads the
-    baked emission map (its brightest pixel times its strength) and every flat light's colour times strength"""
+    """No warm light. The shared map includes PR 911's ion lens (peak 4), the explicit R304 exception to resting trim."""
     from PIL import Image
     out = dict(threshold=THRESHOLD, lights={})
     p = os.path.join(job_dir, f'{cell}_engine_emission.png')
@@ -427,10 +473,11 @@ def emissive_audit(job_dir, cell):
         a = np.asarray(Image.open(p).convert('RGB')).astype(np.float64) / 255.0
         a = np.where(a <= .04045, a / 12.92, ((a + .055) / 1.055) ** 2.4) * ENGINE_GLOW['strength']
         lit = a.max(2) > .02
-        out['lights']['map'] = dict(max=round(float(a.max()), 4), warm_px=int(((a[..., 0] > a[..., 2] + 1e-3) & lit).sum()))
+        out['lights']['map'] = dict(max=round(float(a.max()), 4), limit=ENGINE_GLOW['strength'],
+                                   warm_px=int(((a[..., 0] > a[..., 2] + 1e-3) & lit).sum()))
     for z, (name, f) in GLOW_FLAT.items():
         c = f(); out['lights'][name] = dict(max=round(max(c), 4), warm=bool(c[0] > c[2] + 1e-6))
-    out['pass'] = all(v['max'] < THRESHOLD for v in out['lights'].values()) and \
+    out['pass'] = all(v['max'] <= v['limit'] if 'limit' in v else v['max'] < THRESHOLD for v in out['lights'].values()) and \
         not any(v.get('warm') or v.get('warm_px') for v in out['lights'].values())
     return out
 

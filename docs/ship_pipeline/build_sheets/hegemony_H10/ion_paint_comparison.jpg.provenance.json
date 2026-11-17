@@ -1,0 +1,77 @@
+{
+  "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+  "source_dirty": true,
+  "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "ion_paint_comparison.jpg",
+  "date": "2026-11-17T07:09:12Z",
+  "sources": [
+    {
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": true,
+      "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_ion.jpg",
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": true,
+      "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+      "stage": "sheet built",
+      "date": "2026-11-16T22:55:35Z",
+      "image_sha256": "3a02e3e54a23e9963de7edc96631bf06fc392f0d24de942e3f95a0a96b90c3c0",
+      "sources": [
+        {
+          "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+          "source_dirty": true,
+          "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "close.png",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "paint proof",
+      "date": "2026-11-17T07:00:21Z",
+      "image_sha256": "f64eea8993a7515ffb5280e6de6d6c17bfdf936e9dfa117ca5de9927445e2f4e",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    124
+  ],
+  "strip_sha256": [
+    "6cf3f0bf38c1bf2598db2cfe57d1ea9c12d332f5eb122aaf1df71f5f25c0d947"
+  ],
+  "stamp_template_sha256": "03d568d02f21b83a3fe6e18ab812f05b8e5312848c0f640320153ee5dd77a765",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAAB8CAIAAADxfb18AAAB80lEQVR4nO3VIQEAIQDAQPgEOCz9U76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYBR8wP9TwE/QSM5mAAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "182bb9cebc29fec988591ab3338b5f49411b0a828d21393526105ffcf2d9ea6c"
+}
