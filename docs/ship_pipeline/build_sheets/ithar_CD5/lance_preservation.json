@@ -1,0 +1,50 @@
+{
+  "result": "PASS",
+  "baseline_commit": "1727b82f53a8dfd941d0a044252d5b2f5c4ec0c4",
+  "lance_function_ast_identical": true,
+  "compared": "World vertices, faces, materials and shader values, features and fit records",
+  "records": [
+    {
+      "revision": "run1",
+      "lances": {
+        "L1": {
+          "sha256": "6099a103ffc18bcd14fdb09a2ffea7529c7979e9de0fb8840acbeb8ee109a107",
+          "meshes": 6,
+          "vertices": 9556
+        },
+        "L2": {
+          "sha256": "4a60db2169e1a8e9eee38e9707756f283b5bf288d226e687b0ed9f955bab592e",
+          "meshes": 6,
+          "vertices": 9556
+        }
+      },
+      "dimensions": [
+        26.01854705810547,
+        8.914787292480469,
+        4.770407199859619
+      ],
+      "hull_depth": 4.244582295417786
+    },
+    {
+      "revision": "run2",
+      "lances": {
+        "L1": {
+          "sha256": "6099a103ffc18bcd14fdb09a2ffea7529c7979e9de0fb8840acbeb8ee109a107",
+          "meshes": 6,
+          "vertices": 9556
+        },
+        "L2": {
+          "sha256": "4a60db2169e1a8e9eee38e9707756f283b5bf288d226e687b0ed9f955bab592e",
+          "meshes": 6,
+          "vertices": 9556
+        }
+      },
+      "dimensions": [
+        25.99154281616211,
+        9.14002799987793,
+        6.565288543701172
+      ],
+      "hull_depth": 6.037384271621704
+    }
+  ]
+}
