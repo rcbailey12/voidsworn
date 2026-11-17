@@ -2,7 +2,7 @@
 // Issue 687: actual Windows .bat runs against tiny local Git fixtures and stub agents.
 // Issue 722 extends it: the resolved-model stamp, the free-space floor and the Board hashes check (audit 706
 // findings 6 and 7), all in test mode through the same entry points.
-// Fixture objects are test data written directly to TEMP. No git commit or push is run.
+// Fixture objects are test data written directly to TEMP. Accounting fault cases preserve commits to local TEMP remotes only.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -52,6 +52,23 @@ assert(ghLookup.includes('if (-not $command -and -not $test)'), 'test gh must ne
 assert(ghLookup.includes('Log "GitHub CLI: $exe"'), 'log the selected executable');
 assert(ghLookup.includes('GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs'));
 pass('GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the missing-tool refusal');
+const workBat = read(path.join(here, 'work_issue.bat'));
+const lean = JSON.parse(read(path.join(here, 'work/opencode_lean.json')));
+const mock = JSON.parse(read(path.join(here, 'work/opencode_mock.json')));
+assert(workBat.includes('"MODEL=openai/gpt-6.1-sol"'));
+assert(workBat.includes('if /i "%ARM%"=="openai" set "OPENCODE_CONFIG=%T%work\\opencode_lean.json"'));
+assert(workBat.includes('if /i "%ARM%"=="openai" set "OPENCODE_DISABLE_DEFAULT_PLUGINS=1"'));
+assert.equal(lean.provider.openai.options.baseURL, 'https://api.openai.com/v1');
+assert.equal(lean.provider.openai.options.apiKey, '{env:VOIDSWORN_OPENAI_API_KEY}');
+assert.equal(lean.tools.task, false);
+assert.equal(mock.provider.openai.options.baseURL, 'http://127.0.0.1:8765/v1');
+assert.equal(mock.provider.openai.npm, '@ai-sdk/openai');
+assert(mock.provider.openai.models['gpt-6.1-sol']);
+assert(!/(?:getkey|setx|set)\s+"?OPENAI_API_KEY\b/i.test(workBat));
+const openaiKeyBat = read(path.join(here, 'openai_api_key.bat'));
+assert(openaiKeyBat.includes('setx VOIDSWORN_OPENAI_API_KEY "%K%"'));
+assert(!/setx\s+OPENAI_API_KEY\b/i.test(openaiKeyBat));
+pass('OpenAI arm defaults, isolated key name, lean config and local stand-in config');
 assert(!/['"](?:reset|clean|--force)['"]/.test(shared), 'checkout reuse must never discard working tree bytes');
 if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
@@ -127,7 +144,7 @@ const partial = fixtureCommit({ 'progress.txt': 'from partial\n' }, base,
 const conflicting = fixtureCommit({ 'progress.txt': 'conflicting main\n' }, base);
 write(path.join(source, 'HEAD'), 'ref: refs/heads/main\n');
 write(path.join(source, 'refs/heads/main'), base + '\n');
-const arms = ['opus', 'sonnet', 'deepseek', 'kimi', 'kimicode', 'codex'];
+const arms = ['opus', 'sonnet', 'openai', 'deepseek', 'kimi', 'kimicode', 'codex'];
 for (const arm of arms) write(path.join(source, 'refs/heads', (arm === 'codex' ? 'codex/issue-687' : 'work/issue-687-' + arm) + '-partial'), partial + '\n');
 const agent = path.join(root, 'stub agent.bat');
 const gitStub = path.join(root, 'stub git.bat');
@@ -147,7 +164,10 @@ if (probe) {
     fs.writeFileSync(process.env.PC_TEST_TRACE + '.pid', String(process.pid));
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,60000);
   }
-  if (a[0] === 'run') console.log(JSON.stringify({type:'text',part:{text:'RUNNER_READY'}}));
+  if (a[0] === 'run') {
+    console.log(JSON.stringify({type:'step_finish',part:{tokens:{input:100,output:10,reasoning:3,cache:{read:20,write:0}}}}));
+    console.log(JSON.stringify({type:'text',part:{text:'RUNNER_READY'}}));
+  }
   else if (a[0] === 'exec') { fs.writeFileSync(a[a.indexOf('-o') + 1], 'RUNNER_READY'); console.log('stub codex'); }
   else console.log('RUNNER_READY');
 } else {
@@ -157,6 +177,19 @@ if (probe) {
   if (!fs.readFileSync(task,'utf8').includes('saved work before stopping')) process.exit(33);
   if (fs.readFileSync('progress.txt','utf8') !== 'from partial\\n') process.exit(32);
   fs.writeFileSync('agent_started.txt', 'resumed work verified');
+  const fault = process.env.STUB_ACCOUNT_FAULT;
+  if (fault === 'invalid') fs.writeFileSync(path.join(process.env.WORK_ROOT, 'openai_spend.txt'), 'invalid ledger\\n');
+  if (fault === 'busy') {
+    fs.writeFileSync(process.env.PC_TEST_TRACE + '.lock-request', 'lock now');
+    const end = Date.now() + 10000;
+    while (!fs.existsSync(process.env.PC_TEST_TRACE + '.locked')) {
+      if (Date.now() > end) process.exit(37);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,50);
+    }
+  }
+  const tokens = {input:1000,output:100,reasoning:30,cache:{read:200,write:0}};
+  if (fault === 'missing') delete tokens.output;
+  console.log(JSON.stringify({type:'step_finish',part:{tokens}}));
   console.log(JSON.stringify({type:'text',part:{text:'Stub completed from partial'}}));
 }
 `);
@@ -194,10 +227,12 @@ const defaults = {
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
+  STUB_ACCOUNT_FAULT: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
   PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '',
+  VOIDSWORN_OPENAI_API_KEY: '', WORK_MODEL: '', WORK_EFFORT: '',
   GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.invalid', GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.invalid'
 };
 // Most scenarios need real Git only. Avoid a cmd + Node + Git process tree for every harmless Git call.
@@ -233,7 +268,7 @@ async function job(arm, label, extra = {}) {
     if (label === 'two-current') db.issue.body += '\n## Run 2 THIS IS THE JOB NOW\nAnother job.\n';
     write(env.PC_TEST_GH_DB, JSON.stringify(db)); write(env.PC_TEST_GH_TRACE, '');
   }
-  const bat = path.join(here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
+  const bat = path.join(extra.STUB_RUNNER_TOOLS || here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
@@ -247,6 +282,113 @@ async function job(arm, label, extra = {}) {
 const fixtureSetupSeconds = (Date.now() - started) / 1000;
 console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny shared source and stubs; retry delay 0 s)');
 (async () => { try {
+  // Issue 985: exercise real PS accounting with only token fixtures, never a key or provider call.
+  const spendRoot = path.join(root, 'openai accounting'); fs.mkdirSync(spendRoot, { recursive: true });
+  const spendOut = path.join(spendRoot, 'out'); write(path.join(spendOut, 'result.txt'), '');
+  const spendSettings = path.join(spendRoot, 'runner_settings.txt');
+  const ledger = path.join(spendRoot, 'openai_spend.txt');
+  const workPS = args => run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'work_issue.ps1'), ...args], { ...defaults });
+  const budget = (model = 'openai/gpt-6.1-sol', dry = '0') => workPS(['openai-budget', spendOut, spendRoot, spendSettings, model, dry]);
+  const spend = (out = spendOut, model = 'openai/gpt-6.1-sol', dry = '0') => workPS(['openai-spend', '985', out, spendRoot, spendSettings, model, dry]);
+  const rows = () => read(ledger).trim().split(/\r?\n/).filter(Boolean).map(s => JSON.parse(s));
+  assert.equal(workPS(['openai-key', spendOut]).code, 3);
+  assert(read(path.join(spendOut, 'result.txt')).includes('no OpenAI API key saved: run OPENAI_API_KEY.bat'));
+  assert.equal(budget().code, 0); // Missing setting defaults to 94.
+  const event = (input, cached, output) => JSON.stringify({type:'step_finish',part:{tokens:{input,output,reasoning:100000,cache:{read:cached,write:0}}}}) + '\n';
+  write(path.join(spendOut, 'events.jsonl'), event(1000000, 2000000, 3000000));
+  write(path.join(spendOut, 'preflight_log.txt'), event(100000, 100000, 100000));
+  assert.equal(spend().code, 0);
+  assert.equal(rows().length, 1); assert.equal(rows()[0].estimated_usd, 35.41);
+  assert.equal(rows()[0].running_total_usd, 35.41); assert.equal(rows()[0].budget_usd, 94);
+  assert.equal(rows()[0].input, 1100000); assert.equal(rows()[0].cached_input, 2100000); assert.equal(rows()[0].output, 3300000);
+  assert.equal(spend().code, 0); assert.equal(rows().length, 1, 'finish must not double record');
+  assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI estimate USD: 35.41'));
+  write(spendSettings, 'openai_budget_usd=35.41\n');
+  assert.equal(budget().code, 3); assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI budget reached'));
+  assert.equal(budget('openai/gpt-6.1-sol', '1').code, 0, 'dry run ignores real spend');
+  write(spendSettings, 'openai_budget_usd=36\n'); assert.equal(budget().code, 0);
+  write(spendSettings, 'openai_budget_usd=oops\n'); assert.equal(budget().code, 3);
+  write(spendSettings, 'openai_budget_usd=94\n'); assert.equal(budget('openai/unpriced').code, 3);
+  const old = rows()[0]; old.date = '2000-01-01T00:00:00Z'; write(ledger, JSON.stringify(old) + '\n');
+  write(spendSettings, 'openai_budget_usd=1\n'); assert.equal(budget().code, 0, 'previous month does not spend this month');
+  const terraOut = path.join(spendRoot, 'terra'); write(path.join(terraOut, 'result.txt'), '');
+  write(path.join(terraOut, 'events.jsonl'), event(1000000, 2000000, 3000000));
+  assert.equal(spend(terraOut, 'openai/gpt-6.1-terra').code, 0);
+  assert.equal(rows()[1].estimated_usd, 16.6); assert.equal(rows()[1].running_total_usd, 16.6);
+  assert.equal(budget().code, 3, 'run crossing budget stops the next start');
+  const beforeDry = read(ledger); assert.equal(spend(terraOut, 'openai/gpt-6.1-terra', '1').code, 0);
+  assert.equal(read(ledger), beforeDry);
+  const unknownOut = path.join(spendRoot, 'unknown'); write(path.join(unknownOut, 'result.txt'), '');
+  write(path.join(unknownOut, 'preflight_log.txt'), '{"type":"error","error":{"message":"fixture failed probe"}}\n');
+  assert.equal(spend(unknownOut).code, 3); assert.equal(rows()[2].status, 'unknown');
+  write(spendSettings, 'openai_budget_usd=94\n'); assert.equal(budget().code, 3);
+  assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI usage unknown'));
+  write(ledger, 'bad ledger\n'); assert.equal(budget().code, 3);
+  pass('OpenAI missing key, named prices, probe plus agent usage, idempotent ledger, default/configured budget, dry isolation, month rollover and unknown-usage refusal');
+  // Run the real preservation path against our local remote. Only the TEMP copy enables live accounting in dryrun
+  // and a local push; test agents and fake GitHub still isolate every provider and network operation.
+  const faultTools = path.join(root, 'accounting runner');
+  for (const name of ['work_issue.bat','work_issue.ps1','runner_common.ps1','run_timeout.ps1','tmo.bat','gpu_slots.js']) {
+    write(path.join(faultTools, name), read(path.join(here, name)));
+  }
+  write(path.join(faultTools, 'work_issue.bat'), read(path.join(faultTools, 'work_issue.bat'))
+    .replace(/(%PS% openai-(?:budget|spend)[^\r\n]*)"%DRY%"/g, '$1"0"')
+    .replace('set "PUSHMODE=dry"', 'set "PUSHMODE=test"'));
+  const ledgerHolder = path.join(root, 'ledger holder.ps1');
+  write(ledgerHolder, `while (-not (Test-Path ($env:PC_TEST_TRACE + '.lock-request'))) { Start-Sleep -Milliseconds 100 }
+$s = [IO.File]::Open((Join-Path $env:WORK_ROOT 'openai_spend.txt'), 'OpenOrCreate', 'ReadWrite', 'None')
+try {
+  [IO.File]::WriteAllText(($env:PC_TEST_TRACE + '.locked'), 'locked')
+  while (-not (Test-Path ($env:PC_TEST_TRACE + '.release'))) { Start-Sleep -Milliseconds 100 }
+} finally { $s.Dispose() }
+`);
+  for (const fault of ['missing', 'invalid', 'busy']) {
+    const extra = { STUB_RUNNER_TOOLS: faultTools, STUB_ACCOUNT_FAULT: fault,
+      PC_TEST_STOP_BEFORE_PUBLISH: '0' };
+    if (fault === 'busy') {
+      const home = path.join(root, 'openai-account-busy');
+      const child = spawn('powershell.exe', ['-NoProfile', '-File', ledgerHolder], { stdio: 'ignore', windowsHide: true,
+        env: { ...process.env, WORK_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt') } });
+      testChildren.push(child);
+    }
+    const r = await job('openai', 'account-' + fault, extra);
+    assert.equal(r.code, 14, r.text + r.result);
+    assert.equal(r.state.status, 'partial', r.result);
+    assert.equal(r.state.reason, 'spend accounting unknown');
+    assert.equal(read(path.join(r.out, 'checks.txt')).trim(), 'runner checks skipped: partial run');
+    assert(fs.existsSync(path.join(r.out, 'guard_dir.txt')), 'the preservation guard ran');
+    const branch = 'work/issue-687-openai-partial';
+    const tip = run('git', ['--git-dir', source, 'rev-parse', branch]); assert.equal(tip.code, 0, tip.text);
+    assert.equal(run('git', ['--git-dir', source, 'show', tip.text.trim() + ':agent_started.txt']).text.trim(), 'resumed work verified');
+    assert.equal(read(path.join(r.out, 'confirmed_commit.txt')).trim(), tip.text.trim());
+    assert.equal(run('git', ['--git-dir', source, 'show-ref', '--verify', 'refs/heads/work/issue-687-openai']).code, 128, 'no delivery branch or PR');
+    const journal = path.join(r.env.WORK_ROOT, 'openai_spend_unknown');
+    const entries = fs.readdirSync(journal).map(name => JSON.parse(read(path.join(journal, name))));
+    assert.equal(entries.length, 1); assert.equal(entries[0].status, 'unknown'); assert.equal(entries[0].run.toLowerCase(), r.out.toLowerCase());
+    if (fault === 'busy') write(r.env.PC_TEST_TRACE + '.release', 'release');
+    // Repairing the ledger and releasing its lock cannot erase the separate unknown entry.
+    if (fault !== 'busy') write(path.join(r.env.WORK_ROOT, 'openai_spend.txt'), '');
+    const probeBefore = read(r.env.PC_TEST_TRACE);
+    const refused = await job('openai', 'account-' + fault, extra);
+    assert.equal(refused.code, 3, refused.text + refused.result);
+    assert.equal(refused.state.status, 'failed'); assert(refused.result.includes('OpenAI usage unknown'), refused.result);
+    assert(!fs.existsSync(refused.repo), 'next paid start refused before checkout');
+    assert.equal(read(r.env.PC_TEST_TRACE), probeBefore, 'next paid start never calls the probe');
+    // Restore the shared source partial so the existing resume matrix keeps its original fixture.
+    write(path.join(source, 'refs/heads', branch), partial + '\n');
+    pass('OpenAI ' + fault + ' accounting: guarded partial push retains agent changes, never checked, next paid start refused');
+  }
+  const openaiOverride = await job('openai', 'override', { WORK_MODEL: 'openai/gpt-6.1-terra' });
+  assert.equal(openaiOverride.code, 0, openaiOverride.text + openaiOverride.result);
+  assert.equal(openaiOverride.state.model, 'openai/gpt-6.1-terra');
+  assert(openaiOverride.result.includes('differs from the arm default openai/gpt-6.1-sol'));
+  const wrongProvider = await job('openai', 'provider', { WORK_MODEL: 'anthropic/claude-opus-5-5' });
+  assert.equal(wrongProvider.code, 0, wrongProvider.text + wrongProvider.result);
+  assert.equal(wrongProvider.state.model, 'openai/gpt-6.1-sol');
+  const unpriced = await job('openai', 'unpriced', { WORK_MODEL: 'openai/unpriced' });
+  assert.equal(unpriced.code, 3, unpriced.text + unpriced.result);
+  assert(!fs.existsSync(unpriced.env.PC_TEST_TRACE)); assert(!fs.existsSync(unpriced.repo));
+  pass('OpenAI same-provider override stamped, other provider ignored and unpriced model refused before checkout/probe');
   // Issue 860 run 2: exercise the real checkout with local Git data, never publish or discard fixture files.
   function checkoutFixture(label, prepare = () => {}, expectedKeep = false, options = {}) {
     const home = path.join(root, 'reuse-' + label), repo = path.join(home, 'repo'), out = path.join(home, 'out');
@@ -483,6 +625,11 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
     if (arm === 'codex') { assert(r.result.includes('effort: high'), r.result); assert.equal(r.state.effort, 'high'); }
     assert(!r.result.includes('differs from the arm default'), r.result);
     assert(!JSON.parse(read(r.env.PC_TEST_GH_DB)).running, 'finished run releases its claim');
+    if (arm === 'openai') {
+      assert(r.result.includes('dry run, no spend recorded'), r.result);
+      assert(read(path.join(r.out, 'stats.txt')).includes('OpenAI estimate USD:'));
+      assert(!fs.existsSync(path.join(r.env.WORK_ROOT, 'openai_spend.txt')));
+    }
     pass(arm + ': claim before probe and agent, only current brief, partial resumed, model stamped, Python bytecode disabled in probe and agent, claim released, no publish');
     const why = arm === 'kimicode' ? 'provider managed:kimi-code has no credential configured (expired login)' : arm === 'codex' ? 'quota exhausted' : 'credit balance is too low';
     const bad = await job(arm, 'auth', { STUB_AUTH_FAIL: '1', STUB_REASON: why });
@@ -693,7 +840,7 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
   assert(hashWarn.result.includes('WARNING: these runner files differ'), hashWarn.result);
   pass('a run whose tools folder drifts from the Board hashes still starts and warns');
-  const note = 'PASS runner687+722+860: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
+  const note = 'PASS runner687+722+860+985: ' + passed + ' checks, Windows entry points, local Git and stub agents only. Preservation commits and pushes use TEMP remotes only; no model usage.\nEvidence: ' + root + '\n';
   write(path.join(root, 'summary.txt'), note); console.log(note.trim());
 } catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; }
 finally {

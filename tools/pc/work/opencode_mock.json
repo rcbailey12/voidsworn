@@ -3,6 +3,17 @@
   "autoupdate": false,
   "share": "disabled",
   "provider": {
+    "openai": {
+      "npm": "@ai-sdk/openai",
+      "options": {
+        "baseURL": "http://127.0.0.1:8765/v1",
+        "apiKey": "dry"
+      },
+      "models": {
+        "gpt-6.1-sol": { "name": "stand-in", "limit": { "context": 1050000, "output": 128000 } },
+        "gpt-6.1-terra": { "name": "stand-in", "limit": { "context": 1050000, "output": 128000 } }
+      }
+    },
     "deepseek": {
       "options": {
         "baseURL": "http://127.0.0.1:8765/v1"
