@@ -1,0 +1,37 @@
+{
+  "approved_commit": "ee2e21d9",
+  "before_living_sha256": "983c2f2ab352c6aae01b22f655ec4e1ff5bd845b1d9b082a9aa4f914954b6dfa",
+  "gas_functions": {
+    "_gas": {
+      "identical": true,
+      "sha256": "2cfd63906e072f01ea75570ccaa4c3e889d76dfd7b5cd0e403848679a876dd9e"
+    },
+    "_fog_patch": {
+      "identical": true,
+      "sha256": "5c7a2cb9816e53689b469d8d1f11fc2b9539864097abf37233a4c519e6440e8f"
+    },
+    "_mask": {
+      "identical": true,
+      "sha256": "023ce913bdbff5c1eadb83f74393ec7676a9029518cce305ad93f36f06c601ef"
+    },
+    "_bolts": {
+      "identical": true,
+      "sha256": "f0370ba31a0cd3f3652600362f3bcd9af8d959da30a71c659dfe549318c5792f"
+    },
+    "_flash": {
+      "identical": true,
+      "sha256": "186a3025b4af7509462d6a1b87041d9206d7c7aead22c402f396861afe225076"
+    },
+    "_start_storm_burst": {
+      "identical": true,
+      "sha256": "c7ac56e43cc3c749e093cee957f508c35a81f7d61ade54f1256abb25b120648b"
+    },
+    "_set_flashes": {
+      "identical": true,
+      "sha256": "0f6dfced27c8475aabf597547508ca667638db1968387c131067a092091b594e"
+    }
+  },
+  "ion_storm_identical": true,
+  "ion_storm_sha256": "21026d0bd9788f84ec2a857c784bc5bbf32a95a419b1bcedc95eba94124ea194",
+  "installed_gen_manifest_sha256": "47a031d95f774a2ce520f46c813a40717b8cce0ef9de7da90eeceb35ba9e020f"
+}
