@@ -131,7 +131,7 @@ cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, us
   A failed clone folder is renamed beside repo and kept before the next attempt. Network failure stops before the model.
 - **Model preflight.** Before ship copying or agent work, a tiny prompt must return exactly RUNNER_READY within 90 seconds.
   openai, opus, sonnet and deepseek use OpenCode with the job's model; kimicode always uses Kimi Code CLI and its saved subscription
-  login (no API key required); Codex uses the pinned gpt-6.1-sol. Error events fail even with exit 0. result.txt gets a one-line
+  login (no API key required); Codex uses the pinned gpt-6.2-sol (CODEX_MODEL in codex_issue.bat). Error events fail even with exit 0. result.txt gets a one-line
   reason and preflight_log.txt holds the details. No automatic model fallback or login is attempted.
 - **Safe chains.** Use `chain_issue.bat "<first run out>\status.json" work_issue.bat 642 opus` (or `codex_issue.bat 687`).
   The child writes its own result, then waits before checkout or model use. Only status checked_push with a commit id releases
@@ -181,7 +181,7 @@ wait, the mirror fetch and any model call:
   ("model: <id>"), and result.txt warns when it differs from the arm's default, whatever the provider: a
   same-provider WORK_MODEL override (invisible to PR 636's provider guard) warns here. The kimicode arm stamps the
   Kimi Code CLI model (kimi-code/kimi-for-coding, or WORK_KIMI_MODEL) whenever the CLI or its test stand-in runs;
-  other arms stamp the OpenCode model; Codex stamps its pinned gpt-6.1-sol.
+  other arms stamp the OpenCode model; Codex stamps its pinned gpt-6.2-sol.
 - **Free-space floor.** The run refuses to start when the drive holding Downloads\voidsworn_test has less than
   min_free_gb free: one line in result.txt, status failed, exit 14. No mirror fetch, no model probe, no agent, and a
   chained child waiting on the run fails closed. min_free_gb is a tuning value in work217\runner_settings.txt;
