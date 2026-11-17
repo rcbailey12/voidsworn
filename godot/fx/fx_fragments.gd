@@ -51,8 +51,11 @@ static func atlas() -> ImageTexture:
 			for i in VERTICES:
 				var v := vertices[i]
 				var n := normals[i]
-				_atlas_image.set_pixel(i, profile * 2, Color(v.x, v.y, v.z, float(profile >= GLASS)))
-				_atlas_image.set_pixel(i, profile * 2 + 1, Color(n.x, n.y, n.z, float(i >= CAP * 2)))
+				# Interpolate from the cap centre to the torn rim. Wall vertices are all on the rim.
+				var rim := 0.0 if i == 0 or i == CAP else 1.0
+				var surface := 0 if i < CAP else (1 if i < CAP * 2 else 2)
+				_atlas_image.set_pixel(i, profile * 2, Color(v.x, v.y, v.z, rim))
+				_atlas_image.set_pixel(i, profile * 2 + 1, Color(n.x, n.y, n.z, surface + (3 if profile >= GLASS else 0)))
 	# The pool material owns the GPU texture. The static cache only holds CPU data.
 	return ImageTexture.create_from_image(_atlas_image)
 

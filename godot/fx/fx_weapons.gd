@@ -1238,7 +1238,7 @@ static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 # Solid ejecta leaves the same contact as the sparks. The tips of the plume are small and fast;
 # the larger pieces peel off slowly along the surface, with a few loose pieces between them.
 static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, count: int, speed: float, size: float,
-		heat: float, fam: String, substance := "metal") -> void:
+		heat: float, fam: String, substance := "metal", macro := false) -> void:
 	if substance == "chorus":
 		var tissue: Color = fx.faction_info("chorus").damage_glow
 		for j in _amount(fx, count):
@@ -1249,37 +1249,48 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 			_note(fx, "drop", fam, v, n, life)
 		return
 	var paint: Color = fx.faction_info(substance).fragment_paint
-	var pieces := _amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)
+	var original := _amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)
+	var extra := ceili(original * 0.3) if macro and fx.quality != "low" else 0
+	var pieces := original + extra
+	var shared_state: int = 0
 	for j in pieces:
-		# Preserve the draw order of the old chips so the shared hit RNG still places the soot and embers.
+		# Extra fragments use a separate sequence. Soot, embers and later hits keep the original draw order.
+		if j == original:
+			shared_state = fx.rng.state
+			fx.rng.state = shared_state ^ 0x459dbad1
 		var jitter: Vector3 = fx.rdir()
 		var motion: float = fx.rng.randf()
 		var life: float = fx.rng.randf_range(DEBRIS_LIFE.x, DEBRIS_LIFE.y)
 		var born: float = T + fx.rng.randf() * 0.025
-		var variant: int = int(fx.rng.randf() >= 0.5)
+		var shape: float = fx.rng.randf()
+		var variant := int(shape >= 0.5)
 		var turn: float = fx.rng.randf()
 		var lead := j == 0 or (j == 1 and pieces >= 6)
 		var quick := j >= 2 and j % 3 != 0
-		var rib := j == 1 or (j > 2 and j % 3 == 0)
+		var rib := j == 1 or (j >= 2 and j % 2 == 0)
 		var profile := FRAGMENTS.RIB if rib else FRAGMENTS.PLATE
 		if substance == "ithar":
 			profile = FRAGMENTS.GLASS
-		var scale := 3.9 if j == 0 else (3.1 if j == 1 else (1.45 if quick else 2.25))
+		var scale := lerpf(1.85, 2.8, shape) if quick else lerpf(2.85, 3.5, shape)
+		if lead:
+			scale = lerpf(4.4, 5.0, shape) if j == 0 else lerpf(3.7, 4.2, shape)
 		var tangent := jitter.slide(n)
-		var aim := axis + jitter * 0.25
+		var aim := axis + jitter * 0.60
 		var speed_share := lerpf(0.72, 1.0, motion)
 		var drag := 0.09
 		var spin := lerpf(4.8, 9.0, absf(turn * 2.0 - 1.0))
 		if not quick:
-			aim = axis * (0.3 if lead else 0.53) + tangent * 0.72 + n * 0.12
-			speed_share = lerpf(0.09, 0.20, motion) if lead else lerpf(0.23, 0.42, motion)
+			aim = axis * 0.42 + tangent * 0.67 + n * 0.40
+			speed_share = lerpf(0.14, 0.25, motion) if lead else lerpf(0.29, 0.51, motion)
 			drag = 0.58 if lead else 0.24
 			spin = lerpf(0.75, 2.35, absf(turn * 2.0 - 1.0))
-		var v: Vector3 = _outward(n, aim, 0.24) * speed * speed_share * k
-		var origin := p + (n * 0.15 + tangent * (0.26 if lead else 0.11)) * k
-		fx.hit_fragment(origin, born, life, v, scale * (1.0 - 0.14 * variant) * size * k, heat,
+		var v: Vector3 = _outward(n, aim, 0.34) * speed * speed_share * k
+		var origin := p + (n * 0.18 + tangent * (0.26 if lead else 0.11)) * k
+		fx.hit_fragment(origin, born, life, v, scale * size * k, heat,
 			spin if turn >= 0.5 else -spin, drag, paint, profile + variant, lead)
 		_note(fx, "debris", fam, v, n, life)
+	if extra > 0:
+		fx.rng.state = shared_state
 
 
 # R303: compact soot peels away from the blast. It never grows into a long-lived pale cloud.
@@ -1406,7 +1417,7 @@ static func _shell_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col
 		heavy *= 0.5
 	_throw_sparks(fx, p + n * 0.15 * k, n, skip, T, k, ejecta, int(round(17.0 * heavy)), 32.0, 0.45, fam)
 	if substance != "chorus" and fam != "flak":
-		_throw_debris(fx, p, n, skip, T, k, int(round(4.0 * heavy)), 11.0, 0.16, 0.7, fam, substance)
+		_throw_debris(fx, p, n, skip, T, k, int(round(4.0 * heavy)), 11.0, 0.16, 0.7, fam, substance, lk == "macro")
 	_gas_cloud(fx, p + n * 0.3 * k, n, T, k, Color(0.40, 0.38, 0.36) if substance != "chorus" else Color(0.30, 0.34, 0.16), 1 if heavy < 0.9 else 2, 1.6 * heavy + 0.6, fam, 0.34, 20 if substance == "chorus" else 7, skip)
 	if substance != "chorus":
 		_embers(fx, p + n * 0.1 * k, n, T + 0.05, k, int(round(6.0 * heavy)), fam)
@@ -1684,7 +1695,7 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 	var target_scale: float = {"small": 0.8, "cruiser": 1.0, "capital": 1.2}[band]
 	var flash_px: float = (float(LADDER_PX["torp"]) if torpedo else float(LADDER_PX["shell"][2])) * target_scale * ks
 	flash_px = rung if rung > 0.0 else flash_px
-	var body_px: float = flash_px * (0.72 if energy else (0.82 if torpedo else 0.9))
+	var body_px: float = flash_px * (0.72 if energy else (0.86 if torpedo else 0.94))
 	var life := 0.16 if torpedo else (0.08 if energy else 0.12)
 	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, T, flash_px * DEATH.STAGING_UNITS_PER_PIXEL, flash_px, life, src != null and not torpedo)
 	var lift: bool = soft and fx.flash_lift   # opus_check_524b: a full field: the flash rises slowly and dimly, no peak

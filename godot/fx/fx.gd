@@ -507,7 +507,7 @@ func shd(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: flo
 		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, 0.0, tint, drag), Vector4(heat, rng.randf(), 0.0, 0.0)))
 
 
-# Hull ejecta shares one bounded ring. A negative profile key gives a lead piece the screen-size floor.
+# Hull ejecta shares one bounded ring. A negative profile key gives a lead piece the full screen-size floor.
 func hit_fragment(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin: float, drag: float,
 		paint: Color, profile: int, lead: bool) -> void:
 	var ax := rdir()

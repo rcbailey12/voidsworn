@@ -950,15 +950,15 @@ void fragment() {
 
 # Hull-hit fragments. The old SHARD material also serves other effects, so it has its own shader.
 # a0 = (origin, born); a1 = (velocity, life); a2 = (tumble axis, spin); a3 = (size, phase, profile key, drag).
-# a4 = (linear hull paint, fracture heat). Negative profile keys mark the few pieces with a pixel floor.
+# a4 = (linear hull paint, fracture heat). Negative profile keys mark the lead pieces.
 const HIT_FRAGMENT := """
 shader_type spatial;
 render_mode cull_back;
 """ + COMMON + """
 uniform sampler2D fragment_meshes : filter_nearest, repeat_disable;
 uniform int fragment_stride = 1;
-varying vec3 part_pos;
-varying flat vec4 surface_data; // fracture face, glass, heat, visibility
+varying vec4 part_pos; // template position and distance from cap centre toward the rim
+varying flat vec4 surface_data; // surface class, glass, heat, visibility
 varying flat vec3 paint;
 vec3 turn_fragment(vec3 v, vec3 k, float c, float s) {
 	return v * c + cross(k, v) * s + k * dot(k, v) * (1.0 - c);
@@ -980,9 +980,11 @@ void vertex() {
 		vec4 normals = texelFetch(fragment_meshes, ivec2(column, row + 1), 0);
 		vec3 centre = a0.xyz + pDisp(a1.xyz, a3.w, 0.0, age);
 		float depth = -(VIEW_MATRIX * MODEL_MATRIX * vec4(centre, 1.0)).z;
-		float size_at_two_px = frame_world(2.0, depth, PROJECTION_MATRIX, 1080.0);
-		float scale = lead ? max(a3.x, px_world(7.0, depth, PROJECTION_MATRIX)) : a3.x;
-		float distance_fade = lead ? 1.0 : smoothstep(0.4, 1.5, scale / size_at_two_px);
+		float pixel = frame_world(1.0, depth, PROJECTION_MATRIX, 1080.0);
+		// Mid-sized pieces get a smaller boost. Flecks still follow their world size.
+		float floor_px = lead ? 10.0 : 6.5 * smoothstep(0.21, 0.45, a3.x);
+		float scale = max(a3.x, px_world(floor_px, depth, PROJECTION_MATRIX));
+		float distance_fade = lead ? 1.0 : smoothstep(0.55, 1.45, scale / pixel);
 		float t = age / a1.w;
 		vec3 axis = snorm(a2.xyz);
 		float angle = a3.y * 6.2831853 + age * a2.w;
@@ -990,9 +992,10 @@ void vertex() {
 		float s = sin(angle);
 		VERTEX = centre + turn_fragment(points.xyz, axis, c, s) * scale;
 		NORMAL = turn_fragment(normals.xyz, axis, c, s);
-		part_pos = points.xyz;
-		paint = a4.rgb * mix(0.82, 1.15, a3.y);
-		surface_data = vec4(normals.w, points.w, a4.w * exp(-age * 2.1), distance_fade * (1.0 - smoothstep(0.55, 1.0, t)));
+		part_pos = points;
+		paint = a4.rgb * mix(0.65, 1.05, a3.y);
+		float heat = a4.w * (1.0 - smoothstep(0.08, 1.05, age));
+		surface_data = vec4(mod(normals.w, 3.0), step(3.0, normals.w), heat, distance_fade * (1.0 - smoothstep(0.55, 1.0, t)));
 	}
 }
 void fragment() {
@@ -1000,23 +1003,29 @@ void fragment() {
 	if (fade < 1.0 && fade <= h21(floor(FRAGCOORD.xy))) {
 		discard;
 	}
-	float edge = surface_data.x;
+	float inside = step(0.5, surface_data.x);
+	float wall = step(1.5, surface_data.x);
 	float heat = surface_data.z * mix(1.0, 0.45, fx_calm);
 	float wear = smoothstep(0.42, 0.74, vnoise(part_pos.xz * vec2(13.0, 27.0) + part_pos.y * 9.0));
-	vec3 alloy = vec3(0.24, 0.22, 0.19) * mix(0.68, 1.08, wear);
-	ALBEDO = mix(mix(paint, alloy, 0.26 * wear), alloy, edge);
-	METALLIC = mix(0.35, 0.72, edge);
-	ROUGHNESS = mix(0.76 - 0.15 * wear, 0.34, edge);
-	vec3 hot_edge = mix(vec3(0.56, 0.085, 0.025), vec3(1.0, 0.38, 0.11), clamp(heat * 2.0, 0.0, 1.0));
-	EMISSION = hot_edge * heat * edge * 1.2 * fx_gain;
+	float scorch = smoothstep(0.52, 0.98, part_pos.w) * mix(0.37, 0.78, wear);
+	float lip_width = min(0.16, fwidth(part_pos.w) * 0.35);
+	float lip = smoothstep(mix(0.77, 0.91, wear) - lip_width, 1.0, part_pos.w);
+	vec3 charred = paint * 0.10 + vec3(0.019, 0.014, 0.011);
+	vec3 alloy = vec3(0.105, 0.083, 0.068) * mix(0.65, 1.2, wear);
+	ALBEDO = mix(mix(paint, charred, max(scorch, inside)), alloy, wall);
+	METALLIC = mix(0.23, 0.63, wall);
+	ROUGHNESS = mix(0.79 - 0.15 * wear, 0.38, wall);
+	vec3 hot_edge = mix(vec3(0.78, 0.055, 0.009), vec3(1.0, 0.24, 0.045), clamp(heat * 1.7, 0.0, 1.0));
+	EMISSION = hot_edge * heat * mix(2.1 * lip, 4.6, wall) * mix(0.62, 1.0, wear) * fx_gain;
 	if (surface_data.y > 0.5) {
 		float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
 		float prism = clamp(rim + part_pos.x * 0.55 + part_pos.z * 0.35, 0.0, 1.0);
-		vec3 spectral = mix(vec3(0.26, 0.76, 0.83), vec3(0.76, 0.44, 0.85), prism);
-		ALBEDO = mix(paint * mix(0.62, 1.02, wear), spectral, 0.22 * rim + 0.26 * edge);
+		vec3 spectral = mix(vec3(0.32, 0.78, 0.90), vec3(0.78, 0.57, 0.92), prism);
+		ALBEDO = mix(paint * mix(0.43, 0.79, wear), spectral, 0.32 * rim + 0.30 * wall);
 		METALLIC = 0.10;
-		ROUGHNESS = mix(0.13, 0.30, edge);
-		EMISSION += spectral * (0.035 + 0.11 * rim * rim) * fx_gain;
+		ROUGHNESS = mix(0.10, 0.23, wall);
+		float glint = smoothstep(0.32, 0.86, rim) * (0.28 + 0.39 * lip);
+		EMISSION = EMISSION * 0.47 + spectral * (0.045 + glint) * fx_gain;
 	}
 }
 """

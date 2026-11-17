@@ -1,5 +1,5 @@
 extends SceneTree
-# godot --headless --path godot --script res://tests/hit_fragments_check.gd
+# godot --headless --path godot --script res://fx/test/hit_fragments_check.gd
 
 const FX := preload("res://fx/fx.gd")
 const FRAGMENTS := preload("res://fx/fx_fragments.gd")
@@ -68,30 +68,43 @@ func _check_bursts(fx) -> void:
 	# The old recipe used ten draws per chip, including the direction, tumble axis and phase.
 	for i in 7 * 10:
 		legacy_rng.randf()
-	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "hegemony")
+	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "hegemony", true)
 	_check(fx.rng.state == legacy_rng.state, "Later effects keep their seeded random sequence")
-	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "ithar")
+	var macro_pieces: int = pool.emitted
+	_check(macro_pieces > 7, "Macro adds fragments over the seven-piece burst")
+	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "ithar", true)
+	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "corsair")
 	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "chorus")
-	_check(pool.emitted == 14 and fx.pools["smk"].emitted == 4, "Metal and glass preserve the seven-piece count. Chorus emits four sprites.")
+	_check(pool.emitted == 2 * macro_pieces + 7 and fx.pools["smk"].emitted == 4, "Other hits keep seven pieces. Chorus emits four sprites.")
 	# Each pending slot repeats its 20 packed attributes for every template vertex.
 	var stride: int = pool.vpp * POOLS.STRIDE
-	for burst in 2:
+	var first_slot := 0
+	for faction in ["hegemony", "ithar", "corsair"]:
+		var count := 7 if faction == "corsair" else macro_pieces
+		var paint: Color = fx.faction_info(faction).fragment_paint
 		var floor_count := 0
-		for j in 7:
-			var i := (burst * 7 + j) * stride
+		for j in count:
+			var i := (first_slot + j) * stride
 			var key := int(pool.pending[i + 18])
 			var profile := -1 - key if key < 0 else key
-			_check((profile >= FRAGMENTS.GLASS) == (burst == 1), "The target picks the fragment mesh family")
+			_check((profile >= FRAGMENTS.GLASS) == (faction == "ithar"), "The target picks the fragment mesh family")
+			var packed_paint := Color(pool.pending[i], pool.pending[i + 1], pool.pending[i + 2])
+			_check(packed_paint.is_equal_approx(paint), "The target supplies the outer hull paint")
 			_check(pool.pending[i + 9] > 0.0, "The fragment leaves the face outward")
 			if key < 0:
 				floor_count += 1
-		_check(floor_count == 2, "Only the lead pieces get a screen-size floor")
-		var first := burst * 7 * stride
+		_check(floor_count == 2, "Only the lead pieces get the full screen-size floor")
+		var first := first_slot * stride
 		var chip := first + 2 * stride
 		_check(pool.pending[first + 16] > pool.pending[chip + 16]
 			and absf(pool.pending[first + 15]) < absf(pool.pending[chip + 15])
-			and absf(pool.pending[first + 8]) < absf(pool.pending[chip + 8]),
+			and _velocity(pool.pending, first).length() < _velocity(pool.pending, chip).length(),
 			"Lead piece is larger, slower and tumbles more gently than a chip")
+		first_slot += count
+
+
+func _velocity(data: PackedFloat32Array, start: int) -> Vector3:
+	return Vector3(data[start + 8], data[start + 9], data[start + 10])
 
 
 func _run() -> void:

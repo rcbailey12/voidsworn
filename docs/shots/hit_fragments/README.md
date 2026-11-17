@@ -1,45 +1,38 @@
-# Hull-hit fragments, issue 1000
+# Hull-hit fragments, issue 1000 run 2
 
-Hull hits throw buckled armour, snapped ribs and tapered glass fractures. Larger pieces roll away from the wound and stay close to it. Smaller pieces race along the skip direction or drift between the two groups. Only up to two pieces get a screen-size floor.
+Macro hits emit about 30 percent more solid pieces at Max and High. A few large buckled plates and broken ribs tumble slowly near the wound. Smaller jagged pieces spread along the skip direction. The two lead pieces get the strongest size boost at battle distance. The smallest pieces keep their world size.
 
-Each of the six templates has two caps and six walls. The caps carry worn hull paint in the target faction's colours. The fracture walls catch the existing impact light and cool from orange to bare alloy or glass. The templates are built once and share one draw and the original 384-slot Max / 192-slot lower-quality pool. Chorus retains the tissue sprites.
+The outer faces use the target faction's paint. Steel and rust-red armour have burned undersides and ember rims that cool in about one second. The Glasswright shards catch pale glints as they turn. The existing impact light illuminates the debris. The fire body has a slightly larger footprint and keeps its original timing. Soot retains its seeded placement, density and lifetime.
 
 ## Before and after
 
-Start at [battle camera 170](hull_fragments_c170.png) for the size of the pieces in play. The closer sheets use the closest battle camera, 26. Each panel is a 1:1 crop from a 1920 by 1080 frame and shows the same hit about 0.35 and 1.20 seconds after contact.
+The sheets show main and the updated working tree at +0.35 s and +1.20 s after contact. Each panel uses 1080p source pixels at 1:1. The look bench uses the same installed ship assets, launch seed and fixed 60 Hz clock in both runs. The close Hullbreaker sheet uses a wider source crop to keep the area beside the turret visible.
 
-| Target | Hit | Closest battle camera |
-| --- | --- | --- |
-| H9_23, Hegemony Navy | Macro | [Steel plate and rib](H9_23_macro_fragments_c26.png) |
-| C19_51, Ashfall Hullbreakers | Macro | [Painted armour](C19_51_macro_fragments_c26.png) |
-| I15_11, Glasswrights | Macro | [Tapered glass](I15_11_macro_fragments_c26.png) |
-| H9_23, Hegemony Navy | Torpedo | [Heavy hit](H9_23_torpedo_fragments_c26.png) |
+| Target | Hit | Battle camera 170 | Closest camera 26 |
+| --- | --- | --- | --- |
+| H9_23, Hegemony Navy | Macro | [Battle](H9_23_macro_fragments_c170.png) | [Close](H9_23_macro_fragments_c26.png) |
+| C19_51, Ashfall Hullbreakers | Macro | [Battle](C19_51_macro_fragments_c170.png) | [Close](C19_51_macro_fragments_c26.png) |
+| I15_11, Glasswrights | Macro | [Battle](I15_11_macro_fragments_c170.png) | [Close](I15_11_macro_fragments_c26.png) |
+| H9_23, Hegemony Navy | Torpedo | [Battle overview](hull_fragments_c170.png) | [Close](H9_23_torpedo_fragments_c26.png) |
 
-The look bench plays one round per row on the fixed 60 Hz effects clock, with one shared launch seed and the same installed ship assets on both revisions. The C19_51 row uses a wider native source crop so it includes the fragments beside the turret. The sheets carry both source revisions and the in-game stage.
+The Hegemony torpedo close-up shows the thickness, black undersides and hot rims most clearly. At camera 170 the heavier pieces are visible next to the wound. The smallest cooled pieces are faint against the starfield at +1.20 s.
 
-The torpedo's later frame shows the fracture walls and bent faces most clearly. At camera 170 the lighter chips disappear sooner, and the larger pieces stay nearer the hull. The Glasswright fragments read as short pale glints at that distance. Their pointed shapes are clearest in the camera 26 crop.
-
-Both revisions ran the look bench twice. The second captures are shown here. All pre-hit frames matched within the standing tolerance, and the shield and las controls differed by at most 0.00002 mean RGB levels. The largest difference between repeats was 0.216 levels against a tolerance of 2.0. The multi-row look bench hit a Windows teardown error on both revisions after saving the complete capture sets. The reports and picture stamps verified. [Frame comparisons](look_differences.json)
+Both main and the updated project ran twice at cameras 170, 60 and 26. The second runs supplied the pictures. The largest repeat difference was 0.217 mean RGB levels, against the 2.0-level tolerance. The pre-hit frames matched exactly, and the shield and las controls differed by at most 0.00003 levels. The one frame above tolerance was the H9_23 torpedo at camera 26, +0.35 s. Both revisions hit the same Windows teardown fault after saving every multi-row strip. The wide Hullbreaker captures exited normally. All eight picture stamps verified. [Frame comparisons](look_differences.json)
 
 ## Scene 207
 
-All six updated gate measurements passed 12.5 ms. The RTX 5080 ran the 20-ship storm scene through the solo watchdog claim at both resolutions. Each revision ran three sessions and each mode used 120 warm-up frames and 720 measured frames. The 4K mode draws the 3D scene at 3840 by 2160 with the HUD at 1080p.
+The three-session medians were below the 12.5 ms gate in both updated batches. One 1080p session in each batch exceeded 12.5 ms, including main. The updated peaks were 15.199 ms in the first batch and 13.998 ms on repeat. The range of observed frame times is larger than the difference between the before and after medians.
 
-| Gate measure | Before, ms | After, ms | Change, ms | Highest after, ms |
+The RTX 5080 ran the same 20-ship storm scene under exclusive watchdog claims. Each mode used 120 warm-up frames and 720 measured frames per session. The 4K mode draws the scene at 3840 by 2160 with the HUD at 1080p. Values in the median columns are medians of the three session medians.
+
+| Run | 1080p frame median, ms | Highest 1080p session, ms | 4K GPU median, ms | Highest 4K session, ms |
 | --- | ---: | ---: | ---: | ---: |
-| 1080p frame median | 9.554 | 10.415 | +0.861 | 12.216 |
-| 4K GPU median | 5.929 | 5.894 | -0.035 | 5.954 |
-
-The table uses the median across sessions. At 1080p the GPU median moved from 2.700 to 2.619 ms. Run-to-run variation covers the GPU changes at both resolutions. The updated full-frame medians at 4K were 9.751 to 12.716 ms. The gate uses GPU time in that mode. [Baseline report](gate_before.json) · [Updated report](gate_after.json)
+| [Main](gate_before.json) | 11.108 | 12.900 | 5.909 | 5.933 |
+| [Updated, first batch](gate_after_first.json) | 12.383 | 15.199 | 5.840 | 5.842 |
+| [Updated, repeat](gate_after.json) | 10.928 | 13.998 | 5.841 | 5.975 |
 
 ## Checks
 
-The focused Godot check welds the cap and wall vertices and checks that each edge has two opposite uses, with real volume and outward shading normals. It also checks the pool caps, the seven-piece test burst, the glass and Chorus paths, the lead-piece floor and the random draw order. The existing hit-recipe check covers the approved staging, outward travel and flash comfort.
+The fragment check lives in godot/fx/test/ and runs through godot/tools/ci/godot_checks.txt. It checks closed meshes with real volume, outward flight, faction paint and glass, larger macro bursts, lead-piece size and motion, bounded pools and the seeded sequence used by later effects.
 
-Both Godot checks passed. The standing suite returned 64 PASS, two KNOWN and zero FAIL. The known rows are the seven listed findings and twelve oracle constant differences.
-
-```text
-godot --headless --path godot --script res://tests/hit_fragments_check.gd
-godot --headless --path godot --script res://fx/test/hit_recipe_check.gd
-node contrib/opus/tools/run_all_checks.js
-```
+The CI manifest passed with 105 registered scripts. The fragment, hit recipe, flash area, late shader and effects smoke checks passed. Standing checks returned 64 PASS, two KNOWN and zero FAIL. The two known rows cover seven listed findings and twelve oracle constant differences.
