@@ -1,4 +1,4 @@
-# chorus_C10 fit report (the recipe (issue 623); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# chorus_C10 fit report (uneven folded flesh lips (issue 921 run 2, R306); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -29,7 +29,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How the recipe (issue 623) fixed them
+## How uneven folded flesh lips (issue 921 run 2, R306) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -41,7 +41,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 169 objects, 19 parts, 534 close pairs, 581 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 234 objects, 19 parts, 160 close pairs, 582 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
