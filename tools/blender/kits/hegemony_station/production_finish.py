@@ -1,4 +1,4 @@
-"""Refs #975 run 2. T2's aged metal and glazing, without changing its mesh.
+"""Refs #975 run 3. Built module tones, structural weathering and fitted glazing.
 
 The accepted T2 beauty supplies the pale, warm-grey and dark-band direction.
 These are station overrides on a privately loaded Hegemony stack, not changes
@@ -12,12 +12,32 @@ import bpy
 import numpy as np
 
 PALETTE = {
-    'hgrey': ((166, 160, 147), (198, 193, 180)),
-    'hpanel': ((139, 131, 113), (181, 173, 152)),
-    'hmetal': ((113, 122, 129), (162, 169, 173)),
-    'htrim': ((38, 48, 60), (70, 82, 96)),
-    'dark': ((12, 18, 26), (27, 35, 44)),
+    'hgrey': ((184, 181, 171), (184, 181, 171)),
+    'hpanel': ((175, 172, 162), (175, 172, 162)),
+    'hmetal': ((192, 193, 187), (192, 193, 187)),
+    'htrim': ((105, 117, 128), (105, 117, 128)),
+    'dark': ((77, 89, 99), (77, 89, 99)),
 }
+
+# Accent decisions belong to complete pressure modules, never random plates.
+# Values multiply the neutral station tiles in linear space.
+MODULE_TONES = {
+    'pale': (.96, .96, .92), 'warm': (.90, .82, .67),
+    'steel': (.76, .84, .90), 'blue': (.37, .57, .76),
+}
+
+
+def module_family(module):
+    if module.startswith('core_'):
+        return ('pale', 'steel', 'pale', 'warm', 'pale', 'warm', 'steel', 'pale', 'pale')[int(module[-2:])-1]
+    if module.startswith('tower_'):
+        return ('pale', 'steel', 'blue', 'pale', 'steel')[int(module[-1])-1]
+    if module.startswith('habitat_'):
+        return ('warm', 'pale', 'steel', 'pale', 'warm', 'pale')[int(module.split('_')[1])-1]
+    if module in ('arm_2', 'service_finger_3', 'service_finger_6'):
+        return 'blue'
+    if module.startswith('cargo_'): return 'warm'
+    return 'pale'
 
 
 def configure(stack):
@@ -32,11 +52,15 @@ def configure(stack):
     stack.RUST = stack.RUST_DARK = stack.GRIME
     for zone, (lo, hi) in PALETTE.items():
         stack.ZONES[zone] = dict(stack.ZONES[zone], lo=tone(lo), hi=tone(hi))
-    stack.PATCH_FAMILIES_PARTS = [
-        (.18, (tone((130, 144, 157)), tone((159, 170, 177)))),
-        (.24, (tone((151, 140, 120)), tone((181, 170, 146)))),
-    ]
+    # The shared patchwork layer was inherited from scavenged Hullbreakers.
+    # Disable it on this private stack, including its object-random base tone.
+    stack.LAYERS = dict(stack.LAYERS, island_tone=0, plate_var=0, mottle=0, grain=0)
+    for zone in PALETTE:
+        stack.ZONES[zone].update(patchwork=0, patchwork_parts=0)
+    stack.PATCH_FAMILIES_PARTS = []
     return dict(palette_srgb=PALETTE, source='accepted station_T2 beauty; station-only Hegemony overrides',
+                module_tones=MODULE_TONES, plate_variation_percent=3,
+                hierarchy='module base > structural zone > +/-1.5 percent plate value',
                 rust=0, window_source='hegemony.stack.glow_material(hwin)')
 
 
@@ -46,10 +70,7 @@ def random_value(*values):
 
 
 def island_tones(mesh, module, zone):
-    """One tone per connected plate/fitting, including all its bevel faces.
-
-    Never per-triangle noise. Adjacency comes from the unchanged mesh itself.
-    """
+    """One module family; each connected plate varies only +/-1.5 percent."""
     parent = list(range(len(mesh.vertices)))
     def find(i):
         while parent[i] != i:
@@ -65,20 +86,8 @@ def island_tones(mesh, module, zone):
         co = mesh.vertices[root].co
         seed = tuple(round(v, 3) for v in co)
         pick = random_value(module, zone, seed)
-        # Blue is a minority of external panels, not a tint over all metals.
-        if zone in ('plate', 'plate2', 'frost'):
-            if pick < .12:
-                rgb = (.24, .39, .59)
-            elif pick < .38:
-                rgb = (.73, .64, .48)
-            elif pick < .62:
-                rgb = (.66, .70, .72)
-            else:
-                rgb = (.91, .90, .86)
-        else:
-            v = .72 + .26 * pick
-            rgb = (v, v, v)
-        tones[root] = np.asarray(rgb)
+        family = MODULE_TONES[module_family(module)]
+        tones[root] = np.asarray(family) * (.985 + .03 * pick)
     return roots, tones
 
 
@@ -90,12 +99,13 @@ def weather(point, normal, cavity, edge, tone):
     """
     x, y, z = point
     damage = max(0.0, min(1.0, (-y + 1) / 24))
-    broad = .5 + .5 * math.sin(x * .34 + math.sin(z * .19) * 1.8)
-    tracks = (.5 + .5 * math.sin(x * 2.3 + y * .43)) ** 10
-    soot = damage * (.18 + .30 * broad + .18 * tracks)
-    grime = (1 - cavity) * (.85 + .5 * damage)
-    worn = min(.24, edge * .9) * cavity
-    value = np.maximum(.18, 1 - soot - grime)
+    # Exposure is continuous across the entire damaged side. Fine streaks
+    # originate at the tile's seams/vents, not a random colour on each island.
+    exposure = .6 + .4 * max(0, -normal.y)
+    soot = damage * (.20 + .24 * exposure)
+    grime = (1 - cavity) * (.80 + .7 * damage)
+    worn = min(.16, edge * .65) * cavity
+    value = np.maximum(.20, 1 - soot - grime)
     rgb = tone * value * np.array((1 - .10 * damage, 1 - .035 * damage, 1))
     return np.clip(rgb * (1 - worn) + np.array((.94, .96, .97)) * worn, 0, 1)
 
@@ -109,25 +119,33 @@ def glass_materials(stack, paint, out, resolution, tile_world):
     y, x = np.mgrid[0:resolution, 0:resolution].astype(np.float32)
     x = x / resolution * tile_world
     y = y / resolution * tile_world
-    cx, cy = np.mod(x, .25) / .25, np.mod(y, .25) / .25
-    room = ((cx > .075) & (cx < .925) & (cy > .12) & (cy < .88)).astype(np.float32)
+    cx, cy = np.mod(x, .50) / .50, np.mod(y, .48) / .48
+    room = ((cx > .07) & (cx < .93) & (cy > .10) & (cy < .90)).astype(np.float32)
     # Stable room-to-room brightness, a sill and a faint interior equipment row.
-    cells = np.sin(np.floor(x/.25)*17.13 + np.floor(y/.25)*31.71) * 43758.5453
+    cells = np.sin(np.floor(x/.50)*17.13 + np.floor(y/.48)*31.71) * 43758.5453
     cells -= np.floor(cells)
     room *= np.where(cells < .16, .08, .62 + .34*cells)
     interior = ((cx > .48) & (cx < .58) & (cy < .55)) | ((cy > .28) & (cy < .37))
     room *= np.where(interior, .32, 1)
     arrays = {}
     albedo = np.zeros((resolution, resolution, 4), np.float32)
-    albedo[..., :3] = np.array((.018, .042, .070)) + room[..., None]*np.array((.018, .048, .075))
+    reflection = (.5 + .5*np.cos((cx*.65+cy)*math.tau)) * .012
+    albedo[..., :3] = np.array((.010, .020, .030)) + room[..., None]*np.array((.009, .016, .024))
+    albedo[..., :3] += reflection[...,None]*np.array((.6,.8,1))
+    frame = (room == 0)
+    albedo[frame,:3] = (.055,.068,.077)
     albedo[..., 3] = 1
     arrays['albedo'] = albedo
     orm = np.ones_like(albedo)
-    orm[..., 1] = np.where(room > .01, .24, .55)
-    orm[..., 2] = np.where(room > .01, .62, .72)
+    orm[..., 0] = np.where(frame,.64,1)
+    orm[..., 1] = np.where(frame, .68, .24 + reflection*5)
+    orm[..., 2] = np.where(frame, .60, .38)
     arrays['orm'] = orm
     normal = np.ones_like(albedo)
-    normal[..., :3] = (.5, .5, 1)
+    gy,gx = np.gradient(np.where(frame,.004,0).astype(np.float32),tile_world/resolution)
+    nv = np.stack((-gx,gy,np.ones_like(gx)),axis=2)
+    nv /= np.linalg.norm(nv,axis=2,keepdims=True)
+    normal[..., :3] = nv*.5+.5
     arrays['normal'] = normal
     glow = np.zeros_like(albedo)
     base = stack.GLOW_FLAT['hwin'][1]()
@@ -142,13 +160,13 @@ def glass_materials(stack, paint, out, resolution, tile_world):
         paint.save(im, str(out), im.name)
         maps[channel] = im
     result = []
-    for lit in (False, True):
+    def material(name, images, strength):
         mat = stack.glow_material('hwin')
-        mat.name = 'T2_glass_' + ('lit' if lit else 'dark')
+        mat.name = name
         nt = mat.node_tree
         bs = nt.nodes.get('Principled BSDF')
         textures = {}
-        for channel, im in maps.items():
+        for channel, im in images.items():
             tex = nt.nodes.new('ShaderNodeTexImage')
             tex.image = im
             tex.extension = 'REPEAT'
@@ -159,18 +177,49 @@ def glass_materials(stack, paint, out, resolution, tile_world):
         nt.links.new(sep.outputs[1], bs.inputs['Roughness'])
         nt.links.new(sep.outputs[2], bs.inputs['Metallic'])
         nt.links.new(textures['emission'].outputs['Color'], bs.inputs['Emission Color'])
-        bs.inputs['Emission Strength'].default_value = 1 if lit else .035
-        # Retained normal channel also gives the density/export reader a full PBR set.
+        bs.inputs['Emission Strength'].default_value = strength
         normal_node = nt.nodes.new('ShaderNodeNormalMap')
         nt.links.new(textures['normal'].outputs['Color'], normal_node.inputs['Color'])
         nt.links.new(normal_node.outputs[0], bs.inputs['Normal'])
-        result.append(mat)
+        return mat
+    for lit in (False, True):
+        result.append(material('T2_glass_' + ('lit' if lit else 'dark'), maps, 1 if lit else .035))
+    # The 90 old flat blue cards and five flat battery bars get real recessed
+    # lenses and bezels. UVs fit each original face; no geometry or light added.
+    for name, colour in [('marker_lens',(.12,.52,1)), ('battery_strip',(.40,.12,.025))]:
+        bezel = (cx < .12) | (cx > .88) | (cy < .16) | (cy > .84)
+        # Draw a single lens in normalized face space, not the repeating rooms.
+        u,v = x/tile_world,y/tile_world
+        bezel = (u < .14) | (u > .86) | (v < .16) | (v > .84)
+        ribs = (np.mod(u*9,1)<.13) & ~bezel
+        light = np.where(bezel,0,np.where(ribs,.12,.68+.22*np.sin(u*math.pi)))
+        lens_maps = {}
+        for channel in arrays:
+            pixels = np.ones_like(albedo)
+            if channel == 'albedo':
+                pixels[...,:3] = np.where(bezel[...,None],(.048,.058,.063),(.004,.010,.018))
+                pixels[...,:3] += light[...,None]*np.array(colour)*.028
+            elif channel == 'orm':
+                pixels[...,0] = np.where(bezel,.62,1)
+                pixels[...,1] = np.where(bezel,.70,.29+light*.10)
+                pixels[...,2] = np.where(bezel,.62,.22)
+            elif channel == 'normal':
+                gy,gx = np.gradient(np.where(bezel,.004,0).astype(np.float32),tile_world/resolution)
+                nv = np.stack((-gx,gy,np.ones_like(gx)),axis=2)
+                pixels[...,:3] = nv/np.linalg.norm(nv,axis=2,keepdims=True)*.5+.5
+            else:
+                pixels[...,:3] = light[...,None]*np.array(colour)*.60
+            im = paint.new_image('T2_'+name+'_'+channel,resolution,channel in ('albedo','emission'))
+            im.pixels.foreach_set(pixels.ravel())
+            paint.save(im,str(out),im.name)
+            lens_maps[channel] = im
+        result.append(material('T2_'+name,lens_maps,1))
     return result
 
 
 def assign_glazing(ob, materials):
     ob.data.materials.clear()
-    for mat in materials: ob.data.materials.append(mat)
+    for mat in materials[:2]: ob.data.materials.append(mat)
     lit_count = dark_count = 0
     for polygon in ob.data.polygons:
         p = polygon.center

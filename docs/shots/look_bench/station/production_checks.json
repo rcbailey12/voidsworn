@@ -1,10 +1,10 @@
 {
-  "triangles": 697088,
+  "triangles": 702516,
   "surfaces": 12,
   "materials": 9,
-  "glb_sha256": "98cd281603e5de01dbaf6e4f78fbeda48529dc050fb274308e7a593876b9c31f",
+  "glb_sha256": "d0af9c4bd3b87a42995ae6be737bd407c536014634579e123a4d0d20eada3d56",
   "mesh_nodes": 2,
-  "bytes": 69955688,
+  "bytes": 79689820,
   "bounds": [
     99.19999060741884,
     69.28070757174817,
@@ -48,28 +48,28 @@
         2048,
         2048
       ],
-      "texels_per_unit": 992.5462537503129,
-      "minimum_triangle_texels_per_unit": 64.38096618652344
+      "texels_per_unit": 933.9504532645506,
+      "minimum_triangle_texels_per_unit": 0.0
     },
     {
       "material": "T2_painted_hpanel",
-      "surface_area": 3468.50439453125,
+      "surface_area": 3465.871337890625,
       "texture_resolution": [
         2048,
         2048
       ],
-      "texels_per_unit": 980.098165298573,
-      "minimum_triangle_texels_per_unit": 294.946044921875
+      "texels_per_unit": 968.8240635035559,
+      "minimum_triangle_texels_per_unit": 0.0
     },
     {
       "material": "T2_painted_hmetal",
-      "surface_area": 16935.634765625,
+      "surface_area": 16972.40625,
       "texture_resolution": [
         2048,
         2048
       ],
-      "texels_per_unit": 989.8853379279343,
-      "minimum_triangle_texels_per_unit": 649.7227172851562
+      "texels_per_unit": 893.815020501843,
+      "minimum_triangle_texels_per_unit": 0.0
     },
     {
       "material": "T2_painted_hgrey",
@@ -78,8 +78,8 @@
         2048,
         2048
       ],
-      "texels_per_unit": 971.7277618319378,
-      "minimum_triangle_texels_per_unit": 778.0556030273438
+      "texels_per_unit": 953.7567436720892,
+      "minimum_triangle_texels_per_unit": 0.0
     },
     {
       "material": "T2_painted_htrim",
@@ -88,7 +88,7 @@
         2048,
         2048
       ],
-      "texels_per_unit": 968.355526231497,
+      "texels_per_unit": 953.466097085251,
       "minimum_triangle_texels_per_unit": 0.0
     }
   ],
@@ -106,110 +106,1770 @@
     {
       "material": "T2_painted_htrim",
       "vertex_rgb_p10": [
-        0.26832990005340657,
-        0.2765011062790875,
-        0.280849927519646
+        0.3126268406195163,
+        0.3223620965896086,
+        0.316235599298085
       ],
       "vertex_rgb_p90": [
-        0.7998168917372397,
-        0.8114900434882124,
-        0.8175020981155108
+        0.889440756847486,
+        0.9014953841458763,
+        0.8765011062790875
       ]
     },
     {
       "material": "T2_painted_hmetal",
       "vertex_rgb_p10": [
-        0.3350850690470741,
-        0.3437872892347601,
-        0.3484168764782178
+        0.38663920042725264,
+        0.39756008239871826,
+        0.3901976043335622
       ],
       "vertex_rgb_p90": [
-        0.8478461890592812,
-        0.858710612649729,
-        0.8643045700770581
+        0.9247302967879759,
+        0.931621271076524,
+        0.9006439307240406
       ]
     },
     {
       "material": "T2_painted_dark",
       "vertex_rgb_p10": [
-        0.3058213168535897,
-        0.31306172274357214,
-        0.31689936675059127
+        0.3357061112382696,
+        0.34576180666819256,
+        0.34009308003356986
       ],
       "vertex_rgb_p90": [
-        0.4092317082475013,
-        0.4175631342030976,
-        0.4219501029983978
+        0.47177843900205996,
+        0.48120851453421837,
+        0.4695963988708324
       ]
     },
     {
       "material": "T2_painted_dark",
       "vertex_rgb_p10": [
-        0.2686198214694438,
-        0.2786037994964523,
-        0.28383306630045013
+        0.2401312275883116,
+        0.27757076371404604,
+        0.27627985046158543
       ],
       "vertex_rgb_p90": [
-        0.692988479438468,
-        0.6968032349126421,
-        0.6987258716716258
+        0.718272678721294,
+        0.724956130312047,
+        0.7422140840772107
       ]
     },
     {
       "material": "T2_painted_hpanel",
       "vertex_rgb_p10": [
-        0.20318913557640955,
-        0.24467689021133746,
-        0.2643625543602655
+        0.24040588998245213,
+        0.2890363927672236,
+        0.2891279468986038
       ],
       "vertex_rgb_p90": [
-        0.6328709849698636,
-        0.6320607309071489,
-        0.6136034180209053
+        0.7135271229114214,
+        0.7183642328526741,
+        0.7012130922407873
       ]
     },
     {
       "material": "T2_painted_hmetal",
       "vertex_rgb_p10": [
-        0.25680933852140075,
-        0.2672922865644312,
-        0.2729365987640192
+        0.22737468528267338,
+        0.24520332646677348,
+        0.24977492942702373
       ],
       "vertex_rgb_p90": [
-        0.7648889906157015,
-        0.769695582513161,
-        0.7725947966735333
+        0.8081025406271458,
+        0.8239108873121233,
+        0.8179598687724117
       ]
     },
     {
       "material": "T2_painted_hgrey",
       "vertex_rgb_p10": [
-        0.23724727244983596,
-        0.2729076066224155,
-        0.28088807507438773
+        0.28804455634393833,
+        0.32260624093995577,
+        0.3189440756847486
       ],
       "vertex_rgb_p90": [
-        0.6547493705653468,
-        0.6422827496757458,
-        0.6188143739986267
+        0.7172961013199054,
+        0.7217822537575341,
+        0.7003433279926756
       ]
     },
     {
       "material": "T2_painted_htrim",
       "vertex_rgb_p10": [
-        0.3043106736858167,
-        0.3151140611886778,
-        0.32098878461890595
+        0.24627145799954225,
+        0.27136644541084914,
+        0.25647364003967343
       ],
       "vertex_rgb_p90": [
-        0.7821774624246586,
-        0.7900053406576638,
-        0.7943266956588093
+        0.8111390859845884,
+        0.8328313115129325,
+        0.816739147020676
       ]
     }
   ],
+  "material_detail": [
+    {
+      "material": "T2_painted_htrim",
+      "albedo_range_8bit": 118,
+      "normal_xy_range_8bit": 245,
+      "roughness_range_8bit": 70
+    },
+    {
+      "material": "T2_painted_hmetal",
+      "albedo_range_8bit": 166,
+      "normal_xy_range_8bit": 245,
+      "roughness_range_8bit": 65
+    },
+    {
+      "material": "T2_painted_dark",
+      "albedo_range_8bit": 100,
+      "normal_xy_range_8bit": 245,
+      "roughness_range_8bit": 80
+    },
+    {
+      "material": "T2_painted_hpanel",
+      "albedo_range_8bit": 160,
+      "normal_xy_range_8bit": 247,
+      "roughness_range_8bit": 78
+    },
+    {
+      "material": "T2_glass_dark",
+      "albedo_range_8bit": 12,
+      "normal_xy_range_8bit": 229,
+      "roughness_range_8bit": 112
+    },
+    {
+      "material": "T2_glass_lit",
+      "albedo_range_8bit": 12,
+      "normal_xy_range_8bit": 229,
+      "roughness_range_8bit": 112
+    },
+    {
+      "material": "T2_painted_hgrey",
+      "albedo_range_8bit": 163,
+      "normal_xy_range_8bit": 247,
+      "roughness_range_8bit": 78
+    },
+    {
+      "material": "T2_marker_lens",
+      "albedo_range_8bit": 12,
+      "normal_xy_range_8bit": 229,
+      "roughness_range_8bit": 102
+    },
+    {
+      "material": "T2_battery_strip",
+      "albedo_range_8bit": 12,
+      "normal_xy_range_8bit": 229,
+      "roughness_range_8bit": 102
+    }
+  ],
+  "module_detail": [
+    {
+      "module_id": 1,
+      "material": "T2_glass_dark",
+      "samples": 96,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 1,
+      "material": "T2_glass_lit",
+      "samples": 480,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 1,
+      "material": "T2_painted_dark",
+      "samples": 7696,
+      "sampled_albedo_range": 0.37225642536966974
+    },
+    {
+      "module_id": 1,
+      "material": "T2_painted_hgrey",
+      "samples": 4752,
+      "sampled_albedo_range": 0.7128776869716378
+    },
+    {
+      "module_id": 1,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7500833711068924
+    },
+    {
+      "module_id": 1,
+      "material": "T2_painted_hpanel",
+      "samples": 2816,
+      "sampled_albedo_range": 0.627602732860902
+    },
+    {
+      "module_id": 1,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4737235992741493
+    },
+    {
+      "module_id": 2,
+      "material": "T2_glass_dark",
+      "samples": 72,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 2,
+      "material": "T2_glass_lit",
+      "samples": 504,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 2,
+      "material": "T2_painted_dark",
+      "samples": 7696,
+      "sampled_albedo_range": 0.30073222361348595
+    },
+    {
+      "module_id": 2,
+      "material": "T2_painted_hgrey",
+      "samples": 4752,
+      "sampled_albedo_range": 0.525672227233764
+    },
+    {
+      "module_id": 2,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.597838365070603
+    },
+    {
+      "module_id": 2,
+      "material": "T2_painted_hpanel",
+      "samples": 2816,
+      "sampled_albedo_range": 0.49524603676825885
+    },
+    {
+      "module_id": 2,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.3989486833109684
+    },
+    {
+      "module_id": 3,
+      "material": "T2_glass_dark",
+      "samples": 152,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 3,
+      "material": "T2_glass_lit",
+      "samples": 424,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 3,
+      "material": "T2_painted_dark",
+      "samples": 7792,
+      "sampled_albedo_range": 0.3826376745250629
+    },
+    {
+      "module_id": 3,
+      "material": "T2_painted_hgrey",
+      "samples": 4752,
+      "sampled_albedo_range": 0.7330361713618078
+    },
+    {
+      "module_id": 3,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7657662108407869
+    },
+    {
+      "module_id": 3,
+      "material": "T2_painted_hpanel",
+      "samples": 4224,
+      "sampled_albedo_range": 0.6808471449921237
+    },
+    {
+      "module_id": 3,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4966213114680526
+    },
+    {
+      "module_id": 4,
+      "material": "T2_painted_dark",
+      "samples": 2000,
+      "sampled_albedo_range": 0.3516939100046824
+    },
+    {
+      "module_id": 4,
+      "material": "T2_painted_hgrey",
+      "samples": 1936,
+      "sampled_albedo_range": 0.6577670067034976
+    },
+    {
+      "module_id": 4,
+      "material": "T2_painted_hmetal",
+      "samples": 7488,
+      "sampled_albedo_range": 0.7351833371480888
+    },
+    {
+      "module_id": 4,
+      "material": "T2_painted_hpanel",
+      "samples": 176,
+      "sampled_albedo_range": 0.5715648485990872
+    },
+    {
+      "module_id": 4,
+      "material": "T2_painted_htrim",
+      "samples": 9120,
+      "sampled_albedo_range": 0.4874655512620857
+    },
+    {
+      "module_id": 5,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.4622463374607492
+    },
+    {
+      "module_id": 6,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6466546010688297
+    },
+    {
+      "module_id": 7,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6582560733151122
+    },
+    {
+      "module_id": 8,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6307351407794368
+    },
+    {
+      "module_id": 9,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6433092330546317
+    },
+    {
+      "module_id": 10,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.604921363677843
+    },
+    {
+      "module_id": 11,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6325269089859185
+    },
+    {
+      "module_id": 12,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6368711824395588
+    },
+    {
+      "module_id": 13,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6510400100530026
+    },
+    {
+      "module_id": 14,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.6430719223525223
+    },
+    {
+      "module_id": 15,
+      "material": "T2_painted_hmetal",
+      "samples": 672,
+      "sampled_albedo_range": 0.45629351177413063
+    },
+    {
+      "module_id": 16,
+      "material": "T2_painted_hmetal",
+      "samples": 112,
+      "sampled_albedo_range": 0.5932962030467182
+    },
+    {
+      "module_id": 16,
+      "material": "T2_painted_hpanel",
+      "samples": 176,
+      "sampled_albedo_range": 0.581542148560042
+    },
+    {
+      "module_id": 16,
+      "material": "T2_painted_htrim",
+      "samples": 880,
+      "sampled_albedo_range": 0.3501585292696464
+    },
+    {
+      "module_id": 17,
+      "material": "T2_painted_hmetal",
+      "samples": 112,
+      "sampled_albedo_range": 0.5862903372991831
+    },
+    {
+      "module_id": 17,
+      "material": "T2_painted_hpanel",
+      "samples": 176,
+      "sampled_albedo_range": 0.589293013611945
+    },
+    {
+      "module_id": 17,
+      "material": "T2_painted_htrim",
+      "samples": 880,
+      "sampled_albedo_range": 0.363696393335697
+    },
+    {
+      "module_id": 18,
+      "material": "T2_painted_hmetal",
+      "samples": 112,
+      "sampled_albedo_range": 0.5179220383659682
+    },
+    {
+      "module_id": 18,
+      "material": "T2_painted_hpanel",
+      "samples": 176,
+      "sampled_albedo_range": 0.5729103352945664
+    },
+    {
+      "module_id": 18,
+      "material": "T2_painted_htrim",
+      "samples": 880,
+      "sampled_albedo_range": 0.3906803359577854
+    },
+    {
+      "module_id": 19,
+      "material": "T2_glass_dark",
+      "samples": 744,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 19,
+      "material": "T2_glass_lit",
+      "samples": 3096,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 19,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.41191220976068765
+    },
+    {
+      "module_id": 19,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.569089948942116
+    },
+    {
+      "module_id": 19,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.8226120034646955
+    },
+    {
+      "module_id": 19,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6619096336787558
+    },
+    {
+      "module_id": 19,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5194420044969236
+    },
+    {
+      "module_id": 20,
+      "material": "T2_glass_dark",
+      "samples": 816,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 20,
+      "material": "T2_glass_lit",
+      "samples": 3024,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 20,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.40636326345598894
+    },
+    {
+      "module_id": 20,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5843139050081007
+    },
+    {
+      "module_id": 20,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7713827396526627
+    },
+    {
+      "module_id": 20,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6023357313933432
+    },
+    {
+      "module_id": 20,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5312244766679083
+    },
+    {
+      "module_id": 21,
+      "material": "T2_glass_dark",
+      "samples": 632,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 21,
+      "material": "T2_glass_lit",
+      "samples": 2968,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 21,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.421166956139288
+    },
+    {
+      "module_id": 21,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7428901684526203
+    },
+    {
+      "module_id": 21,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.854608748206691
+    },
+    {
+      "module_id": 21,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6900269127258747
+    },
+    {
+      "module_id": 21,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.530846770996489
+    },
+    {
+      "module_id": 22,
+      "material": "T2_glass_dark",
+      "samples": 992,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 22,
+      "material": "T2_glass_lit",
+      "samples": 2848,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 22,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.34080026089935483
+    },
+    {
+      "module_id": 22,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.57041754368643
+    },
+    {
+      "module_id": 22,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.786430851947096
+    },
+    {
+      "module_id": 22,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6427994201571681
+    },
+    {
+      "module_id": 22,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4639141585272751
+    },
+    {
+      "module_id": 23,
+      "material": "T2_glass_dark",
+      "samples": 552,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 23,
+      "material": "T2_glass_lit",
+      "samples": 3000,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 23,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.42095297079692484
+    },
+    {
+      "module_id": 23,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7250325929715749
+    },
+    {
+      "module_id": 23,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.8381387583644122
+    },
+    {
+      "module_id": 23,
+      "material": "T2_painted_hpanel",
+      "samples": 11616,
+      "sampled_albedo_range": 0.680420969486444
+    },
+    {
+      "module_id": 23,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5502292353883647
+    },
+    {
+      "module_id": 24,
+      "material": "T2_glass_dark",
+      "samples": 560,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 24,
+      "material": "T2_glass_lit",
+      "samples": 2704,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 24,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.3310112453007449
+    },
+    {
+      "module_id": 24,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6169301540712416
+    },
+    {
+      "module_id": 24,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7795374541668348
+    },
+    {
+      "module_id": 24,
+      "material": "T2_painted_hpanel",
+      "samples": 11968,
+      "sampled_albedo_range": 0.6196127978314236
+    },
+    {
+      "module_id": 24,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.44141706646800016
+    },
+    {
+      "module_id": 25,
+      "material": "T2_glass_dark",
+      "samples": 672,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 25,
+      "material": "T2_glass_lit",
+      "samples": 2928,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 25,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.41261885207275867
+    },
+    {
+      "module_id": 25,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6184108416846561
+    },
+    {
+      "module_id": 25,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.768009969227639
+    },
+    {
+      "module_id": 25,
+      "material": "T2_painted_hpanel",
+      "samples": 11616,
+      "sampled_albedo_range": 0.5981276482007569
+    },
+    {
+      "module_id": 25,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5534463518221816
+    },
+    {
+      "module_id": 26,
+      "material": "T2_glass_dark",
+      "samples": 784,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 26,
+      "material": "T2_glass_lit",
+      "samples": 2720,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 26,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.41382162203402767
+    },
+    {
+      "module_id": 26,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5687547890141026
+    },
+    {
+      "module_id": 26,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.8295235505051186
+    },
+    {
+      "module_id": 26,
+      "material": "T2_painted_hpanel",
+      "samples": 11792,
+      "sampled_albedo_range": 0.6617882676073406
+    },
+    {
+      "module_id": 26,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5262702811599451
+    },
+    {
+      "module_id": 27,
+      "material": "T2_glass_dark",
+      "samples": 704,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 27,
+      "material": "T2_glass_lit",
+      "samples": 2704,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 27,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4109410777357407
+    },
+    {
+      "module_id": 27,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7229609802874382
+    },
+    {
+      "module_id": 27,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.8349498023059075
+    },
+    {
+      "module_id": 27,
+      "material": "T2_painted_hpanel",
+      "samples": 11792,
+      "sampled_albedo_range": 0.6901602586254613
+    },
+    {
+      "module_id": 27,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.534183171094027
+    },
+    {
+      "module_id": 28,
+      "material": "T2_battery_strip",
+      "samples": 240,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 28,
+      "material": "T2_marker_lens",
+      "samples": 4320,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 29,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.8749052220262485
+    },
+    {
+      "module_id": 29,
+      "material": "T2_painted_hpanel",
+      "samples": 880,
+      "sampled_albedo_range": 0.8061536942540808
+    },
+    {
+      "module_id": 29,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5692565415576469
+    },
+    {
+      "module_id": 30,
+      "material": "T2_painted_hmetal",
+      "samples": 784,
+      "sampled_albedo_range": 0.7017342925573373
+    },
+    {
+      "module_id": 31,
+      "material": "T2_glass_dark",
+      "samples": 440,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 31,
+      "material": "T2_glass_lit",
+      "samples": 472,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 31,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.2532765697718776
+    },
+    {
+      "module_id": 31,
+      "material": "T2_painted_hgrey",
+      "samples": 2816,
+      "sampled_albedo_range": 0.32237629645586785
+    },
+    {
+      "module_id": 31,
+      "material": "T2_painted_hmetal",
+      "samples": 6464,
+      "sampled_albedo_range": 0.5471747023368743
+    },
+    {
+      "module_id": 31,
+      "material": "T2_painted_hpanel",
+      "samples": 1056,
+      "sampled_albedo_range": 0.2895098413211321
+    },
+    {
+      "module_id": 31,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.34921220661912433
+    },
+    {
+      "module_id": 32,
+      "material": "T2_glass_dark",
+      "samples": 528,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 32,
+      "material": "T2_glass_lit",
+      "samples": 384,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 32,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.30069296903166537
+    },
+    {
+      "module_id": 32,
+      "material": "T2_painted_hgrey",
+      "samples": 3168,
+      "sampled_albedo_range": 0.5104567683485999
+    },
+    {
+      "module_id": 32,
+      "material": "T2_painted_hmetal",
+      "samples": 5904,
+      "sampled_albedo_range": 0.7045313011906525
+    },
+    {
+      "module_id": 32,
+      "material": "T2_painted_hpanel",
+      "samples": 704,
+      "sampled_albedo_range": 0.42030243381399257
+    },
+    {
+      "module_id": 32,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4241456129564056
+    },
+    {
+      "module_id": 33,
+      "material": "T2_glass_dark",
+      "samples": 128,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 33,
+      "material": "T2_glass_lit",
+      "samples": 784,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 33,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.37487112359757857
+    },
+    {
+      "module_id": 33,
+      "material": "T2_painted_hgrey",
+      "samples": 3168,
+      "sampled_albedo_range": 0.5977525854318227
+    },
+    {
+      "module_id": 33,
+      "material": "T2_painted_hmetal",
+      "samples": 6464,
+      "sampled_albedo_range": 0.7746656314467496
+    },
+    {
+      "module_id": 33,
+      "material": "T2_painted_hpanel",
+      "samples": 704,
+      "sampled_albedo_range": 0.5772935222460085
+    },
+    {
+      "module_id": 33,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.49210328861841535
+    },
+    {
+      "module_id": 34,
+      "material": "T2_glass_dark",
+      "samples": 128,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 34,
+      "material": "T2_glass_lit",
+      "samples": 784,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 34,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.3704809733460791
+    },
+    {
+      "module_id": 34,
+      "material": "T2_painted_hgrey",
+      "samples": 3168,
+      "sampled_albedo_range": 0.5568365354839578
+    },
+    {
+      "module_id": 34,
+      "material": "T2_painted_hmetal",
+      "samples": 5904,
+      "sampled_albedo_range": 0.7256700730189078
+    },
+    {
+      "module_id": 34,
+      "material": "T2_painted_hpanel",
+      "samples": 704,
+      "sampled_albedo_range": 0.5643339212544709
+    },
+    {
+      "module_id": 34,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4752273369865227
+    },
+    {
+      "module_id": 35,
+      "material": "T2_glass_dark",
+      "samples": 120,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 35,
+      "material": "T2_glass_lit",
+      "samples": 792,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 35,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.3524157874029294
+    },
+    {
+      "module_id": 35,
+      "material": "T2_painted_hgrey",
+      "samples": 3168,
+      "sampled_albedo_range": 0.49411561252257064
+    },
+    {
+      "module_id": 35,
+      "material": "T2_painted_hmetal",
+      "samples": 5904,
+      "sampled_albedo_range": 0.6578541925658644
+    },
+    {
+      "module_id": 35,
+      "material": "T2_painted_hpanel",
+      "samples": 704,
+      "sampled_albedo_range": 0.4912388381002817
+    },
+    {
+      "module_id": 35,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.454424921872312
+    },
+    {
+      "module_id": 36,
+      "material": "T2_glass_dark",
+      "samples": 72,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 36,
+      "material": "T2_glass_lit",
+      "samples": 840,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 36,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.3614521203308515
+    },
+    {
+      "module_id": 36,
+      "material": "T2_painted_hgrey",
+      "samples": 2816,
+      "sampled_albedo_range": 0.5228657041515011
+    },
+    {
+      "module_id": 36,
+      "material": "T2_painted_hmetal",
+      "samples": 6464,
+      "sampled_albedo_range": 0.6546033626695509
+    },
+    {
+      "module_id": 36,
+      "material": "T2_painted_hpanel",
+      "samples": 1056,
+      "sampled_albedo_range": 0.5053080153248452
+    },
+    {
+      "module_id": 36,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.46524973184512985
+    },
+    {
+      "module_id": 37,
+      "material": "T2_glass_dark",
+      "samples": 88,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 37,
+      "material": "T2_glass_lit",
+      "samples": 824,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 37,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.3625599253205516
+    },
+    {
+      "module_id": 37,
+      "material": "T2_painted_hgrey",
+      "samples": 2816,
+      "sampled_albedo_range": 0.549650314081534
+    },
+    {
+      "module_id": 37,
+      "material": "T2_painted_hmetal",
+      "samples": 5904,
+      "sampled_albedo_range": 0.7248866568829408
+    },
+    {
+      "module_id": 37,
+      "material": "T2_painted_hpanel",
+      "samples": 1056,
+      "sampled_albedo_range": 0.5705342901637651
+    },
+    {
+      "module_id": 37,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.47584487857857727
+    },
+    {
+      "module_id": 38,
+      "material": "T2_glass_dark",
+      "samples": 120,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 38,
+      "material": "T2_glass_lit",
+      "samples": 792,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 38,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.3704782805775091
+    },
+    {
+      "module_id": 38,
+      "material": "T2_painted_hgrey",
+      "samples": 2816,
+      "sampled_albedo_range": 0.536982752817309
+    },
+    {
+      "module_id": 38,
+      "material": "T2_painted_hmetal",
+      "samples": 5904,
+      "sampled_albedo_range": 0.7224456920938818
+    },
+    {
+      "module_id": 38,
+      "material": "T2_painted_hpanel",
+      "samples": 1056,
+      "sampled_albedo_range": 0.5468123753659548
+    },
+    {
+      "module_id": 38,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4634678969627067
+    },
+    {
+      "module_id": 39,
+      "material": "T2_glass_dark",
+      "samples": 48,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 39,
+      "material": "T2_glass_lit",
+      "samples": 864,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 39,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.3124815507953391
+    },
+    {
+      "module_id": 39,
+      "material": "T2_painted_hgrey",
+      "samples": 3168,
+      "sampled_albedo_range": 0.5616888446078058
+    },
+    {
+      "module_id": 39,
+      "material": "T2_painted_hmetal",
+      "samples": 6464,
+      "sampled_albedo_range": 0.724260881402992
+    },
+    {
+      "module_id": 39,
+      "material": "T2_painted_hpanel",
+      "samples": 704,
+      "sampled_albedo_range": 0.5481707275112685
+    },
+    {
+      "module_id": 39,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.416950553289142
+    },
+    {
+      "module_id": 40,
+      "material": "T2_glass_dark",
+      "samples": 264,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 40,
+      "material": "T2_glass_lit",
+      "samples": 648,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 40,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.30442054263275975
+    },
+    {
+      "module_id": 40,
+      "material": "T2_painted_hgrey",
+      "samples": 3168,
+      "sampled_albedo_range": 0.5102345491183428
+    },
+    {
+      "module_id": 40,
+      "material": "T2_painted_hmetal",
+      "samples": 5904,
+      "sampled_albedo_range": 0.6973097985360315
+    },
+    {
+      "module_id": 40,
+      "material": "T2_painted_hpanel",
+      "samples": 704,
+      "sampled_albedo_range": 0.39715850084597815
+    },
+    {
+      "module_id": 40,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4114995998246709
+    },
+    {
+      "module_id": 41,
+      "material": "T2_glass_dark",
+      "samples": 432,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 41,
+      "material": "T2_glass_lit",
+      "samples": 480,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 41,
+      "material": "T2_painted_dark",
+      "samples": 3696,
+      "sampled_albedo_range": 0.3248596095186378
+    },
+    {
+      "module_id": 41,
+      "material": "T2_painted_hgrey",
+      "samples": 3168,
+      "sampled_albedo_range": 0.35002609292744336
+    },
+    {
+      "module_id": 41,
+      "material": "T2_painted_hmetal",
+      "samples": 6464,
+      "sampled_albedo_range": 0.6196435492484931
+    },
+    {
+      "module_id": 41,
+      "material": "T2_painted_hpanel",
+      "samples": 704,
+      "sampled_albedo_range": 0.3179150790551972
+    },
+    {
+      "module_id": 41,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4271642902984036
+    },
+    {
+      "module_id": 42,
+      "material": "T2_glass_dark",
+      "samples": 200,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 42,
+      "material": "T2_glass_lit",
+      "samples": 328,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 42,
+      "material": "T2_painted_hmetal",
+      "samples": 1312,
+      "sampled_albedo_range": 0.3145581141843578
+    },
+    {
+      "module_id": 42,
+      "material": "T2_painted_htrim",
+      "samples": 736,
+      "sampled_albedo_range": 0.4443919773448405
+    },
+    {
+      "module_id": 43,
+      "material": "T2_painted_dark",
+      "samples": 224,
+      "sampled_albedo_range": 0.21707083626919907
+    },
+    {
+      "module_id": 43,
+      "material": "T2_painted_hmetal",
+      "samples": 2192,
+      "sampled_albedo_range": 0.7013952430747229
+    },
+    {
+      "module_id": 43,
+      "material": "T2_painted_htrim",
+      "samples": 4576,
+      "sampled_albedo_range": 0.46720707539901607
+    },
+    {
+      "module_id": 44,
+      "material": "T2_painted_dark",
+      "samples": 224,
+      "sampled_albedo_range": 0.2188030045313311
+    },
+    {
+      "module_id": 44,
+      "material": "T2_painted_hmetal",
+      "samples": 2192,
+      "sampled_albedo_range": 0.714461513605213
+    },
+    {
+      "module_id": 44,
+      "material": "T2_painted_htrim",
+      "samples": 4576,
+      "sampled_albedo_range": 0.4491267501125727
+    },
+    {
+      "module_id": 45,
+      "material": "T2_painted_dark",
+      "samples": 224,
+      "sampled_albedo_range": 0.20326725578459046
+    },
+    {
+      "module_id": 45,
+      "material": "T2_painted_hmetal",
+      "samples": 2192,
+      "sampled_albedo_range": 0.7229884864197198
+    },
+    {
+      "module_id": 45,
+      "material": "T2_painted_htrim",
+      "samples": 4576,
+      "sampled_albedo_range": 0.45965545926414614
+    },
+    {
+      "module_id": 46,
+      "material": "T2_painted_dark",
+      "samples": 224,
+      "sampled_albedo_range": 0.14905222624641523
+    },
+    {
+      "module_id": 46,
+      "material": "T2_painted_hmetal",
+      "samples": 2304,
+      "sampled_albedo_range": 0.8047989803383016
+    },
+    {
+      "module_id": 46,
+      "material": "T2_painted_htrim",
+      "samples": 4576,
+      "sampled_albedo_range": 0.517027327113038
+    },
+    {
+      "module_id": 47,
+      "material": "T2_painted_dark",
+      "samples": 8448,
+      "sampled_albedo_range": 0.3048357037176663
+    },
+    {
+      "module_id": 47,
+      "material": "T2_painted_hmetal",
+      "samples": 8448,
+      "sampled_albedo_range": 0.5665952963317011
+    },
+    {
+      "module_id": 47,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5593920326961945
+    },
+    {
+      "module_id": 48,
+      "material": "T2_glass_dark",
+      "samples": 960,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 48,
+      "material": "T2_painted_dark",
+      "samples": 96,
+      "sampled_albedo_range": 0.34604780860997786
+    },
+    {
+      "module_id": 48,
+      "material": "T2_painted_hmetal",
+      "samples": 1664,
+      "sampled_albedo_range": 0.7074423635327327
+    },
+    {
+      "module_id": 48,
+      "material": "T2_painted_htrim",
+      "samples": 1472,
+      "sampled_albedo_range": 0.4597706060374863
+    },
+    {
+      "module_id": 49,
+      "material": "T2_painted_hmetal",
+      "samples": 1600,
+      "sampled_albedo_range": 0.7099045114345426
+    },
+    {
+      "module_id": 49,
+      "material": "T2_painted_htrim",
+      "samples": 1472,
+      "sampled_albedo_range": 0.4569872407649258
+    },
+    {
+      "module_id": 50,
+      "material": "T2_glass_dark",
+      "samples": 960,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 50,
+      "material": "T2_painted_dark",
+      "samples": 96,
+      "sampled_albedo_range": 0.2846503514810975
+    },
+    {
+      "module_id": 50,
+      "material": "T2_painted_hmetal",
+      "samples": 1664,
+      "sampled_albedo_range": 0.5401181527009216
+    },
+    {
+      "module_id": 50,
+      "material": "T2_painted_htrim",
+      "samples": 1472,
+      "sampled_albedo_range": 0.38929450959448403
+    },
+    {
+      "module_id": 51,
+      "material": "T2_painted_hmetal",
+      "samples": 1600,
+      "sampled_albedo_range": 0.682926740239088
+    },
+    {
+      "module_id": 51,
+      "material": "T2_painted_htrim",
+      "samples": 1472,
+      "sampled_albedo_range": 0.45381213750473104
+    },
+    {
+      "module_id": 52,
+      "material": "T2_painted_hmetal",
+      "samples": 1600,
+      "sampled_albedo_range": 0.5598258077931714
+    },
+    {
+      "module_id": 52,
+      "material": "T2_painted_htrim",
+      "samples": 1472,
+      "sampled_albedo_range": 0.3756030978806415
+    },
+    {
+      "module_id": 53,
+      "material": "T2_glass_dark",
+      "samples": 960,
+      "sampled_albedo_range": 0.047058823529411764
+    },
+    {
+      "module_id": 53,
+      "material": "T2_painted_dark",
+      "samples": 96,
+      "sampled_albedo_range": 0.29788644594940283
+    },
+    {
+      "module_id": 53,
+      "material": "T2_painted_hmetal",
+      "samples": 1664,
+      "sampled_albedo_range": 0.5566817910501349
+    },
+    {
+      "module_id": 53,
+      "material": "T2_painted_htrim",
+      "samples": 1472,
+      "sampled_albedo_range": 0.37943147676913647
+    },
+    {
+      "module_id": 54,
+      "material": "T2_painted_dark",
+      "samples": 3712,
+      "sampled_albedo_range": 0.3669840244024672
+    },
+    {
+      "module_id": 54,
+      "material": "T2_painted_hgrey",
+      "samples": 3696,
+      "sampled_albedo_range": 0.7000279748734772
+    },
+    {
+      "module_id": 54,
+      "material": "T2_painted_hmetal",
+      "samples": 10848,
+      "sampled_albedo_range": 0.7369926263020656
+    },
+    {
+      "module_id": 54,
+      "material": "T2_painted_hpanel",
+      "samples": 528,
+      "sampled_albedo_range": 0.6357332782811759
+    },
+    {
+      "module_id": 54,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.48446574723579827
+    },
+    {
+      "module_id": 55,
+      "material": "T2_painted_dark",
+      "samples": 3712,
+      "sampled_albedo_range": 0.3569061884309686
+    },
+    {
+      "module_id": 55,
+      "material": "T2_painted_hgrey",
+      "samples": 3696,
+      "sampled_albedo_range": 0.6974400447597977
+    },
+    {
+      "module_id": 55,
+      "material": "T2_painted_hmetal",
+      "samples": 10848,
+      "sampled_albedo_range": 0.7380133651080024
+    },
+    {
+      "module_id": 55,
+      "material": "T2_painted_hpanel",
+      "samples": 528,
+      "sampled_albedo_range": 0.6640883706805374
+    },
+    {
+      "module_id": 55,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.468645133494002
+    },
+    {
+      "module_id": 56,
+      "material": "T2_painted_dark",
+      "samples": 352,
+      "sampled_albedo_range": 0.33946529395308894
+    },
+    {
+      "module_id": 56,
+      "material": "T2_painted_hmetal",
+      "samples": 2048,
+      "sampled_albedo_range": 0.6771519723781784
+    },
+    {
+      "module_id": 56,
+      "material": "T2_painted_hpanel",
+      "samples": 1760,
+      "sampled_albedo_range": 0.6309831327968741
+    },
+    {
+      "module_id": 57,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.36774800473328884
+    },
+    {
+      "module_id": 57,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.41498830889645855
+    },
+    {
+      "module_id": 57,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7324684759079492
+    },
+    {
+      "module_id": 57,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6733354815642592
+    },
+    {
+      "module_id": 57,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4750230575788719
+    },
+    {
+      "module_id": 58,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.36458400964210613
+    },
+    {
+      "module_id": 58,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.2850622253937052
+    },
+    {
+      "module_id": 58,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6679226896170334
+    },
+    {
+      "module_id": 58,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.2660795354076627
+    },
+    {
+      "module_id": 58,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4648080519764174
+    },
+    {
+      "module_id": 59,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.31729897360638004
+    },
+    {
+      "module_id": 59,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.32679505188815416
+    },
+    {
+      "module_id": 59,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.5783982514956085
+    },
+    {
+      "module_id": 59,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.33580391857666236
+    },
+    {
+      "module_id": 59,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.411105336618511
+    },
+    {
+      "module_id": 60,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.3751305469162564
+    },
+    {
+      "module_id": 60,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.41202632330875427
+    },
+    {
+      "module_id": 60,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.7268802630535697
+    },
+    {
+      "module_id": 60,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.3982693875597085
+    },
+    {
+      "module_id": 60,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.479264694662484
+    },
+    {
+      "module_id": 61,
+      "material": "T2_painted_dark",
+      "samples": 12288,
+      "sampled_albedo_range": 0.32242706212466415
+    },
+    {
+      "module_id": 61,
+      "material": "T2_painted_hgrey",
+      "samples": 12288,
+      "sampled_albedo_range": 0.16848415579960016
+    },
+    {
+      "module_id": 61,
+      "material": "T2_painted_hmetal",
+      "samples": 12288,
+      "sampled_albedo_range": 0.6050867654912734
+    },
+    {
+      "module_id": 61,
+      "material": "T2_painted_hpanel",
+      "samples": 12288,
+      "sampled_albedo_range": 0.16265826522872825
+    },
+    {
+      "module_id": 61,
+      "material": "T2_painted_htrim",
+      "samples": 12288,
+      "sampled_albedo_range": 0.4092016210466791
+    }
+  ],
   "animations": [
-    "T2_radiator_swing"
+    "T2_radiator_swing.001"
   ],
   "windows": [
     {
@@ -379,68 +2039,423 @@
     "palette_srgb": {
       "hgrey": [
         [
-          166,
-          160,
-          147
+          184,
+          181,
+          171
         ],
         [
-          198,
-          193,
-          180
+          184,
+          181,
+          171
         ]
       ],
       "hpanel": [
         [
-          139,
-          131,
-          113
+          175,
+          172,
+          162
         ],
         [
-          181,
-          173,
-          152
+          175,
+          172,
+          162
         ]
       ],
       "hmetal": [
         [
-          113,
-          122,
-          129
+          192,
+          193,
+          187
         ],
         [
-          162,
-          169,
-          173
+          192,
+          193,
+          187
         ]
       ],
       "htrim": [
         [
-          38,
-          48,
-          60
+          105,
+          117,
+          128
         ],
         [
-          70,
-          82,
-          96
+          105,
+          117,
+          128
         ]
       ],
       "dark": [
         [
-          12,
-          18,
-          26
+          77,
+          89,
+          99
         ],
         [
-          27,
-          35,
-          44
+          77,
+          89,
+          99
         ]
       ]
     },
     "source": "accepted station_T2 beauty; station-only Hegemony overrides",
+    "module_tones": {
+      "pale": [
+        0.96,
+        0.96,
+        0.92
+      ],
+      "warm": [
+        0.9,
+        0.82,
+        0.67
+      ],
+      "steel": [
+        0.76,
+        0.84,
+        0.9
+      ],
+      "blue": [
+        0.37,
+        0.57,
+        0.76
+      ]
+    },
+    "plate_variation_percent": 3,
+    "hierarchy": "module base > structural zone > +/-1.5 percent plate value",
     "rust": 0,
     "window_source": "hegemony.stack.glow_material(hwin)"
+  },
+  "geometry_repairs": {
+    "changed_objects": [
+      "core_03|edge|False",
+      "core_03|frame|False",
+      "core_05|edge|False",
+      "core_05|frame|False",
+      "core_07|edge|False",
+      "core_07|frame|False",
+      "core_08|edge|False",
+      "core_08|frame|False",
+      "core_09|edge|False",
+      "core_09|frame|False",
+      "habitat_1_slot_00|edge|False",
+      "habitat_1_slot_00|frame|False",
+      "habitat_1_slot_01|frame|False",
+      "habitat_2_slot_02|edge|False",
+      "habitat_2_slot_02|frame|False",
+      "habitat_2_slot_03|frame|False",
+      "habitat_3_slot_04|frame|False",
+      "habitat_3_slot_05|edge|False",
+      "habitat_3_slot_05|frame|False",
+      "habitat_4_slot_06|frame|False",
+      "habitat_4_slot_07|frame|False",
+      "habitat_5_slot_08|edge|False",
+      "habitat_5_slot_08|frame|False",
+      "habitat_5_slot_09|frame|False",
+      "habitat_6_slot_10|edge|False",
+      "habitat_6_slot_10|frame|False",
+      "spoke_3|frame|False",
+      "tower_1|edge|False",
+      "tower_1|plate2|False",
+      "tower_1|frame|False",
+      "folded_plate|edge|False",
+      "folded_plate|frame|False"
+    ],
+    "unchanged_objects": 357,
+    "bounds_unchanged": true,
+    "inside_triangles": 110428,
+    "baseline_triangles": 695876,
+    "source": "original and repaired builds; only listed loose-piece source meshes may differ",
+    "attached_wreckage": [
+      {
+        "piece": "core_03/torn_01",
+        "module": "core_03",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -2.4042186737060547,
+          -6.74346399307251,
+          0.27528008818626404
+        ],
+        "max": [
+          -1.7468546628952026,
+          -5.795464515686035,
+          0.750218391418457
+        ]
+      },
+      {
+        "piece": "core_03/torn_02",
+        "module": "core_03",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          0.6891804933547974,
+          -7.031275749206543,
+          -0.02021840214729309
+        ],
+        "max": [
+          1.2266829013824463,
+          -6.084870338439941,
+          0.4294050931930542
+        ]
+      },
+      {
+        "piece": "core_05/torn_01",
+        "module": "core_05",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -6.360791206359863,
+          -2.8351762294769287,
+          4.8602800369262695
+        ],
+        "max": [
+          -5.408708095550537,
+          -2.1603646278381348,
+          5.33521842956543
+        ]
+      },
+      {
+        "piece": "core_05/torn_02",
+        "module": "core_05",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -3.909480333328247,
+          -5.810943603515625,
+          4.564781188964844
+        ],
+        "max": [
+          -3.0976574420928955,
+          -4.879622459411621,
+          5.014404773712158
+        ]
+      },
+      {
+        "piece": "core_07/torn_01",
+        "module": "core_07",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          2.9091739654541016,
+          -5.830455780029297,
+          9.61028003692627
+        ],
+        "max": [
+          3.6753041744232178,
+          -4.884233474731445,
+          10.08521842956543
+        ]
+      },
+      {
+        "piece": "core_07/torn_02",
+        "module": "core_07",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          4.884233474731445,
+          -3.7076187133789062,
+          9.314781188964844
+        ],
+        "max": [
+          5.82012939453125,
+          -2.9091739654541016,
+          9.764405250549316
+        ]
+      },
+      {
+        "piece": "core_08/torn_01",
+        "module": "core_08",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -4.501858234405518,
+          3.325394630432129,
+          11.545280456542969
+        ],
+        "max": [
+          -3.614194393157959,
+          4.2084784507751465,
+          12.020218849182129
+        ]
+      },
+      {
+        "piece": "core_08/torn_02",
+        "module": "core_08",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -6.001542568206787,
+          0.41893407702445984,
+          11.249781608581543
+        ],
+        "max": [
+          -5.067152976989746,
+          0.9285680055618286,
+          11.699405670166016
+        ]
+      },
+      {
+        "piece": "core_09/torn_01",
+        "module": "core_09",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -0.6302077770233154,
+          -6.486451625823975,
+          14.210280418395996
+        ],
+        "max": [
+          -0.1506742388010025,
+          -5.557868480682373,
+          14.685218811035156
+        ]
+      },
+      {
+        "piece": "core_09/torn_02",
+        "module": "core_09",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          3.707380533218384,
+          -4.774473190307617,
+          13.91478157043457
+        ],
+        "max": [
+          4.573909282684326,
+          -3.872121810913086,
+          14.364405632019043
+        ]
+      },
+      {
+        "piece": "habitat_1_slot_00/torn_01",
+        "module": "habitat_1_slot_00",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          4.75623893737793,
+          -15.964627265930176,
+          1.6288414001464844
+        ],
+        "max": [
+          6.328453063964844,
+          -13.460295677185059,
+          2.093886137008667
+        ]
+      },
+      {
+        "piece": "habitat_2_slot_02/torn_01",
+        "module": "habitat_2_slot_02",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          14.133517265319824,
+          -3.6430137157440186,
+          1.6288414001464844
+        ],
+        "max": [
+          16.61668586730957,
+          -2.418390989303589,
+          2.093886137008667
+        ]
+      },
+      {
+        "piece": "habitat_3_slot_05/torn_01",
+        "module": "habitat_3_slot_05",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          3.3474748134613037,
+          13.96636962890625,
+          1.9386447668075562
+        ],
+        "max": [
+          4.426154613494873,
+          16.432146072387695,
+          2.765324115753174
+        ]
+      },
+      {
+        "piece": "habitat_5_slot_08/torn_01",
+        "module": "habitat_5_slot_08",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -16.238183975219727,
+          3.814650774002075,
+          1.6288414001464844
+        ],
+        "max": [
+          -13.768004417419434,
+          5.197566986083984,
+          2.093886137008667
+        ]
+      },
+      {
+        "piece": "habitat_6_slot_10/torn_01",
+        "module": "habitat_6_slot_10",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -12.908258438110352,
+          -11.420467376708984,
+          1.6288414001464844
+        ],
+        "max": [
+          -10.666980743408203,
+          -9.325931549072266,
+          2.093886137008667
+        ]
+      },
+      {
+        "piece": "tower_1/torn_01",
+        "module": "tower_1",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -13.5,
+          -0.5499999523162842,
+          21.76953887939453
+        ],
+        "max": [
+          -11.734999656677246,
+          2.549999952316284,
+          22.100000381469727
+        ]
+      },
+      {
+        "piece": "tower_1/torn_02",
+        "module": "tower_1",
+        "source_pieces": 1,
+        "triangles_before_bevel": 140,
+        "min": [
+          -11.864999771118164,
+          -0.5499999523162842,
+          21.599077224731445
+        ],
+        "max": [
+          -10.100000381469727,
+          2.549999952316284,
+          22.100000381469727
+        ]
+      },
+      {
+        "piece": "folded_plate/torn_01",
+        "module": "folded_plate",
+        "source_pieces": 2,
+        "triangles_before_bevel": 140,
+        "min": [
+          -13.899999618530273,
+          -3.4499998092651367,
+          2.3440794944763184
+        ],
+        "max": [
+          -11.100000381469727,
+          -0.7849999666213989,
+          3.4600000381469727
+        ]
+      }
+    ]
   },
   "cruiser": {
     "code": "C15s_23",
@@ -455,22 +2470,38 @@
   "baseline_geometry": {
     "pass_": true,
     "triangles": 697088,
+    "common_triangles": 696746,
+    "loose_piece_source_triangle_budget": 44324,
     "authored_joints_unchanged": true,
     "precision_world_units": 0.0001,
-    "baseline_sha256": "744dc7580b6b7d7e53092b11b9601701ef08060533391912f50cdbc3c9924823",
+    "baseline_sha256": "079a1a186a97f018e7ddc80eadc5d222aeeac47fa04c7c9bc8145c14882f3ed1",
     "canonical_geometry_sha256": "424c6d82c53931d33e6f210c8969f11c244a5f180a3e16d9f6df824180f2e60f"
   },
+  "planted_faults": [
+    {
+      "fault": "missing_detail",
+      "rejected": "missing normalTexture detail map: T2_painted_dark"
+    },
+    {
+      "fault": "flat_albedo",
+      "rejected": "flat albedo detail map: T2_painted_htrim"
+    },
+    {
+      "fault": "flat_module",
+      "rejected": "flat albedo across module 1: T2_glass_dark"
+    }
+  ],
   "frame_gate": {
     "pass_": true,
     "frame1080_ms": [
-      8.082,
-      9.822,
-      9.124
+      7.917,
+      6.907,
+      5.652
     ],
     "gpu4k_ms": [
-      7.13600015640259,
-      7.20100021362305,
-      7.2960000038147
+      6.93800020217896,
+      6.91300010681152,
+      6.91499996185303
     ],
     "source": "gate/scene_gate.json"
   }

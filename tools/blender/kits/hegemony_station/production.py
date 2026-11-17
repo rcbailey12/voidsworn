@@ -52,7 +52,8 @@ def signature(objs):
         me.calc_loop_triangles()
         vv = np.array([v.co[:] for v in me.vertices], dtype='<f4')
         tt = np.array([t.vertices[:] for t in me.loop_triangles], dtype='<u4')
-        result[ob.name] = dict(vertices=len(vv), triangles=len(tt), inside=bool(ob['inside']),
+        key = '|'.join((ob['module'],ob['zone'],str(bool(ob['inside']))))
+        result[key] = dict(vertices=len(vv), triangles=len(tt), inside=bool(ob['inside']),
                                sha256=hashlib.sha256(vv.tobytes() + tt.tobytes()).hexdigest())
         ev.to_mesh_clear()
     return result
@@ -143,16 +144,22 @@ def fine_details(maps, out):
         hd = ImageDraw.Draw(height)
         marking = Image.new('L', (RES, RES), 0)
         md = ImageDraw.Draw(marking)
+        # Calm ordered sheets on every zone, including former black deck and
+        # liner materials. These coordinates are physical, module-aligned UVs.
+        for x in (0,1024,2047):
+            hd.line((x,0,x,2047),fill=-.006,width=17)
+        for y in (0,512,1024,1536,2047):
+            hd.line((0,y,2047,y),fill=-.006,width=17)
         if zone in ('hgrey', 'hpanel'):
             # A recessed maintenance cover with screws and an adjacent vent.
-            hd.rectangle((180, 250, 700, 810), outline=-.003, width=5)
+            hd.rectangle((180, 250, 700, 810), outline=-.006, width=14)
             hd.line((690, 290, 690, 760), fill=.002, width=8)
             for x in (208, 672):
                 for y in (280, 780):
-                    hd.ellipse((x-9, y-9, x+9, y+9), fill=-.002)
-                    hd.line((x-5, y, x+5, y), fill=-.004, width=3)
+                    hd.ellipse((x-13, y-13, x+13, y+13), fill=-.004)
+                    hd.line((x-8, y, x+8, y), fill=-.007, width=5)
             for y in range(1100, 1390, 37):
-                hd.rounded_rectangle((190, y, 650, y+17), radius=7, fill=-.004)
+                hd.rounded_rectangle((190, y, 650, y+21), radius=7, fill=-.007)
             font = ImageFont.truetype('C:/Windows/Fonts/consola.ttf', 30)
             md.text((210, 835), 'EVA  /  04', font=font, fill=95)
             md.text((210, 1420), 'RETURN', font=font, fill=75)
@@ -160,7 +167,14 @@ def fine_details(maps, out):
                 md.line((x-20,y,x+20,y),fill=90,width=4)
                 md.line((x,y-20,x,y+20),fill=90,width=4)
         else:
-            # Machined trim: sparse shallow handling scratches, never grain.
+            # Structural bands, deck plates, cable trunks and bare fittings
+            # have joints, access slots and flush bolts too, never flat grey.
+            hd.rectangle((175,150,840,440),outline=-.005,width=13)
+            for x in (200,810):
+                for y in (180,410):
+                    hd.ellipse((x-12,y-12,x+12,y+12),fill=-.006)
+            for y in range(1140,1360,44):
+                hd.rounded_rectangle((1220,y,1830,y+21),radius=6,fill=-.007)
             for x,y in ((150,300),(730,1200),(1450,720)):
                 hd.line((x,y,x+150,y+4), fill=-.0004, width=2)
         h = np.asarray(height, dtype=np.float32)
@@ -169,8 +183,27 @@ def fine_details(maps, out):
         # Fine residue runs down the metal, with broad world-space soot added
         # from the real geometry below. This is sparse streaking, not grain.
         yy, xx = np.mgrid[0:RES, 0:RES].astype(np.float32) / RES
-        streak = np.maximum(0, np.cos(xx*math.tau*13 + .3*np.sin(yy*math.tau)))**24
-        streak *= (.5 + .5*np.cos(yy*math.tau*2 + xx*3))**2 * .24
+        # Residue originates at the service cover corners, vent ends and
+        # seams, then trails down the module. No independent plate noise.
+        streak = np.zeros_like(xx)
+        for sx,sy in ((.09,.39),(.34,.39),(.60,.67),(.89,.67),(.50,.25)):
+            trail = np.exp(-((xx-sx)/.012)**2)*np.maximum(0,yy-sy)*np.exp(-np.maximum(0,yy-sy)*4)
+            streak += trail*2.4
+        # Fine geometry survives the camera only if the seam's dirt shoulder
+        # spans real pixels too. A 17-texel seam is .017 world units; its soft
+        # grime shoulder is .05 units. They follow the same ordered joints.
+        from PIL import ImageFilter
+        cavity_image = Image.fromarray(((h < -.001)*255).astype(np.uint8))
+        residue = np.asarray(cavity_image.filter(ImageFilter.GaussianBlur(24)),dtype=np.float32)[::-1]/255
+        # A shallow brushed-metal direction and rubbed service-cover margin,
+        # shared by the entire module. No randomly coloured plate or grain.
+        brush = .012*np.sin(xx*math.tau*220+.25*np.sin(yy*math.tau))
+        handling = Image.new('L',(RES,RES),0)
+        handling_draw = ImageDraw.Draw(handling)
+        for x,y in ((700,500),(840,280),(1180,1340)):
+            handling_draw.line((x-50,y-10,x+70,y+18),fill=110,width=5)
+            handling_draw.line((x-35,y+10,x+45,y+34),fill=70,width=4)
+        scuffs = np.asarray(handling.filter(ImageFilter.GaussianBlur(1)),dtype=np.float32)[::-1]/255
         detailed = {}
         for channel, im in source.items():
             pixels = np.empty(RES*RES*4, np.float32)
@@ -184,11 +217,15 @@ def fine_details(maps, out):
                 v /= np.maximum(np.linalg.norm(v,axis=2,keepdims=True),1e-6)
                 pixels[...,:3] = v * .5 + .5
             elif channel == 'albedo':
-                recess = (h[::-1] < -.001).astype(np.float32) * .23
-                pixels[...,:3] *= (1 - recess[...,None]) * (1 - streak[...,None])
+                recess = (h[::-1] < -.001).astype(np.float32) * .42
+                pixels[...,:3] *= ((1-recess)*(1-residue*.48)*(1-streak)+brush)[...,None]
+                wear = np.clip(np.hypot(gx,gy)[::-1]*.08,0,.10)+scuffs*.30
+                pixels[...,:3] = pixels[...,:3]*(1-wear[...,None])+np.array(H.BARE)*wear[...,None]
                 pixels[...,:3] = pixels[...,:3]*(1-mark[::-1,...,None]) + np.array(H.CAP_LIN)*mark[::-1,...,None]
             else:
-                pixels[...,1] = np.maximum(pixels[...,1], .52 + (h[::-1] < 0)*.1 + streak*.35)
+                base_roughness = pixels[...,1]-(.14 if zone == 'dark' else 0)
+                pixels[...,0] *= 1-residue*.45
+                pixels[...,1] = np.clip(base_roughness+residue*.28+streak*.30-scuffs*.25,.52,.92)
             final = PS.new_image('T2_detail_'+zone+'_'+channel, RES, channel == 'albedo')
             final.pixels.foreach_set(pixels.ravel())
             PS.save(final, str(out), final.name)
@@ -215,6 +252,7 @@ def uv_and_masks(objs, uniform_scale, out):
         ev.to_mesh_clear()
     tree = BVHTree.FromPolygons(vertices, faces)
     density = []
+    module_ids = {name:i+1 for i,name in enumerate(sorted({o['module'] for o in objs}))}
     for ob in objs:
         bpy.ops.object.select_all(action='DESELECT')
         ob.select_set(True)
@@ -224,6 +262,8 @@ def uv_and_masks(objs, uniform_scale, out):
         me = ob.data
         me.uv_layers.new(name='T2_world_tile')
         me.color_attributes.new(name='T2_geometry_wear', type='FLOAT_COLOR', domain='CORNER')
+        ids = me.attributes.new(name='_T2_MODULE',type='FLOAT',domain='POINT')
+        ids.data.foreach_set('value',np.full(len(me.vertices),module_ids[ob['module']],np.float32))
         # Adding an attribute can invalidate earlier RNA handles (Blender 4.5).
         uv = me.uv_layers['T2_world_tile']
         ca = me.color_attributes['T2_geometry_wear']
@@ -231,6 +271,13 @@ def uv_and_masks(objs, uniform_scale, out):
         colours = np.ones((len(me.loops), 4), dtype=np.float32)
         uvs = np.zeros((len(me.loops), 2), dtype=np.float32)
         roots, tones = finish.island_tones(me, ob['module'], ob['zone'])
+        module = ob['module']
+        radial_origin = None
+        if module.startswith('core_') or module == 'observation_window':
+            radial_origin = Vector((0,0,0))
+        elif module.startswith('tower_'):
+            tower = review.D.TOWERS[int(module[-1])-1]
+            radial_origin = Vector((tower['x'],tower['y'],0))
         for p in me.polygons:
             n = p.normal
             axis = max(range(3), key=lambda k: abs(n[k]))
@@ -254,6 +301,21 @@ def uv_and_masks(objs, uniform_scale, out):
                 co = me.vertices[me.loops[li].vertex_index].co * uniform_scale
                 uvs[li] = [co[axes[0]] / TILE_WORLD,
                            co[axes[1]] / TILE_WORLD * (1 if n[axis] > 0 else -1)]
+                if radial_origin is not None and abs(n.z)<.65:
+                    local = me.vertices[me.loops[li].vertex_index].co-radial_origin
+                    mid = p.center-radial_origin
+                    angle = math.atan2(mid.y,mid.x)
+                    delta = math.atan2(math.sin(math.atan2(local.y,local.x)-angle),
+                                       math.cos(math.atan2(local.y,local.x)-angle))
+                    radius = math.hypot(mid.x,mid.y)
+                    uvs[li] = ((angle+delta)*radius*uniform_scale/TILE_WORLD,co.z/TILE_WORLD)
+                if ob['zone'] in ('blue','battery'):
+                    # Each face gets a complete bezel and recessed lens.
+                    points = [me.vertices[i].co for i in p.vertices]
+                    for uvaxis,axis0 in enumerate(axes):
+                        low = min(v[axis0] for v in points)
+                        span = max(v[axis0] for v in points)-low
+                        uvs[li,uvaxis] = (me.vertices[me.loops[li].vertex_index].co[axis0]-low)/max(span,1e-8)
                 # Bevel faces expose lighter worn edges in the same palette.
                 edge = 1 - max(abs(n.x), abs(n.y), abs(n.z))
                 world = ob.matrix_world @ me.vertices[me.loops[li].vertex_index].co
@@ -279,6 +341,7 @@ def uv_and_masks(objs, uniform_scale, out):
                             texels_per_unit=math.sqrt(texels/max(area, 1e-12)), minimum=minimum))
         print('T2 SURFACE', ob.name, flush=True)
     write(out / 'station_density.json', dict(resolution=RES, tile_world=TILE_WORLD,
+          module_ids=module_ids,
           method='actual exported per-triangle UV area / world surface area', surfaces=density))
 
 
@@ -356,6 +419,13 @@ def main():
     initial = review.bounds(objs)
     uniform_scale = contract()['range'][0] / max(initial['size'])
     root.scale = (uniform_scale,) * 3
+    bpy.context.view_layer.update()
+    original = signature(objs)
+    original_bounds = review.bounds(objs)
+    # Rebuild only with the explicit loose-piece repairs enabled. The original
+    # review route remains available, and every other source mesh must match.
+    root, move, objs, rows, details = review.build(repair_loose=True)
+    root.scale = (uniform_scale,) * 3
     joints = dict(review.D.JOINTS, core=[z*uniform_scale for z in review.D.JOINTS['core']])
     root['joints_json'] = json.dumps(joints)
     root['status'] = 'production paint; issue 975'
@@ -363,6 +433,15 @@ def main():
     root['tile_world_units'] = TILE_WORLD
     bpy.context.view_layer.update()
     before = signature(objs)
+    changed = [key for key in before if before[key] != original.get(key)]
+    allowed = {f'core_{i:02d}|{zone}|False' for i in (3,5,7,8,9) for zone in ('edge','frame')}
+    allowed |= {f'habitat_{i//2+1}_slot_{i:02d}|{zone}|False' for i in range(11) for zone in ('edge','frame')}
+    allowed |= {'tower_1|'+zone+'|False' for zone in ('edge','plate2','frame')}
+    allowed |= {'folded_plate|edge|False','folded_plate|frame|False','spoke_3|frame|False'}
+    assert set(changed) <= allowed, 'geometry outside loose-piece repairs: '+str(set(changed)-allowed)
+    assert set(original) <= set(before), 'removed a source module or zone'
+    assert np.allclose(original_bounds['min'],review.bounds(objs)['min'],atol=.0001), (original_bounds,review.bounds(objs))
+    assert np.allclose(original_bounds['max'],review.bounds(objs)['max'],atol=.0001), (original_bounds,review.bounds(objs))
     uv_and_masks(objs, uniform_scale, out)
     after = signature(objs)
     if before != after: raise RuntimeError('Paint changed PR 700 geometry')
@@ -377,24 +456,26 @@ def main():
             window_counts.append(dict(module=ob['module'], zone=zone,
                                       **finish.assign_glazing(ob, glass)))
         elif zone == 'blue':
-            bs = ob.data.materials[0].node_tree.nodes.get('Principled BSDF')
-            rgb = H.window_rgb()
-            # Keep all 90 markers and their peak, but make the lens dark and
-            # blue-filtered like the glazing. The old pale diffuse lens caught
-            # the key as a white rectangle beside the observation window.
-            bs.inputs['Base Color'].default_value = (.003, .009, .025, 1)
-            bs.inputs['Emission Color'].default_value = (
-                *(v*f*.60/max(rgb) for v,f in zip(rgb,(.12,.52,1))), 1)
-            bs.inputs['Emission Strength'].default_value = 1
+            ob.data.materials.clear()
+            ob.data.materials.append(glass[2])
+        elif zone == 'battery':
+            ob.data.materials.clear()
+            ob.data.materials.append(glass[3])
+        else: raise RuntimeError('unpainted station zone: '+zone)
     write(out/'shape_preservation.json', dict(pass_unchanged=before == after, objects=after,
+          baseline_objects=original,changed_objects=changed,allowed_changed_objects=sorted(allowed),
+          unchanged_objects=len(before)-len(changed),bounds_unchanged=True,
+          baseline_triangles=sum(v['triangles'] for v in original.values()),
           triangles=sum(v['triangles'] for v in after.values()),
           inside_triangles=sum(v['triangles'] for v in after.values() if v['inside']),
-          source='unchanged review.build(), design.py and parts.py from PR 700'))
+          baseline_inside_triangles=sum(v['triangles'] for v in original.values() if v['inside']),
+          source='review.build() against review.build(repair_loose=True); paint changes no geometry'))
     write(out/'cruiser_density.json', cruiser)
     write(out/'production_manifest.json', dict(code='station_T2', stage='paint proof',
           bounds=review.bounds(objs), uniform_scale=uniform_scale, modules=rows,
           details=details, joints=joints,
-          drums=review.D.DRUMS, light_clusters=review.D.LIGHT_CLUSTERS,
+          drums=review.D.DRUMS, towers=review.D.TOWERS,light_clusters=review.D.LIGHT_CLUSTERS,
+          module_families={r['id']:finish.module_family(r['id']) for r in rows},
           lit_window_faces=sum(r['lit_faces'] for r in window_counts),
           windows=window_counts, paint_direction=paint_direction,
           paint_stack='tools/blender/kits/hegemony/stack.py',

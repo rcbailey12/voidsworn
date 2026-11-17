@@ -380,6 +380,22 @@ sheet's battle camera, a module band close and the port flank) and `pictures.py`
 `docs/ship_pipeline/build_sheets/hegemony_H10/paint/` and `hegemony_IM5/paint/`.
 
 
+### Station T2 production adapter (issue 975 run 3)
+
+`tools/recipe/station_paint.bat` reads the station route in `tools/recipe/stations/station_T2.json`.
+The approved kit supplies the layout and insides. Stages 5 to 7 use the private Hegemony stack configured by
+`hegemony_station/production_finish.py`: one base family per complete module, darker structural bands, lighter edge
+metal and only +/-1.5 percent variation per connected plate. Disable the inherited scavenged-plate patchwork on this
+station stack. Blue and warm accents identify modules, never isolated random plates. Fleet stacks are separate work.
+Every station material, including liner, glass, marker lenses and battery bezels, must export non-flat albedo, roughness
+and normal maps. UVs follow cylindrical modules or physical face dimensions. Wear reads real bevels, cavities, seams,
+vents and damaged-side exposure. Loose damage sheets have thickness, jagged bent edges, a continuous root and frame
+ribs; intact loose fittings get attachment feet. The production check compares both builds and permits only those source
+meshes to change, preserving the bounds and inside geometry. It samples each module in the actual GLB and rejects absent
+maps, flat maps or flat module albedo; its three planted faults must fail. Preserve the full-detail density and station-map
+12.5 ms gate. Capture twice, keep the second pass, and compare the same five cameras with run 2 plus the tall tower and
+top deck, at native 1080p close pixels and no more than 720 pixels high. All captures use the GPU watchdog.
+
 ## What a ship needs (the per-ship data)
 
 `tools/recipe/ships/<ship>.json` (C15s_23 is the worked example):

@@ -31,7 +31,7 @@ def empty(name, parent=None, pos=(0,0,0)):
     return ob
 
 
-def build():
+def build(repair_loose=False):
     bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
     root=empty(D.CODE)
     root['status']='BUILD SHEET - AWAITING BOARD REVIEW'
@@ -40,7 +40,7 @@ def build():
     move=empty('T2_hanging_radiator',root,D.MOTION['pivot'])
     move['period_seconds']=D.MOTION['period']; move['swing_period_seconds']=D.MOTION['swing_period']
     move['swing_degrees']=D.MOTION['swing_degrees']
-    p=Parts(stack.materials())
+    p=Parts(stack.materials(),repair_loose=repair_loose)
     c=D.CORE
     for i,drum in enumerate(D.DRUMS):
         z=drum['bottom']; radius=drum['radius']; height=drum['height']
@@ -112,6 +112,12 @@ def build():
                   (r['outer']-r['inner']-.2,.13,.22),'frame',True,a)
             p.box((rm*math.cos(a),rm*math.sin(a),top+.24),
                   (r['outer']-r['inner']+.14,.12,.10),'trim',rotation=a)
+            if repair_loose:
+                # The transverse top stiffener used to hover .03 above the
+                # roof. Feet weld it to the existing bearing top, no new slab.
+                for radius in (r['inner']+.12,r['outer']-.12):
+                    p.rod((radius*math.cos(a),radius*math.sin(a),top+.12),
+                          (radius*math.cos(a),radius*math.sin(a),top+.24),.045,'frame',n=6)
             p.box(((rm+.45)*math.cos(a),(rm+.45)*math.sin(a),z+.70),
                   (.48,.65,.9),'rack',True,a)
         # Each half of an arc has its own corridor deck; the gap has no hidden cap.
@@ -137,8 +143,12 @@ def build():
         # Sprung bearing joint plates are physically lifted from the track.
         if i in (0,2,5,8,10):
             old=p.matrix.copy()
-            p.matrix=Matrix.Translation(Vector((rm*math.cos(a0),rm*math.sin(a0),top+.3))) @ Matrix.Rotation(a0,4,'Z') @ Matrix.Rotation(.7 if i%2 else -.6,4,'X')
-            p.box((0,0,.25),(r['outer']-r['inner'],.8,.15),'edge')
+            if repair_loose:
+                p.matrix=Matrix.Translation(Vector((rm*math.cos(a0),rm*math.sin(a0),top+.13))) @ Matrix.Rotation(a0,4,'Z') @ Matrix.Translation(Vector((0,-.32,0))) @ Matrix.Rotation(.7 if i%2 else -.6,4,'X') @ Matrix.Rotation(math.pi/2,4,'Z')
+                p.torn_plate(.85,r['outer']-r['inner']-.16,.15,fold=.30)
+            else:
+                p.matrix=Matrix.Translation(Vector((rm*math.cos(a0),rm*math.sin(a0),top+.3))) @ Matrix.Rotation(a0,4,'Z') @ Matrix.Rotation(.7 if i%2 else -.6,4,'X')
+                p.box((0,0,.25),(r['outer']-r['inner'],.8,.15),'edge')
             p.matrix=old
     for i,a in enumerate(D.SPOKES):
         p.record('spoke_%d'%(i+1),'spoke','bearing support and service corridor; buckled' if i==2 else 'bearing support and service corridor')
@@ -152,6 +162,10 @@ def build():
             for k in range(10):
                 x=k*.81; f=(x/3.7 if x<3.7 else (8.1-x)/4.4); zz=-1.8*f
                 p.box((x,-1.4*f,zz),(.55,.9,.12),'plate2')
+                if repair_loose:
+                    for side in (-1,1):
+                        p.rod((x,-1.4*f+side*.36,zz),
+                              (x,-1.4*f+side*.42,zz+.17),.055,'frame',n=6)
         else:
             p.arm(8.1,1.1,4,cap=False)
         p.matrix=old
@@ -252,12 +266,22 @@ def build():
                     p.rod((side*(rad+.5),-.35,zz+dz),(side*(rad+.5),.35,zz+dz),.025,'edge',n=6)
         if t['cap']=='pad':
             # Landing pad split across two buckled plates, not an intact array.
-            p.box((-.85,0,h+.22),(1.7,3.1,.16),'edge')
-            saved=p.matrix.copy()
-            p.matrix=saved @ Matrix.Translation(Vector((0,0,h+.22))) @ Matrix.Rotation(.30,4,'Y')
-            p.box((.85,0,0),(1.6,3.1,.16),'plate2')
-            for yy in (-1.2,0,1.2): p.rod((-.6,yy,-.22),(1.6,yy,-.22),.07,'frame')
-            p.matrix=saved
+            if repair_loose:
+                saved=p.matrix.copy()
+                for side in (-1,1):
+                    p.matrix=saved @ Matrix.Translation(Vector((0,0,h+.22))) @ Matrix.Rotation(math.pi if side<0 else 0,4,'Z')
+                    p.torn_plate(1.7,3.1,.16,'edge' if side<0 else 'plate2',fold=-.15 if side<0 else -.30)
+                p.matrix=saved
+                for xx in (-.70,.70):
+                    for yy in (-.70,.70):
+                        p.rod((xx,yy,h+.05),(xx,yy,h+.23),.065,'frame',n=6)
+            else:
+                p.box((-.85,0,h+.22),(1.7,3.1,.16),'edge')
+                saved=p.matrix.copy()
+                p.matrix=saved @ Matrix.Translation(Vector((0,0,h+.22))) @ Matrix.Rotation(.30,4,'Y')
+                p.box((.85,0,0),(1.6,3.1,.16),'plate2')
+                for yy in (-1.2,0,1.2): p.rod((-.6,yy,-.22),(1.6,yy,-.22),.07,'frame')
+                p.matrix=saved
         elif t['cap']=='dishes':
             p.rod((-1.1,0,h+.1),(1.1,0,h+.1),.12)
             for x in (-1.1,0,1.1): p.dish((x,0,h+.35),.68,.7)
@@ -322,10 +346,18 @@ def build():
         p.matrix=old
         p.rod((x,y,z-.8),(x,y-1.9,z-1.2),.11,'frame')
     p.record('folded_plate','debris','one torn plate folded over arm walkway; two thick bent leaves',inside='torn frame')
-    p.box((-12.5,-1.8,3.7),(3.0,2.0,.16),'edge',rotation=.18)
-    old=p.matrix.copy(); p.matrix=Matrix.Translation(Vector((-12.4,-2.6,3.65))) @ Matrix.Rotation(-.95,4,'X')
-    p.box((0,-.8,-.12),(2.7,1.8,.16),'edge')
-    p.matrix=old
+    if repair_loose:
+        old=p.matrix.copy()
+        p.matrix=Matrix.Translation(Vector((-12.5,-.85,3.38))) @ Matrix.Rotation(-math.pi/2,4,'Z')
+        p.torn_plate(2.6,2.8,.16,fold=-.55)
+        p.matrix=old
+        for x in (-13.2,-11.8):
+            p.rod((x,-.85,3.30),(x,-.85,3.42),.08,'frame',n=8)
+    else:
+        p.box((-12.5,-1.8,3.7),(3.0,2.0,.16),'edge',rotation=.18)
+        old=p.matrix.copy(); p.matrix=Matrix.Translation(Vector((-12.4,-2.6,3.65))) @ Matrix.Rotation(-.95,4,'X')
+        p.box((0,-.8,-.12),(2.7,1.8,.16),'edge')
+        p.matrix=old
     p.record('emergency_lights','lights','90 implant-blue markers in six scattered clusters; five dull battery strips',inside='module-local batteries')
     rng=random.Random(373)
     for cl in D.LIGHT_CLUSTERS:
@@ -495,7 +527,7 @@ def export(root,move,objs,out,vertex_colour=None):
     bpy.context.scene.frame_end=int(D.MOTION['period']*bpy.context.scene.render.fps)+1
     colour_options = {} if vertex_colour is None else dict(
         export_vertex_color='NAME', export_vertex_color_name=vertex_colour,
-        export_all_vertex_colors=False)
+        export_all_vertex_colors=False,export_attributes=True)
     bpy.ops.export_scene.gltf(filepath=str(out/'station_T2_review.glb'),export_format='GLB',
         use_selection=True,export_extras=True,export_yup=True,export_animations=True,
         export_frame_range=True,export_animation_mode='ACTIONS',export_materials='EXPORT',

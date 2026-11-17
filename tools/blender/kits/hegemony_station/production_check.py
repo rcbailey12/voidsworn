@@ -11,7 +11,7 @@ import numpy as np
 from check import glb_json, exported_bounds
 
 
-def inspect(path):
+def inspect(path, fault=None):
     doc = glb_json(path)
     raw = path.read_bytes()
     length = struct.unpack_from('<I', raw, 12)[0]
@@ -35,6 +35,17 @@ def inspect(path):
     paint_colours = []
     glass = []
     resolutions = {}
+    pixels = {}
+    detail = []
+    module_samples = {}
+    def texture_pixels(index):
+        image_index = doc['textures'][index]['source']
+        if image_index not in pixels:
+            view = doc['bufferViews'][doc['images'][image_index]['bufferView']]
+            start = view.get('byteOffset',0)
+            with Image.open(io.BytesIO(binary[start:start+view['byteLength']])) as image:
+                pixels[image_index] = np.asarray(image.convert('RGB')).copy()
+        return pixels[image_index]
     def texture_size(index):
         image_index = doc['textures'][index]['source']
         if image_index not in resolutions:
@@ -45,13 +56,48 @@ def inspect(path):
         return resolutions[image_index]
     for p in primitives:
         mat = doc['materials'][p['material']]
+        name = mat['name']
+        pbr = mat['pbrMetallicRoughness']
+        if fault == 'missing_detail' and name == 'T2_painted_dark': mat.pop('normalTexture',None)
+        for key,source in [('baseColorTexture',pbr),('metallicRoughnessTexture',pbr),('normalTexture',mat)]:
+            assert key in source, 'missing '+key+' detail map: '+name
+        albedo = texture_pixels(pbr['baseColorTexture']['index'])
+        if fault == 'flat_albedo': albedo = np.full_like(albedo,64)
+        normal = texture_pixels(mat['normalTexture']['index'])
+        orm = texture_pixels(pbr['metallicRoughnessTexture']['index'])
+        albedo_range = int(np.ptp(albedo.astype(np.int16),axis=(0,1)).max())
+        normal_range = int(np.ptp(normal.astype(np.int16),axis=(0,1))[:2].max())
+        rough_range = int(np.ptp(orm[...,1].astype(np.int16)))
+        assert albedo_range > 1, 'flat albedo detail map: '+name
+        assert normal_range > 1, 'flat normal detail map: '+name
+        assert rough_range > 1, 'flat roughness detail map: '+name
+        assert '_T2_MODULE' in p['attributes'], 'missing exported module identity: '+name
+        module = values(p['attributes']['_T2_MODULE']).reshape(-1).astype(int)
+        uv = values(p['attributes']['TEXCOORD_0'])
+        indices = values(p['indices']).reshape(-1,3)
+        colours = np.ones((len(uv),3))
+        if 'COLOR_0' in p['attributes']:
+            colours = values(p['attributes']['COLOR_0'])[:,:3]
+            if colours.dtype.kind == 'u': colours = colours/np.iinfo(colours.dtype).max
+        for ident in np.unique(module):
+            triangles0 = indices[module[indices[:,0]] == ident]
+            select = triangles0[np.linspace(0,len(triangles0)-1,min(3072,len(triangles0))).astype(int)]
+            for weights in ((1/3,1/3,1/3),(.8,.1,.1),(.1,.8,.1),(.1,.1,.8)):
+                q = (uv[select]*np.array(weights)[None,:,None]).sum(axis=1)
+                c = (colours[select]*np.array(weights)[None,:,None]).sum(axis=1)
+                if fault == 'flat_module' and ident == 1: q[:]=.125; c[:]=1
+                h,w = albedo.shape[:2]
+                sampled = albedo[(np.floor((1-q[:,1])*h).astype(int)%h),np.floor(q[:,0]*w).astype(int)%w]/255*c
+                module_samples.setdefault((int(ident),name),[]).append(sampled)
+        if name not in {r['material'] for r in detail}:
+            detail.append(dict(material=name,albedo_range_8bit=albedo_range,
+                               normal_xy_range_8bit=normal_range,roughness_range_8bit=rough_range))
         if mat['name'].startswith('T2_glass_'):
             assert 'baseColorTexture' in mat['pbrMetallicRoughness'], 'blank glass albedo'
             assert 'metallicRoughnessTexture' in mat['pbrMetallicRoughness'], 'lost reflective glazing'
             assert 'emissiveTexture' in mat, 'lost framed room/interior emission'
             glass.append(dict(material=mat['name'], triangles=doc['accessors'][p['indices']]['count']//3))
         if not mat['name'].startswith('T2_painted_'): continue
-        pbr = mat['pbrMetallicRoughness']
         assert 'baseColorTexture' in pbr, 'lost albedo: '+mat['name']
         assert 'metallicRoughnessTexture' in pbr, 'lost ORM: '+mat['name']
         assert 'normalTexture' in mat, 'lost detail normal: '+mat['name']
@@ -78,10 +124,17 @@ def inspect(path):
               texels_per_unit=float(np.sqrt(ua.sum()*width*height/area.sum())),
               minimum_triangle_texels_per_unit=float(tpu.min())))
     assert density, 'no painted primitives'
+    module_detail = []
+    for (ident,name),samples in sorted(module_samples.items()):
+        sample = np.concatenate(samples)
+        span = float(np.ptp(sample,axis=0).max())
+        assert span > 1/255, f'flat albedo across module {ident}: {name}'
+        module_detail.append(dict(module_id=ident,material=name,samples=len(sample),sampled_albedo_range=span))
     return dict(triangles=triangles,surfaces=len(primitives),materials=len(doc['materials']),
                 glb_sha256=hashlib.sha256(raw).hexdigest(),
                 mesh_nodes=sum('mesh' in n for n in doc['nodes']),bytes=path.stat().st_size,
                 bounds=exported_bounds(doc),density=density, glass=glass, paint_colours=paint_colours,
+                material_detail=detail,module_detail=module_detail,
                 animations=[a.get('name') for a in doc.get('animations',[])])
 
 
@@ -132,6 +185,7 @@ def main():
     ap.add_argument('out')
     ap.add_argument('--gate', action='store_true')
     ap.add_argument('--baseline', type=Path)
+    ap.add_argument('--selftest',action='store_true')
     a = ap.parse_args()
     out = Path(a.out)
     shape = json.loads((out/'shape_preservation.json').read_text())
@@ -145,10 +199,32 @@ def main():
         assert hashlib.sha256(source.read_bytes()).hexdigest() == expected, 'stale painted source: '+name
     cruiser = json.loads((out/'cruiser_density.json').read_text())
     assert shape['pass_unchanged'], 'changed evaluated geometry'
+    assert shape['bounds_unchanged'], 'changed station bounds'
+    assert set(shape['changed_objects']) <= set(shape['allowed_changed_objects']), 'unapproved geometry change'
+    assert shape['inside_triangles'] == shape['baseline_inside_triangles'], 'changed inside geometry'
     assert report['glass'], 'missing textured station glazing'
     report['windows'] = manifest['windows']
     report['paint_direction'] = manifest['paint_direction']
-    assert report['triangles'] == shape['triangles'] == baseline['triangles'], 'lost source triangles'
+    # The GLB tessellator retains 1,212 more triangles than Blender's source
+    # loop-triangle reader. Compare deltas through the same readers, while
+    # retaining the independently measured exported baseline cost.
+    expected = baseline['triangles'] + shape['triangles']-shape['baseline_triangles']
+    assert report['triangles'] == expected >= baseline['triangles'], 'lost source detail'
+    report['geometry_repairs'] = dict(changed_objects=shape['changed_objects'],
+        unchanged_objects=shape['unchanged_objects'],bounds_unchanged=True,
+        inside_triangles=shape['inside_triangles'],baseline_triangles=shape['baseline_triangles'],
+        source='original and repaired builds; only listed loose-piece source meshes may differ')
+    counters = {}
+    pieces = []
+    for row in manifest['details']:
+        if row['kind'] != 'attached_wreckage': continue
+        module = row['module']
+        counters[module] = counters.get(module,0)+1
+        pieces.append(dict(piece=module+'/torn_%02d'%counters[module],module=module,
+            source_pieces=2 if module == 'folded_plate' else 1,
+            triangles_before_bevel=row['triangles'],min=row['min'],max=row['max']))
+    assert len(pieces) == 18, 'missing attached wreckage repairs'
+    report['geometry_repairs']['attached_wreckage'] = pieces
     assert report['animations'], 'lost hanging-radiator motion'
     # Compare like measurements: surface-area weighted density on every material
     # against even the cruiser's finest triangle. Original bevels contain near
@@ -162,16 +238,33 @@ def main():
     if a.baseline:
         old = geometry(a.baseline)
         new = geometry(out/'station_T2.glb')
-        assert np.array_equal(old,new), 'exported world-space shape differs from PR 700 review GLB'
+        # Run 3 expressly replaces loose squares. Compare the common geometry
+        # and bound all removed source triangles by those exact source meshes.
+        old_rows = old.view(np.dtype((np.void,old.dtype.itemsize*9))).ravel()
+        new_rows = new.view(np.dtype((np.void,new.dtype.itemsize*9))).ravel()
+        old_unique,old_counts = np.unique(old_rows,return_counts=True)
+        new_unique,new_counts = np.unique(new_rows,return_counts=True)
+        _,old_indices,new_indices = np.intersect1d(old_unique,new_unique,return_indices=True)
+        common = int(np.minimum(old_counts[old_indices],new_counts[new_indices]).sum())
+        repair_budget = sum(shape['baseline_objects'].get(k,{}).get('triangles',0) for k in shape['changed_objects'])
+        assert len(old)-common <= repair_budget, 'export changes exceed scoped loose-piece source meshes'
         def breaks(path):
             doc = glb_json(path)
             node = next(n for n in doc['nodes'] if n.get('name') == 'station_T2')
             return json.loads(node['extras']['joints_json'])
         assert breaks(a.baseline) == breaks(out/'station_T2.glb'), 'authored joint metadata differs from PR 700'
-        report['baseline_geometry'] = dict(pass_=True,triangles=len(old),
+        report['baseline_geometry'] = dict(pass_=True,triangles=len(old),common_triangles=common,
+            loose_piece_source_triangle_budget=repair_budget,
             authored_joints_unchanged=True,
             precision_world_units=.0001,baseline_sha256=hashlib.sha256(a.baseline.read_bytes()).hexdigest(),
             canonical_geometry_sha256=hashlib.sha256(old.tobytes()).hexdigest())
+    if a.selftest:
+        rejected = []
+        for fault in ('missing_detail','flat_albedo','flat_module'):
+            try: inspect(out/'station_T2.glb',fault=fault)
+            except AssertionError as error: rejected.append(dict(fault=fault,rejected=str(error)))
+            else: raise AssertionError('checker accepted planted fault: '+fault)
+        report['planted_faults'] = rejected
     if a.gate:
         gate = json.loads((out/'gate/scene_gate.json').read_text())
         assert gate['map'] == 'station', 'timing did not use a station map'

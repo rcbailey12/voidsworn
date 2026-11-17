@@ -1,26 +1,24 @@
-# station_T2: run 2 production finish and preserved feature inventory
+# station_T2: run 3 production finish and retained feature inventory
 
-Issue 975 run 2 changes paint and lights only. The design, parts, insides, scale, joints and live swap remain.
-The [current method, measurements and before/after evidence](README.md) describe the installed finish.
-The route is `tools/recipe/station_paint.bat` and recipe entry `tools/recipe/stations/station_T2.json`.
+Refs #975. The current [method, material fixes, loose-piece inventory, measurements and pictures](README.md) describe
+run 3. The station recipe entry is `tools/recipe/stations/station_T2.json`; the launcher is `tools/recipe/station_paint.bat`.
 
-| Production measurement | Value |
+| Production measurement | Run 3 |
 |---|---|
-| Evaluated triangles retained | 697,088, including 110,428 inside |
-| Exported surfaces / materials / mesh nodes | 12 / 9 / 2 |
-| Uniform scale and dimensions | 1.919133; 99.200 x 70.211 x 69.281 game units |
-| PBR detail tiles | Five 2048 sets; two game units per repeat |
-| Lowest material mean texture density | 862.88 texels per game unit |
-| Actual C15s_23 cruiser | 42.30 mean; 191.86 finest triangle, texels per game unit |
-| Panel finish | Pale and warm metal, minority blue, dark structural bands; connected-panel tones |
-| Local wear | Actual cavity rays and bevels, directional damaged-side soot, fine residue; no rust |
-| Glazing | hwin through blue glass, room/sill masks and dark gaps; 4,424 lit / 1,168 dark original faces |
-| Marker lights | All 90 retained; dark blue lenses, blue emission at the retained 0.60 peak |
-| Export correction | Named T2_geometry_wear exported as COLOR_0; white substitute rejected |
-| Visible station draw-call delta | 12, by hiding the station in the same GPU studio |
-| Station-map 1080p frame medians | 8.082 / 9.822 / 9.124 ms |
-| Station-map 4K GPU medians | 7.136 / 7.201 / 7.296 ms |
-| Accepted-export shape comparison | Every world-space triangle and authored joint matches PR 700 at 0.0001-unit precision |
+| Exported triangles | 702,516, including 110,428 inside |
+| Surfaces / materials / mesh nodes | 12 / 9 / 2 |
+| Draw-call delta, station visible versus hidden | 12 in all seven views |
+| Scale and dimensions | 1.919133 uniform; 99.200 x 70.211 x 69.281 game units, unchanged |
+| Tone hierarchy | Complete module family, structural zone, then +/-1.5 percent plate value |
+| Full PBR coverage | All nine materials; decoded maps and 267 module/material albedo samples pass |
+| Texture density | 862.88 minimum material mean texels/unit; cruiser 42.30 mean and 191.86 finest triangle |
+| Inside, layout and joints | Retained; 357 source meshes unchanged; only 32 scoped exterior meshes differ |
+| Loose-sheet repair | 19 old sheets become 18 attached torn assemblies; 66 roof beams and 10 spoke treads gain feet/braces |
+| Exported geometry comparison | 696,746 old triangles identical; 342 replaced, 5,770 added |
+| Glazing | Framed real-size room grid, reflection and dark interiors; all original lights and window bands retained |
+| 1080p frame medians | 7.917 / 6.907 / 5.652 ms |
+| 4K GPU medians | 6.938 / 6.913 / 6.915 ms |
+| 12.5 ms gate | All six pass on the installed station map, solo GPU |
 
 ## PR 700 shape inventory, before production paint
 

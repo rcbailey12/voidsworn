@@ -5,13 +5,14 @@ for %%I in ("%~dp0..\..\..\..") do set "REPO=%%~fI"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 for %%I in ("%REPO%\..") do set "BOARD=%%~fI"
 set "OUT=%BOARD%\issue-975\shots"
-set "RAW=%TEMP%\station975_run2_native"
+set "RAW=%TEMP%\station975_run3_native"
 set "GD=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 set "B=%VT%\blender\blender-4.5.14-windows-x64\blender.exe"
 set "PY=%VT%\blender\blender-4.5.14-windows-x64\4.5\python\bin\python.exe"
 set "KIT=%~dp0"
 set "BASEARG="
 if exist "%VT%\board_b\issue-373\shots\review8\station_T2_review.glb" set BASEARG=--baseline "%VT%\board_b\issue-373\shots\review8\station_T2_review.glb"
+if defined STATION_BASELINE set BASEARG=--baseline "%STATION_BASELINE%"
 if not exist "%OUT%" mkdir "%OUT%"
 if not exist "%RAW%" mkdir "%RAW%"
 if "%STATION_START_STAGE%"=="7" goto :exported
@@ -21,7 +22,7 @@ call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -t 8 --python-exit-code 1 -P "%KIT
 if errorlevel 1 goto :bad
 :exported
 rem Stage 6. Full-detail cost and texture density from the actual exported GLB.
-"%PY%" "%KIT%production_check.py" "%OUT%" %BASEARG%
+"%PY%" "%KIT%production_check.py" "%OUT%" --selftest %BASEARG%
 if errorlevel 1 goto :bad
 rem Stage 7. Copy replaced files aside before installation; never delete.
 for /f %%T in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "STAMP=%%T"
@@ -50,7 +51,7 @@ rem The real 20-ship battle, on its station map. Timings own the GPU alone.
 set "PC_GPU_MODE=solo"
 call "%REPO%\tools\pc\tmo.bat" 1800 "%GD%" --path "%REPO%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://bench/scene_gate.tscn -- --out "%OUT%\gate" --map station --modes base,res_2160 --sessions 3 --warmup 120 --frames 720 > "%TEMP%\station975_gate.log" 2>&1
 if errorlevel 1 goto :bad
-"%PY%" "%KIT%production_check.py" "%OUT%" --gate %BASEARG%
+"%PY%" "%KIT%production_check.py" "%OUT%" --gate --selftest %BASEARG%
 if errorlevel 1 goto :bad
 echo station_T2 production route PASS. Review pictures: %OUT%
 if not "%RECIPE_NOPAUSE%"=="1" pause

@@ -1,4 +1,4 @@
-"""Refs #975. Native crops, concept and run-1/run-2 comparisons, stamped."""
+"""Refs #975 run 3. Native crops, concept and run-2/run-3 comparisons, stamped."""
 import json
 from pathlib import Path
 import shutil
@@ -23,7 +23,8 @@ def main():
     raw, out = map(Path, sys.argv[1:3])
     report = json.loads((raw/'production_captures.json').read_text())
     concept = REPO/'contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg'
-    for name, title in [('docking','DOCKING ARM END'),('habitat','HABITAT WINDOW BANDS'),('arrays','TOWER ARRAYS')]:
+    for name, title in [('docking','DOCKING ARM END'),('habitat','HABITAT WINDOW BANDS'),('arrays','TOWER ARRAYS'),
+                        ('tall_tower','TALL TOWER / STRUCTURAL FINISH'),('top_deck','HABITAT TOP DECK / ATTACHED TORN RIM')]:
         review = Review('installed in game')
         src = review.open(raw/('station_T2_closest_'+name+'.png'))
         # No resizing: one image pixel is one native 1920x1080 render pixel.
@@ -47,18 +48,18 @@ def main():
     for name in ('closest_docking','closest_habitat','closest_arrays','compare170','compare60'):
         review = Review('installed in game')
         filename = 'station_T2_' + name + '.png'
-        before = review.open(REPO/'docs/shots/look_bench/station/run1'/filename).convert('RGB')
+        before = review.open(REPO/'docs/shots/look_bench/station/run2'/filename).convert('RGB')
         after = review.open(out/filename).convert('RGB')
         # Keep native close pixels and the original camera/concept layouts.
         # Wide evidence can be opened at 1:1; no sheet exceeds 720px high.
         pair = Image.new('RGB', (before.width + after.width,720),'#080c12')
         pair.paste(before,(0,0))
         pair.paste(after,(before.width,0))
-        label(pair,'station_T2 | '+name.upper()+' / RUN 1 BEFORE (LEFT) / RUN 2 AFTER (RIGHT)',
-              'Same installed camera, scale and light | Paint and windows only | Close views retain native 1080p pixels')
+        label(pair,'station_T2 | '+name.upper()+' / RUN 2 BEFORE (LEFT) / RUN 3 AFTER (RIGHT)',
+              'Same installed camera, scale and light | Module paint and attached wreckage | Native 1080p close pixels')
         review.save(pair,out/('station_T2_before_after_'+name+'.png'))
     shutil.copy2(raw/'production_captures.json',out/'production_captures.json')
-    print('T2 PICTURES PASS: three native crops, two concept comparisons, five before/after pairs')
+    print('T2 PICTURES PASS: five native crops, two concept comparisons, five run-2/run-3 pairs')
 
 
 if __name__ == '__main__': main()
