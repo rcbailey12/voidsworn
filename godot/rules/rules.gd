@@ -734,7 +734,7 @@ func genTerrain(map, shape, opt) -> Dictionary:
 		var feature = "station" if opt.get("enc") == "defend" else "rock"
 		for h in [c, {"q": c.q + 1, "r": c.r}, {"q": c.q, "r": c.r + 1}]:
 			if onBoard(h.q, h.r): T[hkey(h.q, h.r)] = feature
-		if feature == "station": TERRAIN_META["station"] = c
+		if feature == "station": TERRAIN_META["station"] = c; TERRAIN_META["stationR"] = 1
 		TERRAIN_META["shape"] = "open"
 		return T
 	var put = func(h, t): _put(T, h, t)
@@ -764,13 +764,14 @@ func genTerrain(map, shape, opt) -> Dictionary:
 		if jt(opt.get("stationAt")): want = opt["stationAt"]
 		else:
 			var a1 = ri(-1, 1); var q1: float = midh.q + a1; var a2 = ri(-1, 1); want = {"q": q1, "r": midh.r + a2}
+		# R314: the big station blocks every hex within 2 of its centre (19 hexes), so the site needs its whole footprint on the board and clear of any hole
 		var okSite = func(h):
-			if not onBoard(h.q, h.r): return false
-			for d in DIRS:
-				if not onBoard(h.q + d[0], h.r + d[1]): return false
+			for dq in range(-2, 3):
+				for dr in range(max(-2, -dq - 2), min(2, -dq + 2) + 1):
+					if not onBoard(h.q + dq, h.r + dr): return false
 			for o in (VOID.get("holes") if VOID.has("holes") else []):
 				for qr in o["cells"]:
-					if hdist(h, {"q": qr[0], "r": qr[1]}) <= 3: return false
+					if hdist(h, {"q": qr[0], "r": qr[1]}) <= 4: return false
 			return true
 		var c
 		if okSite.call(want): c = want
@@ -789,11 +790,11 @@ func genTerrain(map, shape, opt) -> Dictionary:
 					if okk: l2.append(h)
 				JSM.ssort(l2, func(a, b): return hdist(a, want) - hdist(b, want))
 				c = l2[0] if l2.size() > 0 else want
-		TERRAIN_META["station"] = c
+		TERRAIN_META["station"] = c; TERRAIN_META["stationR"] = 2
 		for h in all:
 			var d = hdist(h, c)
-			if d <= 1: T[hkey(h.q, h.r)] = "station"
-			elif d <= 3 and rnd() < 0.42: put.call(h, "debris")
+			if d <= 2: T[hkey(h.q, h.r)] = "station"
+			elif d <= 4 and rnd() < 0.42: put.call(h, "debris")
 		for i in range(3): blob.call("rock", ri(2, 4), 5, BW - 6, 1, BH - 2)
 		blob.call("neb", ri(5, 8), 5, BW - 6, 1, BH - 2)
 	if m == "planet":
@@ -3692,19 +3693,23 @@ func survivorsP() -> int:
 	for u in B["units"]:
 		if u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited"))): n += 1
 	return n
+# R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre
+func stationRad() -> int:
+	if B != null and jt(B.get("map")) and jt(B["map"].get("stationR")): return int(B["map"]["stationR"])
+	return 0
 func objZone(q, r):
 	var o = B.get("obj") if B != null else null
 	if o == null or not onBoard(q, r): return null
 	if o.type == "break" and q + floor(r / 2.0) >= o.exitC: return "exit"
 	if o.type == "intercept" and r >= o.exitR: return "texit"
-	if o.type == "defend" and hdist({"q": q, "r": r}, o.hex) == 2: return "guard"
+	if o.type == "defend" and hdist({"q": q, "r": r}, o.hex) == stationRad() + 2: return "guard"
 	return null
 func stationFire(dq) -> void:
 	var o = B.get("obj")
 	if o == null or o.type != "defend": return
 	var src = {"q": o.hex.q, "r": o.hex.r, "facing": 0}; var ts = []
 	for u in caps("enemy"):
-		if hdist(u, o.hex) <= 5: ts.append(u)
+		if hdist(u, o.hex) <= stationRad() + 5: ts.append(u)
 	JSM.ssort(ts, func(a, b): return hdist(a, o.hex) - hdist(b, o.hex))
 	ts = ts.slice(0, 2)
 	var att = {"side": "player", "dealt": 0, "kills": 0, "crit": 0, "lockOn": false, "fx": {}}
@@ -3730,7 +3735,7 @@ func aiObjScore(u, v) -> float:
 	if o.type == "hunt" and jt(u.get("flagship")):
 		var d = _mind(v, caps("player"), 30); return min(d, 9) * 3.0
 	var vet = aiVet(); var urg = aiObjUrgency(o) if vet else 1.0
-	if o.type == "defend": return -max(0, hdist(v, o.hex) - 2) * 3.0 * urg
+	if o.type == "defend": return -max(0, hdist(v, o.hex) - (stationRad() + 2)) * 3.0 * urg
 	if o.type == "break":
 		var pl = caps("player")
 		if pl.size() == 0: return 0.0
@@ -3776,7 +3781,7 @@ func objectiveTick(_dq) -> void:
 	if o.type == "defend":
 		var near = []
 		for u in caps("enemy"):
-			if hdist(u, o.hex) <= 2: near.append(u)
+			if hdist(u, o.hex) <= stationRad() + 2: near.append(u)
 		if near.size() > 0:
 			o["hp"] = max(0, o["hp"] - near.size()); logm(ns(near.size()) + " enemy ship" + ("s" if near.size() > 1 else "") + " at the station. Integrity " + ns(o["hp"]) + "/" + ns(o["hpMax"]) + ".", "e")
 		if o["hp"] > 0 and B["round"] <= o["rounds"]: stationFire(_dq)
@@ -5861,7 +5866,7 @@ func sqValue(t, e, s) -> float:
 func sqObjNear(t) -> bool:
 	var o = B.get("obj") if B != null else null
 	if o == null: return false
-	if o.type == "defend" and o.get("hex") != null: return hdist(t, o.hex) <= 3
+	if o.type == "defend" and o.get("hex") != null: return hdist(t, o.hex) <= stationRad() + 3
 	if o.type == "intercept":
 		for x in B["units"]:
 			if jt(x.get("transport")) and not jt(x.get("dead")) and hdist(x, t) <= 3: return true
