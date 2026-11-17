@@ -157,6 +157,11 @@ function buildChecks() {
 
 // ---------- running ----------
 
+function printRow(row) {
+  console.log(row.result + ': ' + row.check + ' (' + row.seconds.toFixed(2) + ' s) | ' + row.detail);
+  if (row.result === 'FAIL') console.log('\nFAIL ' + row.check + ' (first 15 output lines):\n' + row.output.split(/\r?\n/).slice(0, 15).join('\n'));
+}
+
 async function execute(c, baseline) {
   const start = Date.now();
   const row = { check: c.name, result: 'FAIL', seconds: 0, detail: '', output: '' };
@@ -237,19 +242,18 @@ async function main() {
       const row = { check: c.name, result: 'SKIP', seconds: 0, detail: 'SKIP: fast', output: '' };
       report.push(row);
       console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
-      console.log(row.detail);
+      printRow(row);
       continue;
     }
     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
     const row = await execute(c, baseline);
     if (c.gate && row.result === 'SKIP') { row.result = 'FAIL'; row.detail = 'FAIL: gating row would skip: ' + row.detail; }
     report.push(row);
-    console.log(row.detail);
+    printRow(row);
   }
   console.log('\ncheck | result | seconds | detail');
   console.log('--- | --- | --- | ---');
   for (const r of report) console.log(`${r.check} | ${r.result} | ${r.seconds.toFixed(2)} | ${r.detail}`);
-  for (const r of report.filter(r => r.result === 'FAIL')) console.log('\nFAIL ' + r.check + ' (first 15 output lines):\n' + r.output.split(/\r?\n/).slice(0, 15).join('\n'));
   const skipped = report.filter(r => r.result === 'SKIP').map(r => r.check);
   if (skipped.length) console.log('\nSKIP: ' + skipped.join(', '));
   if (args.includes('--json')) fs.writeFileSync(path.join(ROOT, 'checks_report.json'), JSON.stringify(report, null, 2) + '\n');
@@ -260,4 +264,4 @@ if (require.main === module) {
   main().catch(e => { console.error(ascii(e.stack)); process.exitCode = 1; });
 }
 
-module.exports = { classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT };
+module.exports = { classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, buildChecks, ROOT };

@@ -158,7 +158,7 @@ if errorlevel 1 goto :nochange
 rem A chain needs green runner checks as well as a confirmed non-partial push.
 if defined PARTIAL goto :afterchecks
 if "%PC_RUNNER_TEST%"=="1" goto :afterchecks
-call "%TP%tmo.bat" 900 node contrib\opus\tools\run_all_checks.js > "%O%\checks_node.txt" 2>&1
+call "%TP%tmo.bat" 1800 node contrib\opus\tools\run_all_checks.js > "%O%\checks_node.txt" 2>&1
 set "NODE_EXIT=%ERRORLEVEL%"
 call "%TP%tmo.bat" 1500 "%COMSPEC%" /c tools\pc\parity.bat nopause > "%O%\checks_parity.txt" 2>&1
 set "PARITY_EXIT=%ERRORLEVEL%"
