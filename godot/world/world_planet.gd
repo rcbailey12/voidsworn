@@ -490,14 +490,15 @@ void fragment() {
 	dens *= mix(0.35, 1.0, smoothstep(0.08, 0.2, u));
 	vec3 L = normalize(sun);
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
-	// the planet's shadow across the ring
+	// Closest point on the ray toward the sun, in planet radii. On the lit
+	// side the closest point is the ring itself, already outside the sphere.
 	vec3 rel = vW - vC;
-	float t = dot(-rel, L);
-	float sh = 1.0;
-	if (t > 0.0) {
-		float dperp = length(rel + L * t) / vR;
-		sh = smoothstep(0.97, 1.03, dperp);
-	}
+	float t = max(dot(-rel, L), 0.0);
+	float dperp = length(rel + L * t) / vR;
+	// Widen the penumbra downsun and keep some light in the umbra so the
+	// shadow reads across the bands without looking like a cut in the ring.
+	float penumbra = mix(0.23, 0.48, smoothstep(0.0, 2.0, t / vR));
+	float sh = mix(0.38, 1.0, smoothstep(1.0 - penumbra, 1.0 + penumbra, dperp));
 	vec3 c = mix(col_b, col_a, n1(u * 23.0 + 5.0));
 	// lit from either side; brighter seen against the light (forward scattering)
 	float fwd = pow(max(dot(-V, L), 0.0), 6.0);

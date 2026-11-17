@@ -1,0 +1,94 @@
+{
+  "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "GRID-C.jpg",
+  "date": "2026-11-17T21:20:52Z",
+  "sources": [
+    {
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": true,
+      "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "GRID-C-main-still.png",
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-17T21:20:52Z",
+      "image_sha256": "a639abf99b11ed3f82a838da262b119eaee23ed530208e6ab05d967ef05221ff",
+      "sources": [
+        {
+          "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "GRID-C-final-still.png",
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": true,
+      "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+      "stage": "installed in game",
+      "date": "2026-11-17T21:20:52Z",
+      "image_sha256": "8e1a1d9f8a635fc4eb3d5883319695be197ec4c99b899aa83037bd39031541e7",
+      "sources": [
+        {
+          "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+          "source_dirty": true,
+          "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "GRID-C-final-tactical.png",
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": true,
+      "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+      "stage": "installed in game",
+      "date": "2026-11-17T21:20:52Z",
+      "image_sha256": "42e846af35cd932cae787d99eab674e0dadde322f2c3d325dfb311e713f8dfa2",
+      "sources": [
+        {
+          "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+          "source_dirty": true,
+          "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    586,
+    636,
+    710
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "0cc8d7d38bba924f28bcf1eabbede73b320765f9fe488f3eacf79ce1c3598a2b"
+  ],
+  "stamp_template_sha256": "580b355af0be8efc10e3a31ec3a1676c04245d77f5f1210de20f20d86edfc42b",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgFNLT4l/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fqQcBO/eunywAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "b5479594c4a6762b4c80d927508518be5dddf202f61499e4f061c47c43964360"
+}
