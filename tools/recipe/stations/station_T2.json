@@ -24,7 +24,21 @@
   "install": true,
   "install_authority": "CODEX_TASK.md issue 975 current run, Nov 17: Ryan approved PR 700 shape; step 1 says Paint the station with the Hegemony stack and install it. This replaces issue 373's review-only install setting for this production run. Board review and Ryan's final painted look are still owed before merge.",
   "notes": "A station is not a data.js ship. Use the station launcher, never invent ship weapons, engines or RCS hard points. The production adapter preserves the approved world scale and joints. Live rules footprint and blocked cells are unchanged; visual overhang is reported. T1 is a later state of this kit; refinery T3 is separate.",
-  "motion": "One cold radiator hanging open on one hinge swings +/-3 degrees in 240 seconds. Ring seized; all other parts static.",
+  "motion": "One cold radiator hanging open on one hinge swings +/-3 degrees in 240 seconds. Ring seized. Issue 863 adds separate detached fittings with continuous slow tumble at 0.12 to 0.38 degrees/second; base station parts retain their original motion.",
+  "debris": {
+    "issue": 863,
+    "status": "Part set built; installation, loaded clearance proof and game captures pending",
+    "install_authority": "Issue 863 current brief: add sparse debris off the damaged stub arm on the painted issue 975 station; retain rules cells and report every piece against them",
+    "launcher": "tools/blender/kits/hegemony_station/debris_run.bat",
+    "generator": "tools/blender/kits/hegemony_station/debris.py",
+    "runtime": "godot/render/station_debris.gd",
+    "cache": "res://gen/ships/station_T2_debris.scn",
+    "parts": "6 thick torn plates, 4 bent I-section girders, 3 cold pressure pods, 21 fine fragments",
+    "paint": "Existing painted T2 Hegemony PBR materials, two game units per repeat; no base geometry or paint changed",
+    "placement": "Off the 270-degree stub, outside the complete seven-cell circumcircle at every bearing; below fitted ship flight space; independent non-overlapping tumble spheres",
+    "check": "tools/blender/kits/hegemony_station/debris_check.gd measures actual loaded meshes, live rules cells and fitted roster/boss hulls; report docs/shots/look_bench/station/debris_checks.json",
+    "evidence": "docs/shots/look_bench/station/debris_README.md"
+  },
   "review_run": 5,
   "production_issue": 975,
   "production_evidence": "docs/shots/look_bench/station/production_checks.json"

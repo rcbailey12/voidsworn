@@ -38,6 +38,13 @@ static func station(size: float) -> Node3D:
 	if ResourceLoader.exists(t2_path):
 		var t2 := (load(t2_path) as PackedScene).instantiate() as Node3D
 		t2.set_meta("station_T2", true)
+		# Refs #863. Separate kit/cache leaves PR 977's painted station intact.
+		var debris_path := "res://gen/ships/station_T2_debris.scn"
+		if ResourceLoader.exists(debris_path):
+			var debris := (load(debris_path) as PackedScene).instantiate() as Node3D
+			debris.name = "station_T2_debris"
+			debris.set_script(load("res://render/station_debris.gd"))
+			t2.add_child(debris)
 		var look = load("res://render/look.gd")
 		for child in t2.find_children("*", "MeshInstance3D", true, false):
 			for i in child.mesh.get_surface_count():

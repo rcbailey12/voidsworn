@@ -1,5 +1,9 @@
 # station_T2: production paint, issue 975
 
+Issue 863 adds a separate damage-side debris kit on this painted base. Its current pictures, motion proof, triangle
+cost and per-piece cell clearances are in [the debris evidence](debris_README.md). The production paint record below
+belongs to issue 975 and remains the reference for the unchanged base station.
+
 Ryan approved PR 700's T2 shape on Nov 17. Issue 975 takes that exact kit through recipe stages 5 to 7.
 `design.py`, `parts.py`, towers, ring, arms, authored joints, damage and insides are unchanged. The production check
 compares every evaluated vertex and triangle before and after painting, then reads the exported GLB independently.
