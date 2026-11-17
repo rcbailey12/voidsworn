@@ -9,12 +9,11 @@
 #      G edges (the bevel normal against the face normal: every plate edge, rim and step), B ambient occlusion at a long reach
 #      (where grime gathers: under decks, between parts). Parts occlude the hull and the hull the parts, as on the real ship;
 #   3. builds one procedural material per (zone, atlas) from the faction stack's layers, every layer driven by those masks, the
-#      world position and the face normal: base colour (two tones, one tone per plate island), soot, rust and run-off, grime,
+#      world position and the face normal: module family, surface duty and a small local step, soot, rust and run-off, grime,
 #      edge wear to bare metal, the faction's TRIM SHEET (rivet rows near plate edges, scuffs, grilles, tread, stripes; sampled
 #      by box projection at ship scale, so a gun and a hull plate carry the same rivet and scuff density, R224) and DECALS
 #      (placed by the faction's rules on the ship's own surfaces by ray cast, never painted by hand);
-#   4. bakes the atlases: albedo, ORM (occlusion, roughness, metal) for both; a detail normal for the hull (rivets, welds,
-#      scuffs and seams from the same layers' height);
+#   4. bakes albedo, ORM (occlusion, roughness, metal) and a detail normal for both atlases (rivets, wear and seams);
 #   5. puts the textured materials on the ship (the recipe's export, stage 7, reads them), keeps glowing zones as their own
 #      emissive surfaces and leaves the insides with the sheet's own materials.
 # The concept picture is never projected onto the ship: colours may be sampled from it (the faction stack says where).
@@ -77,35 +76,20 @@ def unwrap(objs, margin):
     bpy.ops.object.mode_set(mode='OBJECT')
 
 
-def mirror_islands(o):
-    """issue 783: a per-plate random that a plate and its mirror twin share (point attribute ps_isl, 0..1), for a stack that asks
-    for a mirrored paint (LAYERS mirror). Blender's Random Per Island numbers islands in mesh order, so twins got unrelated tones;
-    here each island (vertices joined by edges) takes a hash of its centre folded to the port side, (x, |y|, z), on a 0.1 mm grid."""
-    me = o.data; n = len(me.vertices)
-    if not n: return 0
-    co = np.zeros(n * 3, np.float32); me.vertices.foreach_get('co', co); co = co.reshape(n, 3) @ np.asarray(o.matrix_world)[:3, :3].T + np.asarray(o.matrix_world)[:3, 3]
-    ev = np.zeros(len(me.edges) * 2, np.int64); me.edges.foreach_get('vertices', ev); ev = ev.reshape(-1, 2)
-    root = np.arange(n)
-    def find(a):
-        while root[a] != a:
-            root[a] = root[root[a]]; a = root[a]
-        return a
-    for a, b in ev:
-        ra, rb = find(a), find(b)
-        if ra != rb: root[max(ra, rb)] = min(ra, rb)
-    lab = np.array([find(i) for i in range(n)])
-    _, inv = np.unique(lab, return_inverse=True); k = inv.max() + 1
-    cen = np.zeros((k, 3)); np.add.at(cen, inv, co.astype(np.float64)); cen /= np.bincount(inv, minlength=k)[:, None]
-    cen[:, 1] = np.abs(cen[:, 1])
-    q = np.round(cen * 1e4).astype(np.int64)
-    h = (q[:, 0] * 73856093) ^ (q[:, 1] * 19349663) ^ (q[:, 2] * 83492791)
-    val = ((h * 2654435761) % 1000003) / 1000003.0
-    if me.attributes.get('ps_isl') is None: me.attributes.new('ps_isl', 'FLOAT', 'POINT')
-    me.attributes['ps_isl'].data.foreach_set('value', val[inv].astype(np.float32))
-    return int(k)
+def part_module_tones(S, objs):
+    """Pick a finish once per authored assembly, including its mount and turning pieces."""
+    by_group = {}
+    for o in objs:
+        kind = o.get('part_kind')
+        if kind:
+            by_group.setdefault(o.get('grp', o.name), kind)
+    return {
+        o.name: S.MODULE_TONES[S.PART_FAMILIES.get(by_group.get(o.get('grp', o.name)), 'body')]
+        for o in objs
+    }
 
 
-def bake_copy(objs, name, zone_by_kind=None):
+def bake_copy(objs, name, zone_by_kind=None, module_tones=None):
     """one joined copy of these objects (same UVs and material slots, world space, no modifiers), so Cycles syncs the scene once
     per bake instead of once per object (round 6 lesson, bakeAb6.py); the originals are hidden from the render meanwhile"""
     cps = []
@@ -113,6 +97,9 @@ def bake_copy(objs, name, zone_by_kind=None):
         c = o.copy(); c.data = o.data.copy(); bpy.context.scene.collection.objects.link(c)
         mw = o.matrix_world.copy(); c.parent = None; c.matrix_world = mw
         for md in list(c.modifiers): c.modifiers.remove(md)
+        if module_tones is not None:
+            tone = c.data.attributes.new('ps_module_tone', 'FLOAT', 'POINT')
+            tone.data.foreach_set('value', np.full(len(c.data.vertices), module_tones[o.name], np.float32))
         z = (zone_by_kind or {}).get((o.get('part_kind'), o.data.materials[0].name if o.data.materials else ''))
         if z:      # the faction stack gives this part kind its own zone (a launch bay mouth's warning stripes)
             ph = bpy.data.materials.get(z) or bpy.data.materials.new(z)
@@ -166,7 +153,7 @@ def np_image(name, arr, colour=True):
 
 # ------------------------------------------------------------------------------------------------------------ shared node blocks
 class Ctx:
-    """the inputs every layer reads, made once per material: masks, position, normal, per-plate random, edge bands"""
+    """the inputs every layer reads, made once per material: masks, position, normal and edge bands"""
     def __init__(self, nt, masks, scale, mirror=False):
         self.nt = nt
         tc = node(nt, 'ShaderNodeTexCoord'); geo = node(nt, 'ShaderNodeNewGeometry'); self.tc, self.geo = tc, geo
@@ -187,11 +174,6 @@ class Ctx:
         self.up = math_(nt, 'MAXIMUM', self.nz, 0)
         self.down = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', self.nz, -1), 0)
         self.side = math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', self.nz))
-        self.isl = geo.outputs['Random Per Island'] if 'Random Per Island' in geo.outputs else None
-        if mirror:      # the plate's own random, the same for a plate and its mirror twin (mirror_islands writes it on the bake copy)
-            at = node(nt, 'ShaderNodeAttribute'); at.attribute_type = 'GEOMETRY'; at.attribute_name = 'ps_isl'; self.isl = at.outputs['Fac']
-        if self.isl is None:
-            oi = node(nt, 'ShaderNodeObjectInfo'); self.isl = oi.outputs['Random']
         self.scale = scale
         self._edge_band = None
 
@@ -354,11 +336,20 @@ def _seams(c, S, lines):
     return seam
 
 
+def repair_cluster(c, cell_id):
+    """Neighbouring salvage cells share a repair register within the authored shell section."""
+    nt = c.nt
+    ids = node(nt, 'ShaderNodeSeparateXYZ')
+    nt.links.new(cell_id, ids.inputs[0])
+    xyz = [math_(nt, 'FLOOR', math_(nt, 'DIVIDE', axis, 2)) for axis in ids.outputs]
+    return _wn(nt, xyz[0], xyz[1], math_(nt, 'ADD', xyz[2], math_(nt, 'MULTIPLY', c.shell_module, 41.0)))
+
+
 def patchwork(c, S, col, amount, families=None, cells=None):
     """the plate patchwork (R228, R240; RULEBOOK 0.5, tidy is a fault): two uneven panel grids of different sizes (_grid: no even
     row, no repeated cell, no row running on across a face), the region of each chosen by a broad noise, plus a sparse layer of
-    larger patch plates laid over them; each panel (and each modelled plate, by its UV island) picks one of the faction's plate
-    families. Returns the colour and the seam mask."""
+    larger patch plates laid over them. Hullbreaker colours follow those same seam cells and their repair clusters.
+    Returns the colour and the seam mask."""
     if hasattr(S, 'panel_nodes'):
         return S.panel_nodes(c, col, amount, families, cells)
     nt = c.nt; L = S.LAYERS; families = families or S.PATCH_FAMILIES
@@ -372,8 +363,10 @@ def patchwork(c, S, col, amount, families=None, cells=None):
         seam = sm if seam is None else math_(nt, 'ADD', seam, sm)
     def pick(cid, w, col, small=False):
         wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cid, wn.inputs['Vector'])
-        r = math_(nt, 'FRACT', math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', c.isl, .618)))
+        cluster, _, _, _ = repair_cluster(c, cid)
         sp2 = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sp2.inputs[0]); tone = sp2.outputs[1]
+        grouped = math_(nt, 'LESS_THAN', sp2.outputs[2], .55)
+        r = math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', grouped, math_(nt, 'SUBTRACT', cluster, wn.outputs['Value'])))
         lo = 0.0
         for fam_ in families:
             share, (flo, fhi) = fam_[0], fam_[1]
@@ -394,33 +387,75 @@ def patchwork(c, S, col, amount, families=None, cells=None):
     return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
 
 
-def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
+def seam_limit(c, x, path):
+    """Read the sheet's kinked plan seam as an x boundary at the current beam position."""
+    if not path:
+        return x
+    nt = c.nt
+    path = sorted(path, key=lambda point: point[1])
+    low_y, high_y = path[0][1], path[-1][1]
+    if high_y <= low_y:
+        return x
+    low_x = min(p[0] for p in path)
+    span_x = max(p[0] for p in path) - low_x
+    if span_x < 1e-6:
+        return low_x
+    along = math_(nt, 'DIVIDE', math_(nt, 'SUBTRACT', c.y, low_y), high_y - low_y)
+    profile = node(nt, 'ShaderNodeValToRGB')
+    nt.links.new(along, profile.inputs['Fac'])
+    elements = profile.color_ramp.elements
+    stops = [elements[0], elements[1]]
+    for px, element in zip((path[0][0], path[-1][0]), stops):
+        value = (px - low_x) / span_x
+        element.color = (value, value, value, 1)
+    for px, py in path[1:-1]:
+        element = elements.new((py - low_y) / (high_y - low_y))
+        value = (px - low_x) / span_x
+        element.color = (value, value, value, 1)
+    return math_(nt, 'ADD', low_x, math_(nt, 'MULTIPLY', profile.outputs['Color'], span_x))
+
+
+def module_finish(c, S, zone, group, joints):
+    """R318: choose a module family, then an authored finish for its surface duty."""
+    nt = c.nt
+    c.shell_module = 0.0
+    tone = S.MODULE_TONES[S.HULL_FAMILIES[0]]
+    for i, (joint, path) in enumerate(joints, 1):
+        after = math_(nt, 'GREATER_THAN', c.x, seam_limit(c, joint, path))
+        c.shell_module = math_(nt, 'ADD', c.shell_module, after)
+        if group == 'H':
+            families = S.HULL_FAMILIES
+            step = S.MODULE_TONES[families[i % len(families)]] - S.MODULE_TONES[families[(i - 1) % len(families)]]
+            if step:
+                tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', after, step))
+    if group == 'P':
+        attr = node(nt, 'ShaderNodeAttribute', attribute_type='GEOMETRY', attribute_name='ps_module_tone')
+        tone = attr.outputs['Fac']
+    z = S.ZONES[zone]
+    duty = S.SURFACE_DUTIES[zone]
+    base = getattr(S, 'PART_DUTY_TONES', {}).get(duty) if group == 'P' else None
+    if base is None:
+        base = tuple((a + b) / 2 for a, b in zip(z['lo'], z['hi']))
+    rgb = node(nt, 'ShaderNodeRGB')
+    rgb.outputs[0].default_value = (*base, 1.0)
+    return mulc(nt, rgb.outputs[0], tone)
+
+
+def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
     """the procedural material of one zone in one atlas (group 'H' hull, 'P' parts), from the faction stack S"""
     z = S.ZONES[zone]
     m = bpy.data.materials.new(f'ps_{zone}_{group}'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
     c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
     L = S.LAYERS
-    lo, hi = z['lo'], z['hi']
-    # 1. base: two tones in broad patches, one tone per plate island (a scavenged hull: no two plates alike)
-    # the plate's own tone first (its island), a soft broad patch over it, a fine mottle: a hull of salvaged plates, no camouflage
-    it = L.get('island_tone', .75)       # issue 642: how much of the base tone is the plate island's own (thousands of tiny islands read as grain)
-    tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', c.isl, it), math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['patch_scale'], 3), .3, .7), 1 - it))
-    col = mixc(nt, lo, hi, tone)
-    col = mulc(nt, col, math_(nt, 'ADD', 1 - z.get('plate_var', L['plate_var']) / 2, math_(nt, 'MULTIPLY', c.isl, z.get('plate_var', L['plate_var']))))
-    mo = L.get('mottle', .2); col = mulc(nt, col, math_(nt, 'ADD', 1 - mo / 2, math_(nt, 'MULTIPLY', c.noise(L['mottle_scale'], 5, .65), mo)))
+    col = module_finish(c, S, zone, group, joints)
     seam = None
-    if group == 'H' and z.get('red_share', 0) > 0:      # a share of the zone's hull plates (by island) carry the red over-paint, worn
-        pick = math_(nt, 'GREATER_THAN', math_(nt, 'FRACT', math_(nt, 'MULTIPLY', c.isl, 7.31)), 1 - z['red_share'])
-        rlo, rhi = S.RED_PLATE
-        red = mixc(nt, rlo, rhi, ramp(nt, c.noise(L['patch_scale'] * 3, 3), .3, .7))
-        thin = ramp(nt, c.noise(L['mottle_scale'] * .5, 4, .6), .32, .58)          # the paint is thin and patchy
-        col = mixc(nt, col, red, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', pick, thin), L.get('red_tone', .75)))
-    if group == 'H' and z.get('patchwork', 0) > 0 and getattr(S, 'PATCH_FAMILIES', None):
+    if group == 'H' and z.get('patchwork', 0) > 0:
         col, seam = patchwork(c, S, col, z['patchwork'])
-    elif group == 'P' and z.get('patchwork_parts', 0) > 0 and getattr(S, 'PATCH_FAMILIES_PARTS', None):
-        # R224 in paint: big part faces (a rack box, a turret top) carry the hull's plate and seam detail at a smaller plate size
-        col, seam = patchwork(c, S, col, z['patchwork_parts'], S.PATCH_FAMILIES_PARTS, S.LAYERS['patch_parts'])
+    elif group == 'P' and z.get('patchwork_parts', 0) > 0:
+        col, seam = patchwork(c, S, col, z['patchwork_parts'], cells=L['patch_parts'])
+    # The finish varies by at most 1.5 percent in either direction, in ship space.
+    col = mulc(nt, col, math_(nt, 'ADD', .985, math_(nt, 'MULTIPLY', c.noise(L['mottle_scale'], 2), .03)))
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['side_dark'], math_(nt, 'MULTIPLY', c.up, L['side_dark'])))
     height = math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 4, .6), L.get('grain', .05))
     rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 2), .08))
@@ -465,9 +500,13 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     run = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['streak_scale'] * .7, 2, .5, stretch=(30, 30, 1.6)), .55, .74), c.side), z.get('grime', L['grime']) * .5)
     col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, run))
     cav = math_(nt, 'POWER', c.ao, L.get('cavity_pow', 1.0))
-    col = mulc(nt, col, math_(nt, 'ADD', 1 - L['ao_dark'], math_(nt, 'MULTIPLY', cav, L['ao_dark'])))
+    ao_dark = L.get('parts_ao_dark', L['ao_dark']) if group == 'P' else L['ao_dark']
+    col = mulc(nt, col, math_(nt, 'ADD', 1 - ao_dark, math_(nt, 'MULTIPLY', cav, ao_dark)))
     if seam is not None:       # black seams between the panels
-        col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, L.get('seam_dark', .8))))
+        seam_dark = L.get('seam_dark', .8)
+        if group == 'P':
+            seam_dark = L.get('parts_seam_dark', seam_dark)
+        col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, seam_dark)))
         panel_height = math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5))
         panel_height.node.label = 'NORMAL_PATCHWORK_HEIGHT'
         height = math_(nt, 'SUBTRACT', height, panel_height)
@@ -499,7 +538,7 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     m['ps_zone'] = zone; m['ps_group'] = group
     # Only the trophy layer needs this repair. Other factions retain their
     # original bake path even if a later ship adds more nodes or decals.
-    m['ps_height_bake'] = group == 'H' and bool((getattr(S, 'TROPHY', None) or {}).get('share'))
+    m['ps_height_bake'] = bool((getattr(S, 'TROPHY', None) or {}).get('share'))
     return m
 
 
@@ -997,10 +1036,18 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         for o in plug: o['emissive_zone'] = 'plug'
         P = [o for o in P if o not in plug]; G = G + plug
     unwrap(H, .0003); unwrap(P, .0004)
+    scene = bpy.context.scene
+    if hasattr(S, 'paint_joints'):
+        joints = [(x, None) for x in sorted(S.paint_joints())]
+    else:
+        cuts = scene.get('r209_t_lines', ())
+        paths = json.loads(scene.get('r209_t_paths', 'null')) or [None] * len(cuts)
+        joints = list(zip(cuts, paths))
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
-        J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None)); hid = {o.name: o.hide_render for o in objs}
-        if S.LAYERS.get('mirror'): INFO[f'mirror_islands_{group}'] = mirror_islands(J)
+        tones = part_module_tones(S, objs) if group == 'P' else None
+        J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None), tones)
+        hid = {o.name: o.hide_render for o in objs}
         for o in objs: o.hide_render = True
         for o in I: o.hide_render = True
         mm = mask_material(f'ps_mask_{group}', S)
@@ -1011,7 +1058,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         mats = {}
         for i, z in enumerate(zones):
             zz = z if z in S.ZONES else S.FALLBACK
-            if zz not in mats: mats[zz] = zone_material(S, zz, group, masks, tiles, decals if group == 'H' else (), datlas)
+            if zz not in mats: mats[zz] = zone_material(S, zz, group, masks, tiles, decals if group == 'H' else (), datlas, joints)
             J.material_slots[i].material = mats[zz]
         ml = list(mats.values()); imgs = {}
         for kind, cs in (('albedo', True), ('orm', False)):
@@ -1020,15 +1067,15 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
             for m in ml: _emit_switch(m, 'ALBEDO' if kind == 'albedo' else 'ORM')
             INFO[f'bake_{group}_{kind}_s'] = bake(J, 'EMIT', 8); save(im, out, im.name); imgs[kind] = im
         for m in ml: _emit_switch(m, None)
-        if group == 'H':
-            im = new_image(f'{cell}_hull_normal', R, colour=False, fill=(.5, .5, 1, 1))
-            _target(ml, im); INFO['bake_H_normal_s'] = bake(J, 'NORMAL', 8); save(im, out, im.name); imgs['normal'] = im
+        atlas = 'hull' if group == 'H' else 'parts'
+        im = new_image(f'{cell}_{atlas}_normal', R, colour=False, fill=(.5, .5, 1, 1))
+        _target(ml, im); INFO[f'bake_{group}_normal_s'] = bake(J, 'NORMAL', 8); save(im, out, im.name); imgs['normal'] = im
         maps[group] = imgs
         for o in objs: o.hide_render = hid[o.name]
         bpy.data.objects.remove(J)
         INFO[f'zones_{group}'] = sorted(mats)
     HM = textured(f'{cell}_hull_mat', maps['H']['albedo'], maps['H']['orm'], maps['H']['normal'])
-    PM = textured(f'{cell}_parts_mat', maps['P']['albedo'], maps['P']['orm'])
+    PM = textured(f'{cell}_parts_mat', maps['P']['albedo'], maps['P']['orm'], maps['P']['normal'])
     # issue 601: these surfaces carry the stack's own roughness; the game gives them the soft rim light (godot/render/look.gd RIM
     # soft), not the full specular that flared white on them at the close cameras. glTF writes it as the material's extras.
     for M_ in (HM, PM): M_['rim_soft'] = 1
