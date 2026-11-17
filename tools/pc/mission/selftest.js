@@ -220,6 +220,7 @@ async function test() {
   }
   let connected=true;try{await request(port);}catch(_){connected=false;}
   check('closing the publisher process closes its server',()=>assert.equal(connected,false));
+  await require('./phone_selftest').test(check, base, root);
   console.log(`PASS mission publisher: ${count} checks; no real lane files touched`);
   console.log('Fixture data and local test output kept in '+base);
   return {base,cases};
