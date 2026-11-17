@@ -49,6 +49,8 @@ set "PC_GPU_ISSUE=%N%"
 set "PC_GPU_LANE="
 echo %R%| findstr /i /c:"board_c" >nul
 if not errorlevel 1 set "PC_GPU_LANE=C"
+echo %R%| findstr /i /c:"board_d" >nul
+if not errorlevel 1 set "PC_GPU_LANE=D"
 if not defined CODEX_TEST_ROOT goto :setup
 set "B=%CODEX_TEST_ROOT%"
 set "R=%CODEX_TEST_ROOT%\repo"

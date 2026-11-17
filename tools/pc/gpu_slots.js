@@ -148,6 +148,13 @@ function modeFor(exe, args, cwd = process.cwd(), requested = '') {
   return resources.some(measures) ? 'solo' : 'shared';
 }
 
+// Lanes C (board_c) and D (board_d) are code only (R268, R301). The runner flag or the working folder is enough (issue 947).
+function codeOnlyLane(flag, cwd) {
+  if (flag === 'C' || flag === 'D') return flag;
+  const m = /(?:^|[\\/])board_([cd])(?:[\\/]|$)/i.exec(cwd || '');
+  return m ? m[1].toUpperCase() : '';
+}
+
 async function main() {
   const [action, root, issue, pid, mode, weight = '1'] = process.argv.slice(2);
   if (action === 'classify') {
@@ -160,7 +167,8 @@ async function main() {
   const slots = new Slots(root);
   if (action === 'release') { await transaction(() => slots.release(issue)); return; }
   if (action !== 'acquire' || !['shared', 'solo'].includes(mode)) throw new Error('Usage: gpu_slots.js acquire ROOT ISSUE PID shared|solo [WEIGHT]');
-  if (process.env.PC_GPU_LANE === 'C' || /(?:^|[\\/])board_c(?:[\\/]|$)/i.test(process.cwd())) throw new Error('Lane C is code only; GPU work refused');
+  const lane = codeOnlyLane(process.env.PC_GPU_LANE, process.cwd());
+  if (lane) throw new Error(`Lane ${lane} is code only; GPU work refused`);
   const holder = { token: crypto.randomUUID(), issue, pid: Number(pid), mode,
     weight: positiveInteger(weight, 'GPU weight'), started: new Date().toISOString() };
   let claimed = false;
@@ -177,4 +185,4 @@ async function main() {
   }
 }
 if (require.main === module) main().catch(e => { console.error('GPU claim: ' + e.message); process.exitCode = 1; });
-module.exports = { Slots, modeFor, weightFor, transaction };
+module.exports = { Slots, modeFor, weightFor, transaction, codeOnlyLane };
