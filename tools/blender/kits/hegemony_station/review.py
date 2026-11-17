@@ -474,7 +474,7 @@ def lighting(scene):
         ob.rotation_euler=(-ob.location).to_track_quat('-Z','Y').to_euler()
 
 
-def export(root,move,objs,out):
+def export(root,move,objs,out,vertex_colour=None):
     # Keep the source blend's per-module meshes and insides. Only export copies are joined.
     copies=[]
     for ob in objs:
@@ -493,9 +493,13 @@ def export(root,move,objs,out):
     for ob in bpy.context.scene.objects:
         if ob.name in ('T2_moving_mesh','T2_structure') or ob.name.startswith('tower_axis_'): ob.select_set(True)
     bpy.context.scene.frame_end=int(D.MOTION['period']*bpy.context.scene.render.fps)+1
+    colour_options = {} if vertex_colour is None else dict(
+        export_vertex_color='NAME', export_vertex_color_name=vertex_colour,
+        export_all_vertex_colors=False)
     bpy.ops.export_scene.gltf(filepath=str(out/'station_T2_review.glb'),export_format='GLB',
         use_selection=True,export_extras=True,export_yup=True,export_animations=True,
-        export_frame_range=True,export_animation_mode='ACTIONS',export_materials='EXPORT')
+        export_frame_range=True,export_animation_mode='ACTIONS',export_materials='EXPORT',
+        **colour_options)
 
 
 def main():

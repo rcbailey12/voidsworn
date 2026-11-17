@@ -9,18 +9,23 @@
   "concept_plan": "contrib/muse/design/station_concept_2026_11/station_T2_scale.jpg",
   "design_pack": "contrib/muse/design/station_pack_2026_11/pack.md",
   "sheet": "docs/shots/look_bench/station",
-  "status": "build sheet awaiting Board review",
+  "status": "PR 700 shape retained; issue 975 run 2 changes paint and windows only, preserving the run 1 live swap",
+  "production_launcher": "tools/recipe/station_paint.bat",
+  "production_check": "tools/blender/kits/hegemony_station/production_check.py",
   "recipe_stages": {
     "1": "accepted T2 beauty and plan named above",
     "2": "pending: accepted concept AI shape reference; CPU-only Blender run",
     "3": "sheet design is authority, never trace the sheet again",
     "4": "run 5 T2 kit: upright spread towers; habitat airlocks and hatches, connected pipes, berth clamps and dark guide lenses, cargo cranes and bay door, tower sensors, trussed solar wings and cold radiators, ring thruster quads and EVA rails; one large observation pane; uniform 99.2-unit span and run 3 breaks retained; source footprint and 49 poses checked; production fit and seam export pending",
-    "5": "pending: production geometry-mask and trim bake after sheet approval",
-    "6": "review GLB cost in cost.json; CPU sheets plus Godot GPU studio comparisons for every combat class at camera170 and partial detail at camera60; production station-map scene gate pending after approval",
-    "7": "review GLB only; no install before gate and Ryan look"
+    "5": "Hegemony faction stack through shared paint machinery; station-only T2 pale/warm metal palette, dark structural bands, minority blue panels, connected-panel tones, cavity/bevel wear and directional cold grime; fixed-density PBR tiles and framed hwin glazing with dim interiors; PR 700 shape and insides unchanged",
+    "6": "production_checks.json reports exported GLB triangles, surfaces and measured UV density against the real C15s_23 cruiser; installed 20-ship station-map scene gate at 1080p and 4K",
+    "7": "issue 975 authorizes local production installation: preserve replaced station_T2 GLB and scene cache, cache production GLB under gen/ships/station_T2.scn, verify board readback, capture twice at 170, 60 and closest battle camera, retain second run"
   },
-  "install": false,
-  "notes": "A station is not a data.js ship. Do not pass this entry to the ship launchers or invent weapon, engine or RCS hard points. This review entry records the same ship-recipe gates at station scale; it does not claim that the ship export contract already supports stations. T1 is a later state of this kit; refinery T3 is separate.",
+  "install": true,
+  "install_authority": "CODEX_TASK.md issue 975 run 2, Nov 17: keep every triangle, density work and gate; change only paint and lights; the live swap stays as run 1 wired it. Board review and Ryan's final painted look remain owed before merge.",
+  "notes": "A station is not a data.js ship. Use the station launcher, never invent ship weapons, engines or RCS hard points. The production adapter preserves the approved world scale and joints. Live rules footprint and blocked cells are unchanged; visual overhang is reported. T1 is a later state of this kit; refinery T3 is separate.",
   "motion": "One cold radiator hanging open on one hinge swings +/-3 degrees in 240 seconds. Ring seized; all other parts static.",
-  "review_run": 4
+  "review_run": 5,
+  "production_issue": 975,
+  "production_evidence": "docs/shots/look_bench/station/production_checks.json"
 }
