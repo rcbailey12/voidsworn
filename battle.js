@@ -242,7 +242,7 @@ function genTerrain(map,shape,opt){
   if(m==='station'){ const want=opt.stationAt||{q:mid.q+ri(-1,1),r:mid.r+ri(-1,1)};
     /* R314: the big station blocks every hex within 2 of its centre (19 hexes), so the site needs its whole footprint on the board and clear of any hole (a dead star, a shoal, a colossus) */
     const cellsAt=(h,rad)=>{ const o=[]; for(let dq=-rad;dq<=rad;dq++) for(let dr=Math.max(-rad,-dq-rad);dr<=Math.min(rad,-dq+rad);dr++) o.push({q:h.q+dq,r:h.r+dr}); return o; };
-    const okSite=h=>cellsAt(h,2).every(x=>onBoard(x.q,x.r))&&!(VOID.holes||[]).some(o=>o.cells.some(([q,r])=>hdist(h,{q,r})<=2));
+    const okSite=h=>cellsAt(h,2).every(x=>onBoard(x.q,x.r))&&!(VOID.holes||[]).some(o=>o.cells.some(([q,r])=>hdist(h,{q,r})<=4));
     const c=okSite(want)?want:(all.filter(okSite).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||all.filter(h=>onBoard(h.q,h.r)&&DIRS.every(d=>onBoard(h.q+d[0],h.r+d[1]))).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||want); TERRAIN_META.station=c; TERRAIN_META.stationR=2;
     for(const h of all){ const d=hdist(h,c); if(d<=2) T[hkey(h.q,h.r)]='station'; else if(d<=4&&rnd()<.42) put(h,'debris'); }
     for(let i=0;i<3;i++) blob('rock',ri(2,4),5,BW-6); blob('neb',ri(5,8),5,BW-6); }

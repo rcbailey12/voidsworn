@@ -1888,7 +1888,7 @@
   "rounds": 8,
   "bot": "full",
   "note": "Tree fixture: Tamsa Cast Twice in Light (aelith:A:0:1) repeats an extra wing strike at half damage",
-  "seed": 31201,
+  "seed": 37100,
   "admiral": "aelith",
   "fleet": [
    "i_carrier",
@@ -2645,7 +2645,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 31504,
+  "seed": 37101,
   "admiral": "vex",
   "fleet": [
    "penitent",
@@ -3208,7 +3208,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 7919,
+  "seed": 37107,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3241,7 +3241,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 7919,
+  "seed": 37101,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3461,7 +3461,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31806,
+  "seed": 37102,
   "admiral": "sekhmar",
   "fleet": [
    "d_harvester",
@@ -3659,7 +3659,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31812,
+  "seed": 37100,
   "admiral": "sekhmar",
   "fleet": [
    "d_harvester",
@@ -4050,7 +4050,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 32005,
+  "seed": 37113,
   "admiral": "khepra",
   "fleet": [
    "d_harvester",
@@ -4462,7 +4462,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 76984,
+  "seed": 37125,
   "admiral": "razormaw",
   "fleet": [
    "b_razor",
@@ -4768,7 +4768,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 31746,
+  "seed": 37101,
   "admiral": "voice",
   "fleet": [
    "b_brood"
@@ -4891,7 +4891,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 31722,
+  "seed": 37101,
   "admiral": "voice",
   "fleet": [
    "b_spitter",
@@ -5071,7 +5071,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 29,
+  "seed": 37112,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -5299,7 +5299,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 33009,
+  "seed": 37100,
   "admiral": "sable",
   "fleet": [
    "c_reaver",
@@ -5463,7 +5463,7 @@
   "kind": "battle",
   "rounds": 12,
   "bot": "full",
-  "seed": 37100,
+  "seed": 37101,
   "admiral": "sable",
   "fleet": [
    "c_raider",
@@ -5618,7 +5618,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 13,
+  "seed": 37105,
   "admiral": "mott",
   "fleet": [
    "c_hulk",
@@ -5832,7 +5832,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 33026,
+  "seed": 37100,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -5988,7 +5988,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37100,
+  "seed": 37101,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -6445,7 +6445,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 7919,
+  "seed": 37102,
   "admiral": "kassar",
   "fleet": [
    "h_dominion",
@@ -7827,7 +7827,7 @@
   ],
   "cmdRound": 1,
   "note": "Tree fixture: Brin The Lens Rotates (mirelle:A:1:1) gives evasion on a facing change",
-  "seed": 2,
+  "seed": 37103,
   "lineage": {
    "id": "mirelle",
    "picks": [
@@ -7977,7 +7977,7 @@
   ],
   "cmdRound": 3,
   "note": "Tree fixture: Vex The Last Account (vex:cap:1) fires again on a kill",
-  "seed": 1860000000019,
+  "seed": 37101,
   "lineage": {
    "id": "vex",
    "picks": [],
@@ -8351,7 +8351,7 @@
   ],
   "cmdRound": 2,
   "rounds": 7,
-  "seed": 38209,
+  "seed": 37101,
   "lineage": {
    "id": "anuket",
    "picks": [
@@ -8863,7 +8863,7 @@
   "rounds": 5,
   "cmdRound": 1,
   "cmdAfterMove": true,
-  "seed": 52945,
+  "seed": 37116,
   "note": "Issue 529: Matriarch Spawned Before the Strike (matriarch:A:1:1): the brood moves, then Spawning surge; its extra swarms strike at +15%",
   "lineage": {
    "id": "matriarch",
@@ -8932,7 +8932,7 @@
   ],
   "rounds": 6,
   "cmdRound": 2,
-  "seed": 52978,
+  "seed": 37102,
   "note": "Issue 529: Razormaw Scent in the Dark (razormaw:A:1:1): after a kill in the frenzy the ship's next shot at a new target gains +10 aim",
   "lineage": {
    "id": "razormaw",
