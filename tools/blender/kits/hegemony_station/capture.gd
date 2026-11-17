@@ -166,7 +166,7 @@ func _run() -> void:
 			await RenderingServer.frame_post_draw
 			var path := name + ".png" if mode == "170" else "game_compare_low.png"
 			var picture := viewport.get_texture().get_image()
-			if picture.save_png(out.path_join(path)) != OK: printerr("Cannot write " + path); quit(1); return
+			if preload("res://tools/picture_provenance.gd").save_png(picture, out.path_join(path), "sheet built") != OK: printerr("Cannot write " + path); quit(1); return
 			report.comparisons.append({"class": cls, "code": sv.code, "length": sv.L,
 				"camera_radius": camera.r, "beta": camera.b, "file": path,
 				"station_pixels": screen_bounds(camera, box),
@@ -200,7 +200,7 @@ func _run() -> void:
 		label_at(overlay, "Named working parts; all towers upright. Review only; production paint and live swap pending.", Vector2(24, 674), 18)
 		for i in range(24): await process_frame
 		await RenderingServer.frame_post_draw
-		if viewport.get_texture().get_image().save_png(out.path_join(view.file)) != OK:
+		if preload("res://tools/picture_provenance.gd").save_png(viewport.get_texture().get_image(), out.path_join(view.file), "sheet built") != OK:
 			printerr("Cannot write camera 60 close view"); quit(1); return
 		var detail := {"file": view.file, "camera_radius": camera.r, "beta": camera.b, "alpha": camera.a,
 			"target": [camera.t.x, camera.t.y, camera.t.z], "framing": "partial close view",

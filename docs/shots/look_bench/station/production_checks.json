@@ -1,0 +1,130 @@
+{
+  "triangles": 697088,
+  "surfaces": 12,
+  "materials": 9,
+  "glb_sha256": "079a1a186a97f018e7ddc80eadc5d222aeeac47fa04c7c9bc8145c14882f3ed1",
+  "mesh_nodes": 2,
+  "bytes": 73928036,
+  "bounds": [
+    99.19999060741884,
+    69.28070757174817,
+    70.21057511244226
+  ],
+  "density": [
+    {
+      "material": "T2_painted_htrim",
+      "surface_area": 211.5828399658203,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 862.8787507632362,
+      "minimum_triangle_texels_per_unit": 840.2615356445312
+    },
+    {
+      "material": "T2_painted_hmetal",
+      "surface_area": 197.57876586914062,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 875.3857209913908,
+      "minimum_triangle_texels_per_unit": 858.0279541015625
+    },
+    {
+      "material": "T2_painted_dark",
+      "surface_area": 8.064075469970703,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 899.3889468502211,
+      "minimum_triangle_texels_per_unit": 812.5195922851562
+    },
+    {
+      "material": "T2_painted_dark",
+      "surface_area": 43125.3515625,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 992.2327422815148,
+      "minimum_triangle_texels_per_unit": 64.38096618652344
+    },
+    {
+      "material": "T2_painted_hpanel",
+      "surface_area": 3468.50439453125,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 980.098165298573,
+      "minimum_triangle_texels_per_unit": 294.946044921875
+    },
+    {
+      "material": "T2_painted_hmetal",
+      "surface_area": 16935.634765625,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 989.8853379279343,
+      "minimum_triangle_texels_per_unit": 649.7227172851562
+    },
+    {
+      "material": "T2_painted_hgrey",
+      "surface_area": 9994.078125,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 971.7277618319378,
+      "minimum_triangle_texels_per_unit": 778.0556030273438
+    },
+    {
+      "material": "T2_painted_htrim",
+      "surface_area": 6067.99267578125,
+      "texture_resolution": [
+        2048,
+        2048
+      ],
+      "texels_per_unit": 968.355526231497,
+      "minimum_triangle_texels_per_unit": 0.0
+    }
+  ],
+  "animations": [
+    "T2_radiator_swing"
+  ],
+  "cruiser": {
+    "code": "C15s_23",
+    "length_world": 23.36,
+    "texels_per_unit": 42.30291094343862,
+    "max_triangle_texels_per_unit": 191.862635762376,
+    "source_sha256": "d7dcf88eec17975ca72b8603aae1afa3d3cc4c798462b41025daffd579c13e7c"
+  },
+  "lowest_surface_texels_per_unit": 862.8787507632362,
+  "density_vs_cruiser_mean": 20.397621145196222,
+  "pass": true,
+  "baseline_geometry": {
+    "pass_": true,
+    "triangles": 697088,
+    "authored_joints_unchanged": true,
+    "precision_world_units": 0.0001,
+    "baseline_sha256": "744dc7580b6b7d7e53092b11b9601701ef08060533391912f50cdbc3c9924823",
+    "canonical_geometry_sha256": "424c6d82c53931d33e6f210c8969f11c244a5f180a3e16d9f6df824180f2e60f"
+  },
+  "frame_gate": {
+    "pass_": true,
+    "frame1080_ms": [
+      4.112,
+      4.113,
+      4.143
+    ],
+    "gpu4k_ms": [
+      6.63899993896484,
+      6.56899976730347,
+      6.56500005722046
+    ],
+    "source": "gate/scene_gate.json"
+  }
+}

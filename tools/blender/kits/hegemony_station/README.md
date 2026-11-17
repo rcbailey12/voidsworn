@@ -1,4 +1,30 @@
-# Hegemony station kit: station_T2 run 5
+# Hegemony station kit: station_T2 production paint
+
+Issue 975 authorizes painting and installing the PR 700 shape approved by Ryan Nov 17. Double-click
+`tools/recipe/station_paint.bat` for the station adapter to recipe stages 5 to 7, two capture passes and the station-map
+frame gate. It retains every evaluated triangle and inside, preserves replaced T2 files, and changes no rules cells.
+The existing ship GLBs and import/cache files must first be present in this checkout, as for every PC look bench.
+
+`production.py` uses the actual Hegemony faction stack and shared bake machinery for five 2048 PBR tile sets at a fixed
+two-unit repeat. It adds normal/roughness service covers, flush fasteners, vents and low-contrast stencils, and masks
+wear with rays against the real geometry and its bevel normals. `production_check.py` reads the exported GLB's PBR
+channels, vertex colours, triangle count, bounds, animation and UV areas independently. It compares those densities
+with the actual installed C15s_23 cruiser and rejects incomplete paint or lost geometry.
+
+`install.gd` writes a compressed, mipmapped station cache and reads it through the board's real prop loader.
+`production_capture.gd` loads that same cache, production lighting/camera and real ShipView cruiser; its closest
+comparisons put the cruiser at the same camera depth as the inspected fitting. `production_pictures.py` produces
+1920 x 720 crops without resizing their native 1920 x 1080 pixels, plus 1280 x 720 camera 170/60 concept comparisons.
+Every review picture carries its stage, source revision and provenance sidecar. The frame gate takes a solo GPU claim
+and requires three 1080p frame and 4K GPU medians below 12.5 ms on the actual 20-ship station-map scene.
+
+Production output: `Downloads/voidsworn_test/board/issue-975/shots`. Scratch logs and native source captures: TEMP.
+The default recipe entry is `tools/recipe/stations/station_T2.json`. Do not pass it to the ship hardpoint export.
+After a capture interruption, `STATION_START_STAGE=7` resumes from the painted export. The independent check first
+requires its baked source hashes to match the current production, design, faction and shared paint files.
+Shape review scripts below remain for reproducing PR 700. Their preview palette is not the production paint.
+
+## PR 700 shape review route
 
 Refs #373. Fleet station first: the abandoned T2 of Vesper Reach, accepted in R206, shape damage in R279, fine detail in R284.
 T1 is a later state of this kit. The refinery T3 needs its own plan.
