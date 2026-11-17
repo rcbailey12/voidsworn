@@ -1,4 +1,16 @@
-# Issue 368: route comparison before Ryan's pick
+# Issue 368: nebula and ion storm
+
+Current build and evidence: [Run 6, forked multi-strike storms](RUN6.md).
+Read [camera 170](N368A_R6_lightning_c170.jpg) first, then
+[camera 60](N368A_R6_lightning_c60.jpg) and the [six-frame strip](N368A_R6_strike_c170.jpg).
+Run 6 keeps the accepted calm purple nebula from run 5, with 2 to 4 strikes per
+storm patch, tapered branches, cyan cloud light and violet/cyan bloom fringes.
+Low and High retain cards; Max retains fog plus cards. Ryan approval is pending.
+[Run 5](RUN5.md) and [Run 4](RUN4.md) are the prior review records.
+
+The Step 1 route comparison below is a historical record, before the route pick.
+
+## Step 1: route comparison before Ryan's pick
 
 Refs #368. Step 1 compares two opt-in prototypes against today's gas. No route has been selected and the shipped default is unchanged. The route build and Ryan's final approval remain step 2.
 
