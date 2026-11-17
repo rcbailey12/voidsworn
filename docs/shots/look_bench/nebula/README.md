@@ -1,4 +1,15 @@
-# Issue 368: route comparison before Ryan's pick
+# Issue 368: nebula and ion storm
+
+Current build and evidence: [Run 5, stronger storm lightning](RUN5.md).
+Route A is the default after Ryan's R270 pick. R289 calls for calm purple/rose
+nebula gas without bright veins, and a darker steel-blue/cyan ion storm with
+white-violet lightning. Use Low, High and Max for the three actual Graphics
+settings. Run 5 keeps the accepted Run 4 nebula and upgrades storm lightning for
+R300. Its pictures are installed in game and await Ryan's approval.
+
+The Step 1 route comparison below is a historical record, before the route pick.
+
+## Step 1: route comparison before Ryan's pick
 
 Refs #368. Step 1 compares two opt-in prototypes against today's gas. No route has been selected and the shipped default is unchanged. The route build and Ryan's final approval remain step 2.
 
