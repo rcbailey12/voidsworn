@@ -100,7 +100,7 @@ LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0014, edge_gain=18.0,      # the masks (a wider edge than the Hullbreakers': the machined bevels read)
     # pass 2: no fine mottle, no grain, almost none of the per-island tone (the sheet's thousands of tiny plate islands each took
     # their own tone, which read as grainy paint); the plate families and their seams carry the variety, in big calm panels
-    patch_scale=4.0, plate_var=.10, island_tone=.15, side_dark=.30, grain_scale=260.0, mottle_scale=40.0, mottle=0.0, grain=0.0,
+    side_dark=.30, grain_scale=260.0, mottle_scale=40.0, grain=0.0,
     rough=.66, metal=.40, wear=1.0, grime=.50, ao_dark=.92, red_tone=0.0,
     rough_floor=.50,     # the roughness floor (ships.md section 0 item 2, pass 5): no white specular glare at the game's key light
     # R243: mechanically aligned panels with recessed seams and shallow relief, all in one ship coordinate frame.
@@ -131,7 +131,7 @@ ZONES = dict(
     gunv=dict(rust=0, metal=.78, rough=.50, wear=1.2, patchwork_parts=.6),
     steel=dict(rust=0, metal=.80, rough=.48, wear=1.1, patchwork_parts=.6),
     iron=dict(rust=0, metal=.60, rough=.55, rivets=0, scuff=.05),
-    dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92, plate_var=.05),
+    dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92),
     bell=dict(base='gunv', rust=0, metal=.35, rough=.80, wear=.6, grime=.7),     # engine bells and housings: matte, never mirror black
 )
 _BASE = dict(shade='shade', shade2='shade2', violet='violet', mauve='mauve', lilac='lilac', gunv='gunv', steel='steel', iron='iron',
@@ -139,47 +139,35 @@ _BASE = dict(shade='shade', shade2='shade2', violet='violet', mauve='mauve', lil
 for _k, _z in ZONES.items():
     _z['lo'], _z['hi'] = pair(_BASE[_k])
 FALLBACK = 'shade'
+MODULE_TONES = dict(body=1.0, shaded=.96, machinery=.98)
+HULL_FAMILIES = ('body', 'shaded')
+PART_FAMILIES = dict(engine='machinery', thruster='machinery', gun='machinery')
+SURFACE_DUTIES = dict(shade='panel', shade2='panel', violet='panel', mauve='band', lilac='band',
+                      gunv='machinery', steel='edge', iron='edge', dark='recess', bell='machinery')
 ZONE_BY_KIND = {('engine', 'gunv'): 'bell', ('engine', 'shade'): 'bell', ('engine', 'shade2'): 'bell'}
 BARE = lin(CONCEPT['bare'][1])
 GRIME = lin(CONCEPT['grime'][0])
 RUST = RUST_DARK = GRIME          # read by the shared rust layer only where a zone has rust, and no Eclipse zone has
-RED_PLATE = pair('shade')         # read only where a zone has a red_share, and no Eclipse zone has
-# the patchwork families: (share of panels, colour pair[, 'small']). Clear value steps (pass 2): near-black shade plates most, then
-# deep violet, the lighter dusk violet, a few mauve and cool gunmetal plates, rare weathered pale plates on small plates only
-PATCH_FAMILIES = [(.32, pair('shade')), (.22, pair('shade2')), (.14, pair('violet')), (.08, pair('mauve')), (.05, pair('gunmetal')),
-                  (.03, pair('lilac'), 'small')]
-PATCH_FAMILIES_PARTS = [(.30, pair('gunv')), (.18, pair('shade')), (.14, pair('violet')), (.06, pair('gunmetal')), (.03, pair('lilac'), 'small')]
 
 
 def panel_nodes(c, col, amount, families=None, cells=None):
     """R243: one aligned panel lattice across the hull and crescent, with shallow recessed joints.
-    The accepted colour pairs and shares stay unchanged. Panel tone varies by cell, never by mesh island; neither row
-    offsets, noise-chosen grid sizes nor overlaid patches may break the alignment. Small panels occupy every fourth column.
-    The shared stack bakes the joints' relief into the hull normal map as well as its albedo and roughness."""
-    from paint_stack import node, math_, mixc, _seams
+    Small panels occupy every fourth column. The sheet places the lilac and metal bands.
+    The shared stack bakes the joints' relief into the normal map as well as its albedo and roughness."""
+    from paint_stack import node, math_, _seams
     from types import SimpleNamespace
     nt = c.nt; cell = cells[0] if cells else LAYERS['patch_big']
     q = node(nt, 'ShaderNodeVectorMath', operation='DIVIDE'); nt.links.new(c.pos, q.inputs[0]); q.inputs[1].default_value = cell
     xyz = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(q.outputs[0], xyz.inputs[0])
     column = math_(nt, 'FLOOR', xyz.outputs[0])
     small = math_(nt, 'LESS_THAN', math_(nt, 'PINGPONG', column, 2.0), .5)
-    cid = node(nt, 'ShaderNodeCombineXYZ'); lines = []
+    lines = []
     for k, (axis, size) in enumerate(zip(xyz.outputs, cell)):
         # A fixed half pitch inside periodic columns. Every joint remains on the same half-cell lattice.
         div = math_(nt, 'ADD', 1.0, small)
         v = math_(nt, 'MULTIPLY', axis, div)
-        nt.links.new(math_(nt, 'FLOOR', v), cid.inputs[k])
         f = math_(nt, 'FRACT', v)
         lines.append((math_(nt, 'DIVIDE', math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', f, math_(nt, 'SUBTRACT', 1, f)), size), div), k))
-    wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cid.outputs[0], wn.inputs['Vector'])
-    tones = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], tones.inputs[0])
-    lo = 0.0
-    for family in families or PATCH_FAMILIES:
-        share, (flo, fhi) = family[:2]; hi = lo + share
-        on = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', wn.outputs['Value'], lo - 1e-4), math_(nt, 'LESS_THAN', wn.outputs['Value'], hi))
-        if len(family) > 2: on = math_(nt, 'MULTIPLY', on, small)
-        col = mixc(nt, col, mixc(nt, flo, fhi, tones.outputs[1]), math_(nt, 'MULTIPLY', on, amount))
-        lo = hi
     return col, math_(nt, 'MULTIPLY', _seams(c, SimpleNamespace(LAYERS=LAYERS), lines), amount, clamp=True)
 
 # ------------------------------------------------------------------------------------------------------------ the light
