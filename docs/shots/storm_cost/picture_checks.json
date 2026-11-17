@@ -1,0 +1,128 @@
+[
+  {
+    "name": "STORM982_c170_bolt.jpg",
+    "size": [
+      1280,
+      720
+    ],
+    "sources": [
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "2adb8d13ff996b99503e2b46b43783a59852345d950d18ce217f44943190c6bc",
+        "source_dirty": true,
+        "stage": "installed in game"
+      },
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+        "source_dirty": true,
+        "stage": "installed in game"
+      }
+    ],
+    "image_sha256": "de71ba6ffd0e5556c730e5fe47ba90ef074a010f3ff5862d05fa6e566bb9df67",
+    "verified": true
+  },
+  {
+    "name": "STORM982_c170_calm.jpg",
+    "size": [
+      1280,
+      720
+    ],
+    "sources": [
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "2adb8d13ff996b99503e2b46b43783a59852345d950d18ce217f44943190c6bc",
+        "source_dirty": true,
+        "stage": "installed in game"
+      },
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+        "source_dirty": true,
+        "stage": "installed in game"
+      }
+    ],
+    "image_sha256": "27c5e8d5574b199a5d35943a5e648df2911bec8ad11330164eb8535ba30d4018",
+    "verified": true
+  },
+  {
+    "name": "STORM982_c170_quality.jpg",
+    "size": [
+      1280,
+      720
+    ],
+    "sources": [
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+        "source_dirty": true,
+        "stage": "installed in game"
+      }
+    ],
+    "image_sha256": "cb8bdcb37f8047378b80eb9141813a09f45f7ec3866c7b42d113c1082e5bd9af",
+    "verified": true
+  },
+  {
+    "name": "STORM982_c60_bolt.jpg",
+    "size": [
+      1280,
+      720
+    ],
+    "sources": [
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "2adb8d13ff996b99503e2b46b43783a59852345d950d18ce217f44943190c6bc",
+        "source_dirty": true,
+        "stage": "installed in game"
+      },
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+        "source_dirty": true,
+        "stage": "installed in game"
+      }
+    ],
+    "image_sha256": "750718b4a4c101e342a2f8bd6a7234e82e5124a9043ac8170f39060a641b2de3",
+    "verified": true
+  },
+  {
+    "name": "STORM982_c60_calm.jpg",
+    "size": [
+      1280,
+      720
+    ],
+    "sources": [
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "2adb8d13ff996b99503e2b46b43783a59852345d950d18ce217f44943190c6bc",
+        "source_dirty": true,
+        "stage": "installed in game"
+      },
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+        "source_dirty": true,
+        "stage": "installed in game"
+      }
+    ],
+    "image_sha256": "63bf4f304c066f3a1055fe247ac6c2b0d8516bdb5abf5595334fde4ae38d1846",
+    "verified": true
+  },
+  {
+    "name": "STORM982_c60_quality.jpg",
+    "size": [
+      1280,
+      720
+    ],
+    "sources": [
+      {
+        "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+        "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+        "source_dirty": true,
+        "stage": "installed in game"
+      }
+    ],
+    "image_sha256": "7d8a8bc133213eb6235fd518a69ee2f1abd488d1aec616cce4c918b1dffcc6c3",
+    "verified": true
+  }
+]
