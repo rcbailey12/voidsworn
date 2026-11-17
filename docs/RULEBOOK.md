@@ -138,6 +138,7 @@ Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route pe
 pick up a job without asking, and main stays reviewed. Set: Ryan, Nov 2 and 4 (R75, R102). Ids: agents-04, agents-05,
 agents-09. A run brief for a PC job goes into the issue body (under the fixed block, marked as the job now): the runner
 builds the task from the body only and never reads comments (R281).
+When the Board needs Ryan's answer on a job, it adds the `ryan` label and one issue-body line `Ask Ryan: <one question> | Picture: <link>`, then removes both when he answers; Mission Control reads only this marker so it cannot mistake a dispatch lock for a question (Ryan, Nov 17, issue 951).
 The PC runner merges `origin/<branch>` from the optional Base line and commits that merge before starting the agent;
 a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
 also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on

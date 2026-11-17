@@ -1,112 +1,225 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="referrer" content="no-referrer">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark"><meta name="referrer" content="no-referrer">
 <title>Mission Control | Voidsworn</title>
 <style>
-#demo-label{position:sticky;top:0;z-index:3;background:#101821;padding:10px 12px;white-space:pre-line}
-:root{color-scheme:dark;--bg:#090e15;--ink:#f1f2ed;--muted:#b2bec9;--line:#3c4650;--ember:#ffab68;--blue:#a8d3ef;--green:#b9d8b0;--red:#ffaba4;--yellow:#f6d28a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px}
-*{box-sizing:border-box}body{margin:0;color:var(--ink);background:radial-gradient(ellipse at 95% 0%,#27314255,transparent 58%),radial-gradient(circle at 8% 13%,#b7682920,transparent 30%),var(--bg);min-height:100vh}body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(1px 1px at 28px 51px,#a8c4d075 50%,transparent),radial-gradient(1px 1px at 145px 190px,#a8c4d050 50%,transparent);background-size:233px 257px,317px 283px}main{max-width:680px;margin:auto;padding:26px 20px 36px}a{color:inherit;text-decoration-thickness:1px;text-underline-offset:4px}a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--ember);outline-offset:4px}button,.button{font:inherit;color:var(--ink);background:#1b2631;border:1px solid #71808c;min-height:48px;padding:10px 14px;cursor:pointer;text-decoration:none}button:hover{border-color:var(--ember)}.eyebrow{color:var(--ember);font-size:1rem;letter-spacing:.12em;margin:0 0 8px}.mast{display:flex;gap:16px;justify-content:space-between;align-items:center}.orbit{width:64px;height:64px;flex:none;border:1px solid #af8c6690;border-radius:50%;position:relative;transform:rotate(-24deg)}.orbit:before{content:"";position:absolute;inset:14px;border:1px solid var(--ember);border-radius:50%;box-shadow:0 0 18px #ff8a3a25}.orbit:after{content:"";position:absolute;left:-6px;right:-6px;top:30px;border-top:1px solid var(--ember)}h1{font-weight:550;font-size:2.118rem;line-height:1.06;letter-spacing:-.04em;margin:0}h1 span{display:block;color:var(--muted);font-size:1.176rem;letter-spacing:0;font-weight:400;margin-top:10px}.signal{margin-top:24px;border-top:1px solid var(--ember);border-bottom:1px solid var(--line);padding:14px 0}.signal strong{display:flex;align-items:center;gap:10px;font-size:1.059rem;font-weight:600}.signal small{display:block;color:var(--muted);font-size:1rem;margin-top:6px;line-height:1.4}.light{width:8px;height:8px;background:currentColor;box-shadow:0 0 9px currentColor;flex:none}.online{color:var(--green)}.offline{color:var(--yellow)}.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0 24px}.toolbar p{flex:1;margin:0;color:var(--muted);font-size:1rem}.toolbar button{padding:8px 12px}#demo-label{margin:16px 0;color:var(--yellow);border-left:2px solid var(--yellow);padding-left:12px;line-height:1.4}#demo-label:empty{display:none}.section-title{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px;color:var(--muted);font-size:1rem;font-weight:500;margin:0}.section-title span:last-child{color:var(--ember)}.lane{--state:var(--muted);position:relative;padding:20px 0 18px 16px;border-bottom:1px solid var(--line);border-left:1px solid #626e7860;margin-top:0}.lane:before{content:"";position:absolute;left:-2px;top:24px;width:3px;height:28px;background:var(--state);box-shadow:0 0 10px color-mix(in srgb,var(--state) 35%,transparent)}.lane[data-state=running]{--state:var(--blue)}.lane[data-state=waiting],.lane[data-state=stale]{--state:var(--yellow)}.lane[data-state=blocked],.lane[data-state=failed]{--state:var(--red)}.lane[data-state=finished]{--state:var(--green)}.lane-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.lane h3{font-size:1.118rem;font-weight:600;margin:0}.state{font-size:1rem;display:flex;align-items:center;gap:7px;color:var(--state);white-space:nowrap}.state:before{content:"";width:6px;height:6px;background:currentColor}.job{display:block;font-size:1.235rem;line-height:1.35;font-weight:520;margin:12px 0 6px;text-decoration:none;overflow-wrap:anywhere;min-height:44px}.job .number{color:var(--ember);font-variant-numeric:tabular-nums;margin-right:6px}.job:hover{text-decoration:underline}.idle{color:var(--muted);font-size:1.118rem;margin:12px 0}.times{color:var(--muted);font-size:1rem;line-height:1.6;margin:0}.reason{font-size:1rem;line-height:1.45;color:var(--state);margin:10px 0}.next{font-size:1rem;color:var(--muted);margin:10px 0 0;line-height:1.5}.queue-link{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:var(--ink)}.source{font-size:1rem;line-height:1.45;color:var(--muted);margin:10px 0 0;overflow-wrap:anywhere}.source b{font-weight:500;color:var(--ink)}details{margin-top:8px}summary{min-height:44px;cursor:pointer;padding:10px 0;color:var(--muted);font-size:1rem}details p{font-size:1rem;line-height:1.5;color:var(--muted);margin:6px 0}.pr{display:inline-flex;align-items:center;min-height:44px;color:var(--ember)}.notice{color:var(--yellow);font-size:1rem;line-height:1.5}footer{font-size:1rem;line-height:1.5;color:var(--muted);padding-top:24px}footer strong{color:var(--ember);font-weight:500}.hidden{display:none!important}@media(max-width:360px){main{padding:20px 14px}.lane{padding-left:12px}.lane h3{font-size:1rem}.state{font-size:1rem}.orbit{display:none}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+@font-face{font-family:Chakra;src:url('ChakraPetch-SemiBold.ttf')}
+@font-face{font-family:Barlow;src:url('Barlow-Regular.ttf')}
+@font-face{font-family:Azeret;src:url('AzeretMono-VF.ttf')}
+
+:root{color-scheme:dark;--bg:#070b0e;--panel:#0b1218;--line:#263440;--ink:#e8edee;--muted:#a1b1bd;--ember:#ff9b3e;--blue:#a4d4ec;--red:#ff8775;--gold:#f5ca75;font:16px Barlow, sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 80% 0,#3c251622,transparent 400px),var(--bg);color:var(--ink)}
+main{max-width:680px;margin:auto;padding:12px 16px 52px}
+button,a{touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit;text-underline-offset:3px;overflow-wrap:anywhere}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offset:3px}
+h1,h2,h3,p{margin:0}
+h1,h2,h3,.status,.kind,.eyebrow{font-family:Chakra,sans-serif}
+h1{font-size:1.4rem;letter-spacing:.035em;line-height:1.15}
+header{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:9px}
+header .eyebrow{color:var(--ember);font-size:.625rem;letter-spacing:.17em;margin-bottom:4px}
+.clock{display:block;white-space:nowrap;font:1.2rem Azeret,monospace}
+.your-time{display:block;font: .6rem Chakra,sans-serif;color:var(--muted);letter-spacing:.1em;text-align:right}
+.refresh{display:block;flex:none;width:82px;background:none;border:0;padding:0 0 0 6px;min-height:44px;text-align:right}
+#demo-label{position:sticky;top:0;z-index:5;background:#48290f;color:#ffd4a4;font:.6rem Azeret,monospace;padding:6px 12px;overflow-wrap:anywhere}
+#demo-label:empty{display:none}
+.feeds{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.feed{border:1px solid var(--line);background:var(--panel);padding:6px 8px;min-width:0}
+.feed-label{font:.625rem Chakra,sans-serif;letter-spacing:.12em;color:var(--muted);margin-bottom:5px}
+.feed-value{font-size:.8rem;line-height:1.35;overflow-wrap:anywhere}
+.feed-value:before{content:'';display:inline-block;width:6px;height:6px;background:#b5d89f;margin-right:6px}
+.feed.warn .feed-value:before{background:var(--gold)}
+.age{color:var(--muted);font:.65rem Azeret,monospace}
+.tallies{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin:8px 0 12px;background:var(--panel)}
+.tally{padding:6px 8px;border-right:1px solid var(--line);min-width:0}
+.tally:last-child{border:0}
+.tally strong{display:block;font:1.2rem Chakra,sans-serif}
+.tally span{font:.6rem Chakra,sans-serif;color:var(--muted);letter-spacing:.12em}
+.tally.attention strong{color:var(--gold)}
+.section-title{font:.7rem Chakra,sans-serif;letter-spacing:.15em;color:var(--blue);display:flex;align-items:center;gap:8px;margin:12px 0 6px}
+.section-title:after{content:'';height:1px;background:var(--line);flex:1}
+.section-title small{font:.65rem Chakra,sans-serif;color:var(--muted);letter-spacing:.05em}
+.attention-item{border:1px solid var(--line);border-left:3px solid var(--blue);background:var(--panel);padding:7px 9px;margin-bottom:5px}
+.attention-item[data-kind="Needs you"]{border-left-color:var(--gold)}
+.attention-item[data-kind=Failed]{border-left-color:var(--red)}
+.attention-item[data-kind=Blocked],.attention-item[data-kind=Stale]{border-left-color:var(--ember)}
+.attention-item[data-kind="For you: not checked"]{border-left:3px dotted var(--muted)}
+.attention-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}
+.kind{font-size:.625rem;text-transform:uppercase;letter-spacing:.11em;color:var(--blue)}
+.attention-item[data-kind="Needs you"] .kind{color:var(--gold)}
+.attention-item[data-kind=Failed] .kind{color:var(--red)}
+.attention-item[data-kind=Blocked] .kind,.attention-item[data-kind=Stale] .kind{color:var(--ember)}
+.owner{font:.625rem Azeret,monospace;color:var(--muted)}
+.attention-copy{font-size:.875rem;line-height:1.25}
+.meaning{color:var(--muted);font-size:.73rem;line-height:1.3;margin-top:5px}
+.picture-link{display:inline-block;color:var(--gold);min-height:44px;padding:12px 0 4px;font-size:.8rem}
+.lane{background:linear-gradient(110deg,#0a1116,#101820);border:1px solid var(--line);margin-bottom:6px;position:relative}
+.lane:before,.lane:after{content:'';position:absolute;width:6px;height:6px;border-color:var(--ember);pointer-events:none}
+.lane:before{left:-1px;top:-1px;border-left:1px solid var(--ember);border-top:1px solid var(--ember)}
+.lane:after{right:-1px;bottom:-1px;border-right:1px solid var(--ember);border-bottom:1px solid var(--ember)}
+.lane-open{display:block;width:100%;background:none;border:0;text-align:left;padding:8px 10px 5px}
+.lane-top{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.lane-name{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.lane h3{font-size:.85rem;text-transform:uppercase}
+.role{color:var(--muted);font-size:.65rem;letter-spacing:.03em}
+.status{border:1px solid #33434f;color:var(--muted);padding:2px 5px;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.lane[data-state=running] .status{border-color:#3e7897;color:var(--blue)}
+.lane[data-state=stale] .status,.lane[data-state=waiting] .status{color:var(--gold)}
+.lane[data-state=failed] .status,.lane[data-state=blocked] .status{color:var(--red)}
+.job-line{display:flex;align-items:baseline;gap:5px;margin:6px 0 4px}
+.short{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.95rem;flex:0 1 auto;min-width:0}
+.number{color:var(--muted);font:.7rem Azeret,monospace;white-space:nowrap}
+.times{font-size:.75rem;color:var(--muted);line-height:1.45}
+.times b{margin-right:10px;font-weight:400;color:var(--ink);font-family:Azeret,monospace;font-size:.68rem}
+.next{display:flex;justify-content:space-between;gap:8px;margin-top:5px;padding-top:5px;border-top:1px dashed var(--line);font-size:.75rem;color:var(--muted)}
+.next-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.details-word{color:var(--ember);white-space:nowrap;font-family:Chakra,sans-serif}
+.crew{display:flex;align-items:center;gap:10px;min-height:68px;border:1px solid var(--line);background:var(--panel);padding:8px 9px;margin-bottom:6px}
+.avatar{display:grid;place-items:center;flex:none;width:31px;height:34px;border:1px solid var(--line);font:.75rem Chakra,sans-serif;color:var(--blue)}
+img.avatar{object-fit:contain;padding:0}
+.crew-copy{min-width:0;flex:1}
+.crew-top{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.crew h3{font-size:.8rem;text-transform:uppercase}
+.no-live{font:.55rem Chakra,sans-serif;color:var(--muted);border:1px solid var(--line);padding:2px 4px;white-space:nowrap}
+.crew-record{font-size:.75rem;line-height:1.3;color:var(--muted);margin-top:5px}
+.crew-record a{color:var(--ink)}
+.offline-banner{padding:10px;border:1px solid #85453a;background:repeating-linear-gradient(135deg,#2a1713,#2a1713 8px,#23120f 8px,#23120f 16px);margin-bottom:9px;font-size:.85rem;line-height:1.35}
+.offline-banner strong{display:block;color:var(--red);font:.8rem Chakra,sans-serif;letter-spacing:.1em;margin-bottom:4px}
+.last-known .lane{opacity:.65}
+.last-known-note{color:var(--gold)}
+footer{color:var(--muted);font:.6rem Chakra,sans-serif;letter-spacing:.07em;margin-top:12px;line-height:1.5}
+.file-controls{display:flex;gap:10px;margin-top:12px}
+.file-controls button{background:none;border:1px solid var(--line);padding:10px;min-height:44px;font:.75rem Barlow,sans-serif}
+.notice{font-size:.8rem;color:var(--gold);line-height:1.4;margin-top:8px}
+.hidden{display:none!important}
+dialog{color:var(--ink);background:var(--bg);border:0;border-top:1px solid var(--ember);width:min(100%,680px);max-width:100%;max-height:90dvh;position:fixed;inset:auto 0 0;margin:0 auto;padding:0;overflow:auto}
+dialog::backdrop{background:#000b}
+.sheet-header{position:sticky;top:0;z-index:1;background:var(--bg);padding:5px 16px 0;display:flex;justify-content:space-between;align-items:center}
+.handle{width:40px;border-top:3px solid var(--line);margin:0 auto}
+.close{background:none;border:0;min-width:44px;min-height:44px;font-size:.9rem;color:var(--ember)}
+#sheet-content{padding:0 16px 20px}
+.sheet-title{font-family:Barlow,sans-serif;font-size:1.1rem;line-height:1.3;margin:8px 0 10px}
+.sheet-links{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px}
+.sheet-links a{display:grid;place-items:center;min-height:44px;text-decoration:none;text-align:center;font:.7rem Chakra,sans-serif;letter-spacing:.08em;padding:6px;border:1px solid var(--line);color:var(--blue)}
+.sheet-links a:first-child{border-color:var(--ember);color:var(--ember)}
+.evidence{display:flex;justify-content:space-between;gap:16px;font-size:.85rem;line-height:1.3;border-bottom:1px solid var(--line);padding:9px 0}
+.evidence dt{color:var(--muted)}
+.evidence dd{margin:0;text-align:right;overflow-wrap:anywhere;min-width:0}
+.queue{padding:0;list-style:none;margin:0}
+.queue a{display:flex;gap:10px;min-height:44px;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none;font-size:.85rem}
+.source{font:.625rem Chakra,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;line-height:1.4;margin-top:12px;overflow-wrap:anywhere}
+@media(max-width:360px){main{padding-left:12px;padding-right:12px}
+.role{font-size:.6rem}
+.crew-top{align-items:flex-start;flex-wrap:wrap}
+.tally{padding-left:6px;padding-right:6px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}
+}
+
 </style>
 </head>
 <body>
-<main>
-<header class="mast"><div><p class="eyebrow">VOIDSWORN / PC TELEMETRY</p><h1>Mission control<span>Embers of the Hollow Sun</span></h1></div><div class="orbit" aria-hidden="true"></div></header>
 <div id="demo-label"></div>
-<section class="signal" aria-live="polite" aria-atomic="true"><strong id="signal-title" class="offline"><i class="light" aria-hidden="true"></i><span>Waiting for PC status</span></strong><small id="signal-detail">Reading the local publisher.</small></section>
-<div class="toolbar"><p id="counts">5 seats / awaiting signal</p><button id="refresh" type="button">Refresh</button></div>
-<h2 class="section-title"><span>PC LANES</span><span id="clock">LOCAL PILOT</span></h2>
-<div id="lanes"></div>
+<main>
+<header><div><p class="eyebrow">HOLLOW SUN · FLEET OPERATIONS</p><h1>MISSION CONTROL</h1></div><button class="refresh" id="refresh" title="Refresh status" aria-label="Refresh status"><span class="clock" id="clock">--:--</span><span class="your-time">YOUR TIME · REFRESH</span></button></header>
+<div id="offline" class="hidden offline-banner" role="status"></div>
+<section class="feeds" aria-label="Feed times"><div class="feed" id="pc-feed"><p class="feed-label">PC FEED</p><p class="feed-value" id="signal-title">Waiting for PC status</p></div><div class="feed warn" id="github-feed"><p class="feed-label">GITHUB CHECK</p><p class="feed-value" id="github-signal">Not read</p></div></section>
+<div class="tallies" id="counts" aria-label="Last reported counts"></div>
+<h2 class="section-title">ATTENTION <small id="attention-count"></small></h2><div id="attention"></div>
+<h2 class="section-title" id="lane-heading">PC LANES <small id="lane-note">5</small></h2><div id="lanes"></div>
+<h2 class="section-title" id="crew-heading">CREW <small>LAST RECORDED, NOT LIVE</small></h2><div id="crew"></div>
 <p id="warning" class="notice" role="status"></p>
-<footer><strong>Local pilot / status only</strong><br>No remote access is enabled.<br><button id="open-file" type="button" style="margin-top:16px">Open a status file</button><input id="file" type="file" accept=".json,application/json" class="hidden"><p id="file-note">Updates once a minute. Close the publisher window to stop it.</p><p id="proof"></p></footer>
+<footer>READ ONLY · PRIVATE TAILSCALE LINK · PC REFRESHES EACH MINUTE<br>GITHUB CHECK EVERY 5 MINUTES · NO LIVE CREW FEED<div class="file-controls"><button id="open-file" type="button">Open a status file</button><input id="file" type="file" accept=".json,application/json" class="hidden"></div><p id="file-note"></p></footer>
 </main>
+<dialog id="sheet" aria-labelledby="sheet-title"><div class="sheet-header"><div><div class="handle" aria-hidden="true"></div><p id="sheet-proof" class="source"></p></div><button class="close" id="close-sheet" aria-label="Close lane details">Close ×</button></div><div id="sheet-content"></div></dialog>
 <script>
 'use strict';
 (() => {
-  const repo = 'https://github.com/rcbailey12/voidsworn';
-  const seats = [['main','Codex main'],['b','Codex lane B'],['c','Codex lane C'],['d','Codex lane D'],['deepseek','DeepSeek']];
-  const params = new URLSearchParams(location.search);
-  const fixture = params.get('fixture');
-  const demo = /^(overview|running|waiting|blocked|failed|finished|gap|stale|offline|unknown)$/.test(fixture || '');
-  const endpoint = demo ? `fixtures/${fixture}.json` : 'status.json';
-  let data = null, lastFailure = false, imported = false, fetching = false;
-  const $ = id => document.getElementById(id);
-  const validTime = s => typeof s === 'string' && Number.isFinite(Date.parse(s));
-  const clock = s => validTime(s) ? new Date(s).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:false}) : 'unknown';
-  const stamp = s => validTime(s) ? new Date(s).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}) : 'unknown';
-  const age = (s, now) => !validTime(s) ? 'unknown' : Math.max(0, Math.floor((now-Date.parse(s))/60000)) < 1 ? 'just now' : `${Math.max(0, Math.floor((now-Date.parse(s))/60000))}m ago`;
-  const el = (tag, cls, text) => { const node = document.createElement(tag); if(cls) node.className=cls; if(text !== undefined) node.textContent=text; return node; };
-  const isIssue = n => Number.isSafeInteger(n) && n > 0;
-  const emptyLane = ([id,label]) => ({id,label,state:'unknown',current:null,next:[],source:{},warnings:[]});
-  function validate(value) {
-    if (!value || value.schemaVersion !== 1 || !validTime(value.generatedAt) || !Array.isArray(value.lanes)) throw Error('Invalid status file');
-    if (Date.parse(value.generatedAt) > Date.now()+120000 && !demo) throw Error('PC clock is ahead; freshness cannot be confirmed');
-    return value;
-  }
-  function render() {
-    // Fixture time is fixed to the publisher's test clock; real and imported snapshots always age in real time.
-    const now = demo && data && validTime(data.fixtureNow) ? Date.parse(data.fixtureNow) : Date.now();
-    const offline = data && now-Date.parse(data.generatedAt) >= 180000;
-    const title = $('signal-title'); title.className = data && !offline && !lastFailure && !imported ? 'online' : 'offline';
-    title.replaceChildren(el('i','light'), el('span','',!data ? 'Waiting for PC status' : offline ? `PC offline (last heard ${clock(data.generatedAt)})` : lastFailure ? 'Connection interrupted' : imported ? 'Saved PC snapshot' : 'PC signal online'));
-    $('signal-detail').textContent = !data ? 'No snapshot received. Start the local publisher or open a status file.' : `${imported ? 'File time' : 'Last report'} ${stamp(data.generatedAt)} / ${age(data.generatedAt,now)}${offline ? '. Last known jobs below.' : ''}`;
-    $('clock').textContent = data ? clock(data.generatedAt) : 'LOCAL PILOT';
-    $('demo-label').textContent = demo ? `MC-918 / ${fixture.toUpperCase()} / SAMPLE\n${data && data.fixtureRevision || 'working tree'}\nFixture proof / sheet built` : '';
-    $('proof').textContent = demo && data ? `MC-918 / ${data.fixtureRevision || 'working tree'} / fixture proof` : '';
-    const rows = seats.map(s => data && data.lanes.find(l => l && l.id === s[0]) || emptyLane(s));
-    const running = rows.filter(l => l.state==='running' && !l.stale && validTime(l.lastActivityAt) && now-Date.parse(l.lastActivityAt)<1800000).length;
-    $('counts').textContent = `5 seats / ${running} running${offline ? ' (last report)' : ''}`;
-    // Preserve expanded details and focus across minute refreshes.
-    const expanded = new Set([...document.querySelectorAll('details[open]')].map(n=>n.dataset.id));
-    const focused=document.activeElement, focusedLane=focused && focused.closest('.lane');
-    const focusKey=focusedLane ? {lane:focusedLane.id,tag:focused.tagName,href:focused.getAttribute('href')} : null;
-    const frag = document.createDocumentFragment();
-    for (let i=0; i<rows.length; i++) {
-      const lane=rows[i], source=lane.source || {}, job=lane.current;
-      const stale = !!lane.stale || job && ['running','waiting'].includes(lane.state) && (validTime(lane.lastActivityAt) ? now-Date.parse(lane.lastActivityAt)>=1800000 : validTime(lane.startedAt) && now-Date.parse(lane.startedAt)>=1800000);
-      const state = stale ? 'stale' : ['running','waiting','blocked','failed','finished'].includes(lane.state) ? lane.state : 'unknown';
-      const card=el('article','lane'); card.dataset.state=state; card.id=`lane-${seats[i][0]}`;
-      const top=el('div','lane-top'); top.append(el('h3','',seats[i][1]),el('span','state',state[0].toUpperCase()+state.slice(1))); card.append(top);
-      if (job && isIssue(job.issue)) {
-        const link=el('a','job'); link.href=`${repo}/issues/${job.issue}`;
-        link.append(el('span','number',`#${job.issue}`),document.createTextNode(typeof job.title==='string' ? job.title : 'Title unavailable')); card.append(link);
-      } else card.append(el('p','idle',state==='waiting' ? 'Queued behind another chain' : 'No current job confirmed'));
-      card.append(el('p','times',!job && state==='waiting' ? 'Not started\nActivity: awaiting runner' : `Started ${stamp(lane.startedAt)}\nActivity ${age(lane.lastActivityAt,now)}`));
-      card.lastChild.style.whiteSpace='pre-line';
-      if(stale) card.append(el('p','reason','No sign of life for 30 minutes. The runner has not confirmed a stop.'));
-      else if(lane.reason && !(!job && state==='waiting')) card.append(el('p','reason',String(lane.reason)));
-      const queue=Array.isArray(lane.next) ? lane.next.filter(j=>j && isIssue(j.issue)) : [];
-      const next=el('p','next',queue.length ? 'Next' : 'Next: no queued jobs confirmed');
-      for(const j of queue.slice(0,2)){const a=el('a','queue-link',`#${j.issue}`);a.href=`${repo}/issues/${j.issue}`;a.title=typeof j.title==='string'?j.title:'';next.append(a);}
-      if(queue.length>2) next.append(document.createTextNode(` +${queue.length-2} more`)); card.append(next);
-      const names=Array.isArray(source.lanes) ? source.lanes.filter(s=>typeof s==='string') : [];
-      card.append(el('p','source',`Source: ${names[0] || source.runner || 'no feed'}\nRefreshed ${clock(source.refreshedAt)}`));card.lastChild.style.whiteSpace='pre-line';
-      const details=el('details');details.dataset.id=lane.id;details.open=expanded.has(lane.id);details.append(el('summary','', 'Evidence and links'));
-      details.append(el('p','',`Source files: ${[...names,...(Array.isArray(source.files)?source.files:[])].join(', ') || 'none'}`),el('p','',`Source last changed: ${stamp(source.updatedAt)}`),el('p','',`Last sign of life: ${stamp(lane.lastActivityAt)}`));
-      if(queue.length>2){const p=el('p','', 'All next jobs: ');for(const j of queue){const a=el('a','queue-link',`#${j.issue}`);a.href=`${repo}/issues/${j.issue}`;p.append(a);}details.append(p);}
-      if(job && isIssue(job.issue)){const a=el('a','pr','Find pull request');const branch=seats[i][0]==='deepseek'?`work/issue-${job.issue}-deepseek`:`codex/issue-${job.issue}`;a.href=`${repo}/pulls?q=${encodeURIComponent('is:pr head:'+branch)}`;if(typeof job.prUrl==='string' && job.prUrl.startsWith(repo+'/pulls?q='))a.href=job.prUrl;details.append(a);}
-      if(Array.isArray(lane.warnings)) for(const warning of lane.warnings) details.append(el('p','notice',String(warning)));
-      card.append(details);frag.append(card);
+  const repo='https://github.com/rcbailey12/voidsworn';
+  const seats=[['main','Codex main','GPU builds'],['b','Lane B','Godot UI'],['c','Lane C','code only'],['d','Lane D','code only'],['deepseek','DeepSeek','small code jobs']];
+  const fixture=new URLSearchParams(location.search).get('fixture');
+  const demo=/^(overview|running|waiting|blocked|failed|finished|gap|stale|offline|unknown|leftover|ended|github-unread|needs-ryan|no-needs-ryan|night)$/.test(fixture || '');
+  const endpoint=demo?'fixtures/'+fixture+'.json':'status.json';
+  let data=null,lastFailure=false,imported=false,fetching=false,selected=null;
+  const $=id=>document.getElementById(id), validTime=s=>typeof s==='string' && Number.isFinite(Date.parse(s));
+  const now=()=>demo && validTime(data?.fixtureNow)?Date.parse(data.fixtureNow):Date.now();
+  const clock=s=>validTime(s)?new Date(s).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):'unknown';
+  const stamp=s=>validTime(s)?new Date(s).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}):'unknown';
+  const age=s=>!validTime(s)?'unknown':now()-Date.parse(s)<60000?'just now':Math.max(0,Math.floor((now()-Date.parse(s))/60000))+'m ago';
+  const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+  const isIssue=n=>Number.isSafeInteger(n) && n>0;
+  const rows=()=>seats.map(([id,label])=>data?.lanes.find(l=>l?.id===id) || {id,label,state:'unknown',next:[],source:{},warnings:[]});
+  const queue=l=>Array.isArray(l.next)?l.next.filter(j=>isIssue(j?.issue)):[];
+  const stale=l=>!!l.stale || l.current && ['running','waiting'].includes(l.state) && (validTime(l.lastActivityAt)?now()-Date.parse(l.lastActivityAt)>=1800000:validTime(l.startedAt) && now()-Date.parse(l.startedAt)>=1800000);
+  const state=l=>stale(l)?'stale':['running','waiting','blocked','failed','finished','idle'].includes(l.state)?l.state:'unknown';
+  const stateLabel=l=>({running:'Working',finished:'Idle',idle:'Idle'})[state(l)] || state(l);
+  const issueLink=(number,cls,text)=>{const a=el('a',cls,text);a.href=repo+'/issues/'+number;return a;};
+  const github=()=>data?.github || {lastReadAt:null,ok:false,needsRyan:[],crew:{}};
+  const safePicture=raw=>{try{const u=new URL(raw);return u.protocol==='https:' && !u.username && !u.password && !u.search && !u.hash && (u.hostname==='github.com' && u.pathname.startsWith('/rcbailey12/voidsworn/') || u.hostname==='raw.githubusercontent.com' && u.pathname.startsWith('/rcbailey12/voidsworn/'))?u.href:null;}catch(_){return null;}};
+  function validate(v){if(!v || v.schemaVersion!==1 || !validTime(v.generatedAt) || !Array.isArray(v.lanes))throw Error('Invalid status');if(!demo && Date.parse(v.generatedAt)>Date.now()+120000)throw Error('PC clock ahead');return v;}
+  function attentionItems(list){
+    const g=github(), items=[];
+    for(const q of (Array.isArray(g.needsRyan)?g.needsRyan:[]).filter(q=>isIssue(q?.issue)))items.push({kind:'Needs you',owner:'Board asks',copy:q.question,meaning:'Your answer is needed on issue #'+q.issue+'. Asked '+stamp(q.updatedAt)+'; as of '+clock(g.lastReadAt)+'.',issue:q.issue,picture:safePicture(q.picture)});
+    if(!g.lastReadAt || !g.coverageComplete)items.push({kind:'For you: not checked',owner:'Board',copy:!g.lastReadAt?'GitHub has not been read successfully.':'The recent GitHub window may omit older questions.',meaning:'This page cannot yet tell you that nothing needs you.'});
+    for(const l of list){
+      for(const x of l.leftovers || [])if(isIssue(x.job?.issue))items.push({kind:'Leftover record',owner:l.label,copy:'An unfinished #'+x.job.issue+' record sits in this lane. The live chain names a different job.',meaning:'No action for you. The Board can inspect the old record.'});
+      if(l.endedWithoutPush)items.push({kind:'Ended without a push',owner:l.label,copy:'This run ended without a confirmed push.'+(l.current?.prState==='merged'?' The fix merged later on GitHub (PR '+l.current.prNumber+').':''),meaning:'No action for you. The Board checks any remaining work.'});
+      else if(state(l)==='stale')items.push({kind:'Stale',owner:l.label,copy:'No sign of life: last activity '+age(l.lastActivityAt)+'. The runner has not confirmed a stop.',meaning:'May be hung or quietly working. The Board checks it.'});
+      else if(['failed','blocked'].includes(state(l)))items.push({kind:state(l)==='failed'?'Failed':'Blocked',owner:l.label,copy:l.reason || 'The runner could not continue.',meaning:state(l)==='failed'?'The Board looks at failures first. No action for you unless it asks.':'Waiting on the Board, a predecessor or a retry. No answer needed from you.'});
     }
-    $('lanes').replaceChildren(frag);
-    if(focusKey){const row=document.getElementById(focusKey.lane);const target=row && [...row.querySelectorAll('a,summary')].find(n=>n.tagName===focusKey.tag && n.getAttribute('href')===focusKey.href);if(target)target.focus({preventScroll:true});}
-    $('warning').textContent=lastFailure ? 'Cannot refresh the publisher. The last good report stays visible and will show PC offline after 3 minutes.' : data && Array.isArray(data.warnings) ? data.warnings.join(' ') : '';
-    $('file-note').textContent=imported ? 'Saved file only. Open a newer file to update it, or Refresh to reconnect to the publisher.' : 'Updates once a minute. Close the publisher window to stop it.';
+    return items;
   }
-  async function refresh(){
-    if(fetching)return;fetching=true;
-    const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),8000);
-    try{const r=await fetch(endpoint,{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error('No snapshot');data=validate(await r.json());lastFailure=false;imported=false;}
-    catch(_){lastFailure=true;}finally{clearTimeout(timeout);fetching=false;render();}
+  function renderSheet(){
+    if(!selected || !$('sheet').open)return;
+    const l=rows().find(l=>l.id===selected),seat=seats.find(s=>s[0]===selected),job=l.current,frag=document.createDocumentFragment();
+    $('sheet-proof').textContent=demo?'MC-951 r1 / fixture / '+(data?.fixtureRevision || 'working tree'):'';
+    const top=el('div','lane-top');const name=el('div','lane-name');name.append(el('h3','',seat[1].toUpperCase()),el('span','role',seat[2]));top.append(name,el('span','status',stateLabel(l)));frag.append(top);
+    const title=el('h2','sheet-title',job?.title || 'No current job confirmed');title.id='sheet-title';frag.append(title);
+    if(isIssue(job?.issue)){
+      const links=el('div','sheet-links');links.append(issueLink(job.issue,'','ISSUE #'+job.issue));
+      const pr=el('a','',isIssue(job.prNumber)?'PR '+job.prNumber+' · '+String(job.prState || 'recorded').toUpperCase():'FIND PULL REQUEST');
+      pr.href=isIssue(job.prNumber)?repo+'/pull/'+job.prNumber:repo+'/pulls?q='+encodeURIComponent('is:pr head:'+(l.id==='deepseek'?'work/issue-'+job.issue+'-deepseek':'codex/issue-'+job.issue));links.append(pr);frag.append(links);
+    }
+    const evidence=el('dl');
+    for(const [key,value] of [['Runner says',l.runnerState || 'unknown'],['Log last written',clock(l.logAt)+' · '+age(l.logAt)],['Started',stamp(l.startedAt)],['Chain',(l.source?.lanes || []).join(', ') || 'No chain confirmed']]){const pair=el('div','evidence');pair.append(el('dt','',key),el('dd','',value));evidence.append(pair);}frag.append(evidence);
+    frag.append(el('h3','section-title','QUEUE AFTER THIS'));
+    const ul=el('ol','queue');for(const job of queue(l)){const li=el('li');const a=issueLink(job.issue,'');a.append(el('span','number','#'+job.issue),el('span','',job.title));li.append(a);ul.append(li);}if(!ul.children.length)ul.append(el('li','meaning','Nothing queued after this job.'));frag.append(ul);
+    if(l.reason)frag.append(el('p','meaning',l.reason));
+    for(const warning of l.warnings || [])frag.append(el('p','notice',String(warning)));
+    frag.append(el('p','source','Sources: '+[...(l.source?.lanes || []),...(l.source?.files || []),github().lastReadAt?'GitHub '+clock(github().lastReadAt):'GitHub not read'].join(', ')),el('p','source','Source changed '+stamp(l.source?.updatedAt)+' · PC inspected '+stamp(l.source?.refreshedAt)));
+    // Keep focus and the sheet scroll position during periodic refreshes.
+    const scroll=$('sheet').scrollTop,active=document.activeElement,key=active?.getAttribute('href');$('sheet-content').replaceChildren(frag);$('sheet').scrollTop=scroll;
+    if(key){const target=[...$('sheet-content').querySelectorAll('a')].find(a=>a.getAttribute('href')===key);if(target)target.focus({preventScroll:true});}
   }
-  $('refresh').addEventListener('click',refresh);
-  $('open-file').addEventListener('click',()=>$('file').click());
-  $('file').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>1024*1024)throw Error('Too large');data=validate(JSON.parse(await file.text()));imported=true;lastFailure=false;render();}catch(_){$('warning').textContent='Cannot open this status file. Choose a publisher status.json file under 1 MB.';}finally{e.target.value='';}});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();if(!imported)refresh();}});
-  render();refresh();setInterval(()=>{if(!imported)refresh();},60000);setInterval(render,10000);
+  function render(){
+    const g=github(),offline=data && now()-Date.parse(data.generatedAt)>=180000,list=rows(),items=attentionItems(list);
+    $('clock').textContent=clock(new Date(now()).toISOString());
+    $('demo-label').textContent=demo?'MC-951 r1 · fixture '+fixture+' · '+(data?.fixtureRevision || 'working tree'):'';
+    $('offline').classList.toggle('hidden',!offline);$('offline').replaceChildren(el('strong','','PC FEED LOST'),el('span','','Last heard '+clock(data?.generatedAt)+', '+age(data?.generatedAt)+'. The PC may be asleep, off, or the link dropped. Everything below is last known.'));
+    document.body.classList.toggle('last-known',!!offline);$('lane-note').textContent=offline?'LAST KNOWN '+clock(data.generatedAt):'5';
+    $('signal-title').textContent=!data?'Waiting for PC status':(offline?'Lost since ':lastFailure?'Interrupted · ':imported?'Saved ':'Fresh ')+clock(data.generatedAt)+' · '+age(data.generatedAt);$('pc-feed').classList.toggle('warn',!data || !!offline || lastFailure || imported);
+    const ghOld=!g.ok || !validTime(g.lastReadAt) || now()-Date.parse(g.lastReadAt)>=600000;
+    $('github-feed').classList.toggle('warn',ghOld);$('github-signal').textContent=!g.lastReadAt?'Not read':ghOld?'GitHub check: not read since '+clock(g.lastReadAt)+' · '+age(g.lastReadAt):'Read '+clock(g.lastReadAt)+' · '+age(g.lastReadAt);
+    $('counts').replaceChildren(...[['Working',list.filter(l=>state(l)==='running').length],['Idle',list.filter(l=>['finished','idle'].includes(state(l))).length],['Attention',items.length],['For you',g.lastReadAt && g.coverageComplete?(g.needsRyan || []).length:'?']].map(([label,count])=>{const n=el('div','tally '+label.toLowerCase().replaceAll(' ','-'));n.append(el('strong','',String(count)),el('span','',label.toUpperCase()));return n;}));
+    $('attention-count').textContent=String(items.length);$('attention').replaceChildren(...items.map(i=>{const n=el('article','attention-item');n.dataset.kind=i.kind;const top=el('div','attention-top');top.append(el('h3','kind',i.kind),el('span','owner',i.owner));n.append(top,el('p','attention-copy',String(i.copy)),el('p','meaning',i.meaning));if(i.issue){const a=issueLink(i.issue,'picture-link','Open question #'+i.issue);n.append(a);if(i.picture){const pic=el('a','picture-link','View picture');pic.href=i.picture;pic.style.marginLeft='16px';n.append(pic);}}return n;}));
+    const focused=document.activeElement?.closest('.lane')?.id;
+    $('lanes').replaceChildren(...list.map((l,index)=>{const card=el('article','lane');card.id='lane-'+l.id;card.dataset.state=state(l);const button=el('button','lane-open');button.type='button';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-label',seats[index][1]+' details: '+(l.current?.title || 'no current job'));
+      const top=el('div','lane-top'),name=el('div','lane-name');name.append(el('h3','',seats[index][1]),el('span','role',seats[index][2]));top.append(name,el('span','status',stateLabel(l)));button.append(top);
+      const job=el('div','job-line');job.append(el('span','short',l.current?.title || (state(l)==='waiting'?'Queued behind another chain':'No current job confirmed')));if(isIssue(l.current?.issue))job.append(el('span','number','#'+l.current.issue));button.append(job);
+      const times=el('p','times');times.append(document.createTextNode(validTime(l.finishedAt)?'Ended ':'Started '),el('b','',clock(l.finishedAt || l.startedAt)),document.createTextNode('   Last activity '+age(l.lastActivityAt)));button.append(times);
+      const next=queue(l),line=el('div','next');line.append(el('span','next-text','Next: '+(next.length?next[0].title+(next.length>1?' +'+(next.length-1):''):'nothing queued')),el('span','details-word','DETAILS ›'));button.append(line);button.addEventListener('click',()=>{selected=l.id;$('sheet').showModal();renderSheet();$('close-sheet').focus();});card.append(button);return card;}));
+    if(focused && !$('sheet').open)document.querySelector('#'+focused+' button')?.focus({preventScroll:true});
+    $('crew').replaceChildren(...[['claude','Claude · Board','CL'],['muse','Muse · Rey chairs','MU'],['artoo','Artoo · Tech review','']].map(([id,label,initial])=>{const card=el('article','crew');card.id='crew-'+id;let avatar;if(id==='artoo'){avatar=el('img','avatar');avatar.src='artoo.svg';avatar.alt='Original white and blue Artoo droid';}else avatar=el('div','avatar',initial);const copy=el('div','crew-copy'),top=el('div','crew-top');top.append(el('h3','',label),el('span','no-live','NO LIVE FEED'));const record=g.crew?.[id],line=el('p','crew-record',record?'Last on GitHub '+clock(record.at)+' · '+age(record.at)+': ':'No GitHub activity recorded in this check.');if(record && isIssue(record.number)){const a=el('a','',String(record.action)+' #'+record.number);a.href=repo+(id==='artoo'?'/issues/':'/pull/')+record.number;line.append(a);}copy.append(top,line);card.append(avatar,copy);return card;}));
+    $('warning').textContent=lastFailure?'Cannot refresh the publisher. The last good report stays visible; PC offline appears after 3 minutes.':(data?.warnings || []).join(' ');
+    $('file-note').textContent=imported?'Saved PC snapshot. Open a newer file or Refresh to reconnect.':'';renderSheet();
+  }
+  async function refresh(){if(fetching)return;fetching=true;const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);try{const res=await fetch(endpoint,{cache:'no-store',signal:controller.signal});if(!res.ok)throw Error('No snapshot');data=validate(await res.json());lastFailure=false;imported=false;}catch(_){lastFailure=true;}finally{clearTimeout(timeout);fetching=false;render();}}
+  $('close-sheet').addEventListener('click',()=>$('sheet').close());$('sheet').addEventListener('close',()=>{document.querySelector('#lane-'+selected+' button')?.focus({preventScroll:true});});$('sheet').addEventListener('click',e=>{if(e.target===$('sheet') && e.clientY<$('sheet').getBoundingClientRect().top)$('sheet').close();});
+  $('refresh').addEventListener('click',refresh);$('open-file').addEventListener('click',()=>$('file').click());$('file').addEventListener('change',async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>1024*1024)throw Error('Too large');data=validate(JSON.parse(await f.text()));imported=true;lastFailure=false;render();}catch(_){$('warning').textContent='Cannot open this status file. Choose a publisher status.json file under 1 MB.';}finally{e.target.value='';}});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();if(!imported)refresh();}});render();refresh();setInterval(()=>{if(!imported)refresh();},60000);setInterval(render,10000);
 })();
 </script>
 </body>

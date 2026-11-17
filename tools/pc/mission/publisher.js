@@ -15,6 +15,7 @@ const SEATS = [
 ];
 const STALE_SECONDS = 1800;
 const OFFLINE_SECONDS = 180;
+const GITHUB_SECONDS = 300;
 const iso = n => Number.isFinite(n) && n > 0 ? new Date(n).toISOString() : null;
 const time = s => { const n = Date.parse(s); return Number.isFinite(n) ? n : 0; };
 const maxTime = (...ns) => Math.max(0, ...ns.filter(Number.isFinite));
@@ -79,8 +80,8 @@ function readChain(root, name, reader) {
   const src = reader.read(path.join(root, name));
   const bat = reader.read(path.join(root, name.replace(/\.txt$/i, '.bat')));
   const issues = parseIssues(bat.text);
-  let current = null, lastIssue = null, currentAt = 0, cursor = 0, anchor = src.mtime;
-  let done = false, started = false, predecessor = null;
+  let current = null, lastIssue = null, currentAt = 0, endedAt = 0, cursor = 0, anchor = src.mtime;
+  let done = false, started = false, predecessor = null, stopped = false;
   for (const line of src.text.split(/\r?\n/)) {
     const wait = /^waiting for ([a-z0-9_]+\.txt)\b/i.exec(line);
     if (wait && lanePattern.test(wait[1])) predecessor = wait[1].toLowerCase();
@@ -92,12 +93,13 @@ function readChain(root, name, reader) {
       if (e[2].toLowerCase() === 'start') {
         current = +e[1]; lastIssue = current; currentAt = anchor; started = true;
         if (index >= 0) cursor = index;
-      } else { current = null; if (index >= 0) cursor = index + 1; }
+      } else { current = null; endedAt = anchor; if (index >= 0) cursor = index + 1; }
     }
-    if (/^all done\b/i.test(line)) { done = true; current = null; }
+    if (/^all done\b/i.test(line)) { done = true; current = null; endedAt = eventTime(line,anchor); }
+    if (/paused by the Board|\bstopped\b/i.test(line)) { stopped = true; done = true; current = null; }
   }
-  return { name, id: laneId(name), issues, current, lastIssue, currentAt, cursor, done, started,
-    waiting: !!predecessor && !started && !done, predecessor, mtime: src.mtime,
+  return { name, id: laneId(name), issues, current, lastIssue, currentAt, endedAt, cursor, done, started,
+    stopped, waiting: !!predecessor && !started && !done, predecessor, mtime: src.mtime,
     unreadable: src.unreadable || bat.unreadable, missingBat: !bat.exists };
 }
 
@@ -154,13 +156,17 @@ function jobInfo(folder, issue, seat, reader) {
   const log = reader.read(path.join(folder, 'log.txt'), 16384);
   const started = time(status && status.started);
   const finished = time(status && status.finished);
-  const activity = maxTime(state.mtime, logStat && logStat.mtimeMs);
+  const checks = ['checks_node.txt', 'checks_parity.txt'].map(name => [name, reader.stat(path.join(folder, name))]);
+  const activity = maxTime(state.mtime, logStat && logStat.mtimeMs, result.mtime, ...checks.map(([,s]) => s && s.mtimeMs));
+  const logTail = reader.read(path.join(folder, 'log.txt'), 8192, true);
+  const lastOutput = [logTail,result].filter(x=>x.exists).sort((a,b)=>b.mtime-a.mtime)[0];
+  const ended = /clone failed|push stopped|all done/i.test(lastOutput?.text.trim().split(/\r?\n/).at(-1) || '');
   const title = cleanTitle((status && status.title) || titleFromLog(log.text, issue), issue);
   const branch = seat === 'deepseek' ? `work/issue-${issue}-${/deepseekpro/i.test(folder) ? 'deepseekpro' : 'deepseek'}` : `codex/issue-${issue}`;
-  const job = { issue, title, url: `${REPO}/issues/${issue}`,
+  const job = { issue, title, branch, url: `${REPO}/issues/${issue}`,
     prUrl: `${REPO}/pulls?q=${encodeURIComponent('is:pr head:' + branch)}` };
-  return { issue, job, started, finished, activity, updated: maxTime(state.mtime, result.mtime, logStat && logStat.mtimeMs),
-    state, status, result, files: [state.exists && 'status.json', result.exists && 'result.txt', logStat && 'log.txt'].filter(Boolean) };
+  return { issue, job, started, finished, activity, logAt: logStat && logStat.mtimeMs, ended, updated: activity,
+    state, status, result, files: [state.exists && 'status.json', result.exists && 'result.txt', logStat && 'log.txt', ...checks.filter(([,s]) => s).map(([name]) => name)].filter(Boolean) };
 }
 
 function readJobs(root, seat, reader) {
@@ -176,8 +182,12 @@ function readJobs(root, seat, reader) {
       const p = path.join(base, d.name), latest = reader.read(path.join(p, 'latest.txt'), 4096);
       const run = latest.text.trim().split(/[\\/]/).pop();
       const runs = reader.dirs(p).filter(x => x.isDirectory() && /^\d{8}_\d{6}$/.test(x.name)).map(x => x.name).sort();
-      const selected = runs.includes(run) ? run : runs.at(-1);
-      if (selected) jobs.push(jobInfo(path.join(p, selected, 'out'), +m[1], seat[0], reader));
+      if (runs.includes(run)) jobs.push(jobInfo(path.join(p, run, 'out'), +m[1], seat[0], reader));
+      else {
+        const candidates = [...(runs.length ? [jobInfo(path.join(p, runs.at(-1), 'out'), +m[1], seat[0], reader)] : []), jobInfo(path.join(p, 'out'), +m[1], seat[0], reader)];
+        const selected = candidates.filter(j => j.updated).sort((a,b) => b.updated-a.updated)[0];
+        if (selected) jobs.push(selected);
+      }
     }
   }
   return jobs;
@@ -210,7 +220,95 @@ function chainOrder(chains) {
   return ordered;
 }
 
-function snapshot(root, now = Date.now(), reader = new Reader()) {
+function emptyGithub() { return { lastReadAt:null, lastAttemptAt:null, ok:false, coverageComplete:false, issues:[], pulls:[], needsRyan:[], crew:{} }; }
+const issueNumber = n => Number.isSafeInteger(n) && n > 0;
+const branchPattern = /^(?:codex|work|opus|muse)\/issue-\d+(?:-[a-z0-9_-]+)?$/i;
+function pictureLink(raw) {
+  if (typeof raw !== 'string') return null;
+  const link = (/^\[[^\]]*\]\(([^)]+)\)$/.exec(raw.trim()) || [null,raw.trim()])[1];
+  try {
+    const u = new URL(link);
+    return u.protocol === 'https:' && !u.username && !u.password && !u.search && !u.hash &&
+      (u.hostname === 'github.com' && u.pathname.startsWith('/rcbailey12/voidsworn/') || u.hostname === 'raw.githubusercontent.com' && u.pathname.startsWith('/rcbailey12/voidsworn/')) ? u.href : null;
+  } catch (_) { return null; }
+}
+function askRyan(body, number) {
+  let fence = false;
+  for (const line of String(body || '').split(/\r?\n/)) {
+    if (/^\s*(```|~~~)/.test(line)) { fence = !fence; continue; }
+    const match = !fence && /^Ask Ryan: (.+?) \| Picture: (.+)$/.exec(line);
+    if (match) return { question:cleanTitle(match[1],number), picture:pictureLink(match[2]) };
+  }
+  return null;
+}
+function githubData(issues, pulls, comments, previous, now) {
+  if (![issues,pulls,comments].every(Array.isArray)) throw Error('Invalid GitHub list');
+  const data = emptyGithub();
+  data.lastReadAt = iso(now); data.lastAttemptAt = iso(now); data.ok = true;
+  // One bounded page per source. Do not turn an incomplete first page into a claim of zero questions.
+  data.coverageComplete = issues.length < 100 || !!previous.coverageComplete && time(issues.at(-1)?.updated_at) <= time(previous.lastReadAt);
+  data.issues = [...previous.issues]; data.pulls = [...previous.pulls]; data.crew = {...previous.crew};
+  const put = (list, item, key) => { const index=list.findIndex(x=>x[key]===item[key]); if(index<0)list.push(item);else list[index]=item; };
+  const record = (seat,at,action,number) => {
+    if (time(at) && (!data.crew[seat] || time(at)>time(data.crew[seat].at))) data.crew[seat]={at:iso(time(at)),action,number,url:`${REPO}/${action==='Technical review recorded'?'issues':'pull'}/${number}`};
+  };
+  for (const issue of issues) {
+    if (!issueNumber(issue.number) || issue.pull_request) continue;
+    const ask = issue.state === 'open' && Array.isArray(issue.labels) && issue.labels.some(l=>(typeof l==='string'?l:l?.name)==='ryan') ? askRyan(issue.body,issue.number) : null;
+    put(data.issues,{number:issue.number,title:cleanTitle(issue.title,issue.number),updatedAt:iso(time(issue.updated_at)),ask},'number');
+  }
+  for (const pr of pulls) {
+    if (!issueNumber(pr.number) || pr.base?.repo?.full_name !== 'rcbailey12/voidsworn') continue;
+    const own = pr.head?.repo?.full_name === 'rcbailey12/voidsworn', branch = own && pr.head?.ref;
+    const state = pr.merged_at ? 'merged' : pr.state === 'open' ? 'open' : 'closed';
+    if (branchPattern.test(branch)) put(data.pulls,{number:pr.number,branch,state,updatedAt:iso(time(pr.updated_at)),url:`${REPO}/pull/${pr.number}`},'number');
+    if (own && /^opus\//.test(branch)) record('claude',pr.updated_at,'Branch update recorded',pr.number);
+    if (own && /^muse\//.test(branch)) record('muse',pr.updated_at,pr.merged_at?'Merged PR recorded':'Branch update recorded',pr.number);
+    // A merge commit is visible in this read. Direct Board commits are not exposed by these three endpoints.
+    if (pr.merged_at && /^[a-f0-9]{40}$/i.test(pr.merge_commit_sha || '')) record('claude',pr.merged_at,'Board merge commit recorded',pr.number);
+  }
+  for (const comment of comments) {
+    const m = /^https:\/\/api\.github\.com\/repos\/rcbailey12\/voidsworn\/issues\/(\d+)$/.exec(comment.issue_url || '');
+    if (m && String(comment.body || '').startsWith('Artoo (technical review):')) record('artoo',comment.updated_at,'Technical review recorded',+m[1]);
+  }
+  data.issues.sort((a,b)=>time(b.updatedAt)-time(a.updatedAt)); data.pulls.sort((a,b)=>time(b.updatedAt)-time(a.updatedAt));
+  // Retain marked questions even when they fall outside the latest update window.
+  data.issues = data.issues.filter((x,i)=>i<500 || x.ask); data.pulls = data.pulls.slice(0,500);
+  data.needsRyan = data.issues.filter(x=>x.ask).map(x=>({issue:x.number,title:x.title,url:`${REPO}/issues/${x.number}`,updatedAt:x.updatedAt,...x.ask}));
+  return data;
+}
+function enrichJob(job, github) {
+  const issue=github.issues.find(x=>x.number===job.issue);
+  if (issue && /\(title (?:unavailable|withheld)\)$/.test(job.title)) job.title=issue.title;
+  const pr=github.pulls.filter(x=>x.branch===job.branch).sort((a,b)=>time(b.updatedAt)-time(a.updatedAt))[0];
+  if(pr){job.prState=pr.state;job.prNumber=pr.number;job.prUrl=pr.url;}
+}
+class GithubReader {
+  constructor(fetcher = fetch, initial = emptyGithub()) { this.fetcher=fetcher; this.data=initial; this.busy=false; }
+  async update(now = Date.now()) {
+    if(this.busy || this.data.lastAttemptAt && now-time(this.data.lastAttemptAt)<GITHUB_SECONDS*1000) return this.data;
+    this.busy=true;
+    const previous=this.data, since=previous.lastReadAt || iso(now-7*86400000);
+    const base='https://api.github.com/repos/rcbailey12/voidsworn/';
+    const urls=[base+'issues?state=all&sort=updated&direction=desc&per_page=100',base+'pulls?state=all&sort=updated&direction=desc&per_page=100',base+'issues/comments?sort=updated&direction=desc&per_page=100&since='+encodeURIComponent(since)];
+    try {
+      const results=await Promise.allSettled(urls.map(async url=>{
+        const res=await this.fetcher(url,{method:'GET',redirect:'error',headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'voidsworn-mission-control'},signal:AbortSignal.timeout(8000)});
+        if(!res.ok)throw Error('GitHub unavailable');
+        let body='',bytes=0;
+        const decoder=new TextDecoder();
+        for await(const chunk of res.body){bytes+=chunk.length;if(bytes>4*1024*1024){throw Error('GitHub response too large');}body+=decoder.decode(chunk,{stream:true});}
+        return JSON.parse(body+decoder.decode());
+      }));
+      if(results.some(x=>x.status!=='fulfilled'))throw Error('GitHub read incomplete');
+      this.data=githubData(...results.map(x=>x.value),previous,now);
+    }catch(_){this.data={...previous,ok:false,lastAttemptAt:iso(now)};}
+    finally{this.busy=false;}
+    return this.data;
+  }
+}
+
+function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyGithub()) {
   reader.errors.clear();
   const chains = reader.dirs(root).filter(d => d.isFile() && lanePattern.test(d.name)).map(d => readChain(root, d.name, reader));
   const lanes = SEATS.map(seat => {
@@ -222,9 +320,9 @@ function snapshot(root, now = Date.now(), reader = new Reader()) {
     let chain = latestEvent && !latestEvent.done ? latestEvent : null;
     const chainIssue = chain && (chain.current || chain.lastIssue);
     let info = jobs[0];
-    if (chain && info && info.issue !== chainIssue && (info.started || info.updated) > chain.currentAt + 2000) chain = null;
+    if (chain && !chain.current && info && info.issue !== chainIssue && (info.started || info.updated) > chain.currentAt + 2000) chain = null;
     // A live chain names the running or just-ended job. Old rerun outputs cannot supply its status.
-    if (chain && (!info || chain.currentAt >= (info.started || info.updated) - 2000)) {
+    if (chain) {
       info = jobs.find(j => j.issue === chainIssue);
       if (info && info.started && info.started < chain.currentAt - 2000) info = null;
     }
@@ -235,7 +333,12 @@ function snapshot(root, now = Date.now(), reader = new Reader()) {
     }
     const waiters = chainOrder(own.filter(c => c.waiting));
     const verdict = classify(info);
-    let current = info && info.job, started = info && info.started || chain && chain.currentAt, activity = info && info.activity;
+    const ended = seat[0] === 'deepseek' && latestEvent && latestEvent.done && !latestEvent.stopped && info && info.issue === latestEvent.lastIssue && info.ended && verdict.state !== 'finished';
+    if (ended) { verdict.state = 'idle'; verdict.reason = 'Run ended without a confirmed push.'; }
+    if (latestEvent && latestEvent.stopped && info && info.issue === latestEvent.lastIssue && verdict.state === 'running') {
+      verdict.state = 'idle'; verdict.reason = 'The Board stopped this chain; its running record is last known.';
+    }
+    let current = info && info.job, started = info && info.started || chain && chain.currentAt || ended && latestEvent.currentAt, activity = info && info.activity;
     const sources = [], next = [];
     if (chain) sources.push(chain.name);
     if (unverifiedEvent) {
@@ -259,16 +362,22 @@ function snapshot(root, now = Date.now(), reader = new Reader()) {
     if (own.some(c => c.unreadable)) warnings.push('A lane source could not be read.');
     if (chain && chain.missingBat || waiters.some(c => c.missingBat)) warnings.push('A chain script is missing; its next jobs are unknown.');
     if (!current && !waiters.length && !own.length) warnings.push('No lane feed found.');
-    return { id: seat[0], label: seat[1], state: verdict.state, stale, current: current || null,
-      startedAt: iso(started), lastActivityAt: iso(activity), reason: verdict.reason,
+    const leftovers = chain && chain.current ? jobs.filter(j => j.issue !== chainIssue && !chain.issues.includes(j.issue) && j.status && j.status.status === 'running' && now-j.activity >= STALE_SECONDS*1000).map(j => ({job:j.job,lastActivityAt:iso(j.activity)})) : [];
+    if (chain && chain.current) for (const j of jobs.filter(j => j.issue !== chainIssue && !chain.issues.includes(j.issue) && j.status && j.status.status === 'running')) warnings.push(`Stray job folder: issue #${j.issue}.`);
+    return { id: seat[0], label: seat[1], state: verdict.state, runnerState: info && typeof info.status?.status === 'string' && ['running','checked_push','partial','unverified','no_changes','blocked','failed'].includes(info.status.status) ? info.status.status : 'unknown', stale, endedWithoutPush: !!ended, leftovers, current: current || null,
+      startedAt: iso(started), finishedAt: iso(info && info.finished || latestEvent && latestEvent.done && latestEvent.lastIssue === current?.issue && latestEvent.endedAt), logAt: iso(info && info.logAt), lastActivityAt: iso(activity), reason: verdict.reason,
       next: [...new Set(next)].filter(n => n !== (current && current.issue)).map(n => {
         const known = jobs.find(j => j.issue === n);
         return known ? known.job : { issue: n, title: cleanTitle(null, n), url: `${REPO}/issues/${n}` };
       }), source: { lanes: [...new Set(sources)], runner: info ? `${seat[1]} runner, issue #${info.issue}` : null,
         files: info ? info.files : [], updatedAt: iso(maxTime(info && info.updated, ...own.filter(c => sources.includes(c.name)).map(c => c.mtime))), refreshedAt: iso(now) }, warnings };
   });
+  for (const lane of lanes) for (const job of [lane.current,...lane.next,...lane.leftovers.map(x=>x.job)].filter(Boolean)) {
+    job.branch ||= lane.id === 'deepseek' ? `work/issue-${job.issue}-deepseek` : `codex/issue-${job.issue}`;
+    enrichJob(job,github);
+  }
   return { schemaVersion: 1, generatedAt: iso(now), staleAfterSeconds: STALE_SECONDS, offlineAfterSeconds: OFFLINE_SECONDS,
-    lanes, warnings: reader.errors.size ? ['Some PC sources could not be read; affected rows may be unknown.'] : [] };
+    github, lanes, warnings: reader.errors.size ? ['Some PC sources could not be read; affected rows may be unknown.'] : [] };
 }
 
 function checkOutputParents(out) {
@@ -319,28 +428,31 @@ function allowedHost(req, port, tailnetHost) {
     req.headers['x-forwarded-host'] === host && req.headers['x-forwarded-proto'] === 'https' && tailnetIP);
 }
 
-function serve(opts, discover = tailscale.discover) {
+function serve(opts, discover = tailscale.discover, githubReader = new GithubReader()) {
   const reader = new Reader();
-  const publish = () => writeSnapshot(opts.out, snapshot(opts.root, Date.now(), reader));
+  const publish = () => writeSnapshot(opts.out, snapshot(opts.root, Date.now(), reader, githubReader.data));
   publish();
-  if (opts.once) return null;
+  const update = async () => { await githubReader.update(); try { publish(); } catch (_) { console.error('Snapshot failed; last good snapshot kept.'); } };
+  if (opts.once) return update();
+  void update();
   const tailnetHost = discover().host;
   const page = path.resolve(__dirname, '../../../docs/mission/index.html');
   const server = http.createServer((req, res) => {
-    // A fixed two-file surface, never a directory server or an upload endpoint.
+    // Fixed routes only, never a directory server or an upload endpoint.
     const route = req.url.split('?')[0];
     if (!allowedHost(req, opts.port, tailnetHost)) { res.writeHead(403).end('Local host required'); return; }
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405).end(); return; }
-    const file = route === '/' || route === '/index.html' ? page : route === '/status.json' ? path.join(opts.out, 'status.json') : null;
+    const assets = {'/artoo.svg':'image/svg+xml','/ChakraPetch-SemiBold.ttf':'font/ttf','/Barlow-Regular.ttf':'font/ttf','/AzeretMono-VF.ttf':'font/ttf'};
+    const file = route === '/' || route === '/index.html' ? page : route === '/status.json' ? path.join(opts.out, 'status.json') : Object.hasOwn(assets,route) ? path.join(path.dirname(page),route.slice(1)) : null;
     if (!file) { res.writeHead(404).end(); return; }
     try {
       const body = fs.readFileSync(file);
-      res.writeHead(200, { 'Content-Type': route === '/status.json' ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8',
+      res.writeHead(200, { 'Content-Type': assets[route] || (route === '/status.json' ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8'),
         'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
       res.end(req.method === 'HEAD' ? undefined : body);
     } catch (_) { res.writeHead(503).end('Local snapshot unavailable'); }
   });
-  const timer = setInterval(() => { try { publish(); } catch (_) { console.error('Snapshot failed; last good snapshot kept.'); } }, 60000);
+  const timer = setInterval(() => { try { publish(); void update(); } catch (_) { console.error('Snapshot failed; last good snapshot kept.'); } }, 60000);
   const stop = () => { clearInterval(timer); server.close(); };
   server.on('close', () => clearInterval(timer));
   server.on('error', () => { clearInterval(timer); console.error('Local server could not start. Check whether its port is in use.'); process.exitCode = 1; });
@@ -349,7 +461,7 @@ function serve(opts, discover = tailscale.discover) {
   return server;
 }
 
-module.exports = { Reader, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, writeSnapshot, options, serve, allowedHost };
+module.exports = { Reader, GithubReader, emptyGithub, githubData, cleanTitle, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, writeSnapshot, options, serve, allowedHost };
 if (require.main === module) {
   try { serve(options(process.argv.slice(2))); }
   catch (_) { console.error('Mission control could not read or write its local folders. Check arguments and folder access.'); process.exitCode = 1; }
