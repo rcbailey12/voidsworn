@@ -1,0 +1,190 @@
+{
+  "readability": [
+    {
+      "kind": "neb",
+      "camera": 170,
+      "hull_pixels": 8955,
+      "contrast_retained": 0.9930758005058792,
+      "mean_luma_delta_255": -0.14771752093802337,
+      "p95_rgb_difference_255": 0.0
+    },
+    {
+      "kind": "neb",
+      "camera": 60,
+      "hull_pixels": 83290,
+      "contrast_retained": 0.9916059022535206,
+      "mean_luma_delta_255": -0.1904858134229799,
+      "p95_rgb_difference_255": 1.0
+    },
+    {
+      "kind": "storm",
+      "camera": 170,
+      "hull_pixels": 8955,
+      "contrast_retained": 0.9936129053380548,
+      "mean_luma_delta_255": -0.16443848129536567,
+      "p95_rgb_difference_255": 0.0
+    },
+    {
+      "kind": "storm",
+      "camera": 60,
+      "hull_pixels": 83315,
+      "contrast_retained": 0.9914378737385382,
+      "mean_luma_delta_255": -0.2630909392066254,
+      "p95_rgb_difference_255": 0.0
+    }
+  ],
+  "gates": [
+    {
+      "phase": "before",
+      "case": "nebula",
+      "tier": "max",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_before_nebula_max_keep\\scene_gate.json",
+      "frame_ms": 8.531,
+      "gpu_4k_ms": 7.0939998626709,
+      "frame_sessions": [
+        7.395,
+        9.384,
+        8.531
+      ],
+      "gpu_sessions": [
+        7.06699991226196,
+        7.11700010299683,
+        7.0939998626709
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    },
+    {
+      "phase": "before",
+      "case": "storm",
+      "tier": "max",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_before_storm_max_keep\\scene_gate.json",
+      "frame_ms": 5.169,
+      "gpu_4k_ms": 7.40899991989136,
+      "frame_sessions": [
+        5.169,
+        5.331,
+        4.729
+      ],
+      "gpu_sessions": [
+        7.34800004959106,
+        7.42000007629395,
+        7.40899991989136
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    },
+    {
+      "phase": "after",
+      "case": "nebula",
+      "tier": "max",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_after_nebula_max_keep\\scene_gate.json",
+      "frame_ms": 7.567,
+      "gpu_4k_ms": 7.18300008773804,
+      "frame_sessions": [
+        5.243,
+        8.766,
+        7.567
+      ],
+      "gpu_sessions": [
+        7.18300008773804,
+        7.22599983215332,
+        7.14400005340576
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    },
+    {
+      "phase": "after",
+      "case": "nebula",
+      "tier": "high",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_after_nebula_high_keep\\scene_gate.json",
+      "frame_ms": 7.176,
+      "gpu_4k_ms": 5.90100002288818,
+      "frame_sessions": [
+        7.176
+      ],
+      "gpu_sessions": [
+        5.90100002288818
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    },
+    {
+      "phase": "after",
+      "case": "nebula",
+      "tier": "low",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_after_nebula_low_keep\\scene_gate.json",
+      "frame_ms": 6.854,
+      "gpu_4k_ms": 4.25500011444092,
+      "frame_sessions": [
+        6.854
+      ],
+      "gpu_sessions": [
+        4.25500011444092
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    },
+    {
+      "phase": "after",
+      "case": "storm",
+      "tier": "max",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_after_storm_max_keep\\scene_gate.json",
+      "frame_ms": 5.552,
+      "gpu_4k_ms": 7.33400011062622,
+      "frame_sessions": [
+        5.996,
+        4.896,
+        5.552
+      ],
+      "gpu_sessions": [
+        7.26100015640259,
+        7.38500022888184,
+        7.33400011062622
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    },
+    {
+      "phase": "after",
+      "case": "storm",
+      "tier": "high",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_after_storm_high_keep\\scene_gate.json",
+      "frame_ms": 5.564,
+      "gpu_4k_ms": 5.01000022888184,
+      "frame_sessions": [
+        5.564
+      ],
+      "gpu_sessions": [
+        5.01000022888184
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    },
+    {
+      "phase": "after",
+      "case": "storm",
+      "tier": "low",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\run4\\gate_after_storm_low_keep\\scene_gate.json",
+      "frame_ms": 5.346,
+      "gpu_4k_ms": 3.56500005722046,
+      "frame_sessions": [
+        5.346
+      ],
+      "gpu_sessions": [
+        3.56500005722046
+      ],
+      "pass": true,
+      "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+    }
+  ]
+}
