@@ -2,7 +2,7 @@
 // Issue 687: actual Windows .bat runs against tiny local Git fixtures and stub agents.
 // Issue 722 extends it: the resolved-model stamp, the free-space floor and the Board hashes check (audit 706
 // findings 6 and 7), all in test mode through the same entry points.
-// Fixture objects are test data written directly to TEMP. No git commit or push is run.
+// Fixture objects are test data written directly to TEMP. Accounting fault cases preserve commits to local TEMP remotes only.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -177,7 +177,19 @@ if (probe) {
   if (!fs.readFileSync(task,'utf8').includes('saved work before stopping')) process.exit(33);
   if (fs.readFileSync('progress.txt','utf8') !== 'from partial\\n') process.exit(32);
   fs.writeFileSync('agent_started.txt', 'resumed work verified');
-  console.log(JSON.stringify({type:'step_finish',part:{tokens:{input:1000,output:100,reasoning:30,cache:{read:200,write:0}}}}));
+  const fault = process.env.STUB_ACCOUNT_FAULT;
+  if (fault === 'invalid') fs.writeFileSync(path.join(process.env.WORK_ROOT, 'openai_spend.txt'), 'invalid ledger\\n');
+  if (fault === 'busy') {
+    fs.writeFileSync(process.env.PC_TEST_TRACE + '.lock-request', 'lock now');
+    const end = Date.now() + 10000;
+    while (!fs.existsSync(process.env.PC_TEST_TRACE + '.locked')) {
+      if (Date.now() > end) process.exit(37);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,50);
+    }
+  }
+  const tokens = {input:1000,output:100,reasoning:30,cache:{read:200,write:0}};
+  if (fault === 'missing') delete tokens.output;
+  console.log(JSON.stringify({type:'step_finish',part:{tokens}}));
   console.log(JSON.stringify({type:'text',part:{text:'Stub completed from partial'}}));
 }
 `);
@@ -215,6 +227,7 @@ const defaults = {
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
+  STUB_ACCOUNT_FAULT: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
@@ -255,7 +268,7 @@ async function job(arm, label, extra = {}) {
     if (label === 'two-current') db.issue.body += '\n## Run 2 THIS IS THE JOB NOW\nAnother job.\n';
     write(env.PC_TEST_GH_DB, JSON.stringify(db)); write(env.PC_TEST_GH_TRACE, '');
   }
-  const bat = path.join(here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
+  const bat = path.join(extra.STUB_RUNNER_TOOLS || here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
@@ -312,6 +325,59 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI usage unknown'));
   write(ledger, 'bad ledger\n'); assert.equal(budget().code, 3);
   pass('OpenAI missing key, named prices, probe plus agent usage, idempotent ledger, default/configured budget, dry isolation, month rollover and unknown-usage refusal');
+  // Run the real preservation path against our local remote. Only the TEMP copy enables live accounting in dryrun
+  // and a local push; test agents and fake GitHub still isolate every provider and network operation.
+  const faultTools = path.join(root, 'accounting runner');
+  for (const name of ['work_issue.bat','work_issue.ps1','runner_common.ps1','run_timeout.ps1','tmo.bat','gpu_slots.js']) {
+    write(path.join(faultTools, name), read(path.join(here, name)));
+  }
+  write(path.join(faultTools, 'work_issue.bat'), read(path.join(faultTools, 'work_issue.bat'))
+    .replace(/(%PS% openai-(?:budget|spend)[^\r\n]*)"%DRY%"/g, '$1"0"')
+    .replace('set "PUSHMODE=dry"', 'set "PUSHMODE=test"'));
+  const ledgerHolder = path.join(root, 'ledger holder.ps1');
+  write(ledgerHolder, `while (-not (Test-Path ($env:PC_TEST_TRACE + '.lock-request'))) { Start-Sleep -Milliseconds 100 }
+$s = [IO.File]::Open((Join-Path $env:WORK_ROOT 'openai_spend.txt'), 'OpenOrCreate', 'ReadWrite', 'None')
+try {
+  [IO.File]::WriteAllText(($env:PC_TEST_TRACE + '.locked'), 'locked')
+  while (-not (Test-Path ($env:PC_TEST_TRACE + '.release'))) { Start-Sleep -Milliseconds 100 }
+} finally { $s.Dispose() }
+`);
+  for (const fault of ['missing', 'invalid', 'busy']) {
+    const extra = { STUB_RUNNER_TOOLS: faultTools, STUB_ACCOUNT_FAULT: fault,
+      PC_TEST_STOP_BEFORE_PUBLISH: '0' };
+    if (fault === 'busy') {
+      const home = path.join(root, 'openai-account-busy');
+      const child = spawn('powershell.exe', ['-NoProfile', '-File', ledgerHolder], { stdio: 'ignore', windowsHide: true,
+        env: { ...process.env, WORK_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt') } });
+      testChildren.push(child);
+    }
+    const r = await job('openai', 'account-' + fault, extra);
+    assert.equal(r.code, 14, r.text + r.result);
+    assert.equal(r.state.status, 'partial', r.result);
+    assert.equal(r.state.reason, 'spend accounting unknown');
+    assert.equal(read(path.join(r.out, 'checks.txt')).trim(), 'runner checks skipped: partial run');
+    assert(fs.existsSync(path.join(r.out, 'guard_dir.txt')), 'the preservation guard ran');
+    const branch = 'work/issue-687-openai-partial';
+    const tip = run('git', ['--git-dir', source, 'rev-parse', branch]); assert.equal(tip.code, 0, tip.text);
+    assert.equal(run('git', ['--git-dir', source, 'show', tip.text.trim() + ':agent_started.txt']).text.trim(), 'resumed work verified');
+    assert.equal(read(path.join(r.out, 'confirmed_commit.txt')).trim(), tip.text.trim());
+    assert.equal(run('git', ['--git-dir', source, 'show-ref', '--verify', 'refs/heads/work/issue-687-openai']).code, 128, 'no delivery branch or PR');
+    const journal = path.join(r.env.WORK_ROOT, 'openai_spend_unknown');
+    const entries = fs.readdirSync(journal).map(name => JSON.parse(read(path.join(journal, name))));
+    assert.equal(entries.length, 1); assert.equal(entries[0].status, 'unknown'); assert.equal(entries[0].run.toLowerCase(), r.out.toLowerCase());
+    if (fault === 'busy') write(r.env.PC_TEST_TRACE + '.release', 'release');
+    // Repairing the ledger and releasing its lock cannot erase the separate unknown entry.
+    if (fault !== 'busy') write(path.join(r.env.WORK_ROOT, 'openai_spend.txt'), '');
+    const probeBefore = read(r.env.PC_TEST_TRACE);
+    const refused = await job('openai', 'account-' + fault, extra);
+    assert.equal(refused.code, 3, refused.text + refused.result);
+    assert.equal(refused.state.status, 'failed'); assert(refused.result.includes('OpenAI usage unknown'), refused.result);
+    assert(!fs.existsSync(refused.repo), 'next paid start refused before checkout');
+    assert.equal(read(r.env.PC_TEST_TRACE), probeBefore, 'next paid start never calls the probe');
+    // Restore the shared source partial so the existing resume matrix keeps its original fixture.
+    write(path.join(source, 'refs/heads', branch), partial + '\n');
+    pass('OpenAI ' + fault + ' accounting: guarded partial push retains agent changes, never checked, next paid start refused');
+  }
   const openaiOverride = await job('openai', 'override', { WORK_MODEL: 'openai/gpt-6.1-terra' });
   assert.equal(openaiOverride.code, 0, openaiOverride.text + openaiOverride.result);
   assert.equal(openaiOverride.state.model, 'openai/gpt-6.1-terra');
@@ -773,7 +839,7 @@ console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny share
   assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
   assert(hashWarn.result.includes('WARNING: these runner files differ'), hashWarn.result);
   pass('a run whose tools folder drifts from the Board hashes still starts and warns');
-  const note = 'PASS runner687+722+860: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
+  const note = 'PASS runner687+722+860+985: ' + passed + ' checks, Windows entry points, local Git and stub agents only. Preservation commits and pushes use TEMP remotes only; no model usage.\nEvidence: ' + root + '\n';
   write(path.join(root, 'summary.txt'), note); console.log(note.trim());
 } catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; }
 finally {

@@ -25,6 +25,17 @@ running monthly total and budget. A run id prevents duplicate entries when stats
 protects updates from concurrent writers. The UTC calendar month resets the total; the budget setting remains until changed.
 Invalid ledger data or unknown usage blocks another paid run until the Board reconciles it. No keys or prompts go in it.
 
+An accounting failure after the agent marks the run partial with `spend accounting unknown`. The usual staging, guard
+and preservation push still run, to `work/issue-N-openai-partial`, with no pull request and no checked-run result.
+Failures before the agent still stop before preservation. If the main ledger is invalid or locked, an independent
+unknown entry is saved as `work217\openai_spend_unknown\<run-hash>.json`. These entries block later paid starts even
+after the main ledger is repaired or its lock is released, and unknown entries remain blocking across month changes.
+To clear a stop, the Board first waits for any ledger writer to finish, keeps the run's logs and existing accounting
+files, then reconciles its usage against the provider's usage records. Repair invalid main-ledger lines and add or
+correct that run's row with verified counts, USD cost, monthly total and `status: "estimated"`, keeping its `run` id.
+Then change the matching independent entry to `status: "estimated"` too, if present. Do not clear an entry just because
+the lock is free. Rerun the `openai-budget` helper to confirm the ledger and remaining budget permit a paid start.
+
 `out\openai_estimate.txt`, `result.txt` and `stats.txt` carry the run estimate. Counts come from OpenCode's emitted
 `step_finish` stats for the preflight and agent, including cache reads. OpenCode input is uncached input; output
 and reasoning are separate, so the ledger adds both at the output rate. The single price table uses the brief's USD per million
@@ -36,9 +47,11 @@ budget, and simultaneous starts can both pass it; the check stops later starts. 
 
 Free proof: `tools\pc\runner_selftest.bat` includes the OpenAI arm with stub agents, no key and no network. It checks
 model resolution/stamps, missing-key refusal, provider overrides, spend arithmetic, repeat recording, month rollover and
-budget refusal. Ordinary `work_issue.bat <issue> openai dryrun` uses the local stand-in provider in `opencode_mock.json`;
+budget refusal. Missing token fields, an invalid ledger and a busy ledger lock each prove that agent changes reach the
+partial branch and the next paid start is refused. Those fault cases commit and push only to tiny local TEMP remotes.
+Ordinary `work_issue.bat <issue> openai dryrun` uses the local stand-in provider in `opencode_mock.json`;
 it never loads the saved OpenAI key or adds spend to the real ledger. Like the older arms' dry runs it still uses GitHub
-for checkout and push validation. The selftest isolates those too and stops before publishing.
+for checkout and push validation. The selftest isolates those too and never publishes to GitHub.
 
 Ryan's two double-click files (copies sit in Downloads\voidsworn_test; the scripts they call are in Downloads\voidsworn_test\work217\tools\):
 - `WORKHORSE_SETUP.bat` (tools/pc/work_setup.bat): installs OpenCode 1.19.5 with npm, asks once for the DeepSeek and Moonshot

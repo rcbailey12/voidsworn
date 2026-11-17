@@ -332,7 +332,13 @@ if /i not "%MODE%"=="dryrun" timeout /t 60 /nobreak > nul
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_after.txt") else (%PS% balance %ARM% "%O%\balance_after.txt" > nul)
 if /i "%ARM%"=="openai" (
   %PS% openai-spend "%N%" "%O%" "%WORK_ROOT%" "%SETF%" "%RESOLVED%" "%DRY%"
-  if errorlevel 1 goto :probefail
+  if errorlevel 1 (
+    set "PARTIAL=spend accounting unknown"
+    set "PB=%BR%-partial"
+    set "RC=14"
+    > "%O%\partial.txt" echo spend accounting unknown
+    echo PARTIAL RUN, spend accounting unknown: the work goes to %BR%-partial, which opens no pull request >> "%O%\result.txt"
+  )
 )
 %PS% stats %N% %ARM% "%O%" > nul
 move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul

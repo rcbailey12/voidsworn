@@ -142,6 +142,33 @@ function OpenAI-Total($rows, $month) {
   foreach ($row in $rows) { if ($row.date.StartsWith($month)) { $total += [decimal]$row.estimated_usd } }
   return $total
 }
+function OpenAI-UnknownPath($root, $out) {
+  $hash = [Security.Cryptography.SHA256]::Create()
+  try { $id = [BitConverter]::ToString($hash.ComputeHash($utf8.GetBytes([IO.Path]::GetFullPath($out).ToLowerInvariant()))).Replace('-', '').ToLowerInvariant() }
+  finally { $hash.Dispose() }
+  return Join-Path (Join-Path $root 'openai_spend_unknown') ($id + '.json')
+}
+function OpenAI-KeepUnknown($root, $out, $n, $model) {
+  # A separate entry per run survives an invalid or locked main ledger. Never repair either automatically.
+  $path = OpenAI-UnknownPath $root $out
+  [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($path)) | Out-Null
+  $row = [ordered]@{ date = [datetime]::UtcNow.ToString('s') + 'Z'; issue = $n; model = $model;
+    estimated_usd = 0; status = 'unknown'; run = [IO.Path]::GetFullPath($out) }
+  [IO.File]::WriteAllText($path, ($row | ConvertTo-Json -Compress) + "`n", $utf8)
+}
+function OpenAI-CheckUnknown($root, $out, $spend) {
+  $dir = Join-Path $root 'openai_spend_unknown'
+  if (-not (Test-Path -LiteralPath $dir)) { return }
+  foreach ($file in (Get-ChildItem -LiteralPath $dir -Filter '*.json' -File)) {
+    try {
+      $row = [IO.File]::ReadAllText($file.FullName) | ConvertFrom-Json
+      if (-not $row.run -or $row.status -notin @('estimated','unknown')) { throw 'bad entry' }
+    } catch { throw 'OpenAI unknown-spend entry is invalid; reconcile openai_spend_unknown before another run' }
+    if ($row.status -eq 'unknown' -and (-not $spend -or $row.run -eq [IO.Path]::GetFullPath($out))) {
+      throw 'OpenAI usage unknown: reconcile openai_spend_unknown and openai_spend.txt before another run'
+    }
+  }
+}
 function OpenAI-Usage($out) {
   $inputTokens = [decimal]0; $cached = [decimal]0; $outputTokens = [decimal]0; $steps = 0
   foreach ($file in @('preflight_log.txt','events.jsonl')) {
@@ -187,9 +214,12 @@ if ($mode -in @('openai-key','openai-budget','openai-spend')) {
     $budget = OpenAI-Budget $settings
     $month = [datetime]::UtcNow.ToString('yyyy-MM')
     $rows = @(); $total = [decimal]0
-    if (-not $dry) { $stream = OpenAI-Lock $root; $rows = @(OpenAI-Rows $stream); $total = OpenAI-Total $rows $month }
+    if (-not $dry) {
+      OpenAI-CheckUnknown $root $out ($mode -eq 'openai-spend')
+      $stream = OpenAI-Lock $root; $rows = @(OpenAI-Rows $stream); $total = OpenAI-Total $rows $month
+    }
     if ($mode -eq 'openai-budget') {
-      if (@($rows | Where-Object { $_.date.StartsWith($month) -and $_.status -eq 'unknown' }).Count) { throw 'OpenAI usage unknown: reconcile openai_spend.txt before another run' }
+      if (@($rows | Where-Object { $_.status -eq 'unknown' }).Count) { throw 'OpenAI usage unknown: reconcile openai_spend.txt before another run' }
       if (-not $dry -and $total -ge $budget) { throw "OpenAI budget reached: USD $total / $budget; no paid call started" }
       exit 0
     }
@@ -212,9 +242,10 @@ if ($mode -in @('openai-key','openai-budget','openai-spend')) {
       $stream.Position = $stream.Length; $stream.Write($bytes, 0, $bytes.Length); $stream.Flush($true)
     }
     OpenAI-Note $out ([pscustomobject]$row) $dry
-    if ($row.status -eq 'unknown' -and -not $dry) { exit 3 }
+    if ($row.status -eq 'unknown' -and -not $dry) { OpenAI-KeepUnknown $root $out $n $model; exit 3 }
     exit 0
   } catch {
+    if ($mode -eq 'openai-spend' -and -not $dry) { OpenAI-KeepUnknown $root $out $n $model }
     Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value $_.Exception.Message -Encoding UTF8
     exit 3
   } finally { if ($stream) { $stream.Dispose() } }
