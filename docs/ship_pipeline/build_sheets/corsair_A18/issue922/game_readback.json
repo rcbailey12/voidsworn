@@ -1,0 +1,20 @@
+{
+  "battle_draw_calls_whole_probe": 26,
+  "camera170_crop": [
+    640,
+    360
+  ],
+  "camera_distance": 170,
+  "camera_pitch": 0.98,
+  "effect_nozzles": 3,
+  "engine_hardpoints": 3,
+  "nozzles_from_kit": true,
+  "result": "PASS",
+  "stage": "paint proof",
+  "surfaces": 15,
+  "triangles": 186136,
+  "viewport": [
+    1920,
+    1080
+  ]
+}

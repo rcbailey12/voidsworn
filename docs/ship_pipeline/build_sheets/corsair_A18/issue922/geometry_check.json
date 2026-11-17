@@ -1,0 +1,38 @@
+{
+  "result": "PASS",
+  "changed_objects": [
+    "RL16_mount_iron",
+    "D1_mount_iron",
+    "E3_body_ember",
+    "RL17_mount_iron",
+    "RL16_body_light",
+    "D1_body_steel",
+    "E1_body_glow",
+    "E3_body_glow",
+    "D1_body_dish",
+    "RL17_body_light",
+    "E3_body_steel",
+    "E2_body_ember",
+    "E1_body_ember",
+    "E1_body_steel",
+    "E2_body_steel",
+    "E2_body_glow"
+  ],
+  "unchanged_objects": 270,
+  "plate_layout_unchanged": true,
+  "interiors_unchanged": true,
+  "automatic_running_light_changes": [
+    "RL16_mount_iron",
+    "RL17_mount_iron",
+    "RL16_body_light",
+    "RL17_body_light"
+  ],
+  "running_light_counts": {
+    "before": 17,
+    "after": 18
+  },
+  "running_light_note": "The unchanged stack admits one extra lamp after the large dish clears its placement test.",
+  "bell_shell_closed": true,
+  "slot_wall_winding_consistent": true,
+  "kit_builder_restored": true
+}

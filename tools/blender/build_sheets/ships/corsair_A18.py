@@ -7,8 +7,8 @@
 # raised spine of stacked blocks from a third of the length to the engine block, a lower aft engine block, two engine drums
 # on short pylons at the stern quarters and smaller bells between them, grabbers under the chin, a big flush disc on the nose.
 # The Board is the final designer (R233): the build keeps that mass, and its outline from above is its own: a tapering nose
-# that swells into the body (round 2: the Board found round 1 a long box with a dish at the front), one oversized listening
-# dish nearly flush on the nose to starboard (designs.md, "a little brick with one big ear"), and lopsided engine drums (the
+# that swells into the body (round 2: the Board found round 1 a long box with a dish at the front), one small listening
+# disc nearly flush on the nose to starboard (R302, issue 922), and lopsided engine drums (the
 # port drum clearly larger). It is never a small A16 (the barge's wide body and gun rows) or a small A17 (the cruiser's
 # boxy head with two ears).
 # +X bow, +Y port, +Z up. Grabber tips about x = +3.3, engine exits about x = -3.2. Flat belly z = -0.57, spine top 0.69.
@@ -24,8 +24,8 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_corsair_2026_11/corsair_A18_sh
 CONCEPT_VIEWS = dict(top=dict(box=(250, 30, 1650, 480), largest=True, flip=False), side=dict(box=(240, 490, 1750, 830), largest=True, flip=False))
 CROPS = [('bow (wedge, face, chin, grabbers)', (60, 380, 1000, 1220)), ('midships (spine and flank)', (500, 120, 1400, 900)),
          ('stern (engine block and drums)', (1050, 40, 1920, 640))]
-SHEET = dict(version=1, round='first sheet (issue 633)', date='2026-11-12', blend='opus633\\corsair_A18',
-             before='First full layout', before_note='The first complete A18 layout, built with the Hullbreaker kit and run through the check before any fix.',
+SHEET = dict(version=2, round='dish and engine correction (issue 922)', date='2026-11-16', blend='issue922\\corsair_A18',
+             before='Main before issue 922', before_note='The large raised dish and closed engine jackets, with issue 726 paint unchanged.',
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
 import math, random
@@ -75,6 +75,57 @@ def small_antenna(K, fid, pos, h, whips, k, inv, note):
                            pos=tuple(p), aim=None, src='picture', note=note, inv=[inv]))
 
 
+def overburn_engine(K, *args, **kwargs):
+    """A18's bell has two cooling slots showing its hot lining from above (R302).
+
+    Keep the kit's lip, throat, ribs, mount and exit registry. Only the flared
+    jacket is opened, with real thickness round each slot. The faction stack
+    paints the exposed lining and throat; the game draws exhaust at that exit.
+    """
+    import kit as _k
+    stock = _k.HP.engine_bell
+
+    def slotted_bell(*a, **kw):
+        part = stock(*a, **kw)
+        seg = kw.get('seg', 28)
+        bell = next(c for c in part.comps if c['name'] == 'bell')
+        # The stock bell's seven spans, full lip, then its inner wall.
+        assert len(bell['verts']) == 17 * seg, 'A18 cooling slots need the kit bell profile'
+        slots = ((2, 6), (8, 12))
+        removed = {j * seg + i for lo, hi in slots for i in range(lo, hi)
+                   for j in (2, 3, 4, 11, 12, 13)}
+        bell['faces'] = [f for i, f in enumerate(bell['faces']) if i not in removed]
+        # Join the outer and inner skins round the four sides of each opening.
+        at = lambda j, i: j * seg + i
+        for lo, hi in slots:
+            for j in (2, 5):
+                for i in range(lo, hi):
+                    face = (at(j, i), at(j, i + 1), at(16 - j, i + 1), at(16 - j, i))
+                    bell['faces'].append(face if j == 2 else face[::-1])
+            for i in (lo, hi):
+                for j in range(2, 5):
+                    face = (at(j, i), at(16 - j, i), at(15 - j, i), at(j + 1, i))
+                    bell['faces'].append(face if i == lo else face[::-1])
+        # The deep lining is hot metal, the lining toward the dark lip dimmer.
+        # These are the existing stack zones, not a ship-specific paint change.
+        lining = next(c for c in part.comps if c['name'] == 'lining')
+        throat_x = max(v.x for v in bell['verts'])
+        hot = [f for f in lining['faces']
+               if sum(lining['verts'][i].x for i in f) / len(f) > throat_x * .45]
+        lining['faces'] = [f for f in lining['faces'] if f not in hot]
+        used = sorted({i for face in hot for i in face})
+        remap = {old: new for new, old in enumerate(used)}
+        part.add('hot_lining', 'body', 'glow',
+                 ([lining['verts'][i] for i in used], [tuple(remap[i] for i in face) for face in hot]))
+        return part
+
+    _k.HP.engine_bell = slotted_bell
+    try:
+        K.engine(*args, **kwargs)
+    finally:
+        _k.HP.engine_bell = stock
+
+
 def build(K):
     import kit as _k
     _plating.install(K, _k.HP)
@@ -111,7 +162,7 @@ def build(K):
         K.vent('I%d' % (i + 1), (3.11, y, -0.04), (1, 0, 0), 0.18, 0.21, slats=5, inv='scoop',
                note='%s panel of the wide intake grille that fills the bow face: the wake-sniffer scoop tastes the wake of ships ahead '
                     '(designs.md: the chin scoop, moved up into the face as the picture draws it)' % ('port', 'middle', 'starboard')[i])
-    # ---------------- the dish mount: a low raised block on the nose, starboard, that carries the one big ear nearly flush ----------------
+    # ---------------- the existing plated nose mount, carrying the small flush receiver (R302) ----------------
     K.mass('Dish mount (raised block on the nose, starboard)', K.loft('A18_sponson', [(2.45, 0.28, 0.28, 0.15, 0.6, 0.06, 0.0, -0.36),
                                                                                      (2.27, 0.32, 0.32, 0.15, 0.6, 0.07, 0.0, -0.37),
                                                                                      (1.62, 0.32, 0.32, 0.15, 0.62, 0.07, 0.0, -0.37),
@@ -166,9 +217,10 @@ def build(K):
         K.keepouts.append((Vector((2.15, 0.34 * side, -0.6)), 0.26))
     K.finish()
 
-    # the one big ear, after the plates (a plate keep-out round its base would strip the small sponson bare)
-    K.dish('D1', (1.98, -0.37, 0.62), 0.46, yaw=-15, pitch=84, post=0.16, inv='ear',
-           note='the one oversized listening dish, 0.9 across (more than half the beam), set nearly flush on the raised dish mount, canted a little forward, on the starboard side of the nose')
+    # R302: a small flush receiver on the starboard nose, never a big raised ear.
+    # Keep the existing plated mount and keep-outs so issue 726's plates do not move.
+    K.dish('D1', (2.12, -0.37, 0.62), 0.20, yaw=-15, pitch=88, post=0.10, inv='ear',
+           note='small listening disc, 0.4 across, nearly flush on the starboard nose; the oversized raised dish is removed (R302)')
 
     # ---------------- the grabbers: one pair of small arms under the chin ----------------
     for side, fi in ((1, 'J1'), (-1, 'J2')):
@@ -184,9 +236,9 @@ def build(K):
 
     # ---------------- engines: the overburn drums on short pylons at the stern quarters (port larger, as the picture), a small centre bell ----------------
     for side, y, r, ex, nm in ENG:
-        K.engine('E%d' % (1 if side > 0 else 2), (ex, y, 0.0), r, 1.0, bell=1.12, rings=3, body_r=r * 1.12, nose='flat', inv='engines',
+        overburn_engine(K, 'E%d' % (1 if side > 0 else 2), (ex, y, 0.0), r, 1.0, bell=1.12, rings=3, body_r=r * 1.12, nose='flat', inv='engines',
                  src='picture', note='%s: the overburn engine' % nm)
-    K.engine('E3', (-3.15, 0.0, -0.09), 0.17, 0.45, bell=1.1, rings=2, body_r=0.19, nose='flat', inv='engines', src='picture', note='small centre bell under the block')
+    overburn_engine(K, 'E3', (-3.15, 0.0, -0.09), 0.17, 0.45, bell=1.1, rings=2, body_r=0.19, nose='flat', inv='engines', src='picture', note='small centre bell under the block')
     for i, (x, z, side) in enumerate(THR):
         K.thruster('Q%d' % (i + 1), (x, sy(x, side), z), (0, side, 0), r=0.13, inv='thrusters', note='bow' if x > 0 else 'stern')
     for (x, side) in LAMPS:
@@ -238,8 +290,10 @@ def build(K):
              'Ryan, Nov 13 2026: "a18 and a19 are much slimmer than concept. It\'s not a huge deal but it\'d add some variety." The beauty reads broader than the sheet\'s top view; the build moves toward it so the family varies in width, not only length. The grille nose, the dish and the lopsided drums are kept')
     K.change('The nose is chunky and tapers forward to the face: 0.96 across and 0.5 tall at the face, widening and deepening over the first 40 percent to 2.0 across at midships, where the body is widest, then easing aft',
              'the Board on round 1 (Nov 13, R233): the build was a long box (1.46 wide almost bow to stern, a 0.4 tall face) with a dish at the front; the concept sheet draws the nose 1.0 across at the face and 1.6 to 1.7 by 40 percent of the length')
-    K.change('The one big ear: an oversized listening dish (0.9 across, more than half the beam) set nearly flush on a low raised dish mount on the nose, to starboard',
-             'the picture\'s flush disc on the starboard foredeck; designs.md\'s "a little brick with one big ear". Round 2 drops round 1\'s sponson that bulged the shoulder: the outline from above is the nose\'s own taper and swell (the Board)')
+    K.change('Issue 922 (R302): a small listening disc, 0.4 across, nearly flush on the starboard nose; no large raised dish',
+             'Ryan agreed with the audit that the big raised ear has no concept counterpart. The existing plated mount stays, so issue 726\'s plate layout is unchanged')
+    K.change('Issue 922 (R302): two cooling slots in each bell jacket expose the hot inner lining from above, with dark lips and ribs retained',
+             'The old engine glow was hidden at the concept and broadside battle cameras. Deep lining uses the existing glow zone, outer lining ember; the faction stack still bakes the varied red-orange throat and plug. All three exits and radii stay registered for the game plume')
     K.change('Lopsided engines: two drums on short pylons at the stern quarters, the port drum clearly larger, and one small centre bell',
              'designs.md (two bells of uneven size) with the picture\'s outrigger drums, the larger on the side the picture draws it; the picture\'s three stacked centre bells become one, so the stern does not read as A16\'s pods')
     K.change('The bow face is a wide intake grille: three louvre panels in one steel frame, 0.56 across, at the end of the nose; the wake-sniffer scoop is that grille',

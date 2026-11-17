@@ -1,4 +1,48 @@
-# corsair_A18 build sheet: Hullbreaker raider (the Sniffer) (issue 633, round 2)
+# corsair_A18 build sheet: Hullbreaker raider (the Sniffer)
+
+## Current proof: issue 922 (R302)
+
+The raised 0.9-wide dish is replaced by a 0.4-wide receiver nearly flush on the starboard nose.
+Two openings through each engine's thick bell jacket expose its hot inner lining from above.
+The existing faction glow and ember zones supply the red-orange heat; the dark lip, ribs, throat,
+plug and all three registered engine exits stay in place. The issue 726 paint stack and plate layout are retained.
+The smaller dish clears one placement that the unchanged stack previously rejected, so its automatic running lamps go from 17 to 18.
+
+[Accepted concept](issue922/A18_concept.jpg), [concept beside corrected paint](issue922/A18_concept_vs_after.jpg),
+[main before / after at the concept camera](issue922/A18_compare_concept_camera.jpg),
+[CPU paint at camera 170](issue922/A18_compare_camera170.jpg),
+[production game effect at camera 170](issue922/A18_game_camera170_compare.jpg),
+[engine detail](issue922/A18_compare_engine_detail.jpg).
+Every current picture carries its source revision and stage, at 720 pixels tall or less.
+The Godot effect pictures load the checked export directly and are labelled paint proof.
+
+Method: [A18 design](../../../../tools/blender/build_sheets/ships/corsair_A18.py),
+[build manifest](manifest.json), [CPU proof and publication script](issue922/proof.py),
+[Godot engine probe](issue922/engine_probe.gd). The three engine rows are hand-built alterations of the existing kit bell;
+the other fittings retain their kit route. No shared kit or paint file changes.
+
+The earlier run records below retain their original measurements. The current sheet, feature table,
+fit report, manifest, full paint picture and engine picture are regenerated for issue 922.
+Other old paint crops and the old outline overlay are historical; issue 922 does not rescore the outline.
+
+CPU bake: 2048 maps, 16 samples; comparison renders: 32 samples. [Verification](issue922/verification.json),
+[geometry comparison](issue922/geometry_check.json), [contract](issue922/contract.json),
+[export readback](issue922/export_check.json), [Godot nozzle and cost record](issue922/game_readback.json).
+Fit (all eight counts zero), weapon match, build manifest, closed slot walls, contract, audit, export and its planted faults,
+Godot engine attachment, authored interiors and destruction all pass. The destruction check splits zero machines and leaves
+zero inside triangles outside their fragments.
+
+Budget on the checked GLB in Godot: **186,136 triangles, 15 surfaces, 26 total probe draw calls including the running effect**.
+Main before: 186,168 triangles, 15 surfaces, 26 probe draw calls. The three engine exit positions and radii are unchanged.
+The standing suite reports 59 passing checks and one failure: the unchanged Windows runner self-test exceeded its 600-second limit.
+It is not a clean standing-suite pass. [Standing result](issue922/standing_checks.json).
+
+At camera 170 the production plume supplies most of the engine read in both versions; the opened lining is clearest in the
+engine detail. The stock plume stays paler than the concept and the issue 726 hull paint stays greyer. Those colours are unchanged.
+No playable-build install or scene-gate run was made: this job delivers the A18 design and sheet outputs, with the checked GLB
+exercised directly through the production engine effect. Full-game acceptance remains the Board's picture review.
+
+## Earlier recipe records
 
 **Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 12 machines, zero split, zero inside triangles beyond their piece. Budget: 65644 triangles, 13 surfaces, 4513 inside triangles. Costs reported; the scene gate was not measured.
 

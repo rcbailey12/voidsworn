@@ -1,0 +1,54 @@
+{
+  "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+  "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+  "source_dirty": true,
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "A18_after_game_camera170.jpg",
+  "date": "2026-11-17T03:19:16Z",
+  "sources": [
+    {
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+      "source_dirty": true,
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "A18_game_camera170.png",
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+      "stage": "paint proof",
+      "date": "2026-11-17T03:15:38Z",
+      "image_sha256": "dd4319cbbb6006063d160669746fcd459a45b831ad7c45cc98e3ac475fdcc660",
+      "sources": [
+        {
+          "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+          "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+          "source_dirty": true,
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "ac51fb5b4994b53c5979cc61794ee087a6a6cb7225efe223e2b5e9d148c06bc8"
+  ],
+  "stamp_template_sha256": "1912dc60b78e3c796b6ba69cdcfdb95c12ba64efc9133679c11166323d12a8d5",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkklEQVR4nO3VMRHAIADAQKgC7pjwb7Q7BsjwryBb5tpnAEDJ9zoAAG7mBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTAKPmB58zAQDVZGh8AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "79c2f4168d181f409883476269106bdc2e6822d57b17e6568c79a15fa3de128e"
+}
