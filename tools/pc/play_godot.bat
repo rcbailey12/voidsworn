@@ -2,7 +2,7 @@
 rem Play Voidsworn in Godot. Double-click this file.
 rem The first time, it prepares the ship, rock and sky files for Godot (about a minute), then the game opens.
 rem Works from Downloads\voidsworn_test (the game is in build\, the Godot project in build\godot\)
-rem or from a repo checkout (tools\pc\play_godot.bat). If an exported Voidsworn.exe exists, it runs that instead.
+rem or from a repo checkout (tools\pc\play_godot.bat). Prefer the complete live export published by g2_export.bat.
 rem play_godot_safe.bat runs the same in the simpler Compatibility renderer, for a PC where the game will not start.
 setlocal
 set "HERE=%~dp0"
@@ -14,7 +14,7 @@ if not defined ROOT (
   pause
   exit /b 1
 )
-if exist "%ROOT%export\Voidsworn.exe" (
+if exist "%ROOT%export\Voidsworn.exe" if exist "%ROOT%export\Voidsworn.pck" (
   start "" "%ROOT%export\Voidsworn.exe" %*
   exit /b 0
 )

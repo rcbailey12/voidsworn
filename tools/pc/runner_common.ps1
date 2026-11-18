@@ -14,6 +14,47 @@
 # announce <out> <issue> <seat> <repo> <ceiling seconds> <resume command> <push mode>: validate and claim before work.
 # board-dryrun <out>: list ACCEPT or REFUSE for every open codex, muse or opus issue, without claims or agent calls.
 # Test claims require PC_TEST_GH and PC_TEST_GH_DB; real dry runs validate read-only. Linux probes use pwsh and real git.
+# Public runner diagnostics are built from fixed text. Keep exceptions, reports from interrupted agents,
+# raw check details, and resume tails in the local run folder. Never interpolate an arbitrary log line.
+function Public-RunnerText($status, $reason, $code, $folder) {
+  switch ($status) {
+    'running' { return 'claimed before checkout and model calls' }
+    'checked_push' { return 'non-partial push confirmed and runner checks passed' }
+    'unverified' { return 'dry/test push or checks did not pass; chain stays stopped' }
+    'no_changes' { return 'no changes pushed' }
+    'partial' {
+      switch -Exact ($reason) {
+        'CEILING' { return 'CEILING' }
+        'usage limit' { return 'usage limit' }
+        'spend accounting unknown' { return 'spend accounting unknown' }
+        { $_ -in @('Codex left a merge unfinished', 'the agent left a merge unfinished') } { return 'the agent left a merge unfinished' }
+      }
+      if ($reason -cmatch '\ASTALLED after ([0-9]{1,6}(?:[.,][0-9]{1,6})?) min\z') { return "STALLED after $($Matches[1]) min" }
+      if ($reason -match '\A(?:codex|agent) exit (-?[0-9]{1,10})\z') { return "agent exit $($Matches[1])" }
+      return 'agent run interrupted; see the local run folder'
+    }
+    'checks' {
+      $rows = @()
+      foreach ($check in @(
+        @{ name = 'standing checks'; log = 'checks_node.txt'; code = $env:NODE_EXIT },
+        @{ name = 'parity'; log = 'checks_parity.txt'; code = $env:PARITY_EXIT }
+      )) {
+        $label = $check.name
+        if (-not (Test-Path -LiteralPath (Join-Path $folder $check.log) -PathType Leaf)) { $rows += "SKIP: $label"; continue }
+        if ($check.code -eq '0') { $rows += "PASS: $label" }
+        elseif ($check.code -eq '124') { $rows += "FAIL: $label timed out" }
+        elseif ($check.code -match '\A-?[0-9]{1,10}\z') { $rows += "FAIL: $label (exit $($check.code))" }
+        else { $rows += "SKIP: $label (no exit recorded)" }
+      }
+      return ($rows -join "`n")
+    }
+    default {
+      if ($code -match '\A-?[0-9]{1,10}\z') { return "runner exit $code; see the local run folder" }
+      return 'runner failed; see the local run folder'
+    }
+  }
+}
+if ($args[0] -eq 'publication-library') { return }
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
 $utf8 = New-Object Text.UTF8Encoding($false)
@@ -321,11 +362,12 @@ function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
     return ($lines -join "`n")
   } catch { $script:ghError = $_.Exception.Message; Log "WARNING: GitHub status $method $endpoint failed: $script:ghError"; return '' }
 }
-function Status-Body($s, $label, $reason) {
+function Status-Body($s, $label, $code) {
   $g = $s.github
   $branch = $s.branch
   if ($label -eq 'partial') { $branch += '-partial' }
   $commit = $s.commit; if (-not $commit) { $commit = $g.start_commit }
+  $reason = Public-RunnerText $s.status $s.reason $code
   return @"
 $($g.marker)
 Runner status: $label
@@ -476,7 +518,7 @@ function End-Announcement($s, $code) {
     $label = 'failed'
     if ($code -eq '0' -and $s.status -in @('checked_push','unverified')) { $label = 'finished' }
     if ($s.status -eq 'partial') { $label = 'partial' }
-    if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $s.reason) } }
+    if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $code) } }
     # Clearing the owned label must still be attempted when editing the comment fails.
     $null = Invoke-Gh 'DELETE' "issues/$($g.issue)/labels/running"
     if ($ghOK) { $g.claimed = $false; Save-State $s }
@@ -491,7 +533,7 @@ try {
     $resumePath = Join-Path $out 'resume.txt'
     if (Test-Path -LiteralPath $resumePath) { [IO.File]::Move($resumePath, "$resumePath.$($s.run).previous") }
     # Old run metadata must never turn a later failure into success.
-    foreach ($f in @('stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt')) { Put (Join-Path $out $f) '' }
+    foreach ($f in @('stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt','commit.txt')) { Put (Join-Path $out $f) '' }
   }
   elseif ($mode -eq 'wait') {
     $script:out = $args[1]
@@ -687,7 +729,7 @@ try {
       # Reuse this branch's comment on retries instead of adding a new comment every run.
       try {
         foreach ($comment in $comments) { if (([string]$comment.body).StartsWith($g.marker)) { $g.comment = $comment.id } }
-        $payload = @{ body = (Status-Body $s 'running' 'claimed before checkout and model calls') }
+        $payload = @{ body = (Status-Body $s 'running' '') }
         if ($g.comment) { $null = Require-Gh 'PATCH' "issues/comments/$($g.comment)" $payload }
         else { $reply = Require-Gh 'POST' "issues/$issue/comments" $payload; $g.comment = $reply.id }
         if (-not $g.comment) { throw 'claim comment has no id; no agent started' }

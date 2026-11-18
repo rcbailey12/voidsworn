@@ -6,6 +6,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const net = require('net');
 const { spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const helper = path.join(pc, 'gpu_slots.js');
@@ -18,7 +19,7 @@ let passed = 0;
 function pass(s) { passed++; console.log('PASS ' + s); }
 function client(args, env = {}) {
   const p = spawn(process.execPath, [helper, ...args], { cwd: root, windowsHide: true,
-    env: { ...process.env, PC_GPU_LANE: '', ...env } });
+    env: { ...process.env, PC_GPU_LANE: '', PC_GPU_WAIT_SECONDS: '300', ...env } });
   children.push(p);
   p.output = ''; p.errors = ''; p.done = false;
   p.stdout.on('data', b => { p.output += b; });
@@ -29,8 +30,8 @@ function client(args, env = {}) {
   });
   return p;
 }
-async function until(fn) {
-  for (let i = 0; i < 200; i++) { if (fn()) return; await sleep(50); }
+async function until(fn, ms = 10000) {
+  for (let i = 0; i < ms / 50; i++) { if (fn()) return; await sleep(50); }
   throw new Error('timed out waiting for fake GPU client');
 }
 const holder = (pid, mode = 'shared') => ({ pid, mode, token: String(pid), issue: '847', started: 'fake start' });
@@ -97,7 +98,7 @@ async function main() {
   assert(slots.step(holder(1))); assert.equal(used(slots).length, 1, 'dead weighted claims must be reclaimed in full');
   slots.release('1'); live.add(2);
   capacity(fakeRoot, 1);
-  assert.equal(slots.step(heavy), null, 'a job larger than total capacity waits for a Board increase');
+  assert.throws(() => slots.step(heavy), /exceeds.*capacity/, 'a job larger than total capacity must fail immediately');
   assert.equal(slots.read('gpu_solo'), null, 'heavy shared waiters must not reserve solo');
   capacity(fakeRoot, 3);
   assert(slots.step(heavy)); slots.release('2');
@@ -146,6 +147,27 @@ async function main() {
 
   const raceRoot = path.join(root, 'race');
   put(path.join(raceRoot, 'gpu_go.txt'), 'GPU cleared');
+  const closed = path.join(root, 'closed');
+  capacity(closed, 1);
+  const tooHeavy = client(['acquire', closed, '1100', String(process.pid), 'shared', '2'], { PC_GPU_WAIT_SECONDS: '60' });
+  try { await until(() => tooHeavy.done, 2500); }
+  catch { throw new Error('impossible GPU weight waited for admission'); }
+  assert.match((await tooHeavy.result).error, /exceeds.*capacity/i);
+  const closedGate = client(['acquire', closed, '1100', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '1' });
+  await until(() => closedGate.done, 3500);
+  const expired = await closedGate.result;
+  assert.notEqual(expired.code, 0); assert.match(expired.error, /admission timed out/i);
+  pass('GPU admission fails promptly at impossible weight and times out with the go gate closed');
+  const heldLock = net.createServer();
+  await new Promise((resolve, reject) => {
+    heldLock.once('error', reject); heldLock.listen(47847, '127.0.0.1', resolve);
+  });
+  try {
+    const waiter = client(['acquire', raceRoot, '1100', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '1' });
+    await until(() => waiter.done, 3500);
+    assert.match((await waiter.result).error, /admission timed out/i);
+  } finally { await new Promise(resolve => heldLock.close(resolve)); }
+  pass('admission deadline also covers a busy slot lock');
   const workers = [1, 2, 3, 4].map(() => {
     const p = spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { windowsHide: true });
     children.push(p); return p;
@@ -160,6 +182,21 @@ async function main() {
   assert(rs.read('gpu_slot_1') && rs.read('gpu_slot_2'));
   // Cancel the third shared waiter, then queue solo before releasing either slot.
   const blocked = claims.find(p => !p.done); blocked.kill(); await blocked.result;
+  const cancelled = claim(workers[3], 'solo');
+  await until(() => !!rs.read('gpu_solo'));
+  workers[3].kill();
+  await until(() => cancelled.done, 3500);
+  const cancelResult = await cancelled.result;
+  assert.notEqual(cancelResult.code, 0); assert.match(cancelResult.error, /cancelled/i);
+  assert.equal(rs.read('gpu_solo'), null, 'cancellation must release the pending solo reservation');
+  workers[3] = spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { windowsHide: true });
+  children.push(workers[3]);
+  const timedSolo = client(['acquire', raceRoot, '1100', String(workers[3].pid), 'solo'], { PC_GPU_WAIT_SECONDS: '1' });
+  await until(() => !!rs.read('gpu_solo'));
+  await until(() => timedSolo.done, 3500);
+  assert.match((await timedSolo.result).error, /admission timed out/i);
+  assert.equal(rs.read('gpu_solo'), null, 'timeout must release the pending solo reservation');
+  pass('pending solo releases on cancellation and on admission timeout');
   const solo = claim(workers[3], 'solo');
   await until(() => !!rs.read('gpu_solo'));
   const newcomer = claim(workers[2]);
@@ -249,7 +286,7 @@ setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`
   async function run(exe, args, extra = {}) {
     const p = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'run_timeout.ps1')], {
       cwd: root, windowsHide: true, env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GPU_ROOT: home,
-        PC_GPU_LANE: '', PC_GPU_MODE: 'shared', PC_GPU_WEIGHT: '', PC_GPU_ISSUE: '847', PC_TEST_POLL_MS: '30',
+        PC_GPU_LANE: '', PC_GPU_MODE: 'shared', PC_GPU_WEIGHT: '', PC_GPU_ISSUE: '847', PC_GPU_WAIT_SECONDS: '300', PC_TEST_POLL_MS: '30',
         PC_TEST_TIMEOUT_LOG: path.join(home, 'timeouts.log'), TMO_REPO: '', TMO_OUT: '', TMO_LOG: '',
         TMO_ARGS: `1 "${exe}" ${args}`, ...extra }
     });
@@ -260,6 +297,14 @@ setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`
   }
   const marker = path.join(home, 'started.txt');
   const rs = new Slots(home);
+  const notStarted = path.join(home, 'admission_started.txt');
+  put(path.join(home, 'gpu_go.txt'), 'GPU not cleared');
+  const admission = await run(process.execPath, `"${probe}" "${notStarted}" 0 0`, { PC_GPU_WAIT_SECONDS: '1' });
+  assert.equal(admission.code, 126, admission.output);
+  assert.match(admission.output, /GPU admission timed out after 1 seconds/);
+  assert(!fs.existsSync(notStarted));
+  put(path.join(home, 'gpu_go.txt'), 'GPU cleared');
+  pass('Windows watchdog returns a separate admission failure without starting the command');
   for (const [code, delay, expect] of [[7, 0, 7], [0, 5000, 124]]) {
     const r = await run(process.execPath, `"${probe}" "${marker}" ${code} ${delay}`, { PC_GPU_WEIGHT: '2' });
     assert.equal(r.code, expect, r.output); assert(fs.existsSync(marker));

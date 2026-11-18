@@ -121,6 +121,14 @@ Init 'failed' 'work/issue-846-deepseek'; Announce; Finish '8'
 $end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
 Assert ($end.payload.body.Contains('Runner status: failed') -and $end.payload.body.Contains('runner exit 8')) 'failed comment'
 Pass 'failed publish still edits status and clears the label'
+Init 'private-exception'; Announce
+$secret = 'fake-secret-for-status-1100'
+$privatePath = 'Z:/private runner/' + $secret
+Base "Base: $privatePath" 14
+$end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
+Assert ($end.payload.body.Contains('Runner status: failed') -and -not $end.payload.body.Contains($secret) -and -not $end.payload.body.Contains('Z:/')) 'public comment leaked a raw runner exception'
+Assert ((Get-Content -LiteralPath (Join-Path $out 'result.txt') -Raw).Contains($privatePath)) 'the full exception should be available locally'
+Pass 'public failed status hides exception paths and secrets and keeps the local diagnostic'
 Init 'patch-failure'; Announce; $env:PC_TEST_GH_FAIL = 'PATCH'; Finish '0' 'CEILING'
 Assert ((Calls)[-1].method -eq 'DELETE') 'label clear after failed comment edit'
 Assert ((Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json).status -eq 'partial') 'report failure cannot change run outcome'

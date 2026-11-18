@@ -47,7 +47,7 @@ for (const [runner, cap] of [['codex_issue', 'CODEX_CAP'], ['work_issue', 'WORK_
   assert(bat.includes('stop_reason.txt'));
   assert(bat.includes('if defined PARTIAL goto :haschange'));
 }
-pass('both launchers set agent progress paths, preserve ceiling overrides and publish stopped notes with no file changes');
+pass('both launchers set agent progress paths, preserve ceiling overrides and keep partial runs with no file changes');
 
 if (process.platform !== 'win32') {
   console.log('SKIP Windows process and file probes: Windows standing checks run them');
@@ -94,7 +94,7 @@ $before = $after
 $after = Get-RunProgress $repo @($log)
 Assert (Test-RunProgress $before $after) 'changed mtime below previous max must count'
 $before = $after
-[IO.File]::WriteAllText($log, 'last action: writing tests')
+[IO.File]::WriteAllText($log, 'last action: writing tests Z:/private fake-api-secret-818')
 $after = Get-RunProgress $repo @($log)
 Assert (Test-RunProgress $before $after) 'new log bytes must count'
 $before = $after
@@ -114,21 +114,29 @@ Assert ($note.Contains('old-time.txt') -and $note.Contains('last action: writing
 [IO.File]::WriteAllText((Join-Path $out 'title.txt'), 'Fixture title')
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $args[0] 'codex_issue.ps1') msg 818 $repo $out
 Assert ($LASTEXITCODE -eq 0) 'codex message helper'
-Assert ([IO.File]::ReadAllText((Join-Path $out 'commit.txt')).Contains($note)) 'codex commit message needs full stop note'
+function Assert-SafeMessage($message) {
+  Assert ($message.Contains('STALLED after 30 min')) 'public message needs the fixed stop reason'
+  Assert (-not ($message -match 'Z:/private|old-time\.txt|fake-api-secret-818')) 'public message leaked private stop details'
+}
+Assert-SafeMessage ([IO.File]::ReadAllText((Join-Path $out 'commit.txt')))
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $args[0] 'work_issue.ps1') msg 818 deepseek $out
 Assert ($LASTEXITCODE -eq 0) 'work message helper'
-Assert ([IO.File]::ReadAllText((Join-Path $out 'commit.txt')).Contains($note.Trim())) 'work commit message needs full stop note'
+Assert-SafeMessage ([IO.File]::ReadAllText((Join-Path $out 'commit.txt')))
 & git.exe -C $repo remote add origin $repo
 [IO.File]::WriteAllText((Join-Path $out 'base_commit.txt'), $head)
 [IO.File]::WriteAllText((Join-Path $out 'partial.txt'), 'STALLED after 30 min')
+[IO.File]::WriteAllText((Join-Path $out 'guard_dir.txt'), $out)
+[IO.File]::WriteAllText((Join-Path $out 'guard.md'), 'Guard detail: Z:/private fake-api-secret-818')
 # The empty fixture tree is unchanged. skipcommit exercises the publisher without creating any commit or pushing.
 $env:WORK_TEST_FAULT = 'skipcommit'
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $args[0] 'work_issue.ps1') commit $repo $out fixture/issue-818-partial dry
 Assert ($LASTEXITCODE -eq 0) 'stopped run with no staged changes must keep its partial message'
 Assert ((& git.exe -C $repo rev-parse HEAD) -eq $next) 'test must not commit'
 $message = [IO.File]::ReadAllText((Join-Path $out 'commit.txt'))
-Assert ($message.StartsWith('PARTIAL RUN') -and $message.Contains($note.Trim())) 'partial publisher must retain the full stop note'
-Write-Output 'PASS Windows file, commit, log and resume probes'
+Assert ($message.StartsWith('PARTIAL RUN')) 'partial publisher must label the message'
+Assert-SafeMessage $message
+Assert ([IO.File]::ReadAllText((Join-Path $out 'resume.txt')) -ceq $note) 'public write must leave full local resume note intact'
+Write-Output 'PASS Windows partial publisher keeps the stop reason and leaves raw details in the local resume note'
 `);
 const p = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, pc, root], {
   encoding: 'utf8', windowsHide: true, timeout: 60000
