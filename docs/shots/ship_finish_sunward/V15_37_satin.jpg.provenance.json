@@ -1,0 +1,111 @@
+{
+  "source_commit": "7b5db2797655f03cbe5bdc530dcccc22a9852b9c",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "V15_37_satin.jpg",
+  "date": "2026-11-18T07:21:35Z",
+  "sources": [
+    {
+      "source_commit": "7b5db2797655f03cbe5bdc530dcccc22a9852b9c",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "697a4a69a72320048e03837df0d94de0e66ace0f",
+      "source_diff_sha256": "ca3c002245c221e29b8fd9bf5dcc92b89b46d6814fb2d65a7c3c1bc44e0a4400",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "V15_37_battle.png",
+      "source_commit": "7b5db2797655f03cbe5bdc530dcccc22a9852b9c",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T07:09:53Z",
+      "image_sha256": "33d2ab6348b59136e241f58b1cb9d90afd29f68d2e26ce1050f30a6065144848",
+      "sources": [
+        {
+          "source_commit": "7b5db2797655f03cbe5bdc530dcccc22a9852b9c",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "V15_37_battle.png",
+      "source_commit": "697a4a69a72320048e03837df0d94de0e66ace0f",
+      "source_dirty": true,
+      "source_diff_sha256": "ca3c002245c221e29b8fd9bf5dcc92b89b46d6814fb2d65a7c3c1bc44e0a4400",
+      "stage": "installed in game",
+      "date": "2026-11-18T07:14:46Z",
+      "image_sha256": "010c98c2eb1b37494c273a00ea34e5dbdbfdaf2996e678a5f9ca1b7036c0dedc",
+      "sources": [
+        {
+          "source_commit": "697a4a69a72320048e03837df0d94de0e66ace0f",
+          "source_diff_sha256": "ca3c002245c221e29b8fd9bf5dcc92b89b46d6814fb2d65a7c3c1bc44e0a4400",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "V15_37_close.png",
+      "source_commit": "7b5db2797655f03cbe5bdc530dcccc22a9852b9c",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T07:09:53Z",
+      "image_sha256": "cbc5f947f65089fd9d29a1d758014dacac2543a1b8a57c9b2e9cd3db768118df",
+      "sources": [
+        {
+          "source_commit": "7b5db2797655f03cbe5bdc530dcccc22a9852b9c",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "V15_37_close.png",
+      "source_commit": "697a4a69a72320048e03837df0d94de0e66ace0f",
+      "source_dirty": true,
+      "source_diff_sha256": "ca3c002245c221e29b8fd9bf5dcc92b89b46d6814fb2d65a7c3c1bc44e0a4400",
+      "stage": "installed in game",
+      "date": "2026-11-18T07:14:46Z",
+      "image_sha256": "c022a08ab91724807a3e713cc4e939089d2d9043112ff269e9bf47936222dc2f",
+      "sources": [
+        {
+          "source_commit": "697a4a69a72320048e03837df0d94de0e66ace0f",
+          "source_diff_sha256": "ca3c002245c221e29b8fd9bf5dcc92b89b46d6814fb2d65a7c3c1bc44e0a4400",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    510,
+    636,
+    634
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "865ed6ecc0f155a805c4cbd707f3402c3b69bb920d5d4608f015aafd6b828540"
+  ],
+  "stamp_template_sha256": "65e20aa6eda46915fe6db254917f3bf51921d574ff92278d88b6d7e0746f92a5",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgHdJT4V/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fVkwBQdrLMykAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "52c3712a56777e4cdfa7151b9be2ef9017233a0017df87f9b08489192eaa8ba0"
+}
