@@ -264,7 +264,7 @@ func run(battle) -> void:
 			b._on_key(KEY_ESCAPE)
 			await _idle()
 	# 6. the enemy's turn: end the ship that is up
-	b.hud.toast("Out of range.")
+	b.hud.toast(b.NO_READY_GUN_IN_RANGE)
 	b.handed_t = -9.0
 	b._on_key(KEY_SPACE)
 	var t0 := Time.get_ticks_msec()
@@ -276,7 +276,7 @@ func run(battle) -> void:
 			b.handed_t = -9.0
 			b._on_key(KEY_SPACE)
 	await get_tree().create_timer(0.3).timeout
-	_note(b.hud.ledger.enemy_turn() and b.hud.toast_lbl.text != "Out of range." and not b.hud.tip.visible, "enemy turn clears firing warning and hover tip")
+	_note(b.hud.ledger.enemy_turn() and b.hud.toast_lbl.text != b.NO_READY_GUN_IN_RANGE and not b.hud.tip.visible, "enemy turn clears firing warning and hover tip")
 	_check("6_enemy_turn")
 	await b._snap("6_enemy_turn")
 	# let the enemy's turn finish (hurried) before quitting, so nothing is torn down mid-move

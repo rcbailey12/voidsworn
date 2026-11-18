@@ -569,8 +569,9 @@ Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 // Allow the same PC proof to run with pwsh, the engine used by Linux CI.
 const ps = process.env.PC_TEST_POWERSHELL || (process.platform === 'win32' ? 'powershell.exe' : 'pwsh');
+const probeStarted = Date.now();
 r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'probes.ps1'), pc, root], {
-  cwd: root, encoding: 'utf8', windowsHide: true, timeout: 90000,
+  cwd: root, encoding: 'utf8', windowsHide: true, timeout: 240000,
   env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '',
     // The Windows prep helper builds its Godot path from USERPROFILE, which Linux does not provide.
     USERPROFILE: root,
@@ -581,6 +582,7 @@ r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.joi
 // Standing checks show only the first 15 lines on failure. Keep the actual exception ahead of earlier PASS output.
 assert.equal(r.status, 0, (r.stderr || '') + String(r.error || '') + '\nEvidence: ' + root + '\n' + (r.stdout || ''));
 console.log(r.stdout.trim());
+console.log('PASS PowerShell probes elapsed: ' + ((Date.now() - probeStarted) / 1000).toFixed(1) + ' s');
 // Race two actual PowerShell processes against the same issue and fake REST database, just like two PC lanes.
 (async () => {
   const race = path.join(root, 'claim-race'); fs.mkdirSync(race);

@@ -59,11 +59,12 @@ const MOVE_ROT := [0.6, 1.1]
 const MOVE_SQUAD := 0.35
 const MOVE_SK_MAX := 1.4     # the size scale runs past battleship at half slope (dreadnought 1.25, bosses up to 1.4), by eye
 const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex time; building and bleeding speed fill the rest
+const NO_READY_GUN_IN_RANGE := "No ready gun can reach it."
 const TIPS := [
 	["select", "Moving and facing", "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship can move first, then digs in: it takes less hull damage and does not take the +10, but bracing ends its turn, so it cannot move or fire again this turn."],
 	["target", "Firing", "The red ring means this enemy can be hit from where your ship sits. Click it once to see the hit chance and the damage expected. Click again to fire every gun that bears. Keys 1 to 6 fire one gun at a time."],
 	["fired", "Taking turns", "Sides take turns, one ship at a time, until every ship has acted. That is one round. Press Space to end this ship early, or Tab for the next ship. A ship with nothing left to do ends itself."],
-	["move", "Shields and hull", "The cyan arcs are shields: one pool feeds all four sides, and each side catches a share set by its coverage. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."],
+	["move", "Shields and hull", "The blue bar shows your shield pool. All four sides share it. Sides with more coverage block more damage while shields hold. Shields recharge each round. The pale bar shows hull. Hull damage needs repairs."],
 	["threat", "Threat map", "Press R for the threat map. It shades every hex enemy guns can reach next turn. Darker means more damage waiting there."],
 	["reinforce_warn", "More ships are coming", "More enemy ships are on their way. They arrive at the map edge, and a banner will name the ship and flash where it came in. A new arrival acts in the turn order like any other ship."],
 	["close", "Close action", "Up close you have two more attacks. Press X to ram an enemy dead ahead. Press G to board an enemy next to your ship. Win a boarding and the ship is yours for the rest of the fight."],
@@ -3563,7 +3564,7 @@ func _arrive(list: Array) -> void:
 
 func _clear_fire_feedback() -> void:
 	hud.show_tip("", Vector2.ZERO)
-	if hud.toast_lbl.text == "Out of range.":
+	if hud.toast_lbl.text == NO_READY_GUN_IN_RANGE:
 		hud.toast("")
 
 
@@ -3588,7 +3589,7 @@ func _cant_fire_reason(t_id: String) -> String:
 	if not any_ready:
 		return "Every gun has already fired or is reloading."
 	if not in_range:
-		return "Out of range."
+		return NO_READY_GUN_IN_RANGE
 	if not in_arc:
 		return "No ready gun points at it. Turn the ship (Q/E) or move."
 	return _blocker_text(VU.get(t_id, {}))
@@ -3700,6 +3701,10 @@ func _ship_tip(u: Dictionary) -> String:
 	return t
 
 
+func _target_defenses(u: Dictionary) -> String:
+	return "armor %d%%, evasion %d" % [int(round(float(u.get("armor", 0)) * 100.0)), int(_z0(u.get("ev"))) + int(_z0(u.get("evBuff")))]
+
+
 func _attack_tip(t_id: String) -> String:
 	var ru = api.unit(sel)
 	var tu = api.unit(t_id)
@@ -3748,7 +3753,7 @@ func _attack_tip(t_id: String) -> String:
 		elif not tg.get("los", false):
 			right = "[color=#7c8674]blocked[/color]"
 		rows += "%s  %s\n" % [str(vw["name"]), right]
-	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %s/%s, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), Campaign.hull_text(tv["hp"]), Campaign.hull_text(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
+	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %s/%s, %s[/color]\n" % [str(tv["name"]), Campaign.hull_text(tv["hp"]), Campaign.hull_text(tv["maxHp"]), _target_defenses(tu)]
 	if float(tv["shMax"]) > 0:
 		t += "Hits the [color=#92b8e8][b]%s shield[/b][/color] (pool [color=#92b8e8]%d[/color]/%d, this side catches %d)%s." % [QUAD_NAME[quad], int(_z0(tu.get("shp"))), int(tv["shMax"]), int(tv["sh"][quad]), " [color=#ffad3b]down, straight to hull[/color]" if float(_z0(tu.get("shp"))) < 1 else ""]
 	else:
@@ -5006,7 +5011,7 @@ func _target_info() -> Dictionary:
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
-		"exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
+		"defenses": _target_defenses(api.unit(tid)), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
 
 
 func _torpedo_why() -> String:
