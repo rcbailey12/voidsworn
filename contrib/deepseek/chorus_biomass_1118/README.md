@@ -13,17 +13,23 @@ Flat biomass alone also stays out of the spiral (3.8 percent against 4.2
 percent), but it costs about 6 points of run win rate. The kill bonus recovers
 about a third of that cost.
 
+Run 2 corrected the spiral price from a full repair to the stated 25 percent
+repair. That changes 3 battle verdicts but no run-level spiral or starvation
+count, so the pick is unchanged (see "Run 2 correction" below).
+
 ## The measured table
 
 240 Chorus runs per setup, paired seeds 7000 to 7239, existing campaign bot,
 Veteran AI, all four Chorus admirals rotated in the same order per seed. A run
-win means beating the sector 3 flagship.
+win means beating the sector 3 flagship. Run 2 repeated the same seeds and
+reproduced every number below except the corrected spiral pricing, which is
+called out in its own section.
 
-| Setup | Win rate (95 percent) | Paired win delta | Mean sectors | Reach S3 | Loss spiral | Income per battle |
+| Setup | Win rate (95 percent) | Paired win delta | Mean sectors | Reach S3 | Loss spiral run 1 -> run 2 | Income per battle |
 |---|---:|---:|---:|---:|---:|---:|
-| Today: credits | 72.1% (66.1 to 77.4) | 0.0 | 2.67 | 79.2% | 4.2% (10/240) | 118 +- 81, p10-p90 43-251 |
-| Biomass flat | 66.3% (60.1 to 71.9) | -5.8 (-11.3 to -0.3) | 2.58 | 71.7% | 3.8% (9/240) | 116 +- 80, p10-p90 43-248 |
-| Biomass flat + kill bonus | 67.9% (61.8 to 73.5) | -4.2 (-9.7 to +1.4) | 2.59 | 73.3% | 2.9% (7/240) | 124 +- 82, p10-p90 48-255 |
+| Today: credits | 72.1% (66.1 to 77.4) | 0.0 | 2.67 | 79.2% | 4.2% -> 4.2% (10/240) | 118 +- 81, p10-p90 43-251 |
+| Biomass flat | 66.3% (60.1 to 71.9) | -5.8 (-11.3 to -0.3) | 2.58 | 71.7% | 3.8% -> 3.8% (9/240) | 116 +- 80, p10-p90 43-248 |
+| Biomass flat + kill bonus | 67.9% (61.8 to 73.5) | -4.2 (-9.7 to +1.4) | 2.59 | 73.3% | 2.9% -> 2.9% (7/240) | 124 +- 82, p10-p90 48-255 |
 
 Paired deltas are against the credits row on the same seeds. Income is the flat
 per-win battle payment only: credits in the first row, biomass in the other two,
@@ -67,17 +73,51 @@ hull money (credits in row one, biomass in rows two and three) cannot pay for a
 25 percent hull repair of the worst ship or for the cheapest hull the faction can
 field. An empty fleet counts as no recovery.
 
-| Setup | Spiral | Paired spiral delta | Starvation (two setbacks, no recovery) | Two losses in a row |
-|---|---:|---:|---:|---:|
-| Credits | 4.2% (10/240) | 0.0 | 18.3% (44/240) | 4.2% (10/240) |
-| Biomass flat | 3.8% (9/240) | -0.4 +- 2.7 | 20.4% (49/240) | 4.2% (10/240) |
-| Biomass + kill | 2.9% (7/240) | -1.3 +- 2.7 | 19.2% (46/240) | 3.3% (8/240) |
+| Setup | Spiral run 1 | Spiral run 2 | Starvation run 1 | Starvation run 2 | Two losses in a row |
+|---|---:|---:|---:|---:|---:|
+| Credits | 4.2% (10/240) | 4.2% (10/240) | 18.3% (44/240) | 18.3% (44/240) | 4.2% (10/240) |
+| Biomass flat | 3.8% (9/240) | 3.8% (9/240) | 20.4% (49/240) | 20.4% (49/240) | 4.2% (10/240) |
+| Biomass + kill | 2.9% (7/240) | 2.9% (7/240) | 19.2% (46/240) | 19.2% (46/240) | 3.3% (8/240) |
+
+Run 1 and run 2 are the same 240 paired seeds per setup. The run 1 column is
+recomputed from run 2's records with run 1's full repair price (spiralFull and
+starveFull in results_runs.csv) and matches the PR 1094 counts exactly.
 
 The narrower two-loss streak is the same 4.2 percent for credits and flat
 biomass, and lower with the kill bonus. The broader starvation measure is 2.1
 points higher for flat biomass (95 percent interval -3.0 to +5.1) and 0.8 points
 higher with the kill bonus (-4.5 to +6.1), so neither is a real separation. The
-loss spiral is not where the biomass flow fails.
+loss spiral is not where the biomass flow fails. The paired spiral deltas are
+unchanged: -0.4 +- 2.7 points for flat biomass and -1.3 +- 2.7 with the kill
+bonus.
+
+## Run 2 correction: 25 percent repair, not a full repair
+
+Run 1 wrote the spiral test as a 25 percent repair but priced a full repair of
+every missing hull point on the worst ship. Artoo's example: a 100 hull ship
+missing 50 with 20 to spend was counted stuck even though a 25 hull repair costs
+13. Run 2 prices the stated test: 25 percent of the worst ship's maximum hull,
+capped at what it is missing, at the shipped 1 credit per 2 hull with the same
+price multiplier, or the cheapest hull purchase. The code lives in sim/spiral.js
+and both the driver and spiral_test.js use it. The test covers Artoo's example
+(100 hull, 50 missing, 20 to spend: recoverable) and a truly unrecoverable case
+(10 to spend, cheapest hull 90).
+
+The corrected price flips 3 battle verdicts in the 720 runs:
+
+- credits seed 7076, sector 2 retreat: 97 missing on a 135 hull ship, 46
+  credits, 25 percent repair 21 against a full repair of 59 at priceMult 1.2.
+- biomass seed 7076, sector 2 retreat: 134 missing on a 135 hull ship, 51
+  biomass, 25 percent repair 21 against a full repair of 81 at priceMult 1.2.
+- biomass seed 7132, sector 3 retreat: 131 missing on a 135 hull ship, 41
+  biomass, 25 percent repair 17 against a full repair of 66.
+
+No run-level spiral or starvation flag changes, because each of those runs still
+met the test later: the two seed 7076 runs ended in a defeat that wiped the fleet,
+and the seed 7132 run had a second retreat in the same streak where even the 25
+percent repair cost more than the money left. results_runs.csv carries the
+per-battle price, the 25 percent cost, the full cost, both unrecoverable flags
+and both run-level flags, so both definitions can be recounted.
 
 ## Where the win-rate cost comes from
 
@@ -129,18 +169,26 @@ average, which is why it recovers part of the gap.
   patch layer lives only in memory. It moves the flat battle payment to biomass,
   swaps the hull pool inside the shipped shipyard ACT handlers, snapshots the
   fleet before endRun clears RUN, and records the per-battle income, setbacks
-  and spiral test.
+  and both the corrected and run 1 spiral tests.
 - sim/run_sim.js runs a seed block for one setup.
-- sim/summarize.js builds results.csv and results_sectors.csv.
-- The job folder delivered here: results.csv and results_sectors.csv.
+- sim/spiral.js is the shared spiral recovery test: 25 percent of the worst
+  ship's maximum hull, capped at what it is missing, priced as the shipped
+  repair is priced, or the cheapest hull.
+- spiral_test.js is the tiny unit test for sim/spiral.js (Artoo's example plus an
+  unrecoverable case). run_all_checks.js runs it in the standing checks.
+- sim/summarize.js builds results.csv, results_sectors.csv and results_runs.csv.
+- The job folder delivered here: results.csv, results_sectors.csv,
+  results_runs.csv (one row per run and setup), and results_run1.csv plus
+  results_sectors_run1.csv (run 1's summary, kept for the side by side).
 
-Reproduce (about 7 minutes per setup, 3 setups run in parallel on this PC):
+Reproduce (about 9 minutes per setup on this PC, 3 setups in parallel):
 
 ```
 node contrib/deepseek/chorus_biomass_1118/sim/run_sim.js --setup baseline --n 240 --seed0 7000 --out raw/baseline.json
 node contrib/deepseek/chorus_biomass_1118/sim/run_sim.js --setup biomass --n 240 --seed0 7000 --out raw/biomass.json
 node contrib/deepseek/chorus_biomass_1118/sim/run_sim.js --setup biomass_kill --n 240 --seed0 7000 --out raw/biomass_kill.json
 node contrib/deepseek/chorus_biomass_1118/sim/summarize.js raw/baseline.json raw/biomass.json raw/biomass_kill.json
+node contrib/deepseek/chorus_biomass_1118/spiral_test.js
 ```
 
 Raw JSON was kept in the system temp folder, not in this folder.
@@ -148,21 +196,30 @@ Raw JSON was kept in the system temp folder, not in this folder.
 ## Checks
 
 - Standing checks: `node contrib/opus/tools/run_all_checks.js` returned exit 0,
-  67 PASS and 0 FAIL (two KNOWN rows as configured). Full log in the temp folder.
+  68 PASS and 0 FAIL (two KNOWN rows as configured), including the new
+  `spiral_test | PASS | PASS: 6 spiral recovery checks` row. Full log in the
+  temp folder.
+- Spiral test: `node contrib/deepseek/chorus_biomass_1118/spiral_test.js`
+  printed 6 PASS lines and `PASS: 6 spiral recovery checks`.
+- Run 2 reran all 3 setups on seeds 7000 to 7239 and reproduced run 1's wins
+  (173, 159, 163), sectors, fleet, hull and income exactly. Only the spiral
+  pricing changed.
 - No change to battle.js, data.js, core.js, campaign_run.js, sim3d.js or the
-  Godot game, so rules parity, campaign parity, the export tables and the save
-  format are untouched. The runner may still run parity; it should pass because
-  no root game file changed.
+  Godot game. `cmd.exe //c "tools\\pc\\parity.bat nopause"` returned exit 0:
+  `PASS: the Godot port matches the game's rules exactly.` and
+  `PASS: the Godot campaign matches the game on all 30 seeded runs`. Rules
+  parity, campaign parity, the export tables and the save format are untouched.
 - Callers: no game function, constant or save field was added or changed. The
-  new code is in contrib/deepseek/chorus_biomass_1118/sim only.
+  new code is in contrib/deepseek/chorus_biomass_1118 only. The one file outside
+  that folder is the single run_all_checks.js row for the new test.
 - Saves: the sim never writes a player save. It calls the shipped saveRun in
   memory only, and no run save shape changed.
 - Twins: not triggered, both sides untouched.
 - UI: not triggered, no screen reads any new value.
-- CI: no new test file that GitHub should run. The sim is a evidence script
-  under contrib/deepseek, not a standing test. GitHub's normal rows (standing
-  checks, no em dashes, Godot rules parity, Godot game checks) still apply to
-  the branch and see only these new text files.
+- CI: the new test file spiral_test.js is added to
+  contrib/opus/tools/run_all_checks.js, so GitHub's standing checks row runs it.
+  The other GitHub rows (no em dashes, Godot rules parity, Godot game checks)
+  see only new text and data files under contrib/deepseek.
 
 ## Limits
 
@@ -170,6 +227,10 @@ Raw JSON was kept in the system temp folder, not in this folder.
   72 percent to the game.
 - 240 runs per setup give about +-5 points on a win rate and about +-3 points on
   the spiral counts.
+- The spiral share is dominated by defeats: a wiped fleet is unrecoverable
+  under any repair price, so the 25 percent price only decides the rare mid-run
+  pair where the fleet survives and the money is small. That is why its
+  correction moves 3 battle verdicts and 0 run flags here.
 - This tests the simplest flat biomass flow: no digestion of credits into
   biomass, no starlight trickle, no Feeding Grounds node or price changes. It
   answers the flow question the Board asked, not the full Approach A design.

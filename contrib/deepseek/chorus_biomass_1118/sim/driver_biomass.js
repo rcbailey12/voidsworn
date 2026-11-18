@@ -52,9 +52,9 @@ rewardFlow = function(summary){
 var MC_END_SNAPSHOT=null;
 const _mcOrigEndRun = endRun;
 endRun = function(victory, abandoned){
-  if(RUN && !RUN.over) MC_END_SNAPSHOT={sector:RUN.sector,ships:RUN.fleet.length,
+  if(RUN && !RUN.over){ const wp=mcWorstPair(RUN.fleet); MC_END_SNAPSHOT={sector:RUN.sector,ships:RUN.fleet.length,
     hull:RUN.fleet.reduce((a,s)=>a+Math.max(0,s.hp),0),maxHull:RUN.fleet.reduce((a,s)=>a+derive(s).maxHp,0),
-    worst:RUN.fleet.reduce((a,s)=>Math.max(a,derive(s).maxHp-s.hp),0),credits:RUN.credits,biomass:RUN.biomass||0,fleet:RUN.fleet.map(s=>s.tpl)};
+    worst:wp.worst,worstMax:wp.worstMax,credits:RUN.credits,biomass:RUN.biomass||0,fleet:RUN.fleet.map(s=>s.tpl)}; }
   return _mcOrigEndRun(victory, abandoned);
 };
 // Run a shipped shipyard ACT handler against the biomass pool instead of credits.
@@ -65,6 +65,9 @@ function mcBiomassCall(fn){
 }
 function mcFleetHpFrac(){ if(!RUN||!RUN.fleet.length) return 1; const mx=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp,0); return mx?RUN.fleet.reduce((a,s)=>a+Math.max(0,s.hp),0)/mx:1; }
 function mcMissing(){ return RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0); }
+// The worst damaged ship's missing hull and its own maximum hull. The spiral
+// test needs both: the repair it prices is a quarter of the maximum.
+function mcWorstPair(fleet){ let worst=0,worstMax=0; for(const s of (fleet||[])){ const d=derive(s), m=d.maxHp-s.hp; if(m>worst){ worst=m; worstMax=d.maxHp; } } return {worst,worstMax}; }
 function mcFxScore(fx){ if(!fx) return 0; let sc=0; for(const k in fx){ const v=fx[k]; if(!v) continue; sc+=Math.abs(v)*(k.includes('Pct')?30:2); } return sc; }
 function mcPickBoon(offer){
   const kit=fleetKit();
@@ -140,23 +143,34 @@ async function mcFight(cfgIn,S,isNem){
   rec.income=MC_LAST_INCOME?MC_LAST_INCOME.total:0;
   rec.incomeDetail=MC_LAST_INCOME;
   if(MC_LAST_INCOME) S.incomes.push(MC_LAST_INCOME.total);
+  const wp=RUN?mcWorstPair(RUN.fleet):null;
   const st=RUN?{sector:RUN.sector,credits:RUN.credits,biomass:RUN.biomass||0,ships:RUN.fleet.length,missing:mcMissing(),cp:fleetCP(),
       hull:RUN.fleet.reduce((a,s)=>a+Math.max(0,s.hp),0),maxHull:RUN.fleet.reduce((a,s)=>a+derive(s).maxHp,0),
-      worst:RUN.fleet.reduce((a,s)=>Math.max(a,derive(s).maxHp-s.hp),0),fleet:RUN.fleet.map(s=>s.tpl)}:MC_END_SNAPSHOT;
+      worst:wp.worst,worstMax:wp.worstMax,fleet:RUN.fleet.map(s=>s.tpl)}:MC_END_SNAPSHOT;
   // Loss spiral bookkeeping (stated definition in README):
   // "loss" = a battle not won; "setback" = a loss or a win that cost ships.
   // spiral = two losses in a row where, at the second, the hull money (credits
   // baseline, biomass in the biomass setups) cannot pay for a 25 percent hull
-  // repair of the worst ship or for the cheapest hull the faction can field.
+  // repair of the worst ship (capped at what it is missing), priced as the
+  // shipped repair is priced, or for the cheapest hull the faction can field.
   // starve = the same test on two setbacks in a row (the broader starvation
   // signal, because a defeat ends the run and makes a literal two-loss streak rare).
   // An empty fleet counts as no recovery.
+  // Run 2 fix (issue 1085): run 1 priced a full repair of the worst ship's
+  // missing hull, not the stated 25 percent. The shared test lives in spiral.js.
+  // spiralFull and starveFull keep run 1's full repair pricing on the same runs,
+  // so the two definitions can be compared without relying on an older run.
   { const loss=effective!=='win', setback=loss||rec.lost>0;
-    const unrecoverable=()=>{ if(!st) return false; const alive=st.ships>0; const worst=alive?st.worst:1;
-      const money=MC_SETUP==='baseline'?st.credits:st.biomass, repairWorst=Math.ceil(Math.max(worst,1)/2*prePm);
-      return !alive||(worst>0&&money<repairWorst&&money<preCheapest); };
-    if(loss){ S.lossStreak=(S.lossStreak||0)+1; if(S.lossStreak>=2){ S.twoLosses=true; if(!S.spiral&&unrecoverable()) S.spiral=true; } } else S.lossStreak=0;
-    if(setback){ S.setbackStreak=(S.setbackStreak||0)+1; if(S.setbackStreak>=2){ S.twoSetbacks=true; if(!S.starve&&unrecoverable()) S.starve=true; } } else S.setbackStreak=0;
+    const alive=!!st&&st.ships>0;
+    const worst=st?(st.worst||0):0, worstMax=st?(st.worstMax||0):0;
+    const money=st?(MC_SETUP==='baseline'?st.credits:st.biomass):0;
+    const repairHull=mcRepairHull(worst,worstMax), repairCost=mcRepairCost(worst,worstMax,prePm);
+    const fullCost=Math.ceil(Math.max(worst,1)/2*prePm);
+    const unrec=st?mcUnrecoverable(worst,worstMax,money,prePm,preCheapest,alive):false;
+    const unrecFull=!st?false:(!alive||(worst>0&&money<fullCost&&money<preCheapest));
+    if(st) S.recovery.push({s:st.sector,res:effective,lost:rec.lost,worst:Math.round(worst*10)/10,worstMax:Math.round(worstMax*10)/10,money,pm:prePm,repairHull,repairCost,fullCost,cheapest:preCheapest,unrec:unrec?1:0,unrecFull:unrecFull?1:0});
+    if(loss){ S.lossStreak=(S.lossStreak||0)+1; if(S.lossStreak>=2){ S.twoLosses=true; if(!S.spiral&&unrec) S.spiral=true; if(!S.spiralFull&&unrecFull) S.spiralFull=true; } } else S.lossStreak=0;
+    if(setback){ S.setbackStreak=(S.setbackStreak||0)+1; if(S.setbackStreak>=2){ S.twoSetbacks=true; if(!S.starve&&unrec) S.starve=true; if(!S.starveFull&&unrecFull) S.starveFull=true; } } else S.setbackStreak=0;
   }
   if(nemB){ nemB.res=res; if(RUN&&RUN.nem){ nemB.adaptA=RUN.nem.adapt.length; nemB.revA=RUN.nem.revealed.length; } S.nem.push(nemB); }
   if(st) S.econ.push({at:'postbattle',s:st.sector,credits:st.credits,biomass:st.biomass,ships:st.ships,missing:st.missing,cp:st.cp,hull:st.hull,maxHull:st.maxHull,fleet:st.fleet});
@@ -250,7 +264,7 @@ function mcEnterNode(id,S){
 function mcFreshStats(cfg){ return {fac:cfg.fac,admiral:cfg.admiral,ai:cfg.ai,seed:cfg.seed,setup:cfg.setup||'baseline',won:false,sectorReached:1,timeouts:0,verbUses:0,
   battles:[],nem:[],econ:[],regroups:[],boonOffers:[],boonPicks:[],boonDeclines:0,modOffers:[],modPicks:[],relicOffers:[],relicPicks:[],
   hullOffers:[],hullPicks:[],prizePicks:[],salvageOffers:[],salvagePicks:[],events:[],perkPicks:[],patrons:[],gift:null,finalFleet:[],finalBoons:[],errors:[],
-  incomes:[],lossStreak:0,setbackStreak:0,twoLosses:false,twoSetbacks:false,spiral:false,starve:false}; }
+  incomes:[],recovery:[],lossStreak:0,setbackStreak:0,twoLosses:false,twoSetbacks:false,spiral:false,starve:false,spiralFull:false,starveFull:false}; }
 async function mcRunOne(cfg){
   const S=mcFreshStats(cfg);
   try{

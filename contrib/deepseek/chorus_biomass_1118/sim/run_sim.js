@@ -31,6 +31,7 @@ async function main() {
 
   const extra = [
     fs.readFileSync(path.join(__dirname, 'bot.js'), 'utf8'),
+    fs.readFileSync(path.join(__dirname, 'spiral.js'), 'utf8'),
     fs.readFileSync(path.join(__dirname, 'driver_biomass.js'), 'utf8'),
   ];
   const G = loadGame(REPO, { extra });
