@@ -149,4 +149,6 @@ Older items are in docs/archive/LOOP_history_2026-11-14.md and the FINDINGS rows
 
 Build one only when Ryan asks for it (R319); a merge is not a reason to build.
 
+Captures (PR 1042, issue 1037): pin origin/main once and use that full SHA for every archive; the tools zip includes tools/picture_font.json. After the sync, run tools\pc\jobs\g2_playtest_capture.bat prepare <full SHA> <git %cI date> and go on to g2_export.bat only on exit 0. After the export passes, run g2_playtest_capture.bat capture "%S%" in a fresh shots folder and pass on its exit code. The stamps then read "built from <commit>" with no git or Python in the build.
+
 Check ship files are unchanged first (git diff --stat <last build hash> origin/main -- godot/assets/ships). Zips from origin/main with git archive: src1 = godot portraits; src2 = godot audio world; src3 = godot campaign fx main render rules scenes story ui; tools = tools/pc (prefix kept). Copy manifest and mcheck from the last build (build\g2_pt_<hash>_*). Copy the last bat (queue\done\g2_pt_<hash>.bat), replace the hash, rewrite line 2, CRLF. Zips to Downloads\voidsworn_test\build\, bat to Downloads\voidsworn_test\queue\. Results in shots\g2_pt_<hash>\result.txt (expect MANIFEST OK, export exit 0, title and battle exits 0). About 20 minutes.
