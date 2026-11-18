@@ -1,21 +1,88 @@
 # Map evaluation on 30 × 22
 
-**Playtest 30 × 22 with the new shape weights, x1.25 speed and range rounded to whole numbers, retuned Hunt, split Ambush banks and screened bosses. Keep today's starts for Engagement, Defend, Intercept, Breakthrough, Relay and Decapitation.** Engagement moves get longer and the quarry escapes 31% of the time, up from 9%. Hunt's first hull-to-hull shot lands in median round 3. Breakthrough and Decapitation are easier for the Hegemony mirror, by 28 and 16 points respectively.
+**Playtest 30 × 22 with the new shape weights, x1.25 speed and range rounded to whole numbers, split Ambush banks and screened bosses. Keep today's starts for Engagement, Defend, Intercept, Breakthrough, Relay and Decapitation. For Hunt, use approach 6 and a 15% west-edge bearing, with the quarry one column in from the east edge.** That Hunt setting favours sector 1, where it gives 26% and 27% escape on two samples. The current AI keeps the pacing result. Every fixture moves farther per move, and most spend fewer activations just moving. The package still makes Breakthrough easier (+30 points with current AI), while the Decapitation gain shrinks from +16 to +6 points. Screening the sector 3 engagement boss still helps the player, with a smaller gain (+8 points, down from +16).
 
-| Encounter | First gun act | Hexes per move | Move only | Player win / quarry kill |
+Each metric shows **old AI** first and **current AI** second. Each arrow goes from that AI's baseline to the same run 2 package, with 100 paired seeds per arm. Hunt counts quarry kills. The other win rates include partial wins. [Old AI results](results.csv) · [Current AI results](results_current.csv)
+
+| Encounter | First gun act old / current | Hexes per move old / current | Move only old / current | Player win old / current |
 |---|---:|---:|---:|---:|
-| Engagement | 1 → 0 | 2.90 → 3.52 | 11.1% → 4.0% | 41% → 37% |
-| Ambush | 0 → 0 | 2.83 → 3.57 | 2.6% → 1.9% | 55% → 61% |
-| Hold the station | 6 → 0 | 3.04 → 3.68 | 21.2% → 6.0% | 38% → 30% |
-| Hunt | 0 → 13 | 3.41 → 4.57 | 7.5% → 15.7% | 91% → 69% |
-| Intercept | 2 → 0 | 2.98 → 3.76 | 30.8% → 21.7% | 73% → 87% |
-| Breakthrough | 0 → 0 | 3.23 → 3.91 | 5.7% → 6.8% | 37% → 65% |
-| Relay | 0 → 0 | 2.97 → 3.35 | 11.4% → 2.4% | 50% → 59% |
-| Decapitation | 2 → 0 | 2.90 → 3.47 | 10.7% → 4.4% | 36% → 52% |
+| Engagement | 1 → 0 / 1 → 0 | 2.90 → 3.52 / 2.92 → 3.50 | 11.1% → 4.0% / 10.8% → 3.9% | 41% → 37% / 39% → 37% |
+| Ambush | 0 → 0 / 0 → 0 | 2.83 → 3.57 / 2.82 → 3.58 | 2.6% → 1.9% / 2.7% → 1.6% | 55% → 61% / 50% → 62% |
+| Hold the station | 6 → 0 / 6 → 0 | 3.04 → 3.68 / 3.04 → 3.68 | 21.2% → 6.0% / 21.0% → 6.0% | 38% → 30% / 39% → 29% |
+| Hunt | 0 → 13 / 0 → 13 | 3.41 → 4.57 / 3.42 → 4.54 | 7.5% → 15.7% / 7.7% → 15.5% | 91% → 69% / 90% → 66% |
+| Intercept | 2 → 0 / 2 → 0 | 2.98 → 3.76 / 2.99 → 3.77 | 30.8% → 21.7% / 30.6% → 21.8% | 73% → 87% / 66% → 87% |
+| Breakthrough | 0 → 0 / 0 → 0 | 3.23 → 3.91 / 3.22 → 3.96 | 5.7% → 6.8% / 5.9% → 6.2% | 37% → 65% / 35% → 65% |
+| Relay | 0 → 0 / 0 → 0 | 2.97 → 3.35 / 2.96 → 3.37 | 11.4% → 2.4% / 11.4% → 2.6% | 50% → 59% / 46% → 55% |
+| Decapitation | 2 → 0 / 2 → 0 | 2.90 → 3.47 / 2.91 → 3.51 | 10.7% → 4.4% / 10.7% → 4.5% | 36% → 52% / 40% → 46% |
+| Sector 1 boss engagement | 1 → 0 / 1 → 0 | 3.26 → 4.02 / 3.26 → 4.02 | 12.3% → 7.2% / 12.3% → 7.2% | 100% → 100% / 100% → 100% |
+| Sector 1 boss ambush | 0 → 0 / 0 → 0 | 2.91 → 3.62 / 2.91 → 3.62 | 2.3% → 3.9% / 2.4% → 4.2% | 100% → 100% / 100% → 100% |
+| Sector 2 boss engagement | 1 → 0 / 1 → 0 | 3.07 → 3.65 / 3.07 → 3.68 | 10.3% → 4.3% / 10.4% → 4.0% | 95% → 99% / 92% → 99% |
+| Sector 2 boss ambush | 0 → 0 / 0 → 0 | 2.78 → 3.47 / 2.80 → 3.48 | 2.1% → 2.2% / 2.2% → 2.0% | 100% → 99% / 100% → 99% |
+| Sector 3 boss engagement | 1 → 0 / 1 → 0 | 2.99 → 3.50 / 2.99 → 3.49 | 10.3% → 5.0% / 10.2% → 4.7% | 53% → 69% / 57% → 65% |
+| Sector 3 boss ambush | 0 → 0 / 0 → 0 | 2.67 → 3.34 / 2.66 → 3.32 | 2.5% → 2.5% / 2.1% → 2.1% | 82% → 88% / 74% → 93% |
 
-Today → recommended package, with 100 paired seeds per row. Hunt counts quarry kills. Other rows use the game's win flag, which includes partial wins. [All 22,300 comparison rows](results.csv)
+## Why Hunt escapes less often in sector 1
 
-## What changed since run 1
+The original Hunt tune still lands in the 25% to 50% band in the sector 2 Hegemony mirror. The current AI leaves the gap with sector 1 intact.
+
+| Fixture | Old AI baseline → package | Current AI baseline → package |
+|---|---:|---:|
+| Sector 2 Hegemony mirror | 9 → 31 of 100 (31%) | 9 → 34 of 100 (34%) |
+| Sector 1 faction mix | 35 → 41 of 468 (9%) | 34 → 43 of 468 (9%) |
+
+With the same Hegemony fleets, Vex and 100 seeds, moving the fixture to sector 1 drops escape from 34% to 17%. Both mirrors start with a median gap of 24 hexes, and the first hull-to-hull shot lands in median round 3. Sector 2 adds 12% to enemy hull, shield pool and regeneration and 8% to damage. The Dominion quarry has 258 hull in sector 2 and 230 in sector 1. Sector 1 also excludes Dead Star terrain. Across the 86 seeds where the realized map, shape, arena and approach match, escape still falls from 30 to 16.
+
+The sector 1 faction mix adds more variation. Its median quarry has 175 hull and its hunters start 22 hexes away. Hull-to-hull fire starts in median round 2, giving the fleets more time to shoot before the fixed six-round jump. The four factions whose quarries have 140 to 180 starting hull escaped in just 13 of 312 battles combined. Hull stats, weapons and hunter fleet composition vary together in that sweep.
+
+### A shared Hunt setting
+
+None of the 16 shared settings reached 25% to 50% in both the sector 2 mirror and the sector 1 faction mix. The Hegemony mirrors both reach the target with approach 4.5, while the broader mix still escapes only 13% of the time. Extending the starting gap and moving the jump bearing toward the north end of the west edge raised the early escape rate. The first settings to reach 25% in sector 1 also exceeded 50% in sector 2. Favour sector 1. It is the first Hunt players can see, and its six-faction sample covers more kinds of quarry and hunter than the sector 2 mirror.
+
+At approach 6 and bearing 0.15, the quarry one column in escaped in 123/468 (26%) and 127/468 (27%) sector 1 battles on two seed sets. Sector 2 escape was 56/100 and 64/100. Starting the quarry on the edge gave 150/468 and 135/468 escapes in the sector 1 mix, with a larger overshoot of 63/100 and 69/100 in sector 2. The pick meets the sector 1 target in both samples and keeps more kills in sector 2. Both settings kept the first shot at the quarry in median round 3 in both main fixtures in the first sample. The encounter and faction tables use the original run 2 Hunt. [Hunt confirmation data](hunt_confirmation.csv)
+
+The approach value sets the starting gap in units of each hunter's movement allowance, plus its longest gun range. The bearing is a fraction from the top of the west edge. The quarry offset counts columns in from the east edge. The six-round jump and escort settings stay fixed.
+
+<details>
+<summary>All 16 Hunt settings on current AI</summary>
+
+| Approach | Exit bearing | Quarry offset | Sector 2 mirror | Sector 1 mirror | Sector 1 faction mix |
+|---:|---:|---:|---:|---:|---:|
+| 4 | 0.45 | 1 | 34/100 (34%) | 17/100 (17%) | 43/468 (9%) |
+| 4.5 | 0.45 | 1 | 39/100 (39%) | 32/100 (32%) | 59/468 (13%) |
+| 5 | 0.45 | 1 | 54/100 (54%) | 35/100 (35%) | 64/468 (14%) |
+| 5.5 | 0.45 | 1 | 53/100 (53%) | 39/100 (39%) | 75/468 (16%) |
+| 6 | 0.45 | 1 | 47/100 (47%) | 40/100 (40%) | 93/468 (20%) |
+| 4 | 0.35 | 1 | 34/100 (34%) | 17/100 (17%) | 40/468 (9%) |
+| 4 | 0.25 | 1 | 29/100 (29%) | 16/100 (16%) | 39/468 (8%) |
+| 4 | 0.15 | 1 | 34/100 (34%) | 19/100 (19%) | 61/468 (13%) |
+| 6 | 0.15 | 1 | 56/100 (56%) | 46/100 (46%) | 123/468 (26%) |
+| 6 | 0.05 | 1 | 57/100 (57%) | 49/100 (49%) | 122/468 (26%) |
+| 6 | 0.15 | 0 | 63/100 (63%) | 52/100 (52%) | 150/468 (32%) |
+| 6 | 0.05 | 0 | 64/100 (64%) | 55/100 (55%) | 148/468 (32%) |
+| 6 | 0.20 | 1 | 56/100 (56%) | 41/100 (41%) | 110/468 (24%) |
+| 6 | 0.25 | 1 | 55/100 (55%) | 39/100 (39%) | 101/468 (22%) |
+| 6 | 0.30 | 1 | 51/100 (51%) | 40/100 (40%) | 103/468 (22%) |
+| 5.75 | 0.15 | 1 | 56/100 (56%) | 46/100 (46%) | 113/468 (24%) |
+
+Each setting uses seeds 1000 to 1099 in each mirror and the same 13 Hunt seeds in each of the 36 faction seatings. [Hunt sweep data](hunt_current.csv)
+
+</details>
+
+## Matched-CP faction check on both AIs
+
+Each ordered matchup uses the same 100 seeds on each AI, at 16 CP per side before mission transports. Five seatings shift by more than 10 points on current AI, down from six on old AI. Sunward Crusade against Hegemony Navy crosses the cutoff, while Chorus against Sunward and Eclipse against Hegemony fall below it. The largest current shift is Chorus against Hegemony, at +21 points. The table shows every seating flagged by either AI. [Old AI results](results.csv) · [Current AI results](results_current.csv)
+
+| Player | Enemy | Old AI baseline → package | Current AI baseline → package |
+|---|---|---:|---:|
+| Hegemony Navy | Hegemony Navy | 70% → 87% (+17 pp) | 70% → 85% (+15 pp) |
+| Hegemony Navy | Ashfall Hullbreakers | 69% → 83% (+14 pp) | 71% → 88% (+17 pp) |
+| Sunward Crusade | Hegemony Navy | 71% → 80% (+9 pp) | 64% → 82% (+18 pp) |
+| Ashfall Hullbreakers | Sunward Crusade | 86% → 69% (-17 pp) | 86% → 67% (-19 pp) |
+| Chorus | Hegemony Navy | 50% → 78% (+28 pp) | 51% → 72% (+21 pp) |
+| Chorus | Sunward Crusade | 57% → 42% (-15 pp) | 57% → 50% (-7 pp) |
+| Eclipse | Hegemony Navy | 82% → 94% (+12 pp) | 90% → 93% (+3 pp) |
+
+## Old AI findings from runs 1 and 2
 
 - **Hunt has a chase.** Build 2 sent the quarry to its nearest east-edge exit and let it escape in all 100 seeds in both arms. The retune sends it across the board toward a west-side jump bearing and spreads the hunters by how far each ship can move and fire. Escape falls to 44% with placement alone and 31% with the full package. The first ship gun still fires in median round 2 and mostly engages wings at that point. Ship-on-ship fire and the first shot at the quarry both land in median round 3. [Hunt tuning data](hunt_tuning.csv)
 - **Defend keeps today's start.** With new shapes held fixed, moving two pickets forward reduced defender wins from 34% to 20%. The original start also gives the defenders 30% wins with x1.25. The 19-hex station stays in every arm.
@@ -25,7 +92,7 @@ Today → recommended package, with 100 paired seeds per row. Hunt counts quarry
 - **The retests narrow the AI claims.** Muse measured more displacement and a combat cost for two-pass, and Hegemony wins of 66/96 → 63/96 with the damage-band falloff, inside paired noise. Multiplicative scoring widened the fight and cost about 1.5 rounds when used by both controllers, with wins flat at 5/24. Its veteran-only arm raised player wins from 5/24 to 13/24. Our Engagement moved farther and ended sooner with the stat preset. Those results measure different levers, and the present tests use the ordinary scoring and accuracy falloff throughout. [Two-pass and falloff retest](../../muse/design/map_mechanics_2026_11/retest_results.md) · [Multiplicative retest](../../muse/design/map_mechanics_2026_11/mult_retest_results.md) · [Muse status](../../muse/design/map_mechanics_2026_11/STATUS.md)
 - **DeepSeek's larger board showed a longer approach.** Its unchanged 30 × 22 Engagement fired on median activation 1, the same here. On 38 × 26, adding two speed still left its median first shot at activation 12. Its 19-hex Defend benchmark was 37.5% wins and 6.5 mean rounds, close to 38% and 6.5 here. Its no-shot metric counts more than move-only. [DeepSeek issue 1019](../../deepseek/map_pace_1117/README.md)
 
-## Hunt settings
+## Old AI Hunt settings
 
 The quarry deploys one column in from the east edge. Its bearing is the nearest open hex to a point on the west edge, 45% of the way down the board. Two escorts start behind the quarry with a target separation of five hexes and are scored to hold their opening posts through round 2. The quarry adds 1 point per hex from the nearest hunter up to a distance of 9 and subtracts 10 points per hex from the jump bearing. It can move and fight from round 1. The jump still occurs at the end of round 6.
 
@@ -43,7 +110,7 @@ At 4, the median initial gap from the closest hunter to the quarry is 18 hexes i
 
 ## Deployment pictures
 
-Each sheet shows today's rules on the left and the test setup on the right, using the same seed. The Hunt sheet shows the retune. The other sheets show the run 1 full trial, including the alternative placements studied for Defend, Intercept, Breakthrough and Decapitation. The cards show the nearest player ship's distance to the goal. The arrows show facing. Gold marks objectives, the quarry or flagship, and the two Hunt screen ships. These diagrams come from the deployment code before the first activation.
+Each saved sheet shows the old-AI baseline on the left and the test setup on the right, using the same seed. The Hunt sheet shows the run 2 retune. The other sheets show the run 1 full trial, including the alternative placements studied for Defend, Intercept, Breakthrough and Decapitation. The cards show the nearest player ship's distance to the goal. The arrows show facing. Gold marks objectives, the quarry or flagship, and the two Hunt screen ships. These diagrams come from the deployment code before the first activation.
 
 | Encounter | Picture | Boss encounter | Picture |
 |---|---|---|---|
@@ -173,7 +240,7 @@ The new weights increased realized Hourglass from 16 to 179 of 800 ordinary batt
 
 </details>
 
-## Faction check at matched CP
+## Old AI faction check at matched CP
 
 The six factions give 30 ordered non-mirror pairings and six mirrors, with 100 matched seeds and 16 CP on each side. Intercept adds three mission transports. The sweep cycles through eight ordinary encounters, so Hunt and Ambush each contribute 13 seeds per seating. The recommended package reuses the 74 identical battles per seating from shapes + x1.25. Boss starts have their own six paired fixtures above.
 
@@ -214,7 +281,8 @@ In the run 1 full trial, mean torpedo launch range rose from 3.44 to 4.07 hexes.
 
 ## Method and limits
 
-- **Source.** The sim reads the checkout's `data.js`, `core.js`, `battle.js` and the player bot from `sim3d.js`. `trial_rules.js` supplies the proposed rules to a private in-memory copy. The 19-hex station, reach, damage, objectives, veteran enemy AI and alternating round loop run from the browser oracle. Design inputs were issue 1004 at `e60244df`, the Muse map mechanics package at `b7acd353` (STATUS, Build 2 and consolidated results section 6), and DeepSeek's 1019 pace study. [DeepSeek's pace study](../../deepseek/map_pace_1117/README.md)
+- **Source.** The harness reads `data.js`, `core.js`, `battle.js` and the player bot from `sim3d.js` with `git show`. Frozen mode uses `31c4b3f7d21727a71feb727174fcabc9251445ee`. Those four files are byte-identical to the run 1 salvage commit `657ab403`. Current mode defaults to the checkout's `origin/main`. The run 3 results used `0b5066adefe3b214a30e1b51b566c1932a859657`, which includes PR 1068. It changed the veteran's approach with unloaded guns, scaled caution by hull value, and moved replacement wing launches after movement. Of the four source files, only `battle.js` differs between these two revisions. The trial uses its own jump bearing in place of the generic approach term for the quarry in both versions. [Rules source for each CSV](rules_sources.json)
+- **Inputs.** `trial_rules.js` supplies the proposed rules to a private in-memory copy. The 19-hex station, reach, damage, objectives, veteran enemy AI and alternating round loop run from the browser oracle. Design inputs were issue 1004 at `e60244df`, the Muse map mechanics package at `b7acd353` (STATUS, Build 2 and consolidated results section 6), and DeepSeek's 1019 pace study. [DeepSeek's pace study](../../deepseek/map_pace_1117/README.md)
 - **Pairs.** Seeds 1000 to 1099 recur in every cell. The map request, opponent, fleet, deployment-mode draw, shape quantile and `startBattle` seed are paired. There are separate deterministic map and shape draws per encounter. Within a fight, different terrain or decisions can consume different random numbers. The harness resets unit ids per battle so tie-breaks stay stable across worker schedules.
 - **Fixtures.** The encounter table uses the earlier 16-CP Hegemony mirror in sector 2 with the same Vex bot policy. Boss rows use that player fleet against the live boss fleet generator at the last column in each sector, with factions drawn from that sector's pool and the fleet fixed across variants. The map request samples belt, graveyard, storm, planet and station, with Defend forced to station. The campaign's line/line/flank draw feeds ordinary encounters. The engine retains the placement overrides for objective encounters and its angled approaches for round and square fields. Teaching encounters, campaign events, Nemeses, compact two-ship starts and built-up campaign fleets are outside these fixtures.
 - **Shape weights.** The baseline reads the live encounter lists and boss shape pool. The trial keeps at least two Hourglass entries per encounter, at least two Corridor entries for Rout, and adds two Archipelago entries for belt and graveyard. Hourglass and Corridor use the strip to retain their cuts. Other shapes use the live arena weights and the existing compatibility, connectivity and rollback logic. The CSV records both requested and realized map and shape.
@@ -223,12 +291,27 @@ In the run 1 full trial, mean torpedo launch range rose from 3.44 to 4.07 hexes.
 
 ## Reproduce
 
-Run from the checkout root with Node 22 and Python 3 with Pillow. This uses the saved run 1 data from the Board's base commit. The renderer makes the Hunt sheet on the CPU and verifies its stamp.
+Run from the checkout root with Git, Node 22 and Python 3. Use `--rules current` by itself to test the local `origin/main` ref. Pass the recorded SHA to replay the published current-AI sample.
 
 ```powershell
 $job = 'contrib/codex/map_eval_1118'
 $out = Join-Path $env:TEMP ('map-eval-1050-' + [guid]::NewGuid().ToString('N'))
 [System.IO.Directory]::CreateDirectory($out) | Out-Null
+$env:PYTHONUTF8 = '1'
+$current = (Get-Content "$job/rules_sources.json" -Raw | ConvertFrom-Json).current
+node "$job/sim.js" encounters --rules frozen --setup today --enc rout --sims 1 --out "$out/replay.csv"
+python -B -c "from pathlib import Path; import sys; assert Path(sys.argv[1]).read_bytes().splitlines()[:2] == Path(sys.argv[2]).read_bytes().splitlines(); print('Saved Rout row matches')" "$job/results.csv" "$out/replay.csv"
+node "$job/sim.js" encounters --rules current --revision $current --setup today,recommended --out "$out/encounters_current.csv"
+node "$job/sim.js" factions --rules current --revision $current --setup today,recommended --out "$out/factions_current.csv"
+node "$job/sim.js" hunt-sweep --rules current --revision $current --hunt-fixture sector2,sector1-mirror,sector1-mix --input "$job/hunt_current_settings.json" --out "$out/hunt_current.csv"
+python -B "$job/report.py" --current --encounters "$out/encounters_current.csv" --factions "$out/factions_current.csv" --hunt "$out/hunt_current.csv" --out "$out/results_current.csv"
+python -B -c "from pathlib import Path; import json,sys; src,dst=map(Path,sys.argv[1:]); dst.write_text(json.dumps([s for s in json.loads(src.read_text()) if s['approachTurns']==6 and s['exitLane']==0.15]))" "$job/hunt_current_settings.json" "$out/hunt-confirmation.json"
+node "$job/sim.js" hunt-sweep --rules current --revision $current --seed 1100 --hunt-fixture sector2,sector1-mirror,sector1-mix --input "$out/hunt-confirmation.json" --out "$out/hunt_confirmation.csv"
+```
+
+The original report uses the saved run 1 data from the Board's base commit. The CPU renderer needs Pillow and verifies the Hunt sheet's stamp. Run these commands in the same shell using the fresh output directory above. The sim defaults to frozen mode.
+
+```powershell
 python -B -c "from pathlib import Path; import subprocess, sys; Path(sys.argv[1]).write_bytes(subprocess.check_output(['git', 'show', sys.argv[2]]))" "$out/base.csv" "657ab403:$job/results.csv"
 node "$job/sim.js" encounters --setup recommended --enc ambush,boss1_rout,boss1_ambush,boss2_rout,boss2_ambush,boss3_rout,boss3_ambush --out "$out/encounters.csv"
 node "$job/sim.js" hunt-sweep --out "$out/hunt_tuning.csv"
@@ -243,6 +326,12 @@ python -B "$job/draw_deployment.py" "$out/deployment.json" "$out/shots"
 To repeat the extra Hunt sample, add `--seed 1100` to `hunt-sweep` with a fresh output filename. The first setting in `hunt_settings.json` is the pick.
 
 ## Verification
+
+- Frozen mode reproduced all 58 fields of the saved Engagement baseline for seed 1000, plus five saved tuned Hunt rows. The pinned current mode also reproduced the published Hunt row for seed 1000.
+- The report checked paired seeds, realized map and shape inputs, and faction CP. The current results contain 2,800 encounter and 7,200 faction rows. The cap applied to 19 encounter and six faction rows. The 10,688 Hunt sweep rows and 1,336 confirmation rows had zero caps.
+- `node contrib/opus/tools/run_all_checks.js` reported 65 passes and two known baseline rows. Two checks passed on isolated reruns. The GPU slot test used a temporary Node copy for the Windows hard-link fixture. The picture provenance test passed once the working tree had settled. The isolated browser build passed and all 14 linked deployment sheets verified.
+
+### Runs 1 and 2
 
 - The standing checks reported 66 passes, two known baseline rows and a Windows hard-link permission failure. The isolated `gpu_slots_tests` rerun with hard-link permission passed all 12 groups using the suite's Node stub.
 - The browser `build.py test` passed in UTF-8 mode from a temporary source copy.

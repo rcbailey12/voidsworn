@@ -1,0 +1,11 @@
+{
+  "frozen": "31c4b3f7d21727a71feb727174fcabc9251445ee",
+  "current": "0b5066adefe3b214a30e1b51b566c1932a859657",
+  "csv": {
+    "results.csv": "frozen",
+    "hunt_tuning.csv": "frozen",
+    "results_current.csv": "current",
+    "hunt_current.csv": "current",
+    "hunt_confirmation.csv": "current"
+  }
+}

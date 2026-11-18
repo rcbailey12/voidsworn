@@ -4,14 +4,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const {execFileSync} = require('node:child_process');
 const {Worker, isMainThread, parentPort, workerData} = require('node:worker_threads');
 
 const root = path.resolve(__dirname, '../../..');
-const read = name => fs.readFileSync(path.join(root, name), 'utf8').replace(/\r\n/g, '\n');
-const battle = read('battle.js');
-const data = read('data.js');
-const core = replaceOnce(read('core.js'), "const newId = () => 'x'+Date.now().toString(36)+(UID++);",
-  "const newId = () => 'x'+String(UID++).padStart(8,'0');");
+const sources = require('./rules_sources.json');
+const git = (...args) => execFileSync('git', args, {cwd: root, encoding: 'utf8'});
 const trial = fs.readFileSync(path.join(__dirname, 'trial_rules.js'), 'utf8');
 const setups = ['today', 'shapes', 'placement', 'tempo', 'all'];
 const followups = ['hunt_placement', 'hunt_all', 'recommended'];
@@ -36,8 +34,12 @@ function replaceOnce(source, old, value) {
   return source.slice(0, at) + value + source.slice(at + old.length);
 }
 
-function harness() {
-  let source = battle;
+function harness({rules, revision}) {
+  const read = name => git('show', `${revision}:${name}`).replace(/\r\n/g, '\n');
+  const data = read('data.js');
+  const core = replaceOnce(read('core.js'), "const newId = () => 'x'+Date.now().toString(36)+(UID++);",
+    "const newId = () => 'x'+String(UID++).padStart(8,'0');");
+  let source = read('battle.js');
   source = replaceOnce(source, 'const eList = cfg.enemies || genEnemyFleet', 'const eList = cfg.enemies || cfg.trialEnemies || genEnemyFleet');
   source = replaceOnce(source, "else if(enc==='hunt'){ const bb0=boardBounds()", `else if(cfg.trialPlacement&&enc==='hunt'){
     trialHunt(B.units.filter(u=>u.side==='player'), B.units.filter(u=>u.side==='enemy'));
@@ -60,9 +62,10 @@ function harness() {
   B.trialStarted=true;
   startSideTurn('player');
   for(const u of alive('enemy'))`);
-  source = replaceOnce(source, '  if(u.transport) return -(o.exitR-v.r)*14;', `  if(u.transport) return -(o.exitR-v.r)*14;
-  if(B.trialQuarry && (u===B.trialQuarry || u.trialStation)) return trialHuntScore(u,v);`);
-  source = replaceOnce(source, '      if(off<=0){ const hd=', '      if(off<=0 && u!==B.trialQuarry){ const hd=');
+  // The trial quarry follows its jump bearing in place of the AI's generic approach term.
+  source = rules === 'frozen'
+    ? replaceOnce(source, 'if(off<=0){ const hd=', 'if(u!==B.trialQuarry&&off<=0){ const hd=')
+    : replaceOnce(source, 'if(off<=0||unloaded){', 'if(u!==B.trialQuarry&&(off<=0||unloaded)){');
   source = replaceOnce(source, '  const keep=[w.fired,w.cdLeft,u.sureUsed,u.postFire,u.postMp], b0=B;', `  if(!opts.intercept) trialShot(u,t,w);
   const keep=[w.fired,w.cdLeft,u.sureUsed,u.postFire,u.postMp], b0=B;`);
 
@@ -86,6 +89,11 @@ const runtime = `
 var STATS={rams:0,boards:0,caps:0};
 let meter=null;
 function trialScaledStat(value) { return Math.round(value*1.25); }
+const trialOriginalObjScore=aiObjScore;
+aiObjScore=function(u,v) {
+  if(B.obj&&!u.isSq&&!u.transport&&B.trialQuarry&&(u===B.trialQuarry||u.trialStation)) return trialHuntScore(u,v);
+  return trialOriginalObjScore(u,v);
+};
 function trialScale(u) {
   u.speed=trialScaledStat(u.speed);
   for(const w of u.weapons) w.r=trialScaledStat(w.r);
@@ -151,7 +159,7 @@ function pick(list, fraction) { return list[Math.floor(fraction * list.length)];
 function setupBattle(H, cell, seed) {
   const boss = cell.enc.startsWith('boss');
   const enc = boss ? cell.enc.split('_')[1] : cell.enc;
-  const sector = boss ? Number(cell.enc[4]) : cell.group === 'faction' ? 1 : 2;
+  const sector = boss ? Number(cell.enc[4]) : cell.sector ?? (cell.group === 'faction' ? 1 : 2);
   const factionPool = H.SECTOR_POOL[sector - 1];
   const channel = 8 * encounters.indexOf(cell.enc);
   const ef = boss ? pick(factionPool, draw(seed, channel + 3)) : cell.ef;
@@ -260,6 +268,9 @@ async function fight(H, cell, seed, drawPicture = false) {
   const {B, config, ef} = setupBattle(H, cell, seed);
   const {metrics, target, picture} = deployment(H);
   if (drawPicture) return {seed, setup: cell.setup, encounter: cell.enc, ...picture()};
+  const quarry = cell.huntFixture && target && {
+    hunt_fixture: cell.huntFixture, quarry_hull: target.tpl, quarry_max_hp: target.maxHp, quarry_speed: target.speed,
+  };
   const m = {unit:null, acts:0, moves:0, distance:0, first:null, any:null, targetFirst:null,
     objective:target, torpShots:0, torpRange:0};
   const stat0 = {...H.stats};
@@ -324,6 +335,7 @@ async function fight(H, cell, seed, drawPicture = false) {
     quarry_kill: B.obj.type === 'hunt' ? Number(!!target.dead && !target.fled) : null,
     timeout: Number(!B.over), result: B.over || 'timeout',
     ...(cell.huntTuning && {capital_contact_round: m.capitalContact?.round}),
+    ...quarry,
   };
 }
 
@@ -331,13 +343,20 @@ function cell(group, enc, setup, pf = 'hegemony', ef = 'hegemony') { return {gro
 
 function options() {
   const input = process.argv.slice(2);
-  const options = { mode: input.shift(), sims: 100, seed: 1000, jobs: Math.min(8, os.availableParallelism()) };
+  const options = { mode: input.shift(), rules: 'frozen', sims: 100, seed: 1000,
+    jobs: Math.min(8, os.availableParallelism()) };
   for (let i = 0; i < input.length; i += 2) {
     const key = input[i].slice(2);
-    assert(['out','jobs','sims','seed','enc','setup','input'].includes(key) && input[i + 1], `Bad option ${input[i]}`);
-    options[key] = ['jobs','sims','seed'].includes(key) ? Number(input[i + 1]) : input[i + 1];
+    assert(['out','jobs','sims','seed','enc','setup','input','rules','revision','hunt-fixture'].includes(key) &&
+      input[i + 1], `Bad option ${input[i]}`);
+    options[key === 'hunt-fixture' ? 'huntFixture' : key] =
+      ['jobs','sims','seed'].includes(key) ? Number(input[i + 1]) : input[i + 1];
   }
   for (const key of ['jobs','sims','seed']) assert(Number.isSafeInteger(options[key]) && options[key] > 0);
+  assert(['frozen', 'current'].includes(options.rules), 'Choose --rules frozen or current');
+  assert(!options.revision || options.rules === 'current' && /^[a-f0-9]{40}$/.test(options.revision),
+    '--revision requires current mode and a full commit SHA');
+  options.revision = options.rules === 'frozen' ? sources.frozen : options.revision || git('rev-parse', 'origin/main').trim();
   return options;
 }
 
@@ -350,6 +369,19 @@ function tasks(opt) {
   }
   if (opt.mode === 'hunt-sweep') {
     const candidates = opt.input ? JSON.parse(fs.readFileSync(opt.input, 'utf8')) : huntSettings;
+    if (opt.huntFixture) {
+      const fixtures = opt.huntFixture.split(',');
+      assert(fixtures.every(fixture => ['sector2', 'sector1-mirror', 'sector1-mix'].includes(fixture)),
+        'Unknown Hunt fixture');
+      return candidates.flatMap(huntTuning => fixtures.flatMap(huntFixture => {
+        const base = {huntTuning, huntFixture};
+        if (huntFixture === 'sector1-mix') return factions.flatMap(pf => factions.map(ef => ({
+          ...cell('faction', 'hunt', 'recommended', pf, ef), ...base,
+        })));
+        return [{...cell('encounter', 'hunt', 'recommended'), ...base,
+          sector:huntFixture === 'sector1-mirror' ? 1 : 2}];
+      }));
+    }
     return candidates.flatMap(tuning => ['hunt_placement', 'hunt_all'].map(setup => ({
       ...cell('encounter', 'hunt', setup), huntTuning: tuning,
     })));
@@ -363,9 +395,11 @@ function tasks(opt) {
 
 async function runTask(H, task, opt) {
   const rows = [];
+  const filter = task.huntFixture ? 'hunt' : opt.enc;
   for (let i = 0; i < opt.sims; i++) {
+    // Keep the Hunt seeds from the original eight-encounter faction rotation.
     const enc = task.group === 'faction' ? ordinary[i % ordinary.length] : task.enc;
-    if (task.group === 'faction' && opt.enc && enc !== opt.enc) continue;
+    if (task.group === 'faction' && filter && enc !== filter) continue;
     const row = await fight(H, {...task, enc}, opt.seed + i);
     rows.push(opt.mode === 'hunt-sweep' ? {...row, ...task.huntTuning} : row);
   }
@@ -399,20 +433,22 @@ function workerPool(list, opt) {
 }
 
 function csv(rows) {
-  const keys = Object.keys(rows[0]);
+  assert(rows.length, 'No rows matched the simulation options');
+  const keys = [...new Set(rows.flatMap(Object.keys))];
   const record = row => keys.map(k => row[k] ?? '').join(',');
   return [keys.join(','), ...rows.map(record)].join('\n') + '\n';
 }
 
 async function main() {
   const opt = options();
+  console.error(`Rules: ${opt.rules} (${opt.revision})`);
   if (opt.mode === 'stats') {
-    const H = harness();
+    const H = harness(opt);
     console.log(JSON.stringify({hulls:H.HULLS, weapons:H.W, admirals:H.ADMIRALS, modules:H.MODULES}, null, 2));
     return;
   }
   if (opt.mode === 'pictures') {
-    const H = harness();
+    const H = harness(opt);
     const chosen = JSON.parse(fs.readFileSync(opt.input, 'utf8'));
     const selected = Object.entries(chosen).filter(([enc]) => !opt.enc || opt.enc.split(',').includes(enc));
     const after = opt.setup || 'all';
@@ -434,7 +470,7 @@ async function main() {
 
 if (isMainThread) main().catch(error => { console.error(error); process.exit(1); });
 else {
-  const H = harness();
+  const H = harness(workerData);
   parentPort.on('message', async msg => {
     if (!msg) { parentPort.close(); return; }
     parentPort.postMessage({index:msg.index, rows:await runTask(H, msg.task, workerData)});
