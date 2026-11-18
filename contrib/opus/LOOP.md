@@ -144,6 +144,7 @@ Older items are in docs/archive/LOOP_history_2026-11-14.md and the FINDINGS rows
 - gh GraphQL is blocked: use gh api REST (pulls, issues, merges). Branch deletion and repo settings are refused by the proxy.
 - auto_pr (Nov 7): PR titles come from the issue title, with "[arm arm]" added for work/issue-N-arm branches. Branches outside codex/, muse/ and work/issue-* do not auto-open a PR; open it with gh api.
 - Questions for Ryan go in chat or this file, never as GitHub tags. Plain words, no em dashes, no human-hour estimates (R99).
+- New ships only (R323, Ryan Nov 18): replace every old A4 hull with its newer recipe build as fast as the lanes allow, and brief no paint, finish, effect or fix work on an old A4 hull that has a replacement. Old hulls without one stay as they are until their build exists. Each brief names which hull it touches.
 
 ## Playtest exe recipe (lane A)
 
