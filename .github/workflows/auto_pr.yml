@@ -100,12 +100,22 @@ jobs:
                 {
                   line = $0
                   gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
-                  if (split(line, words, /[[:space:]]+/) != 2 || words[2] != "#" issue) next
+                  if (split(line, words, /[[:space:]]+/) != 2) next
                   directive = tolower(words[1])
+                  # A branch with no issue number (issue-less Muse branch): keep every valid issue link the report names.
+                  if (issue == "") {
+                    if (words[2] ~ /^#[0-9]+$/ && directive ~ /^(refs|close[sd]?|fix(e[sd])?|resolve[sd]?):?$/ && !(line in seen)) {
+                      seen[line] = 1
+                      kept[++k] = words[1] " " words[2]
+                    }
+                    next
+                  }
+                  if (words[2] != "#" issue) next
                   if (directive ~ /^refs:?$/) refs = words[1] " " words[2]
                   if (directive ~ /^(close[sd]?|fix(e[sd])?|resolve[sd]?):?$/) closes = words[1] " " words[2]
                 }
                 END {
+                  if (issue == "") { for (i = 1; i <= k; i++) print kept[i]; exit }
                   if (refs != "") print refs
                   if (closes != "") print closes
                   if (refs == "" && closes == "") print "Refs #" issue

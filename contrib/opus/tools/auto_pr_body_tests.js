@@ -120,4 +120,17 @@ for (const action of ['create', 'edit']) {
   assert.ok(wideBody.includes(checks + notice(1) + afterChecks));
 }
 
-console.log('PASS auto_pr_body_tests: create and edit keep short bodies and bound long workhorse, Codex and plain bodies');
+// Issue 906 (Artoo on PR 943): an issue-less Muse branch keeps the report's own issue links when cut, never a bare "Refs #".
+for (const action of ['create', 'edit']) {
+  const museTitle = 'Muse look pass';
+  const muse = `${museTitle}\n\n${report}\n\n${'y'.repeat(70000)}\n\nRefs #726\nCloses #727`;
+  const museBody = send(action, muse, 'muse/look-pass-726');
+  assert.ok(museBody.includes('\n\n(Report cut to fit. Full text is in the head commit message.)\n\n'));
+  assert.match(museBody, /^Refs #726$/m);
+  assert.match(museBody, /^Closes #727$/m);
+  assert.doesNotMatch(museBody, /#\s*$/m);
+  const museShort = `${museTitle}\n\n${report}\n\nRefs #726`;
+  assert.match(send(action, museShort, 'muse/look-pass-726'), /^Refs #726$/m);
+}
+
+console.log('PASS auto_pr_body_tests: create and edit keep short bodies and bound long workhorse, Codex, plain and issue-less Muse bodies');
