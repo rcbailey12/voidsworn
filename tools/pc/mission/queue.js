@@ -98,10 +98,13 @@ function resolveQueue(input, now) {
     const target = hits[0], state = resolve(target);
     visiting.pop();
     c.predecessor = target.name;
+    c.predecessorIssue = target.issues.at(-1) || target.current || target.lastIssue;
+    c.predecessorAt = Math.max(target.mtime, target.batMtime);
     if (c.state === 'unknown') return c.state;
     if (['started', 'linked', 'starting', 'stuck'].includes(state)) {
       c.state = 'linked';
-      c.reason = state === 'stuck' ? 'predecessor is also blocked' : 'predecessor has no recorded ending';
+      c.reason = state === 'stuck' || target.blockedByPredecessor ? 'predecessor is also blocked' : 'predecessor has no recorded ending';
+      c.blockedByPredecessor = state === 'stuck' || target.blockedByPredecessor;
     }
     else if (state === 'ended') {
       c.state = 'starting'; c.readyAt = target.endedAt;

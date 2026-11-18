@@ -43,7 +43,7 @@ p + p { margin-top: 5px; }
 summary, a { color: inherit; }
 a { text-decoration-color: var(--dim); text-underline-offset: 3px; }
 summary { cursor: pointer; }
-summary:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--bone); outline-offset: -2px; }
+summary:focus-visible, a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--bone); outline-offset: -2px; }
 [hidden] { display: none !important; }
 .inset { margin-inline: 16px; }
 .kicker { font: 700 12px/1.3 var(--title); letter-spacing: .14em; text-transform: uppercase; }
@@ -68,17 +68,8 @@ summary:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px 
 .calm { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; margin: 8px 16px 9px; }
 .calm strong { font: 700 14px var(--title); }
 .calm::before { content: ""; flex: 0 0 7px; height: 7px; border: 1px solid var(--tone, var(--dim)); transform: rotate(45deg); align-self: center; }
-.hero { margin-top: 10px; padding: 8px 0 0; border-top: 1px solid var(--line); }
-.hero-open, .row-link { display: block; text-decoration: none; }
-.hero-title { padding: 3px 0 5px; }
-.hero-title h2 { margin: 2px 0; }
-.hero-title .meta { margin-top: 1px; }
-.hero-title .status { font-size: 11px; }
-.last-known .status, .last-known .ring, .last-known .track li { --tone: var(--dim); }
-.track { display: grid; grid-template-columns: repeat(5,minmax(0, 1fr)); gap: 4px; padding: 0; margin: 4px 0 0; list-style: none; }
-.track li { border-top: 3px solid var(--line); padding-top: 3px; color: var(--secondary); font: 500 11px/1.2 var(--title); }
-.track li[data-proved] { border-color: var(--tone, var(--green)); }
-.track li:last-child { border-top-style: dashed; }
+.row-link { display: block; text-decoration: none; }
+.last-known .status, .last-known .ring { --tone: var(--dim); }
 .mate-strip { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 2px; }
 .mate-chip { display: flex; flex-direction: column; align-items: center; text-align: center; padding-block: 2px 3px; gap: 3px; font: 700 12px/1.2 var(--title); min-height: 44px; }
 .mate-chip small { font: 500 12px/1.18 var(--body); color: var(--dim); }
@@ -91,11 +82,12 @@ summary:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px 
 .row strong { color: var(--bone); font-size: 16px; overflow-wrap: anywhere; }
 .row .meta { min-width: 0; grid-column: 1/-1; font-size: 13px; }
 .row .status { justify-self: end; }
+.last-known .row { grid-template-columns: minmax(0,1fr); gap: 1px; padding-block: 4px; }
+.last-known .row .status { justify-self: start; }
 .status { display: inline-flex; gap: 5px; align-items: center; font: 700 12px/1.25 var(--title); color: var(--tone, var(--secondary)); text-transform: uppercase; }
 .issue-id { color: var(--teal); font: 500 11px var(--mono); margin-right: 7px; }
 .back, .text-link { display: inline-flex; align-items: center; min-height: 44px; font: 700 13px var(--title); }
 .text-link { margin-right: 14px; }
-.failure h3 a { font-size: inherit; min-height: 44px; }
 .back { gap: 9px; padding-inline: 16px; color: var(--secondary); }
 details { background-color: var(--panel); padding: 0 10px 2px; margin-top: 8px; border-top: 1px solid var(--line); }
 summary { min-height: 44px; padding: 12px 0 8px; font: 700 14px/1.4 var(--title); }
@@ -117,11 +109,20 @@ details .evidence { margin: 2px 0 8px; }
 .timeline li[data-proved]::before { border-color: var(--tone,var(--green)); background: var(--tone,var(--green)); }
 .timeline li:not(:last-child)::after { content: ""; position: absolute; left: 5px; top: 8px; height: 100%; width: 1px; background: var(--line); }
 .timeline .meta { display: block; }
-.group { margin-top: 10px; }
-.group .meta { margin-top: 2px; }
-.group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 7px; }
-.queue-lane { margin: 13px 0 20px; }
-.queue-lane h3 { margin-bottom: 3px; }
+.flight-plan { margin: 12px 0 18px; padding-top: 7px; border-top: 2px solid var(--line); }
+.flight-plan h3 { color: var(--teal); }
+.flight-leg { margin-top: 10px; }
+.flight-leg h4 { margin: 0 0 3px; color: var(--secondary); }
+.flight-leg.attention h4 { color: var(--amber); }
+.chain-group { margin: 6px 0 0; padding-left: 8px; border-left: 2px solid var(--line); }
+.chain-group.attention { border-color: var(--amber); }
+.chain-group .list, .flight-leg .list { margin: 0; }
+.chain-group .list > li:first-child, .flight-leg .list > li:first-child { border-top: 0; }
+.chain-group > .meta { margin-top: 3px; }
+.copy-button { min-height: 44px; color: var(--bone); background: var(--iron); border: 1px solid var(--line); padding-inline: 12px; font: 700 13px var(--title); cursor: pointer; }
+.check-in { display: block; width: 100%; margin: 8px 0; padding: 7px; resize: vertical; color: var(--bone); background: var(--iron); border: 1px solid var(--line); font: inherit; }
+.job-picture { margin: 12px 0; }
+.job-picture img { display: block; max-width: 100%; max-height: 420px; object-fit: contain; }
 .crew-detail { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 10px; border-top: 1px solid var(--line); padding: 9px 0; scroll-margin-top: 8px; }
 .crew-detail .list { margin-top: 5px; }
 .crew-detail .ring { margin-top: 2px; }
@@ -153,7 +154,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   <nav aria-label="Mission Control">
     <a id="nav-now" href="#now">Now</a>
     <a id="nav-queue" href="#queue">Queue<small id="queue-count"></small></a>
-    <a id="nav-crew" href="#crew">Crew<small>Last seen</small></a>
+    <a id="nav-crew" href="#crew">Crew</a>
   </nav>
 </div>
 <script>
@@ -167,17 +168,16 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     {id:'codex',name:'Codex',source:'PC files',icon:'/crew/codex.svg'},
     {id:'muse',name:'Muse / Rey',source:'pulls',icon:'/crew/muse.svg'},
     {id:'deepseek',name:'DeepSeek',source:'PC files',icon:'/crew/deepseek.svg'},
-    {id:'openai',name:'OpenAI',source:'pulls',icon:'/crew/openai.svg'},
+    {id:'openai',name:'OpenAI',source:'PC files',icon:'/crew/openai.svg'},
     {id:'artoo',name:'Artoo',source:'comments',icon:'/crew/artoo.svg'}
   ];
   const ICONS = {lanes:'/icons/lanes.svg',queue:'/icons/queue.svg',gpu:'/icons/gpu.svg',pc:'/icons/pc.svg',github:'/icons/github.svg',phone:'/icons/phone.svg'};
   const SOURCES = {questions:'Questions',issues:'Issues',pulls:'Pull requests',comments:'Comments'};
   const STATES = {
-    running:['Working','good'], waiting:['Waiting','warn'], blocked:['Blocked','warn'], failed:['Failed','bad'],
-    finished:['Checked push','good'], quiet:['Quiet','warn'], idle:['Idle',''], unknown:['Unknown','warn']
+    running:['Running','good'], waiting:['Waiting','warn'], blocked:['Blocked','warn'], failed:['Failed','bad'],
+    finished:['Finished','good'], quiet:['Quiet','warn'], idle:['Idle',''], unknown:['Unknown','warn']
   };
-  const GROUPS = {started:'Started chain',linked:'Waiting for predecessor',starting:'Ready, start pending',stuck:'Stuck',unknown:'Queue unknown'};
-  const QUEUED = new Set(['started','linked','starting']);
+  const GROUPS = {started:'Recorded in this chain',linked:'Waiting for predecessor',starting:'Ready, start pending',stuck:'Blocked',unknown:'Queue unknown',legacy:'Last listed, queue unverified'};
   const $ = id => document.getElementById(id);
   const isIssue = n => Number.isSafeInteger(n) && n>0;
   const date = value => typeof value==='string' && Number.isFinite(Date.parse(value)) ? Date.parse(value) : 0;
@@ -224,6 +224,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   const lanes = () => data?.lanes || [];
   const full = () => data && data.state!=='starting';
   const offline = () => full() && Date.now()-date(data.generatedAt)>(data.offlineAfterSeconds || 180)*1000;
+  const lastKnown = () => offline() || fetchFailed;
   const oldBuild = () => data && (data.schemaVersion===1 || !data.build?.id || data.build.stale);
   function latestSource(name) {
     if (gh().sources?.[name]) return gh().sources[name];
@@ -232,7 +233,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   function sourceWarning(name) {
     const source = latestSource(name);
     const threshold = (source.intervalSeconds || 600)*(data?.thresholds?.githubIntervalMultiplier || 2)*1000;
-    return !!(offline() || source.stale || !source.complete || !date(source.lastSuccessfulReadAt) ||
+    return !!(lastKnown() || source.stale || !source.complete || !date(source.lastSuccessfulReadAt) ||
       Date.now()-date(source.lastSuccessfulReadAt)>threshold);
   }
   function sourceLine(name) {
@@ -265,7 +266,8 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     }
     const build = data?.build;
     if (/^[a-f0-9]{64}$/i.test(build?.id || '')) entries.push([iconLabel('Version '+build.id.slice(0,8),'phone'),
-      (/^[a-f0-9]{40}$/i.test(build.sourceRevision || '') ? 'Build '+build.sourceRevision.slice(0,12)+' · ' : '')+'Publisher started '+dated(build.startedAt)]);
+      (/^[a-f0-9]{40}$/i.test(build.sourceRevision || '') ? 'Build '+build.sourceRevision.slice(0,12)+' · ' : '')+
+      'Publisher started '+dated(build.startedAt)+(date(build.sourceAt) ? ' · Files updated '+dated(build.sourceAt) : '')]);
     const pc = data?.pcSource;
     if (pc) entries.push([iconLabel((pc.complete ? 'PC files' : 'PC files incomplete')+' · '+
       (date(pc.lastSuccessfulReadAt) ? 'last successful scan '+dated(pc.lastSuccessfulReadAt) : 'no successful scan'),'pc'),
@@ -288,7 +290,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     );
     if (oldBuild()) alerts.push(alert('Older publisher','Mission Control is running an older version. Restart with PHONE_ON.','bad'));
     if (isOffline) alerts.push(alert('PC feed lost · '+age(data.generatedAt),'Last-known snapshot from '+clock(data.generatedAt)+'. The PC may be asleep or the link may have dropped.','bad'));
-    else if (fetchFailed) alerts.push(alert('PC link interrupted',full() ? 'Showing the PC snapshot from '+dated(data.generatedAt)+'.' : 'No PC snapshot has reached this page.','warn'));
+    else if (fetchFailed) alerts.push(alert('PC link interrupted',full() ? 'Last-known snapshot from '+dated(data.generatedAt)+'.' : 'No PC snapshot has reached this page.','warn'));
     if (full() && !isOffline && troubled.length) {
       const summary = troubled.map(name=>sourceLine(name)).join(' / ');
       const next = troubled.map(name=>latestSource(name).nextAttemptAt).filter(stamp=>date(stamp)>Date.now()).sort()[0];
@@ -298,33 +300,31 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     }
     if (data?.pcSource?.complete===false || full() && data.warnings?.length) alerts.push(alert('PC sources incomplete',
       clean(data.pcSource?.reason,'Some lane files could not be read.'),'warn'));
-    document.body.classList.toggle('last-known',!!isOffline);
+    document.body.classList.toggle('last-known',!!lastKnown());
     $('alerts').replaceChildren(...alerts);
   }
 
   function laneState(lane) {
-    if (lane.endedWithoutPush) return ['Ended without a push','bad'];
+    if (lane.endedWithoutPush) return ['Finished','bad'];
     const key = lane.stale && ['running','waiting','quiet'].includes(lane.state) ? 'quiet' : lane.state;
     const claim = key==='unknown' && /^Claim/i.test(lane.reason || '') && lane.claim?.state;
     if (claim==='claimed, not started') return ['Claimed','warn'];
     if (claim==='not confirmed') return ['Claim not confirmed','warn'];
-    if (key==='finished' && lane.runnerState!=='checked_push') return ['Ended',''];
     return STATES[key] || STATES.unknown;
   }
-  function stateLine(lane) {
-    const [word,tone] = laneState(lane);
-    return el('span','status '+tone,offline() ? 'Was '+word.toLowerCase() : word);
+  function statusText(word) {
+    return lastKnown() ? 'Last known · '+word : word;
+  }
+  function stateLine(word, tone) {
+    return el('span','status '+tone,statusText(word));
   }
   function laneEvidence(lane) {
-    if (['running','quiet'].includes(lane.state) && date(lane.lastActivityAt)) {
-      const log = lane.logAt===lane.lastActivityAt;
-      return 'PC '+(log ? 'log write' : 'run activity')+' · '+dated(lane.lastActivityAt);
-    }
-    if (['Claimed','Claim not confirmed'].includes(laneState(lane)[0])) return 'PC chain start · '+dated(lane.startedAt);
+    if (['running','quiet'].includes(lane.state) && date(lane.lastActivityAt)) return 'PC run activity · '+dated(lane.lastActivityAt);
+    if (['Claimed','Claim not confirmed'].includes(laneState(lane)[0])) return 'PC start record · '+dated(lane.startedAt);
     const result = (lane.evidence || []).find(item=>item.source==='result.txt' && /matching run|same run directory/.test(item.association || '') && date(item.at));
-    if (result && ['failed','blocked','waiting','unknown'].includes(lane.state)) return 'PC result.txt · '+dated(result.at);
+    if (result && ['failed','blocked','waiting','unknown'].includes(lane.state)) return 'PC runner result · '+dated(result.at);
     const runner = (lane.evidence || []).find(item=>item.source==='status.json' && date(item.at));
-    if (runner) return 'PC status.json · '+dated(runner.at);
+    if (runner) return 'PC runner update · '+dated(runner.at);
     return date(lane.source?.updatedAt) ? 'PC lane files · '+dated(lane.source.updatedAt) : 'PC snapshot · '+dated(data?.generatedAt);
   }
   function laneReason(lane) {
@@ -335,26 +335,30 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   }
   const jobTitle = job => clean(job?.title,isIssue(job?.issue) ? 'Issue #'+job.issue : 'No current job confirmed');
   const taskHref = (lane,job) => '#task/'+lane.id+'/'+(job?.issue || 0);
-  function row(lane, job = lane.current) {
+  function row(lane, entry) {
+    const {job, word, tone, updated} = entry;
     const title = el('strong','');
     if (isIssue(job?.issue)) title.append(el('span','issue-id','#'+job.issue));
-    title.append(jobTitle(job));
-    const note = ['unknown','blocked','quiet','waiting'].includes(lane.state) ? laneReason(lane) : '';
-    return el('li','',link(taskHref(lane,job),el('span','row',title,stateLine(lane),
-      el('span','meta',lane.label+' · '+laneEvidence(lane)+(note ? ' · '+note : ''))),'row-link'));
+    const name = jobTitle(job);
+    title.append(/\bGPU\b|cost at 4K/i.test(name) ? iconLabel(name,'gpu') : name);
+    const delivery = stages(lane,entry).slice(1).filter(([label])=>['Checked push confirmed','PR recorded','Technical review recorded'].includes(label));
+    const deliveryLine = delivery.map(([label,verdict])=>label==='PR recorded' ? label+' · '+verdict.split(' · ').slice(0,2).join(' · ') : label);
+    const content = el('span','row',title,stateLine(word,tone),el('span','meta',updated),
+      deliveryLine.length ? el('span','meta',deliveryLine.join(' / ')) : '');
+    return el('li','',job ? link(taskHref(lane,job),content,'row-link') : content);
   }
 
   function questions() {
     const section = el('section','');
     const source = latestSource('questions'), warning = sourceWarning('questions');
     const asks = (gh().needsRyan || []).filter(question=>isIssue(question?.issue));
-    const label = warning ? isChecking('questions') ? 'Checking for questions' :
-      date(source.lastSuccessfulReadAt) ? 'Questions not fully checked' : 'Questions not checked' : 'Nothing waiting on you';
+    const label = warning ? isChecking('questions') ? 'Checking for questions' : 'Needs Ryan check incomplete' : 'Nothing waiting on you';
     if (warning || !asks.length) section.append(el('p','calm'+(warning ? ' warn' : ''),el('strong','',label),el('span','meta',sourceLine('questions'))));
     for (const ask of asks) {
+      const question = clean(ask.question);
       const article = el('article','notice question on-panel'+(warning ? ' striped' : ''),
-        el('div','question-top',el('p','kicker',warning ? 'Last-known question' : 'For you'),el('span','secondary','#'+ask.issue+' · updated '+age(ask.updatedAt))),
-        el('h2','',clean(ask.question,'Question text unavailable')),el('p','secondary','Answer the Board in chat.'));
+        el('div','question-top',el('p','kicker',warning ? 'Needs Ryan · last known' : 'Needs Ryan'),el('span','secondary','#'+ask.issue+' · updated '+age(ask.updatedAt))),
+        el('h2','',question || 'Needs Ryan flagged; question unavailable'),question ? el('p','secondary','Answer the Board in chat.') : '');
       const attached = pictureLink(ask.picture);
       if (attached) article.append(link(attached,'View Board picture'));
       article.append(link(REPO+'/issues/'+ask.issue,'Open issue #'+ask.issue),el('p','secondary',sourceLine('questions')));
@@ -372,51 +376,31 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     for (const warning of lane.warnings || []) entries.push([clean(warning),'PC snapshot · '+dated(data?.generatedAt)]);
     if (lane.source?.updatedAt) entries.push(['PC lane files updated',dated(lane.source.updatedAt)]);
     entries.push(['PC scanned',dated(lane.source?.refreshedAt || data?.generatedAt)]);
-    return detail(subtitle,'evidence-'+lane.id,evidenceList(entries));
+    return evidenceList([[subtitle,''],...entries]);
   }
-  function failure(lane) {
-    const title = link(taskHref(lane,lane.current),jobTitle(lane.current),'text-link');
-    const reason = laneReason(lane) || 'The PC runner could not continue.';
-    return el('article','notice failure on-panel bad',el('div','question-top',stateLine(lane),el('span','secondary',lane.label)),
-      el('h3','',title),el('p','',reason),el('p','secondary',laneEvidence(lane)),
-      /^Runner exit \d+\.$/.test(reason) ? el('p','secondary','The run stopped before a checked push was confirmed.') : '',
-      el('p','secondary',offline() ? 'The Board can check the run when the PC feed returns.' : 'The Board checks the run and decides what to do next.'),
-      evidence(lane));
-  }
-
-
-  function stages(lane, job, current = true) {
-    const push = current && laneState(lane)[0]==='Checked push';
-    const pr = isIssue(job?.prNumber), prState = ['open','closed','merged'].includes(job?.prState) ? job.prState : 'recorded';
-    const [word] = laneState(lane);
+  function stages(lane, entry) {
+    const {job, word, current} = entry;
+    const push = current && lane.state==='finished' && lane.runnerState==='checked_push' && !lane.endedWithoutPush;
+    const pr = isIssue(job?.prNumber), prState = ['open','closed','merged'].includes(job?.prState) ? job.prState : 'state unverified';
+    const review = pr && date(job.prReviewAt);
     return [
-      ['Claimed',current && date(lane.startedAt) ? 'PC start record · '+dated(lane.startedAt) : 'PC start unverified',current && date(lane.startedAt)],
-      ['Runner',current ? (offline() ? 'Was '+word.toLowerCase() : word)+' · '+laneEvidence(lane) : 'Awaiting PC runner evidence',current && lane.state!=='unknown'],
-      ['Pushed',push ? 'PC confirmed a checked push · '+dated(lane.finishedAt || lane.source?.updatedAt) : 'Checked push unconfirmed',push],
-      [pr ? 'PR '+prState : 'PR open',(pr ? 'PR #'+job.prNumber+' '+prState : 'PR unconfirmed')+' · '+sourceLine('pulls'),pr && !sourceWarning('pulls'),pr ? '#'+job.prNumber : ''],
-      ['On your PC / your OK','Untracked',false]
+      ['Runner',statusText(word)+' · '+entry.updated,current && lane.state!=='unknown'],
+      [push ? 'Checked push confirmed' : 'Checked push unconfirmed',push ? statusText('PC runner')+' · '+dated(lane.finishedAt || lane.source?.updatedAt) : '',push],
+      [pr ? 'PR recorded' : 'PR unconfirmed',pr ? '#'+job.prNumber+' · '+prState+' · '+sourceLine('pulls') : sourceLine('pulls'),pr && !sourceWarning('pulls')],
+      [review ? 'Technical review recorded' : 'Review evidence unavailable',review ? 'Artoo comment names the recorded PR head · '+dated(job.prReviewAt)+' · '+sourceLine('comments') : '',review && !sourceWarning('comments') && !sourceWarning('pulls')]
     ];
   }
-  function hero(lane) {
-    const job = lane.current;
-    const title = el('div','hero-title',stateLine(lane),el('h2','',jobTitle(job)),el('p','meta',lane.label+' · #'+job.issue+' · '+laneEvidence(lane)));
-    const track = el('ol','track');
-    for (const [name,verdict,proved,number] of stages(lane,job)) {
-      const item = el('li','',name==='On your PC / your OK' ? 'On PC?' : name+(number ? ' '+number : ''));
-      item.setAttribute('aria-label',name+' · '+verdict);
-      if (proved) item.dataset.proved = '';
-      track.append(item);
-    }
-    return el('section','hero inset',link(taskHref(lane,job),title,'hero-open'),track);
-  }
 
-  function crewLanes(member) { return lanes().filter(lane=>(lane.id==='deepseek' ? 'deepseek' : 'codex')===member.id); }
+  function crewLanes(member) { return lanes().filter(lane=>(['deepseek','openai'].includes(lane.id) ? lane.id : 'codex')===member.id); }
   function memberSummary(member) {
     if (member.source==='PC files') {
       const own = crewLanes(member), working = own.filter(lane=>lane.state==='running' && !lane.stale).length;
-      if (working) return working+(offline() ? ' were working' : ' working')+' · '+age(data.generatedAt);
+      if (working) return statusText(working+' running')+' · '+age(data.generatedAt);
       const quiet = own.filter(lane=>lane.state==='quiet' || lane.stale).length;
-      return quiet ? quiet+(offline() ? ' were quiet' : ' quiet')+' · '+age(data.generatedAt) : 'See lanes · '+age(data.generatedAt);
+      if (quiet) return statusText(quiet+' quiet')+' · '+age(data.generatedAt);
+      if (own.some(lane=>lane.run)) return 'PC records · '+age(data.generatedAt);
+      const hit = gh().crew?.[member.id];
+      return hit ? 'Last seen on GitHub · '+age(hit.at) : 'Local activity unknown';
     }
     const hit = gh().crew?.[member.id];
     return hit ? (sourceWarning(member.source) ? 'Last known · ' : 'GitHub · ')+age(hit.at) :
@@ -424,7 +408,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   }
   function glyph(member) {
     const local = member.source==='PC files';
-    const tone = local && crewLanes(member).some(lane=>lane.state==='running' && !lane.stale) && !offline() ? ' good' : !local && sourceWarning(member.source) ? ' warn' : '';
+    const tone = local && crewLanes(member).some(lane=>lane.state==='running' && !lane.stale) && !lastKnown() ? ' good' : !local && sourceWarning(member.source) ? ' warn' : '';
     const image = el('img',member.id);
     image.src = member.icon;
     image.alt = '';
@@ -441,13 +425,13 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     const section = el('section','inset',el('h2','section-label','Crew'));
     for (const member of CREW) {
       const local = member.source==='PC files', hit = gh().crew?.[member.id];
-      const unavailable = !local && sourceWarning(member.source);
+      const unavailable = (!local || hit) && sourceWarning(local ? 'pulls' : member.source);
       const copy = el('div','',el('h3','',member.name));
-      if (local) copy.append(el('p','meta','PC files · '+dated(data?.generatedAt)),el('ul','list',...crewLanes(member).map(lane=>row(lane))));
-      else {
+      if (local) copy.append(el('p','meta','PC files · '+dated(data?.generatedAt)),el('ul','list',...crewLanes(member).map(lane=>row(lane,flightPlan(lane).current))));
+      if (!local || hit) {
         copy.append(el('p','secondary',hit ? (unavailable ? 'Last known on GitHub · ' : 'Last seen on GitHub · ')+dated(hit.at) : 'GitHub activity unknown'));
         if (isIssue(hit?.number)) copy.append(link(REPO+(member.id==='artoo' ? '/issues/' : '/pull/')+hit.number,clean(hit.action,'Activity recorded')+' #'+hit.number));
-        copy.append(el('p','meta',sourceLine(member.source)));
+        copy.append(el('p','meta',sourceLine(local ? 'pulls' : member.source)));
       }
       const entry = el('article','crew-detail'+(unavailable ? ' striped' : ''),glyph(member),copy);
       entry.id = 'crew-'+member.id;
@@ -457,120 +441,180 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     return section;
   }
 
-  function groups(lane) {
-    if (lane.queue?.groups) return lane.queue.groups;
-    return (lane.next || []).length ? [{chain:'Legacy listing',state:'unknown',jobs:lane.next}] : [];
-  }
-  function queueItems(lane) { return groups(lane).flatMap(group=>group.jobs || []).filter(job=>isIssue(job.issue)); }
-  function issueState(job) {
-    const state = {open:'Open on GitHub',closed:'Closed on GitHub; chain still lists it'}[job.githubState] || 'GitHub issue state unverified';
-    return state+' · '+sourceLine('issues');
-  }
-  function queueLabel(group) { return GROUPS[group.state] || 'Queue unknown'; }
-  function queuePage() {
-    const section = el('section','inset',el('h2','section-label',iconLabel('Queue','queue')),el('p','meta','PC chain files · snapshot '+dated(data?.generatedAt)));
-    for (const lane of lanes()) {
-      const list = el('article','queue-lane',el('h3','',lane.label));
-      list.id = 'queue-'+lane.id;
-      const why = clean(lane.queue?.reason);
-      if (lane.queue?.state==='unknown' || !lane.queue) list.append(el('p','status warn','Queue unknown'),
-        el('p','meta',why || 'Recorded chain order is unverified in this snapshot.'));
-      if (!queueItems(lane).length) list.append(el('p','meta',lane.queue?.state==='known' ? 'No successor listed in PC chains' : 'No successor order confirmed'));
-      for (const group of groups(lane)) {
-        const label = queueLabel(group);
-        const node = el('section','group',el('div','group-head',el('span','status '+(group.amber || ['stuck','unknown'].includes(group.state) ? 'warn' : ''),label),
-          el('span','meta',clean(group.chain)+' · '+age(group.sourceAt || data.generatedAt))));
-        if (group.reason || group.readyAt) node.append(el('p','meta',[
-          clean(group.reason),group.readyAt ? 'PC predecessor ended '+dated(group.readyAt) : ''
-        ].filter(Boolean).join(' · ')));
-        if (group.after) node.append(el('p','meta','After '+clean(group.after)+(group.waitSource ? ' · '+clean(group.waitSource) : '')));
-        for (const note of group.notes || []) node.append(el('p','meta',clean(note)));
-        node.append(el('ul','list',...(group.jobs || []).map(job=>el('li','',
-          link(taskHref(lane,job),el('span','row',el('strong','',el('span','issue-id','#'+job.issue),
-            /\b(?:GPU|cost at 4K)\b/i.test(jobTitle(job)) ? iconLabel(jobTitle(job),'gpu') : jobTitle(job)),
-            el('span','meta'+(sourceWarning('issues') ? ' striped' : ''),issueState(job))),'row-link')))));
-        list.append(node);
+  // Keep each group's partial order and evidence for all three views.
+  function flightPlan(lane) {
+    const [word,tone] = laneState(lane);
+    const current = {job:lane.current,word,tone,current:true,updated:laneEvidence(lane),reason:laneReason(lane)};
+    const raw = lane.queue?.groups || ((lane.next || []).length ? [{state:'legacy',jobs:lane.next,
+      reason:'The older snapshot lists this issue without a verified chain.'}] : []);
+    const groups = raw.map(group=>{
+      const word = GROUPS[group.state] || GROUPS.unknown;
+      const waiting = ['started','linked','starting'].includes(group.state);
+      const updated = (group.state==='legacy' ? 'Legacy snapshot' : 'Chain updated')+' · '+dated(group.sourceAt || (group.state==='legacy' ? data.generatedAt : null));
+      const predecessor = group.predecessor;
+      const after = isIssue(predecessor?.issue) ? 'After #'+predecessor.issue+' · '+jobTitle(predecessor) :
+        group.after && group.state!=='unknown' ? 'Wait target has no confirmed issue.' : '';
+      const jobs = (group.jobs || []).filter(job=>isIssue(job.issue)).map(job=>({job,group,updated,
+        word:job.githubState==='closed' ? 'Issue conflict' : word,
+        tone:job.githubState==='closed' ? 'bad' : waiting && !group.amber ? '' : 'warn',
+        reason:job.githubState==='closed' ? (sourceWarning('issues') ? 'Last known closed on GitHub; chain still lists it.' : 'Closed on GitHub; chain still lists it.') : ''}));
+      return {group,word,waiting,updated,after,jobs};
+    });
+    const next = groups.filter(entry=>entry.waiting && entry.jobs.length);
+    const unresolved = groups.filter(entry=>!entry.waiting);
+    const recorded = next.flatMap(entry=>entry.jobs);
+    const waitingCount = new Set(recorded.filter(entry=>!entry.reason && !entry.group.blockedByPredecessor).map(entry=>entry.job.issue)).size;
+    const attention = [];
+    if (current.reason && (lane.endedWithoutPush || lane.state!=='running' && lane.state!=='finished')) attention.push(current.reason);
+    for (const {group,jobs} of groups) {
+      if (group.attention || group.amber && group.state==='starting') {
+        const subject = group.predecessor?.issue || jobs[0]?.job.issue || current.job?.issue;
+        attention.push((subject ? '#'+subject+' · ' : '')+clean(group.attention || group.reason));
       }
-      const past = lane.queue?.history || [];
-      if (past.length) list.append(detail('Chain history · '+past.length,'history-'+lane.id,evidenceList(past.map(chain=>[
-        clean(chain.chain)+' · '+clean(chain.state)+(chain.reason ? ' · '+clean(chain.reason) : ''),
-        date(chain.endedAt) ? 'PC chain ended '+dated(chain.endedAt) : 'PC chain files · '+dated(chain.sourceAt || data.generatedAt)
-      ]))));
-      section.append(list);
     }
-    section.append(detail('Sources & version','queue-sources',sourceRows()));
-    return section;
+    for (const issue of new Set(recorded.map(entry=>entry.job.issue))) {
+      if (next.filter(entry=>entry.jobs.some(item=>item.job.issue===issue)).length>1) attention.push('#'+issue+' appears in multiple recorded chains.');
+    }
+    if (!unresolved.length && lane.queue?.state==='unknown') attention.push(clean(lane.queue.reason,'Queue records are incomplete.'));
+    return {current,groups,next,unresolved,waitingCount,attention:[...new Set(attention)],
+      nextEmpty:!lane.queue || lane.queue.state==='unknown' ? 'Successor order unverified.' : 'No successor recorded.'};
   }
 
+  function chainDetails(entries, key, lane) {
+    const facts = [];
+    for (const {group,updated} of entries) {
+      facts.push([clean(group.chain,'Legacy listing'),updated]);
+      if (group.after) facts.push(['Predecessor file',clean(group.after)]);
+      if (group.targets?.length>1) facts.push(['Possible predecessor files',group.targets.map(name=>clean(name)).join(', ')]);
+      if (group.waitSource) facts.push(['Wait recorded by',clean(group.waitSource)]);
+      if (group.predecessorAt) facts.push(['Predecessor record updated',dated(group.predecessorAt)]);
+      if (group.readyAt) facts.push(['Predecessor ended',dated(group.readyAt)]);
+      for (const note of group.notes || []) facts.push([clean(note),'']);
+    }
+    const history = (lane?.queue?.history || []).map(chain=>[clean(chain.chain)+' · '+clean(chain.state),
+      [clean(chain.reason),date(chain.endedAt) ? 'Ended '+dated(chain.endedAt) : 'Updated '+dated(chain.sourceAt)].filter(Boolean).join(' · ')]);
+    if (lane) for (const item of lane.leftovers || []) history.push(['Older '+lane.label+' record #'+item.job.issue,'PC activity '+dated(item.lastActivityAt)]);
+    return facts.length || history.length ? detail('Details',key,...(facts.length ? [evidenceList(facts)] : []),
+      ...(history.length ? [el('h4','kicker','History'),evidenceList(history)] : [])) : '';
+  }
+
+  function groupRows(lane, entry) {
+    const {group,word,updated,after,jobs} = entry;
+    return el('div','chain-group'+(entry.waiting ? '' : ' attention'),
+      el('p','meta',[after,clean(group.reason)].filter(Boolean).join(' · ') || (group.state==='started' ? 'Continues within this chain.' : word)),
+      jobs.length ? el('ul','list',...jobs.map(job=>row(lane,job))) : el('p','meta',statusText(word)+' · '+updated));
+  }
+  function flightCard(lane, prefix) {
+    const plan = flightPlan(lane);
+    const present = (title,cls,...nodes) => el('section','flight-leg '+cls,el('h4','kicker',title),...nodes);
+    const card = el('article','flight-plan',el('h3','',lane.label),
+      present('Now','now',el('ul','list',row(lane,plan.current))),
+      present('Next','next',...(plan.next.length ? plan.next.map(group=>groupRows(lane,group)) : [el('p','meta',statusText(plan.nextEmpty))])),
+      present('Needs attention','attention',
+        ...plan.attention.map(note=>el('p','secondary',note)),
+        ...plan.unresolved.map(group=>groupRows(lane,group)),
+        ...(!plan.attention.length && !plan.unresolved.length && !plan.groups.some(group=>group.jobs.some(entry=>entry.reason)) ?
+          [el('p','meta',statusText('No blockers recorded.'))] : [])),
+      chainDetails(plan.groups,prefix+'-details-'+lane.id,lane));
+    const attention = card.querySelector('.flight-leg.attention');
+    for (const {jobs} of plan.groups) for (const entry of jobs.filter(job=>job.reason))
+      attention.append(el('p','secondary','#'+entry.job.issue+' · '+entry.reason));
+    card.id = prefix+'-'+lane.id;
+    return card;
+  }
+
+  function queuePage() {
+    return el('section','inset',el('h2','section-label',iconLabel('Queue','queue')),
+      el('p','meta',statusText('PC chain snapshot')+' · '+dated(data.generatedAt)+'. Each chain has its own order.'),
+      ...lanes().map(lane=>flightCard(lane,'queue')),detail('Sources & version','queue-sources',sourceRows()));
+  }
+  function issueState(job) {
+    const state = {open:'Open on GitHub',closed:'Closed on GitHub'}[job.githubState] || 'GitHub issue state unverified';
+    return state+' · '+sourceLine('issues');
+  }
   function facts(pairs) {
     return el('dl','facts',...pairs.map(([key,value])=>el('div','fact',el('dt','kicker',key),el('dd','value',value))));
   }
-  function nextStep(lane, job) {
-    if (['failed','blocked'].includes(lane.state) || lane.endedWithoutPush) return 'The Board checks the run and decides whether to retry.';
-    if (laneState(lane)[0]==='Checked push') return job?.prState==='merged' ? 'GitHub recorded the merge. PC installation is untracked.' : 'The Board reviews the push.';
-    if (lane.state==='running') return 'The runner reports its result when the job ends.';
-    if (lane.state==='waiting') return 'Check the predecessor in Queue.';
-    return 'The Board can check the PC evidence.';
+  function jobPicture(lane, issue) {
+    const picture = (lane.pictures || []).find(pic=>pic.issue===issue && pic.association==='this run' && /^[a-f0-9]{64}$/.test(pic.id || ''));
+    if (!picture || lastKnown()) return '';
+    const image = el('img',''), figure = el('figure','job-picture',image,
+      el('figcaption','meta',clean(picture.stage,'Run picture')+' · '+dated(picture.capturedAt)));
+    figure.hidden = true;
+    image.alt = 'Verified artwork from issue #'+issue;
+    image.addEventListener('load',()=>{ figure.hidden = false; });
+    image.src = '/pic/'+picture.id;
+    return figure;
+  }
+  function checkIn(lane, job, word, updated) {
+    const coordinator = lane.id==='openai' ? 'OpenAI workhorse' : lane.id==='deepseek' ? 'DeepSeek workhorse' : 'the Board';
+    const message = 'Check-in for '+coordinator+'\n'+lane.label+' · #'+job.issue+' '+jobTitle(job)+'\n'+
+      statusText(word)+' · '+updated+'\n'+REPO+'/issues/'+job.issue+'\nCan you confirm the current state and next step?';
+    const area = el('textarea','check-in');
+    area.value = message;
+    area.readOnly = true;
+    area.rows = 4;
+    area.hidden = true;
+    area.setAttribute('aria-label','Check-in for '+coordinator);
+    const button = el('button','copy-button','Copy check-in for '+coordinator);
+    button.type = 'button';
+    button.addEventListener('click',async ()=>{
+      try { await navigator.clipboard.writeText(message); button.textContent = 'Check-in copied'; }
+      catch (_) { area.hidden = false; area.focus(); area.select(); }
+    });
+    return el('section','flight-leg',button,area);
   }
   function taskPage(lane, issue, from) {
-    const current = issue===(lane.current?.issue || 0), job = current ? lane.current : queueItems(lane).find(item=>item.issue===issue);
     const section = el('section','',link('#'+from,'‹ '+(from==='queue' ? 'Queue' : from==='crew' ? 'Crew' : 'Now'),'back'));
-    if (issue && !job) {
-      section.append(alert('Job no longer listed','The PC snapshot from '+dated(data.generatedAt)+' has no current or queued record for #'+issue+'.','warn'));
+    const plan = flightPlan(lane);
+    const matches = plan.groups.filter(group=>group.jobs.some(entry=>entry.job.issue===issue));
+    const assignments = matches.map(group=>group.jobs.find(entry=>entry.job.issue===issue));
+    const current = issue===(lane.current?.issue || 0);
+    const entry = current ? plan.current : assignments.length>1 ? {...assignments[0],word:'Multiple chain records',tone:'warn',
+      updated:'PC snapshot · '+dated(data.generatedAt)} : assignments[0];
+    if (!entry) {
+      section.append(alert('Job no longer listed','The PC snapshot from '+dated(data.generatedAt)+' has no current or chain record for #'+issue+'.','warn'));
       return section;
     }
-    const group = current ? null : groups(lane).find(item=>item.jobs.some(entry=>entry.issue===issue));
+    const {job,word,tone,updated,reason} = entry;
     const content = el('div','inset'), heading = el('div','task-title',el('p','kicker',lane.label+(issue ? ' · #'+issue : '')),el('h2','',jobTitle(job)));
-    const reason = current ? laneReason(lane) : clean(group?.reason);
-    if (current) heading.append(stateLine(lane),el('p','meta',laneEvidence(lane)));
-    else heading.append(el('span','status warn',queueLabel(group || {})),el('p','meta','PC chain files · snapshot '+dated(data.generatedAt)));
+    heading.append(stateLine(word,tone),el('p','meta',updated));
     if (reason) heading.append(el('p','secondary',reason));
     content.append(heading);
+    if (current && issue) content.append(jobPicture(lane,issue));
+    if (matches.length) {
+      const recorded = el('section','flight-leg',el('h3','kicker','Chain records'));
+      for (const [index, group] of matches.entries()) {
+        const record = assignments[index];
+        recorded.append(el('div','chain-group',stateLine(record.word,record.tone),
+          el('p','meta',[group.after,clean(group.group.reason),record.updated].filter(Boolean).join(' · '))));
+      }
+      content.append(recorded);
+    }
     const timeline = el('ol','timeline');
-    for (const [name,verdict,proved] of stages(lane,job,current)) {
+    for (const [name,verdict,proved] of stages(lane,entry)) {
       const item = el('li','',el('strong','',name),el('span','meta',verdict));
       if (proved) item.dataset.proved = '';
       timeline.append(item);
     }
     content.append(timeline);
-    const pairs = [['Next',offline() ? 'Awaiting a fresh PC feed.' : current ? nextStep(lane,job) : clean(group?.after,'See the chain in Queue.')]];
-    if (job) pairs.push(['Issue',issueState(job)]);
-    content.append(facts(pairs));
-    if (issue) content.append(link(REPO+'/issues/'+issue,'Open issue #'+issue));
-    if (isIssue(job?.prNumber)) content.append(link(REPO+'/pull/'+job.prNumber,'Open PR #'+job.prNumber));
-    if (current) content.append(evidence(lane));
+    if (job) content.append(facts([['Issue',issueState(job)]]),link(REPO+'/issues/'+issue,'Open issue #'+issue));
+    if (isIssue(job?.prNumber)) content.append(link(REPO+'/pull/'+job.prNumber,'View PR #'+job.prNumber));
+    if (job) content.append(checkIn(lane,job,word,updated));
+    if (current) content.append(detail('Details','run-'+lane.id,evidence(lane)));
+    content.append(chainDetails(matches,'task-chains-'+lane.id+'-'+issue));
     content.append(detail('Sources & version','task-sources',sourceRows()));
     section.append(content);
     return section;
   }
 
   function nowPage() {
-    const section = el('section','',questions());
-    const failures = lanes().filter(lane=>lane.endedWithoutPush || lane.state==='failed');
-    const featured = lanes().find(lane=>lane.current && lane.state==='running' && !lane.endedWithoutPush);
-    for (const lane of failures) section.append(failure(lane));
-    if (featured) section.append(hero(featured));
-    section.append(crewStrip());
-    const rest = lanes().filter(lane=>lane!==featured && !failures.includes(lane));
-    const listings = lanes().flatMap(lane=>groups(lane).flatMap(group=>(group.jobs || [])
-      .filter(job=>isIssue(job.issue)).map(job=>({lane,group,job}))));
-    const queued = !offline() && listings.find(({group})=>QUEUED.has(group.state));
-    const next = queued || listings.find(({group})=>group.state==='unknown' || offline());
-    if (next) {
-      const label = queued ? 'On the queue' : 'Last listed, queue unverified';
-      section.append(el('div','inset',link('#queue',iconLabel(label+' · #'+next.job.issue+' · '+next.lane.label,'queue')),
-        el('p','meta',(next.lane.queue ? 'PC chain files' : 'Legacy listing')+' · '+dated(next.group.sourceAt || data.generatedAt))));
-    }
-    const laneList = el('section','inset',el('div','section-label',el('h2','kicker',iconLabel(offline() ? 'Last-known lanes' : 'PC lanes','lanes'))),
-      el('ul','list',...rest.map(lane=>row(lane))));
-    for (const lane of lanes()) {
-      for (const leftover of lane.leftovers || []) laneList.append(el('p','meta','Older '+lane.label+' record #'+leftover.job.issue+' · PC activity '+dated(leftover.lastActivityAt)));
-    }
-    if (lanes().some(lane=>lane.queue?.state==='unknown')) laneList.append(link('#queue','Queue unknown on some lanes · PC chain files'));
-    laneList.append(detail('Sources & version','now-sources',sourceRows()));
-    section.append(laneList);
-    return section;
+    const plans = el('section','inset',el('h2','section-label',iconLabel('Lane flight plans','lanes')),
+      ...lanes().map(lane=>flightCard(lane,'now')),
+      detail('Sources & version','now-sources',sourceRows()));
+    return el('section','',questions(),plans,crewStrip());
   }
+
 
   let from = 'now';
   function route() {
@@ -587,8 +631,8 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       if (tab===screen.tab) $('nav-'+tab).setAttribute('aria-current','page');
       else $('nav-'+tab).removeAttribute('aria-current');
     }
-    const count = lanes().reduce((total,lane)=>total+queueItems(lane).length,0);
-    $('queue-count').textContent = full() ? offline() ? 'Last known' : count+' listed' : '';
+    const count = lanes().reduce((total,lane)=>total+flightPlan(lane).waitingCount,0);
+    $('queue-count').textContent = !full() ? '' : lastKnown() ? 'Last known' : count ? count+' recorded waiting '+(count===1 ? 'job' : 'jobs') : '';
     const main = $('content');
     const expanded = new Set([...main.querySelectorAll('details[open]')].map(node=>node.dataset.keep));
     const active = document.activeElement;
@@ -602,11 +646,11 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     if (!full() && data?.pcSource) main.append(el('section','inset',detail('Sources & version','starting-sources',sourceRows())));
     if (navigated) {
       window.scrollTo(0,0);
-      const crew = screen.view==='crew' && screen.id ? $('crew-'+screen.id) : null;
-      const focus = crew || main.querySelector('h2') || main;
+      const target = screen.id && $(screen.view+'-'+screen.id);
+      const focus = target || main.querySelector('h2') || main;
       focus.tabIndex = -1;
       focus.focus({preventScroll:true});
-      if (crew) crew.scrollIntoView({block:'start'});
+      if (target) target.scrollIntoView({block:'start'});
     } else {
       for (const node of main.querySelectorAll('details')) node.open = expanded.has(node.dataset.keep);
       if (control) [...main.querySelectorAll('a,summary')].find(node=>(node.getAttribute('href') || node.closest('details')?.dataset.keep)===control)?.focus({preventScroll:true});

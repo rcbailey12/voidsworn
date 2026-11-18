@@ -1,0 +1,36 @@
+{
+  "source_commit": "abc615a0b0e29889e5f337cb343a6183c3a3c47f",
+  "source_dirty": true,
+  "source_diff_sha256": "be2152392b15c41853d388af23837923f68ac2a63d8b6061e8a338936962b64d",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-1118-running-pixel.png",
+  "date": "2026-11-18T03:10:11Z",
+  "sources": [
+    {
+      "source_commit": "abc615a0b0e29889e5f337cb343a6183c3a3c47f",
+      "source_dirty": true,
+      "source_diff_sha256": "be2152392b15c41853d388af23837923f68ac2a63d8b6061e8a338936962b64d",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "69408a94820e530d7023ed69944a22e0906e5f0e49edd88e0e99ca506d9b118d"
+  ],
+  "stamp_template_sha256": "69408a94820e530d7023ed69944a22e0906e5f0e49edd88e0e99ca506d9b118d",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "f1fb9c28fc86c29fc3c9e61838494d8a256f763f2f81038b134df8c513129e2e"
+}

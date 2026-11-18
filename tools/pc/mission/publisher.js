@@ -75,10 +75,9 @@ class Reader {
 }
 
 const {parseIssues, eventTime} = queue;
-function readChain(root, name, reader) {
+function readChain(root, name, reader, files = new Map(reader.dirs(root).filter(d=>d.isFile()).map(d=>[d.name.toLowerCase(),d.name]))) {
   const src = reader.read(path.join(root, name));
-  const entries = reader.dirs(root);
-  const batName = entries.find(d => d.isFile() && d.name.toLowerCase() === name.replace(/\.txt$/i, '.bat').toLowerCase())?.name;
+  const batName = files.get(name.toLowerCase().replace(/\.txt$/, '.bat'));
   const bat = batName ? reader.read(path.join(root, batName)) : {text:'',mtime:0,exists:false};
   return queue.parseChain({name, text:src.text, bat:bat.text, mtime:src.mtime, batMtime:bat.mtime,
     missingBat:!bat.exists, unreadable:src.unreadable || bat.unreadable});
@@ -120,11 +119,13 @@ function hasLocalUser(text) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   return new RegExp('(^|[^a-z0-9_])'+escaped+'($|[^a-z0-9_])','i').test(text);
 }
+function publicText(s) {
+  // Discard anything resembling a path, email, token or log dump.
+  if (typeof s !== 'string' || s.length > 240 || hasLocalUser(s) || /[\r\n]|[a-z]:[\\/]|\\\\|\/Users\/|\/home\/|@|(?:gh[pousr]_|github_pat_|sk-)[a-z0-9_]+|(?:token|password|secret|api[_ -]?key)\s*[:=]/i.test(s)) return null;
+  return s.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\u2014/g, '-').trim() || null;
+}
 function cleanTitle(s, issue) {
-  if (typeof s !== 'string' || !s.trim()) return `Issue #${issue} (title unavailable)`;
-  // Titles are job metadata; discard anything resembling a path, email, token or log dump.
-  if (s.length > 240 || hasLocalUser(s) || /[\r\n]|[a-z]:[\\/]|\\\\|\/Users\/|\/home\/|@|(?:gh[pousr]_|github_pat_|sk-)[a-z0-9_]+|(?:token|password|secret|api[_ -]?key)\s*[:=]/i.test(s)) return `Issue #${issue} (title withheld)`;
-  return s.trim().replace(/[\u0000-\u001f\u007f]/g, '').replace(/\u2014/g, '-');
+  return publicText(s) || `Issue #${issue} (title ${typeof s === 'string' && s.trim() ? 'withheld' : 'unavailable'})`;
 }
 
 function titleFromLog(text, issue) {
@@ -161,7 +162,8 @@ function jobInfo(folder, issue, seat, reader, byLocation = false, arm = seat) {
   const run = runId(status?.run), tagged = tags.length === 1 ? tags[0] : null;
   const branch = branchFor(issue,seat,arm);
   const foreignRunner = WORKHORSE_ARMS[seat] && (
-    status && (status.branch && status.branch !== branch || seat === 'openai' && (!run || status.branch !== branch) ||
+    seat === 'openai' && (!run || status.branch !== branch) ||
+    status && (status.branch && status.branch !== branch ||
       status.github?.seat && status.github.seat !== arm || status.github?.issue && Number(status.github.issue) !== issue) ||
     claims.some(m => +m[1] !== issue || m[2].toLowerCase() !== arm));
   const resultStartLine = result.text.split(/\r?\n/).find(l=>/^started\s/i.test(l));
@@ -234,7 +236,7 @@ function classify(info) {
   return {state:'unknown',reason:info.state.exists ? 'Runner status is unreadable or unrecognized.' : 'Runner status is missing; text cannot prove a checked finish.'};
 }
 
-function emptyGithub() { return { lastReadAt:null, lastAttemptAt:null, ok:false, coverageComplete:false, issues:[], pulls:[], needsRyan:[], crew:{}, sources:Object.fromEntries(Object.keys(SOURCE_INTERVAL_MS).map(n=>[n,sourceRecord(n)])), budget:null }; }
+function emptyGithub() { return { lastReadAt:null, lastAttemptAt:null, ok:false, coverageComplete:false, issues:[], pulls:[], needsRyan:[], crew:{}, reviews:[], sources:Object.fromEntries(Object.keys(SOURCE_INTERVAL_MS).map(n=>[n,sourceRecord(n)])), budget:null }; }
 const issueNumber = n => Number.isSafeInteger(n) && n > 0;
 const branchPattern = /^(?:codex|work|opus|muse)\/issue-\d+(?:-[a-z0-9_-]+)?$/i;
 function pictureLink(raw) {
@@ -248,12 +250,20 @@ function pictureLink(raw) {
       (u.hostname === 'github.com' && u.pathname.startsWith('/rcbailey12/voidsworn/') || u.hostname === 'raw.githubusercontent.com' && u.pathname.startsWith('/rcbailey12/voidsworn/')) ? u.href : null;
   } catch (_) { return null; }
 }
-function askRyan(body, number) {
-  let fence = false;
+function askRyan(body) {
+  let fence;
   for (const line of String(body || '').split(/\r?\n/)) {
-    if (/^\s*(```|~~~)/.test(line)) { fence = !fence; continue; }
-    const match = !fence && /^Ask Ryan: (.+?) \| Picture: (.+)$/.exec(line);
-    if (match) return { question:cleanTitle(match[1],number), picture:pictureLink(match[2]) };
+    const marker = /^\s*(`{3,}|~{3,})(.*)$/.exec(line);
+    if (marker) {
+      if (!fence) fence = marker[1];
+      else if (marker[1][0] === fence[0] && marker[1].length >= fence.length && !marker[2].trim()) fence = undefined;
+      continue;
+    }
+    const match = !fence && /^Ask Ryan:\s*(.*)$/.exec(line);
+    if (!match) continue;
+    const [raw, picture] = match[1].split(/\s*\|\s*Picture:\s*/, 2);
+    const question = publicText(raw);
+    if (question) return {question, picture:pictureLink(picture)};
   }
   return null;
 }
@@ -264,33 +274,43 @@ function githubData(issues, pulls, comments, previous, now) {
   // Standalone sanitizer: the paginated reader sets authoritative completeness per source.
   data.coverageComplete = issues.length < 100 || !!previous.coverageComplete && time(issues.at(-1)?.updated_at) <= time(previous.lastReadAt);
   data.issues = [...previous.issues]; data.pulls = [...previous.pulls]; data.crew = {...previous.crew};
+  data.reviews = [...(previous.reviews || [])];
   const put = (list, item, key) => { const index=list.findIndex(x=>x[key]===item[key]); if(index<0)list.push(item);else list[index]=item; };
   const record = (seat,at,action,number) => {
     if (time(at) && (!data.crew[seat] || time(at)>time(data.crew[seat].at))) data.crew[seat]={at:iso(time(at)),action,number,url:`${REPO}/${action==='Technical review recorded'?'issues':'pull'}/${number}`};
   };
   for (const issue of issues) {
     if (!issueNumber(issue.number) || issue.pull_request) continue;
-    const ask = issue.state === 'open' && Array.isArray(issue.labels) && issue.labels.some(l=>(typeof l==='string'?l:l?.name)==='ryan') ? askRyan(issue.body,issue.number) : null;
+    const needsRyan = issue.state === 'open' && Array.isArray(issue.labels) && issue.labels.some(l=>(typeof l==='string'?l:l?.name)==='ryan');
+    const ask = needsRyan ? askRyan(issue.body) || {question:null,picture:null} : null;
     put(data.issues,{number:issue.number,title:cleanTitle(issue.title,issue.number),state:issue.state === 'closed' ? 'closed' : issue.state === 'open' ? 'open' : 'unknown',updatedAt:iso(time(issue.updated_at)),ask},'number');
   }
   for (const pr of pulls) {
     if (!issueNumber(pr.number) || pr.base?.repo?.full_name !== 'rcbailey12/voidsworn') continue;
     const own = pr.head?.repo?.full_name === 'rcbailey12/voidsworn', branch = own && pr.head?.ref;
-    const state = pr.merged_at ? 'merged' : pr.state === 'open' ? 'open' : 'closed';
-    if (branchPattern.test(branch)) put(data.pulls,{number:pr.number,branch,state,updatedAt:iso(time(pr.updated_at)),url:`${REPO}/pull/${pr.number}`},'number');
-    if (own && /^opus\//.test(branch)) record('claude',pr.updated_at,'Branch update recorded',pr.number);
-    if (own && /^muse\//.test(branch)) record('muse',pr.updated_at,pr.merged_at?'Merged PR recorded':'Branch update recorded',pr.number);
-    if (own && /^work\/issue-\d+-openai$/i.test(branch)) record('openai',pr.updated_at,pr.merged_at?'Merged PR recorded':'Branch update recorded',pr.number);
-    // A merge commit is visible in this read. Direct Board commits are not exposed by these three endpoints.
-    if (pr.merged_at && /^[a-f0-9]{40}$/i.test(pr.merge_commit_sha || '')) record('claude',pr.merged_at,'Board merge commit recorded',pr.number);
+    const state = pr.merged_at ? 'merged' : ['open','closed'].includes(pr.state) ? pr.state : null;
+    if (branchPattern.test(branch)) put(data.pulls,{number:pr.number,branch,state,head:sha(pr.head.sha),updatedAt:iso(time(pr.updated_at)),url:`${REPO}/pull/${pr.number}`},'number');
+    if (own && /^opus\//i.test(branch)) record('claude',pr.updated_at,'PR activity recorded',pr.number);
+    if (own && /^muse\//i.test(branch)) record('muse',pr.updated_at,'PR activity recorded',pr.number);
+    if (own && /^work\/issue-\d+-openai$/i.test(branch)) record('openai',pr.updated_at,'PR activity recorded',pr.number);
   }
   for (const comment of comments) {
     const m = /^https:\/\/api\.github\.com\/repos\/rcbailey12\/voidsworn\/issues\/(\d+)$/.exec(comment.issue_url || '');
-    if (m && String(comment.body || '').startsWith('Artoo (technical review):')) record('artoo',comment.updated_at,'Technical review recorded',+m[1]);
+    const body = String(comment.body || '');
+    if (!m || !issueNumber(comment.id)) continue;
+    const revision = body.startsWith('Artoo (technical review):') && /\b(?:commit|head|sha)\s*(?:[:=]|is)?\s*`?([a-f0-9]{7,40})\b/i.exec(body)?.[1]?.toLowerCase();
+    const review = {id:comment.id,number:+m[1],revision:revision || null,at:iso(time(comment.updated_at))};
+    data.reviews = data.reviews.filter(r=>r.id!==comment.id);
+    if (body.startsWith('Artoo (technical review):')) {
+      record('artoo',comment.updated_at,'Technical review recorded',+m[1]);
+      if (revision) data.reviews.push(review);
+    }
   }
   data.issues.sort((a,b)=>time(b.updatedAt)-time(a.updatedAt)); data.pulls.sort((a,b)=>time(b.updatedAt)-time(a.updatedAt));
   // Retain marked questions even when they fall outside the latest update window.
   data.issues = data.issues.filter((x,i)=>i<500 || x.ask); data.pulls = data.pulls.slice(0,500);
+  data.reviews.sort((a,b)=>time(b.at)-time(a.at));
+  data.reviews = data.reviews.slice(0,500);
   data.needsRyan = data.issues.filter(x=>x.ask).map(x=>({issue:x.number,title:x.title,url:`${REPO}/issues/${x.number}`,updatedAt:x.updatedAt,...x.ask}));
   return data;
 }
@@ -299,7 +319,11 @@ function enrichJob(job, github) {
   if (issue) { job.githubState = issue.state || 'unknown'; if (issue.state === 'closed') job.note = 'closed on GitHub; the chain still lists it'; }
   if (issue && /\(title (?:unavailable|withheld)\)$/.test(job.title)) job.title=issue.title;
   const pr=github.pulls.filter(x=>x.branch===job.branch).sort((a,b)=>time(b.updatedAt)-time(a.updatedAt))[0];
-  if(pr){job.prState=pr.state;job.prNumber=pr.number;job.prUrl=pr.url;}
+  if (pr) {
+    job.prState=pr.state; job.prNumber=pr.number; job.prUrl=pr.url; job.prUpdatedAt=pr.updatedAt;
+    const review = pr.head && github.reviews?.find(r=>r.number===pr.number && pr.head.startsWith(r.revision));
+    if (review) job.prReviewAt = review.at;
+  }
 }
 class GithubReadError extends Error {}
 class GithubReader {
@@ -413,6 +437,12 @@ function buildHash(base = __dirname) {
   }
   return hash.digest('hex');
 }
+function buildSourceAt(base = __dirname) {
+  const times = RUNTIME_FILES.filter(name=>name!=='build.json').map(name=>{
+    try { return fs.statSync(path.resolve(base,name)).mtimeMs; } catch (_) { return 0; }
+  });
+  return times.every(Boolean) ? iso(Math.max(...times)) : null;
+}
 function git(repo, args) {
   const r = spawnSync('git',['--no-optional-locks','-C',repo,...args],{encoding:'utf8',windowsHide:true,timeout:5000,maxBuffer:2*1024*1024,env:{...process.env,GIT_TERMINAL_PROMPT:'0'}});
   return r.status === 0 ? r.stdout.trim() : '';
@@ -422,8 +452,11 @@ function sourceRevision() {
 }
 // Captured during module load, before the first scan. Disk checks never replace the loaded hash.
 const LOADED_BUILD = !isMainThread && workerData?.missionScan ? workerData.build :
-  {id:buildHash(),startedAt:iso(Date.now()),sourceRevision:sourceRevision()};
-function buildInfo(loaded = LOADED_BUILD, base = __dirname) { const diskId=buildHash(base); return {...loaded,diskId,stale:diskId!==loaded.id}; }
+  {id:buildHash(),startedAt:iso(Date.now()),sourceRevision:sourceRevision(),sourceAt:buildSourceAt()};
+function buildInfo(loaded = LOADED_BUILD, base = __dirname) {
+  const diskId=buildHash(base), diskSourceAt=buildSourceAt(base);
+  return {...loaded,diskId,diskSourceAt,stale:diskId!==loaded.id};
+}
 const PICTURE_TYPES = {'.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'};
 const PICTURE_LIMIT = 3*1024*1024;
 const STAMP_LIMIT = 512*1024;
@@ -504,42 +537,56 @@ function pictureIndex(repo, info, reader, gitRead = git) {
 
 function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyGithub()) {
   reader.errors.clear();
-  const chains = queue.resolveQueue(reader.dirs(root,true).filter(d=>d.isFile() && lanePattern.test(d.name)).map(d=>readChain(root,d.name,reader)),now);
-  const jobFor = (issue, jobs) => jobs.find(j=>j.issue===issue)?.job || {issue,title:cleanTitle(null,issue),url:REPO+'/issues/'+issue};
+  const files = new Map(reader.dirs(root,true).filter(d=>d.isFile()).map(d=>[d.name.toLowerCase(),d.name]));
+  const chains = queue.resolveQueue([...files.values()].filter(name=>lanePattern.test(name)).map(name=>readChain(root,name,reader,files)),now);
+  const jobsBySeat = new Map(SEATS.map(seat=>[seat[0],readJobs(root,seat,reader).sort((a,b)=>(b.started || b.updated)-(a.started || a.updated))]));
+  const jobFor = (issue, jobs, seat) => jobs.find(j=>j.issue===issue)?.job || {issue,title:cleanTitle(null,issue),branch:branchFor(issue,seat),url:REPO+'/issues/'+issue};
   const lanes = SEATS.map(seat => {
-    const own = chains.filter(c=>c.id===seat[0]), jobs = readJobs(root,seat,reader).sort((a,b)=>(b.started || b.updated)-(a.started || a.updated));
-    const active = own.filter(c=>c.state==='started');
-    const recorded = active.filter(c=>c.current).sort((a,b)=>b.currentAt-a.currentAt);
-    // A newer own start proves the lane's latest assignment, without cancelling any older queue.
-    const live = recorded.filter(c=>c.currentAt===recorded[0]?.currentAt);
-    const chain = live.length===1 ? live[0] : live.length>1 ? null : active.sort((a,b)=>b.currentAt-a.currentAt)[0] || own.filter(c=>c.lastIssue).sort((a,b)=>b.currentAt-a.currentAt)[0];
+    const id = seat[0], own = chains.filter(c=>c.id===id), jobs = jobsBySeat.get(id);
+    const recorded = own.filter(c=>c.current || c.lastIssue).sort((a,b)=>b.currentAt-a.currentAt);
+    const newest = recorded.filter(c=>c.currentAt===recorded[0]?.currentAt);
+    // A newer own start proves the lane's latest assignment, without cancelling older records.
+    const chain = newest.length===1 ? newest[0] : null;
     const issue = chain?.current || chain?.lastIssue;
-    let info = issue ? jobs.find(j=>j.issue===issue) : live.length>1 ? null : jobs[0];
-    if (chain && info?.started && info.started < chain.currentAt-2000) info = null;
+    let info = issue ? jobs.find(j=>j.issue===issue) : newest.length>1 ? null : jobs[0];
+    if (chain && info?.started && info.started < chain.currentAt-2000 && !info.conflict) info = null;
     const verdict = classify(info), warnings = [];
-    if (live.length>1) { verdict.state='unknown'; verdict.reason='Several chains name current jobs; no single current job is proved.'; }
+    if (newest.length>1) { verdict.state='unknown'; verdict.reason='Several chains record starts at the same time; the current job is unknown.'; }
     const started = info?.started || chain?.currentAt || 0;
-    const current = live.length>1 ? null : info?.job || (issue ? jobFor(issue,jobs) : null);
-    const pictures = pictureIndex(path.join(root,seat[2],'repo'),info,reader);
+    const current = newest.length>1 ? null : info?.job || (issue ? jobFor(issue,jobs,id) : null);
+    const checkout = info?.byLocation && info.run ? path.join(info.folder,'..','repo') : path.join(root,seat[2],'repo');
+    const pictures = WORKHORSE_ARMS[id] && !info?.run ? [] : pictureIndex(checkout,info,reader);
     const activity = maxTime(info?.activity, ...pictures.filter(p=>p.association==='this run' && time(p.writtenAt)>started).map(p=>time(p.writtenAt)));
     const stopped = chain && ['cancelled','paused'].includes(chain.state);
-    if (stopped && verdict.state==='running') { verdict.state='unknown'; verdict.reason='The Board stopped this chain; its runner state is last known.'; }
+    if (stopped && ['running','waiting','unknown'].includes(verdict.state)) { verdict.state='blocked'; verdict.reason=`The Board ${chain.state} this chain.`; }
     const stale = !!(current && !stopped && ['running','waiting'].includes(verdict.state) && started && now-(activity || started)>=STALE_SECONDS*1000);
     if (stale) { verdict.state='quiet'; verdict.reason='quiet '+Math.floor((now-(activity || started))/60000)+' min, process not confirmed'; }
     const claimOld = !!(current && !info?.status && started && now-started>CLAIM_SECONDS*1000);
-    if (current && !info) verdict.reason=claimOld ? 'Claim not confirmed; no matching runner status after 10 minutes.' : 'Claimed, not started; no matching runner status.';
-    const groups = own.filter(c=>['started','linked','starting','stuck','unknown'].includes(c.state)).map(c=>({
-      chain:c.name,state:c.state,reason:c.reason,after:c.targets.length===1 ? c.targets[0] : null,targets:c.targets,
-      waitSource:c.waitSource,sourceAt:iso(maxTime(c.mtime,c.batMtime)),readyAt:iso(c.readyAt),amber:!!c.amber,notes:c.notes,
-      jobs:(c.state==='started' ? c.issues.slice(c.cursor+(c.current ? 1 : 0)) : c.issues).map(n=>({...jobFor(n,jobs)}))}));
+    if (current && !info && !stopped) verdict.reason=chain?.state==='ended' ? 'The chain ended without a matching runner result.' :
+      claimOld ? 'Claim not confirmed; no matching runner status after 10 minutes.' : 'Claimed, not started; no matching runner status.';
     const unknown = own.filter(c=>c.state==='unknown' || c.state==='started' && (c.missingBat || c.unreadable));
     for (const c of unknown) c.reason ||= c.missingBat ? 'chain script missing' : 'source unreadable';
+    const groups = own.filter(c=>['started','linked','starting','stuck','unknown'].includes(c.state)).map(c=>{
+      const afterIssue = c.state==='started' ? c.current || c.lastIssue : c.predecessorIssue;
+      const afterSeat = c.predecessor && c.state!=='started' ? queue.laneId(c.predecessor) : id;
+      const prior = jobsBySeat.get(afterSeat).find(j=>j.issue===afterIssue);
+      const old = stamp => stamp && now-stamp >= STALE_SECONDS*1000;
+      const oldEnding = c.state==='started' && old(c===chain ? maxTime(activity,c.mtime) : c.mtime);
+      const oldPredecessor = c.state==='linked' && old(maxTime(c.predecessorAt,prior?.activity));
+      return {chain:c.name,state:unknown.includes(c) ? 'unknown' : c.state,reason:c.reason,
+        after:c.predecessor || (c.waitTargets.length===1 ? c.waitTargets[0] : null),targets:c.waitTargets,
+        predecessor:afterIssue ? {...jobFor(afterIssue,jobsBySeat.get(afterSeat),afterSeat)} : null,predecessorAt:iso(maxTime(c.predecessorAt,prior?.activity)),
+        waitSource:c.waitSource,sourceAt:iso(maxTime(c.mtime,c.batMtime)),readyAt:iso(c.readyAt),amber:!!c.amber,notes:c.notes,
+        blockedByPredecessor:!!c.blockedByPredecessor,
+        attention:c.blockedByPredecessor ? 'The predecessor is also blocked.' : oldEnding ? 'Old chain has no recorded ending.' :
+          oldPredecessor ? 'Old predecessor chain has no recorded ending.' : null,
+        jobs:(c.state==='started' ? c.issues.slice(c.cursor+(c.current ? 1 : 0)) : c.issues).map(n=>({...jobFor(n,jobs,id)}))};
+    });
     const queueState = unknown.length ? 'unknown' : 'known';
     if (recorded.length>1) warnings.push('Earlier chain start records remain listed; the latest own start is the current assignment.');
     if (unknown.length) warnings.push('queue unknown: '+[...new Set(unknown.map(c=>c.reason))].join('; '));
     if (own.some(c=>c.unreadable || c.missingBat)) warnings.push('A chain source is missing or unreadable.');
-    if (!current && groups.some(c=>['linked','starting','stuck'].includes(c.state)) && live.length<2) { verdict.state='waiting'; verdict.reason='Chain assignment is recorded; a running process is not confirmed.'; }
-    if (!own.length && !info) warnings.push('No lane feed found.');
+    if (!current && !own.length && !info) { warnings.push('No lane feed found.'); verdict.reason='No local run or chain has been observed.'; }
     const leftovers = jobs.filter(j=>j!==info && j.status?.status==='running' && j.activity && now-j.activity>=STALE_SECONDS*1000).map(j=>({job:j.job,lastActivityAt:iso(j.activity)}));
     // Legacy Next is a listing only. Groups retain the actual partial order and every branch.
     const next = groups.flatMap(g=>g.jobs.map(j=>({...j,chain:g.chain,queueState:g.state}))).filter(j=>j.issue!==current?.issue);
@@ -552,11 +599,9 @@ function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyG
         history:own.filter(c=>['ended','cancelled','paused','superseded'].includes(c.state)).map(c=>({chain:c.name,state:c.state,reason:c.reason,endedAt:iso(c.endedAt),sourceAt:iso(maxTime(c.mtime,c.batMtime))}))},
       pictures,evidence:info?.evidence || [],source:{lanes:own.map(c=>c.name),runner:info ? seat[1]+' runner, issue #'+info.issue : null,files:info?.files || [],updatedAt:iso(sourceAt),refreshedAt:iso(now)},warnings};
   });
-  for (const lane of lanes) for (const job of [lane.current,...lane.next,...lane.queue.groups.flatMap(g=>g.jobs),...lane.leftovers.map(x=>x.job)].filter(Boolean)) {
-    job.branch ||= lane.id==='deepseek' ? 'work/issue-'+job.issue+'-deepseek' : 'codex/issue-'+job.issue;
-    enrichJob(job,github);
-  }
-  const publicGithub = {...github,sources:Object.fromEntries(Object.entries(github.sources || {}).map(([name,record])=>[name,{...record,stale:!record.lastSuccessfulReadAt || now-time(record.lastSuccessfulReadAt)>record.intervalSeconds*2000}]))};
+  for (const lane of lanes) for (const job of [lane.current,...lane.next,...lane.queue.groups.flatMap(g=>[g.predecessor,...g.jobs]),...lane.leftovers.map(x=>x.job)].filter(Boolean)) enrichJob(job,github);
+  const {reviews, ...summary} = github;
+  const publicGithub = {...summary,sources:Object.fromEntries(Object.entries(github.sources || {}).map(([name,record])=>[name,{...record,stale:!record.lastSuccessfulReadAt || now-time(record.lastSuccessfulReadAt)>record.intervalSeconds*2000}]))};
   if (chains.some(c=>c.missingBat && !['ended','cancelled','paused','superseded'].includes(c.state))) reader.errors.add('Chain script missing');
   const complete = reader.errors.size===0;
   if (complete) reader.lastSuccessfulReadAt = iso(now);
@@ -747,7 +792,7 @@ function serve(opts, discover = tailscale.discover, githubReader = new GithubRea
   return server;
 }
 
-module.exports = { Reader, GithubReader, emptyGithub, githubData, cleanTitle, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, jobInfo, readJobs, readChain, pictureIndex, buildHash, buildInfo, ASSETS, RUNTIME_FILES, writeSnapshot, options, serve, allowedHost, servePicture };
+module.exports = { Reader, GithubReader, emptyGithub, githubData, cleanTitle, SEATS, parseIssues, eventTime, safeReason, snapshot, classify, jobInfo, readJobs, readChain, pictureIndex, buildHash, buildSourceAt, buildInfo, ASSETS, RUNTIME_FILES, writeSnapshot, options, serve, allowedHost, servePicture };
 if (!isMainThread && workerData?.missionScan) scanInWorker();
 else if (require.main === module) {
   const failed = () => { console.error('Mission control could not start or write its local snapshot. Check the port and folder access.'); process.exitCode = 1; };

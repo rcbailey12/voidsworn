@@ -27,18 +27,20 @@ function makeCases(base) {
   const now = Date.parse(deck.now), minute = 60000, repo = path.resolve(__dirname,'../../..');
   const nowText = timestamp => new Date(timestamp).toTimeString().slice(0,8);
   const raw = require('./fixtures/github.json');
+  const flight = require('./fixtures/flight_plan.json');
   const sourceNames = ['questions','issues','pulls','comments'];
   const outageCases = sourceNames.map(name=>'github-'+name);
-  const values = ['overview','task','decision','failure','offline','unknown','no-picture','missing-picture','queue','crew',
+  const values = ['overview','task','decision','failure','offline','unknown','no-picture','missing-picture','queue','queue-photo','crew',
     'blocked','quiet','checked-push','ended','leftover','claim','claim-old','github-unread','legacy','no-build','old-build',
-    'starting','long-title','privacy','legacy-listing','pr-only','pc-partial',...outageCases];
+    'starting','long-title','privacy','legacy-listing','pr-only','pr-merged','pr-closed','review','needs-ryan','question-partial',
+    'pc-partial',...outageCases];
   const cases = {};
   for (const name of values) {
     const root = path.join(base,'display-'+name);
     const put = (file,contents,at=now-minute) => write(path.join(root,file),contents,at);
-    function chainFile(file, log, issues, at = now-minute) {
+    function chainFile(file, log, issues, at = now-minute, bat = '') {
       put(file+'.txt',log,at);
-      put(file+'.bat','for %%N in ('+issues.join(' ')+') do call :one %%N',at);
+      put(file+'.bat','for %%N in ('+issues.join(' ')+') do call :one %%N\n'+bat,at);
     }
     function runner(folder, issue, title, state, start, reason = '', last = now-minute) {
       const prefix = folder+'/issue-'+issue+'/';
@@ -51,27 +53,34 @@ function makeCases(base) {
       const destination = folder+'/repo/'+file;
       const stamp = JSON.parse(fs.readFileSync(original+'.provenance.json','utf8'));
       put(destination,fs.readFileSync(original));
-      put(destination+'.provenance.json',JSON.stringify({...stamp,issue,decisionOption}));
+      put(destination+'.provenance.json',JSON.stringify({...stamp,issue,decisionOption,
+        ...(key==='hero' ? {date:iso(now-4*minute),run:RUN} : {})}));
     }
     const start = Date.parse('2026-11-17T10:21:00Z'), claimStart = now-(name==='claim-old' ? 11 : 9)*minute;
     const chainStart = name.startsWith('claim') ? claimStart : start;
-    const chainLog = '970 start '+nowText(chainStart)+(name==='queue' ? '\n970 end '+nowText(now-40*minute)+'\nall done '+nowText(now-40*minute) : '');
-    chainFile('codex_chain_fixture',chainLog,[970,982],chainStart);
+    const chainEnd = name==='queue' ? now-40*minute : name==='queue-photo' ? now-2*minute : null;
+    const chainLog = '970 start '+nowText(chainStart)+(chainEnd ? '\n970 end '+nowText(chainEnd)+'\nall done '+nowText(chainEnd) : '');
+    chainFile('codex_chain_fixture',chainLog,[970],chainEnd || chainStart);
     for (const [file,log,list] of [
-      ['codex_chain_next','waiting for codex_chain_fixture.txt',[982,923]],
-      ['codex_chain_split','waiting for codex_chain_fixture.txt',[921]],
+      ['codex_chain_next','waiting for codex_chain_fixture.txt',name==='queue-photo' ? [923] : [982,923]],
       ['codex_lane_b25','waiting for codex_chain_fixture.txt\ncancelled by the Board',[922]],
       ['codex_lane_d11','waiting for codex_chain_fixture.txt',[984]]
     ]) chainFile(file,log,list);
-    if (name==='queue') chainFile('codex_lane_d12','waiting for codex_lane_b25.txt',[985]);
-    if (name==='queue' || name==='unknown') chainFile('codex_lane_d13','waiting for codex_lane_d99.txt',[986]);
+    if (name==='queue') {
+      chainFile('codex_chain_other','920 start '+nowText(now-70*minute),[920],now-70*minute);
+      for (const {file,target,issues,alternative} of flight.chains) {
+        const command = target => 'findstr /c:"all done" "%V%\\'+target+'" >nul';
+        chainFile(file,'waiting for '+target,issues,now-minute,alternative ? [command(target),command(alternative)].join('\n') : command(target));
+      }
+    }
+    if (name==='unknown') chainFile('codex_chain_unclear','waiting for codex_chain_missing.txt',[988]);
     const title = name==='long-title' ? 'L'.repeat(240) : name==='privacy' ?
       (process.env.USERNAME || 'PrivatePerson')+' C:\\Users\\PrivatePerson\\log.txt' : 'Iron Mandate: bow ion gun';
     if (name==='unknown') {
       put('board/issue-970/status.json','{broken');
       put('board/issue-970/log.txt','Codex job: issue #970, "Iron Mandate: bow ion gun"');
     } else if (!name.startsWith('claim')) {
-      runner('board',970,title,['checked-push','queue'].includes(name) ? 'checked_push' : 'running',start);
+      runner('board',970,title,['checked-push','queue','queue-photo'].includes(name) ? 'checked_push' : 'running',start);
     }
     if (name==='failure') {
       runner('board_b',928,'Hull hit redo', 'failed', now-18*minute,'runner exit 8',now-10*minute);
@@ -99,12 +108,19 @@ function makeCases(base) {
       put('work217/issue-916-deepseek/20261117_120000/out/status.json',
         JSON.stringify({title:'Stage 5 self-test repair',run:RUN,status:'running',started:iso(now-15*minute)}),now-2*minute);
     }
+    if (name==='crew') {
+      put('work217/issue-916-openai/latest.txt','20261117_130000');
+      put('work217/issue-916-openai/20261117_130000/out/status.json',JSON.stringify({title:'OpenAI workhorse patch',
+        branch:'work/issue-916-openai',run:OLD,status:'running',started:iso(now-10*minute)}),now-minute);
+    }
     const issues = raw.issues.filter(issue=>issue.number!==855 && issue.number!==929).concat(
-      {number:982,title:'Measure storm map cost at 4K',state:'closed',updated_at:iso(now-20*minute)},
+      {number:982,title:'Measure storm map cost at 4K',state:name==='queue' ? 'closed' : 'open',updated_at:iso(now-20*minute)},
       {number:970,title:'Iron Mandate: bow ion gun',state:'open',updated_at:iso(now-20*minute)},
       {number:929,title:'Shield hit look',state:'open',labels:name==='decision' ? ['ryan'] : [],
         updated_at:iso(now-41*minute),body:'Ask Ryan: Keep the egg shield as the default, or switch to the fitted skin? | Picture: https://github.com/rcbailey12/voidsworn/issues/929'}
     );
+    for (const [number,title] of Object.entries(flight.titles)) issues.push({number:+number,title,state:'open',updated_at:iso(now-minute)});
+    if (['needs-ryan','question-partial'].includes(name)) for (const ask of flight.questions) issues.push({...ask,updated_at:iso(now-6*minute)});
     if (name==='privacy') {
       issues.find(issue=>issue.number===970).title = (process.env.USERNAME || 'PrivatePerson')+' C:\\Users\\PrivatePerson\\status.json';
       const folder = 'board/issue-970/';
@@ -113,14 +129,21 @@ function makeCases(base) {
       put(folder+'log.txt','RAW-LOG-SENTINEL');
     }
     const fixturePull = (number,ref) => ({...raw.pulls[1],number,updated_at:iso(now-4*minute),head:{...raw.pulls[1].head,ref}});
-    const github = p.githubData(issues,[...raw.pulls,fixturePull(1008,'codex/issue-970'),fixturePull(1005,'work/issue-1005-openai')],raw.comments,p.emptyGithub(),now);
+    const pr = fixturePull(1008,'codex/issue-970');
+    pr.head.sha = 'b'.repeat(40);
+    if (['pr-merged','pr-closed'].includes(name)) pr.state = 'closed';
+    if (name==='pr-merged') pr.merged_at = iso(now-2*minute);
+    const comments = [...raw.comments];
+    if (name==='review') comments.push({id:999,issue_url:'https://api.github.com/repos/rcbailey12/voidsworn/issues/1008',
+      body:'Artoo (technical review): read commit bbbbbbbbbbbb.',updated_at:iso(now-minute)});
+    const github = p.githubData(issues,[...raw.pulls,pr,fixturePull(1005,'work/issue-1005-openai')],comments,p.emptyGithub(),now);
     for (const source of sourceNames) {
-      const incomplete = name==='github-'+source;
+      const incomplete = name==='github-'+source || name==='question-partial' && source==='questions';
       Object.assign(github.sources[source],{
         complete:!incomplete,
         lastSuccessfulReadAt:iso(now-minute*(incomplete ? 65 : 3)),
         lastAttemptAt:iso(now-3*minute),nextAttemptAt:iso(now+7*minute),
-        reason:incomplete ? 'GitHub returned HTTP '+(501+sourceNames.indexOf(source)) : null
+        reason:incomplete ? name==='question-partial' ? 'Read incomplete: shared GitHub budget paused' : 'GitHub returned HTTP '+(501+sourceNames.indexOf(source)) : null
       });
     }
     github.lastReadAt = iso(now-3*minute);
@@ -134,7 +157,7 @@ function makeCases(base) {
     let data = p.snapshot(root,now,reader,name==='github-unread' ? p.emptyGithub() : github);
     if (name==='legacy-listing') {
       for (const lane of data.lanes) { delete lane.queue; lane.next = []; }
-      data.lanes[0].next = [{issue:922}];
+      data.lanes[0].next = [{issue:922,title:'Old station frame listing'}];
     }
     if (name==='legacy') {
       data.schemaVersion = 1;
@@ -180,13 +203,13 @@ async function test(){
     c=q.resolveQueue([pred,waiter()],NOW+38*60000)[1];assert.equal(c.state,'starting');assert(c.amber);assert.match(c.reason,/40 min.*window may be closed/);
   });
   check('all done releases a successor even after failing checks',()=>assert.equal(resolve({...pred,runnerResult:'failed'},waiter())[1].state,'starting'));
-  check('cancelled and paused predecessors leave waiters stuck',()=>{for(const terminal of ['cancelled','paused']){const c=resolve({...pred,terminal},waiter())[1];assert.equal(c.state,'stuck');assert.equal(c.reason,'waits on a cancelled chain');}});
+  check('cancelled and paused predecessors leave waiters stuck',()=>{for(const terminal of ['cancelled','paused']){const c=resolve({...pred,terminal},waiter())[1];assert.equal(c.state,'stuck');assert.equal(c.reason,'waits on a '+terminal+' chain');}});
   check('zero and multiple matching targets are unknown',()=>{assert.equal(resolve(waiter())[0].reason,'target not found');assert.equal(resolve(pred,{...pred},waiter())[2].reason,'target ambiguous');});
   check('two-chain cycle and its dependent stay unknown for this resolution',()=>{
     const a=waiter('codex_chain_a.txt','codex_chain_b.txt'),b=waiter('codex_chain_b.txt','codex_chain_a.txt'),c=waiter('codex_chain_c.txt','codex_chain_a.txt');
     for(const x of resolve(a,b,c)){assert.equal(x.state,'unknown');assert.equal(x.reason,'cycle');}
   });
-  check('two waiters stay separate with their branching note',()=>{const cs=resolve(pred,waiter(),waiter('codex_chain_h.txt'));assert(cs.slice(1).every(c=>c.notes[0]==='2 chains wait on codex_chain_16f.txt'));});
+  check('two waiters stay separate with their branching note',()=>{const cs=resolve(pred,waiter(),waiter('codex_chain_h.txt'));assert(cs.slice(1).every(c=>c.notes[0]==='2 chains share this predecessor; their order is unverified'));});
   check('old lane, old chain and exact-file targets, with bat Path winning',()=>{
     for(const [word,file] of [['lane C32','codex_lane_c32.txt'],['chain 16F','codex_chain_16f.txt'],['codex_lane_c32.txt','codex_lane_c32.txt']])assert.equal(waiter('codex_chain_x.txt',word).waitTargets[0],file);
     const bat="powershell -Command \"while(-not (Select-String -Quiet -Path ($env:USERPROFILE+'\\Downloads\\voidsworn_test\\codex_lane_c32.txt') -Pattern 'all done')){Start-Sleep 60}\"";
@@ -198,6 +221,12 @@ async function test(){
     assert.equal(resolve(pred,{...a,supersededBy:b.name})[1].state,'superseded');assert.equal(resolve(pred,a,{...b,id:'b',replaces:[a.name]})[1].state,'starting');
   });
   check('DeepSeek has an own issue start without a waiting line',()=>{const c=resolve(chain('ds_15v.txt','983 start Tue 11/17/2026 9:37:25\n',[983]))[0];assert.equal(c.state,'started');assert.equal(c.current,983);});
+  check('OpenAI findstr wait names the actual predecessor and keeps the OpenAI lane',()=>{
+    const first=chain('oa_1005b.txt','1 start 16:00:00\n1 end 16:28:00\nall done 16:28:00',[1]);
+    const next=chain('oa_1021.txt','waiting for oa_1005b',[2],'findstr /c:"all done" "%V%\\oa_1005b.txt" >nul');
+    const c=resolve(first,next)[1];
+    assert.equal(c.id,'openai');assert.equal(c.state,'starting');assert.equal(c.predecessorIssue,1);assert.equal(c.waitSource,'bat findstr');
+  });
   const root=path.join(base,'real'),real=nov17(root),before=fingerprints(root);
   check('Nov 17 real files: main 982, B 975, C 985, D 984 and no phantom Next',()=>{
     for(const [id,issue] of [['main',982],['b',975],['c',985],['d',984],['deepseek',983]]){const row=lane(real.snapshot,id);assert.equal(row.current.issue,issue,id);assert.equal(row.state,'running',id);assert.deepEqual(row.next,[],id);}
@@ -207,6 +236,45 @@ async function test(){
     const r=path.join(base,'closed');write(path.join(r,'codex_chain_a.txt'),'waiting for chain missing');write(path.join(r,'codex_chain_a.bat'),'for %%N in (2) do call :one %%N');
     const g=p.githubData([{number:2,title:'Closed job',state:'closed'}],[],[],p.emptyGithub(),NOW),row=lane(p.snapshot(r,NOW,new p.Reader(),g),'main');
     assert.equal(row.queue.label,'queue unknown');assert.equal(row.next[0].githubState,'closed');assert.match(row.next[0].note,/chain still lists it/);
+  });
+  check('independent chains keep distinct predecessors beside an unknown chain on the same lane',()=>{
+    const r=path.join(base,'mixed');
+    for (const [name,log,issues] of [['root','1 start 16:20:00',[1,2]],['other','3 start 16:20:00',[3]],
+      ['first','waiting for chain root',[4]],['second','waiting for chain other',[5]],['missing','waiting for chain missing_target',[6]]]) {
+      write(path.join(r,`codex_chain_${name}.txt`),log);
+      write(path.join(r,`codex_chain_${name}.bat`),'for %%N in ('+issues.join(' ')+') do call :one %%N');
+    }
+    const row=lane(p.snapshot(r,NOW),'main'), group=issue=>row.queue.groups.find(g=>g.jobs.some(j=>j.issue===issue));
+    assert.equal(row.queue.state,'unknown');
+    assert.equal(group(2).state,'started');assert.equal(group(2).predecessor.issue,1);
+    assert.equal(group(4).state,'linked');assert.equal(group(4).predecessor.issue,2);
+    assert.equal(group(5).predecessor.issue,3);assert.equal(group(5).notes.length,0);
+    assert.equal(group(6).reason,'target not found');assert.equal(group(6).after,'codex_chain_missing_target.txt');
+    assert.match(row.reason,/same time/);
+  });
+  check('OpenAI and both DeepSeek folder arms stay isolated even for the same issue',()=>{
+    const root=path.join(base,'seats'), stamp='20261116_160000';
+    const placed = (arm, branchArm, run, result='agent running') => {
+      const job=path.join(root,`work217/issue-37-${arm}`);
+      write(path.join(job,'latest.txt'),stamp);
+      write(path.join(job,stamp,'out/status.json'),JSON.stringify({run,title:'Run for '+branchArm,status:'running',
+        started:iso(NOW-60000),branch:'work/issue-37-'+branchArm}));
+      write(path.join(job,stamp,'out/result.txt'),result);
+    };
+    placed('deepseek','deepseek',RUN); placed('openai','openai',OLD);
+    let snap=p.snapshot(root,NOW);
+    assert.equal(lane(snap,'openai').current.branch,'work/issue-37-openai');assert.equal(lane(snap,'openai').state,'running');
+    assert.equal(lane(snap,'deepseek').current.branch,'work/issue-37-deepseek');assert.equal(lane(snap,'deepseek').state,'running');
+    placed('openai','deepseek',RUN);
+    snap=p.snapshot(root,NOW);
+    assert.equal(lane(snap,'openai').state,'unknown');assert.equal(lane(snap,'openai').run,null);
+    placed('openai','openai',OLD,'job claimed: issue #37 by deepseek, run '+OLD);
+    assert.equal(lane(p.snapshot(root,NOW),'openai').state,'unknown');
+    placed('deepseek','openai',OLD);
+    assert.equal(lane(p.snapshot(root,NOW),'deepseek').state,'unknown');
+    placed('deepseekpro','deepseekpro',RUN);
+    const pro=p.readJobs(root,p.SEATS.find(([id])=>id==='deepseek'),new p.Reader()).find(j=>j.job.branch.endsWith('-deepseekpro'));
+    assert.equal(p.classify(pro).state,'running');
   });
   const out=path.join(base,'run');
   const status=(extra={})=>write(path.join(out,'status.json'),JSON.stringify({run:RUN,status:'running',started:iso(NOW-60000),...extra}),NOW-50000);
@@ -334,7 +402,7 @@ async function test(){
     assert.match(deploy,/rev-parse HEAD[\s\S]+build\.json[\s\S]+id:p\.buildHash\(\), assets:p\.ASSETS/);
     assert.match(deploy,/-WindowStyle Hidden/);
     assert.match(deploy,/GetAsync\("http:\/\/127\.0\.0\.1:\$Port\$Route"[\s\S]+Get-LocalResponse '\/status\.json'/);
-    assert.match(deploy,/AddSeconds\(60\)[\s\S]+Wait-Status \$process \$deadline[\s\S]+sourceRevision -ne \$revision[\s\S]+Confirm-ServedFile '\/'[\s\S]+foreach \(\$asset in \$build\.assets\.PSObject\.Properties\)[\s\S]+Confirm-ServedFile \$asset\.Name/);
+    assert.match(deploy,/sourceRevision -ne \$revision[\s\S]+diskSourceAt -ne \$build\.sourceAt[\s\S]+AddSeconds\(150\)[\s\S]+Confirm-BuildStatus \(Wait-Status \$process \$deadline\)[\s\S]+Confirm-ServedFile '\/'[\s\S]+foreach \(\$asset in \$build\.assets\.PSObject\.Properties\)[\s\S]+Confirm-ServedFile \$asset\.Name[\s\S]+lastAttemptAt[\s\S]+source\.refreshedAt -ne \$status\.generatedAt/);
     assert.match(deploy,/catch \{\s+Write-Step \('Failed step:'?[^\n]*[\s\S]+::Move\(\$previous, \$installed\)/);
     assert.match(deploy,/AppendAllText\(\$script:log,[\s\S]+Join-Path \$dated 'deploy\.log'/);
     assert.doesNotMatch(deploy,/Get-NetTCPConnection|Remove-Item|::Delete\(|tailscale|funnel|\bpython\b|Write-Error \$_/i);
@@ -406,7 +474,23 @@ async function budgetTests(check){
     const g=p.githubData([{number:1,title:'Safe',state:'open',labels:['ryan'],body:'Ask Ryan: Pick this? | Picture: https://github.com/rcbailey12/voidsworn/blob/main/%67hp_FIXTURESECRET.png'}],[],[],p.emptyGithub(),NOW);assert.equal(g.needsRyan[0].picture,null);
   });
   check('GitHub crew stays dated, issue state is kept, comments remain private',()=>{const g=githubFixture(true);assert(g.crew.artoo && g.crew.muse && g.crew.claude);assert(!JSON.stringify(g).includes('Private fixture comment'));assert(g.issues.every(i=>['open','closed','unknown'].includes(i.state)));});
-  check('Ryan questions require open state, label and an unfenced marker',()=>{const issue={number:1,title:'Question',state:'open',labels:['ryan'],body:'Ask Ryan: Pick this? | Picture: https://github.com/rcbailey12/voidsworn/issues/1'};assert.equal(p.githubData([issue],[],[],p.emptyGithub(),NOW).needsRyan.length,1);for(const extra of [{state:'closed'},{labels:[]},{body:'```\n'+issue.body+'\n```'}])assert.equal(p.githubData([{...issue,...extra}],[],[],p.emptyGithub(),NOW).needsRyan.length,0);});
+  check('Needs Ryan keeps flagged issues with unavailable questions and follows the label and fence rules',()=>{
+    const cue='Ask Ryan: Pick this?', issue={number:1,title:'Question',state:'open',labels:['ryan'],body:cue};
+    const asks=extra=>p.githubData([{...issue,...extra}],[],[],p.emptyGithub(),NOW).needsRyan;
+    assert.equal(asks({})[0].question,'Pick this?');assert.equal(asks({})[0].picture,null);
+    const picture='https://github.com/rcbailey12/voidsworn/issues/1';
+    assert.equal(asks({body:cue+' | Picture: '+picture})[0].picture,picture);
+    for(const extra of [{state:'closed'},{labels:[]}]) assert.equal(asks(extra).length,0);
+    for(const body of ['', '````md\n```\n~~~\n'+cue+'\n````', 'Ask Ryan: | Picture: '+picture]) {
+      assert.equal(asks({body})[0].issue,1);assert.equal(asks({body})[0].question,null);
+    }
+  });
+  check('OpenAI PR observations exclude DeepSeek and do not prove a push or review',()=>{
+    const raw=require('./fixtures/github.json'), source=raw.pulls[0];
+    const pr=(number,ref,updated)=>({...source,number,updated_at:iso(updated),head:{...source.head,ref}});
+    const g=p.githubData([], [pr(1027,'work/issue-1006-openai',NOW-60000),pr(1028,'work/issue-1006-deepseek',NOW)],[],p.emptyGithub(),NOW);
+    assert.equal(g.crew.openai.number,1027);assert.equal(g.crew.openai.action,'PR activity recorded');assert.equal(g.reviews.length,0);
+  });
 }
 async function paginationTests(check){
   const fixture=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/github.json'),'utf8'));
