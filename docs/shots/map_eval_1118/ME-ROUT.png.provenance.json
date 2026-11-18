@@ -1,0 +1,36 @@
+{
+  "source_commit": "d278088a5adf73a07335e1c38accaf7670fab181",
+  "source_dirty": true,
+  "source_diff_sha256": "43e47094f5d0140b2afe9c3f54c663cbc7ca51f138e5cd4b86a8d06f227fa4de",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "ME-ROUT.png",
+  "date": "2026-11-18T15:03:40Z",
+  "sources": [
+    {
+      "source_commit": "d278088a5adf73a07335e1c38accaf7670fab181",
+      "source_dirty": true,
+      "source_diff_sha256": "43e47094f5d0140b2afe9c3f54c663cbc7ca51f138e5cd4b86a8d06f227fa4de",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    590,
+    564,
+    688
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "b519ca0cd8fb046c45d7c2128da901e6ad8ac7e321edb5bb3c14a2b660f36ce4"
+  ],
+  "stamp_template_sha256": "b519ca0cd8fb046c45d7c2128da901e6ad8ac7e321edb5bb3c14a2b660f36ce4",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAB0ElEQVR4nO3WsQ3AIADAMMrK1K3/PwpHMFSR7Asy5lnvtwcAQNj8OwAA4JahAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAwKg7jwEB9+tXEHgAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "cd87d21431317aa46d6159aa6d7deaeebc7df9f0ca4b70e4569fe44ea87ea9d1"
+}
