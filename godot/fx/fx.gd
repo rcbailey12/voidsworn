@@ -1376,6 +1376,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# The temporary PBR adapter is queried for uniforms at death too. Keep its
 	# shader alive so that query never recompiles it for each new ship.
 	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
+	_shaders["hull_exterior_alpha"] = HULL.shared_shader(HULL.exterior_alpha_code(), "exterior_alpha")
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
