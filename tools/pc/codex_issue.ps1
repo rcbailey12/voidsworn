@@ -92,8 +92,9 @@ Rules:
   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
   gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp checks) in %TEMP%, not in this folder.
-- Save review pictures and their .provenance.json sidecars in $out\shots (create it). The runner copies linked stamped
-  pictures into docs/shots/issue-$n-codex and rewrites links to repo paths before publishing. Never link other PC paths.
+- Save review pictures and their .provenance.json sidecars in $out\shots (create it). Link them as shots/<file> so the
+  runner can copy them into docs/shots/issue-$n-codex and rewrite the links before publishing.
+- Link pictures already in the checkout by repo-relative path, and keep every picture link relative.
 - Finish with a short report: what you changed (files), the checks you ran and their result, anything you skipped and why.
   That report becomes the pull request description, so write it for a reviewer.
 
