@@ -178,13 +178,39 @@ function Warn-KeptRepos($repo) {
     } catch { Log "WARNING: kept checkout $($copy.FullName): size unavailable ($($_.Exception.Message))" }
   }
 }
+function Test-SharedShipCopy($repo, $path) {
+  # Use the same default shared build as get_ship_files.bat.
+  $build = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/build'
+  $local = Get-Item -LiteralPath (Join-Path $repo $path) -Force -ErrorAction SilentlyContinue
+  $shared = Get-Item -LiteralPath (Join-Path $build $path) -Force -ErrorAction SilentlyContinue
+  foreach ($file in @($local, $shared)) {
+    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
+  }
+  if ($local.Length -ne $shared.Length) { return $false }
+  # Git can list the contents of a junction as ignored files. Keep checkouts that contain a linked ship directory.
+  $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
+  for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
+    if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
+  }
+  return (Get-FileHash -LiteralPath $local.FullName -Algorithm SHA256).Hash -eq
+         (Get-FileHash -LiteralPath $shared.FullName -Algorithm SHA256).Hash
+}
 function Reuse-Caches($repo) {
   $status = @(Git @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
   if ($gitExit -ne 0) { throw 'working tree status not verified' }
   foreach ($line in $status) {
-    # Only ignored Godot and Python bytecode caches are rebuildable. Unknown or quoted paths count as work.
-    if ($line -notmatch '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import|([^"\r\n]*/)?__pycache__/[^"\r\n]+|[^"\r\n]+\.pyc)$') { throw "working tree needs keeping: $line" }
-    $line.Substring(3)
+    if ($line -match '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import|([^"\r\n]*/)?__pycache__/[^"\r\n]+|[^"\r\n]+\.pyc)$') {
+      $line.Substring(3)
+      continue
+    }
+    # Git can quote paths with spaces. Leave paths with escapes or unknown status alone.
+    if ($line -match '^!! ("?)(godot/assets/ships/[^"\\:\r\n]+)\1$') {
+      $path = $Matches[2]
+      if (-not (Test-SharedShipCopy $repo $path)) { throw "working tree needs keeping: $line (shared ship copy could not be verified)" }
+      $path
+      continue
+    }
+    throw "working tree needs keeping: $line"
   }
 }
 function Can-ReuseRepo($repo, $mirror, $sparse) {
@@ -210,7 +236,7 @@ function Can-ReuseRepo($repo, $mirror, $sparse) {
     $pushed = New-Object 'Collections.Generic.HashSet[string]'
     foreach ($id in $remote) { $null = $pushed.Add($id) }
     foreach ($id in $local) { if (-not $pushed.Contains($id)) { throw "local history not in fetched mirror: $id" } }
-    # Keep the whole checkout when a cache obstructs the incoming tree.
+    # Keep the whole checkout when an ignored file obstructs the incoming tree.
     $paths = @(Git @('--git-dir',$mirror,'-c','core.quotePath=false','ls-tree','-r','--name-only','refs/heads/main'))
     if ($gitExit -ne 0) { throw 'incoming paths not verified' }
     $files = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
@@ -557,7 +583,7 @@ try {
       catch { throw "checkout changed while starting; kept as is: $($_.Exception.Message)" }
     }
     if ($switchExit -ne 0) { throw "git checkout failed (exit $switchExit); see git_log.txt" }
-    if ($reuse) { Log 'earlier checkout reused in place; ignored cache files left in place' }
+    if ($reuse) { Log 'earlier checkout reused in place; ignored files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
     $partial = "refs/remotes/origin/$br-partial"
