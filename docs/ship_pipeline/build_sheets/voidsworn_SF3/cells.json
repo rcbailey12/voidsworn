@@ -320,7 +320,7 @@
   {
    "cell": "stern/side",
    "concept": 4,
-   "build": 2
+   "build": 1
   },
   {
    "cell": "stern/below",
@@ -337,7 +337,7 @@
   },
   "build": {
    "env_LB": 4.3,
-   "env_LH": 4.3,
+   "env_LH": 6.58,
    "hull_LB": 4.81,
    "hull_LH": 15.48
   }

@@ -1,6 +1,6 @@
 # voidsworn_SF3: Spire Dart fighter (Sunward Crusade fighter wing craft), build sheet
 
-Sunward Crusade (voidsworn) | class Squadron | version 1 (first sheet), 2026-11-15 | blockout: rendered in the issue 769 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py voidsworn_SF3 <out> render` rebuilds it from this file
+Sunward Crusade (voidsworn) | class Squadron | version 3 (R302 raised low fin, run 2), 2026-11-17 | blockout: rendered on Ryan's PC (Blender 4.5.14, Cycles CPU); `build.py voidsworn_SF3 <out> render` rebuilds it from this file
 
 **Length 1.6 world units** (data.js fighter (cls 'Squadron', the Sunward wing: voidsworn sq 'fighter'); length from godot/render/hull_table.gd CLS_LEN['Squadron'] = 1.6 (drawn x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84 on the board, docs/playbooks/scale.md)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -21,8 +21,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | beam top | 0.373 |
 | beam bow | 0.373 |
 | beam disagreement percent | 0.0 |
-| height side | 0.373 |
-| height bow | 0.373 |
+| height side | 0.246 |
+| height bow | 0.246 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 78.6 |
 | hull beam | 0.38 |
@@ -30,21 +30,21 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | L to B hull | 4.21 |
 | L to H hull | 8.42 |
 | prow overhang | 0.0 |
-| outline iou percent | 90.8 |
-| mass outline iou percent | 91.1 |
+| outline iou percent | 91.2 |
+| mass outline iou percent | 91.3 |
 | PASS | True |
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
 
-| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
-|---|---|---:|---:|---:|---:|---|---|---|---|
-| G1 | interceptor guns, triple turret | 3 barrels | 29.0 | 0.00 | 0.04 | forward, +5 elev | T guns | picture | the interceptor guns (data.js guns T, 3 shots): three barrels in one emitter cluster on a traverse ring in an armoured well; every volley fires all three |
-| R1 | radiator spire, 0.18 tall, four ember fins a side | 1 | 75.0 | 0.00 | 0.14 | - | - | picture | sheds the drive reactor's heat: a square-topped column of iron posts round a dark core, ember fins reaching out to each side |
-| W1 | armoured sensor slit 0.054 x 0.013 | 1 | 63.9 | 0.00 | 0.10 | - | - | picture | the pilot looks out through an ember-lit armoured slit in the stern block's sloping face: no canopy, no glass bubble |
-| E1 | engine, bell 0.1 across | 1 | 99.1 | 0.06 | 0.04 | exhaust aft | - | picture | port drive: a deep bell sunk in an eight-sided armoured cowl, ember lining and plug, dim like banked coals |
-| E2 | engine, bell 0.1 across | 1 | 99.1 | -0.06 | 0.04 | exhaust aft | - | picture | starboard drive: a deep bell sunk in an eight-sided armoured cowl, ember lining and plug, dim like banked coals |
-| V1p | heat louvre 0.144 x 0.051 | 1 | 83.0 | 0.13 | 0.08 | - | - | picture | the drive room's heat louvre: slanted slats over an ember-lit recess (the concept's glowing flank slats) |
-| V1s | heat louvre 0.144 x 0.051 | 1 | 83.0 | -0.13 | 0.08 | - | - | picture | the drive room's heat louvre: slanted slats over an ember-lit recess (the concept's glowing flank slats) |
+| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note | Route |
+|---|---|---:|---:|---:|---:|---|---|---|---|---|
+| G1 | interceptor guns, triple turret | 3 barrels | 29.0 | 0.00 | 0.04 | forward, +5 elev | T guns | picture | the interceptor guns (data.js guns T, 3 shots): three barrels in one emitter cluster on a traverse ring in an armoured well; every volley fires all three | kit |
+| R1 | raised low swept radiator fin, 0.04960 above stern roof, side slats, no zigzag | 1 | 75.0 | 0.00 | 0.14 | - | - | picture | R302 run 2: a small raised swept heat panel on the stern roof, orange side slats and a thin cap; 0.031 length above the roof, about a quarter of the old tower; same reactor socket, no zigzag | hand-built |
+| W1 | armoured sensor slit 0.054 x 0.013 | 1 | 63.9 | 0.00 | 0.10 | - | - | picture | the pilot looks out through an ember-lit armoured slit in the stern block's sloping face: no canopy, no glass bubble | kit |
+| E1 | engine, bell 0.1 across | 1 | 99.1 | 0.06 | 0.04 | exhaust aft | - | picture | port drive: a deep bell sunk in an eight-sided armoured cowl, ember lining and plug, dim like banked coals | kit |
+| E2 | engine, bell 0.1 across | 1 | 99.1 | -0.06 | 0.04 | exhaust aft | - | picture | starboard drive: a deep bell sunk in an eight-sided armoured cowl, ember lining and plug, dim like banked coals | kit |
+| V1p | heat louvre 0.144 x 0.051 | 1 | 83.0 | 0.13 | 0.08 | - | - | picture | the drive room's heat louvre: slanted slats over an ember-lit recess (the concept's glowing flank slats) | kit |
+| V1s | heat louvre 0.144 x 0.051 | 1 | 83.0 | -0.13 | 0.08 | - | - | picture | the drive room's heat louvre: slanted slats over an ember-lit recess (the concept's glowing flank slats) | kit |
 
 Totals: 1 gun mounts with 3 barrels; 0 launcher tubes; 2 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
@@ -62,7 +62,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
 | Hull: the forged blade | 0.0 to 94.5 | -0.19 to 0.19 | -0.04 to 0.15 | black iron plate | one narrow forged blade: a low spine strip, the deck, upper facets out to a thin knife edge, lower facets, a flat belly; thickened at the stern into the armoured block |
-| Radiator spire R1 | 71.9 to 78.2 | -0.07 to 0.07 | 0.17 to 0.30 | ember fins on iron | the fighter's one spire (SF3) |
+| Low dorsal radiator R1 | 69.1 to 77.6 | -0.01 to 0.01 | 0.15 to 0.19 | ember panels on iron | SF3 R302, one swept heat fin, not a tower |
 
 ## INSIDE (R98, R209): what each break reveals
 
@@ -97,7 +97,7 @@ A craft: the game shows its death as a spark and hides it (godot/fx/fx_death.gd 
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 56 objects, 7 parts, 75 close pairs, 114 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 2 cones, 3 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 56 objects, 7 parts, 88 close pairs, 110 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 2 cones, 3 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -106,10 +106,10 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 ## Changed from the picture (R207)
 
 - **Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as the bomber, not the notes' 3.2 units.** docs/playbooks/scale.md, Squadron rows, binding (it wins over the design notes): "same wing frame as a fighter, only its load differs"; the fighter reads apart by its slim outline, not its length.
-- **The spire is an upright, square-topped radiator with four ember fins reaching out to each side, standing on the stern block, not the concept's raked fin.** Ryan (R254): no tail fins; the council flagged spires drifting into stabiliser reads (design_notes_757.md); factions.md: the spires are radiators. A raked blade on the stern reads as a tail fin; fins out to the sides read as a radiator from the battle camera and from above.
+- **R1 is a small raised swept dorsal radiator on the stern roof, with orange side slats and no zigzag.** Issue 920 run 2: the first revision was flush and almost invisible. The fin now rises 0.031 length above the roof, about a quarter of the old tower, so its swept side and slats read clearly; the reactor and all other parts are unchanged.
 - **The two drives are deep bells sunk in eight-sided armoured cowls in the stern face, smaller (0.077 across) and dim, not two big protruding drums with bright bells.** the production notes: SF3's bells render oversized and brighter than banked coals, the sheet dims and shrinks them (R55); the owner's rule for craft: drives are nozzle clusters inside armoured blocks.
 - **The interceptor guns turn on a shallow traverse ring in an armoured well on the blade's back near the bow (the concept's dorsal bow recess), three barrels in one emitter cluster.** data.js guns fires all round (arc T): the fit check sweeps the guns through every bearing, which a gun in the nose face cannot do; the notes let the sheet pick the dorsal recess or the nose face, and DeepSeek's traverse ring is in the callout (R241, ships.md rule 11).
-- **The guns elevate to 45 degrees (the fit check's band 0 to 45).** interceptor guns engage craft above and below the wing; dead astern the line clears the spire from 30 degrees up (the ARC test).
+- **The guns elevate to 45 degrees (the fit check's band 0 to 45).** interceptor guns engage craft above and below the wing; the fit check tests the same 0 to 45 degree band against the low radiator.
 - **An armoured sensor slit for the pilot in the stern block's sloping face.** Ryan (R254): no canopy, an armoured slit at most; one unaugmented pilot, no AI (lore 2.5), so the pilot needs a view out.
 - **The concept's glowing flank slats are the drive room's heat louvres; its glyph decals and small panels are not modelled.** every part has a job (R221); the decals are generator noise (production notes); fine greeble reads as a shrunken capital ship at this size (both design legs).
 - **No hatches, lamps or attitude thrusters.** below what the battle camera shows on a 3.84 unit craft (about 30 px long); the drives turn the craft; bold and simple (production notes).

@@ -1,50 +1,78 @@
 # Open work (generated from GitHub; FINDINGS R194, issue 788)
 
-GENERATED Nov 15 2026 23:20 UTC from the GitHub API by the Board. Do not hand-edit rows: GitHub is the record for what is open and who has it, LOOP.md's newest LATEST line for what is running. The hand-kept ledger it replaces (stale by Nov 15 evening, found by Ryan's dot) is docs/archive/OPEN_WORK_2026-11-15.md. Issue 788 step 5 makes this page regenerate itself nightly.
+GENERATED Nov 17 2026 18:39 UTC from the GitHub API by contrib/opus/tools/gen_open_work.js. Do not hand-edit rows: GitHub is the record for what is open and who has it, LOOP.md's newest LATEST line for what is running on the PC. The hand-kept ledger it replaces (stale by Nov 15 evening, found by Ryan's dot) is docs/archive/OPEN_WORK_2026-11-15.md. The open work nightly workflow (.github/workflows/open_work_nightly.yml, issue 890) regenerates this page every night.
+
+## Live status
+
+### Open jobs by seat
+
+The seat label says who has the job; running means a seat has claimed it and is working on it now.
+
+- codex: 8 open. Running now: 992, 989, 975. Not running: 990, 985, 983, 982, 863.
+- muse: 2 open. Running now: none. Not running: 946, 256.
+- opus: 4 open. Running now: none. Not running: 545, 405, 371, 211.
+- ryan: no open jobs.
+
+### Pull requests waiting on the Board
+
+Open, not drafts, and their issue does not carry running.
+
+- PR 864: Issue 860: Runner: stop piling up repo-kept copies (PC disk filled, Nov 16)
+- PR 867: Issue 371: Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek)
+- PR 943: Issue 906: Artoo: standing technical sweep (merge issues, bugs, technical problems; R295) [muse-branches arm]
+- PR 958: Issue 946: Standing checks: --fast runs the rows that are actually fast
+- PR 980: R312 Path D: RULEBOOK 3.1, browser rules are a live reference copy until retirement is approved
+- PR 986: Issue 863: Station debris field off the damaged side (Ryan R284, after 373)
+- PR 993: Issue 985: Workhorse: an OpenAI arm on Ryan's ChatGPT Pro API credits (key by double-click)
+- PR 994: Issue 982: Storm map costs 16.4 ms at 4K and its low tier is slower than max
+- PR 997: Issue 990: Saved Godot battle results and the changed-battles review pilot (Path D step 3)
+
+### Open issues that a merged pull request names
+
+From the last 100 closed pull requests ("Issue N" in the title or "#N" in the body). Check whether the scope is done, then close the issue (RULEBOOK 2.4).
+
+- Issue 211: HunyuanVideo-Foley probe: generated Foley for captured sequences (Ryan, via Rey, Nov 6 2026) (merged PR 893)
+- Issue 256: Outside check: Opus-coded PRs, starting with #231 (R132) (merged PR 819, 893)
+- Issue 371: Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek) (merged PR 821, 893)
+- Issue 405: Fable program: one finished battle, and a playbook per area that other models can run (merged PR 893)
+- Issue 545: Sweep follow-ups: every dropped or partly carried item from issue 540, with the Board's disposition (merged PR 893)
+- Issue 863: Station debris field off the damaged side (Ryan R284, after 373) (merged PR 893)
+- Issue 906: Artoo: standing technical sweep (merge issues, bugs, technical problems; R295) (merged PR 907)
+- Issue 975: Station T2: paint and fine detail that holds up at close zoom (merged PR 991)
+- Issue 985: Workhorse: an OpenAI arm on Ryan's ChatGPT Pro API credits (key by double-click) (merged PR 995)
 
 ## Open pull requests
 
 | PR | Branch | Title |
 |---|---|---|
-| 821 | opus/issue-371 | Issue 371: Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek) |
-| 820 | codex/issue-811 | Issue 811: E14 lift: per-hull height in the game so the Eclipse flagship sits higher (R266) |
-| 819 | muse/issue-256 | Issue 256: Outside check: Opus-coded PRs, starting with #231 (R132) |
-| 814 | codex/issue-800 | Issue 800: Effects kit round 2: Eclipse doom arc as a weapon in its colours, a visible null cannon shot (Ryan R263) |
-| 798 | muse/issue-794 | Issue 794: UI upgrade: audit every text-heavy screen, then mockups worst first, starting with the after-run screen (R260) |
-| 725 | codex/issue-369 | Issue 369: Board planet and rocks from real data (replaces issue 140) |
-| 717 | codex/issue-368 | Issue 368: Nebula and ion storm hexes with depth: measure two routes against the gate, pick, build (replaces issue 139) |
-| 716 | codex/issue-367 | Issue 367: One kit of trails, beams and flares: no bare hairlines, plain cones, bars or tubes |
-| 705 | work/issue-44-deepseek | Issue 44: Run 5 finale board brightens as the new sun catches (R78 Q18) [deepseek arm] |
-| 700 | codex/issue-373 | Issue 373: The station as one built set piece through the ship recipe (replaces issue 199) |
-| 696 | codex/issue-688 | Issue 688: A20 carrier: real bow openings and angular flanks (R244) |
+| 997 | codex/issue-990 | Issue 990: Saved Godot battle results and the changed-battles review pilot (Path D step 3) |
+| 996 | codex/issue-989 | Issue 989: Mission Control r3: trustworthy queue, run-matched results, picture evidence, GitHub budget (run 1 data, run 2 page) |
+| 994 | codex/issue-982 | Issue 982: Storm map costs 16.4 ms at 4K and its low tier is slower than max |
+| 993 | codex/issue-985 | Issue 985: Workhorse: an OpenAI arm on Ryan's ChatGPT Pro API credits (key by double-click) |
+| 986 | codex/issue-863 | Issue 863: Station debris field off the damaged side (Ryan R284, after 373) |
+| 980 | opus/issue-492-path-d | R312 Path D: RULEBOOK 3.1, browser rules are a live reference copy until retirement is approved |
+| 977 | codex/issue-975 | Issue 975: Station T2: paint and fine detail that holds up at close zoom |
+| 958 | muse/issue-946 | Issue 946: Standing checks: --fast runs the rows that are actually fast |
+| 943 | opus/issue-906-muse-branches | Issue 906: Artoo: standing technical sweep (merge issues, bugs, technical problems; R295) [muse-branches arm] |
+| 867 | opus/issue-371 | Issue 371: Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek) |
+| 864 | opus/issue-860 | Issue 860: Runner: stop piling up repo-kept copies (PC disk filled, Nov 16) |
 
 ## Open issues
 
 | Issue | Seat labels | Title |
 |---|---|---|
-| 44 | codex, blocked | Run 5 finale board brightens as the new sun catches (R78 Q18) |
-| 100 | codex, blocked | Terrain fx 2: debris, dead star well, old looks and the quality ladder |
 | 211 | opus | HunyuanVideo-Foley probe: generated Foley for captured sequences (Ryan, via Rey, Nov 6 2026) |
 | 256 | muse | Outside check: Opus-coded PRs, starting with #231 (R132) |
-| 367 | codex, blocked | One kit of trails, beams and flares: no bare hairlines, plain cones, bars or tubes |
-| 368 | codex, blocked | Nebula and ion storm hexes with depth: measure two routes against the gate, pick, build (replaces issue 139) |
-| 369 | codex, blocked | Board planet and rocks from real data (replaces issue 140) |
 | 371 | opus, blocked | Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek) |
-| 372 | opus, blocked | Shield surface look: energy with depth instead of flat line art |
-| 373 | codex, blocked | The station as one built set piece through the ship recipe (replaces issue 199) |
 | 405 | opus | Fable program: one finished battle, and a playbook per area that other models can run |
-| 507 | opus | Audit builds still to file: hits, sound weight, the kill moment (the rest of Ryan's order) |
 | 545 | opus | Sweep follow-ups: every dropped or partly carried item from issue 540, with the Board's disposition |
-| 688 | codex, blocked | A20 carrier: real bow openings and angular flanks (R244) |
-| 726 | opus, blocked | Hullbreaker paint: trophy patches bigger and paler like the concepts (R252) |
-| 732 | codex, blocked | Commit-message closing-word lint on main, and more bot-battle seeds (audit 706 findings 4 and 8) |
-| 780 | opus | Hegemony paint stack: H10 and IM5 painted in the sandbox (Opus worker, R256) |
-| 781 | opus | Sunward S8 paint: hull a step lighter toward the concept (Opus worker, R256) |
-| 783 | opus | E13 fan ship: paint and edge light even side to side (Ryan R256) |
-| 793 | opus | Squadron craft build sheets: Hegemony HF1D, Hullbreaker KB1C-C, Chorus CS1B-A2 (Opus worker, R259) |
-| 800 | codex, blocked | Effects kit round 2: Eclipse doom arc as a weapon in its colours, a visible null cannon shot (Ryan R263) |
-| 811 | codex, blocked | E14 lift: per-hull height in the game so the Eclipse flagship sits higher (R266) |
-| 812 | codex, blocked | Ship pipeline: per-variant parts (E14 guard spire, E13 and E12 variants) |
-| 815 | codex, blocked | Effects kit round 3: a cinematic doom arc, a null cannon tracer you can follow, no smoke on shield hits (Ryan R271) |
-| 817 | deepseek | Record and test fixes from Muse's checks of PRs 786, 789 and 787 |
-| 818 | codex, blocked | Runner: stop a job only when it stalls, not at a fixed 2 hours; always leave a resume note (Ryan, Nov 15) |
+| 863 | codex, blocked | Station debris field off the damaged side (Ryan R284, after 373) |
+| 906 |  | Artoo: standing technical sweep (merge issues, bugs, technical problems; R295) |
+| 946 | muse | Standing checks: --fast runs the rows that are actually fast |
+| 975 | codex, blocked, running | Station T2: paint and fine detail that holds up at close zoom |
+| 982 | codex, blocked | Storm map costs 16.4 ms at 4K and its low tier is slower than max |
+| 983 | codex, blocked | Station blocks every hex it covers: 19 hexes, not 7 (Ryan's pick) |
+| 985 | codex, blocked | Workhorse: an OpenAI arm on Ryan's ChatGPT Pro API credits (key by double-click) |
+| 989 | codex, blocked, running | Mission Control r3: trustworthy queue, run-matched results, picture evidence, GitHub budget (run 1 data, run 2 page) |
+| 990 | codex, blocked | Saved Godot battle results and the changed-battles review pilot (Path D step 3) |
+| 992 | codex, blocked, running | Audit how paint and effects are applied across ships, station and effects: random squares, flat materials, stretched maps |

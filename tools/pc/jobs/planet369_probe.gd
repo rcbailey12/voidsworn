@@ -37,7 +37,7 @@ func shot(name: String, full_frame := false) -> void:
 	else:
 		# True pixel crop, no enlargement of camera 170 detail.
 		img = img.get_region(Rect2i((img.get_width()-1280)/2,(img.get_height()-720)/2,1280,720))
-	img.save_png(out.path_join(name+".png"))
+	preload("../../../godot/tools/picture_provenance.gd").save_png(img, out.path_join(name+".png"))
 	print("R01_SHOT ", name)
 
 func median(values: Array) -> float:

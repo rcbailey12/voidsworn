@@ -33,6 +33,12 @@ and rest_pitch, the turning meshes its children; the hex foot stays on the hull.
 
 ## Other parts
 
+E12's `reactor_core(r)` (issue 877, Ryan R289) replaces its plain glowing bulb with a faceted reactor, cooling bands and
+bright seam rings. Eight matched shade petals in three aligned armour courses leave narrow openings, tuned to show about
+a quarter of the reactor at the beauty and battle cameras. The stack reads each reactor facet's centre and boundary
+vertices to bake dimmer green centres and hot green-white seams with the existing core colours. Both the base zenith and turreted zenith use it. The hubs,
+gimbals, core point, insides and Eclipse paint colours stay as before. Other ships retain `core_cage(r)`.
+
 Eclipse engines (faceted ribbed drums, vanes, a short bell, a pale corona ring round a black shade disc, no flame), the caged
 core, truss struts, the hex core port, octagonal hatches, shade-generator housings, heat slot panels, corona strip lights, slot
 thrusters, machine-cut plates with flush fasteners. Each part's docstring in parts.py says what it is.

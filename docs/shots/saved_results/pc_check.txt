@@ -1,0 +1,21 @@
+PC launcher: tools/pc/saved_results.bat nopause
+Node 22.11.0; Godot 4.7.2; source 2efb76f8 plus issue 990 worktree
+281 of 281 browser/Godot battle comparisons PASS; same Godot files used by saved gate.
+  seed 1001: PASS
+  seed 7: PASS
+  seed 4242424242: PASS
+  math: PASS (math 316090 values, differences from Node: none)
+  threat map s4: PASS
+  threat map s19: PASS
+  threat map s23: PASS
+  threads: PASS
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 984 events, 60 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 10, 1810 events, 99 reads during enemy steps on a worker)
+PASS: saved Godot results; 281 battles checked, 0 changed, 0 other files changed, 0 failures; 19.304 s
+Whole rules parity step: 555.145 s
+PASS: the Godot port matches the game's rules exactly.
+Launcher exit: 0
+Standing checks: 63 PASS, 2 KNOWN, 0 FAIL, 0 SKIP, exit 0.
+Saved-results self-test: 21 cases PASS.
+Launcher exit fixture: success 0, failure 17.

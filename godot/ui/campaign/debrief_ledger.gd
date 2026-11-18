@@ -222,7 +222,7 @@ func _build_heirs(x: float, w: float) -> void:
 		var rank = words(ranked.substr(comma + 2), Rect2(cx + 8, 744, cw - 16, 26), 17, GS.TEXT3); rank.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		var line = C.inheritanceLine(id); var total = float(line["next"]) if line["next"] != null else maxf(1, float(line["xp"]))
 		meter(Rect2(cx + 16, 779, cw - 32, 8), float(line["xp"]), total)
-		var shadow = C.numstr(snapped(float(line["xp"]), 0.01)) + " SHADOW XP"
+		var shadow = C.numstr(snapped(float(line["xp"]), 0.01)) + " shadow XP"
 		words(shadow, Rect2(cx + 16, 790, cw - 32, 29), 17, GS.TEXT2, GS.num())
 		var tip = ranked + ". Total " + C.numstr(line["xp"]) + " shadow XP. " + ("Fully mastered." if line["next"] == null else C.numstr(line["remaining"]) + " XP to next level.") + "\nDouble earnings for this line when named."
 		for row in receipt["shadow"]:

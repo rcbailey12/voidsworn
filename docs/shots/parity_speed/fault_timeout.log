@@ -1,0 +1,28 @@
+Voidsworn rules parity: 2 battles, 1 workers
+Records and log: <proof>\result-timeout-native
+[1/5] Exporting the game data tables for Godot...
+  data export: PASS
+[2/5] Random numbers: first 10,000 draws from 3 seeds...
+  seed 1001: PASS
+  seed 7: PASS
+  seed 4242424242: PASS
+[3/5] Math functions on all 316,090 inputs...
+  math: PASS (math 316090 values, differences from Node: none)
+[4/5] Seeded battles, every action compared (state hash, PRNG state)...
+  worker 0: finished 2 battles (Godot exit 1, timeout)
+  worker 0: FAIL (batch exit 1, timeout; see <proof>\result-timeout-native\workers\godot0.log)
+  battle s4: FAIL (never ran in its batch; passes alone, exit 0)
+  battle s1: FAIL (never ran in its batch; passes alone, exit 0)
+[4b] Threat overlay, rounds 1 to 3...
+  threat map s4: PASS
+  threat map s19: PASS
+  threat map s23: PASS
+[4c] Threads and the hard stop (s4, s23)...
+  threads: PASS
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 984 events, 60 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 10, 1810 events, 99 reads during enemy steps on a worker)
+[5/5] Enemy think time (report only; game bar: worst under about 0.5 s)...
+  timing records s4: FAIL (missing file)
+Whole rules parity step: 273.210 s
+FAIL: 4 check(s) differ.

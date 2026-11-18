@@ -1,0 +1,81 @@
+{
+  "commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+  "source_files": {
+    "godot/fx/fx_ship.gd": "c4b7351cff6ca23b114373ef198ef327dbcbbfbf385320a64139bd8a3f945270",
+    "godot/fx/fx_shaders.gd": "6f356c62acc5a4fe838224c8eba8100a2e57fe09a0dab4eeee2e0b4a5711af37",
+    "godot/fx/fx_weapons.gd": "15248ac204f44517058dfa6134292d5ab8a0ec75d05dd645c2f3f965e75010a3"
+  },
+  "default": "egg",
+  "cameras": [
+    170,
+    60
+  ],
+  "offset_seconds": [
+    0,
+    0.1,
+    0.3,
+    0.6
+  ],
+  "global_seed": 2070,
+  "effects_seed": 11,
+  "fixed_fps": 60,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "cell": [
+    300,
+    200
+  ],
+  "crop": {
+    "170": [
+      300,
+      200
+    ],
+    "60": [
+      900,
+      600
+    ]
+  },
+  "fixture": "E12 is normally unshielded. In the isolated capture/probe only, enable its shield with Eclipse engine tint and the existing lattice style. Both versions use this same fixture.",
+  "raw_sources": "Main and after share the current A17 and E12 exports. H9 uses its installed hull. No ship model is changed.",
+  "asset_files": {
+    "C15s_23": {
+      "C15s_23.glb": "0b5d6c6da890fa62c92de4f3425f4b62e42a762bc20b25233c36dae5b04b23e5",
+      "C15s_23_base.jpg": "99ec81321c5e50671e5d67d8deba22579cdfb1cdc29c77cb5868abdc8ba17e50",
+      "C15s_23_glow_emission.jpg": "f0f88f447cc1e4b38e996146530282f16ea962a9081c5c82f4ce1442b16ea2c8",
+      "C15s_23_normal.jpg": "7a5f5b988b942d2eedd4e779e8f0aa859700738bb5445e68672667747176fa76",
+      "C15s_23_orm.jpg": "a15b8b87353140d51d99045cc803a76adb3a33beab3c5300da11ab7e8099d48f",
+      "C15s_23_parts_base.jpg": "d65eaef9dcfaa8d1d086a030ae90cfa22ee28d2875f77c0c0c5c33d825140168",
+      "C15s_23_parts_orm.jpg": "951217d82190916ba4d51828325b12ade2584c4ce72da3b08093b04334ee29a3"
+    },
+    "D21_23": {
+      "D21_23.glb": "0444fa8a22a9db40fdb1b5f089a2b14dcce71f5ff681489a0c0b2cafc9d1eb52",
+      "D21_23_base.jpg": "8ddcebc06f73bbf3b2f61d14d92f3963f6b9288822002b1525df530bb187da97",
+      "D21_23_glow_emission.jpg": "550fedb5c9a62b19faa744d12b14b2e6cc46e271de4341ac8de983b368f42efa",
+      "D21_23_normal.jpg": "2eb307b1969be5bd90ccfd77857ec6f2db9408142f03c72afd66e107ec738bb2",
+      "D21_23_orm.jpg": "d7399fc9288a0e29d8b82a184de6782ef9a32951b23a68fd4764eb70d55c4580",
+      "D21_23_parts_base.jpg": "043d523be541ae2d90dd9e8f222149a05b3d4df50ac5ec82dff141cec49050bb",
+      "D21_23_parts_orm.jpg": "1da915e55e3c32052fbddbfccd4fea0ca6dc07e7f3cd59f043d1433c0b5a98e4"
+    },
+    "H9_23": {
+      "H9_23.glb": "a6c4ad0fb5f7eaa29c46f7108ec869c878f27167e7bc587a9625c3d280f89d07",
+      "H9_23_base.jpg": "1bcc58dd5398f910f3cc012fea3572651785ed588657daffd0c23a70d72d754f",
+      "H9_23_damage.glb": "342ffbf9391ff2f1b3c1ef32fbecb8b6d3168a5fff3f869db91a309092647fef",
+      "H9_23_emissive.jpg": "7a78018684168c91c4d7555238dd5fb736c084e8783902471c60de3e6ed5851b",
+      "H9_23_normal.jpg": "41be4b34d5a4518bb19ef3110018629f53f888d6af4558182be794081f572b85",
+      "H9_23_orm.jpg": "0e7fa25df3f7a0a44416a2aa8b465820a13e52d35b3bb3ca9aff54db104ac7df",
+      "H9_23_wreck.glb": "f13257acf7844af505bb0e5ea15c62e40adbad3ae58909eded86f17eb30b29bd"
+    }
+  },
+  "harness_files": {
+    "bench/look_bench.gd": "f4bf404281412ebb42650aeebfb4fc4af2034f2d5fc55a3b3910eb1288535b07",
+    "fx/faction_look.gd": "c6f9af5990f8214b4eafc2320c211c7fe46b6d28b648cd2138e1ffd3949292b7",
+    "render/ship_view.gd": "6488a51671a8b2e562d1ef615f85c2d6ccb3e0c1125d83bd4d9933245de7717c",
+    "skin_views.gd": "aea4ec92617b7311a3e1ca43db61fcbac7266f9331d39e22ee63a126bea06a4c",
+    "geometry_probe.gd": "57eee79a5491b88d05f04e00ac90d44c0fe2e70ab215310ebbaf9c1c2acea4b5"
+  },
+  "egg_build_unchanged": true,
+  "shield_shader_after_hit_loop_unchanged": true,
+  "wide_camera60": "Final camera-60 sheets use moments_wide.json for all three hulls. Standard camera-60 crops were excluded because the larger eggs clipped."
+}

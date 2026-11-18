@@ -1,0 +1,3 @@
+rules 7, campaign 0: launcher exit 7 (expected 7)
+rules 0, campaign 9: launcher exit 1 (expected 1)
+rules 0, campaign 0: launcher exit 0 (expected 0)

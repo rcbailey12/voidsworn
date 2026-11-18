@@ -1,0 +1,310 @@
+{
+  "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "ithar.jpg",
+  "date": "2026-11-18T14:30:33Z",
+  "sources": [
+    {
+      "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "I14_23.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "a92de7ec7eef6f1c1864c0fca8d71daa35b388683a59dc2d134dc136db298c66",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "I11_37.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "68e1ad6faa06e480d438ddcafb18d210f1c97b110372e676e92e81d120b7ba52",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "I15_11.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "be5f8fe37dc3fb93afffaa17d82ab6f42ba3a2a2df8cafec623ee610151d8501",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "I16_11.jpg",
+      "source_commit": "fa8106d926fc018941f45c2c70ca36fe21d4cfc0",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T17:30:06Z",
+      "image_sha256": "cbb1318dc36e1ef3fa6c304fcef8d9b7f2352e85a7fcc78396ad30cb69e396a3",
+      "sources": [
+        {
+          "source_commit": "fa8106d926fc018941f45c2c70ca36fe21d4cfc0",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "I8_37.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "01e7db318301e963b088bcefdea9edfbf9988fbd7e21ba42aa1eb4ae9af1f210",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "compare.jpg",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_dirty": true,
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745",
+      "stage": "sheet built",
+      "date": "2026-11-17T10:21:11Z",
+      "image_sha256": "17d4e18bde131db1778b05dd6ba625fa1ab600dd0d24daeb0dc65a0f8691044e",
+      "sources": [
+        {
+          "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+          "source_dirty": true,
+          "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    432,
+    720
+  ],
+  "strip_size": [
+    432,
+    98
+  ],
+  "strip_sha256": [
+    "9a979ca3f92ed23f6bd85e3b807058d865cf3eec5569011cf426c8291969c7fc"
+  ],
+  "stamp_template_sha256": "3fddfbe2f8ddaaa9d6df01508eb494cb656a518d4265793956a24e501e17e7cd",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABO0lEQVR4nO3UMQHAMAzAsKz/zgEYf5I9YhgSBB9+3u8fAGaOCADLEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLMugaQAQfvd13PAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "9643a9e984c59bab05a818fe0725857bba5113b63019008084d2c0a52661527f",
+  "source_files": [
+    {
+      "code": "I14_23",
+      "source_path": "godot/assets/ships/previews/I14_23.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "I14_23.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "a92de7ec7eef6f1c1864c0fca8d71daa35b388683a59dc2d134dc136db298c66",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "I11_37",
+      "source_path": "godot/assets/ships/previews/I11_37.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "I11_37.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "68e1ad6faa06e480d438ddcafb18d210f1c97b110372e676e92e81d120b7ba52",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "I15_11",
+      "source_path": "godot/assets/ships/previews/I15_11.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "I15_11.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "be5f8fe37dc3fb93afffaa17d82ab6f42ba3a2a2df8cafec623ee610151d8501",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "I16_11",
+      "source_path": "godot/assets/ships/previews/I16_11.jpg",
+      "source_revision_label": "fa8106d9",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "I16_11.jpg",
+        "source_commit": "fa8106d926fc018941f45c2c70ca36fe21d4cfc0",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T17:30:06Z",
+        "image_sha256": "cbb1318dc36e1ef3fa6c304fcef8d9b7f2352e85a7fcc78396ad30cb69e396a3",
+        "sources": [
+          {
+            "source_commit": "fa8106d926fc018941f45c2c70ca36fe21d4cfc0",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "I8_37",
+      "source_path": "godot/assets/ships/previews/I8_37.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "I8_37.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "01e7db318301e963b088bcefdea9edfbf9988fbd7e21ba42aa1eb4ae9af1f210",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CD5",
+      "source_path": "docs/ship_pipeline/build_sheets/ithar_CD5/compare.jpg",
+      "source_revision_label": "23a9f63a+c02a7",
+      "crop": [
+        650,
+        100,
+        1264,
+        515
+      ],
+      "exact_source": {
+        "picture_name": "compare.jpg",
+        "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+        "source_dirty": true,
+        "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745",
+        "stage": "sheet built",
+        "date": "2026-11-17T10:21:11Z",
+        "image_sha256": "17d4e18bde131db1778b05dd6ba625fa1ab600dd0d24daeb0dc65a0f8691044e",
+        "sources": [
+          {
+            "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+            "source_dirty": true,
+            "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745",
+            "stage": "sheet built"
+          }
+        ]
+      }
+    }
+  ],
+  "comparison": "Existing pictures cropped and scaled. Each cell identifies the original stage."
+}

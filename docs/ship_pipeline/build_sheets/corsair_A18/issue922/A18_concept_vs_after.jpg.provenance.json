@@ -1,0 +1,77 @@
+{
+  "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "A18_concept_vs_after.jpg",
+  "date": "2026-11-17T03:19:16Z",
+  "sources": [
+    {
+      "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "A18_concept.jpg",
+      "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-17T03:19:15Z",
+      "image_sha256": "deff571d3f2c62e8a7cd221fc1859568241a4da61c715124f5893330c97c0bf9",
+      "sources": [
+        {
+          "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "A18_after_concept_camera.jpg",
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+      "stage": "paint proof",
+      "date": "2026-11-17T03:19:15Z",
+      "image_sha256": "aac3f17a7f81d19e1b102eab535b05dba84575a83ae8d192a64c97220e92b4dd",
+      "sources": [
+        {
+          "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+          "source_dirty": true,
+          "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    124
+  ],
+  "strip_sha256": [
+    "40a8d1cadf416c5b3cbe6c12117bef33a7a994d18887ee2ebd6ce8f8a947150b"
+  ],
+  "stamp_template_sha256": "78cf08bf49760d599dec9d3204ff6cc7d75dc02d914e47af0bf2e74715463280",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAAB8CAIAAADxfb18AAAB80lEQVR4nO3VMRHAIADAQKgC7pjwb7Q7BsjwryBb5tpnAEDJ9zoAAG7mBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQEwan6+2wE0K4KN6QAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "07521e694b31605b7d08a9580adfd049f519195213e53c25f941772b4dbd04f7"
+}

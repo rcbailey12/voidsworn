@@ -51,6 +51,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Picture provenance self-test dependency
+        run: python -m pip install Pillow
       - name: No em dashes in changed text files (house rule)
         run: |
           files=$(git diff --name-only --diff-filter=AM origin/main...HEAD | grep -E '\.(md|txt|js|gd|json|bat|py)$' || true)
@@ -103,6 +108,36 @@ jobs:
       - name: Nemesis scenarios (JS game and Godot, record by record)
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/campaign/test/run_nem_scenarios.sh
+  # Issue 979 (Path D, R312): Godot-only rules safety net beside parity: every battle with scoring caches on and off,
+  # byte for byte, plus the ruled numbers test. Uses no browser code. Its own job, so it adds no time to parity.
+  rules-safety:
+    name: Rules safety net (Godot only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Merge main in (test the branch as it would land)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
+          if git merge -q --no-edit origin/main; then
+            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
+          else
+            git merge --abort 2>/dev/null || true
+            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Get Godot 4.7.2 (headless)
+        run: |
+          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
+          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
+      - name: Run Godot-only rules safety net
+        run: sh godot/rules/test/safety/run_cache_check.sh
   # Issue 359: GitHub opens the game the player sees (the battle scene, HUD, effects, world, story), not only the rules.
   # Its own job, so it runs beside the parity job and has its own 30 minute limit. Ship files (godot/gen) are never on
   # GitHub: ships are placeholder blocks.

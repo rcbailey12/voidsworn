@@ -1,0 +1,36 @@
+{
+  "source_commit": "ec120d1a4c0ec0740af095d4812f81c7cf308ed0",
+  "source_dirty": true,
+  "source_diff_sha256": "63b2623ce7524c6ef9025749d5abfd2662fb3f286ff484cac90ce3e08911d906",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-r3-decision.png",
+  "date": "2026-11-17T20:21:29Z",
+  "sources": [
+    {
+      "source_commit": "ec120d1a4c0ec0740af095d4812f81c7cf308ed0",
+      "source_dirty": true,
+      "source_diff_sha256": "63b2623ce7524c6ef9025749d5abfd2662fb3f286ff484cac90ce3e08911d906",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "8884e4496a19f6fdfcf33a13732e0803e5eda9ed9a99c1eb1de90383690f12ac"
+  ],
+  "stamp_template_sha256": "8884e4496a19f6fdfcf33a13732e0803e5eda9ed9a99c1eb1de90383690f12ac",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "5e431c9535283c096d89e6f13fba599c768139adb1fbcea174a46a4f653355cb"
+}

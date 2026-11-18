@@ -1,0 +1,66 @@
+{
+  "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "A18_paint_full.jpg",
+  "date": "2026-11-17T03:19:20Z",
+  "sources": [
+    {
+      "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "A18_concept_vs_after.jpg",
+      "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-11-17T03:19:16Z",
+      "image_sha256": "07521e694b31605b7d08a9580adfd049f519195213e53c25f941772b4dbd04f7",
+      "sources": [
+        {
+          "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        },
+        {
+          "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+          "source_dirty": true,
+          "source_diff_sha256": "4ea155f9a8eb7396cf872c0efe100c70fd770c5b198098bfbf8ca998f7ec1158",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    124
+  ],
+  "strip_sha256": [
+    "547d1aec112567e59eb73172225b4e6e6986ed1de62dbd5f1ca4037bffa51f75"
+  ],
+  "stamp_template_sha256": "839a39cda195d5b194d75025a2d02fb3b658f32e3aae60e6f0bbdb5ab53ccac2",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAAB8CAIAAADxfb18AAAB80lEQVR4nO3VMRHAIADAQKgC7pjwb7Q7BsjwryBb5tpnAEDJ9zoAAG7mBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQEwan6+2wE0K4KN6QAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "6084f7efd77825474a1e9156b9a2b89e7b91dd741bbaead46ca6948ecbb4b08e"
+}

@@ -1,0 +1,77 @@
+{
+  "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "beauty_vs_blockout.jpg",
+  "date": "2026-11-17T03:19:20Z",
+  "sources": [
+    {
+      "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "30ba25f67d00e60dd14f6349da132694e74f11f31844651b211610013afc01e3",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "corsair_A18_beauty.jpg",
+      "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-17T03:19:20Z",
+      "image_sha256": "8b46d3624024950786edc47e5789aa6b60d8bb43e1ee2afe4454d367ce960546",
+      "sources": [
+        {
+          "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "beauty_cam.png",
+      "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+      "source_dirty": true,
+      "source_diff_sha256": "30ba25f67d00e60dd14f6349da132694e74f11f31844651b211610013afc01e3",
+      "stage": "sheet built",
+      "date": "2026-11-17T02:59:09Z",
+      "image_sha256": "abe9972eff2f6a6c76e70c8c89fd635c3f1efa3ef14f985dadd7d1800ac48710",
+      "sources": [
+        {
+          "source_commit": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+          "source_dirty": true,
+          "source_diff_sha256": "30ba25f67d00e60dd14f6349da132694e74f11f31844651b211610013afc01e3",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    124
+  ],
+  "strip_sha256": [
+    "a9df5c945818f8373831708bc079daa9c3b6a04901130d9210684144e3d3a1ff"
+  ],
+  "stamp_template_sha256": "5af60622b915b5673d492c4abcb665c634776a9be3b66701545ea21f4c84a8ae",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAAB8CAIAAADxfb18AAAB80lEQVR4nO3VMRHAIADAQKgU7ljwL7A7BsjwryBb5tpnAEDJ9zoAAG7mBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQEwan6O5AFp2ShrLgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "adad7a101bbb716cf7ef783cee8d7f4c04599b8a3ae8e94399cbd23c723d0ee9"
+}

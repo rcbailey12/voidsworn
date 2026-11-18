@@ -10,6 +10,38 @@ PC recipe run in this job: the Board reviews the pictures, then Ryan, before eit
 beside contrib/muse/design/concept_directions_2026_11/corsair_A.jpg (R198 (3)); the pictures here are unpainted, so the style
 comparison is of shape and detail, the paint is the Hegemony stack's job.
 
+## Issue 870, run 2: a visible blue bow gun
+
+Current proof: [concept, main before, after](ion_weapon_before_after.jpg),
+[camera 170 at native pixels](ion_weapon_cam170.jpg), [bow detail](weapon_ion.jpg),
+[checks and contract](ion_weapon_checks.json). These replace run 1's pale-lens evidence.
+The other pictures below show the original sheet.
+
+The shared accelerator keeps run 1's broad lens, nested metal coils and inset muzzle lip.
+Its lens and inner field contacts now emit blue light from materials authored in the design,
+using the Hegemony hblue and hlining zones with a dark base and ion-only emission strengths
+4.0 and 1.5. Other lights and the closed, dark drone doors keep their materials and geometry.
+The gun is brought forward within the bow; its registered beam origin follows the lens.
+
+H10's mouth grows from 1.3 by 0.7 to 1.8 by 1.05. A 0.93 by 1.56 window through the bow roof
+exposes the top of the emitter at the steep concept camera, where the closed roof hid it.
+The wedge outline stays intact. All 60 interior objects have identical evaluated geometry
+before and after. IM5 uses the same accelerator within its existing mouth, with no roof window.
+
+Method: build sheet, Blender 4.5.14, Cycles CPU, 24 samples. Both states use identical light,
+Standard view transform and a fog-glow compositor; no capture-only light boost. The before
+design is main 67ac3ab86616, not run 1. Current count: **54,332 outside + 5,432 inside = 59,764
+triangles**. Contract and weapon match pass; clash, mount, arc, sensor, sweep, exhaust, exit
+and lane each report zero. The stored record includes the full contract and interior hashes.
+
+This is a sheet correction. The existing painted export, game install and scene performance
+have not been rebuilt or measured. The port-beam camera cannot face the forward lens; the
+camera 170 sheet also shows a bow-quarter view at the same range and native scale.
+
+Rebuild the evidence with `tools/blender/build_sheets/studies/ion870.py` for both states of
+both ships, then `ion870_compose.py <render dir> <contract dir>`. The render folder and logs
+belong in TEMP; the compositor publishes the pictures and their provenance here.
+
 ![hegemony_H10 overview](hegemony_H10_sheet_overview.jpg)
 
 Start here: [the overview](hegemony_H10_sheet_overview.jpg), [the whole concept beside the build](hegemony_H10_compare_H10.jpg)
@@ -28,8 +60,9 @@ Files: design `tools/blender/build_sheets/ships/hegemony_H10.py`, inventory `heg
 2. **The shoulder terraces**: at 38 to 46 percent the deck steps down 0.34 into an octagonal terrace each side (H10's turret bays)
    and the knuckle swells out over it. The two heavy plasma lance turrets sit low in them: their roofs stand 0.1 over the deck,
    their barrels at deck level (R185 (4)).
-3. **The ion trench** (ion F): a 1.3 by 0.7 trench recessed 1.2 deep in the blunt bow face, coil-lined, a blue lens on the emitter
-   block at its back (R183 (1): never prongs or a barrel on the nose). Retro thrusters on the bow face either side.
+3. **The ion trench** (ion F): a 1.8 by 1.05 opening within the blunt bow face, a blue emissive lens at the accelerator's back,
+   six stepped capacitor rings, fainter field contacts, an inset muzzle lip and an upper field window (R287 run 2).
+   The bow module remains 1.2 deep. Retro thrusters on the bow face either side.
 4. **The twin rails** (the aft half): two chamfered blocks 2.66 wide in two module tiers (a recessed band at mid height carries the
    blue line), a gap 1.24 wide between them; the drone bay block between their roots with flush armoured doors in its roof (R232).
 5. **Four rectangular nozzle pods in one flat row**, two a rail: thick lips, blue-white throats, guide vanes (factions.md).
@@ -81,7 +114,7 @@ are the repo's own tools.
 | * Detail density, mesh (R224) | no flags; lowest: hatchbox 0.93 and antenna 0.94 triangles of the hull's per square unit ([density_mesh.json](density_mesh.json)) |
 | Outline overlap at the camera fitted to the H10 beauty | 93.5 percent, mass outline 93.6 (reported, not a bar; [outline_check.jpg](outline_check.jpg)) |
 
-## Budget (the stage 4 sheet_hull build, before the export)
+## Original budget (the first stage 4 sheet_hull build, before the export)
 
 53,556 triangles outside, 5,432 inside (58,988 in all; * budget.py); 11 outside materials, 12 inside; 355 outside objects. For
 comparison, the S8 sheet's stage 4 scene (the same stage, measured the same way): 99,690 outside, 15,508 inside, 8 outside

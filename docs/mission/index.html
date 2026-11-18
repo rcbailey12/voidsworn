@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<title>Mission Control | Embers Ops</title>
+<style>
+@font-face { font-family: Shoulders; src: url('/fonts/BigShouldersDisplay-VF.ttf'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: Chakra; src: url('/fonts/ChakraPetch-Medium.ttf'); font-weight: 500; font-display: swap; }
+@font-face { font-family: Chakra; src: url('/fonts/ChakraPetch-Bold.ttf'); font-weight: 700; font-display: swap; }
+@font-face { font-family: Barlow; src: url('/fonts/Barlow-Medium.ttf'); font-weight: 500; font-display: swap; }
+@font-face { font-family: Azeret; src: url('/fonts/AzeretMono-VF.ttf'); font-weight: 100 900; font-display: swap; }
+:root {
+  color-scheme: dark;
+  --ink: #090c09; --iron: #111611; --panel: #182019; --line: #344235;
+  --bone: #e8eee0; --secondary: #bec8b5; --dim: #a1ad99;
+  --lime: #c8f53a; --green: #59d6a8; --amber: #ffb23e; --coral: #ff8a72; --teal: #a1cbd9;
+  --body: Barlow, system-ui, sans-serif;
+  --title: Chakra, system-ui, sans-serif;
+  --mono: Azeret, ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--bone); font: 500 16px/1.32 var(--body); background: radial-gradient(ellipse at 72% 0, #18231a 0, transparent 370px), var(--ink); }
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48.5'%3E%3Cpath d='M14 0l14 8.08v16.17L14 32.33 0 24.25V8.08z M14 32.33v16.17' fill='none' stroke='%23c8f53a' stroke-width='.8'/%3E%3C/svg%3E");
+}
+.deck { position: relative; max-width: 580px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+header { padding: 11px 16px 0; }
+.mast { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+h1, h2, h3, p, figure, ol, dl { margin: 0; }
+.brand { display: block; font: 800 24px/.96 Shoulders, Impact, sans-serif; letter-spacing: .13em; }
+.brand small { display: block; margin-top: 5px; font: 700 10px/1.2 var(--title); letter-spacing: .21em; color: var(--dim); }
+.ticks { height: 7px; margin-top: 10px; border-top: 1px solid var(--line); background: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 8px) 0 0 / 100% 4px no-repeat; }
+.signals { display: flex; flex-wrap: wrap; justify-content: end; gap: 3px 11px; }
+.signal { display: inline-flex; align-items: center; gap: 5px; font: 500 11px/1.4 var(--mono); color: var(--secondary); white-space: nowrap; }
+.signal::before, .status::before { content: ""; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--tone, var(--dim)); }
+.good { --tone: var(--green); } .warn { --tone: var(--amber); } .bad { --tone: var(--coral); }
+h2, h3 { font: 700 23px/1.12 var(--title); overflow-wrap: anywhere; }
+h3 { font-size: 19px; }
+p + p { margin-top: 5px; }
+summary, a { color: inherit; }
+a { text-decoration-color: var(--dim); text-underline-offset: 3px; }
+summary { cursor: pointer; }
+summary:focus-visible, a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--bone); outline-offset: -2px; }
+[hidden] { display: none !important; }
+.inset { margin-inline: 16px; }
+.kicker { font: 700 12px/1.3 var(--title); letter-spacing: .14em; text-transform: uppercase; }
+.section-label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 13px 0 6px; color: var(--secondary); }
+.label-icon { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; }
+.tool-icon { width: 17px; height: 17px; flex: none; }
+.signal .tool-icon { width: 14px; height: 14px; }
+.evidence .tool-icon { width: 15px; height: 15px; }
+.meta { color: var(--dim); }
+.meta, .secondary { font-size: 14px; }
+.secondary, .on-panel .meta { color: var(--secondary); }
+.mono { font: 500 11px/1.45 var(--mono); }
+.meta, .secondary, .notice, .value { overflow-wrap: anywhere; }
+.notice { margin: 9px 12px 0; border-left: 2px solid var(--tone, var(--line)); background-color: var(--iron); padding: 8px 12px; }
+.notice .kicker { color: var(--tone, var(--secondary)); }
+.notice p { margin-top: 3px; }
+.notice h3 { margin: 3px 0 4px; }
+.striped { background-image: repeating-linear-gradient(135deg, #ffb23e10 0 6px, transparent 6px 13px); }
+.question { --tone: var(--lime); }
+.question h2 { margin-top: 5px; font-size: 22px; }
+.question-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.calm { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; margin: 8px 16px 9px; }
+.calm strong { font: 700 14px var(--title); }
+.calm::before { content: ""; flex: 0 0 7px; height: 7px; border: 1px solid var(--tone, var(--dim)); transform: rotate(45deg); align-self: center; }
+.row-link { display: block; text-decoration: none; }
+.last-known .status, .last-known .ring { --tone: var(--dim); }
+.mate-strip { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 2px; }
+.mate-chip { display: flex; flex-direction: column; align-items: center; text-align: center; padding-block: 2px 3px; gap: 3px; font: 700 12px/1.2 var(--title); min-height: 44px; }
+.mate-chip small { font: 500 12px/1.18 var(--body); color: var(--dim); }
+.ring { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border: 1.5px solid var(--tone, var(--dim)); border-radius: 50%; background: var(--iron); }
+.ring.github { border-style: dashed; }
+.ring img { width: 24px; height: 24px; object-fit: contain; }
+.list { padding: 0; list-style: none; }
+.list > li { border-top: 1px solid var(--line); }
+.row { width: 100%; min-height: 48px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 3px 8px; align-items: baseline; padding: 6px 0; }
+.row strong { color: var(--bone); font-size: 16px; overflow-wrap: anywhere; }
+.row .meta { min-width: 0; grid-column: 1/-1; font-size: 13px; }
+.row .status { justify-self: end; }
+.last-known .row { grid-template-columns: minmax(0,1fr); gap: 1px; padding-block: 4px; }
+.last-known .row .status { justify-self: start; }
+.status { display: inline-flex; gap: 5px; align-items: center; font: 700 12px/1.25 var(--title); color: var(--tone, var(--secondary)); text-transform: uppercase; }
+.issue-id { color: var(--teal); font: 500 11px var(--mono); margin-right: 7px; }
+.back, .text-link { display: inline-flex; align-items: center; min-height: 44px; font: 700 13px var(--title); }
+.text-link { margin-right: 14px; }
+.back { gap: 9px; padding-inline: 16px; color: var(--secondary); }
+details { background-color: var(--panel); padding: 0 10px 2px; margin-top: 8px; border-top: 1px solid var(--line); }
+summary { min-height: 44px; padding: 12px 0 8px; font: 700 14px/1.4 var(--title); }
+details .evidence { margin: 2px 0 8px; }
+.evidence { padding: 0; list-style: none; }
+.evidence li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 9px; padding: 5px 0; border-top: 1px solid var(--line); font-size: 14px; overflow-wrap: anywhere; }
+.evidence li span { min-width: 0; }
+.facts { margin-top: 8px; }
+.fact { display: grid; grid-template-columns: minmax(75px,25%) minmax(0,1fr); gap: 8px; border-top: 1px solid var(--line); padding: 6px 0; font-size: 15px; }
+.fact dt { align-self: start; color: var(--secondary); }
+.fact dd { margin: 0; }
+.task-title { margin-top: 10px; }
+.task-title .kicker { color: var(--teal); margin-bottom: 4px; }
+.task-title .status { margin: 5px 8px 0 0; }
+.task-title .meta { margin: 3px 0; }
+.timeline { list-style: none; padding: 0; margin-top: 9px; }
+.timeline li { position: relative; padding: 0 0 7px 16px; font-size: 15px; }
+.timeline li::before { content: ""; position: absolute; top: 5px; left: 0; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--dim); background: var(--ink); z-index: 1; }
+.timeline li[data-proved]::before { border-color: var(--tone,var(--green)); background: var(--tone,var(--green)); }
+.timeline li:not(:last-child)::after { content: ""; position: absolute; left: 5px; top: 8px; height: 100%; width: 1px; background: var(--line); }
+.timeline .meta { display: block; }
+.flight-plan { margin: 12px 0 18px; padding-top: 7px; border-top: 2px solid var(--line); }
+.flight-plan h3 { color: var(--teal); }
+.flight-leg { margin-top: 10px; }
+.flight-leg h4 { margin: 0 0 3px; color: var(--secondary); }
+.flight-leg.attention h4 { color: var(--amber); }
+.chain-group { margin: 6px 0 0; padding-left: 8px; border-left: 2px solid var(--line); }
+.chain-group.attention { border-color: var(--amber); }
+.chain-group .list, .flight-leg .list { margin: 0; }
+.chain-group .list > li:first-child, .flight-leg .list > li:first-child { border-top: 0; }
+.chain-group > .meta { margin-top: 3px; }
+.copy-button { min-height: 44px; color: var(--bone); background: var(--iron); border: 1px solid var(--line); padding-inline: 12px; font: 700 13px var(--title); cursor: pointer; }
+.check-in { display: block; width: 100%; margin: 8px 0; padding: 7px; resize: vertical; color: var(--bone); background: var(--iron); border: 1px solid var(--line); font: inherit; }
+.job-picture { margin: 12px 0; }
+.job-picture img { display: block; max-width: 100%; max-height: 420px; object-fit: contain; }
+.crew-detail { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 10px; border-top: 1px solid var(--line); padding: 9px 0; scroll-margin-top: 8px; }
+.crew-detail .list { margin-top: 5px; }
+.crew-detail .ring { margin-top: 2px; }
+nav { position: fixed; z-index: 4; left: 50%; bottom: 0; width: min(100%,580px); transform: translateX(-50%); padding-bottom: env(safe-area-inset-bottom); display: grid; grid-template-columns: repeat(3,1fr); background: var(--ink); border-top: 1px solid var(--line); }
+nav a { min-height: 53px; display: grid; place-content: center; text-align: center; gap: 2px; position: relative; font: 700 13px var(--title); letter-spacing: .13em; text-transform: uppercase; text-decoration: none; color: var(--secondary); }
+nav a[aria-current] { color: var(--bone); }
+nav a[aria-current]::before { content: ""; position: absolute; left: calc(50% - 12px); top: 4px; width: 24px; height: 2px; background: var(--bone); }
+nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none; letter-spacing: 0; }
+.fixture-label { padding: 3px 16px; font: 500 10px var(--mono); background: var(--ink); color: var(--secondary); }
+@media (max-width: 350px) {
+  header { padding-inline: 12px; } .inset { margin-inline: 12px; }
+  .signals { display: grid; gap: 2px; }
+  .row { column-gap: 5px; }
+  .status { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+<div class="deck">
+  <header>
+    <div class="mast">
+      <h1 class="brand">EMBERS OPS<small>MISSION CONTROL</small></h1>
+      <div class="signals" id="signals"></div>
+    </div>
+    <div class="ticks" aria-hidden="true"></div>
+  </header>
+  <div id="alerts" role="status"></div>
+  <main id="content"></main>
+  <nav aria-label="Mission Control">
+    <a id="nav-now" href="#now">Now</a>
+    <a id="nav-queue" href="#queue">Queue<small id="queue-count"></small></a>
+    <a id="nav-crew" href="#crew">Crew</a>
+  </nav>
+</div>
+<script>
+(() => {
+  'use strict';
+
+
+  const REPO = 'https://github.com/rcbailey12/voidsworn';
+  const CREW = [
+    {id:'claude',name:'Claude',source:'pulls',icon:'/crew/claude.svg'},
+    {id:'codex',name:'Codex',source:'PC files',icon:'/crew/codex.svg'},
+    {id:'muse',name:'Muse / Rey',source:'pulls',icon:'/crew/muse.svg'},
+    {id:'deepseek',name:'DeepSeek',source:'PC files',icon:'/crew/deepseek.svg'},
+    {id:'openai',name:'OpenAI',source:'PC files',icon:'/crew/openai.svg'},
+    {id:'artoo',name:'Artoo',source:'comments',icon:'/crew/artoo.svg'}
+  ];
+  const ICONS = {lanes:'/icons/lanes.svg',queue:'/icons/queue.svg',gpu:'/icons/gpu.svg',pc:'/icons/pc.svg',github:'/icons/github.svg',phone:'/icons/phone.svg'};
+  const SOURCES = {questions:'Questions',issues:'Issues',pulls:'Pull requests',comments:'Comments'};
+  const STATES = {
+    running:['Running','good'], waiting:['Waiting','warn'], blocked:['Blocked','warn'], failed:['Failed','bad'],
+    finished:['Finished','good'], quiet:['Quiet','warn'], idle:['Idle',''], unknown:['Unknown','warn']
+  };
+  const GROUPS = {started:'Recorded in this chain',linked:'Waiting for predecessor',starting:'Ready, start pending',stuck:'Blocked',unknown:'Queue unknown',legacy:'Last listed, queue unverified'};
+  const $ = id => document.getElementById(id);
+  const isIssue = n => Number.isSafeInteger(n) && n>0;
+  const date = value => typeof value==='string' && Number.isFinite(Date.parse(value)) ? Date.parse(value) : 0;
+  const clean = (value, fallback = '') => typeof value==='string' && value.trim() &&
+    !/[a-z]:[\\/]|\\\\|\/Users\/|\/home\/|(?:gh[pousr]_|github_pat_|sk-)[a-z0-9_]+/i.test(value) ? value : fallback;
+  const clock = stamp => date(stamp) ? new Date(stamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:false}) : 'time unknown';
+  const minutes = stamp => Math.max(0,Math.floor((Date.now()-date(stamp))/60000));
+  const age = stamp => !date(stamp) ? 'age unknown' : minutes(stamp)<1 ? 'just now' :
+    minutes(stamp)<60 ? minutes(stamp)+' min ago' : Math.floor(minutes(stamp)/60)+' h '+minutes(stamp)%60+' min ago';
+  const dated = stamp => date(stamp) ? clock(stamp)+' · '+age(stamp) : 'time unknown';
+  function el(tag, classes, ...children) {
+    const node = document.createElement(tag);
+    if (classes) node.className = classes;
+    node.append(...children);
+    return node;
+  }
+  function link(href, label, classes = 'text-link') {
+    const node = el('a',classes,label);
+    node.href = href;
+    return node;
+  }
+  function iconLabel(label, name) {
+    const icon = el('img','tool-icon');
+    icon.src = ICONS[name];
+    icon.alt = '';
+    return el('span','label-icon',icon,label);
+  }
+  function detail(title, key, ...nodes) {
+    const node = el('details','on-panel',el('summary','',title),...nodes);
+    node.dataset.keep = key;
+    return node;
+  }
+  function pictureLink(raw) {
+    try {
+      const url = new URL(raw);
+      return url.protocol==='https:' && !url.username && !url.password && !url.search && !url.hash &&
+        ['github.com','raw.githubusercontent.com'].includes(url.hostname) &&
+        url.pathname.startsWith('/rcbailey12/voidsworn/') && clean(decodeURIComponent(url.pathname)) ? url.href : null;
+    } catch (_) { return null; }
+  }
+
+  let data, fetchFailed = false, fetching = false;
+  const gh = () => data?.github || {};
+  const lanes = () => data?.lanes || [];
+  const full = () => data && data.state!=='starting';
+  const offline = () => full() && Date.now()-date(data.generatedAt)>(data.offlineAfterSeconds || 180)*1000;
+  const lastKnown = () => offline() || fetchFailed;
+  const oldBuild = () => data && (data.schemaVersion===1 || !data.build?.id || data.build.stale);
+  function latestSource(name) {
+    if (gh().sources?.[name]) return gh().sources[name];
+    return {lastSuccessfulReadAt:gh().lastReadAt,complete:name==='questions' ? gh().coverageComplete : gh().ok};
+  }
+  function sourceWarning(name) {
+    const source = latestSource(name);
+    const threshold = (source.intervalSeconds || 600)*(data?.thresholds?.githubIntervalMultiplier || 2)*1000;
+    return !!(lastKnown() || source.stale || !source.complete || !date(source.lastSuccessfulReadAt) ||
+      Date.now()-date(source.lastSuccessfulReadAt)>threshold);
+  }
+  function sourceLine(name) {
+    const source = latestSource(name), at = source.lastSuccessfulReadAt;
+    const label = 'GitHub '+SOURCES[name].toLowerCase();
+    if (!date(at)) return label+' · '+(source.lastAttemptAt ? 'no successful read · tried '+age(source.lastAttemptAt) :
+      offline() ? 'no recorded read' : 'awaiting first read');
+    return label+' · '+(sourceWarning(name) ? 'last known ' : 'read ')+dated(at);
+  }
+  function isChecking(name) {
+    const source = latestSource(name);
+    return !date(source.lastSuccessfulReadAt) && !date(source.lastAttemptAt) && !offline();
+  }
+  function evidenceList(entries) {
+    return el('ul','evidence',...entries.map(([key,value])=>el('li','',el('span','',key),el('span','secondary',value))));
+  }
+  function sourceRows() {
+    const entries = Object.keys(SOURCES).map(name => {
+      const source = latestSource(name);
+      const state = sourceWarning(name) ? isChecking(name) ? 'Checking' : 'Incomplete or old' : 'Checked';
+      const notes = [];
+      if (!source.complete && source.lastAttemptAt) notes.push(clean(source.reason,'Read incomplete'));
+      if (sourceWarning(name) && date(source.nextAttemptAt)) notes.push('Next try '+clock(source.nextAttemptAt));
+      return [iconLabel(state+' · '+sourceLine(name),'github'),notes.join(' · ')];
+    });
+    const budget = gh().budget;
+    if (budget) {
+      entries.push(['GitHub budget',budget.requestsPastHour+' / '+budget.ceilingPerHour+' requests in the last hour']);
+      if (budget.pausedUntil && date(budget.pausedUntil)>Date.now()) entries.push([clean(budget.reason,'GitHub reads paused'),'Until '+clock(budget.pausedUntil)]);
+    }
+    const build = data?.build;
+    if (/^[a-f0-9]{64}$/i.test(build?.id || '')) entries.push([iconLabel('Version '+build.id.slice(0,8),'phone'),
+      (/^[a-f0-9]{40}$/i.test(build.sourceRevision || '') ? 'Build '+build.sourceRevision.slice(0,12)+' · ' : '')+
+      'Publisher started '+dated(build.startedAt)+(date(build.sourceAt) ? ' · Files updated '+dated(build.sourceAt) : '')]);
+    const pc = data?.pcSource;
+    if (pc) entries.push([iconLabel((pc.complete ? 'PC files' : 'PC files incomplete')+' · '+
+      (date(pc.lastSuccessfulReadAt) ? 'last successful scan '+dated(pc.lastSuccessfulReadAt) : 'no successful scan'),'pc'),
+      pc.complete ? '' : clean(pc.reason,'PC scan incomplete')]);
+    else if (full()) entries.push([iconLabel('PC snapshot','pc'),dated(data.generatedAt)]);
+    return evidenceList(entries);
+  }
+  function alert(title, copy, tone, striped = false) {
+    return el('section','notice on-panel '+tone+(striped ? ' striped' : ''),el('h2','kicker',title),el('p','secondary',copy));
+  }
+  function renderSignals() {
+    const isOffline = offline(), alerts = [], sources = Object.keys(SOURCES);
+    const troubled = sources.filter(name=>sourceWarning(name) && !isChecking(name));
+    const ghAge = gh().lastReadAt;
+    $('signals').replaceChildren(
+      el('span','signal '+(isOffline ? 'bad' : full() && !fetchFailed ? 'good' : 'warn'),
+        iconLabel(isOffline ? 'PC lost' : full() ? 'PC '+age(data.generatedAt) : data ? 'PC starting' : 'PC waiting','pc')),
+      el('span','signal '+(troubled.length || !date(ghAge) ? 'warn' : 'good'),
+        iconLabel(isOffline ? 'GitHub last known' : troubled.length ? 'GitHub partial' : date(ghAge) ? 'GitHub '+age(ghAge) : 'GitHub checking','github'))
+    );
+    if (oldBuild()) alerts.push(alert('Older publisher','Mission Control is running an older version. Restart with PHONE_ON.','bad'));
+    if (isOffline) alerts.push(alert('PC feed lost · '+age(data.generatedAt),'Last-known snapshot from '+clock(data.generatedAt)+'. The PC may be asleep or the link may have dropped.','bad'));
+    else if (fetchFailed) alerts.push(alert('PC link interrupted',full() ? 'Last-known snapshot from '+dated(data.generatedAt)+'.' : 'No PC snapshot has reached this page.','warn'));
+    if (full() && !isOffline && troubled.length) {
+      const summary = troubled.map(name=>sourceLine(name)).join(' / ');
+      const next = troubled.map(name=>latestSource(name).nextAttemptAt).filter(stamp=>date(stamp)>Date.now()).sort()[0];
+      const pauseReason = date(gh().budget?.pausedUntil)>Date.now() ? clean(gh().budget.reason)+'. ' : '';
+      alerts.push(alert('GitHub unavailable · '+troubled.map(name=>SOURCES[name]).join(', '),
+        pauseReason+summary+(next ? '. Next try '+clock(next)+'.' : '.'),'warn',true));
+    }
+    if (data?.pcSource?.complete===false || full() && data.warnings?.length) alerts.push(alert('PC sources incomplete',
+      clean(data.pcSource?.reason,'Some lane files could not be read.'),'warn'));
+    document.body.classList.toggle('last-known',!!lastKnown());
+    $('alerts').replaceChildren(...alerts);
+  }
+
+  function laneState(lane) {
+    if (lane.endedWithoutPush) return ['Finished','bad'];
+    const key = lane.stale && ['running','waiting','quiet'].includes(lane.state) ? 'quiet' : lane.state;
+    const claim = key==='unknown' && /^Claim/i.test(lane.reason || '') && lane.claim?.state;
+    if (claim==='claimed, not started') return ['Claimed','warn'];
+    if (claim==='not confirmed') return ['Claim not confirmed','warn'];
+    return STATES[key] || STATES.unknown;
+  }
+  function statusText(word) {
+    return lastKnown() ? 'Last known · '+word : word;
+  }
+  function stateLine(word, tone) {
+    return el('span','status '+tone,statusText(word));
+  }
+  function laneEvidence(lane) {
+    if (['running','quiet'].includes(lane.state) && date(lane.lastActivityAt)) return 'PC run activity · '+dated(lane.lastActivityAt);
+    if (['Claimed','Claim not confirmed'].includes(laneState(lane)[0])) return 'PC start record · '+dated(lane.startedAt);
+    const result = (lane.evidence || []).find(item=>item.source==='result.txt' && /matching run|same run directory/.test(item.association || '') && date(item.at));
+    if (result && ['failed','blocked','waiting','unknown'].includes(lane.state)) return 'PC runner result · '+dated(result.at);
+    const runner = (lane.evidence || []).find(item=>item.source==='status.json' && date(item.at));
+    if (runner) return 'PC runner update · '+dated(runner.at);
+    return date(lane.source?.updatedAt) ? 'PC lane files · '+dated(lane.source.updatedAt) : 'PC snapshot · '+dated(data?.generatedAt);
+  }
+  function laneReason(lane) {
+    if (lane.endedWithoutPush) return 'The run ended without a confirmed push.';
+    return clean(lane.reason,
+      lane.state==='quiet' ? 'No recent write. The running process is unconfirmed.' :
+      lane.state==='unknown' ? 'The PC files do not establish a current state.' : '');
+  }
+  const jobTitle = job => clean(job?.title,isIssue(job?.issue) ? 'Issue #'+job.issue : 'No current job confirmed');
+  const taskHref = (lane,job) => '#task/'+lane.id+'/'+(job?.issue || 0);
+  function row(lane, entry) {
+    const {job, word, tone, updated} = entry;
+    const title = el('strong','');
+    if (isIssue(job?.issue)) title.append(el('span','issue-id','#'+job.issue));
+    const name = jobTitle(job);
+    title.append(/\bGPU\b|cost at 4K/i.test(name) ? iconLabel(name,'gpu') : name);
+    const delivery = stages(lane,entry).slice(1).filter(([label])=>['Checked push confirmed','PR recorded','Technical review recorded'].includes(label));
+    const deliveryLine = delivery.map(([label,verdict])=>label==='PR recorded' ? label+' · '+verdict.split(' · ').slice(0,2).join(' · ') : label);
+    const content = el('span','row',title,stateLine(word,tone),el('span','meta',updated),
+      deliveryLine.length ? el('span','meta',deliveryLine.join(' / ')) : '');
+    return el('li','',job ? link(taskHref(lane,job),content,'row-link') : content);
+  }
+
+  function questions() {
+    const section = el('section','');
+    const source = latestSource('questions'), warning = sourceWarning('questions');
+    const asks = (gh().needsRyan || []).filter(question=>isIssue(question?.issue));
+    const label = warning ? isChecking('questions') ? 'Checking for questions' : 'Needs Ryan check incomplete' : 'Nothing waiting on you';
+    if (warning || !asks.length) section.append(el('p','calm'+(warning ? ' warn' : ''),el('strong','',label),el('span','meta',sourceLine('questions'))));
+    for (const ask of asks) {
+      const question = clean(ask.question);
+      const article = el('article','notice question on-panel'+(warning ? ' striped' : ''),
+        el('div','question-top',el('p','kicker',warning ? 'Needs Ryan · last known' : 'Needs Ryan'),el('span','secondary','#'+ask.issue+' · updated '+age(ask.updatedAt))),
+        el('h2','',question || 'Needs Ryan flagged; question unavailable'),question ? el('p','secondary','Answer the Board in chat.') : '');
+      const attached = pictureLink(ask.picture);
+      if (attached) article.append(link(attached,'View Board picture'));
+      article.append(link(REPO+'/issues/'+ask.issue,'Open issue #'+ask.issue),el('p','secondary',sourceLine('questions')));
+      section.append(article);
+    }
+    return section;
+  }
+
+  function evidence(lane) {
+    const shortRun = /^[a-f0-9]{8}$/i.test(lane.run || '') ? lane.run : '';
+    const subtitle = 'Evidence'+(shortRun ? ' · run '+shortRun : '');
+    const entries = (lane.evidence || []).map(item=>[clean(item.source,'PC file')+(item.association ? ' · '+clean(item.association) : ''),dated(item.at)]);
+    if (lane.source?.lanes?.length) entries.push(['PC chain files',lane.source.lanes.map(name=>clean(name)).filter(Boolean).join(', ')]);
+    if (lane.source?.files?.length && !entries.length) entries.push(['PC runner files',lane.source.files.map(name=>clean(name)).filter(Boolean).join(', ')]);
+    for (const warning of lane.warnings || []) entries.push([clean(warning),'PC snapshot · '+dated(data?.generatedAt)]);
+    if (lane.source?.updatedAt) entries.push(['PC lane files updated',dated(lane.source.updatedAt)]);
+    entries.push(['PC scanned',dated(lane.source?.refreshedAt || data?.generatedAt)]);
+    return evidenceList([[subtitle,''],...entries]);
+  }
+  function stages(lane, entry) {
+    const {job, word, current} = entry;
+    const push = current && lane.state==='finished' && lane.runnerState==='checked_push' && !lane.endedWithoutPush;
+    const pr = isIssue(job?.prNumber), prState = ['open','closed','merged'].includes(job?.prState) ? job.prState : 'state unverified';
+    const review = pr && date(job.prReviewAt);
+    return [
+      ['Runner',statusText(current ? laneState(lane)[0] : word)+' · '+entry.updated,current && lane.state!=='unknown'],
+      [push ? 'Checked push confirmed' : 'Checked push unconfirmed',push ? statusText('PC runner')+' · '+dated(lane.finishedAt || lane.source?.updatedAt) : '',push],
+      [pr ? 'PR recorded' : 'PR unconfirmed',pr ? '#'+job.prNumber+' · '+prState+' · '+sourceLine('pulls') : sourceLine('pulls'),pr && !sourceWarning('pulls')],
+      [review ? 'Technical review recorded' : 'Review evidence unavailable',review ? 'Artoo comment names the recorded PR head · '+dated(job.prReviewAt)+' · '+sourceLine('comments') : '',review && !sourceWarning('comments') && !sourceWarning('pulls')]
+    ];
+  }
+
+  function crewLanes(member) { return lanes().filter(lane=>(['deepseek','openai'].includes(lane.id) ? lane.id : 'codex')===member.id); }
+  function memberSummary(member) {
+    if (member.source==='PC files') {
+      const own = crewLanes(member), working = own.filter(lane=>lane.state==='running' && !lane.stale).length;
+      if (working) return statusText(working+' running')+' · '+age(data.generatedAt);
+      const quiet = own.filter(lane=>lane.state==='quiet' || lane.stale).length;
+      if (quiet) return statusText(quiet+' quiet')+' · '+age(data.generatedAt);
+      if (own.some(lane=>lane.run)) return 'PC records · '+age(data.generatedAt);
+      const hit = gh().crew?.[member.id];
+      return hit ? 'Last seen on GitHub · '+age(hit.at) : 'Local activity unknown';
+    }
+    const hit = gh().crew?.[member.id];
+    return hit ? (sourceWarning(member.source) ? 'Last known · ' : 'GitHub · ')+age(hit.at) :
+      isChecking(member.source) ? 'GitHub checking' : 'GitHub unknown';
+  }
+  function glyph(member) {
+    const local = member.source==='PC files';
+    const tone = local && crewLanes(member).some(lane=>lane.state==='running' && !lane.stale) && !lastKnown() ? ' good' : !local && sourceWarning(member.source) ? ' warn' : '';
+    const image = el('img',member.id);
+    image.src = member.icon;
+    image.alt = '';
+    return el('span','ring'+(local ? '' : ' github')+tone,image);
+  }
+  function crewStrip() {
+    const section = el('section','inset',el('div','section-label',el('h2','kicker','Crew'),el('span','meta','Solid PC · Dashed GitHub')));
+    const strip = el('div','mate-strip');
+    for (const member of CREW) strip.append(link('#crew/'+member.id,el('span','mate-chip',glyph(member),member.name,el('small','',memberSummary(member))),'row-link'));
+    section.append(strip);
+    return section;
+  }
+  function crewPage() {
+    const section = el('section','inset',el('h2','section-label','Crew'));
+    for (const member of CREW) {
+      const local = member.source==='PC files', hit = gh().crew?.[member.id];
+      const unavailable = (!local || hit) && sourceWarning(local ? 'pulls' : member.source);
+      const copy = el('div','',el('h3','',member.name));
+      if (local) copy.append(el('p','meta','PC files · '+dated(data?.generatedAt)),el('ul','list',...crewLanes(member).map(lane=>row(lane,flightPlan(lane).current))));
+      if (!local || hit) {
+        copy.append(el('p','secondary',hit ? (unavailable ? 'Last known on GitHub · ' : 'Last seen on GitHub · ')+dated(hit.at) : 'GitHub activity unknown'));
+        if (isIssue(hit?.number)) copy.append(link(REPO+(member.id==='artoo' ? '/issues/' : '/pull/')+hit.number,clean(hit.action,'Activity recorded')+' #'+hit.number));
+        copy.append(el('p','meta',sourceLine(local ? 'pulls' : member.source)));
+      }
+      const entry = el('article','crew-detail'+(unavailable ? ' striped' : ''),glyph(member),copy);
+      entry.id = 'crew-'+member.id;
+      section.append(entry);
+    }
+    section.append(detail('Sources & version','crew-sources',sourceRows()));
+    return section;
+  }
+
+  // Keep each group's partial order and evidence for all three views.
+  function flightPlan(lane) {
+    const [word,tone] = laneState(lane);
+    const conflict = lane.state==='running' && !lane.stale && !lane.endedWithoutPush && lane.current?.githubState==='closed';
+    const conflictReason = conflict ? 'PC runner records this job as running. '+(sourceWarning('issues') ?
+      'Last known issue state on GitHub is closed.' : 'The issue is closed on GitHub.') : '';
+    const current = {job:lane.current,word:conflict ? 'Issue conflict' : word,tone:conflict ? 'bad' : tone,
+      current:true,updated:laneEvidence(lane),reason:conflictReason || laneReason(lane)};
+    const raw = lane.queue?.groups || ((lane.next || []).length ? [{state:'legacy',jobs:lane.next,
+      reason:'The older snapshot lists this issue without a verified chain.'}] : []);
+    const groups = raw.map(group=>{
+      const word = GROUPS[group.state] || GROUPS.unknown;
+      const waiting = ['started','linked','starting'].includes(group.state);
+      const updated = (group.state==='legacy' ? 'Legacy snapshot' : 'Chain updated')+' · '+dated(group.sourceAt || (group.state==='legacy' ? data.generatedAt : null));
+      const predecessor = group.predecessor;
+      const after = isIssue(predecessor?.issue) ? 'After #'+predecessor.issue+' · '+jobTitle(predecessor) :
+        group.after && group.state!=='unknown' ? 'Wait target has no confirmed issue.' : '';
+      const jobs = (group.jobs || []).filter(job=>isIssue(job.issue)).map(job=>({job,group,updated,
+        word:job.githubState==='closed' ? 'Issue conflict' : word,
+        tone:job.githubState==='closed' ? 'bad' : waiting && !group.amber ? '' : 'warn',
+        reason:job.githubState==='closed' ? (sourceWarning('issues') ? 'Last known closed on GitHub; chain still lists it.' : 'Closed on GitHub; chain still lists it.') : ''}));
+      return {group,word,waiting,updated,after,jobs};
+    });
+    const next = groups.filter(entry=>entry.waiting && entry.jobs.length);
+    const unresolved = groups.filter(entry=>!entry.waiting);
+    const recorded = next.flatMap(entry=>entry.jobs);
+    const waitingCount = new Set(recorded.filter(entry=>!entry.reason && !entry.group.blockedByPredecessor).map(entry=>entry.job.issue)).size;
+    const attention = [];
+    if (conflict) attention.push('#'+current.job.issue+' · '+conflictReason);
+    else if (current.reason && (lane.endedWithoutPush || lane.state!=='running' && lane.state!=='finished')) attention.push(current.reason);
+    for (const {group,jobs} of groups) {
+      if (group.attention || group.amber && group.state==='starting') {
+        const subject = group.predecessor?.issue || jobs[0]?.job.issue || current.job?.issue;
+        attention.push((subject ? '#'+subject+' · ' : '')+clean(group.attention || group.reason));
+      }
+    }
+    for (const issue of new Set(recorded.map(entry=>entry.job.issue))) {
+      if (next.filter(entry=>entry.jobs.some(item=>item.job.issue===issue)).length>1) attention.push('#'+issue+' appears in multiple recorded chains.');
+    }
+    if (!unresolved.length && lane.queue?.state==='unknown') attention.push(clean(lane.queue.reason,'Queue records are incomplete.'));
+    return {current,groups,next,unresolved,waitingCount,attention:[...new Set(attention)],
+      nextEmpty:!lane.queue || lane.queue.state==='unknown' ? 'Successor order unverified.' : 'No successor recorded.'};
+  }
+
+  function chainDetails(entries, key, lane) {
+    const facts = [];
+    for (const {group,updated} of entries) {
+      facts.push([clean(group.chain,'Legacy listing'),updated]);
+      if (group.after) facts.push(['Predecessor file',clean(group.after)]);
+      if (group.targets?.length>1) facts.push(['Possible predecessor files',group.targets.map(name=>clean(name)).join(', ')]);
+      if (group.waitSource) facts.push(['Wait recorded by',clean(group.waitSource)]);
+      if (group.predecessorAt) facts.push(['Predecessor record updated',dated(group.predecessorAt)]);
+      if (group.readyAt) facts.push(['Predecessor ended',dated(group.readyAt)]);
+      for (const note of group.notes || []) facts.push([clean(note),'']);
+    }
+    const history = (lane?.queue?.history || []).map(chain=>[clean(chain.chain)+' · '+clean(chain.state),
+      [clean(chain.reason),date(chain.endedAt) ? 'Ended '+dated(chain.endedAt) : 'Updated '+dated(chain.sourceAt)].filter(Boolean).join(' · ')]);
+    if (lane) for (const item of lane.leftovers || []) history.push(['Older '+lane.label+' record #'+item.job.issue,'PC activity '+dated(item.lastActivityAt)]);
+    return facts.length || history.length ? detail('Details',key,...(facts.length ? [evidenceList(facts)] : []),
+      ...(history.length ? [el('h4','kicker','History'),evidenceList(history)] : [])) : '';
+  }
+
+  function groupRows(lane, entry) {
+    const {group,word,updated,after,jobs} = entry;
+    return el('div','chain-group'+(entry.waiting ? '' : ' attention'),
+      el('p','meta',[after,clean(group.reason)].filter(Boolean).join(' · ') || (group.state==='started' ? 'Continues within this chain.' : word)),
+      jobs.length ? el('ul','list',...jobs.map(job=>row(lane,job))) : el('p','meta',statusText(word)+' · '+updated));
+  }
+  function flightCard(lane, prefix) {
+    const plan = flightPlan(lane);
+    const present = (title,cls,...nodes) => el('section','flight-leg '+cls,el('h4','kicker',title),...nodes);
+    const card = el('article','flight-plan',el('h3','',lane.label),
+      present('Now','now',el('ul','list',row(lane,plan.current))),
+      present('Next','next',...(plan.next.length ? plan.next.map(group=>groupRows(lane,group)) : [el('p','meta',statusText(plan.nextEmpty))])),
+      present('Needs attention','attention',
+        ...plan.attention.map(note=>el('p','secondary',note)),
+        ...plan.unresolved.map(group=>groupRows(lane,group)),
+        ...(!plan.attention.length && !plan.unresolved.length && !plan.groups.some(group=>group.jobs.some(entry=>entry.reason)) ?
+          [el('p','meta',statusText('No blockers recorded.'))] : [])),
+      chainDetails(plan.groups,prefix+'-details-'+lane.id,lane));
+    const attention = card.querySelector('.flight-leg.attention');
+    for (const {jobs} of plan.groups) for (const entry of jobs.filter(job=>job.reason))
+      attention.append(el('p','secondary','#'+entry.job.issue+' · '+entry.reason));
+    card.id = prefix+'-'+lane.id;
+    return card;
+  }
+
+  function queuePage() {
+    return el('section','inset',el('h2','section-label',iconLabel('Queue','queue')),
+      el('p','meta',statusText('PC chain snapshot')+' · '+dated(data.generatedAt)+'. Each chain has its own order.'),
+      ...lanes().map(lane=>flightCard(lane,'queue')),detail('Sources & version','queue-sources',sourceRows()));
+  }
+  function issueState(job) {
+    const state = {open:'Open on GitHub',closed:'Closed on GitHub'}[job.githubState] || 'GitHub issue state unverified';
+    return state+' · '+sourceLine('issues');
+  }
+  function facts(pairs) {
+    return el('dl','facts',...pairs.map(([key,value])=>el('div','fact',el('dt','kicker',key),el('dd','value',value))));
+  }
+  function jobPicture(lane, issue) {
+    const picture = (lane.pictures || []).find(pic=>pic.issue===issue && pic.association==='this run' && /^[a-f0-9]{64}$/.test(pic.id || ''));
+    if (!picture || lastKnown()) return '';
+    const image = el('img',''), figure = el('figure','job-picture',image,
+      el('figcaption','meta',clean(picture.stage,'Run picture')+' · '+dated(picture.capturedAt)));
+    figure.hidden = true;
+    image.alt = 'Verified artwork from issue #'+issue;
+    image.addEventListener('load',()=>{ figure.hidden = false; });
+    image.src = '/pic/'+picture.id;
+    return figure;
+  }
+  function checkIn(lane, job, word, updated) {
+    const coordinator = lane.id==='openai' ? 'OpenAI workhorse' : lane.id==='deepseek' ? 'DeepSeek workhorse' : 'the Board';
+    const message = 'Check-in for '+coordinator+'\n'+lane.label+' · #'+job.issue+' '+jobTitle(job)+'\n'+
+      statusText(word)+' · '+updated+'\n'+REPO+'/issues/'+job.issue+'\nCan you confirm the current state and next step?';
+    const area = el('textarea','check-in');
+    area.value = message;
+    area.readOnly = true;
+    area.rows = 4;
+    area.hidden = true;
+    area.setAttribute('aria-label','Check-in for '+coordinator);
+    const button = el('button','copy-button','Copy check-in for '+coordinator);
+    button.type = 'button';
+    button.addEventListener('click',async ()=>{
+      try { await navigator.clipboard.writeText(message); button.textContent = 'Check-in copied'; }
+      catch (_) { area.hidden = false; area.focus(); area.select(); }
+    });
+    return el('section','flight-leg',button,area);
+  }
+  function taskPage(lane, issue, from) {
+    const section = el('section','',link('#'+from,'‹ '+(from==='queue' ? 'Queue' : from==='crew' ? 'Crew' : 'Now'),'back'));
+    const plan = flightPlan(lane);
+    const matches = plan.groups.filter(group=>group.jobs.some(entry=>entry.job.issue===issue));
+    const assignments = matches.map(group=>group.jobs.find(entry=>entry.job.issue===issue));
+    const current = issue===(lane.current?.issue || 0);
+    const entry = current ? plan.current : assignments.length>1 ? {...assignments[0],word:'Multiple chain records',tone:'warn',
+      updated:'PC snapshot · '+dated(data.generatedAt)} : assignments[0];
+    if (!entry) {
+      section.append(alert('Job no longer listed','The PC snapshot from '+dated(data.generatedAt)+' has no current or chain record for #'+issue+'.','warn'));
+      return section;
+    }
+    const {job,word,tone,updated,reason} = entry;
+    const content = el('div','inset'), heading = el('div','task-title',el('p','kicker',lane.label+(issue ? ' · #'+issue : '')),el('h2','',jobTitle(job)));
+    heading.append(stateLine(word,tone),el('p','meta',updated));
+    if (reason) heading.append(el('p','secondary',reason));
+    content.append(heading);
+    if (current && issue) content.append(jobPicture(lane,issue));
+    if (matches.length) {
+      const recorded = el('section','flight-leg',el('h3','kicker','Chain records'));
+      for (const [index, group] of matches.entries()) {
+        const record = assignments[index];
+        recorded.append(el('div','chain-group',stateLine(record.word,record.tone),
+          el('p','meta',[group.after,clean(group.group.reason),record.updated].filter(Boolean).join(' · '))));
+      }
+      content.append(recorded);
+    }
+    const timeline = el('ol','timeline');
+    for (const [name,verdict,proved] of stages(lane,entry)) {
+      const item = el('li','',el('strong','',name),el('span','meta',verdict));
+      if (proved) item.dataset.proved = '';
+      timeline.append(item);
+    }
+    content.append(timeline);
+    if (job) content.append(facts([['Issue',issueState(job)]]),link(REPO+'/issues/'+issue,'Open issue #'+issue));
+    if (isIssue(job?.prNumber)) content.append(link(REPO+'/pull/'+job.prNumber,'View PR #'+job.prNumber));
+    if (job) content.append(checkIn(lane,job,word,updated));
+    if (current) content.append(detail('Details','run-'+lane.id,evidence(lane)));
+    content.append(chainDetails(matches,'task-chains-'+lane.id+'-'+issue));
+    content.append(detail('Sources & version','task-sources',sourceRows()));
+    section.append(content);
+    return section;
+  }
+
+  function nowPage() {
+    const plans = el('section','inset',el('h2','section-label',iconLabel('Lane flight plans','lanes')),
+      ...lanes().map(lane=>flightCard(lane,'now')),
+      detail('Sources & version','now-sources',sourceRows()));
+    return el('section','',questions(),plans,crewStrip());
+  }
+
+
+  let from = 'now';
+  function route() {
+    const [view,id,issue] = (location.hash.slice(1)||'now').split('/');
+    if (view==='task') return {view,lane:lanes().find(lane=>lane.id===id),issue:Number(issue),tab:from};
+    const tab = ['queue','crew'].includes(view) ? view : 'now';
+    from = tab;
+    return {view:tab,tab,id};
+  }
+  function render(navigated = false) {
+    renderSignals();
+    const screen = route();
+    for (const tab of ['now','queue','crew']) {
+      if (tab===screen.tab) $('nav-'+tab).setAttribute('aria-current','page');
+      else $('nav-'+tab).removeAttribute('aria-current');
+    }
+    const count = lanes().reduce((total,lane)=>total+flightPlan(lane).waitingCount,0);
+    $('queue-count').textContent = !full() ? '' : lastKnown() ? 'Last known' : count ? count+' recorded waiting '+(count===1 ? 'job' : 'jobs') : '';
+    const main = $('content');
+    const expanded = new Set([...main.querySelectorAll('details[open]')].map(node=>node.dataset.keep));
+    const active = document.activeElement;
+    const control = active?.closest('#content') ? active.getAttribute('href') || active.closest('details')?.dataset.keep : null;
+    const starting = data?.state==='starting';
+    const view = !full() ? alert(starting ? 'Mission Control is starting' : 'Awaiting the PC',
+      starting ? 'The publisher is listening. The first read of PC files is in progress.' : 'The page is waiting for a publisher snapshot.','warn') :
+      screen.view==='task' && screen.lane ? taskPage(screen.lane,screen.issue,screen.tab) :
+      screen.view==='queue' ? queuePage() : screen.view==='crew' ? crewPage() : nowPage();
+    main.replaceChildren(view);
+    if (!full() && data?.pcSource) main.append(el('section','inset',detail('Sources & version','starting-sources',sourceRows())));
+    if (navigated) {
+      window.scrollTo(0,0);
+      const target = screen.id && $(screen.view+'-'+screen.id);
+      const focus = target || main.querySelector('h2') || main;
+      focus.tabIndex = -1;
+      focus.focus({preventScroll:true});
+      if (target) target.scrollIntoView({block:'start'});
+    } else {
+      for (const node of main.querySelectorAll('details')) node.open = expanded.has(node.dataset.keep);
+      if (control) [...main.querySelectorAll('a,summary')].find(node=>(node.getAttribute('href') || node.closest('details')?.dataset.keep)===control)?.focus({preventScroll:true});
+    }
+  }
+  function validate(snapshot) {
+    if (![1,2].includes(snapshot?.schemaVersion) || !Array.isArray(snapshot.lanes)) throw Error('Snapshot schema');
+    if (snapshot.schemaVersion===2 && snapshot.state==='starting' && snapshot.generatedAt===null && snapshot.build?.id && !snapshot.lanes.length) return snapshot;
+    if (!date(snapshot.generatedAt) || date(snapshot.generatedAt)>Date.now()+120000) throw Error('Snapshot time');
+    return snapshot;
+  }
+  async function refresh() {
+    if (fetching) return;
+    fetching = true;
+    const controller = new AbortController(), timeout = setTimeout(()=>controller.abort(),8000);
+    try {
+      const response = await fetch('/status.json',{cache:'no-store',signal:controller.signal});
+      if (!response.ok) throw Error('Snapshot unavailable');
+      const next = validate(await response.json());
+      if (!(next.state==='starting' && full())) data = next;
+      fetchFailed = false;
+    } catch (_) { fetchFailed = true; }
+    finally { clearTimeout(timeout); fetching = false; render(); }
+    setTimeout(refresh,data?.state==='starting' || !data ? 3000 : 60000);
+  }
+  window.addEventListener('hashchange',()=>render(true));
+  document.addEventListener('visibilitychange',()=>{ if (!document.hidden) render(); });
+  render();
+  void refresh();
+})();
+</script>
+</body>
+</html>

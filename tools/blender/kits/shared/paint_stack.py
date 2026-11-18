@@ -9,12 +9,11 @@
 #      G edges (the bevel normal against the face normal: every plate edge, rim and step), B ambient occlusion at a long reach
 #      (where grime gathers: under decks, between parts). Parts occlude the hull and the hull the parts, as on the real ship;
 #   3. builds one procedural material per (zone, atlas) from the faction stack's layers, every layer driven by those masks, the
-#      world position and the face normal: base colour (two tones, one tone per plate island), soot, rust and run-off, grime,
+#      world position and the face normal: module family, surface duty and a small local step, soot, rust and run-off, grime,
 #      edge wear to bare metal, the faction's TRIM SHEET (rivet rows near plate edges, scuffs, grilles, tread, stripes; sampled
 #      by box projection at ship scale, so a gun and a hull plate carry the same rivet and scuff density, R224) and DECALS
 #      (placed by the faction's rules on the ship's own surfaces by ray cast, never painted by hand);
-#   4. bakes the atlases: albedo, ORM (occlusion, roughness, metal) for both; a detail normal for the hull (rivets, welds,
-#      scuffs and seams from the same layers' height);
+#   4. bakes albedo, ORM (occlusion, roughness, metal) and a detail normal for both atlases (rivets, wear and seams);
 #   5. puts the textured materials on the ship (the recipe's export, stage 7, reads them), keeps glowing zones as their own
 #      emissive surfaces and leaves the insides with the sheet's own materials.
 # The concept picture is never projected onto the ship: colours may be sampled from it (the faction stack says where).
@@ -57,6 +56,11 @@ def split(scene=None):
 GLOW_ZONES = set()      # filled by use(stack): the zones the faction stack keeps as glowing surfaces
 
 
+def glow_zone(o, fallback='glow'):
+    """The sheet's explicit zone wins over a private or copied material name."""
+    return o.get('emissive_zone') or (o.data.materials[0].name if o.data.materials else fallback)
+
+
 def unwrap(objs, margin):
     """one atlas for these objects: smart projection, islands packed together at one texel density"""
     bpy.ops.object.select_all(action='DESELECT')
@@ -72,35 +76,20 @@ def unwrap(objs, margin):
     bpy.ops.object.mode_set(mode='OBJECT')
 
 
-def mirror_islands(o):
-    """issue 783: a per-plate random that a plate and its mirror twin share (point attribute ps_isl, 0..1), for a stack that asks
-    for a mirrored paint (LAYERS mirror). Blender's Random Per Island numbers islands in mesh order, so twins got unrelated tones;
-    here each island (vertices joined by edges) takes a hash of its centre folded to the port side, (x, |y|, z), on a 0.1 mm grid."""
-    me = o.data; n = len(me.vertices)
-    if not n: return 0
-    co = np.zeros(n * 3, np.float32); me.vertices.foreach_get('co', co); co = co.reshape(n, 3) @ np.asarray(o.matrix_world)[:3, :3].T + np.asarray(o.matrix_world)[:3, 3]
-    ev = np.zeros(len(me.edges) * 2, np.int64); me.edges.foreach_get('vertices', ev); ev = ev.reshape(-1, 2)
-    root = np.arange(n)
-    def find(a):
-        while root[a] != a:
-            root[a] = root[root[a]]; a = root[a]
-        return a
-    for a, b in ev:
-        ra, rb = find(a), find(b)
-        if ra != rb: root[max(ra, rb)] = min(ra, rb)
-    lab = np.array([find(i) for i in range(n)])
-    _, inv = np.unique(lab, return_inverse=True); k = inv.max() + 1
-    cen = np.zeros((k, 3)); np.add.at(cen, inv, co.astype(np.float64)); cen /= np.bincount(inv, minlength=k)[:, None]
-    cen[:, 1] = np.abs(cen[:, 1])
-    q = np.round(cen * 1e4).astype(np.int64)
-    h = (q[:, 0] * 73856093) ^ (q[:, 1] * 19349663) ^ (q[:, 2] * 83492791)
-    val = ((h * 2654435761) % 1000003) / 1000003.0
-    if me.attributes.get('ps_isl') is None: me.attributes.new('ps_isl', 'FLOAT', 'POINT')
-    me.attributes['ps_isl'].data.foreach_set('value', val[inv].astype(np.float32))
-    return int(k)
+def part_module_tones(S, objs):
+    """Pick a finish once per authored assembly, including its mount and turning pieces."""
+    by_group = {}
+    for o in objs:
+        kind = o.get('part_kind')
+        if kind:
+            by_group.setdefault(o.get('grp', o.name), kind)
+    return {
+        o.name: S.MODULE_TONES[S.PART_FAMILIES.get(by_group.get(o.get('grp', o.name)), 'body')]
+        for o in objs
+    }
 
 
-def bake_copy(objs, name, zone_by_kind=None):
+def bake_copy(objs, name, zone_by_kind=None, module_tones=None, plate_mesh=None):
     """one joined copy of these objects (same UVs and material slots, world space, no modifiers), so Cycles syncs the scene once
     per bake instead of once per object (round 6 lesson, bakeAb6.py); the originals are hidden from the render meanwhile"""
     cps = []
@@ -108,6 +97,12 @@ def bake_copy(objs, name, zone_by_kind=None):
         c = o.copy(); c.data = o.data.copy(); bpy.context.scene.collection.objects.link(c)
         mw = o.matrix_world.copy(); c.parent = None; c.matrix_world = mw
         for md in list(c.modifiers): c.modifiers.remove(md)
+        if module_tones is not None:
+            tone = c.data.attributes.new('ps_module_tone', 'FLOAT', 'POINT')
+            tone.data.foreach_set('value', np.full(len(c.data.vertices), module_tones[o.name], np.float32))
+        if plate_mesh is not None and plate_mesh(o):
+            plates = c.data.attributes.new('ps_authored_panels', 'FLOAT', 'POINT')
+            plates.data.foreach_set('value', np.ones(len(c.data.vertices), np.float32))
         z = (zone_by_kind or {}).get((o.get('part_kind'), o.data.materials[0].name if o.data.materials else ''))
         if z:      # the faction stack gives this part kind its own zone (a launch bay mouth's warning stripes)
             ph = bpy.data.materials.get(z) or bpy.data.materials.new(z)
@@ -161,7 +156,7 @@ def np_image(name, arr, colour=True):
 
 # ------------------------------------------------------------------------------------------------------------ shared node blocks
 class Ctx:
-    """the inputs every layer reads, made once per material: masks, position, normal, per-plate random, edge bands"""
+    """the inputs every layer reads, made once per material: masks, position, normal and edge bands"""
     def __init__(self, nt, masks, scale, mirror=False):
         self.nt = nt
         tc = node(nt, 'ShaderNodeTexCoord'); geo = node(nt, 'ShaderNodeNewGeometry'); self.tc, self.geo = tc, geo
@@ -182,11 +177,6 @@ class Ctx:
         self.up = math_(nt, 'MAXIMUM', self.nz, 0)
         self.down = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', self.nz, -1), 0)
         self.side = math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', self.nz))
-        self.isl = geo.outputs['Random Per Island'] if 'Random Per Island' in geo.outputs else None
-        if mirror:      # the plate's own random, the same for a plate and its mirror twin (mirror_islands writes it on the bake copy)
-            at = node(nt, 'ShaderNodeAttribute'); at.attribute_type = 'GEOMETRY'; at.attribute_name = 'ps_isl'; self.isl = at.outputs['Fac']
-        if self.isl is None:
-            oi = node(nt, 'ShaderNodeObjectInfo'); self.isl = oi.outputs['Random']
         self.scale = scale
         self._edge_band = None
 
@@ -349,11 +339,20 @@ def _seams(c, S, lines):
     return seam
 
 
+def repair_cluster(c, cell_id):
+    """Neighbouring salvage cells share a repair register within the authored shell section."""
+    nt = c.nt
+    ids = node(nt, 'ShaderNodeSeparateXYZ')
+    nt.links.new(cell_id, ids.inputs[0])
+    xyz = [math_(nt, 'FLOOR', math_(nt, 'DIVIDE', axis, 2)) for axis in ids.outputs]
+    return _wn(nt, xyz[0], xyz[1], math_(nt, 'ADD', xyz[2], math_(nt, 'MULTIPLY', c.shell_module, 41.0)))
+
+
 def patchwork(c, S, col, amount, families=None, cells=None):
     """the plate patchwork (R228, R240; RULEBOOK 0.5, tidy is a fault): two uneven panel grids of different sizes (_grid: no even
     row, no repeated cell, no row running on across a face), the region of each chosen by a broad noise, plus a sparse layer of
-    larger patch plates laid over them; each panel (and each modelled plate, by its UV island) picks one of the faction's plate
-    families. Returns the colour and the seam mask."""
+    larger patch plates laid over them. Hullbreaker colours follow those same seam cells and their repair clusters.
+    Returns the colour and the seam mask."""
     if hasattr(S, 'panel_nodes'):
         return S.panel_nodes(c, col, amount, families, cells)
     nt = c.nt; L = S.LAYERS; families = families or S.PATCH_FAMILIES
@@ -367,8 +366,10 @@ def patchwork(c, S, col, amount, families=None, cells=None):
         seam = sm if seam is None else math_(nt, 'ADD', seam, sm)
     def pick(cid, w, col, small=False):
         wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cid, wn.inputs['Vector'])
-        r = math_(nt, 'FRACT', math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', c.isl, .618)))
+        cluster, _, _, _ = repair_cluster(c, cid)
         sp2 = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sp2.inputs[0]); tone = sp2.outputs[1]
+        grouped = math_(nt, 'LESS_THAN', sp2.outputs[2], .55)
+        r = math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', grouped, math_(nt, 'SUBTRACT', cluster, wn.outputs['Value'])))
         lo = 0.0
         for fam_ in families:
             share, (flo, fhi) = fam_[0], fam_[1]
@@ -389,36 +390,95 @@ def patchwork(c, S, col, amount, families=None, cells=None):
     return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
 
 
-def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
+def seam_limit(c, x, path):
+    """Read the sheet's kinked plan seam as an x boundary at the current beam position."""
+    if not path:
+        return x
+    nt = c.nt
+    path = sorted(path, key=lambda point: point[1])
+    low_y, high_y = path[0][1], path[-1][1]
+    if high_y <= low_y:
+        return x
+    low_x = min(p[0] for p in path)
+    span_x = max(p[0] for p in path) - low_x
+    if span_x < 1e-6:
+        return low_x
+    along = math_(nt, 'DIVIDE', math_(nt, 'SUBTRACT', c.y, low_y), high_y - low_y)
+    profile = node(nt, 'ShaderNodeValToRGB')
+    nt.links.new(along, profile.inputs['Fac'])
+    elements = profile.color_ramp.elements
+    stops = [elements[0], elements[1]]
+    for px, element in zip((path[0][0], path[-1][0]), stops):
+        value = (px - low_x) / span_x
+        element.color = (value, value, value, 1)
+    for px, py in path[1:-1]:
+        element = elements.new((py - low_y) / (high_y - low_y))
+        value = (px - low_x) / span_x
+        element.color = (value, value, value, 1)
+    return math_(nt, 'ADD', low_x, math_(nt, 'MULTIPLY', profile.outputs['Color'], span_x))
+
+
+def module_finish(c, S, zone, group, joints):
+    """R318: choose a module family, then an authored finish for its surface duty."""
+    nt = c.nt
+    c.shell_module = 0.0
+    tone = S.MODULE_TONES[S.HULL_FAMILIES[0]]
+    for i, (joint, path) in enumerate(joints, 1):
+        after = math_(nt, 'GREATER_THAN', c.x, seam_limit(c, joint, path))
+        c.shell_module = math_(nt, 'ADD', c.shell_module, after)
+        if group == 'H':
+            families = S.HULL_FAMILIES
+            step = S.MODULE_TONES[families[i % len(families)]] - S.MODULE_TONES[families[(i - 1) % len(families)]]
+            if step:
+                tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', after, step))
+    if group == 'P':
+        attr = node(nt, 'ShaderNodeAttribute', attribute_type='GEOMETRY', attribute_name='ps_module_tone')
+        tone = attr.outputs['Fac']
+    z = S.ZONES[zone]
+    duty = S.SURFACE_DUTIES[zone]
+    base = getattr(S, 'PART_DUTY_TONES', {}).get(duty) if group == 'P' else None
+    if base is None:
+        base = tuple((a + b) / 2 for a, b in zip(z['lo'], z['hi']))
+    rgb = node(nt, 'ShaderNodeRGB')
+    rgb.outputs[0].default_value = (*base, 1.0)
+    return mulc(nt, rgb.outputs[0], tone)
+
+
+def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, base_image=None, normal_image=None):
     """the procedural material of one zone in one atlas (group 'H' hull, 'P' parts), from the faction stack S"""
     z = S.ZONES[zone]
+    if base_image is not None:
+        z = {**z, **getattr(S, 'LEGACY_COAT', {})}
     m = bpy.data.materials.new(f'ps_{zone}_{group}'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
     c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
     L = S.LAYERS
-    lo, hi = z['lo'], z['hi']
-    # 1. base: two tones in broad patches, one tone per plate island (a scavenged hull: no two plates alike)
-    # the plate's own tone first (its island), a soft broad patch over it, a fine mottle: a hull of salvaged plates, no camouflage
-    it = L.get('island_tone', .75)       # issue 642: how much of the base tone is the plate island's own (thousands of tiny islands read as grain)
-    tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', c.isl, it), math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['patch_scale'], 3), .3, .7), 1 - it))
-    col = mixc(nt, lo, hi, tone)
-    col = mulc(nt, col, math_(nt, 'ADD', 1 - z.get('plate_var', L['plate_var']) / 2, math_(nt, 'MULTIPLY', c.isl, z.get('plate_var', L['plate_var']))))
-    mo = L.get('mottle', .2); col = mulc(nt, col, math_(nt, 'ADD', 1 - mo / 2, math_(nt, 'MULTIPLY', c.noise(L['mottle_scale'], 5, .65), mo)))
+    bare_roughness = L.get('bare_roughness')
+    if base_image is None:
+        col = module_finish(c, S, zone, group, joints)
+    else:
+        # A legacy atlas already carries its livery and the seams of its fitted pieces.
+        # Keep that paint beneath the same satin coat, grime and exposed edge layers.
+        col = atlas_colour(nt, base_image)
+        legacy_panel_colour = getattr(S, 'legacy_panel_colour', None)
+        if legacy_panel_colour is not None:
+            col = legacy_panel_colour(c, col)
     seam = None
-    if group == 'H' and z.get('red_share', 0) > 0:      # a share of the zone's hull plates (by island) carry the red over-paint, worn
-        pick = math_(nt, 'GREATER_THAN', math_(nt, 'FRACT', math_(nt, 'MULTIPLY', c.isl, 7.31)), 1 - z['red_share'])
-        rlo, rhi = S.RED_PLATE
-        red = mixc(nt, rlo, rhi, ramp(nt, c.noise(L['patch_scale'] * 3, 3), .3, .7))
-        thin = ramp(nt, c.noise(L['mottle_scale'] * .5, 4, .6), .32, .58)          # the paint is thin and patchy
-        col = mixc(nt, col, red, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', pick, thin), L.get('red_tone', .75)))
-    if group == 'H' and z.get('patchwork', 0) > 0 and getattr(S, 'PATCH_FAMILIES', None):
+    # The ship-frame lattice belongs to the shell. A fitting already has
+    # its own joints, edges and clearances in the built geometry.
+    if base_image is None and group == 'H' and z.get('patchwork', 0) > 0:
         col, seam = patchwork(c, S, col, z['patchwork'])
-    elif group == 'P' and z.get('patchwork_parts', 0) > 0 and getattr(S, 'PATCH_FAMILIES_PARTS', None):
-        # R224 in paint: big part faces (a rack box, a turret top) carry the hull's plate and seam detail at a smaller plate size
-        col, seam = patchwork(c, S, col, z['patchwork_parts'], S.PATCH_FAMILIES_PARTS, S.LAYERS['patch_parts'])
+    mottle = c.noise(L['mottle_scale'], 2)
+    tone_range = z.get('mottle_range', L.get('mottle_range', .03))
+    col = mulc(nt, col, math_(nt, 'ADD', 1 - tone_range / 2, math_(nt, 'MULTIPLY', mottle, tone_range)))
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['side_dark'], math_(nt, 'MULTIPLY', c.up, L['side_dark'])))
-    height = math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 4, .6), L.get('grain', .05))
-    rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 2), .08))
+    grain = c.noise(L['grain_scale'], 2 if bare_roughness is not None else 4, .6)
+    height = math_(nt, 'MULTIPLY', grain, L.get('grain', .05))
+    rough_grain = grain if bare_roughness is not None else c.noise(L['grain_scale'], 2)
+    rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', rough_grain, L.get('rough_grain', .08)))
+    if L.get('coat_roughness'):
+        coat = ramp(nt, mottle, .34, .66)
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', coat, L['coat_roughness']))
     metal = z.get('metal', L['metal'])
     wear_amt = z.get('wear', L['wear'])
     # 2. the trim sheet: scuffs everywhere, rivet rows set back from plate edges, the zone's own rows (grille, tread, stripes)
@@ -426,6 +486,8 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     scuff = math_(nt, 'MULTIPLY', sc_a, z.get('scuff', L['scuff']))
     col = mixc(nt, col, S.BARE, math_(nt, 'MULTIPLY', scuff, .55))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', scuff, -.25))
+    if L.get('scuff_roughness'):
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', scuff, L['scuff_roughness']))
     if z.get('rivets', L['rivets']):
         rv_c, rv_a = c.tile(tiles['rivets'], L['rivet_pitch'])
         band = c.edge_band(L['rivet_band'][0], L['rivet_band'][1])
@@ -457,30 +519,62 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     g = math_(nt, 'ADD', g, math_(nt, 'MULTIPLY', ramp(nt, c.x, L['soot_x'][1], L['soot_x'][0]), L['soot_aft']))
     g = math_(nt, 'MULTIPLY', g, z.get('grime', L['grime']), clamp=True)
     col = mixc(nt, col, S.GRIME, math_(nt, 'MULTIPLY', g, .8))
-    run = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['streak_scale'] * .7, 2, .5, stretch=(30, 30, 1.6)), .55, .74), c.side), z.get('grime', L['grime']) * .5)
+    streaks = c.noise(L['streak_scale'] * .7, 2, .5, stretch=(30, 30, 1.6))
+    run = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ramp(nt, streaks, .55, .74), c.side), z.get('grime', L['grime']) * .5)
+    if L.get('recess_streaks'):
+        # Vertical tracks show strongly below overhangs and around vents.
+        shelter = ramp(nt, c.aol, .97, .58)
+        residue = math_(nt, 'MULTIPLY', run, shelter)
+        run = math_(nt, 'ADD', run, math_(nt, 'MULTIPLY', residue, L['recess_streaks']))
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', run, .30))
     col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, run))
     cav = math_(nt, 'POWER', c.ao, L.get('cavity_pow', 1.0))
-    col = mulc(nt, col, math_(nt, 'ADD', 1 - L['ao_dark'], math_(nt, 'MULTIPLY', cav, L['ao_dark'])))
+    ao_dark = L.get('parts_ao_dark', L['ao_dark']) if group == 'P' else L['ao_dark']
+    col = mulc(nt, col, math_(nt, 'ADD', 1 - ao_dark, math_(nt, 'MULTIPLY', cav, ao_dark)))
+    if L.get('cavity_roughness'):
+        sheltered = math_(nt, 'SUBTRACT', 1, cav)
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', sheltered, L['cavity_roughness']))
     if seam is not None:       # black seams between the panels
-        col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, L.get('seam_dark', .8))))
-        height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5)))
+        seam_dark = L.get('seam_dark', .8)
+        col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, seam_dark)))
+        panel_height = math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5))
+        panel_height.node.label = 'NORMAL_PATCHWORK_HEIGHT'
+        height = math_(nt, 'SUBTRACT', height, panel_height)
         rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', seam, .1))
     # 5. decals (hull atlas): before the wear, so the wear eats into them
     wear = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', c.edge, ramp(nt, c.noise(L['wear_scale'], 6, .6), L.get('wear_lo', .38), L.get('wear_hi', .62))), wear_amt)
     wear = math_(nt, 'MULTIPLY', wear, ramp(nt, c.noise(L['wear_patch'], 2), .30, .66), clamp=True)
+    if bare_roughness is not None:
+        wear = math_(nt, 'MULTIPLY', wear, cav)
+    if z.get('handling_wear'):
+        # The trim's scratches also polish exposed fittings such as collars
+        # and rims. Short occlusion keeps them out of sheltered corners.
+        handling = math_(nt, 'MULTIPLY', scuff, math_(nt, 'MULTIPLY', cav, z['handling_wear']))
+        wear = math_(nt, 'MAXIMUM', wear, handling)
     if decals and decal_atlas is not None:
         col, height, rough = decal_layer(c, col, height, rough, decals, decal_atlas, S.DECAL_CELLS, math_(nt, 'ADD', math_(nt, 'MULTIPLY', scuff, .7), wear))
     # 6. edge wear to bare metal: broken up, only in some areas
     col = mixc(nt, col, S.BARE, wear)
-    rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', wear, .30))
-    metal = math_(nt, 'ADD', metal, math_(nt, 'MULTIPLY', wear, .6), clamp=True)
-    height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', wear, .1))
+    if bare_roughness is None:
+        rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', wear, .30))
     rough = math_(nt, 'MAXIMUM', math_(nt, 'MINIMUM', rough, 1.0), L.get('rough_floor', .05))
+    if bare_roughness is not None:
+        # Coat and exposed metal have separate finishes. The paint's
+        # roughness floor still applies across broad panel faces.
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', wear, math_(nt, 'SUBTRACT', bare_roughness, rough)))
+    metal_gain = math_(nt, 'SUBTRACT', 1, metal) if bare_roughness is not None else .6
+    metal = math_(nt, 'ADD', metal, math_(nt, 'MULTIPLY', wear, metal_gain), clamp=True)
+    height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', wear, .1))
     nt.links.new(col, bs.inputs['Base Color']); nt.links.new(rough, bs.inputs['Roughness'])
     if isinstance(metal, float): bs.inputs['Metallic'].default_value = metal
     else: nt.links.new(metal, bs.inputs['Metallic'])
     # the detail normal: the layers' height through a bump at the trim's own scale
     bp = node(nt, 'ShaderNodeBump'); bp.inputs['Distance'].default_value = L['bump_distance']; bp.inputs['Strength'].default_value = L['bump_strength']
+    if normal_image is not None:
+        original_normal = node(nt, 'ShaderNodeNormalMap')
+        original_normal.inputs['Strength'].default_value = z.get('normal_strength', 1.0)
+        nt.links.new(atlas_colour(nt, normal_image), original_normal.inputs['Color'])
+        nt.links.new(original_normal.outputs['Normal'], bp.inputs['Normal'])
     nt.links.new(height, bp.inputs['Height']); nt.links.new(bp.outputs['Normal'], bs.inputs['Normal'])
     # the bake's labelled outputs (paint3's names, so the same emit switch bakes them)
     orm = node(nt, 'ShaderNodeCombineColor'); orm.label = 'ORM'
@@ -490,7 +584,16 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     else: nt.links.new(metal, orm.inputs[2])
     alb = node(nt, 'ShaderNodeMix', data_type='RGBA'); alb.label = 'ALBEDO'; alb.inputs[0].default_value = 0; nt.links.new(col, alb.inputs[6])
     m['ps_zone'] = zone; m['ps_group'] = group
+    # Only the trophy layer needs this repair. Other factions retain their
+    # original bake path even if a later ship adds more nodes or decals.
+    m['ps_height_bake'] = bool((getattr(S, 'TROPHY', None) or {}).get('share'))
     return m
+
+
+def atlas_colour(nt, image):
+    tex = node(nt, 'ShaderNodeTexImage'); tex.image = image
+    nt.links.new(node(nt, 'ShaderNodeUVMap').outputs[0], tex.inputs[0])
+    return tex.outputs['Color']
 
 
 def mask_material(name, S):
@@ -533,7 +636,110 @@ def bake(obj, kind, margin):
     rb.use_selected_to_active = False; rb.margin = margin; rb.target = 'IMAGE_TEXTURES'
     bpy.ops.object.select_all(action='DESELECT'); obj.select_set(True); bpy.context.view_layer.objects.active = obj
     t0 = time.time()
-    if kind == 'NORMAL': bpy.ops.object.bake(type='NORMAL', normal_space='TANGENT')
+    if kind == 'NORMAL':
+        # Compile only the existing normal. Large patchwork inputs are cut at
+        # their labelled height term, baked per material to 16-bit PNG, then
+        # sampled by a small UV graph. Rivets, wear and decals stay procedural.
+        restore, temporary_nodes, temporary_images, height_links = [], [], [], []
+        materials = {slot.material for slot in obj.material_slots if slot.material}
+        old_clear = rb.use_clear
+        try:
+            for mat in sorted(materials, key=lambda m: m.name):
+                nt = mat.node_tree
+                bs = next(n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED')
+                out = next(n for n in nt.nodes if n.type == 'OUTPUT_MATERIAL')
+                surface = out.inputs['Surface']; sources = [link.from_socket for link in surface.links]
+                normal = [link.from_socket for link in bs.inputs['Normal'].links]
+                pending = [socket.node for socket in normal]; ancestors = set(pending)
+                while pending:
+                    for socket in pending.pop().inputs:
+                        for link in socket.links:
+                            if link.from_node not in ancestors:
+                                ancestors.add(link.from_node); pending.append(link.from_node)
+                target = nt.nodes.active
+                restore.append((mat, surface, sources, None, target, target.image, len(ancestors)))
+            # 800 is a conservative routing budget measured against A20, not
+            # a test of SVM validity. Simpler materials retain their old path.
+            heavy = [item for item in restore if item[0].get('ps_height_bake', False) and item[-1] > 800]
+            if heavy:
+                # Leave every smaller ship's bake entirely on its original
+                # surface, including Eclipse. Only a large input needs proxies.
+                for index, item in enumerate(restore):
+                    mat, surface, sources, _, target, atlas, count = item
+                    nt = mat.node_tree
+                    proxy = nt.nodes.new('ShaderNodeBsdfDiffuse'); temporary_nodes.append((nt, proxy))
+                    bs = next(n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED')
+                    for link in bs.inputs['Normal'].links: nt.links.new(link.from_socket, proxy.inputs['Normal'])
+                    nt.links.new(proxy.outputs[0], surface)
+                    restore[index] = (mat, surface, sources, proxy, target, atlas, count)
+                heavy = [item for item in restore if item[0].get('ps_height_bake', False) and item[-1] > 800]
+                import tempfile
+                from pathlib import Path
+                directory = Path(tempfile.mkdtemp(prefix='voidsworn_normal_height_'))
+                dummy = bpy.data.images.new('ps_height_inactive', 1, 1, alpha=False)
+                temporary_images.append(dummy)
+                emissions = {}
+                for mat, surface, _, _, _, _, _ in restore:
+                    emission = mat.node_tree.nodes.new('ShaderNodeEmission')
+                    emissions[mat] = emission; temporary_nodes.append((mat.node_tree, emission))
+                # Raw avoids display transforms. PNG is genuinely 16-bit and
+                # is reloaded before the normal pass, so its precision is tested.
+                writer = bpy.data.scenes.new('ps_height_writer')
+                try:
+                    writer.view_settings.view_transform = 'Raw'
+                    settings = writer.render.image_settings
+                    settings.file_format = 'PNG'; settings.color_mode = 'BW'; settings.color_depth = '16'
+                    rows = []
+                    for active in heavy:
+                        mat, _, _, _, _, atlas, count = active
+                        nt = mat.node_tree
+                        cut = next((n for n in nt.nodes if n.label == 'NORMAL_PATCHWORK_HEIGHT'), None)
+                        if cut is None: raise ValueError(mat.name + ': large normal input has no patchwork height cut')
+                        source = cut.outputs[0]
+                        destinations = [link.to_socket for link in source.links]
+                        height = bpy.data.images.new('ps_patchwork_height', *atlas.size, alpha=False, float_buffer=True)
+                        height.colorspace_settings.name = 'Non-Color'; temporary_images.append(height)
+                        for other, surface, _, _, target, _, _ in restore:
+                            emission = emissions[other]; tree = other.node_tree
+                            for link in list(emission.inputs['Color'].links): tree.links.remove(link)
+                            emission.inputs['Color'].default_value = (0, 0, 0, 1)
+                            if other == mat: tree.links.new(source, emission.inputs['Color'])
+                            target.image = height if other == mat else dummy
+                            tree.links.new(emission.outputs[0], surface)
+                        rb.use_clear = True
+                        started = time.time(); bpy.ops.object.bake(type='EMIT')
+                        path = directory / (mat.name + '_height16.png')
+                        height.save_render(str(path), scene=writer)
+                        with open(path, 'rb') as encoded:
+                            if encoded.read(25)[24] != 16: raise ValueError('Patchwork height was not saved at 16 bits')
+                        loaded = bpy.data.images.load(str(path), check_existing=False)
+                        loaded.colorspace_settings.name = 'Non-Color'; temporary_images.append(loaded)
+                        uv = nt.nodes.new('ShaderNodeUVMap'); temporary_nodes.append((nt, uv))
+                        texture = nt.nodes.new('ShaderNodeTexImage'); temporary_nodes.append((nt, texture))
+                        texture.image = loaded; texture.interpolation = 'Linear'; texture.extension = 'EXTEND'
+                        nt.links.new(uv.outputs[0], texture.inputs['Vector'])
+                        for destination in destinations:
+                            height_links.append((nt, source, destination))
+                            nt.links.new(texture.outputs['Color'], destination)
+                        row = dict(material=mat.name, input_nodes=count, path=str(path), bits=16,
+                                   seconds=round(time.time() - started, 1))
+                        rows.append(row); print('NORMAL HEIGHT', row, flush=True)
+                    INFO['normal_height_maps'] = rows
+                finally:
+                    bpy.data.scenes.remove(writer)
+                for mat, surface, _, proxy, target, atlas, _ in restore:
+                    target.image = atlas; mat.node_tree.links.new(proxy.outputs[0], surface)
+            rb.use_clear = old_clear
+            bpy.ops.object.bake(type='NORMAL', normal_space='TANGENT')
+        finally:
+            rb.use_clear = old_clear
+            for nt, source, destination in height_links: nt.links.new(source, destination)
+            for mat, surface, sources, _, target, atlas, _ in restore:
+                target.image = atlas
+                for link in list(surface.links): mat.node_tree.links.remove(link)
+                for source in sources: mat.node_tree.links.new(source, surface)
+            for nt, temporary in reversed(temporary_nodes): nt.nodes.remove(temporary)
+            for temporary in temporary_images: bpy.data.images.remove(temporary)
     else: bpy.ops.object.bake(type=kind)
     return round(time.time() - t0, 1)
 
@@ -754,35 +960,39 @@ def add_running_lights(S, hull, others, decals):
 def bake_engine_glow(S, objs, out, cell, res, samples):
     """the engine throat glow (Ryan, Nov 12 19:16 CST: "more variation to the engine glow so it's not so uniform, just disc
     color"): each engine's throat disc and bell lining get an emission map, a hot core grading out to deeper red and orange,
-    uneven hot spots and soot streaks across the throat, the lining dark toward the lip, and each engine a little dimmer, more
-    orange or more red than its neighbours. The game's moving plume sits on top; this paints no flame. Per vertex the stack
+    uneven hot spots and soot streaks across the throat, the lining dark toward the lip. R308: engines on one ship share
+    colour, strength, core reach and a pattern scaled to their own radius. The game's moving plume sits on top; this paints no flame. Per vertex the stack
     writes, in the colour attribute ps_glow: R the distance from the engine's axis over the throat radius, G the engine's own
-    random, B the depth into the bell (1 at the throat, 0 at the lip), A the angle round the axis."""
+    shared random, B the depth into the bell (1 at the throat, 0 at the lip), A the angle round the axis.
+    ps_glow_pos stores normalized bell coordinates, so translated and larger bells get the same hot spots."""
     E = S.ENGINE_GLOW; groups = {}; ek = E.get('kind'); extra = []
     for o in objs:
         if ek is not None and o.get('part_kind') != ek and o.get('emissive_zone') != 'plug':
             extra.append(o); continue        # issue 642: a stack's other lights (the Eclipse rim lines and core) share the map
         groups.setdefault(o.get('grp') or o.name.split('_')[0], []).append(o)
     for o in extra: S.glow_vertex(o)
-    rng = np.random.default_rng(601)
+    rnd = float(np.random.default_rng(601).random())
     for gname, members in sorted(groups.items()):
-        rnd = float(rng.random())
         W = [o.matrix_world @ v.co for o in members for v in o.data.vertices]
-        disc = [o for o in members if o.data.materials and o.data.materials[0].name in E.get('disc', ('glow',))]
+        disc = [o for o in members if glow_zone(o) in E.get('disc', ('glow',))]
         core = disc + [o for o in members if o.get('emissive_zone') == 'plug']      # the throat disc and the plug: the core's surfaces
         Dv = [o.matrix_world @ v.co for o in (disc or members) for v in o.data.vertices]
-        cy = sum(v.y for v in Dv) / len(Dv); cz = sum(v.z for v in Dv) / len(Dv)
+        cy = (min(v.y for v in Dv) + max(v.y for v in Dv)) / 2
+        cz = (min(v.z for v in Dv) + max(v.z for v in Dv)) / 2
         rmax = max(math.hypot(v.y - cy, v.z - cz) for v in Dv) or 1.0
         x0 = min(v.x for v in W); x1 = max(v.x for v in W)
         for o in members:
             me = o.data; ca = me.color_attributes.get('ps_glow') or me.color_attributes.new('ps_glow', 'FLOAT_COLOR', 'POINT')
+            pos = me.color_attributes.get('ps_glow_pos') or me.color_attributes.new('ps_glow_pos', 'FLOAT_COLOR', 'POINT')
             is_disc = o in core
             for i, v in enumerate(me.vertices):
                 w = o.matrix_world @ v.co
                 r = min(1.0, math.hypot(w.y - cy, w.z - cz) / rmax) if is_disc else 1.0
                 d = 1.0 if is_disc else (w.x - x0) / max(x1 - x0, 1e-6)
-                ang = (math.atan2(w.z - cz, w.y - cy) / (2 * math.pi)) % 1.0
+                dy, dz = w.y - cy, w.z - cz
+                ang = 0.0 if math.hypot(dy, dz) < rmax * 1e-7 else (math.atan2(dz, dy) / (2 * math.pi)) % 1.0
                 ca.data[i].color = (r, rnd, d, ang)
+                pos.data[i].color = ((w.y - cy) / rmax * .025, (w.z - cz) / rmax * .025, d * .025, 1.0)
     for o in objs: o.hide_render = False
     unwrap(objs, .004)
     J = bake_copy(objs, f'{cell}_E_bake'); hid = {o.name: o.hide_render for o in objs}
@@ -819,23 +1029,24 @@ def _throat_glow(nt, E, r, e, d, a, tc, noise):
     """the Hullbreaker throat (issue 601): a hot core on the axis grading out to deep red, hot spots, soot streaks, the lining
     dark toward the lip; returns the emission colour socket"""
     # heat: the core (hot at the axis) on the throat disc, the lining by its depth (dark at the lip, R228 item 5)
-    # the core: hottest on the axis (the plug's tip, the throat's centre), falling off toward the wall, each engine its own reach
+    # the core: hottest on the axis, falling off toward the wall with the ship's shared core reach
     e2 = math_(nt, 'FRACT', math_(nt, 'MULTIPLY', e, 7.31))
     reach = math_(nt, 'ADD', E['core_reach'][0], math_(nt, 'MULTIPLY', e2, E['core_reach'][1] - E['core_reach'][0]))
     corev = math_(nt, 'POWER', math_(nt, 'SUBTRACT', 1, ramp(nt, r, 0.0, 1.0)), reach)
     lining = math_(nt, 'MULTIPLY', ramp(nt, r, .98, 1.0), math_(nt, 'MULTIPLY', math_(nt, 'POWER', d, E['lining_falloff']), E['lining_gain']))
     heat = math_(nt, 'ADD', math_(nt, 'MULTIPLY', corev, math_(nt, 'SUBTRACT', 1, ramp(nt, r, .98, 1.0))), lining)
-    # uneven hot spots (each engine's own pattern), and soot streaks running out from the axis
+    # Uneven hot spots in normalized bell coordinates, with the same pattern on every engine.
     hn = node(nt, 'ShaderNodeTexNoise'); hn.noise_dimensions = '4D'; hn.inputs['Scale'].default_value = E['hotspot_scale']
     hn.inputs['Detail'].default_value = 4; hn.inputs['Roughness'].default_value = .6
-    nt.links.new(tc.outputs['Object'], hn.inputs['Vector']); nt.links.new(math_(nt, 'MULTIPLY', e, 13.0), hn.inputs['W'])
+    local = node(nt, 'ShaderNodeAttribute'); local.attribute_type = 'GEOMETRY'; local.attribute_name = 'ps_glow_pos'
+    nt.links.new(local.outputs['Color'], hn.inputs['Vector']); nt.links.new(math_(nt, 'MULTIPLY', e, 13.0), hn.inputs['W'])
     hs = ramp(nt, hn.outputs['Fac'], E['hotspot'][0], E['hotspot'][1])
     heat = math_(nt, 'ADD', heat, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', hs, d), E['hotspot_gain']))
     av = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'MULTIPLY', a, E['streaks']), av.inputs[0]); nt.links.new(math_(nt, 'MULTIPLY', e, 31.0), av.inputs[1])
     nt.links.new(math_(nt, 'MULTIPLY', r, 1.5), av.inputs[2])
     soot = ramp(nt, noise(av.outputs[0], 1.0, 2, .5), E['soot'][0], E['soot'][1])
     heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', soot, E['soot_gain'])), clamp=True)
-    # each engine its own: brightness and hue (more orange or more red)
+    # One brightness and hue for every engine, driven by the shared ship random.
     heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'ADD', E['bright'][0], math_(nt, 'MULTIPLY', e, E['bright'][1] - E['bright'][0])))
     cr = node(nt, 'ShaderNodeValToRGB')
     for i_, (pos, col) in enumerate(E['ramp']):
@@ -879,10 +1090,19 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         for o in plug: o['emissive_zone'] = 'plug'
         P = [o for o in P if o not in plug]; G = G + plug
     unwrap(H, .0003); unwrap(P, .0004)
+    scene = bpy.context.scene
+    if hasattr(S, 'paint_joints'):
+        joints = [(x, None) for x in sorted(S.paint_joints())]
+    else:
+        cuts = scene.get('r209_t_lines', ())
+        paths = json.loads(scene.get('r209_t_paths', 'null')) or [None] * len(cuts)
+        joints = list(zip(cuts, paths))
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
-        J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None)); hid = {o.name: o.hide_render for o in objs}
-        if S.LAYERS.get('mirror'): INFO[f'mirror_islands_{group}'] = mirror_islands(J)
+        tones = part_module_tones(S, objs) if group == 'P' else None
+        plate_mesh = getattr(S, 'authored_panel_mesh', None) if group == 'H' else None
+        J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None), tones, plate_mesh)
+        hid = {o.name: o.hide_render for o in objs}
         for o in objs: o.hide_render = True
         for o in I: o.hide_render = True
         mm = mask_material(f'ps_mask_{group}', S)
@@ -893,7 +1113,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         mats = {}
         for i, z in enumerate(zones):
             zz = z if z in S.ZONES else S.FALLBACK
-            if zz not in mats: mats[zz] = zone_material(S, zz, group, masks, tiles, decals if group == 'H' else (), datlas)
+            if zz not in mats: mats[zz] = zone_material(S, zz, group, masks, tiles, decals if group == 'H' else (), datlas, joints)
             J.material_slots[i].material = mats[zz]
         ml = list(mats.values()); imgs = {}
         for kind, cs in (('albedo', True), ('orm', False)):
@@ -902,15 +1122,15 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
             for m in ml: _emit_switch(m, 'ALBEDO' if kind == 'albedo' else 'ORM')
             INFO[f'bake_{group}_{kind}_s'] = bake(J, 'EMIT', 8); save(im, out, im.name); imgs[kind] = im
         for m in ml: _emit_switch(m, None)
-        if group == 'H':
-            im = new_image(f'{cell}_hull_normal', R, colour=False, fill=(.5, .5, 1, 1))
-            _target(ml, im); INFO['bake_H_normal_s'] = bake(J, 'NORMAL', 8); save(im, out, im.name); imgs['normal'] = im
+        atlas = 'hull' if group == 'H' else 'parts'
+        im = new_image(f'{cell}_{atlas}_normal', R, colour=False, fill=(.5, .5, 1, 1))
+        _target(ml, im); INFO[f'bake_{group}_normal_s'] = bake(J, 'NORMAL', 8); save(im, out, im.name); imgs['normal'] = im
         maps[group] = imgs
         for o in objs: o.hide_render = hid[o.name]
         bpy.data.objects.remove(J)
         INFO[f'zones_{group}'] = sorted(mats)
     HM = textured(f'{cell}_hull_mat', maps['H']['albedo'], maps['H']['orm'], maps['H']['normal'])
-    PM = textured(f'{cell}_parts_mat', maps['P']['albedo'], maps['P']['orm'])
+    PM = textured(f'{cell}_parts_mat', maps['P']['albedo'], maps['P']['orm'], maps['P']['normal'])
     # issue 601: these surfaces carry the stack's own roughness; the game gives them the soft rim light (godot/render/look.gd RIM
     # soft), not the full specular that flared white on them at the close cameras. glTF writes it as the material's extras.
     for M_ in (HM, PM): M_['rim_soft'] = 1
@@ -922,15 +1142,15 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     # it names when it names one (issue 642: the Eclipse engine ring is the corona zone, which is also every shade rim's line)
     ez = S.ENGINE_GLOW.get('zones', ('glow', 'ember')) if hasattr(S, 'ENGINE_GLOW') else (); ek = S.ENGINE_GLOW.get('kind') if hasattr(S, 'ENGINE_GLOW') else None
     ex = S.ENGINE_GLOW.get('extra_zones', ()) if hasattr(S, 'ENGINE_GLOW') else ()      # issue 642: lights of any part kind on the same map
-    eng = [o for o in G if ((o.data.materials[0].name if o.data.materials else '') in ez and (ek is None or o.get('part_kind') == ek))
-           or (o.data.materials[0].name if o.data.materials else '') in ex or o.get('emissive_zone') == 'plug'] if hasattr(S, 'ENGINE_GLOW') else []
+    eng = [o for o in G if (glow_zone(o) in ez and (ek is None or o.get('part_kind') == ek))
+           or glow_zone(o) in ex or o.get('emissive_zone') == 'plug'] if hasattr(S, 'ENGINE_GLOW') else []
     if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
         glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, int(res * S.ENGINE_GLOW.get('res_frac', .25))), samples); glow['engine']['rim_soft'] = 1
         hull_glow = getattr(S, 'GLOW_HULL', ())
         if hull_glow:
             # One emission image, separate materials: only the hull's own listed trim is exempt from breach clearance.
             # The engine rings, core and lens keep the unmarked material even when they use that same image.
-            trim = [o for o in eng if o.get('role') == 'hull' and o.data.materials and o.data.materials[0].name in hull_glow]
+            trim = [o for o in eng if o.get('role') == 'hull' and glow_zone(o) in hull_glow]
             if trim:
                 glow['engine_hull'] = glow['engine'].copy(); glow['engine_hull'].name = 'p3_glow_hull'
                 glow['engine_hull']['hull_surface'] = 1
@@ -940,7 +1160,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
             o.data.materials.clear(); o.data.materials.append(glow['engine_hull'] if o in trim else glow['engine'])
     for o in G:
         if o in eng: continue
-        z = o.data.materials[0].name if o.data.materials else 'glow'
+        z = glow_zone(o)
         # issue 642: a glow zone the stack lists in GLOW_HULL that the sheet puts on the hull itself (the Eclipse corona line on a
         # shade rim) is hull trim, not a part: its own material, marked hull_surface, so the export check measures breach
         # clearance from the parts and not from the hull's own rim line
@@ -964,6 +1184,72 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     return INFO
 
 
+def bake_existing_atlas(S, source, out, samples):
+    """Bake finish onto the installed A4 UVs, keeping their paint and relief as inputs."""
+    code = source.stem
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=str(source), merge_vertices=True)
+    scene = bpy.context.scene
+    geometry = [obj for obj in scene.objects if obj.type == 'MESH']
+    expected = {f'{code}_hull'}
+    if not geometry or any(not obj.data.uv_layers or {m.name for m in obj.data.materials if m} != expected
+                           for obj in geometry):
+        raise ValueError(f'{code}: expected the single textured A4 exterior atlas')
+    paint_mesh = getattr(S, 'legacy_paint_mesh', None)
+    exterior = geometry if paint_mesh is None else [obj for obj in geometry if paint_mesh(obj)]
+    if not exterior:
+        raise ValueError(f'{code}: no intact exterior meshes to paint')
+    device = gpu(samples)
+    print(f'[paint] {code}: {device}, {samples} samples', flush=True)
+    images = {}
+    for kind in ('base', 'orm', 'normal'):
+        image = bpy.data.images.load(str(source.with_name(f'{code}_{kind}.jpg')))
+        if kind != 'base':
+            image.colorspace_settings.name = 'Non-Color'
+        if image.size[0] < 1 or image.size[0] != image.size[1]:
+            raise ValueError(f'{code}: invalid {kind} atlas size {tuple(image.size)}')
+        images[kind] = image
+
+    atlas = bake_copy(exterior, code + '_finish')
+    for obj in geometry:
+        obj.hide_render = True
+    mask = mask_material('ps_existing_mask', S)
+    atlas.data.materials[0] = mask
+    resolution = max(im.size[0] for im in images.values())
+    masks = new_image(code + '_mask', resolution, colour=False, fill=(1, 0, 1, 1))
+    _target([mask], masks)
+    scene.render.bake.use_clear = True
+    bake(atlas, 'EMIT', 8)
+
+    tiles = {name: np_image(code + '_trim_' + name, pixels) for name, pixels in S.trim_sheet().items()}
+    material = zone_material(S, S.LEGACY_FINISH_ZONE, 'H', masks, tiles, (), None, (),
+                             base_image=images['base'], normal_image=images['normal'])
+    atlas.data.materials[0] = material
+    scene.render.bake.use_clear = False
+    out.mkdir(parents=True, exist_ok=True)
+    for kind, label in (('base', 'ALBEDO'), ('orm', 'ORM'), ('normal', None)):
+        original = images[kind]
+        image = new_image(code + '_coated_' + kind, original.size[0], colour=kind == 'base')
+        # Damage meshes can sample UVs outside the intact mesh's islands. Keep
+        # the old texels there, including the padding around those islands.
+        pixels = np.empty(len(original.pixels), dtype=np.float32)
+        original.pixels.foreach_get(pixels)
+        image.pixels.foreach_set(pixels)
+        _target([material], image)
+        _emit_switch(material, label)
+        seconds = bake(atlas, 'EMIT' if label else 'NORMAL', 8)
+        if kind == 'base':
+            coated = np.empty_like(pixels)
+            image.pixels.foreach_get(coated)
+            coated -= pixels
+            coated *= S.LEGACY_ALBEDO_BLEND
+            coated += pixels
+            image.pixels.foreach_set(coated)
+            print(f'[paint] {code} legacy albedo blend {S.LEGACY_ALBEDO_BLEND}', flush=True)
+        save(image, str(out), f'{code}_{kind}')
+        print(f'[paint] {code} {kind} {image.size[0]}px: {seconds:.1f}s', flush=True)
+
+
 def _uv_world_area(objs):
     uv = world = 0.0
     for o in objs:
@@ -983,3 +1269,20 @@ def texel_density(H, P, res, parts_res):
         uv, world = _uv_world_area(objs)
         out[k] = dict(uv_share=round(uv, 4), area=round(world, 5), texels_per_unit2=round(uv * R * R / max(world, 1e-9), 1))
     return out
+
+
+if __name__ == '__main__':
+    import argparse
+    import importlib.util
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description='Bake finish onto an existing A4 ship atlas.')
+    parser.add_argument('stack', type=Path)
+    parser.add_argument('source', type=Path, help='installed GLB with its original maps alongside it')
+    parser.add_argument('output', type=Path)
+    parser.add_argument('--samples', type=int, default=64)
+    args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
+    spec = importlib.util.spec_from_file_location('faction_stack', args.stack)
+    stack = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stack)
+    bake_existing_atlas(stack, args.source, args.output, args.samples)

@@ -1,0 +1,54 @@
+{
+  "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+  "source_dirty": true,
+  "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "KB1CC_R299_profile.jpg",
+  "date": "2026-11-16T23:49:37Z",
+  "sources": [
+    {
+      "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+      "source_dirty": true,
+      "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "paint_beauty.png",
+      "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+      "source_dirty": true,
+      "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+      "stage": "paint proof",
+      "date": "2026-11-16T23:47:48Z",
+      "image_sha256": "2c40ffa274ae0cb42d2dfce795d320d3ad33f8d621b798772235e1ba9dca828b",
+      "sources": [
+        {
+          "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+          "source_dirty": true,
+          "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "1699e4a5a55f55f1faa1b51f8bcc1dcedc1ed67a3571314086c3621fcf6b1a8d"
+  ],
+  "stamp_template_sha256": "229d7ce756753a615926338186b82594f38d6e1abcde38965670326ba61feb30",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VMQHAIADAMJgAOPDvdT8G6JEo6Ne59hkAUPK9DgCAmzkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gRAjjkBkGNOAOSYEwA55gTAqPkBPFUA9OhhKs4AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "5dad6bf65a1b0254e686bcebe8f750439cb6f9697bee68c0a4a6013c59ea2811"
+}

@@ -1,0 +1,54 @@
+{
+  "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+  "source_dirty": true,
+  "source_diff_sha256": "0b567482bf60f62195fff8a466204477a74ba70d4caa8c3b65fac0851bbb59fc",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_ion.jpg",
+  "date": "2026-11-16T22:55:36Z",
+  "sources": [
+    {
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": true,
+      "source_diff_sha256": "0b567482bf60f62195fff8a466204477a74ba70d4caa8c3b65fac0851bbb59fc",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "close.png",
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": true,
+      "source_diff_sha256": "0b567482bf60f62195fff8a466204477a74ba70d4caa8c3b65fac0851bbb59fc",
+      "stage": "sheet built",
+      "date": "2026-11-16T22:38:34Z",
+      "image_sha256": "e2968b9887a49a2a58ca1d23c322aa09aa5f83782b6469e22769816339a05d85",
+      "sources": [
+        {
+          "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+          "source_dirty": true,
+          "source_diff_sha256": "0b567482bf60f62195fff8a466204477a74ba70d4caa8c3b65fac0851bbb59fc",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "9a06d0c701d654f053bd399d3a28e4b1a1838cbe4fff3a46e022faf42fa565ab"
+  ],
+  "stamp_template_sha256": "72c30710bb19d0ba4fe4acdd3103f8cc25257ebab94a0f1d08d40e4147eed2ea",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgIKDT9Q76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/IxMBEPoKPEAAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "8bbca6776bc0887080be1244a803f01c2212d1b0f24f670b1049c95da04898f9"
+}

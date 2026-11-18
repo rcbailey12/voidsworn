@@ -1,3 +1,10 @@
+
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import open_picture as _open_picture
+
 # Parts inventory and the per-cell table (issue 532 round 3; R218, RULEBOOK 5.16, ships.md 2c).
 #   python inventory.py <code> <repo> <out dir> [<model json>]
 # Without a model: writes inventory.md (the list written from the concept before modelling).
@@ -67,7 +74,7 @@ def ratios(rd):
         ys = np.where(m.any(1))[0]
         return L, ys.max() - ys.min(), float(np.median(mid))
     cs = M.get('concept_sheet') or 'contrib/muse/design/concept_round8_2026_11/%s_sheet.jpg' % CODE
-    im = np.asarray(Image.open(os.path.join(REPO, cs)).convert('RGB')).astype(int)
+    im = np.asarray(_open_picture(os.path.join(REPO, cs)).convert('RGB')).astype(int)
     bg = np.median(im[5:40, 5:40].reshape(-1, 3), axis=0); d = np.abs(im - bg).sum(2) > 40
     cv = M.get('concept_views')
     if cv:
@@ -84,8 +91,8 @@ def ratios(rd):
         h2 = im.shape[0] * 7 // 12; w2 = im.shape[1] * 3 // 4
         con = (clean(d[:h2, :w2]), clean(d[h2:, :w2]))
     views = dict(concept=con,
-                 build=(clean(np.rot90(np.asarray(Image.open(os.path.join(rd, 'top.png')))[..., 3] > 8)),
-                        clean(np.asarray(Image.open(os.path.join(rd, 'side.png')))[..., 3] > 8)))
+                 build=(clean(np.rot90(np.asarray(_open_picture(os.path.join(rd, 'top.png')))[..., 3] > 8)),
+                        clean(np.asarray(_open_picture(os.path.join(rd, 'side.png')))[..., 3] > 8)))
     out = {}
     for k, (t, s_) in views.items():
         Lt, Bt, Bm = prof(t)

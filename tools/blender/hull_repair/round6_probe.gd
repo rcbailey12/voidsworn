@@ -97,7 +97,7 @@ func record_4k(label: String) -> void:
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
 	assert(img.get_size()==Vector2i(3840,2160),"4K record size")
-	assert(img.save_png(out.path_join(label+"_4k.png"))==OK)
+	assert(preload("../../../godot/tools/picture_provenance.gd").save_png(img, out.path_join(label+"_4k.png"))==OK)
 	root.size=Vector2i(1920,1080)
 	root.position=previous_position
 	await settle(6)

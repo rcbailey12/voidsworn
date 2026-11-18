@@ -119,6 +119,15 @@
   },
   {
    "cell": "mid/top",
+   "id": "bomb_tubes",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
    "id": "rails",
    "built": 1,
    "listed": 1,
@@ -154,6 +163,15 @@
    "detailed": true
   },
   {
+   "cell": "mid/top",
+   "id": "nacelles",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
    "cell": "mid/side",
    "id": "body",
    "built": 1,
@@ -167,6 +185,15 @@
    "id": "glacis_plates",
    "built": 1,
    "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "bomb_tubes",
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -290,6 +317,15 @@
   },
   {
    "cell": "stern/top",
+   "id": "nacelles",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
    "id": "drives",
    "built": 5,
    "listed": 5,
@@ -326,6 +362,15 @@
   },
   {
    "cell": "stern/side",
+   "id": "nacelles",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
    "id": "drives",
    "built": 5,
    "listed": 5,
@@ -356,6 +401,15 @@
    "id": "belly_plates",
    "built": 1,
    "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/below",
+   "id": "nacelles",
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -427,9 +481,9 @@
   },
   "build": {
    "env_LB": 0.83,
-   "env_LH": 4.21,
+   "env_LH": 4.03,
    "hull_LB": 0.83,
-   "hull_LH": 6.47
+   "hull_LH": 4.68
   }
  }
 }

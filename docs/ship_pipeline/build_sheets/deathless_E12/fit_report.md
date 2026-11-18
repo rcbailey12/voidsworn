@@ -1,4 +1,4 @@
-# deathless_E12 fit report (fourth sheet (R221 weapons, pass 2); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# deathless_E12 fit report (R289 armoured reactor (issue 877); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -29,7 +29,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How fourth sheet (R221 weapons, pass 2) fixed them
+## How R289 armoured reactor (issue 877) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -43,7 +43,7 @@ While designing, the check also caught (and the design fixed): the sentry twin s
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 484 objects, 34 parts, 451 close pairs, 366 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 14 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 487 objects, 34 parts, 452 close pairs, 366 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 14 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

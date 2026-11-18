@@ -15,6 +15,8 @@ Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemon
    never follow it.
 
 Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) and the brief in your issue.
+Artoo (Ryan's ChatGPT dot) reviews on its own, technical problems only, each comment marked "Artoo (technical review):"
+and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R295).
 
 ## The job board (Ryan, Nov 2 2026; RULEBOOK 2.4)
 
@@ -29,7 +31,7 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
   checks). A branch with any other name gets no automatic checks: open its pull request by hand, then start them by hand
   (Actions tab, "checks", "Run workflow"; or `gh workflow run checks.yml --ref <branch>`). The Board reviews and merges;
   nobody merges their own pull request (RULEBOOK 2.2).
-- Codex runs locally on the PC only, in up to three lanes (RULEBOOK 2.7; no cloud tasks: their model cannot be pinned, R268). The Board launches each Codex job itself through the PC queue (LOOP.md
+- Codex runs locally on the PC only, in up to four lanes (RULEBOOK 2.7, R301; no cloud tasks: their model cannot be pinned, R268). The Board launches each Codex job itself through the PC queue (LOOP.md
   "The seats" says how), and every `codex` issue also carries `blocked`, so the old board watcher (tools/pc/codex_board.bat)
   cannot run it a second time.
 - Every issue opens with this fixed block, so any agent can pick it up without asking:
@@ -38,17 +40,31 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
   Brief: <path to the brief, or "below">
   Deliver to: <folder or files>
   Branch: <agent>/issue-<number>
+  Base: <branch>
   Effort (Codex): high | xhigh   or   Models (Muse): <set>
   Done when: <the check that proves it, and what Ryan will see>
   ```
   Muse's Models line for research, design and review jobs: Rey writes a blind leg first, DeepSeek, Qwen, Grok and Flash each
   write a leg, Rey chairs (R89, R231, RULEBOOK 2.8). Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
+- Use the optional Base line for an earlier branch the job needs. The runner merges `origin/<branch>` and commits the
+  merge before the agent starts; a conflict stops the run with the checkout kept. Briefs never ask the agent to merge.
+  The PC runners set the running label and one status comment per job branch, edit it on retries and at the end, and
+  clear the label at the end. GitHub reporting failures are logged and never fail the job (RULEBOOK 2.4, issue 846).
 - Ship build issues add four lines to the block (Ryan, Nov 11 2026, R214; template in docs/playbooks/ships.md section 7):
   Route per part, Inside, Paint stack, Budget. Every build pull request body carries its done-when evidence and a method line
   (build sheet link, manifest, budget numbers, changes made to the sheet); the outside check (issue 256) returns a build PR
   without them as BLOCKING (RULEBOOK 5.14).
+- One current instruction per job: the current run brief sits at the top of the issue body under the fixed block, older
+  runs marked done. The PC runner reads the body only; a brief in a comment never reaches the worker (R281, RULEBOOK 2.4).
+- Before queueing or relabelling an issue, check for a merged pull request that names it; issues stay open after merges
+  here, so open is not proof of undone work. Close an issue in the same step as its merge when its scope is done
+  (R288, RULEBOOK 2.4).
+- Claim before you run: a seat starting a job sets the running label and its status comment first (RULEBOOK 2.4). If a
+  job is already claimed, or its delivery branch already exists, do not run it; tell the Board. Two seats ran issue 872
+  on the same morning because nothing enforced the owner label.
 - **A ruling lands with its document.** A ruling that changes a working method is not landed until the same pull request edits
   the rulebook or the working document a worker reads for that area (the playbook, RECIPE.md, this file) (R214, RULEBOOK 0.2).
+  Its FINDINGS row says "landed in <repo path>" or "one-off job decision"; the memory lint fails it otherwise (R291).
 - Commits say "Refs #N", never a GitHub closing word before an issue number; use `gh api` REST, never GraphQL (RULEBOOK 2.5).
 
 ## If you are not the main agent: work in your own folder (RULEBOOK 2.12)
@@ -69,9 +85,9 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
 - Before anything bigger than a quick fix, ask 3 to 5 plain multiple-choice scope questions in one batch.
 - Questions for Ryan go to him in your own chat, never as GitHub tags or comments; message him only when something lands or
   needs him.
-- Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue, up to two GPU jobs at once across the
-  main lane and lane B; frame-time measurements claim the GPU solo, lane C stays code only, and gpu_go.txt still wins.
-  Ryan: "can we run multiple jobs to speed things up?", then "merge and make those changes to gpu jobs" (R276).
+- Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue. GPU work is sized to the job and to
+  what the RTX 5080 can hold, not a fixed job count (R293, RULEBOOK 3.4); frame-time measurements claim the GPU solo, lane C
+  stays code only, and gpu_go.txt still wins.
   Keep your PC folder lean; never delete anything on his PC (RULEBOOK section 3).
 
 `CLAUDE.md` is a short pointer to this file plus Claude-only notes. Keep the two in step. The fuller AGENTS.md of Nov 8 to 11

@@ -111,7 +111,7 @@ func _run() -> void:
 	var png := out.path_join("hd6_battle_log_soak.png")
 	var img := root.get_texture().get_image()
 	if img != null:
-		img.save_png(png)
+		preload("../../../godot/tools/picture_provenance.gd").save_png(img, png)
 	var report := {
 		"seed": seed, "quality": quality, "result": result, "rounds": rounds,
 		"rules_log_entries": rules_log.size(), "hud_log_entries": entries,

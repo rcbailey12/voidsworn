@@ -1,0 +1,54 @@
+{
+  "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+  "source_diff_sha256": "8c1cc1c16bb472f0c75d4191b257d17ec71c642af0d6334fa4ae7930e52e2f22",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "ion_installed_bow.jpg",
+  "date": "2026-11-17T10:31:02Z",
+  "sources": [
+    {
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "8c1cc1c16bb472f0c75d4191b257d17ec71c642af0d6334fa4ae7930e52e2f22",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "IM5_bow.png",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_dirty": true,
+      "source_diff_sha256": "8c1cc1c16bb472f0c75d4191b257d17ec71c642af0d6334fa4ae7930e52e2f22",
+      "stage": "installed in game",
+      "date": "2026-11-17T10:30:54Z",
+      "image_sha256": "b533bcdf87aac3615f64a5634d1e131b329674c3247858ef1e2185b7d2017652",
+      "sources": [
+        {
+          "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+          "source_diff_sha256": "8c1cc1c16bb472f0c75d4191b257d17ec71c642af0d6334fa4ae7930e52e2f22",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "f5b68454143cbf6257a8748da25cfcbd8129d046e9fcc13966d25fd6db0faba4"
+  ],
+  "stamp_template_sha256": "251d7b03d92e00c55a788935153502a4d431a506655627f87fe1683322fe51c2",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABiklEQVR4nO3VQQEAMAgAIV3/0KbYvaAEu/sGAPjPuAAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAQkS4ARKQLABHpAkBEugAwjQMYdwDIQo873AAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "1bfc4659d687301e40531c555640ac5aa39eb5143c786ce8835a19c7a4f37f93"
+}

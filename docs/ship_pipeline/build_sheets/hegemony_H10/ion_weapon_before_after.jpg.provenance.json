@@ -1,0 +1,111 @@
+{
+  "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "ion_weapon_before_after.jpg",
+  "date": "2026-11-16T22:55:35Z",
+  "sources": [
+    {
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": true,
+      "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "concept.png",
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-16T22:36:56Z",
+      "image_sha256": "036fca5792dc6467484517f3c8f8607415b4891691b9823c77465955ffa64af2",
+      "sources": [
+        {
+          "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "concept.png",
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": true,
+      "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+      "stage": "sheet built",
+      "date": "2026-11-16T22:34:11Z",
+      "image_sha256": "d6d64c7ed3970e0b72aef42cf5eb363dcd5523014688ae9ea2349f5d995b85f1",
+      "sources": [
+        {
+          "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+          "source_dirty": true,
+          "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "close.png",
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-16T22:37:02Z",
+      "image_sha256": "160ad16b7d26abeb5a65f40ab7e7a5bb000a09a102051302a68475f5a60170e5",
+      "sources": [
+        {
+          "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "close.png",
+      "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+      "source_dirty": true,
+      "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+      "stage": "sheet built",
+      "date": "2026-11-16T22:34:18Z",
+      "image_sha256": "5fac416910110a7e63a67148fd1d82887a7760df57230ae796bb5c6be534b07e",
+      "sources": [
+        {
+          "source_commit": "67ac3ab86616e39cfc598b5fa9714cb46307e117",
+          "source_dirty": true,
+          "source_diff_sha256": "2371d0adc872cb4169b9f4c1ff7abbd886e7ecaa8ee0016b14973062b8d4e98a",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    124
+  ],
+  "strip_sha256": [
+    "d10abf64bb4acf67b6f3bf20a504351587a149ff566739568e57fe5f8b5e70b9"
+  ],
+  "stamp_template_sha256": "e0e75eb74c754b437d3ef1122cf1972bf063af9e26e5bd5483a15ad347924e41",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAAB8CAIAAADxfb18AAAB80lEQVR4nO3VIQEAIQDAQPgIKDT9Q76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYBR8wMCgAFEFOZKVwAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "7974f3d23f598a31fc1cc1b455c87c41582ffd5b5b424362a5f2daf875f87525"
+}

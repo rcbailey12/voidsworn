@@ -68,7 +68,7 @@ const FAC_MAP={hegemony:['station'],corsair:['belt','graveyard'],chorus:['storm'
 const ENCOUNTERS={
   rout:{n:'Engagement',d:'Break their fleet. It flees once it has lost about two thirds of its strength.',shapes:['open','lanes','ring','dense','deadstar','rift','shoals','hourglass','archipelago','archipelago','colossus']},
   ambush:{n:'Ambush',d:'Two enemy groups close in from both sides. Break their fleet.',shapes:['open','ring','dense','deadstar','shoals','archipelago','colossus']},
-  defend:{n:'Hold the station',d:'Keep enemy ships off the friendly station until round 6 ends. Every enemy ship within 2 hexes of it at the start of a round knocks out 1 integrity. Its batteries fire on enemies that come close.',shapes:['open','lanes','dense','corridor','archipelago']},
+  defend:{n:'Hold the station',d:'Keep enemy ships off the friendly station until round 6 ends. Every enemy ship next to the station at the start of a round knocks out 1 integrity. Its batteries fire on enemies that come close.',shapes:['open','lanes','dense','corridor','archipelago']},
   hunt:{n:'Hunt',d:'Their flagship is running and jumps out at the end of round 6. Destroy it before then.',shapes:['open','corridor','lanes','ring','dense','deadstar','rift','shoals','hourglass','archipelago','colossus']},
   intercept:{n:'Intercept',d:'Enemy transports are crossing to the far side (red hexes). Destroy them before they get through.',shapes:['open','ring','dense','deadstar','shoals','archipelago']},
   break:{n:'Breakthrough',d:'Get ships off the far edge: a ship that ends its move on a green hex jumps clear. Their fleet blocks the way ahead and more close in from behind.',shapes:['open','lanes','corridor','dense','rift','shoals','archipelago','colossus']},
@@ -124,7 +124,7 @@ function makeUnit(side, tpl, opts={}){
       hullRegen:Math.round((t.regen||0)*sc), weapons:nameWeapons(t.fac,t.w.map(([id,arc])=>mkWeapon(id,arc,opts.fx||{})))};
   }
   const fac=t.fac || opts.fac || 'voidsworn';
-  const u={id:newId(), side, tpl, t, name:opts.ship?opts.ship.name:(opts.name||t.n), cls:t.cls,
+  const u={id:opts.preview?'':newId(), side, tpl, t, name:opts.ship?opts.ship.name:(opts.name||t.n), cls:t.cls,
     fac, size:t.size, q:0, r:0, facing: side==='player'?0:3,
     hp:opts.ship?Math.min(opts.ship.hp,s.maxHp):s.maxHp, maxHp:s.maxHp, shMax:s.shMax, regen:s.regen,
     shp:s.shMax, cov:shieldCov(fac,t.cls), route:[0,0,0,0], sh:[0,0,0,0],
@@ -228,7 +228,7 @@ function genTerrain(map,shape,opt){
   if(opt.edgeFeature){ const hs=boardHexes().filter(h=>onBoard(h.q,h.r)), r=Math.min(...hs.map(h=>h.r))+1, c=offToAx(Math.floor(BW/2),r);
     const feature=opt.enc==='defend'?'station':'rock';
     for(const h of [c,{q:c.q+1,r:c.r},{q:c.q,r:c.r+1}]) if(onBoard(h.q,h.r)) T[hkey(h.q,h.r)]=feature;
-    if(feature==='station') TERRAIN_META.station=c;
+    if(feature==='station'){ TERRAIN_META.station=c; TERRAIN_META.stationR=1; }
     TERRAIN_META.shape='open'; return T; }
   const put=(h,t)=>{ if(onBoard(h.q,h.r)&&!T[hkey(h.q,h.r)]) T[hkey(h.q,h.r)]=t; };
   const blob=(type,n,c0,c1,r0=1,r1=BH-2)=>{ let cur=offToAx(ri(c0,c1),ri(r0,r1)); for(let k=0;k<n;k++){ put(cur,type); const d=pick(DIRS); cur={q:cur.q+d[0],r:cur.r+d[1]}; } };
@@ -240,10 +240,11 @@ function genTerrain(map,shape,opt){
       if(gaps.some(g=>Math.hypot(p.x-g.x,p.y-g.y)<1.6)) continue; if(d<1.1&&rnd()<.72) put(h,'rock'); else if(d<2.4&&rnd()<.16) put(h,'rock'); else if(d<3&&rnd()<.12) put(h,'debris'); }
     for(let i=0;i<2;i++) blob('neb',ri(5,9),5,BW-6); }
   if(m==='station'){ const want=opt.stationAt||{q:mid.q+ri(-1,1),r:mid.r+ri(-1,1)};
-    /* the station needs solid ground: its centre and ring on the board, and clear of any hole (a dead star, a shoal, a colossus) */
-    const okSite=h=>onBoard(h.q,h.r)&&DIRS.every(d=>onBoard(h.q+d[0],h.r+d[1]))&&!(VOID.holes||[]).some(o=>o.cells.some(([q,r])=>hdist(h,{q,r})<=3));
-    const c=okSite(want)?want:(all.filter(okSite).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||all.filter(h=>onBoard(h.q,h.r)&&DIRS.every(d=>onBoard(h.q+d[0],h.r+d[1]))).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||want); TERRAIN_META.station=c;
-    for(const h of all){ const d=hdist(h,c); if(d<=1) T[hkey(h.q,h.r)]='station'; else if(d<=3&&rnd()<.42) put(h,'debris'); }
+    /* R314: the big station blocks every hex within 2 of its centre (19 hexes), so the site needs its whole footprint on the board and clear of any hole (a dead star, a shoal, a colossus) */
+    const cellsAt=(h,rad)=>{ const o=[]; for(let dq=-rad;dq<=rad;dq++) for(let dr=Math.max(-rad,-dq-rad);dr<=Math.min(rad,-dq+rad);dr++) o.push({q:h.q+dq,r:h.r+dr}); return o; };
+    const okSite=h=>cellsAt(h,2).every(x=>onBoard(x.q,x.r))&&!(VOID.holes||[]).some(o=>o.cells.some(([q,r])=>hdist(h,{q,r})<=4));
+    const c=okSite(want)?want:(all.filter(okSite).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||all.filter(h=>onBoard(h.q,h.r)&&DIRS.every(d=>onBoard(h.q+d[0],h.r+d[1]))).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||want); TERRAIN_META.station=c; TERRAIN_META.stationR=2;
+    for(const h of all){ const d=hdist(h,c); if(d<=2) T[hkey(h.q,h.r)]='station'; else if(d<=4&&rnd()<.42) put(h,'debris'); }
     for(let i=0;i<3;i++) blob('rock',ri(2,4),5,BW-6); blob('neb',ri(5,8),5,BW-6); }
   if(m==='planet'){ const top=rnd()<.5, c=offToAx(Math.floor(BW/2)+ri(-3,3),top?-5:BH+4), R=8, edge=planetEdge(R), cw=hexXZ(c); TERRAIN_META.planet={q:c.q,r:c.r,R,top};
     /* block by the planet's real outline (a circle), so no ship or asteroid ever sits under its rim */
@@ -1260,6 +1261,10 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   checkEnd();
 }
 function sideCP(side){ return B.units.filter(u=>u.side===side&&!u.isSq&&!u.dead).reduce((a,u)=>a+(u.t.cp||1),0); }
+// R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre.
+// The edge distances match the old 7-hex station: damage and the guard ring 1 hex out (the hexes touching the station body),
+// guns 4 hexes out, wing support 2 hexes out. The enemy pull aims one ring outside the damaging perimeter.
+function stationRad(){ return (B&&B.map&&B.map.stationR)||0; }
 function setupObjective(type){ const o={type:type||'rout',score:0,escore:0};
   if(o.type==='flagship'&&caps('enemy').length<3) o.type=caps('enemy').some(u=>u.t&&u.t.boss)?'rout':'hunt'; // killing the "flagship" of a one- or two-ship fleet is just a rout
   if(o.type==='defend'&&!B.map.station) o.type='hold';
@@ -1272,9 +1277,9 @@ function setupObjective(type){ const o={type:type||'rout',score:0,escore:0};
     o.hex={q:best.q,r:best.r}; for(const h of boardHexes()) if(hdist(h,o.hex)<=1&&blocks(terr(h.q,h.r))) delete B.terrain[hkey(h.q,h.r)]; }
   B.obj=o; }
 function survivorsP(){ return B.units.filter(u=>u.side==='player'&&!u.isSq&&(!u.dead||u.exited)).length; }
-function objZone(q,r){ const o=B&&B.obj; if(!o||!onBoard(q,r)) return null; if(o.type==='break'&&q+Math.floor(r/2)>=o.exitC) return 'exit'; if(o.type==='intercept'&&r>=o.exitR) return 'texit'; if(o.type==='defend'&&hdist({q,r},o.hex)===2) return 'guard'; return null; }
+function objZone(q,r){ const o=B&&B.obj; if(!o||!onBoard(q,r)) return null; if(o.type==='break'&&q+Math.floor(r/2)>=o.exitC) return 'exit'; if(o.type==='intercept'&&r>=o.exitR) return 'texit'; if(o.type==='defend'&&hdist({q,r},o.hex)===stationRad()+1) return 'guard'; return null; }
 function stationFire(dq){ const o=B.obj; if(!o||o.type!=='defend') return; const src={q:o.hex.q,r:o.hex.r,facing:0};
-  const ts=caps('enemy').filter(u=>hdist(u,o.hex)<=5).sort((a,b)=>hdist(a,o.hex)-hdist(b,o.hex)).slice(0,2);
+  const ts=caps('enemy').filter(u=>hdist(u,o.hex)<=stationRad()+4).sort((a,b)=>hdist(a,o.hex)-hdist(b,o.hex)).slice(0,2);
   const att={side:'player',dealt:0,kills:0,crit:0,lockOn:false,fx:{}};
   for(const t of ts){ const r=applyHit(att,{crit:0,pierce:.2},t,12,shieldQuad(t,src)); try{ if(typeof fxText==='function') fxText(t,`Station \u2212${r.hull+r.shield}`,'#7fd6ff',-30); }catch(e){}
     log(`Station batteries hit ${t.name}: ${r.shield} shield, ${r.hull} hull.`,'p'); if(t.hp<=0&&!t.dead){ t.hp=0; queueDeath(t,dq); } } }
@@ -1285,7 +1290,7 @@ function aiObjScore(u,v){ const o=B.obj; if(!o||u.isSq) return 0;
   if(u.transport) return -(o.exitR-v.r)*14;
   if(o.type==='hunt'&&u.flagship){ const d=Math.min(30,...caps('player').map(p=>hdist(v,p))); return Math.min(d,9)*3; } // runs, but stops running once well clear
   const vet=aiVet(), urg=vet?aiObjUrgency(o):1; // v53-D: veterans feel the round clock and the station's integrity; standard keeps the flat pull
-  if(o.type==='defend') return -Math.max(0,hdist(v,o.hex)-2)*3*urg;
+  if(o.type==='defend') return -Math.max(0,hdist(v,o.hex)-(stationRad()+2))*3*urg;
   if(o.type==='break'){ const pl=caps('player'); if(!pl.length) return 0; const lead=Math.max(...pl.map(p=>p.q+Math.floor(p.r/2))), c=v.q+Math.floor(v.r/2); if(!vet) return -Math.max(0,lead+1-c)*1.2;
     // veterans block the exit lane in front of the leading ship, harder the further it has got
     const L=pl.find(p=>p.q+Math.floor(p.r/2)===lead), c0=o.c0!=null?o.c0:(o.c0=boardBounds().c0), prog=clamp((lead-c0)/Math.max(1,o.exitC-c0),0,1);
@@ -1302,7 +1307,7 @@ function aiObjUrgency(o){ const done=clamp(((B.round||1)-1)/(o.rounds||ENC_ROUND
   if(o.type==='hold') return 1+done*.8+(o.score>=2?.8:0)+(o.escore>=2?.4:0);
   return 1; }
 function objectiveTick(dq){ const o=B.obj; if(!o||B.over) return;
-  if(o.type==='defend'){ const near=caps('enemy').filter(u=>hdist(u,o.hex)<=2); if(near.length){ o.hp=Math.max(0,o.hp-near.length); log(`${near.length} enemy ship${near.length>1?'s':''} at the station. Integrity ${o.hp}/${o.hpMax}.`,'e'); }
+  if(o.type==='defend'){ const near=caps('enemy').filter(u=>hdist(u,o.hex)<=stationRad()+1); if(near.length){ o.hp=Math.max(0,o.hp-near.length); log(`${near.length} enemy ship${near.length>1?'s':''} at the station. Integrity ${o.hp}/${o.hpMax}.`,'e'); }
     if(o.hp>0&&B.round<=o.rounds) stationFire(dq); checkEnd(); return; }
   if(o.type==='hunt'){ if(B.round>o.rounds){ const f=B.units.find(u=>u.flagship&&u.side==='enemy'&&!u.dead); if(f){ f.dead=true; f.fled=true; o.escaped=true; try{ if(typeof fxWithdraw==='function') fxWithdraw(f); }catch(e){} log(`${f.name} jumps out. Its escorts follow.`,'e'); } } checkEnd(); return; }
   if(o.type!=='hold') return; const near=s=>alive(s).some(u=>!u.isSq&&hdist(u,o.hex)<=1); const p=near('player'), e=near('enemy');
@@ -1976,7 +1981,7 @@ function sqRole(s){ return s.t.sq==='fighter'?'fighter':'bomber'; }
 function sqWants(s,t){ if(t.dead||t.side===s.side) return false; if(sqRole(s)==='bomber') return !t.isSq; return alive(t.side).some(x=>x.isSq)?t.isSq:true; }
 function sqValue(t,e,s){ let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=25; if(t.isSq&&sqRole(t)==='bomber') v*=1.5; if(s&&s.side==='enemy'&&t===B.aiFocus&&aiVet()) v*=1.3; if(s&&(s.side==='player'||aiVet())&&sqObjNear(t)) v+=6; return v+(1-t.hp/t.maxHp)*10; }
 // v53-D: wings lean on the fleet focus (as evalOffenseVet does) and on targets close to the station or a transport in defend and intercept
-function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defend'&&o.hex) return hdist(t,o.hex)<=3; if(o.type==='intercept'){ for(const x of B.units) if(x.transport&&!x.dead&&hdist(x,t)<=3) return true; } return false; }
+function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defend'&&o.hex) return hdist(t,o.hex)<=stationRad()+2; if(o.type==='intercept'){ for(const x of B.units) if(x.transport&&!x.dead&&hdist(x,t)<=3) return true; } return false; }
 // a target is "in reach" only if some hex the squadron can actually fly to this round lets a weapon legally hit it (same range, arc and sight rules as manual fire)
 // wing orders (player only): 'strike' a chosen enemy, or 'guard' a friendly ship and hit whatever comes near it
 function sqOrder(s){ const o=s.wingOrder; if(!o) return null; const t=B.units.find(x=>x.id===o.id); if(!t||t.dead||(o.kind==='strike'?t.side===s.side:t.side!==s.side)){ s.wingOrder=null; return null; } return {kind:o.kind,t}; }
@@ -2001,10 +2006,13 @@ async function sqAct(s){ const live=liveFrom(s); const p=sqPlan(s); if(!p) retur
   for(let i=0;i<s.weapons.length;i++){ if(p.t.dead||s.dead||!live()) break; if(canFire(s,s.weapons[i],p.t)) await fireWeapon(s,i,p.t); }
   if(s.treeNoStopKill&&live()) await treeNoStop(s); } // Matriarch capstone 2
 async function swarmPhase(side){ const b0=B; for(const s of alive(side).filter(x=>x.isSq&&!x.activated)){ if(B!==b0||B.over) return; const t0=(typeof performance!=='undefined'?performance.now():0); if(await stallGuard(sqAct(s),15000,'squadron',{name:s.name,sq:s.t.sq,q:s.q,r:s.r})==='stall'&&B===b0) log(`${s.t&&s.t.n||s.name}: orders lost in interference.`,'x'); s.activated=true; if(typeof console!=='undefined'&&console.debug) console.debug('[swarm] '+side+' '+s.id+' '+Math.round((typeof performance!=='undefined'?performance.now():0)-t0)+'ms'); } }
-function makeWing(u,h,kind){ const fx=u.side==='player'?sumFx(fleetFxList()):{};
-  const sq=makeUnit(u.side, kind, {parent:u.id, fac:u.fac, sqPct:(u.fx.sqPct||0), sqHp:fx.sqHp||0, scale:u.side==='enemy'?1+.1*(B.sector-1):1});
+function wingUnit(u,kind,preview=false){ const fx=u.side==='player'?sumFx(fleetFxList()):{};
+  const sq=makeUnit(u.side, kind, {preview, parent:u.id, fac:u.fac, sqPct:(u.fx.sqPct||0), sqHp:fx.sqHp||0, scale:u.side==='enemy'?1+.1*(B.sector-1):1});
   { const pk=wingPerks(u); if(pk.includes('aces')) sq.aim+=10; if(pk.includes('jinkers')) sq.ev+=8; if(pk.includes('armored')){ sq.maxHp=Math.round(sq.maxHp*1.25); sq.hp=sq.maxHp; } } // B4 wing veteran perks
-  sq.fac=u.fac; sq.q=h.q; sq.r=h.r; sq.facing=u.facing; sq.name=`${HULLS[kind].n} (${u.side==='player'?u.name:u.t.n.split(' ').slice(-1)[0]})`; B.units.push(sq); return sq; }
+  sq.fac=u.fac; sq.facing=u.facing; return sq;
+}
+function makeWing(u,h,kind){ const sq=wingUnit(u,kind);
+  sq.q=h.q; sq.r=h.r; sq.name=`${HULLS[kind].n} (${u.side==='player'?u.name:u.t.n.split(' ').slice(-1)[0]})`; B.units.push(sq); return sq; }
 // carriers open the battle with their wings already in flight; launching only replaces losses
 function deployWings(){ for(const u of B.units.filter(x=>(x.ab==='launch'||(x.fx&&x.fx.hive))&&!x.dead&&!x.isSq&&!x.treeOff)){ const foes=alive(u.side==='player'?'enemy':'player'), sec=B.sector||1, bossWings=u.side==='enemy'&&u.t.boss;
   u.spare=bossWings?Math.max(0,sec-1):(u.fx&&u.fx.endless)?99:(u.hangar||0)+(wingPerks(u).includes('reserve')?1:0)+((u.fx&&u.fx.spareWings)||0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
@@ -2187,11 +2195,22 @@ function pathField(targets){ const D=new Map(), q=[]; for(const t of targets){ c
   for(let i=0;i<q.length;i++){ const h=q[i], d=D.get(hkey(h.q,h.r)); for(const dd of DIRS){ const n={q:h.q+dd[0],r:h.r+dd[1]}, k=hkey(n.q,n.r); if(D.has(k)||!onBoard(n.q,n.r)||blocks(terr(n.q,n.r))) continue; D.set(k,d+1); q.push(n); } }
   return D; }
 function fieldDist(D,v,fallback){ const d=D.get(hkey(v.q,v.r)); return d==null?fallback+6:d; }
-// v53-D: the ability checks in one helper. 'pre' runs before moving; 'aim' re-runs the ones that depend on where the ship ended up (focus and frenzy
+// Score the new wing in each legal hex, then use distance to break threat ties.
+function aiLaunchHex(u,kind,foes){
+  const wing=wingUnit(u,kind,true);
+  let best=null, threat=Infinity, dist=Infinity;
+  for(const h of launchHexes(u)){
+    wing.q=h.q; wing.r=h.r;
+    const th=evalThreat(wing,foes), d=Math.min(...foes.map(f=>hdist(h,f)));
+    if(th<threat||(th===threat&&d<dist)){ best=h; threat=th; dist=d; }
+  }
+  return best;
+}
+// v53-D: the ability checks in one helper. 'pre' runs before moving; 'aim' runs from the ship's committed destination (launch, focus and frenzy
 // only once a gun bears, reload when a spent tube now reaches a target) just before it fires; 'escape' is the phase jump away after firing when hurt
 // and still under the guns. canAbility and cooldowns already stop a double use.
 async function aiAbilities(u,live,mode){ const foes=alive('player'); if(!foes.length||u.dead) return live(); const pre=mode==='pre', aim=mode==='aim';
-    if(pre&&u.ab==='launch' && canAbility(u)){ const hs=launchHexes(u).sort((a,b)=>Math.min(...foes.map(f=>hdist(a,f)))-Math.min(...foes.map(f=>hdist(b,f)))); await useAbility(u,{hex:hs[0]}); await wait(200); }
+    if(aim&&u.ab==='launch' && canAbility(u)){ const kind=wingKind(u); await useAbility(u,{hex:aiLaunchHex(u,kind,foes),kind}); await wait(200); if(!live()) return false; }
     const nearF=foes.filter(f=>!f.isSq).reduce((a,f)=>!a||hdist(u,f)<hdist(u,a)?f:a,null);
     /* shields (R246 pool): surge when the pool is under half and the nearest threat is close */
     if(pre&&u.ab==='surge' && canAbility(u) && nearF && hdist(u,nearF)<=8 && (u.shp||0)<u.shMax*.5) { await useAbility(u); await wait(200); if(!live()) return false; }
@@ -2214,8 +2233,16 @@ async function fadeMove(u){ if(!u||u.dead||u.isSq||!u.postFire||postFireMp(u)<1)
   const here=evalThreat(u,foes)+torpThreat(u,u); if(here<5) return false; let best=null,bv=here; for(const s of computeReach(u).states){ if(s.q===u.q&&s.r===u.r) continue; const v=stateView(u,s), th=evalThreat(v,foes)+torpThreat(u,v); if(th<bv){ bv=th; best=s; } }
   if(!best||bv>here*.75) return false; await moveUnit(u,best); fstat(u.fac,'fade'); return true; }
 function enemyPaceK(){ const n=B?B.units.filter(x=>x.side==='enemy'&&!x.isSq&&!x.dead).length:1; return Math.min(1,Math.max(PACE.bigMin,Math.sqrt(PACE.bigRef/Math.max(1,n)))); } // B2: bigger enemy fleets play their phase quicker
-// veteran AI: brace instead of firing when the incoming fire is heavy, our own guns can do little and the hull is already down
-function aiVetBrace(u){ if(!(aiVet()&&!u.isSq&&!u.t.boss&&canOrder(u,'brace'))) return false; const pf=alive('player'), myOff=evalOffense(u,u.weapons.filter(weaponReady),pf), thr=evalThreat(u,pf); return thr>u.hp*.45&&myOff<thr*.35&&u.hp<u.maxHp*.7; }
+// Before firing, a hurt veteran can trade a weak volley for protection. After a
+// volley with no shots, either difficulty can brace a badly damaged ship.
+function aiShouldBrace(u, afterVolley=false){
+  if(!canOrder(u,'brace')) return false;
+  const foes=alive('player');
+  if(afterVolley) return u.hp<u.maxHp*.5&&evalThreat(u,foes)>10;
+  if(!aiVet()||u.t.boss||u.hp>=u.maxHp*.7) return false;
+  const threat=evalThreat(u,foes);
+  return threat>u.hp*.45&&evalOffense(u,u.weapons.filter(weaponReady),foes)<threat*.35;
+}
 async function aiUnit(u){
   if(u.isSq){ if(!B.over&&!u.dead&&u.side==='enemy') await sqAct(u); return; } // squadrons follow the swarm rules
   // H17 The First Throat Opens: in Alternating mode the enemy's paired activation after the flagship is skipped once, so the player opens one more throat
@@ -2232,8 +2259,12 @@ async function aiUnit(u){
     // plan movement
     const ready=u.weapons.filter(weaponReady);
     const {states}=computeReach(u);
-    const minR=Math.min(...u.weapons.map(w=>w.opt));
-    let best=null, bestScore=-1e9; const PF=pathField(foes.filter(f=>!f.isSq||u.isSq));
+    const minR=Math.min(...ready.filter(w=>w.k!=='flak').map(w=>w.opt));
+    const approachTargets=foes.filter(f=>!f.isSq||u.isSq), PF=pathField(approachTargets);
+    // With no gun to bring into range, keep the current standoff distance or retreat.
+    const unloaded=!Number.isFinite(minR)&&u.weapons.some(w=>w.k!=='flak');
+    const startDist=unloaded?fieldDist(PF,u,Math.min(99,...approachTargets.map(f=>hdist(u,f)))):0;
+    let best=null, bestScore=-1e9;
     const vet0=aiVet(), focus0=vet0?aiRefreshFocus():null; // v53-D: the sticky fleet focus, checked once per activation
     const flE=vet0&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq?B.units.find(x=>x.flagship&&!x.dead&&x.side==='enemy'):null, escO=flE?caps('enemy').filter(x=>x!==u&&x!==flE&&!x.transport):[], escIn=flE?escO.filter(x=>hdist(x,flE)<=3).length:0; // escort spacing
     for(const s of states){
@@ -2242,11 +2273,15 @@ async function aiUnit(u){
       const off=vet?evalOffenseVet(v,ready,foes,focus):evalOffense(v,ready,foes);
       const threat=vet?evalThreatVet(v,foes):evalThreat(v,foes);
       const prof=nemProf(u,(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn), tw=(u.isSq?.15:!vet?.3:u.flagship?.65:aiHurtW(u,prof))*prof.tw; // AI polish: smooth caution curve with hysteresis
-      let score=off-threat*tw; if(vet&&!u.isSq&&threat>=u.hp) score-=25; // v53-D death cliff: a hex where the expected fire could finish us
+      // A 3 CP hull keeps the old price. Limit the spread to keep fleets engaged.
+      let score=off-threat*tw; if(vet&&threat>=u.hp) score-=25+3*(clamp(u.t.cp||1,1,7)-3);
       if(vet&&!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
       if(vet&&!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u)*.35;
       if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=flE; if(fl){ const dv=hdist(v,fl); score-=Math.max(0,dv-3)*(escIn>=2?.6:2); if(dv<=3) for(const x of escO) if(hdist(x,v)===1) score-=1; } } // two escorts in the ring cap the pull, and escorts spread out instead of stacking
-      if(off<=0){ const hd=Math.min(...foes.filter(f=>!f.isSq||u.isSq).map(f=>hdist(v,f)).concat([99])), nd=Math.max(hd,fieldDist(PF,v,hd)); score-=Math.max(0,nd-minR)*4; } // travel distance, so a hole or a rock wall between us is not a shortcut
+      if(off<=0||unloaded){
+        const hd=Math.min(99,...approachTargets.map(f=>hdist(v,f))), nd=fieldDist(PF,v,hd);
+        score-=Math.max(0,unloaded?startDist-nd:nd-minR)*4;
+      } // travel distance, so a hole or a rock wall between us is not a shortcut
       score-=s.cost*.05;
       if(!u.isSq){ score-=torpThreat(u,v)*.9; score-=syncPull(u,v)*(vet?2:1.2)*(u.nem&&B.nemLine?2:1); } // B3: step out of incoming torpedo lanes; Hegemony keeps formation on its anchor
       if(B.obj&&B.obj.type==='hold'&&!u.isSq&&!vet) score-=hdist(v,B.obj.hex)*1.6; // veterans: aiObjScore (two nearest, urgency)
@@ -2255,23 +2290,23 @@ async function aiUnit(u){
     }
     let volleyP=null, braceMid=false;
     if(best && best.path.length){ const midFire=!u.isSq&&!runner&&!(u.ab==='nova'&&canAbility(u))&&!(typeof animPath==='function'&&typeof process!=='undefined'&&process.env&&process.env.NOMIDFIRE);
-      // R1 (AI-1, Muse patch pack 1 as adjusted by its addendum): the veteran brace decision runs on the mid-move path too, after the boarding deferral and before
-      // the volley (once a gun fires, Brace is closed); on a brace call the ship finishes its move, fires nothing and braces
-      await moveUnit(u,best,midFire?{onLate:()=>{ if(boardTargets(u).length) return; if(aiVetBrace(u)){ braceMid=true; return; } volleyP=(async()=>{ if(!await aiAbilities(u,live,'aim')||u.dead) return null; return aiVolley(u,live); })(); return volleyP; }}:undefined); if(!live()) return; }
+      // Hold the volley if the ship will brace when the move ends.
+      await moveUnit(u,best,midFire?{onLate:()=>{ if(boardTargets(u).length) return; if(aiShouldBrace(u)){ braceMid=true; return; } volleyP=(async()=>{ if(!await aiAbilities(u,live,'aim')||u.dead) return null; return aiVolley(u,live); })(); return volleyP; }}:undefined); if(!live()) return; }
     if(braceMid){ if(!u.dead) giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; }
-    if(volleyP){ const fired=await volleyP; if(!live()||B.over) return; if(!await aiAfterFire(u,live,runner)) return; if(!fired && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); } B.aiActive=null; u.activated=true; return; }
-    // nova
-    if(u.ab==='nova' && canAbility(u)){
-      let bh=null, bv=0;
-      for(const h of novaTargets(u)){ let v=0; for(const x of alive()){ const d=hdist(x,h); if(d>1) continue; const dm=d===0?40:20; v+= x.side==='player'?dm:-dm*1.5; } if(v>bv){bv=v;bh=h;} }
-      if(bh && bv>=40){ await useAbility(u,{hex:bh}); await wait(80); if(!live()) return; }
+    if(!volleyP){
+      if(u.ab==='nova' && canAbility(u)){
+        let bh=null, bv=0;
+        for(const h of novaTargets(u)){ let v=0; for(const x of alive()){ const d=hdist(x,h); if(d>1) continue; const dm=d===0?40:20; v+= x.side==='player'?dm:-dm*1.5; } if(v>bv){bv=v;bh=h;} }
+        if(bh && bv>=40){ await useAbility(u,{hex:bh}); await wait(80); if(!live()) return; }
+      }
+      if(!u.isSq && !runner && await tacticBoard(u)){ if(live()){ if(!B.over&&aiShouldBrace(u,true)) giveOrder(u,'brace'); B.aiActive=null; u.activated=true; } return; }
+      if(!live()) return;
+      if(aiShouldBrace(u)){ giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; }
+      if(!await aiAbilities(u,live,'aim')) return;
+      volleyP=aiVolley(u,live);
     }
-    if(!u.isSq && !runner && await tacticBoard(u)){ if(live()){ B.aiActive=null; u.activated=true; } return; }
-    if(!live()) return;
-    if(aiVetBrace(u)){ giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; }
-    if(!await aiAbilities(u,live,'aim')) return;
-    const fired=await aiVolley(u,live); if(fired===null) return;
+    const fired=await volleyP; if(fired===null||!live()||B.over) return;
     if(!await aiAfterFire(u,live,runner)) return;
-    if(!fired && !u.isSq && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); }
+    if(!fired&&aiShouldBrace(u,true)) giveOrder(u,'brace');
     B.aiActive=null; u.activated=true;
 }

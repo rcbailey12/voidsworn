@@ -1,0 +1,1826 @@
+{
+	"all_bearings_blocked_radius": 27.3205083644738,
+	"base_glb_sha256": "d0af9c4bd3b87a42995ae6be737bd407c536014634579e123a4d0d20eada3d56",
+	"base_station_triangles": 702516,
+	"clearance_proof": "Full vertex-radius spheres cover every tumble angle continuously; radial bound covers every station bearing. Visual debris has no collision or terrain entry.",
+	"combined_triangles": 704822,
+	"failures": [],
+	"footprint": {
+		"cells": [
+			{
+				"q": 9,
+				"r": 10,
+				"x": -12.9903879165649,
+				"z": -7.5
+			},
+			{
+				"q": 10,
+				"r": 9,
+				"x": -4.33013391494751,
+				"z": -22.5
+			},
+			{
+				"q": 9,
+				"r": 9,
+				"x": -21.6506423950195,
+				"z": -22.5
+			},
+			{
+				"q": 8,
+				"r": 10,
+				"x": -30.3108959197998,
+				"z": -7.5
+			},
+			{
+				"q": 8,
+				"r": 11,
+				"x": -21.6506423950195,
+				"z": 7.5
+			},
+			{
+				"q": 9,
+				"r": 11,
+				"x": -4.33013391494751,
+				"z": 7.5
+			},
+			{
+				"q": 10,
+				"r": 10,
+				"x": 4.33012008666992,
+				"z": -7.5
+			}
+		],
+		"centre": [
+			-12.9903869628906,
+			0.0,
+			-7.5
+		],
+		"hex_radius": 9.99999940756459
+	},
+	"lowest_fitted_ship_y": -25.5646324157715,
+	"lowest_ship": "D22_23",
+	"maximum_debris_world_y": -27.9580800533295,
+	"measured_ships": [
+		{
+			"code": "V15_37",
+			"min_y": -1.56468784809113
+		},
+		{
+			"code": "V14_23",
+			"min_y": -1.00908160209656
+		},
+		{
+			"code": "V16_37",
+			"min_y": -2.00883436203003
+		},
+		{
+			"code": "V18_51",
+			"min_y": -3.01655554771423
+		},
+		{
+			"code": "V17_37",
+			"min_y": -2.99677681922913
+		},
+		{
+			"code": "V1b_r_23",
+			"min_y": -5.77853584289551
+		},
+		{
+			"code": "H7_23",
+			"min_y": -1.34237849712372
+		},
+		{
+			"code": "H8_23",
+			"min_y": -1.84721231460571
+		},
+		{
+			"code": "H9_23",
+			"min_y": -2.70823311805725
+		},
+		{
+			"code": "H10_23",
+			"min_y": -2.94185161590576
+		},
+		{
+			"code": "H4_11",
+			"min_y": -3.54989743232727
+		},
+		{
+			"code": "C13s_23",
+			"min_y": -1.87733697891235
+		},
+		{
+			"code": "C14s_23",
+			"min_y": -2.21739196777344
+		},
+		{
+			"code": "C15s_23",
+			"min_y": -4.16580104827881
+		},
+		{
+			"code": "C16s_23",
+			"min_y": -3.64435482025146
+		},
+		{
+			"code": "C19_51",
+			"min_y": -7.45158290863037
+		},
+		{
+			"code": "B19_11",
+			"min_y": -3.58472442626953
+		},
+		{
+			"code": "B20_11",
+			"min_y": -1.78189921379089
+		},
+		{
+			"code": "B21_11",
+			"min_y": -3.28216695785522
+		},
+		{
+			"code": "B22_11",
+			"min_y": -4.33851146697998
+		},
+		{
+			"code": "B16_23",
+			"min_y": -19.4570178985596
+		},
+		{
+			"code": "I14_23",
+			"min_y": -2.07033395767212
+		},
+		{
+			"code": "I11_37",
+			"min_y": -2.74068427085876
+		},
+		{
+			"code": "I15_11",
+			"min_y": -5.37905931472778
+		},
+		{
+			"code": "I16_11",
+			"min_y": -7.20312547683716
+		},
+		{
+			"code": "I8_37",
+			"min_y": -1.63206076622009
+		},
+		{
+			"code": "D9_23",
+			"min_y": -1.25186765193939
+		},
+		{
+			"code": "D20_23",
+			"min_y": 3.38912081718445
+		},
+		{
+			"code": "D21_23",
+			"min_y": -5.91867017745972
+		},
+		{
+			"code": "D22_23",
+			"min_y": -25.5646324157715
+		}
+	],
+	"minimum_blocked_clearance": 18.7050911152015,
+	"motion_check": "Loaded script changes actual mesh bounds after 60 seconds; 0.12 to 0.38 degrees/second, continuous axis rotation",
+	"pass": true,
+	"pieces": [
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 36.0255991184364,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 18.7050911152015,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 18.7050911152015,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 18.7050911152015,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 18.7050911152015,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 18.7050911152015,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 18.7050930225502,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 18.7050911152015,
+			"kind": "plate",
+			"maximum_world_y": -28.0752859115601,
+			"name": "T2_debris_01_plate",
+			"position": [
+				-5.39999961853027,
+				-33.75,
+				48.4000053405762
+			],
+			"rate_deg_per_second": 0.208745175055225,
+			"triangles": 148,
+			"tumble_radius": 2.67471408843994
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 36.8760393821846,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 19.5555313789497,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 19.5555313789497,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 19.5555313789497,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 19.5555313789497,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 19.5555313789497,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 19.5555332862983,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 19.5555313789497,
+			"kind": "girder",
+			"maximum_world_y": -29.7179663181305,
+			"name": "T2_debris_02_girder",
+			"position": [
+				0.899999618530273,
+				-36.0499992370605,
+				50.2000045776367
+			],
+			"rate_deg_per_second": 0.223741294555218,
+			"triangles": 192,
+			"tumble_radius": 3.33203291893005
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 40.6926332676063,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 23.3721252643714,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 23.3721252643714,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 23.3721252643714,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 23.3721252643714,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 23.3721252643714,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 23.3721271717201,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 23.3721252643714,
+			"kind": "plate",
+			"maximum_world_y": -30.9381055831909,
+			"name": "T2_debris_03_plate",
+			"position": [
+				-9.20000076293945,
+				-36.25,
+				52.2000007629395
+			],
+			"rate_deg_per_second": 0.287839266079844,
+			"triangles": 140,
+			"tumble_radius": 2.31189441680908
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 43.655744429792,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 26.3352364265571,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 26.3352364265571,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 26.3352364265571,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 26.3352364265571,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 26.3352364265571,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 26.3352383339057,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 26.3352364265571,
+			"kind": "pod",
+			"maximum_world_y": -28.9728720188141,
+			"name": "T2_debris_04_pod",
+			"position": [
+				-1.90000343322754,
+				-33.25,
+				54.9000053405762
+			],
+			"rate_deg_per_second": 0.357590991774396,
+			"triangles": 296,
+			"tumble_radius": 1.27712798118591
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 46.0809663498054,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 28.7604583465705,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 28.7604583465705,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 28.7604583465705,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 28.7604583465705,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 28.7604583465705,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 28.7604602539192,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 28.7604583465705,
+			"kind": "girder",
+			"maximum_world_y": -27.9580800533295,
+			"name": "T2_debris_05_girder",
+			"position": [
+				-8.20000076293945,
+				-33.8499984741211,
+				58.4000091552734
+			],
+			"rate_deg_per_second": 0.371039051871765,
+			"triangles": 192,
+			"tumble_radius": 2.89191842079163
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 44.1415578090797,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 26.8210498058448,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 26.8210498058448,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 26.8210498058448,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 26.8210498058448,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 26.8210498058448,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 26.8210517131935,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 26.8210498058448,
+			"kind": "plate",
+			"maximum_world_y": -32.0950150489807,
+			"name": "T2_debris_06_plate",
+			"position": [
+				4.70000076293945,
+				-37.25,
+				56.1000061035156
+			],
+			"rate_deg_per_second": 0.131884051940128,
+			"triangles": 144,
+			"tumble_radius": 2.15498495101929
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 50.0908315145622,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 32.7703235113273,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 32.7703235113273,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 32.7703235113273,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 32.7703235113273,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 32.7703235113273,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 32.7703254186759,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 32.7703235113273,
+			"kind": "antenna",
+			"maximum_world_y": -31.9614945650101,
+			"name": "T2_debris_07_antenna",
+			"position": [
+				-4.69999885559082,
+				-36.5499992370605,
+				61.5000038146973
+			],
+			"rate_deg_per_second": 0.29737292281472,
+			"triangles": 122,
+			"tumble_radius": 1.58850467205048
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 50.710840340818,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 33.3903323375831,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 33.3903323375831,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 33.3903323375831,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 33.3903323375831,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 33.3903323375831,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 33.3903342449317,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 33.3903323375831,
+			"kind": "girder",
+			"maximum_world_y": -30.1010384559631,
+			"name": "T2_debris_08_girder",
+			"position": [
+				5.69999694824219,
+				-35.0499992370605,
+				62.4000053405762
+			],
+			"rate_deg_per_second": 0.172398040348586,
+			"triangles": 192,
+			"tumble_radius": 1.94896078109741
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 53.4028271400581,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 36.0823191368232,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 36.0823191368232,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 36.0823191368232,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 36.0823191368232,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 36.0823191368232,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 36.0823210441719,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 36.0823191368232,
+			"kind": "plate",
+			"maximum_world_y": -34.7613708972931,
+			"name": "T2_debris_09_plate",
+			"position": [
+				-11.3000011444092,
+				-39.25,
+				63.9000053405762
+			],
+			"rate_deg_per_second": 0.235072514005828,
+			"triangles": 148,
+			"tumble_radius": 1.48862910270691
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 57.013812299932,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 39.6933042966972,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 39.6933042966972,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 39.6933042966972,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 39.6933042966972,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 39.6933042966972,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 39.6933062040458,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 39.6933042966972,
+			"kind": "plate",
+			"maximum_world_y": -32.1179386377335,
+			"name": "T2_debris_10_plate",
+			"position": [
+				2.50000190734863,
+				-36.25,
+				68.0999984741211
+			],
+			"rate_deg_per_second": 0.339140316104324,
+			"triangles": 140,
+			"tumble_radius": 1.13206136226654
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 50.4951446616302,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 33.1746366583953,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 33.1746366583953,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 33.1746366583953,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 33.1746366583953,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 33.1746366583953,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 33.174638565744,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 33.1746366583953,
+			"kind": "chip",
+			"maximum_world_y": -31.1229678988457,
+			"name": "T2_debris_11_chip",
+			"position": [
+				-2.58827781677246,
+				-34.5947380065918,
+				60.9119491577148
+			],
+			"rate_deg_per_second": 0.128817202033031,
+			"triangles": 32,
+			"tumble_radius": 0.471770107746124
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 61.53543293115,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 44.2149249279151,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 44.2149249279151,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 44.2149249279151,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 44.2149249279151,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 44.2149249279151,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 44.2149268352638,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 44.2149249279151,
+			"kind": "chip",
+			"maximum_world_y": -31.0587372779846,
+			"name": "T2_debris_12_chip",
+			"position": [
+				-11.929220199585,
+				-34.7928733825684,
+				71.2782211303711
+			],
+			"rate_deg_per_second": 0.170833679052129,
+			"triangles": 36,
+			"tumble_radius": 0.73413610458374
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 42.0942088329444,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 24.7737008297096,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 24.7737008297096,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 24.7737008297096,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 24.7737008297096,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 24.7737008297096,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 24.7737027370582,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 24.7737008297096,
+			"kind": "chip",
+			"maximum_world_y": -34.9643530845642,
+			"name": "T2_debris_13_chip",
+			"position": [
+				7.41720199584961,
+				-38.4156723022461,
+				52.0193977355957
+			],
+			"rate_deg_per_second": 0.263331976819163,
+			"triangles": 12,
+			"tumble_radius": 0.451319217681885
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 49.7889514529357,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 32.4684434497009,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 32.4684434497009,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 32.4684434497009,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 32.4684434497009,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 32.4684434497009,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 32.4684453570495,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 32.4684434497009,
+			"kind": "chip",
+			"maximum_world_y": -31.8777350783348,
+			"name": "T2_debris_14_chip",
+			"position": [
+				-1.45238876342773,
+				-35.5462760925293,
+				60.4400444030762
+			],
+			"rate_deg_per_second": 0.132735927502901,
+			"triangles": 32,
+			"tumble_radius": 0.668541014194489
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 55.1089165472637,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 37.7884085440288,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 37.7884085440288,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 37.7884085440288,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 37.7884085440288,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 37.7884085440288,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 37.7884104513774,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 37.7884085440288,
+			"kind": "chip",
+			"maximum_world_y": -34.4619823992252,
+			"name": "T2_debris_15_chip",
+			"position": [
+				-4.796630859375,
+				-37.9204025268555,
+				65.3916549682617
+			],
+			"rate_deg_per_second": 0.184034407676263,
+			"triangles": 36,
+			"tumble_radius": 0.458420127630234
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 41.4011597597251,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 24.0806517564903,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 24.0806517564903,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 24.0806517564903,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 24.0806517564903,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 24.0806517564903,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 24.0806536638389,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 24.0806517564903,
+			"kind": "chip",
+			"maximum_world_y": -31.0020512342453,
+			"name": "T2_debris_16_chip",
+			"position": [
+				5.88304328918457,
+				-34.5785675048828,
+				51.6436729431152
+			],
+			"rate_deg_per_second": 0.333416728191833,
+			"triangles": 12,
+			"tumble_radius": 0.576516270637512
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 44.559294190372,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 27.2387861871372,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 27.2387861871372,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 27.2387861871372,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 27.2387861871372,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 27.2387861871372,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 27.2387880944858,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 27.2387861871372,
+			"kind": "chip",
+			"maximum_world_y": -31.1379536092281,
+			"name": "T2_debris_17_chip",
+			"position": [
+				-11.9951000213623,
+				-34.6096458435059,
+				53.7077941894531
+			],
+			"rate_deg_per_second": 0.31974971056399,
+			"triangles": 32,
+			"tumble_radius": 0.471692234277725
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 61.8560354077468,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 44.535527404512,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 44.535527404512,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 44.535527404512,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 44.535527404512,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 44.535527404512,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 44.5355293118606,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 44.535527404512,
+			"kind": "chip",
+			"maximum_world_y": -33.7605729699135,
+			"name": "T2_debris_18_chip",
+			"position": [
+				-12.5135669708252,
+				-37.375904083252,
+				71.3828353881836
+			],
+			"rate_deg_per_second": 0.280507057699701,
+			"triangles": 36,
+			"tumble_radius": 0.61533111333847
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 42.0273523294578,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 24.7068443262229,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 24.7068443262229,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 24.7068443262229,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 24.7068443262229,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 24.7068443262229,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 24.7068462335716,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 24.7068443262229,
+			"kind": "chip",
+			"maximum_world_y": -30.9388097524643,
+			"name": "T2_debris_19_chip",
+			"position": [
+				-11.1368446350098,
+				-34.2331771850586,
+				51.1227264404297
+			],
+			"rate_deg_per_second": 0.192718782138676,
+			"triangles": 12,
+			"tumble_radius": 0.294367432594299
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 50.9240032696376,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 33.6034952664028,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 33.6034952664028,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 33.6034952664028,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 33.6034952664028,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 33.6034952664028,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 33.6034971737514,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 33.6034952664028,
+			"kind": "chip",
+			"maximum_world_y": -34.6999855339527,
+			"name": "T2_debris_20_chip",
+			"position": [
+				-13.1436557769775,
+				-38.1587829589844,
+				59.9590911865234
+			],
+			"rate_deg_per_second": 0.282055929611205,
+			"triangles": 32,
+			"tumble_radius": 0.458797425031662
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 48.4133905881296,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 31.0928825848947,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 31.0928825848947,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 31.0928825848947,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 31.0928825848947,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 31.0928825848947,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 31.0928844922433,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 31.0928825848947,
+			"kind": "chip",
+			"maximum_world_y": -35.6064146310091,
+			"name": "T2_debris_21_chip",
+			"position": [
+				-6.97641944885254,
+				-38.8316459655762,
+				58.2221412658691
+			],
+			"rate_deg_per_second": 0.18817274163391,
+			"triangles": 36,
+			"tumble_radius": 0.22523133456707
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 50.3131785356651,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 32.9926705324302,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 32.9926705324302,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 32.9926705324302,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 32.9926705324302,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 32.9926705324302,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 32.9926724397789,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 32.9926705324302,
+			"kind": "chip",
+			"maximum_world_y": -36.73182284832,
+			"name": "T2_debris_22_chip",
+			"position": [
+				5.37824058532715,
+				-40.185920715332,
+				60.52880859375
+			],
+			"rate_deg_per_second": 0.282514847184331,
+			"triangles": 12,
+			"tumble_radius": 0.454097867012024
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 43.7121373676906,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 26.3916293644557,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 26.3916293644557,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 26.3916293644557,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 26.3916293644557,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 26.3916293644557,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 26.3916312718044,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 26.3916293644557,
+			"kind": "chip",
+			"maximum_world_y": -30.5822968780994,
+			"name": "T2_debris_23_chip",
+			"position": [
+				-6.79449462890625,
+				-34.0148773193359,
+				53.7167129516602
+			],
+			"rate_deg_per_second": 0.352152588351755,
+			"triangles": 32,
+			"tumble_radius": 0.432580441236496
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 57.7098041736732,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 40.3892961704383,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 40.3892961704383,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 40.3892961704383,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 40.3892961704383,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 40.3892961704383,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 40.389298077787,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 40.3892961704383,
+			"kind": "chip",
+			"maximum_world_y": -35.9175300598145,
+			"name": "T2_debris_24_chip",
+			"position": [
+				2.59657096862793,
+				-39.4994659423828,
+				68.2423629760742
+			],
+			"rate_deg_per_second": 0.12158381373363,
+			"triangles": 36,
+			"tumble_radius": 0.581935882568359
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 59.04002713796,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 41.7195191347251,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 41.7195191347251,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 41.7195191347251,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 41.7195191347251,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 41.7195191347251,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 41.7195210420738,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 41.7195191347251,
+			"kind": "chip",
+			"maximum_world_y": -36.2002295255661,
+			"name": "T2_debris_25_chip",
+			"position": [
+				-6.50506210327148,
+				-39.4809722900391,
+				69.0148773193359
+			],
+			"rate_deg_per_second": 0.261987718650362,
+			"triangles": 12,
+			"tumble_radius": 0.280742764472961
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 56.2238298022399,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 38.9033217990051,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 38.9033217990051,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 38.9033217990051,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 38.9033217990051,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 38.9033217990051,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 38.9033237063537,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 38.9033217990051,
+			"kind": "chip",
+			"maximum_world_y": -34.5018338561058,
+			"name": "T2_debris_26_chip",
+			"position": [
+				-6.62371253967285,
+				-37.8217887878418,
+				66.2133026123047
+			],
+			"rate_deg_per_second": 0.281266250837583,
+			"triangles": 32,
+			"tumble_radius": 0.319954931735992
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 53.1922711544881,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 35.8717631512533,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 35.8717631512533,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 35.8717631512533,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 35.8717631512533,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 35.8717631512533,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 35.8717650586019,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 35.8717631512533,
+			"kind": "chip",
+			"maximum_world_y": -35.5373375862837,
+			"name": "T2_debris_27_chip",
+			"position": [
+				-4.93785858154297,
+				-38.7584648132324,
+				63.2208557128906
+			],
+			"rate_deg_per_second": 0.225039218829193,
+			"triangles": 36,
+			"tumble_radius": 0.221127226948738
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 45.9197871052871,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 28.5992791020523,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 28.5992791020523,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 28.5992791020523,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 28.5992791020523,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 28.5992791020523,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 28.5992810094009,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 28.5992791020523,
+			"kind": "chip",
+			"maximum_world_y": -36.1629133820534,
+			"name": "T2_debris_28_chip",
+			"position": [
+				-4.05207061767578,
+				-39.5356712341309,
+				56.1465187072754
+			],
+			"rate_deg_per_second": 0.176333591446988,
+			"triangles": 12,
+			"tumble_radius": 0.372757852077484
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 61.2970322930465,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 43.9765242898117,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 43.9765242898117,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 43.9765242898117,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 43.9765242898117,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 43.9765242898117,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 43.9765261971603,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 43.9765242898117,
+			"kind": "chip",
+			"maximum_world_y": -36.3062260746956,
+			"name": "T2_debris_29_chip",
+			"position": [
+				-1.98349952697754,
+				-39.6432037353516,
+				71.6065444946289
+			],
+			"rate_deg_per_second": 0.20779434477296,
+			"triangles": 32,
+			"tumble_radius": 0.336977660655975
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 45.2829295360694,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 27.9624215328346,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 27.9624215328346,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 27.9624215328346,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 27.9624215328346,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 27.9624215328346,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 27.9624234401832,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 27.9624215328346,
+			"kind": "chip",
+			"maximum_world_y": -31.6642165184021,
+			"name": "T2_debris_30_chip",
+			"position": [
+				-3.66784286499023,
+				-35.4309921264648,
+				55.9295654296875
+			],
+			"rate_deg_per_second": 0.365328905103171,
+			"triangles": 36,
+			"tumble_radius": 0.766775608062744
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 47.3703413271556,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 30.0498333239208,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 30.0498333239208,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 30.0498333239208,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 30.0498333239208,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 30.0498333239208,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 30.0498352312694,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 30.0498333239208,
+			"kind": "chip",
+			"maximum_world_y": -30.4730714857578,
+			"name": "T2_debris_31_chip",
+			"position": [
+				4.62520217895508,
+				-33.9640731811523,
+				57.6761856079102
+			],
+			"rate_deg_per_second": 0.169645451685178,
+			"triangles": 12,
+			"tumble_radius": 0.491001695394516
+		},
+		{
+			"all_cells": [
+				{
+					"all_bearings_clearance": 46.463375207151,
+					"q": 9,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 29.1428672039161,
+					"q": 10,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 29.1428672039161,
+					"q": 9,
+					"r": 9
+				},
+				{
+					"all_bearings_clearance": 29.1428672039161,
+					"q": 8,
+					"r": 10
+				},
+				{
+					"all_bearings_clearance": 29.1428672039161,
+					"q": 8,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 29.1428672039161,
+					"q": 9,
+					"r": 11
+				},
+				{
+					"all_bearings_clearance": 29.1428691112648,
+					"q": 10,
+					"r": 10
+				}
+			],
+			"blocked_cell_clearance": 29.1428672039161,
+			"kind": "chip",
+			"maximum_world_y": -36.5250363349915,
+			"name": "T2_debris_32_chip",
+			"position": [
+				-8.26136779785156,
+				-39.8879852294922,
+				56.2226028442383
+			],
+			"rate_deg_per_second": 0.302342808297562,
+			"triangles": 32,
+			"tumble_radius": 0.362948894500732
+		}
+	],
+	"rules_sha256": "1350d35b97be0ae301fd98630c10e17db8ce94aa688f3980738158b3c922d555",
+	"station_radius_hexes": 1,
+	"surfaces": 55,
+	"triangles": 2306
+}

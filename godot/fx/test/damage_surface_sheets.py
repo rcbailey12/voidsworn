@@ -3,6 +3,15 @@
 Run with the PC's bundled ComfyUI Python: this uses its existing Pillow.
 Arguments: capture folder, output folder, label (baseline/final/safe).
 """
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('installed in game')
+
 from pathlib import Path
 import sys
 from PIL import Image, ImageDraw, ImageFont
@@ -29,13 +38,13 @@ for zoom in ["battle", "close"]:
             path = source / f"{faction}_stage{stage}_{zoom}.png"
             if not path.exists():
                 continue
-            with Image.open(path) as im:
+            with PICTURES.open(path) as im:
                 if zoom == "battle":
                     x, z = im.width // 2, im.height // 2
                     im = im.crop((x - 768, z - 432, x + 768, z + 432))
                 sheet.paste(im.resize((768, 432)), (stage * 768, y))
         draw.text((14, y + 4), name, font=small, fill="white", stroke_width=2, stroke_fill="black")
-    sheet.save(output / f"{label}_{zoom}_stages.jpg", quality=94)
+    PICTURES.save(sheet, output / f"{label}_{zoom}_stages.jpg", quality=94)
 
 sheet = Image.new("RGB", (2400, 5 * 510 + 70), "#111822")
 draw = ImageDraw.Draw(sheet)
@@ -45,7 +54,7 @@ for row, (faction, name) in enumerate(factions):
         path = source / f"{faction}_{suffix}.png"
         if not path.exists():
             continue
-        with Image.open(path) as im:
+        with PICTURES.open(path) as im:
             sheet.paste(im.resize((800, 450)), (col * 800, row * 510 + 70))
     draw.text((16, row * 510 + 74), name, font=small, fill="white", stroke_width=2, stroke_fill="black")
-sheet.save(output / f"{label}_details_repair.jpg", quality=94)
+PICTURES.save(sheet, output / f"{label}_details_repair.jpg", quality=94)

@@ -60,7 +60,7 @@ battle medians are in the stack and PR 796.
 - rust 0 everywhere (guide; R204, a well-kept navy, never rusty).
 - grime: body .30, recessed .45, module bands .40, nozzles .30, trim .20. Light soot at the nozzle faces is the whole of it.
 - roughness floor .52 in every zone; trim rough .55, metal .50; nozzle housings metal .48.
-- symmetry is a build rule, not a paint value: every decal, wear patch and scuff on one side is mirrored on the other (guide: never asymmetry). The builder adds a port and starboard mirror check.
+- symmetry is a build rule, not a paint value: decals on one side are mirrored on the other (guide: never asymmetry); the shared wear and scuff noise is not mirrored (it would need a shared change). The builder adds a port and starboard mirror check.
 
 ## 4. Trim and wear
 

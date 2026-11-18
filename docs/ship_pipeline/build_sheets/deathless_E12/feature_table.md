@@ -1,6 +1,6 @@
 # deathless_E12: Eclipse zenith (the ring cruiser), build sheet
 
-Eclipse (deathless) | class Cruiser | version 4 (fourth sheet (R221 weapons, pass 2)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w3\deathless_E12\deathless_E12_blockout.blend`
+Eclipse (deathless) | class Cruiser | version 5 (R289 armoured reactor (issue 877)), 2026-11-16 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\issue-877 (rebuilt base and turreted variant)\deathless_E12\deathless_E12_blockout.blend`
 
 **Length 14.5 world units** (data.js d_harvester (cls 'Cruiser'); length from godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5 (drawn x SHIP_K 1.6 = 23.2 on the board)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -19,15 +19,15 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 |---|---|
 | model length | 14.56 |
 | length side | 14.588 |
-| length top | 14.575 |
-| length disagreement percent | 0.09 |
+| length top | 14.588 |
+| length disagreement percent | 0.0 |
 | beam top | 8.475 |
 | beam bow | 8.475 |
 | beam disagreement percent | 0.0 |
 | height side | 2.788 |
-| height bow | 2.788 |
-| height disagreement percent | 0.0 |
-| widest at station percent | 44.5 |
+| height bow | 2.8 |
+| height disagreement percent | 0.09 |
+| widest at station percent | 44.6 |
 | hull beam | 1.44 |
 | hull depth | 1.46 |
 | L to B hull | 10.07 |
@@ -49,7 +49,7 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | S2s | truss strut, 2.5 long | 1 | 35.5 | -0.16 | 0.13 | - | - | designed | truss from the spine to the centre starboard arc |
 | S3s | truss strut, 2.5 long | 1 | 51.4 | -0.16 | 0.13 | - | - | designed | truss from the spine to the centre starboard arc |
 | S4s | truss strut, 1.9 long | 1 | 66.2 | -0.18 | 0.13 | - | - | picture | truss from the spine to the aft starboard arc |
-| C1 | caged core of trapped light, 1.7 across | 1 | 43.4 | 0.00 | 0.15 | - | - | picture | the trapped light core in gimbal rings; the spine enters its hubs |
+| C1 | caged core of trapped light, 1.7 across | 1 | 43.4 | 0.00 | 0.15 | - | - | picture | R289: faceted reactor, cooling rings and hot seams behind three courses of shade armour; about a quarter peeks through; the spine enters its hubs |
 | T1 | null cannon, twin turret | 2 barrels | 28.1 | 0.00 | 0.61 | forward, +4 elev | T gauss | picture | fore null cannon: twin rail pairs through a crescent shade, on its saddle |
 | T2 | null cannon, twin turret | 2 barrels | 59.4 | 0.00 | 0.61 | forward, +4 elev | T gauss | picture | aft null cannon: twin rail pairs through a crescent shade, on its saddle |
 | A1 | spinal arc emitter (fixed) | 1 barrel | 13.7 | 0.00 | 0.15 | forward | F doom | picture | the corona arc emitter on the spine head (a crown of electrode horns round a black shade disc), firing through the ring's bow gap |
@@ -109,8 +109,8 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Saddle deck, fore battery | 24.1 to 32.1 | -0.38 to 0.38 | 0.37 to 0.61 | mauve plate | the stepped upper deck of the saddle, the turret on it |
 | Saddle, aft battery | 53.5 to 65.2 | -0.52 to 0.52 | 0.05 to 0.45 | violet plate | the long hexagonal plinth the battery stands on |
 | Saddle deck, aft battery | 55.4 to 63.4 | -0.38 to 0.38 | 0.37 to 0.61 | mauve plate | the stepped upper deck of the saddle, the turret on it |
-| Emitter collars | 10.8 to 17.8 | -0.39 to 0.39 | -0.25 to 0.54 | mauve and violet | a part of the kit projector, counted as its own mass |
-| Emitter shaft | 6.9 to 10.3 | -0.33 to 0.32 | -0.18 to 0.47 | violet and mauve | a part of the kit projector, counted as its own mass |
+| Emitter collars | 10.8 to 17.8 | -0.39 to 0.39 | -0.25 to 0.52 | mauve and violet | a part of the kit projector, counted as its own mass |
+| Emitter shaft | 6.9 to 10.3 | -0.33 to 0.33 | -0.18 to 0.47 | violet and mauve | a part of the kit projector, counted as its own mass |
 | Emitter block | 6.5 to 10.6 | -0.33 to 0.33 | -0.18 to 0.48 | mauve | a part of the kit projector, counted as its own mass |
 
 ## INSIDE (R98, R209): what each break reveals
@@ -162,7 +162,7 @@ Eclipse breaks in layers (factions.md): the ring arcs peel away first, band by b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 484 objects, 34 parts, 451 close pairs, 366 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 14 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 487 objects, 34 parts, 452 close pairs, 366 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 14 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -181,7 +181,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Thrusters, hatches and heat panels added.** a ship in space needs thrusters; the picture shows no underside.
 - **The stern block is a faceted box: chamfered long edges, a stepped neck face where the spine enters (green light panel on its wedge), then a short facet wedge to the full block (issue 618).** the Board's R224 pick for the build: the sheet's rounded block tapered over 1.4 units and read as a cone at the aft camera; the concept's block is a chamfered box that steps down to the spine.
 - **The stern block narrowed in plan to 1.44 (was 3.0), its side height kept (issue 618, the Board's massing round).** judged against the whole concept: its stern pod is about a third of the ring's half-height across; the sheet's block was twice that.
-- **The core a whole sphere 1.26 across in a frame 1.63 across (was 1.11 and 1.44), the ring plane on the spine's axis (was 0.25 below it) (issue 618).** the concept's core is a full sphere in a ring frame that shows above and below the spine and the ring, which crosses it at its middle; the sheet's core read as a dome above the ring with a small arc below.
+- **R289: faceted reactor with cooling bands and bright seams, mostly covered by eight ordered shade petals (issue 877).** Ryan: the core looked like a basic green bulb; only about 25 percent should peek out behind armour. The gimbal frame, hubs, core position and insides stay as before; both E12 versions use this kit part.
 - **Bulkier saddles: a long hexagonal plinth 1.7 by 1.04 under a stepped upper deck (issue 618).** the Board's R224 pick for the build: the concept seats each battery on a broad stepped platform; the sheet's 1.5 by 0.84 oval pads read thin beside the arcs.
 - **The block thrusters sit on the roof and belly chamfers at 4.3 (were at 4.0).** R226: at 4.0 they sat on B-2, where the block tears from the spine; a machine rides whole with one piece.
 - **Two boarding origins on the centre arcs' outer walls (issue 618).** the game contract needs one a side on the mid hull (HARDPOINTS.md); the reclaim swarms leave the open arc bays.

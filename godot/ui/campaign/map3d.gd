@@ -131,7 +131,7 @@ func _ready() -> void:
 	mouse_exited.connect(func():   # the pointer left the chart (onto the briefing column, say): no stop is pointed at
 		if not _hot_by_key and not _flying and intel != null: _set_hot(""))
 
-func _C(): return ui.C
+func _C(): return ui.C if is_instance_valid(ui) else null
 func _apply_quality() -> void:
 	var hi = quality != "low"
 	vp.msaa_3d = Viewport.MSAA_4X if hi else Viewport.MSAA_2X
@@ -179,17 +179,30 @@ func _load_sector(sig: String) -> void:
 	add_child(cover)
 	# Paint the cover before building models or uploading textures.
 	await get_tree().process_frame
+	if _cancel_sector_load(cover): return
 	await get_tree().process_frame
+	if _cancel_sector_load(cover): return
 	_build(sig)
 	_last_pos = _C().RUN.get("pos")
 	_refresh()
 	await sector_world.wait_ready()
+	if _cancel_sector_load(cover): return
 	await Loading.settle(get_tree())
+	if _cancel_sector_load(cover): return
 	_arrive(true)
 	cover.queue_free()
 	loading = false
 	# Changes made during loading get their own covered rebuild.
 	sync()
+
+func _cancel_sector_load(cover: CanvasLayer) -> bool:
+	var C = _C()
+	if C != null and C.RUN != null: return false
+	cover.queue_free()
+	loading = false
+	_sig = ""
+	return true
+
 func _mat(col: Color, emit: float, metal: float = 0.3, rough: float = 0.5) -> StandardMaterial3D:
 	var mt = StandardMaterial3D.new(); mt.albedo_color = col; mt.metallic = metal; mt.roughness = rough
 	if emit > 0: mt.emission_enabled = true; mt.emission = col; mt.emission_energy_multiplier = emit
@@ -790,7 +803,9 @@ func _paint_lanes() -> void:
 		L["mat"].set_shader_parameter("col", col); L["mat"].set_shader_parameter("px", w * kk)
 
 func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where the fleet is and settles back over the chart
-	var C = _C(); var pos = C.RUN.get("pos")
+	var C = _C()
+	if C == null or C.RUN == null: return
+	var pos = C.RUN.get("pos")
 	var at = _nodes[pos]["pos"] if pos != null and _nodes.has(pos) else _token_home()
 	if new_sector:
 		_fit(_free_rect())

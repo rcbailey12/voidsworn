@@ -1,0 +1,96 @@
+{
+  "source": {
+    "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+    "source_dirty": true,
+    "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+  },
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fixed_fps": 60,
+  "cameras": [
+    170,
+    60
+  ],
+  "cell": [
+    256,
+    180
+  ],
+  "crop": {
+    "170": [
+      256,
+      180
+    ],
+    "60": [
+      640,
+      450
+    ]
+  },
+  "shown_offsets_s": [
+    0,
+    0.1,
+    0.3,
+    0.6,
+    1.5
+  ],
+  "extra_source_offsets_s": [
+    -0.05,
+    0.03333333333333333,
+    3.5
+  ],
+  "rng_effects": 11,
+  "rng_global": 2070,
+  "shield_left": 0,
+  "shots": 1,
+  "attackers": {
+    "torpedo": [
+      "voidsworn",
+      "Cruiser",
+      "torp"
+    ],
+    "heavy": [
+      "voidsworn",
+      "Cruiser",
+      "hbattery"
+    ],
+    "light": [
+      "hegemony",
+      "Cruiser",
+      "autocannon"
+    ]
+  },
+  "kept": {
+    "before": "camera 170: before_r2 for torpedo, heavy and material; before_light_r2 for autocannon. Camera 60: before_wide_r2.",
+    "after": "camera 170: after_final_r2. Camera 60: after_wide_r2."
+  },
+  "stage": "installed in game",
+  "cache_source": "board/repo-kept-7aa9517dbc594e4ebeb0b16b21e472e8/godot",
+  "cache_manifest_sha256": "1bd11490412ca0cad61133231ff8ca40092c9fbdeade11398dcaf161bdac455b",
+  "target_cache": {
+    "C15s_23": {
+      "file": "godot\\gen\\ships\\C15s_23.scn",
+      "sha256": "13999ff2826896ef9dc2e67fbe4bcd1e54e5304b98617efa2153c1396ee9c9cf"
+    },
+    "H9_23": {
+      "file": "godot\\gen\\ships\\H9_23.scn",
+      "sha256": "226c28e00814b86d45f4914e23868726b2428b36721d2de78eb121db8df0d490"
+    },
+    "D21_23": {
+      "file": "godot\\gen\\ships\\D21_23.scn",
+      "sha256": "278f86954c4fa52e2b3e83f0e817778cdf330b6d61b00eab60b1e7c3be8ee745"
+    },
+    "I15_11": {
+      "file": "godot\\gen\\ships\\I15_11.scn",
+      "sha256": "296b2d53f72d764a2e614c4650e7887280c7ef6512424a79fe4044a15953b5e6"
+    },
+    "B21_11": {
+      "file": "godot\\gen\\ships\\B21_11.scn",
+      "sha256": "86774df0a66a152f73e0568d13e7074711f2c1b13fbbcaa4d7a275b16a358cbf"
+    },
+    "V16_37": {
+      "file": "godot\\gen\\ships\\V16_37.scn",
+      "sha256": "5b11274ae72d2df232f15a6f682ca0f2d02683712ecb3c1f260759e5865e8251"
+    }
+  }
+}

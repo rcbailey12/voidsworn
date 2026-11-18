@@ -1,0 +1,54 @@
+{
+  "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+  "source_dirty": true,
+  "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "SF3_R302_after_concept.jpg",
+  "date": "2026-11-17T07:37:22Z",
+  "sources": [
+    {
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "beauty_cam.png",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+      "stage": "sheet built",
+      "date": "2026-11-17T07:32:57Z",
+      "image_sha256": "4e4676ea8c40a9c336efa56bfe6fb13bad855ef0f095b6b996a5d0b94ccae79e",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "fc9de3ef7bdb341ae661579216d387297b3a4a3897ad0b0b90e51d7e26bd631b"
+  ],
+  "stamp_template_sha256": "41bdda77d18f48f4b57fd84994b5b9f2de3dcf31d2c9ba1edb4f2df6536bef7d",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEALwb9Efgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBMCouTtbATLSKgvHAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "a9acaa9f8f178dd4cd43de241e70f9de2a9e22be8d5d7c95e37dcb988d898123"
+}

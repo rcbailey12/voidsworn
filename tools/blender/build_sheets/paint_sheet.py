@@ -1,3 +1,11 @@
+
+# Issue 889: stamp every newly rendered picture at its save step.
+from pathlib import Path as _PicturePath
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import stamp_file as _stamp_picture
+
 # The painted sheet ship beside its concept (issue 601): renders a stage 5 painted blend (tools/blender/r209/bake_sheet.py) at
 # the build sheet's own beauty camera (ships/<sheet>_camera.json, fitted to the concept) and at the region windows of the
 # sheet's side_by_side.jpg, under the GAME's light (godot/render/look.gd: key 2.0 from KEY_DIR, fill a quarter, cool ambient,
@@ -111,7 +119,7 @@ def ortho(name, loc, look, up, scale, res):
 
 def shoot(o, name, pct):
     sc.camera = o; sc.render.resolution_percentage = int(pct * 100)
-    p = os.path.join(OUT, name + '.png'); sc.render.filepath = p; bpy.ops.render.render(write_still=True); print('[601] shot', name, flush=True)
+    p = os.path.join(OUT, name + '.png'); sc.render.filepath = p; bpy.ops.render.render(write_still=True); _stamp_picture(sc.render.filepath, 'paint proof', new_render=True); print('[601] shot', name, flush=True)
     return p
 
 

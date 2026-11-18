@@ -28,7 +28,7 @@ INVENTORY = [
          src='picture'),
     # ---------------- midships ----------------
     dict(id='core', job='the trapped light core: powers the ship and the reclaim (repair) ability', type='core', what='the caged green core at the centre of the ring', count=1, cells=['mid/top', 'mid/side', 'mid/below'],
-         reads='hub collars, a bright sphere, gimbal rings, meridian bars', src='picture'),
+         reads='hub collars, faceted reactor, cooling vents and bright seams, gimbal rings, load bars, three aligned armour courses with narrow viewing slots (R289)', src='picture'),
     # ---------------- stern ----------------
     dict(id='stern_block', job='holds the engines, the engine room and the sentry', type='tier', what='the stern block: a narrow faceted block stepping down to the spine, the engines stacked on its face (issue 618)', count=1,
          cells=['stern/top', 'stern/side', 'stern/below'], reads='faceted faces, a stepped roof, openings (lights, vents, hatches)', src='picture'),

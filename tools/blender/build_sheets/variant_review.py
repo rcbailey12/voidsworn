@@ -4,6 +4,13 @@
 
 Run variant_selftest.py first. Images are geometry reviews of unbaked test exports.
 """
+from pathlib import Path as _PicturePath
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review, stamp_file
+PICTURES = Review('sheet built')
+
 import json
 import math
 import sys
@@ -53,7 +60,7 @@ def render(path, destination, target, scale, below=False):
     camera.rotation_euler = (-direction).to_track_quat('-Z', 'Y').to_euler()
     scene.camera = camera
     scene.render.filepath = str(destination)
-    bpy.ops.render.render(write_still=True)
+    bpy.ops.render.render(write_still=True); stamp_file(scene.render.filepath, 'sheet built', new_render=True)
 
 
 def main():
@@ -78,7 +85,7 @@ def main():
         for label, path in [('base', base), ('variant', variant)]:
             image = proof / (code + '_' + label + '_review.png')
             render(path, image, target, scale, below=code.endswith('E13'))
-            panels.append(Image.open(image).convert('RGB'))
+            panels.append(PICTURES.open(image).convert('RGB'))
         sheet = Image.new('RGB', (1280, 720), (23, 27, 33))
         draw = ImageDraw.Draw(sheet)
         draw.text((20, 12), code.replace('deathless_', '') + ' / ' + game, font=font, fill='white')
@@ -88,7 +95,7 @@ def main():
             sheet.paste(panel, (10 + i * 640, 78))
         draw.text((20, 641), change, font=font, fill='white')
         draw.text((20, 683), 'Actual exported GLBs / same scale and camera / unbaked geometry proof / CPU render', font=small, fill='#b6c0cb')
-        sheet.save(shots / (code + '_variant.png'))
+        PICTURES.save(sheet, shots / (code + '_variant.png'))
         print('WROTE', shots / (code + '_variant.png'), flush=True)
 
 

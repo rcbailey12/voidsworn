@@ -325,6 +325,28 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	return b
 func add(parent: Node, child) -> void:
 	if child != null: parent.add_child(child)
+func _boon_fleet_line(id: String, rarity: int) -> String:
+	var relevance: Dictionary = C.boonFleetRelevance(id, rarity)
+	var kit: String = {
+		"lance": "with lances", "torp": "with torpedoes", "broad": "with broadside guns",
+		"still": "with broadside guns or batteries", "shields": "with shields",
+		"carrier": "with hangars", "sq": "with squadrons",
+	}.get(relevance.get("need"), "")
+	if kit == "": return ""
+	var ships: PackedStringArray = relevance["ships"]
+	var count := ships.size()
+	if count > 0:
+		var condition := " that have not moved" if relevance["need"] == "still" else ""
+		if count == 1 and condition != "": condition = " that has not moved"
+		var names := ", ".join(ships.slice(0, 3))
+		if count > 3: names += " and %d more" % (count - 3)
+		return "Affects %d %s %s%s: %s" % [count, "ship" if count == 1 else "ships", kit, condition, names]
+	if relevance["capped"]: return "No added benefit: ships %s are already at the limit." % kit
+	if relevance.has("refit"):
+		return "No ship %s now; could use later with the %s refit in your hold." % [kit, C.modName(relevance["refit"])]
+	if relevance.has("hull"): return "No ship %s now; could use later on a fitting hull." % kit
+	return "No current ship %s." % kit
+
 func _toast(msg: String) -> void:   # a strip with a calm VERD bar (ui_style.md 3): toasts here are news, not warnings
 	var p = PanelContainer.new(); var sb = GS.strip(k, VERD); sb.content_margin_left = px(14); sb.content_margin_right = px(18); sb.content_margin_top = px(8); sb.content_margin_bottom = px(8)
 	p.add_theme_stylebox_override("panel", sb); p.add_child(lbl(msg, 18, BONE)); p.custom_minimum_size.x = px(min(900, 260 + msg.length() * 7))
@@ -352,7 +374,7 @@ func render() -> void:
 		"admiral": body = _wrap_page(_admiral())
 		"aspect": body = _wrap_page(_aspect())
 		"map": body = _map()
-		"fleet": body = _wrap_page(_fleet(pg["data"]))
+		"fleet": body = _fleet(pg["data"])
 		"shipyard": body = _wrap_page(_shipyard())
 		"battle":   # the test battle's panel; a dialog over the battle (the rewards) shows over the scene alone, as in the game shell
 			body = _battle_stub(pg["data"]) if (C.modal_d == null or C.modal_d["kind"] == "retreat") else Control.new()
@@ -391,6 +413,9 @@ func _teaching_screen() -> void:
 	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
 
 func _focus_first() -> void:
+	if C.modal_d == null and C.page.get("kind") == "fleet":
+		get_viewport().gui_release_focus()
+		return
 	# the map page: the keys go to the chart (arrows, Enter, zoom), so no button wears a ring when the screen opens;
 	# with a slide-over open they go to its Close
 	if modal_box.get_child_count() == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
@@ -434,7 +459,6 @@ func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
 func _page_finish(kind: String) -> void:
 	var b: Button = null
 	match kind:
-		"fleet": b = fin("Done", "backShipyard" if C.page["data"].get("back") == "shipyard" else "backMap")
 		"shipyard": b = fin("Leave shipyard", "leaveYard")
 	if b == null: return
 	b.anchor_left = 1.0; b.anchor_top = 1.0; b.anchor_right = 1.0; b.anchor_bottom = 1.0
@@ -573,6 +597,15 @@ func _mastery_bar(id) -> Control:
 func _run_options() -> Control:
 	var v = vbox(10)
 	v.add_child(gothic("Run options", 52))
+	var trial = CheckBox.new()
+	trial.name = "MapTrialToggle"
+	trial.text = "Test new battle maps, faster ships and longer gun ranges"
+	trial.tooltip_text = "Also changes where ships start in Hunt, Ambush and boss fights. Applies to this whole run."
+	trial.add_theme_font_size_override("font_size", px(18))
+	trial.button_pressed = C.map_trial_choice
+	trial.toggled.connect(func(on): C.act("optMapTrial", "1" if on else "0"))
+	trial.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	v.add_child(trial)
 	var cards = flow(); var o = C.page["data"]["opts"]; var id = C.picked_admiral; var a = C.ADMIRALS[id]
 	if int(o["ml"]) >= 1:
 		var cv = card(false, 380); cv[1].add_child(lbl("Starting fleet", 20, BONE, font_semi))
@@ -812,6 +845,9 @@ func _briefing_column() -> Control:
 	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
 	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
 	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
+	var trial_status := _sheet_words("Test map package " + ("on" if H["map_trial"] else "off"), 17, GS.TEXT2)
+	trial_status.name = "MapTrialStatus"
+	upper.add_child(trial_status)
 	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
 	upper.add_child(gap(28)); _rows.clear()
 	for r in _routes:
@@ -984,11 +1020,11 @@ func _fleet_line(s: Dictionary, rh: float) -> Control:
 	if s["flagship"]:
 		var diamond = Control.new(); diamond.custom_minimum_size = Vector2(px(10), px(rh)); diamond.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		diamond.draw.connect(func(): GS.diamond(diamond, Vector2(px(5), px(rh) * 0.5), px(5), GS.MAP_EMBER)); h.add_child(diamond)
-	var hp = C.numstr(s["hp"]) + " / " + C.numstr(s["max_hp"])
+	var hp = C.hull_text(s["hp"]) + " / " + C.hull_text(s["max_hp"])
 	var hw = ceil(font_num.get_string_size(hp, HORIZONTAL_ALIGNMENT_LEFT, -1, px(19)).x)
 	var available = COL_W - COL_PAD * 2 - 16 - hw / k - (26 if s["flagship"] else 0)
 	h.add_child(_sheet_name(s["name"], 28, available, 3))
-	var figures = _baseline_row([[C.numstr(s["hp"]), font_num, 19, (HULL_LOW if float(s["frac"]) < 0.35 else HULL) if float(s["frac"]) < 0.999 else GS.TEXT], [" / " + C.numstr(s["max_hp"]), font_num, 19, GS.TEXT]], rh)
+	var figures = _baseline_row([[C.hull_text(s["hp"]), font_num, 19, (HULL_LOW if float(s["frac"]) < 0.35 else HULL) if float(s["frac"]) < 0.999 else GS.TEXT], [" / " + C.hull_text(s["max_hp"]), font_num, 19, GS.TEXT]], rh)
 	figures.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(figures)
 	h.tooltip_text = _wrap_words(s["name"] + ", " + s["cls"] + " Mk " + s["mk"] + "\n" + s["captain"] + ("\nPromotion ready" if s["promotion"] else ""))
 	return h
@@ -1207,7 +1243,7 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 17, BONE2, font_caps, false)); v.add_child(r0)
 	v.add_child(lbl(t["n"], 18, BONE2))
 	if C.jt(s.get("ripped")): v.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-	var r1 = hbox(); r1.add_child(lbl("Hull " + C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
+	var r1 = hbox(); r1.add_child(lbl("Hull " + C.hull_text(s["hp"]) + "/" + C.hull_text(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
 	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
 	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 17))
 	if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]): v.add_child(rich(c(esc(C.ABILITIES[t["ab"]]["n"]) + ".", VERD) + " " + c(esc(C.ABILITIES[t["ab"]]["d"]), BONE3), 17))
@@ -1243,34 +1279,15 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 		for b in extra: add(ex, b)
 		v.add_child(HSeparator.new()); v.add_child(ex)
 	return cv[0]
+const FleetManifest = preload("res://ui/campaign/fleet_manifest.gd")
+var fleet_manifest: Control
+var fleet_state := {"uid": "", "mode": "", "held": {}}
+var _fleet_run = null
 func _fleet(d: Dictionary) -> Control:
-	var v = vbox(10)
-	var head = hbox(); head.add_child(gothic("Fleet")); head.add_child(spacer())
-	var st = _story()
-	if st != null and C.flagshipOf() != null:   # story layer: name your flagship
-		var rb = Button.new(); rb.text = "Rename flagship"; rb.focus_mode = Control.FOCUS_ALL; rb.pressed.connect(func(): st.open_rename()); head.add_child(rb)
-	v.add_child(head)   # Done is the finishing action, fixed at the bottom right of the screen (_page_finish)
-	v.add_child(lbl("Refits can be moved between ships freely. Mark upgrades and repairs happen at shipyards and drydocks.", 18, BONE2))
-	var R = C.RUN
-	var FA = View.faction_action(C)
-	if not FA.is_empty(): v.add_child(_action_line(FA))
-	if R["inventory"].size() > 0:
-		v.add_child(sec_head("In the hold"))
-		var inv = flow()
-		for i in range(R["inventory"].size()):
-			var m = R["inventory"][i]; var cv = card(false, 300)
-			cv[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
-			var fr = flow(6); var any = false
-			for s in R["fleet"]:
-				var b = abtn("Fit to " + str(s["name"]), "equip", str(i) + ":" + s["uid"], false, true)
-				if b != null: fr.add_child(b); any = true
-			if not any: fr.add_child(lbl("No free compatible slot. Remove a refit first.", 17, BONE3))
-			cv[1].add_child(fr); inv.add_child(cv[0])
-		v.add_child(inv)
-	var cards = flow()
-	for s in R["fleet"]: cards.add_child(_ship_card(s, true))
-	v.add_child(cards)
-	return v
+	if not is_same(_fleet_run, C.RUN):
+		_fleet_run = C.RUN; fleet_state = {"uid": "", "mode": "", "held": {}}
+	fleet_manifest = FleetManifest.new(); fleet_manifest.setup(self, d, fleet_state)
+	return fleet_manifest
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
@@ -1299,7 +1316,7 @@ func _shipyard() -> Control:
 		var cv = card(false, 320); var cvv = cv[1]
 		cvv.add_child(rich("[b]" + esc(t["n"]) + "[/b]" + (" " + c("Variant", VERD) if C.jt(t.get("variant")) else ""), 20))
 		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 17, VERD))
-		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
+		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
 		var ws = []
 		for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 		cvv.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
@@ -1318,7 +1335,7 @@ func _shipyard() -> Control:
 			var cv3 = card(false, 320); var cvv3 = cv3[1]
 			cvv3.add_child(rich("[b]" + esc(t2["n"]) + "[/b]", 20))
 			cvv3.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.numstr(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
+			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.hull_text(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
 			var ws2 = []
 			for e in t2["w"]: ws2.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 			cvv3.add_child(lbl(", ".join(PackedStringArray(ws2)) + ".", 17, BONE2))
@@ -1385,7 +1402,7 @@ func _legacy() -> Control:
 					var cv = card(own, 320); cv[1].add_child(lbl(hv["n"], 20, BONE, font_semi)); cv[1].add_child(lbl("Variant of the " + str(C.HULLS[hv["base"]]["n"]), 17, BONE3)); cv[1].add_child(lbl(hv["d"], 18, BONE2))
 					var ws = []
 					for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
-					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
+					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
 					if own: cv[1].add_child(lbl("In your shipyards", 18, VERD))
 					elif C.jt(hv.get("arc")): cv[1].add_child(lbl("Finish the " + str(C.FACTIONS[hv["arc"]]["n"]) + " story to unlock", 17, BONE3))
 					else: add(cv[1], abtn("Unlock for " + C.numstr(hv["cost"]) + " renown", "buyVariant", vid))
@@ -1945,7 +1962,10 @@ func _modal(md: Dictionary) -> void:
 			for i in range(offer.size()):
 				var o = offer[i]; var b = C.BOONS[o["id"]]; var r = int(C.z0(o.get("r"))); var R0 = C.RARITY[r]; var duo = b.get("duo")
 				var tag = ("Duo: " + " + ".join(PackedStringArray(duo.map(func(q): return str(C.PATRONS[q]["short"]))))) if C.jt(duo) else str(R0["n"])
-				add(v, choice(b["n"], C.BOON_D[o["id"]][r], "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
+				var detail: String = C.BOON_D[o["id"]][r]
+				var fleet_line := _boon_fleet_line(o["id"], r)
+				if fleet_line != "": detail += "\n" + fleet_line
+				add(v, choice(b["n"], detail, "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
 			v.add_child(foot([abtn("Reroll the offer (" + C.numstr(d.get("rerollCost", 0)) + " credits, once)", "boonReroll", _arg_of(acts, "boonReroll"), false, false, acts),
 				abtn("Decline: take " + C.numstr(d.get("declineCred", 0)) + " credits", "boonDecline", "", false, false, acts)]))
 		"eatCore":
@@ -1986,6 +2006,8 @@ func _well_text(v: VBoxContainer) -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
+		if fleet_manifest.handle_key(e): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "map":   # the map: Esc shuts a slide-over, 1 to 9 pick a route, Enter flies it
 		if _overlay != "":
 			if e.keycode == KEY_ESCAPE: _close_overlay(); get_viewport().set_input_as_handled()

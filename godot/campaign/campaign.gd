@@ -48,6 +48,7 @@ var yard_node = null
 var picked_admiral := "vex"
 var picked_faction := "voidsworn"
 var run_opt := {"alt": false, "cmdAlt": false, "heat": []}
+var map_trial_choice := false
 var prog_tab := "variants"
 var page := {"kind": "none", "data": {}, "acts": []}
 var modal_d = null       # {kind, data, acts} or null
@@ -151,6 +152,10 @@ func numstr(n) -> String: # a JS number as the browser prints it in text
 	var f = float(n)
 	if f == floor(f) and absf(f) < 1e15: return str(int(f))
 	return str(f)
+static func hull_text(n) -> String: # a hull figure as a whole number, rounded up so a live ship never reads 0 (issue 932)
+	var f = float(n)
+	if f <= 0.0: return "0"
+	return str(int(ceil(f)))
 func toast(msg: String) -> void: toasts.append(msg)
 func tel(ev: String, d: Dictionary = {}) -> void:
 	var e = {"t": now_ms(), "ev": ev, "sector": RUN["sector"] if RUN != null else 0}
@@ -560,18 +565,68 @@ func rollRarity(minR, s, p = null) -> int:
 func fleetKit() -> Dictionary:
 	var k = {}
 	for sh in (RUN["fleet"] if RUN != null else []):
-		var d = derive(sh)
-		for w in d["weapons"]:
-			if w["k"] == "torp": k["torp"] = 1
-			if w["k"] == "lance": k["lance"] = 1
-			if w["k"] == "battery": k["batt"] = 1
-			if w["k"] == "flak": k["flak"] = 1
-			if w["arc"] == "P" or w["arc"] == "S": k["broad"] = 1
-			if w["arc"] == "P" or w["arc"] == "S" or w["k"] == "battery": k["still"] = 1
-		if float(z0(HULLS[sh["tpl"]].get("sh"))) > 0: k["shields"] = 1
-		if jt(HULLS[sh["tpl"]].get("hangar")): k["carrier"] = 1
-		if jt(d["hangar"]): k["sq"] = 1
+		k.merge(_ship_kit(HULLS[sh["tpl"]], derive(sh)))
 	return k
+func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
+	var k := {}
+	for w in d["weapons"]:
+		if w["k"] == "torp": k["torp"] = 1
+		if w["k"] == "lance": k["lance"] = 1
+		if w["k"] == "battery": k["batt"] = 1
+		if w["k"] == "flak": k["flak"] = 1
+		if w["arc"] == "P" or w["arc"] == "S": k["broad"] = 1
+		if w["arc"] == "P" or w["arc"] == "S" or w["k"] == "battery": k["still"] = 1
+	if float(z0(hull.get("sh"))) > 0: k["shields"] = 1
+	if jt(hull.get("hangar")): k["carrier"] = 1
+	if jt(d["hangar"]): k["sq"] = 1
+	return k
+
+# The offer card explains an existing pick. Only the kit is shared with offer eligibility:
+# caps and possible future fits here never add, remove or reweight an offer.
+func boonFleetRelevance(id: String, rarity: int) -> Dictionary:
+	if RUN == null or not BOON_NEED.has(id): return {}
+	var need: String = BOON_NEED[id]
+	var fx: Dictionary = BOON_FX[id][rarity]
+	var ships := PackedStringArray()
+	var capped := false
+	for sh in RUN["fleet"]:
+		var d = derive(sh)
+		if not _ship_kit(HULLS[sh["tpl"]], d).has(need): continue
+		if _boon_has_room(d, fx): ships.append(sh["name"])
+		else: capped = true
+	var result := {"need": need, "ships": ships, "capped": capped}
+	if not ships.is_empty() or capped: return result
+	for mod in or_(RUN.get("inventory"), []):
+		for sh in RUN["fleet"]:
+			if not canFitModule(sh, mod): continue
+			var refitted: Dictionary = sh.duplicate()
+			refitted["mods"] = sh["mods"] + [mod]
+			if _boon_fits_ship(refitted, need, fx):
+				result["refit"] = mod
+				return result
+	for tpl in HULLS:
+		if factionGate(RUN.get("fac"), tpl) != null: continue
+		# A hull the fleet could gain later, without rolling a name or using a reserve captain.
+		var hull := {"tpl": tpl, "uid": null, "mods": [], "cap": {"perks": []}}
+		if _boon_fits_ship(hull, need, fx):
+			result["hull"] = true
+			break
+	return result
+
+func _boon_fits_ship(ship: Dictionary, need: String, fx: Dictionary) -> bool:
+	var d = derive(ship)
+	return _ship_kit(HULLS[ship["tpl"]], d).has(need) and _boon_has_room(d, fx)
+
+func _boon_has_room(derived: Dictionary, fx: Dictionary) -> bool:
+	var current: Dictionary = derived["fx"]
+	var with_boon := sumFx([current, fx])
+	for key in fx:
+		if with_boon[key] <= z0(current.get(key)): continue
+		# Hot Tubes can hit the weapon's reload floor before the stacked bonus cap.
+		if key == "torpCd" and not derived["weapons"].any(func(w): return w["k"] == "torp" and w["cd"] > 1): continue
+		return true
+	return false
+
 func boonUseful(id, kit: Dictionary) -> bool:
 	var n = BOON_NEED.get(id)
 	return not jt(n) or jt(kit.get(n))
@@ -703,7 +758,8 @@ func derive(ship: Dictionary) -> Dictionary:
 	var ws = []
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {
-		"maxHp": maxHp, "shMax": jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT) * (float(TB.SHIELD_POOL_FAC[t["fac"]]) if (t.get("fac") != null and TB.SHIELD_POOL_FAC.has(t["fac"])) else 1.0)),   # core.js (SHIELD_POOL_FAC[t.fac]||1) "regen": jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct")))) * float(TB.SHIELD_REGEN_MULT)),
+		"maxHp": maxHp, "shMax": jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT) * (float(TB.SHIELD_POOL_FAC[t["fac"]]) if (t.get("fac") != null and TB.SHIELD_POOL_FAC.has(t["fac"])) else 1.0)),   # core.js (SHIELD_POOL_FAC[t.fac]||1)
+		"regen": jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct")))) * float(TB.SHIELD_REGEN_MULT)),
 		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": float(t["sp"]) + float(z0(fx.get("speed"))), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
 		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (mk - 1.0) + float(z0(fx.get("dmgPct"))) + 0.06 * tr, "fx": fx,
 		"hangar": (float(t["hangar"]) + float(z0(fx.get("hangar"))) + float(z0(fx.get("hive")))) if jt(t.get("hangar")) else z0(fx.get("hive")),
@@ -1176,6 +1232,8 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
 		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "ambush": false, "over": false, "boons": [], "eatenCore": null, "eatCoreSeen": false}
+	# Missing means off, so old saves and default runs keep their existing save format.
+	if opt.get("mapTrial") == true: RUN["mapTrial"] = true
 	RUN["patrons"] = shuffle(PATRONS.keys()).slice(0, 4); RUN["aspect"] = null; RUN["flagUid"] = null; RUN["nem"] = null
 	if teaching_tips and float(z0(META["stats"].get("finishedRuns", META["stats"].get("runs")))) < 2: RUN["teachingGate"] = true
 	if jt(META["unlocked"].get("chest1")): RUN["credits"] += 75
@@ -1293,6 +1351,8 @@ func act(name: String, arg = "") -> void:
 			run_opt["alt"] = a == "1"; admiralScreen()
 		"optCmd":
 			run_opt["cmdAlt"] = a == "1"; admiralScreen()
+		"optMapTrial":
+			if page.get("kind") == "admiral": map_trial_choice = a == "1"
 		"optHeat":
 			var i = run_opt["heat"].find(a)
 			if i >= 0: run_opt["heat"].remove_at(i)
@@ -1352,6 +1412,7 @@ func act(name: String, arg = "") -> void:
 # ======================= campaign_meta.js: title, admiral, aspect, progression, help, run end =======================
 func titleScreen() -> void:
 	RUN = null; B = null
+	map_trial_choice = false
 	var acts = []
 	if SAVED_RUN != null: A(acts, "continueRun")
 	A(acts, "newRunScreen"); A(acts, "legacy"); A(acts, "help")
@@ -1423,7 +1484,9 @@ func admiralScreen() -> void:
 func ACT_startRun() -> void:
 	if not admiralOwned(picked_admiral): return
 	var ml = masteryLevel(picked_admiral)
-	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3, "heat": run_opt["heat"].duplicate() if heatUnlocked() else []})
+	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3,
+		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice})
+	map_trial_choice = false
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
 	aspectScreen()
 func aspectScreen() -> void:

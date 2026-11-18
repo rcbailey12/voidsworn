@@ -1,9 +1,9 @@
 extends SceneTree
 # Issue 729: the Career screen's dim labels (RUNS, No service yet, Empty refit slot, the experience lines) are drawn in
-# the screen's BONE3 over its card (IRON). RULEBOOK 9.4 needs 4.5 to 1. This check builds the real Career screen from a
+# the screen's BONE3 over its backing. RULEBOOK 9.4 needs 4.5 to 1. This check builds the real Career screen from a
 # fresh default profile at 1080 and 1440, finds every label drawn in BONE3, reads the card behind it, and measures the
-# contrast with the same luminance and contrast functions as ledger_readability_test.gd. The card IRON is the brightest
-# of the three backgrounds the screen uses (INK panels and the screen behind them are darker), so a pass here holds.
+# contrast with the same luminance and contrast functions as ledger_readability_test.gd. CR4's transparent layout
+# wrappers are composited over the opaque screen, rather than treating their unused RGB as a visible white card.
 # Run: godot --headless --path godot --script res://ui/career/test/career_readability_test.gd
 
 const Screen = preload("res://ui/career/career_screen.gd")
@@ -43,15 +43,18 @@ func labels(n: Node, out: Array) -> void:
 		labels(c, out)
 
 
-# the first panel colour above a label is the card it sits on; the screen behind it is the fallback
+# Composite every ancestor backing, outermost first, including transparent layout wrappers.
 func card_bg(l: Control, bg: Color) -> Color:
 	var p := l.get_parent()
+	var layers: Array[Color] = []
 	while p != null:
 		if p is PanelContainer:
 			var sb := (p as PanelContainer).get_theme_stylebox("panel")
 			if sb is StyleBoxFlat:
-				return (sb as StyleBoxFlat).bg_color
+				layers.push_front((sb as StyleBoxFlat).bg_color)
 		p = p.get_parent()
+	for layer in layers:
+		bg = bg.blend(layer)
 	return bg
 
 

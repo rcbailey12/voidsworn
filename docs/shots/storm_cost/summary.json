@@ -1,0 +1,7 @@
+{
+  "storm_max_4K_under_12_5_each_session": true,
+  "low_cheaper_1080p_each_session": true,
+  "low_cheaper_4K_each_session": true,
+  "gate_base_median_of_sessions_under_12_5": true,
+  "gate_res_2160_median_of_sessions_under_12_5": true
+}

@@ -12,9 +12,9 @@
   "LANE": 0
  },
  "tested": {
-  "objects": 368,
+  "objects": 374,
   "parts": 44,
-  "close_pairs": 1214,
+  "close_pairs": 1172,
   "rays": 302,
   "guns": 2,
   "sensor_pairs": 18,
@@ -978,14 +978,14 @@
    "id": "L0",
    "kind": "lamp",
    "pos": [
-    5.199999809265137,
-    3.3299999237060547,
-    -0.44999998807907104
+    5.196207046508789,
+    3.9438109397888184,
+    -0.45694318413734436
    ],
    "dir": [
-    -0.0,
-    1.0,
-    -0.0
+    -0.03160605952143669,
+    0.9978243112564087,
+    -0.0578598827123642
    ],
    "length": 0.35,
    "blocked": false
@@ -1026,14 +1026,14 @@
    "id": "L3",
    "kind": "lamp",
    "pos": [
-    4.591092586517334,
-    -3.331987142562866,
-    -0.4846187233924866
+    4.596189022064209,
+    -3.9276273250579834,
+    -0.40672895312309265
    ],
    "dir": [
-    -0.07422696053981781,
-    -0.705156147480011,
-    -0.705156147480011
+    -0.031758375465869904,
+    -0.9979214072227478,
+    -0.05607462674379349
    ],
    "length": 0.35,
    "blocked": false
@@ -1108,6 +1108,10 @@
   [
    "SENSOR: T1 aiming through the dishes D1 and D2, T2 through the antenna AN1",
    "R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): both turrets lifted onto barbettes (rings at deck height plus 1.05 fore and 0.92 aft), AN1 moved off the aft deck tier onto the deck beside it and cut from 1.3 to 1.0 tall"
+  ],
+  [
+   "R283 design check: port cheek wrap touching the L0 lamp",
+   "The third wrapping course sits aft of L0, with a clear gap; L0 and L3 mount on the new cheek skin. No sensor, weapon, bay or inside moves"
   ]
  ],
  "allowed": []

@@ -1,0 +1,36 @@
+{
+  "source_commit": "f82f58556b46ff2e7a728e9a8ece5b634a8b7840",
+  "source_dirty": true,
+  "source_diff_sha256": "d1c21b6670a0d7d3ce9225219e0bc11b45f40e6232e74c707d24eae28d4a5667",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "ME-HUNT.png",
+  "date": "2026-11-18T16:10:50Z",
+  "sources": [
+    {
+      "source_commit": "f82f58556b46ff2e7a728e9a8ece5b634a8b7840",
+      "source_dirty": true,
+      "source_diff_sha256": "d1c21b6670a0d7d3ce9225219e0bc11b45f40e6232e74c707d24eae28d4a5667",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    590,
+    564,
+    688
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "79aa3daa86c1b609542c4df15e57abd4ffe9754166bffda159b527da4cf86f1d"
+  ],
+  "stamp_template_sha256": "79aa3daa86c1b609542c4df15e57abd4ffe9754166bffda159b527da4cf86f1d",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAB0ElEQVR4nO3WsQ3AIADAMMrK1K3/PwpHMFSR7Asy5lnvtwcAQNj8OwAA4JahAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAwKg7jwEB9+tXEHgAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "16bf557a29240ca6366e6ff059d11f3c18b5a9918c498ca366750b55f1262f51"
+}

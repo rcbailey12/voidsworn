@@ -6,6 +6,10 @@
 #   work_issue.ps1 lasttext <events.jsonl>                        prints the agent's final text
 #   work_issue.ps1 stats   <n> <arm> <out>                        reads events.jsonl, balances and times; writes stats.txt and last.md
 #   work_issue.ps1 msg     <n> <arm> <out>                        writes commit.txt (becomes the PR description)
+#   work_issue.ps1 openai-key <out>                              checks the run's isolated credential, no network
+#   work_issue.ps1 openai-budget <out> <root> <settings> <model> <dry 0|1>   refuses spent budgets and unpriced models
+#   work_issue.ps1 openai-spend <n> <out> <root> <settings> <model> <dry 0|1> records emitted usage once per run
+#   work_issue.ps1 openai-agent <out> <repo> <exe> <model> <variant> <cap>  runs and resumes an OpenCode session
 # Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
 #   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
@@ -18,12 +22,63 @@ $ErrorActionPreference = 'Stop'
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $mode = $args[0]
 
+# Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
+# GitHub link on the delivery branch, so it opens on a phone; every other path under the user's home folder becomes
+# %USERPROFILE%\..., so no PC folder name reaches a public pull request. Everything else is left exactly as written.
+function Path-Pattern([string]$p) {
+  if (-not $p) { return '' }
+  # Either separator matches, whatever the host wrote: every joined separator is [\\/]+, and a leading
+  # separator (a Unix absolute path) is part of the match so none is left in front of the replacement.
+  $lead = ''
+  if ($p -match '^[\\/]') { $lead = '[\\/]+' }
+  $segs = @($p -split '[\\/]+' | Where-Object { $_ -ne '' })
+  if (-not $segs.Count) { return '' }
+  return $lead + (@($segs | ForEach-Object { [regex]::Escape($_) }) -join '[\\/]+')
+}
+function Profile-Root {
+  if ($env:USERPROFILE) { return $env:USERPROFILE }
+  if ($env:HOME) { return $env:HOME }
+  return ''
+}
+function Rewrite-ReportPaths([string]$text, [string]$repo, [string]$branch, [string]$profileRoot) {
+  if (-not $text) { return $text }
+  $repoPat = Path-Pattern $repo
+  if ($repoPat) {
+    $tail = '([\\/][^\s\)\]\>"' + [char]39 + [char]96 + ',;]*)'
+    $rx = New-Object System.Text.RegularExpressions.Regex ('(?i)' + $repoPat + $tail)
+    $text = $rx.Replace($text, [System.Text.RegularExpressions.MatchEvaluator]{
+      param($m)
+      $rel = $m.Groups[1].Value -replace '\\', '/'
+      $trail = ''
+      $t2 = [regex]::Match($rel, '^(.*?)([.,;:]+)$')
+      if ($t2.Success) { $rel = $t2.Groups[1].Value; $trail = $t2.Groups[2].Value }
+      return 'https://github.com/rcbailey12/voidsworn/blob/' + $branch + $rel + $trail
+    })
+  }
+  $homePat = Path-Pattern $profileRoot
+  if ($homePat) {
+    $homeTail = '([\\/][^\s\)\]\>"' + [char]39 + [char]96 + ',;]*)?'
+    $hx = New-Object System.Text.RegularExpressions.Regex ('(?i)' + $homePat + $homeTail)
+    $text = $hx.Replace($text, [System.Text.RegularExpressions.MatchEvaluator]{
+      param($m)
+      $rest = $m.Groups[1].Value
+      if ($rest) { $rest = $rest.Substring(1) }
+      $trail = ''
+      $t2 = [regex]::Match($rest, '^(.*?)([.,;:]+)$')
+      if ($t2.Success) { $rest = $t2.Groups[1].Value; $trail = $t2.Groups[2].Value }
+      if ($rest) { return '%USERPROFILE%\' + $rest + $trail } else { return '%USERPROFILE%' + $trail }
+    })
+  }
+  return $text
+}
+
 function Arm-Info($arm) {
   switch ($arm) {
     { $_ -in 'deepseek','deepseekpro' } { return @{ base = 'https://api.deepseek.com'; key = $env:DEEPSEEK_API_KEY; models = 'https://api.deepseek.com/models'; bal = 'https://api.deepseek.com/user/balance' } }
     'kimi'     { return @{ base = 'https://api.moonshot.ai/v1'; key = $env:MOONSHOT_API_KEY; models = 'https://api.moonshot.ai/v1/models'; bal = 'https://api.moonshot.ai/v1/users/me/balance' } }
     'kimicode' { return @{ base = 'https://api.kimi.com/coding/v1'; key = $env:KIMI_CODE_API_KEY; models = 'https://api.kimi.com/coding/v1/models'; bal = $null } }   # plan quota, no balance endpoint (issue 597)
     { $_ -in 'sonnet','opus' } { return @{ base = 'https://api.anthropic.com/v1'; key = $env:VOIDSWORN_CLAUDE_API_KEY; models = 'https://api.anthropic.com/v1/models'; bal = $null; anthropic = $true } }   # Max plan API credits, no balance endpoint (issue 614)
+    'openai' { return @{ base = 'https://api.openai.com/v1'; key = $env:VOIDSWORN_OPENAI_API_KEY; models = 'https://api.openai.com/v1/models'; bal = $null } }
     default    { throw "unknown arm $arm" }
   }
 }
@@ -45,6 +100,254 @@ function Last-Text($ev) {
 }
 
 function Read-Txt($p) { if (Test-Path $p) { return ([IO.File]::ReadAllText($p)).Trim() } else { return '' } }
+
+function OpenAI-Agent($out, $repo, $exe, $model, $variant, [int]$cap) {
+  $watchdog = Join-Path $PSScriptRoot 'tmo.bat'
+  $log = [IO.StreamWriter]::new((Join-Path $out 'log.txt'), $false, $utf8)
+  $log.AutoFlush = $true
+  $stderr = Join-Path $out 'stderr.txt'
+  [IO.File]::WriteAllText($stderr, '', $utf8)
+  $waits = @(0, 30, 60, 120, 240, 240)
+  $timer = [Diagnostics.Stopwatch]::StartNew()
+  $session = ''
+  $resumeArg = ''
+  $taskPrompt = 'Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push.'
+  $continuePrompt = 'Continue the task from where you stopped. Do not commit and do not push.'
+  $remaining = $cap
+  try {
+    for ($resumes = 0; ; $resumes++) {
+      $lastError = $null
+      $diagnostic = $false
+      $prompt = if ($resumes) { $continuePrompt } else { $taskPrompt }
+      $start = [Diagnostics.ProcessStartInfo]::new($env:COMSPEC)
+      $start.Arguments = '/d /s /c ""{0}" {1} "{2}" run --auto --format json -m {3} {4} --dir "{5}"{6} 2>&1"' -f `
+        $watchdog, $remaining, $exe, $model, $variant, $repo, $resumeArg
+      $start.UseShellExecute = $false
+      $start.CreateNoWindow = $true
+      $start.RedirectStandardInput = $true
+      $start.RedirectStandardOutput = $true
+      $start.StandardOutputEncoding = $utf8
+      $process = [Diagnostics.Process]::Start($start)
+      try {
+        # OpenCode reads the message from stdin. The watchdog can record its command line on a timeout.
+        try { $process.StandardInput.Write($prompt); $process.StandardInput.Close() } catch [IO.IOException] { }
+        if ($resumes) {
+          Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value ('rate limited, resumed {0} of {1}' -f $resumes, $waits.Count) -Encoding UTF8
+        }
+        while ($null -ne ($line = $process.StandardOutput.ReadLine())) {
+          $event = $null
+          if ($line.TrimStart().StartsWith('{')) { try { $event = $line | ConvertFrom-Json } catch { } }
+          if (-not $event.type) {
+            if ($line.Trim() -and -not $diagnostic) {
+              Add-Content -LiteralPath $stderr -Value 'OpenCode or its watchdog wrote a diagnostic.' -Encoding UTF8
+              $diagnostic = $true
+            }
+            continue
+          }
+          if ($event.sessionID -cmatch '^ses_[a-zA-Z0-9]+$' -and -not $session) { $session = $event.sessionID }
+          if ($event.type -eq 'error') {
+            $data = $event.error.data
+            $status = if ([string]$data.statusCode -match '^[1-5][0-9]{2}$') { [int]$data.statusCode }
+            $retryable = $data.isRetryable -is [bool] -and $data.isRetryable
+            $seconds = $null
+            if ($status -eq 429 -and $retryable) {
+              $hint = [regex]::Match("$($data.message) $($data.responseBody)", '(?i)\btry again in\s+(\d+(?:\.\d+)?)\s*(?:s|secs?|seconds?)\b')
+              if ($hint.Success) { $seconds = [double]::Parse($hint.Groups[1].Value, [Globalization.CultureInfo]::InvariantCulture) }
+            }
+            # Keep only the fields needed to decide the retry. Provider errors can carry headers and account details.
+            $lastError = @{ statusCode = $status; isRetryable = $retryable; retryAfterSeconds = $seconds }
+            $line = @{ type = 'error'; sessionID = $session; error = @{ data = $lastError } } | ConvertTo-Json -Compress -Depth 4
+            if ($event.sessionID -cne $session) { $lastError = $null }
+          } else {
+            if ($env:VOIDSWORN_OPENAI_API_KEY -and $env:VOIDSWORN_OPENAI_API_KEY -ne 'dry') {
+              $line = $line.Replace($env:VOIDSWORN_OPENAI_API_KEY, '[redacted]')
+            }
+            $line = $line.Replace($taskPrompt, '[redacted]').Replace($continuePrompt, '[redacted]')
+          }
+          $log.WriteLine($line)
+        }
+        $process.WaitForExit()
+        $code = $process.ExitCode
+      } finally { $process.Dispose() }
+
+      if ($code -in @(0, 124) -or $resumes -ge $waits.Count -or -not $session -or
+          $lastError.statusCode -ne 429 -or -not $lastError.isRetryable) { return $code }
+
+      $minimum = $lastError.retryAfterSeconds
+      if ($null -eq $minimum -and $resumes -eq 0) { $minimum = 5 }
+      $delay = [Math]::Ceiling([Math]::Max($waits[$resumes], [double]$minimum))
+      # Only the dry-run fixture can shorten waits. Check the real delay against the cap either way.
+      if ($timer.Elapsed.TotalSeconds + $delay + 1 -gt $cap) {
+        Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value 'rate limited, too little time left to resume' -Encoding UTF8
+        return $code
+      }
+      if ($env:PC_RUNNER_TEST -ne '1' -or $env:PC_TEST_OPENAI_NO_WAIT -ne '1') { Start-Sleep -Seconds $delay }
+      $remaining = [int][Math]::Floor($cap - $timer.Elapsed.TotalSeconds)
+      if ($remaining -lt 1) { return $code }
+      $resumeArg = " --session $session"
+    }
+  } finally { $log.Dispose() }
+}
+
+if ($mode -eq 'openai-agent') {
+  try { exit (OpenAI-Agent $args[1] $args[2] $args[3] $args[4] $args[5] $args[6]) }
+  catch {
+    Add-Content -LiteralPath (Join-Path $args[1] 'result.txt') -Value 'OpenCode runner failed while running the agent' -Encoding UTF8
+    exit 125
+  }
+}
+
+# Issue 985: one price table, USD per million tokens (Board's standard rates, Nov 17 2026).
+# OpenCode step_finish input excludes cache reads; its visible output and reasoning are separate counts.
+$openaiPrices = @{
+  'openai/gpt-6.2-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
+  'openai/gpt-6.1-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
+  'openai/gpt-6.1-terra' = @{ input = [decimal]1; cached = [decimal]0.05; output = [decimal]5 }
+}
+function OpenAI-Budget($settings) {
+  $budget = [decimal]94
+  foreach ($line in ((Read-Txt $settings) -split '\r?\n')) {
+    if ($line -match '^\s*openai_budget_usd\s*=(.*)$') {
+      if (-not [decimal]::TryParse($Matches[1].Trim(), [Globalization.NumberStyles]::AllowDecimalPoint,
+        [Globalization.CultureInfo]::InvariantCulture, [ref]$budget) -or $budget -lt 0) { throw 'invalid openai_budget_usd in runner_settings.txt' }
+    }
+  }
+  return $budget
+}
+function OpenAI-Lock($root) {
+  $path = Join-Path $root 'openai_spend.txt'
+  for ($attempt = 0; $attempt -lt 100; $attempt++) {
+    try { return [IO.File]::Open($path, [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None) }
+    catch [IO.IOException] { Start-Sleep -Milliseconds 100 }
+  }
+  throw 'OpenAI spend ledger is busy; retry accounting before another run'
+}
+function OpenAI-Rows($stream) {
+  $stream.Position = 0
+  $reader = New-Object IO.StreamReader($stream, $utf8, $true, 1024, $true)
+  try { $raw = $reader.ReadToEnd() } finally { $reader.Dispose() }
+  foreach ($line in ($raw -split '\r?\n' | Where-Object { $_.Trim() })) {
+    try {
+      $row = $line | ConvertFrom-Json
+      if (-not $row.run -or $row.date -notmatch '^\d{4}-\d{2}-\d{2}T' -or
+        $null -eq $row.estimated_usd -or [decimal]$row.estimated_usd -lt 0 -or $row.status -notin @('estimated','unknown')) { throw 'bad row' }
+    } catch { throw 'OpenAI spend ledger is invalid; reconcile openai_spend.txt before another run' }
+    $row
+  }
+}
+function OpenAI-Total($rows, $month) {
+  $total = [decimal]0
+  foreach ($row in $rows) { if ($row.date.StartsWith($month)) { $total += [decimal]$row.estimated_usd } }
+  return $total
+}
+function OpenAI-UnknownPath($root, $out) {
+  $hash = [Security.Cryptography.SHA256]::Create()
+  try { $id = [BitConverter]::ToString($hash.ComputeHash($utf8.GetBytes([IO.Path]::GetFullPath($out).ToLowerInvariant()))).Replace('-', '').ToLowerInvariant() }
+  finally { $hash.Dispose() }
+  return Join-Path (Join-Path $root 'openai_spend_unknown') ($id + '.json')
+}
+function OpenAI-KeepUnknown($root, $out, $n, $model) {
+  # A separate entry per run survives an invalid or locked main ledger. Never repair either automatically.
+  $path = OpenAI-UnknownPath $root $out
+  [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($path)) | Out-Null
+  $row = [ordered]@{ date = [datetime]::UtcNow.ToString('s') + 'Z'; issue = $n; model = $model;
+    estimated_usd = 0; status = 'unknown'; run = [IO.Path]::GetFullPath($out) }
+  [IO.File]::WriteAllText($path, ($row | ConvertTo-Json -Compress) + "`n", $utf8)
+}
+function OpenAI-CheckUnknown($root, $out, $spend) {
+  $dir = Join-Path $root 'openai_spend_unknown'
+  if (-not (Test-Path -LiteralPath $dir)) { return }
+  foreach ($file in (Get-ChildItem -LiteralPath $dir -Filter '*.json' -File)) {
+    try {
+      $row = [IO.File]::ReadAllText($file.FullName) | ConvertFrom-Json
+      if (-not $row.run -or $row.status -notin @('estimated','unknown')) { throw 'bad entry' }
+    } catch { throw 'OpenAI unknown-spend entry is invalid; reconcile openai_spend_unknown before another run' }
+    if ($row.status -eq 'unknown' -and (-not $spend -or $row.run -eq [IO.Path]::GetFullPath($out))) {
+      throw 'OpenAI usage unknown: reconcile openai_spend_unknown and openai_spend.txt before another run'
+    }
+  }
+}
+function OpenAI-Usage($out) {
+  $inputTokens = [decimal]0; $cached = [decimal]0; $outputTokens = [decimal]0; $steps = 0
+  foreach ($file in @('preflight_log.txt','events.jsonl')) {
+    foreach ($e in (Read-Events (Join-Path $out $file))) {
+      if ($e.type -ne 'step_finish') { continue }
+      $k = $e.part.tokens
+      if ($null -eq $k.input -or $null -eq $k.output -or $null -eq $k.cache.read) { throw 'OpenAI token counts missing in OpenCode stats' }
+      foreach ($v in @($k.input, $k.output, $k.reasoning, $k.cache.read)) {
+        if ([decimal]$v -lt 0) { throw 'invalid OpenAI token counts in OpenCode stats' }
+      }
+      $inputTokens += [decimal]$k.input; $cached += [decimal]$k.cache.read
+      $outputTokens += [decimal]$k.output + [decimal]$k.reasoning; $steps++
+    }
+  }
+  return @{ input = $inputTokens; cached = $cached; output = $outputTokens; steps = $steps }
+}
+function OpenAI-Note($out, $row, $dry) {
+  $note = 'OpenAI estimate USD: {0}; running total {1} / budget {2}; input {3}, cached input {4}, output {5}' -f
+    $row.estimated_usd, $row.running_total_usd, $row.budget_usd, $row.input, $row.cached_input, $row.output
+  if ($dry) { $note += '; dry run, no spend recorded' }
+  if ($row.status -eq 'unknown') { $note += '; UNKNOWN usage: reconcile ledger before another paid run' }
+  [IO.File]::WriteAllText((Join-Path $out 'openai_estimate.txt'), $note + "`n", $utf8)
+  Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value $note -Encoding UTF8
+}
+
+if ($mode -in @('openai-key','openai-budget','openai-spend')) {
+  # These commands never call a provider. No credential or prompt belongs in an accounting file or error.
+  $out = if ($mode -eq 'openai-spend') { $args[2] } else { $args[1] }
+  $stream = $null
+  try {
+    if ($mode -eq 'openai-key') {
+      if (-not $env:VOIDSWORN_OPENAI_API_KEY) { throw 'no OpenAI API key saved: run OPENAI_API_KEY.bat' }
+      exit 0
+    }
+    if ($mode -eq 'openai-budget') {
+      $root = $args[2]; $settings = $args[3]; $model = $args[4]; $dry = $args[5] -eq '1'
+    } else {
+      $n = $args[1]; $root = $args[3]; $settings = $args[4]; $model = $args[5]; $dry = $args[6] -eq '1'
+      # Setup/checkout failures have no usage. A failed paid probe still has its log and must be counted.
+      if (-not (Test-Path (Join-Path $out 'preflight_log.txt')) -and -not (Test-Path (Join-Path $out 'events.jsonl'))) { exit 0 }
+    }
+    if (-not $openaiPrices.ContainsKey($model)) { throw 'OpenAI model has no spend price: add its named rates to openaiPrices before running' }
+    $budget = OpenAI-Budget $settings
+    $month = [datetime]::UtcNow.ToString('yyyy-MM')
+    $rows = @(); $total = [decimal]0
+    if (-not $dry) {
+      OpenAI-CheckUnknown $root $out ($mode -eq 'openai-spend')
+      $stream = OpenAI-Lock $root; $rows = @(OpenAI-Rows $stream); $total = OpenAI-Total $rows $month
+    }
+    if ($mode -eq 'openai-budget') {
+      if (@($rows | Where-Object { $_.status -eq 'unknown' }).Count) { throw 'OpenAI usage unknown: reconcile openai_spend.txt before another run' }
+      if (-not $dry -and $total -ge $budget) { throw "OpenAI budget reached: USD $total / $budget; no paid call started" }
+      exit 0
+    }
+    # Idempotent even when the runner regenerates stats or reaches finish after recording the run.
+    $run = [IO.Path]::GetFullPath($out)
+    $existing = @($rows | Where-Object { $_.run -eq $run })
+    if ($existing.Count) {
+      if (-not (Test-Path (Join-Path $out 'openai_estimate.txt'))) { OpenAI-Note $out $existing[0] $false }
+      if ($existing[0].status -eq 'unknown') { exit 3 }
+      exit 0
+    }
+    try { $usage = OpenAI-Usage $out } catch { $usage = @{ input = 0; cached = 0; output = 0; steps = 0 } }
+    $price = $openaiPrices[$model]
+    $cost = [decimal]::Round(($usage.input * $price.input + $usage.cached * $price.cached + $usage.output * $price.output) / 1000000, 8)
+    $row = [ordered]@{ date = [datetime]::UtcNow.ToString('s') + 'Z'; issue = $n; model = $model;
+      input = $usage.input; cached_input = $usage.cached; output = $usage.output; estimated_usd = $cost;
+      running_total_usd = $total + $cost; budget_usd = $budget; status = $(if ($usage.steps) { 'estimated' } else { 'unknown' }); run = $run }
+    if (-not $dry) {
+      $bytes = $utf8.GetBytes(($row | ConvertTo-Json -Compress) + "`n")
+      $stream.Position = $stream.Length; $stream.Write($bytes, 0, $bytes.Length); $stream.Flush($true)
+    }
+    OpenAI-Note $out ([pscustomobject]$row) $dry
+    if ($row.status -eq 'unknown' -and -not $dry) { OpenAI-KeepUnknown $root $out $n $model; exit 3 }
+    exit 0
+  } catch {
+    if ($mode -eq 'openai-spend' -and -not $dry) { OpenAI-KeepUnknown $root $out $n $model }
+    Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value $_.Exception.Message -Encoding UTF8
+    exit 3
+  } finally { if ($stream) { $stream.Dispose() } }
+}
 
 # ---- Runner 2 helpers (issue 377) ----
 # git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
@@ -92,11 +395,15 @@ function Save-Patch($out, $pre) { & git diff --cached --binary "--output=$(Join-
 
 if ($mode -eq 'prep') {
   $n = $args[1]; $arm = $args[2]; $repo = $args[3]; $out = $args[4]; $godot = $args[5]
-  if ($env:PC_RUNNER_TEST -eq '1') {
-    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
-  } else {
-    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  $i = Get-Content -LiteralPath (Join-Path $out 'validated_issue.json') -Raw | ConvertFrom-Json
+  $state = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+  if ($i.number -ne $n -or $i.run -ne $state.run -or $state.instruction_run -ne $state.run -or $state.status -ne 'running') {
+    throw 'job preparation refused: no validated current instruction for this run; no agent started'
   }
+  $bodyFile = Join-Path $out 'issue_body.txt'
+  [IO.File]::WriteAllText($bodyFile, [string]$i.body, $utf8)
+  & (Join-Path $PSScriptRoot 'runner_common.ps1') base $repo $out $bodyFile
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   $resume = Read-Txt (Join-Path $out 'resume.txt')
   $task = @"
 # Workhorse job: issue #$n, "$($i.title)"
@@ -111,11 +418,15 @@ Rules:
 - Do exactly what the job below asks. Change nothing else. Read the brief it names first.
 - No em dashes in anything you write. Plain words, plain ASCII.
 - Do not commit and do not push: the runner does that after you finish.
-- GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. It takes one of two shared GPU slots;
+- The runner handles Base and resume merges before you start. Do not run git merge; report a missing base in your report.
+- GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. Shared capacity comes from Downloads\voidsworn_test\gpu_slots.json (default 2).
+  Captures weigh 1, Blender weighs 2; set PC_GPU_WEIGHT=2 for other heavy bakes, or the Board's chosen weight;
   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
   gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
-- Save the screenshots your report links to in $out\shots (create it). The reviewer sees that folder.
+- Save review pictures and their .provenance.json sidecars in $out\shots (create it). Link them as shots/<file> so the
+  runner can copy them into docs/shots/issue-$n-$arm and rewrite the links before publishing.
+- Link pictures already in the checkout by repo-relative path, and keep every picture link relative.
 - Finish with a short report: what you changed (files), each check you ran and its result (paste the PASS or FAIL lines),
   anything you skipped and why. Your report goes at the top of the pull request description; the runner runs the standing
   checks and parity itself after you stop and adds their real rows under it, so write it for a reviewer.
@@ -214,6 +525,7 @@ balance before: $b0
 balance after: $b1
 real charge (balance before minus after): $charge
 "@
+  if ($arm -eq 'openai') { $s += "`n" + (Read-Txt (Join-Path $out 'openai_estimate.txt')) }
   [IO.File]::WriteAllText((Join-Path $out 'stats.txt'), $s, $utf8)
   Write-Host $s
 }
@@ -229,6 +541,11 @@ elseif ($mode -eq 'msg') {
   $fence = '```'
   $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
   if (Read-Txt (Join-Path $out 'stop_reason.txt')) { $msg += "`n" + (Read-Txt (Join-Path $out 'resume.txt')) + "`n" }
+  # Issue 953: this runner's own checkout is the sibling repo folder of out; a partial run takes -partial.
+  $repo = Join-Path (Split-Path -Parent $out) 'repo'
+  $branch = "work/issue-$n-$arm"
+  if (Read-Txt (Join-Path $out 'partial.txt')) { $branch += '-partial' }
+  $msg = Rewrite-ReportPaths $msg $repo $branch (Profile-Root)
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
 elseif ($mode -eq 'guard') {
@@ -319,6 +636,14 @@ elseif ($mode -eq 'commit') {
   $fault = ''; if ($push -ne 'real' -and $env:WORK_TEST_FAULT) { $fault = $env:WORK_TEST_FAULT }
   Push-Location $repo
   $pre = Git-One rev-parse HEAD
+  # Issue 889: check the exact PR body and the full report before truncation can hide a bad link.
+  # Partial branches preserve interrupted work and never open a PR.
+  if (-not (Read-Txt (Join-Path $out 'partial.txt'))) {
+    foreach ($bodyName in @('last.md', 'commit.txt')) {
+      & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'review_evidence.ps1') check $repo (Join-Path $out $bodyName)
+      if ($LASTEXITCODE -ne 0) { Write-Host 'PR body refused: review picture evidence failed; work kept, nothing committed or pushed'; Pop-Location; exit 13 }
+    }
+  }
   [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
   & git diff --cached --quiet 2>$null
   if ($LASTEXITCODE -eq 0) {
@@ -371,7 +696,7 @@ elseif ($mode -eq 'commit') {
   if ($guard) { $block += "$guard`n`n" }
   if ($base -and $base -ne $pre) {
     $ac = @(Git-Lines log --format='%h %s' "$base..$pre")
-    if ($ac.Count) { $block += "Commits the agent made itself (merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
+    if ($ac.Count) { $block += "Earlier commits (runner Base and resume merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
   }
   if ($old) { $block += "Earlier tip of $br kept: $old is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.`n" }
   $block += "Run-Number: $runNo`n"

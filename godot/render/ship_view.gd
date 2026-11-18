@@ -80,7 +80,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	var variant_code := str(u.get("tpl", ""))
 	if manifest().get("ships", {}).has(variant_code):
 		code = variant_code
-	var squad := cls == "Squadron" or bool(u.get("squadron", false))
+	var battle_wing := bool(u.get("squadron", false))
+	var squad := cls == "Squadron" or battle_wing
 	if squad:
 		squad_kind = CRAFT.kind_for(u)
 		code = fac + "|" + squad_kind
@@ -89,6 +90,10 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		hull = WING.new()
 		hull.name = "hull"
 		add_child(hull)
+		# Battle units carry the squadron flag; class-only portraits have no hex to patrol.
+		if battle_wing:
+			hull.patrol_limit = HT.HEX_S * sqrt(3.0) * 0.5
+			hull.patrol_target = 1.0
 		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 3, bob_seed)
 		_collect(hull)
 		_ring()
@@ -98,6 +103,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		return
 	if u.has("code"):
 		code = str(u["code"])
+	L = HT.length_for(code, cls) * HT.SHIP_K
+	if u.has("code"):
 		L = float(u.get("L", L))
 	bob_seed = randf() * 10.0
 	hull = Node3D.new()
@@ -1481,6 +1488,9 @@ func _process(dt: float) -> void:
 		if path_t >= 1.0:
 			path_dur = 0.0
 			thrust = 0.0
+	if not squad_kind.is_empty() and hull.patrol_limit > 0.0:
+		# Tuck the wing back into its hex before the travel pose stops.
+		hull.patrol_target = 0.0 if fleeing > 0.0 else (smoothstep(0.72, 1.0, path_t) if path_dur > 0.0 else 1.0)
 	if fleeing > 0.0:
 		fleeing += dt
 		position += Vector3(cos(-rotation.y), 0, sin(-rotation.y)) * dt * 60.0 * fleeing

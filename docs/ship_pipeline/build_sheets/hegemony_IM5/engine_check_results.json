@@ -1,0 +1,235 @@
+{
+  "issue": 967,
+  "base_commit": "38865952",
+  "summary": {
+    "passing_export_suites": 13,
+    "passing_cases": 302,
+    "bell_faults_refused": 40,
+    "blocked_export_suites": 1
+  },
+  "rim_plane_limit": "min(mesh tolerance, 0.25 * extras.radius)",
+  "im5_cause": {
+    "engine": "hp_eng_0",
+    "radius": 0.02247596098885265,
+    "half_radius": 0.011237980494426324,
+    "mesh_tolerance": 0.011999999284744264,
+    "old_good": {
+      "radius": 0.0225,
+      "rim_sectors": 12,
+      "throat_vertices": 119,
+      "exhaust_vertices": 0,
+      "ok": true,
+      "why": ""
+    },
+    "old_moved": {
+      "radius": 0.0225,
+      "rim_sectors": 12,
+      "throat_vertices": 131,
+      "exhaust_vertices": 0,
+      "ok": true,
+      "why": ""
+    },
+    "new_good": {
+      "radius": 0.0225,
+      "plane_tolerance": 0.005619,
+      "rim_sectors": 12,
+      "throat_vertices": 119,
+      "exhaust_vertices": 0,
+      "ok": true,
+      "why": ""
+    },
+    "new_moved": {
+      "radius": 0.0225,
+      "plane_tolerance": 0.005619,
+      "rim_sectors": 0,
+      "throat_vertices": 131,
+      "exhaust_vertices": 0,
+      "ok": false,
+      "why": "its rim at radius 0.0225 on the exit plane covers 0 of 12 sectors"
+    }
+  },
+  "results": [
+    {
+      "ship": "hegemony_IM5",
+      "code": "H4_11",
+      "sha256": "5dd513f6d362abe4f9ccc8fab42e236bc1cf52624b1c304eaad5ade44da0a33e",
+      "flags": [],
+      "exit": 0,
+      "cases": 33,
+      "bell_cases": 12,
+      "wrong": [],
+      "source": "issue 930 painted export"
+    },
+    {
+      "ship": "chorus_C10",
+      "code": "B16_23",
+      "sha256": "d3ecf1fa2735af052fd90765d136abd873cab27e96b7aa806a3ea1a95b67b0bc",
+      "flags": [
+        "unbaked=1"
+      ],
+      "exit": 0,
+      "cases": 20,
+      "bell_cases": 0,
+      "wrong": [],
+      "source": "recipe export, unbaked"
+    },
+    {
+      "ship": "chorus_C11",
+      "code": "B21_11",
+      "sha256": "9ee2447217d1156fd89bb90673b899b33e0b2480cf517de9dc3bc25095cc12f0",
+      "flags": [
+        "unbaked=1"
+      ],
+      "exit": 0,
+      "cases": 18,
+      "bell_cases": 0,
+      "wrong": [],
+      "source": "recipe export, unbaked"
+    },
+    {
+      "ship": "corsair_A16",
+      "code": "C19_51",
+      "sha256": "af0c3bb8312d40e6ee3e7c28c1031dff903aab3ec5068ad1e9437b65e05ce3d3",
+      "flags": [],
+      "exit": 0,
+      "cases": 26,
+      "bell_cases": 6,
+      "wrong": [],
+      "source": "preserved lane B installed copy"
+    },
+    {
+      "ship": "corsair_A17",
+      "code": "C15s_23",
+      "sha256": "d7dcf88eec17975ca72b8603aae1afa3d3cc4c798462b41025daffd579c13e7c",
+      "flags": [],
+      "exit": 0,
+      "cases": 24,
+      "bell_cases": 4,
+      "wrong": [],
+      "source": "preserved lane B installed copy"
+    },
+    {
+      "ship": "corsair_A18",
+      "code": "C13s_23",
+      "sha256": "399bf671b8490f64bcd5dce36c96d0be240daaf4492ce007f5025298a67c6475",
+      "flags": [],
+      "exit": 0,
+      "cases": 24,
+      "bell_cases": 4,
+      "wrong": [],
+      "source": "preserved lane B installed copy"
+    },
+    {
+      "ship": "corsair_A19",
+      "code": "C14s_23",
+      "sha256": "78428f640beb6a43a49d019c9cf9705a127b9b71e25525d0fc7456001bebf4fe",
+      "flags": [],
+      "exit": 0,
+      "cases": 22,
+      "bell_cases": 2,
+      "wrong": [],
+      "source": "preserved lane B installed copy"
+    },
+    {
+      "ship": "corsair_A20",
+      "code": "C16s_23",
+      "sha256": "5252de87e071e338d449ebeed401362a6babcfc032f35ff63253862cef0f451d",
+      "flags": [],
+      "exit": 0,
+      "cases": 20,
+      "bell_cases": 0,
+      "wrong": [],
+      "source": "preserved lane B installed copy"
+    },
+    {
+      "ship": "deathless_E11",
+      "code": "D22_23",
+      "sha256": "39d36c5efb53fd7f1f4230e6ca4d013c36457bf840c3b86093ff9ee807798c80",
+      "flags": [],
+      "exit": 0,
+      "cases": 21,
+      "bell_cases": 0,
+      "wrong": [],
+      "source": "eclmain1115 installed copy"
+    },
+    {
+      "ship": "deathless_E12",
+      "code": "D21_23",
+      "sha256": "0444fa8a22a9db40fdb1b5f089a2b14dcce71f5ff681489a0c0b2cafc9d1eb52",
+      "flags": [],
+      "exit": 0,
+      "cases": 21,
+      "bell_cases": 0,
+      "wrong": [],
+      "source": "eclmain1115 installed copy"
+    },
+    {
+      "ship": "deathless_E13",
+      "code": "D9_23",
+      "sha256": "5ee5b2e7e00d97111c00cd42f72201ebaa3c16001aebcf25ce29608f403016e7",
+      "flags": [],
+      "exit": 0,
+      "cases": 23,
+      "bell_cases": 2,
+      "wrong": [],
+      "source": "ecl1314 installed copy"
+    },
+    {
+      "ship": "deathless_E14",
+      "code": "D20_23",
+      "sha256": "663c372feb85aac0f1c1e47a5f13d9e7516e938664cf3f709d62bf237efc9e50",
+      "flags": [],
+      "exit": 0,
+      "cases": 21,
+      "bell_cases": 2,
+      "wrong": [],
+      "source": "issue 811 painted export (current one-slot weapon contract)"
+    },
+    {
+      "ship": "hegemony_H10",
+      "code": "H10_23",
+      "sha256": "71c4c9dc2450ddc5c9b45fce1d717ed6cf4bd382a03798fd41076eb4623e555c",
+      "flags": [],
+      "exit": 0,
+      "cases": 29,
+      "bell_cases": 8,
+      "wrong": [],
+      "source": "issue 930 painted export"
+    },
+    {
+      "ship": "voidsworn_S8",
+      "code": "V1b_r_23",
+      "sha256": "b5c6c2265e754081eade670513ab43da73927698d44827e6cd67454b00ec334c",
+      "flags": [],
+      "exit": 1,
+      "cases": 6,
+      "bell_cases": 0,
+      "wrong": [
+        "WRONG pass: the check failed, and it must not | no authored interior/seams contract version 1"
+      ],
+      "status": "blocked: legacy baseline; original HEAD checker also exits 1 with 48 problems; self-test stops at missing extras.socket",
+      "geometry_only": {
+        "good_bells_accepted": 3,
+        "radius_faults_refused": 3,
+        "plane_faults_refused": 3
+      },
+      "source": "legacy installed A4 copy listed by the ship manifest"
+    }
+  ],
+  "additional_checks": [
+    "Bell geometry at scales 0.001, 1, 1000: good passes and half-radius fault fails",
+    "Fault displacement under rotated and scaled parents, TRS and matrix nodes: half a radius in the scene frame",
+    "A stale empty IM5 bell record is refreshed to all six bells"
+  ],
+  "standing_checks": {
+    "command": "node contrib/opus/tools/run_all_checks.js",
+    "exit": 0,
+    "rows": 64,
+    "pass": 62,
+    "known": {
+      "findings_tests": "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5",
+      "oracle_drift_guard": "KNOWN: 12 constant difference(s) within the baseline"
+    },
+    "skipped": []
+  }
+}

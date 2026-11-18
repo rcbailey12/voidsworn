@@ -96,9 +96,10 @@ check('AI-1 a veteran that moves under heavy fire with nothing to shoot braces (
   const B = T.B; B.terrain = {}; const pens = B.units.filter(u => u.side === 'player'), m = B.units.find(u => u.side === 'enemy');
   [[6, 5], [6, 7], [6, 9]].forEach((p, i) => { const h = T.offToAx(p[0], p[1]); pens[i].q = h.q; pens[i].r = h.r; }); const mh = T.offToAx(14, 7); m.q = mh.q; m.r = mh.r;
   for (const p of pens) { let bf = 0, bd = 1e9; for (let f = 0; f < 6; f++) { const d = T.hdist({ q: p.q + T.DIRS[f][0], r: p.r + T.DIRS[f][1] }, m); if (d < bd) { bd = d; bf = f; } } p.facing = bf; }
-  const w = T.mkWeapon('scatter', 'T', {}); w.fired = false; w.cdLeft = 2; w.off = 0; m.weapons = [w]; m.ab = null; m.maxHp = 100; m.hp = 60; m.sh = [0, 0, 0, 0]; m.shMax = 0;
+  // A loaded short-range gun lets the ship close, but stays out of reach at the firing position.
+  const w = T.mkWeapon('scatter', 'T', {}); w.fired = false; w.cdLeft = 0; w.off = 0; m.weapons = [w]; m.ab = null; m.maxHp = 100; m.hp = 60; m.sh = [0, 0, 0, 0]; m.shMax = 0;
   const d0 = Math.min(...pens.map(p => T.hdist(m, p))); B.side = 'enemy'; await T.turnStart('enemy'); await T.aiUnit(m); const d1 = Math.min(...pens.map(p => T.hdist(m, p)));
-  T.AI = 'standard'; return d1 < d0 && m.braced === true; });
+  T.AI = 'standard'; return d1 < d0 && m.braced === true && !m.postFire; });
 check('WPN-1 Null sentries are no longer a copy of the flak battery (and stay point defense)', () => {
   const a = T.W.flak, b = T.W.gsentry; const same = Object.keys(Object.assign({}, a, b)).filter(k => k !== 'n').every(k => a[k] === b[k]); return !same && b.k === 'flak' && b.vsSq > 0; });
 check('salvage (relics): none offered that can never act (coils without abilities, logbook at top rank, chalked roll for a lone ship)', () => {

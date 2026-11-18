@@ -5,6 +5,13 @@ are only reported (triangles, R113; the R94 shape values, ST3 in issue 230), and
 Output is review material only; the live board prop is not swapped without the owner's approval.
 One shared spine supplies fleet and refinery variants; dimensions are world units.
 """
+
+from pathlib import Path as _PicturePath
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import stamp_file as _stamp_picture
+
 import argparse
 import json
 import math
@@ -349,7 +356,7 @@ def studio(out, variant, ship_root, underside_only=False):
         cam.rotation_euler = (target - cam.location).to_track_quat('-Z', 'Y').to_euler()
         sc.render.resolution_x, sc.render.resolution_y = width, height
         sc.render.filepath = str(out / name)
-        bpy.ops.render.render(write_still=True)
+        bpy.ops.render.render(write_still=True); _stamp_picture(sc.render.filepath, 'sheet built', new_render=True)
 
     for name, az, el in (('working', 205, 38), ('service', 25, 30), ('top', 0, 90),
                          ('side', 0, 0), ('below', 0, -45), ('end', 90, 0)):

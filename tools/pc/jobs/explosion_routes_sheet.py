@@ -12,6 +12,15 @@ from the moment's start otherwise. --heads adds a second line under a column's n
 prints its lines under the sheet. --strips DIR also writes every camera 170 cell of every run, one run per row (one
 picture per moment), to pick the cells. Needs Pillow (ComfyUI's portable Python on the PC).
 """
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('installed in game')
+
 import argparse, json, os
 from PIL import Image, ImageDraw, ImageFont
 
@@ -48,7 +57,7 @@ def stills(run):
 
 
 def cell(path, i, size=(384, 216)):
-    im = Image.open(path).convert("RGB")
+    im = PICTURES.open(path).convert("RGB")
     i = max(0, min(i, im.width // size[0] - 1))
     return im.crop((i * size[0], 0, (i + 1) * size[0], size[1]))
 
@@ -125,7 +134,7 @@ def main():
     for line in notes:
         dr.text((10, y + 4), line, font=FS, fill=DIM)
         y += 24
-    sheet.save(a.out, quality=a.quality)
+    PICTURES.save(sheet, a.out, quality=a.quality)
     print("SHEET", a.out, sheet.size)
     if a.strips:
         os.makedirs(a.strips, exist_ok=True)
@@ -135,13 +144,13 @@ def main():
                 for name, _ in runs:
                     st = data[name][0]
                     if (mid, cam) in st:
-                        rows.append(Image.open(st[(mid, cam)][0]).convert("RGB"))
+                        rows.append(PICTURES.open(st[(mid, cam)][0]).convert("RGB"))
                 if rows:
                     s = Image.new("RGB", (max(r.width for r in rows), sum(r.height for r in rows)), BG)
                     yy = 0
                     for r in rows:
                         s.paste(r, (0, yy)); yy += r.height
-                    s.save(os.path.join(a.strips, "%s_c%d_all.jpg" % (mid, cam)), quality=82)
+                    PICTURES.save(s, os.path.join(a.strips, "%s_c%d_all.jpg" % (mid, cam)), quality=82)
 
 
 if __name__ == "__main__":

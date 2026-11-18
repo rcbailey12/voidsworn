@@ -1,0 +1,1436 @@
+{
+	"camera": {
+		"beta": 0.98,
+		"fov": 45.0,
+		"min_radius": 26.0,
+		"radius": 170.0
+	},
+	"comparisons": [
+		{
+			"class": "Destroyer",
+			"code": "V15_37",
+			"length": 15.2,
+			"unit": {
+				"ab": "reload",
+				"abCd": 0,
+				"abReady": false,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Destroyer",
+				"covered": null,
+				"crew": 43.0,
+				"crewMax": 43.0,
+				"dead": false,
+				"fac": "voidsworn",
+				"facing": 0,
+				"fired": false,
+				"flagship": false,
+				"fled": false,
+				"hp": 85.0,
+				"id": "x02",
+				"inSync": false,
+				"maxHp": 85.0,
+				"moveLeft": 5.0,
+				"mp": 5.0,
+				"name": "Vigilant Ash",
+				"nemesis": false,
+				"q": 1,
+				"r": 11,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 21.0,
+						"max": 21.0
+					},
+					"mid": {
+						"hp": 38.0,
+						"max": 38.0
+					},
+					"prow": {
+						"hp": 26.0,
+						"max": 26.0
+					}
+				},
+				"sh": [
+					25.0,
+					17.0,
+					13.0,
+					17.0
+				],
+				"shMax": 28.0,
+				"shp": 28.0,
+				"side": "player",
+				"size": 0.6,
+				"squadron": false,
+				"stance": null,
+				"tpl": "harrow",
+				"turnsLeft": 2.0,
+				"weapons": [
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 0,
+						"id": "torp",
+						"kind": "torp",
+						"name": "Cinder torpedo",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 1,
+						"id": "turret",
+						"kind": "battery",
+						"name": "Sear turret",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Frigate",
+			"code": "V14_23",
+			"length": 10.4,
+			"unit": {
+				"ab": "evasive",
+				"abCd": 0,
+				"abReady": true,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Frigate",
+				"covered": null,
+				"crew": 38.0,
+				"crewMax": 38.0,
+				"dead": false,
+				"fac": "voidsworn",
+				"facing": 3,
+				"fired": false,
+				"flagship": false,
+				"fled": false,
+				"hp": 62.0,
+				"id": "x03",
+				"inSync": false,
+				"maxHp": 62.0,
+				"moveLeft": 6.0,
+				"mp": 6.0,
+				"name": "Warden-class frigate",
+				"nemesis": false,
+				"q": 16,
+				"r": 15,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 16.0,
+						"max": 16.0
+					},
+					"mid": {
+						"hp": 28.0,
+						"max": 28.0
+					},
+					"prow": {
+						"hp": 19.0,
+						"max": 19.0
+					}
+				},
+				"sh": [
+					23.0,
+					14.0,
+					10.0,
+					14.0
+				],
+				"shMax": 25.0,
+				"shp": 25.0,
+				"side": "enemy",
+				"size": 0.5,
+				"squadron": false,
+				"stance": null,
+				"tpl": "warden",
+				"turnsLeft": 3.0,
+				"weapons": [
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 0,
+						"id": "autocannon",
+						"kind": "battery",
+						"name": "Sear repeater",
+						"off": 0,
+						"range": 4.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 1,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Spark flak",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Cruiser",
+			"code": "V16_37",
+			"length": 23.2,
+			"unit": {
+				"ab": "focus",
+				"abCd": 0,
+				"abReady": true,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Cruiser",
+				"covered": null,
+				"crew": 51.0,
+				"crewMax": 51.0,
+				"dead": false,
+				"fac": "voidsworn",
+				"facing": 3,
+				"fired": false,
+				"flagship": false,
+				"fled": false,
+				"hp": 167.0,
+				"id": "x05",
+				"inSync": false,
+				"maxHp": 167.0,
+				"moveLeft": 4.0,
+				"mp": 4.0,
+				"name": "Vigil-class cruiser",
+				"nemesis": false,
+				"q": 15,
+				"r": 14,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 42.0,
+						"max": 42.0
+					},
+					"mid": {
+						"hp": 75.0,
+						"max": 75.0
+					},
+					"prow": {
+						"hp": 50.0,
+						"max": 50.0
+					}
+				},
+				"sh": [
+					48.0,
+					33.0,
+					25.0,
+					33.0
+				],
+				"shMax": 50.0,
+				"shp": 50.0,
+				"side": "enemy",
+				"size": 0.76,
+				"squadron": false,
+				"stance": null,
+				"tpl": "penitent",
+				"turnsLeft": 2.0,
+				"weapons": [
+					{
+						"arc": "P",
+						"cd": 0,
+						"i": 0,
+						"id": "battery",
+						"kind": "battery",
+						"name": "Sear battery",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "S",
+						"cd": 0,
+						"i": 1,
+						"id": "battery",
+						"kind": "battery",
+						"name": "Sear battery",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 2,
+						"id": "lance",
+						"kind": "lance",
+						"name": "Oath lance",
+						"off": 0,
+						"range": 7.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Carrier",
+			"code": "V18_51",
+			"length": 26.4,
+			"unit": {
+				"ab": "launch",
+				"abCd": 0,
+				"abReady": false,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": true,
+				"cls": "Carrier",
+				"covered": null,
+				"crew": 55.0,
+				"crewMax": 55.0,
+				"dead": false,
+				"fac": "voidsworn",
+				"facing": 3,
+				"fired": false,
+				"flagship": false,
+				"fled": false,
+				"hp": 161.0,
+				"id": "x06",
+				"inSync": false,
+				"maxHp": 161.0,
+				"moveLeft": 3.0,
+				"mp": 3.0,
+				"name": "Hearth-class carrier",
+				"nemesis": false,
+				"q": 17,
+				"r": 13,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 40.0,
+						"max": 40.0
+					},
+					"mid": {
+						"hp": 72.0,
+						"max": 72.0
+					},
+					"prow": {
+						"hp": 48.0,
+						"max": 48.0
+					}
+				},
+				"sh": [
+					47.0,
+					33.0,
+					28.0,
+					33.0
+				],
+				"shMax": 55.0,
+				"shp": 55.0,
+				"side": "enemy",
+				"size": 0.84,
+				"squadron": false,
+				"stance": null,
+				"tpl": "reliquary",
+				"turnsLeft": 1.0,
+				"weapons": [
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 0,
+						"id": "turret",
+						"kind": "battery",
+						"name": "Sear turret",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 1,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Spark flak",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Battleship",
+			"code": "V17_37",
+			"length": 33.6,
+			"unit": {
+				"ab": "surge",
+				"abCd": 0,
+				"abReady": true,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Battleship",
+				"covered": null,
+				"crew": 60.0,
+				"crewMax": 60.0,
+				"dead": false,
+				"fac": "voidsworn",
+				"facing": 3,
+				"fired": false,
+				"flagship": false,
+				"fled": false,
+				"hp": 273.0,
+				"id": "x07",
+				"inSync": false,
+				"maxHp": 273.0,
+				"moveLeft": 3.0,
+				"mp": 3.0,
+				"name": "Bastion-class battleship",
+				"nemesis": false,
+				"q": 19,
+				"r": 9,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 68.0,
+						"max": 68.0
+					},
+					"mid": {
+						"hp": 123.0,
+						"max": 123.0
+					},
+					"prow": {
+						"hp": 82.0,
+						"max": 82.0
+					}
+				},
+				"sh": [
+					70.0,
+					52.0,
+					41.0,
+					52.0
+				],
+				"shMax": 74.0,
+				"shp": 74.0,
+				"side": "enemy",
+				"size": 0.95,
+				"squadron": false,
+				"stance": null,
+				"tpl": "cathedral",
+				"turnsLeft": 1.0,
+				"weapons": [
+					{
+						"arc": "P",
+						"cd": 0,
+						"i": 0,
+						"id": "hbattery",
+						"kind": "battery",
+						"name": "Heavy sear broadside",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "S",
+						"cd": 0,
+						"i": 1,
+						"id": "hbattery",
+						"kind": "battery",
+						"name": "Heavy sear broadside",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 2,
+						"id": "lance",
+						"kind": "lance",
+						"name": "Oath lance",
+						"off": 0,
+						"range": 7.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 3,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Spark flak",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Dreadnought",
+			"code": "V1b_r_23",
+			"length": 43.2,
+			"unit": {
+				"ab": "nova",
+				"abCd": 0,
+				"abReady": true,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Dreadnought",
+				"covered": null,
+				"crew": 128.0,
+				"crewMax": 128.0,
+				"dead": false,
+				"fac": "voidsworn",
+				"facing": 3,
+				"fired": false,
+				"flagship": true,
+				"fled": false,
+				"hp": 247.0,
+				"id": "x08",
+				"inSync": false,
+				"maxHp": 247.0,
+				"moveLeft": 3.0,
+				"mp": 3.0,
+				"name": "Daybreak-class dreadnought",
+				"nemesis": false,
+				"q": 17,
+				"r": 11,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 62.0,
+						"max": 62.0
+					},
+					"mid": {
+						"hp": 111.0,
+						"max": 111.0
+					},
+					"prow": {
+						"hp": 74.0,
+						"max": 74.0
+					}
+				},
+				"sh": [
+					41.0,
+					30.0,
+					26.0,
+					30.0
+				],
+				"shMax": 43.0,
+				"shp": 43.0,
+				"side": "enemy",
+				"size": 1.18,
+				"squadron": false,
+				"stance": null,
+				"tpl": "ascendant",
+				"turnsLeft": 1.0,
+				"weapons": [
+					{
+						"arc": "P",
+						"cd": 0,
+						"i": 0,
+						"id": "hbattery",
+						"kind": "battery",
+						"name": "Heavy sear broadside",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "S",
+						"cd": 0,
+						"i": 1,
+						"id": "hbattery",
+						"kind": "battery",
+						"name": "Heavy sear broadside",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 2,
+						"id": "turret",
+						"kind": "battery",
+						"name": "Sear turret",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 3,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Spark flak",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Super-dreadnought",
+			"code": "H4_11",
+			"length": 49.6,
+			"unit": {
+				"ab": "nova",
+				"abCd": 0,
+				"abReady": true,
+				"activated": false,
+				"active": false,
+				"anchor": true,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Super-dreadnought",
+				"covered": null,
+				"crew": 115.0,
+				"crewMax": 115.0,
+				"dead": false,
+				"fac": "hegemony",
+				"facing": 3,
+				"fired": false,
+				"flagship": true,
+				"fled": false,
+				"hp": 227.0,
+				"id": "x07",
+				"inSync": true,
+				"maxHp": 227.0,
+				"moveLeft": 2.0,
+				"mp": 2.0,
+				"name": "The Iron Mandate",
+				"nemesis": false,
+				"q": 17,
+				"r": 11,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 57.0,
+						"max": 57.0
+					},
+					"mid": {
+						"hp": 102.0,
+						"max": 102.0
+					},
+					"prow": {
+						"hp": 68.0,
+						"max": 68.0
+					}
+				},
+				"sh": [
+					29.0,
+					24.0,
+					21.0,
+					24.0
+				],
+				"shMax": 32.0,
+				"shp": 32.0,
+				"side": "enemy",
+				"size": 1.3,
+				"squadron": false,
+				"stance": null,
+				"tpl": "h_boss",
+				"turnsLeft": 1.0,
+				"weapons": [
+					{
+						"arc": "P",
+						"cd": 0,
+						"i": 0,
+						"id": "hturbo",
+						"kind": "battery",
+						"name": "Heavy plasma lance",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "S",
+						"cd": 0,
+						"i": 1,
+						"id": "hturbo",
+						"kind": "battery",
+						"name": "Heavy plasma lance",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 2,
+						"id": "turbo",
+						"kind": "battery",
+						"name": "Plasma lance",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 3,
+						"id": "ion",
+						"kind": "lance",
+						"name": "Ion cannon",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 4,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Picket lasers",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Battle-barge",
+			"code": "C19_51",
+			"length": 41.6,
+			"unit": {
+				"ab": "launch",
+				"abCd": 0,
+				"abReady": false,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": true,
+				"cls": "Battle-barge",
+				"covered": null,
+				"crew": 137.0,
+				"crewMax": 137.0,
+				"dead": false,
+				"fac": "corsair",
+				"facing": 3,
+				"fired": false,
+				"flagship": true,
+				"fled": false,
+				"hp": 415.0,
+				"id": "x07",
+				"inSync": false,
+				"maxHp": 415.0,
+				"moveLeft": 3.0,
+				"mp": 3.0,
+				"name": "Warlord's Pyre-Barge",
+				"nemesis": false,
+				"q": 17,
+				"r": 11,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 104.0,
+						"max": 104.0
+					},
+					"mid": {
+						"hp": 187.0,
+						"max": 187.0
+					},
+					"prow": {
+						"hp": 125.0,
+						"max": 125.0
+					}
+				},
+				"sh": [
+					36.0,
+					29.0,
+					23.0,
+					29.0
+				],
+				"shMax": 42.0,
+				"shp": 42.0,
+				"side": "enemy",
+				"size": 1.22,
+				"squadron": false,
+				"stance": null,
+				"tpl": "c_boss",
+				"turnsLeft": 1.0,
+				"weapons": [
+					{
+						"arc": "P",
+						"cd": 0,
+						"i": 0,
+						"id": "scatter",
+						"kind": "battery",
+						"name": "Scrap scatter gun",
+						"off": 0,
+						"range": 3.0,
+						"ready": true
+					},
+					{
+						"arc": "S",
+						"cd": 0,
+						"i": 1,
+						"id": "scatter",
+						"kind": "battery",
+						"name": "Scrap scatter gun",
+						"off": 0,
+						"range": 3.0,
+						"ready": true
+					},
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 2,
+						"id": "htorp",
+						"kind": "torp",
+						"name": "Heavy rocket pod",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 3,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Chaff guns",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Bio-titan",
+			"code": "B16_23",
+			"length": 44.8,
+			"unit": {
+				"ab": "launch",
+				"abCd": 0,
+				"abReady": false,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": true,
+				"cls": "Bio-titan",
+				"covered": null,
+				"crew": 127.0,
+				"crewMax": 127.0,
+				"dead": false,
+				"fac": "chorus",
+				"facing": 3,
+				"fired": false,
+				"flagship": true,
+				"fled": false,
+				"hp": 341.0,
+				"id": "x07",
+				"inSync": false,
+				"maxHp": 341.0,
+				"moveLeft": 3.0,
+				"mp": 3.0,
+				"name": "The Ninefold Maw",
+				"nemesis": false,
+				"q": 17,
+				"r": 11,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 85.0,
+						"max": 85.0
+					},
+					"mid": {
+						"hp": 153.0,
+						"max": 153.0
+					},
+					"prow": {
+						"hp": 102.0,
+						"max": 102.0
+					}
+				},
+				"sh": [
+					0,
+					0,
+					0,
+					0
+				],
+				"shMax": 0.0,
+				"shp": 0.0,
+				"side": "enemy",
+				"size": 1.3,
+				"squadron": false,
+				"stance": null,
+				"tpl": "b_boss",
+				"turnsLeft": 1.0,
+				"weapons": [
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 0,
+						"id": "bioplasma",
+						"kind": "bio",
+						"name": "Spine volley",
+						"off": 0,
+						"range": 4.0,
+						"ready": true
+					},
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 1,
+						"id": "bioplasma",
+						"kind": "bio",
+						"name": "Spine volley",
+						"off": 0,
+						"range": 4.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 2,
+						"id": "tendril",
+						"kind": "bio",
+						"name": "Boarding tendrils",
+						"off": 0,
+						"range": 1.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 3,
+						"id": "spores",
+						"kind": "flak",
+						"name": "Spore cloud",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Ark",
+			"code": "I8_37",
+			"length": 41.6,
+			"unit": {
+				"ab": "surge",
+				"abCd": 0,
+				"abReady": true,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Ark",
+				"covered": null,
+				"crew": 90.0,
+				"crewMax": 90.0,
+				"dead": false,
+				"fac": "ithar",
+				"facing": 3,
+				"fired": false,
+				"flagship": true,
+				"fled": false,
+				"hp": 180.0,
+				"id": "x07",
+				"inSync": false,
+				"maxHp": 180.0,
+				"moveLeft": 4.0,
+				"mp": 4.0,
+				"name": "The Unfinished",
+				"nemesis": false,
+				"q": 17,
+				"r": 11,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 45.0,
+						"max": 45.0
+					},
+					"mid": {
+						"hp": 81.0,
+						"max": 81.0
+					},
+					"prow": {
+						"hp": 54.0,
+						"max": 54.0
+					}
+				},
+				"sh": [
+					12.0,
+					10.0,
+					9.0,
+					10.0
+				],
+				"shMax": 13.0,
+				"shp": 13.0,
+				"side": "enemy",
+				"size": 1.26,
+				"squadron": false,
+				"stance": null,
+				"tpl": "i_boss",
+				"turnsLeft": 2.0,
+				"weapons": [
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 0,
+						"id": "pulsar",
+						"kind": "lance",
+						"name": "Prism lance",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 1,
+						"id": "pulsar",
+						"kind": "lance",
+						"name": "Prism lance",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 2,
+						"id": "pulsar",
+						"kind": "lance",
+						"name": "Prism lance",
+						"off": 0,
+						"range": 6.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 3,
+						"id": "turret",
+						"kind": "battery",
+						"name": "Needle beam",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 4,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Mirror veil",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		},
+		{
+			"class": "Tomb-ark",
+			"code": "D22_23",
+			"length": 44.8,
+			"unit": {
+				"ab": "nova",
+				"abCd": 0,
+				"abReady": true,
+				"activated": false,
+				"active": false,
+				"anchor": false,
+				"braced": false,
+				"burning": false,
+				"canRole": false,
+				"canStance": false,
+				"cls": "Tomb-ark",
+				"covered": null,
+				"crew": 115.0,
+				"crewMax": 115.0,
+				"dead": false,
+				"fac": "deathless",
+				"facing": 3,
+				"fired": false,
+				"flagship": true,
+				"fled": false,
+				"hp": 229.0,
+				"id": "x06",
+				"inSync": false,
+				"maxHp": 229.0,
+				"moveLeft": 2.0,
+				"mp": 2.0,
+				"name": "The Unsetting",
+				"nemesis": false,
+				"q": 17,
+				"r": 11,
+				"rising": null,
+				"role": null,
+				"sec": {
+					"eng": {
+						"hp": 57.0,
+						"max": 57.0
+					},
+					"mid": {
+						"hp": 103.0,
+						"max": 103.0
+					},
+					"prow": {
+						"hp": 69.0,
+						"max": 69.0
+					}
+				},
+				"sh": [
+					0,
+					0,
+					0,
+					0
+				],
+				"shMax": 0.0,
+				"shp": 0.0,
+				"side": "enemy",
+				"size": 1.3,
+				"squadron": false,
+				"stance": null,
+				"tpl": "d_boss",
+				"turnsLeft": 1.0,
+				"weapons": [
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 0,
+						"id": "gauss",
+						"kind": "gauss",
+						"name": "Null cannon",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 1,
+						"id": "gauss",
+						"kind": "gauss",
+						"name": "Null cannon",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "F",
+						"cd": 0,
+						"i": 2,
+						"id": "doom",
+						"kind": "lance",
+						"name": "Corona arc",
+						"off": 0,
+						"range": 5.0,
+						"ready": true
+					},
+					{
+						"arc": "T",
+						"cd": 0,
+						"i": 3,
+						"id": "flak",
+						"kind": "flak",
+						"name": "Null shredder",
+						"off": 0,
+						"range": 2.0,
+						"ready": true
+					}
+				]
+			}
+		}
+	],
+	"cruiser_mesh": "cruiser.obj",
+	"cruiser_source": "corsair|Cruiser; real ShipView geometry, studio material",
+	"footprint": {
+		"cells": [
+			{
+				"q": 10,
+				"r": 11,
+				"x": 268.467864990234,
+				"z": 165.0
+			},
+			{
+				"q": 11,
+				"r": 10,
+				"x": 277.128143310547,
+				"z": 150.0
+			},
+			{
+				"q": 10,
+				"r": 10,
+				"x": 259.8076171875,
+				"z": 150.0
+			},
+			{
+				"q": 9,
+				"r": 11,
+				"x": 251.147369384766,
+				"z": 165.0
+			},
+			{
+				"q": 9,
+				"r": 12,
+				"x": 259.8076171875,
+				"z": 180.0
+			},
+			{
+				"q": 10,
+				"r": 12,
+				"x": 277.128143310547,
+				"z": 180.0
+			},
+			{
+				"q": 11,
+				"r": 11,
+				"x": 285.788391113281,
+				"z": 165.0
+			}
+		],
+		"centre": [
+			268.467864990234,
+			0.0,
+			165.0
+		],
+		"hex_radius": 10.0000104196471
+	},
+	"max_ship_height": 51.1292686462402,
+	"scenario_seed": 373,
+	"ships": [
+		{
+			"code": "V15_37",
+			"faction_class": "voidsworn|Destroyer",
+			"height": 3.12937545776367,
+			"length": 15.2
+		},
+		{
+			"code": "V14_23",
+			"faction_class": "voidsworn|Frigate",
+			"height": 2.01816320419312,
+			"length": 10.4
+		},
+		{
+			"code": "V16_37",
+			"faction_class": "voidsworn|Cruiser",
+			"height": 4.01766872406006,
+			"length": 23.2
+		},
+		{
+			"code": "V18_51",
+			"faction_class": "voidsworn|Carrier",
+			"height": 6.03311157226563,
+			"length": 26.4
+		},
+		{
+			"code": "V17_37",
+			"faction_class": "voidsworn|Battleship",
+			"height": 5.99355363845825,
+			"length": 33.6
+		},
+		{
+			"code": "V1b_r_23",
+			"faction_class": "voidsworn|Dreadnought",
+			"height": 11.557071685791,
+			"length": 43.2
+		},
+		{
+			"code": "H7_23",
+			"faction_class": "hegemony|Frigate",
+			"height": 2.68475699424744,
+			"length": 10.4
+		},
+		{
+			"code": "H8_23",
+			"faction_class": "hegemony|Destroyer",
+			"height": 3.69442462921143,
+			"length": 15.2
+		},
+		{
+			"code": "H9_23",
+			"faction_class": "hegemony|Cruiser",
+			"height": 5.4164662361145,
+			"length": 23.2
+		},
+		{
+			"code": "H10_23",
+			"faction_class": "hegemony|Battleship",
+			"height": 6.52012920379639,
+			"length": 33.6
+		},
+		{
+			"code": "H4_11",
+			"faction_class": "hegemony|Super-dreadnought",
+			"height": 9.94781494140625,
+			"length": 49.6
+		},
+		{
+			"code": "C13s_23",
+			"faction_class": "corsair|Frigate",
+			"height": 3.81998562812805,
+			"length": 10.4
+		},
+		{
+			"code": "C14s_23",
+			"faction_class": "corsair|Destroyer",
+			"height": 3.80162858963013,
+			"length": 15.2
+		},
+		{
+			"code": "C15s_23",
+			"faction_class": "corsair|Cruiser",
+			"height": 5.219801902771,
+			"length": 23.2
+		},
+		{
+			"code": "C16s_23",
+			"faction_class": "corsair|Carrier",
+			"height": 8.71639060974121,
+			"length": 26.4
+		},
+		{
+			"code": "C19_51",
+			"faction_class": "corsair|Battle-barge",
+			"height": 16.36572265625,
+			"length": 41.6
+		},
+		{
+			"code": "B19_11",
+			"faction_class": "chorus|Frigate",
+			"height": 7.16944885253906,
+			"length": 10.4
+		},
+		{
+			"code": "B20_11",
+			"faction_class": "chorus|Destroyer",
+			"height": 3.56379842758179,
+			"length": 15.2
+		},
+		{
+			"code": "B21_11",
+			"faction_class": "chorus|Cruiser",
+			"height": 6.56433296203613,
+			"length": 23.2
+		},
+		{
+			"code": "B22_11",
+			"faction_class": "chorus|Carrier",
+			"height": 8.67702293395996,
+			"length": 26.4
+		},
+		{
+			"code": "B16_23",
+			"faction_class": "chorus|Bio-titan",
+			"height": 38.9140396118164,
+			"length": 44.8
+		},
+		{
+			"code": "I14_23",
+			"faction_class": "ithar|Frigate",
+			"height": 4.14066791534424,
+			"length": 10.4
+		},
+		{
+			"code": "I11_37",
+			"faction_class": "ithar|Destroyer",
+			"height": 5.48136806488037,
+			"length": 15.2
+		},
+		{
+			"code": "I15_11",
+			"faction_class": "ithar|Cruiser",
+			"height": 10.7581195831299,
+			"length": 23.2
+		},
+		{
+			"code": "I16_11",
+			"faction_class": "ithar|Carrier",
+			"height": 14.4062509536743,
+			"length": 26.4
+		},
+		{
+			"code": "I8_37",
+			"faction_class": "ithar|Ark",
+			"height": 3.26412153244019,
+			"length": 41.6
+		},
+		{
+			"code": "D9_23",
+			"faction_class": "deathless|Frigate",
+			"height": 2.50373530387878,
+			"length": 10.4
+		},
+		{
+			"code": "D20_23",
+			"faction_class": "deathless|Destroyer",
+			"height": 3.52175831794739,
+			"length": 15.2
+		},
+		{
+			"code": "D21_23",
+			"faction_class": "deathless|Cruiser",
+			"height": 11.8373403549194,
+			"length": 23.2
+		},
+		{
+			"code": "D22_23",
+			"faction_class": "deathless|Tomb-ark",
+			"height": 51.1292686462402,
+			"length": 44.8
+		}
+	]
+}

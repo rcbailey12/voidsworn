@@ -937,9 +937,9 @@ class Kit:
                                   weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
 
-    def core(self, fid, centre, r, src='picture', note='', inv=()):
+    def core(self, fid, centre, r, src='picture', note='', inv=(), part=None):
         p = Vector(centre)
-        part = self.emit(fid, HP.core_cage(r), HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
+        part = self.emit(fid, part if part is not None else HP.core_cage(r), HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
         self.features.append(dict(id=fid, kind='core', what='caged core of trapped light, %.1f across' % (2 * r), count=1, pos=tuple(p), aim=None,
                                   src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 

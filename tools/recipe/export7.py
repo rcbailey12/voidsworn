@@ -7,7 +7,7 @@
 #                          (issue 560) is its own child node turret_<n> at its ring centre (+Y the turning axis, -Z the rest aim),
 #                          with its turning mesh turret_<n>_turn and its muzzles (hp_w) under it; the ring stays in the ship mesh
 #   <CODE>_base.jpg, <CODE>_orm.jpg, <CODE>_normal.jpg          the hull atlas (albedo sRGB; R occlusion, G roughness, B metal; normal)
-#   <CODE>_parts_base.jpg, <CODE>_parts_orm.jpg                 the parts atlas
+#   <CODE>_parts_base.jpg, <CODE>_parts_orm.jpg, <CODE>_parts_normal.jpg  the sheet parts atlas
 #   <CODE>_export.json     what was written: every hard point, the weapon slots, triangles, every file with its size and sha256
 # Hard points (frame: +X bow, +Y up, -Z port, as every game ship):
 #   hp_w<slot>_<weapon>_<arc>_<n>   one per weapon muzzle of every socket that has a "slot" in the ship json (the barrel tips and
@@ -334,11 +334,11 @@ maps = {}
 if UNBAKED:      # test only: the plain role materials set before the join (<CODE>_hull, <CODE>_parts) so the glb still loads; no maps
     for s in J.material_slots: s.material.use_nodes = True
 else:
-    tex = [s.material for s in J.material_slots if s.material and s.material.get('p3_textured') and s.material.name not in destruction['interior_materials']]
-    hullm = next((m for m in tex if any(n.type == 'NORMAL_MAP' for n in m.node_tree.nodes)), None)
-    partm = next((m for m in tex if m is not hullm), None)
-    if hullm is None or partm is None: die('this blend is not baked (no hull and parts atlas materials): run stage 5 first, or pass unbaked=1 for a geometry test')
-    for m, pre in ((hullm, CODE), (partm, CODE + '_parts')):
+    for objs, pre in ((hull_src, CODE), (part_src, CODE + '_parts')):
+        atlas = {m for o in objs for m in o.data.materials if m and m.get('p3_textured')}
+        if len(atlas) != 1:
+            die(f'{pre} needs one baked atlas material, found {len(atlas)}: run stage 5 first')
+        m = atlas.pop()
         m.name = pre if pre != CODE else CODE + '_hull'; nt = m.node_tree
         sep = next(n for n in nt.nodes if n.type == 'SEPARATE_COLOR')
         if not any(n.type == 'GROUP' for n in nt.nodes):
@@ -464,6 +464,16 @@ for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruc
     if mat.get('name') == CODE + '_glow':      # issue 601: the engine glow's own emission map (graded throat, hot spots, soot)
         use(mat, 'emission', mat.get('emissiveTexture')); continue
     pbr = mat.get('pbrMetallicRoughness', {})
+    if not UNBAKED and ship.get('bake') == 'stack' and mat['name'] in (CODE + '_hull', CODE + '_parts'):
+        orm = pbr.get('metallicRoughnessTexture')
+        ao = mat.get('occlusionTexture')
+        normal = mat.get('normalTexture')
+        if not (orm and ao and normal):
+            die(f'{mat["name"]} needs packed occlusion, roughness and metal plus a detail normal')
+        if any(pbr.get(key, 1.0) != 1.0 for key in ('metallicFactor', 'roughnessFactor')):
+            die(f'{mat["name"]} scales the baked roughness or metallic map')
+        if g['textures'][orm['index']]['source'] != g['textures'][ao['index']]['source']:
+            die(f'{mat["name"]} must use the same ORM image for occlusion, roughness and metal')
     use(mat, 'base', pbr.get('baseColorTexture')); use(mat, 'orm', pbr.get('metallicRoughnessTexture')); use(mat, 'orm', mat.get('occlusionTexture'))
     use(mat, 'normal', mat.get('normalTexture'))
     if mat.get('name') in destruction['interior_materials']: use(mat, 'emission', mat.get('emissiveTexture'))
@@ -472,6 +482,8 @@ for i, im in enumerate(g.get('images', [])):
     new = role[i] + '.jpg'; shutil.copyfile(os.path.join(tmp, im['uri']), os.path.join(OUT, new)); im['uri'] = new; im['name'] = role[i]
 if not UNBAKED:
     need = {CODE + '_base', CODE + '_orm', CODE + '_normal', CODE + '_parts_base', CODE + '_parts_orm'}
+    if ship.get('bake') == 'stack':
+        need.add(CODE + '_parts_normal')
     if not need.issubset(set(role.values())): die(f'the map set is not the format\'s: wrote {sorted(role.values())}, need {sorted(need)}')
 del g['buffers'][0]['uri']; g['buffers'][0]['byteLength'] = len(blob)
 g.setdefault('asset', {}).setdefault('extras', {}).update(recipe='tools/recipe/7_export.bat', ship=ship['ship'], cell=ship.get('cell'), game_ship=GAME,

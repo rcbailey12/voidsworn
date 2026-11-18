@@ -55,6 +55,16 @@ if (process.platform !== 'win32') {
   process.exit(0);
 }
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner818 '));
+const pidFiles = [], helpers = [];
+function alive(pid) {
+  try { process.kill(pid, 0); return true; }
+  catch (e) { if (e.code === 'ESRCH') return false; throw e; }
+}
+function agentPids() {
+  return pidFiles.flatMap(file => fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trim().split(/\r?\n/).filter(Boolean).map(Number) : []);
+}
+// A failing assertion or a timed-out PowerShell must not leave the very processes this check is testing.
+try {
 const script = path.join(root, 'probes.ps1');
 fs.writeFileSync(script, `
 $ErrorActionPreference = 'Stop'
@@ -123,31 +133,61 @@ Write-Output 'PASS Windows file, commit, log and resume probes'
 const p = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, pc, root], {
   encoding: 'utf8', windowsHide: true, timeout: 60000
 });
+helpers.push(p.pid);
 assert.equal(p.status, 0, p.stdout + p.stderr + String(p.error || ''));
 pass('Windows real file timestamps, commit-only progress, log bytes, housekeeping exclusion and resume note');
 
 // Actual command launch, process-tree termination, stop reason and resume note. All output stays in TEMP.
-for (const busy of [false, true]) {
-  const folder = path.join(root, busy ? 'busy' : 'silent');
+for (const scenario of ['silent', 'busy', 'lying-killer', 'launcher-exit']) {
+  const busy = scenario === 'busy';
+  const folder = path.join(root, scenario);
   fs.mkdirSync(folder);
   const fake = path.join(folder, 'agent.js');
+  const pidFile = path.join(folder, 'pids.txt'); pidFiles.push(pidFile);
   const cleanChild = "if (['TMO_REPO','TMO_OUT','TMO_LOG','TMO_ERR_LOG'].some(k=>process.env[k])) throw Error('watch settings leaked to child'); ";
-  fs.writeFileSync(fake, cleanChild + (busy ? "console.log('working'); setInterval(()=>console.log('still working'),100);" : "console.log('last action: waiting'); setInterval(()=>{},100);"));
+  const recordPid = `require('fs').appendFileSync(${JSON.stringify(pidFile)}, process.pid+'\\n'); `;
+  // Busy and early-exit launchers also own a child and a grandchild, not merely a single sleeping process.
+  const leaf = path.join(folder, 'leaf.js'), child = path.join(folder, 'child.js');
+  fs.writeFileSync(leaf, recordPid + 'setInterval(()=>{},100);');
+  fs.writeFileSync(child, recordPid + `require('child_process').spawn(process.execPath,[${JSON.stringify(leaf)}],{stdio:'inherit',windowsHide:true}); setInterval(()=>{},100);`);
+  const nested = ['busy', 'launcher-exit'].includes(scenario) ? `require('child_process').spawn(process.execPath,[${JSON.stringify(child)}],{stdio:'inherit',windowsHide:true,detached:true}); ` : '';
+  fs.writeFileSync(fake, cleanChild + recordPid + nested + (busy ? "console.log('working'); setInterval(()=>console.log('still working'),100);" : "console.log('last action: waiting'); setInterval(()=>{},100);") +
+    (scenario === 'launcher-exit' ? 'setTimeout(()=>process.exit(7),1500);' : ''));
+  const killer = path.join(folder, 'taskkill.bat');
+  fs.writeFileSync(killer, '@echo off\r\necho stub taskkill ' + (busy ? 'Access denied' : 'false success') + '\r\nexit /b ' + (busy ? '5' : '0') + '\r\n');
   const log = path.join(folder, 'log.txt');
   const fd = fs.openSync(log, 'w');
   const reason = busy ? 'CEILING' : 'STALLED after 0.02 min';
-  const run = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'run_timeout.ps1')], {
+  let run;
+  try { run = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'run_timeout.ps1')], {
     cwd: folder, env: { ...process.env, TMO_ARGS: `4 "${process.execPath}" "${fake}"`,
       TMO_REPO: path.join(root, 'repo'), TMO_OUT: folder, TMO_LOG: log, TMO_ERR_LOG: '',
-      STALL_MIN: '0.02', PC_RUNNER_TEST: '1', PC_TEST_POLL_MS: '100', PC_TEST_SCAN_S: '0.1', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts.log') },
-    stdio: ['ignore', fd, fd], windowsHide: true, timeout: 20000
-  });
-  fs.closeSync(fd);
-  assert.equal(run.status, 124, fs.readFileSync(log, 'utf8') + String(run.error || ''));
+      STALL_MIN: scenario === 'launcher-exit' ? '1' : '0.02', PC_RUNNER_TEST: '1', PC_TEST_POLL_MS: '100', PC_TEST_SCAN_S: '0.1', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts.log'),
+      PC_TEST_TASKKILL: ['busy', 'lying-killer'].includes(scenario) ? killer : '' },
+    stdio: ['ignore', fd, fd], windowsHide: true, timeout: 30000
+  }); } finally { fs.closeSync(fd); }
+  helpers.push(run.pid);
+  const output = fs.readFileSync(log, 'utf8');
+  assert.equal(run.status, scenario === 'launcher-exit' ? 7 : 124, output + String(run.error || ''));
+  const pids = fs.readFileSync(pidFile, 'utf8').trim().split(/\r?\n/).map(Number);
+  assert.equal(pids.length, ['busy', 'launcher-exit'].includes(scenario) ? 3 : 1);
+  if (scenario === 'launcher-exit') {
+    assert(!alive(pids[0]) && pids.slice(1).every(alive), 'ordinary queue launchers must be able to leave background work running');
+    for (const pid of pids.slice(1).reverse()) process.kill(pid, 'SIGKILL');
+    const deadline = Date.now() + 5000;
+    while (pids.some(alive) && Date.now() < deadline) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+    assert(pids.every(pid => !alive(pid)), 'background fixture cleanup failed');
+    pass('normal launcher keeps exit 7 and background jobs; the test reaps its child and grandchild'); continue;
+  }
+  assert(pids.every(pid => !alive(pid)), scenario + ': fake agents survived: ' + pids);
+  const verified = output.match(/kill verified: all (\d+) processes gone \(PIDs ([\d, ]+)\)/);
+  assert(verified && Number(verified[1]) >= pids.length && pids.every(pid => verified[2].split(', ').map(Number).includes(pid)), output);
+  if (busy) assert(/taskkill PID \d+ exit 5:/.test(output) && output.includes('Access denied'), output);
+  if (scenario === 'lying-killer') assert(/taskkill PID \d+ exit 0:/.test(output), output);
   assert.equal(fs.readFileSync(path.join(folder, 'stop_reason.txt'), 'utf8'), reason);
   const note = fs.readFileSync(path.join(folder, 'resume.txt'), 'utf8');
   assert(note.includes(reason) && note.includes(busy ? 'still working' : 'last action: waiting'));
-  pass(`Windows ${busy ? 'busy ceiling' : 'silent stall'} stops real fake process and saves reason and tail`);
+  pass(`Windows ${scenario}: verifies every agent is gone, saves reason and tail, logs taskkill and fallback result`);
 }
 const timeoutLog = fs.readFileSync(path.join(root, 'timeouts.log'), 'utf8');
 assert(timeoutLog.includes('CEILING') && timeoutLog.includes('STALLED after 0.02 min'));
@@ -159,6 +199,17 @@ const normal = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'B
   encoding: 'utf8', windowsHide: true, timeout: 15000
 });
 assert.equal(normal.status, 7, normal.stdout + normal.stderr);
+helpers.push(normal.pid);
 pass('ordinary commands keep their exit code and explicit limit, child commands cannot inherit the agent watch');
+} finally {
+  for (const pid of [...agentPids().reverse(), ...helpers].filter(Boolean)) {
+    if (alive(pid)) process.kill(pid, 'SIGKILL');
+  }
+  // Wait for forced cleanup on failure too. Never trust a kill's return value alone.
+  const deadline = Date.now() + 5000;
+  while (agentPids().some(alive) && Date.now() < deadline) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+  assert(agentPids().every(pid => !alive(pid)), 'test cleanup leaked fake agents');
+}
+pass('final cleanup asserts none of this test run\'s fake agents is alive');
 console.log('Evidence: ' + root);
 console.log(`PASS runner stall checks (${passed} groups)`);

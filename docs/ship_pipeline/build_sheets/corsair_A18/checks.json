@@ -1,24 +1,22 @@
 {
  "length_from_game": 6.5,
  "model_length": 6.507,
- "length_side": 6.537,
- "length_top": 6.525,
- "length_disagreement_percent": 0.19,
+ "length_side": 6.55,
+ "length_top": 6.55,
+ "length_disagreement_percent": 0.0,
  "model_vs_game_percent": 0.11,
- "beam_top": 3.2,
- "beam_bow": 3.2,
+ "beam_top": 3.225,
+ "beam_bow": 3.225,
  "beam_disagreement_percent": 0.0,
- "height_side": 2.375,
- "height_bow": 2.362,
- "height_disagreement_percent": 0.19,
- "widest_at_station_percent": 80.0,
+ "height_side": 2.4,
+ "height_bow": 2.4,
+ "height_disagreement_percent": 0.0,
+ "widest_at_station_percent": 80.1,
  "hull_beam": 2.04,
  "hull_depth": 1.01,
  "L_to_B_hull": 3.19,
  "L_to_H_hull": 6.44,
  "PASS": true,
- "outline_iou_percent": 76.2,
- "mass_outline_iou_percent": 76.7,
  "concept_camera": {
   "az": 61.864897954377724,
   "el": 28.00962173142033,
@@ -28,5 +26,5 @@
   "sx": -0.0049928349120777205,
   "sy": 0.09290790784802992
  },
- "prow_overhang": 0.19
+ "outline_note": "Historical outline record retained in README; not rescored for issue 922."
 }

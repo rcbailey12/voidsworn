@@ -32,11 +32,11 @@ HULL = [
 ]
 PL = dict(size=(0.3, 0.75), thick=(0.03, 0.1), skip=0.1, stack=0.45, mats={'soot': 5, 'iron': 5, 'pale': 2, 'rust': 2, 'soot2': 2})
 # the top blocks, bow to stern: (name, x fore, x aft, half-beam at the top, half-beam at the base, top, front slope, y offset)
-# they step up toward the stern (concept side view: 0.47, 1.2, 1.6, 1.73, 1.87), with gaps between them and undercut bases
+# they step up toward the stern; the rocket fore block joins the neck and ramp, and the ramp joins the mid block (R289)
 TOP = [
     ('U1 neck block', 4.0, 2.5, 1.5, 1.4, 1.12, 0.25, 0.0),
-    ('U2 fore block', 2.35, 0.85, 1.85, 1.7, 0.9, 0.35, 0.08),
-    ('U3 ramp block', 0.75, -0.15, 1.8, 1.75, 1.2, 0.7, -0.05),
+    ('U2 fore block', 2.78, 0.6, 1.95, 1.8, 1.56, 0.35, 0.08),
+    ('U3 ramp block', 0.75, -0.4, 1.8, 1.75, 1.2, 0.2, -0.05),
     ('U4 mid block', -0.28, -1.85, 2.03, 1.75, 1.3, 0.25, 0.1),
     ('U5 saddle block', -1.98, -3.05, 1.7, 1.65, 1.4, 0.2, -0.12),
     ('U6 aft block', -3.18, -5.55, 2.1, 1.85, 1.52, 0.3, 0.05),
@@ -96,11 +96,22 @@ def build(K):
                 (x0 - slope * 0.7, hwt, hwt, base, top, 0.18, max(0.0, hwt - hwb), yo),
                 (x1 + 0.12, hwt, hwt, base, top, 0.18, max(0.0, hwt - hwb), yo),
                 (x1, hwt - 0.12, hwt - 0.12, base, top - 0.12, 0.12, max(0.0, hwt - hwb), yo)]
+        if nm.startswith('U2 '):
+            # R292, issue 876 run 2: a broad magazine block, with two real terraces down to the neck.
+            # The rear steps meet U3 without lifting the fixed ramp hatch or any weapon or interior.
+            secs = [(x, hw, hw, base, z, ch, max(0.0, hw - hwb), yo) for x, hw, z, ch in (
+                (x0, 1.55, 1.12, 0.12), (2.58, 1.68, 1.12, 0.12),
+                (2.54, 1.76, 1.32, 0.14), (2.27, 1.88, 1.32, 0.14),
+                (2.22, hwt, top, 0.18), (0.95, hwt, top, 0.18),
+                (0.90, 1.88, 1.4, 0.16), (0.80, 1.8, 1.4, 0.16),
+                (0.76, 1.8, 1.2, 0.12), (x1, 1.68, 1.08, 0.12))]
         K.mass(nm, K.loft('A17_' + nm.split()[0], secs, 'soot', plates=dict(PL, seed=zlib.crc32(nm.encode()) % 997, faces=[0, 1, 2, 3], size=(0.3, 0.7))),
                'soot with dried-blood patches', note='stepped top block, top %.2f, undercut base' % top)
+    K.box('A17_spine_step_lower', 2.60, 2.76, -1.28, 1.44, 1.11, 1.16, 'iron', ch=0.02)
+    K.box('A17_spine_step_upper', 2.30, 2.52, -1.45, 1.61, 1.31, 1.37, 'iron', ch=0.02)
     K.box('A17_red_crest', -3.6, -4.9, -1.1, 0.4, 1.5, 1.54, 'blood')
     for side in (1, -1):
-        K.slit('SL%d' % (1 if side > 0 else 2), (0.47, 0.7 * side - 0.05, 1.02), (0.65, 0, 0.76), 0.55, 0.12, inv='hump', note='slit in the ramp block slope')
+        K.slit('SL%d' % (1 if side > 0 else 2), (0.25, 1.8 * side - 0.05, 0.92), (0, side, 0), 0.55, 0.12, inv='hump', note='slit on the raised ramp block flank, clear of the joined fore block (R289)')
         K.hatch('HS%d' % (1 if side > 0 else 2), (-4.35, 2.15 if side > 0 else -2.05, 0.98), (0, side, 0), 0.4, 0.5, inv='stern_hatch',
                 note='hatch on the aft block flank')
     K.mass('Engine block', K.box('A17_engblock', -6.0, -5.4, -2.0, 2.0, -1.35, 1.35, 'soot', ch=0.22, plates=dict(PL, seed=57, faces=[0, 1, 2, 3, 4, 5, 6, 7])), 'soot, steel')
@@ -121,7 +132,7 @@ def build(K):
         K.patch('PT%d' % (6 + i), (-2.5, yf + 0.03 * side, 0.9), (0, side, 0), 0.5, 0.36, ang=0.25 * side, lift=0.1, m='rust', inv='patches')
     for side in (1, -1):
         for j, (x, w) in enumerate(((1.9, 0.8), (1.25, 0.55))):
-            K.patch('RS%d%s' % (j, 'p' if side > 0 else 's'), (x, 1.4 * side, 0.91), (0, 0.0, 1.0), w, 0.3, ang=0.04 * side, lift=0.02, t=0.04, m='blood', inv='rust_plates')
+            K.patch('RS%d%s' % (j, 'p' if side > 0 else 's'), (x, 1.4 * side, tops['U2'][5] + 0.01), (0, 0.0, 1.0), w, 0.3, ang=0.04 * side, lift=0.02, t=0.04, m='blood', inv='rust_plates')
     K.mark('rust_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
 
     # ---------------- head fittings: scoop drums, ears, grabber arms, hoses ----------------
@@ -267,6 +278,10 @@ def build(K):
              'R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532)')
     K.change('Mid turrets P2 and S2 rest at 35 degrees (were 25)', 'their data.js arc is 30 to 150; a rest outside it failed the export check (A17 build, issue 532)')
     K.change('Rooms in the top blocks kept under their roofs; the top deck lowered to 0.3', 'about 70 inside triangles sat outside the intact plating, above the low top blocks and in the gaps between them (issue 532 note from PR 608)')
+    K.change('Rocket fore block raised and widened, joining the neck and ramp; the ramp extends into the mid block',
+             'R289 (issue 876): restore the concept\'s continuous raised spine under the pod. Outer blocks, red roof plates and two ramp slits follow the raised support; the fitted insides, rack plinth, launcher and every weapon stay in place')
+    K.change('Rocket support roof raised from 1.2 to 1.56, with broad plated terraces at 1.12 and 1.32 toward the foredeck and a 1.4 rear step into the ramp',
+             'R292 (issue 876 run 2): run 1\'s support still read too slight; the concept\'s broad stepped spine must read from the beauty camera and side. Only the outer support and its roof plates change; the weapons and fitted interiors remain fixed')
     K.open_item('Belly detail between the grabber arm housings and the engines is designed here; the picture does not show the underside')
 
     # ---------- the fit report's fix column (round 2 clashes) ----------
@@ -280,3 +295,5 @@ def build(K):
     K.fix('SENSOR: P1 and S1 aiming through the ear dishes D1 and D2 at their forward bearings', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): the neck turret barbettes raised 0.14 (top 1.78 to 1.92), so the lowest line of fire of P1 and S1 passes over the ears')
     K.fix('SENSOR: T1 (flak, all round) aiming through the saddle antennas AN1 and AN2', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.55 barbette and the antennas cut (1.3 to 0.75, 1.0 to 0.6 tall), so the crest gun fires over them')
     K.fix('Crest and belly turret housings sunk in the crest and the belly', 'turrets sit on their rings on block tops and the belly band, plates cleared under each mount')
+    K.fix('Rocket pod reads as a narrow plinth above a sunken foredeck, with gaps to the next blocks',
+          'R289 and R292: the broad fore block rises to 1.56 with plated steps down to the neck and ramp; the ramp overlaps the mid block, with the insides kept at their fitted positions')

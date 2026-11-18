@@ -1,0 +1,77 @@
+{
+  "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "SF3_R302_camera170.jpg",
+  "date": "2026-11-17T07:37:22Z",
+  "sources": [
+    {
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    },
+    {
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "before_battle.png",
+      "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-17T00:09:45Z",
+      "image_sha256": "e0160284a1181827549ac013398cd3752e0c1879091b64b53f24be2ed50a4f07",
+      "sources": [
+        {
+          "source_commit": "3bdea48f56dcd4f0f7d871d4da2a642024bd73b6",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "after_battle.png",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+      "stage": "sheet built",
+      "date": "2026-11-17T07:33:50Z",
+      "image_sha256": "e77394b698415956e2e29d5d21b1559eaf1c06069d7702218dfa713c537c72f2",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    124
+  ],
+  "strip_sha256": [
+    "9d0e5ff27e628cb0aea3a85749160264b9086637e8ef236c6810b21a1be965a6"
+  ],
+  "stamp_template_sha256": "337911d4f6592aece3b2a827f9c21c84130b1247ee5d1c863981ce59e4ec0beb",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAAB8CAIAAADxfb18AAAB8UlEQVR4nO3VMQ0AIADAMEALwb9Efgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04AjJoL8jYBZiUOf2EAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "9b44df9f74e78f900e2b3e2462c39eb342715d9653d9982e5809c641ef9b1070"
+}

@@ -1,0 +1,71 @@
+{
+  "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "H9_23_main_egg_fitted_c60.png",
+  "date": "2026-11-17T05:52:28Z",
+  "sources": [
+    {
+      "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "hegemony_shield__c60.png",
+      "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-17T05:41:11Z",
+      "image_sha256": "2e543ef031fcc4a61e7fa122164844fe9033dba02b7417313d203202ad5bafb5",
+      "sources": [
+        {
+          "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "hegemony_shield__c60.png",
+      "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-17T05:44:16Z",
+      "image_sha256": "a8a56651f5940bee081afc4f5e3bca4f56239e7c6caa568a752b8e420389e0e1",
+      "sources": [
+        {
+          "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    504,
+    720
+  ],
+  "strip_size": [
+    504,
+    98
+  ],
+  "strip_sha256": [
+    "42548f4560b494ff680d117acc769499e182a72a85e916bf1c55287a0e541202"
+  ],
+  "stamp_template_sha256": "42548f4560b494ff680d117acc769499e182a72a85e916bf1c55287a0e541202",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAIAAAAzwFa5AAABeklEQVR4nO3UMQ0AIQDAQHgFLKz4l/kqCElzp6BT59pnAND1vQ4A4C6jB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gNH2A6fRAQcjf2q9AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "a30c54fd2e1c53e5412f9a622805aaf645e1489d3fcc03909fc1c305d87aa7a7"
+}

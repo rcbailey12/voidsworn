@@ -1,0 +1,181 @@
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x013 (enemy d_jackal)
+  state.units[8].hp: 85 -> 77
+  later changed records: 326; total records: 306 -> 327
+FAIL battle s15
+  turn 0, round 1, after tick player; unit x010 (enemy d_jackal)
+  state.units[5].hp: 123 -> 112
+  later changed records: 167; total records: 168 -> 148
+FAIL battle s19
+  turn 0, round 1, after tick player; unit x010 (enemy d_jackal)
+  state.units[5].hp: 136 -> 124
+  later changed records: 245; total records: 246 -> 212
+FAIL battle s28
+  turn 0, round 1, after tick player; unit x08 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 316; total records: 285 -> 317
+FAIL battle s39
+  turn 0, round 1, after tick player; unit x014 (enemy d_jackal)
+  state.units[7].hp: 93 -> 85
+  later changed records: 470; total records: 471 -> 450
+FAIL battle s44
+  turn 0, round 1, after tick player; unit x07 (enemy d_jackal_h)
+  state.units[3].hp: 112 -> 95
+  later changed records: 172; total records: 102 -> 173
+FAIL battle t_ecl_restoreninth
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 80; total records: 77 -> 81
+FAIL battle t_ecl_restoredbeyond
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 133; total records: 134 -> 120
+FAIL battle t_ecl_copiescontribute
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 76; total records: 77 -> 72
+FAIL battle t_ecl_tenthframe
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 114; total records: 112 -> 115
+FAIL battle t_ecl_earliercopy
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 93; total records: 94 -> 87
+FAIL battle t_ecl_arcswarm
+  turn 0, round 1, after tick player; unit x07 (player d_jackal)
+  state.units[2].hp: 110 -> 100
+  later changed records: 202; total records: 203 -> 193
+FAIL battle t_ecl_noonchoice
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 57; total records: 58 -> 52
+FAIL battle t_ecl_copyfires
+  turn 0, round 1, after tick player; unit x07 (player d_jackal)
+  state.units[2].hp: 110 -> 100
+  later changed records: 90; total records: 91 -> 55
+FAIL battle t_ecl_coronashadow
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 60; total records: 61 -> 56
+FAIL battle t_ecl_everyframe
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 69; total records: 56 -> 70
+FAIL battle t_ecl_noonrepeat
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 69; total records: 70 -> 67
+FAIL battle t_ecl_onesuncopy
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 66; total records: 67 -> 50
+FAIL battle t_ecl_copiedbehind
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 59; total records: 60 -> 56
+FAIL battle t_ecl_unseenarchive
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 73; total records: 74 -> 53
+FAIL battle t_ecl_uncopiedtarget
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 89; total records: 90 -> 88
+FAIL battle t_ecl_iterationkill
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 59; total records: 60 -> 51
+FAIL battle t_ecl_silentarchive
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 78; total records: 79 -> 77
+FAIL battle t_ecl_outshadow
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 77; total records: 78 -> 74
+FAIL battle t_ecl_longcopy
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 67; total records: 68 -> 63
+FAIL battle t_ecl_platesshadow
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 87; total records: 88 -> 81
+FAIL battle t_ecl_twicerestored
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 113; total records: 112 -> 114
+FAIL battle t_ecl_layersshift
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 80; total records: 81 -> 76
+FAIL battle t_ecl_nolayer
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 119; total records: 120 -> 109
+FAIL battle t_ecl_stillness
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 175; total records: 176 -> 156
+FAIL battle t_ecl_restoredfleet
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 111; total records: 110 -> 112
+FAIL battle t_ecl_iterationswap
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 55; total records: 56 -> 49
+FAIL battle t_ecl_flagshipindex
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 104; total records: 85 -> 105
+FAIL battle t_ecl_framezero
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 125; total records: 126 -> 114
+FAIL battle t7b_ecl_formation_a
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 104; total records: 105 -> 88
+FAIL battle t7b_ecl_formation_b
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 41; total records: 42 -> 34
+FAIL battle t7b_ecl_formation_c
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 104; total records: 105 -> 88
+FAIL battle t7b_ecl_formation_d
+  turn 0, round 1, after tick player; unit x06 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 68; total records: 47 -> 69
+FAIL battle t7b_ecl_shadow
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 86; total records: 87 -> 71
+FAIL battle t7b_ecl_wall
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 132 -> 120
+  later changed records: 120; total records: 121 -> 111
+FAIL battle t7b_ecl_archive
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 95; total records: 92 -> 96
+FAIL battle t7b_ecl_iterfire
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 73; total records: 74 -> 73
+FAIL battle t7b_ecl_triage
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 123; total records: 124 -> 95
+FAIL battle t7b_ecl_targetarchived
+  turn 0, round 1, after tick player; unit x05 (player d_jackal)
+  state.units[1].hp: 110 -> 100
+  later changed records: 39; total records: 40 -> 32
+FAIL file threat_s19.json
+  map.1.-1,12: "4034e147ae147ae1" -> "4052451eb851eb85"
+FAIL: saved Godot results; 280 battles checked, 44 changed, 1 other files changed, 45 failures; 18.382 s

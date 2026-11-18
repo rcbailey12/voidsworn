@@ -22,8 +22,9 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8b_2026_11/chorus_C10_sheet.jp
 # the true views on the 8b sheet (x0, y0, x1, y1), bow on the LEFT already; the escort (right) is a separate shape, left out
 CONCEPT_VIEWS = dict(top=dict(box=(75, 30, 1840, 600), largest=True, flip=False), side=dict(box=(65, 600, 1860, 1195), largest=True, flip=False))
 CROPS = [('bow (the double mouth)', (90, 480, 1000, 1010)), ('midships (crown and sacs)', (560, 60, 1450, 960)), ('stern (vent crown and membranes)', (1150, 30, 1920, 700))]
-SHEET = dict(version=5, round='the recipe (issue 623)', date='2026-11-13', blend='opus623\\chorus_C10',
-             before='First full layout', before_note='The first complete C10 layout with the Chorus kit, run through the check before any fix.')
+SHEET = dict(version=7, round='uneven folded flesh lips (issue 921 run 2, R306)', date='2026-11-17', blend='issue921\\chorus_C10',
+             blend_where='Rebuild from tools/blender/build_sheets/ships/chorus_C10.py on CPU; current checks are in issue921_proof.json',
+             before='Main 51ec81bb; run 1 8e9def50', before_note='Main and run 1 rebuilt on this PC at the same cameras and light.')
 
 PEXP = (2.3, 2.0)   # a soft back, a round belly: no flat top, no parallel sides (the Board on PR 628)
 WOBBLE = (0.12, 1.3)   # the body's unevenness: no flat faces and no straight lines
@@ -65,8 +66,172 @@ def dense(key, step=0.4):
 
 
 HULL = dense(KEY)
-PL = dict(size=(0.5, 1.1), thick=(0.02, 0.045), skip=0.18, stack=0.0, mats={'flesh': 5, 'hide': 3, 'flesh2': 2, 'scar': 0.35},
-          rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.03)
+SCARS = ((9.3, 1.15, 0.42, 1), (6.4, 1.45, 0.55, -1), (3.7, 0.95, 0.45, 1), (-0.4, 1.3, 0.5, -1),
+         (-2.6, 0.38, 0.4, 1), (-4.6, 1.2, 0.48, -1), (-6.0, 0.5, 0.36, 1), (5.9, -0.15, 0.4, -1))
+
+
+def skin_sections():
+    """Subdivide the original loft without changing its section curve or insides."""
+    out = []
+    for a, b in zip(HULL, HULL[1:]):
+        n = max(1, math.ceil((a[0] - b[0]) / 0.1))
+        out.extend(tuple(u + (v - u) * k / n for u, v in zip(a, b)) for k in range(n))
+    return out + [HULL[-1]]
+
+
+def flesh_relief(x, th):
+    """Continuous folded hide, not a layer of pads. Lengthwise tension wrinkles
+    sweep into the shoulders and sag round the brood sacs. These are geometry;
+    pore grain, colour, wetness and fine scar mottling belong to the future stack.
+    Keep the folds shallow at the widest line so the accepted outline carries.
+    """
+    side = abs(math.cos(th))
+    flank = side ** 0.7
+    phase = 23 * th + 0.6 * x + 1.7 * math.sin(x * 0.8 + 6 * th) + 0.5 * math.sin(1.9 * x - 9 * th)
+    long_fold = (0.5 + 0.5 * math.sin(phase)) ** 4
+    fine_fold = 0.14 * math.sin(45 * th + 1.8 * x + 2 * math.sin(phase * 0.4))
+    strength = (0.075 + 0.10 * flank) * min(1.0, max(0.15, (x + 10.2) / 3))
+    # Leave both pairs of siphons' embedded collars clear of the new folds.
+    angle = math.atan2(math.sin(th), abs(math.cos(th)))
+    clear = 1 - math.exp(-((x + 7.4) / 0.65) ** 2 - ((angle - 0.55) / 0.3) ** 2)
+    clear *= 1 - math.exp(-((x - 8.6) / 0.7) ** 2 - ((angle + 0.45) / 0.35) ** 2)
+    relief = clear * strength * (long_fold + fine_fold - 0.12)
+    for sx, st, sr, ss in SCARS:
+        angle = th - (st if ss > 0 else math.pi - st)
+        angle = math.atan2(math.sin(angle), math.cos(angle))
+        u = (x - sx) / (sr * 1.35)
+        v = (2.5 * angle - 0.06 * math.sin(u * 4)) / 0.075
+        relief -= 0.075 * math.exp(-u ** 6 - v * v)
+    return relief
+
+
+def open_maw(HP, seed):
+    """C10's held-open folded mouth, assembled from the Chorus throat anatomy.
+    The bespoke lip replaces the closing coils; the bore and working organs keep
+    their kit roles. No mesh spans the opening in front of the recessed gland.
+    """
+    from mathutils import Vector
+    L, r = 2.65, 1.3
+    part = HP.spinal(L, r=r, style='folded', rolls=0, teeth=9, gland_at=0.38, seg=48, seed=seed)
+    part.comps = [c for c in part.comps if c['name'] not in ('root', 'lip0') and not c['name'].startswith('bore')]
+    # Continuous, slightly wrinkled wall from the opening back to the muscle root.
+    V, F = HP.revolve([(-0.7, 1.6), (0, 1.78), (0.8, 1.7), (1.6, 1.55), (L - 0.25, 1.44),
+                       (L - 0.12, 1.32), (L - 0.23, 1.22)], 96)
+    V = [(x + 0.035 * math.sin(5 * math.atan2(z, y) + 2 * x),
+          y * (1 + 0.055 * math.sin(17 * math.atan2(z, y) + 2.7 * x)),
+          z * (1 + 0.055 * math.sin(17 * math.atan2(z, y) + 2.7 * x))) for x, y, z in V]
+    part.add('root', 'mount', 'flesh', (V, F))
+    # One continuous funnel, with material bands sharing vertices at their ends.
+    # No overlapping bore liners, struts across the opening or luminous front cap.
+    for mat_, lo, hi in (('tissue', 0, 0.4), ('bilewet', 0.4, 0.7), ('gland', 0.7, 1)):
+        V, F = [], []
+        for j in range(13):
+            t = lo + (hi - lo) * j / 12
+            x = (L - 0.23) * (1 - t) + L * 0.38 * t
+            for k in range(96):
+                a = 2 * math.pi * k / 96
+                rr = (1.22 * (1 - t) + 0.78 * t) * (1 + 0.045 * math.sin(13 * a + t * 5 + seed) * math.sin(math.pi * t))
+                V.append((x + 0.035 * math.sin(5 * a + 2 * x) * (1 - t), rr * math.cos(a), rr * math.sin(a)))
+        for j in range(12):
+            for k in range(96):
+                a, b = j * 96 + k, j * 96 + (k + 1) % 96
+                F.append((a, b, b + 96, a + 96))
+        part.add('bore_' + mat_, 'mount', mat_, (V, F))
+    # A continuous cheek-to-throat sheet, rather than a tube round the mouth.
+    # Its back edge is buried in the existing cheek and its inner edge meets the
+    # unchanged bore. Broad unequal gathers make the upper lip and jowls heavy;
+    # the lower lip stays thinner. There is no repeated cross-rim rib geometry.
+    def bump(a, centre, width):
+        delta = math.atan2(math.sin(a - centre), math.cos(a - centre))
+        return math.exp(-(delta / width) ** 2)
+
+    phase = 0.43 if seed == 3 else -0.62
+    V, F = [], []
+    bands = 48
+    around = 160
+    for j in range(bands + 1):
+        t = j / bands
+        # The roll turns back into the mouth after its forward crest.
+        xx = 0.66 + 2.05 * math.sin(t * math.pi * 0.67)
+        rr = 1.7 - 0.48 * t + 0.20 * math.sin(math.pi * t)
+        env = math.sin(math.pi * t) ** 1.1
+        for k in range(around):
+            a = 2 * math.pi * k / around
+            hood = bump(a, 1.4 + phase * 0.4, 0.8)
+            cheek = bump(a, 0.08 + phase, 0.55) + 0.75 * bump(a, 2.95 + phase * 0.4, 0.65)
+            gather = (0.24 * hood + 0.13 * cheek + 0.055 * math.sin(3 * a + phase)
+                      + 0.035 * math.sin(7 * a + 2 * phase)) * env
+            # Unequal sweeping furrows run back into the cheek. They are valleys
+            # in the flesh itself, not small bars laid across a circular tyre.
+            furrow = sum(depth * bump(a, centre + bend * t + 0.08 * math.sin(7 * t + centre), width)
+                         for centre, bend, width, depth in
+                         ((0.24 + phase, 0.9, 0.055, 0.08), (1.0 - phase * 0.3, -0.6, 0.075, 0.12),
+                          (2.0 + phase, 0.7, 0.09, 0.10), (3.2 - phase, -0.8, 0.065, 0.08),
+                          (4.4 + phase * 0.4, 0.5, 0.08, 0.06), (5.7 - phase, -0.65, 0.06, 0.09)))
+            ripple = 0.025 * math.sin(13 * a + 5 * t + 1.7 * math.sin(4 * a + phase))
+            radius = rr + gather - env * furrow + env * ripple
+            x = xx + env * (0.17 * hood + 0.11 * cheek + 0.08 * math.sin(3 * a + phase) - furrow)
+            # Exact run 1 funnel join at t=1, so the depth and throat are kept.
+            x += t ** 10 * ((L - 0.23) - (0.66 + 2.05 * math.sin(math.pi * 0.67)))
+            x += 0.035 * math.sin(5 * a + 2 * x) * t ** 10
+            V.append((x, radius * math.cos(a), radius * math.sin(a)))
+    for j in range(bands):
+        for k in range(around):
+            a, b = j * around + k, j * around + (k + 1) % around
+            F.append((a, b, b + around, a + around))
+    part.add('lip_fold', 'body', 'flesh', (V, F))
+
+    # Wide overlapping lappets: a top hood, one split side fold, an oblique
+    # smaller hood and a low sag. Each dies into the cheek at both ends. The two
+    # mouths have separate layouts, not mirrored or equally spaced segments.
+    folds = (((-0.15, 2.75, 0.41, 0.22, 0.1), (2.15, 4.1, 0.34, -0.04, -0.4),
+              (0.45, 1.9, 0.28, -0.32, 0.5), (4.0, 5.65, 0.23, 0.05, 0.2))
+             if seed == 3 else
+             ((0.3, 2.5, 0.48, 0.08, -0.3), (-1.4, 0.85, 0.35, -0.14, 0.4),
+              (1.75, 3.5, 0.26, -0.35, -0.2), (3.45, 5.05, 0.21, 0.02, -0.5)))
+    for fi, (start, end, width, setback, sweep) in enumerate(folds):
+        V, F = [], []
+        steps, cross = 80, 16
+        for j in range(steps + 1):
+            t = j / steps
+            a = start + (end - start) * t
+            taper = math.sin(math.pi * t) ** 0.65
+            radius = 1.57 + 0.16 * math.sin(a + phase) + 0.10 * math.sin(2.3 * a + fi)
+            if fi == 2:
+                radius += 0.28  # a second hood lies outside and behind the first
+            centre_x = 1.05 + 1.54 * taper + setback * taper
+            # Ends descend into the cheek. The crest wanders inward and curls
+            # back down toward the open funnel, making a loose drape of tissue.
+            radius = 1.60 * (1 - taper) + radius * taper + sweep * 0.12 * math.sin(math.pi * t)
+            for k in range(cross):
+                q = 2 * math.pi * k / cross
+                w = width * taper * (1 + 0.15 * math.sin(5 * a + phase)) + 0.008
+                furrows = (0.018 * math.sin(19 * a + 1.2 * math.sin(4 * a + fi) + 2 * q)
+                           + 0.012 * math.sin(31 * a - 3 * q + phase)) * taper
+                rlocal = radius + (w + furrows) * math.cos(q)
+                x = centre_x + (w * 0.9 + furrows) * math.sin(q) + 0.055 * taper * math.sin(7 * a + fi)
+                V.append((x, rlocal * math.cos(a), rlocal * math.sin(a)))
+        for j in range(steps):
+            for k in range(cross):
+                a, b = j * cross + k, j * cross + (k + 1) % cross
+                F.append((a, b, b + cross, a + cross))
+        F.extend((tuple(range(cross))[::-1], tuple(range(steps * cross, (steps + 1) * cross))))
+        part.add('lip_lappet%d' % fi, 'body', 'flesh', (V, F))
+    for c in part.comps:
+        if c['name'].startswith('tooth'):
+            # Spines sit against the wall, leaving the centre of the maw open.
+            for v in c['verts']:
+                rr = math.hypot(v.y, v.z)
+                if rr:
+                    v.y *= (rr + 0.24) / rr
+                    v.z *= (rr + 0.24) / rr
+        if c['name'] == 'gland':
+            c['mat'] = 'gland'  # the broad gland has readable flesh, with a small hot centre
+            for v in c['verts']:
+                v.x += 0.11 * math.sin(8 * v.y + seed) * math.cos(9 * v.z - seed)
+    part.add('gland_core', 'mount', 'bile', HP.blob(0.12, 0.25, 0.23, centre=(L * 0.38 + 0.24, 0, 0), seed=seed, amp=0.16))
+    part.fit['radius'] = 1.65
+    return part
 
 GLANDS = (4.9, 0.2, -5.1)                      # the spore glands' stations under the belly (R241, issue 676: three, one pore-muzzle each)
 SACS = ((5.06, 1.25, -0.8), (0.34, 1.0, -0.82), (-3.6, 0.75, -0.8))   # brood sacs: station, radius, section angle (port) where the neck grows out   # brood sacs: station, radius, section angle (port)
@@ -77,9 +242,17 @@ def build(K):
     from mathutils import Vector, Matrix
     HP = _k.HP
 
-    hull = K.hull(HULL, 'flesh', shell=0.3, plates=dict(PL, seed=11, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
+    # The loft and its grown folds read the same relief. Working organs and inside
+    # anatomy retain the original surface datum. No other Chorus sheet changes.
+    body_wobble = K.wob
+    K.wob = lambda x, th: body_wobble(x, th) + flesh_relief(x, th)
+    hull = K.hull(skin_sections(), 'flesh', shell=0.3, rounded=True, pexp=PEXP, n=192, smooth=True, wobble=WOBBLE)
+    K.hull_sections = HULL
+    relief_wobble = K.wob
+    K.wob = body_wobble  # preserve the existing organs and their mounts exactly
     K.mass('Hull: the long body', hull, 'dark olive flesh', note='broad flat back, rounder belly, tapering to a tail that rises to the back line')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
+    K.mark('hide', 'hull', ['ridge', 'fold', 'pore'])
 
     def side_th(th, side):
         return th if side > 0 else math.pi - th
@@ -87,12 +260,22 @@ def build(K):
     # ---------------- the double mouth: two bile spitters (bioplasma F, F) ----------------
     for i, side in enumerate((1, -1)):
         fid = 'M%d' % (i + 1)
-        K.spinal(fid, (11.27, 1.36 * side, -0.3), 2.3, r=0.86, slot='F', weapon='bioplasma', inv='throats', style='folded', lip_r=1.2,
-                 rolls=2, teeth=11, seed=3 + i, side=side, gland_at=0.6,
-                 note='%s throat of the double mouth: rolled fold lips, an inner sphincter, a ring of spines, the bile gland glowing deep inside'
+        maw = open_maw(HP, 3 + i)
+        K.gun(fid, (11.27, 1.45 * side, -0.3), 0, 0, barrels=1, cal=2 * maw.fit['bore'], fixed=True,
+                 part=maw, slot='F', weapon='bioplasma', inv='throats',
+                 note='%s great open round maw: an outward rolled lip, open sphincter, recessed spines and a bile gland 1.6 units down the wet throat'
                       % ('port' if side > 0 else 'starboard'))
-    K.allow_touch('M1', 'M2', 'the two throats grow from one fused mouth mass (the picture\'s folded double mouth)')
+        K.features[-1].update(fixed=True, route='hand-built', what='spine volley, held-open round maw (fixed)')
+    K.allow_touch('M1', 'M2', 'the outer lips share a narrow flesh bridge; both round throat voids stay open')
     import bpy as _bpy
+    # Register both forward lanes from the actual foremost lip, clear of the
+    # shared flesh bridge. Their width includes the whole mouth opening.
+    mouth_front = max((ob.matrix_world @ v.co).x for ob in K.coll.objects
+                      if ob.type == 'MESH' and ob.get('grp') in ('M1', 'M2') for v in ob.data.vertices)
+    for fd in K.fitdata:
+        if fd['id'] in ('M1', 'M2'):
+            fd['lanes'] = [dict(apex=(mouth_front + 0.02, fd['ring'][1], fd['ring'][2]), dir=(1, 0, 0),
+                                u=(0, 1, 0), w=(0, 0, 1), hu=1.3, hw=1.3, half=4.0, length=LENGTH * 0.8, what='firing lane')]
     K.mass('Mouth, port throat', _bpy.data.objects['M1_mount_flesh'], 'flesh folds', note='the port lobe of the double mouth')
     K.mass('Mouth, starboard throat', _bpy.data.objects['M2_mount_flesh'], 'flesh folds', note='the starboard lobe')
 
@@ -138,6 +321,7 @@ def build(K):
     K.mass('Vent crown', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='three pulse vents at the tail\'s end')
 
     # ---------------- grown detail on the hull ----------------
+    K.wob = relief_wobble
     import random
     rnd = random.Random(623)
     # the flank fold: a raised fold of membrane running down each flank from behind the head to the tail (the picture's long
@@ -175,12 +359,15 @@ def build(K):
         V, F = [], []
         for k, th0 in enumerate((-0.75, -0.35, 0.05, 0.42, 0.78, 1.12, 1.42)):
             pts = []; nrms = []; ws = []; hs = []
-            for j in range(12):
-                t = j / 11
-                x = 11.9 - 4.2 * t * (0.85 + 0.15 * math.sin(k * 1.7))
-                th = th0 + (0.62 - th0) * t ** 1.4 * 0.55 + 0.05 * math.sin(j * 0.9 + k)
+            for j in range(49):
+                t = j / 48
+                x = 11.55 - 4.2 * t * (0.85 + 0.15 * math.sin(k * 1.7))
+                th = th0 + (0.62 - th0) * t ** 1.4 * 0.55 + 0.05 * math.sin(t * 10 + k)
                 p_, n_ = K.hpt(x, side_th(th, side), out=-0.02); pts.append(p_); nrms.append(n_)
-                ws.append((0.62 * (1 - 0.75 * t) + 0.06) * (1 + 0.18 * math.sin(j * 1.9 + k))); hs.append((0.3 * (1 - 0.8 * t) + 0.03) * (1 + 0.25 * math.sin(j * 1.3 + 2 * k)))
+                fade = math.sin(math.pi * (0.015 + 0.97 * t)) ** 0.4
+                ws.append((0.54 * (1 - 0.75 * t) + 0.06) * fade * (1 + 0.18 * math.sin(t * 18 + k)))
+                hs.append((0.29 * (1 - 0.8 * t) + 0.03) * fade *
+                          (1 + 0.14 * math.sin(t * 43 + k) + 0.08 * math.sin(t * 79 + 2 * k)))
             vv, ff = HP.welt(pts, nrms, ws, hs, n=7)
             o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
         hf = K.hull_detail('head_folds_%s' % ('p' if side > 0 else 's'), (V, F), 'flesh2' if side > 0 else 'flesh', inv='head_folds', kind='welt', subs=['welt'])
@@ -215,12 +402,44 @@ def build(K):
         run([(0.4 - 0.3 * k, -0.24 + 0.02 * k) for k in range(8)], 0.07)
         K.hull_detail('veins_%s' % ('p' if side > 0 else 's'), (V, F), 'vein', inv='veins', kind='vein', subs=['vein', 'branch'])
     # scars: regrowth patches with knit ridges
-    for k, (x, th, r, side) in enumerate(((9.3, 1.15, 0.42, 1), (6.4, 1.45, 0.55, -1), (3.7, 0.95, 0.45, 1), (-0.4, 1.3, 0.5, -1), (-2.6, 0.38, 0.4, 1),
-                                         (-4.6, 1.2, 0.48, -1), (-6.0, 0.5, 0.36, 1), (5.9, -0.15, 0.4, -1))):
-        pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
-        (pv, pf), (kv, kf) = HP.scar(pos, nrm, r, seed=k, knits=3)
-        K.hull_detail('scar%d_patch' % k, (pv, pf), 'scar', inv='scars', kind='scar', subs=['patch', 'knit'])
-        K.hull_detail('scar%d_knit' % k, (kv, kf), 'tissue')
+    for k, (x, th, r, side) in enumerate(SCARS):
+        # A regrowth seam sunk into the actual wrinkled skin, with puckered lips.
+        # The cut is also in flesh_relief, so it remains a recess without colour.
+        V, F = [], []
+        for j in range(33):
+            u = -1.2 + 2.4 * j / 32
+            xx = x + u * r * 1.1
+            bend = 0.06 * math.sin(u * 4)
+            width = 0.022 + 0.07 * max(0, math.sin(math.pi * j / 32))
+            for offset in (-1, -0.5, 0, 0.5, 1):
+                p_, n_ = K.hpt(xx, side_th(th + (bend + width * offset) / 2.5, side), out=0.003)
+                V.append(tuple(p_ + n_ * 0.025 * abs(offset)))
+        for j in range(32):
+            for q in range(4):
+                a = j * 5 + q
+                F.append((a, a + 1, a + 6, a + 5))
+        K.hull_detail('scar%d_patch' % k, (V, F), 'tissue', inv='scars', kind='scar', subs=['patch', 'knit'])
+        for edge in (-1, 1):
+            pts, nrms = [], []
+            for j in range(33):
+                u = -1.2 + 2.4 * j / 32
+                tt = th + (0.06 * math.sin(u * 4) + edge * 0.11) / 2.5
+                p_, n_ = K.hpt(x + u * r * 1.1, side_th(tt, side), out=-0.005)
+                pts.append(p_); nrms.append(n_)
+            hs = [0.065 * math.sin(math.pi * j / 32) ** 0.5 * (1 + 0.25 * math.sin(j * 1.3 + k)) for j in range(33)]
+            K.hull_detail('scar%d_knit%s' % (k, edge), HP.welt(pts, nrms, 0.10, hs, n=6), 'flesh2')
+        # Draw short puckered wrinkles into each scar, with unequal lengths.
+        for b in range(9):
+            pts = []; nrms = []
+            a = 2 * math.pi * b / 9 + 0.18 * math.sin(b * 2.1 + k)
+            for j in range(9):
+                f = j / 8
+                xx = x + math.cos(a) * r * (0.7 + f * (0.65 + 0.2 * math.sin(b)))
+                tt = th + math.sin(a) * r * (0.7 + f * 0.8) / 2.5
+                p_, n_ = K.hpt(xx, side_th(tt, side), out=-0.015)
+                pts.append(p_); nrms.append(n_)
+            hs = [0.075 * (1 - j / 9) for j in range(9)]
+            K.hull_detail('scar%d_pucker%d' % (k, b), HP.welt(pts, nrms, 0.085, hs, n=5), 'flesh')
     # tail folds: wrinkle welts converging on the vent crown
     V, F = [], []
     for k in range(10):
@@ -242,6 +461,7 @@ def build(K):
     K.colour('pale regrowing scar', 9.3, -6.0, 'scar patches')
 
     # ---------- INSIDE: flesh, bone and organs (R98, R209; factions.md: "Inside: flesh and bone, wet and lit from within") ----------
+    K.wob = body_wobble
     K.septum('lower', -0.9, 10.4, -1.4)
     K.septum('upper', 0.85, 10.2, -7.0)
     for i, x in enumerate((10.6, 8.9, 6.2, 4.4, 2.6, 0.8, -0.6, -2.5, -4.2, -5.4, -7.4, -8.8)):
@@ -306,6 +526,15 @@ def build(K):
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Colour: bile yellow-green light over dark olive flesh and ochre chitin', 'R204 and the lore: the colour is fixed in the build; the picture came out grey with amber light (README 8b)')
+    K.change('R306: replace the ring rims and repeated ribs with continuous gathered flesh and unequal overlapping lip folds',
+             'Issue 921 run 2: thick top hoods and side folds curl into the unchanged open throats and blend back into the cheeks. '
+             'Each mouth has its own fold layout. Run 1 bore, spines, glands, glow, hull relief and all other anatomy are kept')
+    K.change('R302: the two maws stay open, with 2.6-unit mouth bores and the bile glands recessed 1.6 units',
+             'Issue 921: replace the constricting coils with outward rolled, creased flesh lips; keep the two forward weapon slots and their real muzzles. '
+             'The mouth centres spread 0.09 units each; firing lanes begin past the actual front of the lips')
+    K.change('R302: continuous wrinkled hide, gathered head folds and puckered regrowth scars are modelled relief',
+             'Issue 921: remove the separate callus-pad layer. Preserve the original loft curve, tendrils, sacs, vents, mounts and insides. '
+             'The future Chorus stack owns fine pore grain, mottling, wetness, scar colour and final maw emission, and must preserve the open voids and relief')
     K.change('The two mouths are the two bile spitters (bioplasma F, F)', 'data.js b_boss carries two Spine volleys forward; a weapon is an organ (factions.md). Each throat gets an inner sphincter, a ring of chitin spines (the spines it spits) and its glowing bile gland; the picture shows only the glow')
     K.change('The tendril cluster is the boarding tendrils (tendril T), a crown on a muscle mound that turns', 'the slot is all round; the profile (the view of record for anatomy, README 8b) curls them up, the plan splays them flat; built as the profile with the tips splayed')
     K.change('The belly row is three spore glands (spores T) on necks, spouts forward', 'the picture\'s small hanging sacs; spaced so the B-2 seam passes behind the crown and between two glands (R226)')

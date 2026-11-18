@@ -1,0 +1,54 @@
+{
+  "source_commit": "708ab5e75152f44b4e713f5d320d5ac75425a246",
+  "source_dirty": true,
+  "source_diff_sha256": "a64b8596660624b17e07ae26227814eae70d50391b456df16088bcd9a9189d24",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "A20_concept_878_new.jpg",
+  "date": "2026-11-17T06:59:51Z",
+  "sources": [
+    {
+      "source_commit": "708ab5e75152f44b4e713f5d320d5ac75425a246",
+      "source_dirty": true,
+      "source_diff_sha256": "a64b8596660624b17e07ae26227814eae70d50391b456df16088bcd9a9189d24",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "beauty.png",
+      "source_commit": "708ab5e75152f44b4e713f5d320d5ac75425a246",
+      "source_dirty": true,
+      "source_diff_sha256": "a64b8596660624b17e07ae26227814eae70d50391b456df16088bcd9a9189d24",
+      "stage": "paint proof",
+      "date": "2026-11-17T06:17:37Z",
+      "image_sha256": "d4840f98745e9738114ae830217595f3420e4c8ad6a5c819a74f420c5b4e8836",
+      "sources": [
+        {
+          "source_commit": "708ab5e75152f44b4e713f5d320d5ac75425a246",
+          "source_dirty": true,
+          "source_diff_sha256": "a64b8596660624b17e07ae26227814eae70d50391b456df16088bcd9a9189d24",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "5e18c8c6543b2906aec41931906287ce00b15514ae73afae96799141598860ff"
+  ],
+  "stamp_template_sha256": "43ba43404d170d506655328b3a90e5423419cfd91e34490e3119ff47f67128f9",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VMRHAIADAQKgAuMO/2O4YIMO/gmyZa58BACXf6wAAuJkTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04AjJoftBEA824h5t8AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "27df9aff9cb9bb0673ec0da1bc97d137cd392baccc291c0f578afbe78a6076e6"
+}

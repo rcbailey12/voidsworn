@@ -1,0 +1,621 @@
+{
+  "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "hegemony.jpg",
+  "date": "2026-11-18T14:30:33Z",
+  "sources": [
+    {
+      "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "navy_installed_cam170.png",
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T14:03:42Z",
+      "image_sha256": "5010472a5381b6d7492782971a95ab800619e708e499b64d75bfc2838cf6fcae",
+      "sources": [
+        {
+          "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "H10_23.jpg",
+      "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T22:49:14Z",
+      "image_sha256": "b03ac7f4d7912d42cbb05704e9fbb7ea613d6232377bf99689da5cc40dde9601",
+      "sources": [
+        {
+          "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "H10_23_satin.jpg",
+      "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T03:35:57Z",
+      "image_sha256": "df96ab23a9dccc64963c85ce07958d782c683bbaee6ca6786eae2e344656d831",
+      "sources": [
+        {
+          "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        },
+        {
+          "source_commit": "d04603239d3d96addeea96c83855cfcda52d9f18",
+          "source_diff_sha256": "12b147625d2ee32aa764c5983816bab9278abc408199f7b59b584e8043440d02",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "H4_11.jpg",
+      "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T22:49:14Z",
+      "image_sha256": "c04b13e098e21ad91e37acded4435c84d95981177aa928ea64ff5191bab44f96",
+      "sources": [
+        {
+          "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "H4_11_satin.jpg",
+      "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T03:35:54Z",
+      "image_sha256": "b5b6c2a94b9fa42d72f0acd0772501de82d799d5cc24fe32d23d03d676526baa",
+      "sources": [
+        {
+          "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        },
+        {
+          "source_commit": "d04603239d3d96addeea96c83855cfcda52d9f18",
+          "source_diff_sha256": "12b147625d2ee32aa764c5983816bab9278abc408199f7b59b584e8043440d02",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "S1_51.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "7dc6636925cc5381505dbf3ac63e3e273161846129c3015c2f3c4db698309d80",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "threequarter.jpg",
+      "source_commit": "e7fd684a844d516c884b66695bc15b9cbbd8def5",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-15T23:55:57Z",
+      "image_sha256": "bfd0bb16253643187efbe8c971e901c8fe14b987b7093f025210f4e904c67cfb",
+      "sources": [
+        {
+          "source_commit": "e7fd684a844d516c884b66695bc15b9cbbd8def5",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "S2_23.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "34999a9742a041f6b6007bd166533bb39f6c8b62d1711060230ed16244c5a6e3",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "O1_37.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "785519309d621bd1fe8b6d83d34bd5b9e2f21c96d51ca5b477be68240a08f26f",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "station_T2_compare170.png",
+      "source_commit": "93edaff2d0e200276a35f116ba3a82b3b822dfab",
+      "source_dirty": true,
+      "source_diff_sha256": "ba3bbdbff1375fa7cce9fc0dcec30808d0a8ecf431e3ed3434a14491034d99dd",
+      "stage": "installed in game",
+      "date": "2026-11-17T18:34:00Z",
+      "image_sha256": "6e1bfa2aace934cd3ed501df4dab311b0cf19aee4823ab264ac7ff95e76b3889",
+      "sources": [
+        {
+          "source_commit": "93edaff2d0e200276a35f116ba3a82b3b822dfab",
+          "source_diff_sha256": "ba3bbdbff1375fa7cce9fc0dcec30808d0a8ecf431e3ed3434a14491034d99dd",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    432,
+    720
+  ],
+  "strip_size": [
+    432,
+    98
+  ],
+  "strip_sha256": [
+    "a1b1d3eaf2f1c13f2ab4ea50740bf77a27cad4637f034dce7366c9308ab3d660"
+  ],
+  "stamp_template_sha256": "c99dba80cd74426cd74a561c0067ca05467804b64761afdc43db0ce77c85e7c6",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABO0lEQVR4nO3UMQHAMAzAsKz/zgEYf5I9YhgSBB9+3u8fAGaOCADLEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLMugaQAQfvd13PAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "0d3540e4697fd86bd84c2a01d52b39db725be2961c7caee2d48b0f95a33313ec",
+  "source_files": [
+    {
+      "code": "H7_23",
+      "source_path": "board/issue-1044/shots/navy_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        118,
+        163,
+        235,
+        234
+      ],
+      "exact_source": {
+        "picture_name": "navy_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "5010472a5381b6d7492782971a95ab800619e708e499b64d75bfc2838cf6fcae",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "H8_23",
+      "source_path": "board/issue-1044/shots/navy_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        404,
+        163,
+        569,
+        235
+      ],
+      "exact_source": {
+        "picture_name": "navy_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "5010472a5381b6d7492782971a95ab800619e708e499b64d75bfc2838cf6fcae",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "H9_23",
+      "source_path": "board/issue-1044/shots/navy_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        686,
+        160,
+        903,
+        237
+      ],
+      "exact_source": {
+        "picture_name": "navy_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "5010472a5381b6d7492782971a95ab800619e708e499b64d75bfc2838cf6fcae",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "H10_23",
+      "source_path": "godot/assets/ships/previews/H10_23.jpg",
+      "source_revision_label": "b1e7f54f",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "H10_23.jpg",
+        "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T22:49:14Z",
+        "image_sha256": "b03ac7f4d7912d42cbb05704e9fbb7ea613d6232377bf99689da5cc40dde9601",
+        "sources": [
+          {
+            "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "H10",
+      "source_path": "docs/shots/ship_finish_1118/H10_23_satin.jpg",
+      "source_revision_label": "d0460323+12b14",
+      "crop": [
+        817,
+        78,
+        1097,
+        186
+      ],
+      "exact_source": {
+        "picture_name": "H10_23_satin.jpg",
+        "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T03:35:57Z",
+        "image_sha256": "df96ab23a9dccc64963c85ce07958d782c683bbaee6ca6786eae2e344656d831",
+        "sources": [
+          {
+            "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          },
+          {
+            "source_commit": "d04603239d3d96addeea96c83855cfcda52d9f18",
+            "source_diff_sha256": "12b147625d2ee32aa764c5983816bab9278abc408199f7b59b584e8043440d02",
+            "source_dirty": true,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "H4_11",
+      "source_path": "godot/assets/ships/previews/H4_11.jpg",
+      "source_revision_label": "b1e7f54f",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "H4_11.jpg",
+        "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T22:49:14Z",
+        "image_sha256": "c04b13e098e21ad91e37acded4435c84d95981177aa928ea64ff5191bab44f96",
+        "sources": [
+          {
+            "source_commit": "b1e7f54ff88aee542c81485a6880db20748492a5",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "IM5",
+      "source_path": "docs/shots/ship_finish_1118/H4_11_satin.jpg",
+      "source_revision_label": "d0460323+12b14",
+      "crop": [
+        740,
+        74,
+        1160,
+        198
+      ],
+      "exact_source": {
+        "picture_name": "H4_11_satin.jpg",
+        "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T03:35:54Z",
+        "image_sha256": "b5b6c2a94b9fa42d72f0acd0772501de82d799d5cc24fe32d23d03d676526baa",
+        "sources": [
+          {
+            "source_commit": "4a6c172caf4cfc319ecfecb34777b1b7d2c970c0",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          },
+          {
+            "source_commit": "d04603239d3d96addeea96c83855cfcda52d9f18",
+            "source_diff_sha256": "12b147625d2ee32aa764c5983816bab9278abc408199f7b59b584e8043440d02",
+            "source_dirty": true,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "S1_51",
+      "source_path": "godot/assets/ships/previews/S1_51.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "S1_51.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "7dc6636925cc5381505dbf3ac63e3e273161846129c3015c2f3c4db698309d80",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "HF1D",
+      "source_path": "docs/ship_pipeline/build_sheets/hegemony_HF1D/threequarter.jpg",
+      "source_revision_label": "e7fd684a",
+      "crop": null,
+      "exact_source": {
+        "picture_name": "threequarter.jpg",
+        "source_commit": "e7fd684a844d516c884b66695bc15b9cbbd8def5",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "sheet built",
+        "date": "2026-11-15T23:55:57Z",
+        "image_sha256": "bfd0bb16253643187efbe8c971e901c8fe14b987b7093f025210f4e904c67cfb",
+        "sources": [
+          {
+            "source_commit": "e7fd684a844d516c884b66695bc15b9cbbd8def5",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "sheet built"
+          }
+        ]
+      }
+    },
+    {
+      "code": "S2_23",
+      "source_path": "godot/assets/ships/previews/S2_23.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "S2_23.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "34999a9742a041f6b6007bd166533bb39f6c8b62d1711060230ed16244c5a6e3",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "O1_37",
+      "source_path": "godot/assets/ships/previews/O1_37.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "O1_37.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "785519309d621bd1fe8b6d83d34bd5b9e2f21c96d51ca5b477be68240a08f26f",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "T2",
+      "source_path": "docs/shots/look_bench/station/station_T2_compare170.png",
+      "source_revision_label": "93edaff2+ba3bb",
+      "crop": [
+        28,
+        145,
+        626,
+        570
+      ],
+      "exact_source": {
+        "picture_name": "station_T2_compare170.png",
+        "source_commit": "93edaff2d0e200276a35f116ba3a82b3b822dfab",
+        "source_dirty": true,
+        "source_diff_sha256": "ba3bbdbff1375fa7cce9fc0dcec30808d0a8ecf431e3ed3434a14491034d99dd",
+        "stage": "installed in game",
+        "date": "2026-11-17T18:34:00Z",
+        "image_sha256": "6e1bfa2aace934cd3ed501df4dab311b0cf19aee4823ab264ac7ff95e76b3889",
+        "sources": [
+          {
+            "source_commit": "93edaff2d0e200276a35f116ba3a82b3b822dfab",
+            "source_diff_sha256": "ba3bbdbff1375fa7cce9fc0dcec30808d0a8ecf431e3ed3434a14491034d99dd",
+            "source_dirty": true,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "O2_37",
+      "source_path": "board/issue-1044/shots/navy_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        1010,
+        166,
+        1200,
+        239
+      ],
+      "exact_source": {
+        "picture_name": "navy_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "5010472a5381b6d7492782971a95ab800619e708e499b64d75bfc2838cf6fcae",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "O3_11",
+      "source_path": "board/issue-1044/shots/navy_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        273,
+        397,
+        387,
+        547
+      ],
+      "exact_source": {
+        "picture_name": "navy_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "5010472a5381b6d7492782971a95ab800619e708e499b64d75bfc2838cf6fcae",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    }
+  ],
+  "comparison": "Existing pictures cropped and scaled. Each cell identifies the original stage."
+}

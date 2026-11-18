@@ -1,0 +1,435 @@
+{
+  "ok": true,
+  "ships": {
+    "A16": {
+      "matches_approved_geometry": true,
+      "before_install_geometry_unchanged": true,
+      "engine_groups": 6,
+      "shared_seed": true,
+      "installed_files": {
+        "repo_game": [
+          {
+            "file": "C19_51.glb",
+            "bytes": 15240932,
+            "sha256": "af0c3bb8312d40e6ee3e7c28c1031dff903aab3ec5068ad1e9437b65e05ce3d3"
+          },
+          {
+            "file": "C19_51_base.jpg",
+            "bytes": 1754594,
+            "sha256": "c8b0353f08d7af56755423095f5190871b17e5cdb5c1a0e78071d60ddfe3dce5"
+          },
+          {
+            "file": "C19_51_glow_emission.jpg",
+            "bytes": 236839,
+            "sha256": "c9db20187233e6db0329ed1ace41db34166d584faded4615d978185f670bebba"
+          },
+          {
+            "file": "C19_51_normal.jpg",
+            "bytes": 602102,
+            "sha256": "53006d7cc9ff852f5cb8777dd35fc5c91762c92ea975a596d5fed9838de67e05"
+          },
+          {
+            "file": "C19_51_orm.jpg",
+            "bytes": 1858737,
+            "sha256": "3ac880d6eafc9e33bf681180e2785382f8f5d1d5de4db4b523ce0a0830bdac83"
+          },
+          {
+            "file": "C19_51_parts_base.jpg",
+            "bytes": 1468790,
+            "sha256": "16fff1051732ec0d1adedc56e970addbe445be89050f43627ced52fdb565ed79"
+          },
+          {
+            "file": "C19_51_parts_orm.jpg",
+            "bytes": 1816381,
+            "sha256": "a62abdc5f7f0dd89a60774d077a58fd82625ebd1bcd20228c062dd1bb66ea822"
+          }
+        ],
+        "playable_game": [
+          {
+            "file": "C19_51.glb",
+            "bytes": 15240932,
+            "sha256": "af0c3bb8312d40e6ee3e7c28c1031dff903aab3ec5068ad1e9437b65e05ce3d3"
+          },
+          {
+            "file": "C19_51_base.jpg",
+            "bytes": 1754594,
+            "sha256": "c8b0353f08d7af56755423095f5190871b17e5cdb5c1a0e78071d60ddfe3dce5"
+          },
+          {
+            "file": "C19_51_glow_emission.jpg",
+            "bytes": 236839,
+            "sha256": "c9db20187233e6db0329ed1ace41db34166d584faded4615d978185f670bebba"
+          },
+          {
+            "file": "C19_51_normal.jpg",
+            "bytes": 602102,
+            "sha256": "53006d7cc9ff852f5cb8777dd35fc5c91762c92ea975a596d5fed9838de67e05"
+          },
+          {
+            "file": "C19_51_orm.jpg",
+            "bytes": 1858737,
+            "sha256": "3ac880d6eafc9e33bf681180e2785382f8f5d1d5de4db4b523ce0a0830bdac83"
+          },
+          {
+            "file": "C19_51_parts_base.jpg",
+            "bytes": 1468790,
+            "sha256": "16fff1051732ec0d1adedc56e970addbe445be89050f43627ced52fdb565ed79"
+          },
+          {
+            "file": "C19_51_parts_orm.jpg",
+            "bytes": 1816381,
+            "sha256": "a62abdc5f7f0dd89a60774d077a58fd82625ebd1bcd20228c062dd1bb66ea822"
+          }
+        ]
+      }
+    },
+    "A17": {
+      "matches_approved_geometry": true,
+      "before_install_geometry_unchanged": true,
+      "engine_groups": 6,
+      "shared_seed": true,
+      "installed_files": {
+        "repo_game": [
+          {
+            "file": "C15s_23.glb",
+            "bytes": 8217548,
+            "sha256": "d7dcf88eec17975ca72b8603aae1afa3d3cc4c798462b41025daffd579c13e7c"
+          },
+          {
+            "file": "C15s_23_base.jpg",
+            "bytes": 1441258,
+            "sha256": "8af96f3454b590845e243350f23a5b44632a27eea78adeaa551735b0b9049655"
+          },
+          {
+            "file": "C15s_23_glow_emission.jpg",
+            "bytes": 252265,
+            "sha256": "381b933e8704279c0ff809dc9ec46d6ad5b558c832099483cf5fa06af7d6774b"
+          },
+          {
+            "file": "C15s_23_normal.jpg",
+            "bytes": 645599,
+            "sha256": "928345715b9c10bb3a3762703a87db2a707a2efd6b8de67900b1cf75db86496a"
+          },
+          {
+            "file": "C15s_23_orm.jpg",
+            "bytes": 1446335,
+            "sha256": "bace406332857f9e520bc23bdc9524678acfe19ac73f3e4265dd48df72355806"
+          },
+          {
+            "file": "C15s_23_parts_base.jpg",
+            "bytes": 1529321,
+            "sha256": "352f9f9da27b4f4903cf301b272c1debfe3c32a016a93493b189224763c419d9"
+          },
+          {
+            "file": "C15s_23_parts_orm.jpg",
+            "bytes": 1849873,
+            "sha256": "32db2eff6f7e396e10fab89bd5ce46957f15ba00c69c33f1a56fc49e9ca24fef"
+          }
+        ],
+        "playable_game": [
+          {
+            "file": "C15s_23.glb",
+            "bytes": 8217548,
+            "sha256": "d7dcf88eec17975ca72b8603aae1afa3d3cc4c798462b41025daffd579c13e7c"
+          },
+          {
+            "file": "C15s_23_base.jpg",
+            "bytes": 1441258,
+            "sha256": "8af96f3454b590845e243350f23a5b44632a27eea78adeaa551735b0b9049655"
+          },
+          {
+            "file": "C15s_23_glow_emission.jpg",
+            "bytes": 252265,
+            "sha256": "381b933e8704279c0ff809dc9ec46d6ad5b558c832099483cf5fa06af7d6774b"
+          },
+          {
+            "file": "C15s_23_normal.jpg",
+            "bytes": 645599,
+            "sha256": "928345715b9c10bb3a3762703a87db2a707a2efd6b8de67900b1cf75db86496a"
+          },
+          {
+            "file": "C15s_23_orm.jpg",
+            "bytes": 1446335,
+            "sha256": "bace406332857f9e520bc23bdc9524678acfe19ac73f3e4265dd48df72355806"
+          },
+          {
+            "file": "C15s_23_parts_base.jpg",
+            "bytes": 1529321,
+            "sha256": "352f9f9da27b4f4903cf301b272c1debfe3c32a016a93493b189224763c419d9"
+          },
+          {
+            "file": "C15s_23_parts_orm.jpg",
+            "bytes": 1849873,
+            "sha256": "32db2eff6f7e396e10fab89bd5ce46957f15ba00c69c33f1a56fc49e9ca24fef"
+          }
+        ]
+      }
+    },
+    "A18": {
+      "matches_approved_geometry": true,
+      "before_install_geometry_unchanged": false,
+      "engine_groups": 3,
+      "shared_seed": true,
+      "installed_files": {
+        "repo_game": [
+          {
+            "file": "C13s_23.glb",
+            "bytes": 20016204,
+            "sha256": "399bf671b8490f64bcd5dce36c96d0be240daaf4492ce007f5025298a67c6475"
+          },
+          {
+            "file": "C13s_23_base.jpg",
+            "bytes": 1821496,
+            "sha256": "2c1f7c806fbc7a78b8ca4ed6895ea4ffd5924264ed0955650240b5f59106c548"
+          },
+          {
+            "file": "C13s_23_glow_emission.jpg",
+            "bytes": 196598,
+            "sha256": "6844a7643fa84c3bb0192ecfea564284e78f1fa19fd73bd97cbe3383a4c3253b"
+          },
+          {
+            "file": "C13s_23_normal.jpg",
+            "bytes": 483196,
+            "sha256": "93ce327d92e72818783aa145ef0e3a8e02a483eddf68464b4affb4e191684bd6"
+          },
+          {
+            "file": "C13s_23_orm.jpg",
+            "bytes": 2502012,
+            "sha256": "ccd3c987d6464741998208aa21f130315e66f5801bff7282c9d339ce095cb90d"
+          },
+          {
+            "file": "C13s_23_parts_base.jpg",
+            "bytes": 1387351,
+            "sha256": "1ee657ef7bee0fa7606ff4e4b702d64fd173d2c88e357808d46729c7f63195ae"
+          },
+          {
+            "file": "C13s_23_parts_orm.jpg",
+            "bytes": 1580846,
+            "sha256": "b5c6887b0d0940aefbae839975e57c3ff7547571690c730586b8bd7002be3d63"
+          }
+        ],
+        "playable_game": [
+          {
+            "file": "C13s_23.glb",
+            "bytes": 20016204,
+            "sha256": "399bf671b8490f64bcd5dce36c96d0be240daaf4492ce007f5025298a67c6475"
+          },
+          {
+            "file": "C13s_23_base.jpg",
+            "bytes": 1821496,
+            "sha256": "2c1f7c806fbc7a78b8ca4ed6895ea4ffd5924264ed0955650240b5f59106c548"
+          },
+          {
+            "file": "C13s_23_glow_emission.jpg",
+            "bytes": 196598,
+            "sha256": "6844a7643fa84c3bb0192ecfea564284e78f1fa19fd73bd97cbe3383a4c3253b"
+          },
+          {
+            "file": "C13s_23_normal.jpg",
+            "bytes": 483196,
+            "sha256": "93ce327d92e72818783aa145ef0e3a8e02a483eddf68464b4affb4e191684bd6"
+          },
+          {
+            "file": "C13s_23_orm.jpg",
+            "bytes": 2502012,
+            "sha256": "ccd3c987d6464741998208aa21f130315e66f5801bff7282c9d339ce095cb90d"
+          },
+          {
+            "file": "C13s_23_parts_base.jpg",
+            "bytes": 1387351,
+            "sha256": "1ee657ef7bee0fa7606ff4e4b702d64fd173d2c88e357808d46729c7f63195ae"
+          },
+          {
+            "file": "C13s_23_parts_orm.jpg",
+            "bytes": 1580846,
+            "sha256": "b5c6887b0d0940aefbae839975e57c3ff7547571690c730586b8bd7002be3d63"
+          }
+        ]
+      }
+    },
+    "A19": {
+      "matches_approved_geometry": true,
+      "before_install_geometry_unchanged": true,
+      "engine_groups": 3,
+      "shared_seed": true,
+      "installed_files": {
+        "repo_game": [
+          {
+            "file": "C14s_23.glb",
+            "bytes": 23611392,
+            "sha256": "78428f640beb6a43a49d019c9cf9705a127b9b71e25525d0fc7456001bebf4fe"
+          },
+          {
+            "file": "C14s_23_base.jpg",
+            "bytes": 1715851,
+            "sha256": "59899f0e206532f7466836aded405b47246cdcbfbd53199a9e1f4e8807db6e1b"
+          },
+          {
+            "file": "C14s_23_glow_emission.jpg",
+            "bytes": 202199,
+            "sha256": "ea5d3e6ac33b8a8292070dfca63baa504d576a2a589dc0bfc99fd0b47c829d02"
+          },
+          {
+            "file": "C14s_23_normal.jpg",
+            "bytes": 476974,
+            "sha256": "f5ff4b29cf4c57b5a297c3c131ef6a00da396611cb50313a9b9a48ed30950bcd"
+          },
+          {
+            "file": "C14s_23_orm.jpg",
+            "bytes": 2529443,
+            "sha256": "1d3232f77c279920b3080cca3bfcfc17813a4a0f8f857f29c8e1bdeb7387d459"
+          },
+          {
+            "file": "C14s_23_parts_base.jpg",
+            "bytes": 1281587,
+            "sha256": "00a607a0539a95a34434ce4122852fb9ed0c60921e772d848929bb91ce685f4e"
+          },
+          {
+            "file": "C14s_23_parts_orm.jpg",
+            "bytes": 1532579,
+            "sha256": "983c76bc790b905d90a298e325d0ed7b03406048cec4290ffed5819aeee93f92"
+          }
+        ],
+        "playable_game": [
+          {
+            "file": "C14s_23.glb",
+            "bytes": 23611392,
+            "sha256": "78428f640beb6a43a49d019c9cf9705a127b9b71e25525d0fc7456001bebf4fe"
+          },
+          {
+            "file": "C14s_23_base.jpg",
+            "bytes": 1715851,
+            "sha256": "59899f0e206532f7466836aded405b47246cdcbfbd53199a9e1f4e8807db6e1b"
+          },
+          {
+            "file": "C14s_23_glow_emission.jpg",
+            "bytes": 202199,
+            "sha256": "ea5d3e6ac33b8a8292070dfca63baa504d576a2a589dc0bfc99fd0b47c829d02"
+          },
+          {
+            "file": "C14s_23_normal.jpg",
+            "bytes": 476974,
+            "sha256": "f5ff4b29cf4c57b5a297c3c131ef6a00da396611cb50313a9b9a48ed30950bcd"
+          },
+          {
+            "file": "C14s_23_orm.jpg",
+            "bytes": 2529443,
+            "sha256": "1d3232f77c279920b3080cca3bfcfc17813a4a0f8f857f29c8e1bdeb7387d459"
+          },
+          {
+            "file": "C14s_23_parts_base.jpg",
+            "bytes": 1281587,
+            "sha256": "00a607a0539a95a34434ce4122852fb9ed0c60921e772d848929bb91ce685f4e"
+          },
+          {
+            "file": "C14s_23_parts_orm.jpg",
+            "bytes": 1532579,
+            "sha256": "983c76bc790b905d90a298e325d0ed7b03406048cec4290ffed5819aeee93f92"
+          }
+        ]
+      }
+    },
+    "A20": {
+      "matches_approved_geometry": true,
+      "before_install_geometry_unchanged": true,
+      "engine_groups": 5,
+      "shared_seed": true,
+      "installed_files": {
+        "repo_game": [
+          {
+            "file": "C16s_23.glb",
+            "bytes": 24847180,
+            "sha256": "5252de87e071e338d449ebeed401362a6babcfc032f35ff63253862cef0f451d"
+          },
+          {
+            "file": "C16s_23_base.jpg",
+            "bytes": 1557935,
+            "sha256": "4fdab16824d8bbd1e69aa84111f1c44d7c4cfe29b67558893f2ca0ba7882ff4e"
+          },
+          {
+            "file": "C16s_23_glow_emission.jpg",
+            "bytes": 240906,
+            "sha256": "52543ef7cc448b03bad7b10815d0861668eeec40091ec4a2f39640efce72ec90"
+          },
+          {
+            "file": "C16s_23_normal.jpg",
+            "bytes": 462108,
+            "sha256": "cd95e765f25b86cd8ae6b96c7fd851eb9c3dc07808482f8e383dfc1632aa0be4"
+          },
+          {
+            "file": "C16s_23_orm.jpg",
+            "bytes": 2699838,
+            "sha256": "da3e57e809c684f26fd73176154ba7e39dfd3f888c23cc7e037441fdbb4d83fd"
+          },
+          {
+            "file": "C16s_23_parts_base.jpg",
+            "bytes": 1323710,
+            "sha256": "9d3d2f5b9c5823c769c555381d6061007704f8dd6e8b7f49a447e89cb7c9dc9a"
+          },
+          {
+            "file": "C16s_23_parts_orm.jpg",
+            "bytes": 1694811,
+            "sha256": "bd2ef0fd72dec498c75f6cb4f5d94e3da2c860cda1cb6b48b467a2824768ddda"
+          }
+        ],
+        "playable_game": [
+          {
+            "file": "C16s_23.glb",
+            "bytes": 24847180,
+            "sha256": "5252de87e071e338d449ebeed401362a6babcfc032f35ff63253862cef0f451d"
+          },
+          {
+            "file": "C16s_23_base.jpg",
+            "bytes": 1557935,
+            "sha256": "4fdab16824d8bbd1e69aa84111f1c44d7c4cfe29b67558893f2ca0ba7882ff4e"
+          },
+          {
+            "file": "C16s_23_glow_emission.jpg",
+            "bytes": 240906,
+            "sha256": "52543ef7cc448b03bad7b10815d0861668eeec40091ec4a2f39640efce72ec90"
+          },
+          {
+            "file": "C16s_23_normal.jpg",
+            "bytes": 462108,
+            "sha256": "cd95e765f25b86cd8ae6b96c7fd851eb9c3dc07808482f8e383dfc1632aa0be4"
+          },
+          {
+            "file": "C16s_23_orm.jpg",
+            "bytes": 2699838,
+            "sha256": "da3e57e809c684f26fd73176154ba7e39dfd3f888c23cc7e037441fdbb4d83fd"
+          },
+          {
+            "file": "C16s_23_parts_base.jpg",
+            "bytes": 1323710,
+            "sha256": "9d3d2f5b9c5823c769c555381d6061007704f8dd6e8b7f49a447e89cb7c9dc9a"
+          },
+          {
+            "file": "C16s_23_parts_orm.jpg",
+            "bytes": 1694811,
+            "sha256": "bd2ef0fd72dec498c75f6cb4f5d94e3da2c860cda1cb6b48b467a2824768ddda"
+          }
+        ]
+      }
+    }
+  },
+  "pictures": [
+    "A16_A20_all_five.jpg",
+    "A16_concept_878_new.jpg",
+    "A16_engines_before_after.jpg",
+    "A16_game_cam170.jpg",
+    "A17_concept_878_new.jpg",
+    "A17_engines_before_after.jpg",
+    "A17_game_cam170.jpg",
+    "A18_concept_878_new.jpg",
+    "A18_engines_before_after.jpg",
+    "A18_game_cam170.jpg",
+    "A19_concept_878_new.jpg",
+    "A19_engines_before_after.jpg",
+    "A19_game_cam170.jpg",
+    "A20_concept_878_new.jpg",
+    "A20_engines_before_after.jpg",
+    "A20_game_cam170.jpg"
+  ],
+  "geometry_source_edits": [],
+  "note": "Painted meshes match fresh builds of unchanged approved sheets. Pre-job A18 install differs from the current sheet in D1 seating, engine throat/lining meshes and one generated running lamp. This normal repaint uses the current approved sheet; no geometry sources were edited."
+}
