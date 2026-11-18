@@ -280,6 +280,8 @@ func _run() -> void:
 		feed(h, {})
 		await process_frame
 		var r1 := measure(h, tag + " your turn, target", sz.y == 1080)
+		if sz.y == 1080:
+			check(is_equal_approx(h.ledger.sheet_r.size.y, 248.0), "1080p: the KEEL shelf is 248 px tall")
 		var a := acts(h)
 		for need in ["confirm", "arm", "brace", "ability", "rotl", "rotr", "next", "command", "end", "pick", "menu", "log_collapse"]:
 			check(a.has(need), "%s: '%s' is reachable on the sheet" % [tag, need])
@@ -290,6 +292,8 @@ func _run() -> void:
 		var joined := " | ".join(words)
 		check("FIRE THE OATH LANCE" in joined and "92%" in joined and "UNYIELDING OATH" in joined and "Hegemony Navy, 2 ships" in joined, "%s: the KEEL shelf shows the ship, target, odds and fire button" % tag)
 		check("About 16 damage" in words and "7 to shields" in words and "9 to hull" in words and "73 / 80" in words, "%s: plain damage words and the actual pool, without summing its facings" % tag)
+		if sz.y == 1080:
+			check("Fire for effect" in words, "1080p: Command keeps its full standing name")
 		check(h.ledger.items.all(func(it): return it.role != "key"), "%s: no shortcut badges on the HUD" % tag)
 		_log_states(h, tag)
 		if sz.y == 1080:
@@ -404,6 +408,8 @@ func _log_states(h, tag: String) -> void:
 	L.ensure_layout()
 	var ticker: Array = L.items.filter(func(it): return it.role == "log")
 	check(ticker.size() == 2 and str(ticker[1].t).begins_with("Contact:"), "%s: collapsed ticker shows only the newest line" % tag)
+	var header: Array = L.hits.filter(func(hit): return hit.act == "log_collapse")
+	check(header.size() == 1 and str(header[0].tip).begins_with("Contact:"), "%s: the collapsed log still exposes the whole line on hover" % tag)
 	var log_r: Rect2 = L.log_r
 	h.set_log_preferences(false, true)
 	L.ensure_layout()

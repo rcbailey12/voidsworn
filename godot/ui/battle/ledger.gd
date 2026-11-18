@@ -276,6 +276,7 @@ func _turn_block(r: Rect2) -> void:
 	var y := r.position.y
 	var w := r.size.x
 	var patch := marks.size()
+	var first_word := items.size()
 	_veil(Rect2(), Brand.KEEL_VEIL, Vector4(px(16), px(12), px(23), px(20)))
 	_text(x, y, "Round %d" % int(top.get("round", 1)), f_body, 18, TEXT2)
 	y += px(26)
@@ -320,6 +321,8 @@ func _turn_block(r: Rect2) -> void:
 		y += px(7)
 	y = _paragraph(x, y, plain(str(top.get("objective", ""))), w, 2)
 	var bounds := Rect2(x, r.position.y, w, y - r.position.y)
+	if not enemy_turn() or float(phase.get("p", -1)) < 0.0:
+		bounds = _fit_corner(bounds, first_word)
 	marks[patch].r = Rect2(bounds.position - Vector2(px(16), px(12)), bounds.size + Vector2(px(39), px(32)))
 	blockers.append(bounds)
 	if not ask.is_empty():
@@ -348,6 +351,7 @@ func _top_right(r: Rect2) -> void:
 	var xr := r.end.x
 	var y := r.position.y
 	var patch := marks.size()
+	var first_word := items.size()
 	_veil(Rect2(), Brand.KEEL_VEIL, Vector4(px(25), px(12), px(14), px(20)))
 	var mw := _right(xr, y, "Menu", f_med, 19, TEXT2)
 	_hit(Rect2(xr - mw - px(6), y - px(5), mw + px(12), px(30)), "menu", null, "Settings, Controls, view options, retreat and quit.")
@@ -378,9 +382,19 @@ func _top_right(r: Rect2) -> void:
 		_right(xr - dw - used - px(11), y, "Nemesis", f_med, 19, NEM)
 		_hit(Rect2(xr - dw - used - nw, y - px(3), dw + used + nw + px(4), px(28)), "", null, _nem_tip())
 		y += px(24)
-	var bounds := Rect2(r.position, Vector2(r.size.x, y - r.position.y))
+	var bounds := _fit_corner(Rect2(r.position, Vector2(r.size.x, y - r.position.y)), first_word)
 	marks[patch].r = Rect2(bounds.position - Vector2(px(25), px(12)), bounds.size + Vector2(px(39), px(32)))
 	blockers.append(bounds)
+
+
+func _fit_corner(r: Rect2, first_word: int) -> Rect2:
+	var left := r.end.x
+	var right := r.position.x
+	for i in range(first_word, items.size()):
+		var word := item_rect(items[i])
+		left = minf(left, word.position.x)
+		right = maxf(right, word.end.x)
+	return Rect2(left, r.position.y, right - left, r.size.y)
 
 
 func _nem_tip() -> String:
@@ -671,19 +685,24 @@ func _turn_order(r: Rect2, order: Dictionary) -> void:
 	_hit(Rect2(mid, r.position.y, r.end.x - mid, r.size.y), "rotr" if order.right else "", null, "Turn right. The odds update for the new facing.")
 
 
-func _order(r: Rect2, o: Dictionary, icon_size: int) -> void:
+func _order(r: Rect2, o: Dictionary, preferred_size: int) -> void:
 	var x := r.position.x
-	var gy := roundf(r.get_center().y - px(icon_size) * 0.5)
 	var enabled := bool(o.on)
 	var active := bool(o.get("active", false))
 	var col := TEXT if enabled or active else TEXT3
-	_glyph(str(o.glyph), Vector2(x, gy), icon_size, EMBER if active else col)
 	var cooldown := int(o.get("cooldown", 0))
-	var room := r.size.x - px(icon_size + 13)
 	var label := str(o.label)
 	if cooldown > 0:
 		label = "%d %s" % [cooldown, "round" if cooldown == 1 else "rounds"]
+	# Give long order names the space before losing words to an ellipsis.
+	var icon_size := preferred_size
+	if _width(label, f_med, 17) > r.size.x - px(icon_size + 13):
+		icon_size = mini(preferred_size, 24)
+	var gy := roundf(r.get_center().y - px(icon_size) * 0.5)
+	_glyph(str(o.glyph), Vector2(x, gy), icon_size, EMBER if active else col)
+	if cooldown > 0:
 		marks.append({"k": "arc", "p": Vector2(x, gy) + Vector2.ONE * px(icon_size) * 0.5, "s": px(icon_size) * 0.5, "col": EMBER})
+	var room := r.size.x - px(icon_size + 13)
 	var label_w := _text(x + px(icon_size + 6), roundf(r.get_center().y - _text_h(f_med, 17) * 0.5), _trim(label, f_med, 17, room), f_med, 17, col, "join" if col == TEXT3 else "")
 	if active:
 		_rect(Rect2(x, r.end.y - px(3), label_w + px(icon_size + 6), px(2)), EMBER)
@@ -792,8 +811,15 @@ func _log(right: float, bottom: float, w: float) -> void:
 		var tx := x + (lw + px(14) if log_collapsed else 0.0)
 		var ty := y if log_collapsed else y + px(28 + i * 26)
 		var col := TEXT if i == entries.size() - 1 else TEXT2
-		_text(tx, ty, _trim(str(entries[i]), f_body, 17, right - tx - px(41 if log_collapsed else 12)), f_body, 17, col, "log", true)
-	_hit(Rect2(log_r.position, Vector2(w, px(29))), "log_collapse", null)
+		var entry := str(entries[i])
+		var caption := _trim(entry, f_body, 17, right - tx - px(41 if log_collapsed else 12))
+		_text(tx, ty, caption, f_body, 17, col, "log", true)
+		if not log_collapsed and caption != entry:
+			_hit(Rect2(tx, ty, right - tx, px(25)), "", null, entry)
+	var log_tip := "Expand the battle log." if log_collapsed else "Collapse the battle log."
+	if log_collapsed and not entries.is_empty():
+		log_tip = str(entries[-1]) + "\n" + log_tip
+	_hit(Rect2(log_r.position, Vector2(w, px(29))), "log_collapse", null, log_tip + " L opens the full history.")
 	blockers.append(log_r)
 
 

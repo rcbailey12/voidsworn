@@ -4,14 +4,14 @@ Review pictures come from the real Godot battle, seed 7, at 1920 x 1080 and came
 1280 x 720 page, with the fingerprint strip outside the frame. The runner publishes the stamped pictures and originals
 under `docs/shots/issue-1021-openai/`.
 
-| Frame | What to look for |
-| --- | --- |
-| `main_target.png` | Main's left rail, the reference for the same opening target. |
-| `keel_target.png` | The left flank is open. The selected ship stays clear of the shelf while the target is in range. |
-| `keel_enemy_turn.png` | Turn and enemy progress stay in the top-left; the fleet strip remains. |
-| `keel_log_collapsed.png` | One ticker line, with the newest event. |
-| `keel_log_open.png` | Three lines above the shelf after a real shot. |
-| `keel_silhouettes_01.png` | Every reviewed ship by its installed asset code and faction. |
+| Review frame | Native frame | What to look for |
+| --- | --- | --- |
+| [Main](../issue-1021-openai/main_target.png) | [1080p](../issue-1021-openai/main_target_1080.png) | Main's left rail, the reference for the same opening target. |
+| [KEEL with a target](../issue-1021-openai/keel_target.png) | [1080p](../issue-1021-openai/keel_target_1080.png) | The left flank is open. The selected ship and target are both above the shelf. |
+| [Enemy turn](../issue-1021-openai/keel_enemy_turn.png) | [1080p](../issue-1021-openai/keel_enemy_turn_1080.png) | Turn and enemy progress stay in the top-left; the fleet strip remains. |
+| [Log collapsed](../issue-1021-openai/keel_log_collapsed.png) | [1080p](../issue-1021-openai/keel_log_collapsed_1080.png) | One ticker line, with the newest event. |
+| [Log open](../issue-1021-openai/keel_log_open.png) | [1080p](../issue-1021-openai/keel_log_open_1080.png) | Three lines above the shelf after a real shot. |
+| [Installed ship silhouettes](../issue-1021-openai/keel_silhouettes_01.png) | 1280 x 720 | Every reviewed ship by its installed asset code and faction. |
 
 ## Reproduce
 

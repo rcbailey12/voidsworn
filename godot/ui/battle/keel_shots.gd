@@ -82,7 +82,8 @@ func _run() -> void:
 		_fail("target click failed")
 		return
 	_quiet_pointer()
-	b.cam.focus(b._pos(friend).lerp(b._pos(foe), 0.50), 170.0)
+	# Use the playing zoom, with room for the target's full model above the shelf.
+	b.cam.focus(b._pos(friend).lerp(b._pos(foe), 0.62), 170.0)
 	await create_timer(0.7).timeout
 	b.hud.ledger.layout()
 	if not baseline:

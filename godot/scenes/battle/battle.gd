@@ -4721,7 +4721,6 @@ func _process(dt: float) -> void:
 	if api == null:
 		return
 	var vs := get_viewport().get_visible_rect().size
-	# issue 271: the camera looks at the middle of the part of the screen the orders sheet leaves clear (0 in cut-ins)
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
@@ -4945,7 +4944,7 @@ func _nem_info() -> Dictionary:
 	return _nem_last
 
 
-# the Target block: the enemy aimed at (or under the pointer) and what the bearing guns are expected to take, by facing
+# The enemy aimed at (or under the pointer) and what the bearing guns are expected to take from its shield pool and hull.
 func _target_info() -> Dictionary:
 	_tgt_plate = {}
 	if api == null or api.phase != "player" or ended or bot or showcase or sel == "" or not VU.has(sel) or VU[sel]["side"] != "player":
