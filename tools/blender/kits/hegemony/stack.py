@@ -147,6 +147,8 @@ LAYERS = dict(
 # grid: the panel grid the zone carries on the hull ('big', 'small' or None: band treatment only, no grid seams of its own).
 # grid_seam: the strength of the painted grid on unplated shell faces. The
 # module_panels slabs carry their own gaps and the bands keep their own joints.
+LEGACY_FINISH_ZONE = 'hgrey'  # Existing A4 atlas supplies its own paint colours and seams.
+LEGACY_ALBEDO_BLEND = .45     # A4 already has painted shadows. Keep the second pass light enough for adjacent fittings.
 _Z = dict(
     hgrey=dict(rust=0, grime=.32, patchwork=1.0, rough=.30, metal=.48, wear=1.05, grid='big', grid_seam=.35),
     hpanel=dict(rust=0, grime=.32, patchwork=1.0, rough=.34, metal=.48, wear=1.05, grid='small', grid_seam=.35),
