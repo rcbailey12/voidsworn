@@ -1110,7 +1110,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 			"hullRegen": JSM.jsround(float(z0(t.get("regen"))) * sc), "weapons": nameWeapons(t.get("fac"), ws)}
 	var ship = opts.get("ship")
 	var ufac: String = t["fac"] if jt(t.get("fac")) else (opts["fac"] if jt(opts.get("fac")) else "voidsworn")
-	var u = {"id": new_id(), "side": side, "tpl": tpl, "t": t, "name": ship["name"] if jt(ship) else (opts["name"] if jt(opts.get("name")) else t["n"]), "cls": t.get("cls"),
+	var u = {"id": "" if jt(opts.get("preview")) else new_id(), "side": side, "tpl": tpl, "t": t, "name": ship["name"] if jt(ship) else (opts["name"] if jt(opts.get("name")) else t["n"]), "cls": t.get("cls"),
 		"fac": ufac, "size": t["size"], "q": 0, "r": 0, "facing": 0 if side == "player" else 3,
 		"hp": min(ship["hp"], s["maxHp"]) if jt(ship) else s["maxHp"], "maxHp": s["maxHp"], "shMax": s["shMax"], "regen": s["regen"],
 		"shp": s["shMax"], "cov": shieldCov(ufac, t["cls"]), "route": [0, 0, 0, 0], "sh": [0, 0, 0, 0],
@@ -5842,15 +5842,19 @@ func _mind(h, fs: Array, cap = null) -> float: # Math.min(...fs.map(f=>hdist(h,f
 	for f in fs: m = min(m, hdist(h, f))
 	return m
 func inThisBattle(u) -> bool: return B != null and u != null and JSM.has_same(B["units"], u)
-func makeWing(u, h, kind) -> Dictionary:
+func wingUnit(u, kind, preview := false) -> Dictionary:
 	var fx = sumFx(fleetFxList()) if u["side"] == "player" else {}
-	var sq = makeUnit(u["side"], kind, {"parent": u["id"], "fac": u["fac"], "sqPct": z0(u["fx"].get("sqPct")), "sqHp": z0(fx.get("sqHp")), "scale": (1.0 + 0.1 * (B["sector"] - 1)) if u["side"] == "enemy" else 1})
+	var sq = makeUnit(u["side"], kind, {"preview": preview, "parent": u["id"], "fac": u["fac"], "sqPct": z0(u["fx"].get("sqPct")), "sqHp": z0(fx.get("sqHp")), "scale": (1.0 + 0.1 * (B["sector"] - 1)) if u["side"] == "enemy" else 1})
 	var pk = wingPerks(u)
 	if pk.has("aces"): sq["aim"] = sq["aim"] + 10
 	if pk.has("jinkers"): sq["ev"] = sq["ev"] + 8
 	if pk.has("armored"):
 		sq["maxHp"] = JSM.jsround(sq["maxHp"] * 1.25); sq["hp"] = sq["maxHp"]
-	sq["fac"] = u["fac"]; sq["q"] = h.q; sq["r"] = h.r; sq["facing"] = u["facing"]
+	sq["fac"] = u["fac"]; sq["facing"] = u["facing"]
+	return sq
+func makeWing(u, h, kind) -> Dictionary:
+	var sq = wingUnit(u, kind)
+	sq["q"] = h.q; sq["r"] = h.r
 	var tn = String(u["t"]["n"]).split(" "); sq["name"] = String(HULLS[kind]["n"]) + " (" + (String(u["name"]) if u["side"] == "player" else tn[tn.size() - 1]) + ")"
 	B["units"].append(sq)
 	emit({"t": "wing", "unit": sq["id"], "parent": u["id"], "kind": kind, "q": int(h.q), "r": int(h.r)})
@@ -6579,14 +6583,23 @@ func pathField(targets: Array) -> Dictionary:
 func fieldDist(D: Dictionary, v, fallback) -> float:
 	var d = D.get(Vector2i(int(v["q"]), int(v["r"])))
 	return fallback + 6.0 if d == null else float(d)
+func aiLaunchHex(u, kind, foes: Array) -> Variant:
+	var wing = wingUnit(u, kind, true)
+	var best = null; var threat = INF; var dist = INF
+	for h in launchHexes(u):
+		wing["q"] = h.q; wing["r"] = h.r
+		var th = evalThreat(wing, foes); var d = _mind(h, foes)
+		if th < threat or (th == threat and d < dist):
+			best = h; threat = th; dist = d
+	return best
 func aiAbilities(u, live: Callable, mode) -> bool:
 	var foes = alive("player")
 	if foes.size() == 0 or jt(u.get("dead")): return live.call()
 	var pre: bool = mode == "pre"; var aim: bool = mode == "aim"
-	if pre and u.get("ab") == "launch" and canAbility(u):
-		var hs = launchHexes(u)
-		JSM.ssort(hs, func(a, b): return _mind(a, foes) - _mind(b, foes))
-		useAbility(u, {"hex": hs[0]})
+	if aim and u.get("ab") == "launch" and canAbility(u):
+		var kind = wingKind(u)
+		useAbility(u, {"hex": aiLaunchHex(u, kind, foes), "kind": kind})
+		if not live.call(): return false
 	var nearF: Variant = null
 	for f in foes:
 		if jt(f.get("isSq")): continue
@@ -6659,11 +6672,14 @@ func aiAfterFire(u, live: Callable, runner) -> bool:
 		fadeMove(u)
 		if jt(B.get("over")) or jt(u.get("dead")) or not live.call(): return false
 	return aiAbilities(u, live, "escape") and not jt(B.get("over"))
-# veteran AI: brace instead of firing when the incoming fire is heavy, our own guns can do little and the hull is already down
-func aiVetBrace(u) -> bool:
-	if not (aiVet() and not jt(u.get("isSq")) and not jt(u["t"].get("boss")) and canOrder(u, "brace")): return false
-	var pf = alive("player"); var myOff = evalOffense(u, readyList(u), pf); var thr = evalThreat(u, pf)
-	return thr > u["hp"] * 0.45 and myOff < thr * 0.35 and u["hp"] < u["maxHp"] * 0.7
+# Check at the committed firing position, or after a volley with no shots.
+func aiShouldBrace(u, afterVolley := false) -> bool:
+	if not canOrder(u, "brace"): return false
+	var foes = alive("player")
+	if afterVolley: return u["hp"] < u["maxHp"] * 0.5 and evalThreat(u, foes) > 10
+	if not aiVet() or jt(u["t"].get("boss")) or u["hp"] >= u["maxHp"] * 0.7: return false
+	var threat = evalThreat(u, foes)
+	return threat > u["hp"] * 0.45 and evalOffense(u, readyList(u), foes) < threat * 0.35
 func aiUnit(u) -> void:
 	if jt(u.get("isSq")):
 		if not jt(B.get("over")) and not jt(u.get("dead")) and u["side"] == "enemy": sqAct(u)
@@ -6691,15 +6707,22 @@ func aiUnit(u) -> void:
 	if jt(B.get("over")) or jt(u.get("dead")) or not live.call(): return
 	var ready = readyList(u)
 	var states: Array = computeReach(u, true).states
-	var opts = []
-	for w in u["weapons"]: opts.append(w["opt"])
-	var minR = JSM.amin(opts)
+	var minR = INF
+	for w in ready:
+		if w["k"] != "flak": minR = min(minR, w["opt"])
+	var unloaded = false
+	if minR == INF:
+		for w in u["weapons"]:
+			if w["k"] != "flak":
+				unloaded = true; break
 	var best: Variant = null; var bestScore = -1e9
 	var pff = []
 	for f in foes:
 		if not jt(f.get("isSq")) or jt(u.get("isSq")): pff.append(f)
 	var PF = pathField(pff)
+	var startDist = fieldDist(PF, u, _mind(u, pff, 99)) if unloaded else 0.0
 	var vet = aiVet(); var focus = aiRefreshFocus() if vet else null
+	var cliff = 25.0 + 3.0 * (clampf(z0(u["t"].get("cp")), 1.0, 7.0) - 3.0)
 	var flE: Variant = null; var escO = []; var escIn = 0
 	var obj = B.get("obj")
 	if vet and jt(obj) and obj.type == "flagship" and not jt(u.get("flagship")):
@@ -6744,8 +6767,8 @@ func aiUnit(u) -> void:
 			off = evalOffenseVet(candidate, ready, foes, focus) if vet else evalOffense(candidate, ready, foes)
 		var threat = evalThreatVet(candidate, threat_guns, threat_cells, move_rules, burn_evade, line_evade) if vet else evalThreat(candidate, foes)
 		var score: float = off - threat * tw
-		if vet and threat >= u["hp"]: score -= 25.0
-		var hd := _mind(candidate, pff, 99) if score_range or off <= 0 else 99.0
+		if vet and threat >= u["hp"]: score -= cliff
+		var hd := _mind(candidate, pff, 99) if score_range or off <= 0 or unloaded else 99.0
 		if score_range:
 			if prof["range"] > 0: score -= max(0, prof["range"] - hd) * prof["rw"]
 			else: score -= max(0, hd + prof["range"]) * prof["rw"]
@@ -6755,8 +6778,9 @@ func aiUnit(u) -> void:
 			if dv <= 3:
 				for x in escO:
 					if hdist(x, candidate) == 1: score -= 1
-		if off <= 0:
-			var nd: float = max(hd, fieldDist(PF, candidate, hd)); score -= max(0, nd - minR) * 4.0
+		if off <= 0 or unloaded:
+			var nd = fieldDist(PF, candidate, hd)
+			score -= max(0, startDist - nd if unloaded else nd - minR) * 4.0
 		score -= s.cost * 0.05
 		score -= torpThreat(u, candidate) * 0.9; score -= syncPull(u, candidate) * formation_weight * nem_formation_weight
 		if standard_hold: score -= hdist(candidate, obj.hex) * 1.6
@@ -6771,7 +6795,7 @@ func aiUnit(u) -> void:
 		if midFire:
 			var on_late = func():
 				if boardTargets(u).size() > 0: return
-				if aiVetBrace(u):   # R1 (AI-1): the veteran brace decision on the mid-move path, after the boarding deferral, before the volley
+				if aiShouldBrace(u):
 					vctx.brace = true; return
 				vctx.started = true
 				if not aiAbilities(u, live, "aim") or jt(u.get("dead")):
@@ -6783,36 +6807,33 @@ func aiUnit(u) -> void:
 	if vctx.brace:
 		if not jt(u.get("dead")): giveOrder(u, "brace")
 		B["aiActive"] = null; u["activated"] = true; return
-	if vctx.started:
-		var fired = vctx.result
-		if not live.call() or jt(B.get("over")): return
-		if not aiAfterFire(u, live, runner): return
-		if not jt(fired) and not jt(u.get("dead")) and u["hp"] < u["maxHp"] * 0.5 and canOrder(u, "brace") and evalThreat(u, alive("player")) > 10: giveOrder(u, "brace")
-		B["aiActive"] = null; u["activated"] = true; return
-	if u.get("ab") == "nova" and canAbility(u):
-		var bh = null; var bv = 0.0
-		for h in novaTargets(u):
-			var v = 0.0
-			for x in alive():
-				var d = hdist(x, h)
-				if d > 1: continue
-				var dm = 40.0 if d == 0 else 20.0
-				v += dm if x["side"] == "player" else -dm * 1.5
-			if v > bv:
-				bv = v; bh = h
-		if bh != null and bv >= 40:
-			useAbility(u, {"hex": bh})
-			if not live.call(): return
-	if not jt(u.get("isSq")) and not jt(runner) and tacticBoard(u):
-		if live.call():
-			B["aiActive"] = null; u["activated"] = true
-		return
-	if not live.call(): return
-	if aiVetBrace(u):
-		giveOrder(u, "brace"); B["aiActive"] = null; u["activated"] = true; return
-	if not aiAbilities(u, live, "aim"): return
-	var fired2 = aiVolley(u, live)
-	if fired2 == null: return
+	var fired = vctx.result
+	if not vctx.started:
+		if u.get("ab") == "nova" and canAbility(u):
+			var bh = null; var bv = 0.0
+			for h in novaTargets(u):
+				var v = 0.0
+				for x in alive():
+					var d = hdist(x, h)
+					if d > 1: continue
+					var dm = 40.0 if d == 0 else 20.0
+					v += dm if x["side"] == "player" else -dm * 1.5
+				if v > bv:
+					bv = v; bh = h
+			if bh != null and bv >= 40:
+				useAbility(u, {"hex": bh})
+				if not live.call(): return
+		if not jt(u.get("isSq")) and not jt(runner) and tacticBoard(u):
+			if live.call():
+				if not jt(B.get("over")) and aiShouldBrace(u, true): giveOrder(u, "brace")
+				B["aiActive"] = null; u["activated"] = true
+			return
+		if not live.call(): return
+		if aiShouldBrace(u):
+			giveOrder(u, "brace"); B["aiActive"] = null; u["activated"] = true; return
+		if not aiAbilities(u, live, "aim"): return
+		fired = aiVolley(u, live)
+	if fired == null or not live.call() or jt(B.get("over")): return
 	if not aiAfterFire(u, live, runner): return
-	if not jt(fired2) and not jt(u.get("isSq")) and not jt(u.get("dead")) and u["hp"] < u["maxHp"] * 0.5 and canOrder(u, "brace") and evalThreat(u, alive("player")) > 10: giveOrder(u, "brace")
+	if not jt(fired) and aiShouldBrace(u, true): giveOrder(u, "brace")
 	B["aiActive"] = null; u["activated"] = true
