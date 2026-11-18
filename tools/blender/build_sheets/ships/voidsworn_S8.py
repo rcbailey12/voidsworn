@@ -60,6 +60,7 @@ HULL = [(r[0], r[1], r[1], r[3], r[2], 0.0, 0.0) for r in ST]
 CROWN = 0.07       # the deck's crown at the centreline
 BWF = 0.58         # the belly's half-width share of hw
 SHELL = 0.28       # hull thickness (the solidify shell)
+B3_RELIEF = (0.10, 0.80)  # the bounds of the relief strip along each lower flank facet
 GUN_X = (3.55, 2.2, 0.85, -0.5, -1.85)   # the five broadside ports a side (hbattery fires 5 shots a volley)
 BALL_Z = 0.05      # the broadside deck line
 PL = dict(size=(0.48, 0.92), thick=(0.03, 0.07))
@@ -91,6 +92,57 @@ def ring(x, inset=0.0):
     h = half_ring(x, inset)
     full = h + [(-y, z) for (y, z) in reversed(h[1:-1])]
     return [(x, y, z) for (y, z) in full]
+
+
+def shell_ring(x):
+    """Add two straight-edge stations for the liner relief on each lower flank."""
+    half = half_ring(x)
+    a, b = half[4:6]
+    half[5:5] = [tuple(u + (v - u) * t for u, v in zip(a, b)) for t in B3_RELIEF]
+    return [(x, y, z) for y, z in half + [(-y, z) for y, z in reversed(half[1:-1])]]
+
+
+def relieve_liner(hull, shell, stations):
+    """Keep the exterior plating continuous and leave a break between the two liner runs."""
+    import bpy
+
+    strip = hull.vertex_groups.new(name='B3_relief')
+    liner = hull.vertex_groups.new(name='inner_shell')
+    shell.shell_vertex_group = liner.name
+    ring_size = len(hull.data.vertices) // len(stations)
+    port = range(3, 5 + len(B3_RELIEF))
+    flanks = [*port, *(ring_size - j for j in port)]
+    relief_vertices = []
+    for i, x in enumerate(stations):
+        # The longitudinal tear reaches the transverse joint on either flank.
+        if 4.5 <= x <= 5.5 or -3.6 <= x <= -2.5:
+            relief_vertices.extend(i * ring_size + j for j in range(ring_size))
+        elif -2.5 < x < 4.5:
+            relief_vertices.extend(i * ring_size + j for j in flanks)
+    strip.add(relief_vertices, 1.0, 'REPLACE')
+
+    tree = bpy.data.node_groups.new('S8 B-3 liner clearance', 'GeometryNodeTree')
+    for direction in ('INPUT', 'OUTPUT'):
+        tree.interface.new_socket(name='Geometry', in_out=direction, socket_type='NodeSocketGeometry')
+    source = tree.nodes.new('NodeGroupInput')
+    output = tree.nodes.new('NodeGroupOutput')
+    remove = tree.nodes.new('GeometryNodeDeleteGeometry')
+    remove.domain = 'FACE'
+    both = tree.nodes.new('ShaderNodeMath')
+    both.operation = 'MULTIPLY'
+    for i, group in enumerate((strip, liner)):
+        weight = tree.nodes.new('GeometryNodeInputNamedAttribute')
+        weight.data_type = 'FLOAT'
+        weight.inputs['Name'].default_value = group.name
+        tree.links.new(weight.outputs['Attribute'], both.inputs[i])
+    full_face = tree.nodes.new('ShaderNodeMath')
+    full_face.operation = 'GREATER_THAN'
+    full_face.inputs[1].default_value = 0.99
+    tree.links.new(both.outputs[0], full_face.inputs[0])
+    tree.links.new(full_face.outputs[0], remove.inputs['Selection'])
+    tree.links.new(source.outputs['Geometry'], remove.inputs['Geometry'])
+    tree.links.new(remove.outputs['Geometry'], output.inputs['Geometry'])
+    hull.modifiers.new('B-3 liner relief', 'NODES').node_group = tree
 
 
 def hw_at(x, z, inset=0.0):
@@ -146,8 +198,9 @@ def build(K):
     xs = sorted({r[0] for r in ST} | {x / 2 for x in range(-23, 27)}, reverse=True)
     xbow = [x for x in xs if x >= 4.8]; xaft = [x for x in xs if x <= 4.8]
     rings = [ring(x) for x in xs]
-    hull = K.loft_rings(CODE + '_hull', rings, 'siron')
+    hull = K.loft_rings(CODE + '_hull', [shell_ring(x) for x in xs], 'siron')
     md = hull.modifiers.new('shell', 'SOLIDIFY'); md.thickness = SHELL; md.offset = -1; md.use_rim = True
+    relieve_liner(hull, md, xs)
     K.mass('Hull: the blade', hull, 'black iron plate',
            note='a long faceted blade: crowned deck, big upper facets, the broadside band, lower facets, a flat worked belly; widest (5.3) at the stern third')
     K.mark('blade', 'hull', ['facet', 'step', 'chamfer'])
@@ -348,10 +401,10 @@ def build(K):
     # ---------------- INSIDE: iron decks, the gun crews' galleries, frames, the reactor, machinery ----------------
     IN = SHELL + 0.06
 
-    def deck_slab(name, z, x0, x1, n=6):
+    def deck_slab(name, z, x0, x1, inset=0.02, n=6):
         rs = []
         for x in [x0 + (x1 - x0) * i / n for i in range(n + 1)]:
-            hw = hw_at(x, z, IN) - 0.02
+            hw = hw_at(x, z, IN) - inset
             rs.append([(x, hw, z - 0.04), (x, hw, z + 0.04), (x, -hw, z + 0.04), (x, -hw, z - 0.04)])
         K.loft_rings('in_deck_' + name, rs, 'deck', inside=True)
         K.inside.append(dict(kind='deck', name={'upper_aft': 'upper', 'main_aft': 'gun'}.get(name, name), z=z, x=(x1, x0)))
@@ -398,14 +451,13 @@ def build(K):
             ya, yb = (y_in, w) if side > 0 else (-w, -y_in)
             K.room('%s_%s' % (name, 'p' if side > 0 else 's'), kind, min(x0, x1), max(x0, x1), ya, yb, z0, z1, note=note)
     # The gun deck floor and upper deck sit above peel B-3, between the bow and aft decks.
-    deck_slab('bow', -0.12, 10.6, 5.1)
-    deck_slab('upper', 0.58, 4.85, -2.65); deck_slab('gun', -0.3, 4.85, -2.65)
-    deck_slab('upper_aft', 0.58, -2.85, -11.3); deck_slab('main_aft', -0.45, -2.85, -11.3)
-    for i, x in enumerate((11.2, 9.4, 7.6, 5.25, 4.75, 2.85, 1.5, 0.15, -1.2, -2.6, -3.05, -4.0, -5.8, -7.6, -9.4, -11.3)):
-        # in the gun deck compartment the frames stop clear of the gun deck peel (B-3 at -0.72): an upper and a lower half, a band
-        # of about 0.35 kept clear either side (the game tears a peel with a V kink and waves, fx_death.gd)
+    deck_slab('bow', -0.12, 10.6, 5.65)
+    deck_slab('upper', 0.58, 4.85, -2.65); deck_slab('gun', -0.12, 4.10, -2.65, inset=0.22)
+    deck_slab('upper_aft', 0.58, -2.85, -11.3); deck_slab('main_aft', -0.45, -3.55, -11.3)
+    for i, x in enumerate((11.2, 9.4, 7.6, 5.75, 4.75, 2.85, 1.5, 0.15, -1.2, -2.6, -3.55, -4.0, -5.8, -7.6, -9.4, -11.3)):
+        # The adjacent frames sit clear of the transverse crossings. The gun deck frames stop short of the B-3 peel.
         if -2.75 < x < 5.0:
-            frame_at('F%d_upper' % i, x, zr=[(-0.36, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -1.06)], record=False)
+            frame_at('F%d_upper' % i, x, zr=[(-0.17, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -1.06)], record=False)
         else:
             frame_at('F%d' % i, x)
     room('fire_control', 'machinery', 9.2, 7.9, -0.08, 0.45, note='the forward fire-control room: the broadside directors (no AI: plotted by hand)')
@@ -425,7 +477,7 @@ def build(K):
     room('reactor', 'core', -4.3, -7.6, -1.18, 0.52, ymax=1.3, note='the reactor: its heat goes up through the plenum into the spires (hp_core)')
     side_room('coolant', 'machinery', -4.3, -7.6, -0.85, 0.5, 1.38, note='coolant pumps and heat exchangers either side of the reactor')
     room('plenum', 'machinery', -4.15, -9.0, 0.63, 0.82, note='the heat plenum feeding the spire line')
-    room('roll_hall', 'crew', -3.15, -4.15, -0.41, 0.52, note='the Roll: the crew hall under the command deck')
+    room('roll_hall', 'crew', -3.55, -4.15, -0.41, 0.52, note='the Roll: the crew hall under the command deck')
     room('engine_room', 'engroom', -7.8, -10.0, -1.15, 0.52, note='the engine room and the two drives\' feeds')
     K.armour('upper facets and deck', 0.3, 'forged plate over the galleries and the turret hoists')
     K.armour('broadside band and lips', 0.35, 'the gun deck face, the heaviest belt')
@@ -487,6 +539,7 @@ def build(K):
     K.change('The spires stand aft of every turret and rise toward the middle of the row', 'so both turret pairs fire aft past and over the whole line (the fit check\'s ARC test); the spires are broad finned radiators, never masts, so nothing reads as a gun aimed through a mast (R240)')
     K.change('The hull is a little deeper (2.75 against S8\'s 2.2) and its flanks are angled facets round a vertical broadside band', 'the gun deck, upper deck and real insides need the depth (R215); R244: big flanks carry angled facets, never a flat wall')
     K.change('The shell rooms and hoist drives sit in the port and starboard gun galleries', 'clears the space below the B-3 peel inside the accepted hull (R254, issue 1059)')
+    K.change('The decks, frames and Roll hall clear the ends of B-3, and the inner liner has relief along the tear', 'keeps these parts inside their own wreck plating where B-3 meets B-1 and B-2 (issue 1059)')
     K.change('The hull is widest at the stern third (5.3 over the reactor); with the broadside barrels the outline is still widest amidships (7.1 at 56 percent), as S8\'s is', 'factions.md: "widest at the stern third"; S8\'s body is 4.4 from end to end, its width carried by the radiator bank and the guns')
     K.change('The two engine bells are bigger (2.1 across) and their drums run 1.55 deep into the stern', 'factions.md: "big bells, ember orange, deep-set"; S8\'s two bells are its stern\'s identity and must read from the battle camera')
     K.change('Weapons built from the lore, not S8\'s generic barrels (R221)', 'the broadside guns are heavy short guns in deep round ports (R244: a round opening has depth); the Sear turrets are forged turrets with one heavy focusing emitter and radiator fins (las); the spark flak a squat drum with twin braked barrels and ammunition drums (tools/blender/kits/voidsworn/README.md)')

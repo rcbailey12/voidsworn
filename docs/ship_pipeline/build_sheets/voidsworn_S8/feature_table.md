@@ -147,9 +147,9 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 ## INSIDE (R98, R209): what each break reveals
 
-Deck levels (height): bow deck -0.12 (11% to 31%); upper deck 0.58 (32% to 60%); gun deck -0.30 (32% to 60%); upper deck 0.58 (61% to 92%); gun deck -0.45 (61% to 92%).
+The bow deck sits at -0.12 (11% to 29%). The forward decks sit at 0.58 (upper, 32% to 60%) and -0.12 (gun, 35% to 60%). The aft decks sit at 0.58 (upper, 61% to 92%) and -0.45 (gun, 63% to 92%).
 
-Bulkhead and frame stations: F0 8.5%, F1 15.2%, F2 21.9%, F3 30.6%, F4 32.4%, F5 39.4%, F6 44.4%, F7 49.4%, F8 54.5%, F9 59.6%, F10 61.3%, F11 64.8%, F12 71.5%, F13 78.2%, F14 84.8%, F15 91.9%.
+Bulkhead and frame stations are F0 8.5%, F1 15.2%, F2 21.9%, F3 28.7%, F4 32.4%, F5 39.4%, F6 44.4%, F7 49.4%, F8 54.5%, F9 59.6%, F10 63.2%, F11 64.8%, F12 71.5%, F13 78.2%, F14 84.8%, and F15 91.9%.
 
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
@@ -172,7 +172,7 @@ Bulkhead and frame stations: F0 8.5%, F1 15.2%, F2 21.9%, F3 30.6%, F4 32.4%, F5
 | coolant p (machinery) | 65.9 to 78.2 | 1.38 to 1.54 | -0.85 to 0.50 | coolant pumps and heat exchangers either side of the reactor |
 | coolant s (machinery) | 65.9 to 78.2 | -1.54 to -1.38 | -0.85 to 0.50 | coolant pumps and heat exchangers either side of the reactor |
 | plenum (machinery) | 65.4 to 83.3 | -1.18 to 1.18 | 0.63 to 0.82 | the heat plenum feeding the spire line |
-| roll hall (crew) | 61.7 to 65.4 | -1.80 to 1.80 | -0.41 to 0.52 | the Roll: the crew hall under the command deck |
+| roll hall (crew) | 63.2 to 65.4 | -1.85 to 1.85 | -0.41 to 0.52 | the Roll, the crew hall under the command deck |
 | engine room (engroom) | 78.9 to 87.0 | -1.05 to 1.05 | -1.15 to 0.52 | the engine room and the two drives' feeds |
 
 | Armour zone | Thickness (units) | Note |
@@ -230,6 +230,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **The spires stand aft of every turret and rise toward the middle of the row.** so both turret pairs fire aft past and over the whole line (the fit check's ARC test); the spires are broad finned radiators, never masts, so nothing reads as a gun aimed through a mast (R240).
 - **The hull is a little deeper (2.75 against S8's 2.2) and its flanks are angled facets round a vertical broadside band.** The gun deck, upper deck and real insides need the depth (R215). R244 calls for angled facets along the flanks.
 - **The shell rooms and hoist drives sit in the port and starboard gun galleries.** This clears the space below the B-3 peel inside the accepted hull (R254, issue 1059).
+- **The decks, frames and Roll hall clear the ends of B-3.** The liner has relief along B-3 and across its joints with B-1 and B-2 so the broken interior stays within its own plating (issue 1059).
 - **The hull is widest at the stern third (5.3 over the reactor); with the broadside barrels the outline is still widest amidships (7.1 at 56 percent), as S8's is.** factions.md: "widest at the stern third"; S8's body is 4.4 from end to end, its width carried by the radiator bank and the guns.
 - **The two engine bells are bigger (2.1 across) and their drums run 1.55 deep into the stern.** factions.md: "big bells, ember orange, deep-set"; S8's two bells are its stern's identity and must read from the battle camera.
 - **Weapons built from the lore, not S8's generic barrels (R221).** the broadside guns are heavy short guns in deep round ports (R244: a round opening has depth); the Sear turrets are forged turrets with one heavy focusing emitter and radiator fins (las); the spark flak a squat drum with twin braked barrels and ammunition drums (tools/blender/kits/voidsworn/README.md).
