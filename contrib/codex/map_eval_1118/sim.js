@@ -204,13 +204,14 @@ function setupBattle(H, cell, seed) {
     trialTempo: ['tempo', 'all', 'hunt_all', 'recommended'].includes(cell.setup),
     huntTuning: cell.huntTuning ?? (followups.includes(cell.setup) ? huntSettings[0] : null),
   };
-  if (boss) config.trialEnemies = H.genEnemyFleet(ef, sector, config.col, 'boss');
-  else config.enemies = e.map(tpl => ({tpl}));
+  if (boss) {
+    if (!cell.generateBossInBattle) config.trialEnemies = H.genEnemyFleet(ef, sector, config.col, 'boss');
+  } else config.enemies = e.map(tpl => ({tpl}));
   H.startBattle(config);
   const B = H.getB();
   B.alt = true;
   for (const u of B.units) u.activated = false;
-  return {B, config, ef};
+  return {B, config, ef, run};
 }
 
 function deployment(H) {
@@ -468,11 +469,13 @@ async function main() {
   console.log(`${rows.length} rows, ${rows.filter(r => r.timeout).length} reached the round cap`);
 }
 
-if (isMainThread) main().catch(error => { console.error(error); process.exit(1); });
-else {
+if (require.main === module && isMainThread) main().catch(error => { console.error(error); process.exit(1); });
+if (require.main === module && !isMainThread) {
   const H = harness(workerData);
   parentPort.on('message', async msg => {
     if (!msg) { parentPort.close(); return; }
     parentPort.postMessage({index:msg.index, rows:await runTask(H, msg.task, workerData)});
   });
 }
+
+module.exports = { harness, setupBattle, encounters, sources, huntSettings };

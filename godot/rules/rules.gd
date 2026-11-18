@@ -966,6 +966,161 @@ func deploy(units: Array, side, zoneFn = null) -> void:
 			var x = SQRT3 * ((target.q - u.q) + (target.r - u.r) / 2.0); var y = 1.5 * (target.r - u.r)
 			u["facing"] = fmod(fmod(JSM.jsround(JSM.atan2(y, x) * 180.0 / PI / 60.0), 6.0) + 6.0, 6.0)
 
+# Issue 1050: the optional map package from contrib/codex/map_eval_1118/sim.js and trial_rules.js.
+const MAP_TRIAL_ENCOUNTERS := ["rout", "ambush", "defend", "hunt", "intercept", "break", "hold", "flagship"]
+const MAP_TRIAL_HUNT_GAP := 5
+
+func _map_trial_shape(enc: String, map, boss: bool, no_star: bool, seed: int) -> String:
+	var shapes: Array = ENCOUNTERS[enc]["shapes"]
+	var pool := (["ring", "open", "hourglass"].filter(func(s): return shapes.has(s)) if boss else shapes.duplicate())
+	if no_star or map not in ["storm", "graveyard"]:
+		pool = pool.filter(func(s): return s != "deadstar")
+	while pool.count("hourglass") < 2: pool.append("hourglass")
+	if enc == "rout":
+		while pool.count("corridor") < 2: pool.append("corridor")
+	if map in ["belt", "graveyard"]: pool.append_array(["archipelago", "archipelago"])
+
+	# The trial's separate shape draw leaves the battle PRNG at its original seed.
+	var index := MAP_TRIAL_ENCOUNTERS.find(enc)
+	if boss: index = 8 + (int(RUN["sector"]) - 1) * 2 + int(enc == "ambush")
+	var channel := 8 * index + 2
+	var x := (seed ^ (channel * 0x9e3779b9)) & 0xffffffff
+	x = ((x ^ (x >> 16)) * 0x21f0aaad) & 0xffffffff
+	x = ((x ^ (x >> 15)) * 0x735a2d97) & 0xffffffff
+	var draw := float(x ^ (x >> 15)) / 4294967296.0
+	return pool[floori(draw * pool.size())]
+
+func _map_trial_scale(value: float) -> float:
+	return JSM.jsround(value * 1.25)
+
+func _map_trial_scale_unit(u: Dictionary) -> void:
+	u["speed"] = _map_trial_scale(u["speed"])
+	for w in u["weapons"]: w["r"] = _map_trial_scale(w["r"])
+
+func _map_trial_col(h: Dictionary) -> float:
+	return h.q + floor(h.r / 2.0)
+
+func _map_trial_face(u: Dictionary, target: Dictionary) -> void:
+	var x = SQRT3 * ((target.q - u.q) + (target.r - u.r) / 2.0)
+	var y = 1.5 * (target.r - u.r)
+	u["facing"] = posmod(int(JSM.jsround(JSM.atan2(y, x) / (PI / 3.0))), 6)
+
+func _map_trial_center(units: Array) -> Dictionary:
+	var q := 0.0
+	var r := 0.0
+	for u in units:
+		q += u.q
+		r += u.r
+	return {"q": q / units.size(), "r": r / units.size()}
+
+func _map_trial_spot(u: Dictionary, score: Callable, facing: int) -> void:
+	var occupied := occMap()
+	var best := -INF
+	var spot = null
+	for h in boardHexes():
+		var occupant = occupied.get(hkey(h.q, h.r))
+		if blocks(terr(h.q, h.r)) or (occupant != null and not is_same(occupant, u)): continue
+		var value: float = score.call(h)
+		if value > best:
+			best = value
+			spot = h
+	if spot != null:
+		u.q = spot.q
+		u.r = spot.r
+		u.facing = facing
+
+func _map_trial_hunt(player: Array, enemy: Array) -> void:
+	if enemy.is_empty(): return
+	var bb := boardBounds()
+	JSM.ssort(enemy, _byCpHp)
+	var quarry: Dictionary = enemy[0]
+	var escorts := enemy.slice(1)
+	var row: float = bb.r0 + 1
+	for i in range(player.size()):
+		var start := offToAx(bb.c0 + i % 2, bb.r1 - floor(i / 2.0))
+		_map_trial_spot(player[i], func(h): return -hdist(h, start) - 4 * (_map_trial_col(h) - bb.c0), 0)
+	_map_trial_spot(quarry, func(h): return -4 * absf(_map_trial_col(h) - (bb.c1 - 1)) - 2 * absf(h.r - row), 3)
+	var quarry_col := _map_trial_col(quarry)
+	for i in range(mini(2, escorts.size())):
+		var target := offToAx(quarry_col + MAP_TRIAL_HUNT_GAP, quarry.r - 2 * i)
+		_map_trial_spot(escorts[i], func(h):
+			var d := hdist(h, quarry)
+			return -25 * maxf(0, absf(MAP_TRIAL_HUNT_GAP - d) - 1) - 20 * maxf(0, quarry_col - _map_trial_col(h)) - hdist(h, target), 3)
+	for i in range(maxi(0, escorts.size() - 2)):
+		var target := offToAx(bb.c1 - i % 2, row - 2 * floor(i / 2.0))
+		_map_trial_spot(escorts[i + 2], func(h): return -hdist(h, target) - 5 * maxf(0, quarry_col - _map_trial_col(h)), 3)
+	for i in range(player.size()):
+		var u: Dictionary = player[i]
+		var reach := 0.0
+		for w in u["weapons"]:
+			if w["k"] != "flak": reach = maxf(reach, _map_trial_scale(w["r"]))
+		var gap := reach + ceilf(_map_trial_scale(u["speed"]) * 6)
+		var start_row: float = JSM.jsround(bb.r1 - (bb.r1 - bb.r0) * 0.3) + (i % 3 - 1) * 2
+		_map_trial_spot(u, func(h):
+			return -8 * absf(hdist(h, quarry) - gap) - 4 * absf(h.r - start_row) - 40 * maxf(0, _map_trial_col(h) - (bb.c0 + 13)), 0)
+		_map_trial_face(u, quarry)
+
+	var aim := offToAx(bb.c0, JSM.jsround(bb.r0 + (bb.r1 - bb.r0) * 0.15))
+	var open := boardHexes().filter(func(h): return not blocks(terr(h.q, h.r)))
+	JSM.ssort(open, func(a, b):
+		var d := hdist(a, aim) - hdist(b, aim)
+		if d != 0: return d
+		var col := _map_trial_col(a) - _map_trial_col(b)
+		return col if col != 0 else hdist(a, quarry) - hdist(b, quarry))
+	B["mapTrialQuarry"] = quarry
+	B["mapTrialBearing"] = open[0]
+	for escort in escorts:
+		escort["mapTrialStart"] = {"q": escort.q, "r": escort.r}
+
+func _map_trial_ambush(player: Array, enemy: Array) -> void:
+	var bb := boardBounds()
+	var mid: float = (bb.r0 + bb.r1) / 2.0
+	var fleet := _map_trial_center(player)
+	JSM.ssort(enemy, func(a, b): return b.size - a.size)
+	for i in range(enemy.size()):
+		var south := i % 2 == 1
+		var row: float = bb.r1 - 1 if south else bb.r0 + 1
+		var col: float = 17 + 2 * floor(i / 2.0)
+		_map_trial_spot(enemy[i], func(h):
+			var wrong: bool = h.r < mid + 2 if south else h.r > mid - 2
+			var spacing := 2.0
+			for j in range(i % 2, i, 2): spacing = minf(spacing, hdist(enemy[j], h))
+			return -30 * int(wrong) + 3 * spacing - absf(_map_trial_col(h) - col) - 2 * absf(h.r - row), 3)
+		_map_trial_face(enemy[i], fleet)
+	for boss in enemy:
+		if not jt(boss["t"].get("boss")): continue
+		var escort = null
+		for u in enemy:
+			if not is_same(u, boss) and (u.r < mid) == (boss.r < mid):
+				if escort == null or hdist(u, fleet) < hdist(escort, fleet): escort = u
+		if escort != null:
+			var target := {"q": escort.q + 4, "r": escort.r}
+			_map_trial_spot(boss, func(h): return -hdist(h, target) - 30 * int((h.r < mid) != (escort.r < mid)), 3)
+			_map_trial_face(boss, fleet)
+		break
+
+func _map_trial_screen_boss(player: Array, enemy: Array) -> void:
+	if enemy.size() < 3 or player.is_empty(): return
+	var target = null
+	for u in enemy:
+		if jt(u["t"].get("boss")):
+			target = u
+			break
+	if target == null:
+		JSM.ssort(enemy, _byCpHp)
+		target = enemy[0]
+	var escorts := enemy.filter(func(u): return not is_same(u, target))
+	var front := _map_trial_center(escorts)
+	var hunters := _map_trial_center(player)
+	var dot := func(d): return (front.q - hunters.q) * (d[0] + d[1] / 2.0) + (front.r - hunters.r) * (d[0] / 2.0 + d[1])
+	var away: Array = DIRS[0]
+	for d in DIRS:
+		if dot.call(d) > dot.call(away): away = d
+	var goal := {"q": JSM.jsround(front.q) + 4 * away[0], "r": JSM.jsround(front.r) + 4 * away[1]}
+	var gap := hdist(front, hunters)
+	_map_trial_spot(target, func(h): return -3 * hdist(h, goal) - 8 * maxf(0, gap + 2 - hdist(h, hunters)), 3)
+	_map_trial_face(target, hunters)
+
 func approachDeploy() -> void:
 	var ap = B["approach"]; var hs = boardHexes()
 	if hs.size() == 0: return
@@ -1134,6 +1289,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 		u["sec"] = {"prow": {"max": JSM.jsround(u["maxHp"] * 0.3)}, "mid": {"max": JSM.jsround(u["maxHp"] * 0.45)}, "eng": {"max": JSM.jsround(u["maxHp"] * 0.25)}}
 		for k in u["sec"].keys(): u["sec"][k]["hp"] = JSM.jsround(u["sec"][k]["max"] * f)
 		u["crewMax"] = JSM.jsround((12.0 + u["size"] * 40.0) * (CREW_MULT[u["fac"]] if jt(CREW_MULT.get(u["fac"])) else 1.0) * (1.8 if u["boss"] else 1.0)); u["crew"] = u["crewMax"]; u["speed"] = u["speed"] + 1
+	if B != null and B.get("mapTrialReady") == true: _map_trial_scale_unit(u)
 	return u
 func fleetPower() -> float:
 	if RUN == null or RUN.get("fleet") == null: return 99.0
@@ -1154,8 +1310,11 @@ func startBattle(cfg: Dictionary) -> void:
 	JSM.rnd_seed(seed)
 	var enc = cfg["obj"] if ENCOUNTERS.has(cfg.get("obj")) else "rout"; var midR = floori(BH / 2.0)
 	var shape = cfg["shape"] if SHAPES.has(cfg.get("shape")) else "open"; var map = "station" if enc == "defend" else cfg.get("map")
-	if shape == "open" and not jt(cfg.get("edgeFeature")) and B0small(cfg) and ["rout", "hunt", "ambush"].has(enc): shape = "compact"
+	var map_trial: bool = RUN.get("mapTrial") == true
 	if not ["belt", "station", "planet", "storm", "graveyard"].has(map) and FAC_MAP.has(cfg.get("fac")) and rnd() < 0.55: map = pick(FAC_MAP[cfg["fac"]])
+	var trial_shape: bool = map_trial and not jt(cfg.get("edgeFeature"))
+	if trial_shape: shape = _map_trial_shape(enc, map, cfg.get("kind") == "boss", jt(cfg.get("noStar")) or RUN["sector"] == 1, seed)
+	if shape == "open" and not jt(cfg.get("edgeFeature")) and B0small(cfg) and ["rout", "hunt", "ambush"].has(enc): shape = "compact"
 	if (shape == "lanes" or shape == "ring") and map == "belt": map = pick(["station", "planet", "storm", "graveyard"])
 	var axisFree: bool = ["rout", "hold", "flagship"].has(enc) and cfg.get("kind") != "boss" and shape != "compact" and not (cfg.get("dep") == "ambush")
 	var wpick = func(l: Array):
@@ -1166,7 +1325,8 @@ func startBattle(cfg: Dictionary) -> void:
 			x -= e[1]
 			if x <= 0: return e[0]
 		return l[0][0]
-	var ak = cfg["arena"] if ARENAS.has(cfg.get("arena")) else (wpick.call(ENC_ARENA[enc]) if axisFree and ENC_ARENA.has(enc) else "strip")
+	var ak = "strip" if trial_shape and shape in ["hourglass", "corridor"] else cfg.get("arena")
+	if not ARENAS.has(ak): ak = wpick.call(ENC_ARENA[enc]) if axisFree and ENC_ARENA.has(enc) else "strip"
 	ARENA = {"kind": ak}
 	for k in ARENAS[ak].keys(): ARENA[k] = ARENAS[ak][k]
 	if shape == "deadstar" and (jt(cfg.get("noStar")) or ["belt", "station", "planet"].has(map)) and not jt(cfg.get("keepShape")):   # R1: cfg.noStar (campaign sector 1) never fields the dead star
@@ -1292,6 +1452,8 @@ func startBattle(cfg: Dictionary) -> void:
 			if not JSM.has_same(back, u): front.append(u)
 		deploy(front, "enemy", func(h): return h.c >= 16 + CX and h.c <= 20 + CX and absf(h.r - mr) <= 6)
 		if back.size() > 0: deploy(back, "enemy", func(h): return h.c >= bb0.c0 and h.c <= bb0.c0 + 3 and absf(h.r - mr) <= 5)
+	elif enc == "hunt" and map_trial:
+		_map_trial_hunt(caps("player"), caps("enemy"))
 	elif enc == "hunt":
 		var bb0 = boardBounds(); var mr = floori((bb0.r0 + bb0.r1) / 2.0); var es = []
 		for u in B["units"]:
@@ -1328,6 +1490,8 @@ func startBattle(cfg: Dictionary) -> void:
 		for u in B["units"]:
 			if jt(u.get("transport")): tr.append(u)
 		deploy(tr, "enemy", func(h): return h.r <= bb.r0 + 1 and h.c >= 13 + CX and h.c <= 18 + CX)
+	if map_trial and enc == "ambush": _map_trial_ambush(caps("player"), caps("enemy"))
+	if map_trial and enc == "rout" and cfg.get("kind") == "boss": _map_trial_screen_boss(caps("player"), caps("enemy"))
 	clearSpawns()
 	treeBattleStart()
 	deployWings()
@@ -1341,6 +1505,9 @@ func startBattle(cfg: Dictionary) -> void:
 		emit({"t": "adaptation", "source": "carrier_report"})
 		var ad = B.get("adapt"); var aw = B.get("adaptWings")
 		logm("Scouts report your carriers. The enemy " + (("bolted extra point defense onto " + (ns(ad) + " ships" if ad > 1 else "one ship")) if jt(ad) else "") + (" and " if (jt(ad) and jt(aw)) else "") + (("launched " + ("two fighter wings" if aw > 1 else "a fighter wing") + " to hunt your craft") if jt(aw) else "") + ".", "ember")
+	if map_trial:
+		for u in B["units"]: _map_trial_scale_unit(u)
+		B["mapTrialReady"] = true
 	startSideTurn("player")
 	for u in alive("enemy"): u["intercepts"] = max(0, 2 - z0(u.get("treeFlakDown"))) if _has_flak(u) else 0
 	var F = FACTIONS[cfg["fac"]]
@@ -3776,6 +3943,13 @@ func aiObjScore(u, v) -> float:
 	var o = B.get("obj")
 	if o == null or jt(u.get("isSq")): return 0.0
 	if jt(u.get("transport")): return -(o.exitR - v.r) * 14.0
+	var quarry = B.get("mapTrialQuarry")
+	if quarry != null:
+		if is_same(u, quarry):
+			return minf(_mind(v, caps("player"), 30), 9) - 10 * hdist(v, B["mapTrialBearing"])
+		var station = u.get("mapTrialStart")
+		if station != null:
+			return -80 * hdist(v, station) if B["round"] < 3 and not jt(quarry.get("dead")) else 0.0
 	if o.type == "hunt" and jt(u.get("flagship")):
 		var d = _mind(v, caps("player"), 30); return min(d, 9) * 3.0
 	var vet = aiVet(); var urg = aiObjUrgency(o) if vet else 1.0
@@ -6778,7 +6952,7 @@ func aiUnit(u) -> void:
 			if dv <= 3:
 				for x in escO:
 					if hdist(x, candidate) == 1: score -= 1
-		if off <= 0 or unloaded:
+		if not is_same(u, B.get("mapTrialQuarry")) and (off <= 0 or unloaded):
 			var nd = fieldDist(PF, candidate, hd)
 			score -= max(0, startDist - nd if unloaded else nd - minR) * 4.0
 		score -= s.cost * 0.05
