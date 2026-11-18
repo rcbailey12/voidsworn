@@ -1,39 +1,41 @@
-# station_T2: damage-side debris, issue 863
+# station_T2_debris, issue 863
 
-Current stage: **part set built, runtime proof pending**. The generated GLB contains 34 pieces and 14,580 triangles.
-The standing suite passed 63 rows with two existing KNOWN rows, and the Godot project import reported no script errors.
-The watchdog held cache installation on its game-open check. That waiting launcher was stopped without starting Godot.
-Installed game proof is not built yet: the loaded clearance check, camera 170/60 pictures and visual comparison remain
-unverified. The build is recorded in [debris_manifest.json](debris_manifest.json); no runtime pass is claimed here.
+A loose trail of wreckage follows the damaged 270-degree stub. Five pressure plates have folded edges, backing ribs
+and burnt inner faces. Three open docking trusses have bent chords and missing braces. A split pod, a broken sensor
+dish and 22 fine chips and rail slivers fill out the trail. The CC0 part set uses Hegemony PBR tiles from Ryan's
+approved issue 975 run 3 export, at the station's two-world-unit repeat.
 
-The painted issue 975 station is the base. This job adds a separate part set off the broken 270-degree stub arm,
-following the loose cloud in the accepted T2 scale view. The station's base meshes, scale, paint and radiator animation
-remain inputs. No rules, terrain cells, movement cost or collision bodies are added.
+Method. [T2 station recipe](../../../../tools/recipe/stations/station_T2.json),
+[parts generator](../../../../tools/blender/kits/hegemony_station/debris.py) and
+[accepted T2 plan](../../../../contrib/muse/design/station_concept_2026_11/station_T2_scale.jpg).
+The generator is a separate Blender export with no station rebake. The loaded debris is 2,306 triangles across
+55 surfaces. The base station is 702,516 triangles, for 704,822 total.
 
-Method: [debris.py](../../../../tools/blender/kits/hegemony_station/debris.py) builds six thick folded plates with
-ragged edges and back stiffeners, four bent I-section frames, three cold pressure pods with bands and severed cradles,
-and 21 fine shell fragments. Each plate's tear and fold varies. The pieces reuse the installed T2's Hegemony PBR
-materials at its two-unit repeat. No concept image is projected. These new meshes are own work, CC0.
-The source construction is the station's pressure plating, docking structure and equipment pods, not generic rocks.
+The board reads the blocked station cells from the battle. It leaves the authored group in place whenever the true
+footprint fits and can push it outward along the stub when a larger station needs more room. The pieces turn
+independently at 0.12 to 0.38 degrees per second around fixed centres. The pose updates up to 12 Hz, which moves an
+edge by less than one pixel at camera 60. Debris has no collision bodies or terrain entries.
 
-The separate debris cache is attached by [the board prop loader](../../../../godot/assets/ships/a4_props.gd).
-[The motion script](../../../../godot/render/station_debris.gd) turns each piece slowly about its own axis at
-0.12 to 0.38 degrees per second. Centres stay fixed, with no loop reset or outward drift across the board.
-This job chooses the brief's tumble option so a long battle cannot carry pieces into new flight space.
+[The loaded check](../../../../tools/blender/kits/hegemony_station/debris_check.gd) reads the rules radius from
+`TERRAIN_META.stationR` through the battle view, falling back to 1. It checks each fragment's full tumble sphere against
+each blocked cell across all station bearings. It also checks against every fitted roster and boss hull floor, the other
+pieces, and the measured motion. Only the detached field is covered by this clearance proof.
 
-Placement is below the fitted ships and outside the whole seven-cell station circumcircle. The
-[loaded-geometry check](../../../../tools/blender/kits/hegemony_station/debris_check.gd) reads those cells from the
-real rules scenario, measures every exported mesh's full tumble sphere and compares it with every cell under every
-station bearing. It measures fitted roster and boss hull bottoms through ShipView, checks separate tumble spheres,
-source hashes, PBR textures and triangle totals, and confirms changing mesh bounds at 60 seconds with no collision
-objects or rules-view changes. The per-piece JSON retains the comparison against all seven individual cells.
-The clearance proof is continuous for these fixed centres and arbitrary rotation, rather than a sample of motion poses.
+The final field clears the seven-cell footprint by at least **18.71 world units** and the 19-cell footprint by **1.38**.
+It stays **2.39 world units** below the lowest fitted hull, the Eclipse D22. Both PC projects load the same coated
+station and the 32 debris pieces. The 19-cell run loaded the issue 983 rules from `363df0268cef` for the check.
 
-Reproduce by double-clicking [debris_run.bat](../../../../tools/blender/kits/hegemony_station/debris_run.bat) after
-preparing the painted station and current game caches. The launcher preserves replaced debris caches and leaves the
-painted base cache untouched. It builds, installs, checks, captures twice and keeps the second pass. Native captures
-and logs stay in TEMP. `STATION_DEBRIS_RESUME=1` resumes at cache installation from a source-current export.
+- [Per-piece positions and clearances](debris_placement.md)
+- [Seven-cell check](debris_checks.json) and [19-cell check](debris_checks_983.json)
+- [Parts manifest](debris_manifest.json) and [matching PC project files](debris_installation.json)
+- [Camera positions and fragment projections](debris_captures.json)
 
-The field's lower depth separates it from the flight plane, unlike the concept's unmeasured depth. The base station's
-previously reported overhang remains; this job does not certify or change the original station footprint. The small
-pieces are for the Board's visual review at camera 170 before close inspection at 60. Ryan's final look remains owed.
+The solo #207 test used 20 ships and four squadrons with this field installed. The initial 1080p run peaked at
+13.790 ms. The control with the debris hidden peaked at 13.584 ms. All three 1080p frame medians on the same build's
+warm repeat cleared 12.5 ms, with a slowest median of **12.241 ms**. The slowest of the three 4K GPU medians was
+**6.776 ms**. [Scene gate measurements](debris_gate.json)
+
+Double-click [debris_run.bat](../../../../tools/blender/kits/hegemony_station/debris_run.bat) after preparing the approved
+paint and ship caches in the checkout. It runs the installed clearance check, keeps the second camera pass, then measures
+the 20-ship #207 station-map gate with a solo GPU claim. `STATION_DEBRIS_RESUME=1` reuses an export with a matching source
+hash. `STATION_DEBRIS_RULES` takes a second rules source for testing a pending footprint.

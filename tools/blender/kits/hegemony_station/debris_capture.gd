@@ -44,10 +44,10 @@ func _run() -> void:
 	camera.input_enabled = false
 	camera.current = true
 	var views := [
-		{"name":"station_T2_debris170","radius":170.0,"target":Vector3(4,-2,9),"beta":0.98,"alpha":-2.08,"time":0.0},
-		{"name":"station_T2_debris60","radius":60.0,"target":Vector3(0,-22,33),"beta":0.98,"alpha":-2.08,"time":0.0},
-		{"name":"station_T2_debris60_t600","radius":60.0,"target":Vector3(0,-22,33),"beta":0.98,"alpha":-2.08,"time":600.0},
-		{"name":"station_T2_debris_plan","radius":170.0,"target":Vector3(3,0,8),"beta":0.12,"alpha":-PI/2,"time":0.0}]
+		{"name":"station_T2_debris170","radius":170.0,"target":Vector3(-2,-7,14),"beta":0.98,"alpha":0.35,"time":0.0},
+		{"name":"station_T2_debris60","radius":60.0,"target":Vector3(-3,-24,51),"beta":0.67,"alpha":0.35,"time":0.0},
+		{"name":"station_T2_debris60_t600","radius":60.0,"target":Vector3(-3,-24,51),"beta":0.67,"alpha":0.35,"time":600.0},
+		{"name":"station_T2_debris_plan","radius":170.0,"target":Vector3(-2,0,12),"beta":0.12,"alpha":0.35,"time":0.0}]
 	var report: Array = []
 	for view in views:
 		camera.r = view.radius
@@ -60,9 +60,13 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		var frame := viewport.get_texture().get_image()
 		if preload("res://tools/picture_provenance.gd").save_png(frame,args[0].path_join(view.name+".png")) != OK: quit(1); return
+		var pixels := {}
+		for piece in debris.find_children("T2_debris_*", "MeshInstance3D", true, false):
+			var point := camera.unproject_position(piece.global_position)
+			pixels[piece.name] = [point.x, point.y]
 		report.append({"name":view.name,"radius":view.radius,"target":[camera.t.x,camera.t.y,camera.t.z],
 			"beta":view.beta,"alpha":view.alpha,"seconds":view.time,
-			"debris_centre_pixel":camera.unproject_position(Vector3(0,-34,38))})
+			"piece_centres_px":pixels})
 		print("T2 DEBRIS CAPTURE ",view.name)
 	var file := FileAccess.open(args[0].path_join("debris_captures.json"),FileAccess.WRITE)
 	file.store_string(JSON.stringify(report,"\t")+"\n")

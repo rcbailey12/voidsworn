@@ -3,7 +3,6 @@ extends SceneTree
 const API = preload("res://rules/battle_api.gd")
 const BOARD = preload("res://render/board.gd")
 const BV = preload("res://world/blocker_visuals.gd")
-const PROPS = preload("res://assets/ships/a4_props.gd")
 const SV = preload("res://render/ship_view.gd")
 const PG = preload("res://render/placeholder_guard.gd")
 const PROBE = preload("inspect.gd")
@@ -17,29 +16,49 @@ func _init() -> void:
 
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
-	if args.size() != 1: quit(1); return
-	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(args[0].get_base_dir().path_join("debris_manifest.json")))
-	var generator := get_script().resource_path.get_base_dir().path_join("debris.py")
+	if args.size() < 1 or args.size() > 2: quit(1); return
+	var manifest_dir := args[0].get_base_dir()
+	var manifest = JSON.parse_string(FileAccess.get_file_as_string(manifest_dir.path_join("debris_manifest.json")))
+	if not manifest is Dictionary: printerr("Missing debris build manifest"); quit(1); return
+	var generator: String = get_script().resource_path.get_base_dir().path_join("debris.py")
 	require(manifest.get("generator_sha256","") == FileAccess.get_sha256(generator),"Debris cache source is stale")
 	require(manifest.get("material_source_sha256","") == FileAccess.get_sha256("res://assets/ships/station_T2/station_T2.glb"),
 		"Debris material source differs from painted T2")
 	var api = API.new()
-	require(api.load_rules() == "","Rules load")
+	if api.load_rules() != "": printerr("Rules load failed"); quit(1); return
+	# An optional rules source can prove a pending footprint without merging it.
+	var rules_sha := FileAccess.get_sha256("res://rules/rules.gd")
+	if args.size() == 2:
+		var candidate := GDScript.new()
+		candidate.source_code = FileAccess.get_file_as_string(args[1])
+		if candidate.source_code.is_empty() or candidate.reload() != OK:
+			printerr("Cannot load alternate rules"); quit(1); return
+		api.R = candidate.new()
+		if api.R.load_tables("res://rules/data/tables.json") != "": quit(1); return
+		rules_sha = FileAccess.get_sha256(args[1])
 	api.new_battle_scenario({"seed":863,"sector":3,"admiral":"vex","fleet":["harrow"],
 		"enemies":["c_marauder"],"fac":"corsair","obj":"rout","shape":"open",
 		"map":"station","dep":"line","kind":"battle"},863)
 	var board := BOARD.new()
 	root.add_child(board)
-	var footprint := BV.station_review_footprint(api.view(),board.hex_world)
-	require(footprint.get("cells",[]).size() == 7,"Expected live seven-cell station")
-	var before := JSON.stringify(api.view())
-	var station := PROPS.station(46.0)
+	var view: Dictionary = api.view()
+	var before := JSON.stringify(view)
+	board.build(api)
+	var footprint := BV.station_review_footprint(view, board.hex_world)
+	var station_radius := int(view.map.get("stationR", 1))
+	var expected_cells := 1 + 3 * station_radius * (station_radius + 1)
+	require(footprint.get("cells", []).size() == expected_cells,
+		"Station terrain must match the rules radius of %d hexes" % station_radius)
+	var station: Node3D
+	for prop in board.props.get_children():
+		if prop.has_meta("station_T2"):
+			station = prop
+			break
 	if station == null: printerr("Missing painted T2 cache"); quit(1); return
-	root.add_child(station)
 	var debris := station.get_node_or_null("station_T2_debris")
 	if debris == null: printerr("Missing debris cache"); quit(1); return
 	debris.set_process(false)
-	require(debris.get_meta("debris_export_sha256","") == FileAccess.get_sha256(args[0].get_base_dir().path_join("station_T2_debris.glb")),
+	require(debris.get_meta("debris_export_sha256","") == FileAccess.get_sha256(manifest_dir.path_join("station_T2_debris.glb")),
 		"Loaded debris cache differs from current export")
 	require(JSON.stringify(api.view()) == before,"Art changed rules view")
 	var base_triangles := 0
@@ -50,11 +69,17 @@ func _run() -> void:
 	var outside_radius := 0.0
 	var centre := Vector3(footprint.centre[0],0,footprint.centre[2])
 	for cell in footprint.cells:
+		require(api.R.hdist(cell, view.map.station) <= station_radius,
+			"Station terrain exceeds the rules radius")
 		outside_radius = maxf(outside_radius,Vector3(cell.x,0,cell.z).distance_to(centre)+float(footprint.hex_radius))
+	require(Vector2(station.position.x, station.position.z).is_equal_approx(Vector2(centre.x, centre.z)),
+		"Board placed the station away from the footprint centre")
+	require(station.basis.y.is_equal_approx(Vector3.UP), "Station tilt invalidates the bearing-independent bounds")
 	var floor_y := INF
 	var lowest_ship := ""
 	var ships: Array = []
 	var seen := {}
+	var ship_assets: Dictionary = SV.manifest().get("ships", {})
 	for faction in api.R.FACTIONS:
 		var roster: Array = api.R.FACTIONS[faction].get("roster",[]).duplicate()
 		var boss: String = str(api.R.FACTIONS[faction].get("boss",""))
@@ -69,6 +94,8 @@ func _run() -> void:
 			sv.setup(unit,Vector3.ZERO)
 			if PG.stop_if_any(): return
 			if not seen.has(sv.code):
+				require(not ship_assets.has(sv.code) or sv.a4,
+					"Installed ship fell back to an older hull: " + sv.code)
 				seen[sv.code] = true
 				var box := PROBE.mesh_bounds(sv.hull,sv)
 				ships.append({"code":sv.code,"min_y":box.position.y})
@@ -80,7 +107,7 @@ func _run() -> void:
 	var top := -INF
 	var surfaces := 0
 	for mi in debris.find_children("T2_debris_*","MeshInstance3D",true,false):
-		var xf: Transform3D = debris.global_transform.affine_inverse() * mi.global_transform
+		var xf: Transform3D = station.global_transform.affine_inverse() * mi.global_transform
 		var radius := 0.0
 		var count := 0
 		for s in mi.mesh.get_surface_count():
@@ -89,12 +116,12 @@ func _run() -> void:
 			for vertex in arrays[Mesh.ARRAY_VERTEX]: radius = maxf(radius,(xf.basis*vertex).length())
 			count += arrays[Mesh.ARRAY_INDEX].size()/3
 			var mat := mi.get_active_material(s) as BaseMaterial3D
-			require(mat != null and mat.albedo_texture != null and mat.normal_texture != null,
+			require(mat != null and mat.albedo_texture != null and mat.normal_texture != null
+				and mat.albedo_color.r < 0.999,
 				"Missing inherited PBR paint: " + str(mi.name))
 		var p: Vector3 = xf.origin
 		var radial := Vector2(p.x,p.z).length()-radius-outside_radius
-		# Board._station lifts the complete station root by 3, including debris.
-		var maximum_y := p.y+radius+3.0
+		var maximum_y := p.y + radius + station.global_position.y
 		require(radial > 0,"Tumble envelope enters blocked-cell circumcircle: " + str(mi.name))
 		require(maximum_y < floor_y-2.0,"Debris enters fitted ship flight space: " + str(mi.name))
 		require(absf(radius-float(mi.get_meta("debris_radius"))) < .001,"Export lost radius/scale: " + str(mi.name))
@@ -129,7 +156,8 @@ func _run() -> void:
 	var report := {"pass":failures.is_empty(),"failures":failures,"pieces":rows,"triangles":total,
 		"base_station_triangles":base_triangles,"combined_triangles":base_triangles+total,
 		"base_glb_sha256":FileAccess.get_sha256("res://assets/ships/station_T2/station_T2.glb"),
-		"surfaces":surfaces,"footprint":footprint,"all_bearings_blocked_radius":outside_radius,
+		"surfaces":surfaces,"footprint":footprint,"station_radius_hexes":station_radius,
+		"rules_sha256":rules_sha,"all_bearings_blocked_radius":outside_radius,
 		"minimum_blocked_clearance":min_clearance,"maximum_debris_world_y":top,
 		"lowest_fitted_ship_y":floor_y,"lowest_ship":lowest_ship,"measured_ships":ships,
 		"clearance_proof":"Full vertex-radius spheres cover every tumble angle continuously; radial bound covers every station bearing. Visual debris has no collision or terrain entry.",
@@ -138,6 +166,5 @@ func _run() -> void:
 	file.store_string(JSON.stringify(report,"\t")+"\n")
 	print("T2 DEBRIS CHECK ","PASS" if failures.is_empty() else "FAIL",": ",rows.size()," pieces; ",total,
 		" triangles; cell clearance ",min_clearance,"; flight clearance ",floor_y-top)
-	station.free()
 	board.free()
 	quit(0 if failures.is_empty() else 1)

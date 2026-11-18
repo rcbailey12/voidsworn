@@ -758,11 +758,17 @@ func _terrain() -> void:
 					seen[nk] = true
 					stack.append(nk)
 		var cen := Vector3.ZERO
+		var centres: Array[Vector3] = []
 		for ck in cl:
 			var qr2: PackedStringArray = ck.split(",")
-			cen += hex_world(int(qr2[0]), int(qr2[1]))
+			var p := hex_world(int(qr2[0]), int(qr2[1]))
+			centres.append(p)
+			cen += p
 		cen /= float(cl.size())
-		_station(cen, rng, STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size())
+		var clearance := HS
+		for p in centres:
+			clearance = maxf(clearance, cen.distance_to(p) + HS)
+		_station(cen, rng, STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size(), clearance)
 
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
@@ -808,9 +814,9 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	BV.fit_hulk(mi, c)
 
 
-func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0) -> void:
+func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0, clearance := 0.0) -> void:
 	# A4's painted station (O1_37 in its own paint); the flat grey clay below stays as the fallback
-	var a4 := A4P.station(size)
+	var a4 := A4P.station(size, clearance)
 	if a4 != null:
 		var bearing := rng.randf() * 6.0
 		var attitude := Vector3(0, bearing, 0) if a4.has_meta("station_T2") else Vector3(0.06, bearing, 0.04)

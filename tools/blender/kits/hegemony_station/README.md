@@ -2,26 +2,22 @@
 
 ## Issue 863: detached damage-side debris
 
-After painting/installing T2, double-click `debris_run.bat`. It builds only a separate debris part set, imports the
-existing T2 PBR materials, installs `gen/ships/station_T2_debris.scn`, checks the loaded field, captures twice and
-keeps the second pass. `STATION_DEBRIS_RESUME=1` skips rebuilding when only the check or capture needs rerunning.
-Output is `Downloads/voidsworn_test/board/issue-863/shots`; scratch logs and native captures stay in TEMP.
-The approved base GLB and station scene cache are inputs and remain untouched. Replaced debris caches are preserved.
+After installing the approved issue 975 run 3 paint, double-click `debris_run.bat` from the checkout. It builds the
+part set with the T2 paint, installs `gen/ships/station_T2_debris.scn`, checks the live board, captures twice and keeps
+the second pass. The final step runs the solo #207 station-map gate. `STATION_DEBRIS_RESUME=1` reuses a current build.
+`STATION_DEBRIS_RULES` can point to an upcoming Godot rules file for a second clearance check in the same run.
+Review pictures go to `board/issue-863/shots`. The launcher prints the TEMP folder for logs and measurements.
+The install preserves replaced debris caches.
 
-`debris.py` builds thick, folded torn plates with exposed edges and stiffeners, kinked I-section girders, cold pressure
-pods with bands/ribs/severed cradles, and fine shell fragments. Its own meshes are CC0. The source is the station's
-pressure-shell and docking-frame construction, rather than unrelated rocks or flat billboard panels. Existing Hegemony
-PBR paint repeats every two world units. No projected concept image or new station paint bake is used.
+`debris.py` builds folded pressure skin with burnt backs and peeled ribs, open docking trusses with broken braces,
+a split pressure pod, a torn sensor dish and fine pieces of skin and rail. The CC0 geometry uses the approved T2
+Hegemony paint tiles at their two-unit repeat, with separate material tones for scorched interiors and torn edges.
 
-`godot/render/station_debris.gd` gives each fitting an independent slow tumble around a fixed centre. Motion has no
-reset, outward travel or changing footprint. `a4_props.gd` attaches this optional cache only to the painted T2, before
-applying the existing Hegemony game lighting. The same loader is used by the board and the capture script.
-
-`debris_check.gd` reads the live seven blocked cells, their radius and actual fitted roster/boss hulls. It measures a
-full vertex-radius sphere around every loaded fitting: each sphere stays outside the entire blocked-cell circumcircle
-under every station bearing, below fitted flight space, and clear of all other debris spheres. It verifies inherited
-PBR paint, source hashes, triangle totals, moving mesh bounds and absence of collision objects/rules-view changes.
-The report lists every piece against all seven cells. This does not repair the approved base station's existing overhang.
+`godot/render/station_debris.gd` tumbles each piece independently around a fixed centre. The live board derives the
+blocked area from its station cells and shifts the group outward along the stub if a larger footprint needs room.
+`debris_check.gd` reads the rules radius from `TERRAIN_META.stationR` through the battle view, with a fallback of 1.
+It checks every loaded piece against every blocked cell, every station bearing and the full tumble sphere. It also checks
+vertical separation from fitted roster and boss hulls and verifies the PBR channels, hashes, triangles and motion.
 
 Review evidence and measured placement: `docs/shots/look_bench/station/debris_README.md`. The recipe entry is still
 `tools/recipe/stations/station_T2.json`; the station paint route and debris route can be reproduced separately.
