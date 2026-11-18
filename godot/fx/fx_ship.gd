@@ -416,11 +416,11 @@ func _build_shield(fx) -> void:
 	sph.height = 2.0
 	sph.radial_segments = 64
 	sph.rings = 32
-	# R297: egg stays the default. Only the optional surface comes from PR 855.
-	# Select with rendering/effects/shield_shape="fitted" or VS_SHIELD_SHAPE=fitted.
+	# Ryan, Nov 18 (issue 1045): the fitted skin replaces the R297 egg default.
+	# Select the egg with rendering/effects/shield_shape="egg" or VS_SHIELD_SHAPE=egg.
 	var shape := OS.get_environment("VS_SHIELD_SHAPE")
 	if shape.is_empty():
-		shape = str(ProjectSettings.get_setting("rendering/effects/shield_shape", "egg"))
+		shape = str(ProjectSettings.get_setting("rendering/effects/shield_shape", "fitted"))
 	var skin: Mesh = _shield_skin() if shape == "fitted" else sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
 	_shield_mat.set_shader_parameter("fitted_shape", _shield_tm != null)

@@ -2499,7 +2499,7 @@ func _fans(id: String, host: Node3D = null) -> void:
 		var arc := str(w["arc"])
 		if not w["ready"] or w["kind"] == "flak" or not ARC_SPAN.has(arc):
 			continue
-		var rad: float = float(w["range"]) * board.HW + board.HS * 0.5
+		var rad: float = float(w["range"]) * board.HW + 0.5
 		var dk := "%s%d" % [arc, int(rad)]
 		if done.has(dk):
 			continue

@@ -5,7 +5,10 @@ battles with the browser rules from `battle.js` and `data.js` and changes only t
 size and the ship move speed inside its own setup. It gives the Board numbers for the
 map size idea in issue 1004 and the options priced in PR 1008.
 
-## The answer in one table
+## Historical results
+
+The tables and saved results below are the original study from its own source
+commits. The 7-hex label describes main at the time of that study.
 
 200 sims per setup, paired seeds 1000 to 1199, mirror Hegemony fleets of 6 ships,
 sector 2, strip arena held fixed.
@@ -44,7 +47,7 @@ contact change means contact comes later, which is slower.
   75.2 at +1 and 70.8 at +2. The +2 speed roughly returns today's number of turns, but
   it pays for that with a full extra round of no-contact at the start and a lower win
   rate in this bot pairing. No big-board setup gets contact anywhere near today's.
-- The defend map on the 19-hex station is slower to first contact than main's 7-hex
+- The defend map on the 19-hex station is slower to first contact than the study's 7-hex
   station (median 4 vs 1) and lasts about half a round longer (6.5 vs 5.9 rounds).
   The defender wins more often in this pairing (37.5% vs 17.0%). This is the ruled
   R314 station; see the note below.
@@ -73,12 +76,11 @@ contact change means contact comes later, which is slower.
 
 - Today standard: 30 by 22 canvas, belt map, open shape, strip arena, rout, today's
   hull speeds.
-- Today defend: 30 by 22 canvas, station map, open shape, strip arena, defend. Main
-  at this run still paints the old 7-hex station, so the 7-hex row is what main does
-  today. R314 rules the 19-hex station, so the 19-hex row loads `battle.js` from
-  `work/issue-983-deepseek` at commit b0c490b2 for that setup only. The 19-hex row is
-  the map the brief names; the 7-hex row is kept so the Board can see the gap until
-  983 merges.
+- Today defend: 30 by 22 canvas, station map, open shape, strip arena, defend.
+  It uses the checkout's `battle.js`, which built the 7-hex station in the original
+  study and builds the 19-hex station since R314 merged. The R314 comparison loads
+  `battle.js` at commit `b0c490b2`. Each fresh row records the generated map's
+  `TERRAIN_META.stationR` and labels the corresponding footprint.
 - Proposed sizes and speeds: PR 1008 priced a 38 by 26 canvas (609 hexes against
   today's 361) with edge deployment at today's speed, +1 speed and +2 speed. Those are
   the three big-board rows. The +1 and +2 rows raise every hull's `sp` by 1 or 2,
@@ -125,9 +127,11 @@ contact change means contact comes later, which is slower.
 - `summary.md`: the generated tables above.
 - `README.md`: this file.
 
-CSV columns: `setup, label, board_w, board_h, speed_delta, encounter, map, arena, seed,
-first_contact_activations, battle_rounds, capital_activations, no_shot_activations,
-no_shot_share, win, timeout, result`.
+Fresh CSV and JSON rows add `station_r`, `data_commit`, `core_commit`,
+`battle_commit` and `sim3d_commit`. The summary lists those source commits by
+setup. Checkout files carry the checkout commit, with `+working` if the source
+file has local changes. Merging historical rows keeps their original labels and
+shows their missing source fields as unrecorded.
 
 ## Re-running
 
@@ -141,8 +145,8 @@ node contrib/deepseek/map_pace_1117/sim_map_pace.js --sims 200
 # rebuild the tables and CSV from the stored per-setup JSON
 node contrib/deepseek/map_pace_1117/sim_map_pace.js --merge
 
-# quick smoke run of one setup, to the temp folder
-node contrib/deepseek/map_pace_1117/sim_map_pace.js --only today_standard --sims 5 --out "$TEMP/pace_check.csv"
+# quick smoke run of both station setups, to a temp folder
+node contrib/deepseek/map_pace_1117/sim_map_pace.js --setups today_defend,today_defend_19hex --sims 2 --out "$TEMP/pace_check/raw.csv"
 
 # prove the smoke run left the saved dataset alone (also a standing check)
 node contrib/deepseek/map_pace_1117/smoke_safety_test.js

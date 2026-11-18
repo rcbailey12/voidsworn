@@ -3,9 +3,8 @@
 // with board size and ship speed changed in this file's own setup, not in battle.js
 // or data.js. No game file is edited.
 //
-// The 19-hex station defend row (R314) reads battle.js from work/issue-983-deepseek
-// at commit b0c490b2, because main still paints the old 7-hex station at this run.
-// Everything else uses the checkout's battle.js.
+// The R314 comparison reads battle.js at b0c490b2. The other setups use the
+// checkout's battle.js. Each battle labels its own station footprint.
 //
 //   node contrib/deepseek/map_pace_1117/sim_map_pace.js
 //   node contrib/deepseek/map_pace_1117/sim_map_pace.js --sims 200 --out contrib/deepseek/map_pace_1117/raw.csv
@@ -26,23 +25,19 @@ const vm = require('vm');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..', '..');
-const HARNESS = path.join(ROOT, 'sim3d.js');
-const DATA_SRC = fs.readFileSync(path.join(ROOT, 'data.js'), 'utf8');
-const CORE_SRC = fs.readFileSync(path.join(ROOT, 'core.js'), 'utf8');
-const BASE_BATTLE_SRC = fs.readFileSync(path.join(ROOT, 'battle.js'), 'utf8');
+const SOURCE_KEYS = ['data_commit', 'core_commit', 'battle_commit', 'sim3d_commit'];
 
 const FLEET = ['h_vanguard', 'h_interdictor', 'h_interdictor', 'h_picket', 'h_picket', 'h_dominion'];
 
-// R314 (19-hex station) was ruled on Nov 17 but was not in main at this run. Its
-// battle.js lives on work/issue-983-deepseek; load that file for the 19-hex defend row.
+// The original R314 comparison used this revision of battle.js.
 const STATION_983_COMMIT = 'b0c490b2';
 
 // PR 1008 measured a 38 by 26 canvas at today's speed, +1 and +2. Its recommendation
 // was to keep the 30 by 22 canvas; these are the size and speed options it priced.
 const SETUPS = [
   { id: 'today_standard', label: 'Today standard strip 30x22 speed +0', w: 30, h: 22, speed: 0, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
-  { id: 'today_defend', label: 'Today station defend 30x22 speed +0 (7-hex station, main)', w: 30, h: 22, speed: 0, enc: 'defend', map: 'station', shape: 'open', arena: 'strip' },
-  { id: 'today_defend_19hex', label: 'Today station defend 30x22 speed +0 (19-hex station, R314)', w: 30, h: 22, speed: 0, enc: 'defend', map: 'station', shape: 'open', arena: 'strip', src: '983' },
+  { id: 'today_defend', label: 'Today station defend 30x22 speed +0', w: 30, h: 22, speed: 0, enc: 'defend', map: 'station', shape: 'open', arena: 'strip' },
+  { id: 'today_defend_19hex', label: 'R314 comparison station defend 30x22 speed +0', w: 30, h: 22, speed: 0, enc: 'defend', map: 'station', shape: 'open', arena: 'strip', src: '983' },
   { id: 'big_speed0', label: '38x26 speed +0', w: 38, h: 26, speed: 0, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
   { id: 'big_speed1', label: '38x26 speed +1', w: 38, h: 26, speed: 1, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
   { id: 'big_speed2', label: '38x26 speed +2', w: 38, h: 26, speed: 2, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
@@ -63,12 +58,23 @@ function args() {
   return out;
 }
 
-let station983Src = null;
-function battleSourceFor(setup) {
-  if (setup.src !== '983') return BASE_BATTLE_SRC;
+function git(args) {
+  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+}
+
+function checkoutSource(file, commit) {
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const dirty = git(['diff', '--name-only', commit, '--', file]).trim();
+  return { text, commit: commit + (dirty ? '+working' : '') };
+}
+
+let station983Src;
+function battleSourceFor(setup, commit) {
+  if (setup.src !== '983') return checkoutSource('battle.js', commit);
   if (!station983Src) {
     try {
-      station983Src = execFileSync('git', ['show', STATION_983_COMMIT + ':battle.js'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+      const pinned = git(['rev-parse', STATION_983_COMMIT + '^{commit}']).trim();
+      station983Src = { commit: pinned, text: git(['show', pinned + ':battle.js']) };
     } catch (e) {
       throw new Error('cannot read battle.js at ' + STATION_983_COMMIT + '; run git fetch origin work/issue-983-deepseek first (' + e.message + ')');
     }
@@ -85,7 +91,12 @@ function boardSource(src, w, h) {
 // Load one private copy of the browser rules and the sim3d bot in a fresh VM context.
 // The board constant is replaced in memory only. HULLS speed is changed after load.
 function loadHarness(setup) {
-  let src = fs.readFileSync(HARNESS, 'utf8');
+  const commit = git(['rev-parse', 'HEAD']).trim();
+  const harness = checkoutSource('sim3d.js', commit);
+  const data = checkoutSource('data.js', commit);
+  const core = checkoutSource('core.js', commit);
+  const battle = battleSourceFor(setup, commit);
+  let src = harness.text;
   const cut = src.indexOf("(async()=>{ if(process.argv[2]==='varmatrix')");
   if (cut < 0) throw new Error('sim3d.js dispatcher not found, the harness layout changed');
   src = src.slice(0, cut);
@@ -99,9 +110,9 @@ function loadHarness(setup) {
   src = src.replace(marker, marker + ' global.__H={rndSeed,startBattle,newShip,swarmPhase,botUnit,alive,aiUnit,aiPickActivation,roundStart,derive,HULLS,getRUN:()=>RUN,setRUN:v=>{RUN=v;},getB:()=>B,setAlt:v=>{B.alt=v;},startSideTurn};');
 
   const sandbox = {
-    __DATA_SRC: DATA_SRC,
-    __CORE_SRC: CORE_SRC,
-    __BATTLE_SRC: boardSource(battleSourceFor(setup), setup.w, setup.h),
+    __DATA_SRC: data.text,
+    __CORE_SRC: core.text,
+    __BATTLE_SRC: boardSource(battle.text, setup.w, setup.h),
     require,
     module: { exports: {} },
     exports: {},
@@ -123,7 +134,9 @@ function loadHarness(setup) {
   vm.createContext(sandbox);
   vm.runInContext(src, sandbox, { filename: 'sim3d_harness.js' });
   if (!sandbox.__H) throw new Error('harness export failed');
-  return sandbox.__H;
+  return Object.assign(sandbox.__H, {
+    sourceCommits: { data_commit: data.commit, core_commit: core.commit, battle_commit: battle.commit, sim3d_commit: harness.commit },
+  });
 }
 
 function buildRun(H) {
@@ -151,6 +164,9 @@ async function fight(H, setup, seed) {
     obj: setup.enc, map: setup.map, shape: setup.shape, arena: setup.arena, dep: 'line',
     enemies: FLEET.map((tpl) => ({ tpl })),
   });
+  const terrain = H.getB().map;
+  const stationR = terrain.stationR ?? null;
+  const label = stationR === null ? setup.label : `${setup.label} (${1 + 3 * stationR * (stationR + 1)}-hex station)`;
 
   let activations = 0, noShot = 0, firstContact = null;
   const activate = async (u, fn) => {
@@ -202,7 +218,7 @@ async function fight(H, setup, seed) {
   const B = H.getB();
   return {
     setup: setup.id,
-    label: setup.label,
+    label,
     board_w: setup.w,
     board_h: setup.h,
     speed_delta: setup.speed,
@@ -218,6 +234,8 @@ async function fight(H, setup, seed) {
     win: B.over === 'win' ? 1 : 0,
     timeout: B.over ? 0 : 1,
     result: B.over || 'timeout',
+    station_r: stationR,
+    ...H.sourceCommits,
   };
 }
 
@@ -263,6 +281,9 @@ function summarise(rows) {
     rounds_median: median(rounds),
     acts_mean: mean(acts),
     no_shot_share: totalActs ? noShot / totalActs : 0,
+    sourceRows: [...new Set(rows.map((r) => [
+      r.label, ...SOURCE_KEYS.map((key) => r[key] || 'unrecorded'),
+    ].join(' | ')))],
   };
 }
 
@@ -288,10 +309,15 @@ function report(summaries) {
       lines.push('| ' + s.label + ' | ' + (s.contact_median == null || base.contact_median == null ? 'n/a' : (s.contact_median - base.contact_median).toFixed(1)) + ' | ' + (s.contact_mean == null || base.contact_mean == null ? 'n/a' : (s.contact_mean - base.contact_mean).toFixed(1)) + ' | ' + (s.rounds_mean - base.rounds_mean).toFixed(1) + ' | ' + ((s.no_shot_share - base.no_shot_share) * 100).toFixed(1) + ' pts | ' + ((s.win_rate - base.win_rate) * 100).toFixed(1) + ' pts |');
     }
   }
+  lines.push('', '| Setup | data.js commit | core.js commit | battle.js commit | sim3d.js commit |');
+  lines.push('|---|---|---|---|---|');
+  for (const s of summaries) {
+    for (const row of s.sourceRows) lines.push('| ' + row + ' |');
+  }
   return lines.join('\n');
 }
 
-const CSV_KEYS = ['setup', 'label', 'board_w', 'board_h', 'speed_delta', 'encounter', 'map', 'arena', 'seed', 'first_contact_activations', 'battle_rounds', 'capital_activations', 'no_shot_activations', 'no_shot_share', 'win', 'timeout', 'result'];
+const CSV_KEYS = ['setup', 'label', 'board_w', 'board_h', 'speed_delta', 'encounter', 'map', 'arena', 'seed', 'first_contact_activations', 'battle_rounds', 'capital_activations', 'no_shot_activations', 'no_shot_share', 'win', 'timeout', 'result', 'station_r', ...SOURCE_KEYS];
 
 function csvOf(rows) {
   return [CSV_KEYS.join(',')].concat(rows.map((r) => CSV_KEYS.map((k) => {
@@ -301,8 +327,6 @@ function csvOf(rows) {
 }
 
 function writeFinal(rows, outPath) {
-  const labelOf = new Map(SETUPS.map((s) => [s.id, s.label]));
-  rows = rows.map((r) => (labelOf.has(r.setup) && labelOf.get(r.setup) !== r.label ? Object.assign({}, r, { label: labelOf.get(r.setup) }) : r));
   const summaries = SETUPS.map((s) => summarise(rows.filter((r) => r.setup === s.id))).filter(Boolean);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, csvOf(rows), 'utf8');

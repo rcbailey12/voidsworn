@@ -20,6 +20,7 @@ headless|campaign/test/free_exit_test.gd|fixture:free_exit_tests.js|{fixture}|fr
 headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP payout; campaign data only
 headless|campaign/test/inheritance_test.gd|fixture:inheritance_tests.js|{fixture}|inheritance receipts match the browser payouts and profiles
 headless|campaign/test/lineage_test.gd|-|-|lineage XP, tiers, locks, capstones, saves and resets for every faction
+headless|campaign/test/map_load_cancel_test.gd|-|-|issue 1045: ending a run during map loading clears the cover and permits a retry
 headless|campaign/test/map_readonly_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 344: opening the map, the Dossier and the Map key changes nothing)
 headless|campaign/test/map_travel_test.gd|-|-|map reachability, lanes, flight at 30, 60 and 144 fps; no models or bakes needed
 headless|campaign/test/nem_read_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 364: Nemesis readers ask the campaign)
@@ -41,6 +42,7 @@ headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
+headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs agree with rules at hex centres for ranges 1 to 6 and report range 7
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
 headless|portraits/test/campaign_face_check.gd|-|-|issue 737: the campaign screen's face hook passes an Eclipse admiral's level 0, 3 and 8 to portraits.face and the picture changes with level; C.ADMIRALS factions match crests/index.json for every admiral, by name
 headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory
