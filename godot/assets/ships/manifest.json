@@ -508,32 +508,32 @@
      "sha256": "6611595baa1542adbd2c445f33d0fcd33355add59c7c7590c680899af3a9c8e0"
     },
     "C19_51_base.jpg": {
-     "bytes": 1766476,
-     "sha256": "870490adca6405cb04e09608264ccc73f00b608f5a1f07733df08a54ea17eba1"
+     "bytes": 1732917,
+     "sha256": "16c29f69d148a27f5321fc8fa24dfd17e8d6de3d512b32fe9e2aa183f15d4746"
     },
     "C19_51_glow_emission.jpg": {
-     "bytes": 236761,
-     "sha256": "953c8ace50a43a897e9f1c6f84879ad7b99390cb106c020b3c062c290db83ff2"
+     "bytes": 236827,
+     "sha256": "0d49d2aff560ca82057d5efcad8753936c4c1a2376dc779edf216af0a2ab9d42"
     },
     "C19_51_normal.jpg": {
-     "bytes": 602375,
-     "sha256": "55f77b4cd7a61084b65550960eeffa2d158763c07effab11fd0bb111249d653f"
+     "bytes": 605224,
+     "sha256": "f1c3dd9cc8a1365a5deb72d438872a95c8be408c4b46fd599568068e10908673"
     },
     "C19_51_orm.jpg": {
-     "bytes": 1858957,
-     "sha256": "eef2150664a79ed93b63f29c1ebc7cad1233b24b15f271f1a2f34aa199ed71b6"
+     "bytes": 1768988,
+     "sha256": "b04e60993400f399d124099b5c53e6ff78957bf3dc57f3545cc26f2dceada5e8"
     },
     "C19_51_parts_base.jpg": {
-     "bytes": 1440064,
-     "sha256": "b0df719d2b78834b4978b7f4f171774656f42a58dcf08ff71db7d6b736c5b9ec"
+     "bytes": 1383310,
+     "sha256": "8fd5e3a1311fe550b3437fc0bd7faef5032286ef497479cb3712042d39f72209"
     },
     "C19_51_parts_normal.jpg": {
-     "bytes": 477899,
-     "sha256": "4c26ba692bb699e25f4b6851354bccaf0b8511a1ce6e1c1ed876929fd1380736"
+     "bytes": 438751,
+     "sha256": "0831f022957326eeeb8ded5298cfd520544ad512af0a23100402439475b4cc4c"
     },
     "C19_51_parts_orm.jpg": {
-     "bytes": 1769144,
-     "sha256": "b53b9cbbf87fbbbadc3f7811cc21b593253bcfba11a8844d932501f986ad994b"
+     "bytes": 1720245,
+     "sha256": "c58d406d69ebecf1230bfef07f456633c430545959d8660af817b5de1b044686"
     }
    },
    "pc_path": "godot/assets/ships/C19_51/"
@@ -754,32 +754,32 @@
      "sha256": "eecfd62be4106e118fd623aa41bc2f83d8dacc4e566f5ad4a3465591c9dcd747"
     },
     "H10_23_base.jpg": {
-     "bytes": 1371503,
-     "sha256": "073b3c6a355ee029ad1fc86d49009983a306b48af3b8ba33d76a035a74703a5a"
+     "bytes": 1398191,
+     "sha256": "4d0d17609865a17410905661d40365679d145c6772c8e22a72bd24d9cb92c393"
     },
     "H10_23_glow_emission.jpg": {
-     "bytes": 595999,
-     "sha256": "1f4d9433807943ead65d6e0849d53a566dab70c35c556a4e25529fbc0ffc3f13"
+     "bytes": 596160,
+     "sha256": "d64855cb0c12fe9b86a4a29cac9b6088b2da3d161e44307722214a02417109fc"
     },
     "H10_23_normal.jpg": {
-     "bytes": 286996,
-     "sha256": "4489ba73e685a67ed7cee9a202830f773bf0dbec164b963f8b38283cb928df21"
+     "bytes": 484805,
+     "sha256": "a0887694a6f9073c43ee89fb121fde3df247fb79ab376c0478a627bc9a0728a5"
     },
     "H10_23_orm.jpg": {
-     "bytes": 1764548,
-     "sha256": "c8d0d8db22dd9f7c927d63d0e01aaacd5d2120a20474012d020ce6c88e8551c1"
+     "bytes": 1698141,
+     "sha256": "813a71278602615bf8723458a21c7bfb4586b1ab1dd27c84ff03191983ca3ca6"
     },
     "H10_23_parts_base.jpg": {
-     "bytes": 945374,
-     "sha256": "013bd014cc536a339affb4049c6cac7e255d5062ae6092f11b769db51ff88221"
+     "bytes": 878911,
+     "sha256": "c95a5a9ff5f3b2bd9143449d407f4e2eabf88a6f387769324f24711bb506a872"
     },
     "H10_23_parts_normal.jpg": {
-     "bytes": 385971,
-     "sha256": "6dcaa2514c34664c5c0ff8eb7b9dc22b05c464fa06594bfe58490538ce3e5307"
+     "bytes": 422680,
+     "sha256": "f4086cdb71b46905a61f60e517647693f5eeb6d0e442dbafa64fa2a1e1e3dca3"
     },
     "H10_23_parts_orm.jpg": {
-     "bytes": 1290168,
-     "sha256": "142eb27accb8b1ffca497865ba70349cd01d515b57410b2d8f3dfa193afc6756"
+     "bytes": 1236540,
+     "sha256": "a9c914fbcfdab0631b79f584c6acae3e792a3d44b374a9642cfebce9f8111669"
     }
    },
    "pc_path": "godot/assets/ships/H10_23/"
@@ -807,32 +807,32 @@
      "sha256": "08529398fb54c2f0598632de8b8af14e593408acdddbea42f7d153746dfea2d3"
     },
     "H4_11_base.jpg": {
-     "bytes": 1492792,
-     "sha256": "7bd5617cc6c754447aaaf62e18d8a933e006448b1a91038c8c28ba27527f64c5"
+     "bytes": 1522361,
+     "sha256": "b7996fdd8b100c713cca4431a848206bc5afe14f9381a45198cbeb97a7215107"
     },
     "H4_11_glow_emission.jpg": {
      "bytes": 712554,
      "sha256": "d5b2347eeddec9ec88473b461f43feba3e0ea1e46d5b4c4b1c18bc5c60a7fdf8"
     },
     "H4_11_normal.jpg": {
-     "bytes": 280612,
-     "sha256": "bcb45efac4f939f909f610698f65865f25defd7622d61c825bfd7d54237ec614"
+     "bytes": 433108,
+     "sha256": "49f9b2280fec1557bc80d7cb64511d44b853a7da33fda988f8997f32f69a160d"
     },
     "H4_11_orm.jpg": {
-     "bytes": 1935888,
-     "sha256": "6020bba3b4994b9e2dd62c029b9d09fd8ab091b53d5bd5c57aab27fb7a5aa0cb"
+     "bytes": 1791097,
+     "sha256": "ad101e9629f5dc3d41ba7fb874a9507ea0c2393dbab4bb63fb9c628057316ea7"
     },
     "H4_11_parts_base.jpg": {
-     "bytes": 1122737,
-     "sha256": "435c1c88bf55533b817a005cb6a967ed060e57a35c74a418da508313c30a8db8"
+     "bytes": 1079928,
+     "sha256": "a295d61f254a87293c7fc3205f13e375e6f41a7e67279349b53b97462960c957"
     },
     "H4_11_parts_normal.jpg": {
-     "bytes": 376600,
-     "sha256": "770a52e06026456b87873d423505ccfcc7772534ccf8a8793dde5ea49e4790be"
+     "bytes": 412151,
+     "sha256": "3f1eb3fdd20c7d515134e2d5183a18e1095ffe1fe0b12fd2cef681d4768255e2"
     },
     "H4_11_parts_orm.jpg": {
-     "bytes": 1528698,
-     "sha256": "295cf4d38485c2ace012bea24f1bfd60fd36c8ea8afea47b870aac3efc197ab8"
+     "bytes": 1465395,
+     "sha256": "9bdc4623815e531763a22998efd4c608add191945bf97eaa28770cdf5045b81d"
     }
    },
    "pc_path": "godot/assets/ships/H4_11/"

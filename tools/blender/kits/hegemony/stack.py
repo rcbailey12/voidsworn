@@ -110,16 +110,15 @@ SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: 
 # lightening past the sample, Ryan's swatch ruling)
 TONE_AT = 1.0
 LAYERS = dict(
-    ao_short=.004, ao_long=.025, edge_radius=.0012, edge_gain=16.0,
-    side_dark=.08, grain_scale=260.0, mottle_scale=40.0, grain=0.0,
+    ao_short=.004, ao_long=.025, edge_radius=.0016, edge_gain=20.0,
+    side_dark=.08, grain_scale=260.0, mottle_scale=40.0, grain=.38,
     rough=.58, metal=.45, wear=.45, grime=.30, ao_dark=.88, red_tone=0.0,
-    # A fitting's small pieces stay in one steel range. The ORM and normal still carry full cavity and seam depth.
-    parts_ao_dark=.56, parts_seam_dark=.70,
-    rough_floor=.52,     # hegemony.md 3: the roughness floor in every zone
-    # hegemony.md 1: the two module sizes (patch_big on the body modules, patch_small on the small module plates and every part),
+    parts_ao_dark=.62,
+    rough_floor=.52, bare_roughness=.34, rough_grain=.16, cavity_roughness=.14, scuff_roughness=.20,
+    # hegemony.md 1: the two module sizes (patch_big on the body, patch_small on the small hull plates),
     # identical on every ship in ship lengths; over-plates (patch_over, a share of .05 of their cells) at the module joints only
     patch_big=(.070, .048, .038), patch_small=(.032, .021, .018), patch_over=(.085, .055, .045), patch_over_share=.05,
-    patch_region=3.0, patch_parts=((.032, .021, .018), (.032, .021, .018), (.085, .055, .045)), patch_seam=.0016, seam_dark=.94,
+    patch_region=3.0, patch_seam=.0016, seam_dark=.94,
     # R243 (Ryan, Nov 13 2026: "Hegemony also pretty rigid and clean"; a hull's order follows its faction's lore): the EVEN GRID
     # IS THE DIRECTION. The Hegemony is the Registry's fleet, identical by doctrine, so its panels are flush rectangles on a
     # straight grid with no variation a sister ship would not share. patch_warp, patch_band and patch_split are 0 and stay 0: the
@@ -134,16 +133,16 @@ LAYERS = dict(
     # the whole 0.10 world ring on the second sandbox bake)
     band_seam=3.0, band_dark=.96, band_ao=.35, band_grime=.40,
     cavity_pow=1.6, wear_lo=.30, wear_hi=.54,
-    scuff=.08, scuff_size=.050,                                           # hegemony.md 1: machining and handling marks
+    scuff=.15, scuff_size=.050,                                           # hegemony.md 1: machining and handling marks
     rivets=0, rivet_pitch=.016, rivet_band=(.0012, .0040),               # hegemony.md 1: flush fasteners, no rivet lines
     trim_size=dict(), trim_aspect=dict(),
     streak_scale=4.0, streak_stretch=60.0, rust_blot=26.0,                # never rust (every zone's rust is 0)
     grime_z=(-.12, -.04), soot_x=(-.50, -.38), soot_aft=.12,              # light soot toward the nozzle faces only
-    wear_scale=50.0, wear_patch=3.0, bump_distance=.0008, bump_strength=.45, panel_relief=.90,
+    wear_scale=50.0, wear_patch=3.0, bump_distance=.0010, bump_strength=.55, panel_relief=.75,
 )
-# hegemony.md 3 and 4, per zone: rust 0 everywhere; grime body .30, recessed .45, trim .20, nozzles .30 (the module bands .40 are
-# drawn by panel_nodes where the bands are); roughness floor .52 in every zone; trim rough .55, metal .50; nozzle housings metal
-# .48. Wear (dulled pale edges toward the cap) mostly on the module bands (the trim rings) and the nozzle housings.
+# hegemony.md 3 and 4: the paint stays cool and free of rust. Machinery
+# housings and recesses are rougher than the plate and worked trim. Exposed
+# edge metal takes a smoother finish through the shared convex wear mask.
 # grid: the panel grid the zone carries on the hull ('big', 'small' or None: band treatment only, no grid seams of its own).
 # grid_seam: the strength of the painted grid's seams on the hull. The Hegemony sheets MODEL the even grid (kits/hegemony/parts.py
 # module_panels: flush slabs with a seam gap at the 0.6 module pitch, two module sizes), and a painted grid at hegemony.md's
@@ -151,26 +150,23 @@ LAYERS = dict(
 # line (.35) and the cells' calm tones carry the grid; the module band's seams keep their full strength (the first H10 bake
 # showed full painted seams cutting across the modelled slabs)
 _Z = dict(
-    hgrey=dict(rust=0, grime=.30, patchwork=1.0, patchwork_parts=.8, rough=.58, metal=.45, wear=.35, grid='big', grid_seam=.35),     # body modules
-    hpanel=dict(rust=0, grime=.30, patchwork=1.0, patchwork_parts=.8, rough=.58, metal=.45, wear=.35, grid='small', grid_seam=.35),  # small modules
-    hgrey2=dict(rust=0, grime=.45, patchwork=1.0, patchwork_parts=.6, rough=.62, metal=.38, wear=.30, grid='small', grid_seam=.60),  # recessed
-    htrim=dict(rust=0, grime=.20, patchwork=1.0, patchwork_parts=.6, rough=.55, metal=.50, wear=.90, grid=None),       # trim, bands
-    hmetal=dict(rust=0, grime=.20, patchwork=0, patchwork_parts=0, rough=.53, metal=.58, wear=.60),                    # machined
-    dark=dict(rust=0, grime=.20, patchwork=0, patchwork_parts=0, rough=.80, metal=.20, wear=.10, scuff=.03),           # deep recess
+    hgrey=dict(rust=0, grime=.30, patchwork=1.0, rough=.52, metal=.45, wear=.78, grid='big', grid_seam=.35),
+    hpanel=dict(rust=0, grime=.30, patchwork=1.0, rough=.52, metal=.45, wear=.78, grid='small', grid_seam=.35),
+    hgrey2=dict(rust=0, grime=.45, patchwork=1.0, rough=.66, metal=.38, wear=.40, grid='small', grid_seam=.60),
+    htrim=dict(rust=0, grime=.20, patchwork=1.0, rough=.50, metal=.50, wear=1.08, grid=None),
+    hmetal=dict(rust=0, grime=.20, patchwork=0, rough=.48, metal=.64, wear=.96),
+    dark=dict(rust=0, grime=.20, patchwork=0, rough=.80, metal=.20, wear=.10, scuff=.03),
 )
 _BASE = dict(hgrey='hull', hpanel='hull', hgrey2='hull_shade', htrim='trim', hmetal='trim', dark='hull_shade')
 _AT = dict(hgrey=TONE_AT, hpanel=TONE_AT, hgrey2=TONE_AT, htrim=TONE_AT, hmetal=.80, dark=.15)
 ZONES = dict(_Z)
-# R224 in paint (the density check, tools/recipe/density.py): the trim parts (hatch rims, bay frames, gun rings) and the nozzle
-# housings carry the small module grid too (patchwork_parts .6), or they read under three quarters of the hull's paint detail
-# (the first 2048 H10 bake: engine 0.48, bay 0.57, hatch 0.73 of the hull)
 # the nozzle housings (hegemony.md 2 nozzle pair, 3 metal .48 and grime .30): every plate of an engine or a thruster takes the
 # nozzle zone (ZONE_BY_KIND, read by the shared bake), so the stern's housings read as one machined family
 ZONE_BY_KIND = {}
 for _kind in ('engine', 'thruster'):
     for _zn in ('hgrey', 'hgrey2', 'hpanel', 'htrim', 'hmetal'):
         _nz = f'nozzle_{_zn}'
-        ZONES[_nz] = dict(rust=0, grime=.30, patchwork=0, patchwork_parts=.6, rough=.55, metal=.48, wear=.90)
+        ZONES[_nz] = dict(rust=0, grime=.30, patchwork=0, rough=.68 if _zn == 'hgrey2' else .59, metal=.48, wear=.98)
         _BASE[_nz] = 'nozzle'; _AT[_nz] = .45 if _zn == 'hgrey2' else TONE_AT
         ZONE_BY_KIND[(_kind, _zn)] = _nz
 for _k, _z in ZONES.items():
@@ -244,13 +240,12 @@ def panel_nodes(c, col, amount, families=None, cells=None):
     """hegemony.md 1 and R243: the even grid. Flush rectangles on one straight grid anchored to the ship (x along the hull, the
     beam measured out from the centreline so port and starboard are mirror images, z up), no stagger, no warp, no split: the same
     module on every sister ship. Two module sizes: patch_big on the body modules (zone hgrey), patch_small on the small module
-    plates and recessed fields (hpanel, hgrey2) and on every part. The module bands (module_bands()) carry the joint: the band's own
+    plates and recessed fields (hpanel, hgrey2). The module bands (module_bands()) carry the joint: the band's own
     seam dark all across and a one-sided seam where each ring meets the plating, darker (band_dark), an AO-driven recess and a little more grime; over-plates
     (patch_over, share .05) sit only beside the bands. Returns the colour and the seam mask (the shared stack darkens the seams by
     seam_dark and bakes their relief into the hull normal)."""
     from paint_stack import node, math_, mixc, ramp
     nt = c.nt; L = LAYERS
-    hull = cells is None
     zone = _zone_of(nt); z = ZONES.get(zone, ZONES[FALLBACK])
     nx = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(c.geo.outputs['Normal'], nx.inputs[0])
     nrm = [math_(nt, 'ABSOLUTE', nx.outputs[k]) for k in range(3)]
@@ -276,13 +271,12 @@ def panel_nodes(c, col, amount, families=None, cells=None):
             seam = e if seam is None else math_(nt, 'MAXIMUM', seam, e)
         return cid.outputs[0], seam
 
-    kind = z.get('grid', 'small') if hull else 'small'
-    size = L['patch_big'] if kind == 'big' else (L['patch_small'] if hull else cells[0])
-    _, gseam = grid(size, 11.0 if kind == 'big' else 37.0)
-    if hull: gseam = math_(nt, 'MULTIPLY', gseam, z.get('grid_seam', 1.0))
-    seam = gseam if kind is not None else None
-    if not hull:
-        return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
+    kind = z.get('grid', 'small')
+    seam = None
+    if kind is not None:
+        size = L['patch_big'] if kind == 'big' else L['patch_small']
+        _, gseam = grid(size, 11.0 if kind == 'big' else 37.0)
+        seam = math_(nt, 'MULTIPLY', gseam, z.get('grid_seam', 1.0))
     # the module bands: the box of each band (a little wider, so the joint reaches the plating on both sides of the rings), the
     # seams at its edges and at its own seam, and a wider neighbourhood where the over-plates may sit
     pad, near = .003, .022

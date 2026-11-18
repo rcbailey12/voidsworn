@@ -116,7 +116,7 @@ LAYERS = dict(
     # sunward.md 1: triangles on the flat fields (patch_big), rectangles on the curves and the triangular infill (patch_small),
     # over-plates at deck edges and spire roots only (patch_over, a share of .08 of their cells)
     patch_big=(.070, .038, .028), patch_small=(.030, .018, .014), patch_over=(.060, .036, .026), patch_over_share=.08,
-    patch_region=3.0, patch_parts=((.030, .018, .014), (.030, .018, .014), (.060, .036, .026)), patch_seam=.0014, seam_dark=.90,
+    patch_region=3.0, patch_seam=.0014, seam_dark=.90,
     # R243 (Ryan, Nov 13 2026: "Sunward could have more triangle sleek panels"; a hull's order follows its faction's lore): the
     # Sunward plates are FORGED, not scavenged, so their order is deliberate and stays exact. patch_warp, patch_band and
     # patch_split are 0 and stay 0: the uneven warped grid is the Hullbreakers' opt-in only (R240, PR 682), never "fix" this order
@@ -135,9 +135,9 @@ LAYERS = dict(
 )
 # sunward.md 3: per zone. Grime is carbon soot (GRIME below), rust 0 everywhere; the roughness floor .55 holds in every zone.
 _Z = dict(
-    siron=dict(rust=0, grime=.55, patchwork=1.0, patchwork_parts=.8, rough=.68, metal=.48),        # body plate
-    siron2=dict(rust=0, grime=.70, patchwork=.8, patchwork_parts=.6, rough=.72, metal=.35),        # recessed iron
-    sworn=dict(rust=0, grime=.45, patchwork=1.0, patchwork_parts=.4, rough=.58, metal=.62, wear=1.2),   # worked iron: bands, rims
+    siron=dict(rust=0, grime=.55, patchwork=1.0, rough=.68, metal=.48),        # body plate
+    siron2=dict(rust=0, grime=.70, patchwork=.8, rough=.72, metal=.35),        # recessed iron
+    sworn=dict(rust=0, grime=.45, patchwork=1.0, rough=.58, metal=.62, wear=1.2),   # worked iron: bands, rims
     dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92),
 )
 _BASE = dict(siron='iron', siron2='iron_shade', sworn='worked', dark='soot')
