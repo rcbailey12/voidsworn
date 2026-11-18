@@ -152,12 +152,13 @@ PASS: Rules safety net (Godot only), 701.106 s
 
 ## Pictures
 
-The top-down footprint and the blocking tooltip from run 2 stay; the footprint did not change in this run. The board-start picture was taken in run 2, when the guard ring was drawn at 2 hexes past the edge; this run draws it at 1 hex past the edge, so that one picture is one ring out of date. It is not used as rules evidence here.
+All pictures are current for this branch. The drawn guard ring sits one hex out from the station body: three hexes out from the station centre, because the body is the 19-hex disc within two hexes of its centre. Every hex at that distance touches the body, and the ring is the 18 hexes at distance 3.
 
 | Picture | What to inspect |
 |---|---|
-| `station_board_start.png` | Battle start on the station map (run 2). The big station stands over the blocked cluster. The guard ring drawn here is the old run 2 ring, one hex outside the current one. |
-| `station_topdown.png` | Top-down of the same map. The station body spans the 19-hex cluster; every hex under it is blocked. Unchanged by this run. |
+| `station_board_start.png` | Battle start on the station map, defend objective, seed 983, round 1 (4 player ships against 5 Hegemony ships), in the default isometric battle view. The big station and its guard ring are on the right. The guard ring is the outlined ring of hexes one hex out from the body (three from the station centre). Run 2 drew that ring one ring further out, so this picture replaces that one. |
+| `station_guard_ring_topdown.png` | Top-down over the station with the HUD off. The painted station covers the 19-hex body (the centre hex, the 6 hexes at distance 1 and the 12 at distance 2). The drawn guard ring is the ring of 18 hexes at distance 3, the hexes that touch the body. A script check against the board data found 18 guard hexes, all at distance 3, and every one touches a station hex. |
+| `station_topdown.png` | Top-down from run 2, kept for the 19-hex footprint. The station body spans the 19-hex cluster and every hex under it is blocked. Its guard ring is the run 2 ring at distance 4; `station_guard_ring_topdown.png` shows the current ring. |
 | `station_block_tooltip.png` | A target tip that names the blocking hexes: "Blocked by the station at 4,11, the station at 5,11 ... the station at 8,11." Direct in-game proof that the station blocks line of fire across its footprint. Unchanged by this run. |
 
-Capture method: `docs/shots/station_footprint/capture.gd` is a SceneTree script that instantiates the battle scene, focuses the defend objective hex, switches the camera top-down and saves one PNG. This checkout has no `godot/gen` or built hull files, so a fresh screen capture needs the PC build's installed assets and a GPU run. Run 3 made no new capture because the only drawing that moved is the guard ring, and the footprint pictures above are the evidence for the 19 hexes.
+Capture method: this checkout has the PC build's installed `gen` and ship assets, so the capture ran here. This run started the battle from `s983_station_defend` with seed 983 and used a temporary SceneTree script, modeled on `docs/shots/station_footprint/capture.gd`. It saved the default battle view for `station_board_start.png`, then hid the HUD, focused the station centre, switched the camera top-down and saved `station_guard_ring_topdown.png`. Both pictures are 1338x720 and carry a provenance strip made with `tools/picture_provenance.py`. This run changed no rules.
