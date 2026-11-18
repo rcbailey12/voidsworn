@@ -1,4 +1,4 @@
-"""Issues 889 and 957: image saves, per-output revisions, and runner PR refusals.
+"""Issues 889, 957 and 1064: image saves, per-output revisions, and runner reports.
 
 All test files and the isolated git index stay in TEMP. No commits or pushes.
 """
@@ -300,6 +300,48 @@ func _ready() -> void:
         print('PASS headless Windows fixture exe stamps the packed commit and refuses missing or unknown revisions')
 
 
+def checkout_picture_links(repo, out, picture):
+    report = out / 'last.md'
+    destination = 'docs/shots/issue-1064'
+    expected = picture.relative_to(repo).as_posix()
+    env = dict(os.environ, PICTURE_PYTHON=sys.executable)
+    if os.name == 'nt':
+        command = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                   str(ROOT / 'tools/pc/review_evidence.ps1'), 'prepare', str(repo), str(out), destination]
+    else:
+        command = [sys.executable, str(ROOT / 'tools/picture_provenance.py'), 'publish-report',
+                   str(out), '--repo', str(repo), '--destination', destination]
+
+    def prepare(body):
+        report.write_text(body, encoding='utf-8')
+        return subprocess.run(command, env=env, capture_output=True, text=True, timeout=30)
+
+    spellings = [picture.as_posix()]
+    if os.name == 'nt':
+        spellings.append(str(picture).swapcase())
+    for absolute in spellings:
+        result = prepare(f'[Picture](<{absolute}>)')
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert f'Rewrote picture link: {absolute} -> {expected}' in result.stdout.splitlines(), result.stdout
+        body = report.read_text(encoding='utf-8')
+        assert body == f'[Picture](<{expected}>)', body
+        check_body(repo, body, staged=True)
+    assert not (repo / destination).exists()
+    print('PASS checkout picture links are rewritten, logged, and accepted with the staged pair')
+
+    outside = repo.with_name('repo-other') / picture.name
+    outside.parent.mkdir()
+    shutil.copyfile(picture, outside)
+    shutil.copyfile(sidecar(picture), sidecar(outside))
+    for target in (outside.as_posix(), picture.as_uri(), 'https://example.com/a.png', r'\\host\share\a.png'):
+        body = f'[Picture](<{target}>)'
+        result = prepare(body)
+        assert result.returncode == 1, result.stdout + result.stderr
+        assert 'use a relative repo picture link' in result.stderr, result.stderr
+        assert report.read_text(encoding='utf-8') == body
+    print('PASS prepare refuses outside checkout paths, file URLs, web URLs and UNC paths')
+
+
 def run():
     folder = Path(tempfile.mkdtemp(prefix='picture889-'))
     # Deliberately kept for diagnosis, following the PC no-deletion rule.
@@ -429,6 +471,13 @@ def run():
     check_body(repo, body, staged=True)
     print('PASS runner copies stamped evidence, rewrites PC links, and checks the staged pair')
     dest = repo / 'docs/shots/issue-889/PROVENANCE_889.png'
+    if os.name == 'nt':
+        # The fixture repo has no tools: use the real helper through a copied tool folder.
+        (repo / 'tools').mkdir()
+        for name in ('picture_provenance.py', 'picture_font.json'):
+            shutil.copyfile(ROOT / 'tools' / name, repo / 'tools' / name)
+    checkout_picture_links(repo, out, dest)
+
     ImageDraw.Draw(original).rectangle((0, 600, 1000, 720), fill='red')
     original.save(dest)
     refused(lambda: check_body(repo, body, staged=True), 'modified or removed strip')
@@ -441,10 +490,6 @@ def run():
     # Exercise the same PowerShell entry used by both PC runners.
     if os.name == 'nt':
         env = dict(os.environ, PICTURE_PYTHON=sys.executable)
-        # The fixture repo has no tools: use the real helper through a copied tool folder.
-        (repo / 'tools').mkdir()
-        for name in ('picture_provenance.py', 'picture_font.json'):
-            shutil.copyfile(ROOT / 'tools' / name, repo / 'tools' / name)
         body_path = folder / 'body.md'; body_path.write_text(body)
         result = subprocess.run(['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
                                  str(ROOT / 'tools/pc/review_evidence.ps1'), 'check', str(repo), str(body_path)],
