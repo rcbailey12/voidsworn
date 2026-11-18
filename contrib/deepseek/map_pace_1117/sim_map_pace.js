@@ -3,17 +3,23 @@
 // with board size and ship speed changed in this file's own setup, not in battle.js
 // or data.js. No game file is edited.
 //
+// The 19-hex station defend row (R314) reads battle.js from work/issue-983-deepseek
+// at commit b0c490b2, because main still paints the old 7-hex station at this run.
+// Everything else uses the checkout's battle.js.
+//
 //   node contrib/deepseek/map_pace_1117/sim_map_pace.js
 //   node contrib/deepseek/map_pace_1117/sim_map_pace.js --sims 200 --out contrib/deepseek/map_pace_1117/raw.csv
 //   node contrib/deepseek/map_pace_1117/sim_map_pace.js --only today_standard --sims 5
 //
-// Metrics per capital-ship activation: whether any weapon fired (a launch counts,
-// a flak interception does not). First contact is the number of completed capital
-// activations before the first one that fired.
+// Metrics per capital-ship activation: whether any weapon fired. A flak interception
+// is not a shot (the rules do not spend the gun), and a launch or other ability is not
+// a shot. First contact is the number of completed capital activations before the
+// first one that fired a weapon.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..', '..');
 const HARNESS = path.join(ROOT, 'sim3d.js');
@@ -23,11 +29,16 @@ const BASE_BATTLE_SRC = fs.readFileSync(path.join(ROOT, 'battle.js'), 'utf8');
 
 const FLEET = ['h_vanguard', 'h_interdictor', 'h_interdictor', 'h_picket', 'h_picket', 'h_dominion'];
 
+// R314 (19-hex station) was ruled on Nov 17 but was not in main at this run. Its
+// battle.js lives on work/issue-983-deepseek; load that file for the 19-hex defend row.
+const STATION_983_COMMIT = 'b0c490b2';
+
 // PR 1008 measured a 38 by 26 canvas at today's speed, +1 and +2. Its recommendation
 // was to keep the 30 by 22 canvas; these are the size and speed options it priced.
 const SETUPS = [
   { id: 'today_standard', label: 'Today standard strip 30x22 speed +0', w: 30, h: 22, speed: 0, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
-  { id: 'today_defend', label: 'Today station defend 30x22 speed +0', w: 30, h: 22, speed: 0, enc: 'defend', map: 'station', shape: 'open', arena: 'strip' },
+  { id: 'today_defend', label: 'Today station defend 30x22 speed +0 (7-hex station, main)', w: 30, h: 22, speed: 0, enc: 'defend', map: 'station', shape: 'open', arena: 'strip' },
+  { id: 'today_defend_19hex', label: 'Today station defend 30x22 speed +0 (19-hex station, R314)', w: 30, h: 22, speed: 0, enc: 'defend', map: 'station', shape: 'open', arena: 'strip', src: '983' },
   { id: 'big_speed0', label: '38x26 speed +0', w: 38, h: 26, speed: 0, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
   { id: 'big_speed1', label: '38x26 speed +1', w: 38, h: 26, speed: 1, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
   { id: 'big_speed2', label: '38x26 speed +2', w: 38, h: 26, speed: 2, enc: 'rout', map: 'belt', shape: 'open', arena: 'strip' },
@@ -48,10 +59,23 @@ function args() {
   return out;
 }
 
-function boardSource(w, h) {
+let station983Src = null;
+function battleSourceFor(setup) {
+  if (setup.src !== '983') return BASE_BATTLE_SRC;
+  if (!station983Src) {
+    try {
+      station983Src = execFileSync('git', ['show', STATION_983_COMMIT + ':battle.js'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+    } catch (e) {
+      throw new Error('cannot read battle.js at ' + STATION_983_COMMIT + '; run git fetch origin work/issue-983-deepseek first (' + e.message + ')');
+    }
+  }
+  return station983Src;
+}
+
+function boardSource(src, w, h) {
   const from = 'const BW=30, BH=22;';
-  if (BASE_BATTLE_SRC.indexOf(from) < 0) throw new Error('battle.js board constant not found at the usual line');
-  return BASE_BATTLE_SRC.replace(from, `const BW=${w}, BH=${h};`);
+  if (src.indexOf(from) < 0) throw new Error('battle.js board constant not found at the usual line');
+  return src.replace(from, `const BW=${w}, BH=${h};`);
 }
 
 // Load one private copy of the browser rules and the sim3d bot in a fresh VM context.
@@ -73,7 +97,7 @@ function loadHarness(setup) {
   const sandbox = {
     __DATA_SRC: DATA_SRC,
     __CORE_SRC: CORE_SRC,
-    __BATTLE_SRC: boardSource(setup.w, setup.h),
+    __BATTLE_SRC: boardSource(battleSourceFor(setup), setup.w, setup.h),
     require,
     module: { exports: {} },
     exports: {},
@@ -243,10 +267,10 @@ function num(x, d) { return x == null ? 'n/a' : x.toFixed(d == null ? 1 : d); }
 
 function report(summaries) {
   const lines = [];
-  lines.push('| Setup | Board | Speed | Sims | First contact median (mean), activations | Battle rounds mean (median) | Capital activations, mean | No shot fired, share | Win rate (95% CI) | Timeouts |');
+  lines.push('| Setup | Board | Speed | Sims | First contact median (mean), activations [sims with contact] | Battle rounds mean (median) | Capital activations, mean | No shot fired, share | Win rate (95% CI) | Timeouts |');
   lines.push('|---|---|---|---|---|---|---|---|---|---|');
   for (const s of summaries) {
-    lines.push('| ' + s.label + ' | ' + s.board_w + ' by ' + s.board_h + ' | +' + s.speed_delta + ' | ' + s.sims + ' | ' + num(s.contact_median) + ' (' + num(s.contact_mean) + ') | ' + num(s.rounds_mean) + ' (' + num(s.rounds_median) + ') | ' + num(s.acts_mean) + ' | ' + pct(s.no_shot_share) + ' | ' + pct(s.win_rate) + ' (' + pct(s.win_lo) + ' to ' + pct(s.win_hi) + ') | ' + s.timeouts + ' |');
+    lines.push('| ' + s.label + ' | ' + s.board_w + ' by ' + s.board_h + ' | +' + s.speed_delta + ' | ' + s.sims + ' | ' + num(s.contact_median) + ' (' + num(s.contact_mean) + ') [' + s.contact_n + '/' + s.sims + '] | ' + num(s.rounds_mean) + ' (' + num(s.rounds_median) + ') | ' + num(s.acts_mean) + ' | ' + pct(s.no_shot_share) + ' | ' + pct(s.win_rate) + ' (' + pct(s.win_lo) + ' to ' + pct(s.win_hi) + ') | ' + s.timeouts + ' |');
   }
   const base = summaries.find((s) => s.id === 'today_standard');
   if (base) {
@@ -273,6 +297,8 @@ function csvOf(rows) {
 }
 
 function writeFinal(rows, outPath) {
+  const labelOf = new Map(SETUPS.map((s) => [s.id, s.label]));
+  rows = rows.map((r) => (labelOf.has(r.setup) && labelOf.get(r.setup) !== r.label ? Object.assign({}, r, { label: labelOf.get(r.setup) }) : r));
   const summaries = SETUPS.map((s) => summarise(rows.filter((r) => r.setup === s.id))).filter(Boolean);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, csvOf(rows), 'utf8');
