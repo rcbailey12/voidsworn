@@ -138,7 +138,7 @@ function buildChecks() {
   // Issue 975 timed fx_death_spawn_tests under 5 s with the real hull.
   // Re-time when a row's cost changes. Gate rows always run.
   const FAST_AUTO = new Set([
-    'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
+    'auto_pr_body_tests', 'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
     'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
     'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
     'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
