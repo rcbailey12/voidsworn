@@ -55,7 +55,9 @@ def text_lines(record):
     lines = [record['picture_name']]
     for src in record['sources']:
         rev = src['source_commit'][:12]
-        if src['source_dirty']:
+        if 'source_commit_date' in src:
+            rev = 'built from ' + rev
+        elif src['source_dirty']:
             rev += ' + working ' + src['source_diff_sha256'][:8]
         line = rev + ' | ' + src['stage']
         if line not in lines:
@@ -92,8 +94,12 @@ def strip_for(record, size):
 
 
 def summary(record):
-    return {k: record[k] for k in ('picture_name', 'source_commit', 'source_dirty',
-                                  'source_diff_sha256', 'stage', 'date', 'image_sha256', 'sources')}
+    keys = ('picture_name', 'source_commit', 'source_dirty', 'source_diff_sha256',
+            'stage', 'date', 'image_sha256', 'sources')
+    result = {k: record[k] for k in keys}
+    if 'source_commit_date' in record:
+        result['source_commit_date'] = record['source_commit_date']
+    return result
 
 
 def verify(path):
@@ -109,6 +115,10 @@ def verify(path):
             raise ValueError('invalid source revision/stage: ' + str(path))
         if src['source_dirty'] and not re.fullmatch(r'[a-f0-9]{64}', src['source_diff_sha256']):
             raise ValueError('working revision lacks its digest: ' + str(path))
+        if 'source_commit_date' in src:
+            datetime.strptime(src['source_commit_date'], '%Y-%m-%dT%H:%M:%SZ')
+            if src['source_dirty'] or src['source_diff_sha256']:
+                raise ValueError('build revision has a working-tree state: ' + str(path))
     if not record['sources'] or record['image_sha256'] != digest(path.read_bytes()):
         raise ValueError('picture changed after stamping: ' + str(path))
     with Image.open(path) as image:
