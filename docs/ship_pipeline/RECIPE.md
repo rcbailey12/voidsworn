@@ -253,6 +253,15 @@ and measures the bow, midships and stern windows on its own camera; `paint_compa
 compare crop holds the same third of the ship on both sides) (and the game's camera 170
 and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`; for both Hullbreaker sheet ships (A16, A17) `tools/pc/jobs/PAINT_RUN_601.bat`.
 
+**Finish on existing Navy A4 exports (issue 1016).** For a Navy ship with a single published A4 atlas, run Blender in the PC
+watchdog with `-b --python-exit-code 1 -P tools/blender/kits/shared/paint_stack.py --` followed by the Navy `stack.py`,
+the installed GLB and a temporary output folder. The original atlas supplies the livery and the seams. The bake uses the
+same convex wear, cavity, scuff and satin roughness layers as the Navy sheet ships, and adds fine relief over the existing
+normal. `LEGACY_ALBEDO_BLEND` tempers the coat where the old atlas already has painted shadows. Each new map uses the
+original map's dimensions and UVs. Encode base and ORM at JPEG quality 90 and normal at 95 for the legacy A4 bundle, and
+keep its GLBs and emission. Verify the hashes, import and refresh the ship cache in the review build, and run the install
+readback and paint lint on the packaged ship.
+
 **The Eclipse stack (issue 642; ships.md section 0 item 2, "The Eclipse paint").** `tools/blender/kits/eclipse/stack.py` paints E11
 and E12 (and every later Eclipse sheet ship) on the same shared machinery. What is the faction's own, and where it lives:
 - the battle lift is in the colours: every `CONCEPT` tone is the tone the plate must show in the game, and `lin()` divides it
