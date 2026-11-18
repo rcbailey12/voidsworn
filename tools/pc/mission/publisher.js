@@ -47,16 +47,27 @@ class Reader {
       return hash;
     } catch (error) { this.error('Picture read',error); return null; }
   }
-  stat(p) {
-    try { const s = fs.lstatSync(p); return s.isFile() ? s : null; }
-    catch (e) { if (e.code !== 'ENOENT') this.error('File metadata',e); return null; }
+  stat(p, source = 'File metadata', required = false) {
+    try {
+      const s = fs.lstatSync(p);
+      if (s.isFile()) return s;
+      if (required) this.errors.add(source+': expected a regular file');
+    } catch (e) { if (required || e.code !== 'ENOENT') this.error(source,e); }
+    return null;
   }
-  dirs(p, required = false) {
+  dirs(p, required = false, source = 'Folder listing') {
     try { return fs.readdirSync(p, { withFileTypes: true }).filter(d => !d.isSymbolicLink()); }
-    catch (e) { if (required || e.code !== 'ENOENT') this.error('Folder listing',e); return []; }
+    catch (e) { if (required || e.code !== 'ENOENT') this.error(source,e); return []; }
   }
-  read(p, limit = 65536, tail = false) {
-    const s = this.stat(p);
+  directory(p, source) {
+    try {
+      if (fs.lstatSync(p).isDirectory()) return true;
+      this.errors.add(source+': expected a regular directory');
+    } catch (e) { this.error(source,e); }
+    return false;
+  }
+  read(p, limit = 65536, tail = false, source, required = false) {
+    const s = this.stat(p,source,required);
     if (!s) return { text: '', mtime: 0, exists: false };
     const key = `${p}:${limit}:${tail}`;
     const cached = this.cache.get(key);
@@ -70,7 +81,7 @@ class Reader {
       const v = { text: buf.toString('utf8').replace(/^\uFEFF/, ''), mtime: s.mtimeMs, size: s.size, exists: true };
       this.cache.set(key, v);
       return v;
-    } catch (error) { this.error('File read',error); return { text: '', mtime: s.mtimeMs, exists: true, unreadable: true }; }
+    } catch (error) { this.error(source || 'File read',error); return { text: '', mtime: s.mtimeMs, exists: true, unreadable: true }; }
   }
 }
 
@@ -144,18 +155,20 @@ function resultVerdict(text) {
   if (/all done/i.test(text)) return 'ended';
   return null;
 }
-function jobInfo(folder, issue, seat, reader, byLocation = false, arm = seat) {
-  const state = reader.read(path.join(folder, 'status.json'));
+function jobInfo(folder, issue, seat, reader, byLocation = false, arm = seat, source) {
+  const fileSource = name => source ? source+'/'+name : undefined;
+  const read = (name, limit, tail) => reader.read(path.join(folder,name),limit,tail,fileSource(name));
+  const state = read('status.json');
   let status = null;
   if (state.exists && !state.unreadable) {
     try { status = JSON.parse(state.text); } catch (_) { /* Invalid status is reported below. */ }
     if (!status || typeof status!=='object' || Array.isArray(status)) {
       status = null;
-      reader.errors.add('Runner status file is invalid');
+      reader.errors.add(source ? fileSource('status.json')+': invalid runner status' : 'Runner status file is invalid');
     }
   }
-  const head = reader.read(path.join(folder, 'result.txt'), 65536);
-  const tail = reader.read(path.join(folder, 'result.txt'), 16384, true);
+  const head = read('result.txt',65536);
+  const tail = read('result.txt',16384,true);
   const result = {...tail, text:head.text + '\n' + tail.text};
   const claims = [...result.text.matchAll(/job claimed: issue #(\d+) by ([a-z]+), run ([a-f0-9]{32})(?![a-f0-9])/gi)];
   const tags = [...new Set(claims.map(m => m[3].toLowerCase()))];
@@ -178,15 +191,15 @@ function jobInfo(folder, issue, seat, reader, byLocation = false, arm = seat) {
     !(resultState === 'ended' && status?.status !== 'running') ? 'result has no run id' : null;
   const started = time(status?.started), finished = time(status?.finished);
   const names = ['log.txt','events.jsonl','checks_node.txt','checks_parity.txt'];
-  const writes = names.map(name => ({name, at:reader.stat(path.join(folder,name))?.mtimeMs || 0}));
-  const log = reader.read(path.join(folder, 'log.txt'), 16384);
+  const writes = names.map(name => ({name, at:reader.stat(path.join(folder,name),fileSource(name))?.mtimeMs || 0}));
+  const log = read('log.txt',16384);
   const evidence = [{source:'status.json', at:iso(state.mtime), run:run?.slice(0,8) || null}];
   if (result.exists) evidence.push({source:'result.txt', at:iso(result.mtime), run:tagged?.slice(0,8) || null,
     association:previous ? 'previous run, ended ' + new Date(eventTime(result.text.split(/\r?\n/).filter(l=>/all done/i.test(l)).at(-1) || '',result.mtime)).toISOString().slice(11,16) : resultMatches ? byLocation && !tagged ? 'same run directory; no run id in result' : 'matching run id' : 'association unverified'});
   for (const w of writes.filter(w => w.at)) evidence.push({source:w.name, at:iso(w.at), association:started && w.at > started ? 'after run start' : 'from an earlier run'});
   const activity = foreignRunner ? 0 : maxTime(started, ...writes.filter(w => started && w.at > started).map(w=>w.at),
     started && state.mtime > started && state.mtime, started && resultMatches && result.mtime > started && result.mtime);
-  const runnerTitle = WORKHORSE_ARMS[seat] ? reader.read(path.join(folder,'title.txt'),4096).text.trim() : '';
+  const runnerTitle = WORKHORSE_ARMS[seat] ? read('title.txt',4096).text.trim() : '';
   const title = cleanTitle(!foreignRunner && (status?.title || runnerTitle || titleFromLog(log.text, issue)), issue);
   return {issue, job:{issue,title,branch,url:REPO+'/issues/'+issue,prUrl:REPO+'/pulls?q='+encodeURIComponent('is:pr head:'+branch)},
     folder, run:foreignRunner ? null : run, started:foreignRunner ? 0 : started, finished:foreignRunner ? 0 : finished,
@@ -195,24 +208,35 @@ function jobInfo(folder, issue, seat, reader, byLocation = false, arm = seat) {
     evidence:foreignRunner ? [{source:'Runner records',at:iso(state.mtime),association:'seat, issue or branch unverified'}] : evidence, byLocation,
     files:[state.exists && 'status.json', result.exists && 'result.txt', ...writes.filter(w=>w.at).map(w=>w.name)].filter(Boolean)};
 }
-function readJobs(root, seat, reader) {
-  const jobs = [], [id,label,directory] = seat, base = path.join(root,directory);
+function workhorseOutput(job, source, latest, reader) {
+  if (!latest.exists || latest.unreadable) return null;
+  const pointer = latest.text.trim().replace(/[\\/]/g,path.sep);
+  const resolved = path.resolve(job,pointer), run = path.relative(job,resolved);
+  // The original runner wrote directly to the issue's out folder.
+  if (!pointer || (run && !/^\d{8}_\d{6}$/.test(run))) {
+    reader.errors.add(source+'/latest.txt: expected the issue folder or one timestamped run inside it');
+    return null;
+  }
+  const runSource = run ? source+'/'+run : source;
+  if (run && !reader.directory(resolved,runSource)) return null;
+  const folder = path.join(resolved,'out'), outSource = runSource+'/out';
+  return reader.directory(folder,outSource) ? {folder,source:outSource} : null;
+}
+function readJobs(root, seat, reader, hasLaneLog = false) {
+  const jobs = [], [id,,directory] = seat, base = path.join(root,directory);
   const arms = WORKHORSE_ARMS[id];
-  for (const d of reader.dirs(base)) {
+  for (const d of reader.dirs(base,!!arms && hasLaneLog,arms ? directory : undefined)) {
     if (!d.isDirectory()) continue;
     const m = /^issue-(\d+)(?:-([a-z]+))?$/i.exec(d.name), arm = m?.[2]?.toLowerCase();
     if (!m || (arms ? !arms.includes(arm) : arm)) continue;
     const p = path.join(base,d.name);
     if (!arms) jobs.push(jobInfo(p,+m[1],id,reader));
     else {
-      const latest = reader.read(path.join(p,'latest.txt'),4096), pointer = latest.text.trim().replace(/[\\/]/g,path.sep), run = path.basename(pointer);
-      const expected = path.join(p,run), resolved = path.resolve(p,pointer);
-      const samePath = process.platform === 'win32' ? expected.toLowerCase() === resolved.toLowerCase() : expected === resolved;
-      // No fallback to another run: latest.txt is the authority for per-run location evidence.
-      const valid = samePath && reader.dirs(p).some(x=>x.isDirectory() && x.name===run && /^\d{8}_\d{6}$/.test(run));
-      if (valid) jobs.push(jobInfo(path.join(p,run,'out'),+m[1],id,reader,true,arm));
+      const source = directory+'/'+d.name;
+      const latest = reader.read(path.join(p,'latest.txt'),4096,false,source+'/latest.txt',true);
+      const output = workhorseOutput(p,source,latest,reader);
+      if (output) jobs.push(jobInfo(output.folder,+m[1],id,reader,true,arm,output.source));
       else {
-        if (latest.exists && !latest.unreadable) reader.errors.add(label+' run directory could not be verified');
         const issue = +m[1];
         jobs.push({issue, job:{issue,title:cleanTitle(null,issue),branch:branchFor(issue,id,arm),url:REPO+'/issues/'+issue},
           updated:latest.mtime, activity:0, evidence:[{source:'latest.txt',at:iso(latest.mtime),association:'run directory unverified'}],
@@ -283,13 +307,15 @@ function githubData(issues, pulls, comments, previous, now) {
     if (!issueNumber(issue.number) || issue.pull_request) continue;
     const needsRyan = issue.state === 'open' && Array.isArray(issue.labels) && issue.labels.some(l=>(typeof l==='string'?l:l?.name)==='ryan');
     const ask = needsRyan ? askRyan(issue.body) || {question:null,picture:null} : null;
-    put(data.issues,{number:issue.number,title:cleanTitle(issue.title,issue.number),state:issue.state === 'closed' ? 'closed' : issue.state === 'open' ? 'open' : 'unknown',updatedAt:iso(time(issue.updated_at)),ask},'number');
+    put(data.issues,{number:issue.number,title:cleanTitle(issue.title,issue.number),state:issue.state === 'closed' ? 'closed' : issue.state === 'open' ? 'open' : 'unknown',
+      updatedAt:iso(time(issue.updated_at)),closedAt:iso(time(issue.closed_at)),ask},'number');
   }
   for (const pr of pulls) {
     if (!issueNumber(pr.number) || pr.base?.repo?.full_name !== 'rcbailey12/voidsworn') continue;
     const own = pr.head?.repo?.full_name === 'rcbailey12/voidsworn', branch = own && pr.head?.ref;
     const state = pr.merged_at ? 'merged' : ['open','closed'].includes(pr.state) ? pr.state : null;
-    if (branchPattern.test(branch)) put(data.pulls,{number:pr.number,branch,state,head:sha(pr.head.sha),updatedAt:iso(time(pr.updated_at)),url:`${REPO}/pull/${pr.number}`},'number');
+    if (branchPattern.test(branch)) put(data.pulls,{number:pr.number,branch,state,head:sha(pr.head.sha),updatedAt:iso(time(pr.updated_at)),
+      mergedAt:iso(time(pr.merged_at)),url:`${REPO}/pull/${pr.number}`},'number');
     if (own && /^opus\//i.test(branch)) record('claude',pr.updated_at,'PR activity recorded',pr.number);
     if (own && /^muse\//i.test(branch)) record('muse',pr.updated_at,'PR activity recorded',pr.number);
     if (own && /^work\/issue-\d+-openai$/i.test(branch)) record('openai',pr.updated_at,'PR activity recorded',pr.number);
@@ -535,11 +561,31 @@ function pictureIndex(repo, info, reader, gitRead = git) {
   return pictures.sort((a,b)=>time(b.capturedAt)-time(a.capturedAt));
 }
 
+function chainJobsEnded(chain, now, jobs, github) {
+  if (!chain.startedAt || now-chain.mtime < STALE_SECONDS*1000 || !chain.issues.length ||
+      chain.lastIssue && !chain.issues.includes(chain.lastIssue)) return false;
+  return chain.issues.every((issue,index) => {
+    if (chain.jobEnds.has(index)) return true;
+    const start = chain.jobStarts.get(index);
+    // An earlier occurrence of an issue cannot close a repeat that has yet to start.
+    if (!start && chain.issues.indexOf(issue) !== index) return false;
+    const since = start || chain.startedAt;
+    const job = jobs.find(job=>job.issue===issue);
+    if (start && job?.started >= start-2000 && job.finished >= since && !job.conflict &&
+        ['checked_push','partial','unverified','no_changes','blocked','failed','stopped'].includes(job.status?.status)) return true;
+    const branch = job?.job.branch || branchFor(issue,chain.id);
+    return github.issues.some(item=>item.number===issue && item.state==='closed' && time(item.closedAt)>=since) ||
+      github.pulls.some(pr=>pr.branch===branch && pr.state==='merged' && time(pr.mergedAt)>=since);
+  });
+}
+
 function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyGithub()) {
   reader.errors.clear();
   const files = new Map(reader.dirs(root,true).filter(d=>d.isFile()).map(d=>[d.name.toLowerCase(),d.name]));
-  const chains = queue.resolveQueue([...files.values()].filter(name=>lanePattern.test(name)).map(name=>readChain(root,name,reader,files)),now);
-  const jobsBySeat = new Map(SEATS.map(seat=>[seat[0],readJobs(root,seat,reader).sort((a,b)=>(b.started || b.updated)-(a.started || a.updated))]));
+  const observed = [...files.values()].filter(name=>lanePattern.test(name)).map(name=>readChain(root,name,reader,files));
+  const jobsBySeat = new Map(SEATS.map(seat=>[seat[0],readJobs(root,seat,reader,observed.some(c=>c.id===seat[0]))
+    .sort((a,b)=>(b.started || b.updated)-(a.started || a.updated))]));
+  const chains = queue.resolveQueue(observed,now,c=>chainJobsEnded(c,now,jobsBySeat.get(c.id),github));
   const jobFor = (issue, jobs, seat) => jobs.find(j=>j.issue===issue)?.job || {issue,title:cleanTitle(null,issue),branch:branchFor(issue,seat),url:REPO+'/issues/'+issue};
   const lanes = SEATS.map(seat => {
     const id = seat[0], own = chains.filter(c=>c.id===id), jobs = jobsBySeat.get(id);
@@ -571,7 +617,7 @@ function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyG
       const afterSeat = c.predecessor && c.state!=='started' ? queue.laneId(c.predecessor) : id;
       const prior = jobsBySeat.get(afterSeat).find(j=>j.issue===afterIssue);
       const old = stamp => stamp && now-stamp >= STALE_SECONDS*1000;
-      const oldEnding = c.state==='started' && old(c===chain ? maxTime(activity,c.mtime) : c.mtime);
+      const oldEnding = c.state==='started' && c===chain && !unknown.includes(c) && old(maxTime(activity,c.mtime));
       const oldPredecessor = c.state==='linked' && old(maxTime(c.predecessorAt,prior?.activity));
       return {chain:c.name,state:unknown.includes(c) ? 'unknown' : c.state,reason:c.reason,
         after:c.predecessor || (c.waitTargets.length===1 ? c.waitTargets[0] : null),targets:c.waitTargets,
