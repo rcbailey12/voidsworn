@@ -4,7 +4,7 @@ Added after Artoo's review of the package at 35c61de8 (verdict GO WITH CONDITION
 
 ## Provenance
 
-The sim source files (data.js, core.js, battle.js, and the sim3d-derived measurement harness measure_map.js) were extracted from this repo for the issue 1004 job on Nov 17, 2026, and copied per test round. The extraction's main SHA was not pinned in the job record; that is a real gap. Anchors: the issue 1004 delivery sits on branch muse/issue-1004 at e60244df, and this package was pushed from main 6242d53e52. The tested copies may differ from current main where the game changed during Nov 17; treat the docs' numbers as measured on the tested copies, not on main.
+The sim source files (data.js, core.js, battle.js, and the sim3d-derived measurement harness measure_map.js) were extracted from this repo for the issue 1004 job on Nov 17, 2026, and copied per test round. The code was measured at main db4885e1632f78ebed9fd54535c49e8678072da3 (Nov 17, 2026), as recorded in the issue 1004 design document's header. Correction: the first version of this manifest said the extraction SHA was not pinned; that was wrong, the chair checked the wrong job file. The tested copies may differ from current main where the game changed during Nov 17; treat the docs' numbers as measured on the tested copies, not on main.
 
 ## Contents
 
@@ -13,6 +13,7 @@ The sim source files (data.js, core.js, battle.js, and the sim3d-derived measure
 - sizing/patch_sites.py and sizing/<size>/: the plural-site prototype patch and the sizing run specs and rows for 30x22, 34x24, 38x26, 42x30.
 - feel/<size>/: feel test specs and rows for 30x22, 34x24, 38x26.
 - objectives/: the rent run (t34) and the pull-weight and majority-scoring diagnostic runs (t34w, t38w, t34m, t38m).
+- sim_source/: the tested source itself, added after Artoo noted the referenced measure_map.js was not in the branch. data.js, core.js, battle.js and measure_map.js are the mechanics-matrix copy (all patch sets applied, exactly as run). measure_map_sites_feel_t34.js is the 34x24 harness at the earlier sizing and feel stage, before the mechanics patches. With these files plus the specs, the matrix, sizing and feel runs can be reconstructed without the chair's working folders.
 
 ## Battle count reconciliation (Artoo finding 4)
 
