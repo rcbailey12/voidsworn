@@ -10,7 +10,7 @@ on:
   push:
     branches:
       - 'codex/issue-*'
-      - 'muse/*'         # every Muse delivery, whatever its branch name (Nov 17 audit fix D: muse/look-pass-726 and
+      - 'muse/*'         # every one-level Muse branch (muse/<name>; a nested muse/a/b gets none) (Nov 17 audit fix D: muse/look-pass-726 and
                          # muse/glasswright-family sat with no PR); a scratch branch named muse/wip-<anything> opts out
       - 'work/issue-*'
       - 'opus/issue-*'   # Claude worker branches (issue 359); '*' also matches the arm shape opus/issue-<n>-<arm>
