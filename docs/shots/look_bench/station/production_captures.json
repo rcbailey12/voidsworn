@@ -1,0 +1,237 @@
+{
+	"capture_resolution": [
+		1920,
+		1080
+	],
+	"closest_radius": 26.0,
+	"cruiser_code": "C15s_23",
+	"cruiser_length": 23.36,
+	"stage": "installed in game",
+	"station_cache": "res://gen/ships/station_T2.scn",
+	"views": [
+		{
+			"alpha": -2.08,
+			"beta": 0.98,
+			"cruiser_bounds_pixels": [
+				1173.07702636719,
+				410.841705322266,
+				1350.19580078125,
+				530.736206054688
+			],
+			"cruiser_depth_offset": -22.8755722045898,
+			"cruiser_position": [
+				65.0,
+				0.0,
+				0.0
+			],
+			"fov": 45.0,
+			"name": "station_T2_camera170",
+			"radius": 170.0,
+			"station_bounds_pixels": [
+				316.510620117188,
+				126.684425354004,
+				1387.00842285156,
+				1082.27758789063
+			],
+			"station_draw_call_delta": 12,
+			"target": [
+				14.0,
+				4.0,
+				0.0
+			],
+			"visible_draw_calls": 35
+		},
+		{
+			"alpha": -2.08,
+			"beta": 0.98,
+			"cruiser_bounds_pixels": [
+				1283.1884765625,
+				358.925109863281,
+				1867.42150878906,
+				763.098693847656
+			],
+			"cruiser_depth_offset": 0.0,
+			"cruiser_position": [
+				24.4477233886719,
+				10.0,
+				18.6494979858398
+			],
+			"fov": 45.0,
+			"name": "station_T2_camera60",
+			"radius": 60.0,
+			"station_bounds_pixels": [
+				-11663.51171875,
+				-317.590270996094,
+				2640.77734375,
+				2307.40380859375
+			],
+			"station_draw_call_delta": 12,
+			"target": [
+				0.0,
+				10.0,
+				5.0
+			],
+			"visible_draw_calls": 35
+		},
+		{
+			"alpha": -2.08,
+			"beta": 0.98,
+			"cruiser_bounds_pixels": [
+				1493.73864746094,
+				167.956283569336,
+				2910.53466796875,
+				1146.943359375
+			],
+			"cruiser_depth_offset": 0.00000095367431640625,
+			"cruiser_position": [
+				-22.4846096038818,
+				3.83826661109924,
+				13.1620168685913
+			],
+			"fov": 45.0,
+			"name": "station_T2_closest_docking",
+			"radius": 26.0,
+			"station_bounds_pixels": [
+				-81.9146347045898,
+				-2141.66943359375,
+				6911.25732421875,
+				3330.53564453125
+			],
+			"station_draw_call_delta": 12,
+			"target": [
+				-43.4398002624512,
+				3.83826661109924,
+				1.46244633197784
+			],
+			"visible_draw_calls": 30
+		},
+		{
+			"alpha": -1.30899693899575,
+			"beta": 0.98,
+			"cruiser_bounds_pixels": [
+				1483.6171875,
+				197.855331420898,
+				3571.32373046875,
+				1022.58557128906
+			],
+			"cruiser_depth_offset": 0.0,
+			"cruiser_position": [
+				34.8206596374512,
+				14.1171445846558,
+				-0.867835521697998
+			],
+			"fov": 45.0,
+			"name": "station_T2_closest_habitat",
+			"radius": 26.0,
+			"station_bounds_pixels": [
+				-27589.58984375,
+				-7558.18310546875,
+				2895.04248046875,
+				3961.21728515625
+			],
+			"station_draw_call_delta": 12,
+			"target": [
+				11.6384420394897,
+				14.1171445846558,
+				5.34382200241089
+			],
+			"visible_draw_calls": 30
+		},
+		{
+			"alpha": -0.8,
+			"beta": 0.98,
+			"cruiser_bounds_pixels": [
+				1447.52197265625,
+				147.820922851563,
+				3676.1630859375,
+				1255.22875976563
+			],
+			"cruiser_depth_offset": 0.0000019073486328125,
+			"cruiser_position": [
+				37.9842071533203,
+				22.4336547851563,
+				-8.2525749206543
+			],
+			"fov": 45.0,
+			"name": "station_T2_closest_arrays",
+			"radius": 26.0,
+			"station_bounds_pixels": [
+				-1074.79663085938,
+				-657.202819824219,
+				3596.71875,
+				3928.00561523438
+			],
+			"station_draw_call_delta": 12,
+			"target": [
+				20.7676620483398,
+				22.4336547851563,
+				8.46838569641113
+			],
+			"visible_draw_calls": 30
+		},
+		{
+			"alpha": -2.08,
+			"beta": 0.98,
+			"cruiser_bounds_pixels": [
+				1493.73876953125,
+				167.956283569336,
+				2910.53466796875,
+				1146.94311523438
+			],
+			"cruiser_depth_offset": -0.00000286102294921875,
+			"cruiser_position": [
+				0.92881965637207,
+				28.5375118255615,
+				11.242880821228
+			],
+			"fov": 45.0,
+			"name": "station_T2_closest_tall_tower",
+			"radius": 26.0,
+			"station_bounds_pixels": [
+				-730.6572265625,
+				-392.69580078125,
+				5121.6806640625,
+				4597.90478515625
+			],
+			"station_draw_call_delta": 12,
+			"target": [
+				-20.0263748168945,
+				28.5375118255615,
+				-0.456687331199646
+			],
+			"visible_draw_calls": 30
+		},
+		{
+			"alpha": -2.08,
+			"beta": 0.98,
+			"cruiser_bounds_pixels": [
+				1493.73876953125,
+				167.956283569336,
+				2910.53515625,
+				1146.94360351563
+			],
+			"cruiser_depth_offset": 0.00000095367431640625,
+			"cruiser_position": [
+				27.2831497192383,
+				28.1344947814941,
+				23.3512001037598
+			],
+			"fov": 45.0,
+			"name": "station_T2_closest_top_deck",
+			"radius": 26.0,
+			"station_bounds_pixels": [
+				-2002.39538574219,
+				-351.752838134766,
+				3790.00463867188,
+				5084.474609375
+			],
+			"station_draw_call_delta": 12,
+			"target": [
+				6.32795906066895,
+				28.1344947814941,
+				11.6516304016113
+			],
+			"visible_draw_calls": 30
+		}
+	]
+}

@@ -1,4 +1,43 @@
-# Hegemony station kit: station_T2 run 5
+# Hegemony station kit: station_T2 production paint
+
+Issue 975 authorizes painting and installing the PR 700 shape approved by Ryan Nov 17. Double-click
+`tools/recipe/station_paint.bat` for the station adapter to recipe stages 5 to 7, two capture passes and the station-map
+frame gate. It retains every evaluated triangle and inside, preserves replaced T2 files, and changes no rules cells.
+The existing ship GLBs and import/cache files must first be present in this checkout, as for every PC look bench.
+
+`production.py` uses the actual Hegemony faction stack and shared bake machinery for five 2048 PBR tile sets at a fixed
+two-unit repeat. It adds normal/roughness service covers, flush fasteners, vents and low-contrast stencils, and masks
+wear with rays against the real geometry and its bevel normals. `production_check.py` reads the exported GLB's PBR
+channels, vertex colours, triangle count, bounds, animation and UV areas independently. It compares those densities
+with the actual installed C15s_23 cruiser and rejects incomplete paint or lost geometry.
+
+Run 2's `production_finish.py` configures a privately loaded Hegemony stack with T2's accepted pale and warm-metal
+direction. It keeps ordered seams, blue hwin emission and no rust. The fleet stack is unchanged. Connected mesh
+islands receive stable panel tones, with a minority in blue; cavity rays, the retained bevels and world-space
+damaged-side soot supply wear. Fine directional residue also enters the albedo and roughness tiles. Existing
+window geometry takes reflective framed glazing with a room/sill mask in hwin emission, including the broad
+observation pane. Dark panels are more frequent toward the damaged side. The original 90 marker lights remain.
+Solar-cell glazing stays dark. Glass filters the hwin light blue without raising its original emission peak.
+The production export explicitly names `T2_geometry_wear` as `COLOR_0`. Blender's default material inference inserted
+a white `COLOR_0` and put the real wear in `COLOR_1`, which Godot does not multiply into the hull. The independent
+GLB check now rejects that white substitute; the actual run 1 GLB proves the rejection.
+
+`install.gd` writes a compressed, mipmapped station cache and reads it through the board's real prop loader.
+`production_capture.gd` loads that same cache, production lighting/camera and real ShipView cruiser; its closest
+comparisons put the cruiser at the same camera depth as the inspected fitting. `production_pictures.py` produces
+1920 x 720 crops without resizing their native 1920 x 1080 pixels, plus 1280 x 720 camera 170/60 concept comparisons.
+Every review picture carries its stage, source revision and provenance sidecar. The frame gate takes a solo GPU claim
+and requires three 1080p frame and 4K GPU medians below 12.5 ms on the actual 20-ship station-map scene.
+
+Production output: the checkout's parent `issue-975/shots` folder, lane B in this run. Scratch logs and native source captures: TEMP.
+The default recipe entry is `tools/recipe/stations/station_T2.json`. Do not pass it to the ship hardpoint export.
+After a capture interruption, `STATION_START_STAGE=7` resumes from the painted export. The independent check first
+requires its baked source hashes to match the current production, design, faction and shared paint files.
+Shape review scripts below remain for reproducing PR 700. Their preview palette is not the production paint.
+Run 1's five stamped pictures are retained under `docs/shots/look_bench/station/run1`. The compositor puts each
+beside its run 2 counterpart, preserving native close pixels, camera settings, revision stamps and the concept views.
+
+## PR 700 shape review route
 
 Refs #373. Fleet station first: the abandoned T2 of Vesper Reach, accepted in R206, shape damage in R279, fine detail in R284.
 T1 is a later state of this kit. The refinery T3 needs its own plan.

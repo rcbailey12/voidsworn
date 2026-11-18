@@ -809,7 +809,9 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0) -> void:
 	# A4's painted station (O1_37 in its own paint); the flat grey clay below stays as the fallback
 	var a4 := A4P.station(size)
 	if a4 != null:
-		a4.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)), c + Vector3(0, 3, 0))
+		var bearing := rng.randf() * 6.0
+		var attitude := Vector3(0, bearing, 0) if a4.has_meta("station_T2") else Vector3(0.06, bearing, 0.04)
+		a4.transform = Transform3D(Basis.from_euler(attitude), c + Vector3(0, 3, 0))
 		props.add_child(a4)
 		return
 	var p := "res://gen/hulls/O1_37.res"
