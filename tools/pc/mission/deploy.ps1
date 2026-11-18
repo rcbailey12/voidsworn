@@ -96,6 +96,21 @@ function Confirm-ServedFile([string]$Route, [string]$File, [string]$Type, [DateT
     }
 }
 
+function Confirm-BuildStatus($Reply) {
+    $status = $utf8.GetString($Reply.Bytes) | ConvertFrom-Json
+    if ($Reply.Type -ne 'application/json' -or $status.schemaVersion -ne 2 -or
+        $status.build.id -ne $build.id -or $status.build.diskId -ne $build.id -or
+        $status.build.sourceRevision -ne $revision -or $status.build.stale -ne $false -or
+        $status.build.sourceAt -ne $build.sourceAt -or $status.build.diskSourceAt -ne $build.sourceAt) {
+        throw 'HTTP build or source file timestamp did not match.'
+    }
+    $started = [DateTimeOffset]::Parse($status.build.startedAt).UtcDateTime
+    if ($started -lt $launchedAt -or $started -gt [DateTime]::UtcNow) {
+        throw 'The reported publisher start does not match this launch.'
+    }
+    return $status
+}
+
 $phase = 'Prepare deployment'
 $lock = $client = $sha = $null
 $oldMoved = $newMoved = $wasRunning = $stopAttempted = $false
@@ -127,16 +142,17 @@ try {
         $node = Get-Command node.exe -CommandType Application | Select-Object -First 1 -ExpandProperty Source
     }
 
-    $phase = 'Stage the publisher and page'
+    $phase = 'Stage the publisher, queue, page and assets'
     Write-Step $phase
     Copy-MissionPair $checkout $candidate $true
     $candidatePublisher = Join-Path $candidate $publisherRelative
     [IO.File]::WriteAllText((Join-Path (Split-Path -Parent $candidatePublisher) 'build.json'),
         ('{"revision":"' + $revision + '"}'), $utf8)
-    $manifest = & $node -e 'const p = require(process.argv[1]); console.log(JSON.stringify({id:p.buildHash(), assets:p.ASSETS}));' $candidatePublisher 2>$null
+    $manifest = & $node -e 'const p = require(process.argv[1]); console.log(JSON.stringify({id:p.buildHash(), assets:p.ASSETS, sourceAt:p.buildSourceAt(), checkoutAt:p.buildSourceAt(process.argv[2])}));' $candidatePublisher (Split-Path -Parent (Join-Path $checkout $publisherRelative)) 2>$null
     if ($LASTEXITCODE -ne 0) { throw 'Could not load the staged publisher.' }
     $build = $manifest | ConvertFrom-Json
     if ($build.id -notmatch '^[a-f0-9]{64}$' -or !$build.assets) { throw 'Build metadata unavailable.' }
+    if (!$build.sourceAt -or $build.sourceAt -ne $build.checkoutAt) { throw 'Staged source file timestamps did not match the checkout.' }
     Add-Type -AssemblyName System.Net.Http
     $handler = New-Object System.Net.Http.HttpClientHandler
     $handler.UseProxy = $false
@@ -164,16 +180,13 @@ try {
     $newMoved = $true
     $phase = 'Start the publisher hidden'
     Write-Step $phase
-    $deadline = [DateTime]::UtcNow.AddSeconds(60)
+    $launchedAt = [DateTime]::UtcNow.AddMilliseconds(-1)
+    $deadline = $launchedAt.AddSeconds(150)
     $process = Start-InstalledPublisher
 
     $phase = 'Check status and build over HTTP'
     Write-Step $phase
-    $reply = Wait-Status $process $deadline
-    $status = $utf8.GetString($reply.Bytes) | ConvertFrom-Json
-    if ($reply.Type -ne 'application/json' -or $status.schemaVersion -ne 2 -or
-        $status.build.id -ne $build.id -or $status.build.diskId -ne $build.id -or
-        $status.build.sourceRevision -ne $revision -or $status.build.stale -ne $false) { throw 'HTTP build did not match.' }
+    $status = Confirm-BuildStatus (Wait-Status $process $deadline)
     $phase = 'Check the page and every asset over HTTP'
     Write-Step $phase
     $page = Join-Path $installed 'docs\mission'
@@ -181,7 +194,20 @@ try {
     foreach ($asset in $build.assets.PSObject.Properties) {
         Confirm-ServedFile $asset.Name (Join-Path $page ($asset.Name.TrimStart('/'))) $asset.Value $deadline
     }
-    if ([DateTime]::UtcNow -ge $deadline) { throw 'HTTP check timed out.' }
+    $phase = 'Check the first PC source scan'
+    Write-Step $phase
+    while (!$status.generatedAt -and [DateTime]::UtcNow -lt $deadline) {
+        Start-Sleep -Milliseconds 500
+        $status = Confirm-BuildStatus (Wait-Status $process $deadline)
+    }
+    if (!$status.generatedAt -or !$status.pcSource.lastAttemptAt -or !$status.lanes.Count) { throw 'No PC scan was published.' }
+    $scanned = [DateTimeOffset]::Parse($status.generatedAt).UtcDateTime
+    $attempted = [DateTimeOffset]::Parse($status.pcSource.lastAttemptAt).UtcDateTime
+    if ($scanned -lt $launchedAt -or $attempted -lt $scanned -or $attempted -gt [DateTime]::UtcNow -or
+        @($status.lanes | Where-Object { $_.source.refreshedAt -ne $status.generatedAt }).Count -gt 0) {
+        throw 'PC source scan timestamps did not match the running build.'
+    }
+    Write-Step ('Verified build ' + $build.id.Substring(0, 12) + ', source ' + $build.sourceAt + ', PC scan ' + $status.generatedAt + '.')
     Write-Step 'Deployment passed. The backup was kept.'
 } catch {
     Write-Step ('Failed step: ' + $phase + '.')
