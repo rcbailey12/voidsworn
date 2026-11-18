@@ -539,196 +539,216 @@
    "pc_path": "godot/assets/ships/C19_51/"
   },
   "D20_23": {
-   "name": "Eclipse flare",
+   "name": "Eclipse flare, the glass cannon (Eclipse)",
    "faction": "deathless",
    "cls": "Destroyer",
    "band": "M",
+   "game_ship": "d_jackal",
    "length_world": 9.5,
-   "hardpoints": {
-    "gun": 2,
-    "engine": 4,
-    "breach": 6,
-    "core": 1
-   },
-   "breaches": 6,
-   "skins": 13,
-   "files": {
-    "D20_23.glb": {
-     "bytes": 6376952,
-     "sha256": "fbbabb4070c4b6fa758f649bd0331d96f96b762d55f439b3ea7cef867425cf64"
-    },
-    "D20_23_base.jpg": {
-     "bytes": 713685,
-     "sha256": "75523a685a5206a11678dd57003ca5b6300835f24f32647e0d61fb44051a1f5b"
-    },
-    "D20_23_damage.glb": {
-     "bytes": 27048248,
-     "sha256": "1b6335a82fefc22e65e4047f5317d09df4783e081020c9ff0c8d560a903475d5"
-    },
-    "D20_23_emissive.jpg": {
-     "bytes": 339334,
-     "sha256": "789af4ac1a46169beafe9fc9df17b4cfb830f765f9660cc0173fa5665b1c6426"
-    },
-    "D20_23_normal.jpg": {
-     "bytes": 1582370,
-     "sha256": "17b2d37b04e91fb1783fb881499f96ddb6c09d12494e6b1cffaf3149fbb832f7"
-    },
-    "D20_23_orm.jpg": {
-     "bytes": 1567841,
-     "sha256": "2ee2a0d2d065b0551b59f10930f59281892431c1066e29d03eb5e24e657ce745"
-    },
-    "D20_23_wreck.glb": {
-     "bytes": 3909172,
-     "sha256": "5e0edc395eee52f4f51227d8d16c332d075669f2ae1f52ff916e0bebd041523b"
-    }
-   },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\D20_23\\",
-   "preview": "previews/D20_23.jpg",
-   "damage_preview": "previews/D20_23_damage.jpg"
-  },
-  "D21_23": {
-   "name": "Eclipse zenith",
-   "faction": "deathless",
-   "cls": "Cruiser",
-   "band": "M",
-   "length_world": 14.5,
-   "hardpoints": {
-    "gun": 4,
-    "engine": 2,
-    "breach": 6,
-    "core": 1
-   },
-   "breaches": 6,
-   "skins": 13,
-   "files": {
-    "D21_23.glb": {
-     "bytes": 6083152,
-     "sha256": "4832716ce6bf5ead364e75b4374e9f8fea524213840b2a027458700d8c71a3a3"
-    },
-    "D21_23_base.jpg": {
-     "bytes": 790875,
-     "sha256": "05b5c68d0d18c3bff7387b2e0cd6e4a089ff088eae6e84193448f06163ef189e"
-    },
-    "D21_23_damage.glb": {
-     "bytes": 17693588,
-     "sha256": "9f7af5ee11eecba92dc4b9c34a2350da223feb7cb9872e59741e530afb73e997"
-    },
-    "D21_23_emissive.jpg": {
-     "bytes": 475227,
-     "sha256": "bbf8e139cf8b4e012fd395db1d4f54940d21662c164f3289d7de86a109335323"
-    },
-    "D21_23_normal.jpg": {
-     "bytes": 1838086,
-     "sha256": "cb90e9643174aefe3cb38e26d61568d29d59aa15f4fecfce75d8d1fee6f2c54f"
-    },
-    "D21_23_orm.jpg": {
-     "bytes": 1651565,
-     "sha256": "ad6fc6f1611540c25d963faf63802c327ca821906d77f57870fe104c4cabab43"
-    },
-    "D21_23_wreck.glb": {
-     "bytes": 3530232,
-     "sha256": "9065ca4a0a2710abab5dded62f044877a1a8ae21841fc329819c8cbfab5a9375"
-    }
-   },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\D21_23\\",
-   "preview": "previews/D21_23.jpg",
-   "damage_preview": "previews/D21_23_damage.jpg"
-  },
-  "D22_23": {
-   "name": "The Unsetting",
-   "faction": "deathless",
-   "cls": "Tomb-ark",
-   "band": "XL",
-   "length_world": 28,
-   "hardpoints": {
-    "gun": 4,
-    "engine": 2,
-    "breach": 10,
-    "core": 1
-   },
-   "breaches": 10,
-   "skins": 21,
-   "files": {
-    "D22_23.glb": {
-     "bytes": 8695496,
-     "sha256": "46bf4c648974b699e1e7cd8f633a633ed8737557d2ab7f41d7070adfd309aacf"
-    },
-    "D22_23_base.jpg": {
-     "bytes": 2597559,
-     "sha256": "1b8f643dd577cbfe3e34b3d10e01bd253e239d6f7b153f0e821a41a804feeb7c"
-    },
-    "D22_23_damage.glb": {
-     "bytes": 9701376,
-     "sha256": "d7b946f45ab882497ec3cb53075d536c1e3ae361ef38a9d41bbcb7ea559f65ad"
-    },
-    "D22_23_emissive.jpg": {
-     "bytes": 597479,
-     "sha256": "358fabcaf8b73b3a71d25191a316bc81814194de01346a02a7ed4d9cc505909b"
-    },
-    "D22_23_normal.jpg": {
-     "bytes": 8275230,
-     "sha256": "0e72c0cf575a042a0ad0554cc99e403224b788405890b6c970e1894c8d8b39c0"
-    },
-    "D22_23_orm.jpg": {
-     "bytes": 1703324,
-     "sha256": "352e0404853f5a623c993f0848e25b817fc456c9454263072bc73bb3b3ce6029"
-    },
-    "D22_23_wreck.glb": {
-     "bytes": 4982320,
-     "sha256": "381a295dc41d659cae2b1827da6edd5dbe82ac742ba2c60209c3451538d98dbb"
-    }
-   },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\D22_23\\",
-   "preview": "previews/D22_23.jpg",
-   "damage_preview": "previews/D22_23_damage.jpg"
-  },
-  "D9_23": {
-   "name": "Eclipse mote",
-   "faction": "deathless",
-   "cls": "Frigate",
-   "band": "S",
-   "length_world": 6.5,
    "hardpoints": {
     "gun": 1,
     "engine": 1,
-    "breach": 4,
-    "core": 1
+    "breach": 3,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
    },
-   "breaches": 4,
-   "skins": 9,
+   "breaches": 3,
+   "turrets": 0,
    "files": {
-    "D9_23.glb": {
-     "bytes": 3417464,
-     "sha256": "ecd2dd5147dd4d6c546407a1b0b21e733d1336fcac3df941f340a4681a2db0a2"
+    "D20_23.glb": {
+     "bytes": 4824324,
+     "sha256": "f623f2fda365df4eaac7a309c36f52992c51f68111b37fb36ccbecbd3775e4dd"
     },
-    "D9_23_base.jpg": {
-     "bytes": 844384,
-     "sha256": "5147505f0fe2154eeedcfce4abefb28d227b372c5dad4187c4b509c3e300dc44"
+    "D20_23_base.jpg": {
+     "bytes": 884853,
+     "sha256": "20a95bfffc95376bd681654bc586c1175783fcd4a0b5d2ae5fc3dea03dc6f215"
     },
-    "D9_23_damage.glb": {
-     "bytes": 19152812,
-     "sha256": "a840a549f6ac2c0a34686d334895b61142a5f7c95f71b0233bc80cb126672599"
+    "D20_23_glow_emission.jpg": {
+     "bytes": 1134318,
+     "sha256": "f1aa3b1c790ef1c7d4ca92590e07f04cda566d325e731b31c2ef08d7661b6dd9"
     },
-    "D9_23_emissive.jpg": {
-     "bytes": 516704,
-     "sha256": "5e6c2614c25069130a63e521ed8430228d258faea8202eee9e33418baae7754d"
+    "D20_23_normal.jpg": {
+     "bytes": 427647,
+     "sha256": "98a3109dab09f12665a22f5bb41acf53c18fa781637a1a423cb3bce123aa9ff7"
     },
-    "D9_23_normal.jpg": {
-     "bytes": 2275123,
-     "sha256": "3bc0c2012071df38e2e6f055fe0703c86128236e56fe88040558aba0836b1a5d"
+    "D20_23_orm.jpg": {
+     "bytes": 1580972,
+     "sha256": "a33f60f85c08c174a19e547b549b11a179fc7a94b0084594af555c0a47212440"
     },
-    "D9_23_orm.jpg": {
-     "bytes": 1914546,
-     "sha256": "a0b5df0e2c3ab034f8b67c647c476d3581a0ceded7cd64f8d041180296d271dd"
+    "D20_23_parts_base.jpg": {
+     "bytes": 902941,
+     "sha256": "ac185fc7a60885005df59413eb353b67022252b19b92a057b1cfa088b90bd8cb"
     },
-    "D9_23_wreck.glb": {
-     "bytes": 1855532,
-     "sha256": "2b63b054bc7c809e076e1f5fabdbfa3f3ec058f6eaf62386bccb3d08647f7efc"
+    "D20_23_parts_normal.jpg": {
+     "bytes": 186026,
+     "sha256": "91197fd3f2940f3f99f565502900511a2d6d7be60f961b69d1abffd7dd06f8d9"
+    },
+    "D20_23_parts_orm.jpg": {
+     "bytes": 1540776,
+     "sha256": "6601db0595c658c681ed0dd950c6865c12bfe5c3b8fcfc2850f6b86d2fb58f79"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\D9_23\\",
-   "preview": "previews/D9_23.jpg",
-   "damage_preview": "previews/D9_23_damage.jpg"
+   "pc_path": "godot/assets/ships/D20_23/"
+  },
+  "D21_23": {
+   "name": "Eclipse zenith, the ring cruiser (Eclipse)",
+   "faction": "deathless",
+   "cls": "Cruiser",
+   "band": "M",
+   "game_ship": "d_harvester",
+   "length_world": 14.5,
+   "hardpoints": {
+    "gun": 7,
+    "engine": 3,
+    "breach": 4,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
+   },
+   "breaches": 4,
+   "turrets": 3,
+   "files": {
+    "D21_23.glb": {
+     "bytes": 5314232,
+     "sha256": "df41a234df227b88c0145faa23f47d5a5a36f3a5a9804dcdd26f6a2d84ab3ef5"
+    },
+    "D21_23_base.jpg": {
+     "bytes": 1018598,
+     "sha256": "69b69d910f61f490c9e42060935af26b9526a1c10f5341197db11492973f0ba4"
+    },
+    "D21_23_glow_emission.jpg": {
+     "bytes": 901212,
+     "sha256": "c70a9447860c605b1c0e8a9c2266061994a12f7efd36071fb048fffa0534d125"
+    },
+    "D21_23_normal.jpg": {
+     "bytes": 382893,
+     "sha256": "e87b0aa637456bcc570942cd3f9ef971815797a703dd13dac34cb3816397bf9f"
+    },
+    "D21_23_orm.jpg": {
+     "bytes": 1665445,
+     "sha256": "6205c841021c160403c757aff7d753450c008219f4f50868d3943833c52a22dd"
+    },
+    "D21_23_parts_base.jpg": {
+     "bytes": 897762,
+     "sha256": "4d4b8e038662c6930bbc12922a02f3652a704805267552989046944f9ce8e0b6"
+    },
+    "D21_23_parts_normal.jpg": {
+     "bytes": 188173,
+     "sha256": "82b657039dff0ae4bab84b41d5af2cd18c8e939d5f7dad3244fbcb83fbf07c3e"
+    },
+    "D21_23_parts_orm.jpg": {
+     "bytes": 1652501,
+     "sha256": "60e869e5449fa8f14c515c8348ac9e3e42fe270a9c50f41a48c798d382af7da3"
+    }
+   },
+   "pc_path": "godot/assets/ships/D21_23/"
+  },
+  "D22_23": {
+   "name": "The Unsetting, the Eclipse flagship (Eclipse)",
+   "faction": "deathless",
+   "cls": "Tomb-ark",
+   "band": "XL",
+   "game_ship": "d_boss",
+   "length_world": 28.0,
+   "hardpoints": {
+    "gun": 10,
+    "engine": 3,
+    "breach": 8,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
+   },
+   "breaches": 8,
+   "turrets": 3,
+   "files": {
+    "D22_23.glb": {
+     "bytes": 12844428,
+     "sha256": "7e9020a12a73fa77bb2abc33ec3794803a80a964db96c6419fe16b348318e78a"
+    },
+    "D22_23_base.jpg": {
+     "bytes": 1249565,
+     "sha256": "769e70ca9ae474153eeb41152fa04216bb104576fcacb8e5473d36f4a2d2a855"
+    },
+    "D22_23_glow_emission.jpg": {
+     "bytes": 538513,
+     "sha256": "2bd84a407e63a7c31b2d296719b96d6bb6938b3ea3d0025e430197d696a0972e"
+    },
+    "D22_23_normal.jpg": {
+     "bytes": 351390,
+     "sha256": "f26711ee3be88825a18a545dccc3020650f26a491aa4ab7b94f3a8e9c4787f1b"
+    },
+    "D22_23_orm.jpg": {
+     "bytes": 2223964,
+     "sha256": "5b68c521d37afadd16426bdaabe56ad85e3d58c4d19be703f953675b2b2c50f6"
+    },
+    "D22_23_parts_base.jpg": {
+     "bytes": 1063914,
+     "sha256": "d2694b2004f895e577768f396659d98d1359d32c26502e69588f9d58906149cc"
+    },
+    "D22_23_parts_normal.jpg": {
+     "bytes": 216213,
+     "sha256": "84c33dff4d6e2dfc29f020fe2597132ea3186ae821388c0e4ad9504896853383"
+    },
+    "D22_23_parts_orm.jpg": {
+     "bytes": 1807755,
+     "sha256": "8415b89b1488a280ff5efdb8dc4179fc459a6a711c8e1d2f475b8db8110f9d79"
+    }
+   },
+   "pc_path": "godot/assets/ships/D22_23/"
+  },
+  "D9_23": {
+   "name": "Eclipse mote, the fan frigate (Eclipse)",
+   "faction": "deathless",
+   "cls": "Frigate",
+   "band": "S",
+   "game_ship": "d_scythe",
+   "length_world": 6.5,
+   "hardpoints": {
+    "gun": 2,
+    "engine": 1,
+    "breach": 2,
+    "core": 1,
+    "rcs": 2,
+    "board": 2
+   },
+   "breaches": 2,
+   "turrets": 1,
+   "files": {
+    "D9_23.glb": {
+     "bytes": 1987540,
+     "sha256": "c4adacd41198f81278be737ff71bb77e20040d5b1e84a037e4598d2c7b3f49e7"
+    },
+    "D9_23_base.jpg": {
+     "bytes": 690309,
+     "sha256": "b655319da2d63027340d476ba789637ddd9ada4c225e3f34705dcdd4a03f6f7b"
+    },
+    "D9_23_glow_emission.jpg": {
+     "bytes": 819613,
+     "sha256": "87515a2aa7b25a031af1acc20cfb03eea81cc0622557ff13c4528633d14a6060"
+    },
+    "D9_23_normal.jpg": {
+     "bytes": 409473,
+     "sha256": "af76e415489b8b5a7a4945bd4c023c732620e2c3b0254057fdca713884148b46"
+    },
+    "D9_23_orm.jpg": {
+     "bytes": 1235920,
+     "sha256": "9fa85fbde6c5509cdcdc32b757d53ea0da3578beffccc8be041220c13b5c3fe8"
+    },
+    "D9_23_parts_base.jpg": {
+     "bytes": 694253,
+     "sha256": "66ff91fcc6c0ad63e3021f43051ca20591c70b2613089c3a6f4ffb65dc50e30c"
+    },
+    "D9_23_parts_normal.jpg": {
+     "bytes": 187288,
+     "sha256": "6f2f4cf1f75d6cfc72994bb908a5e9b98b30b83691cd546ec336f17168a557ef"
+    },
+    "D9_23_parts_orm.jpg": {
+     "bytes": 1230937,
+     "sha256": "452d94bf7f6e019bcd258890d58e20eefe4d55c40e511d3a5e5737ae88520611"
+    }
+   },
+   "pc_path": "godot/assets/ships/D9_23/"
   },
   "H10_23": {
    "name": "Dominion-class dreadnought, the Hegemony line flagship (Hegemony Navy)",
