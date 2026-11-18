@@ -14,7 +14,7 @@ every Blender ship and paint stack (R205); two or three threads at once, big one
 plan (R264), local only, four lanes on the PC (R268, R301): main (tools build_b, repo
 board\repo, mirror repo-mirror.git; GPU jobs), lane B (build_c, board_b\repo, repo-mirror-b.git; Godot UI), lane C (build_d,
 board_c\repo, repo-mirror-c.git; code-only), lane D (build_e, board_d\repo; code-only, R301). No Codex cloud: its model cannot be pinned (R268). DeepSeek takes code, mid-size
-included; Kimi is gone (R257); Muse does design, checks and audits when Ryan starts it. GPU work is sized to the job and the
+included; Kimi is gone (R257); Muse does design, checks and audits and starts its own runs (Ryan, Nov 17). GPU work is sized to the job and the
 5080 (R293). Every PC write is read back before it is relied on (LOOP Known traps).
 
 **Artoo.** Ryan's ChatGPT dot is an independent technical reviewer (R295, RULEBOOK 2.7): it comments by itself on PRs and

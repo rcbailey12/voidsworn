@@ -76,7 +76,7 @@ other work to free you up on these crucial items" (R205, R206). So "Fable" in th
 | Every ship model in Blender (blockouts, build sheets, hulls, kits, the station), hard or visual builds, read-only code audits | Opus 5.5 worker threads, two at most (R205; LOOP.md duties item 9) |
 | Well-specified code: services, checks, tables, wiring, screens and builds to a spec | DeepSeek workhorse on the PC |
 | Captures, benches, look-bench runs, scripted pipeline steps that shape no ship, code, image-tool jobs | Codex on the PC, one job at a time (R205, R206) |
-| Concept pictures by image to image, research, design text, outside checks of Opus-built changes | Muse (Ryan starts every run) |
+| Concept pictures by image to image, research, design text, outside checks of Opus-built changes | Muse (starts its own runs from the board, Ryan Nov 17) |
 | Picks, looks, money | Ryan |
 
 No Fable helpers (R180). The Board starts agreed work on its own and asks Ryan only for design, key decisions, reviews of what
