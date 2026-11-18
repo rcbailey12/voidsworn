@@ -247,7 +247,7 @@ const fs = require('fs'), path = require('path'), cp = require('child_process');
 const a = process.argv.slice(2), mode = process.env.STUB_GIT_FAULT || '';
 // This hook runs after reuse eligibility, immediately before the real branch switch.
 if (a.includes('checkout') && a.includes('-B') && process.env.STUB_CHECKOUT_EDIT) {
-  fs.writeFileSync(path.join(a[a.indexOf('-C') + 1], 'progress.txt'), process.env.STUB_CHECKOUT_EDIT);
+  fs.writeFileSync(path.join(a[a.indexOf('-C') + 1], process.env.STUB_CHECKOUT_EDIT_PATH || 'progress.txt'), process.env.STUB_CHECKOUT_EDIT);
   fs.writeFileSync(process.env.STUB_CHECKOUT_MARKER, 'edit injected before switch');
 }
 if (a.includes('status') && process.env.STUB_RECHECK_FAIL === '1' && fs.existsSync(process.env.STUB_CHECKOUT_MARKER)) {
@@ -283,6 +283,7 @@ const defaults = {
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
+  STUB_CHECKOUT_EDIT_PATH: '',
   STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
@@ -529,7 +530,7 @@ async function checkoutFixture(source, label, prepare = () => {}, expectedKeep =
     assert.equal(fs.readdirSync(home).filter(n => n.startsWith('repo-kept-')).length, 0);
     assert(!r.text.includes('local clone attempt') && !r.text.includes('earlier checkout reused in place'), r.text);
     assert(!fs.existsSync(path.join(out, 'base_commit.txt')), 'stop before resume or agent work');
-    assert.equal(read(path.join(repo, 'progress.txt')), env.STUB_CHECKOUT_EDIT, 'late tracked edit bytes survive');
+    assert.equal(read(path.join(repo, env.STUB_CHECKOUT_EDIT_PATH || 'progress.txt')), env.STUB_CHECKOUT_EDIT, 'late edit bytes survive');
     return { home, repo, text: r.text };
   }
   assert.equal(r.code, 0, r.text);
@@ -596,6 +597,45 @@ async function testCleanAndCacheReuse() {
   for (const [name, bytes] of Object.entries(pythonCaches)) assert.equal(read(path.join(python.repo, name)), bytes);
   pass('pushed checkout with only ignored Python caches reuses in place and preserves every cache byte');
 }
+async function testSharedShipCopySafety() {
+  const source = fixtureSource('reuse-ship-safety');
+  const ship = 'godot/assets/ships/B16_23/armor plate.glb';
+  const profile = path.join(root, 'ship-profile');
+  const sharedShip = path.join(profile, 'Downloads/voidsworn_test/build', ship);
+  write(sharedShip, 'hull-A');
+  function copyShip(repo) {
+    write(path.join(repo, '.git/info/exclude'), 'godot/assets/ships/*/\n');
+    fs.mkdirSync(path.dirname(path.join(repo, ship)), { recursive: true });
+    fs.copyFileSync(sharedShip, path.join(repo, ship));
+  }
+  const env = { USERPROFILE: profile };
+  await checkoutFixture(source, 'late-shared-ship-edit', copyShip, false, {
+    changed: true, env: { ...env, STUB_CHECKOUT_EDIT: 'hull-B', STUB_CHECKOUT_EDIT_PATH: ship }
+  });
+  pass('a byte change to a shared ship after eligibility stops the job and survives the switch');
+
+  const linked = await checkoutFixture(source, 'linked-shared-ship', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'godot/assets/ships/*/\n');
+    const linkedDir = path.dirname(path.join(repo, ship));
+    fs.mkdirSync(path.dirname(linkedDir), { recursive: true });
+    fs.symlinkSync(path.dirname(sharedShip), linkedDir, 'junction');
+  }, true, { env });
+  assert(linked.text.includes('shared ship copy could not be verified'), linked.text);
+  assert(fs.lstatSync(path.dirname(path.join(linked.old, ship))).isSymbolicLink());
+  assert.equal(read(path.join(linked.old, ship)), 'hull-A');
+  pass('a junction to the shared build keeps the checkout and the junction');
+
+  const collisionTip = fixtureCommit({ godot: 'incoming tracked file\n', 'progress.txt': 'base\n' }, base, '', source);
+  const collision = await checkoutFixture(source, 'shared-ship-collision', repo => {
+    copyShip(repo);
+    write(path.join(source, 'refs/heads/main'), collisionTip + '\n');
+  }, true, { env });
+  assert(collision.text.includes('cache would be overwritten by incoming file: ' + ship), collision.text);
+  assert.equal(read(path.join(collision.old, ship)), 'hull-A');
+  assert.equal(read(path.join(collision.repo, 'godot')), 'incoming tracked file\n');
+  assert.equal(read(sharedShip), 'hull-A');
+  pass('an incoming tracked file that collides with an identical ship copy keeps the checkout and both copies');
+}
 async function testKeptLookalikes() {
   const source = fixtureSource('reuse-lookalikes');
   for (const [label, name, exclude] of [
@@ -618,6 +658,65 @@ async function testKeptLookalikes() {
     if (label.startsWith('untracked-')) assert(kept.text.includes('?? ' + name), kept.text);
     pass(label + ': checkout and all bytes kept aside even beside a Python cache');
   }
+}
+async function testCampaignParityCleanup() {
+  const home = path.join(root, 'campaign-parity'), dir = path.join(home, 'godot/campaign/test');
+  const bat = path.join(home, 'tools/pc/parity_campaign.bat');
+  write(bat, read(path.join(here, 'parity_campaign.bat')));
+  write(path.join(home, 'godot/project.godot'), '');
+  write(path.join(home, 'godot/campaign/data/campaign_tables.json'), '{"sha256":"fixture"}');
+  write(path.join(dir, 'node/export_campaign.js'), 'require("fs").writeFileSync(process.argv[2], \'{"sha256":"fixture"}\');');
+  write(path.join(dir, 'node/golden_campaign.js'), 'require("fs").writeFileSync(process.argv[3], process.argv[2]);');
+  write(path.join(dir, 'node/compare_campaign.js'), `
+    const fs = require('fs');
+    const same = fs.readFileSync(process.argv[2]).equals(fs.readFileSync(process.argv[3]));
+    console.log(same ? 'match' : 'fixture mismatch');
+    process.exitCode = same ? 0 : 1;
+  `);
+  write(path.join(dir, 'node/cross_twin_handoff_test.js'), 'process.exitCode = 0;');
+  write(path.join(home, 'compile.ps1'), `
+$ErrorActionPreference = 'Stop'
+Add-Type -TypeDefinition @'
+using System;
+using System.IO;
+public static class CampaignFixture {
+  public static int Main(string[] args) {
+    int separator = Array.IndexOf(args, "--");
+    if (separator < 0 || args[0] != "--headless") return 1;
+    string folder = args[separator + 1];
+    bool fail = Environment.GetEnvironmentVariable("PC_TEST_CAMPAIGN_MISMATCH") == "1";
+    for (int i = separator + 2; i < args.Length; i++) {
+      string seed = args[i];
+      File.WriteAllText(Path.Combine(folder, "c" + seed + ".jsonl"), fail && seed == "1" ? "different" : seed);
+    }
+    return 0;
+  }
+}
+'@ -OutputAssembly (Join-Path $PSScriptRoot 'godot.exe') -OutputType ConsoleApplication
+  `);
+  const built = run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(home, 'compile.ps1')]);
+  assert.equal(built.code, 0, built.text);
+  write(path.join(home, 'godot_path.txt'), path.join(home, 'godot.exe') + '\r\n');
+  const launch = mismatch => runEntryPoint('""' + bat + '" nopause"', {
+    PATH: path.dirname(process.execPath) + path.delimiter + process.env.PATH,
+    PC_TEST_CAMPAIGN_MISMATCH: mismatch
+  });
+  const failed = await launch('1');
+  assert.equal(failed.code, 1, failed.text);
+  assert(failed.text.includes('fixture mismatch'), failed.text);
+  assert.equal(fs.readdirSync(path.join(dir, 'golden')).length, 30);
+  assert.equal(fs.readdirSync(path.join(dir, 'out')).length, 32);
+  assert.equal(read(path.join(dir, 'golden/c1.jsonl')), '1');
+  assert.equal(read(path.join(dir, 'out/c1.jsonl')), 'different');
+  assert(read(path.join(dir, 'parity_campaign_log.txt')).includes('fixture mismatch'));
+
+  const succeeded = await launch('0');
+  assert.equal(succeeded.code, 0, succeeded.text);
+  assert(succeeded.text.includes('matches the game on all 30 seeded runs'), succeeded.text);
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'golden')), []);
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'out')), []);
+  assert(read(path.join(dir, 'parity_campaign_log.txt')).includes('PASS'));
+  pass('campaign parity batch keeps mismatch records and clears all generated output after a pass');
 }
 async function testLateCheckoutEdits() {
   const source = fixtureSource('reuse-late-edit');
@@ -1062,7 +1161,7 @@ async function testRunnerStartChecks() {
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools]);
   await parallel([
     testAccounting, testAccountingFaults, testOpenAIModels,
-    testCleanAndCacheReuse, testKeptLookalikes, testLateCheckoutEdits,
+    testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
     testClaimRules, testClaimFailures, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,

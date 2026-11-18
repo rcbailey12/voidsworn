@@ -15,6 +15,47 @@
 # announce <out> <issue> <seat> <repo> <ceiling seconds> <resume command> <push mode>: validate and claim before work.
 # board-dryrun <out>: list ACCEPT or REFUSE for every open codex, muse or opus issue, without claims or agent calls.
 # Test claims require PC_TEST_GH and PC_TEST_GH_DB; real dry runs validate read-only. Linux probes use pwsh and real git.
+# Public runner diagnostics are built from fixed text. Keep exceptions, reports from interrupted agents,
+# raw check details, and resume tails in the local run folder. Never interpolate an arbitrary log line.
+function Public-RunnerText($status, $reason, $code, $folder) {
+  switch ($status) {
+    'running' { return 'claimed before checkout and model calls' }
+    'checked_push' { return 'non-partial push confirmed and runner checks passed' }
+    'unverified' { return 'dry/test push or checks did not pass; chain stays stopped' }
+    'no_changes' { return 'no changes pushed' }
+    'partial' {
+      switch -Exact ($reason) {
+        'CEILING' { return 'CEILING' }
+        'usage limit' { return 'usage limit' }
+        'spend accounting unknown' { return 'spend accounting unknown' }
+        { $_ -in @('Codex left a merge unfinished', 'the agent left a merge unfinished') } { return 'the agent left a merge unfinished' }
+      }
+      if ($reason -cmatch '\ASTALLED after ([0-9]{1,6}(?:[.,][0-9]{1,6})?) min\z') { return "STALLED after $($Matches[1]) min" }
+      if ($reason -match '\A(?:codex|agent) exit (-?[0-9]{1,10})\z') { return "agent exit $($Matches[1])" }
+      return 'agent run interrupted; see the local run folder'
+    }
+    'checks' {
+      $rows = @()
+      foreach ($check in @(
+        @{ name = 'standing checks'; log = 'checks_node.txt'; code = $env:NODE_EXIT },
+        @{ name = 'parity'; log = 'checks_parity.txt'; code = $env:PARITY_EXIT }
+      )) {
+        $label = $check.name
+        if (-not (Test-Path -LiteralPath (Join-Path $folder $check.log) -PathType Leaf)) { $rows += "SKIP: $label"; continue }
+        if ($check.code -eq '0') { $rows += "PASS: $label" }
+        elseif ($check.code -eq '124') { $rows += "FAIL: $label timed out" }
+        elseif ($check.code -match '\A-?[0-9]{1,10}\z') { $rows += "FAIL: $label (exit $($check.code))" }
+        else { $rows += "SKIP: $label (no exit recorded)" }
+      }
+      return ($rows -join "`n")
+    }
+    default {
+      if ($code -match '\A-?[0-9]{1,10}\z') { return "runner exit $code; see the local run folder" }
+      return 'runner failed; see the local run folder'
+    }
+  }
+}
+if ($args[0] -eq 'publication-library') { return }
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
 $utf8 = New-Object Text.UTF8Encoding($false)
@@ -186,13 +227,44 @@ function Warn-KeptRepos($repo) {
     } catch { Log "WARNING: kept checkout $($copy.FullName): size unavailable ($($_.Exception.Message))" }
   }
 }
+function Test-SharedShipCopy($repo, $path) {
+  # Use the same default shared build as get_ship_files.bat.
+  $build = Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/build'
+  $local = Get-Item -LiteralPath (Join-Path $repo $path) -Force -ErrorAction SilentlyContinue
+  $shared = Get-Item -LiteralPath (Join-Path $build $path) -Force -ErrorAction SilentlyContinue
+  foreach ($file in @($local, $shared)) {
+    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $false }
+  }
+  if ($local.Length -ne $shared.Length) { return $false }
+  # Git can list the contents of a junction as ignored files. Keep checkouts that contain a linked ship directory.
+  $root = [IO.Path]::GetFullPath($repo).TrimEnd('\','/')
+  for ($dir = $local.Directory; $dir -and $dir.FullName -ne $root; $dir = $dir.Parent) {
+    if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }
+  }
+  return (Get-FileHash -LiteralPath $local.FullName -Algorithm SHA256).Hash -eq
+         (Get-FileHash -LiteralPath $shared.FullName -Algorithm SHA256).Hash
+}
 function Reuse-Caches($repo) {
   $status = @(Git @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
   if ($gitExit -ne 0) { throw 'working tree status not verified' }
   foreach ($line in $status) {
-    # Only ignored Godot and Python bytecode caches are rebuildable. Unknown or quoted paths count as work.
-    if ($line -notmatch '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import|([^"\r\n]*/)?__pycache__/[^"\r\n]+|[^"\r\n]+\.pyc)$') { throw "working tree needs keeping: $line" }
-    $line.Substring(3)
+    if ($line -match '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import|([^"\r\n]*/)?__pycache__/[^"\r\n]+|[^"\r\n]+\.pyc)$') {
+      $line.Substring(3)
+      continue
+    }
+    # Ignored parity outputs and UIDs are rebuildable files. Git can also list a nested repo with a trailing slash.
+    if ($line -match '^!! ("?)(godot/(?:(?:campaign|rules)/test/(?:golden|out)/[^"\\:\r\n]+|campaign/test/parity_campaign_log\.txt|rules/test/parity_log\.txt|[^"\\:\r\n]+\.uid))(?<!/)\1$') {
+      $Matches[2]
+      continue
+    }
+    # Git can quote paths with spaces. Leave paths with escapes or unknown status alone.
+    if ($line -match '^!! ("?)(godot/assets/ships/[^"\\:\r\n]+)\1$') {
+      $path = $Matches[2]
+      if (-not (Test-SharedShipCopy $repo $path)) { throw "working tree needs keeping: $line (shared ship copy could not be verified)" }
+      $path
+      continue
+    }
+    throw "working tree needs keeping: $line"
   }
 }
 function Get-RebuildableRepoFiles($repo, $mirror, $sparse) {
@@ -222,7 +294,7 @@ function Can-ReuseRepo($repo, $mirror, $sparse) {
   if (-not (Test-Path -LiteralPath $repo)) { return $false }
   try {
     $caches = @(Get-RebuildableRepoFiles $repo $mirror $sparse)
-    # Keep the whole checkout when a cache obstructs the incoming tree.
+    # Keep the whole checkout when an ignored file obstructs the incoming tree.
     $paths = @(Git @('--git-dir',$mirror,'-c','core.quotePath=false','ls-tree','-r','--name-only','refs/heads/main'))
     if ($gitExit -ne 0) { throw 'incoming paths not verified' }
     $files = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
@@ -380,11 +452,12 @@ function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
     return ($lines -join "`n")
   } catch { $script:ghError = $_.Exception.Message; Log "WARNING: GitHub status $method $endpoint failed: $script:ghError"; return '' }
 }
-function Status-Body($s, $label, $reason) {
+function Status-Body($s, $label, $code) {
   $g = $s.github
   $branch = $s.branch
   if ($label -eq 'partial') { $branch += '-partial' }
   $commit = $s.commit; if (-not $commit) { $commit = $g.start_commit }
+  $reason = Public-RunnerText $s.status $s.reason $code
   return @"
 $($g.marker)
 Runner status: $label
@@ -535,7 +608,7 @@ function End-Announcement($s, $code) {
     $label = 'failed'
     if ($code -eq '0' -and $s.status -in @('checked_push','unverified')) { $label = 'finished' }
     if ($s.status -eq 'partial') { $label = 'partial' }
-    if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $s.reason) } }
+    if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $code) } }
     # Clearing the owned label must still be attempted when editing the comment fails.
     $null = Invoke-Gh 'DELETE' "issues/$($g.issue)/labels/running"
     if ($ghOK) { $g.claimed = $false; Save-State $s }
@@ -550,7 +623,7 @@ try {
     $resumePath = Join-Path $out 'resume.txt'
     if (Test-Path -LiteralPath $resumePath) { [IO.File]::Move($resumePath, "$resumePath.$($s.run).previous") }
     # Old run metadata must never turn a later failure into success.
-    foreach ($f in @('stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt','scratch_path.txt')) { Put (Join-Path $out $f) '' }
+    foreach ($f in @('stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt','scratch_path.txt','commit.txt')) { Put (Join-Path $out $f) '' }
   }
   elseif ($mode -eq 'scratch') {
     $script:out = $args[1]
@@ -654,7 +727,7 @@ try {
       catch { throw "checkout changed while starting; kept as is: $($_.Exception.Message)" }
     }
     if ($switchExit -ne 0) { throw "git checkout failed (exit $switchExit); see git_log.txt" }
-    if ($reuse) { Log 'earlier checkout reused in place; ignored cache files left in place' }
+    if ($reuse) { Log 'earlier checkout reused in place; ignored files left in place' }
     $base = @(Git @('-C',$repo,'rev-parse','HEAD'))[0]
     Put (Join-Path $out 'base_commit.txt') $base
     $partial = "refs/remotes/origin/$br-partial"
@@ -758,7 +831,7 @@ try {
       # Reuse this branch's comment on retries instead of adding a new comment every run.
       try {
         foreach ($comment in $comments) { if (([string]$comment.body).StartsWith($g.marker)) { $g.comment = $comment.id } }
-        $payload = @{ body = (Status-Body $s 'running' 'claimed before checkout and model calls') }
+        $payload = @{ body = (Status-Body $s 'running' '') }
         if ($g.comment) { $null = Require-Gh 'PATCH' "issues/comments/$($g.comment)" $payload }
         else { $reply = Require-Gh 'POST' "issues/$issue/comments" $payload; $g.comment = $reply.id }
         if (-not $g.comment) { throw 'claim comment has no id; no agent started' }

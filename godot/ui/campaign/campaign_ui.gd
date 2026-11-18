@@ -597,6 +597,15 @@ func _mastery_bar(id) -> Control:
 func _run_options() -> Control:
 	var v = vbox(10)
 	v.add_child(gothic("Run options", 52))
+	var trial = CheckBox.new()
+	trial.name = "MapTrialToggle"
+	trial.text = "Test new battle maps, faster ships and longer gun ranges"
+	trial.tooltip_text = "Also changes where ships start in Hunt, Ambush and boss fights. Applies to this whole run."
+	trial.add_theme_font_size_override("font_size", px(18))
+	trial.button_pressed = C.map_trial_choice
+	trial.toggled.connect(func(on): C.act("optMapTrial", "1" if on else "0"))
+	trial.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	v.add_child(trial)
 	var cards = flow(); var o = C.page["data"]["opts"]; var id = C.picked_admiral; var a = C.ADMIRALS[id]
 	if int(o["ml"]) >= 1:
 		var cv = card(false, 380); cv[1].add_child(lbl("Starting fleet", 20, BONE, font_semi))
@@ -836,6 +845,9 @@ func _briefing_column() -> Control:
 	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
 	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
 	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
+	var trial_status := _sheet_words("Test map package " + ("on" if H["map_trial"] else "off"), 17, GS.TEXT2)
+	trial_status.name = "MapTrialStatus"
+	upper.add_child(trial_status)
 	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
 	upper.add_child(gap(28)); _rows.clear()
 	for r in _routes:
