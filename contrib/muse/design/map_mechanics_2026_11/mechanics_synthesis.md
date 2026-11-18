@@ -1,0 +1,44 @@
+# Chair synthesis: making movement matter in Voidsworn
+
+Council: blind Rey (written first), DeepSeek (DeepThink on, Search off), Qwen (Qwen3.8-Max), ChatGPT (GPT-6 at High), Flash (Gemini 3.5 Flash-Lite, ideation seat). Grok seat parked: grok.com bot wall, same as earlier rounds. Evidence base: the pack (600+ measured battles, the current bot's scoring structure from the code, and reference designs from BattleTech, Advance Wars, Deadlock, Into the Breach, XCOM 2, Armada, and the influence-map and utility-AI literature).
+
+## Where the council agrees
+
+1. Evasion from movement is the consensus mechanic. All five legs proposed it independently, and it is a top-3 pick for DeepSeek (1st), ChatGPT (1st), Qwen (2nd) and Rey (2nd). The shared shape: meaningful distance travelled in an activation makes the ship harder to hit until its next activation; direct-fire only; capped; standing still gets nothing. The variants differ in form: BattleTech-style charges (DeepSeek, Qwen), stepped accuracy penalties on net displacement (ChatGPT: 0 at 0-2 hexes, -10 points at 3-4, -15 at 5+), a continuous damage-reduction fraction of speed used (Flash). ChatGPT's net-displacement refinement matters: measuring start-to-end displacement rather than path length is what stops ships farming the bonus by circling. Chair's read: the form is a tuning choice, the principle is settled. Price it inside the bot's existing threat estimate (all legs agree on this) so the bot values it without a new side term.
+
+2. Attacking from multiple bearings should pay. Rey (crossfire), DeepSeek (bearing-change bonus requiring movement of 2+ hexes), ChatGPT (rear-quarter hit bonus), Qwen (anvil/hammer pairs that manufacture the geometry), Flash (arc multipliers). One flag the chair must record: Flash's version assumes rear shield arcs are weaker, which contradicts Voidsworn's pooled-shield ruling; the workable form is ChatGPT's, an explicit accuracy bonus for rear-quarter attacks that assumes nothing about shield pools. DeepSeek's movement requirement (the bonus only counts if the attacker actually travelled) is the anti-camping refinement.
+
+3. Independent per-ship optimization is a blob cause, and a light coordination layer is the fix. Rey (target assignment with over-assignment penalty), DeepSeek (sector deconfliction plus a top-N destination repulsion filter), Qwen (anvil/hammer role pairs per round), ChatGPT (coordinated attack lanes, its 3rd pick). Nobody proposed a heavy squad-command system; all versions are per-round assignments or soft penalties layered on the existing scorer.
+
+4. Spatial fields are the structural answer, with a sequencing dispute (below). Rey ranked threat/value fields 1st; DeepSeek, Qwen and Flash all include them; ChatGPT includes them but deliberately last, in a coarse form first, with the warning that a field which merely re-encodes enemy proximity recreates the failure with more machinery.
+
+5. Objectives are closed as a lever. Every leg accepted the evidence; DeepSeek said it plainly: do not lead with objective changes. No leg proposed one.
+
+## The one real fork: how much scoring surgery, and when
+
+Qwen and Flash rank a multiplicative scoring restructure (response curves, weighted product) as the single highest-leverage change, to be done first, on the argument that new mechanics are invisible to a scorer that cannot weigh them. DeepSeek agrees on the plumbing but sequences it as preparation, not as the headline. ChatGPT argues the opposite order: start with a cheap two-pass selection change (shortlist every destination within a small combat budget, about 10% of a volley, of the best score, then pick among them for movement and future position), which tests the local-optimization trap with no rule change and no restructure; restructure only if the cheap tests show terms fighting. Rey's variant is a third position: do not restructure or add terms, change what the existing offense and threat estimates themselves price (evasion expectation, crossfire axes).
+
+Chair's ruling: ChatGPT's sequence is the right discipline for this project, because it is the only ordering that produces evidence before architecture. The two-pass selection is a one-function change on the current scorer and directly tests the strongest diagnosis (the bot is trapped by overly precise local optimization). If it moves displacement materially, the additive scorer was never the binding constraint and the restructure can be skipped or deferred. If it fails, Qwen and Flash's restructure becomes the evidenced next step rather than a bet. Rey's fold-in principle is adopted as the standing rule for every mechanic below: new value enters through the offense and threat estimates, not as new additive side terms; the pull-crank failure is the recorded reason.
+
+## The recommended test sequence (chair)
+
+Step 0. Instrument. Add net displacement per activation (start hex to end hex, not path length), bearing diversity per target, and multi-activation displacement. ChatGPT is right that move rate and coverage cannot judge this work. No behavior change.
+Step 1. Two-pass combat-budget selection (ChatGPT 7). No rule change. Pass signal: post-contact net displacement up about 20%+ with no win-split or duration damage, and the average combat value sacrificed stays inside the budget by construction.
+Step 2. Evasion from movement (consensus mechanic), priced into the threat estimate. Form: stepped penalties on net displacement, direct-fire only, cap at the 5+ step. Pass signal: distance per move and long move-and-fire share up; rounds do not stretch materially; fast hulls' survival improves without dominating win split.
+Step 3. Rear-quarter / crossfire bonus (ChatGPT 2 with DeepSeek's movement requirement). Pass signal: bearing diversity per target up, shot clustering down.
+Step 4. Attack-lane assignment (ChatGPT 5 / DeepSeek B2, soft form). Pass signal: distinct attack sectors per target up, focus fire (damage concentration on the primary target) not materially down.
+Step 5. Coarse opportunity/threat field around priority targets (ChatGPT's scoped version of the fields consensus). Only expand to a full board field if the coarse version pays. Pass signal: combat-phase coverage and shot-origin diversity up, exposure-adjusted exchange improved.
+Step 6, conditional. Multiplicative restructure (Qwen C1 / Flash 5) if steps 1-5 show terms fighting; persistent tactical course (ChatGPT 9) if ships identify good positions but do not complete maneuvers; predictive torpedo avoidance (ChatGPT 8) as a specialist upgrade to the existing torpedo term.
+
+## Held for later, with reasons
+
+- Turn-rate limit / facing commitment (Qwen A2): the most original single idea in the round, and the only one that makes position around the enemy matter through facing itself. Held because it changes how the game feels to a human hand, not just the bot, and its value multiplies once flanking pays (step 3). First candidate after the sequence.
+- Range-band falloff (Qwen A3) and long-gun close-range weakness (ChatGPT 3): range preference creates opposed movement desires, which is real, but both legs themselves flag composition dependence; mirror-fleet tests would mute them. Test with asymmetric fleets after the core sequence.
+- Weapon firing arcs (DeepSeek A3): plausible, but it is a data and UI change across the roster, not a scoring change; after arcs exist in the data, the scorer work is small.
+- Momentum / broadside bonus (Flash 1): the most gamey proposal; straight-line tracking on a hex grid is fiddly and the tuning risk (fast ships dominant) is the highest in the round. Not recommended.
+- Strike and slip (Flash 6): requires splitting movement around firing inside an activation, a rules change to the activation structure; the same ground is covered more cheaply by step 1's selection change.
+- One-ply lookahead (Qwen B3, DeepSeek B3, ChatGPT 4 in sampled form): agreed direction, agreed cost concern; the sampled future-value version is the only one worth prototyping, and only if steps 1-4 leave the bot visibly myopic.
+
+## Acceptance discipline (adopted from ChatGPT, agreed by the chair)
+
+Paired seeds, swapped sides, mirror fleets, 1.25 whole-number baseline, per-encounter reporting. Provisional gates: 20-30% improvement in mean post-contact net displacement; long move-and-fire share up, not walking turns; positional payoff shown (better attacks or lower exposure), not just hexes travelled; no material damage to duration, win splits, or objective behavior; no circular movement. And inspect replays: a bot can improve every movement statistic while producing an unconvincing battle. ChatGPT's closing test is the right one to end on: success is when "why did that ship move there?" has an answer better than "because it had movement points left."
