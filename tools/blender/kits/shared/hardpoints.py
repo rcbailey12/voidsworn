@@ -183,6 +183,12 @@ def missing_required(counts, weapons, cls, faction, hangar=0):
     return probs
 
 
+def missing_sides(required, sides):
+    """A required braking or boarding pair must include a valid point on each side."""
+    return [f'need one valid hp_{kind} on each side (P and S)'
+            for kind in ('rcs', 'board') if required[kind] and sides[kind] != {'P', 'S'}]
+
+
 def name_problem(name):
     """the point type for a written node name, or None when the name is not one the contract defines"""
     import re
