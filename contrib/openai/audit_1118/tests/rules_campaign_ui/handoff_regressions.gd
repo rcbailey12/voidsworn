@@ -19,6 +19,8 @@ func _initialize() -> void:
 	_breakthrough(c, api)
 	_hegemony_event(c, api)
 	_backup_without_primary(c, restored)
+	_prize_then_reload(c, restored, api)
+	_doctrine_at_yard(c)
 	quit(1 if failures != 0 else 0)
 
 
@@ -34,6 +36,13 @@ func _run(c) -> void:
 	c.mapScreen()
 
 
+func _external(c, api) -> void:
+	c.battle_mode = "external"
+	c.battle_setup = func(run, cfg):
+		api.new_battle(run, cfg)
+		return api.R.B
+
+
 func _story_checkpoint(c, restored, api) -> void:
 	_run(c)
 	c.RUN["sector"] = 3
@@ -45,10 +54,7 @@ func _story_checkpoint(c, restored, api) -> void:
 	c.act("enterNode", c.availableNodes()[0]) # Sector III starts at a shipyard.
 	c.act("leaveYard")
 	var next = c.availableNodes().filter(func(id): return c.findNode(id)["type"] == "battle")[0]
-	c.battle_mode = "external"
-	c.battle_setup = func(run, cfg):
-		api.new_battle(run, cfg)
-		return api.R.B
+	_external(c, api)
 	c.act("enterNode", next)
 	if c.page["kind"] != "battle" or not c.B["cfg"].get("storyMods", {}).get("power", false):
 		printerr("ERROR: story battle fixture did not start with the earned modifier")
@@ -57,7 +63,10 @@ func _story_checkpoint(c, restored, api) -> void:
 	restored.load_save_text(c.save_text())
 	restored.act("continueRun")
 	var n = restored.findNode(next)
-	var resume_same_fight: bool = restored.page["kind"] == "battle" or (restored.availableNodes().has(next) and not n.get("done", false) and restored.RUN.get("storyNext", {}).get("power", false))
+	var reopened = restored.B != null and restored.B.get("cfg", {}).get("node") == next and restored.B.get("cfg", {}).get("storyMods", {}).get("power", false)
+	var pending = restored.RUN.get("storyNext")
+	var can_retry = restored.availableNodes().has(next) and not n.get("done", false) and pending is Dictionary and pending.get("power", false)
+	var resume_same_fight: bool = reopened or can_retry
 	_check(resume_same_fight, "unfinished story fight remains playable with its reward after reload (page=%s, node_done=%s, node_reachable=%s)" % [restored.page["kind"], n.get("done", false), restored.availableNodes().has(next)])
 
 
@@ -92,8 +101,9 @@ func _hegemony_event(c, api) -> void:
 	c.RUN["nem"] = nem
 	c.RUN["nemAssign"][0] = "hegemony"
 	c.RUN["nems"]["hegemony"] = nem
-	var cfg = {"kind": "elite", "obj": "rout", "fac": "hegemony", "col": 1, "seed": 1091, "map": "belt", "shape": "open", "campaign": true, "nemesis": c.nemBattleCfg()}
-	api.new_battle(c.RUN, cfg)
+	var cfg = {"kind": "elite", "obj": "rout", "fac": "hegemony", "col": 1, "seed": 1091, "map": "belt", "shape": "open", "nemesis": c.nemBattleCfg()}
+	_external(c, api)
+	c.battleScreen(cfg)
 	var event = api.R.B.get("event")
 	_check(event is Dictionary and event.get("k") == "reinf_enemy" and event.get("r") == 3, "Hegemony Nemesis always calls enemy reinforcements in round 3 (event=%s)" % str(event))
 
@@ -106,3 +116,53 @@ func _backup_without_primary(c, restored) -> void:
 	restored.SAVED_RUN = null
 	restored.load_save_text("", backup)
 	_check(restored.SAVED_RUN != null and restored.META.get("renown") == 41, "an empty or missing primary save recovers the backup run and profile (renown=%s)" % restored.META.get("renown"))
+
+
+func _prize_then_reload(c, restored, api) -> void:
+	_run(c)
+	var next = c.availableNodes()[0]
+	c.RUN["curNode"] = next
+	c.RUN["pos"] = next
+	_external(c, api)
+	c.battleScreen({"kind": "elite", "obj": "rout", "fac": "hegemony", "col": 1, "node": next,
+		"seed": 1091, "map": "belt", "shape": "open", "enemies": [{"tpl": "h_picket"}, {"tpl": "h_picket"}]})
+	var r = api.R
+	var foes: Array = r.caps("enemy")
+	# One captured escort and one wreck; use the real rules result and reward flow.
+	foes[0]["side"] = "player"
+	foes[0]["captured"] = true
+	foes[1]["hp"] = 0
+	r.killUnit(foes[1], r.caps("player")[0])
+	c.finish_battle(r.B["over"], r.B)
+	c.act("prizeStep")
+	if c.modal_d == null or c.modal_d["kind"] != "prize":
+		printerr("ERROR: prize fixture did not create a prize")
+		quit(2)
+		return
+	c.act("prizeSet", "0:ransom")
+	c.act("prizeConfirm")
+	if c.modal_d == null or c.modal_d["kind"] != "salvage":
+		printerr("ERROR: prize fixture did not reach salvage")
+		quit(2)
+		return
+	restored.load_save_text(c.save_text())
+	restored.act("continueRun")
+	var kind: String = restored.modal_d.get("kind", "") if restored.modal_d != null else "none"
+	_check(kind == "salvage" and restored.RUN["credits"] == c.RUN["credits"], "reopening during salvage resumes salvage after the paid prize (modal=%s)" % kind)
+
+
+func _doctrine_at_yard(c) -> void:
+	_run(c)
+	c.RUN["sector"] = 2
+	c.RUN["map"] = c.genSector(2)
+	c.mapScreen()
+	var yard = c.availableNodes()[0]
+	c.act("enterNode", yard)
+	c.act("yardFleet")
+	if c.page["kind"] != "fleet" or c.page["data"].get("back") != "shipyard" or not c.verbCanUse():
+		printerr("ERROR: doctrine fixture did not reach the yard fleet with a payable action")
+		quit(2)
+		return
+	c.act("factionVerb")
+	_check(c.page["kind"] == "shipyard" or (c.page["kind"] == "fleet" and c.page["data"].get("back") == "shipyard"),
+		"using doctrine from the yard fleet keeps a way back to the yard (page=%s)" % c.page["kind"])
