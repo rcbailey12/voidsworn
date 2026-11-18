@@ -9,6 +9,7 @@
 #   work_issue.ps1 openai-key <out>                              checks the run's isolated credential, no network
 #   work_issue.ps1 openai-budget <out> <root> <settings> <model> <dry 0|1>   refuses spent budgets and unpriced models
 #   work_issue.ps1 openai-spend <n> <out> <root> <settings> <model> <dry 0|1> records emitted usage once per run
+#   work_issue.ps1 openai-agent <out> <repo> <exe> <model> <variant> <cap>  runs and resumes an OpenCode session
 # Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
 #   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
@@ -99,6 +100,102 @@ function Last-Text($ev) {
 }
 
 function Read-Txt($p) { if (Test-Path $p) { return ([IO.File]::ReadAllText($p)).Trim() } else { return '' } }
+
+function OpenAI-Agent($out, $repo, $exe, $model, $variant, [int]$cap) {
+  $watchdog = Join-Path $PSScriptRoot 'tmo.bat'
+  $log = [IO.StreamWriter]::new((Join-Path $out 'log.txt'), $false, $utf8)
+  $log.AutoFlush = $true
+  $stderr = Join-Path $out 'stderr.txt'
+  [IO.File]::WriteAllText($stderr, '', $utf8)
+  $waits = @(0, 30, 60, 120, 240, 240)
+  $timer = [Diagnostics.Stopwatch]::StartNew()
+  $session = ''
+  $resumeArg = ''
+  $taskPrompt = 'Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push.'
+  $continuePrompt = 'Continue the task from where you stopped. Do not commit and do not push.'
+  $remaining = $cap
+  try {
+    for ($resumes = 0; ; $resumes++) {
+      $lastError = $null
+      $diagnostic = $false
+      $prompt = if ($resumes) { $continuePrompt } else { $taskPrompt }
+      $start = [Diagnostics.ProcessStartInfo]::new($env:COMSPEC)
+      $start.Arguments = '/d /s /c ""{0}" {1} "{2}" run --auto --format json -m {3} {4} --dir "{5}"{6} 2>&1"' -f `
+        $watchdog, $remaining, $exe, $model, $variant, $repo, $resumeArg
+      $start.UseShellExecute = $false
+      $start.CreateNoWindow = $true
+      $start.RedirectStandardInput = $true
+      $start.RedirectStandardOutput = $true
+      $start.StandardOutputEncoding = $utf8
+      $process = [Diagnostics.Process]::Start($start)
+      try {
+        # OpenCode reads the message from stdin. The watchdog can record its command line on a timeout.
+        try { $process.StandardInput.Write($prompt); $process.StandardInput.Close() } catch [IO.IOException] { }
+        if ($resumes) {
+          Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value ('rate limited, resumed {0} of {1}' -f $resumes, $waits.Count) -Encoding UTF8
+        }
+        while ($null -ne ($line = $process.StandardOutput.ReadLine())) {
+          $event = $null
+          if ($line.TrimStart().StartsWith('{')) { try { $event = $line | ConvertFrom-Json } catch { } }
+          if (-not $event.type) {
+            if ($line.Trim() -and -not $diagnostic) {
+              Add-Content -LiteralPath $stderr -Value 'OpenCode or its watchdog wrote a diagnostic.' -Encoding UTF8
+              $diagnostic = $true
+            }
+            continue
+          }
+          if ($event.sessionID -cmatch '^ses_[a-zA-Z0-9]+$' -and -not $session) { $session = $event.sessionID }
+          if ($event.type -eq 'error') {
+            $data = $event.error.data
+            $status = if ([string]$data.statusCode -match '^[1-5][0-9]{2}$') { [int]$data.statusCode }
+            $retryable = $data.isRetryable -is [bool] -and $data.isRetryable
+            $seconds = $null
+            if ($status -eq 429 -and $retryable) {
+              $hint = [regex]::Match("$($data.message) $($data.responseBody)", '(?i)\btry again in\s+(\d+(?:\.\d+)?)\s*(?:s|secs?|seconds?)\b')
+              if ($hint.Success) { $seconds = [double]::Parse($hint.Groups[1].Value, [Globalization.CultureInfo]::InvariantCulture) }
+            }
+            # Keep only the fields needed to decide the retry. Provider errors can carry headers and account details.
+            $lastError = @{ statusCode = $status; isRetryable = $retryable; retryAfterSeconds = $seconds }
+            $line = @{ type = 'error'; sessionID = $session; error = @{ data = $lastError } } | ConvertTo-Json -Compress -Depth 4
+            if ($event.sessionID -cne $session) { $lastError = $null }
+          } else {
+            if ($env:VOIDSWORN_OPENAI_API_KEY -and $env:VOIDSWORN_OPENAI_API_KEY -ne 'dry') {
+              $line = $line.Replace($env:VOIDSWORN_OPENAI_API_KEY, '[redacted]')
+            }
+            $line = $line.Replace($taskPrompt, '[redacted]').Replace($continuePrompt, '[redacted]')
+          }
+          $log.WriteLine($line)
+        }
+        $process.WaitForExit()
+        $code = $process.ExitCode
+      } finally { $process.Dispose() }
+
+      if ($code -in @(0, 124) -or $resumes -ge $waits.Count -or -not $session -or
+          $lastError.statusCode -ne 429 -or -not $lastError.isRetryable) { return $code }
+
+      $minimum = $lastError.retryAfterSeconds
+      if ($null -eq $minimum -and $resumes -eq 0) { $minimum = 5 }
+      $delay = [Math]::Ceiling([Math]::Max($waits[$resumes], [double]$minimum))
+      # Only the dry-run fixture can shorten waits. Check the real delay against the cap either way.
+      if ($timer.Elapsed.TotalSeconds + $delay + 1 -gt $cap) {
+        Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value 'rate limited, too little time left to resume' -Encoding UTF8
+        return $code
+      }
+      if ($env:PC_RUNNER_TEST -ne '1' -or $env:PC_TEST_OPENAI_NO_WAIT -ne '1') { Start-Sleep -Seconds $delay }
+      $remaining = [int][Math]::Floor($cap - $timer.Elapsed.TotalSeconds)
+      if ($remaining -lt 1) { return $code }
+      $resumeArg = " --session $session"
+    }
+  } finally { $log.Dispose() }
+}
+
+if ($mode -eq 'openai-agent') {
+  try { exit (OpenAI-Agent $args[1] $args[2] $args[3] $args[4] $args[5] $args[6]) }
+  catch {
+    Add-Content -LiteralPath (Join-Path $args[1] 'result.txt') -Value 'OpenCode runner failed while running the agent' -Encoding UTF8
+    exit 125
+  }
+}
 
 # Issue 985: one price table, USD per million tokens (Board's standard rates, Nov 17 2026).
 # OpenCode step_finish input excludes cache reads; its visible output and reasoning are separate counts.
