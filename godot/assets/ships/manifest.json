@@ -504,32 +504,36 @@
    "turrets": 8,
    "files": {
     "C19_51.glb": {
-     "bytes": 15240932,
-     "sha256": "af0c3bb8312d40e6ee3e7c28c1031dff903aab3ec5068ad1e9437b65e05ce3d3"
+     "bytes": 15241072,
+     "sha256": "6611595baa1542adbd2c445f33d0fcd33355add59c7c7590c680899af3a9c8e0"
     },
     "C19_51_base.jpg": {
-     "bytes": 1754594,
-     "sha256": "c8b0353f08d7af56755423095f5190871b17e5cdb5c1a0e78071d60ddfe3dce5"
+     "bytes": 1922039,
+     "sha256": "ee216e4a58efb2ece656c6217fc27f891119ee3d129ca33a0b5a411689aa75b3"
     },
     "C19_51_glow_emission.jpg": {
      "bytes": 236839,
      "sha256": "c9db20187233e6db0329ed1ace41db34166d584faded4615d978185f670bebba"
     },
     "C19_51_normal.jpg": {
-     "bytes": 602102,
-     "sha256": "53006d7cc9ff852f5cb8777dd35fc5c91762c92ea975a596d5fed9838de67e05"
+     "bytes": 610712,
+     "sha256": "a0d723cba4c60fe1cdd74541cd5c7e5a0f9364e6c33327c6062197531a61fbc5"
     },
     "C19_51_orm.jpg": {
-     "bytes": 1858737,
-     "sha256": "3ac880d6eafc9e33bf681180e2785382f8f5d1d5de4db4b523ce0a0830bdac83"
+     "bytes": 1900284,
+     "sha256": "8d02f9aca4a5a298d1f8c966b9b84f1bc115c823ad792edd49e01c17af437823"
     },
     "C19_51_parts_base.jpg": {
-     "bytes": 1468790,
-     "sha256": "16fff1051732ec0d1adedc56e970addbe445be89050f43627ced52fdb565ed79"
+     "bytes": 1557807,
+     "sha256": "d5bfb737c889622fdb86a78b0919804f85834d73e44b4a094bd8b68ab3bb4ddb"
+    },
+    "C19_51_parts_normal.jpg": {
+     "bytes": 446662,
+     "sha256": "235570d9d327b5a299a489c82e72ebe0dde26b91dc789ea024a1cd9c3479b39d"
     },
     "C19_51_parts_orm.jpg": {
-     "bytes": 1816381,
-     "sha256": "a62abdc5f7f0dd89a60774d077a58fd82625ebd1bcd20228c062dd1bb66ea822"
+     "bytes": 1823719,
+     "sha256": "928d3ecbbb9970a9875720120cc0924cac76cffa143661756f243ed5d9bc1603"
     }
    },
    "pc_path": "godot/assets/ships/C19_51/"
@@ -727,52 +731,58 @@
    "damage_preview": "previews/D9_23_damage.jpg"
   },
   "H10_23": {
-   "name": "Dominion-class battleship",
+   "name": "Dominion-class dreadnought, the Hegemony line flagship (Hegemony Navy)",
    "faction": "hegemony",
    "cls": "Battleship",
    "band": "L",
-   "length_world": 21,
+   "game_ship": "h_dominion",
+   "length_world": 21.0,
    "hardpoints": {
-    "gun": 7,
-    "engine": 3,
-    "breach": 8,
-    "core": 1
+    "gun": 9,
+    "engine": 4,
+    "bay": 1,
+    "breach": 6,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 8,
-   "skins": 17,
+   "breaches": 6,
+   "turrets": 4,
    "files": {
     "H10_23.glb": {
-     "bytes": 5384912,
-     "sha256": "3bc36c1d5fe1b06daed7f191d04af9f1152024deba3a914d3cecd97f20492e4b"
+     "bytes": 6245408,
+     "sha256": "eecfd62be4106e118fd623aa41bc2f83d8dacc4e566f5ad4a3465591c9dcd747"
     },
     "H10_23_base.jpg": {
-     "bytes": 3298596,
-     "sha256": "d882d4ffc5e0f9f5be3abfceb184969c4cea53389907cba65c73994258e4e464"
+     "bytes": 1417311,
+     "sha256": "e16426fc1faad88043aa45ac7e446ed8cb73347fc0e374f07264ad5da25f1bd8"
     },
-    "H10_23_damage.glb": {
-     "bytes": 31674708,
-     "sha256": "95b3a8c8d963c8a0bfc2f0312172624ea4dd32cac0996998592d72e90fa56449"
-    },
-    "H10_23_emissive.jpg": {
-     "bytes": 170502,
-     "sha256": "1ad84aa0b351ce161a1c25f2b6831cc41ab5a19493b824726f2084b2071cf9d6"
+    "H10_23_glow_emission.jpg": {
+     "bytes": 596229,
+     "sha256": "ca3b6f865d8538302d89156ea96d5cb025178d8ce634ca45703f93a6ca53fb52"
     },
     "H10_23_normal.jpg": {
-     "bytes": 10424633,
-     "sha256": "a7710cd5e3dcb16965cd01f3f816d2185658251c7587174eea269067efb8a314"
+     "bytes": 463808,
+     "sha256": "f779a007812b946a7a3597bd7b312aa3fec39780406f61138e3b2ac6df33d1d0"
     },
     "H10_23_orm.jpg": {
-     "bytes": 1718587,
-     "sha256": "70c663ed846a8140c07030adef5e430b1e230c3cbb6b6b6bc760ecd009851c88"
+     "bytes": 1702676,
+     "sha256": "4b78a1d3110cedb6f53702de40904430db88a9f3bd460f05d2af9ea245fd355f"
     },
-    "H10_23_wreck.glb": {
-     "bytes": 3127804,
-     "sha256": "d4d5e6bdaba19630088c1b773ec502ed594831f1987b74189a264453e9b017c8"
+    "H10_23_parts_base.jpg": {
+     "bytes": 939070,
+     "sha256": "8ffeacc7b7a218fec0043dafc81b70b162e9a0ca0ff96a3ea9fac86fabe99613"
+    },
+    "H10_23_parts_normal.jpg": {
+     "bytes": 435095,
+     "sha256": "e3fe57f99332b2440724986ad88efb9f1546758a36403566a302b96171b25b01"
+    },
+    "H10_23_parts_orm.jpg": {
+     "bytes": 1257585,
+     "sha256": "73508134f14dda8527f08d6c59d83f61d66eaad21e2c23fa4950615885c60525"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\H10_23\\",
-   "preview": "previews/H10_23.jpg",
-   "damage_preview": "previews/H10_23_damage.jpg"
+   "pc_path": "godot/assets/ships/H10_23/"
   },
   "H4_11": {
    "name": "The Iron Mandate, super-dreadnought, the Hegemony flagship and boss (Hegemony Navy)",
@@ -793,32 +803,36 @@
    "turrets": 4,
    "files": {
     "H4_11.glb": {
-     "bytes": 11139232,
-     "sha256": "5dd513f6d362abe4f9ccc8fab42e236bc1cf52624b1c304eaad5ade44da0a33e"
+     "bytes": 12609092,
+     "sha256": "08529398fb54c2f0598632de8b8af14e593408acdddbea42f7d153746dfea2d3"
     },
     "H4_11_base.jpg": {
-     "bytes": 1497629,
-     "sha256": "d5e21d198616d63d3667d1f8e27c385141fc72ea30ae418c395b15de191c0750"
+     "bytes": 1550851,
+     "sha256": "fd3b90691ece58b9ae99b82bffddc0db391d791917b46e14e694146a0cb256ed"
     },
     "H4_11_glow_emission.jpg": {
-     "bytes": 714452,
-     "sha256": "6c09cc7417d25bc332b00480781e361072166e3dbf756e205da0d2c7e71cdd68"
+     "bytes": 712318,
+     "sha256": "71f3dd7ab7778a81ef2eead9140be7811ed7dc76857b1b97b3e3d2161bdd95b6"
     },
     "H4_11_normal.jpg": {
-     "bytes": 280516,
-     "sha256": "9be476f5f8c3d0d6968156e4ab090a65b7b5b8b578aa9a74f6ffb3937b567108"
+     "bytes": 377436,
+     "sha256": "cd15f8859a603a9b1b5b8001e5c1f5469b2d8f13d3615cbfa35f75f3a0ea5575"
     },
     "H4_11_orm.jpg": {
-     "bytes": 1935718,
-     "sha256": "31989f153781bef2ad996c69376bdcdc5989b194e4accc8d2800a696e507ce9e"
+     "bytes": 1774976,
+     "sha256": "fb7b138a18c7acbb818cdd740e5e9fc581286b5e9c6141db3d35dbe8eb58f904"
     },
     "H4_11_parts_base.jpg": {
-     "bytes": 1275087,
-     "sha256": "f7d93c04a0968f2fd59ea702ea33145cc38b2c6260743d98b684d889c93aad0b"
+     "bytes": 1149449,
+     "sha256": "b815d8b2bc9b7124b13bf7200d91f56cf39110a3c624d09bf4c98fa12b308114"
+    },
+    "H4_11_parts_normal.jpg": {
+     "bytes": 426402,
+     "sha256": "2eec6a5ea9d5d38a5ec3c793021db557d30344455e05f9fcdce45cd81b4109f5"
     },
     "H4_11_parts_orm.jpg": {
-     "bytes": 1528592,
-     "sha256": "9c5a35b94ca1234aa1b47f1ede234cbe9a3e2a10a72b1b5071dadcdff21b811a"
+     "bytes": 1495199,
+     "sha256": "a0dce3fd8883ac7bf0a5c8bcb84d7dbff7876baf9435f9279d7e372bbf2070d7"
     }
    },
    "pc_path": "godot/assets/ships/H4_11/"

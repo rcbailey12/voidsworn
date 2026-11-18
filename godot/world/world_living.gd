@@ -389,6 +389,38 @@ func _patches(ps: Array) -> Array:
 	return patches
 
 
+static func _gas_card_shader(storm: bool) -> String:
+	# Expanded cards cover much more than their thin height bands. Reject empty
+	# support before the expensive noise, using the accepted shader's own math.
+	# Hoist its declarations rather than keeping another table of layer sizes.
+	var code: String = ION.CARDS if storm else GAS_SHADER
+	var declarations := ["float lo =", "float hi =", "float y =", "float layer =", "float shape ="]
+	if storm:
+		declarations.append("float foot =")
+	var support := PackedStringArray()
+	var body := PackedStringArray()
+	var in_fragment := false
+	for line in code.split("\n"):
+		if line == "void fragment() {":
+			in_fragment = true
+		var move := false
+		if in_fragment:
+			for declaration in declarations:
+				if line.strip_edges().begins_with(declaration):
+					move = true
+					break
+		if move:
+			support.append(line)
+		else:
+			body.append(line)
+	var anchor := "\tfloat band = floor(%s.w);" % ("cloud" if storm else "vI")
+	# Remaining field and contact factors are in [0, 1]. Zero support already
+	# produced zero density and was discarded; no visible samples are removed.
+	var bound := "shape * cloud.z" if storm else "shape * mask.g * layer * vI.z"
+	var early := "\n".join(support) + "\n\tif (" + bound + " <= 0.0) { discard; }"
+	return "\n".join(body).replace(anchor, anchor + "\n" + early).replace("%NOISE%", WS.NOISE)
+
+
 func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var low: bool = W.quality == "low"
 	var expanded := gas_route != "today"
@@ -397,7 +429,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	# the patch reads as one body of gas, not a row of cotton balls on hex tiles
 	var per := 3 if low else 5
 	if expanded:
-		per = 2 if volume else (3 if low else 5)
+		per = 2 if volume or low else 5
 	var n_big := ps.size() / 3 if broad_count < 0 else broad_count
 	var mm := _quad_mm(ps.size() * per + n_big)
 	var i := 0
@@ -407,6 +439,9 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 			var rr := sqrt(rng.randf()) * GAS_PUFF_REACH
 			# Preserve the count and size; split the existing puffs into height bands.
 			var layer: int = [0, 1, 2, 1, 2][k % 5]
+			# Low drops the dim bottom puff, retaining the core and upper layer.
+			if expanded and low:
+				layer = k + 1
 			var y := rng.randf_range(-2.5, 0.5) if layer == 0 else (rng.randf_range(2.5, 6.5) if layer == 1 else rng.randf_range(8.0, 12.0))
 			if expanded:
 				y *= GAS_HEIGHT
@@ -437,7 +472,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = (ION.CARDS if storm else GAS_SHADER).replace("%NOISE%", WS.NOISE)
+	sh.code = _gas_card_shader(storm)
 	m.shader = sh
 	if expanded:
 		m.set_shader_parameter("height_scale", GAS_HEIGHT)

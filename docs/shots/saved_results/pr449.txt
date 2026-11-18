@@ -1,0 +1,11 @@
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x05 (player ascendant)
+  state.units[0].fx.spareWings: <missing> -> 0
+  later changed records: 305; total records: 306 -> 306
+FAIL battle s10
+  turn 0, round 1, after tick player; unit x05 (player reliquary)
+  state.units[0].fx.torpCd: 3 -> 1
+  later changed records: 189; total records: 190 -> 190
+FAIL: saved Godot results; 271 battles checked, 2 changed, 0 other files changed, 2 failures; 18.556 s
