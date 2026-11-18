@@ -105,7 +105,7 @@ LAYERS = dict(
     rough_floor=.50,     # the roughness floor (ships.md section 0 item 2, pass 5): no white specular glare at the game's key light
     # R243: mechanically aligned panels with recessed seams and shallow relief, all in one ship coordinate frame.
     patch_big=(.090, .060, .050), patch_small=(.040, .026, .022), patch_over=(.110, .070, .060), patch_over_share=.06,
-    patch_region=3.0, patch_parts=((.035, .025, .020), (.018, .014, .012), (.045, .030, .025)), patch_seam=.0020, seam_dark=.95,
+    patch_region=3.0, patch_seam=.0020, seam_dark=.95,
     cavity_pow=1.6, wear_lo=.16, wear_hi=.38,
     scuff=.08, scuff_size=.050,                                           # a few machining scratches, never chips
     rivets=0, rivet_pitch=.016, rivet_band=(.0015, .0045),               # flush fasteners only on the body plates (zone violet)
@@ -123,13 +123,13 @@ LAYERS = dict(
 # pass 2: the shade plates, the body behind them and the machinery differ in finish, not only colour: the shades a matte heat
 # shield, the body a satin metal, the machines (guns, engines, saddles, rails) a brighter worked metal
 ZONES = dict(
-    shade=dict(rust=0, grime=.50, patchwork=1.0, patchwork_parts=.8, rough=.80, metal=.15),
-    shade2=dict(rust=0, grime=.55, patchwork=1.0, patchwork_parts=.8, rough=.74, metal=.20),
-    violet=dict(rust=0, grime=.50, patchwork=.9, patchwork_parts=.7, rough=.58, metal=.50, rivets=1),
-    mauve=dict(rust=0, grime=.50, patchwork=.7, patchwork_parts=.6, rough=.60, metal=.45),
+    shade=dict(rust=0, grime=.50, patchwork=1.0, rough=.80, metal=.15),
+    shade2=dict(rust=0, grime=.55, patchwork=1.0, rough=.74, metal=.20),
+    violet=dict(rust=0, grime=.50, patchwork=.9, rough=.58, metal=.50, rivets=1),
+    mauve=dict(rust=0, grime=.50, patchwork=.7, rough=.60, metal=.45),
     lilac=dict(rust=0, grime=.60, patchwork=.6, rough=.66, metal=.35),
-    gunv=dict(rust=0, metal=.78, rough=.50, wear=1.2, patchwork_parts=.6),
-    steel=dict(rust=0, metal=.80, rough=.48, wear=1.1, patchwork_parts=.6),
+    gunv=dict(rust=0, metal=.78, rough=.50, wear=1.2),
+    steel=dict(rust=0, metal=.80, rough=.48, wear=1.1),
     iron=dict(rust=0, metal=.60, rough=.55, rivets=0, scuff=.05),
     dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92),
     bell=dict(base='gunv', rust=0, metal=.35, rough=.80, wear=.6, grime=.7),     # engine bells and housings: matte, never mirror black

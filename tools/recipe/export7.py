@@ -464,6 +464,16 @@ for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruc
     if mat.get('name') == CODE + '_glow':      # issue 601: the engine glow's own emission map (graded throat, hot spots, soot)
         use(mat, 'emission', mat.get('emissiveTexture')); continue
     pbr = mat.get('pbrMetallicRoughness', {})
+    if not UNBAKED and ship.get('bake') == 'stack' and mat['name'] in (CODE + '_hull', CODE + '_parts'):
+        orm = pbr.get('metallicRoughnessTexture')
+        ao = mat.get('occlusionTexture')
+        normal = mat.get('normalTexture')
+        if not (orm and ao and normal):
+            die(f'{mat["name"]} needs packed occlusion, roughness and metal plus a detail normal')
+        if any(pbr.get(key, 1.0) != 1.0 for key in ('metallicFactor', 'roughnessFactor')):
+            die(f'{mat["name"]} scales the baked roughness or metallic map')
+        if g['textures'][orm['index']]['source'] != g['textures'][ao['index']]['source']:
+            die(f'{mat["name"]} must use the same ORM image for occlusion, roughness and metal')
     use(mat, 'base', pbr.get('baseColorTexture')); use(mat, 'orm', pbr.get('metallicRoughnessTexture')); use(mat, 'orm', mat.get('occlusionTexture'))
     use(mat, 'normal', mat.get('normalTexture'))
     if mat.get('name') in destruction['interior_materials']: use(mat, 'emission', mat.get('emissiveTexture'))
