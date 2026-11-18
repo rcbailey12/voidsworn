@@ -444,19 +444,29 @@ def module_finish(c, S, zone, group, joints):
     return mulc(nt, rgb.outputs[0], tone)
 
 
-def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
+def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, base_image=None, normal_image=None):
     """the procedural material of one zone in one atlas (group 'H' hull, 'P' parts), from the faction stack S"""
     z = S.ZONES[zone]
+    if base_image is not None:
+        z = {**z, **getattr(S, 'LEGACY_COAT', {})}
     m = bpy.data.materials.new(f'ps_{zone}_{group}'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
     c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
     L = S.LAYERS
     bare_roughness = L.get('bare_roughness')
-    col = module_finish(c, S, zone, group, joints)
+    if base_image is None:
+        col = module_finish(c, S, zone, group, joints)
+    else:
+        # A legacy atlas already carries its livery and the seams of its fitted pieces.
+        # Keep that paint beneath the same satin coat, grime and exposed edge layers.
+        col = atlas_colour(nt, base_image)
+        legacy_panel_colour = getattr(S, 'legacy_panel_colour', None)
+        if legacy_panel_colour is not None:
+            col = legacy_panel_colour(c, col)
     seam = None
     # The ship-frame lattice belongs to the shell. A fitting already has
     # its own joints, edges and clearances in the built geometry.
-    if group == 'H' and z.get('patchwork', 0) > 0:
+    if base_image is None and group == 'H' and z.get('patchwork', 0) > 0:
         col, seam = patchwork(c, S, col, z['patchwork'])
     mottle = c.noise(L['mottle_scale'], 2)
     tone_range = z.get('mottle_range', L.get('mottle_range', .03))
@@ -560,6 +570,11 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
     else: nt.links.new(metal, bs.inputs['Metallic'])
     # the detail normal: the layers' height through a bump at the trim's own scale
     bp = node(nt, 'ShaderNodeBump'); bp.inputs['Distance'].default_value = L['bump_distance']; bp.inputs['Strength'].default_value = L['bump_strength']
+    if normal_image is not None:
+        original_normal = node(nt, 'ShaderNodeNormalMap')
+        original_normal.inputs['Strength'].default_value = z.get('normal_strength', 1.0)
+        nt.links.new(atlas_colour(nt, normal_image), original_normal.inputs['Color'])
+        nt.links.new(original_normal.outputs['Normal'], bp.inputs['Normal'])
     nt.links.new(height, bp.inputs['Height']); nt.links.new(bp.outputs['Normal'], bs.inputs['Normal'])
     # the bake's labelled outputs (paint3's names, so the same emit switch bakes them)
     orm = node(nt, 'ShaderNodeCombineColor'); orm.label = 'ORM'
@@ -573,6 +588,12 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
     # original bake path even if a later ship adds more nodes or decals.
     m['ps_height_bake'] = bool((getattr(S, 'TROPHY', None) or {}).get('share'))
     return m
+
+
+def atlas_colour(nt, image):
+    tex = node(nt, 'ShaderNodeTexImage'); tex.image = image
+    nt.links.new(node(nt, 'ShaderNodeUVMap').outputs[0], tex.inputs[0])
+    return tex.outputs['Color']
 
 
 def mask_material(name, S):
@@ -1163,6 +1184,72 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     return INFO
 
 
+def bake_existing_atlas(S, source, out, samples):
+    """Bake finish onto the installed A4 UVs, keeping their paint and relief as inputs."""
+    code = source.stem
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=str(source), merge_vertices=True)
+    scene = bpy.context.scene
+    geometry = [obj for obj in scene.objects if obj.type == 'MESH']
+    expected = {f'{code}_hull'}
+    if not geometry or any(not obj.data.uv_layers or {m.name for m in obj.data.materials if m} != expected
+                           for obj in geometry):
+        raise ValueError(f'{code}: expected the single textured A4 exterior atlas')
+    paint_mesh = getattr(S, 'legacy_paint_mesh', None)
+    exterior = geometry if paint_mesh is None else [obj for obj in geometry if paint_mesh(obj)]
+    if not exterior:
+        raise ValueError(f'{code}: no intact exterior meshes to paint')
+    device = gpu(samples)
+    print(f'[paint] {code}: {device}, {samples} samples', flush=True)
+    images = {}
+    for kind in ('base', 'orm', 'normal'):
+        image = bpy.data.images.load(str(source.with_name(f'{code}_{kind}.jpg')))
+        if kind != 'base':
+            image.colorspace_settings.name = 'Non-Color'
+        if image.size[0] < 1 or image.size[0] != image.size[1]:
+            raise ValueError(f'{code}: invalid {kind} atlas size {tuple(image.size)}')
+        images[kind] = image
+
+    atlas = bake_copy(exterior, code + '_finish')
+    for obj in geometry:
+        obj.hide_render = True
+    mask = mask_material('ps_existing_mask', S)
+    atlas.data.materials[0] = mask
+    resolution = max(im.size[0] for im in images.values())
+    masks = new_image(code + '_mask', resolution, colour=False, fill=(1, 0, 1, 1))
+    _target([mask], masks)
+    scene.render.bake.use_clear = True
+    bake(atlas, 'EMIT', 8)
+
+    tiles = {name: np_image(code + '_trim_' + name, pixels) for name, pixels in S.trim_sheet().items()}
+    material = zone_material(S, S.LEGACY_FINISH_ZONE, 'H', masks, tiles, (), None, (),
+                             base_image=images['base'], normal_image=images['normal'])
+    atlas.data.materials[0] = material
+    scene.render.bake.use_clear = False
+    out.mkdir(parents=True, exist_ok=True)
+    for kind, label in (('base', 'ALBEDO'), ('orm', 'ORM'), ('normal', None)):
+        original = images[kind]
+        image = new_image(code + '_coated_' + kind, original.size[0], colour=kind == 'base')
+        # Damage meshes can sample UVs outside the intact mesh's islands. Keep
+        # the old texels there, including the padding around those islands.
+        pixels = np.empty(len(original.pixels), dtype=np.float32)
+        original.pixels.foreach_get(pixels)
+        image.pixels.foreach_set(pixels)
+        _target([material], image)
+        _emit_switch(material, label)
+        seconds = bake(atlas, 'EMIT' if label else 'NORMAL', 8)
+        if kind == 'base':
+            coated = np.empty_like(pixels)
+            image.pixels.foreach_get(coated)
+            coated -= pixels
+            coated *= S.LEGACY_ALBEDO_BLEND
+            coated += pixels
+            image.pixels.foreach_set(coated)
+            print(f'[paint] {code} legacy albedo blend {S.LEGACY_ALBEDO_BLEND}', flush=True)
+        save(image, str(out), f'{code}_{kind}')
+        print(f'[paint] {code} {kind} {image.size[0]}px: {seconds:.1f}s', flush=True)
+
+
 def _uv_world_area(objs):
     uv = world = 0.0
     for o in objs:
@@ -1182,3 +1269,20 @@ def texel_density(H, P, res, parts_res):
         uv, world = _uv_world_area(objs)
         out[k] = dict(uv_share=round(uv, 4), area=round(world, 5), texels_per_unit2=round(uv * R * R / max(world, 1e-9), 1))
     return out
+
+
+if __name__ == '__main__':
+    import argparse
+    import importlib.util
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description='Bake finish onto an existing A4 ship atlas.')
+    parser.add_argument('stack', type=Path)
+    parser.add_argument('source', type=Path, help='installed GLB with its original maps alongside it')
+    parser.add_argument('output', type=Path)
+    parser.add_argument('--samples', type=int, default=64)
+    args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
+    spec = importlib.util.spec_from_file_location('faction_stack', args.stack)
+    stack = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stack)
+    bake_existing_atlas(stack, args.source, args.output, args.samples)

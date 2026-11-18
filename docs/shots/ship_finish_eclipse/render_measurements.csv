@@ -1,0 +1,5 @@
+ship,battle_crop_mean_rgb,battle_hull_mean_rgb,battle_hull_pixels,close_crop_mean_rgb,before_rake_travel_px,before_rake0_p95_luma,before_rake1_p95_luma,before_rake0_px,before_rake1_px,after_rake_travel_px,after_rake0_p95_luma,after_rake1_p95_luma,after_rake0_px,after_rake1_px
+D9_23,0.025,3.131,908,1.722,72.3,85.92,68.27,8054,7952,69.9,94.25,73.79,7547,7428
+D20_23,0.16,6.855,2702,2.201,97.6,90.13,123.5,65181,67557,94.3,106.4,145.48,64225,61675
+D21_23,0.48,7.248,7662,5.48,365.0,119.34,114.2,168938,168663,339.9,142.2,135.2,161780,167165
+D22_23,3.071,8.266,61375,8.641,707.1,123.27,124.62,135036,133993,697.9,149.92,151.62,157422,141599
