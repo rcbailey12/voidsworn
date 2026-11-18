@@ -215,11 +215,13 @@ if (probe) {
 } else {
   if (process.env.ARM === 'openai') fs.writeFileSync(process.env.PC_TEST_TRACE + '.agent', JSON.stringify(a));
   const task = fs.existsSync('CODEX_TASK.md') ? 'CODEX_TASK.md' : 'WORK_TASK.md';
-  if (fs.readFileSync(task,'utf8').includes('OLD BRIEF MUST NOT REACH AGENT')) process.exit(35);
-  if (!fs.readFileSync(task,'utf8').includes('Resumed by merging')) process.exit(31);
-  if (!fs.readFileSync(task,'utf8').includes('saved work before stopping')) process.exit(33);
+  const brief = fs.readFileSync(task, 'utf8');
+  const expectResume = process.env.STUB_EXPECT_FRESH !== '1';
+  if (brief.includes('OLD BRIEF MUST NOT REACH AGENT')) process.exit(35);
+  if (brief.includes('Resumed by merging') !== expectResume) process.exit(31);
+  if (brief.includes('saved work before stopping') !== expectResume) process.exit(33);
   if (fs.readFileSync('progress.txt','utf8') !== 'from partial\\n') process.exit(32);
-  fs.writeFileSync('agent_started.txt', 'resumed work verified');
+  fs.writeFileSync('agent_started.txt', expectResume ? 'resumed work verified' : 'fresh start verified');
   const fault = process.env.STUB_ACCOUNT_FAULT;
   if (fault === 'invalid') fs.writeFileSync(path.join(process.env.WORK_ROOT, 'openai_spend.txt'), 'invalid ledger\\n');
   if (fault === 'busy') {
@@ -278,7 +280,7 @@ const defaults = {
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
-  STUB_ACCOUNT_FAULT: '',
+  STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
@@ -860,6 +862,32 @@ async function testHeldCheckout() {
   stuck.kill(); await new Promise(resolve => stuck.once('exit', resolve));
   pass('rename wait expires cleanly with failed status and the original checkout intact');
 }
+async function testMergedPartial() {
+  const mergedSource = fixtureSource('merged-partial-source');
+  const main = fixtureCommit({ 'progress.txt': 'from partial\n', 'upstream.txt': 'later main work\n' }, partial, '', mergedSource);
+  write(path.join(mergedSource, 'refs/heads/main'), main + '\n');
+  write(path.join(root, 'codex-merged-partial', 'issue-687', 'resume.txt'), 'Resumed by merging an earlier partial');
+  const trace = path.join(root, 'merged-partial-trace.jsonl');
+  const merged = await job('codex', 'merged-partial', { PC_TEST_SOURCE: mergedSource, STUB_EXPECT_FRESH: '1', GIT_TRACE2_EVENT: trace });
+  assert.equal(merged.code, 0, merged.text + '\n' + merged.result);
+  assert(merged.result.includes(`skipping codex/issue-687-partial at ${partial}: already in HEAD`), merged.result);
+  assert(!fs.existsSync(path.join(merged.out, 'resume.txt')));
+  const commands = read(trace).trim().split(/\r?\n/).map(line => JSON.parse(line)).filter(event => event.event === 'cmd_name');
+  assert(!commands.some(event => event.name === 'merge'), 'a partial already in HEAD must skip git merge');
+  assert.equal(run('git', ['-C', merged.repo, 'rev-parse', 'HEAD']).text.trim(), main);
+  assert.equal(read(path.join(merged.repo, 'agent_started.txt')), 'fresh start verified');
+  pass('partial in HEAD skips git merge, logs why and starts fresh without resume.txt');
+
+  const pending = await job('codex', 'unmerged-partial');
+  assert.equal(pending.code, 0, pending.text + '\n' + pending.result);
+  assert(pending.result.includes(`resuming codex/issue-687-partial at ${partial}`), pending.result);
+  assert.equal(run('git', ['-C', pending.repo, 'rev-parse', 'HEAD']).text.trim(), partial);
+  const note = read(path.join(pending.out, 'resume.txt'));
+  assert(note.includes(`Resumed by merging codex/issue-687-partial (${partial})`), note);
+  assert(note.includes('saved work before stopping'), note);
+  assert.equal(read(path.join(pending.repo, 'agent_started.txt')), 'resumed work verified');
+  pass('partial with new commits still merges and passes the saved resume note to the agent');
+}
 async function testResumeConflict() {
   const source = fixtureSource('conflicting-source');
   // A conflicting partial stops before preflight and leaves MERGE_HEAD and conflicted files intact.
@@ -1031,7 +1059,7 @@ async function testRunnerStartChecks() {
     testCleanAndCacheReuse, testKeptLookalikes, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
     testClaimRules, testClaimFailures, testResumeAndFailures, testGitRetries,
-    testHeldCheckout, testResumeConflict, testChainRelease, testProbeTimeout,
+    testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
     testMirrorAndConfirmation, testRunnerStartChecks
   ], check => check());
   shell.assertHealthy();

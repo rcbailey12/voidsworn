@@ -15,7 +15,7 @@ MACHINES = {'tower_cap', 'pump', 'rack', 'berth_collar'}
 
 
 class Parts:
-    def __init__(self, materials):
+    def __init__(self, materials, repair_loose=False):
         self.materials = materials
         self.meshes = {}
         self.rows = []
@@ -24,6 +24,31 @@ class Parts:
         self.moving = False
         self.details = []
         self.active_detail = None
+        self.repair_loose = repair_loose
+
+    def torn_plate(self, length, width, thickness=.13, zone='edge', fold=.35):
+        """A thick bent sheet, hinged at x=0, with a torn perimeter and ribs.
+
+        The root is continuous and stays on its parent shell. The distal edge
+        is jagged in plan and height. No detached square is emitted.
+        """
+        outline = [(0,-.5),(.48,-.5),(.94,-.40),(.76,-.24),(1,-.08),
+                   (.82,.10),(.96,.29),(.68,.50),(0,.50)]
+        upper = [(x*length,y*width,fold*length*max(0,x-.25)**1.4) for x,y in outline]
+        vv = [(x,y,z-thickness/2) for x,y,z in upper]+[(x,y,z+thickness/2) for x,y,z in upper]
+        n = len(outline)
+        # Fan triangles from the root keep the concave torn rim explicit.
+        ff = [(0,i+1,i) for i in range(1,n-1)] + [(n,n+i,n+i+1) for i in range(1,n-1)]
+        ff += [(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
+        with self.detail('attached_wreckage','torn thick plate with continuous welded root and exposed bent frame ribs'):
+            self.mesh('torn_plate',vv,ff,zone)
+            self.rod((0,-width*.50,0),(0,width*.50,0),.065,'frame')
+            for y in (-width*.30,width*.28):
+                a=(0,y,-thickness*.55)
+                b=(length*.42,y,-thickness*.55+fold*length*.17**1.4)
+                c=(length*.78,y,-thickness*.55+fold*length*.53**1.4)
+                self.rod(a,b,.045,'frame',n=6)
+                self.rod(b,c,.045,'frame',n=6)
 
     @contextmanager
     def detail(self, kind, purpose):
@@ -340,7 +365,10 @@ class Parts:
                 a=centre+side*width*.49/radius
                 old=self.matrix.copy()
                 self.matrix=old @ Matrix.Translation(Vector((radius*math.cos(a),radius*math.sin(a),bottom+height*.7))) @ Matrix.Rotation(a,4,'Z') @ Matrix.Rotation(side*.65,4,'Y')
-                self.box((.35,0,0),(.9,.45,.13),'edge')
+                if self.repair_loose:
+                    self.torn_plate(.85,.45,fold=side*.40)
+                else:
+                    self.box((.35,0,0),(.9,.45,.13),'edge')
                 self.matrix=old
             if top_tear:
                 for j in range(5):

@@ -1,2625 +1,2807 @@
 {
   "resolution": 2048,
   "tile_world": 2.0,
+  "module_ids": {
+    "arm_1": 1,
+    "arm_2": 2,
+    "arm_3": 3,
+    "arm_4": 4,
+    "bearing_00": 5,
+    "bearing_01": 6,
+    "bearing_02": 7,
+    "bearing_03": 8,
+    "bearing_04": 9,
+    "bearing_05": 10,
+    "bearing_06": 11,
+    "bearing_07": 12,
+    "bearing_08": 13,
+    "bearing_09": 14,
+    "bearing_10": 15,
+    "cargo_1": 16,
+    "cargo_2": 17,
+    "cargo_3": 18,
+    "core_01": 19,
+    "core_02": 20,
+    "core_03": 21,
+    "core_04": 22,
+    "core_05": 23,
+    "core_06": 24,
+    "core_07": 25,
+    "core_08": 26,
+    "core_09": 27,
+    "emergency_lights": 28,
+    "equipment_deck": 29,
+    "folded_plate": 30,
+    "habitat_1_slot_00": 31,
+    "habitat_1_slot_01": 32,
+    "habitat_2_slot_02": 33,
+    "habitat_2_slot_03": 34,
+    "habitat_3_slot_04": 35,
+    "habitat_3_slot_05": 36,
+    "habitat_4_slot_06": 37,
+    "habitat_4_slot_07": 38,
+    "habitat_5_slot_08": 39,
+    "habitat_5_slot_09": 40,
+    "habitat_6_slot_10": 41,
+    "observation_window": 42,
+    "radiator_1": 43,
+    "radiator_2": 44,
+    "radiator_3": 45,
+    "radiator_4": 46,
+    "ring_attitude_control": 47,
+    "service_finger_1": 48,
+    "service_finger_2": 49,
+    "service_finger_3": 50,
+    "service_finger_4": 51,
+    "service_finger_5": 52,
+    "service_finger_6": 53,
+    "spoke_1": 54,
+    "spoke_2": 55,
+    "spoke_3": 56,
+    "tower_1": 57,
+    "tower_2": 58,
+    "tower_3": 59,
+    "tower_4": 60,
+    "tower_5": 61
+  },
   "method": "actual exported per-triangle UV area / world surface area",
   "surfaces": [
     {
-      "object": "core_01_liner",
+      "object": "core_01_liner.001",
       "zone": "liner",
       "area": 908.0397387235611,
-      "texels_per_unit": 989.1912562761356,
-      "minimum": 861.0779238620328
+      "texels_per_unit": 897.9399350742093,
+      "minimum": 0.0
     },
     {
-      "object": "core_01_plate2",
+      "object": "core_01_plate2.001",
       "zone": "plate2",
       "area": 64.88780422430548,
-      "texels_per_unit": 954.5517796474142,
-      "minimum": 778.0719035665951
+      "texels_per_unit": 941.6499543473418,
+      "minimum": 0.0
     },
     {
-      "object": "core_01_glazing",
+      "object": "core_01_glazing.001",
       "zone": "glazing",
       "area": 70.48912176512316,
-      "texels_per_unit": 983.5496179633093,
-      "minimum": 862.36699534485
+      "texels_per_unit": 951.7518107858365,
+      "minimum": 0.0
     },
     {
-      "object": "core_01_edge",
+      "object": "core_01_edge.001",
       "zone": "edge",
       "area": 356.5300373294588,
-      "texels_per_unit": 999.5618854404908,
-      "minimum": 861.0779291767625
+      "texels_per_unit": 892.2891859159023,
+      "minimum": 0.0
     },
     {
-      "object": "core_01_deck",
+      "object": "core_01_deck.001",
       "zone": "deck",
       "area": 727.0840043363116,
-      "texels_per_unit": 1005.8983848295543,
-      "minimum": 861.077920244559
+      "texels_per_unit": 837.6999439644934,
+      "minimum": 0.0
     },
     {
-      "object": "core_01_plate",
+      "object": "core_01_plate.001",
       "zone": "plate",
       "area": 249.8187662363203,
-      "texels_per_unit": 949.2856968576642,
-      "minimum": 783.632512561165
+      "texels_per_unit": 941.7729667259433,
+      "minimum": 0.0
     },
     {
-      "object": "core_01_frame",
+      "object": "core_01_frame.001",
       "zone": "frame",
       "area": 147.43075175421222,
-      "texels_per_unit": 964.4749530197944,
-      "minimum": 827.6560653946296
+      "texels_per_unit": 748.7955938765713,
+      "minimum": 136.31626780583372
     },
     {
-      "object": "core_01_rack",
+      "object": "core_01_rack.001",
       "zone": "rack",
       "area": 144.67120880108325,
-      "texels_per_unit": 979.6389925886422,
-      "minimum": 861.0780594540671
+      "texels_per_unit": 865.0317338408706,
+      "minimum": 297.4865928354026
     },
     {
-      "object": "core_01_trim",
+      "object": "core_01_trim.001",
       "zone": "trim",
       "area": 115.067313816921,
-      "texels_per_unit": 973.269228520472,
+      "texels_per_unit": 971.2429663649945,
       "minimum": 0.0
     },
     {
-      "object": "core_01_recess",
+      "object": "core_01_recess.001",
       "zone": "recess",
       "area": 25.602703376568368,
-      "texels_per_unit": 979.6996972699774,
-      "minimum": 952.9379036215428
+      "texels_per_unit": 980.9702078750844,
+      "minimum": 240.79038799107823
     },
     {
-      "object": "core_02_liner",
+      "object": "core_02_liner.001",
       "zone": "liner",
       "area": 1196.6638197865743,
-      "texels_per_unit": 986.6532524086568,
-      "minimum": 861.0779360714384
+      "texels_per_unit": 898.4198869336902,
+      "minimum": 0.0
     },
     {
-      "object": "core_02_plate2",
+      "object": "core_02_plate2.001",
       "zone": "plate2",
       "area": 99.76370462592826,
-      "texels_per_unit": 959.6185116504648,
-      "minimum": 783.6272606449224
+      "texels_per_unit": 954.1390796943048,
+      "minimum": 0.0
     },
     {
-      "object": "core_02_glazing",
+      "object": "core_02_glazing.001",
       "zone": "glazing",
       "area": 101.19370215857661,
-      "texels_per_unit": 980.9820367956203,
-      "minimum": 862.3669907628271
+      "texels_per_unit": 954.3927113625954,
+      "minimum": 0.0
     },
     {
-      "object": "core_02_edge",
+      "object": "core_02_edge.001",
       "zone": "edge",
       "area": 401.0157911748124,
-      "texels_per_unit": 999.8057066007234,
-      "minimum": 861.0779291767625
+      "texels_per_unit": 899.7095170182885,
+      "minimum": 0.0
     },
     {
-      "object": "core_02_deck",
+      "object": "core_02_deck.001",
       "zone": "deck",
       "area": 903.7144556771859,
-      "texels_per_unit": 1007.1333219641524,
-      "minimum": 861.0779265745651
+      "texels_per_unit": 851.1169516922631,
+      "minimum": 0.0
     },
     {
-      "object": "core_02_plate",
+      "object": "core_02_plate.001",
       "zone": "plate",
       "area": 371.005645873507,
-      "texels_per_unit": 954.8797922454592,
-      "minimum": 783.6272606449224
+      "texels_per_unit": 951.9935714223747,
+      "minimum": 0.0
     },
     {
-      "object": "core_02_frame",
+      "object": "core_02_frame.001",
       "zone": "frame",
       "area": 181.16750968436673,
-      "texels_per_unit": 965.3575181542254,
-      "minimum": 827.6564209169201
+      "texels_per_unit": 750.4899030545156,
+      "minimum": 127.88829246203552
     },
     {
-      "object": "core_02_rack",
+      "object": "core_02_rack.001",
       "zone": "rack",
       "area": 144.67103676480545,
-      "texels_per_unit": 979.638985010378,
-      "minimum": 861.0777639227096
+      "texels_per_unit": 863.0457053061757,
+      "minimum": 276.71163351656605
     },
     {
-      "object": "core_02_trim",
+      "object": "core_02_trim.001",
       "zone": "trim",
       "area": 134.34637207524727,
-      "texels_per_unit": 972.6507130387457,
+      "texels_per_unit": 966.889680481505,
       "minimum": 0.0
     },
     {
-      "object": "core_02_recess",
+      "object": "core_02_recess.001",
       "zone": "recess",
       "area": 42.442259893091624,
-      "texels_per_unit": 978.800722026721,
-      "minimum": 941.4888140289851
+      "texels_per_unit": 990.2200013348654,
+      "minimum": 260.1567222258001
     },
     {
-      "object": "core_03_liner",
+      "object": "core_03_liner.001",
       "zone": "liner",
       "area": 1631.1426559824783,
-      "texels_per_unit": 982.0428695297126,
-      "minimum": 861.0779300813826
+      "texels_per_unit": 900.8005861211665,
+      "minimum": 0.0
     },
     {
-      "object": "core_03_plate2",
+      "object": "core_03_plate2.001",
       "zone": "plate2",
       "area": 136.51461703337063,
-      "texels_per_unit": 961.2890833856859,
-      "minimum": 778.0718864689264
+      "texels_per_unit": 961.5370085394622,
+      "minimum": 0.0
     },
     {
-      "object": "core_03_glazing",
+      "object": "core_03_glazing.001",
       "zone": "glazing",
       "area": 148.44600704939492,
-      "texels_per_unit": 975.8119882374,
-      "minimum": 862.3639727231684
+      "texels_per_unit": 958.6260489403485,
+      "minimum": 0.0
     },
     {
-      "object": "core_03_edge",
+      "object": "core_03_edge.001",
       "zone": "edge",
-      "area": 455.04006445786354,
-      "texels_per_unit": 999.2140893756429,
-      "minimum": 861.0779197319101
+      "area": 454.6410720771931,
+      "texels_per_unit": 908.3166317546986,
+      "minimum": 0.0
     },
     {
-      "object": "core_03_deck",
+      "object": "core_03_deck.001",
       "zone": "deck",
       "area": 1165.1128024615623,
-      "texels_per_unit": 1008.5372446663797,
-      "minimum": 861.0779339641238
+      "texels_per_unit": 866.289843279257,
+      "minimum": 0.0
     },
     {
-      "object": "core_03_plate",
+      "object": "core_03_plate.001",
       "zone": "plate",
       "area": 571.0358986807674,
-      "texels_per_unit": 958.5199724965883,
-      "minimum": 783.6291015743348
+      "texels_per_unit": 962.6588746137944,
+      "minimum": 0.0
     },
     {
-      "object": "core_03_frame",
+      "object": "core_03_frame.001",
       "zone": "frame",
       "area": 231.77232463217075,
-      "texels_per_unit": 966.5676196867063,
-      "minimum": 827.6565610049381
+      "texels_per_unit": 753.4625264274133,
+      "minimum": 118.79710745071347
     },
     {
-      "object": "core_03_rack",
+      "object": "core_03_rack.001",
       "zone": "rack",
       "area": 144.67104616403978,
-      "texels_per_unit": 979.6389919943941,
-      "minimum": 861.077930922969
+      "texels_per_unit": 861.0754311090825,
+      "minimum": 254.76320275911388
     },
     {
-      "object": "core_03_trim",
+      "object": "core_03_frame.002",
+      "zone": "frame",
+      "area": 4.525121591934056,
+      "texels_per_unit": 789.3342779456967,
+      "minimum": 192.60930341258887
+    },
+    {
+      "object": "core_03_trim.001",
       "zone": "trim",
       "area": 146.1955871053432,
-      "texels_per_unit": 971.6420758095082,
+      "texels_per_unit": 960.7637440632333,
       "minimum": 0.0
     },
     {
-      "object": "core_03_recess",
+      "object": "core_03_recess.001",
       "zone": "recess",
       "area": 42.44226112315417,
-      "texels_per_unit": 979.1746506502349,
-      "minimum": 952.93744785986
+      "texels_per_unit": 990.0832262322168,
+      "minimum": 243.334888838434
     },
     {
-      "object": "core_04_liner",
+      "object": "core_04_liner.001",
       "zone": "liner",
       "area": 931.20595777346,
-      "texels_per_unit": 991.5105931096344,
-      "minimum": 861.0779197079742
+      "texels_per_unit": 917.5371064545276,
+      "minimum": 0.0
     },
     {
-      "object": "core_04_plate2",
+      "object": "core_04_plate2.001",
       "zone": "plate2",
       "area": 64.86458265432026,
-      "texels_per_unit": 952.4379254924179,
-      "minimum": 783.6265872420504
+      "texels_per_unit": 942.8187154113275,
+      "minimum": 0.0
     },
     {
-      "object": "core_04_glazing",
+      "object": "core_04_glazing.001",
       "zone": "glazing",
       "area": 70.88403569874109,
-      "texels_per_unit": 985.4055928607058,
-      "minimum": 862.3689981889615
+      "texels_per_unit": 963.5478303690089,
+      "minimum": 0.0
     },
     {
-      "object": "core_04_edge",
+      "object": "core_04_edge.001",
       "zone": "edge",
       "area": 393.68289933147787,
-      "texels_per_unit": 1000.743395074339,
-      "minimum": 861.0779355742266
+      "texels_per_unit": 906.4601977692333,
+      "minimum": 0.0
     },
     {
-      "object": "core_04_deck",
+      "object": "core_04_deck.001",
       "zone": "deck",
       "area": 966.290111923554,
-      "texels_per_unit": 1007.5079118548556,
-      "minimum": 861.0779226980097
+      "texels_per_unit": 855.1749603074205,
+      "minimum": 0.0
     },
     {
-      "object": "core_04_plate",
+      "object": "core_04_plate.001",
       "zone": "plate",
       "area": 249.68712867796503,
-      "texels_per_unit": 945.6623164351867,
-      "minimum": 783.6265872420504
+      "texels_per_unit": 943.5274639397828,
+      "minimum": 0.0
     },
     {
-      "object": "core_04_frame",
+      "object": "core_04_frame.001",
       "zone": "frame",
       "area": 165.83264052877166,
-      "texels_per_unit": 962.5561794031782,
-      "minimum": 827.656353429422
+      "texels_per_unit": 740.4946437540801,
+      "minimum": 125.42242774218555
     },
     {
-      "object": "core_04_rack",
+      "object": "core_04_rack.001",
       "zone": "rack",
       "area": 144.67103678189503,
-      "texels_per_unit": 979.638999946302,
-      "minimum": 861.0779222848787
+      "texels_per_unit": 862.4924441764406,
+      "minimum": 270.6988740343805
     },
     {
-      "object": "core_04_trim",
+      "object": "core_04_trim.001",
       "zone": "trim",
       "area": 127.65294271245963,
-      "texels_per_unit": 974.6771611266078,
+      "texels_per_unit": 979.0265231108009,
       "minimum": 0.0
     },
     {
-      "object": "core_04_recess",
+      "object": "core_04_recess.001",
       "zone": "recess",
       "area": 25.602690291173268,
-      "texels_per_unit": 979.3302021616367,
-      "minimum": 941.4868458567114
+      "texels_per_unit": 980.7392464531501,
+      "minimum": 223.4878910615988
     },
     {
-      "object": "core_05_liner",
+      "object": "core_05_liner.001",
       "zone": "liner",
       "area": 1591.7236134293241,
-      "texels_per_unit": 986.1966901646798,
-      "minimum": 861.0779199398615
+      "texels_per_unit": 897.3271308604683,
+      "minimum": 0.0
     },
     {
-      "object": "core_05_plate2",
+      "object": "core_05_plate2.001",
       "zone": "plate2",
       "area": 126.0332141438799,
-      "texels_per_unit": 965.3463970906206,
-      "minimum": 778.0720593726016
+      "texels_per_unit": 960.8824358247606,
+      "minimum": 0.0
     },
     {
-      "object": "core_05_glazing",
+      "object": "core_05_glazing.001",
       "zone": "glazing",
       "area": 144.7281400061401,
-      "texels_per_unit": 982.5461197858733,
-      "minimum": 862.3699961887921
+      "texels_per_unit": 956.5267793080965,
+      "minimum": 0.0
     },
     {
-      "object": "core_05_edge",
+      "object": "core_05_edge.001",
       "zone": "edge",
-      "area": 437.85079695608215,
-      "texels_per_unit": 999.1424461555871,
-      "minimum": 835.3083739609937
+      "area": 437.45181138321,
+      "texels_per_unit": 907.3399944529825,
+      "minimum": 0.0
     },
     {
-      "object": "core_05_deck",
+      "object": "core_05_deck.001",
       "zone": "deck",
       "area": 1096.988507231208,
-      "texels_per_unit": 1008.2088666746863,
-      "minimum": 861.077933207683
+      "texels_per_unit": 862.7501582393912,
+      "minimum": 0.0
     },
     {
-      "object": "core_05_plate",
+      "object": "core_05_plate.001",
       "zone": "plate",
       "area": 556.8939440482771,
-      "texels_per_unit": 962.0003895154781,
-      "minimum": 783.6297762442357
+      "texels_per_unit": 961.6692478642605,
+      "minimum": 0.0
     },
     {
-      "object": "core_05_frame",
+      "object": "core_05_frame.001",
       "zone": "frame",
       "area": 227.1719426573094,
-      "texels_per_unit": 966.9590041943308,
-      "minimum": 827.65655628838
+      "texels_per_unit": 755.0601984937387,
+      "minimum": 120.86962897015161
     },
     {
-      "object": "core_05_rack",
+      "object": "core_05_rack.001",
       "zone": "rack",
       "area": 144.67102825895702,
-      "texels_per_unit": 979.6389922003367,
-      "minimum": 861.0779283445205
+      "texels_per_unit": 861.5118140123897,
+      "minimum": 259.759306902475
     },
     {
-      "object": "core_05_trim",
+      "object": "core_05_frame.002",
+      "zone": "frame",
+      "area": 4.5251203277820835,
+      "texels_per_unit": 789.3642066263922,
+      "minimum": 195.67337146029988
+    },
+    {
+      "object": "core_05_trim.001",
       "zone": "trim",
       "area": 141.9752900293365,
-      "texels_per_unit": 971.4446498141058,
+      "texels_per_unit": 959.6278480994941,
       "minimum": 0.0
     },
     {
-      "object": "core_05_recess",
+      "object": "core_05_recess.001",
       "zone": "recess",
       "area": 35.36855897976013,
-      "texels_per_unit": 983.7491134885591,
-      "minimum": 952.9374466211941
+      "texels_per_unit": 990.1157374457292,
+      "minimum": 247.23537015335802
     },
     {
-      "object": "core_06_liner",
+      "object": "core_06_liner.001",
       "zone": "liner",
       "area": 1035.5025037490248,
-      "texels_per_unit": 987.2653393148345,
-      "minimum": 861.0779230090312
+      "texels_per_unit": 902.7265959680893,
+      "minimum": 0.0
     },
     {
-      "object": "core_06_plate2",
+      "object": "core_06_plate2.001",
       "zone": "plate2",
       "area": 74.3058580965799,
-      "texels_per_unit": 955.6164009526439,
-      "minimum": 783.6272606449224
+      "texels_per_unit": 947.9960565406659,
+      "minimum": 0.0
     },
     {
-      "object": "core_06_glazing",
+      "object": "core_06_glazing.001",
       "zone": "glazing",
       "area": 78.11752647217702,
-      "texels_per_unit": 980.7010267716581,
-      "minimum": 862.366996925722
+      "texels_per_unit": 955.9246980634871,
+      "minimum": 0.0
     },
     {
-      "object": "core_06_edge",
+      "object": "core_06_edge.001",
       "zone": "edge",
       "area": 379.5190738295611,
-      "texels_per_unit": 1000.6954324964892,
-      "minimum": 861.0779355742266
+      "texels_per_unit": 904.445006364754,
+      "minimum": 0.0
     },
     {
-      "object": "core_06_deck",
+      "object": "core_06_deck.001",
       "zone": "deck",
       "area": 903.7157881998157,
-      "texels_per_unit": 1007.1332701407363,
-      "minimum": 861.0779276337637
+      "texels_per_unit": 851.1163719486183,
+      "minimum": 0.0
     },
     {
-      "object": "core_06_plate",
+      "object": "core_06_plate.001",
       "zone": "plate",
       "area": 312.3568818256957,
-      "texels_per_unit": 952.8327042320726,
-      "minimum": 783.6272606449224
+      "texels_per_unit": 950.0146620892696,
+      "minimum": 0.0
     },
     {
-      "object": "core_06_frame",
+      "object": "core_06_frame.001",
       "zone": "frame",
       "area": 175.03335021212362,
-      "texels_per_unit": 964.6885125247061,
-      "minimum": 827.6559139465543
+      "texels_per_unit": 748.2062713488615,
+      "minimum": 127.88829784557446
     },
     {
-      "object": "core_06_rack",
+      "object": "core_06_rack.001",
       "zone": "rack",
       "area": 144.6710665800234,
-      "texels_per_unit": 979.6389830666819,
-      "minimum": 861.0777635249189
+      "texels_per_unit": 863.0457014706019,
+      "minimum": 276.7116403569271
     },
     {
-      "object": "core_06_trim",
+      "object": "core_06_trim.001",
       "zone": "trim",
       "area": 127.40461440669496,
-      "texels_per_unit": 973.8305518755834,
+      "texels_per_unit": 973.8886465180146,
       "minimum": 0.0
     },
     {
-      "object": "core_06_recess",
+      "object": "core_06_recess.001",
       "zone": "recess",
       "area": 21.335592706079968,
-      "texels_per_unit": 981.8262803395424,
-      "minimum": 941.4868323500967
+      "texels_per_unit": 980.7924391780497,
+      "minimum": 227.479981805177
     },
     {
-      "object": "core_07_liner",
+      "object": "core_07_liner.001",
       "zone": "liner",
       "area": 1380.4569708183135,
-      "texels_per_unit": 987.6564436201996,
-      "minimum": 861.0779285909776
+      "texels_per_unit": 901.2221195440864,
+      "minimum": 0.0
     },
     {
-      "object": "core_07_plate2",
+      "object": "core_07_plate2.001",
       "zone": "plate2",
       "area": 108.05251162252448,
-      "texels_per_unit": 963.6631846980071,
-      "minimum": 778.0663101280779
+      "texels_per_unit": 958.3082399736946,
+      "minimum": 0.0
     },
     {
-      "object": "core_07_glazing",
+      "object": "core_07_glazing.001",
       "zone": "glazing",
       "area": 121.13614648388474,
-      "texels_per_unit": 983.4721957356196,
-      "minimum": 862.3700061716189
+      "texels_per_unit": 957.4611152404188,
+      "minimum": 0.0
     },
     {
-      "object": "core_07_edge",
+      "object": "core_07_edge.001",
       "zone": "edge",
-      "area": 429.01565726610806,
-      "texels_per_unit": 999.1238932970484,
-      "minimum": 842.3419397948765
+      "area": 428.61667204002026,
+      "texels_per_unit": 906.7352997327303,
+      "minimum": 0.0
     },
     {
-      "object": "core_07_deck",
+      "object": "core_07_deck.001",
       "zone": "deck",
       "area": 1063.6203131975992,
-      "texels_per_unit": 1008.0393275040051,
-      "minimum": 861.0779238422557
+      "texels_per_unit": 860.9203308907709,
+      "minimum": 0.0
     },
     {
-      "object": "core_07_plate",
+      "object": "core_07_plate.001",
       "zone": "plate",
       "area": 459.82373758043843,
-      "texels_per_unit": 959.4126358445834,
-      "minimum": 783.6298094798341
+      "texels_per_unit": 958.347744070585,
+      "minimum": 0.0
     },
     {
-      "object": "core_07_frame",
+      "object": "core_07_frame.001",
       "zone": "frame",
       "area": 208.77034644752143,
-      "texels_per_unit": 965.8298865501907,
-      "minimum": 827.6564279845143
+      "texels_per_unit": 751.3082280464596,
+      "minimum": 121.99043557076418
     },
     {
-      "object": "core_07_rack",
+      "object": "core_07_rack.001",
       "zone": "rack",
       "area": 144.67110362122332,
-      "texels_per_unit": 979.6389948035886,
-      "minimum": 861.0777635249189
+      "texels_per_unit": 861.7426639841173,
+      "minimum": 262.36951740956994
     },
     {
-      "object": "core_07_trim",
+      "object": "core_07_frame.002",
+      "zone": "frame",
+      "area": 4.525126204090593,
+      "texels_per_unit": 789.3777247611175,
+      "minimum": 197.2699659073224
+    },
+    {
+      "object": "core_07_trim.001",
       "zone": "trim",
       "area": 134.54317272602964,
-      "texels_per_unit": 971.5003857879314,
+      "texels_per_unit": 960.248839028387,
       "minimum": 0.0
     },
     {
-      "object": "core_07_recess",
+      "object": "core_07_recess.001",
       "zone": "recess",
       "area": 35.368536460464625,
-      "texels_per_unit": 983.7490850335785,
-      "minimum": 952.9385167453362
+      "texels_per_unit": 990.1326706668015,
+      "minimum": 249.25883212885742
     },
     {
-      "object": "core_08_liner",
+      "object": "core_08_liner.001",
       "zone": "liner",
       "area": 873.0360965388356,
-      "texels_per_unit": 989.9777381056126,
-      "minimum": 861.0779227352841
+      "texels_per_unit": 906.4030070326947,
+      "minimum": 0.0
     },
     {
-      "object": "core_08_plate2",
+      "object": "core_08_plate2.001",
       "zone": "plate2",
       "area": 62.475161489945926,
-      "texels_per_unit": 953.7921717046894,
-      "minimum": 783.6298381834658
+      "texels_per_unit": 942.840720580671,
+      "minimum": 0.0
     },
     {
-      "object": "core_08_glazing",
+      "object": "core_08_glazing.001",
       "zone": "glazing",
       "area": 66.26374272972114,
-      "texels_per_unit": 984.1658415604318,
-      "minimum": 862.3669997650122
+      "texels_per_unit": 956.7260264490118,
+      "minimum": 0.0
     },
     {
-      "object": "core_08_edge",
+      "object": "core_08_edge.001",
       "zone": "edge",
-      "area": 379.6701125699304,
-      "texels_per_unit": 998.3609264551085,
-      "minimum": 796.6059692389009
+      "area": 379.2711243148998,
+      "texels_per_unit": 897.3849505894489,
+      "minimum": 0.0
     },
     {
-      "object": "core_08_deck",
+      "object": "core_08_deck.001",
       "zone": "deck",
       "area": 828.0998331504603,
-      "texels_per_unit": 1006.6399628155164,
-      "minimum": 861.0779254304646
+      "texels_per_unit": 845.7631162158739,
+      "minimum": 0.0
     },
     {
-      "object": "core_08_plate",
+      "object": "core_08_plate.001",
       "zone": "plate",
       "area": 240.94560914685223,
-      "texels_per_unit": 948.6166871611947,
-      "minimum": 783.6298381834658
+      "texels_per_unit": 943.5815661515544,
+      "minimum": 0.0
     },
     {
-      "object": "core_08_frame",
+      "object": "core_08_frame.001",
       "zone": "frame",
       "area": 156.63192537526655,
-      "texels_per_unit": 963.7345509062774,
-      "minimum": 827.6567595830654
+      "texels_per_unit": 745.4551326437736,
+      "minimum": 131.22668353627702
     },
     {
-      "object": "core_08_rack",
+      "object": "core_08_rack.001",
       "zone": "rack",
       "area": 144.6710945490847,
-      "texels_per_unit": 979.6389825226744,
-      "minimum": 861.0779303262743
+      "texels_per_unit": 863.8076614579846,
+      "minimum": 284.8268468758969
     },
     {
-      "object": "core_08_trim",
+      "object": "core_08_frame.002",
+      "zone": "frame",
+      "area": 4.525124257424414,
+      "texels_per_unit": 789.5089034790518,
+      "minimum": 210.69682706309075
+    },
+    {
+      "object": "core_08_trim.001",
       "zone": "trim",
       "area": 118.86844899326324,
-      "texels_per_unit": 974.3064583901262,
+      "texels_per_unit": 976.7987147158067,
       "minimum": 0.0
     },
     {
-      "object": "core_08_recess",
+      "object": "core_08_recess.001",
       "zone": "recess",
       "area": 25.602662849613097,
-      "texels_per_unit": 979.3302001073993,
-      "minimum": 941.4868433711134
+      "texels_per_unit": 980.8629426674726,
+      "minimum": 232.7489652831801
     },
     {
-      "object": "core_09_liner",
+      "object": "core_09_liner.001",
       "zone": "liner",
       "area": 1498.0818513471772,
-      "texels_per_unit": 982.8507631605233,
-      "minimum": 861.0779273091314
-    },
-    {
-      "object": "core_09_plate2",
-      "zone": "plate2",
-      "area": 121.7362903210787,
-      "texels_per_unit": 961.4326450159107,
-      "minimum": 778.0663327843322
-    },
-    {
-      "object": "core_09_glazing",
-      "zone": "glazing",
-      "area": 130.89645070897055,
-      "texels_per_unit": 977.5474127962021,
-      "minimum": 862.3689944448519
-    },
-    {
-      "object": "core_09_edge",
-      "zone": "edge",
-      "area": 397.96558964374736,
-      "texels_per_unit": 998.2800594704453,
-      "minimum": 796.6071547271919
-    },
-    {
-      "object": "core_09_deck",
-      "zone": "deck",
-      "area": 857.5809286194982,
-      "texels_per_unit": 1007.2385823368755,
-      "minimum": 861.0779284742997
-    },
-    {
-      "object": "core_09_plate",
-      "zone": "plate",
-      "area": 516.4631719669937,
-      "texels_per_unit": 959.9799376756953,
-      "minimum": 783.6246084685441
-    },
-    {
-      "object": "core_09_frame",
-      "zone": "frame",
-      "area": 214.90422867292963,
-      "texels_per_unit": 967.5544279665903,
-      "minimum": 827.6568512282198
-    },
-    {
-      "object": "core_09_rack",
-      "zone": "rack",
-      "area": 144.67106705763663,
-      "texels_per_unit": 979.6389984278577,
-      "minimum": 861.0779303262743
-    },
-    {
-      "object": "core_09_frame.001",
-      "zone": "frame",
-      "area": 37.87286161857555,
-      "texels_per_unit": 952.1526779880953,
-      "minimum": 843.4325827204455
-    },
-    {
-      "object": "core_09_recess",
-      "zone": "recess",
-      "area": 35.36854883948862,
-      "texels_per_unit": 983.7491807500094,
-      "minimum": 952.93744785986
-    },
-    {
-      "object": "core_09_trim",
-      "zone": "trim",
-      "area": 40.00998221838069,
-      "texels_per_unit": 949.3962940513759,
+      "texels_per_unit": 890.7344094816707,
       "minimum": 0.0
     },
     {
-      "object": "observation_window_viewport",
+      "object": "core_09_plate2.001",
+      "zone": "plate2",
+      "area": 121.7362903210787,
+      "texels_per_unit": 958.8035192749369,
+      "minimum": 0.0
+    },
+    {
+      "object": "core_09_glazing.001",
+      "zone": "glazing",
+      "area": 130.89645070897055,
+      "texels_per_unit": 952.2797425138032,
+      "minimum": 0.0
+    },
+    {
+      "object": "core_09_edge.001",
+      "zone": "edge",
+      "area": 397.56660426879847,
+      "texels_per_unit": 900.9168977855433,
+      "minimum": 0.0
+    },
+    {
+      "object": "core_09_deck.001",
+      "zone": "deck",
+      "area": 857.5809286194982,
+      "texels_per_unit": 855.1756720239623,
+      "minimum": 0.0
+    },
+    {
+      "object": "core_09_plate.001",
+      "zone": "plate",
+      "area": 516.4631719669937,
+      "texels_per_unit": 958.9845807065526,
+      "minimum": 0.0
+    },
+    {
+      "object": "core_09_frame.002",
+      "zone": "frame",
+      "area": 214.90422867292963,
+      "texels_per_unit": 757.6425471288643,
+      "minimum": 125.42242922124105
+    },
+    {
+      "object": "core_09_rack.001",
+      "zone": "rack",
+      "area": 144.67106705763663,
+      "texels_per_unit": 862.4924425233255,
+      "minimum": 270.6988784224471
+    },
+    {
+      "object": "core_09_frame.003",
+      "zone": "frame",
+      "area": 42.397988495767954,
+      "texels_per_unit": 807.006741437242,
+      "minimum": 202.3367179832574
+    },
+    {
+      "object": "core_09_recess.001",
+      "zone": "recess",
+      "area": 35.36854883948862,
+      "texels_per_unit": 990.1842591544039,
+      "minimum": 255.60070179495017
+    },
+    {
+      "object": "core_09_trim.001",
+      "zone": "trim",
+      "area": 40.00998221838069,
+      "texels_per_unit": 827.2398205649374,
+      "minimum": 0.0
+    },
+    {
+      "object": "observation_window_viewport.001",
       "zone": "viewport",
       "area": 42.31746932897377,
-      "texels_per_unit": 985.2684696386148,
-      "minimum": 861.0779379985711
+      "texels_per_unit": 1011.0939180395003,
+      "minimum": 0.0
     },
     {
-      "object": "observation_window_edge",
+      "object": "observation_window_edge.001",
       "zone": "edge",
       "area": 48.74011908162237,
-      "texels_per_unit": 1010.3781500029808,
-      "minimum": 865.2187625022116
+      "texels_per_unit": 1013.2673502583294,
+      "minimum": 0.0
     },
     {
-      "object": "observation_window_trim",
+      "object": "observation_window_trim.001",
       "zone": "trim",
       "area": 6.352311581789221,
-      "texels_per_unit": 960.9612490586851,
-      "minimum": 779.4255367064462
+      "texels_per_unit": 826.4531702969055,
+      "minimum": 77.0291961882576
     },
     {
-      "object": "bearing_00_edge",
+      "object": "bearing_00_edge.001",
       "zone": "edge",
       "area": 346.0251573343241,
       "texels_per_unit": 1006.8268035972059,
       "minimum": 763.9577232595846
     },
     {
-      "object": "habitat_1_slot_00_liner",
+      "object": "habitat_1_slot_00_liner.001",
       "zone": "liner",
       "area": 353.6524266459741,
       "texels_per_unit": 927.0781466678675,
       "minimum": 64.38114701275819
     },
     {
-      "object": "habitat_1_slot_00_plate2",
+      "object": "habitat_1_slot_00_plate2.001",
       "zone": "plate2",
       "area": 54.88044499751319,
       "texels_per_unit": 943.3951163153388,
       "minimum": 861.065103079327
     },
     {
-      "object": "habitat_1_slot_00_glazing",
+      "object": "habitat_1_slot_00_glazing.001",
       "zone": "glazing",
       "area": 26.983670348078274,
       "texels_per_unit": 942.2868371574957,
       "minimum": 866.6838725314702
     },
     {
-      "object": "habitat_1_slot_00_plate",
+      "object": "habitat_1_slot_00_plate.001",
       "zone": "plate",
       "area": 197.83246821982294,
       "texels_per_unit": 933.3330374776355,
       "minimum": 861.0649216177499
     },
     {
-      "object": "habitat_1_slot_00_recess",
+      "object": "habitat_1_slot_00_recess.001",
       "zone": "recess",
       "area": 17.22617374098534,
       "texels_per_unit": 984.6631337111374,
       "minimum": 870.0714911685009
     },
     {
-      "object": "habitat_1_slot_00_edge",
+      "object": "habitat_1_slot_00_edge.001",
       "zone": "edge",
-      "area": 40.785609706762955,
-      "texels_per_unit": 957.2197416256788,
-      "minimum": 809.6866374316153
+      "area": 38.48215864710455,
+      "texels_per_unit": 971.8167597420097,
+      "minimum": 801.6172744252997
     },
     {
-      "object": "habitat_1_slot_00_trim",
+      "object": "habitat_1_slot_00_trim.001",
       "zone": "trim",
       "area": 59.37366562535797,
       "texels_per_unit": 949.0090180102078,
       "minimum": 0.0
     },
     {
-      "object": "habitat_1_slot_00_frame",
+      "object": "habitat_1_slot_00_frame.001",
       "zone": "frame",
       "area": 38.389404893940714,
       "texels_per_unit": 965.3892028597596,
       "minimum": 876.7111077101001
     },
     {
-      "object": "habitat_1_slot_00_rack",
+      "object": "habitat_1_slot_00_frame.002",
+      "zone": "frame",
+      "area": 7.058826618785658,
+      "texels_per_unit": 963.7136277639872,
+      "minimum": 868.4763194613483
+    },
+    {
+      "object": "habitat_1_slot_00_rack.001",
       "zone": "rack",
       "area": 58.73764239473938,
       "texels_per_unit": 953.5900202044137,
       "minimum": 876.7105749966873
     },
     {
-      "object": "habitat_1_slot_00_deck",
+      "object": "habitat_1_slot_00_deck.001",
       "zone": "deck",
       "area": 139.30589433087576,
       "texels_per_unit": 1019.2919518518119,
       "minimum": 866.6880604024961
     },
     {
-      "object": "bearing_01_edge",
+      "object": "bearing_01_edge.001",
       "zone": "edge",
       "area": 317.82180037823156,
       "texels_per_unit": 1018.8885497798549,
       "minimum": 894.7868687389862
     },
     {
-      "object": "habitat_1_slot_01_liner",
+      "object": "habitat_1_slot_01_liner.001",
       "zone": "liner",
       "area": 353.65244641747574,
       "texels_per_unit": 963.5767034620278,
       "minimum": 210.39398676489438
     },
     {
-      "object": "habitat_1_slot_01_plate",
+      "object": "habitat_1_slot_01_plate.001",
       "zone": "plate",
       "area": 222.56161194942104,
       "texels_per_unit": 963.1705198938416,
       "minimum": 852.0509038973626
     },
     {
-      "object": "habitat_1_slot_01_glazing",
+      "object": "habitat_1_slot_01_glazing.001",
       "zone": "glazing",
       "area": 26.983648904983614,
       "texels_per_unit": 973.7700187179569,
       "minimum": 903.7604739012465
     },
     {
-      "object": "habitat_1_slot_01_plate2",
+      "object": "habitat_1_slot_01_plate2.001",
       "zone": "plate2",
       "area": 30.151396889142774,
       "texels_per_unit": 979.2646521112239,
       "minimum": 861.0723402987618
     },
     {
-      "object": "habitat_1_slot_01_recess",
+      "object": "habitat_1_slot_01_recess.001",
       "zone": "recess",
       "area": 17.22617273023205,
       "texels_per_unit": 995.1451195035866,
       "minimum": 874.9856230558545
     },
     {
-      "object": "habitat_1_slot_01_edge",
+      "object": "habitat_1_slot_01_edge.001",
       "zone": "edge",
       "area": 21.707305939781588,
       "texels_per_unit": 988.1531415961006,
       "minimum": 815.7631452646974
     },
     {
-      "object": "habitat_1_slot_01_trim",
+      "object": "habitat_1_slot_01_trim.001",
       "zone": "trim",
       "area": 59.37353856898009,
       "texels_per_unit": 960.4416786790505,
       "minimum": 0.0
     },
     {
-      "object": "habitat_1_slot_01_frame",
+      "object": "habitat_1_slot_01_frame.001",
       "zone": "frame",
       "area": 38.38940857787124,
       "texels_per_unit": 985.1424384695384,
       "minimum": 894.7867827363323
     },
     {
-      "object": "habitat_1_slot_01_rack",
+      "object": "habitat_1_slot_01_frame.002",
+      "zone": "frame",
+      "area": 1.897024980344859,
+      "texels_per_unit": 988.8773933978204,
+      "minimum": 952.9329204957962
+    },
+    {
+      "object": "habitat_1_slot_01_rack.001",
       "zone": "rack",
       "area": 58.73764996149118,
       "texels_per_unit": 977.417642397431,
       "minimum": 894.7866658049551
     },
     {
-      "object": "habitat_1_slot_01_deck",
+      "object": "habitat_1_slot_01_deck.001",
       "zone": "deck",
       "area": 139.30590558609597,
       "texels_per_unit": 1020.8484288963211,
       "minimum": 894.7870674205072
     },
     {
-      "object": "bearing_02_edge",
+      "object": "bearing_02_edge.001",
       "zone": "edge",
       "area": 317.8217721792571,
       "texels_per_unit": 1023.315628348901,
       "minimum": 1002.4727144691657
     },
     {
-      "object": "habitat_2_slot_02_liner",
+      "object": "habitat_2_slot_02_liner.001",
       "zone": "liner",
       "area": 353.6524340642191,
       "texels_per_unit": 1013.7935438698853,
       "minimum": 132.26804995467216
     },
     {
-      "object": "habitat_2_slot_02_plate",
+      "object": "habitat_2_slot_02_plate.001",
       "zone": "plate",
       "area": 222.56155246794847,
       "texels_per_unit": 1003.5381560001066,
       "minimum": 781.8411483373569
     },
     {
-      "object": "habitat_2_slot_02_glazing",
+      "object": "habitat_2_slot_02_glazing.001",
       "zone": "glazing",
       "area": 26.983631812604518,
       "texels_per_unit": 1019.0676957562091,
       "minimum": 1005.9297413715373
     },
     {
-      "object": "habitat_2_slot_02_plate2",
+      "object": "habitat_2_slot_02_plate2.001",
       "zone": "plate2",
       "area": 30.151407557199448,
       "texels_per_unit": 1002.3695039927921,
       "minimum": 787.0123278068224
     },
     {
-      "object": "habitat_2_slot_02_recess",
+      "object": "habitat_2_slot_02_recess.001",
       "zone": "recess",
       "area": 17.22615795745047,
       "texels_per_unit": 1018.858002901639,
       "minimum": 868.400863066087
     },
     {
-      "object": "habitat_2_slot_02_edge",
+      "object": "habitat_2_slot_02_edge.001",
       "zone": "edge",
-      "area": 40.785663517137834,
-      "texels_per_unit": 971.031024527558,
-      "minimum": 821.7023323438241
+      "area": 38.482213333627556,
+      "texels_per_unit": 986.9746754018432,
+      "minimum": 811.6939107887455
     },
     {
-      "object": "habitat_2_slot_02_trim",
+      "object": "habitat_2_slot_02_trim.001",
       "zone": "trim",
       "area": 59.37363023649006,
       "texels_per_unit": 978.1116266860859,
       "minimum": 0.0
     },
     {
-      "object": "habitat_2_slot_02_frame",
+      "object": "habitat_2_slot_02_frame.001",
       "zone": "frame",
       "area": 38.38940479549088,
       "texels_per_unit": 1019.1612424779905,
       "minimum": 1002.4720721033575
     },
     {
-      "object": "habitat_2_slot_02_rack",
+      "object": "habitat_2_slot_02_frame.002",
+      "zone": "frame",
+      "area": 7.058818643862421,
+      "texels_per_unit": 972.9136096508539,
+      "minimum": 915.9363566161131
+    },
+    {
+      "object": "habitat_2_slot_02_rack.001",
       "zone": "rack",
       "area": 58.73763802523996,
       "texels_per_unit": 1018.2189500150472,
       "minimum": 1002.4726071605769
     },
     {
-      "object": "habitat_2_slot_02_deck",
+      "object": "habitat_2_slot_02_deck.001",
       "zone": "deck",
       "area": 139.30590852753596,
       "texels_per_unit": 1023.5859748631013,
       "minimum": 1002.472699728114
     },
     {
-      "object": "bearing_03_edge",
+      "object": "bearing_03_edge.001",
       "zone": "edge",
       "area": 317.821809429943,
       "texels_per_unit": 1016.9844647118559,
       "minimum": 866.1135694493503
     },
     {
-      "object": "habitat_2_slot_03_liner",
+      "object": "habitat_2_slot_03_liner.001",
       "zone": "liner",
       "area": 353.6524221478843,
       "texels_per_unit": 937.4424841775033,
       "minimum": 206.3983567531855
     },
     {
-      "object": "habitat_2_slot_03_plate",
+      "object": "habitat_2_slot_03_plate.001",
       "zone": "plate",
       "area": 222.56162519749046,
       "texels_per_unit": 943.6053480563653,
       "minimum": 861.064494324582
     },
     {
-      "object": "habitat_2_slot_03_glazing",
+      "object": "habitat_2_slot_03_glazing.001",
       "zone": "glazing",
       "area": 26.98366279025221,
       "texels_per_unit": 951.9844740244604,
       "minimum": 866.3573538763249
     },
     {
-      "object": "habitat_2_slot_03_plate2",
+      "object": "habitat_2_slot_03_plate2.001",
       "zone": "plate2",
       "area": 30.15139367783326,
       "texels_per_unit": 955.4816623845936,
       "minimum": 861.0715873925218
     },
     {
-      "object": "habitat_2_slot_03_recess",
+      "object": "habitat_2_slot_03_recess.001",
       "zone": "recess",
       "area": 17.22616157652796,
       "texels_per_unit": 989.9365407986218,
       "minimum": 861.6279267689215
     },
     {
-      "object": "habitat_2_slot_03_edge",
+      "object": "habitat_2_slot_03_edge.001",
       "zone": "edge",
       "area": 21.70728568465798,
       "texels_per_unit": 984.9070915400977,
       "minimum": 827.4723776247276
     },
     {
-      "object": "habitat_2_slot_03_trim",
+      "object": "habitat_2_slot_03_trim.001",
       "zone": "trim",
       "area": 59.37369513577135,
       "texels_per_unit": 952.3367451281315,
       "minimum": 374.7020595363103
     },
     {
-      "object": "habitat_2_slot_03_frame",
+      "object": "habitat_2_slot_03_frame.001",
       "zone": "frame",
       "area": 38.38940879109943,
       "texels_per_unit": 970.4164849630453,
       "minimum": 866.1117034326822
     },
     {
-      "object": "habitat_2_slot_03_rack",
+      "object": "habitat_2_slot_03_frame.002",
+      "zone": "frame",
+      "area": 1.8970230003342647,
+      "texels_per_unit": 988.8772006356311,
+      "minimum": 952.9313977257667
+    },
+    {
+      "object": "habitat_2_slot_03_rack.001",
       "zone": "rack",
       "area": 58.73760654661098,
       "texels_per_unit": 959.6644910123104,
       "minimum": 866.1132311951975
     },
     {
-      "object": "habitat_2_slot_03_deck",
+      "object": "habitat_2_slot_03_deck.001",
       "zone": "deck",
       "area": 139.30587978126928,
       "texels_per_unit": 1019.6683280768198,
       "minimum": 866.1135432925827
     },
     {
-      "object": "bearing_04_edge",
+      "object": "bearing_04_edge.001",
       "zone": "edge",
       "area": 317.8217435154578,
       "texels_per_unit": 1017.9330637455209,
       "minimum": 876.0813553148654
     },
     {
-      "object": "habitat_3_slot_04_liner",
+      "object": "habitat_3_slot_04_liner.001",
       "zone": "liner",
       "area": 353.6524172971355,
       "texels_per_unit": 952.4181261487425,
       "minimum": 366.7612975057772
     },
     {
-      "object": "habitat_3_slot_04_plate",
+      "object": "habitat_3_slot_04_plate.001",
       "zone": "plate",
       "area": 222.56146050123138,
       "texels_per_unit": 956.862462467394,
       "minimum": 861.0630243174336
     },
     {
-      "object": "habitat_3_slot_04_glazing",
+      "object": "habitat_3_slot_04_glazing.001",
       "zone": "glazing",
       "area": 26.98365991447187,
       "texels_per_unit": 963.7034255510368,
       "minimum": 885.755771181033
     },
     {
-      "object": "habitat_3_slot_04_plate2",
+      "object": "habitat_3_slot_04_plate2.001",
       "zone": "plate2",
       "area": 30.15139105953536,
       "texels_per_unit": 945.8098997124,
       "minimum": 861.0615941838767
     },
     {
-      "object": "habitat_3_slot_04_recess",
+      "object": "habitat_3_slot_04_recess.001",
       "zone": "recess",
       "area": 17.226179629519052,
       "texels_per_unit": 990.2194594649179,
       "minimum": 867.2118558838313
     },
     {
-      "object": "habitat_3_slot_04_edge",
+      "object": "habitat_3_slot_04_edge.001",
       "zone": "edge",
       "area": 21.707298545209294,
       "texels_per_unit": 984.9955460784208,
       "minimum": 833.1413383035783
     },
     {
-      "object": "habitat_3_slot_04_trim",
+      "object": "habitat_3_slot_04_trim.001",
       "zone": "trim",
       "area": 59.373591061387096,
       "texels_per_unit": 956.4506236380992,
       "minimum": 0.0
     },
     {
-      "object": "habitat_3_slot_04_frame",
+      "object": "habitat_3_slot_04_frame.001",
       "zone": "frame",
       "area": 38.38941904391905,
       "texels_per_unit": 977.6649184218086,
       "minimum": 876.081353470729
     },
     {
-      "object": "habitat_3_slot_04_rack",
+      "object": "habitat_3_slot_04_frame.002",
+      "zone": "frame",
+      "area": 1.8970257815861897,
+      "texels_per_unit": 988.8780685665043,
+      "minimum": 952.936652008879
+    },
+    {
+      "object": "habitat_3_slot_04_rack.001",
       "zone": "rack",
       "area": 58.73763594421091,
       "texels_per_unit": 968.410184217011,
       "minimum": 876.0814718348307
     },
     {
-      "object": "habitat_3_slot_04_deck",
+      "object": "habitat_3_slot_04_deck.001",
       "zone": "deck",
       "area": 139.3058823618568,
       "texels_per_unit": 1020.258186547443,
       "minimum": 876.0812946050331
     },
     {
-      "object": "bearing_05_edge",
+      "object": "bearing_05_edge.001",
       "zone": "edge",
       "area": 317.821769734608,
       "texels_per_unit": 1023.3642658364342,
       "minimum": 1008.9870110638744
     },
     {
-      "object": "habitat_3_slot_05_liner",
+      "object": "habitat_3_slot_05_liner.001",
       "zone": "liner",
       "area": 353.65246730512405,
       "texels_per_unit": 1014.3957089191422,
       "minimum": 152.1190495645957
     },
     {
-      "object": "habitat_3_slot_05_plate",
+      "object": "habitat_3_slot_05_plate.001",
       "zone": "plate",
       "area": 197.8324203190335,
       "texels_per_unit": 1004.3828785615515,
       "minimum": 782.1270942488079
     },
     {
-      "object": "habitat_3_slot_05_glazing",
+      "object": "habitat_3_slot_05_glazing.001",
       "zone": "glazing",
       "area": 26.98372385106278,
       "texels_per_unit": 1019.5847908985578,
       "minimum": 1011.8451669995252
     },
     {
-      "object": "habitat_3_slot_05_plate2",
+      "object": "habitat_3_slot_05_plate2.001",
       "zone": "plate2",
       "area": 54.88051225464553,
       "texels_per_unit": 1001.5458718706046,
       "minimum": 787.3122069188644
     },
     {
-      "object": "habitat_3_slot_05_recess",
+      "object": "habitat_3_slot_05_recess.001",
       "zone": "recess",
       "area": 17.22618662429301,
       "texels_per_unit": 1018.8536123854443,
       "minimum": 873.7964955867594
     },
     {
-      "object": "habitat_3_slot_05_edge",
+      "object": "habitat_3_slot_05_edge.001",
       "zone": "edge",
-      "area": 40.7856450348018,
-      "texels_per_unit": 955.9553353857061,
-      "minimum": 838.6430912353513
+      "area": 38.482196795269886,
+      "texels_per_unit": 956.5490607516253,
+      "minimum": 801.0829071125592
     },
     {
-      "object": "habitat_3_slot_05_trim",
+      "object": "habitat_3_slot_05_trim.001",
       "zone": "trim",
       "area": 59.373583179390195,
       "texels_per_unit": 978.3094481904458,
       "minimum": 0.0
     },
     {
-      "object": "habitat_3_slot_05_frame",
+      "object": "habitat_3_slot_05_frame.001",
       "zone": "frame",
       "area": 38.389399085023655,
       "texels_per_unit": 1019.5294632378757,
       "minimum": 1008.9863326887521
     },
     {
-      "object": "habitat_3_slot_05_rack",
+      "object": "habitat_3_slot_05_frame.002",
+      "zone": "frame",
+      "area": 7.0588258420630146,
+      "texels_per_unit": 968.1294581198713,
+      "minimum": 859.13977891568
+    },
+    {
+      "object": "habitat_3_slot_05_rack.001",
       "zone": "rack",
       "area": 58.73764801816823,
       "texels_per_unit": 1018.6590391462577,
       "minimum": 1008.9867506945734
     },
     {
-      "object": "habitat_3_slot_05_deck",
+      "object": "habitat_3_slot_05_deck.001",
       "zone": "deck",
       "area": 139.30586289027215,
       "texels_per_unit": 1023.6160751630199,
       "minimum": 1008.9869772851407
     },
     {
-      "object": "bearing_06_edge",
+      "object": "bearing_06_edge.001",
       "zone": "edge",
       "area": 317.82174886299106,
       "texels_per_unit": 1017.9330629093344,
       "minimum": 876.0813553148654
     },
     {
-      "object": "habitat_4_slot_06_liner",
+      "object": "habitat_4_slot_06_liner.001",
       "zone": "liner",
       "area": 353.65241966301517,
       "texels_per_unit": 950.1710992162489,
       "minimum": 192.86723277684513
     },
     {
-      "object": "habitat_4_slot_06_plate",
+      "object": "habitat_4_slot_06_plate.001",
       "zone": "plate",
       "area": 197.83240816906635,
       "texels_per_unit": 956.0428309241648,
       "minimum": 861.0650762185705
     },
     {
-      "object": "habitat_4_slot_06_glazing",
+      "object": "habitat_4_slot_06_glazing.001",
       "zone": "glazing",
       "area": 26.983664822497936,
       "texels_per_unit": 963.1305294101575,
       "minimum": 885.755771181033
     },
     {
-      "object": "habitat_4_slot_06_plate2",
+      "object": "habitat_4_slot_06_plate2.001",
       "zone": "plate2",
       "area": 54.880449886327035,
       "texels_per_unit": 954.5718220395421,
       "minimum": 861.0635692533662
     },
     {
-      "object": "habitat_4_slot_06_recess",
+      "object": "habitat_4_slot_06_recess.001",
       "zone": "recess",
       "area": 17.22616358648496,
       "texels_per_unit": 994.8515698726233,
       "minimum": 867.2118558838313
     },
     {
-      "object": "habitat_4_slot_06_edge",
+      "object": "habitat_4_slot_06_edge.001",
       "zone": "edge",
       "area": 21.70730281549886,
       "texels_per_unit": 988.0228159970738,
       "minimum": 833.1429887756987
     },
     {
-      "object": "habitat_4_slot_06_trim",
+      "object": "habitat_4_slot_06_trim.001",
       "zone": "trim",
       "area": 59.37356675573302,
       "texels_per_unit": 956.4841143840905,
       "minimum": 172.8782526082342
     },
     {
-      "object": "habitat_4_slot_06_frame",
+      "object": "habitat_4_slot_06_frame.001",
       "zone": "frame",
       "area": 38.38942569695641,
       "texels_per_unit": 977.6649369504798,
       "minimum": 876.081353470729
     },
     {
-      "object": "habitat_4_slot_06_rack",
+      "object": "habitat_4_slot_06_frame.002",
+      "zone": "frame",
+      "area": 1.8970257815861897,
+      "texels_per_unit": 988.8780685665043,
+      "minimum": 952.936652008879
+    },
+    {
+      "object": "habitat_4_slot_06_rack.001",
       "zone": "rack",
       "area": 58.73762805135107,
       "texels_per_unit": 968.4101921462893,
       "minimum": 876.0814718348307
     },
     {
-      "object": "habitat_4_slot_06_deck",
+      "object": "habitat_4_slot_06_deck.001",
       "zone": "deck",
       "area": 139.3058847999644,
       "texels_per_unit": 1020.2581864141424,
       "minimum": 876.0812946050331
     },
     {
-      "object": "bearing_07_edge",
+      "object": "bearing_07_edge.001",
       "zone": "edge",
       "area": 317.82180566412484,
       "texels_per_unit": 1016.9844645491576,
       "minimum": 866.1135694493503
     },
     {
-      "object": "habitat_4_slot_07_liner",
+      "object": "habitat_4_slot_07_liner.001",
       "zone": "liner",
       "area": 353.6524420131453,
       "texels_per_unit": 937.2384551375138,
       "minimum": 291.37338490752967
     },
     {
-      "object": "habitat_4_slot_07_plate2",
+      "object": "habitat_4_slot_07_plate2.001",
       "zone": "plate2",
       "area": 54.8804774758108,
       "texels_per_unit": 932.3213865072887,
       "minimum": 861.0672930083745
     },
     {
-      "object": "habitat_4_slot_07_glazing",
+      "object": "habitat_4_slot_07_glazing.001",
       "zone": "glazing",
       "area": 26.98363643424052,
       "texels_per_unit": 952.6130953112398,
       "minimum": 866.3573538763249
     },
     {
-      "object": "habitat_4_slot_07_plate",
+      "object": "habitat_4_slot_07_plate.001",
       "zone": "plate",
       "area": 197.8325450962692,
       "texels_per_unit": 948.273996884721,
       "minimum": 861.0643742912677
     },
     {
-      "object": "habitat_4_slot_07_recess",
+      "object": "habitat_4_slot_07_recess.001",
       "zone": "recess",
       "area": 17.226158251400957,
       "texels_per_unit": 984.8873376020722,
       "minimum": 861.6279267689215
     },
     {
-      "object": "habitat_4_slot_07_edge",
+      "object": "habitat_4_slot_07_edge.001",
       "zone": "edge",
       "area": 21.70727994635687,
       "texels_per_unit": 981.6137410765962,
       "minimum": 827.4943810556566
     },
     {
-      "object": "habitat_4_slot_07_trim",
+      "object": "habitat_4_slot_07_trim.001",
       "zone": "trim",
       "area": 59.37359096085229,
       "texels_per_unit": 952.2891877571221,
       "minimum": 288.3367783578429
     },
     {
-      "object": "habitat_4_slot_07_frame",
+      "object": "habitat_4_slot_07_frame.001",
       "zone": "frame",
       "area": 38.38940550913588,
       "texels_per_unit": 970.416485131174,
       "minimum": 866.1117682695672
     },
     {
-      "object": "habitat_4_slot_07_rack",
+      "object": "habitat_4_slot_07_frame.002",
+      "zone": "frame",
+      "area": 1.8970230003342674,
+      "texels_per_unit": 988.8772006356304,
+      "minimum": 952.9313977257667
+    },
+    {
+      "object": "habitat_4_slot_07_rack.001",
       "zone": "rack",
       "area": 58.737606391004306,
       "texels_per_unit": 959.6644900659192,
       "minimum": 866.1132311951975
     },
     {
-      "object": "habitat_4_slot_07_deck",
+      "object": "habitat_4_slot_07_deck.001",
       "zone": "deck",
       "area": 139.30587877810433,
       "texels_per_unit": 1019.6683291082271,
       "minimum": 866.1135432925827
     },
     {
-      "object": "bearing_08_edge",
+      "object": "bearing_08_edge.001",
       "zone": "edge",
       "area": 317.82177370039307,
       "texels_per_unit": 1023.3156297434512,
       "minimum": 1002.4727144691657
     },
     {
-      "object": "habitat_5_slot_08_liner",
+      "object": "habitat_5_slot_08_liner.001",
       "zone": "liner",
       "area": 353.6524517003316,
       "texels_per_unit": 1013.8887903587566,
       "minimum": 169.508680846582
     },
     {
-      "object": "habitat_5_slot_08_plate",
+      "object": "habitat_5_slot_08_plate.001",
       "zone": "plate",
       "area": 222.5615548684437,
       "texels_per_unit": 1003.615994554043,
       "minimum": 781.8411094057512
     },
     {
-      "object": "habitat_5_slot_08_glazing",
+      "object": "habitat_5_slot_08_glazing.001",
       "zone": "glazing",
       "area": 26.98362908826229,
       "texels_per_unit": 1019.1207079171145,
       "minimum": 1005.9297413715373
     },
     {
-      "object": "habitat_5_slot_08_plate2",
+      "object": "habitat_5_slot_08_plate2.001",
       "zone": "plate2",
       "area": 30.15142071593003,
       "texels_per_unit": 1002.237674546884,
       "minimum": 782.4227874314164
     },
     {
-      "object": "habitat_5_slot_08_recess",
+      "object": "habitat_5_slot_08_recess.001",
       "zone": "recess",
       "area": 17.226148117330393,
       "texels_per_unit": 1018.4162875476851,
       "minimum": 868.400863066087
     },
     {
-      "object": "habitat_5_slot_08_edge",
+      "object": "habitat_5_slot_08_edge.001",
       "zone": "edge",
-      "area": 40.78566680927443,
-      "texels_per_unit": 969.8880273950135,
+      "area": 38.482215471271054,
+      "texels_per_unit": 986.4821846574544,
       "minimum": 821.7018995882
     },
     {
-      "object": "habitat_5_slot_08_trim",
+      "object": "habitat_5_slot_08_trim.001",
       "zone": "trim",
       "area": 59.37364429119944,
       "texels_per_unit": 978.185396241442,
       "minimum": 280.0409698015986
     },
     {
-      "object": "habitat_5_slot_08_frame",
+      "object": "habitat_5_slot_08_frame.001",
       "zone": "frame",
       "area": 38.38941105368658,
       "texels_per_unit": 1019.161244270987,
       "minimum": 1002.472239570804
     },
     {
-      "object": "habitat_5_slot_08_rack",
+      "object": "habitat_5_slot_08_frame.002",
+      "zone": "frame",
+      "area": 7.058816467662688,
+      "texels_per_unit": 968.3326914831681,
+      "minimum": 890.6888549793022
+    },
+    {
+      "object": "habitat_5_slot_08_rack.001",
       "zone": "rack",
       "area": 58.737642302600044,
       "texels_per_unit": 1018.2189589215983,
       "minimum": 1002.4726071605769
     },
     {
-      "object": "habitat_5_slot_08_deck",
+      "object": "habitat_5_slot_08_deck.001",
       "zone": "deck",
       "area": 139.30590767730942,
       "texels_per_unit": 1023.5859753568415,
       "minimum": 1002.472699728114
     },
     {
-      "object": "bearing_09_edge",
+      "object": "bearing_09_edge.001",
       "zone": "edge",
       "area": 317.82179826143124,
       "texels_per_unit": 1018.8885493128157,
       "minimum": 894.7868687389862
     },
     {
-      "object": "habitat_5_slot_09_liner",
+      "object": "habitat_5_slot_09_liner.001",
       "zone": "liner",
       "area": 353.65243330509895,
       "texels_per_unit": 961.7110346256308,
       "minimum": 178.07050034617916
     },
     {
-      "object": "habitat_5_slot_09_plate",
+      "object": "habitat_5_slot_09_plate.001",
       "zone": "plate",
       "area": 222.56159485279917,
       "texels_per_unit": 965.1021295898984,
       "minimum": 852.0508915458237
     },
     {
-      "object": "habitat_5_slot_09_glazing",
+      "object": "habitat_5_slot_09_glazing.001",
       "zone": "glazing",
       "area": 26.983648116063527,
       "texels_per_unit": 973.2521978375778,
       "minimum": 903.7604739012465
     },
     {
-      "object": "habitat_5_slot_09_plate2",
+      "object": "habitat_5_slot_09_plate2.001",
       "zone": "plate2",
       "area": 30.151420486529197,
       "texels_per_unit": 966.3714478913527,
       "minimum": 861.0719982655619
     },
     {
-      "object": "habitat_5_slot_09_recess",
+      "object": "habitat_5_slot_09_recess.001",
       "zone": "recess",
       "area": 17.226162702319908,
       "texels_per_unit": 999.3559606243291,
       "minimum": 874.9856230558545
     },
     {
-      "object": "habitat_5_slot_09_edge",
+      "object": "habitat_5_slot_09_edge.001",
       "zone": "edge",
       "area": 21.707303775510205,
       "texels_per_unit": 990.9095344253761,
       "minimum": 815.7737251731319
     },
     {
-      "object": "habitat_5_slot_09_trim",
+      "object": "habitat_5_slot_09_trim.001",
       "zone": "trim",
       "area": 59.373669654213316,
       "texels_per_unit": 960.4623295360294,
       "minimum": 498.342173172434
     },
     {
-      "object": "habitat_5_slot_09_frame",
+      "object": "habitat_5_slot_09_frame.001",
       "zone": "frame",
       "area": 38.3893880736037,
       "texels_per_unit": 985.1424589346991,
       "minimum": 894.7867827363323
     },
     {
-      "object": "habitat_5_slot_09_rack",
+      "object": "habitat_5_slot_09_frame.002",
+      "zone": "frame",
+      "area": 1.8970249803448573,
+      "texels_per_unit": 988.8773933978208,
+      "minimum": 952.9329204957962
+    },
+    {
+      "object": "habitat_5_slot_09_rack.001",
       "zone": "rack",
       "area": 58.73765891450873,
       "texels_per_unit": 977.4176941884976,
       "minimum": 894.7866658049551
     },
     {
-      "object": "habitat_5_slot_09_deck",
+      "object": "habitat_5_slot_09_deck.001",
       "zone": "deck",
       "area": 139.30590431075575,
       "texels_per_unit": 1020.8484282953524,
       "minimum": 894.7870674205072
     },
     {
-      "object": "bearing_10_edge",
+      "object": "bearing_10_edge.001",
       "zone": "edge",
       "area": 346.025136474114,
       "texels_per_unit": 1007.1435985770121,
       "minimum": 712.6073707783491
     },
     {
-      "object": "habitat_6_slot_10_liner",
+      "object": "habitat_6_slot_10_liner.001",
       "zone": "liner",
       "area": 353.65240767154313,
       "texels_per_unit": 924.2425188501614,
       "minimum": 187.3213545424417
     },
     {
-      "object": "habitat_6_slot_10_plate",
+      "object": "habitat_6_slot_10_plate.001",
       "zone": "plate",
       "area": 222.5614988470922,
       "texels_per_unit": 935.7276000877501,
       "minimum": 861.0650119924777
     },
     {
-      "object": "habitat_6_slot_10_glazing",
+      "object": "habitat_6_slot_10_glazing.001",
       "zone": "glazing",
       "area": 26.983681744605306,
       "texels_per_unit": 942.9698259412392,
       "minimum": 866.6838725314702
     },
     {
-      "object": "habitat_6_slot_10_plate2",
+      "object": "habitat_6_slot_10_plate2.001",
       "zone": "plate2",
       "area": 30.151421724683928,
       "texels_per_unit": 932.1818492392154,
       "minimum": 861.0690918212986
     },
     {
-      "object": "habitat_6_slot_10_recess",
+      "object": "habitat_6_slot_10_recess.001",
       "zone": "recess",
       "area": 17.226172832548954,
       "texels_per_unit": 979.202158803234,
       "minimum": 870.070622041813
     },
     {
-      "object": "habitat_6_slot_10_edge",
+      "object": "habitat_6_slot_10_edge.001",
       "zone": "edge",
-      "area": 40.78559455526754,
-      "texels_per_unit": 947.024889347704,
-      "minimum": 804.4859439551947
+      "area": 38.48213977792628,
+      "texels_per_unit": 967.5919450815715,
+      "minimum": 804.486623796664
     },
     {
-      "object": "habitat_6_slot_10_trim",
+      "object": "habitat_6_slot_10_trim.001",
       "zone": "trim",
       "area": 59.37369607552236,
       "texels_per_unit": 948.9467090525203,
       "minimum": 708.4574033636601
     },
     {
-      "object": "habitat_6_slot_10_frame",
+      "object": "habitat_6_slot_10_frame.001",
       "zone": "frame",
       "area": 38.38938868222958,
       "texels_per_unit": 965.3891219054836,
       "minimum": 876.7093147668588
     },
     {
-      "object": "habitat_6_slot_10_rack",
+      "object": "habitat_6_slot_10_frame.002",
+      "zone": "frame",
+      "area": 7.058837731493564,
+      "texels_per_unit": 933.1092830959464,
+      "minimum": 810.3944022396104
+    },
+    {
+      "object": "habitat_6_slot_10_rack.001",
       "zone": "rack",
       "area": 58.73763749303363,
       "texels_per_unit": 953.5899841162557,
       "minimum": 876.7105749966873
     },
     {
-      "object": "habitat_6_slot_10_deck",
+      "object": "habitat_6_slot_10_deck.001",
       "zone": "deck",
       "area": 139.30589383688408,
       "texels_per_unit": 1019.291953659064,
       "minimum": 866.6880604024961
     },
     {
-      "object": "spoke_1_deck",
+      "object": "spoke_1_deck.001",
       "zone": "deck",
       "area": 67.10411875081002,
       "texels_per_unit": 1012.8521701686474,
       "minimum": 926.7916152656626
     },
     {
-      "object": "spoke_1_liner",
+      "object": "spoke_1_liner.001",
       "zone": "liner",
       "area": 170.67417263642892,
       "texels_per_unit": 973.5380971923302,
       "minimum": 926.7897256212193
     },
     {
-      "object": "spoke_1_trim",
+      "object": "spoke_1_trim.001",
       "zone": "trim",
       "area": 95.86203750884043,
       "texels_per_unit": 933.9186742570541,
       "minimum": 0.0
     },
     {
-      "object": "spoke_1_plate",
+      "object": "spoke_1_plate.001",
       "zone": "plate",
       "area": 110.98244256007911,
       "texels_per_unit": 956.2424644733694,
       "minimum": 861.0731289488871
     },
     {
-      "object": "spoke_1_edge",
+      "object": "spoke_1_edge.001",
       "zone": "edge",
       "area": 64.46669767213255,
       "texels_per_unit": 949.6085201391093,
       "minimum": 862.4704107096768
     },
     {
-      "object": "spoke_1_plate2",
+      "object": "spoke_1_plate2.001",
       "zone": "plate2",
       "area": 14.449960559149368,
       "texels_per_unit": 988.4297416293672,
       "minimum": 861.0753682288918
     },
     {
-      "object": "spoke_1_recess",
+      "object": "spoke_1_recess.001",
       "zone": "recess",
       "area": 10.46795476454172,
       "texels_per_unit": 1009.8568130974006,
       "minimum": 879.1732255236242
     },
     {
-      "object": "spoke_1_frame",
+      "object": "spoke_1_frame.001",
       "zone": "frame",
       "area": 24.526476193931536,
       "texels_per_unit": 941.9183963545032,
       "minimum": 926.7900674746644
     },
     {
-      "object": "spoke_1_rack",
+      "object": "spoke_1_rack.001",
       "zone": "rack",
       "area": 23.977099253907504,
       "texels_per_unit": 969.7962208803904,
       "minimum": 926.7911473769992
     },
     {
-      "object": "spoke_2_deck",
+      "object": "spoke_2_deck.001",
       "zone": "deck",
       "area": 67.10409809610883,
       "texels_per_unit": 1012.8521752375273,
       "minimum": 926.7918857735993
     },
     {
-      "object": "spoke_2_liner",
+      "object": "spoke_2_liner.001",
       "zone": "liner",
       "area": 170.6741954034645,
       "texels_per_unit": 973.5381669210313,
       "minimum": 926.7897256212193
     },
     {
-      "object": "spoke_2_trim",
+      "object": "spoke_2_trim.001",
       "zone": "trim",
       "area": 95.86206322934777,
       "texels_per_unit": 933.9186612201332,
       "minimum": 723.5998017886976
     },
     {
-      "object": "spoke_2_plate",
+      "object": "spoke_2_plate.001",
       "zone": "plate",
       "area": 110.98248327587613,
       "texels_per_unit": 956.2424474398774,
       "minimum": 861.0730542681483
     },
     {
-      "object": "spoke_2_edge",
+      "object": "spoke_2_edge.001",
       "zone": "edge",
       "area": 64.46669050041088,
       "texels_per_unit": 949.6088554108769,
       "minimum": 862.469998749664
     },
     {
-      "object": "spoke_2_plate2",
+      "object": "spoke_2_plate2.001",
       "zone": "plate2",
       "area": 14.449957187754036,
       "texels_per_unit": 988.4297372921903,
       "minimum": 861.0753682288918
     },
     {
-      "object": "spoke_2_recess",
+      "object": "spoke_2_recess.001",
       "zone": "recess",
       "area": 10.46795688064252,
       "texels_per_unit": 1009.8568839816725,
       "minimum": 879.1708692489682
     },
     {
-      "object": "spoke_2_frame",
+      "object": "spoke_2_frame.001",
       "zone": "frame",
       "area": 24.526475768317407,
       "texels_per_unit": 941.9184035126519,
       "minimum": 926.7912668448023
     },
     {
-      "object": "spoke_2_rack",
+      "object": "spoke_2_rack.001",
       "zone": "rack",
       "area": 23.977098682353088,
       "texels_per_unit": 969.7962485661761,
       "minimum": 926.7911473769992
     },
     {
-      "object": "spoke_3_liner",
+      "object": "spoke_3_liner.001",
       "zone": "liner",
       "area": 92.19653348483627,
       "texels_per_unit": 919.7126488535714,
       "minimum": 825.9985336886659
     },
     {
-      "object": "spoke_3_edge",
+      "object": "spoke_3_edge.001",
       "zone": "edge",
       "area": 42.614745311224105,
       "texels_per_unit": 937.9652694908639,
       "minimum": 851.2545762429314
     },
     {
-      "object": "spoke_3_plate2",
+      "object": "spoke_3_plate2.001",
       "zone": "plate2",
       "area": 45.82288976392511,
       "texels_per_unit": 989.4699017400256,
       "minimum": 861.0736317077058
     },
     {
-      "object": "arm_1_deck",
+      "object": "spoke_3_frame",
+      "zone": "frame",
+      "area": 5.540078855348308,
+      "texels_per_unit": 968.2898444572635,
+      "minimum": 925.3751460265369
+    },
+    {
+      "object": "arm_1_deck.001",
       "zone": "deck",
       "area": 412.644031342949,
       "texels_per_unit": 1024.0000061419557,
       "minimum": 1023.9999883104365
     },
     {
-      "object": "arm_1_liner",
+      "object": "arm_1_liner.001",
       "zone": "liner",
       "area": 1206.7932451458669,
       "texels_per_unit": 1016.9831702756167,
       "minimum": 887.8966598813879
     },
     {
-      "object": "arm_1_trim",
+      "object": "arm_1_trim.001",
       "zone": "trim",
       "area": 471.4107200216438,
       "texels_per_unit": 994.7309714694845,
       "minimum": 757.8583446127928
     },
     {
-      "object": "arm_1_plate",
+      "object": "arm_1_plate.001",
       "zone": "plate",
       "area": 670.5805501529665,
       "texels_per_unit": 1010.1711787091407,
       "minimum": 778.0659412442582
     },
     {
-      "object": "arm_1_edge",
+      "object": "arm_1_edge.001",
       "zone": "edge",
       "area": 300.7419479115036,
       "texels_per_unit": 985.1764056891136,
       "minimum": 846.6494329528249
     },
     {
-      "object": "arm_1_plate2",
+      "object": "arm_1_plate2.001",
       "zone": "plate2",
       "area": 109.70176109209949,
       "texels_per_unit": 1004.5169988172586,
       "minimum": 778.073027599139
     },
     {
-      "object": "arm_1_recess",
+      "object": "arm_1_recess.002",
       "zone": "recess",
       "area": 14.93578779640058,
       "texels_per_unit": 1015.476573069068,
       "minimum": 912.0512358947956
     },
     {
-      "object": "arm_1_frame",
+      "object": "arm_1_frame.001",
       "zone": "frame",
       "area": 193.72811249853933,
       "texels_per_unit": 1024.0000068272118,
       "minimum": 1023.999996264146
     },
     {
-      "object": "arm_1_rack",
+      "object": "arm_1_rack.001",
       "zone": "rack",
       "area": 59.47422483460599,
       "texels_per_unit": 1023.9999997522905,
       "minimum": 1023.9999981423416
     },
     {
-      "object": "arm_1_glazing",
+      "object": "arm_1_glazing.001",
       "zone": "glazing",
       "area": 4.20752977983567,
       "texels_per_unit": 1002.2490640073792,
       "minimum": 952.9390267323562
     },
     {
-      "object": "arm_1_recess.001",
+      "object": "arm_1_recess.003",
       "zone": "recess",
       "area": 41.74144012007759,
       "texels_per_unit": 1021.4023211141505,
       "minimum": 887.8930200091434
     },
     {
-      "object": "arm_2_deck",
+      "object": "arm_2_deck.001",
       "zone": "deck",
       "area": 202.2978359931601,
       "texels_per_unit": 1018.4445236519911,
       "minimum": 952.9393791010702
     },
     {
-      "object": "arm_2_liner",
+      "object": "arm_2_liner.001",
       "zone": "liner",
       "area": 604.3216997926161,
       "texels_per_unit": 979.3791815166006,
       "minimum": 831.4869147813895
     },
     {
-      "object": "arm_2_trim",
+      "object": "arm_2_trim.001",
       "zone": "trim",
       "area": 238.430690134649,
       "texels_per_unit": 946.6742814658313,
       "minimum": 0.0
     },
     {
-      "object": "arm_2_plate",
+      "object": "arm_2_plate.001",
       "zone": "plate",
       "area": 336.36026271084637,
       "texels_per_unit": 970.7110065837985,
       "minimum": 861.0672100293963
     },
     {
-      "object": "arm_2_edge",
+      "object": "arm_2_edge.001",
       "zone": "edge",
       "area": 188.5548150222664,
       "texels_per_unit": 950.1331200482249,
       "minimum": 831.4856736297044
     },
     {
-      "object": "arm_2_plate2",
+      "object": "arm_2_plate2.001",
       "zone": "plate2",
       "area": 61.613532670823034,
       "texels_per_unit": 986.7971331731197,
       "minimum": 831.7314110480937
     },
     {
-      "object": "arm_2_recess",
+      "object": "arm_2_recess.002",
       "zone": "recess",
       "area": 14.935810215868914,
       "texels_per_unit": 1012.1450040514067,
       "minimum": 911.9989101153892
     },
     {
-      "object": "arm_2_frame",
+      "object": "arm_2_frame.001",
       "zone": "frame",
       "area": 63.518649899505114,
       "texels_per_unit": 960.8612910484198,
       "minimum": 952.9386490721812
     },
     {
-      "object": "arm_2_rack",
+      "object": "arm_2_rack.001",
       "zone": "rack",
       "area": 38.511692573517536,
       "texels_per_unit": 977.300534098537,
       "minimum": 952.9386011857351
     },
     {
-      "object": "arm_2_glazing",
+      "object": "arm_2_glazing.001",
       "zone": "glazing",
       "area": 4.2075205197651915,
       "texels_per_unit": 948.6979004847678,
       "minimum": 886.8009651249237
     },
     {
-      "object": "arm_2_recess.001",
+      "object": "arm_2_recess.003",
       "zone": "recess",
       "area": 13.32211449986965,
       "texels_per_unit": 951.7240904671646,
       "minimum": 831.3853419827673
     },
     {
-      "object": "arm_3_deck",
+      "object": "arm_3_deck.001",
       "zone": "deck",
       "area": 597.0643534368476,
       "texels_per_unit": 1024.000005545201,
       "minimum": 1023.999998326854
     },
     {
-      "object": "arm_3_liner",
+      "object": "arm_3_liner.001",
       "zone": "liner",
       "area": 1747.791530825062,
       "texels_per_unit": 1016.8938517230275,
       "minimum": 887.8964857801667
     },
     {
-      "object": "arm_3_trim",
+      "object": "arm_3_trim.001",
       "zone": "trim",
       "area": 772.5116718232199,
       "texels_per_unit": 1002.2824069207051,
       "minimum": 757.8251776325047
     },
     {
-      "object": "arm_3_plate",
+      "object": "arm_3_plate.001",
       "zone": "plate",
       "area": 962.0110601084904,
       "texels_per_unit": 1012.6524124183723,
       "minimum": 778.055963600063
     },
     {
-      "object": "arm_3_edge",
+      "object": "arm_3_edge.001",
       "zone": "edge",
       "area": 411.43667990232336,
       "texels_per_unit": 989.3442908631205,
       "minimum": 846.6492360063259
     },
     {
-      "object": "arm_3_plate2",
+      "object": "arm_3_plate2.001",
       "zone": "plate2",
       "area": 188.5662967037,
       "texels_per_unit": 1003.8763073643253,
       "minimum": 778.0665728693457
     },
     {
-      "object": "arm_3_recess",
+      "object": "arm_3_recess.002",
       "zone": "recess",
       "area": 63.26799321915445,
       "texels_per_unit": 1021.9942665707077,
       "minimum": 912.0511363187468
     },
     {
-      "object": "arm_3_frame",
+      "object": "arm_3_frame.001",
       "zone": "frame",
       "area": 403.1363812697431,
       "texels_per_unit": 1024.0000086282664,
       "minimum": 1023.9999894253405
     },
     {
-      "object": "arm_3_rack",
+      "object": "arm_3_rack.001",
       "zone": "rack",
       "area": 81.21314600591505,
       "texels_per_unit": 1024.0000001575331,
       "minimum": 1023.9999880474043
     },
     {
-      "object": "arm_3_glazing",
+      "object": "arm_3_glazing.001",
       "zone": "glazing",
       "area": 4.207528321086484,
       "texels_per_unit": 1002.2490659162586,
       "minimum": 952.938826923881
     },
     {
-      "object": "arm_3_recess.001",
+      "object": "arm_3_recess.003",
       "zone": "recess",
       "area": 87.87762307461631,
       "texels_per_unit": 1022.1997352476508,
       "minimum": 887.8929271171539
     },
     {
-      "object": "arm_4_deck",
+      "object": "arm_4_deck.001",
       "zone": "deck",
       "area": 151.15634380688988,
       "texels_per_unit": 1019.7711440985214,
       "minimum": 972.4639012368397
     },
     {
-      "object": "arm_4_liner",
+      "object": "arm_4_liner.001",
       "zone": "liner",
       "area": 221.20733340278179,
       "texels_per_unit": 1024.000002858171,
       "minimum": 1023.9999926699538
     },
     {
-      "object": "arm_4_trim",
+      "object": "arm_4_trim.001",
       "zone": "trim",
       "area": 103.63720344415144,
       "texels_per_unit": 993.5420331222816,
       "minimum": 371.33395064818035
     },
     {
-      "object": "arm_4_plate",
+      "object": "arm_4_plate.001",
       "zone": "plate",
       "area": 145.2989888062391,
       "texels_per_unit": 1005.6614319642556,
       "minimum": 778.0717477607446
     },
     {
-      "object": "arm_4_edge",
+      "object": "arm_4_edge.001",
       "zone": "edge",
       "area": 75.60447364775358,
       "texels_per_unit": 983.0158612659746,
       "minimum": 886.8015766003285
     },
     {
-      "object": "arm_4_plate2",
+      "object": "arm_4_plate2.001",
       "zone": "plate2",
       "area": 12.567333764801777,
       "texels_per_unit": 1005.718001107127,
       "minimum": 778.0717477607446
     },
     {
-      "object": "arm_4_recess",
+      "object": "arm_4_recess.001",
       "zone": "recess",
       "area": 5.974321429218809,
       "texels_per_unit": 1015.4765091858047,
       "minimum": 912.0510802773606
     },
     {
-      "object": "arm_4_frame",
+      "object": "arm_4_frame.001",
       "zone": "frame",
       "area": 101.98054034528177,
       "texels_per_unit": 988.5456189339772,
       "minimum": 869.2316684724556
     },
     {
-      "object": "arm_4_rack",
+      "object": "arm_4_rack.001",
       "zone": "rack",
       "area": 19.44190175095396,
       "texels_per_unit": 1024.000004510426,
       "minimum": 1023.99999170153
     },
     {
-      "object": "service_finger_1_edge",
+      "object": "service_finger_1_edge.001",
       "zone": "edge",
       "area": 23.103841819019117,
       "texels_per_unit": 956.8737380702232,
       "minimum": 866.0742236319696
     },
     {
-      "object": "service_finger_1_trim",
+      "object": "service_finger_1_trim.001",
       "zone": "trim",
       "area": 13.993981763984344,
       "texels_per_unit": 931.0958125696358,
       "minimum": 0.0
     },
     {
-      "object": "service_finger_1_recess",
+      "object": "service_finger_1_recess.001",
       "zone": "recess",
       "area": 37.622581297886384,
       "texels_per_unit": 1020.2155470181909,
       "minimum": 986.0133338306142
     },
     {
-      "object": "service_finger_1_glazing",
+      "object": "service_finger_1_glazing.001",
       "zone": "glazing",
       "area": 29.50877925716278,
       "texels_per_unit": 1019.1491297324686,
       "minimum": 986.0124838949245
     },
     {
-      "object": "service_finger_2_edge",
+      "object": "service_finger_2_edge.001",
       "zone": "edge",
       "area": 153.4726743952311,
       "texels_per_unit": 984.8367392720111,
       "minimum": 892.8534003214936
     },
     {
-      "object": "service_finger_2_trim",
+      "object": "service_finger_2_trim.001",
       "zone": "trim",
       "area": 17.338317554321527,
       "texels_per_unit": 937.0728841804874,
       "minimum": 0.0
     },
     {
-      "object": "service_finger_3_edge",
+      "object": "service_finger_3_edge.001",
       "zone": "edge",
       "area": 21.78375412707935,
       "texels_per_unit": 964.4244939223963,
       "minimum": 876.9776189606121
     },
     {
-      "object": "service_finger_3_trim",
+      "object": "service_finger_3_trim.001",
       "zone": "trim",
       "area": 13.103755904433072,
       "texels_per_unit": 930.6891356682352,
       "minimum": 0.0
     },
     {
-      "object": "service_finger_3_recess",
+      "object": "service_finger_3_recess.001",
       "zone": "recess",
       "area": 35.18069369005588,
       "texels_per_unit": 1020.1521759131649,
       "minimum": 986.0135051946834
     },
     {
-      "object": "service_finger_3_glazing",
+      "object": "service_finger_3_glazing.001",
       "zone": "glazing",
       "area": 27.745318599494567,
       "texels_per_unit": 1018.9096432389847,
       "minimum": 986.0120515331325
     },
     {
-      "object": "service_finger_4_edge",
+      "object": "service_finger_4_edge.001",
       "zone": "edge",
       "area": 151.96332284355748,
       "texels_per_unit": 985.4360967043622,
       "minimum": 910.0312477533049
     },
     {
-      "object": "service_finger_4_trim",
+      "object": "service_finger_4_trim.001",
       "zone": "trim",
       "area": 15.33549144329125,
       "texels_per_unit": 936.7352676588965,
       "minimum": 0.0
     },
     {
-      "object": "service_finger_5_edge",
+      "object": "service_finger_5_edge.001",
       "zone": "edge",
       "area": 150.47831811821433,
       "texels_per_unit": 918.8940844172533,
       "minimum": 873.7192876945011
     },
     {
-      "object": "service_finger_5_trim",
+      "object": "service_finger_5_trim.001",
       "zone": "trim",
       "area": 13.33596091144542,
       "texels_per_unit": 915.0105991025281,
       "minimum": 0.0
     },
     {
-      "object": "service_finger_6_edge",
+      "object": "service_finger_6_edge.001",
       "zone": "edge",
       "area": 24.43326371307234,
       "texels_per_unit": 962.7877463621863,
       "minimum": 874.402647978488
     },
     {
-      "object": "service_finger_6_trim",
+      "object": "service_finger_6_trim.001",
       "zone": "trim",
       "area": 14.887477059441913,
       "texels_per_unit": 928.7301477172451,
       "minimum": 0.0
     },
     {
-      "object": "service_finger_6_recess",
+      "object": "service_finger_6_recess.001",
       "zone": "recess",
       "area": 40.0644768602525,
       "texels_per_unit": 1019.1996250057491,
       "minimum": 974.8496671899062
     },
     {
-      "object": "service_finger_6_glazing",
+      "object": "service_finger_6_glazing.001",
       "zone": "glazing",
       "area": 31.272216023364745,
       "texels_per_unit": 1018.0277923600419,
       "minimum": 974.8489367829607
     },
     {
-      "object": "ring_attitude_control_trim",
+      "object": "ring_attitude_control_trim.001",
       "zone": "trim",
       "area": 40.4761930738533,
       "texels_per_unit": 958.4375631684509,
       "minimum": 0.0
     },
     {
-      "object": "ring_attitude_control_edge",
+      "object": "ring_attitude_control_edge.001",
       "zone": "edge",
       "area": 33.71447204786076,
       "texels_per_unit": 955.9274458322988,
       "minimum": 845.0899852962185
     },
     {
-      "object": "ring_attitude_control_recess",
+      "object": "ring_attitude_control_recess.001",
       "zone": "recess",
       "area": 4.953778213470955,
       "texels_per_unit": 967.780756260327,
       "minimum": 845.0533573785729
     },
     {
-      "object": "equipment_deck_plate2",
+      "object": "equipment_deck_plate2.001",
       "zone": "plate2",
       "area": 607.322913528023,
       "texels_per_unit": 1011.3136677114259,
       "minimum": 808.9167138162845
     },
     {
-      "object": "equipment_deck_trim",
+      "object": "equipment_deck_trim.001",
       "zone": "trim",
       "area": 412.14586822900617,
       "texels_per_unit": 946.3925753028124,
       "minimum": 0.0
     },
     {
-      "object": "equipment_deck_edge",
+      "object": "equipment_deck_edge.001",
       "zone": "edge",
       "area": 194.06335457024463,
       "texels_per_unit": 959.2100482443769,
       "minimum": 839.2033445073931
     },
     {
-      "object": "tower_1_trim",
+      "object": "tower_1_trim.001",
       "zone": "trim",
       "area": 252.0118457126392,
-      "texels_per_unit": 977.5822072301604,
-      "minimum": 404.6407575886918
+      "texels_per_unit": 878.1485482140749,
+      "minimum": 0.0
     },
     {
-      "object": "tower_1_liner",
+      "object": "tower_1_liner.001",
       "zone": "liner",
       "area": 1506.826684281556,
-      "texels_per_unit": 975.8007122025323,
-      "minimum": 659.759584096263
+      "texels_per_unit": 1002.9571512103205,
+      "minimum": 0.0
     },
     {
-      "object": "tower_1_edge",
+      "object": "tower_1_edge.001",
       "zone": "edge",
-      "area": 310.6469947884565,
-      "texels_per_unit": 1001.707815328916,
-      "minimum": 649.7234195979707
+      "area": 304.9342997669808,
+      "texels_per_unit": 968.6188320426899,
+      "minimum": 0.0
     },
     {
-      "object": "tower_1_recess",
+      "object": "tower_1_recess.001",
       "zone": "recess",
       "area": 219.25179458077255,
-      "texels_per_unit": 979.2152991344362,
-      "minimum": 892.9373192244458
+      "texels_per_unit": 931.9805627838156,
+      "minimum": 385.41297951627763
     },
     {
-      "object": "tower_1_plate",
+      "object": "tower_1_plate.001",
       "zone": "plate",
       "area": 647.2984499003549,
-      "texels_per_unit": 972.7134371616676,
-      "minimum": 785.3791412084558
+      "texels_per_unit": 884.1244392835056,
+      "minimum": 0.0
     },
     {
-      "object": "tower_1_plate2",
+      "object": "tower_1_plate2.001",
       "zone": "plate2",
-      "area": 285.4270543407064,
-      "texels_per_unit": 970.1489333993131,
-      "minimum": 785.3818105240402
+      "area": 282.79411914367324,
+      "texels_per_unit": 928.97575064597,
+      "minimum": 0.0
     },
     {
-      "object": "tower_1_deck",
+      "object": "tower_1_deck.001",
       "zone": "deck",
       "area": 48.45725620869051,
-      "texels_per_unit": 1007.0242137231972,
-      "minimum": 881.4406018969281
+      "texels_per_unit": 1016.1671862223636,
+      "minimum": 0.0
     },
     {
-      "object": "tower_1_frame",
+      "object": "tower_1_frame.002",
       "zone": "frame",
       "area": 624.8875998790658,
-      "texels_per_unit": 977.9700073071485,
-      "minimum": 952.9383482725844
+      "texels_per_unit": 572.1638124291869,
+      "minimum": 226.63100058618264
     },
     {
-      "object": "tower_1_rack",
+      "object": "tower_1_rack.001",
       "zone": "rack",
       "area": 434.01312006193626,
-      "texels_per_unit": 988.5534638690775,
-      "minimum": 952.9388884284467
+      "texels_per_unit": 893.2306032832985,
+      "minimum": 336.79830032521187
     },
     {
-      "object": "tower_1_frame.001",
+      "object": "tower_1_frame.003",
       "zone": "frame",
-      "area": 10.724942963575973,
-      "texels_per_unit": 974.0056398033671,
-      "minimum": 962.022090401949
+      "area": 16.265235868379367,
+      "texels_per_unit": 801.8224632228635,
+      "minimum": 0.669962797439681
     },
     {
-      "object": "tower_2_trim",
+      "object": "tower_2_trim.001",
       "zone": "trim",
       "area": 123.82816554796152,
-      "texels_per_unit": 975.8078621106647,
+      "texels_per_unit": 890.8051094812902,
       "minimum": 0.0
     },
     {
-      "object": "tower_2_liner",
+      "object": "tower_2_liner.001",
       "zone": "liner",
       "area": 625.4293686024654,
-      "texels_per_unit": 978.9850284434923,
-      "minimum": 881.436439252916
-    },
-    {
-      "object": "tower_2_edge",
-      "zone": "edge",
-      "area": 268.74451030350286,
-      "texels_per_unit": 986.3821445198413,
-      "minimum": 790.613432418847
-    },
-    {
-      "object": "tower_2_recess",
-      "zone": "recess",
-      "area": 224.87360840136614,
-      "texels_per_unit": 979.6301320154179,
-      "minimum": 892.9381393194222
-    },
-    {
-      "object": "tower_2_plate",
-      "zone": "plate",
-      "area": 235.1803343604876,
-      "texels_per_unit": 971.6859360222123,
-      "minimum": 785.3826016876038
-    },
-    {
-      "object": "tower_2_plate2",
-      "zone": "plate2",
-      "area": 122.594199323883,
-      "texels_per_unit": 971.0808230773753,
-      "minimum": 785.3826131869546
-    },
-    {
-      "object": "tower_2_deck",
-      "zone": "deck",
-      "area": 66.55719820712856,
-      "texels_per_unit": 1013.0415296392482,
-      "minimum": 881.4296000493988
-    },
-    {
-      "object": "tower_2_frame",
-      "zone": "frame",
-      "area": 387.3703693815116,
-      "texels_per_unit": 979.203458865022,
-      "minimum": 952.9366805802578
-    },
-    {
-      "object": "tower_2_rack",
-      "zone": "rack",
-      "area": 434.0133797181786,
-      "texels_per_unit": 988.5534577555825,
-      "minimum": 952.9388489293827
-    },
-    {
-      "object": "tower_3_trim",
-      "zone": "trim",
-      "area": 194.359545155902,
-      "texels_per_unit": 978.28744542923,
-      "minimum": 405.1301802828261
-    },
-    {
-      "object": "tower_3_liner",
-      "zone": "liner",
-      "area": 1096.549092521816,
-      "texels_per_unit": 977.0688699705662,
-      "minimum": 881.4364325688025
-    },
-    {
-      "object": "tower_3_edge",
-      "zone": "edge",
-      "area": 223.34381812272383,
-      "texels_per_unit": 996.206148868057,
-      "minimum": 841.7103680637978
-    },
-    {
-      "object": "tower_3_recess",
-      "zone": "recess",
-      "area": 224.8737708574733,
-      "texels_per_unit": 979.6301450333654,
-      "minimum": 892.9381393194222
-    },
-    {
-      "object": "tower_3_plate",
-      "zone": "plate",
-      "area": 453.4054141595967,
-      "texels_per_unit": 972.9611000296117,
-      "minimum": 785.3826016876038
-    },
-    {
-      "object": "tower_3_plate2",
-      "zone": "plate2",
-      "area": 217.67507113162893,
-      "texels_per_unit": 963.4280089483735,
-      "minimum": 294.9460525901398
-    },
-    {
-      "object": "tower_3_deck",
-      "zone": "deck",
-      "area": 66.55720987397497,
-      "texels_per_unit": 1013.041526970688,
-      "minimum": 881.4334136153869
-    },
-    {
-      "object": "tower_3_frame",
-      "zone": "frame",
-      "area": 722.9971735944896,
-      "texels_per_unit": 978.2742194736874,
-      "minimum": 952.9373552206956
-    },
-    {
-      "object": "tower_3_rack",
-      "zone": "rack",
-      "area": 434.01341714423523,
-      "texels_per_unit": 988.5534458697064,
-      "minimum": 952.9388495188497
-    },
-    {
-      "object": "tower_4_trim",
-      "zone": "trim",
-      "area": 161.94700987498618,
-      "texels_per_unit": 982.0572172862048,
-      "minimum": 774.8909752842482
-    },
-    {
-      "object": "tower_4_liner",
-      "zone": "liner",
-      "area": 833.2762044900105,
-      "texels_per_unit": 977.8729048566285,
-      "minimum": 881.4400612945752
-    },
-    {
-      "object": "tower_4_edge",
-      "zone": "edge",
-      "area": 233.30152107075475,
-      "texels_per_unit": 994.4871554491234,
-      "minimum": 841.7108208334319
-    },
-    {
-      "object": "tower_4_recess",
-      "zone": "recess",
-      "area": 224.87375144274213,
-      "texels_per_unit": 979.6301579932838,
-      "minimum": 892.9381393194222
-    },
-    {
-      "object": "tower_4_plate",
-      "zone": "plate",
-      "area": 331.4560380387496,
-      "texels_per_unit": 972.4556381948862,
-      "minimum": 785.3799453601525
-    },
-    {
-      "object": "tower_4_plate2",
-      "zone": "plate2",
-      "area": 146.66315519122108,
-      "texels_per_unit": 969.0132437384784,
-      "minimum": 785.3799281114198
-    },
-    {
-      "object": "tower_4_deck",
-      "zone": "deck",
-      "area": 66.5572014548415,
-      "texels_per_unit": 1013.0415182191364,
-      "minimum": 881.4330555226095
-    },
-    {
-      "object": "tower_4_frame",
-      "zone": "frame",
-      "area": 535.4412425570428,
-      "texels_per_unit": 978.6500519491761,
-      "minimum": 952.9366833526685
-    },
-    {
-      "object": "tower_4_rack",
-      "zone": "rack",
-      "area": 434.013337391623,
-      "texels_per_unit": 988.5534669190838,
-      "minimum": 952.9388489293827
-    },
-    {
-      "object": "tower_5_trim",
-      "zone": "trim",
-      "area": 170.40946409402716,
-      "texels_per_unit": 994.2582241979713,
+      "texels_per_unit": 1001.8054432817747,
       "minimum": 0.0
     },
     {
-      "object": "tower_5_liner",
+      "object": "tower_2_edge.001",
+      "zone": "edge",
+      "area": 268.74451030350286,
+      "texels_per_unit": 939.0647728508322,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_2_recess.001",
+      "zone": "recess",
+      "area": 224.87360840136614,
+      "texels_per_unit": 934.3301258221828,
+      "minimum": 427.43036807325313
+    },
+    {
+      "object": "tower_2_plate.001",
+      "zone": "plate",
+      "area": 235.1803343604876,
+      "texels_per_unit": 860.9780596495534,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_2_plate2.001",
+      "zone": "plate2",
+      "area": 122.594199323883,
+      "texels_per_unit": 930.630770144062,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_2_deck.001",
+      "zone": "deck",
+      "area": 66.55719820712856,
+      "texels_per_unit": 1013.92980045957,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_2_frame.001",
+      "zone": "frame",
+      "area": 387.3703693815116,
+      "texels_per_unit": 524.9372255981702,
+      "minimum": 242.24228235967598
+    },
+    {
+      "object": "tower_2_rack.001",
+      "zone": "rack",
+      "area": 434.0133797181786,
+      "texels_per_unit": 904.5432838634007,
+      "minimum": 397.0637315518858
+    },
+    {
+      "object": "tower_3_trim.001",
+      "zone": "trim",
+      "area": 194.359545155902,
+      "texels_per_unit": 860.3887106535527,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_3_liner.001",
+      "zone": "liner",
+      "area": 1096.549092521816,
+      "texels_per_unit": 1000.9439159909002,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_3_edge.001",
+      "zone": "edge",
+      "area": 223.34381812272383,
+      "texels_per_unit": 958.7224513107175,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_3_recess.001",
+      "zone": "recess",
+      "area": 224.8737708574733,
+      "texels_per_unit": 934.330093673668,
+      "minimum": 427.4303594432712
+    },
+    {
+      "object": "tower_3_plate.001",
+      "zone": "plate",
+      "area": 453.4054141595967,
+      "texels_per_unit": 860.8088509706369,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_3_plate2.001",
+      "zone": "plate2",
+      "area": 217.67507113162893,
+      "texels_per_unit": 919.4991934246538,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_3_deck.001",
+      "zone": "deck",
+      "area": 66.55720987397497,
+      "texels_per_unit": 1013.9297930287125,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_3_frame.001",
+      "zone": "frame",
+      "area": 722.9971735944896,
+      "texels_per_unit": 509.7940903705009,
+      "minimum": 242.2422932319816
+    },
+    {
+      "object": "tower_3_rack.001",
+      "zone": "rack",
+      "area": 434.01341714423523,
+      "texels_per_unit": 904.5432972800284,
+      "minimum": 397.0637315518858
+    },
+    {
+      "object": "tower_4_trim.001",
+      "zone": "trim",
+      "area": 161.94700987498618,
+      "texels_per_unit": 865.8118304853373,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_4_liner.001",
+      "zone": "liner",
+      "area": 833.2762044900105,
+      "texels_per_unit": 1001.3054289562965,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_4_edge.001",
+      "zone": "edge",
+      "area": 233.30152107075475,
+      "texels_per_unit": 963.0451091257864,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_4_recess.001",
+      "zone": "recess",
+      "area": 224.87375144274213,
+      "texels_per_unit": 934.3301319803892,
+      "minimum": 427.4298081163545
+    },
+    {
+      "object": "tower_4_plate.001",
+      "zone": "plate",
+      "area": 331.4560380387496,
+      "texels_per_unit": 860.8760048438235,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_4_plate2.001",
+      "zone": "plate2",
+      "area": 146.66315519122108,
+      "texels_per_unit": 919.5081110748173,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_4_deck.001",
+      "zone": "deck",
+      "area": 66.5572014548415,
+      "texels_per_unit": 1013.9298248072729,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_4_frame.001",
+      "zone": "frame",
+      "area": 535.4412425570428,
+      "texels_per_unit": 515.9696055806321,
+      "minimum": 242.24266974750262
+    },
+    {
+      "object": "tower_4_rack.001",
+      "zone": "rack",
+      "area": 434.013337391623,
+      "texels_per_unit": 904.5433042893254,
+      "minimum": 397.06386872393784
+    },
+    {
+      "object": "tower_5_trim.001",
+      "zone": "trim",
+      "area": 170.40946409402716,
+      "texels_per_unit": 961.7386258598547,
+      "minimum": 0.0
+    },
+    {
+      "object": "tower_5_liner.001",
       "zone": "liner",
       "area": 362.15673574758057,
-      "texels_per_unit": 982.2185907383863,
-      "minimum": 881.4364348331875
+      "texels_per_unit": 1003.2614778484514,
+      "minimum": 0.0
     },
     {
-      "object": "tower_5_edge",
+      "object": "tower_5_edge.001",
       "zone": "edge",
       "area": 230.66461875921084,
-      "texels_per_unit": 995.8471299311686,
-      "minimum": 841.7103680637978
+      "texels_per_unit": 954.9203025547947,
+      "minimum": 0.0
     },
     {
-      "object": "tower_5_recess",
+      "object": "tower_5_recess.001",
       "zone": "recess",
       "area": 224.87370745373073,
-      "texels_per_unit": 979.6301459096144,
-      "minimum": 892.9381393194222
+      "texels_per_unit": 934.330114264372,
+      "minimum": 427.4292271973089
     },
     {
-      "object": "tower_5_plate",
+      "object": "tower_5_plate.001",
       "zone": "plate",
       "area": 113.23111030682914,
-      "texels_per_unit": 968.8268098727283,
-      "minimum": 785.3825752044258
+      "texels_per_unit": 861.356146147777,
+      "minimum": 0.0
     },
     {
-      "object": "tower_5_plate2",
+      "object": "tower_5_plate2.001",
       "zone": "plate2",
       "area": 92.10692027279087,
-      "texels_per_unit": 975.2378394432438,
-      "minimum": 785.3825973969194
+      "texels_per_unit": 952.669342497887,
+      "minimum": 0.0
     },
     {
-      "object": "tower_5_deck",
+      "object": "tower_5_deck.001",
       "zone": "deck",
       "area": 66.5572344191657,
-      "texels_per_unit": 1013.0415188299529,
-      "minimum": 881.440324420515
+      "texels_per_unit": 1013.9297867310814,
+      "minimum": 0.0
     },
     {
-      "object": "tower_5_frame",
+      "object": "tower_5_frame.001",
       "zone": "frame",
       "area": 199.8146180160486,
-      "texels_per_unit": 981.0797212479838,
-      "minimum": 952.9366842533941
+      "texels_per_unit": 554.2946614349524,
+      "minimum": 242.24228883795217
     },
     {
-      "object": "tower_5_rack",
+      "object": "tower_5_rack.001",
       "zone": "rack",
       "area": 434.01325976495554,
-      "texels_per_unit": 988.5534569955701,
-      "minimum": 952.9388489293827
+      "texels_per_unit": 904.5433101180555,
+      "minimum": 397.0637508901123
     },
     {
-      "object": "radiator_1_trim",
+      "object": "radiator_1_trim.001",
       "zone": "trim",
       "area": 236.42262102457647,
       "texels_per_unit": 915.3451913443396,
       "minimum": 827.6352137052298
     },
     {
-      "object": "radiator_1_edge",
+      "object": "radiator_1_edge.001",
       "zone": "edge",
       "area": 207.1784565251427,
       "texels_per_unit": 922.1091599193464,
       "minimum": 848.9788440047212
     },
     {
-      "object": "radiator_1_liner",
+      "object": "radiator_1_liner.001",
       "zone": "liner",
       "area": 8.064078361157835,
       "texels_per_unit": 930.2969319961888,
       "minimum": 873.721327403659
     },
     {
-      "object": "radiator_2_trim",
+      "object": "radiator_2_trim.001",
       "zone": "trim",
       "area": 236.42257957280955,
       "texels_per_unit": 915.345223151902,
       "minimum": 827.6353130761992
     },
     {
-      "object": "radiator_2_edge",
+      "object": "radiator_2_edge.001",
       "zone": "edge",
       "area": 207.17848893530928,
       "texels_per_unit": 922.1090327826477,
       "minimum": 848.978012212683
     },
     {
-      "object": "radiator_2_liner",
+      "object": "radiator_2_liner.001",
       "zone": "liner",
       "area": 8.064085911269322,
       "texels_per_unit": 930.2970660045377,
       "minimum": 873.7214794746703
     },
     {
-      "object": "radiator_3_trim",
+      "object": "radiator_3_trim.001",
       "zone": "trim",
       "area": 236.42260969679702,
       "texels_per_unit": 915.3453374309105,
       "minimum": 827.6230010969363
     },
     {
-      "object": "radiator_3_edge",
+      "object": "radiator_3_edge.001",
       "zone": "edge",
       "area": 207.17854391652398,
       "texels_per_unit": 922.1090206997851,
       "minimum": 848.980053935116
     },
     {
-      "object": "radiator_3_liner",
+      "object": "radiator_3_liner.001",
       "zone": "liner",
       "area": 8.06409064793389,
       "texels_per_unit": 930.2969875265396,
       "minimum": 873.7202120470773
     },
     {
-      "object": "radiator_4_trim",
+      "object": "radiator_4_trim.002",
       "zone": "trim",
       "area": 23.07626784815905,
       "texels_per_unit": 949.3792042031606,
       "minimum": 827.63889449355
     },
     {
-      "object": "radiator_4_edge",
+      "object": "radiator_4_edge.002",
       "zone": "edge",
       "area": 12.931434653699403,
       "texels_per_unit": 941.1181621698572,
       "minimum": 848.9800199403392
     },
     {
-      "object": "radiator_4_trim.001",
+      "object": "radiator_4_trim.003",
       "zone": "trim",
       "area": 211.582846410165,
       "texels_per_unit": 862.878663849275,
       "minimum": 840.2615510949031
     },
     {
-      "object": "radiator_4_edge.001",
+      "object": "radiator_4_edge.003",
       "zone": "edge",
       "area": 197.57884148841916,
       "texels_per_unit": 875.3855703612833,
       "minimum": 858.0311412097923
     },
     {
-      "object": "radiator_4_liner",
+      "object": "radiator_4_liner.001",
       "zone": "liner",
       "area": 8.064078200985112,
       "texels_per_unit": 899.3889796612375,
       "minimum": 812.5210398218205
     },
     {
-      "object": "cargo_1_plate2",
+      "object": "cargo_1_plate2.001",
       "zone": "plate2",
       "area": 86.77609737850092,
       "texels_per_unit": 1012.4783336708643,
       "minimum": 847.3580600858741
     },
     {
-      "object": "cargo_1_trim",
+      "object": "cargo_1_trim.001",
       "zone": "trim",
       "area": 123.07862001394639,
       "texels_per_unit": 1005.0668765247826,
       "minimum": 847.3580600858741
     },
     {
-      "object": "cargo_1_frame",
+      "object": "cargo_1_frame.001",
       "zone": "frame",
       "area": 5.068617348894198,
       "texels_per_unit": 980.6803189220316,
       "minimum": 973.6404972715533
     },
     {
-      "object": "cargo_2_plate2",
+      "object": "cargo_2_plate2.001",
       "zone": "plate2",
       "area": 86.77609075630771,
       "texels_per_unit": 1004.2685599341094,
       "minimum": 861.0679200699274
     },
     {
-      "object": "cargo_2_trim",
+      "object": "cargo_2_trim.001",
       "zone": "trim",
       "area": 123.07857757890886,
       "texels_per_unit": 993.23451044129,
       "minimum": 861.0679159154992
     },
     {
-      "object": "cargo_2_frame",
+      "object": "cargo_2_frame.001",
       "zone": "frame",
       "area": 5.068616500695914,
       "texels_per_unit": 980.6802860456164,
       "minimum": 973.6405224388438
     },
     {
-      "object": "cargo_3_plate2",
+      "object": "cargo_3_plate2.001",
       "zone": "plate2",
       "area": 86.77609381242837,
       "texels_per_unit": 990.3577997997234,
       "minimum": 861.0728126327986
     },
     {
-      "object": "cargo_3_trim",
+      "object": "cargo_3_trim.001",
       "zone": "trim",
       "area": 123.07874312776312,
       "texels_per_unit": 972.6020161793899,
       "minimum": 861.065658638795
     },
     {
-      "object": "cargo_3_frame",
+      "object": "cargo_3_frame.001",
       "zone": "frame",
       "area": 5.068645395719209,
       "texels_per_unit": 980.6807912239698,
       "minimum": 973.6408563996467
     },
     {
-      "object": "folded_plate_edge",
+      "object": "folded_plate_edge.001",
       "zone": "edge",
-      "area": 91.19288450066472,
-      "texels_per_unit": 981.7580447610187,
-      "minimum": 923.5410133899519
+      "area": 57.49369959997007,
+      "texels_per_unit": 979.127885006066,
+      "minimum": 864.7689522433392
     },
     {
-      "object": "emergency_lights_blue",
+      "object": "folded_plate_frame",
+      "zone": "frame",
+      "area": 9.313388362310219,
+      "texels_per_unit": 978.2995074246084,
+      "minimum": 952.9338947895457
+    },
+    {
+      "object": "emergency_lights_blue.001",
       "zone": "blue",
       "area": 43.55601615320348,
-      "texels_per_unit": 986.6592248901769,
-      "minimum": 886.1993356321591
+      "texels_per_unit": 6690.4638687535735,
+      "minimum": 5278.600845630662
     },
     {
-      "object": "emergency_lights_battery",
+      "object": "emergency_lights_battery.001",
       "zone": "battery",
       "area": 5.708772723387508,
-      "texels_per_unit": 1023.9999969252384,
-      "minimum": 1023.9999875391741
+      "texels_per_unit": 4694.822778217802,
+      "minimum": 3820.9809703447495
     }
   ]
 }

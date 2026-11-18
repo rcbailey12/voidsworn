@@ -461,8 +461,11 @@ try {
     $script:out = $args[1]
     $s = @{ run = [guid]::NewGuid().ToString('N'); branch = $args[2]; status = 'running'; reason = ''; commit = ''; started = [DateTime]::UtcNow.ToString('o'); finished = '' }
     Put (Join-Path $out 'status.json') ($s | ConvertTo-Json)
-    # Old run metadata must never turn a later failure into success or claim an old resume.
-    foreach ($f in @('resume.txt','stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt')) { Put (Join-Path $out $f) '' }
+    # Keep any earlier resume note aside. The current run writes a note only when it has resume context.
+    $resumePath = Join-Path $out 'resume.txt'
+    if (Test-Path -LiteralPath $resumePath) { [IO.File]::Move($resumePath, "$resumePath.$($s.run).previous") }
+    # Old run metadata must never turn a later failure into success.
+    foreach ($f in @('stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt')) { Put (Join-Path $out $f) '' }
   }
   elseif ($mode -eq 'wait') {
     $script:out = $args[1]
@@ -560,6 +563,11 @@ try {
     $partial = "refs/remotes/origin/$br-partial"
     $tip = @(Git @('-C',$repo,'rev-parse','--verify','--quiet',$partial))
     if ($gitExit -eq 0) {
+      $null = Git @('-C',$repo,'merge-base','--is-ancestor',$tip[0],'HEAD')
+      if ($gitExit -eq 0) {
+        Log "skipping $br-partial at $($tip[0]): already in HEAD"
+        exit 0
+      }
       Log "resuming $br-partial at $($tip[0])"
       # Full mirror history makes the merge base available. A conflict stays on disk and stops before the model.
       $null = Git @('-C',$repo,'merge','--no-edit',$partial)

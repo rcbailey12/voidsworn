@@ -22,6 +22,26 @@ function githubFixture(needs=false,now=NOW){
   if(!needs)raw.issues=raw.issues.filter(x=>x.number!==855);
   return p.githubData(raw.issues,raw.pulls,raw.comments,p.emptyGithub(),now);
 }
+function chainHistoryFixture(root, now) {
+  const old = now-90*60000, current = now-45*60000;
+  const clock = timestamp => new Date(timestamp).toTimeString().slice(0,8);
+  for (const [issue,at] of [[944,old],[1033,current]]) {
+    const stem = path.join(root,`codex_lane_c${issue}`);
+    write(stem+'.txt',`${issue} start ${clock(at)}`,at);
+    write(stem+'.bat',`for %%N in (${issue}) do call :one %%N`,at);
+  }
+  write(path.join(root,'board_c/issue-1033/status.json'),JSON.stringify({run:RUN,status:'running',
+    title:'Check the lane handoff',started:iso(current)}),current);
+  const legacy = path.join(root,'work217/issue-932-deepseek');
+  write(path.join(legacy,'latest.txt'),legacy+path.sep,old);
+  write(path.join(legacy,'out/result.txt'),'started earlier',old);
+  write(path.join(legacy,'out/events.jsonl'),'{}',old);
+  const github = githubFixture(false,now);
+  for (const source of Object.values(github.sources)) {
+    Object.assign(source,{complete:true,lastSuccessfulReadAt:iso(now),lastAttemptAt:iso(now)});
+  }
+  return {data:p.snapshot(root,now,new p.Reader(),github),pictures:new Map()};
+}
 function makeCases(base) {
   const deck = require('./fixtures/deck.json');
   const now = Date.parse(deck.now), minute = 60000, repo = path.resolve(__dirname,'../../..');
@@ -177,6 +197,7 @@ function makeCases(base) {
   }
   const record = nov17(path.join(base,'display-nov17'));
   cases.nov17 = {data:record.snapshot,pictures:new Map(),now:record.now};
+  cases['chain-history'] = chainHistoryFixture(path.join(base,'display-chain-history'),now);
   return {cases,now};
 }
 function fingerprints(root){
@@ -241,6 +262,37 @@ async function test(){
     const r=path.join(base,'closed');write(path.join(r,'codex_chain_a.txt'),'waiting for chain missing');write(path.join(r,'codex_chain_a.bat'),'for %%N in (2) do call :one %%N');
     const g=p.githubData([{number:2,title:'Closed job',state:'closed'}],[],[],p.emptyGithub(),NOW),row=lane(p.snapshot(r,NOW,new p.Reader(),g),'main');
     assert.equal(row.queue.label,'queue unknown');assert.equal(row.next[0].githubState,'closed');assert.match(row.next[0].note,/chain still lists it/);
+  });
+  check('a later start moves an old chain to history and leaves a genuinely stuck chain in attention',()=>{
+    const {data} = chainHistoryFixture(path.join(base,'chain-history'),NOW), row = lane(data,'c');
+    assert.deepEqual(row.queue.history.map(h=>[h.chain,h.state]),[['codex_lane_c944.txt','superseded']]);
+    assert.deepEqual(row.queue.groups.map(g=>[g.predecessor.issue,g.attention]),[[1033,'Old chain has no recorded ending.']]);
+    assert(data.pcSource.complete);
+    const legacy = lane(data,'deepseek');
+    assert.equal(legacy.current.issue,932);
+    assert.equal(legacy.state,'unknown');
+    assert(legacy.source.files.includes('events.jsonl'));
+  });
+  check('old chains need ending evidence for every job and cannot release a text wait without all done',()=>{
+    const r = path.join(base,'mixed-endings'), at = NOW-80*60000, finish = NOW-70*60000;
+    write(path.join(r,'codex_chain_endings.txt'),'1 start 15:00:00\n1 end 15:05:00\n2 start 15:10:00',at);
+    write(path.join(r,'codex_chain_endings.bat'),'for %%N in (1 2 3 4) do call :one %%N',at);
+    write(path.join(r,'board/issue-2/status.json'),JSON.stringify({run:RUN,status:'failed',started:iso(at),finished:iso(finish)}),finish);
+    write(path.join(r,'codex_lane_b_wait.bat'),'for %%N in (5) do call :one %%N',at);
+    write(path.join(r,'codex_lane_b_wait.txt'),'waiting for codex_chain_endings.txt',at);
+    const pull = {number:6,state:'closed',merged_at:iso(finish),base:{repo:{full_name:'rcbailey12/voidsworn'}},
+      head:{ref:'codex/issue-3',repo:{full_name:'rcbailey12/voidsworn'}}};
+    const close = {number:4,state:'closed',closed_at:iso(finish)};
+    const snap = (issue,pr) => p.snapshot(r,NOW,new p.Reader(),p.githubData([issue],[pr],[],p.emptyGithub(),NOW));
+    for (const data of [snap({...close,state:'open'},pull),snap({...close,closed_at:iso(at-3600000)},pull),
+      snap(close,{...pull,merged_at:null}),snap(close,{...pull,merged_at:iso(at-3600000)})]) {
+      assert.equal(lane(data,'main').queue.groups[0].attention,'Old chain has no recorded ending.');
+    }
+    const data = snap(close,pull);
+    assert.deepEqual(lane(data,'main').queue.groups,[]);
+    assert.equal(lane(data,'main').queue.history[0].reason,'All listed jobs have ending evidence.');
+    assert.equal(lane(data,'b').queue.groups[0].state,'unknown');
+    assert.match(lane(data,'b').queue.groups[0].reason,/no recorded all done marker/);
   });
   check('independent chains keep distinct predecessors beside an unknown chain on the same lane',()=>{
     const r=path.join(base,'mixed');
@@ -307,7 +359,20 @@ async function test(){
     const r=path.join(base,'same-name-pointer'),job=path.join(r,'work217/issue-1-deepseek');
     write(path.join(job,'latest.txt'),path.join(base,'outside','20261116_100000'));
     write(path.join(job,'20261116_100000/out/status.json'),JSON.stringify({run:RUN,status:'running',started:iso(NOW-60000)}));
-    assert.equal(lane(p.snapshot(r,NOW),'deepseek').state,'unknown');
+    const data = p.snapshot(r,NOW);
+    assert.equal(lane(data,'deepseek').state,'unknown');
+    assert.match(data.pcSource.reason,/work217\/issue-1-deepseek\/latest\.txt: expected the issue folder/);
+    assert(!data.pcSource.reason.includes(base));
+  });
+  check('missing workhorse directories and pointers identify the expected source',()=>{
+    const r=path.join(base,'missing-run'), job=path.join(r,'work217/issue-2-openai'), stamp='20261116_100000';
+    write(path.join(job,'latest.txt'),path.join(job,stamp));
+    fs.mkdirSync(path.join(r,'work217/issue-3-deepseek'));
+    const reasons = () => p.snapshot(r,NOW).pcSource.reason;
+    assert.match(reasons(),/work217\/issue-2-openai\/20261116_100000: file or folder missing/);
+    assert.match(reasons(),/work217\/issue-3-deepseek\/latest\.txt: file or folder missing/);
+    fs.mkdirSync(path.join(job,stamp));
+    assert.match(reasons(),/work217\/issue-2-openai\/20261116_100000\/out: file or folder missing/);
   });
   check('runner-managed waits require matching result evidence and can become quiet',()=>{
     const r=path.join(base,'runner-wait'),out=path.join(r,'board/issue-1');

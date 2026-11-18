@@ -12,7 +12,7 @@ var HW := HS * sqrt(3.0)
 # The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
 const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex
 const STATION_PER_HEX := 4.0
-const STATION_BIG_LEN := 46.0      # a cluster of 5 or more station hexes
+const STATION_BIG_LEN := A4P.LARGE_STATION_SIZE  # a cluster of 5 or more station hexes
 const STATION_BIG_HEXES := 5
 const HULK_SCALE := 11.0           # a board wreck: the A4 hull scaled to this length
 const PLANET_R_DEFAULT := 3.0      # the map's planet radius in hexes when it names none
@@ -765,7 +765,9 @@ func _terrain() -> void:
 		var clearance := HS
 		for p in centres:
 			clearance = maxf(clearance, cen.distance_to(p) + HS)
-		_station(cen, rng, STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size(), clearance)
+		var size := STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size()
+		var teaching: bool = cl.size() == 3 and VW.get("map", {}).get("stationR", 0) == 1
+		_station(cen, rng, size, teaching, clearance)
 
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
@@ -811,13 +813,18 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	BV.fit_hulk(mi, c)
 
 
-func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0, clearance := 0.0) -> void:
-	# A4's painted station (O1_37 in its own paint); the flat grey clay below stays as the fallback
+func _station(c: Vector3, rng: RandomNumberGenerator, size := STATION_BIG_LEN, teaching := false, clearance := 0.0) -> void:
+	# The painted station for this cluster size, with the original hull below as a fallback.
 	var a4 := A4P.station(size, clearance)
 	if a4 != null:
 		var bearing := rng.randf() * 6.0
 		var attitude := Vector3(0, bearing, 0) if a4.has_meta("station_T2") else Vector3(0.06, bearing, 0.04)
-		a4.transform = Transform3D(Basis.from_euler(attitude), c + Vector3(0, 3, 0))
+		var offset := Vector3(0, 3, 0)
+		if teaching:
+			# Bank O1_37 into the triangular cluster at full scale and lift its low edge above the grid.
+			attitude = Vector3(deg_to_rad(-63.0), deg_to_rad(65.0), 0.0)
+			offset = Vector3(2.0, 13.0, 1.5)
+		a4.transform = Transform3D(Basis.from_euler(attitude), c + offset)
 		props.add_child(a4)
 		return
 	var p := "res://gen/hulls/O1_37.res"

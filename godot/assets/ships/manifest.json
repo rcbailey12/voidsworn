@@ -310,28 +310,28 @@
      "sha256": "399bf671b8490f64bcd5dce36c96d0be240daaf4492ce007f5025298a67c6475"
     },
     "C13s_23_base.jpg": {
-     "bytes": 1821496,
-     "sha256": "2c1f7c806fbc7a78b8ca4ed6895ea4ffd5924264ed0955650240b5f59106c548"
+     "bytes": 1922343,
+     "sha256": "a6eeab35889eb1716e110ce7400da1afe25471a5e9fa67997ef43ecfb24161b0"
     },
     "C13s_23_glow_emission.jpg": {
      "bytes": 196598,
      "sha256": "6844a7643fa84c3bb0192ecfea564284e78f1fa19fd73bd97cbe3383a4c3253b"
     },
     "C13s_23_normal.jpg": {
-     "bytes": 483196,
-     "sha256": "93ce327d92e72818783aa145ef0e3a8e02a483eddf68464b4affb4e191684bd6"
+     "bytes": 491624,
+     "sha256": "c2bf90b5ce2c569a7c57c1167bb4001f33a833fc08b730f70b19eec4f577a7f0"
     },
     "C13s_23_orm.jpg": {
-     "bytes": 2502012,
-     "sha256": "ccd3c987d6464741998208aa21f130315e66f5801bff7282c9d339ce095cb90d"
+     "bytes": 2504169,
+     "sha256": "f30bfa831b90f59911554ca17cd3b2bd1ba51b47d2b93a4cec6e9a90b6c0f098"
     },
     "C13s_23_parts_base.jpg": {
-     "bytes": 1387351,
-     "sha256": "1ee657ef7bee0fa7606ff4e4b702d64fd173d2c88e357808d46729c7f63195ae"
+     "bytes": 1563027,
+     "sha256": "2ce5670287928621cbf63ebce065d914392b947c92540cd010169dce8e1511a3"
     },
     "C13s_23_parts_orm.jpg": {
-     "bytes": 1580846,
-     "sha256": "b5c6887b0d0940aefbae839975e57c3ff7547571690c730586b8bd7002be3d63"
+     "bytes": 1668051,
+     "sha256": "af7d42569bf36e4feaba1d679334814519b39b50eeb6894ee43df457f32a059f"
     }
    },
    "pc_path": "godot/assets/ships/C13s_23/"
@@ -359,28 +359,28 @@
      "sha256": "78428f640beb6a43a49d019c9cf9705a127b9b71e25525d0fc7456001bebf4fe"
     },
     "C14s_23_base.jpg": {
-     "bytes": 1715851,
-     "sha256": "59899f0e206532f7466836aded405b47246cdcbfbd53199a9e1f4e8807db6e1b"
+     "bytes": 1786873,
+     "sha256": "6eca49c2f6423e9f649413bde40856f71b1110819f0a6eb339acef90a3e86fff"
     },
     "C14s_23_glow_emission.jpg": {
      "bytes": 202199,
      "sha256": "ea5d3e6ac33b8a8292070dfca63baa504d576a2a589dc0bfc99fd0b47c829d02"
     },
     "C14s_23_normal.jpg": {
-     "bytes": 476974,
-     "sha256": "f5ff4b29cf4c57b5a297c3c131ef6a00da396611cb50313a9b9a48ed30950bcd"
+     "bytes": 479673,
+     "sha256": "3fb2bcb79eeb893e852b27b6c0c4236fe82f7c31450fdd4319622f0940fd3f79"
     },
     "C14s_23_orm.jpg": {
-     "bytes": 2529443,
-     "sha256": "1d3232f77c279920b3080cca3bfcfc17813a4a0f8f857f29c8e1bdeb7387d459"
+     "bytes": 2530757,
+     "sha256": "d6829ba0654ee09a194e5ac06ce33953668a6b91dfb0b96ed3323cde12366de1"
     },
     "C14s_23_parts_base.jpg": {
-     "bytes": 1281587,
-     "sha256": "00a607a0539a95a34434ce4122852fb9ed0c60921e772d848929bb91ce685f4e"
+     "bytes": 1463632,
+     "sha256": "28882152d550283826924966591d57b3e0c0ccd515f252db97c5392bcbde88a8"
     },
     "C14s_23_parts_orm.jpg": {
-     "bytes": 1532579,
-     "sha256": "983c76bc790b905d90a298e325d0ed7b03406048cec4290ffed5819aeee93f92"
+     "bytes": 1584039,
+     "sha256": "7b0d23b6ac8c70ef9a752c0ba0398966ffaef2826344316dbd5e25d68bf511cd"
     }
    },
    "pc_path": "godot/assets/ships/C14s_23/"
@@ -408,28 +408,28 @@
      "sha256": "d7dcf88eec17975ca72b8603aae1afa3d3cc4c798462b41025daffd579c13e7c"
     },
     "C15s_23_base.jpg": {
-     "bytes": 1441258,
-     "sha256": "8af96f3454b590845e243350f23a5b44632a27eea78adeaa551735b0b9049655"
+     "bytes": 1520037,
+     "sha256": "1577729716d7ba05ee3179801677cdb7bad4d5044587abc7fd0cfed9eb1b7846"
     },
     "C15s_23_glow_emission.jpg": {
      "bytes": 252265,
      "sha256": "381b933e8704279c0ff809dc9ec46d6ad5b558c832099483cf5fa06af7d6774b"
     },
     "C15s_23_normal.jpg": {
-     "bytes": 645599,
-     "sha256": "928345715b9c10bb3a3762703a87db2a707a2efd6b8de67900b1cf75db86496a"
+     "bytes": 651469,
+     "sha256": "dd82f327c9d9c09dd92b59c826f282ae67b66f449bfa8a725946351795129385"
     },
     "C15s_23_orm.jpg": {
-     "bytes": 1446335,
-     "sha256": "bace406332857f9e520bc23bdc9524678acfe19ac73f3e4265dd48df72355806"
+     "bytes": 1563989,
+     "sha256": "92062f058700be3882b1d52614ca4a83b5ea98edadb8128daa485d95c60b791d"
     },
     "C15s_23_parts_base.jpg": {
-     "bytes": 1529321,
-     "sha256": "352f9f9da27b4f4903cf301b272c1debfe3c32a016a93493b189224763c419d9"
+     "bytes": 1741778,
+     "sha256": "bf59326036a7fa73b6d305dd30ed77b51ee178a42247b53fd231059a38f4c373"
     },
     "C15s_23_parts_orm.jpg": {
-     "bytes": 1849873,
-     "sha256": "32db2eff6f7e396e10fab89bd5ce46957f15ba00c69c33f1a56fc49e9ca24fef"
+     "bytes": 1852117,
+     "sha256": "3e1803a7b3014466cd664425204eca6515658c11da276e6b0bbfe21cdf7099ac"
     }
    },
    "pc_path": "godot/assets/ships/C15s_23/"
@@ -458,28 +458,28 @@
      "sha256": "5252de87e071e338d449ebeed401362a6babcfc032f35ff63253862cef0f451d"
     },
     "C16s_23_base.jpg": {
-     "bytes": 1557935,
-     "sha256": "4fdab16824d8bbd1e69aa84111f1c44d7c4cfe29b67558893f2ca0ba7882ff4e"
+     "bytes": 1578505,
+     "sha256": "2d276fad9b71c27c9b5ea226f3b7c177827116d3e7fb5462bcbf3b0dd0a7a31f"
     },
     "C16s_23_glow_emission.jpg": {
      "bytes": 240906,
      "sha256": "52543ef7cc448b03bad7b10815d0861668eeec40091ec4a2f39640efce72ec90"
     },
     "C16s_23_normal.jpg": {
-     "bytes": 462108,
-     "sha256": "cd95e765f25b86cd8ae6b96c7fd851eb9c3dc07808482f8e383dfc1632aa0be4"
+     "bytes": 466596,
+     "sha256": "db2135983986fdc3cbdd1c9429ffc0cb17de8466d8ec06ba4303acd728dbb52e"
     },
     "C16s_23_orm.jpg": {
-     "bytes": 2699838,
-     "sha256": "da3e57e809c684f26fd73176154ba7e39dfd3f888c23cc7e037441fdbb4d83fd"
+     "bytes": 2768787,
+     "sha256": "f024c9709177a67a1af99114873e91d0b2734375bd3cfbfd6bd5d73fb06bce57"
     },
     "C16s_23_parts_base.jpg": {
-     "bytes": 1323710,
-     "sha256": "9d3d2f5b9c5823c769c555381d6061007704f8dd6e8b7f49a447e89cb7c9dc9a"
+     "bytes": 1503327,
+     "sha256": "b1b3bd80f6ad6e0ecc548cdcd201a0ee2075b1b9d9fe5c93361bb2c12587d4b7"
     },
     "C16s_23_parts_orm.jpg": {
-     "bytes": 1694811,
-     "sha256": "bd2ef0fd72dec498c75f6cb4f5d94e3da2c860cda1cb6b48b467a2824768ddda"
+     "bytes": 1707638,
+     "sha256": "8f27a2804178e2cb8bdf03bc3f2e8a461f328a541cebf5be6bd6ca078aee3169"
     }
    },
    "pc_path": "godot/assets/ships/C16s_23/"
@@ -857,8 +857,8 @@
      "sha256": "4fb79a975f03c4d842af0e94a2a26fcbd3001e80dea0de92ef37d08cd57d6bd1"
     },
     "H7_23_base.jpg": {
-     "bytes": 1296651,
-     "sha256": "b33b08b6651ed283c17af7be497d6cdb116f8115d4c2e9fd2fea0d56507eba7f"
+     "bytes": 1302156,
+     "sha256": "93affa00e23fe433d25b8ccd39284a45caadececc353698b017bf8b327acae39"
     },
     "H7_23_damage.glb": {
      "bytes": 15547220,
@@ -869,12 +869,12 @@
      "sha256": "6ae3d5390e69895a3e0955260b6b47ccf2b9f3b96af300d0a0045b0f2f11f9c2"
     },
     "H7_23_normal.jpg": {
-     "bytes": 2736549,
-     "sha256": "276c2d21bc8d45da683d844c4ba5cb02c385885deb743702b535df3abe2d71a5"
+     "bytes": 2474890,
+     "sha256": "9e04d0591cc3e0f27dd3ba84a164584bae2ea3b4354f51b03d98a8175905c0a9"
     },
     "H7_23_orm.jpg": {
-     "bytes": 1867158,
-     "sha256": "e76afbb4c791ddc4b9904b0dc64f59ad455df877e2a0aa16e39c72c465ff2928"
+     "bytes": 1810532,
+     "sha256": "d6a9fd20350dd5400db519a6c46639b61de0f3299eccb8b70b20906500008e9e"
     },
     "H7_23_wreck.glb": {
      "bytes": 2722088,
@@ -905,8 +905,8 @@
      "sha256": "6f5b376d805845e3d3cc1612f032d2f72d26ab923950535c5c8f3df754826109"
     },
     "H8_23_base.jpg": {
-     "bytes": 1135100,
-     "sha256": "54f5a44aadd4541931b70e4c0ec0760b6a4bca39e154b7d56c489b912a220afa"
+     "bytes": 1143530,
+     "sha256": "4af77debf843ed5bfef93f8bb5d1a11201116c46de79bd7ca9f3baed692c5936"
     },
     "H8_23_damage.glb": {
      "bytes": 18797680,
@@ -917,12 +917,12 @@
      "sha256": "e9bf36e3b6dac4df0499044d6c2aa571981f16ca532bb9a4499d4c734d834fee"
     },
     "H8_23_normal.jpg": {
-     "bytes": 2678703,
-     "sha256": "4d053a4f9f53a2a17c08ef2a045e307a05ef3d117999ff66ef15c22a705679df"
+     "bytes": 2443259,
+     "sha256": "7996ff68ec575bf63c9e955b551dfb6fc1013e410255ab6885bf1c3d86922260"
     },
     "H8_23_orm.jpg": {
-     "bytes": 1748056,
-     "sha256": "73b2fc020e1051f3eefde3ae2645af2171c6bbf49c44f5c21d797387ae16240c"
+     "bytes": 1621731,
+     "sha256": "6cef9b2d2d72ab60ba211078b4ded0117e8d9391af61f1ad752c2ff84d146e3c"
     },
     "H8_23_wreck.glb": {
      "bytes": 2293296,
@@ -953,8 +953,8 @@
      "sha256": "a6c4ad0fb5f7eaa29c46f7108ec869c878f27167e7bc587a9625c3d280f89d07"
     },
     "H9_23_base.jpg": {
-     "bytes": 1307296,
-     "sha256": "1bcc58dd5398f910f3cc012fea3572651785ed588657daffd0c23a70d72d754f"
+     "bytes": 1307297,
+     "sha256": "61d438e6d5252f4c1596f25a10bb63c0f824ed13aacdd28b38a00b6e92aa7b1a"
     },
     "H9_23_damage.glb": {
      "bytes": 27284328,
@@ -965,12 +965,12 @@
      "sha256": "7a78018684168c91c4d7555238dd5fb736c084e8783902471c60de3e6ed5851b"
     },
     "H9_23_normal.jpg": {
-     "bytes": 2759907,
-     "sha256": "41be4b34d5a4518bb19ef3110018629f53f888d6af4558182be794081f572b85"
+     "bytes": 2495952,
+     "sha256": "81e3cddf983a3ca5def1e8de80c3956322b9c6a13847f59bfe8dfe1d90234ab7"
     },
     "H9_23_orm.jpg": {
-     "bytes": 1954057,
-     "sha256": "0e7fa25df3f7a0a44416a2aa8b465820a13e52d35b3bb3ca9aff54db104ac7df"
+     "bytes": 1821719,
+     "sha256": "6a178fd5ad00a7f427dd4fc5af78c7935ca5bd26515775a8a659129b43fd7903"
     },
     "H9_23_wreck.glb": {
      "bytes": 3371700,
@@ -1287,8 +1287,8 @@
      "sha256": "089b5fcd89fd9f28e5cdab3e04d932e32398c78860ee4ed3fc788425c48f0196"
     },
     "O2_37_base.jpg": {
-     "bytes": 1241103,
-     "sha256": "9b9de2ed87622cabfa704fc7628c384bc36771b6019689cb3554bea48d47b84a"
+     "bytes": 1240724,
+     "sha256": "f615d95b0ab3cca4e6a157f75875896f7e8f8fe6979ed57bfcbbfe6b70b13b11"
     },
     "O2_37_damage.glb": {
      "bytes": 22590176,
@@ -1299,12 +1299,12 @@
      "sha256": "4e72452aa6d050d26110f758b6a40d55864b8543bea74841f96a8548432da007"
     },
     "O2_37_normal.jpg": {
-     "bytes": 2913515,
-     "sha256": "ebd01850e15c743ffbf417c5af77d524aa0846f9ae2ed4ab32e3ebf72a7450b7"
+     "bytes": 2638391,
+     "sha256": "3ebbfea89847ddc5422cd04fdbcfc7d735b498196e430b1ed4ea37291bc7aa11"
     },
     "O2_37_orm.jpg": {
-     "bytes": 2163173,
-     "sha256": "b23dd16034eb3cab80b77ce2ca80aeef19f3916666117aa680c7bd93e508bbf2"
+     "bytes": 1745701,
+     "sha256": "8ae3a4adefd7488c780d288d13ee8f3d194ca8004657ad6592ec11b2d91105f3"
     },
     "O2_37_wreck.glb": {
      "bytes": 2990800,
@@ -1333,8 +1333,8 @@
      "sha256": "db4b343ec4c58e55fbcaa28f75a999c1e08c90fc75adc83da8a8dc1198b4d48f"
     },
     "O3_11_base.jpg": {
-     "bytes": 948323,
-     "sha256": "1f7374c77b07f4005e40923badf88b96fded57fc126688004c3bd4fe871ab6a1"
+     "bytes": 977518,
+     "sha256": "b8d63e60d729541f76ae53f0d34a1ddfd50886f24007ee3d38cb073583ff54f4"
     },
     "O3_11_damage.glb": {
      "bytes": 7639660,
@@ -1345,12 +1345,12 @@
      "sha256": "5706a337f34c687f9c6632a939907c69fd7e1429dcc2a47500c7767ece925754"
     },
     "O3_11_normal.jpg": {
-     "bytes": 2985623,
-     "sha256": "c011292ee15dc34593618500035d0dcde9d637632deec961be815c3bdf59d222"
+     "bytes": 2708288,
+     "sha256": "0d3448ebe901424de2f162e7327d833de6a2d9440b0ac48211894a162758189d"
     },
     "O3_11_orm.jpg": {
-     "bytes": 1983781,
-     "sha256": "3e1ec900e791841fa1920e33fb52ae21e9d98b4280aedcddd3384c9320ddfa30"
+     "bytes": 1671120,
+     "sha256": "68f70aed444d245f12d5958541c7117c9ea76a8f952dbe09a5bc011762f51b16"
     },
     "O3_11_wreck.glb": {
      "bytes": 1466820,
@@ -1380,8 +1380,8 @@
      "sha256": "fe55e3c4e2be5d027b3e3c7ecdba538c605fe3cced538bed451227fa78644fb8"
     },
     "S1_51_base.jpg": {
-     "bytes": 313576,
-     "sha256": "00160c8e0b4e9d28cf209eafb2332f2c2a118d251050e5f82359a051933f10ce"
+     "bytes": 311386,
+     "sha256": "6c70ec30e6981c7fe1a65f95df4b2ca06f7b48360b3f35efd15356f84ca805e4"
     },
     "S1_51_damage.glb": {
      "bytes": 129152,
@@ -1392,12 +1392,12 @@
      "sha256": "12926a72ae89a63b572479450355b239cbec813300d7443d76a0857246f31676"
     },
     "S1_51_normal.jpg": {
-     "bytes": 591365,
-     "sha256": "67cc39c7de089e83459269a6cd8abefb2fd3c9c00cc8e4e1142e74bd3c6f9186"
+     "bytes": 519835,
+     "sha256": "db8b7f6f1b34f1fb99ba8f1d9c2d62eabd804293df000bd1e6a30e5fc4b9dbf6"
     },
     "S1_51_orm.jpg": {
-     "bytes": 624819,
-     "sha256": "9b24e3263496245335dd4ea15dda7e648b88f00c806b1cea9a4b1f7dad5fc07f"
+     "bytes": 553299,
+     "sha256": "e43724b0c9c7c31b850d198371040b1c8721694ad2c256e1aaae70f5e4252c4f"
     },
     "S1_51_wreck.glb": {
      "bytes": 1925492,
@@ -1426,8 +1426,8 @@
      "sha256": "2ac718c792689390ab34ffda1d54b3283369a7d5da00a56ca3d0019c2efb9d5d"
     },
     "S2_23_base.jpg": {
-     "bytes": 285790,
-     "sha256": "ba40eb4dc3b423629031b7072ef7321a7ca14703fc452144734d0e0986681be3"
+     "bytes": 295244,
+     "sha256": "196929589384ab1131238558fd40e980845123289cc9cb93fbce4a421661f16a"
     },
     "S2_23_damage.glb": {
      "bytes": 377796,
@@ -1438,12 +1438,12 @@
      "sha256": "4636c10a9e8c71f08a502c6a55813d133e21af8d465432b75094f8502ba87d76"
     },
     "S2_23_normal.jpg": {
-     "bytes": 603348,
-     "sha256": "7dddcb766e7b3b2ecf01322ae95ad34c51cb027ce8cf97a3efb346e14b3d3574"
+     "bytes": 532835,
+     "sha256": "2143143aef80f6768d5be4c10a016a7ee1a1e046e2b4ada41b6a01e11243c18c"
     },
     "S2_23_orm.jpg": {
-     "bytes": 602345,
-     "sha256": "e4fbe1aa91db5fc03c0364cd25f5c6aa3775ecb194d3a2665ffea732fb512509"
+     "bytes": 563417,
+     "sha256": "97ec838f3488b73a77e9bec3bf6cc324fe826aa8248a57cfe805b0b3ec805359"
     },
     "S2_23_wreck.glb": {
      "bytes": 2054708,
