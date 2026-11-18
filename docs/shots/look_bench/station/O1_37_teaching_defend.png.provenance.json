@@ -1,0 +1,36 @@
+{
+  "source_commit": "b96565128c8bcc1a29d0d837cd6edf4f207a692f",
+  "source_dirty": true,
+  "source_diff_sha256": "528a8a6094066e2697ecc90515a129b73f7d14bdfadb8c29126332f4e37941b8",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "O1_37_teaching_defend.png",
+  "date": "2026-11-18T05:48:09Z",
+  "sources": [
+    {
+      "source_commit": "b96565128c8bcc1a29d0d837cd6edf4f207a692f",
+      "source_dirty": true,
+      "source_diff_sha256": "528a8a6094066e2697ecc90515a129b73f7d14bdfadb8c29126332f4e37941b8",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "325496ba8e7f68a68105d7fbe578c5f448c716277c05889141a0f54e598d53d7"
+  ],
+  "stamp_template_sha256": "325496ba8e7f68a68105d7fbe578c5f448c716277c05889141a0f54e598d53d7",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMUABCyv+ZaKCnxIDHf8697kDAPhvBRsAgOgCQMfTBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARuMB+h8BB2CM+58AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "aa01bfa6019006f34736423fbd51dfc728d0178bb88175f20da0c7368f63cf65"
+}
