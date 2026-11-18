@@ -655,6 +655,65 @@ async function testKeptLookalikes() {
     pass(label + ': checkout and all bytes kept aside even beside a Python cache');
   }
 }
+async function testCampaignParityCleanup() {
+  const home = path.join(root, 'campaign-parity'), dir = path.join(home, 'godot/campaign/test');
+  const bat = path.join(home, 'tools/pc/parity_campaign.bat');
+  write(bat, read(path.join(here, 'parity_campaign.bat')));
+  write(path.join(home, 'godot/project.godot'), '');
+  write(path.join(home, 'godot/campaign/data/campaign_tables.json'), '{"sha256":"fixture"}');
+  write(path.join(dir, 'node/export_campaign.js'), 'require("fs").writeFileSync(process.argv[2], \'{"sha256":"fixture"}\');');
+  write(path.join(dir, 'node/golden_campaign.js'), 'require("fs").writeFileSync(process.argv[3], process.argv[2]);');
+  write(path.join(dir, 'node/compare_campaign.js'), `
+    const fs = require('fs');
+    const same = fs.readFileSync(process.argv[2]).equals(fs.readFileSync(process.argv[3]));
+    console.log(same ? 'match' : 'fixture mismatch');
+    process.exitCode = same ? 0 : 1;
+  `);
+  write(path.join(dir, 'node/cross_twin_handoff_test.js'), 'process.exitCode = 0;');
+  write(path.join(home, 'compile.ps1'), `
+$ErrorActionPreference = 'Stop'
+Add-Type -TypeDefinition @'
+using System;
+using System.IO;
+public static class CampaignFixture {
+  public static int Main(string[] args) {
+    int separator = Array.IndexOf(args, "--");
+    if (separator < 0 || args[0] != "--headless") return 1;
+    string folder = args[separator + 1];
+    bool fail = Environment.GetEnvironmentVariable("PC_TEST_CAMPAIGN_MISMATCH") == "1";
+    for (int i = separator + 2; i < args.Length; i++) {
+      string seed = args[i];
+      File.WriteAllText(Path.Combine(folder, "c" + seed + ".jsonl"), fail && seed == "1" ? "different" : seed);
+    }
+    return 0;
+  }
+}
+'@ -OutputAssembly (Join-Path $PSScriptRoot 'godot.exe') -OutputType ConsoleApplication
+  `);
+  const built = run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(home, 'compile.ps1')]);
+  assert.equal(built.code, 0, built.text);
+  write(path.join(home, 'godot_path.txt'), path.join(home, 'godot.exe') + '\r\n');
+  const launch = mismatch => runEntryPoint('""' + bat + '" nopause"', {
+    PATH: path.dirname(process.execPath) + path.delimiter + process.env.PATH,
+    PC_TEST_CAMPAIGN_MISMATCH: mismatch
+  });
+  const failed = await launch('1');
+  assert.equal(failed.code, 1, failed.text);
+  assert(failed.text.includes('fixture mismatch'), failed.text);
+  assert.equal(fs.readdirSync(path.join(dir, 'golden')).length, 30);
+  assert.equal(fs.readdirSync(path.join(dir, 'out')).length, 32);
+  assert.equal(read(path.join(dir, 'golden/c1.jsonl')), '1');
+  assert.equal(read(path.join(dir, 'out/c1.jsonl')), 'different');
+  assert(read(path.join(dir, 'parity_campaign_log.txt')).includes('fixture mismatch'));
+
+  const succeeded = await launch('0');
+  assert.equal(succeeded.code, 0, succeeded.text);
+  assert(succeeded.text.includes('matches the game on all 30 seeded runs'), succeeded.text);
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'golden')), []);
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'out')), []);
+  assert(read(path.join(dir, 'parity_campaign_log.txt')).includes('PASS'));
+  pass('campaign parity batch keeps mismatch records and clears all generated output after a pass');
+}
 async function testLateCheckoutEdits() {
   const source = fixtureSource('reuse-late-edit');
   const lateEdit = 'tracked edit written during startup\r\n';
@@ -1096,7 +1155,7 @@ async function testRunnerStartChecks() {
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools]);
   await parallel([
     testAccounting, testAccountingFaults, testOpenAIModels,
-    testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testLateCheckoutEdits,
+    testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
     testClaimRules, testClaimFailures, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,

@@ -203,6 +203,11 @@ function Reuse-Caches($repo) {
       $line.Substring(3)
       continue
     }
+    # Ignored parity outputs and UIDs are rebuildable files. Git can also list a nested repo with a trailing slash.
+    if ($line -match '^!! ("?)(godot/(?:(?:campaign|rules)/test/(?:golden|out)/[^"\\:\r\n]+|campaign/test/parity_campaign_log\.txt|rules/test/parity_log\.txt|[^"\\:\r\n]+\.uid))(?<!/)\1$') {
+      $Matches[2]
+      continue
+    }
     # Git can quote paths with spaces. Leave paths with escapes or unknown status alone.
     if ($line -match '^!! ("?)(godot/assets/ships/[^"\\:\r\n]+)\1$') {
       $path = $Matches[2]
