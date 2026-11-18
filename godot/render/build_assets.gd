@@ -440,6 +440,8 @@ func _glb_to_scene(path: String, out: String, name: String) -> bool:
 
 static func append_ship_glb(doc: GLTFDocument, path: String, state: GLTFState) -> Error:
 	state.base_path = path.get_base_dir()
+	# Set the key first: reading a key that was never set prints an engine error on every good import (Artoo, PR 1103).
+	state.set_additional_data(&"ship_image_error", null)
 	var source_images := ShipSourceImages.new()
 	GLTFDocument.register_gltf_document_extension(source_images)
 	var result := doc.append_from_file(path, state)
