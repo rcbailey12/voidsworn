@@ -11,6 +11,10 @@
 //   node contrib/deepseek/map_pace_1117/sim_map_pace.js --sims 200 --out contrib/deepseek/map_pace_1117/raw.csv
 //   node contrib/deepseek/map_pace_1117/sim_map_pace.js --only today_standard --sims 5
 //
+// The per-setup raw_<setup>.json files and summary.md are written beside --out
+// (default: this script's folder). --merge reads them from that same folder, so a
+// smoke run pointed at a temp folder never touches the saved dataset.
+//
 // Metrics per capital-ship activation: whether any weapon fired. A flak interception
 // is not a shot (the rules do not spend the gun), and a launch or other ability is not
 // a shot. First contact is the number of completed capital activations before the
@@ -312,8 +316,9 @@ function writeFinal(rows, outPath) {
   const opt = args();
   if (opt.merge) {
     const rows = [];
+    const rawDir = path.dirname(opt.out);
     for (const setup of SETUPS) {
-      const f = path.join(__dirname, 'raw_' + setup.id + '.json');
+      const f = path.join(rawDir, 'raw_' + setup.id + '.json');
       if (!fs.existsSync(f)) throw new Error('missing ' + f + ', run that setup first');
       rows.push(...JSON.parse(fs.readFileSync(f, 'utf8')));
     }
@@ -322,6 +327,8 @@ function writeFinal(rows, outPath) {
   }
   const setups = opt.setups ? SETUPS.filter((s) => opt.setups.includes(s.id)) : opt.only ? SETUPS.filter((s) => s.id === opt.only) : SETUPS;
   if (!setups.length) throw new Error('no setup named ' + (opt.only || opt.setups));
+  const rawDir = path.dirname(opt.out);
+  fs.mkdirSync(rawDir, { recursive: true });
   const all = [];
   for (const setup of setups) {
     const H = loadHarness(setup);
@@ -339,7 +346,7 @@ function writeFinal(rows, outPath) {
       all.push(row);
       if ((i + 1) % 25 === 0 || i + 1 === opt.sims) process.stdout.write('  ' + setup.id + ': ' + (i + 1) + '/' + opt.sims + '\n');
     }
-    fs.writeFileSync(path.join(__dirname, 'raw_' + setup.id + '.json'), JSON.stringify(rows, null, 0), 'utf8');
+    fs.writeFileSync(path.join(rawDir, 'raw_' + setup.id + '.json'), JSON.stringify(rows, null, 0), 'utf8');
     const s = summarise(rows);
     process.stdout.write('SUMMARY ' + s.id + ': contact median ' + num(s.contact_median) + ' activations, rounds ' + num(s.rounds_mean) + ', no shot ' + pct(s.no_shot_share) + ', win ' + pct(s.win_rate) + ', timeouts ' + s.timeouts + '/' + s.sims + '\n');
   }

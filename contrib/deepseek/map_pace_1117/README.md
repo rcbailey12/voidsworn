@@ -143,7 +143,17 @@ node contrib/deepseek/map_pace_1117/sim_map_pace.js --merge
 
 # quick smoke run of one setup, to the temp folder
 node contrib/deepseek/map_pace_1117/sim_map_pace.js --only today_standard --sims 5 --out "$TEMP/pace_check.csv"
+
+# prove the smoke run left the saved dataset alone (also a standing check)
+node contrib/deepseek/map_pace_1117/smoke_safety_test.js
 ```
+
+The per-setup `raw_<setup>.json` files and `summary.md` go in the folder of the
+`--out` path, and `--merge` reads them from that same folder. With no `--out` that
+folder is this one, which is where the six saved files live. A smoke run pointed at
+the temp folder therefore writes its own raw file there and cannot replace the saved
+200-sim rows. Dedicated check: `smoke_safety_test.js` runs the smoke command above
+and compares the six saved files byte for byte before and after.
 
 If the 19-hex commit cannot be read, the defend 19-hex setup stops with the fetch
 command in the error. Run the other setups with `--setups` if that source is not
