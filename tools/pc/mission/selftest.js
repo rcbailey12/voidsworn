@@ -31,7 +31,7 @@ function makeCases(base) {
   const outageCases = sourceNames.map(name=>'github-'+name);
   const values = ['overview','task','decision','failure','offline','unknown','no-picture','missing-picture','queue','crew',
     'blocked','quiet','checked-push','ended','leftover','claim','claim-old','github-unread','legacy','no-build','old-build',
-    'starting','long-title','privacy',...outageCases];
+    'starting','long-title','privacy','legacy-listing','pr-only','pc-partial',...outageCases];
   const cases = {};
   for (const name of values) {
     const root = path.join(base,'display-'+name);
@@ -112,21 +112,30 @@ function makeCases(base) {
       put(folder+'status.json',JSON.stringify({...status,folder:'C:\\Private\\FOLDER-SENTINEL',marker:'MARKER-SENTINEL'}));
       put(folder+'log.txt','RAW-LOG-SENTINEL');
     }
-    const github = p.githubData(issues,raw.pulls,raw.comments,p.emptyGithub(),now);
+    const fixturePull = (number,ref) => ({...raw.pulls[1],number,updated_at:iso(now-4*minute),head:{...raw.pulls[1].head,ref}});
+    const github = p.githubData(issues,[...raw.pulls,fixturePull(1008,'codex/issue-970'),fixturePull(1005,'work/issue-1005-openai')],raw.comments,p.emptyGithub(),now);
     for (const source of sourceNames) {
       const incomplete = name==='github-'+source;
       Object.assign(github.sources[source],{
         complete:!incomplete,
         lastSuccessfulReadAt:iso(now-minute*(incomplete ? 65 : 3)),
         lastAttemptAt:iso(now-3*minute),nextAttemptAt:iso(now+7*minute),
-        reason:incomplete ? 'source not fully checked' : null
+        reason:incomplete ? 'GitHub returned HTTP '+(501+sourceNames.indexOf(source)) : null
       });
     }
     github.lastReadAt = iso(now-3*minute);
     github.budget = {requestsPastHour:12,ceilingPerHour:30};
     const reader = new p.Reader();
     reader.pictureFiles = new Map();
+    if (name==='pc-partial') {
+      p.snapshot(root,now-3*minute,reader,github);
+      put('codex_chain_missing_script.txt','waiting for codex_chain_fixture.txt');
+    }
     let data = p.snapshot(root,now,reader,name==='github-unread' ? p.emptyGithub() : github);
+    if (name==='legacy-listing') {
+      for (const lane of data.lanes) { delete lane.queue; lane.next = []; }
+      data.lanes[0].next = [{issue:922}];
+    }
     if (name==='legacy') {
       data.schemaVersion = 1;
       delete data.github.sources;
@@ -304,6 +313,42 @@ async function test(){
     const target=path.join(base,'build/tools/pc/mission');fs.mkdirSync(target,{recursive:true});for(const name of p.RUNTIME_FILES){const src=path.resolve(__dirname,name),dest=path.resolve(target,name);write(dest,fs.existsSync(src)?fs.readFileSync(src):'{}');}
     const initial=p.buildHash(target);for(const name of p.RUNTIME_FILES){const file=path.resolve(target,name),bytes=fs.readFileSync(file);fs.appendFileSync(file,' ');assert.notEqual(p.buildHash(target),initial,name);assert(p.buildInfo({id:initial},target).stale,name);fs.writeFileSync(file,bytes);}assert.equal(p.buildHash(target),initial);assert.equal(p.buildInfo().stale,false);
   });
+  check('every page icon is a served file on the shared grid',()=>{
+    const page = path.resolve(__dirname,'../../../docs/mission');
+    const html = fs.readFileSync(path.join(page,'index.html'),'utf8');
+    const icons = [...html.matchAll(/['"](\/(?:crew|icons)\/[a-z]+\.svg)['"]/g)].map(match=>match[1]);
+    assert.deepEqual([...new Set(icons)].sort(),Object.keys(p.ASSETS).filter(route=>/^\/(?:crew|icons)\//.test(route)).sort());
+    assert.equal(icons.length,12);
+    for (const route of icons) {
+      assert.equal(p.ASSETS[route],'image/svg+xml',route);
+      const svg = fs.readFileSync(path.join(page,route.slice(1)),'utf8');
+      assert.match(svg,/viewBox="0 0 24 24".*stroke-width="1\.5"/);
+    }
+  });
+  check('deploy backs up both folders, targets the installed Node script and checks the whole HTTP build before keeping it',()=>{
+    const deploy = fs.readFileSync(path.join(__dirname,'deploy.ps1'),'utf8');
+    assert.match(deploy,/\[string\]\$MainCheckout/);
+    assert.match(deploy,/\$pair = @\('tools\\pc\\mission', 'docs\\mission'\)/);
+    assert.match(deploy,/Copy-MissionPair \$checkout \$candidate \$true[\s\S]+Copy-MissionPair \$installed[^\n]+[\s\S]+\$stopAttempted = \$true[\s\S]+Stop-InstalledPublisher[\s\S]+::Move\(\$candidate, \$installed\)/);
+    assert.match(deploy,/Win32_Process -Filter "Name = 'node\.exe'"[\s\S]+\$words\[1\][\s\S]+GetFullPath\(\$scriptArg\) -eq \$installedPublisher[\s\S]+\$same[\s\S]+Stop-Process -Id \$process\.ProcessId/);
+    assert.match(deploy,/rev-parse HEAD[\s\S]+build\.json[\s\S]+id:p\.buildHash\(\), assets:p\.ASSETS/);
+    assert.match(deploy,/-WindowStyle Hidden/);
+    assert.match(deploy,/GetAsync\("http:\/\/127\.0\.0\.1:\$Port\$Route"[\s\S]+Get-LocalResponse '\/status\.json'/);
+    assert.match(deploy,/AddSeconds\(60\)[\s\S]+Wait-Status \$process \$deadline[\s\S]+sourceRevision -ne \$revision[\s\S]+Confirm-ServedFile '\/'[\s\S]+foreach \(\$asset in \$build\.assets\.PSObject\.Properties\)[\s\S]+Confirm-ServedFile \$asset\.Name/);
+    assert.match(deploy,/catch \{\s+Write-Step \('Failed step:'?[^\n]*[\s\S]+::Move\(\$previous, \$installed\)/);
+    assert.match(deploy,/AppendAllText\(\$script:log,[\s\S]+Join-Path \$dated 'deploy\.log'/);
+    assert.doesNotMatch(deploy,/Get-NetTCPConnection|Remove-Item|::Delete\(|tailscale|funnel|\bpython\b|Write-Error \$_/i);
+  });
+  check('PC source failure gives a safe reason and preserves the last complete read',()=>{
+    const reader = new p.Reader();
+    const healthyRoot = path.join(base,'healthy-pc');
+    fs.mkdirSync(healthyRoot);
+    const first = p.snapshot(healthyRoot,NOW,reader);
+    const failed = p.snapshot(path.join(base,'private-folder'),NOW+60000,reader);
+    assert(first.pcSource.complete);
+    assert.deepEqual(failed.pcSource,{complete:false,lastSuccessfulReadAt:iso(NOW),lastAttemptAt:iso(NOW+60000),reason:'Folder listing: file or folder missing'});
+    assert(!JSON.stringify(failed).includes('private-folder'));
+  });
   check('output paths refuse job roots and junctions',()=>{
     for(const folder of ['board','board_c/issue-1','queue','build_b/tools','work217'])assert.throws(()=>p.options(['--root',base,'--out',path.join(base,folder)]));const link=path.join(base,'link');fs.symlinkSync(root,link,process.platform==='win32'?'junction':'dir');assert.throws(()=>p.writeSnapshot(link,real.snapshot));
   });
@@ -320,7 +365,7 @@ async function budgetTests(check){
   check('three pages spend three requests from the shared budget',()=>{assert.equal(pages,3);assert.equal(paged.data.budget.requestsPastHour,3);assert(paged.data.sources.questions.complete);});
   let calls=0;const initial=p.emptyGithub();initial.needsRyan=[{issue:855,title:'Existing question'}];
   const partial=new p.GithubReader(async url=>{calls++;return !url.includes('labels=ryan')?new Response('[]'):url.endsWith('page=1')?new Response('[]',{headers:{Link:'<https://api.github.com/fixed>; rel="next"'}}):new Response('',{status:500});},initial);await partial.update(NOW);
-  check('page two failure leaves questions not fully checked and retains last good questions',()=>{assert.equal(calls,2);assert(!partial.data.coverageComplete);assert.match(partial.data.sources.questions.reason,/not fully checked/);assert.equal(partial.data.needsRyan[0].issue,855);assert.equal(partial.data.sources.questions.lastSuccessfulReadAt,null);});
+  check('page two failure reports its HTTP status and retains last good questions',()=>{assert.equal(calls,2);assert(!partial.data.coverageComplete);assert.equal(partial.data.sources.questions.reason,'GitHub returned HTTP 500');assert.equal(partial.data.needsRyan[0].issue,855);assert.equal(partial.data.sources.questions.lastSuccessfulReadAt,null);});
   await partial.update(NOW+10*60000);
   check('retries spend the same budget; failure backs off 10 then 20 minutes',()=>{assert.equal(partial.budget.requests.length,calls);assert.equal(partial.data.sources.questions.nextAttemptAt,iso(NOW+30*60000));});
   await partial.update(NOW+30*60000);assert.equal(partial.data.sources.questions.nextAttemptAt,iso(NOW+70*60000));await partial.update(NOW+70*60000);
@@ -338,6 +383,18 @@ async function budgetTests(check){
   check('403 pauses until reset plus a minute and then recovers',()=>{assert.equal(limitedCalls,1);assert(!limited.budget.canSpend(NOW+659999));assert(limited.budget.canSpend(NOW+660000));});limited.fetcher=async()=>new Response('[]');await limited.update(NOW+660000);assert(limited.data.sources.questions.complete);
   const source=new p.GithubReader(async url=>new Response(url.includes('/pulls?')?'':'[]',{status:url.includes('/pulls?')?500:200}));for(let minute=0;minute<=3;minute++)await source.update(NOW+minute*60000);
   check('one failed source does not erase the other source reads',()=>{assert(source.data.sources.questions.complete);assert(source.data.sources.issues.complete);assert(!source.data.sources.pulls.complete);assert(source.data.sources.comments.complete);assert(source.data.coverageComplete);});
+  const safe = new p.GithubReader(async()=>new Response('[]'));
+  await safe.update(NOW);
+  safe.fetcher = async url=>{
+    if (!url.includes('labels=ryan')) return new Response('[]');
+    throw new Error('C:\\private-folder\\github_pat_SECRET and Bearer SECRET',{cause:{code:'ECONNRESET'}});
+  };
+  await safe.update(NOW+10*60000);
+  check('transport failure records the affected source and last success without raw error details',()=>{
+    assert.equal(safe.data.sources.questions.reason,'GitHub request: connection reset');
+    assert.equal(safe.data.sources.questions.lastSuccessfulReadAt,iso(NOW));
+    assert(!/private-folder|SECRET/.test(JSON.stringify(safe.data)));
+  });
   check('per-source ages use twice each source interval',()=>{
     const g=reader.data, snap=p.snapshot(path.join(os.tmpdir(),'mission-no-such-source'),NOW+22*60000,new p.Reader(),g);
     assert(snap.github.sources.questions.stale);assert(!snap.github.sources.comments.stale);

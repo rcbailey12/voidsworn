@@ -48,6 +48,10 @@ summary:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px 
 .inset { margin-inline: 16px; }
 .kicker { font: 700 12px/1.3 var(--title); letter-spacing: .14em; text-transform: uppercase; }
 .section-label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 13px 0 6px; color: var(--secondary); }
+.label-icon { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; }
+.tool-icon { width: 17px; height: 17px; flex: none; }
+.signal .tool-icon { width: 14px; height: 14px; }
+.evidence .tool-icon { width: 15px; height: 15px; }
 .meta { color: var(--dim); }
 .meta, .secondary { font-size: 14px; }
 .secondary, .on-panel .meta { color: var(--secondary); }
@@ -64,48 +68,23 @@ summary:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px 
 .calm { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; margin: 8px 16px 9px; }
 .calm strong { font: 700 14px var(--title); }
 .calm::before { content: ""; flex: 0 0 7px; height: 7px; border: 1px solid var(--tone, var(--dim)); transform: rotate(45deg); align-self: center; }
-.options { display: grid; gap: 8px; margin: 8px 0; }
-.picture {
-  position: relative; min-height: 100px; isolation: isolate; display: flex; flex-direction: column; justify-content: space-between;
-  padding: 8px 12px; background: repeating-linear-gradient(135deg, #151c15 0 6px, #101610 6px 12px);
-}
-.picture img { position: absolute; width: 100%; height: 100%; inset: 0; z-index: -2; object-fit: cover; }
-.picture.has-image::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #090c0960, transparent 38%, transparent 55%, #090c09a0); pointer-events: none; }
-.picture-caption { align-self: start; display: flex; flex-wrap: wrap; gap: 3px 8px; padding: 4px 6px; background: var(--ink); color: var(--secondary); }
-.picture-caption .older { color: var(--amber); }
-.picture-caption .stage { color: var(--green); }
-.picture-caption .stage.warn { color: var(--amber); }
-.picture-link { text-decoration: none; display: block; background: var(--ink); }
-.picture-link .meta { display: block; padding: 3px 7px 6px; }
-.picture-empty { align-self: center; margin: auto; text-align: center; color: var(--secondary); }
-.hero { margin-top: 9px; }
-.hero .picture { min-height: 224px; gap: 54px; }
-.hero .picture img { height: calc(100% - 50px); }
-.hero .picture.has-image::before { background: linear-gradient(180deg, #090c0950, transparent 29%, transparent 58%, var(--ink) 82%); }
+.hero { margin-top: 10px; padding: 8px 0 0; border-top: 1px solid var(--line); }
 .hero-open, .row-link { display: block; text-decoration: none; }
-.hero-title { align-self: start; max-width: 100%; padding: 5px 9px 6px; background: var(--ink); }
+.hero-title { padding: 3px 0 5px; }
 .hero-title h2 { margin: 2px 0; }
 .hero-title .meta { margin-top: 1px; }
 .hero-title .status { font-size: 11px; }
-.hero .picture-empty { align-self: start; padding: 10px 0 0 5px; margin: 0; }
-.option-picture .picture { min-height: 145px; }
-.task-picture .picture { min-height: 202px; }
-.failure .picture { margin-top: 7px; min-height: 110px; }
-.failure .picture img { filter: saturate(.65); }
-.last-known img, .last-known .picture img { filter: grayscale(1) brightness(.68); }
 .last-known .status, .last-known .ring, .last-known .track li { --tone: var(--dim); }
-.last-known .picture-caption .stage, .last-known .picture-caption .stage.warn { color: var(--secondary); }
-.track { display: grid; grid-template-columns: repeat(5,minmax(0, 1fr)); gap: 4px; padding: 0; margin: 8px 16px 0; list-style: none; }
+.track { display: grid; grid-template-columns: repeat(5,minmax(0, 1fr)); gap: 4px; padding: 0; margin: 4px 0 0; list-style: none; }
 .track li { border-top: 3px solid var(--line); padding-top: 3px; color: var(--secondary); font: 500 11px/1.2 var(--title); }
 .track li[data-proved] { border-color: var(--tone, var(--green)); }
 .track li:last-child { border-top-style: dashed; }
-.mate-strip { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 2px; }
+.mate-strip { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 2px; }
 .mate-chip { display: flex; flex-direction: column; align-items: center; text-align: center; padding-block: 2px 3px; gap: 3px; font: 700 12px/1.2 var(--title); min-height: 44px; }
 .mate-chip small { font: 500 12px/1.18 var(--body); color: var(--dim); }
 .ring { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border: 1.5px solid var(--tone, var(--dim)); border-radius: 50%; background: var(--iron); }
 .ring.github { border-style: dashed; }
 .ring img { width: 24px; height: 24px; object-fit: contain; }
-.ring .artoo { width: 26px; height: 29px; }
 .list { padding: 0; list-style: none; }
 .list > li { border-top: 1px solid var(--line); }
 .row { width: 100%; min-height: 48px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 3px 8px; align-items: baseline; padding: 6px 0; }
@@ -184,19 +163,21 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
 
   const REPO = 'https://github.com/rcbailey12/voidsworn';
   const CREW = [
-    {id:'codex',name:'Codex',source:'PC files'},
-    {id:'deepseek',name:'DeepSeek',source:'PC files'},
-    {id:'claude',name:'Claude',source:'pulls'},
-    {id:'muse',name:'Muse / Rey',source:'pulls'},
-    {id:'artoo',name:'Artoo',source:'comments'}
+    {id:'claude',name:'Claude',source:'pulls',icon:'/crew/claude.svg'},
+    {id:'codex',name:'Codex',source:'PC files',icon:'/crew/codex.svg'},
+    {id:'muse',name:'Muse / Rey',source:'pulls',icon:'/crew/muse.svg'},
+    {id:'deepseek',name:'DeepSeek',source:'PC files',icon:'/crew/deepseek.svg'},
+    {id:'openai',name:'OpenAI',source:'pulls',icon:'/crew/openai.svg'},
+    {id:'artoo',name:'Artoo',source:'comments',icon:'/crew/artoo.svg'}
   ];
+  const ICONS = {lanes:'/icons/lanes.svg',queue:'/icons/queue.svg',gpu:'/icons/gpu.svg',pc:'/icons/pc.svg',github:'/icons/github.svg',phone:'/icons/phone.svg'};
   const SOURCES = {questions:'Questions',issues:'Issues',pulls:'Pull requests',comments:'Comments'};
-  const STAGES = ['sheet built','paint proof','installed in game','Ryan accepted'];
   const STATES = {
     running:['Working','good'], waiting:['Waiting','warn'], blocked:['Blocked','warn'], failed:['Failed','bad'],
     finished:['Checked push','good'], quiet:['Quiet','warn'], idle:['Idle',''], unknown:['Unknown','warn']
   };
   const GROUPS = {started:'Started chain',linked:'Waiting for predecessor',starting:'Ready, start pending',stuck:'Stuck',unknown:'Queue unknown'};
+  const QUEUED = new Set(['started','linked','starting']);
   const $ = id => document.getElementById(id);
   const isIssue = n => Number.isSafeInteger(n) && n>0;
   const date = value => typeof value==='string' && Number.isFinite(Date.parse(value)) ? Date.parse(value) : 0;
@@ -218,6 +199,12 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     node.href = href;
     return node;
   }
+  function iconLabel(label, name) {
+    const icon = el('img','tool-icon');
+    icon.src = ICONS[name];
+    icon.alt = '';
+    return el('span','label-icon',icon,label);
+  }
   function detail(title, key, ...nodes) {
     const node = el('details','on-panel',el('summary','',title),...nodes);
     node.dataset.keep = key;
@@ -238,7 +225,6 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   const full = () => data && data.state!=='starting';
   const offline = () => full() && Date.now()-date(data.generatedAt)>(data.offlineAfterSeconds || 180)*1000;
   const oldBuild = () => data && (data.schemaVersion===1 || !data.build?.id || data.build.stale);
-  const allPictures = () => lanes().flatMap(lane=>lane.pictures || []);
   function latestSource(name) {
     if (gh().sources?.[name]) return gh().sources[name];
     return {lastSuccessfulReadAt:gh().lastReadAt,complete:name==='questions' ? gh().coverageComplete : gh().ok};
@@ -267,7 +253,10 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     const entries = Object.keys(SOURCES).map(name => {
       const source = latestSource(name);
       const state = sourceWarning(name) ? isChecking(name) ? 'Checking' : 'Incomplete or old' : 'Checked';
-      return [state+' · '+sourceLine(name),sourceWarning(name) && source.nextAttemptAt ? 'Next try '+clock(source.nextAttemptAt) : ''];
+      const notes = [];
+      if (!source.complete && source.lastAttemptAt) notes.push(clean(source.reason,'Read incomplete'));
+      if (sourceWarning(name) && date(source.nextAttemptAt)) notes.push('Next try '+clock(source.nextAttemptAt));
+      return [iconLabel(state+' · '+sourceLine(name),'github'),notes.join(' · ')];
     });
     const budget = gh().budget;
     if (budget) {
@@ -275,8 +264,13 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       if (budget.pausedUntil && date(budget.pausedUntil)>Date.now()) entries.push([clean(budget.reason,'GitHub reads paused'),'Until '+clock(budget.pausedUntil)]);
     }
     const build = data?.build;
-    if (/^[a-f0-9]{64}$/i.test(build?.id || '')) entries.push(['Version '+build.id.slice(0,8),'Publisher started '+dated(build.startedAt)]);
-    if (full()) entries.push(['PC snapshot',dated(data.generatedAt)]);
+    if (/^[a-f0-9]{64}$/i.test(build?.id || '')) entries.push([iconLabel('Version '+build.id.slice(0,8),'phone'),
+      (/^[a-f0-9]{40}$/i.test(build.sourceRevision || '') ? 'Build '+build.sourceRevision.slice(0,12)+' · ' : '')+'Publisher started '+dated(build.startedAt)]);
+    const pc = data?.pcSource;
+    if (pc) entries.push([iconLabel((pc.complete ? 'PC files' : 'PC files incomplete')+' · '+
+      (date(pc.lastSuccessfulReadAt) ? 'last successful scan '+dated(pc.lastSuccessfulReadAt) : 'no successful scan'),'pc'),
+      pc.complete ? '' : clean(pc.reason,'PC scan incomplete')]);
+    else if (full()) entries.push([iconLabel('PC snapshot','pc'),dated(data.generatedAt)]);
     return evidenceList(entries);
   }
   function alert(title, copy, tone, striped = false) {
@@ -288,9 +282,9 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     const ghAge = gh().lastReadAt;
     $('signals').replaceChildren(
       el('span','signal '+(isOffline ? 'bad' : full() && !fetchFailed ? 'good' : 'warn'),
-        isOffline ? 'PC lost' : full() ? 'PC '+age(data.generatedAt) : data ? 'PC starting' : 'PC waiting'),
+        iconLabel(isOffline ? 'PC lost' : full() ? 'PC '+age(data.generatedAt) : data ? 'PC starting' : 'PC waiting','pc')),
       el('span','signal '+(troubled.length || !date(ghAge) ? 'warn' : 'good'),
-        isOffline ? 'GitHub last known' : troubled.length ? 'GitHub partial' : date(ghAge) ? 'GitHub '+age(ghAge) : 'GitHub checking')
+        iconLabel(isOffline ? 'GitHub last known' : troubled.length ? 'GitHub partial' : date(ghAge) ? 'GitHub '+age(ghAge) : 'GitHub checking','github'))
     );
     if (oldBuild()) alerts.push(alert('Older publisher','Mission Control is running an older version. Restart with PHONE_ON.','bad'));
     if (isOffline) alerts.push(alert('PC feed lost · '+age(data.generatedAt),'Last-known snapshot from '+clock(data.generatedAt)+'. The PC may be asleep or the link may have dropped.','bad'));
@@ -302,7 +296,8 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       alerts.push(alert('GitHub unavailable · '+troubled.map(name=>SOURCES[name]).join(', '),
         pauseReason+summary+(next ? '. Next try '+clock(next)+'.' : '.'),'warn',true));
     }
-    if (full() && data.warnings?.length) alerts.push(alert('PC sources incomplete','Some lane files could not be read in the PC snapshot from '+dated(data.generatedAt)+'.','warn'));
+    if (data?.pcSource?.complete===false || full() && data.warnings?.length) alerts.push(alert('PC sources incomplete',
+      clean(data.pcSource?.reason,'Some lane files could not be read.'),'warn'));
     document.body.classList.toggle('last-known',!!isOffline);
     $('alerts').replaceChildren(...alerts);
   }
@@ -349,64 +344,6 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       el('span','meta',lane.label+' · '+laneEvidence(lane)+(note ? ' · '+note : ''))),'row-link'));
   }
 
-  const validPicture = picture => /^[a-f0-9]{64}$/.test(picture?.id || '') &&
-    /^[a-f0-9]{7,12}(?: \+ working tree)?$/i.test(picture.revision || '') && STAGES.includes(picture.stage);
-  function newest(pictures) {
-    const seen = new Set();
-    return pictures.filter(picture=>{
-      if (!validPicture(picture) || seen.has(picture.id)) return false;
-      seen.add(picture.id);
-      return true;
-    }).sort((a,b)=>date(b.capturedAt)-date(a.capturedAt));
-  }
-  function jobPictures(lane, job) {
-    const current = !!job && job.issue===lane.current?.issue;
-    const pictures = newest((lane.pictures || []).filter(picture=>current || job && picture.issue===job.issue));
-    return current ? [...pictures.filter(picture=>picture.association==='this run'),...pictures.filter(picture=>picture.association!=='this run')] :
-      pictures.map(picture=>({...picture,association:'older'}));
-  }
-  function pictureTile(pictures, extra, onPicture) {
-    const tile = el('figure','picture');
-    const empty = el('p','picture-empty kicker','No picture yet');
-    tile.append(empty);
-    if (extra) tile.append(extra);
-    let index = 0;
-    function showNext() {
-      const picture = pictures[index++];
-      tile.querySelector('img')?.remove();
-      tile.querySelector('figcaption')?.remove();
-      tile.classList.toggle('has-image',!!picture);
-      empty.hidden = !!picture;
-      onPicture?.(picture);
-      if (!picture) return;
-      const caption = el('figcaption','picture-caption mono');
-      if (picture.association!=='this run') caption.append(el('span','older','OLDER PICTURE'));
-      caption.append(el('span','',isIssue(picture.issue) ? '#'+picture.issue : 'Lane archive'),
-        el('span','','rev '+picture.revision),el('span','stage'+(picture.stage==='paint proof' ? ' warn' : ''),picture.stage.toUpperCase()));
-      const image = el('img','');
-      image.alt = 'Review picture, '+picture.stage;
-      image.addEventListener('error',showNext,{once:true});
-      tile.prepend(caption,image);
-      image.src = '/pic/'+picture.id;
-    }
-    showNext();
-    return tile;
-  }
-  function picturePreview(pictures, classes, label = '') {
-    const wrap = el('div',classes);
-    const anchor = link('#','','picture-link');
-    const caption = el('span','meta','');
-    const tile = pictureTile(pictures,label ? el('span','picture-caption kicker',label) : null,picture=>{
-      if (picture) {
-        anchor.href = '/pic/'+picture.id;
-        caption.textContent = 'Picture sidecar · captured '+dated(picture.capturedAt);
-      } else anchor.removeAttribute('href');
-      caption.hidden = !picture;
-    });
-    anchor.append(tile,caption);
-    wrap.append(anchor);
-    return wrap;
-  }
   function questions() {
     const section = el('section','');
     const source = latestSource('questions'), warning = sourceWarning('questions');
@@ -415,14 +352,9 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       date(source.lastSuccessfulReadAt) ? 'Questions not fully checked' : 'Questions not checked' : 'Nothing waiting on you';
     if (warning || !asks.length) section.append(el('p','calm'+(warning ? ' warn' : ''),el('strong','',label),el('span','meta',sourceLine('questions'))));
     for (const ask of asks) {
-      const options = newest(allPictures().filter(picture=>picture.issue===ask.issue && picture.decisionOption));
       const article = el('article','notice question on-panel'+(warning ? ' striped' : ''),
         el('div','question-top',el('p','kicker',warning ? 'Last-known question' : 'For you'),el('span','secondary','#'+ask.issue+' · updated '+age(ask.updatedAt))),
         el('h2','',clean(ask.question,'Question text unavailable')),el('p','secondary','Answer the Board in chat.'));
-      if (options.length) {
-        const previews = ['A','B'].map(option=>picturePreview(options.filter(picture=>picture.decisionOption===option),'option-picture','Option '+option));
-        article.append(el('div','options',...previews));
-      }
       const attached = pictureLink(ask.picture);
       if (attached) article.append(link(attached,'View Board picture'));
       article.append(link(REPO+'/issues/'+ask.issue,'Open issue #'+ask.issue),el('p','secondary',sourceLine('questions')));
@@ -449,38 +381,33 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       el('h3','',title),el('p','',reason),el('p','secondary',laneEvidence(lane)),
       /^Runner exit \d+\.$/.test(reason) ? el('p','secondary','The run stopped before a checked push was confirmed.') : '',
       el('p','secondary',offline() ? 'The Board can check the run when the PC feed returns.' : 'The Board checks the run and decides what to do next.'),
-      picturePreview(jobPictures(lane,lane.current),'failure-picture'),evidence(lane));
+      evidence(lane));
   }
 
 
   function stages(lane, job, current = true) {
     const push = current && laneState(lane)[0]==='Checked push';
-    const review = isIssue(job?.prNumber), reviewUnconfirmed = sourceWarning('pulls');
+    const pr = isIssue(job?.prNumber), prState = ['open','closed','merged'].includes(job?.prState) ? job.prState : 'recorded';
     const [word] = laneState(lane);
     return [
       ['Claimed',current && date(lane.startedAt) ? 'PC start record · '+dated(lane.startedAt) : 'PC start unverified',current && date(lane.startedAt)],
       ['Runner',current ? (offline() ? 'Was '+word.toLowerCase() : word)+' · '+laneEvidence(lane) : 'Awaiting PC runner evidence',current && lane.state!=='unknown'],
       ['Pushed',push ? 'PC confirmed a checked push · '+dated(lane.finishedAt || lane.source?.updatedAt) : 'Checked push unconfirmed',push],
-      ['Review',(review ? 'PR #'+job.prNumber+' '+clean(job.prState,'recorded') : 'PR unconfirmed')+' · '+sourceLine('pulls'),review && !reviewUnconfirmed],
+      [pr ? 'PR '+prState : 'PR open',(pr ? 'PR #'+job.prNumber+' '+prState : 'PR unconfirmed')+' · '+sourceLine('pulls'),pr && !sourceWarning('pulls'),pr ? '#'+job.prNumber : ''],
       ['On your PC / your OK','Untracked',false]
     ];
   }
   function hero(lane) {
-    const job = lane.current, pictures = jobPictures(lane,job);
+    const job = lane.current;
     const title = el('div','hero-title',stateLine(lane),el('h2','',jobTitle(job)),el('p','meta',lane.label+' · #'+job.issue+' · '+laneEvidence(lane)));
-    const figure = pictureTile(pictures,title,picture=>{
-      title.querySelector('.picture-source')?.remove();
-      if (picture) title.append(el('p','meta picture-source','Picture sidecar · '+age(picture.capturedAt)));
-    });
     const track = el('ol','track');
-    const labels = ['Claimed','Runner','Pushed','Review','On PC?'];
-    for (const [index,[name,verdict,proved]] of stages(lane,job).entries()) {
-      const item = el('li','',labels[index]);
+    for (const [name,verdict,proved,number] of stages(lane,job)) {
+      const item = el('li','',name==='On your PC / your OK' ? 'On PC?' : name+(number ? ' '+number : ''));
       item.setAttribute('aria-label',name+' · '+verdict);
       if (proved) item.dataset.proved = '';
       track.append(item);
     }
-    return el('section','hero',link(taskHref(lane,job),figure,'hero-open'),track);
+    return el('section','hero inset',link(taskHref(lane,job),title,'hero-open'),track);
   }
 
   function crewLanes(member) { return lanes().filter(lane=>(lane.id==='deepseek' ? 'deepseek' : 'codex')===member.id); }
@@ -499,7 +426,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     const local = member.source==='PC files';
     const tone = local && crewLanes(member).some(lane=>lane.state==='running' && !lane.stale) && !offline() ? ' good' : !local && sourceWarning(member.source) ? ' warn' : '';
     const image = el('img',member.id);
-    image.src = '/crew/'+member.id+'.svg';
+    image.src = member.icon;
     image.alt = '';
     return el('span','ring'+(local ? '' : ' github')+tone,image);
   }
@@ -541,7 +468,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   }
   function queueLabel(group) { return GROUPS[group.state] || 'Queue unknown'; }
   function queuePage() {
-    const section = el('section','inset',el('h2','section-label','Queue'),el('p','meta','PC chain files · snapshot '+dated(data?.generatedAt)));
+    const section = el('section','inset',el('h2','section-label',iconLabel('Queue','queue')),el('p','meta','PC chain files · snapshot '+dated(data?.generatedAt)));
     for (const lane of lanes()) {
       const list = el('article','queue-lane',el('h3','',lane.label));
       list.id = 'queue-'+lane.id;
@@ -559,7 +486,8 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
         if (group.after) node.append(el('p','meta','After '+clean(group.after)+(group.waitSource ? ' · '+clean(group.waitSource) : '')));
         for (const note of group.notes || []) node.append(el('p','meta',clean(note)));
         node.append(el('ul','list',...(group.jobs || []).map(job=>el('li','',
-          link(taskHref(lane,job),el('span','row',el('strong','',el('span','issue-id','#'+job.issue),jobTitle(job)),
+          link(taskHref(lane,job),el('span','row',el('strong','',el('span','issue-id','#'+job.issue),
+            /\b(?:GPU|cost at 4K)\b/i.test(jobTitle(job)) ? iconLabel(jobTitle(job),'gpu') : jobTitle(job)),
             el('span','meta'+(sourceWarning('issues') ? ' striped' : ''),issueState(job))),'row-link')))));
         list.append(node);
       }
@@ -592,7 +520,6 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       return section;
     }
     const group = current ? null : groups(lane).find(item=>item.jobs.some(entry=>entry.issue===issue));
-    section.append(picturePreview(jobPictures(lane,job),'task-picture'));
     const content = el('div','inset'), heading = el('div','task-title',el('p','kicker',lane.label+(issue ? ' · #'+issue : '')),el('h2','',jobTitle(job)));
     const reason = current ? laneReason(lane) : clean(group?.reason);
     if (current) heading.append(stateLine(lane),el('p','meta',laneEvidence(lane)));
@@ -620,24 +547,26 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   function nowPage() {
     const section = el('section','',questions());
     const failures = lanes().filter(lane=>lane.endedWithoutPush || lane.state==='failed');
-    const working = lanes().filter(lane=>lane.current && lane.state==='running' && !lane.endedWithoutPush);
-    const featured = working.find(lane=>jobPictures(lane,lane.current).some(picture=>picture.association==='this run')) ||
-      working.find(lane=>jobPictures(lane,lane.current).length) || working[0];
+    const featured = lanes().find(lane=>lane.current && lane.state==='running' && !lane.endedWithoutPush);
     for (const lane of failures) section.append(failure(lane));
     if (featured) section.append(hero(featured));
     section.append(crewStrip());
     const rest = lanes().filter(lane=>lane!==featured && !failures.includes(lane));
-    const laneList = el('section','inset',el('div','section-label',el('h2','kicker',offline() ? 'Last-known lanes' : 'PC lanes')),
+    const listings = lanes().flatMap(lane=>groups(lane).flatMap(group=>(group.jobs || [])
+      .filter(job=>isIssue(job.issue)).map(job=>({lane,group,job}))));
+    const queued = !offline() && listings.find(({group})=>QUEUED.has(group.state));
+    const next = queued || listings.find(({group})=>group.state==='unknown' || offline());
+    if (next) {
+      const label = queued ? 'On the queue' : 'Last listed, queue unverified';
+      section.append(el('div','inset',link('#queue',iconLabel(label+' · #'+next.job.issue+' · '+next.lane.label,'queue')),
+        el('p','meta',(next.lane.queue ? 'PC chain files' : 'Legacy listing')+' · '+dated(next.group.sourceAt || data.generatedAt))));
+    }
+    const laneList = el('section','inset',el('div','section-label',el('h2','kicker',iconLabel(offline() ? 'Last-known lanes' : 'PC lanes','lanes'))),
       el('ul','list',...rest.map(lane=>row(lane))));
     for (const lane of lanes()) {
       for (const leftover of lane.leftovers || []) laneList.append(el('p','meta','Older '+lane.label+' record #'+leftover.job.issue+' · PC activity '+dated(leftover.lastActivityAt)));
     }
     if (lanes().some(lane=>lane.queue?.state==='unknown')) laneList.append(link('#queue','Queue unknown on some lanes · PC chain files'));
-    const next = lanes().find(lane=>queueItems(lane).length);
-    if (next) {
-      const first = queueItems(next)[0];
-      laneList.append(link('#queue','On the queue · #'+first.issue+' · '+next.label),el('p','meta','PC chain files · '+dated(data.generatedAt)));
-    }
     laneList.append(detail('Sources & version','now-sources',sourceRows()));
     section.append(laneList);
     return section;
@@ -670,6 +599,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
       screen.view==='task' && screen.lane ? taskPage(screen.lane,screen.issue,screen.tab) :
       screen.view==='queue' ? queuePage() : screen.view==='crew' ? crewPage() : nowPage();
     main.replaceChildren(view);
+    if (!full() && data?.pcSource) main.append(el('section','inset',detail('Sources & version','starting-sources',sourceRows())));
     if (navigated) {
       window.scrollTo(0,0);
       const crew = screen.view==='crew' && screen.id ? $('crew-'+screen.id) : null;

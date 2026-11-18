@@ -7,12 +7,16 @@ const http = require('http');
 const {spawn, spawnSync} = require('child_process');
 const assert = require('assert/strict');
 const {makeCases} = require('./selftest');
-const {ASSETS, servePicture} = require('./publisher');
+const {ASSETS} = require('./publisher');
 
 const repo = path.resolve(__dirname,'../../..');
 const pageRoot = path.join(repo,'docs/mission');
 const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
 const W = 412, H = 670;
+const reviewViewports = [
+  {name:'pixel',width:448,height:997,mobile:true},
+  {name:'desktop',width:1440,height:900,mobile:false}
+];
 
 function fixtureServer(getFixture) {
   return http.createServer((req,res)=>{
@@ -23,7 +27,6 @@ function fixtureServer(getFixture) {
       if (!fixture) return res.writeHead(503).end();
       return res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify(fixture.data));
     }
-    if (req.url.startsWith('/pic/')) return void servePicture(req,res,fixture?.pictures || new Map());
     if (Object.hasOwn(ASSETS,req.url)) return res.writeHead(200,{'Content-Type':ASSETS[req.url]}).end(fs.readFileSync(path.join(pageRoot,req.url.slice(1))));
     res.writeHead(404).end();
   });
@@ -92,7 +95,6 @@ function checkLayout() {
     const style = getComputedStyle(node);
     let effective = over(background(node.parentElement),color(style.backgroundColor));
     if (node.classList.contains('striped')) effective = over(effective,[255,178,62,.063]);
-    if (node.classList.contains('picture') && !node.classList.contains('has-image')) effective = [21,28,21];
     return effective;
   }
   const low = [], dimPanels = [];
@@ -160,7 +162,7 @@ async function run() {
     const {send,evaluate,waitFor} = cdp;
     await send('Page.enable');
     await send('Runtime.enable');
-    const size = width => send('Emulation.setDeviceMetricsOverride',{width,height:H,deviceScaleFactor:1,mobile:true});
+    const size = (width,height = H,mobile = true) => send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile});
     await size(W);
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
     const injected = await send('Page.addScriptToEvaluateOnNewDocument',{source:'window.missionClock='+now+'; Date.now=()=>window.missionClock;'});
@@ -180,11 +182,17 @@ async function run() {
       await waitFor('[...document.images].every(img=>img.complete && img.naturalWidth>0)');
     }
     const shotNames = [];
-    async function capture(name) {
-      const shot = 'MC-r3-'+name+'.png';
-      const code = 'MC-R3 / '+name.toUpperCase()+' / FIXTURE';
-      await evaluate('(()=>{const label=document.createElement("p"); label.className="fixture-label"; label.textContent='+JSON.stringify(code)+'; document.querySelector("header").after(label);})()');
-      const image = await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+    async function capture(name, y = 0) {
+      const shot = 'MC-1117-'+name+'.png';
+      const revision = live.data.build.sourceRevision;
+      assert.match(revision,/^[a-f0-9]{40}$/);
+      const code = 'MC-1117 / '+name.toUpperCase()+' / FIXTURE / BUILD '+revision.slice(0,12);
+      if (!y) await evaluate('(()=>{const label=document.createElement("p"); label.className="fixture-label"; label.textContent='+JSON.stringify(code)+'; document.querySelector("header").after(label);})()');
+      const width = await evaluate('innerWidth');
+      // The provenance strip scales up on desktop. Leave room beneath the page for it.
+      const ceiling = width>=1440 ? 620 : H;
+      const height = y ? Math.min(ceiling,await evaluate('document.documentElement.scrollHeight')-y) : ceiling;
+      const image = await send('Page.captureScreenshot',{format:'png',clip:{x:0,y,width,height,scale:1},captureBeyondViewport:!!y});
       fs.writeFileSync(path.join(scratch,shot),Buffer.from(image.data,'base64'));
       shotNames.push(shot);
     }
@@ -192,6 +200,7 @@ async function run() {
       const layout = await evaluate('('+checkLayout.toString()+')()');
       assert.deepEqual(layout,{low:[],dimPanels:[],overflow:false,small:[]},name);
       const dom = await evaluate('(()=>{const body=document.body.cloneNode(true); body.querySelectorAll("script").forEach(node=>node.remove()); return body.outerHTML;})()');
+      assert(!/\/pic\/|picture-empty|picture-preview|picture-caption|No picture yet/i.test(dom),name+' rendered a picture preview');
       const privacy = dom+'\n'+JSON.stringify(live.data);
       assert(!/(?:^|[^a-z])[a-z]:[\\/]|\\\\Users\\|(?:\\|\/)(?:Users|home)(?:\\|\/)|RAW-LOG-SENTINEL|PrivatePerson|FOLDER-SENTINEL|MARKER-SENTINEL|0123456789abcdef0123456789abcdef/i.test(privacy),name+' leaked PC data');
       if (process.env.USERNAME) {
@@ -208,8 +217,8 @@ async function run() {
       ['failure','',has('.failure',/Runner exit 8/)],
       ['offline','',has('#alerts',/PC feed lost/i)],
       ['unknown','#task/main/970',has('.task-title',/unreadable or unrecognized/)],
-      ['no-picture','#task/main/970',has('.task-picture',/No picture yet/i)],
-      ['missing-picture','#task/main/970',has('.task-picture',/No picture yet/i)],
+      ['no-picture','#task/main/970',has('.task-title',/Iron Mandate/)],
+      ['missing-picture','#task/main/970',has('.task-title',/Iron Mandate/)],
       ['queue','#queue',has('#queue-main',/Ready, start pending/i)],
       ['crew','#crew',has('#crew-artoo',/Last seen on GitHub/)],
       ['blocked','#task/c/978',has('.task-title',/Blocked/i)],
@@ -221,6 +230,9 @@ async function run() {
       ['claim-old','#task/main/970',has('.task-title',/Claim not confirmed/i)],
       ['github-unread','',has('#content',/Checking for questions/)],
       ['legacy','',has('#alerts',/Restart with PHONE_ON/)],
+      ['legacy-listing','',has('#content',/Last listed, queue unverified.*#922/)],
+      ['pr-only','#task/main/970',has('.timeline',/PR open.*PR #1008 open/s)],
+      ['pc-partial','',has('#alerts',/Chain script missing/)],
       ['no-build','',has('#alerts',/Restart with PHONE_ON/)],
       ['old-build','',has('#alerts',/Restart with PHONE_ON/)],
       ['starting','',has('#content',/first read of PC files is in progress/)],
@@ -235,26 +247,31 @@ async function run() {
       if (name==='queue') await evaluate('document.querySelector("#queue-b details").open=true');
       await check(name);
       if (name==='overview') {
-        const main = cases[name].data.lanes[0];
-        const current = main.pictures.find(picture=>picture.association==='this run');
-        assert.equal(await evaluate('document.querySelector(".hero img").getAttribute("src")'),'/pic/'+current.id);
-        assert.match(await evaluate('document.querySelector(".hero figcaption").innerText'),/#970.*rev .*INSTALLED IN GAME/s);
-        assert(!await evaluate('document.querySelector(".hero .older")!==null'));
+        assert.match(await evaluate('document.querySelector("#content").innerText'),/On the queue.*#982/);
         assert(await evaluate('document.fonts.check("700 22px Chakra") && document.fonts.check("800 22px Shoulders")'));
-        assert.equal(await evaluate('document.querySelector(".mate-strip").querySelectorAll(".ring.github").length'),3);
+        assert.equal(await evaluate('document.querySelectorAll(".mate-strip .ring.github").length'),4);
+        assert.equal(await evaluate('document.querySelectorAll(".mate-strip img").length'),6);
       }
       if (name==='decision') {
-        assert.deepEqual(await evaluate('[...document.querySelectorAll(".option-picture .picture-caption.kicker")].map(node=>node.textContent)'),['Option A','Option B']);
-        assert.equal(await evaluate('document.querySelectorAll(".option-picture img").length'),2);
         assert.match(await evaluate('document.querySelector(".question").innerText'),/Answer the Board in chat/);
+        assert.match(await evaluate('document.querySelector(".question").innerText'),/View Board picture/);
       }
       if (name==='failure') {
-        assert.match(await evaluate('document.querySelector(".failure figcaption").innerText'),/OLDER PICTURE.*#928.*820cbaca88b8.*INSTALLED IN GAME/s);
         assert.match(await evaluate('document.querySelector(".failure details").innerText'),/Evidence.*status.json/s);
       }
       if (name==='offline') {
         assert.match(await evaluate('document.querySelector(".hero .status").innerText'),/was working/i);
-        assert.match(await evaluate('getComputedStyle(document.querySelector(".hero img")).filter'),/grayscale\(1\)/);
+        assert(!await evaluate(has('#content',/On the queue/)));
+      }
+      if (name==='legacy-listing') assert(!await evaluate(has('#content',/On the queue/)));
+      if (name==='pr-only') {
+        const stages = await evaluate('[...document.querySelectorAll(".timeline li")].map(stage=>[stage.querySelector("strong").textContent,stage.hasAttribute("data-proved")])');
+        assert.deepEqual(stages.slice(2,4),[['Pushed',false],['PR open',true]]);
+        assert(!await evaluate(has('.timeline',/Review/i)));
+      }
+      if (name==='pc-partial') {
+        const notes = await evaluate('(()=>{const row = document.querySelector("details[data-keep=now-sources]");row.open=true; return row.innerText;})()');
+        assert.match(notes,/PC files incomplete.*last successful scan.*3 min ago.*Chain script missing/s);
       }
       if (name==='unknown') assert.match(await evaluate('document.querySelector(".task-title .status").innerText'),/^unknown$/i);
       if (name==='queue') {
@@ -269,8 +286,11 @@ async function run() {
         const label = {questions:'Questions',issues:'Issues',pulls:'Pull requests',comments:'Comments'}[source];
         assert((await evaluate('document.querySelector("#alerts h2").textContent')).endsWith(label));
         assert.equal(await evaluate(has('#content',/Nothing waiting on you/)),source!=='questions');
+        const rows = await evaluate('(()=>{const d=document.querySelector("details[data-keep=now-sources]");d.open=true;return [...d.querySelectorAll("li")].map(row=>row.innerText);})()');
+        const index = ['questions','issues','pulls','comments'].indexOf(source);
+        assert.match(rows[index],new RegExp('last known.*1 h 5 min ago.*GitHub returned HTTP '+(501+index),'s'));
+        assert.equal(rows.filter(row=>row.includes('GitHub returned HTTP')).length,1);
       }
-      await capture(name);
       console.log('PASS 412 px · '+name);
     }
 
@@ -296,8 +316,27 @@ async function run() {
     await evaluate('window.missionClock+=181000; document.dispatchEvent(new Event("visibilitychange"))');
     await waitFor(has('#alerts',/PC feed lost/i));
     assert.deepEqual(cdp.errors,[]);
+    for (const viewport of reviewViewports) {
+      await size(viewport.width,viewport.height,viewport.mobile);
+      for (const [name,fixture,hash,ready] of [
+        ['now','overview','',has('.hero-title',/Iron Mandate/)],
+        ['queue','queue','#queue',has('#queue-main',/Ready, start pending/i)],
+        ['crew','crew','#crew',has('#crew-artoo',/Last seen on GitHub/)]
+      ]) {
+        await screen(fixture,hash,ready);
+        await check(name+' '+viewport.name);
+        await capture(name+'-'+viewport.name);
+        if (name==='crew') {
+          const y = await evaluate('Math.floor(document.querySelector("#crew-muse").getBoundingClientRect().top)');
+          // Keep the fixed viewport tabs from covering rows in the lower document crop.
+          await evaluate('document.querySelector("nav").hidden=true');
+          await capture(name+'-'+viewport.name+'-continued',y);
+        }
+      }
+    }
+    assert.deepEqual(cdp.errors,[]);
     stampShots(process.env.MISSION_STAMP_PYTHON,scratch,out,shotNames);
-    console.log('PASS Mission Control browser: '+shotNames.length+' states at 412 px, 320 px, contrast, privacy, navigation and startup transition.');
+    console.log('PASS Mission Control browser: '+screens.length+' states, narrow layout, startup, and '+shotNames.length+' fixture captures.');
   } catch (error) {
     console.error(browserError?.message || browserLog);
     throw error;
