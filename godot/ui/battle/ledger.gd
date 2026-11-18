@@ -598,7 +598,11 @@ func _target_block(x: float, y: float, w: float, compact: bool) -> float:
 
 func _target_tip() -> String:
 	var hp := float(target.get("hp", 0))
-	var s := "%s\nHull %s / %s." % [str(target.get("name", "")), Campaign.hull_text(hp), Campaign.hull_text(target.get("maxHp", 0))]
+	var s := "%s\nHull %s / %s" % [str(target.get("name", "")), Campaign.hull_text(hp), Campaign.hull_text(target.get("maxHp", 0))]
+	var defenses := str(target.get("defenses", ""))
+	if defenses != "":
+		s += ", " + defenses
+	s += "."
 	if float(target.get("shMax", 0)) > 0.0:
 		var sh: Array = target.get("sh", [0, 0, 0, 0])
 		var parts := PackedStringArray()
