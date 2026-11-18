@@ -182,10 +182,11 @@ async function run() {
     }
     const shotNames = [];
     async function capture(name) {
-      const shot = 'MC-1118-'+name+'-pixel.png';
+      const codeName = name==='chain-history' ? 'MC-1118B' : 'MC-1118';
+      const shot = codeName+'-'+name+'-pixel.png';
       const revision = live.data.build.sourceRevision;
       assert.match(revision,/^[a-f0-9]{40}$/);
-      const code = 'MC-1118 / '+name.toUpperCase()+' / SAMPLE DATA / '+revision.slice(0,12);
+      const code = codeName+' / '+name.toUpperCase()+' / SAMPLE DATA / '+revision.slice(0,12);
       await evaluate('(()=>{const label=document.createElement("p"); label.className="fixture-label"; label.textContent='+JSON.stringify(code)+'; document.querySelector("header").after(label);})()');
       const width = await evaluate('innerWidth');
       assert.equal(width,W);
@@ -243,6 +244,8 @@ async function run() {
       ['needs-ryan','',has('#content',/Keep the blue glow on the bow gun/)],
       ['question-partial','',has('#content',/Needs Ryan check incomplete/)],
       ['pc-partial','',has('#alerts',/Chain script missing/)],
+      ['chain-history','',has('#now-c .attention',/#1033.*Old chain has no recorded ending/)],
+      ['chain-history','#queue',has('#queue-c .attention',/#1033.*Old chain has no recorded ending/)],
       ['no-build','',has('#alerts',/Restart with PHONE_ON/)],
       ['old-build','',has('#alerts',/Restart with PHONE_ON/)],
       ['starting','',has('#content',/first read of PC files is in progress/)],
@@ -309,6 +312,13 @@ async function run() {
         const notes = await evaluate('(()=>{const row = document.querySelector("details[data-keep=now-sources]");row.open=true; return row.innerText;})()');
         assert.match(notes,/PC files incomplete.*last successful scan.*3 min ago.*Chain script missing/s);
       }
+      if (name==='chain-history') {
+        const card = hash==='#queue' ? '#queue-c' : '#now-c';
+        assert(!await evaluate(has('#alerts',/PC sources incomplete/i)));
+        assert(!await evaluate(has(card+' .attention',/#944/)));
+        const details = await evaluate('(()=>{const row=document.querySelector('+JSON.stringify(card+' details')+');row.open=true;return row.innerText;})()');
+        assert.match(details,/History.*codex_lane_c944\.txt.*superseded.*later same-lane start/is);
+      }
       if (name==='unknown') assert.match(await evaluate('document.querySelector(".task-title .status").innerText'),/^unknown$/i);
       if (Object.hasOwn(closedIssues,name)) {
         const reason = closedIssues[name], task = hash==='#task/main/970';
@@ -371,7 +381,9 @@ async function run() {
     await evaluate('window.missionClock+=181000; document.dispatchEvent(new Event("visibilitychange"))');
     await waitFor(has('#alerts',/PC feed lost/i));
     assert.deepEqual(cdp.errors,[]);
-    for (const [name,fixture,hash,seat,ready] of [
+    const captures = process.argv[3]==='chain-history' ? [
+      ['chain-history','chain-history','#queue','c',has('#queue-c .attention',/#1033.*Old chain has no recorded ending/)]
+    ] : [
       ['running','overview','#now','main',has('#now-main',/Running/i)],
       ['queued','queue-photo','#queue','main',has('#queue-main',/Ready, start pending/i)],
       ['blocked','blocked','#now','c',has('#now-c',/Blocked/i)],
@@ -379,7 +391,8 @@ async function run() {
       ['offline','offline','#now','main',has('#alerts',/PC feed lost/i)],
       ['needs-ryan','needs-ryan','#now','main',has('#content',/question unavailable/i)],
       ['issue-conflict','running-closed-issue','#now','main',has('#now-main .attention',/The issue is closed on GitHub/)]
-    ]) {
+    ];
+    for (const [name,fixture,hash,seat,ready] of captures) {
       await screen(fixture,hash,ready,data=>{
         data.lanes = data.lanes.filter(lane=>lane.id===seat);
         const lane = data.lanes[0];
@@ -387,6 +400,7 @@ async function run() {
         if (name==='offline' || name==='issue-conflict') for (const group of lane.queue.groups) group.jobs = group.jobs.slice(0,1);
         return data;
       });
+      if (name==='chain-history') await evaluate('document.querySelector("#queue-c details").open=true');
       await check(name+' capture');
       await capture(name);
     }
