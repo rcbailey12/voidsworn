@@ -1,6 +1,6 @@
 # Mission Control r3
 
-The deck reads five PC lanes and four GitHub sources. **Now** shows questions, work and failures. **Queue** shows chains, predecessors and history. **Crew** shows PC lane activity for Codex and DeepSeek and last-seen GitHub activity for Claude, Muse/Rey and Artoo. Open a job to see its picture, stages, next step and evidence.
+The deck reads five PC lanes and four GitHub sources. **Now** shows questions, work and failures. **Queue** shows chains, predecessors and history. **Crew** shows PC lane activity for Codex and DeepSeek and last-seen GitHub activity for Claude, Muse/Rey, OpenAI and Artoo. Open a job to see its stages, next step and evidence.
 
 ## Start and phone link
 
@@ -11,6 +11,12 @@ For the Pixel, keep Tailscale connected on both devices and double-click `PHONE_
 The listener initially serves a **starting** response with no snapshot time or lane claims. A worker thread reads the PC files while GitHub reads proceed independently. The page polls every three seconds until a full snapshot arrives and then every minute. If a later scan fails, the listener keeps serving the last good snapshot. The `--once` command writes a snapshot and exits.
 
 The deck accepts schemas 1 and 2. Schema 1, a missing build block or `build.stale` shows a coral banner with the PHONE_ON restart instruction. PHONE_ON also compares the loaded hash with the files on disk. It offers to restart when these differ and requires an explicit Y. Before stopping one PID, it identifies the Node process whose script argument is this folder's exact publisher path and rechecks that identity.
+
+### Board deployment
+
+From a clean main checkout on the PC, run `powershell.exe -NoProfile -File tools\pc\mission\deploy.ps1 -MainCheckout <main checkout>`. The tool stages the publisher and page together, writes the checkout commit to `build.json`, and backs up the installed pair before stopping the installed publisher. A hidden Node process serves the new pair at the same loopback address. The existing private phone link continues to use that address.
+
+The tool has 60 seconds after launch to verify the build through `GET /status.json` and check the bytes and content type for the page and every served asset. A correctly versioned starting response is valid while the first lane scan runs. A failed check restores the previous installation and restarts its publisher if it was running. The dated backup folder keeps the copies and one `deploy.log` with the rollout and rollback steps.
 
 ## How to read a status
 
@@ -25,12 +31,12 @@ The deck accepts schemas 1 and 2. Schema 1, a missing build block or `build.stal
 
 | Age | What the deck shows |
 | --- | --- |
-| PC snapshot over three minutes old | **PC feed lost**, past-tense lane states and desaturated pictures |
+| PC snapshot over three minutes old | **PC feed lost** and past-tense lane states |
 | GitHub source older than twice its interval or incomplete | The affected evidence is marked last known or unavailable |
 | PC claim over ten minutes without a matching runner | **Claim not confirmed** |
 | Run activity at least thirty minutes old | **Quiet**, with the process unconfirmed |
 
-Each observation carries its source and age. A fresh PC scan proves the feed is reading. Live process state and installation on Ryan's PC are untracked. The installed-in-game picture stage describes the source capture.
+Each observation carries its source and age. **Sources & version** shows the last successful read and a safe diagnostic for each incomplete GitHub or PC source. A fresh PC scan proves the feed is reading. Live process state and installation on Ryan's PC are untracked.
 
 ### Queue and runs
 
@@ -38,15 +44,15 @@ A Board text chain releases successors after `all done`, regardless of the runne
 
 Runner-managed waits use a checked push and commit and stop on changed or failed predecessors. Codex results match the full run ID internally. Only the eight-character prefix reaches the page. An untagged conflicting result or an unproved run relationship stays unknown. DeepSeek's `latest.txt` selects a timestamped run directory, and an untagged result can be associated by that directory. Old activity never revives a newer run. The real Nov 17 file reconstruction remains in `tools/pc/mission/fixtures/nov17.json`.
 
-### Pictures
+Now shows **On the queue** for an active chain, a recorded predecessor wait or a ready chain with a start pending. Legacy and unknown listings can show **Last listed, queue unverified**. The **Pushed** stage requires PC runner evidence of a checked push. The next stage shows the PR number and its GitHub state when the pulls source confirms it.
+
+### Picture activity
 
 The publisher checks PNG, JPG and WebP files up to 3 MiB under each lane checkout's `repo/docs/shots` and `repo/docs/ship_pipeline`. The sidecar supplies stage, capture date, source revision and the image SHA-256.
 
-A **this run** picture has a capture after the run started plus a matching sidecar, a fresh run diff, a confirmed-push diff or a first-parent run commit after the starting revision. The deck prefers the newest indexed **this run** picture, then the newest indexed older picture with its revision and stage. The hatched tile takes over when usable picture evidence is absent.
+A **this run** picture has a capture after the run started plus a matching sidecar, a fresh run diff, a confirmed-push diff or a first-parent run commit after the starting revision. A matched picture write can count as run activity. Questions with a Board picture link show the link as text.
 
-A question can show two indexed pictures when their sidecars provide the question's numeric `issue` and `decisionOption` of `A` or `B`. The existing Board picture link stays available for questions with a link.
-
-`GET /pic/<id>` uses the opaque id from the latest index built by the same publisher. The server checks the unchanged sidecar and image bytes before responding. The route refuses links, unknown ids, query parameters, invalid files and over-limit files. Image responses have fixed content and privacy headers. Filesystem paths and filenames stay inside the publisher.
+The private `GET /pic/<id>` route uses the opaque id from the latest index built by the same publisher. The server checks the unchanged sidecar and image bytes before responding. The route refuses links, unknown ids, query parameters, invalid files and over-limit files. Image responses have fixed content and privacy headers. Filesystem paths and filenames stay inside the publisher.
 
 ### GitHub reads
 
@@ -62,8 +68,8 @@ The snapshot uses an allowlist of metadata. PC paths, local user and machine nam
 
 ## Checks and review pictures
 
-Run `tools\pc\mission\selftest.bat nopause` or `node tools/pc/mission/selftest.js`, then `node tools/pc/mission/browser_test.js`. The fixture tests use temporary folders and loopback. Edge runs headlessly with GPU disabled. The browser checks both schema versions, startup, feed loss, per-source outages, navigation, picture provenance display, touch targets, contrast, privacy and layout at 320 and 412 px. The standing command is `node contrib/opus/tools/run_all_checks.js`.
+Run `tools\pc\mission\selftest.bat nopause` or `node tools/pc/mission/selftest.js`, then `node tools/pc/mission/browser_test.js`. The fixture tests use temporary folders and loopback. Edge runs headlessly with GPU disabled. The checks cover installation safeguards, asset routes, both schema versions, startup, feed loss, per-source errors, legacy queues, PR-only jobs, navigation, touch targets, contrast, privacy and layout. The standing command is `node contrib/opus/tools/run_all_checks.js`.
 
-To refresh stamped review pictures, set `MISSION_STAMP_PYTHON` to a local Python with Pillow. Run `node tools/pc/mission/browser_test.js docs/shots/mission_r3`. The captures are 412 × 720 px and bear fixture labels. Pictures inside the deck carry their own sidecar provenance.
+To refresh stamped review pictures, set `MISSION_STAMP_PYTHON` to a local Python with Pillow. Run `node tools/pc/mission/browser_test.js docs/shots/mission_1117`. The Now, Queue and Crew captures use a 448 px Pixel 10 Pro XL viewport and a 1440 px desktop viewport. Each image is 720 px tall with its revision visible. Crew has a second crop for its lower rows.
 
 The Board's live PC and Pixel checks follow merge.
