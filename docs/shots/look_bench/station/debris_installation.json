@@ -1,0 +1,12 @@
+{
+    "checked_files":  {
+                          "assets\\ships\\a4_props.gd":  "a0543c1e4e5f17cb4e14e25eb45ae27b8157d42eb221a60b012b4cd4585148d8",
+                          "render\\board.gd":  "54f1e85747cdbc227084c6d9ed722f15d67c04438435af4eafcc884b7b6de9b8",
+                          "render\\station_debris.gd":  "d7254e4e3ec05a2e302978f98e9d0f8eab40731dc71da587e0d957b6e3e70e4b",
+                          "world\\blocker_visuals.gd":  "0e78b24f164afc002bfc47ff565861dafdad0113c029db73bccce38c356e35dd",
+                          "assets\\ships\\station_T2\\station_T2.glb":  "d0af9c4bd3b87a42995ae6be737bd407c536014634579e123a4d0d20eada3d56",
+                          "gen\\ships\\station_T2.scn":  "008c61d321cd7759b53a8940b2697340bceadab8ac8a4e76004695fc06af0546",
+                          "gen\\ships\\station_T2_debris.scn":  "06fa2da27c76452a1dc2797ec9ab6fac9b7ba9a249e643fc33a7415ec57a93d7"
+                      },
+    "both_projects_match":  true
+}

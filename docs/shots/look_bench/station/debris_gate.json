@@ -1,0 +1,37 @@
+{
+  "limit_ms": 12.5,
+  "passed_on_repeat": true,
+  "frame1080_ms_first": [
+    10.449,
+    13.79,
+    12.892
+  ],
+  "frame1080_ms_hidden_debris_control": [
+    11.136,
+    11.666,
+    13.584
+  ],
+  "frame1080_ms_second": [
+    9.987,
+    12.111,
+    12.241
+  ],
+  "gpu4k_ms": [
+    6.74100017547607,
+    6.75699996948242,
+    6.77600002288818
+  ],
+  "ship_count": 20,
+  "squadron_count": 4,
+  "debris_pieces": 32,
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "measured_frames_per_session": 720,
+  "warmup_frames_per_session": 120,
+  "bench_source_sha256": "ee061ee64ebf4d1ed5dc126b11bf946b2b5039ca5398bf8f1ebb4f7c82de0f65",
+  "control_method": "Same scene gate, with the debris node hidden and processing disabled on entry to the tree.",
+  "raw_sha256": {
+    "first": "c9fc441f23454c577b679478d73d087eaaaf1d5b9d280b6767d3a3e98e7782e0",
+    "control": "ca149bc278a5d916b07d38fb0b752ba70e849fc6e38b5d6ba089b380b90a4894",
+    "second": "2eab36679d8bc001e4a963ce5366430eed18e6cb371b8758960b2cd7c21929f7"
+  }
+}
