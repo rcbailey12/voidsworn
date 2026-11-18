@@ -72,7 +72,7 @@ check(/func _button\([^)]*keys := false\)/.test(hud) && /Control\.FOCUS_ALL if k
 check(/_button\(str\(it\[0\]\), str\(it\[1\]\), it\[2\] if it\.size\(\) > 2 else null, it == items\[0\], true\)/.test(hud), 'battle menu buttons take keyboard focus');
 check(/_button\("Continue", "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
 const t = read('godot/main/title.gd');
-check(/sf\.draw_center = false/.test(t) && /sf\.border_color = HUD\.BONE/.test(t), 'title screen focus ring unchanged (the source of the battle ring)');
+check(/GS\.focus_ring\(k\)/.test(t) && /add_theme_stylebox_override\("focus", sf\)/.test(t), 'title buttons use the shared focus ring');
 
 // 4. TY6: no port text under the floor (a one-glyph ornament, like the side panel's gilt diamond, is not text)
 const gs = diff.godotSizes(files);
@@ -122,7 +122,7 @@ check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0
   const cb = read('godot/ui/campaign/choice_button.gd'), gsh2 = read('godot/ui/theme/glass_shell.gd'), view = read('godot/campaign/campaign_view.gd');
   const msh = read('godot/ui/campaign/map3d_shaders.gd');
   const fleet = read('godot/ui/campaign/fleet_manifest.gd');
-  check(/const GS = preload\("res:\/\/ui\/theme\/glass_shell\.gd"\)/.test(cui) && /const GILT := GS\.GILT/.test(cui), 'campaign_ui.gd takes its palette from glass_shell.gd (ui_style.md 8)');
+  check(/const GS = preload\("res:\/\/ui\/theme\/glass_shell\.gd"\)/.test(cui) && /const BONE := GS\.TEXT\b/.test(cui) && /GS\.MAP_EMBER/.test(cui) && !/GS\.(?:GILT\w*|ON_GILT|KEY_FG)\b/.test(cui), 'campaign_ui.gd takes its palette from the orders sheet (RULEBOOK 9)');
   check(!/Color\("#[0-9a-fA-F]{6}"\)/.test(cui), 'campaign_ui.gd writes no colour hex of its own (new colours go into glass_shell.gd first)');
   check(!/Color\("#[0-9a-fA-F]{6}"\)/.test(mi), 'map_intel.gd writes no colour hex of its own');
   check(/GS\.make_theme\(k, font, font_semi, 17\)/.test(cui) && !/set_stylebox\("focus"/.test(cui), 'campaign theme is GS.make_theme at base 17 and sets no focus stylebox of its own (one ring, ui_spec.md 6)');

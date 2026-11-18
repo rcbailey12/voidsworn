@@ -1,27 +1,12 @@
 extends RefCounted
-# The game's UI theme (issue #271). Layout: Glass Shell C bold (Ryan, Nov 9 2026, FINDINGS R145: "C bold, let's try").
-# Identity: Lime Tactical (Ryan, Nov 9 2026 12:00 CST, FINDINGS R149: "yeah i like lime tactical, run it"): a combat
-# targeting computer. Chakra Petch (angular) for words, Azeret Mono for numbers, black-olive panels, pale sage text, neon
-# lime as the one accent for the next action, chamfered corners, lime brackets, slanted strips, a fine scanline on panels.
-# The battle HUD is the first user; the title, the campaign map, the end screen and the menus follow it from
-# contrib/opus/briefs/ui_style.md, which states these rules in plain words.
-#
-#   - Panels are matte, near-solid slabs (80%): the scene only hints through. Text never sits on the panel itself.
-#   - Text always sits on a solid backing: a well inside a panel, or a strip on the board (nameplates, chips, tags).
-#   - Lime means "do this next" (the filled End ship slab, the UP tag, the lit step, the armed weapon) and marks the
-#     panel furniture (section heads, brackets, the bevel). Only one filled lime button at a time (R148).
-#   - ALERT red is reserved for danger (the Nemesis). Faction colour is a small accent only (a crest, a 3 px bar); the
-#     friend and foe channel in battle is FRIEND mint and the FOE lavender family (ui_spec.md 5.1 and 5.4).
-#   - Sizes are written at the 1080 design height and scaled by ui_scale.gd k (ui_spec.md 4.1). No text under 17 (RULEBOOK 9.4).
+# The shared UI theme. The orders sheet is the current palette (RULEBOOK 9). Older builders still supply the
+# campaign's shapes and spacing; their decorative edges are neutral and the next action uses ember.
 #
 # Every function takes k (the UI scale) so a screen can build its pieces at its own size. Nothing here reads the rules.
 
 const UiScale := preload("res://ui/ui_scale.gd")
 
-# ---------------------------------------------------------------- palette: Lime Tactical (FINDINGS R149)
-# The names are the old ones (ui_spec.md 5.1) so every screen keeps its meaning: GILT is still "the accent", now neon lime;
-# BONE is the text family, now pale sage; INK and IRON are the backgrounds, now black-olive. The values are the mockup's
-# (docs/shots/ui_redesign/identity/2_lime_tactical.png, contrib/opus/ui271_mockups/identity/identity.css body.id2).
+# ---------------------------------------------------------------- legacy palette and materials (FINDINGS R149)
 const INK := Color("#090c09")
 const IRON := Color("#111611")
 const IRON2 := Color("#182019")
@@ -29,10 +14,10 @@ const IRON3 := Color("#283228")
 const BONE := Color("#e8eee0")         # pale sage: body text
 const BONE2 := Color("#a7b09d")        # secondary text
 const BONE3 := Color("#7c8674")        # dim text (units, maxima, "done"): 4.5:1 or better on a well
-const GILT := Color("#c8f53a")         # THE accent, neon lime: the next action (End ship, the lit step, UP, the armed weapon)
-const GILT2 := Color("#6f8a1c")        # dim lime: tooltip edges, a disabled finish button
+# Retired swatches kept for the HUD's legacy input and its palette check.
+const GILT := Color("#c8f53a")
+const GILT2 := Color("#6f8a1c")
 const GILT_HOVER := Color("#d9ff5c")
-const ON_GILT := Color("#0d1200")      # text on lime
 const VERD := Color("#59d6a8")
 const BLOOD := Color("#ff8a72")
 const ALERT := Color("#ff4433")        # reserved red: the Nemesis and danger, nothing else
@@ -48,7 +33,6 @@ const FRIEND := Color("#52f0c4")       # your ships: names, nameplate bars, Read
 const FOE := Color("#c4a4ff")          # FOE family: enemy names
 const FOE_RING := Color("#a06bff")     # FOE family: rings, chip borders, danger badges
 const FOE_TEXT := Color("#e2d2ff")     # FOE family: text on the enemy chip
-const KEY_FG := Color("#d9f78a")       # key cap text (light lime, in the number face)
 # the campaign pages (issue #344, UI rollout 1). The map's danger band colours, stop glyph colours and route planner colours
 # left with the Briefing build (FINDINGS R165): danger is four pips and a word, a stop is its 3D model, a route is lime or pale.
 const BLUE := Color("#62a8ff")         # B4 blue event options (an option your fleet qualifies for)
@@ -68,16 +52,12 @@ const WELL := Color("#080a08")         # the solid backing under every block of 
 const WELL_A := 0.93
 const STRIP_A := 0.88                  # a text strip on the board (nameplates, chips): WELL at this alpha
 const SHELL := Color(0.039, 0.051, 0.039, 0.80)   # the matte panel: near-solid black-olive, the scene only hints through
-const SHELL_EDGE := Color(0.784, 0.961, 0.227, 0.20)  # lime at 20%: the panel edge
-const WELL_EDGE := Color(0.784, 0.961, 0.227, 0.35)   # lime at 35%: a well's 2 px left bar
-const LINE := Color(0.784, 0.961, 0.227, 0.12)        # lime at 12%: row separators and quiet edges
-const SCAN := Color(0.784, 0.961, 0.227, 0.025)       # the fine scanline on panels (one line every 4 px)
 const SHIELD_TRACK := Color("#1b2a2e") # the empty part of a shield bar
 const CUT := 14.0                      # the panel chamfer (top left and bottom right), at 1080
 const BTN_CUT := 10.0                  # the finish button's chamfer
-const BRACKET := 18.0                  # the lime corner brackets (top right and bottom left), 2 px lines
+const BRACKET := 18.0                  # corner brackets (top right and bottom left), 2 px lines
 
-# Orders sheet, campaign map only (R176). The old names above still serve the other screens.
+# Orders sheet (R176, R191, R210).
 const MAP_EMBER := Color("#ff8a3a")
 const TEXT := Color("#f0eade")
 const TEXT2 := Color("#c4beb0")
@@ -85,6 +65,8 @@ const TEXT3 := Color("#969084")
 const NEM := Color("#ff6050")
 const ON_EMBER := Color("#100c08")
 const SHEET_HAIR := Color("#48443c")
+const LINE := Color(TEXT2, 0.12)       # row separators and quiet edges
+const SCAN := Color(TEXT2, 0.025)      # the fine scanline on older panels (one line every 4 px)
 # CR4 uses an opaque reading page, with a neutral picture slot for missing flagship art.
 const CAREER_INK := Color("#0a0d10")
 const CAREER_PICTURE := Color("#171b20")
@@ -276,12 +258,11 @@ static func num_bold() -> Font:
 
 # ---------------------------------------------------------------- frames and backings
 
-# the panel: a matte, near-solid black-olive slab with a lime edge at 20% and two chamfered corners (top left, bottom
-# right). frame_marks() draws the scanline, the lime bevel on the top-left chamfer and the corner brackets.
+# The older matte panel, with a quiet edge and two chamfered corners.
 static func shell(k: float, pad := 8.0) -> StyleBoxFlat:
 	var g := StyleBoxFlat.new()
 	g.bg_color = SHELL
-	g.border_color = SHELL_EDGE
+	g.border_color = SHEET_HAIR
 	g.set_border_width_all(1)
 	g.set_corner_radius_all(0)
 	g.corner_detail = 1
@@ -294,13 +275,11 @@ static func shell(k: float, pad := 8.0) -> StyleBoxFlat:
 	return g
 
 
-# a solid well: every line of text inside a frame sits on one. Square, with a 2 px lime bar on the left (an ALERT bar
-# for the Nemesis block: pass bar). A lit well (the step you are on, the armed weapon, the ship that is up) gets a lime
-# edge all round and a soft lime glow; nothing else lights a well.
+# A square well with a quiet left edge unless a specific bar or selection colour is supplied.
 static func well(k: float, accent := Color(0, 0, 0, 0), pad_x := 12.0, pad_y := 8.0, bar := Color(0, 0, 0, 0)) -> StyleBoxFlat:
 	var w := StyleBoxFlat.new()
 	w.bg_color = Color(WELL, WELL_A)
-	w.border_color = bar if bar.a > 0.0 else WELL_EDGE
+	w.border_color = bar if bar.a > 0.0 else SHEET_HAIR
 	w.set_border_width_all(0)
 	w.border_width_left = maxi(2, px(3 if bar.a > 0.0 else 2, k))
 	w.set_corner_radius_all(0)
@@ -308,8 +287,6 @@ static func well(k: float, accent := Color(0, 0, 0, 0), pad_x := 12.0, pad_y := 
 		w.border_color = accent
 		w.set_border_width_all(1)
 		w.border_width_left = maxi(2, px(2, k))
-		w.shadow_color = Color(accent, 0.16)
-		w.shadow_size = px(6, k)
 	w.content_margin_left = px(pad_x, k)
 	w.content_margin_right = px(pad_x, k)
 	w.content_margin_top = px(pad_y, k)
@@ -355,12 +332,11 @@ static func tag(k: float, col: Color, filled := true) -> StyleBoxFlat:
 	return s
 
 
-# a key cap ("B", "Tab", "Space") beside an action: the key always shows next to what it does. A lime-tinted square with
-# a lime edge; the text is KEY_FG in the number face.
+# A key cap beside an action on the older campaign screens.
 static func keycap(k: float) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = Color("#141a0c")
-	s.border_color = Color(GILT, 0.45)
+	s.bg_color = CAREER_INK
+	s.border_color = SHEET_HAIR
 	s.set_border_width_all(1)
 	s.set_corner_radius_all(0)
 	s.content_margin_left = px(5, k)
@@ -370,11 +346,11 @@ static func keycap(k: float) -> StyleBoxFlat:
 	return s
 
 
-# buttons: a plain one is a dark square with a lime edge at 28% (55% on hover); the primary is solid lime with dark text
+# Buttons: a quiet edge, stronger under the pointer. A filled primary uses ember with dark text.
 static func button_boxes(k: float, primary := false) -> Dictionary:
 	var n := StyleBoxFlat.new()
-	n.bg_color = GILT if primary else Color("#10140b", 0.97)
-	n.border_color = GILT if primary else Color(GILT, 0.28)
+	n.bg_color = MAP_EMBER if primary else Color(CAREER_INK, 0.97)
+	n.border_color = MAP_EMBER if primary else SHEET_HAIR
 	n.set_border_width_all(1)
 	n.set_corner_radius_all(0)
 	if primary:
@@ -386,61 +362,50 @@ static func button_boxes(k: float, primary := false) -> Dictionary:
 	n.content_margin_top = px(5, k)
 	n.content_margin_bottom = px(5, k)
 	var h := n.duplicate() as StyleBoxFlat
-	h.bg_color = GILT_HOVER if primary else Color("#1b210d", 0.97)
-	h.border_color = GILT_HOVER if primary else Color(GILT, 0.55)
+	h.bg_color = MAP_EMBER if primary else Color(CAREER_PICTURE, 0.97)
+	h.border_color = TEXT if primary else TEXT3
 	var d := n.duplicate() as StyleBoxFlat
-	d.bg_color = Color(GILT2, 0.35) if primary else Color("#060806", 0.9)
+	d.bg_color = Color(CAREER_INK, 0.9)
 	d.border_color = LINE
 	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
 
 
-# the screen's one finishing action (End ship; Continue, Confirm or Launch elsewhere): the big filled lime slab of the
-# Lime Tactical mockup. Flat lime, chamfered top left and bottom right, a soft lime glow, dark caps label. One per screen.
+# The campaign's finishing action: ember and dark caps in the existing button shape.
 static func finish_boxes(k: float) -> Dictionary:
 	var n := StyleBoxFlat.new()
-	n.bg_color = GILT
-	n.border_color = GILT
+	n.bg_color = MAP_EMBER
+	n.border_color = MAP_EMBER
 	n.set_border_width_all(1)
 	n.set_corner_radius_all(0)
 	n.corner_detail = 1
 	n.corner_radius_top_left = px(BTN_CUT, k)
 	n.corner_radius_bottom_right = px(BTN_CUT, k)
-	n.shadow_color = Color(GILT, 0.35)
-	n.shadow_size = px(14, k)
 	n.anti_aliasing = true
 	for side in [SIDE_LEFT, SIDE_RIGHT]:
 		n.set_content_margin(side, px(12, k))
 	for side in [SIDE_TOP, SIDE_BOTTOM]:
 		n.set_content_margin(side, px(6, k))
 	var h := n.duplicate() as StyleBoxFlat
-	h.bg_color = GILT_HOVER
-	h.border_color = GILT_HOVER
-	h.shadow_color = Color(GILT, 0.55)
+	h.border_color = TEXT
 	var d := n.duplicate() as StyleBoxFlat
-	d.bg_color = Color("#1a2109")
-	d.border_color = Color(GILT2, 0.8)
-	d.shadow_size = 0
+	d.bg_color = CAREER_PICTURE
+	d.border_color = SHEET_HAIR
 	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
 
 
-# a lit button: the step's own confirm (Move here, Fire N weapons) when the finishing action is already the filled lime
-# one. A dark lime-tinted fill, a lime edge, lime text and a soft glow, so the screen never shows two filled buttons (R148).
-static func lit_boxes(k: float) -> Dictionary:
+# An outlined action or a neutral selected button, using the normal button's metrics.
+static func lit_boxes(k: float, accent: Color) -> Dictionary:
 	var bb := button_boxes(k)
 	var n := (bb["normal"] as StyleBoxFlat).duplicate() as StyleBoxFlat
-	n.bg_color = Color("#171d0c", 0.97)
-	n.border_color = GILT
-	n.shadow_color = Color(GILT, 0.20)
-	n.shadow_size = px(6, k)
+	n.bg_color = Color(CAREER_PICTURE, 0.97)
+	n.border_color = accent
 	var h := n.duplicate() as StyleBoxFlat
-	h.bg_color = Color("#232d10", 0.97)
-	h.border_color = GILT_HOVER
+	h.bg_color = CAREER_INK
 	return {"normal": n, "hover": h, "pressed": h, "disabled": bb["disabled"]}
 
 
-# the finish button's highlight: a thin light line along its top edge (the slab is flat lime, as in the mockup). Off while
-# the button is disabled. The name is kept from the Glass Shell build so callers stay the same.
-static func gilt_sheen(b: Button, k: float) -> void:
+# The finish button's highlight: a thin light line along its top edge. Off while disabled.
+static func finish_sheen(b: Button, k: float) -> void:
 	b.draw.connect(func() -> void:
 		if b.disabled:
 			return
@@ -453,11 +418,11 @@ static func gilt_sheen(b: Button, k: float) -> void:
 	b.mouse_exited.connect(b.queue_redraw)
 
 
-# a key cap sitting on the lime button: dark text on a light wash with a dark edge
-static func keycap_on_gilt(k: float) -> StyleBoxFlat:
+# A key cap on the ember button: dark text on a light wash with a dark edge.
+static func keycap_on_ember(k: float) -> StyleBoxFlat:
 	var s := keycap(k)
 	s.bg_color = Color(1, 1, 1, 0.22)
-	s.border_color = Color(ON_GILT, 0.55)
+	s.border_color = Color(ON_EMBER, 0.55)
 	return s
 
 
@@ -500,9 +465,9 @@ static func make_theme(k: float, body_f: Font, body_semi: Font, base := 17) -> T
 	th.set_font_size("normal_font_size", "RichTextLabel", px(17, k))
 	th.set_font_size("bold_font_size", "RichTextLabel", px(17, k))
 	th.set_font_size("mono_font_size", "RichTextLabel", px(17, k))
-	# tooltips: a solid well with sage text (keyword definitions, one layer deep), a dim lime edge
+	# Tooltips: a solid well with a quiet hairline edge.
 	var tp := well(k, Color(0, 0, 0, 0), 10, 7)
-	tp.border_color = GILT2
+	tp.border_color = SHEET_HAIR
 	tp.set_border_width_all(1)
 	th.set_stylebox("panel", "TooltipPanel", tp)
 	th.set_color("font_color", "TooltipLabel", BONE)
@@ -527,9 +492,9 @@ static func make_theme(k: float, body_f: Font, body_semi: Font, base := 17) -> T
 
 # the panel's marks, drawn by the panel itself over its fill and under its children:
 #   - the fine scanline (SCAN, one 1 px line every 4 px, kept inside the two chamfers),
-#   - a 2 px lime bevel along the top-left chamfer (bevel; off on the flat top bar),
-#   - lime corner brackets, 18 px arms of 2 px, at the top right and bottom left (brackets).
-static func frame_marks(p: Control, k: float, brackets := true, bevel := true, col := GILT) -> void:
+#   - a 2 px bevel along the top-left chamfer (bevel; off on the flat top bar),
+#   - corner brackets, 18 px arms of 2 px, at the top right and bottom left (brackets).
+static func frame_marks(p: Control, k: float, brackets := true, bevel := true, col := SHEET_HAIR) -> void:
 	var cut := float(px(CUT, k))
 	var arm := float(px(BRACKET, k))
 	var w := maxf(2.0, float(px(2, k)))
@@ -561,7 +526,7 @@ static func frame_marks(p: Control, k: float, brackets := true, bevel := true, c
 
 
 # the old name (Glass Shell's corner ticks): the full panel marks
-static func ticks_on(p: Control, k: float, col := GILT) -> void:
+static func ticks_on(p: Control, k: float, col := SHEET_HAIR) -> void:
 	frame_marks(p, k, true, true, col)
 
 
@@ -661,17 +626,17 @@ static func plain_button(b: Button, k: float, size := 17.0, f: Font = null) -> v
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 
 
-# the one filled lime button of the Briefing layout ("JUMP TO RELAY"): flat lime, square, no glow
+# The filled variant of the Briefing jump button.
 static func jump_boxes(k: float) -> Dictionary:
-	var n := flat(GILT, 20.0, 0.0, k)
-	var h := flat(GILT_HOVER, 20.0, 0.0, k)
-	var d := flat(Color("#1a2109"), 20.0, 0.0, k)
+	var n := flat(MAP_EMBER, 20.0, 0.0, k)
+	var h := flat(MAP_EMBER, 20.0, 0.0, k)
+	var d := flat(CAREER_PICTURE, 20.0, 0.0, k)
 	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
 
 
-# the key cap on the lime button: dark text on a light dark wash, no edge
+# The key cap on the filled button: a dark wash, no edge.
 static func keycap_flat(k: float) -> StyleBoxFlat:
-	var s := flat(Color(ON_GILT, 0.16), 7.0, 2.0, k)
+	var s := flat(Color(ON_EMBER, 0.16), 7.0, 2.0, k)
 	return s
 
 
@@ -713,7 +678,7 @@ static func halo_text(ci: CanvasItem, f: Font, at: Vector2, t: String, size: int
 	ci.draw_string(f, at, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
 
 
-# the square number marker of a next jump on the map (the same 1, 2, 3 as the route rows): filled lime with dark text
+# the square number marker of a next jump on the map (the same 1, 2, 3 as the route rows): filled ember with dark text
 # for the picked one, outlined for the others
 static func marker(ci: CanvasItem, center: Vector2, k: float, label: String, f: Font, picked: bool, side := 34.0) -> void:
 	var s := float(px(side, k))
