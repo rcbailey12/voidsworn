@@ -36,19 +36,22 @@ func _check_mesh(profile: int, template: Array) -> void:
 	var balance := {}
 	var uses := {}
 	var side_triangles := 0
+	var bevel_triangles := 0
 	var volume := 0.0
 	for i in range(0, indices.size(), 3):
 		var a := indices[i]
 		var b := indices[i + 1]
 		var c := indices[i + 2]
 		var normal := (points[c] - points[a]).cross(points[b] - points[a])
-		_check(normal.length_squared() > 1e-8 and normal.dot(normals[a] + normals[b] + normals[c]) > 0.0,
-			label + ": non-degenerate triangle with outward shading normals")
+		_check(normal.length_squared() > 1e-12 and normal.dot(normals[a] + normals[b] + normals[c]) > 0.0,
+			label + ": triangle %d is non-degenerate with outward shading normals" % (i / 3))
 		volume += points[a].dot(points[c].cross(points[b])) / 6.0
 		if a >= FRAGMENTS.CAP * 2:
 			side_triangles += 1
 			_check(b >= FRAGMENTS.CAP * 2 and c >= FRAGMENTS.CAP * 2 and absf(normal.normalized().y) < 0.01,
 				label + ": wall uses the fracture vertices and has a lateral normal")
+		elif (template[3][a] as Vector3).z >= 0.89 and absf(normal.normalized().y) < 0.95:
+			bevel_triangles += 1
 		var triangle := [ids[a], ids[b], ids[c]]
 		for j in 3:
 			var u: int = triangle[j]
@@ -58,11 +61,12 @@ func _check_mesh(profile: int, template: Array) -> void:
 			balance[edge] = balance.get(edge, 0) + (1 if u < v else -1)
 	for edge in uses:
 		_check(uses[edge] == 2 and balance[edge] == 0, label + ": every welded edge has two opposite uses")
-	_check(side_triangles == FRAGMENTS.RIM * 2 and volume > 0.01, label + ": closed piece with real thickness")
+	_check(side_triangles == FRAGMENTS.RIM * 2 * (FRAGMENTS.WALL_RINGS - 1)
+		and bevel_triangles >= FRAGMENTS.RIM and volume > 0.01, label + ": bevels and a layered wall enclose real volume")
 
 
 func _check_bursts(fx) -> void:
-	var pool: POOLS.Pool = fx.pools["plate"]
+	var pool: FRAGMENTS.Pool = fx.pools["plate"]
 	var legacy_rng := RandomNumberGenerator.new()
 	legacy_rng.state = fx.rng.state
 	# The old recipe used ten draws per chip, including the direction, tumble axis and phase.
@@ -76,39 +80,103 @@ func _check_bursts(fx) -> void:
 	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "corsair")
 	WEAP._throw_debris(fx, Vector3.ZERO, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "chorus")
 	_check(pool.emitted == 2 * macro_pieces + 7 and fx.pools["smk"].emitted == 4, "Other hits keep seven pieces. Chorus emits four sprites.")
-	# Each pending slot repeats its 20 packed attributes for every template vertex.
-	var stride: int = pool.vpp * POOLS.STRIDE
 	var first_slot := 0
 	for faction in ["hegemony", "ithar", "corsair"]:
 		var count := 7 if faction == "corsair" else macro_pieces
 		var paint: Color = fx.faction_info(faction).fragment_paint
 		var floor_count := 0
 		for j in count:
-			var i := (first_slot + j) * stride
-			var key := int(pool.pending[i + 18])
+			var particle := pool.particles[first_slot + j]
+			var key := int(particle[18])
 			var profile := -1 - key if key < 0 else key
 			_check((profile >= FRAGMENTS.GLASS) == (faction == "ithar"), "The target picks the fragment mesh family")
-			var packed_paint := Color(pool.pending[i], pool.pending[i + 1], pool.pending[i + 2])
+			var packed_paint := Color(particle[0], particle[1], particle[2])
 			_check(packed_paint.is_equal_approx(paint), "The target supplies the outer hull paint")
-			_check(pool.pending[i + 9] > 0.0, "The fragment leaves the face outward")
+			_check(particle[9] > 0.0, "The fragment leaves the face outward")
 			if key < 0:
 				floor_count += 1
 		_check(floor_count == 2, "Only the lead pieces get the full screen-size floor")
-		var first := first_slot * stride
-		var chip := first + 2 * stride
-		_check(pool.pending[first + 16] > pool.pending[chip + 16]
-			and absf(pool.pending[first + 15]) < absf(pool.pending[chip + 15])
-			and _velocity(pool.pending, first).length() < _velocity(pool.pending, chip).length(),
+		var first := pool.particles[first_slot]
+		var chip := pool.particles[first_slot + 2]
+		_check(first[16] > chip[16] and absf(first[15]) < absf(chip[15])
+			and _velocity(first).length() < _velocity(chip).length(),
 			"Lead piece is larger, slower and tumbles more gently than a chip")
 		first_slot += count
 
 
-func _velocity(data: PackedFloat32Array, start: int) -> Vector3:
-	return Vector3(data[start + 8], data[start + 9], data[start + 10])
+func _velocity(data: PackedFloat32Array) -> Vector3:
+	return Vector3(data[8], data[9], data[10])
+
+
+func _check_sparks(fx) -> void:
+	var streaks: POOLS.Pool = fx.pools["stk"]
+	var glow: POOLS.Pool = fx.pools["spr"]
+	var glow_before: int = glow.emitted
+	WEAP._throw_sparks(fx, Vector3.ZERO, Vector3.UP, Vector3.UP, 1.0, 1.0, Color.CORAL, 4, 28.0, 0.45, "shell")
+	_check(streaks.emitted == 6 and glow.emitted == glow_before, "Each hull spark uses one analytic streak")
+	var stride: int = POOLS.STRIDE * streaks.vpp
+	_check(streaks.pending[19] == 8.0 and streaks.pending[stride + 19] == 8.0
+		and streaks.pending[16] != streaks.pending[stride + 16], "Hull sparks use distinct motion-trail lengths")
+	WEAP._throw_sparks(fx, Vector3.ZERO, Vector3.UP, Vector3.UP, 1.0, 1.0, Color.CORAL, 4, 28.0, 0.45, "shield")
+	_check(glow.emitted == glow_before + 6 and streaks.pending[6 * stride + 19] == 1.0,
+		"Shield sparks retain their existing sprite and streak")
+
+
+func _swatch(color: Color) -> ImageTexture:
+	var image := Image.create_empty(8, 8, false, Image.FORMAT_RGBA8)
+	image.fill(color)
+	return ImageTexture.create_from_image(image)
+
+
+func _check_finish(fx) -> void:
+	var target := Node3D.new()
+	root.add_child(target)
+	target.position = Vector3(4, 3, 2)
+	var maps := [_swatch(Color.CORAL), _swatch(Color(1, 0.35, 0.75)), _swatch(Color(0.51, 0.53, 1))]
+	var hull_mat := ORMMaterial3D.new()
+	hull_mat.albedo_texture = maps[0]
+	hull_mat.orm_texture = maps[1]
+	hull_mat.normal_enabled = true
+	hull_mat.normal_texture = maps[2]
+	var mesh := ArrayMesh.new()
+	var surface := []
+	surface.resize(Mesh.ARRAY_MAX)
+	surface[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.ZERO, Vector3.RIGHT * 2, Vector3.BACK * 2])
+	surface[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2(0.25, 0.25), Vector2(0.75, 0.25), Vector2(0.25, 0.75)])
+	surface[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2])
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	surface[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.UP, Vector3.UP + Vector3.RIGHT * 2, Vector3.UP + Vector3.BACK * 2])
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	mesh.surface_set_material(1, hull_mat)
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	target.add_child(mi)
+	fx.add_ship("textured", target, {"meshes": [mi], "shielded": false})
+	var p := target.global_position + Vector3(0.5, 1, 0.5)
+	var finish := FRAGMENTS.source(fx.ships["textured"], p, Vector3.UP)
+	_check(finish.get("maps") == maps, "The struck surface supplies its exact color, ORM and normal textures")
+	var uv: Vector2 = finish.get("uv", Vector2.ZERO)
+	_check(uv.is_equal_approx(Vector2(0.375, 0.375)), "The texture patch is centred on the hit triangle's UV")
+	var pool: FRAGMENTS.Pool = fx.pools["plate"]
+	var slot := pool.particles.size()
+	WEAP._throw_debris(fx, p, Vector3.UP, Vector3.RIGHT, 2.0, 1.0, 4, 11.0, 0.16, 0.7, "shell", "hegemony", true, fx.ships["textured"])
+	_check(pool.particles[slot][26] >= 0 and is_equal_approx(pool.particles[slot][20], uv.x),
+		"The live burst packs the struck UV and its bound finish")
+	var mat := pool.mi.material_override as ShaderMaterial
+	_check(mat.get_shader_parameter("hull_color_0") == maps[0] and mat.get_shader_parameter("hull_orm_0") == maps[1]
+		and mat.get_shader_parameter("hull_normal_0") == maps[2], "The one draw binds the target's full-resolution textures")
+	pool.flush(2.1)
+	_check(pool.mi.multimesh.visible_instance_count == pool.particles.size(), "Only living slots enter the draw")
+	pool.flush(10.0)
+	_check(pool.particles.is_empty() and pool.mi.multimesh.visible_instance_count == 0, "Expired pieces leave the draw")
+	fx.remove_ship("textured")
+	target.free()
 
 
 func _run() -> void:
 	var templates := FRAGMENTS.templates()
+	_check(templates.size() >= 12 and FRAGMENTS.RIM >= 24 and FRAGMENTS.VERTICES >= 300,
+		"Twelve detailed profiles with densely broken rims")
 	for profile in templates.size():
 		_check_mesh(profile, templates[profile])
 	for quality in ["max", "high", "low"]:
@@ -116,11 +184,14 @@ func _run() -> void:
 		root.add_child(fx)
 		fx.manual = true
 		fx.setup({"quality": quality})
-		var pool: POOLS.Pool = fx.pools["plate"]
+		var pool: FRAGMENTS.Pool = fx.pools["plate"]
 		_check(pool.cap == (384 if quality == "max" else 192), "Original pool capacity at " + quality)
-		_check(pool.vpp == FRAGMENTS.VERTICES, "The live pool uses the shared template stride")
+		_check(pool.mi.multimesh.mesh.get_surface_count() == 1
+			and pool.mi.multimesh.mesh.surface_get_array_len(0) == FRAGMENTS.VERTICES, "One mesh surface uses the detailed layout")
 		if quality == "max":
 			_check_bursts(fx)
+			_check_sparks(fx)
+			_check_finish(fx)
 		fx.free()
-	print("PASS hit fragment topology, side walls, burst and pool sizes" if failures == 0 else "FAIL hit fragments: %d" % failures)
+	print("PASS hit fragment topology, layered walls, target textures and burst pool" if failures == 0 else "FAIL hit fragments: %d" % failures)
 	quit(0 if failures == 0 else 1)
