@@ -4,7 +4,7 @@ rem JS campaign files at the repo root in Node (the oracle) and once with the Go
 rem the same scripted player. Compares the campaign state after every click and prints PASS or FAIL with the first difference.
 rem Double-click it, or run "parity_campaign.bat nopause" from a watcher job. parity.bat calls it at the end.
 rem Works from Downloads\voidsworn_test\build\ (the repo's godot\ folder copied to build\godot\) or from a repo checkout.
-setlocal enabledelayedexpansion
+setlocal enableextensions disabledelayedexpansion
 set "HERE=%~dp0"
 set "GAME="
 if exist "%HERE%godot\project.godot" set "GAME=%HERE%"
@@ -12,13 +12,22 @@ if not defined GAME if exist "%HERE%..\..\godot\project.godot" set "GAME=%HERE%.
 if not defined GAME ( echo FAIL: cannot find the Godot project ^(godot\project.godot next to this file or two folders up^). & goto :end )
 set "PROJ=%GAME%godot\"
 set "T=%PROJ%campaign\test\"
-set "NODE=node"
-if exist "%GAME%..\node\node.exe" set "NODE=%GAME%..\node\node.exe"
+set "NODE="
+set "GODOT="
+for %%D in ("%GAME%.") do set "SEARCH=%%~fD"
+rem Find the PC bundle above build or any board lane checkout, as in parity.bat.
+:bundle
+if not defined NODE if exist "%SEARCH%\node\node.exe" set "NODE=%SEARCH%\node\node.exe"
+if not defined GODOT if exist "%SEARCH%\godot_path.txt" set /p GODOT=<"%SEARCH%\godot_path.txt"
+for %%D in ("%SEARCH%\..") do set "NEXT=%%~fD"
+if /i "%NEXT%"=="%SEARCH%" goto :bundle_done
+set "SEARCH=%NEXT%"
+goto :bundle
+:bundle_done
+if not defined NODE set "NODE=node"
 rem Node guard (issue 357): the rules math targets V8 in Node 22; another major gives a false parity failure.
 "%NODE%" -e "process.exit(process.versions.node.split('.')[0]==='22'?0:3)" >nul 2>&1
 if errorlevel 1 ( echo FAIL: Node major 22 is required, use the bundled Node 22 at voidsworn_test\node\node.exe. & exit /b 1 )
-set "GODOT="
-if exist "%GAME%..\godot_path.txt" set /p GODOT=<"%GAME%..\godot_path.txt"
 if not defined GODOT if exist "%HERE%godot_path.txt" set /p GODOT=<"%HERE%godot_path.txt"
 if not defined GODOT ( echo FAIL: no godot_path.txt found ^(it holds the path to the Godot console exe^). & goto :end )
 set "LOG=%T%parity_campaign_log.txt"
@@ -28,8 +37,10 @@ echo Voidsworn campaign parity, %date% %time% > "%LOG%"
 echo Project: %PROJ% >> "%LOG%"
 echo Godot: %GODOT% >> "%LOG%"
 set FAILS=0
+setlocal enabledelayedexpansion
 set "SEEDS="
 for /L %%S in (1,1,30) do set "SEEDS=!SEEDS! %%S"
+endlocal & set "SEEDS=%SEEDS%"
 
 echo.
 echo Campaign parity (G3)
@@ -40,7 +51,7 @@ if errorlevel 1 ( echo   FAIL: campaign_tables.json is stale & set /a FAILS+=1 )
 
 echo [2/4] Playing 30 seeded runs in the JS game and in Godot...
 for /L %%S in (1,1,30) do "%NODE%" "%T%node\golden_campaign.js" %%S "%T%golden\c%%S.jsonl" >> "%LOG%" 2>&1
-"%GODOT%" --headless --path "%PROJ%." --script res://campaign/test/parity_campaign.gd -- "%T%out" !SEEDS! >> "%LOG%" 2>&1
+"%GODOT%" --headless --path "%PROJ%." --script res://campaign/test/parity_campaign.gd -- "%T%out" %SEEDS% >> "%LOG%" 2>&1
 
 echo [3/4] Comparing every click ^(buttons on screen, campaign state, saved copy, PRNG state^)...
 for /L %%S in (1,1,30) do (

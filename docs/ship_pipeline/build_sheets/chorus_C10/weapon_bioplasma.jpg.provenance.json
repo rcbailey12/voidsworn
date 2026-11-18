@@ -1,0 +1,54 @@
+{
+  "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+  "source_dirty": true,
+  "source_diff_sha256": "e6486507c1aafafa7d2d043fc5b3c00eec7df94ba972726c9c4ee9685072d875",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_bioplasma.jpg",
+  "date": "2026-11-17T08:21:09Z",
+  "sources": [
+    {
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "e6486507c1aafafa7d2d043fc5b3c00eec7df94ba972726c9c4ee9685072d875",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_bioplasma.png",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "e6486507c1aafafa7d2d043fc5b3c00eec7df94ba972726c9c4ee9685072d875",
+      "stage": "sheet built",
+      "date": "2026-11-17T08:20:09Z",
+      "image_sha256": "986d167a7991c9a3d1ecd35f1d504dc05b28df297408aba70044a0d9a3105714",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "e6486507c1aafafa7d2d043fc5b3c00eec7df94ba972726c9c4ee9685072d875",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "447c70f0046d20e308f4af09edfba08685a004e8faa903f71e1099c0e26f4b06"
+  ],
+  "stamp_template_sha256": "72efb3cc2c9b23510400b4b726e91937230680e79b13661d00ee025cf4b297d0",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgSKCz9I76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/lnEBHsBulogAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "cebec858faeaee843818d8ae4a14697fc2ffefbe92366e90197255294dba9fdb"
+}

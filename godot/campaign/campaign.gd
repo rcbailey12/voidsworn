@@ -564,18 +564,68 @@ func rollRarity(minR, s, p = null) -> int:
 func fleetKit() -> Dictionary:
 	var k = {}
 	for sh in (RUN["fleet"] if RUN != null else []):
-		var d = derive(sh)
-		for w in d["weapons"]:
-			if w["k"] == "torp": k["torp"] = 1
-			if w["k"] == "lance": k["lance"] = 1
-			if w["k"] == "battery": k["batt"] = 1
-			if w["k"] == "flak": k["flak"] = 1
-			if w["arc"] == "P" or w["arc"] == "S": k["broad"] = 1
-			if w["arc"] == "P" or w["arc"] == "S" or w["k"] == "battery": k["still"] = 1
-		if float(z0(HULLS[sh["tpl"]].get("sh"))) > 0: k["shields"] = 1
-		if jt(HULLS[sh["tpl"]].get("hangar")): k["carrier"] = 1
-		if jt(d["hangar"]): k["sq"] = 1
+		k.merge(_ship_kit(HULLS[sh["tpl"]], derive(sh)))
 	return k
+func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
+	var k := {}
+	for w in d["weapons"]:
+		if w["k"] == "torp": k["torp"] = 1
+		if w["k"] == "lance": k["lance"] = 1
+		if w["k"] == "battery": k["batt"] = 1
+		if w["k"] == "flak": k["flak"] = 1
+		if w["arc"] == "P" or w["arc"] == "S": k["broad"] = 1
+		if w["arc"] == "P" or w["arc"] == "S" or w["k"] == "battery": k["still"] = 1
+	if float(z0(hull.get("sh"))) > 0: k["shields"] = 1
+	if jt(hull.get("hangar")): k["carrier"] = 1
+	if jt(d["hangar"]): k["sq"] = 1
+	return k
+
+# The offer card explains an existing pick. Only the kit is shared with offer eligibility:
+# caps and possible future fits here never add, remove or reweight an offer.
+func boonFleetRelevance(id: String, rarity: int) -> Dictionary:
+	if RUN == null or not BOON_NEED.has(id): return {}
+	var need: String = BOON_NEED[id]
+	var fx: Dictionary = BOON_FX[id][rarity]
+	var ships := PackedStringArray()
+	var capped := false
+	for sh in RUN["fleet"]:
+		var d = derive(sh)
+		if not _ship_kit(HULLS[sh["tpl"]], d).has(need): continue
+		if _boon_has_room(d, fx): ships.append(sh["name"])
+		else: capped = true
+	var result := {"need": need, "ships": ships, "capped": capped}
+	if not ships.is_empty() or capped: return result
+	for mod in or_(RUN.get("inventory"), []):
+		for sh in RUN["fleet"]:
+			if not canFitModule(sh, mod): continue
+			var refitted: Dictionary = sh.duplicate()
+			refitted["mods"] = sh["mods"] + [mod]
+			if _boon_fits_ship(refitted, need, fx):
+				result["refit"] = mod
+				return result
+	for tpl in HULLS:
+		if factionGate(RUN.get("fac"), tpl) != null: continue
+		# A hull the fleet could gain later, without rolling a name or using a reserve captain.
+		var hull := {"tpl": tpl, "uid": null, "mods": [], "cap": {"perks": []}}
+		if _boon_fits_ship(hull, need, fx):
+			result["hull"] = true
+			break
+	return result
+
+func _boon_fits_ship(ship: Dictionary, need: String, fx: Dictionary) -> bool:
+	var d = derive(ship)
+	return _ship_kit(HULLS[ship["tpl"]], d).has(need) and _boon_has_room(d, fx)
+
+func _boon_has_room(derived: Dictionary, fx: Dictionary) -> bool:
+	var current: Dictionary = derived["fx"]
+	var with_boon := sumFx([current, fx])
+	for key in fx:
+		if with_boon[key] <= z0(current.get(key)): continue
+		# Hot Tubes can hit the weapon's reload floor before the stacked bonus cap.
+		if key == "torpCd" and not derived["weapons"].any(func(w): return w["k"] == "torp" and w["cd"] > 1): continue
+		return true
+	return false
+
 func boonUseful(id, kit: Dictionary) -> bool:
 	var n = BOON_NEED.get(id)
 	return not jt(n) or jt(kit.get(n))

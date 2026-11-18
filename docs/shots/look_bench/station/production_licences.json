@@ -1,0 +1,268 @@
+{
+  "textures": [
+    {
+      "file": "T2_dark_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_dark_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_dark_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_dark_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_dark_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_dark_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hgrey_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hgrey_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hgrey_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hmetal_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hmetal_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hmetal_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hpanel_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hpanel_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_hpanel_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_htrim_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_htrim_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_detail_htrim_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hgrey_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hgrey_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hgrey_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hmetal_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hmetal_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hmetal_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hpanel_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hpanel_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_hpanel_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_htrim_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_htrim_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_htrim_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "hegemony_trim.png",
+      "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+      "licence": "CC0",
+      "used": "trim sheet: machining and handling marks (rows: scuffs)"
+    },
+    {
+      "file": "hegemony_decals.png",
+      "source": "own work, drawn by tools/blender/kits/hegemony/stack.py and dedicated CC0 (no downloaded asset)",
+      "licence": "CC0",
+      "used": "decal atlas: hull number, module corner tick, module index bars, registry plate"
+    },
+    {
+      "file": "T2_battery_strip_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_battery_strip_emission.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_battery_strip_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_battery_strip_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_glass_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_glass_emission.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_glass_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_glass_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_marker_lens_albedo.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_marker_lens_emission.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_marker_lens_normal.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    },
+    {
+      "file": "T2_marker_lens_orm.png",
+      "licence": "CC0",
+      "source": "own work: Hegemony procedural stack and station service-detail drawing",
+      "used": "repeating PBR paint tile; no downloaded image or projected concept"
+    }
+  ]
+}

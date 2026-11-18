@@ -1,0 +1,869 @@
+{
+  "source": {
+    "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+    "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+    "source_dirty": true,
+    "stage": "installed in game"
+  },
+  "renderer": "Godot 4.7.2 Forward+ Vulkan",
+  "gpu": "NVIDIA GeForce RTX 5080",
+  "method": "Solo GPU; fixed c170 beta 0.98; idle real battle; no HUD; live presentation time; 180 warm frames before each of two passes; at least 720 measured frames and 8 seconds per pass; retain pass 2. 4K is 2x 3D scaling in a 1920x1080 viewport.",
+  "rows": [
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 7.781,
+        "median": 3.676,
+        "p95": 3.749
+      },
+      "frames": 2169,
+      "gpu_ms": {
+        "max": 3.70300006866455,
+        "median": 3.3510000705719,
+        "p95": 3.37299990653992
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 2,
+        "omni": 0
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 171 deep, 0 belt, 4 mountains",
+        "wisps: 41 gas clouds at middle distance",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 709 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 302 ms",
+        "living debris: 912 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 2023, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 183 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 3.30200004577637,
+        "median": 0.818000018596649,
+        "p95": 1.19599997997284
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 0,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 7.349,
+        "median": 3.682,
+        "p95": 3.735
+      },
+      "frames": 2165,
+      "gpu_ms": {
+        "max": 4.49300003051758,
+        "median": 3.36199998855591,
+        "p95": 3.3840000629425
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 2,
+        "omni": 0
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 171 deep, 0 belt, 4 mountains",
+        "wisps: 41 gas clouds at middle distance",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 709 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 302 ms",
+        "living debris: 912 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 2023, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 183 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 1.29200005531311,
+        "median": 0.796999990940094,
+        "p95": 0.902999997138977
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 0,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 14.032,
+        "median": 6.973,
+        "p95": 7.045
+      },
+      "frames": 1146,
+      "gpu_ms": {
+        "max": 7.05999994277954,
+        "median": 6.64200019836426,
+        "p95": 6.69600009918213
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 2,
+        "omni": 0
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 171 deep, 0 belt, 4 mountains",
+        "wisps: 41 gas clouds at middle distance",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 709 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 302 ms",
+        "living debris: 912 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 2023, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 183 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 1.40299999713898,
+        "median": 0.78600001335144,
+        "p95": 0.916999995708466
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 0,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 13.758,
+        "median": 6.979,
+        "p95": 7.014
+      },
+      "frames": 1145,
+      "gpu_ms": {
+        "max": 6.90500020980835,
+        "median": 6.64900016784668,
+        "p95": 6.67000007629395
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 2,
+        "omni": 0
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 171 deep, 0 belt, 4 mountains",
+        "wisps: 41 gas clouds at middle distance",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 709 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 302 ms",
+        "living debris: 912 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 2023, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 183 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 1.18599998950958,
+        "median": 0.753000020980835,
+        "p95": 0.925000011920929
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 0,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 5.225,
+        "median": 2.603,
+        "p95": 2.646
+      },
+      "frames": 3066,
+      "gpu_ms": {
+        "max": 2.62700009346008,
+        "median": 2.28999996185303,
+        "p95": 2.32299995422363
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 0
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 102 deep, 0 belt, 4 mountains",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 640 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 366 ms",
+        "living debris: 584 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 738, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 230 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 1.25899994373322,
+        "median": 0.643999993801117,
+        "p95": 0.776000022888184
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 1,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 5.163,
+        "median": 2.599,
+        "p95": 2.632
+      },
+      "frames": 3074,
+      "gpu_ms": {
+        "max": 2.59800004959106,
+        "median": 2.28699994087219,
+        "p95": 2.29699993133545
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 0
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 102 deep, 0 belt, 4 mountains",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 640 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 366 ms",
+        "living debris: 584 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 738, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 230 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 1.26400005817413,
+        "median": 0.596000015735626,
+        "p95": 0.745999991893768
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 1,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 10.301,
+        "median": 5.139,
+        "p95": 5.186
+      },
+      "frames": 1556,
+      "gpu_ms": {
+        "max": 5.11700010299683,
+        "median": 4.80999994277954,
+        "p95": 4.85200023651123
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 0
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 102 deep, 0 belt, 4 mountains",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 640 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 366 ms",
+        "living debris: 584 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 738, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 230 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 1.28699994087219,
+        "median": 0.727999985218048,
+        "p95": 0.847000002861023
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 1,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "graveyard",
+      "focus": [
+        30.3108863830566,
+        0.0,
+        7.5
+      ],
+      "frame_ms": {
+        "max": 10.255,
+        "median": 5.142,
+        "p95": 5.168
+      },
+      "frames": 1555,
+      "gpu_ms": {
+        "max": 5.13899993896484,
+        "median": 4.80800008773804,
+        "p95": 4.82000017166138
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 0
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 5, 0 moons",
+        "fields: 39 edge rocks, 102 deep, 0 belt, 4 mountains",
+        "setting: boneyard region, graveyard map, carbon rock, planet 5 (barren), sky for deathless",
+        "rocks: 640 in all (20 rock hexes, 40 debris hexes); clouds on 4 nebula and 0 storm hexes; built in 366 ms",
+        "living debris: 584 rocks and wreck pieces on 40 hexes",
+        "debris: 2 to 3 sub-clumps, four-unit ship gaps, tan dust 738, sun glints, three hot points per heated kit piece",
+        "legacy debris: 2 materials hidden in living/cine and restored in today/holo",
+        "living terrain built in 230 ms",
+        "painted hull debris: 8 cached chunks, 40 instances"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 1.38399994373322,
+        "median": 0.656000018119812,
+        "p95": 0.778999984264374
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 1,
+      "seed": 4107,
+      "ship_count": 8,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 9.359,
+        "median": 4.764,
+        "p95": 4.794
+      },
+      "frames": 1678,
+      "gpu_ms": {
+        "max": 4.83199977874756,
+        "median": 4.42500019073486,
+        "p95": 4.43599987030029
+      },
+      "lights": {
+        "fog_injecting": 2,
+        "fog_volumes": 7,
+        "omni": 4
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 120 deep, 0 belt, 4 mountains",
+        "wisps: 60 gas clouds at middle distance",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 161 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 543 ms",
+        "living terrain built in 416 ms"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 0.810999989509583,
+        "median": 0.374000012874603,
+        "p95": 0.467000007629395
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 0,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 9.33,
+        "median": 4.767,
+        "p95": 4.792
+      },
+      "frames": 1677,
+      "gpu_ms": {
+        "max": 4.80100011825562,
+        "median": 4.42799997329712,
+        "p95": 4.43599987030029
+      },
+      "lights": {
+        "fog_injecting": 2,
+        "fog_volumes": 7,
+        "omni": 4
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 120 deep, 0 belt, 4 mountains",
+        "wisps: 60 gas clouds at middle distance",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 161 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 543 ms",
+        "living terrain built in 416 ms"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 0.642000019550323,
+        "median": 0.354000002145767,
+        "p95": 0.444000005722046
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 0,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 33.247,
+        "median": 16.707,
+        "p95": 16.762
+      },
+      "frames": 720,
+      "gpu_ms": {
+        "max": 16.6979999542236,
+        "median": 16.3560009002686,
+        "p95": 16.3840007781982
+      },
+      "lights": {
+        "fog_injecting": 2,
+        "fog_volumes": 7,
+        "omni": 4
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 120 deep, 0 belt, 4 mountains",
+        "wisps: 60 gas clouds at middle distance",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 161 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 543 ms",
+        "living terrain built in 416 ms"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 0.727999985218048,
+        "median": 0.374000012874603,
+        "p95": 0.546000003814697
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 0,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "max",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 33.322,
+        "median": 16.71,
+        "p95": 16.759
+      },
+      "frames": 720,
+      "gpu_ms": {
+        "max": 16.6469993591309,
+        "median": 16.3589992523193,
+        "p95": 16.3850002288818
+      },
+      "lights": {
+        "fog_injecting": 2,
+        "fog_volumes": 7,
+        "omni": 4
+      },
+      "msaa_3d": 2,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 120 deep, 0 belt, 4 mountains",
+        "wisps: 60 gas clouds at middle distance",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 161 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 543 ms",
+        "living terrain built in 416 ms"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 0.958000004291534,
+        "median": 0.36599999666214,
+        "p95": 0.526000022888184
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 0,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "max",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 11.503,
+        "median": 5.738,
+        "p95": 5.766
+      },
+      "frames": 1393,
+      "gpu_ms": {
+        "max": 5.73999977111816,
+        "median": 5.41200017929077,
+        "p95": 5.4229998588562
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 4
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 72 deep, 0 belt, 4 mountains",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 113 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 498 ms",
+        "living terrain built in 389 ms"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 0.532999992370605,
+        "median": 0.279000014066696,
+        "p95": 0.349999994039536
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 1,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 11.425,
+        "median": 5.739,
+        "p95": 5.776
+      },
+      "frames": 1392,
+      "gpu_ms": {
+        "max": 5.69799995422363,
+        "median": 5.41499996185303,
+        "p95": 5.42399978637695
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 4
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 72 deep, 0 belt, 4 mountains",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 113 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 498 ms",
+        "living terrain built in 389 ms"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 0.720000028610229,
+        "median": 0.275000005960464,
+        "p95": 0.324000000953674
+      },
+      "resolution": "1080p",
+      "scaling_3d": 1.0,
+      "screen_aa": 1,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 43.039,
+        "median": 21.532,
+        "p95": 21.587
+      },
+      "frames": 720,
+      "gpu_ms": {
+        "max": 21.5,
+        "median": 21.19700050354,
+        "p95": 21.2250003814697
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 4
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 72 deep, 0 belt, 4 mountains",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 113 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 498 ms",
+        "living terrain built in 389 ms"
+      ],
+      "pass": 1,
+      "render_cpu_ms": {
+        "max": 0.707000017166138,
+        "median": 0.314000010490417,
+        "p95": 0.476000010967255
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 1,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    },
+    {
+      "actual_quality": "low",
+      "camera_radius": 170,
+      "case": "storm",
+      "focus": [
+        -56.2916450500488,
+        0.0,
+        -112.5
+      ],
+      "frame_ms": {
+        "max": 43.003,
+        "median": 21.549,
+        "p95": 21.612
+      },
+      "frames": 720,
+      "gpu_ms": {
+        "max": 21.8540000915527,
+        "median": 21.2089996337891,
+        "p95": 21.2439994812012
+      },
+      "lights": {
+        "fog_injecting": 0,
+        "fog_volumes": 0,
+        "omni": 4
+      },
+      "msaa_3d": 0,
+      "notes": [
+        "system: planet 7, 2 moons",
+        "fields: 24 edge rocks, 72 deep, 0 belt, 4 mountains",
+        "setting: nebula region, storm map, ice rock, planet 7 (gas giant), sky for ithar",
+        "rocks: 113 in all (3 rock hexes, 0 debris hexes); clouds on 28 nebula and 31 storm hexes; built in 498 ms",
+        "living terrain built in 389 ms"
+      ],
+      "pass": 2,
+      "render_cpu_ms": {
+        "max": 0.626999974250793,
+        "median": 0.321999996900558,
+        "p95": 0.497000008821487
+      },
+      "resolution": "4K",
+      "scaling_3d": 2.0,
+      "screen_aa": 1,
+      "seed": 4103,
+      "ship_count": 9,
+      "tier": "low",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "vsync": 0
+    }
+  ]
+}

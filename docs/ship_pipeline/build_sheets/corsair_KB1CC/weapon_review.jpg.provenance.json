@@ -1,0 +1,54 @@
+{
+  "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+  "source_dirty": true,
+  "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "weapon_review.jpg",
+  "date": "2026-11-17T04:18:22Z",
+  "sources": [
+    {
+      "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+      "source_dirty": true,
+      "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "paint_weapon_bombs.png",
+      "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+      "source_dirty": true,
+      "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+      "stage": "paint proof",
+      "date": "2026-11-17T04:14:44Z",
+      "image_sha256": "43c8bbe615b53e92b2cc68d6bec2db02c4a1521aee6cdd3ec4cb096dbddecbe9",
+      "sources": [
+        {
+          "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+          "source_dirty": true,
+          "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "6a06e47d9400a00e69c75f8b189c7022ed5de0748f576e0809db1dacad8d5da6"
+  ],
+  "stamp_template_sha256": "692b8aca096db3f413a59595207effd52f31ff958c70a2ba455aa07fc74cd459",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEAPwb88fgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBMCouQEuAUr6b/UqAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "530ec054c244c269a7ee68facda11060ddc0def018e73416f0a7e146af95ce12"
+}

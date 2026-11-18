@@ -23,6 +23,10 @@ if ($endpoint -match '/issues/[0-9]+$' -and $method -eq 'GET') {
   if (-not ($words -contains '--paginate') -or -not ($words -contains '--slurp')) { throw 'Must read every page' }
   $items = if ($endpoint -match '/pulls\\?') { @($db.pulls) } elseif ($endpoint -match '/branches\\?') { @($db.branches) } else { @($db.issues) }
   Write-Output ('[[],' + (ConvertTo-Json -InputObject @($items) -Depth 12 -Compress) + ']')
+} elseif ($endpoint -match '/compare/main\\.\\.\\.([0-9a-f]{40,64})$' -and $method -eq 'GET') {
+  $answer = $db.comparisons.PSObject.Properties[$Matches[1]]
+  if (-not $answer) { throw 'No compare answer for branch tip' }
+  ConvertTo-Json -InputObject $answer.Value -Depth 12 -Compress
 } elseif ($endpoint -match '/labels/running$' -and $method -eq 'GET') {
   if (-not $db.label) { Write-Output 'label missing'; exit 1 }
   Write-Output '{}'
@@ -51,7 +55,7 @@ if ($endpoint -match '/issues/[0-9]+$' -and $method -eq 'GET') {
 exit 0
 `);
   return { fake, database(number, sha = '', extra = {}) {
-    return { label: false, running: false, comments: [], pulls: [], branches: [{ name: 'main', commit: { sha } }],
+    return { label: false, running: false, comments: [], pulls: [], comparisons: {}, branches: [{ name: 'main', commit: { sha } }],
       issue: { number, title: 'Stub runner job', state: 'open', labels: [],
         body: `Owner: codex\nBrief: below\nDeliver to: tools/pc/\nBranch: codex/issue-${number}\nEffort (Codex): high\nDone when: stub finishes\n\n## THIS IS THE JOB NOW\nFinish the current fixture job.\n\n## Earlier run (DONE)\nOLD BRIEF MUST NOT REACH AGENT\n` }, ...extra };
   } };

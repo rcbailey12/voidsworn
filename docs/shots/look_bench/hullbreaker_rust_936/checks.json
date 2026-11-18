@@ -1,0 +1,1307 @@
+{
+  "ships": {
+    "A16": {
+      "concept": "contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg",
+      "concept_sha256": "400acb0a49fda19447832c01a6131be28e0a5c0ba5a11eb0ca220c4f3dd58f71",
+      "sampled_concept": {
+        "rust": {
+          "pixels": 17546,
+          "rgb_p25_p75": [
+            [
+              60,
+              17,
+              9
+            ],
+            [
+              131,
+              37,
+              28
+            ]
+          ]
+        },
+        "blood": {
+          "pixels": 39627,
+          "rgb_p25_p75": [
+            [
+              57,
+              19,
+              15
+            ],
+            [
+              126,
+              39,
+              39
+            ]
+          ]
+        },
+        "violet": {
+          "pixels": 20766,
+          "rgb_p25_p75": [
+            [
+              55,
+              40,
+              67
+            ],
+            [
+              105,
+              72,
+              133
+            ]
+          ]
+        },
+        "bare": {
+          "pixels": 94800,
+          "rgb_p25_p75": [
+            [
+              151,
+              144,
+              139
+            ],
+            [
+              193,
+              184,
+              178
+            ]
+          ]
+        }
+      },
+      "graded_stack_targets": {
+        "rust": [
+          [
+            92,
+            17,
+            9
+          ],
+          [
+            157,
+            45,
+            34
+          ]
+        ],
+        "blood": [
+          [
+            72,
+            15,
+            11
+          ],
+          [
+            123,
+            36,
+            38
+          ]
+        ],
+        "violet": [
+          [
+            64,
+            45,
+            101
+          ],
+          [
+            120,
+            83,
+            147
+          ]
+        ],
+        "bare": [
+          [
+            165,
+            155,
+            148
+          ],
+          [
+            204,
+            194,
+            189
+          ]
+        ]
+      },
+      "paint_before": {
+        "luma_p10_p50_p90": [
+          21.3,
+          42.6,
+          81.8
+        ],
+        "red_pixel_percent": 15.7
+      },
+      "paint_after": {
+        "luma_p10_p50_p90": [
+          19.5,
+          42.8,
+          89.5
+        ],
+        "red_pixel_percent": 70.4
+      },
+      "plate_character_on_painted_output": {
+        "geometry_sha256": "f8d0dff242bc41653b25ee75a388b619d7fd70dc8cddd4b0b34e50cdbe757b43",
+        "triangles": 152640,
+        "plate_components": 1121,
+        "plate_area_world2_p10_p50_p90": [
+          0.023123057011052738,
+          0.12707661070505333,
+          0.5316042258713619
+        ],
+        "plate_edge_angle_degrees_p10_p50_p90": [
+          -89.99999998707872,
+          -0.35780775969340084,
+          89.99990072462572
+        ],
+        "method": "Actual painted armour objects named _plates_: each disconnected 8-vertex, 6-quad component is the kit plate_slab; rivet and weld rods are excluded by topology. Includes overlaid slabs. Area is the largest world-space face. Angles are longest-edge face-plane headings modulo 180, relative to projected ship X (ship Y on bow/stern faces). Review evidence, no pass bar.",
+        "engine_seeds": {
+          "E0": [
+            0.825462
+          ],
+          "E1": [
+            0.825462
+          ],
+          "E2": [
+            0.825462
+          ],
+          "E3": [
+            0.825462
+          ],
+          "E4": [
+            0.825462
+          ],
+          "E5": [
+            0.825462
+          ]
+        },
+        "engines_share_seed": true
+      },
+      "triangles": 141728,
+      "turret_triangles": 11436,
+      "triangles_with_turrets": 153164,
+      "base_surfaces": 15,
+      "paint_surfaces": 4,
+      "merged_paint_draw_calls": 4,
+      "exported_surfaces": 23,
+      "estimated_mesh_draw_calls": 23,
+      "density": {
+        "paint_flags": [],
+        "mesh_flags": [
+          "tube: edges_per_unit2 14872.5 is 0.69 of the hull's 21441.0",
+          "rack: tris_per_unit2 20029.8 is 0.73 of the hull's 27413.6",
+          "rack: edges_per_unit2 14056.9 is 0.66 of the hull's 21441.0"
+        ],
+        "hull": {
+          "area": 3.34024,
+          "triangles": 91568,
+          "tris_per_unit2": 27413.6,
+          "edges_per_unit2": 21441.0,
+          "texels_per_unit2": 2249732.7,
+          "atlas": "hull",
+          "paint_detail_share": 0.3
+        },
+        "rule": "R224: a part type more than 25 percent under the hull is flagged",
+        "paint_bar_per_unit": 458.29,
+        "paint_top": 0.3
+      },
+      "before_install_geometry_unchanged": true,
+      "geometry_note": "Painted geometry equals the before capture.",
+      "surface_check": {
+        "ok": true,
+        "totals": {
+          "room": 0,
+          "bare": 0
+        },
+        "views": {
+          "top": {
+            "stack": 95676,
+            "glow": 92,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "below": {
+            "stack": 95715,
+            "glow": 48,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "port": {
+            "stack": 65148,
+            "glow": 238,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "starboard": {
+            "stack": 65123,
+            "glow": 264,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "bow": {
+            "stack": 27201,
+            "glow": 50,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "stern": {
+            "stack": 20585,
+            "glow": 6666,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          }
+        },
+        "seen_from_outside": {},
+        "objects": {
+          "stack": 354,
+          "glow": 47,
+          "liner": 24
+        },
+        "res": 640
+      },
+      "maps": 4096,
+      "export_check": true
+    },
+    "A17": {
+      "concept": "contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg",
+      "concept_sha256": "cfe50f35344effa85a207848bd5b1b874d51bf375cb321526f972cb8b3e7f505",
+      "sampled_concept": {
+        "rust": {
+          "pixels": 4405,
+          "rgb_p25_p75": [
+            [
+              55,
+              25,
+              18
+            ],
+            [
+              146,
+              55,
+              44
+            ]
+          ]
+        },
+        "blood": {
+          "pixels": 15672,
+          "rgb_p25_p75": [
+            [
+              52,
+              19,
+              22
+            ],
+            [
+              119,
+              44,
+              43
+            ]
+          ]
+        },
+        "violet": {
+          "pixels": 3137,
+          "rgb_p25_p75": [
+            [
+              43,
+              35,
+              45
+            ],
+            [
+              60,
+              51,
+              66
+            ]
+          ]
+        },
+        "bare": {
+          "pixels": 130356,
+          "rgb_p25_p75": [
+            [
+              153,
+              149,
+              145
+            ],
+            [
+              194,
+              191,
+              186
+            ]
+          ]
+        }
+      },
+      "graded_stack_targets": {
+        "rust": [
+          [
+            100,
+            36,
+            27
+          ],
+          [
+            174,
+            69,
+            56
+          ]
+        ],
+        "blood": [
+          [
+            67,
+            20,
+            22
+          ],
+          [
+            124,
+            43,
+            40
+          ]
+        ],
+        "violet": [
+          [
+            43,
+            31,
+            50
+          ],
+          [
+            62,
+            49,
+            72
+          ]
+        ],
+        "bare": [
+          [
+            167,
+            162,
+            157
+          ],
+          [
+            204,
+            201,
+            196
+          ]
+        ]
+      },
+      "paint_before": {
+        "luma_p10_p50_p90": [
+          21.3,
+          35.6,
+          77.7
+        ],
+        "red_pixel_percent": 12.7
+      },
+      "paint_after": {
+        "luma_p10_p50_p90": [
+          21.3,
+          42.3,
+          91.4
+        ],
+        "red_pixel_percent": 66.7
+      },
+      "plate_character_on_painted_output": {
+        "geometry_sha256": "3c07c8087643b9ab1ff04a30afac92573c6c98b28abdafe7d9d257a3737d677a",
+        "triangles": 87780,
+        "plate_components": 383,
+        "plate_area_world2_p10_p50_p90": [
+          0.023824120936410623,
+          0.12625058725120225,
+          0.5449865924405541
+        ],
+        "plate_edge_angle_degrees_p10_p50_p90": [
+          -90.0,
+          -90.0,
+          0.2875016686614005
+        ],
+        "method": "Actual painted armour objects named _plates_: each disconnected 8-vertex, 6-quad component is the kit plate_slab; rivet and weld rods are excluded by topology. Includes overlaid slabs. Area is the largest world-space face. Angles are longest-edge face-plane headings modulo 180, relative to projected ship X (ship Y on bow/stern faces). Review evidence, no pass bar.",
+        "engine_seeds": {
+          "E1": [
+            0.825462
+          ],
+          "E2": [
+            0.825462
+          ],
+          "E3": [
+            0.825462
+          ],
+          "E4": [
+            0.825462
+          ],
+          "E5": [
+            0.825462
+          ],
+          "E6": [
+            0.825462
+          ]
+        },
+        "engines_share_seed": true
+      },
+      "triangles": 79360,
+      "turret_triangles": 8528,
+      "triangles_with_turrets": 87888,
+      "base_surfaces": 14,
+      "paint_surfaces": 4,
+      "merged_paint_draw_calls": 4,
+      "exported_surfaces": 20,
+      "estimated_mesh_draw_calls": 20,
+      "density": {
+        "paint_flags": [],
+        "mesh_flags": [],
+        "hull": {
+          "area": 4.05594,
+          "triangles": 33412,
+          "tris_per_unit2": 8237.8,
+          "edges_per_unit2": 6494.7,
+          "texels_per_unit2": 2790383.4,
+          "atlas": "hull",
+          "paint_detail_share": 0.3
+        },
+        "rule": "R224: a part type more than 25 percent under the hull is flagged",
+        "paint_bar_per_unit": 390.4,
+        "paint_top": 0.3
+      },
+      "before_install_geometry_unchanged": true,
+      "geometry_note": "Painted geometry equals the before capture.",
+      "surface_check": {
+        "ok": true,
+        "totals": {
+          "room": 0,
+          "bare": 0
+        },
+        "views": {
+          "top": {
+            "stack": 103580,
+            "glow": 151,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "below": {
+            "stack": 103699,
+            "glow": 32,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "port": {
+            "stack": 72184,
+            "glow": 330,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "starboard": {
+            "stack": 72178,
+            "glow": 337,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "bow": {
+            "stack": 36728,
+            "glow": 55,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "stern": {
+            "stack": 31462,
+            "glow": 5321,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          }
+        },
+        "seen_from_outside": {},
+        "objects": {
+          "stack": 358,
+          "glow": 46,
+          "liner": 20
+        },
+        "res": 640
+      },
+      "maps": 4096,
+      "export_check": true
+    },
+    "A18": {
+      "concept": "contrib/muse/design/class_family_corsair_2026_11/corsair_A18_beauty.jpg",
+      "concept_sha256": "8b46d3624024950786edc47e5789aa6b60d8bb43e1ee2afe4454d367ce960546",
+      "sampled_concept": {
+        "rust": {
+          "pixels": 17904,
+          "rgb_p25_p75": [
+            [
+              58,
+              19,
+              11
+            ],
+            [
+              131,
+              40,
+              29
+            ]
+          ]
+        },
+        "blood": {
+          "pixels": 39712,
+          "rgb_p25_p75": [
+            [
+              59,
+              20,
+              16
+            ],
+            [
+              152,
+              48,
+              45
+            ]
+          ]
+        },
+        "violet": {
+          "pixels": 14951,
+          "rgb_p25_p75": [
+            [
+              51,
+              39,
+              58
+            ],
+            [
+              116,
+              88,
+              150
+            ]
+          ]
+        },
+        "bare": {
+          "pixels": 106651,
+          "rgb_p25_p75": [
+            [
+              148,
+              143,
+              140
+            ],
+            [
+              186,
+              179,
+              175
+            ]
+          ]
+        }
+      },
+      "graded_stack_targets": {
+        "rust": [
+          [
+            88,
+            20,
+            11
+          ],
+          [
+            159,
+            49,
+            37
+          ]
+        ],
+        "blood": [
+          [
+            72,
+            16,
+            12
+          ],
+          [
+            130,
+            37,
+            36
+          ]
+        ],
+        "violet": [
+          [
+            69,
+            47,
+            103
+          ],
+          [
+            128,
+            97,
+            163
+          ]
+        ],
+        "bare": [
+          [
+            162,
+            154,
+            150
+          ],
+          [
+            199,
+            190,
+            187
+          ]
+        ]
+      },
+      "paint_before": {
+        "luma_p10_p50_p90": [
+          21.2,
+          40.3,
+          87.0
+        ],
+        "red_pixel_percent": 16.0
+      },
+      "paint_after": {
+        "luma_p10_p50_p90": [
+          20.3,
+          42.2,
+          88.7
+        ],
+        "red_pixel_percent": 63.4
+      },
+      "plate_character_on_painted_output": {
+        "geometry_sha256": "55841e785aefa2239252edf27cc4bd54ae31a6bd80ec33cb51a97b9179e3f391",
+        "triangles": 186028,
+        "plate_components": 1092,
+        "plate_area_world2_p10_p50_p90": [
+          0.004375888467162475,
+          0.01594521593336263,
+          0.05777424211968311
+        ],
+        "plate_edge_angle_degrees_p10_p50_p90": [
+          -83.14245185912031,
+          0.03734131526893236,
+          82.43289936719835
+        ],
+        "method": "Actual painted armour objects named _plates_: each disconnected 8-vertex, 6-quad component is the kit plate_slab; rivet and weld rods are excluded by topology. Includes overlaid slabs. Area is the largest world-space face. Angles are longest-edge face-plane headings modulo 180, relative to projected ship X (ship Y on bow/stern faces). Review evidence, no pass bar.",
+        "engine_seeds": {
+          "E1": [
+            0.825462
+          ],
+          "E2": [
+            0.825462
+          ],
+          "E3": [
+            0.825462
+          ]
+        },
+        "engines_share_seed": true
+      },
+      "triangles": 184724,
+      "turret_triangles": 1412,
+      "triangles_with_turrets": 186136,
+      "base_surfaces": 14,
+      "paint_surfaces": 4,
+      "merged_paint_draw_calls": 4,
+      "exported_surfaces": 15,
+      "estimated_mesh_draw_calls": 15,
+      "density": {
+        "paint_flags": [],
+        "mesh_flags": [
+          "vent: tris_per_unit2 13040.4 is 0.33 of the hull's 39825.5",
+          "vent: edges_per_unit2 11716.5 is 0.38 of the hull's 30678.2",
+          "slit: tris_per_unit2 10234.5 is 0.26 of the hull's 39825.5",
+          "slit: edges_per_unit2 8772.5 is 0.29 of the hull's 30678.2",
+          "hatch: tris_per_unit2 17408.3 is 0.44 of the hull's 39825.5",
+          "hatch: edges_per_unit2 14114.8 is 0.46 of the hull's 30678.2",
+          "hatchbox: tris_per_unit2 16233.8 is 0.41 of the hull's 39825.5",
+          "hatchbox: edges_per_unit2 13914.7 is 0.45 of the hull's 30678.2",
+          "antenna: tris_per_unit2 14524.0 is 0.36 of the hull's 39825.5",
+          "antenna: edges_per_unit2 11498.2 is 0.37 of the hull's 30678.2",
+          "claw_arm: tris_per_unit2 19856.7 is 0.50 of the hull's 39825.5",
+          "claw_arm: edges_per_unit2 14405.8 is 0.47 of the hull's 30678.2",
+          "gun: tris_per_unit2 20585.4 is 0.52 of the hull's 39825.5",
+          "gun: edges_per_unit2 12266.6 is 0.40 of the hull's 30678.2",
+          "engine: tris_per_unit2 25808.4 is 0.65 of the hull's 39825.5",
+          "engine: edges_per_unit2 10125.3 is 0.33 of the hull's 30678.2"
+        ],
+        "hull": {
+          "area": 4.11576,
+          "triangles": 163912,
+          "tris_per_unit2": 39825.5,
+          "edges_per_unit2": 30678.2,
+          "texels_per_unit2": 871800.6,
+          "atlas": "hull",
+          "paint_detail_share": 0.3
+        },
+        "rule": "R224: a part type more than 25 percent under the hull is flagged",
+        "paint_bar_per_unit": 305.61,
+        "paint_top": 0.3
+      },
+      "before_install_geometry_unchanged": false,
+      "geometry_note": "Pre-job installed A18 differs from the current approved sheet in D1 seating, engine throat/lining meshes and one generated running lamp. Rebuilt the current approved sheet without editing geometry sources.",
+      "surface_check": {
+        "ok": true,
+        "totals": {
+          "room": 0,
+          "bare": 0
+        },
+        "views": {
+          "top": {
+            "stack": 103409,
+            "glow": 637,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "below": {
+            "stack": 103811,
+            "glow": 235,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "port": {
+            "stack": 64216,
+            "glow": 551,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "starboard": {
+            "stack": 64328,
+            "glow": 438,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "bow": {
+            "stack": 29621,
+            "glow": 144,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "stern": {
+            "stack": 25513,
+            "glow": 4252,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          }
+        },
+        "seen_from_outside": {},
+        "objects": {
+          "stack": 240,
+          "glow": 32,
+          "liner": 14
+        },
+        "res": 640
+      },
+      "maps": 4096,
+      "export_check": true
+    },
+    "A19": {
+      "concept": "contrib/muse/design/class_family_corsair_2026_11/corsair_A19_beauty.jpg",
+      "concept_sha256": "fe252dc3c0dbb23173397ecf42e74f05103889924d3fce39b09b7dce59bab26c",
+      "sampled_concept": {
+        "rust": {
+          "pixels": 13275,
+          "rgb_p25_p75": [
+            [
+              65,
+              25,
+              18
+            ],
+            [
+              146,
+              59,
+              47
+            ]
+          ]
+        },
+        "blood": {
+          "pixels": 40742,
+          "rgb_p25_p75": [
+            [
+              66,
+              23,
+              24
+            ],
+            [
+              141,
+              64,
+              65
+            ]
+          ]
+        },
+        "violet": {
+          "pixels": 14902,
+          "rgb_p25_p75": [
+            [
+              71,
+              56,
+              89
+            ],
+            [
+              118,
+              93,
+              154
+            ]
+          ]
+        },
+        "bare": {
+          "pixels": 110793,
+          "rgb_p25_p75": [
+            [
+              141,
+              137,
+              135
+            ],
+            [
+              175,
+              170,
+              166
+            ]
+          ]
+        }
+      },
+      "graded_stack_targets": {
+        "rust": [
+          [
+            99,
+            36,
+            27
+          ],
+          [
+            165,
+            72,
+            61
+          ]
+        ],
+        "blood": [
+          [
+            81,
+            26,
+            27
+          ],
+          [
+            136,
+            63,
+            64
+          ]
+        ],
+        "violet": [
+          [
+            99,
+            77,
+            130
+          ],
+          [
+            134,
+            109,
+            166
+          ]
+        ],
+        "bare": [
+          [
+            154,
+            147,
+            144
+          ],
+          [
+            188,
+            182,
+            178
+          ]
+        ]
+      },
+      "paint_before": {
+        "luma_p10_p50_p90": [
+          21.8,
+          43.1,
+          86.9
+        ],
+        "red_pixel_percent": 12.9
+      },
+      "paint_after": {
+        "luma_p10_p50_p90": [
+          21.6,
+          47.4,
+          96.8
+        ],
+        "red_pixel_percent": 63.3
+      },
+      "plate_character_on_painted_output": {
+        "geometry_sha256": "f628b47c98e2b44bfcd6d7f84e92ad8c203a4d4450aa57c3d12827c4fed39c8a",
+        "triangles": 221110,
+        "plate_components": 1215,
+        "plate_area_world2_p10_p50_p90": [
+          0.006373048660442545,
+          0.028102698039118634,
+          0.09930011462267463
+        ],
+        "plate_edge_angle_degrees_p10_p50_p90": [
+          -81.85590954687615,
+          0.0,
+          82.51130492754575
+        ],
+        "method": "Actual painted armour objects named _plates_: each disconnected 8-vertex, 6-quad component is the kit plate_slab; rivet and weld rods are excluded by topology. Includes overlaid slabs. Area is the largest world-space face. Angles are longest-edge face-plane headings modulo 180, relative to projected ship X (ship Y on bow/stern faces). Review evidence, no pass bar.",
+        "engine_seeds": {
+          "E1": [
+            0.825462
+          ],
+          "E2": [
+            0.825462
+          ],
+          "E3": [
+            0.825462
+          ]
+        },
+        "engines_share_seed": true
+      },
+      "triangles": 218350,
+      "turret_triangles": 2852,
+      "triangles_with_turrets": 221202,
+      "base_surfaces": 13,
+      "paint_surfaces": 4,
+      "merged_paint_draw_calls": 4,
+      "exported_surfaces": 15,
+      "estimated_mesh_draw_calls": 15,
+      "density": {
+        "paint_flags": [],
+        "mesh_flags": [
+          "hatchbox: tris_per_unit2 27006.0 is 0.51 of the hull's 53260.7",
+          "hatchbox: edges_per_unit2 23148.0 is 0.56 of the hull's 40978.4",
+          "hatch: tris_per_unit2 17896.8 is 0.34 of the hull's 53260.7",
+          "hatch: edges_per_unit2 14510.9 is 0.35 of the hull's 40978.4",
+          "slit: tris_per_unit2 21970.6 is 0.41 of the hull's 53260.7",
+          "slit: edges_per_unit2 18832.0 is 0.46 of the hull's 40978.4",
+          "vent: tris_per_unit2 14454.9 is 0.27 of the hull's 53260.7",
+          "vent: edges_per_unit2 12917.1 is 0.32 of the hull's 40978.4",
+          "antenna: tris_per_unit2 12065.1 is 0.23 of the hull's 53260.7",
+          "antenna: edges_per_unit2 9551.5 is 0.23 of the hull's 40978.4",
+          "claw_arm: tris_per_unit2 26755.2 is 0.50 of the hull's 53260.7",
+          "claw_arm: edges_per_unit2 19410.7 is 0.47 of the hull's 40978.4",
+          "gun: tris_per_unit2 31669.2 is 0.59 of the hull's 53260.7",
+          "gun: edges_per_unit2 18937.0 is 0.46 of the hull's 40978.4",
+          "engine: edges_per_unit2 17851.0 is 0.44 of the hull's 40978.4"
+        ],
+        "hull": {
+          "area": 3.53086,
+          "triangles": 188056,
+          "tris_per_unit2": 53260.7,
+          "edges_per_unit2": 40978.4,
+          "texels_per_unit2": 873147.5,
+          "atlas": "hull",
+          "paint_detail_share": 0.3
+        },
+        "rule": "R224: a part type more than 25 percent under the hull is flagged",
+        "paint_bar_per_unit": 277.73,
+        "paint_top": 0.3
+      },
+      "before_install_geometry_unchanged": true,
+      "geometry_note": "Painted geometry equals the before capture.",
+      "surface_check": {
+        "ok": true,
+        "totals": {
+          "room": 0,
+          "bare": 0
+        },
+        "views": {
+          "top": {
+            "stack": 84115,
+            "glow": 248,
+            "liner": 190,
+            "room": 0,
+            "bare": 0
+          },
+          "below": {
+            "stack": 84372,
+            "glow": 168,
+            "liner": 11,
+            "room": 0,
+            "bare": 0
+          },
+          "port": {
+            "stack": 47398,
+            "glow": 300,
+            "liner": 15,
+            "room": 0,
+            "bare": 0
+          },
+          "starboard": {
+            "stack": 47320,
+            "glow": 373,
+            "liner": 20,
+            "room": 0,
+            "bare": 0
+          },
+          "bow": {
+            "stack": 16974,
+            "glow": 102,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "stern": {
+            "stack": 14593,
+            "glow": 2483,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          }
+        },
+        "seen_from_outside": {},
+        "objects": {
+          "stack": 230,
+          "glow": 33,
+          "liner": 16
+        },
+        "res": 640
+      },
+      "maps": 4096,
+      "export_check": true
+    },
+    "A20": {
+      "concept": "contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg",
+      "concept_sha256": "4515f9c116e2cad588be77057ad4abe30715776ed0d5c90e4e74f20bd3b5fe2f",
+      "sampled_concept": {
+        "rust": {
+          "pixels": 29053,
+          "rgb_p25_p75": [
+            [
+              53,
+              23,
+              18
+            ],
+            [
+              108,
+              43,
+              34
+            ]
+          ]
+        },
+        "blood": {
+          "pixels": 51060,
+          "rgb_p25_p75": [
+            [
+              56,
+              23,
+              20
+            ],
+            [
+              136,
+              59,
+              52
+            ]
+          ]
+        },
+        "violet": {
+          "pixels": 6170,
+          "rgb_p25_p75": [
+            [
+              53,
+              46,
+              68
+            ],
+            [
+              116,
+              101,
+              133
+            ]
+          ]
+        },
+        "bare": {
+          "pixels": 135829,
+          "rgb_p25_p75": [
+            [
+              151,
+              147,
+              144
+            ],
+            [
+              183,
+              181,
+              178
+            ]
+          ]
+        }
+      },
+      "graded_stack_targets": {
+        "rust": [
+          [
+            84,
+            33,
+            25
+          ],
+          [
+            153,
+            62,
+            51
+          ]
+        ],
+        "blood": [
+          [
+            69,
+            28,
+            24
+          ],
+          [
+            137,
+            62,
+            58
+          ]
+        ],
+        "violet": [
+          [
+            54,
+            47,
+            73
+          ],
+          [
+            115,
+            99,
+            138
+          ]
+        ],
+        "bare": [
+          [
+            166,
+            163,
+            159
+          ],
+          [
+            190,
+            187,
+            184
+          ]
+        ]
+      },
+      "paint_before": {
+        "luma_p10_p50_p90": [
+          24.8,
+          45.1,
+          87.1
+        ],
+        "red_pixel_percent": 13.7
+      },
+      "paint_after": {
+        "luma_p10_p50_p90": [
+          24.2,
+          52.1,
+          95.4
+        ],
+        "red_pixel_percent": 55.1
+      },
+      "plate_character_on_painted_output": {
+        "geometry_sha256": "79d2fcde72455611564e4f0da266d7aaf0a8dedc62af9c7ec70f0b9303cb6ede",
+        "triangles": 226834,
+        "plate_components": 1010,
+        "plate_area_world2_p10_p50_p90": [
+          0.020060568208326923,
+          0.10086087750896133,
+          0.3216194840166712
+        ],
+        "plate_edge_angle_degrees_p10_p50_p90": [
+          -84.03512612505422,
+          -3.105619185816977e-06,
+          82.51202804137164
+        ],
+        "method": "Actual painted armour objects named _plates_: each disconnected 8-vertex, 6-quad component is the kit plate_slab; rivet and weld rods are excluded by topology. Includes overlaid slabs. Area is the largest world-space face. Angles are longest-edge face-plane headings modulo 180, relative to projected ship X (ship Y on bow/stern faces). Review evidence, no pass bar.",
+        "engine_seeds": {
+          "E1": [
+            0.825462
+          ],
+          "E2": [
+            0.825462
+          ],
+          "E3": [
+            0.825462
+          ],
+          "E4": [
+            0.825462
+          ],
+          "E5": [
+            0.825462
+          ]
+        },
+        "engines_share_seed": true
+      },
+      "triangles": 224170,
+      "turret_triangles": 2852,
+      "triangles_with_turrets": 227022,
+      "base_surfaces": 15,
+      "paint_surfaces": 5,
+      "merged_paint_draw_calls": 5,
+      "exported_surfaces": 17,
+      "estimated_mesh_draw_calls": 17,
+      "density": {
+        "paint_flags": [],
+        "mesh_flags": [
+          "vent: tris_per_unit2 27156.4 is 0.57 of the hull's 47402.6",
+          "vent: edges_per_unit2 24440.8 is 0.67 of the hull's 36343.7",
+          "hangar: tris_per_unit2 8614.2 is 0.18 of the hull's 47402.6",
+          "hangar: edges_per_unit2 7526.9 is 0.21 of the hull's 36343.7",
+          "tube: tris_per_unit2 32207.1 is 0.68 of the hull's 47402.6",
+          "tube: edges_per_unit2 19817.2 is 0.55 of the hull's 36343.7",
+          "gun: edges_per_unit2 22689.0 is 0.62 of the hull's 36343.7"
+        ],
+        "hull": {
+          "area": 3.76059,
+          "triangles": 178262,
+          "tris_per_unit2": 47402.6,
+          "edges_per_unit2": 36343.7,
+          "texels_per_unit2": 1079401.1,
+          "atlas": "hull",
+          "paint_detail_share": 0.3
+        },
+        "rule": "R224: a part type more than 25 percent under the hull is flagged",
+        "paint_bar_per_unit": 249.58,
+        "paint_top": 0.3
+      },
+      "before_install_geometry_unchanged": true,
+      "geometry_note": "Painted geometry equals the before capture.",
+      "surface_check": {
+        "ok": true,
+        "totals": {
+          "room": 0,
+          "bare": 0
+        },
+        "views": {
+          "top": {
+            "stack": 120921,
+            "glow": 219,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "below": {
+            "stack": 121045,
+            "glow": 95,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "port": {
+            "stack": 54540,
+            "glow": 268,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "starboard": {
+            "stack": 54525,
+            "glow": 283,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "bow": {
+            "stack": 28133,
+            "glow": 36,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          },
+          "stern": {
+            "stack": 25352,
+            "glow": 2816,
+            "liner": 0,
+            "room": 0,
+            "bare": 0
+          }
+        },
+        "seen_from_outside": {},
+        "objects": {
+          "stack": 368,
+          "glow": 46,
+          "liner": 23
+        },
+        "res": 640
+      },
+      "maps": 4096,
+      "export_check": true
+    }
+  },
+  "colour_measure": "Issue 875 method: sRGB luma .2126R+.7152G+.0722B; model pixels max(R,G,B)>20; red R>1.2G and R>1.15B. Same saved concept camera before and after. No visual pass bar.",
+  "sampling": "Concept full image: rust R>1.5G,G>1.1B,R<205,mean>25; blood R>1.6G,R>1.3B,mean25..160; violet B>1.15G,R>1.1G,B>.95R,mean35..190; bare min>.84max,mean125..235. Raw channel p25/p75 recorded; graded targets are the stack values, not copied quantiles. Lights and sky can affect raw samples.",
+  "plate_scope": "Plate sizes and finer tiling on A17 to A20 remain outside this paint-only run. Painted mesh component areas and headings are reported; pictures decide the read.",
+  "budget": "Base export plus separately drawn turret meshes. Surface totals include authored interior materials. Estimated mesh draws are material submissions, not GPU frame-time measurements."
+}

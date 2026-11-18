@@ -322,6 +322,20 @@ def sheet_games():
 
 def main():
     bad = []
+    # CD5 (issue 912): the same Prism lance has fixed bow and turning dorsal mounts.
+    for mount, letter in (('fixed', 'F'), ('turret', 'T'), ('launcher', 'F')):
+        m = turret('O1', 'pulsar', letter, n=1, rest=0)
+        m.update(mount=mount, turret=m['turret'] if mount == 'turret' else None)
+        s = dict(code='prism_test', weapons=[('pulsar', letter)],
+                 stats={'pulsar': gamedata.weapon_stats('pulsar')},
+                 parts=[dict(id='O1', kind='gun', type='gun')], mounts=[m])
+        probs = WM.check(s)
+        expected = mount == 'launcher'
+        rejected = any(p.startswith('KIND ') for p in probs)
+        if rejected != expected or (not expected and probs):
+            bad.append(f'Prism lance {mount}: wrong result {probs}')
+        else:
+            print(f'ok   Prism lance {mount}: ' + ('KIND refused' if expected else 'PASS'))
     probs = WM.check(clean())
     if probs:
         bad.append('the clean ship fails: ' + '; '.join(probs))

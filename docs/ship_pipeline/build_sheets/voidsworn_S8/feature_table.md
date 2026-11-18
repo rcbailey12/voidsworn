@@ -157,15 +157,16 @@ Bulkhead and frame stations: F0 8.5%, F1 15.2%, F2 21.9%, F3 30.6%, F4 32.4%, F5
 | bow stores (hold) | 14.4 to 20.7 | -0.52 to 0.52 | -0.60 to -0.16 | bow stores and the bow thrusters' feeds |
 | crew fwd (crew) | 22.2 to 30.0 | 0.04 to -0.04 | -0.08 to 0.74 | crew decks: the dawn watch berths |
 | ballast fwd (machinery) | 22.2 to 30.0 | -0.73 to 0.73 | -0.95 to -0.16 | bow trim tanks and pumps |
-| gun gallery p (gallery) | 33.0 to 59.1 | 1.05 to 1.55 | -0.26 to 0.53 | the gun crews' galleries behind the ports, ember-lit: the old manual gun deck (lore 2.5) |
-| gun gallery s (gallery) | 33.0 to 59.1 | -1.55 to -1.05 | -0.26 to 0.53 | the gun crews' galleries behind the ports, ember-lit: the old manual gun deck (lore 2.5) |
+| gun gallery p (gallery) | 33.0 to 59.1 | 1.30 to 1.55 | -0.26 to 0.53 | the gun crews' galleries behind the ports, ember-lit: the old manual gun deck (lore 2.5) |
+| gun gallery s (gallery) | 33.0 to 59.1 | -1.55 to -1.30 | -0.26 to 0.53 | the gun crews' galleries behind the ports, ember-lit: the old manual gun deck (lore 2.5) |
+| shell rooms p (magazine) | 33.7 to 58.9 | 0.94 to 1.27 | 0.04 to 0.43 | the broadside shell room in the gun gallery |
+| shell hoist p (machinery) | 33.7 to 58.9 | 0.94 to 1.27 | -0.15 to -0.02 | the shell hoist drive below the gallery shell room |
+| shell rooms s (magazine) | 33.7 to 58.9 | -1.27 to -0.94 | 0.04 to 0.43 | the broadside shell room in the gun gallery |
+| shell hoist s (machinery) | 33.7 to 58.9 | -1.27 to -0.94 | -0.15 to -0.02 | the shell hoist drive below the gallery shell room |
 | sear cells (magazine) | 34.1 to 40.4 | -0.90 to 0.90 | -0.26 to 0.53 | the Sear turrets' power cells, hoisted to both tubs |
 | fire plot (bridge) | 49.3 to 55.2 | -0.90 to 0.90 | -0.26 to 0.53 | the broadside plotting room (no AI: plotted by hand) |
 | flak magazine (magazine) | 41.9 to 48.2 | -0.90 to 0.90 | -0.26 to 0.53 | the spark flak magazine, between the tubs |
 | upper fwd rooms (crew) | 33.0 to 59.1 | -0.97 to 0.97 | 0.63 to 0.82 | the gunners' mess and the chalk wall where the names go up before launch |
-| shell rooms p (magazine) | 33.7 to 58.9 | 0.15 to 0.92 | -1.18 to -1.07 | the broadside shell rooms under the galleries (below the gun deck peel) |
-| shell rooms s (magazine) | 33.7 to 58.9 | -0.92 to -0.15 | -1.18 to -1.07 | the broadside shell rooms under the galleries (below the gun deck peel) |
-| keel passage (machinery) | 33.7 to 58.9 | -0.12 to 0.12 | -1.18 to -1.07 | the shell hoists' drive line along the centreline |
 | command (bridge) | 61.7 to 64.8 | -1.11 to 1.11 | 0.63 to 0.82 | the command deck under the spine block's slits |
 | reactor (core) | 65.9 to 78.2 | -1.15 to 1.15 | -1.18 to 0.52 | the reactor: its heat goes up through the plenum into the spires (hp_core) |
 | coolant p (machinery) | 65.9 to 78.2 | 1.38 to 1.54 | -0.85 to 0.50 | coolant pumps and heat exchangers either side of the reactor |
@@ -186,7 +187,7 @@ Bulkhead and frame stations: F0 8.5%, F1 15.2%, F2 21.9%, F3 30.6%, F4 32.4%, F5
 |---|---|---|
 | B-1 | 31.5 (seam wanders 30.7 to 32.0) | the spearhead tears from the gun deck at its root, opening the crew decks and the fire-control room |
 | B-2 | 60.2 (seam wanders 59.6 to 60.3) | the gun deck tears from the reactor section, between the last ports and the spine block |
-| B-3 | 32.6 to 59.3 (along) | along the gun decks: the hull splits lengthwise between the gun deck and the shell rooms, the galleries and turrets lifting away |
+| B-3 | 32.6 to 59.3 (along) | along the gun decks: the lower hull peels away under the galleries, their shell rooms and the turrets |
 | B-4 | 61.3 to 84.1 (along) | the spire line snaps off as one piece, the spine block tearing along its root |
 
 Full interiors throughout the hull (R215), hidden until a piece breaks: iron decks, ember-lit gun galleries, frames, the reactor and its machinery. Sunward breaks along the gun decks (factions.md); deaths blow it apart unevenly, a ragged bite where the reactor goes (R186).
@@ -200,9 +201,9 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 | hp_breach_0 | 15.2 | 1.44 | -0.01 | port | prow | on the broadside deck line |
 | hp_breach_1 | 20.4 | -1.76 | 0.01 | stbd | prow | on the broadside deck line |
 | hp_breach_2 | 25.6 | 1.99 | 0.03 | port | prow | on the broadside deck line |
-| hp_breach_3 | 39.4 | -2.19 | 0.05 | stbd | mid | on the broadside deck line |
-| hp_breach_4 | 49.4 | 2.24 | 0.05 | port | mid | on the broadside deck line |
-| hp_breach_5 | 59.3 | -2.36 | 0.05 | stbd | mid | on the broadside deck line |
+| hp_breach_3 | 39.4 | -1.60 | -1.14 | stbd | mid | on the lower flank, clear of broadside fittings |
+| hp_breach_4 | 49.4 | 1.63 | -1.14 | port | mid | on the lower flank, clear of broadside fittings |
+| hp_breach_5 | 59.3 | -1.72 | -1.14 | stbd | mid | on the lower flank, clear of broadside fittings |
 | hp_breach_6 | 72.2 | 2.63 | 0.05 | port | eng | on the broadside deck line |
 | hp_breach_7 | 83.3 | -2.56 | 0.05 | stbd | eng | on the broadside deck line |
 | hp_rcs_0 | 14.4 | 1.08 | 0.43 | port |  |  |
@@ -227,7 +228,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **S8's four low deck turrets kept in its grid of two pairs, each pair one data.js slot: the two Sear turrets forward with one heavy emitter each, the two spark flak twins aft, all on low tubs at the deck edges.** data.js ascendant carries one turret slot (2 shots) and one flak slot (3 shots); four twin turrets would be extra weapons or silent barrels (R241). Two single-emitter Sear turrets fire one shot each every volley; two flak twins share 3 shots over 4 barrels and both fire every volley (weapon_match SPLIT). The emitters are short enough that a pair trained at each other never meets (the fit check's SWEEP).
 - **S8's radiator bank (upright ember bars in two wide wedges either side of the spine, rising to the stern end) becomes one row of seven radiator spires on the centreline spine block, tallest at the middle of the row, each its own profile (blade, raked, stepped, twin), each a stack of flat radiator fins glowing ember between iron posts.** factions.md: "a row of tall radiator spires along the spine, tallest amidships"; Ryan, Nov 12 (R232): "not exactly the same shape for every ship". Upright panels read as organ pipes from the beam and shards from above in the first render; flat fins read as radiators from the battle camera and from above. The ember glow and the line's place in the stern half are S8's.
 - **The spires stand aft of every turret and rise toward the middle of the row.** so both turret pairs fire aft past and over the whole line (the fit check's ARC test); the spires are broad finned radiators, never masts, so nothing reads as a gun aimed through a mast (R240).
-- **The hull is a little deeper (2.75 against S8's 2.2) and its flanks are angled facets round a vertical broadside band.** two deck rows (the gun deck and the shell rooms, the upper deck) and real insides need the depth (R215); R244: big flanks carry angled facets, never a flat wall.
+- **The hull is a little deeper (2.75 against S8's 2.2) and its flanks are angled facets round a vertical broadside band.** The gun deck, upper deck and real insides need the depth (R215). R244 calls for angled facets along the flanks.
+- **The shell rooms and hoist drives sit in the port and starboard gun galleries.** This clears the space below the B-3 peel inside the accepted hull (R254, issue 1059).
 - **The hull is widest at the stern third (5.3 over the reactor); with the broadside barrels the outline is still widest amidships (7.1 at 56 percent), as S8's is.** factions.md: "widest at the stern third"; S8's body is 4.4 from end to end, its width carried by the radiator bank and the guns.
 - **The two engine bells are bigger (2.1 across) and their drums run 1.55 deep into the stern.** factions.md: "big bells, ember orange, deep-set"; S8's two bells are its stern's identity and must read from the battle camera.
 - **Weapons built from the lore, not S8's generic barrels (R221).** the broadside guns are heavy short guns in deep round ports (R244: a round opening has depth); the Sear turrets are forged turrets with one heavy focusing emitter and radiator fins (las); the spark flak a squat drum with twin braked barrels and ammunition drums (tools/blender/kits/voidsworn/README.md).

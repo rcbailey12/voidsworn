@@ -1,0 +1,196 @@
+{
+ "seeds": [
+  1000,
+  1001
+ ],
+ "configs": [
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "spm": 1.25,
+   "rng": 1.25,
+   "name": "base"
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "spm": 1.25,
+   "rng": 1.25,
+   "name": "twopass",
+   "mech": {
+    "twopass": 1
+   }
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "spm": 1.25,
+   "rng": 1.25,
+   "name": "fallswap",
+   "mech": {
+    "fallSwap": 1
+   }
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "spm": 1.25,
+   "rng": 1.25,
+   "name": "ev12",
+   "mech": {
+    "moveRules": {
+     "evade": 12
+    }
+   }
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "spm": 1.25,
+   "rng": 1.25,
+   "name": "momentum",
+   "mech": {
+    "momentum": 1
+   }
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "spm": 1.25,
+   "rng": 1.25,
+   "name": "mult",
+   "mech": {
+    "mult": 1
+   }
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "spm": 1.25,
+   "rng": 1.25,
+   "name": "turnlimit",
+   "mech": {
+    "turnLimit": 1
+   }
+  }
+ ]
+}

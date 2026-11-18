@@ -1,0 +1,6 @@
+Running gpu_slots_tests (limit 300 s)...
+PASS: gpu_slots_tests (12.05 s) | PASS GPU slot checks (12 groups)
+
+check | result | seconds | detail
+--- | --- | --- | ---
+gpu_slots_tests | PASS | 12.05 | PASS GPU slot checks (12 groups)

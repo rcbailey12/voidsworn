@@ -1,0 +1,26 @@
+{
+  "now": "2026-11-17T16:00:00Z",
+  "pictures": {
+    "hero": {
+      "file": "docs/ship_pipeline/build_sheets/hegemony_IM5/ion_installed_cam170.jpg",
+      "issue": 970
+    },
+    "unlinked": {
+      "file": "docs/ship_pipeline/build_sheets/hegemony_IM5/ion_installed_bow.jpg"
+    },
+    "egg": {
+      "file": "docs/shots/look_bench/shields_r297/I15_11_native_egg_c170.png",
+      "issue": 929,
+      "decisionOption": "A"
+    },
+    "fitted": {
+      "file": "docs/shots/look_bench/shields_r297/I15_11_native_fitted_c170.png",
+      "issue": 929,
+      "decisionOption": "B"
+    },
+    "hull": {
+      "file": "docs/shots/look_bench/hull_hit_r303/C15s_23_heavy_before_after_c60.png",
+      "issue": 928
+    }
+  }
+}

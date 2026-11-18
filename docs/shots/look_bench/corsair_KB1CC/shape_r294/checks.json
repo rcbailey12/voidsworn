@@ -1,0 +1,430 @@
+{
+  "revision": "2a5399eb+903-r3-9bd3527f03",
+  "stage": "paint proof, not installed or accepted",
+  "design_sha256": "9bd3527f03e6b397d12b9c90117579827b68f17153466563a5351560d194a537",
+  "fit": {
+    "CLASH": 0,
+    "MOUNT": 0,
+    "ARC": 0,
+    "SENSOR": 0,
+    "SWEEP": 0,
+    "EXHAUST": 0,
+    "EXIT": 0,
+    "LANE": 0
+  },
+  "weapon_match": "PASS",
+  "contract": "PASS",
+  "manifest": "PASS",
+  "machine_fit": {
+    "problems": [],
+    "parts": 99,
+    "crossing_break_lines": [],
+    "structure_across_seams": [],
+    "guns_with_normals": 0,
+    "guns_into_ship": 0,
+    "ok": true
+  },
+  "rendered_red_area": {
+    "method": "Visible pixels: max sRGB channel >32; red: R>1.30G and R>1.40B. Same paint_full camera; reported, not gated.",
+    "run2": {
+      "visible_pixels": 185893,
+      "red_pixels": 112970,
+      "red_percent": 60.8
+    },
+    "run3": {
+      "visible_pixels": 260914,
+      "red_pixels": 163892,
+      "red_percent": 62.8
+    }
+  },
+  "outline_iou_percent": 79.5,
+  "triangles": 52052,
+  "objects": 140,
+  "surfaces": 4,
+  "draw_calls_merged": 4,
+  "surface": {
+    "ok": true,
+    "totals": {
+      "room": 0,
+      "bare": 0
+    },
+    "views": {
+      "top": {
+        "stack": 176998,
+        "glow": 190,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "below": {
+        "stack": 177188,
+        "glow": 0,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "port": {
+        "stack": 65033,
+        "glow": 68,
+        "liner": 188,
+        "room": 0,
+        "bare": 0
+      },
+      "starboard": {
+        "stack": 65016,
+        "glow": 65,
+        "liner": 208,
+        "room": 0,
+        "bare": 0
+      },
+      "bow": {
+        "stack": 72146,
+        "glow": 43,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "stern": {
+        "stack": 63112,
+        "glow": 9077,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      }
+    },
+    "seen_from_outside": {},
+    "objects": {
+      "stack": 114,
+      "glow": 26,
+      "liner": 9
+    },
+    "res": 640
+  },
+  "paint": {
+    "hull_objects": 41,
+    "part_objects": 63,
+    "glow_objects": 16,
+    "interior_objects": 9,
+    "device": "OPTIX",
+    "samples": 32,
+    "textures": [
+      {
+        "file": "hullbreakers_trim.png",
+        "source": "own work, drawn by tools/blender/kits/hullbreakers/stack.py and dedicated CC0 (no downloaded asset)",
+        "licence": "CC0",
+        "used": "trim sheet: rivet rows, scuffs, warning stripes, tread, weld (rows: rivets, scuffs, stripes, tread, weld)"
+      },
+      {
+        "file": "hullbreakers_decals.png",
+        "source": "own work, drawn by tools/blender/kits/hullbreakers/stack.py and dedicated CC0 (no downloaded asset)",
+        "licence": "CC0",
+        "used": "decal atlas: clan mark, hull code, kill tallies, warning chevrons"
+      }
+    ],
+    "decals": [
+      {
+        "rule": "hull code",
+        "side": "port",
+        "placed": false,
+        "room": null
+      },
+      {
+        "rule": "hull code",
+        "side": "stbd",
+        "placed": false,
+        "room": null
+      },
+      {
+        "rule": "clan mark",
+        "side": "top",
+        "placed": true,
+        "pos": [
+          0.204,
+          0.0,
+          0.0734
+        ],
+        "room": 1.0
+      },
+      {
+        "rule": "kill tallies",
+        "side": "port",
+        "placed": true,
+        "pos": [
+          -0.1133,
+          0.2951,
+          0.0758
+        ],
+        "room": 1.0
+      },
+      {
+        "rule": "kill tallies",
+        "side": "stbd",
+        "placed": true,
+        "pos": [
+          -0.1133,
+          -0.2951,
+          0.0671
+        ],
+        "room": 1.0
+      },
+      {
+        "rule": "warning chevrons",
+        "side": "port",
+        "placed": true,
+        "pos": [
+          0.3627,
+          0.5866,
+          0.0299
+        ],
+        "room": 1.0
+      },
+      {
+        "rule": "warning chevrons",
+        "side": "stbd",
+        "placed": true,
+        "pos": [
+          0.3627,
+          -0.5866,
+          0.0299
+        ],
+        "room": 1.0
+      }
+    ],
+    "running_lights": {
+      "count": 10,
+      "px": 0.8,
+      "lens": [
+        0.0115,
+        0.0115
+      ],
+      "lens_world": 0.018,
+      "rule": {
+        "length_frac": 0.0115,
+        "round": true,
+        "proud": 0.0012,
+        "frame": 0.3,
+        "max_step": 0.012,
+        "clear_machines": 0.012,
+        "flank": {
+          "x": [
+            0.06,
+            0.82
+          ],
+          "step": 0.125,
+          "z_band": [
+            0.4,
+            0.62
+          ]
+        },
+        "deck": {
+          "x": [
+            0.22,
+            0.46,
+            0.7
+          ],
+          "inset": 0.01
+        },
+        "clear_points": 0.045,
+        "clear_decals": 0.035
+      },
+      "where": [
+        {
+          "at": "port flank",
+          "pos": [
+            -0.1778,
+            0.29,
+            0.0832
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "port flank",
+          "pos": [
+            -0.2455,
+            0.2847,
+            0.0832
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "port deck edge",
+          "pos": [
+            0.2834,
+            0.24,
+            0.0499
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "port deck edge",
+          "pos": [
+            0.0458,
+            0.24,
+            0.1248
+          ],
+          "bridge": 0.0016
+        },
+        {
+          "at": "port deck edge",
+          "pos": [
+            -0.1926,
+            0.235,
+            0.1464
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "starboard flank",
+          "pos": [
+            -0.1778,
+            -0.29,
+            0.0696
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "starboard flank",
+          "pos": [
+            -0.2455,
+            -0.2847,
+            0.0696
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "starboard deck edge",
+          "pos": [
+            0.2834,
+            -0.24,
+            0.0529
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "starboard deck edge",
+          "pos": [
+            0.0454,
+            -0.24,
+            0.1202
+          ],
+          "bridge": 0.0
+        },
+        {
+          "at": "starboard deck edge",
+          "pos": [
+            -0.1926,
+            -0.235,
+            0.144
+          ],
+          "bridge": 0.0
+        }
+      ]
+    },
+    "bake_H_masks_s": 8.1,
+    "bake_H_albedo_s": 7.7,
+    "bake_H_orm_s": 6.4,
+    "bake_H_normal_s": 22.8,
+    "zones_H": [
+      "blood",
+      "iron",
+      "rust",
+      "soot",
+      "soot2",
+      "steel"
+    ],
+    "bake_P_masks_s": 7.0,
+    "bake_P_albedo_s": 4.9,
+    "bake_P_orm_s": 5.0,
+    "zones_P": [
+      "bell",
+      "blood",
+      "brass",
+      "dark",
+      "iron",
+      "iron_edge",
+      "rust",
+      "soot",
+      "soot2",
+      "steel",
+      "warhead"
+    ],
+    "bake_engine_glow_s": 0.6,
+    "engine_glow": {
+      "engines": 7,
+      "map": "KB1CC_engine_emission.png",
+      "res": 512
+    },
+    "glow_materials": [
+      "p3_glow",
+      "p3_light"
+    ],
+    "inside_materials": [
+      "ps_inside_core",
+      "ps_inside_crew",
+      "ps_inside_engroom",
+      "ps_inside_iron",
+      "ps_inside_magazine"
+    ],
+    "texel_density": {
+      "hull": {
+        "uv_share": 0.7239,
+        "area": 6.04644,
+        "texels_per_unit2": 502145.0
+      },
+      "parts": {
+        "uv_share": 0.6664,
+        "area": 2.92837,
+        "texels_per_unit2": 954480.3
+      }
+    },
+    "stack_seconds": 73.8
+  },
+  "capture": {
+    "sheet_length": 1.6,
+    "drawn_length": 3.8400000000000007,
+    "battle_radius": 170,
+    "vertical_fov": 45,
+    "pitch_from_up": 0.98,
+    "full_frame": [
+      1920,
+      1080
+    ],
+    "unscaled_crop": [
+      640,
+      360
+    ],
+    "beauty_clip": [
+      1.6316686868667603,
+      3.0970683097839355
+    ],
+    "concept_camera": {
+      "az": 35,
+      "el": 30,
+      "dist": 3.8,
+      "mm": 52,
+      "res": [
+        1080,
+        720
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "roll": 0,
+      "sx": 0,
+      "sy": 0
+    },
+    "sky_spec": 0,
+    "camera_method": "Three-quarter above, matched by eye to the concept; not the head-on outline fit.",
+    "source_blend": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn903_r304_final\\KB1CC.blend",
+    "note": "Painted preview only; no stage 7 export or game install."
+  },
+  "source_sha256": {
+    "tools/blender/build_sheets/ships/corsair_KB1CC.py": "9bd3527f03e6b397d12b9c90117579827b68f17153466563a5351560d194a537",
+    "tools/blender/build_sheets/ships/corsair_KB1CC_inv.py": "cfeb7daf0b4795c9b1cde47d3691dfffb1aef69a501ef6533907853322a2a608",
+    "docs/shots/look_bench/corsair_KB1CC/shape_r294/reproduce.py": "2ad94aa85a545858bfdc1be49c923d2643070b7d92c33876b944236de5f2c265",
+    "docs/shots/look_bench/corsair_KB1CC/capture.py": "0796b19bf47e6697b5fda537efa6b4760d389c0044e7d2cbd483fcca2420808b",
+    "tools/blender/kits/hullbreakers/stack.py": "f0d06ff6d50cb30cf33e43625f7b3446ca6a8284832573d2e56ebc79db9e308b"
+  }
+}

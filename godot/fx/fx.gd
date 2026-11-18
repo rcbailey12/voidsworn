@@ -9,6 +9,7 @@ extends Node3D
 const BREACH := preload("res://fx/fx_breach.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
+const FRAGMENTS := preload("res://fx/fx_fragments.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
@@ -246,6 +247,9 @@ func setup(opts := {}) -> void:
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
 	pools["shd"] = POOLS.Pool.new(768 if big else 384, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
+	var finish_slots := FRAGMENTS.COMPAT_FINISH_SLOTS if compat else FRAGMENTS.FINISH_SLOTS
+	var fragment_mat := _mat(SH.hit_fragment_code(finish_slots), 0, "", "hit fragments")
+	pools["plate"] = FRAGMENTS.Pool.new(384 if big else 192, fragment_mat, finish_slots, self, FRAGMENTS.templates()[0], FRAGMENTS.atlas())
 	if big:
 		pools["dst"] = POOLS.Pool.new(256, _mat(SH.DISTORT, -20), self, "fx_distort", POOLS.quad_shape())
 	for k in (64 if big else (24 if rich else 8)):
@@ -356,7 +360,10 @@ func step(delta: float) -> void:
 	t0 = pend("weap_death", t0)
 	_update_lights()
 	for k in pools:
-		(pools[k] as POOLS.Pool).flush()
+		if k == "plate":
+			(pools[k] as FRAGMENTS.Pool).flush(now)
+		else:
+			(pools[k] as POOLS.Pool).flush()
 	pend("lights_pools", t0)
 
 
@@ -500,6 +507,16 @@ func shd(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: flo
 	var ax = rdir()
 	(pools["shd"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, 0.0, tint, drag), Vector4(heat, rng.randf(), 0.0, 0.0)))
+
+
+# Hull ejecta shares one bounded ring. A negative profile key gives a lead piece the full screen-size floor.
+func hit_fragment(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin: float, drag: float,
+		paint: Color, profile: int, lead: bool, finish := {}) -> void:
+	var ax := rdir()
+	var particle := POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
+		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, rng.randf(), -1 - profile if lead else profile, drag),
+		Vector4(paint.r, paint.g, paint.b, heat))
+	(pools["plate"] as FRAGMENTS.Pool).emit(particle, finish)
 
 
 func dst(p: Vector3, t: float, life: float, s0: float, s1: float, kind: int, strength: float) -> void:
@@ -1341,7 +1358,7 @@ func tick(id: String, kind := "fire") -> void:
 func particles_emitted() -> int:
 	var n = 0
 	for k in pools:
-		n += (pools[k] as POOLS.Pool).emitted
+		n += pools[k].emitted
 	return n
 
 
@@ -1359,6 +1376,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	# The temporary PBR adapter is queried for uniforms at death too. Keep its
 	# shader alive so that query never recompiles it for each new ship.
 	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
+	_shaders["hull_exterior_alpha"] = HULL.shared_shader(HULL.exterior_alpha_code(), "exterior_alpha")
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -1371,6 +1389,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
+	hit_fragment(at, T, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1, c, FRAGMENTS.PLATE, false)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	var tmp = Node3D.new()
@@ -1414,6 +1433,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		wgas.set_shader_parameter("intensity", 0.01)
 		mats.append(wgas)
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
+		if rel.begins_with("weapons/"):
+			var hit := WEAP.hull_impact_material(self, rel)
+			hit.set_shader_parameter("born", now)
+			hit.set_shader_parameter("intensity", 0.01)
+			mats.append(hit)
 		for variant in 3:
 			var production := DEATH.route_material(self, SH.DEATH_FLIPBOOK, rel, true, variant)
 			production.set_shader_parameter("born", now)

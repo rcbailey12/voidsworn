@@ -1,0 +1,1371 @@
+{
+  "issue": 970,
+  "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+  "method": {
+    "ship": "tools/recipe/ships/hegemony_IM5.json",
+    "sheet": "docs/ship_pipeline/build_sheets/hegemony_IM5/README.md",
+    "manifest": "docs/ship_pipeline/build_sheets/hegemony_IM5/manifest.json",
+    "bake": "tools/blender/r209/bake_sheet.py",
+    "stack": "tools/blender/kits/hegemony/stack.py",
+    "sheet_or_geometry_changes": false
+  },
+  "paint": {
+    "resolution": 4096,
+    "parts_resolution": 4096,
+    "samples": 64,
+    "device": "OPTIX",
+    "emission_resolution": 2048,
+    "export_maps": 2048
+  },
+  "geometry": {
+    "cell": "IM5",
+    "geometry_unchanged": true,
+    "painted": {
+      "mesh_objects": 559,
+      "triangles": 113936,
+      "sha256": "3b2e7585708cf414a64ab5ef5e587a62994c3e9bec96407ebb0f7acaeca57ed6"
+    },
+    "unpainted_sheet": {
+      "mesh_objects": 559,
+      "triangles": 113936,
+      "sha256": "3b2e7585708cf414a64ab5ef5e587a62994c3e9bec96407ebb0f7acaeca57ed6"
+    },
+    "ion_zones": [
+      {
+        "object": "I1_body_hblue",
+        "zone": "hblue",
+        "material": "p3_glow",
+        "kinds": [
+          1
+        ]
+      },
+      {
+        "object": "I1_body_hlining",
+        "zone": "hlining",
+        "material": "p3_glow",
+        "kinds": [
+          2
+        ]
+      }
+    ]
+  },
+  "surface": {
+    "ok": true,
+    "totals": {
+      "room": 0,
+      "bare": 0
+    },
+    "views": {
+      "top": {
+        "stack": 107405,
+        "glow": 494,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "below": {
+        "stack": 107419,
+        "glow": 480,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "port": {
+        "stack": 37996,
+        "glow": 679,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "starboard": {
+        "stack": 37996,
+        "glow": 679,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "bow": {
+        "stack": 15536,
+        "glow": 825,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      },
+      "stern": {
+        "stack": 13495,
+        "glow": 2866,
+        "liner": 0,
+        "room": 0,
+        "bare": 0
+      }
+    },
+    "seen_from_outside": {},
+    "objects": {
+      "stack": 413,
+      "glow": 76,
+      "liner": 70
+    },
+    "res": 640
+  },
+  "export": {
+    "ok": true,
+    "sha256": "5dd513f6d362abe4f9ccc8fab42e236bc1cf52624b1c304eaad5ade44da0a33e",
+    "triangles": 105500,
+    "turret_triangles": 8436,
+    "length_world": 31,
+    "hardpoints": {
+      "gun": 9,
+      "engine": 6,
+      "breach": 8,
+      "core": 1,
+      "rcs": 4,
+      "board": 2
+    }
+  },
+  "selftest": {
+    "ok": true,
+    "count": 33,
+    "bell_faults": 12,
+    "cases": [
+      "pass",
+      "no_slot",
+      "off_mesh",
+      "backward",
+      "wrong_side",
+      "no_core",
+      "no_socket",
+      "no_engine",
+      "no_rcs",
+      "no_board",
+      "breach_count",
+      "breach_near",
+      "breach_inward",
+      "no_interior",
+      "no_seams",
+      "liner_only",
+      "hull_trim_near",
+      "part_near",
+      "no_trim_marker",
+      "turret_merged",
+      "turret_no_mesh",
+      "bell_radius",
+      "bell_plane",
+      "bell_radius_hp_eng_1",
+      "bell_plane_hp_eng_1",
+      "bell_radius_hp_eng_2",
+      "bell_plane_hp_eng_2",
+      "bell_radius_hp_eng_3",
+      "bell_plane_hp_eng_3",
+      "bell_radius_hp_eng_4",
+      "bell_plane_hp_eng_4",
+      "bell_radius_hp_eng_5",
+      "bell_plane_hp_eng_5"
+    ]
+  },
+  "installs": [
+    {
+      "target": "repo/godot",
+      "readback": "INSTALL READBACK PASS code=H4_11 nodes=38",
+      "files": {
+        "H4_11.glb": "5dd513f6d362abe4f9ccc8fab42e236bc1cf52624b1c304eaad5ade44da0a33e",
+        "H4_11_base.jpg": "d5e21d198616d63d3667d1f8e27c385141fc72ea30ae418c395b15de191c0750",
+        "H4_11_glow_emission.jpg": "6c09cc7417d25bc332b00480781e361072166e3dbf756e205da0d2c7e71cdd68",
+        "H4_11_normal.jpg": "9be476f5f8c3d0d6968156e4ab090a65b7b5b8b578aa9a74f6ffb3937b567108",
+        "H4_11_orm.jpg": "31989f153781bef2ad996c69376bdcdc5989b194e4accc8d2800a696e507ce9e",
+        "H4_11_parts_base.jpg": "f7d93c04a0968f2fd59ea702ea33145cc38b2c6260743d98b684d889c93aad0b",
+        "H4_11_parts_orm.jpg": "9c5a35b94ca1234aa1b47f1ede234cbe9a3e2a10a72b1b5071dadcdff21b811a"
+      }
+    },
+    {
+      "target": "build/godot",
+      "readback": "INSTALL READBACK PASS code=H4_11 nodes=38",
+      "files": {
+        "H4_11.glb": "5dd513f6d362abe4f9ccc8fab42e236bc1cf52624b1c304eaad5ade44da0a33e",
+        "H4_11_base.jpg": "d5e21d198616d63d3667d1f8e27c385141fc72ea30ae418c395b15de191c0750",
+        "H4_11_glow_emission.jpg": "6c09cc7417d25bc332b00480781e361072166e3dbf756e205da0d2c7e71cdd68",
+        "H4_11_normal.jpg": "9be476f5f8c3d0d6968156e4ab090a65b7b5b8b578aa9a74f6ffb3937b567108",
+        "H4_11_orm.jpg": "31989f153781bef2ad996c69376bdcdc5989b194e4accc8d2800a696e507ce9e",
+        "H4_11_parts_base.jpg": "f7d93c04a0968f2fd59ea702ea33145cc38b2c6260743d98b684d889c93aad0b",
+        "H4_11_parts_orm.jpg": "9c5a35b94ca1234aa1b47f1ede234cbe9a3e2a10a72b1b5071dadcdff21b811a"
+      }
+    }
+  ],
+  "lod_analysis": {
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "cells": {
+      "IM5": {
+        "load_auto": {
+          "chain_triangles": [
+            [
+              "IM5_IM5_lod1",
+              98276
+            ],
+            [
+              "IM5_IM5_lod2",
+              54311
+            ],
+            [
+              "IM5_IM5_lod3",
+              21444
+            ]
+          ],
+          "lod_seconds": 0.077468,
+          "lod_sizes": [
+            [
+              0.0,
+              0.0167241767048836,
+              0.0250862631946802,
+              0.817275106906891
+            ],
+            [
+              0.0,
+              0.00490264454856515,
+              0.0328685529530048,
+              0.0493028312921524,
+              0.0739542469382286,
+              0.110931374132633,
+              0.166397050023079
+            ],
+            [
+              0.0,
+              0.0159808564931154,
+              0.0344616360962391
+            ],
+            [
+              0.0,
+              0.000276027451036498,
+              0.0544971339404583
+            ],
+            [
+              0.0,
+              0.000971616595052183,
+              0.00499415956437588
+            ],
+            [
+              0.0,
+              0.00881253648549318
+            ],
+            [
+              0.0,
+              0.136613667011261,
+              0.20492048561573
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0,
+              0.0563073791563511,
+              0.0945508480072021,
+              0.159123554825783,
+              0.287325203418732
+            ],
+            [
+              0.0,
+              0.0331973917782307,
+              0.0773080065846443,
+              0.12330424040556,
+              0.19712695479393,
+              0.295690417289734,
+              0.508940577507019
+            ],
+            [
+              0.0,
+              0.0262354481965303,
+              0.106452964246273
+            ],
+            [
+              0.0,
+              0.0168908759951591,
+              0.0453044325113297,
+              0.0679566487669945,
+              0.128931507468224,
+              0.193397253751755
+            ],
+            [
+              0.0,
+              0.0368302278220654,
+              0.191848605871201
+            ],
+            [
+              0.0,
+              0.00930639542639256,
+              0.106793381273746,
+              0.16019007563591,
+              0.240285128355026,
+              0.360427707433701
+            ],
+            [
+              0.0,
+              0.0582529418170452,
+              0.0939109399914742
+            ],
+            [
+              0.0,
+              0.0311638992279768,
+              0.0770524069666862,
+              0.118219487369061,
+              0.177329242229462
+            ],
+            [
+              0.0,
+              0.0452973768115044,
+              0.119796060025692,
+              0.179694086313248
+            ]
+          ],
+          "lod_triangles": [
+            [
+              59468,
+              11348,
+              5674,
+              2280
+            ],
+            [
+              39936,
+              17356,
+              7332,
+              2824,
+              664,
+              144,
+              72
+            ],
+            [
+              2292,
+              1120,
+              320
+            ],
+            [
+              848,
+              424,
+              96
+            ],
+            [
+              2720,
+              1360,
+              12
+            ],
+            [
+              728,
+              56
+            ],
+            [
+              132,
+              48,
+              12
+            ],
+            [
+              6720
+            ],
+            [
+              84,
+              42,
+              20,
+              10,
+              4
+            ],
+            [
+              364,
+              182,
+              90,
+              44,
+              22,
+              10,
+              4
+            ],
+            [
+              28,
+              14,
+              6
+            ],
+            [
+              196,
+              98,
+              48,
+              24,
+              12,
+              6
+            ],
+            [
+              28,
+              14,
+              8
+            ],
+            [
+              168,
+              84,
+              42,
+              20,
+              10,
+              4
+            ],
+            [
+              28,
+              14,
+              6
+            ],
+            [
+              140,
+              70,
+              34,
+              16,
+              8
+            ],
+            [
+              56,
+              28,
+              14,
+              6
+            ]
+          ],
+          "surfaces": 17,
+          "triangles": 113936
+        },
+        "load_hand": {
+          "chain_triangles": [
+            [
+              "IM5_IM5_lod1",
+              98276
+            ],
+            [
+              "IM5_IM5_lod2",
+              54311
+            ],
+            [
+              "IM5_IM5_lod3",
+              21444
+            ]
+          ],
+          "lod_seconds": 0.000101,
+          "lod_sizes": [
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ]
+          ],
+          "lod_triangles": [
+            [
+              59468
+            ],
+            [
+              39936
+            ],
+            [
+              2292
+            ],
+            [
+              848
+            ],
+            [
+              2720
+            ],
+            [
+              728
+            ],
+            [
+              132
+            ],
+            [
+              6720
+            ],
+            [
+              84
+            ],
+            [
+              364
+            ],
+            [
+              28
+            ],
+            [
+              196
+            ],
+            [
+              28
+            ],
+            [
+              168
+            ],
+            [
+              28
+            ],
+            [
+              140
+            ],
+            [
+              56
+            ]
+          ],
+          "surfaces": 17,
+          "triangles": 113936
+        },
+        "load_off": {
+          "chain_triangles": [
+            [
+              "IM5_IM5_lod1",
+              98276
+            ],
+            [
+              "IM5_IM5_lod2",
+              54311
+            ],
+            [
+              "IM5_IM5_lod3",
+              21444
+            ]
+          ],
+          "lod_seconds": 7.9e-05,
+          "lod_sizes": [
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ],
+            [
+              0.0
+            ]
+          ],
+          "lod_triangles": [
+            [
+              59468
+            ],
+            [
+              39936
+            ],
+            [
+              2292
+            ],
+            [
+              848
+            ],
+            [
+              2720
+            ],
+            [
+              728
+            ],
+            [
+              132
+            ],
+            [
+              6720
+            ],
+            [
+              84
+            ],
+            [
+              364
+            ],
+            [
+              28
+            ],
+            [
+              196
+            ],
+            [
+              28
+            ],
+            [
+              168
+            ],
+            [
+              28
+            ],
+            [
+              140
+            ],
+            [
+              56
+            ]
+          ],
+          "surfaces": 17,
+          "triangles": 113936
+        },
+        "one_auto": {
+          "draw_calls": 51.0,
+          "frame_median_ms": 0.716,
+          "frame_p99_ms": 1.109,
+          "gpu_median_ms": 0.432000011205673,
+          "label": "IM5_auto_1",
+          "lod_threshold": 1.0,
+          "primitives": 264672,
+          "render_cpu_median_ms": 0.248999997973442,
+          "scaling_3d": 1.0
+        },
+        "one_hand": {
+          "draw_calls": 18.0,
+          "frame_median_ms": 0.658,
+          "frame_p99_ms": 1.029,
+          "gpu_median_ms": 0.439999997615814,
+          "label": "IM5_hand_1",
+          "lod_threshold": 0.0,
+          "primitives": 294828,
+          "render_cpu_median_ms": 0.217999994754791,
+          "scaling_3d": 1.0
+        },
+        "one_off": {
+          "draw_calls": 51.0,
+          "frame_median_ms": 0.622,
+          "frame_p99_ms": 0.975,
+          "gpu_median_ms": 0.442999988794327,
+          "label": "IM5_off_1",
+          "lod_threshold": 0.0,
+          "primitives": 341808,
+          "render_cpu_median_ms": 0.181999996304512,
+          "scaling_3d": 1.0
+        },
+        "runs": [
+          {
+            "draw_calls": 153.0,
+            "frame_median_ms": 1.356,
+            "frame_p99_ms": 1.711,
+            "gpu_median_ms": 1.24000000953674,
+            "label": "IM5_off_20_1.0",
+            "lod_threshold": 0.0,
+            "mode": "off",
+            "primitives": 6836160,
+            "render_cpu_median_ms": 0.256000012159348,
+            "repeat": 1,
+            "scaling_3d": 1.0
+          },
+          {
+            "draw_calls": 153.0,
+            "frame_median_ms": 2.986,
+            "frame_p99_ms": 3.199,
+            "gpu_median_ms": 2.75,
+            "label": "IM5_off_20_2.0",
+            "lod_threshold": 0.0,
+            "mode": "off",
+            "primitives": 6836160,
+            "render_cpu_median_ms": 0.314999997615814,
+            "repeat": 1,
+            "scaling_3d": 2.0
+          },
+          {
+            "draw_calls": 157.0,
+            "frame_median_ms": 1.252,
+            "frame_p99_ms": 1.629,
+            "gpu_median_ms": 1.12699997425079,
+            "label": "IM5_auto_20_1.0",
+            "lod_threshold": 1.0,
+            "mode": "auto",
+            "primitives": 5305572,
+            "render_cpu_median_ms": 0.368999987840652,
+            "repeat": 1,
+            "scaling_3d": 1.0
+          },
+          {
+            "draw_calls": 157.0,
+            "frame_median_ms": 2.884,
+            "frame_p99_ms": 3.04,
+            "gpu_median_ms": 2.63199996948242,
+            "label": "IM5_auto_20_2.0",
+            "lod_threshold": 1.0,
+            "mode": "auto",
+            "primitives": 5305572,
+            "render_cpu_median_ms": 0.426999986171722,
+            "repeat": 1,
+            "scaling_3d": 2.0
+          },
+          {
+            "draw_calls": 84.0,
+            "frame_median_ms": 1.171,
+            "frame_p99_ms": 1.508,
+            "gpu_median_ms": 1.05099999904633,
+            "label": "IM5_hand_20_1.0",
+            "lod_threshold": 0.0,
+            "mode": "hand",
+            "primitives": 4577610,
+            "render_cpu_median_ms": 0.28099998831749,
+            "repeat": 1,
+            "scaling_3d": 1.0
+          },
+          {
+            "draw_calls": 84.0,
+            "frame_median_ms": 2.698,
+            "frame_p99_ms": 2.851,
+            "gpu_median_ms": 2.48699998855591,
+            "label": "IM5_hand_20_2.0",
+            "lod_threshold": 0.0,
+            "mode": "hand",
+            "primitives": 4577610,
+            "render_cpu_median_ms": 0.340000003576279,
+            "repeat": 1,
+            "scaling_3d": 2.0
+          },
+          {
+            "draw_calls": 84.0,
+            "frame_median_ms": 1.173,
+            "frame_p99_ms": 1.585,
+            "gpu_median_ms": 1.04200005531311,
+            "label": "IM5_hand_20_1.0",
+            "lod_threshold": 0.0,
+            "mode": "hand",
+            "primitives": 4577610,
+            "render_cpu_median_ms": 0.28600001335144,
+            "repeat": 2,
+            "scaling_3d": 1.0
+          },
+          {
+            "draw_calls": 84.0,
+            "frame_median_ms": 2.73,
+            "frame_p99_ms": 2.894,
+            "gpu_median_ms": 2.48000001907349,
+            "label": "IM5_hand_20_2.0",
+            "lod_threshold": 0.0,
+            "mode": "hand",
+            "primitives": 4577610,
+            "render_cpu_median_ms": 0.349999994039536,
+            "repeat": 2,
+            "scaling_3d": 2.0
+          },
+          {
+            "draw_calls": 157.0,
+            "frame_median_ms": 1.286,
+            "frame_p99_ms": 3.86,
+            "gpu_median_ms": 1.12800002098084,
+            "label": "IM5_auto_20_1.0",
+            "lod_threshold": 1.0,
+            "mode": "auto",
+            "primitives": 5305572,
+            "render_cpu_median_ms": 0.397000014781952,
+            "repeat": 2,
+            "scaling_3d": 1.0
+          },
+          {
+            "draw_calls": 157.0,
+            "frame_median_ms": 2.89,
+            "frame_p99_ms": 2.996,
+            "gpu_median_ms": 2.62400007247925,
+            "label": "IM5_auto_20_2.0",
+            "lod_threshold": 1.0,
+            "mode": "auto",
+            "primitives": 5305572,
+            "render_cpu_median_ms": 0.412999987602234,
+            "repeat": 2,
+            "scaling_3d": 2.0
+          },
+          {
+            "draw_calls": 153.0,
+            "frame_median_ms": 1.391,
+            "frame_p99_ms": 1.799,
+            "gpu_median_ms": 1.24500000476837,
+            "label": "IM5_off_20_1.0",
+            "lod_threshold": 0.0,
+            "mode": "off",
+            "primitives": 6836160,
+            "render_cpu_median_ms": 0.361000001430511,
+            "repeat": 2,
+            "scaling_3d": 1.0
+          },
+          {
+            "draw_calls": 153.0,
+            "frame_median_ms": 3.018,
+            "frame_p99_ms": 3.161,
+            "gpu_median_ms": 2.77999997138977,
+            "label": "IM5_off_20_2.0",
+            "lod_threshold": 0.0,
+            "mode": "off",
+            "primitives": 6836160,
+            "render_cpu_median_ms": 0.428000003099442,
+            "repeat": 2,
+            "scaling_3d": 2.0
+          }
+        ],
+        "sweep_auto": [
+          [
+            0.8,
+            567560
+          ],
+          [
+            0.894606371845683,
+            567560
+          ],
+          [
+            1.00040070068362,
+            567560
+          ],
+          [
+            1.11870605153807,
+            567560
+          ],
+          [
+            1.25100195241035,
+            567560
+          ],
+          [
+            1.39894289727211,
+            567560
+          ],
+          [
+            1.56437903718487,
+            560760
+          ],
+          [
+            1.74937931830925,
+            560760
+          ],
+          [
+            1.95625735616814,
+            560760
+          ],
+          [
+            2.1876003697475,
+            448608
+          ],
+          [
+            2.44630153728511,
+            448608
+          ],
+          [
+            2.73559617838894,
+            448608
+          ],
+          [
+            3.05910221497931,
+            448608
+          ],
+          [
+            3.42086541705967,
+            448608
+          ],
+          [
+            3.82540999916015,
+            448608
+          ],
+          [
+            4.27779520021357,
+            336456
+          ],
+          [
+            4.78367855445243,
+            336456
+          ],
+          [
+            5.34938664459336,
+            336456
+          ],
+          [
+            5.98199422214928,
+            336456
+          ],
+          [
+            6.68941268434851,
+            268716
+          ],
+          [
+            7.48048901415439,
+            264672
+          ],
+          [
+            8.36511642073019,
+            264672
+          ],
+          [
+            9.35435806402022,
+            264672
+          ],
+          [
+            10.4605854107482,
+            176448
+          ],
+          [
+            11.6976329521141,
+            176448
+          ],
+          [
+            13.0809712180917,
+            174936
+          ],
+          [
+            14.6279002520435,
+            174936
+          ],
+          [
+            16.3577659652515,
+            174936
+          ],
+          [
+            18.2922020770931,
+            174936
+          ],
+          [
+            20.4554006665704,
+            87468
+          ],
+          [
+            22.8744147187128,
+            38078
+          ],
+          [
+            25.5794964495015,
+            38078
+          ],
+          [
+            28.6044756404101,
+            38078
+          ],
+          [
+            31.9871827140194,
+            38078
+          ],
+          [
+            35.7699218416923,
+            32390
+          ],
+          [
+            40.0,
+            32390
+          ]
+        ],
+        "sweep_hand": [
+          [
+            0.8,
+            569680
+          ],
+          [
+            0.894606371845683,
+            569680
+          ],
+          [
+            1.00040070068362,
+            569680
+          ],
+          [
+            1.11870605153807,
+            569680
+          ],
+          [
+            1.25100195241035,
+            569680
+          ],
+          [
+            1.39894289727211,
+            569680
+          ],
+          [
+            1.56437903718487,
+            569680
+          ],
+          [
+            1.74937931830925,
+            569680
+          ],
+          [
+            1.95625735616814,
+            569680
+          ],
+          [
+            2.1876003697475,
+            455744
+          ],
+          [
+            2.44630153728511,
+            455744
+          ],
+          [
+            2.73559617838894,
+            455744
+          ],
+          [
+            3.05910221497931,
+            393104
+          ],
+          [
+            3.42086541705967,
+            393104
+          ],
+          [
+            3.82540999916015,
+            393104
+          ],
+          [
+            4.27779520021357,
+            294828
+          ],
+          [
+            4.78367855445243,
+            294828
+          ],
+          [
+            5.34938664459336,
+            294828
+          ],
+          [
+            5.98199422214928,
+            294828
+          ],
+          [
+            6.68941268434851,
+            294828
+          ],
+          [
+            7.48048901415439,
+            294828
+          ],
+          [
+            8.36511642073019,
+            162933
+          ],
+          [
+            9.35435806402022,
+            162933
+          ],
+          [
+            10.4605854107482,
+            108622
+          ],
+          [
+            11.6976329521141,
+            108622
+          ],
+          [
+            13.0809712180917,
+            108622
+          ],
+          [
+            14.6279002520435,
+            108622
+          ],
+          [
+            16.3577659652515,
+            108622
+          ],
+          [
+            18.2922020770931,
+            42888
+          ],
+          [
+            20.4554006665704,
+            21444
+          ],
+          [
+            22.8744147187128,
+            21444
+          ],
+          [
+            25.5794964495015,
+            21444
+          ],
+          [
+            28.6044756404101,
+            21444
+          ],
+          [
+            31.9871827140194,
+            21444
+          ],
+          [
+            35.7699218416923,
+            21444
+          ],
+          [
+            40.0,
+            21444
+          ]
+        ],
+        "sweep_off": [
+          [
+            0.8,
+            569680
+          ],
+          [
+            0.894606371845683,
+            569680
+          ],
+          [
+            1.00040070068362,
+            569680
+          ],
+          [
+            1.11870605153807,
+            569680
+          ],
+          [
+            1.25100195241035,
+            569680
+          ],
+          [
+            1.39894289727211,
+            569680
+          ],
+          [
+            1.56437903718487,
+            569680
+          ],
+          [
+            1.74937931830925,
+            569680
+          ],
+          [
+            1.95625735616814,
+            569680
+          ],
+          [
+            2.1876003697475,
+            455744
+          ],
+          [
+            2.44630153728511,
+            455744
+          ],
+          [
+            2.73559617838894,
+            455744
+          ],
+          [
+            3.05910221497931,
+            455744
+          ],
+          [
+            3.42086541705967,
+            455744
+          ],
+          [
+            3.82540999916015,
+            455744
+          ],
+          [
+            4.27779520021357,
+            341808
+          ],
+          [
+            4.78367855445243,
+            341808
+          ],
+          [
+            5.34938664459336,
+            341808
+          ],
+          [
+            5.98199422214928,
+            341808
+          ],
+          [
+            6.68941268434851,
+            341808
+          ],
+          [
+            7.48048901415439,
+            341808
+          ],
+          [
+            8.36511642073019,
+            341808
+          ],
+          [
+            9.35435806402022,
+            341808
+          ],
+          [
+            10.4605854107482,
+            227872
+          ],
+          [
+            11.6976329521141,
+            227872
+          ],
+          [
+            13.0809712180917,
+            227872
+          ],
+          [
+            14.6279002520435,
+            227872
+          ],
+          [
+            16.3577659652515,
+            227872
+          ],
+          [
+            18.2922020770931,
+            227872
+          ],
+          [
+            20.4554006665704,
+            113936
+          ],
+          [
+            22.8744147187128,
+            113936
+          ],
+          [
+            25.5794964495015,
+            113936
+          ],
+          [
+            28.6044756404101,
+            113936
+          ],
+          [
+            31.9871827140194,
+            113936
+          ],
+          [
+            35.7699218416923,
+            113936
+          ],
+          [
+            40.0,
+            113936
+          ]
+        ]
+      }
+    },
+    "empty": [
+      {
+        "draw_calls": 0.0,
+        "frame_median_ms": 0.491,
+        "frame_p99_ms": 0.876,
+        "gpu_median_ms": 0.386999994516373,
+        "label": "empty_1.0",
+        "lod_threshold": 1.0,
+        "primitives": 0,
+        "render_cpu_median_ms": 0.128999993205071,
+        "scaling_3d": 1.0
+      },
+      {
+        "draw_calls": 0.0,
+        "frame_median_ms": 1.541,
+        "frame_p99_ms": 1.825,
+        "gpu_median_ms": 1.39800000190735,
+        "label": "empty_2.0",
+        "lod_threshold": 1.0,
+        "primitives": 0,
+        "render_cpu_median_ms": 0.138999998569489,
+        "scaling_3d": 2.0
+      }
+    ],
+    "hand_d": [
+      0.0,
+      3.0,
+      8.0,
+      18.0
+    ],
+    "length_world": 31.0,
+    "method": "round 4 studio protocol: 20 copies 5x4 at 1.15 length spacing, camera at 8 lengths, MSAA 4x, 100 warm-up + 360 frames; 1080p and 3D at 4K (scaling 2.0); modes off / auto / hand",
+    "renderer": "forward_plus",
+    "texture_prep_seconds": 22.675593
+  },
+  "backups": "board/issue-970/replaced_H4_11_20261117_041621",
+  "interiors": {
+    "exit_code": 0,
+    "result": [
+      "[turret] turret_3 (T1) on authored: arc -180 to 180, trains all round",
+      "[turret] turret_0 (F1) on this hull: arc -180 to 180, trains all round",
+      "[turret] turret_1 (HP) on this hull: arc 30 to 150, trains -30.0 to 90.0 from rest",
+      "[turret] turret_2 (HS) on this hull: arc -150 to -30, trains -90.0 to 30.0 from rest",
+      "[turret] turret_3 (T1) on this hull: arc -180 to 180, trains all round",
+      "AUTHORED_INTERIORS failures=0 interior_triangles=30071"
+    ]
+  },
+  "death_seam": {
+    "exit_code": 0,
+    "result": [
+      "[turret] turret_3 (T1) on a16: arc -180 to 180, trains all round",
+      "DEATH_SEAM kill_frame death_ms=4.4 power_down_frames_after=4 power_down_ms_per_frame=[\"4.1\", \"4.7\", \"4.1\", \"0.8\", \"0.0\", \"0.0\", \"0.0\", \"0.0\", \"0.0\", \"0.0\", \"0.0\", \"0.0\"] surfaces=29 powered=29",
+      "DEATH_SEAM machines=24 machines_split=0 []",
+      "DEATH_SEAM inside_triangles=21262 inside_outside_hull=0 fragment_inside_triangles=9336 pieces=19 main=5 (outside the whole ship before the break, a sheet matter: 14)",
+      "DEATH_SEAM cut_worker_ms=3081.6 main_thread_ms piece_build=97.2 (most in one frame 19.2; headless also builds the geometry here, a game window builds it on the worker) death=4.4 break_up=0.8",
+      "DEATH_SEAM failures=0"
+    ]
+  },
+  "standing_checks": {
+    "command": "node contrib/opus/tools/run_all_checks.js",
+    "exit_code": 0,
+    "known_baselines": [
+      "findings_tests: 7 listed failures",
+      "oracle_drift_guard: 12 constant differences"
+    ]
+  }
+}

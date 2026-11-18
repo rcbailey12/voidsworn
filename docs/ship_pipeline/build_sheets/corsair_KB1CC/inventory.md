@@ -7,16 +7,17 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 
 | ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
 |---|---|---|---|---:|---|---|---|
-| body | the craft's main body: the glacis ramp armour over the reactor and the crew, the stern housing over the drives | hull | one wide body: its top one long glacis ramp, low at the bow lip and rising aft to the armoured lip and the stern housing (R275); a flat belly with chines | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | the glacis ramp rising aft, the chamfers, the stern housing at its top | picture |
+| body | the craft's main body: the glacis ramp armour over the reactor and the crew, the stern housing over the drives | hull | R294: tapered bow toe, rising glacis, level upper deck, raised stern housing; a flat belly with chines | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | tapered toe and chamfers, rising glacis then level deck, stern housing | picture |
 | glacis_plates | the glacis ramp's armour: the Hullbreaker patchwork of big uneven plates (R275) | plate | a patchwork of big plates of mixed size and angle over the ramp and the flanks, lapping one another | 1 | bow/top, bow/side, mid/top, mid/side, stern/top | slabs with bevels, plates at their own heights and angles, patches on some, rivets on a few | picture |
 | belly_plates | the belly's armour | plate | patched plates over the flat belly (the concept shows no underside) | 1 | bow/below, mid/below, stern/below | slabs with bevels and steps | designed |
-| bomb_tubes | the bomb payload (data.js bombs T, 2 shots): the wing's only weapon, one tube a corner, both firing every volley | bomb_tube | two bomb tubes at the glacis's extreme corners, each in a dark armoured collar on an eight-sided drum (the concept's two round corner mouths) | 2 | bow/top, bow/side, bow/below | the dark collar with welded bolts, the bore, the bomb nose seated deep inside, the drum, two riveted bands, a welded patch (R221) | picture |
+| bomb_tubes | the bomb payload (data.js bombs T, 2 shots): the wing's only weapon, one tube a corner, both firing every volley | bomb_tube | two long hollow bomb barrels, .54 LENGTH from their unchanged forward mouths to magazine breeches (R304: barrels run into the shoulder armour and the existing magazine rows; R299 mouth and aft drives unchanged) | 2 | bow/top, bow/side, bow/below, mid/top, mid/side | dark collars, deep bores and red-lit bomb noses, continuous barrel bodies, four riveted straps, curved rear armour laps and covered magazine feeds | designed |
 | rails | the armoured edge frames that stiffen the glacis plate and guard the ramp's edges | rib | a raised rail along each top edge of the body, running diagonally up the ramp from the bow toe to the stern housing, with bolted clamps (the concept's raised glacis edges) | 1 | bow/top, mid/top, stern/top | the rail, its clamp brackets | picture |
 | lip | the armoured lip that ends the glacis (against the ramp read) and carries the crew's vision slit | tier | an armoured lip across the top of the glacis ramp, against the stern housing (the round 3 sheet (DeepSeek)) | 1 | stern/top | its sloped face, its roof, the slit opening | picture |
 | vision_slit | the crew's view out (no canopy, R254): the bombardier aims the craft | slit | one vision slit in the lip's face, a little to port, looking forward down the ramp | 1 | stern/top | a welded frame round a dark pane | designed |
 | shoulders | the side bodies behind the corner pods: each holds a bomb row (the magazine) and its hoist | tier | a shoulder either side, its top sloping down and out to a thin edge; the starboard one a touch lower and shorter (lopsided) | 1 | bow/top, mid/top, mid/side, mid/below, stern/top, stern/side | the sloped top, the thin outer edge, the chamfered belly | picture |
 | shoulder_plates | the shoulders' armour | plate | a patchwork of big uneven plates over the shoulders | 1 | mid/top, mid/side, stern/top | slabs with bevels, plates at their own heights and angles, patches on some | picture |
-| hoist_bays | the bomb hoists: they walk the next bomb from the magazine row into its tube, behind armoured doors | machbay | one machinery bay in each shoulder's sloped top, a door in a second tone over its fore part (the concept's recessed side bays with armoured doors) | 2 | mid/top, mid/side | a heavy frame, a dark back, pipes, the hoist block, the door on hinges (two-tone so it survives 32 px, Qwen) | picture |
+| hoist_bays | the bomb hoists: they walk the next bomb from the magazine row into its tube, behind armoured doors | machbay | R294: one real sunken machinery well cut through each shoulder, with three coupled pipes, hoist and hinged partial cover (the concept's recessed side bays with armoured doors) | 2 | mid/top, mid/side | a heavy frame, a dark back, pipes, the hoist block, the door on hinges (two-tone so it survives 32 px, Qwen) | picture |
+| nacelles | the two main drives, separate from the small stern thrusters and forward bomb tubes | engine | two round aft-facing nacelles, reduced and lowered in R299, one a little larger, with armoured drums welded into the shoulders (R294: aft-facing drive mouths; the front paint_full view shows their housings, rear proof shows the throats) | 2 | mid/top, stern/top, stern/side, stern/below | round bell and dark lip, deep red-orange lining and throat, hot plug, cooling ring, armoured drum, bands and gimbal struts | picture |
 | drives | drive (sp 5): the stern thruster bank, nozzle clusters inside an armoured block (the owner's rule for craft) | engine | five mismatched salvaged bells, the centre one the largest | 5 | stern/top, stern/side, stern/below | a bell with a lip, an ember lining, a glowing throat and plug, a cooling ring, a drum with a collar and a band, gimbal struts | picture |
 | bank_recess | the armoured recess round the thruster bank | pylon | a hood over the bank, cheeks at its sides, a sill under it (the concept's recessed stern bank) | 1 | stern/top, stern/side | the welded web plates and their faces | picture |
 
@@ -39,7 +40,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 19; parts whose inventory id names no line with a job: 0.
+Built kit parts: 21; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, corsair_KB1CC_model.json)
 
@@ -49,9 +50,9 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
-| bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
+| bomb_tubes | two long hollow bomb barrels, .54 LENGTH from their unchanged forward  | 2 / 2 | Y | Y | Y |
 | rails | a raised rail along each top edge of the body, running diagonally up t | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 
@@ -59,44 +60,47 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
-| bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
+| bomb_tubes | two long hollow bomb barrels, .54 LENGTH from their unchanged forward  | 2 / 2 | Y | Y | Y |
 
 ### bow/below
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
-| bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
+| bomb_tubes | two long hollow bomb barrels, .54 LENGTH from their unchanged forward  | 2 / 2 | Y | Y | Y |
 
 ### mid/top
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
+| bomb_tubes | two long hollow bomb barrels, .54 LENGTH from their unchanged forward  | 2 / 2 | Y | Y | Y |
 | rails | a raised rail along each top edge of the body, running diagonally up t | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 | shoulder_plates | a patchwork of big uneven plates over the shoulders | 2 / 1 | Y | Y | Y |
-| hoist_bays | one machinery bay in each shoulder's sloped top, a door in a second to | 2 / 2 | Y | Y | Y |
+| hoist_bays | R294: one real sunken machinery well cut through each shoulder, with t | 2 / 2 | Y | Y | Y |
+| nacelles | two round aft-facing nacelles, reduced and lowered in R299, one a litt | 2 / 2 | Y | Y | Y |
 
 ### mid/side
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
+| bomb_tubes | two long hollow bomb barrels, .54 LENGTH from their unchanged forward  | 2 / 2 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 | shoulder_plates | a patchwork of big uneven plates over the shoulders | 2 / 1 | Y | Y | Y |
-| hoist_bays | one machinery bay in each shoulder's sloped top, a door in a second to | 2 / 2 | Y | Y | Y |
+| hoist_bays | R294: one real sunken machinery well cut through each shoulder, with t | 2 / 2 | Y | Y | Y |
 
 ### mid/below
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 
@@ -104,13 +108,14 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
 | rails | a raised rail along each top edge of the body, running diagonally up t | 1 / 1 | Y | Y | Y |
 | lip | an armoured lip across the top of the glacis ramp, against the stern h | 1 / 1 | Y | Y | Y |
 | vision_slit | one vision slit in the lip's face, a little to port, looking forward d | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 | shoulder_plates | a patchwork of big uneven plates over the shoulders | 2 / 1 | Y | Y | Y |
+| nacelles | two round aft-facing nacelles, reduced and lowered in R299, one a litt | 2 / 2 | Y | Y | Y |
 | drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
 | bank_recess | a hood over the bank, cheeks at its sides, a sill under it | 1 / 1 | Y | Y | Y |
 
@@ -118,8 +123,9 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
+| nacelles | two round aft-facing nacelles, reduced and lowered in R299, one a litt | 2 / 2 | Y | Y | Y |
 | drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
 | bank_recess | a hood over the bank, cheeks at its sides, a sill under it | 1 / 1 | Y | Y | Y |
 
@@ -127,8 +133,9 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| body | R294: tapered bow toe, rising glacis, level upper deck, raised stern h | 1 / 1 | Y | Y | Y |
 | belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
+| nacelles | two round aft-facing nacelles, reduced and lowered in R299, one a litt | 2 / 2 | Y | Y | Y |
 | drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
 
 
@@ -155,6 +162,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.10 | 2.10 | 2.54 | 2.54 |
-| build | 0.83 | 4.21 | 0.83 | 6.47 |
+| build | 0.83 | 4.03 | 0.83 | 4.68 |
 
 Lines not present, shaped and detailed without a reason: 0.

@@ -1,0 +1,13 @@
+stage,ship,atlas,adjacent_pairs,high_pairs,high_pct,p90_delta_e76
+before,H4_11,hull,3893,0,0.0,6.05
+before,H4_11,parts,667,6,0.9,11.08
+after,H4_11,hull,3893,1,0.03,6.3
+after,H4_11,parts,667,11,1.65,11.93
+before,H10_23,hull,1453,79,5.44,15.25
+before,H10_23,parts,292,8,2.74,11.03
+after,H10_23,hull,1453,86,5.92,15.55
+after,H10_23,parts,292,10,3.42,12.8
+before,C19_51,hull,2112,96,4.55,14.63
+before,C19_51,parts,681,34,4.99,14.94
+after,C19_51,hull,2112,65,3.08,13.48
+after,C19_51,parts,681,44,6.46,16.56

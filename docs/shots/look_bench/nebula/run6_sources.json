@@ -1,0 +1,13 @@
+{
+  "head": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+  "baseline": "5ca3dc45",
+  "files": {
+    "godot/world/world_living.gd": "e8acef9e8fadb2cc5da8c9618e20f485839782b669c8ac5f8ad5d1f188c2f5fd",
+    "godot/world/ion_storm.gd": "90c81dbb3959c9325ebdbb97d3552d0bd2a516f210adc4e4154b05ba8a136b22",
+    "godot/world/lightning_capture.gd": "a70e14ee549e170889c9cfdcc18092f05b873447d6b972cc92156107fd1d74f0",
+    "godot/world/nebula_bench.gd": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b",
+    "godot/bench/scene_gate.gd": "d4394fbba5ed71247a5afa626a72d7724ff88d3aadcb49e21b8489266914cec9",
+    "godot/world/nebula_noise.res": "92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691"
+  },
+  "checked_utc": "2026-11-17T08:11:32.306796+00:00"
+}

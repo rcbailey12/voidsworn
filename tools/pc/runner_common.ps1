@@ -182,8 +182,8 @@ function Reuse-Caches($repo) {
   $status = @(Git @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
   if ($gitExit -ne 0) { throw 'working tree status not verified' }
   foreach ($line in $status) {
-    # Only these Godot-generated caches are rebuildable. Unknown or quoted paths count as work.
-    if ($line -notmatch '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import)$') { throw "working tree needs keeping: $line" }
+    # Only ignored Godot and Python bytecode caches are rebuildable. Unknown or quoted paths count as work.
+    if ($line -notmatch '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import|([^"\r\n]*/)?__pycache__/[^"\r\n]+|[^"\r\n]+\.pyc)$') { throw "working tree needs keeping: $line" }
     $line.Substring(3)
   }
 }
@@ -306,8 +306,7 @@ Runner status: $label
 
 - Seat: $($g.seat)
 - Run: $($s.run)
-- Machine: $($g.machine)
-- Lane folder: $($g.folder)
+- Lane: $($g.lane)
 - Branch: $branch
 - Started (UTC): $($g.started)
 - Ceiling: $($g.ceiling) seconds
@@ -330,6 +329,8 @@ function Gh-Pages($endpoint) {
 function Current-Body($body, $prefix) {
   # A marker is a line, not a heading or an occurrence: bold and plain run lines work too.
   $current = @(); $runs = @(); $fence = ''; $offset = 0
+  $runLabel = '(?:run[ \t]+[0-9]+|(?:earlier|previous|old)[ \t-]+runs?)\b'
+  $plainRun = '^[ \t]*' + $runLabel + '(?:[ \t]*\([^()]*\))?[ \t]*(?:[:.-][ \t]*.*)?$'
   foreach ($line in ([regex]::Split($body, '(?<=\n)'))) {
     $text = $line.TrimEnd("`r", "`n")
     if ($text -match '^ {0,3}(`{3,}|~{3,})') {
@@ -339,7 +340,10 @@ function Current-Body($body, $prefix) {
     } elseif (-not $fence) {
       $entry = @{ start = $offset; end = $offset + $line.Length; text = $text }
       if ($text.Contains('THIS IS THE JOB NOW')) { $current += $entry }
-      if ($text -match '(?i)^[ \t#*_]*(run[ \t]+[0-9]+|(?:earlier|previous|old)[ \t-]+runs?)\b') { $runs += $entry }
+      # Headings and whole bold labels are explicit; plain labels must be short and use label punctuation.
+      if ($text -match ('^ {0,3}#{1,6}[ \t]+' + $runLabel) -or
+          $text -match ('^[ \t]*\*\*' + $runLabel + '.*\*\*[ \t]*$') -or
+          ($text.Trim().Length -le 80 -and $text -match $plainRun)) { $runs += $entry }
     }
     $offset += $line.Length
   }
@@ -371,7 +375,10 @@ function Current-Body($body, $prefix) {
   }
   $fixedMatch = [regex]::Match($body, [regex]::Escape($fixed))
   if ($h.start -lt $fixedMatch.Index) { throw 'current instruction refused: put the fixed block before the current run; no agent started' }
-  $inline = $h.text -creplace '^.*?THIS IS THE JOB NOW[\W_]*', ''
+  $inline = $h.text -creplace '^.*?THIS IS THE JOB NOW', ''
+  # The marker's run/date suffix identifies the brief, but is not an instruction.
+  $inline = $inline -ireplace '^[ \t#*_:.,;-]*\([ \t]*run[ \t]+[0-9]+\b[^()]*\)', ''
+  $inline = $inline -replace '^[\W_]*', ''
   if (-not $inline.Trim() -and -not $body.Substring($h.end, $end - $h.end).Trim()) { throw 'current instruction refused: the current block is empty; no agent started' }
   if ($h.start -lt $fixedMatch.Index + $fixed.Length) {
     # Some current jobs put their marker and the entire instruction on Done when itself.
@@ -384,6 +391,9 @@ function Seat-Prefix($seat, $branch) {
   if ($seat -in @('codex','opus','muse')) { return $seat }
   return 'work'
 }
+function Find-BaseLines($body) {
+  [regex]::Matches($body, '(?im)^[ \t]*Base:[ \t]*([^\r\n]*)')
+}
 function Validate-Job($i, $issue, $prefix, $pulls, $branches) {
   if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
   if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
@@ -395,8 +405,21 @@ function Validate-Job($i, $issue, $prefix, $pulls, $branches) {
       if (($ref -split '/')[0] -ne $prefix) { throw "job refused: open PR #$($pr.number) from other seat $ref covers issue #$issue; no agent started" }
     }
   }
+  $baseLines = @(Find-BaseLines $body)
+  $base = if ($baseLines.Count -eq 1) { $baseLines[0].Groups[1].Value.Trim() }
   foreach ($branch in $branches) {
     if ($branch.name -match $jobBranch -and ([string]$branch.name -split '/')[0] -ne $prefix) {
+      if ([string]::Equals($branch.name, $base, [StringComparison]::Ordinal)) {
+        Log "Base branch $($branch.name) from another seat is this job's Base; does not block issue #$issue"
+        continue
+      }
+      $tip = [string]$branch.commit.sha
+      if ($tip -notmatch '^[0-9a-f]{40,64}$') { throw "job refused: cannot verify tip of delivery branch $($branch.name) for issue #$issue; no agent started" }
+      $compare = Require-Gh 'GET' "compare/main...$tip"
+      if ($compare.status -in @('behind','identical')) {
+        Log "finished work: delivery branch $($branch.name) tip $tip is already in main ($($compare.status)); does not block issue #$issue"
+        continue
+      }
       throw "job refused: delivery branch $($branch.name) from another seat exists for issue #$issue; no agent started"
     }
   }
@@ -438,8 +461,11 @@ try {
     $script:out = $args[1]
     $s = @{ run = [guid]::NewGuid().ToString('N'); branch = $args[2]; status = 'running'; reason = ''; commit = ''; started = [DateTime]::UtcNow.ToString('o'); finished = '' }
     Put (Join-Path $out 'status.json') ($s | ConvertTo-Json)
-    # Old run metadata must never turn a later failure into success or claim an old resume.
-    foreach ($f in @('resume.txt','stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt')) { Put (Join-Path $out $f) '' }
+    # Keep any earlier resume note aside. The current run writes a note only when it has resume context.
+    $resumePath = Join-Path $out 'resume.txt'
+    if (Test-Path -LiteralPath $resumePath) { [IO.File]::Move($resumePath, "$resumePath.$($s.run).previous") }
+    # Old run metadata must never turn a later failure into success.
+    foreach ($f in @('stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt')) { Put (Join-Path $out $f) '' }
   }
   elseif ($mode -eq 'wait') {
     $script:out = $args[1]
@@ -537,6 +563,11 @@ try {
     $partial = "refs/remotes/origin/$br-partial"
     $tip = @(Git @('-C',$repo,'rev-parse','--verify','--quiet',$partial))
     if ($gitExit -eq 0) {
+      $null = Git @('-C',$repo,'merge-base','--is-ancestor',$tip[0],'HEAD')
+      if ($gitExit -eq 0) {
+        Log "skipping $br-partial at $($tip[0]): already in HEAD"
+        exit 0
+      }
       Log "resuming $br-partial at $($tip[0])"
       # Full mirror history makes the merge base available. A conflict stays on disk and stops before the model.
       $null = Git @('-C',$repo,'merge','--no-edit',$partial)
@@ -551,7 +582,7 @@ try {
   elseif ($mode -eq 'base') {
     $repo = $args[1]; $script:out = $args[2]
     $body = [IO.File]::ReadAllText($args[3])
-    $lines = [regex]::Matches($body, '(?im)^[ \t]*Base:[ \t]*([^\r\n]*)')
+    $lines = @(Find-BaseLines $body)
     if ($lines.Count -eq 0) { exit 0 }
     if ($lines.Count -ne 1) { throw 'Base merge stopped: use one Base: <branch> line; no agent started' }
     $base = $lines[0].Groups[1].Value.Trim()
@@ -616,7 +647,9 @@ try {
       # Dry runs validate read-only. Only fixture tests may write to their fake GitHub.
       if ($args[7] -ne 'real' -and -not $test) { Log "job validated: issue #$issue (dry run, no claim written)"; exit 0 }
       $head = @($branches | Where-Object { $_.name -eq 'main' } | ForEach-Object { $_.commit.sha }) -join ''
-      $g = @{ issue = $issue; seat = $args[3]; folder = $repo; machine = [Environment]::MachineName;
+      # Issue 947: the public status comment names the lane, never the machine or a PC path (folder stays in local state only).
+      $lane = switch ((Split-Path -Leaf (Split-Path -Parent $repo)).ToLowerInvariant()) { 'board' { 'main' } 'board_b' { 'B' } 'board_c' { 'C' } 'board_d' { 'D' } default { 'other' } }
+      $g = @{ issue = $issue; seat = $args[3]; folder = $repo; lane = $lane;
         started = [DateTime]::UtcNow.ToString('o'); ceiling = $args[5]; resume = $args[6]; comment = 0;
         start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
       $s | Add-Member -NotePropertyName github -NotePropertyValue $g -Force
@@ -660,7 +693,7 @@ try {
     switch ($kind) {
       'opencode' { $words = @('run','--auto','--format','json','-m',$model,'--dir',$probe); if ($variant) { $words += @('--variant',($variant -replace '^--variant\s+','')) }; $words += $prompt }
       'kimi' { $words = @('-m',$model,'--output-format','text','-p',$prompt) }
-      'codex' { $words = @('exec','-m','gpt-6.1-sol','-c','model_reasoning_effort=low','--ephemeral','--skip-git-repo-check','--color','never','-C',$probe,'-o',(Join-Path $probe 'reply.txt'),$prompt) }
+      'codex' { $words = @('exec','-m',$model,'-c','model_reasoning_effort=low','--ephemeral','--skip-git-repo-check','--color','never','-C',$probe,'-o',(Join-Path $probe 'reply.txt'),$prompt) }
       default { throw "unknown preflight harness $kind" }
     }
     if ($test -and $env:PC_TEST_PREFLIGHT) { $exe = $env:PC_TEST_PREFLIGHT }
@@ -786,6 +819,17 @@ try {
     [IO.File]::Replace($tmp, $p, "$tmp.previous")
     Log "model: $resolved"
     if ($resolved -ne $default) { Log "WARNING: resolved model $resolved differs from the arm default $default" }
+  }
+  elseif ($mode -eq 'effort') {
+    # Ryan, Nov 17 2026: the reasoning effort is the same on every model; stamp it beside the model so each run shows it.
+    $script:out = $args[1]; $effort = $args[2]
+    $p = Join-Path $script:out 'status.json'
+    $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
+    $s | Add-Member -NotePropertyName effort -NotePropertyValue $effort -Force
+    $tmp = "$p.$([guid]::NewGuid().ToString('N')).tmp"
+    Put $tmp ($s | ConvertTo-Json)
+    [IO.File]::Replace($tmp, $p, "$tmp.previous")
+    Log "effort: $effort"
   }
   elseif ($mode -eq 'finish') {
     $script:out = $args[1]; $code = $args[2]; $partial = $args[3]; $push = $args[4]; $checks = $args[5]

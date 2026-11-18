@@ -1,14 +1,24 @@
 @echo off
 rem Double-click for the sound, 20-ship salvo and existing music checks.
 rem Optional: set GODOT_EXE to the console exe, or pass its full path as argument 1.
-setlocal
+setlocal enableextensions disabledelayedexpansion
 set "ROOT=%~dp0..\.."
-set "G=%~1"
-if not defined G set "G=%GODOT_EXE%"
-if not defined G if exist "%~dp0godot_path.txt" set /p G=<"%~dp0godot_path.txt"
-if not defined G if exist "%ROOT%\..\godot_path.txt" set /p G=<"%ROOT%\..\godot_path.txt"
-if not defined G if exist "%USERPROFILE%\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe" set "G=%USERPROFILE%\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe"
-if not exist "%G%" (
+set "GODOT=%~1"
+if not defined GODOT set "GODOT=%GODOT_EXE%"
+if not defined GODOT if exist "%~dp0godot_path.txt" set /p GODOT=<"%~dp0godot_path.txt"
+set "NODE="
+for %%D in ("%ROOT%") do set "SEARCH=%%~fD"
+rem Find the PC bundle above build or any board lane checkout, as in parity.bat.
+:bundle
+if not defined NODE if exist "%SEARCH%\node\node.exe" set "NODE=%SEARCH%\node\node.exe"
+if not defined GODOT if exist "%SEARCH%\godot_path.txt" set /p GODOT=<"%SEARCH%\godot_path.txt"
+for %%D in ("%SEARCH%\..") do set "NEXT=%%~fD"
+if /i "%NEXT%"=="%SEARCH%" goto :bundle_done
+set "SEARCH=%NEXT%"
+goto :bundle
+:bundle_done
+if not defined GODOT if exist "%USERPROFILE%\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe" set "GODOT=%USERPROFILE%\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe"
+if not exist "%GODOT%" (
   echo FAIL: Godot console exe not found. Set GODOT_EXE to its full path.
   pause
   exit /b 1
@@ -27,7 +37,7 @@ exit /b %RESULT%
 
 :check
 echo Running %~1 check...
-"%G%" --headless --path "%ROOT%\godot" --log-file "%OUT%\%~1_engine.log" --script %~2 > "%OUT%\%~1.log" 2>&1
+"%GODOT%" --headless --path "%ROOT%\godot" --log-file "%OUT%\%~1_engine.log" --script %~2 > "%OUT%\%~1.log" 2>&1
 if errorlevel 1 goto :failed
 findstr /x /c:%3 "%OUT%\%~1.log" >nul
 if errorlevel 1 goto :failed

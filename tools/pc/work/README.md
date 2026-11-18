@@ -2,6 +2,78 @@
 
 OpenCode, headless, on Ryan's PC: one board issue, one model, no one watching. Built and tested by Opus on Nov 7 2026.
 
+## OpenAI arm (issue 985)
+
+Ryan double-clicks `tools/pc/openai_api_key.bat` (the Board can copy it as `OPENAI_API_KEY.bat`) and pastes his key.
+It saves only the user setting `VOIDSWORN_OPENAI_API_KEY`, never a file. The runner reads that setting from HKCU for
+each live run and passes it through its local environment. It never reads or changes an `OPENAI_API_KEY` user or machine
+setting, so Codex keeps its ChatGPT sign-in. Ryan sets a monthly budget in the OpenAI platform settings too.
+
+The Board runs `RUN_RETRY.bat <issue> openai 7200` using its installed retry launcher, or
+`work_issue.bat <issue> openai` directly (`WORK_CAP=7200` for the same two-hour ceiling). Code jobs default to
+`openai/gpt-6.2-sol` at high effort. For a review, set both `WORK_MODEL=openai/gpt-6.1-terra` and
+`WORK_EFFORT=medium` in the job's launcher. The OpenAI arm accepts `low`, `medium`, `high` or `max` in any case.
+An invalid value falls back to high with an ignored-setting message. The existing provider guard ignores a
+`WORK_MODEL` from another provider. Add a named entry in `openaiPrices` in `work_issue.ps1` and configure the
+model and its variants in OpenCode before using another OpenAI model.
+
+The runner passes `--variant <effort>` to the preflight and the agent, and stamps it in `out\model.txt`,
+`out\status.json` and `out\result.txt`. OpenCode 1.19.5 merges the selected model variant's
+`reasoningEffort` into the provider options. The OpenAI Responses request carries it as `reasoning.effort`.
+[OpenCode 1.19.5 request source](https://github.com/anomalyco/opencode/blob/v1.19.5/packages/opencode/src/session/llm/request.ts#L71-L82)
+
+The arm uses `opencode_lean.json` with helper tasks disabled and the same preflight, guards, model stamp, partial pushes
+and standing checks as Sonnet. It disables bundled plugins for the run so an OpenCode ChatGPT OAuth login cannot replace
+the API endpoint. Deploy `openai_api_key.bat`, `work/mock_llm.js` and both changed OpenCode configs with the runner files.
+
+When the OpenAI agent exits and its last error is a retryable HTTP 429, the runner resumes that OpenCode session with
+`--session`. It waits for the provider's stated delay, or 5 seconds if there is no first delay. Subsequent waits are at least
+30, 60, 120, 240 and 240 seconds, and each respects a longer delay named by the provider. The waits use the same
+`WORK_CAP` as the agent. The stall watchdog starts fresh with each attempt, after the wait. `result.txt` records
+`rate limited, resumed N of 6`. If time runs out or the resumes are used up, the usual partial-run path saves the work.
+Other failures follow that path immediately. All attempts append events to `log.txt`, which is copied once to
+`events.jsonl` for the spend estimate. The runner logs only the HTTP status, retry flag and wait hint from provider errors.
+
+The spend limit is `openai_budget_usd=94` in `work217\runner_settings.txt` (also the default when absent), starting with
+the $94 remaining for November 2026. `WORK_ROOT` moves both settings and ledger together. Before a paid probe the runner
+refuses a run at or above that month's budget. After the agent, including partial runs and failed probes, it appends one
+JSON line per run to `work217\openai_spend.txt`: UTC date, issue, model, input/cached-input/output tokens, estimated USD,
+running monthly total and budget. A run id prevents duplicate entries when stats are refreshed; an exclusive file handle
+protects updates from concurrent writers. The UTC calendar month resets the total; the budget setting remains until changed.
+Invalid ledger data or unknown usage blocks another paid run until the Board reconciles it. No keys or prompts go in it.
+
+An accounting failure after the agent marks the run partial with `spend accounting unknown`. The usual staging, guard
+and preservation push still run, to `work/issue-N-openai-partial`, with no pull request and no checked-run result.
+Failures before the agent still stop before preservation. If the main ledger is invalid or locked, an independent
+unknown entry is saved as `work217\openai_spend_unknown\<run-hash>.json`. These entries block later paid starts even
+after the main ledger is repaired or its lock is released, and unknown entries remain blocking across month changes.
+To clear a stop, the Board first waits for any ledger writer to finish, keeps the run's logs and existing accounting
+files, then reconciles its usage against the provider's usage records. Repair invalid main-ledger lines and add or
+correct that run's row with verified counts, USD cost, monthly total and `status: "estimated"`, keeping its `run` id.
+Then change the matching independent entry to `status: "estimated"` too, if present. Do not clear an entry just because
+the lock is free. Rerun the `openai-budget` helper to confirm the ledger and remaining budget permit a paid start.
+
+`out\openai_estimate.txt`, `result.txt` and `stats.txt` carry the run estimate. Counts come from OpenCode's emitted
+`step_finish` stats for the preflight and agent, including cache reads. OpenCode input is uncached input; output
+and reasoning are separate, so the ledger adds both at the output rate. The single price table uses the brief's USD per million
+tokens: 6.2 Sol and 6.1 Sol each use 2.00 input, 0.10 cached input and 10.00 output. 6.1 Terra uses 1.00, 0.05 and 5.00
+([OpenAI pricing](https://developers.openai.com/api/docs/pricing)). These are estimates from emitted usage, not a billing
+balance: hidden title calls or interrupted responses without final usage may be absent, and long-context or service-tier
+surcharges are not included in the brief's flat rates. An in-flight run can cross the
+budget, and simultaneous starts can both pass it; the check stops later starts. The platform budget is Ryan's separate setting.
+
+Free proof: `tools\pc\runner_selftest.bat` includes the OpenAI arm with stub agents, no key and no network. It checks
+model and effort in the preflight and agent commands and run records, ignored settings on other arms, missing-key
+refusal, provider overrides, spend arithmetic, repeat recording, month rollover and budget refusal. Missing token
+fields, an invalid ledger and a busy ledger lock each prove that agent changes reach the
+partial branch and the next paid start is refused. Those fault cases commit and push only to tiny local TEMP remotes.
+Run `node tools/pc/runner_openai_resume_selftest.js` on Windows with OpenCode installed to check the 429 recovery
+against a local mock API. It checks session reuse, spend across attempts, the six-resume limit, the time cap and other HTTP failures.
+Ordinary `work_issue.bat <issue> openai dryrun` uses the local stand-in provider in `opencode_mock.json`, which logs
+the request's `reasoning.effort` in `out\mock_log.txt`. It never loads the saved OpenAI key or adds spend to the
+real ledger. Like the older arms' dry runs it still uses GitHub
+for checkout and push validation. The selftest isolates those too and never publishes to GitHub.
+
 Ryan's two double-click files (copies sit in Downloads\voidsworn_test; the scripts they call are in Downloads\voidsworn_test\work217\tools\):
 - `WORKHORSE_SETUP.bat` (tools/pc/work_setup.bat): installs OpenCode 1.19.5 with npm, asks once for the DeepSeek and Moonshot
   API keys (saved as user settings DEEPSEEK_API_KEY and MOONSHOT_API_KEY, never in a file), checks each key and balance, then asks
@@ -79,8 +151,8 @@ cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, us
 - **Three attempts.** Each mirror fetch, local clone and earlier-branch fetch gets three attempts total, 120 seconds apart.
   A failed clone folder is renamed beside repo and kept before the next attempt. Network failure stops before the model.
 - **Model preflight.** Before ship copying or agent work, a tiny prompt must return exactly RUNNER_READY within 90 seconds.
-  opus, sonnet and deepseek use OpenCode with the job's model; kimicode always uses Kimi Code CLI and its saved subscription
-  login (no API key required); Codex uses the pinned gpt-6.1-sol. Error events fail even with exit 0. result.txt gets a one-line
+  openai, opus, sonnet and deepseek use OpenCode with the job's model; kimicode always uses Kimi Code CLI and its saved subscription
+  login (no API key required); Codex uses the pinned gpt-6.2-sol (CODEX_MODEL in codex_issue.bat). Error events fail even with exit 0. result.txt gets a one-line
   reason and preflight_log.txt holds the details. No automatic model fallback or login is attempted.
 - **Safe chains.** Use `chain_issue.bat "<first run out>\status.json" work_issue.bat 642 opus` (or `codex_issue.bat 687`).
   The child writes its own result, then waits before checkout or model use. Only status checked_push with a commit id releases
@@ -102,6 +174,14 @@ refused-file guards still apply. status.json records a run
 id, branch, state, reason and commit; updates are atomic, with previous versions kept. Unexpected stops stay running and a
 chain times out instead of guessing success. Helper failures use exit 14; other runner exit codes keep their earlier meaning.
 
+Lane tools refresh (issue 1018). Before each job, after any predecessor has finished, run
+`powershell -NoProfile -File "%V%\lane_tools_refresh.ps1" -Build build_c` followed by `if errorlevel 1 exit /b 1`.
+Here `%V%` is `%USERPROFILE%\Downloads\voidsworn_test` and `lane_tools_refresh.ps1` is the Board's launcher copy
+outside the folder being refreshed. Use `build_b`, `build_c`, `build_d`, `build_e` or `work217` for the runner being called.
+The command checks that seat's issue status, fetches public `origin/main` through `lane_tools_source`, and keeps the previous
+tools in `runner_backups\<build>_<yyyyMMdd_HHmmss>\tools` when it installs a change. Matching tools use no backup slot.
+A fourth backup or a running job stops the refresh. The installed commit or failure is recorded in `lane_tools_refresh.txt`.
+
 GPU claims (R276, issue 847): `tmo.bat` uses `gpu_slots.js` for Godot rendering, Blender and explicit
 `PC_GPU_MODE=shared|solo` launches. Two holders live in `voidsworn_test\gpu_slot_1` and `gpu_slot_2` (JSON: issue, PID,
 start time, mode, token); `gpu_solo` reserves priority for a solo waiter. Empty files mean released, dead PIDs are
@@ -114,7 +194,8 @@ watchdog and helper; do not borrow a watchdog from an old benchmark checkout. No
 lane C's code-only check: the Board does that only when every lane is idle.
 
 Free proof: double-click `tools\pc\runner_selftest.bat`. It makes tiny Git fixture data and stub agents under TEMP, runs all
-five arms, and prints its evidence folder. It makes no commits, pushes or model calls. Standing checks call the JS test too;
+OpenAI, Opus, Sonnet, DeepSeek, legacy Kimi, Kimi Code and Codex, and prints its evidence folder. It makes no commits, pushes
+or model calls. Standing checks call the JS test too;
 non-Windows CI checks the entry-point contract and reports the Windows matrix skipped. Test-only overrides are enabled by
 WORK_TEST_AGENT plus dryrun, or CODEX_TEST_AGENT plus CODEX_TEST_ROOT: PC_TEST_SOURCE, PC_TEST_MIRROR, PC_TEST_ISSUE,
 PC_TEST_PREFLIGHT and PC_TEST_GIT isolate dependencies; PC_TEST_RETRY_SECONDS shortens waits;
@@ -129,7 +210,7 @@ wait, the mirror fetch and any model call:
   ("model: <id>"), and result.txt warns when it differs from the arm's default, whatever the provider: a
   same-provider WORK_MODEL override (invisible to PR 636's provider guard) warns here. The kimicode arm stamps the
   Kimi Code CLI model (kimi-code/kimi-for-coding, or WORK_KIMI_MODEL) whenever the CLI or its test stand-in runs;
-  other arms stamp the OpenCode model; Codex stamps its pinned gpt-6.1-sol.
+  other arms stamp the OpenCode model; Codex stamps its pinned gpt-6.2-sol.
 - **Free-space floor.** The run refuses to start when the drive holding Downloads\voidsworn_test has less than
   min_free_gb free: one line in result.txt, status failed, exit 14. No mirror fetch, no model probe, no agent, and a
   chained child waiting on the run fails closed. min_free_gb is a tuning value in work217\runner_settings.txt;
@@ -147,14 +228,14 @@ hashwrite/hashcheck agreement, mismatch, missing file, and a full run that start
 Test-only knobs: PC_TEST_SETTINGS (settings file), PC_TEST_SPACE_FREE_MB (fake free space in MB), PC_TEST_HASHES
 (hashes file). Never set these on a real job.
 
-## Reasoning effort (issue 656, Opus, Nov 13 2026)
+## Legacy Kimi reasoning effort (issue 656, Opus, Nov 13 2026)
 
 Live kimicode jobs now use Kimi Code CLI (issue 687). WORK_EFFORT and the OpenCode variants below apply to the legacy
 OpenCode dry-run path only; the CLI uses its own saved settings and WORK_KIMI_MODEL. This patch adds no CLI effort flag.
 
 - `WORK_EFFORT=low`, `high` or `max` (any case) before calling work_issue.bat adds `--variant <effort>` to the OpenCode run.
-  Unset, nothing is added and every arm runs as before. Only the kimicode arm takes it; on any other arm, or with any other
-  value, the runner prints "WORK_EFFORT ... ignored" and runs at the default. The effort shows in out\model.txt and the
+  Leaving it unset uses the default. The legacy kimicode path and the OpenAI arm above accept `WORK_EFFORT`.
+  Other arms ignore it with a message. The effort shows in out\model.txt and the
   "model:" line of stats.txt (for example `kimicode/kimi-for-coding --variant low`).
 - The variants live in opencode_lean.json (and the stand-in copy in opencode_mock.json): each kimicode model has
   `variants.low/high/max = { "reasoningEffort": "<effort>" }`, which OpenCode 1.19.5 sends to the API as the body field

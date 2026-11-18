@@ -1,0 +1,414 @@
+{
+  "cases": [
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "torp",
+      "plates": 16,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "macro",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "auto",
+      "plates": 6,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "plasma",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "las",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "torp",
+      "plates": 16,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "macro",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "auto",
+      "plates": 6,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "plasma",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "las",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "torp",
+      "plates": 16,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "macro",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "auto",
+      "plates": 6,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "plasma",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "las",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "torp",
+      "plates": 16,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "macro",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "auto",
+      "plates": 6,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "plasma",
+      "plates": 9,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "las",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "torp",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "macro",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "auto",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "plasma",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "las",
+      "plates": 0,
+      "quality": "max",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "torp",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "macro",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "auto",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "plasma",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "corsair",
+      "look": "las",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "torp",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "macro",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "auto",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "plasma",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "las",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "torp",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "macro",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "auto",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "plasma",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "deathless",
+      "look": "las",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "torp",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "macro",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "auto",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "plasma",
+      "plates": 3,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "ithar",
+      "look": "las",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "torp",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "macro",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "auto",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "plasma",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "chorus",
+      "look": "las",
+      "plates": 0,
+      "quality": "low",
+      "reduced": false
+    },
+    {
+      "bodies": 1,
+      "faction": "hegemony",
+      "look": "torp",
+      "plates": 16,
+      "quality": "max",
+      "reduced": true
+    }
+  ],
+  "failures": 0,
+  "plate_shapes": 100
+}

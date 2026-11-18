@@ -1,0 +1,71 @@
+{
+  "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+  "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "graveyard_quality.jpg",
+  "date": "2026-11-17T14:10:25Z",
+  "sources": [
+    {
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "graveyard_cine_c170.jpg",
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_dirty": true,
+      "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+      "stage": "installed in game",
+      "date": "2026-11-17T14:01:15Z",
+      "image_sha256": "fa53da93ae2d48482c8ef64e00f8afd129d15b17088234a70954e0b3c1df6d47",
+      "sources": [
+        {
+          "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+          "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "graveyard_low_cine_c170.jpg",
+      "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+      "source_dirty": true,
+      "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+      "stage": "installed in game",
+      "date": "2026-11-17T14:01:54Z",
+      "image_sha256": "06efa3ee8101f7c2a60032951959b85e0b1fe15bdd9c3c4a0a2bd6a8a74c997b",
+      "sources": [
+        {
+          "source_commit": "7d4db9de71111eedfe72635c88516f5228bad9af",
+          "source_diff_sha256": "2c11badba22d8d56989480feb3d12650aea3a0b82ef4b9d2cfc9d95b5e430c0c",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "c3680141ea7939c8822f3f8d6b53433977252847ef542cff0ed6c588933e8e04"
+  ],
+  "stamp_template_sha256": "eb2ca389c038dd23431fec7ddb03425b102571429036a2430ffd12261e193c80",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMUABCyv+ZaKCnxIDHf8697kDAPhvBRsAgOgCQMfTBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARuMB+h8BB2CM+58AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "a04464a0cec268a4e1250415d0899aafd1b84019661bf59260b014e2144b1051"
+}

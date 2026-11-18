@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAAAAXNSR0IArs4c6QAAAmZJREFUeJzt2jFuEzAYhmHbTVtCI6QuLGXhBh0YWEFcjLGX6FE4AUJl4QqoDAyVQocQm6EHSIraLx6eZ/BkS//2SrbrcrUswJRaK+u7/uX2cvTy6eL72auj3sfuY3tsAQ5icegBgB1Gf1hH346+3aOotZyctueeCvgPogszq6WMF2ftft3PXx+/XLWHAO/0+9dmlFKfeTjgsUQXZjZqqz++rj9+OL+5fbfPtXErdVP6+zfftn9HO5JdmEv1pgszG6O0Vj5fv6217vOgW2vp23J99bP3UavowlxEF2ZXW/lzt3nUkcXJovpQBfNxvQyzG70sV8eHngJ4Ar44AkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkDIP3IPQsGFwK3LAAAAAElFTkSuQmCC"
+	],
+	"date": "2026-11-18T19:15:24Z",
+	"image_sha256": "481a9eb61300d58e834c8a87af39df33798392399ba28e9130d0724a46221bb2",
+	"inputs": [],
+	"picture_name": "RE-HOLD-1080p.jpg",
+	"schema": 1,
+	"source_commit": "548b9e320135ea5043553b9c7c10308d31e08823",
+	"source_diff_sha256": "aae208f3b818b79dd41735bd513f08bfc0621be738cf3972eb95d27eca2c86a7",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "548b9e320135ea5043553b9c7c10308d31e08823",
+			"source_diff_sha256": "aae208f3b818b79dd41735bd513f08bfc0621be738cf3972eb95d27eca2c86a7",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		636,
+		720
+	],
+	"stamp_template_sha256": "daa274cec12f3adc7bf3e7a8b34a48b0db51b82111c8519bf8c2f1d177081969",
+	"strip_sha256": [
+		"57bd1b434635ab0d08d23ec2e20eaeeb0b5bc9b12752252e1bda98d075740754"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

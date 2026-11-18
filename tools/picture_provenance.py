@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+from urllib.parse import quote, unquote, urlsplit
 
 if __name__ != '__main__' or sys.argv[1:2] != ['context']:
     from PIL import Image, ImageDraw, ImageSequence
@@ -55,7 +56,9 @@ def text_lines(record):
     lines = [record['picture_name']]
     for src in record['sources']:
         rev = src['source_commit'][:12]
-        if src['source_dirty']:
+        if 'source_commit_date' in src:
+            rev = 'built from ' + rev
+        elif src['source_dirty']:
             rev += ' + working ' + src['source_diff_sha256'][:8]
         line = rev + ' | ' + src['stage']
         if line not in lines:
@@ -92,8 +95,12 @@ def strip_for(record, size):
 
 
 def summary(record):
-    return {k: record[k] for k in ('picture_name', 'source_commit', 'source_dirty',
-                                  'source_diff_sha256', 'stage', 'date', 'image_sha256', 'sources')}
+    keys = ('picture_name', 'source_commit', 'source_dirty', 'source_diff_sha256',
+            'stage', 'date', 'image_sha256', 'sources')
+    result = {k: record[k] for k in keys}
+    if 'source_commit_date' in record:
+        result['source_commit_date'] = record['source_commit_date']
+    return result
 
 
 def verify(path):
@@ -109,6 +116,10 @@ def verify(path):
             raise ValueError('invalid source revision/stage: ' + str(path))
         if src['source_dirty'] and not re.fullmatch(r'[a-f0-9]{64}', src['source_diff_sha256']):
             raise ValueError('working revision lacks its digest: ' + str(path))
+        if 'source_commit_date' in src:
+            datetime.strptime(src['source_commit_date'], '%Y-%m-%dT%H:%M:%SZ')
+            if src['source_dirty'] or src['source_diff_sha256']:
+                raise ValueError('build revision has a working-tree state: ' + str(path))
     if not record['sources'] or record['image_sha256'] != digest(path.read_bytes()):
         raise ValueError('picture changed after stamping: ' + str(path))
     with Image.open(path) as image:
@@ -237,14 +248,22 @@ class Review:
         return self.save(self.open(source), destination)
 
 
+def picture_target_matches(body):
+    patterns = (
+        r'!?\[[^\]]*\]\(\s*(<[^>]+>|[^\s)]+)',
+        r'(?m)^\s*\[[^\]]+\]:\s*(<[^>]+>|\S+)',
+        r'(?i)(?:src|href)=[\"\']([^\"\']+)',
+        r'(?i)((?:https?://|file:/|[A-Za-z]:[\\/]|\\\\)[^\s<>\"\')]+\.(?:png|jpe?g|webp|gif)\b)',
+    )
+    for pattern in patterns:
+        for match in re.finditer(pattern, body):
+            target = unquote(match[1].strip('<>')).replace('\\', '/')
+            if Path(urlsplit(target).path).suffix.lower() in EXTENSIONS:
+                yield match
+
+
 def picture_targets(body):
-    targets = re.findall(r'!?\[[^\]]*\]\(\s*(<[^>]+>|[^\s)]+)', body)
-    targets += re.findall(r'(?m)^\s*\[[^\]]+\]:\s*(<[^>]+>|\S+)', body)
-    targets += re.findall(r'(?:src|href)=[\"\']([^\"\']+)', body, re.I)
-    targets += re.findall(r'(?:https?://|file:/|[A-Za-z]:[\\/]|\\\\)[^\s<>\"\')]+\.(?:png|jpe?g|webp|gif)\b', body, re.I)
-    from urllib.parse import unquote, urlsplit
-    return {target for target in targets
-            if Path(urlsplit(unquote(target.strip('<>')).replace('\\', '/')).path).suffix.lower() in EXTENSIONS}
+    return {match[1] for match in picture_target_matches(body)}
 
 
 def check_body(repo, body, staged=False, tracked=True):
@@ -253,7 +272,6 @@ def check_body(repo, body, staged=False, tracked=True):
     errors = []
     # Links inside code fences still reach the published PR and must be checked.
     targets = picture_targets(body)
-    from urllib.parse import unquote, urlsplit
     for target in set(targets):
         target = unquote(target.strip('<>'))
         suffix = Path(urlsplit(target.replace('\\', '/')).path).suffix.lower()
@@ -290,30 +308,57 @@ def publish_report(repo, out, destination):
     if not report.exists():
         return
     body = report.read_text(encoding='utf-8-sig')
-    from urllib.parse import unquote
     copies, replacements = [], []
-    for target in picture_targets(body):
-        name = unquote(target.strip('<>'))
+    matches = sorted(picture_target_matches(body), key=lambda match: (match.start(1), -match.end(1)))
+    previous_end = 0
+    for match in matches:
+        start, end = match.span(1)
+        if start < previous_end:
+            continue  # A complete link already covers this bare path match.
+        previous_end = end
+        if match[1].startswith('<') and match[1].endswith('>'):
+            start, end = start + 1, end - 1
+        old = body[start:end]
+        path_text, *suffix = re.split(r'(?=[?#])', old, maxsplit=1)
+        name = unquote(path_text)
         candidate = Path(name)
-        if not candidate.is_absolute():
+        absolute = candidate.is_absolute()
+        if name.replace('\\', '/').startswith('//') or (not absolute and re.match(r'(?i)[a-z]+:', name)):
+            continue  # Leave UNC paths and URLs to check_body.
+        if not absolute:
             candidate = out / candidate
         try:
-            relative = candidate.resolve().relative_to(out / 'shots')
-        except ValueError:
+            resolved = candidate.resolve()
+        except (OSError, RuntimeError, ValueError):
             continue
-        verify(candidate)
-        dest = repo / destination / relative
-        dest.resolve().relative_to(repo)
-        copies.append((candidate, dest))
-        replacements.append((target.strip('<>'), dest.relative_to(repo).as_posix()))
-    for old, new in replacements:
-        body = body.replace(old, new)
+        try:
+            relative = resolved.relative_to(out / 'shots')
+        except ValueError:
+            if not absolute:
+                continue
+            try:
+                relative = resolved.relative_to(repo)
+            except ValueError:
+                continue
+        else:
+            verify(candidate)
+            dest = repo / destination / relative
+            dest.resolve().relative_to(repo)
+            copies.append((candidate, dest))
+            relative = dest.relative_to(repo)
+        new = quote(relative.as_posix()) + ''.join(suffix)
+        if old != new:
+            replacements.append((start, end, old, new))
+    for start, end, _, new in reversed(replacements):
+        body = body[:start] + new + body[end:]
     for source, dest in copies:
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, dest)
         shutil.copyfile(sidecar(source), sidecar(dest))
     check_body(repo, body, tracked=False)
     report.write_text(body, encoding='utf-8')
+    for _, _, old, new in replacements:
+        print(f'Rewrote picture link: {old} -> {new}')
 
 
 def main():

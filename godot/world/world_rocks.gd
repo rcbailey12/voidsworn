@@ -54,6 +54,11 @@ uniform vec3 base = vec3(0.09, 0.075, 0.062);
 uniform vec3 fresh = vec3(0.16, 0.15, 0.14);
 uniform sampler3D detail : filter_linear, repeat_enable;
 uniform float q = 1.0;
+// Only the living debris material enables this; blockers and far fields keep their finish.
+uniform float debris_glint = 0.0;
+uniform vec3 sun_v = vec3(0.45, 0.70, 0.55);
+uniform bool legacy_debris = false;
+uniform bool living_terrain = false;
 uniform bool scanned = false;
 uniform vec3 board_c = vec3(0.0);
 uniform vec2 haze_r = vec2(320.0, 2200.0);
@@ -133,6 +138,8 @@ vec3 bump_normal(vec3 n, vec3 pos, float h, float k) {
 	return normalize(abs(det) * n - grad * k);
 }
 void fragment() {
+	// The legacy scatter and living clumps are alternative presentations of the same hexes.
+	if (legacy_debris && living_terrain) { discard; }
 	// Opaque screen-door fade: keep depth and back-face culling, never draw the inside to fill a cut.
 	float screen_dither = fract(52.9829189 * fract(dot(FRAGCOORD.xy, vec2(0.06711056, 0.00583715))));
 	if (camera_cover <= screen_dither) { discard; }
@@ -210,6 +217,12 @@ void fragment() {
 	// r2: a dull dielectric sheen (the default 0.5 caught the cold fill light and turned brown rock grey-blue)
 	// r11: less for plain rock (its dull sheen picked up the blue of the sky and the fill light and read as frost)
 	SPECULAR = kind == 3 ? 0.5 : (kind == 1 ? 0.3 : 0.12);
+	if (debris_glint > 0.0) {
+		vec3 sun = normalize((VIEW_MATRIX * vec4(sun_v, 0.0)).xyz);
+		vec3 half_v = normalize(sun + VIEW);
+		float glint = pow(max(dot(NORMAL, half_v), 0.0), 96.0) * max(dot(NORMAL, sun), 0.0);
+		em += vec3(0.55, 0.43, 0.25) * glint * fr * debris_glint;
+	}
 	// r8: the flat ambient (and the sky's reflection) cut on rock, more in its hollows; the key light keeps full strength,
 	// so a rock has a lit side and a dark side like the ships do, instead of an evenly grey-blue lump
 	AO = mix(0.35, 1.0, cav) * amb;
@@ -464,6 +477,7 @@ static func crystal_material(look: Dictionary) -> ShaderMaterial:
 class Batch:
 	var groups := {}     # key -> {mesh, mat, shadow, xf: [], cd: []}
 	var dust_materials := {}
+	var legacy_debris_materials := {}
 
 	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float) -> void:
 		# Dust-size rocks keep rockgen's light meshes. Large silhouettes use the

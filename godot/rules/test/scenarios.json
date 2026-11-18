@@ -1888,7 +1888,7 @@
   "rounds": 8,
   "bot": "full",
   "note": "Tree fixture: Tamsa Cast Twice in Light (aelith:A:0:1) repeats an extra wing strike at half damage",
-  "seed": 31201,
+  "seed": 37100,
   "admiral": "aelith",
   "fleet": [
    "i_carrier",
@@ -2645,7 +2645,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 31504,
+  "seed": 37101,
   "admiral": "vex",
   "fleet": [
    "penitent",
@@ -3208,7 +3208,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 7919,
+  "seed": 37108,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3241,7 +3241,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 7919,
+  "seed": 37101,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3461,7 +3461,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31806,
+  "seed": 37102,
   "admiral": "sekhmar",
   "fleet": [
    "d_harvester",
@@ -3659,7 +3659,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 31812,
+  "seed": 37100,
   "admiral": "sekhmar",
   "fleet": [
    "d_harvester",
@@ -4050,7 +4050,7 @@
   "dep": "line",
   "kind": "battle",
   "bot": "full",
-  "seed": 32005,
+  "seed": 37113,
   "admiral": "khepra",
   "fleet": [
    "d_harvester",
@@ -4462,7 +4462,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 76984,
+  "seed": 37126,
   "admiral": "razormaw",
   "fleet": [
    "b_razor",
@@ -4768,7 +4768,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 31746,
+  "seed": 37101,
   "admiral": "voice",
   "fleet": [
    "b_brood"
@@ -4891,7 +4891,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 31722,
+  "seed": 37101,
   "admiral": "voice",
   "fleet": [
    "b_spitter",
@@ -5071,7 +5071,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 29,
+  "seed": 37112,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -5299,7 +5299,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 33009,
+  "seed": 37100,
   "admiral": "sable",
   "fleet": [
    "c_reaver",
@@ -5463,7 +5463,7 @@
   "kind": "battle",
   "rounds": 12,
   "bot": "full",
-  "seed": 37100,
+  "seed": 37101,
   "admiral": "sable",
   "fleet": [
    "c_raider",
@@ -5618,7 +5618,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 13,
+  "seed": 37105,
   "admiral": "mott",
   "fleet": [
    "c_hulk",
@@ -5832,7 +5832,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 33026,
+  "seed": 37100,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -5957,7 +5957,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 37104,
+  "seed": 37105,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -5988,7 +5988,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 37100,
+  "seed": 37101,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -6445,7 +6445,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 7919,
+  "seed": 37102,
   "admiral": "kassar",
   "fleet": [
    "h_dominion",
@@ -7827,7 +7827,7 @@
   ],
   "cmdRound": 1,
   "note": "Tree fixture: Brin The Lens Rotates (mirelle:A:1:1) gives evasion on a facing change",
-  "seed": 2,
+  "seed": 37103,
   "lineage": {
    "id": "mirelle",
    "picks": [
@@ -7977,7 +7977,7 @@
   ],
   "cmdRound": 3,
   "note": "Tree fixture: Vex The Last Account (vex:cap:1) fires again on a kill",
-  "seed": 1860000000019,
+  "seed": 37101,
   "lineage": {
    "id": "vex",
    "picks": [],
@@ -8250,7 +8250,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 37103,
+  "seed": 37104,
   "lineage": {
    "id": "sekhmar",
    "picks": [
@@ -8351,7 +8351,7 @@
   ],
   "cmdRound": 2,
   "rounds": 7,
-  "seed": 38209,
+  "seed": 37101,
   "lineage": {
    "id": "anuket",
    "picks": [
@@ -8863,7 +8863,7 @@
   "rounds": 5,
   "cmdRound": 1,
   "cmdAfterMove": true,
-  "seed": 52945,
+  "seed": 37116,
   "note": "Issue 529: Matriarch Spawned Before the Strike (matriarch:A:1:1): the brood moves, then Spawning surge; its extra swarms strike at +15%",
   "lineage": {
    "id": "matriarch",
@@ -8932,7 +8932,7 @@
   ],
   "rounds": 6,
   "cmdRound": 2,
-  "seed": 52978,
+  "seed": 37102,
   "note": "Issue 529: Razormaw Scent in the Dark (razormaw:A:1:1): after a kill in the frenzy the ship's next shot at a new target gains +10 aim",
   "lineage": {
    "id": "razormaw",
@@ -9011,5 +9011,81 @@
    ],
    "capstone": null
   }
+ },
+ "s983_station_defend": {
+  "note": "R314 station footprint: the big map station blocks every hex within 2 of its centre (19 hexes). Defend measures from the station edge: the guard ring and the damage band are the hexes touching the station (1 hex out, 3 from the centre), guns reach 4 hexes out (6 from the centre), so the Hegemony attackers must press right up to the station body",
+  "seed": 98311,
+  "sector": 2,
+  "admiral": "vex",
+  "obj": "defend",
+  "map": "station",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "fac": "hegemony",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "s983_station_plain": {
+  "note": "R314 station footprint: a plain station battle with the 19-hex station body blocking movement and line of fire, and the debris ring moved out to distance 3 and 4",
+  "seed": 98322,
+  "sector": 2,
+  "admiral": "vex",
+  "obj": "rout",
+  "map": "station",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "fac": "corsair",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ]
+ },
+ "s983_teaching_station_defend": {
+  "note": "R314 edge-feature teaching station: the first-fight 3-hex station measures from its own edge (radius 1), so the teaching fight keeps its scale",
+  "seed": 98333,
+  "sector": 1,
+  "admiral": "vex",
+  "obj": "defend",
+  "map": "station",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "edgeFeature": true,
+  "fac": "hegemony",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ]
  }
 }

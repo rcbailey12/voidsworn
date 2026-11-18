@@ -1,0 +1,54 @@
+{
+  "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+  "source_dirty": true,
+  "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "corsair_KB1CC_compare.jpg",
+  "date": "2026-11-17T04:18:22Z",
+  "sources": [
+    {
+      "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+      "source_dirty": true,
+      "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "paint_beauty.png",
+      "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+      "source_dirty": true,
+      "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+      "stage": "paint proof",
+      "date": "2026-11-17T04:13:14Z",
+      "image_sha256": "8181952702423af1a322cf490a92cfe8b21e47579a072b81b8de2823914d30df",
+      "sources": [
+        {
+          "source_commit": "2a5399ebcf4edb19ce048ca394a27265604ad012",
+          "source_dirty": true,
+          "source_diff_sha256": "012962780a05c7201a6ef61486f09171ebeb0b19da2169353b8e6bfbb6a7db11",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "37a5cac1f7c01ebefc0e5d257a9b04898ba528f054d9af039721bec7c10d3fd0"
+  ],
+  "stamp_template_sha256": "d27889535d4a69941538d88d0bae0bd4f358ad73c4e06784edaa7a83ccaa412b",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAADUElEQVR4nO3d0W7TMACG0ThhN7uAC97/NRFIw0ZJ1qqDCana2v52zrmAjW2ZGUm+2k1J+frt+0Sffv388Z+Ptu3XcuU296+69HYL9Z/Pn6/a/sfH87nbn248nmvd+udzNDn720eOx/LOB9bjrrX2/PxcB90LrjuzAMAdfLnHN+ERyk2+ar7zTOXW27+W8Yyt9HI8lm0No6Xtj5/JzAmAOOIEQBxxAiCOOAEQR5wAiCNOAMQRJwDiiBNAf0pZX+TU2pj/PYQ4AZDIzAmAOOIEQBxxAiCOOAEQR5wAiCNOAMRxP6eOXb7AYeT7ugBvtWlubWqlTXOZBn2pk5kTAHHECYA44gRAHHECII44ARBHnACII04AxBEnAOKIEwBxxAmAOOIEQBxxAiCOOAEQR5wAiCNOAMQRp86sN3CZSmnrG6XNpc1Ta27mBIfS6kuZ6vrGdjOnUgY8B7jZYGf2ffFs2ylLKaXWdU8FjmDetPr+aWEM4tSZ/SHSeV9sqzKVMs8mwXAUv+u03ge3VTMnUqwt2vz75w8aEXB/5fW3ERf0dmZOnalTm09xen2uqazzpkct6117ZFyb0FsfebdOetr4/Xs99ufzWeMpm3leTwanFZTRnnwSp46X9c6zJU84waHU7cFoa63WOlKQLolTZ/ZHTHuW9sdNp1Dtzznde/6UtpiYNp608fe+/VvLH3/bLrGe5/XwPyfq3aX+3olTZ/YatdaWZXl6elqWZX/3tGuOds1e2jLL0cZP2v7Ttjjtx/vLy8uyLKMunIhTZ84ry7XW9VrSvxeaL6/Z23fZvq/i6/1k3fv4ebR6DtKl/cAfuEzdn7kAGJKZ08A88oC+tQMfxcf9mwMQS5wAiCNOAMQRJwDiiBMAccQJgDjiBEAccQIgjjgBEEecAIgjTgDEEScA4ogTAHHECYA44gRAHHECII44ARBHnACII04AxBEnAOKIEwBxxAmAOOIEQBxxAiCOOAEQR5wAiCNOAMQRJwDiiBMAccQJgDjiBEAccQIgjjgBEEecAIgjTgDEEScA4ogTAHHECYA44gRAHHECII44ARBHnACII04AxBEnAOKIEwBxxAmAOOIEQBxxAiCOOAEQR5wAiCNOAMQRJwDiiBMAU5o/RVm2Mf+mlTAAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "91e6b3417a661719f598d4ea57b340e1ff2a0aa2d43c5ef8fdae056a38223430"
+}

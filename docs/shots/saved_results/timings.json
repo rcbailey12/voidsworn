@@ -1,0 +1,50 @@
+{
+  "source_base": "2efb76f845abe675db5c26cc9d996a3825775cb6",
+  "platform": "Windows",
+  "node": "22.11.0",
+  "godot": "4.7.2",
+  "original_parity": {
+    "battles": 281,
+    "workers": 4,
+    "failures": 0,
+    "started_at": "2026-11-17T17:04:50.944Z",
+    "completed_at": "2026-11-17T17:12:47.864Z",
+    "seconds": 476.92
+  },
+  "final_pc_launcher": {
+    "exit": 0,
+    "battles": 281,
+    "workers": 4,
+    "failures": 0,
+    "parity_failures": 0,
+    "saved_failures": 0,
+    "saved_seconds": 19.304,
+    "started_at": "2026-11-17T17:26:21.414Z",
+    "completed_at": "2026-11-17T17:35:36.559Z",
+    "seconds": 555.145
+  },
+  "standing": {
+    "rows": 65,
+    "pass": 63,
+    "known": 2,
+    "fail": 0,
+    "skip": 0,
+    "exit": 0
+  },
+  "saved_self_test": {
+    "cases": 21,
+    "exit": 0
+  },
+  "launcher_exit_fixture": {
+    "pass_exit": 0,
+    "failure_exit": 17
+  },
+  "raw_saved_input_bytes": 916029631,
+  "saved_manifest_and_archives_bytes": 5277069,
+  "ci": {
+    "measured": false,
+    "reason": "Job forbids commits, pushes and workflow edits. Existing parity step already invokes the gate and emits timing to GITHUB_STEP_SUMMARY."
+  },
+  "timing_note": "PC CPU was shared with pilot runs. These whole-step values are observations, not a before/after speed comparison.",
+  "full_run_update_byte_identical": true
+}

@@ -1,0 +1,141 @@
+{
+ "cameras": [
+  60
+ ],
+ "cell": [
+  300,
+  200
+ ],
+ "crop": {
+  "170": [
+   300,
+   200
+  ],
+  "60": [
+   900,
+   600
+  ]
+ },
+ "rows": [
+  {
+   "id": "hegemony_shield",
+   "label": "hegemony torpedo shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "corsair_shield",
+   "label": "corsair torpedo shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "deathless_shield",
+   "label": "Eclipse ring torpedo shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  }
+ ]
+}

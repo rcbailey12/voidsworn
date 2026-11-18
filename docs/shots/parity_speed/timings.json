@@ -1,0 +1,85 @@
+{
+  "source_pin": "7d4db9de71111eedfe72635c88516f5228bad9af",
+  "pc": {
+    "serial_normal": {
+      "exit": 0,
+      "seconds": 1673.1559851
+    },
+    "serial_reversed": {
+      "exit": 0,
+      "seconds": 1709.9382091999998
+    },
+    "parallel_normal_shared": {
+      "battles": 281,
+      "workers": 4,
+      "failures": 0,
+      "seconds": 574.264
+    },
+    "parallel_reversed": {
+      "battles": 281,
+      "workers": 3,
+      "failures": 0,
+      "seconds": 651.242
+    },
+    "parallel_final": {
+      "battles": 281,
+      "workers": 4,
+      "failures": 0,
+      "started_at": "2026-11-17T15:55:37.212Z",
+      "completed_at": "2026-11-17T16:02:40.422Z",
+      "seconds": 423.21
+    },
+    "final_launcher": {
+      "exit": 0,
+      "seconds": 484.74681979999997
+    }
+  },
+  "standing": {
+    "exit": 1,
+    "seconds": 993.1109409,
+    "pass": 61,
+    "known": 2,
+    "fail": 2,
+    "gpu_slots_native_recheck": "PASS (12 groups, 12.05 s)",
+    "remaining_failure": "picture_provenance_tests: unchanged station capture.gd"
+  },
+  "ci_serial_reference": {
+    "run": "https://github.com/rcbailey12/voidsworn/actions/runs/44105588767",
+    "head": "fda538f6fafddafe0b9c1f1f377b39d8ee0e4007",
+    "jobs": [
+      {
+        "name": "Godot game checks",
+        "seconds": 516,
+        "completed_at": "2026-11-17T14:48:35Z",
+        "rules_steps": [],
+        "conclusion": "success",
+        "started_at": "2026-11-17T14:39:59Z"
+      },
+      {
+        "name": "Godot rules parity",
+        "seconds": 1244,
+        "completed_at": "2026-11-17T15:00:43Z",
+        "rules_steps": [
+          {
+            "conclusion": "success",
+            "completed_at": "2026-11-17T14:59:43Z",
+            "name": "Rules parity against the browser game",
+            "seconds": 1133,
+            "started_at": "2026-11-17T14:40:50Z"
+          }
+        ],
+        "conclusion": "success",
+        "started_at": "2026-11-17T14:39:59Z"
+      },
+      {
+        "name": "Standing checks (rules, text, saves)",
+        "seconds": 214,
+        "completed_at": "2026-11-17T14:43:33Z",
+        "rules_steps": [],
+        "conclusion": "success",
+        "started_at": "2026-11-17T14:39:59Z"
+      }
+    ]
+  },
+  "ci_parallel": "Pending runner push; do not infer from PC time"
+}

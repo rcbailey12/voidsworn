@@ -1,0 +1,139 @@
+{
+  "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+  "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "N368A_R6_strike_c60.jpg",
+  "date": "2026-11-17T08:09:34Z",
+  "sources": [
+    {
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "storm_c60_strike_00.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:13Z",
+      "image_sha256": "8daeee6681a065a4c51206cecb870beccff53a17c431fab517dffe6e030b15bd",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "storm_c60_strike_01.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:14Z",
+      "image_sha256": "d4e1a68b0dc59b71581f4a2698b7d37b0482ba46817ee3caed504518bd75b379",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "storm_c60_strike_02.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:16Z",
+      "image_sha256": "9fd6b760b615add4c17e1e8fd82ce757cd897dd2e9172971b10b4221ac85c333",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "storm_c60_strike_03.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:18Z",
+      "image_sha256": "2de7d1852f74972aa31a3ceafd70e7d2de4e60674fbd3f1aa3b3de5c9f904ee0",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "storm_c60_strike_04.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:41Z",
+      "image_sha256": "292df07e6746d9b9281ef73de597a7ecd04a1b663675ab6b46d6fa5cef335c23",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "storm_c60_strike_05.png",
+      "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+      "source_dirty": true,
+      "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+      "stage": "installed in game",
+      "date": "2026-11-17T07:56:43Z",
+      "image_sha256": "f160236024166fbb7dc8c5ad1c7b9bd49665921fa518d82b00654d0506bce017",
+      "sources": [
+        {
+          "source_commit": "6b6f30126846a3ede5e72938848489e7b8cdd007",
+          "source_diff_sha256": "2e09bce3d5dc8b25a89e915f8acbd2a6f7d289a006df196c5d61c6e402d878e9",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "8c7ffed3aa7727382c3d787ecc9179c13fd0a4cae43bb99fc0eb3ffe685dd4ff"
+  ],
+  "stamp_template_sha256": "7a4902afea04d34c46bfd26fc388de5afee0cb57de6eddfb55336826711a17d8",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnElEQVR4nO3XsQ0AIADDMGBFLPx/LFeQyX6gY9S5zx0AwH8r2AAARBcAOp4uAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAwGg+YdQDuRqcoGQAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "d789d3e45a1fcdfddf82c913a6a291ac295ebe7aac8bb533707bcadff5ee7451"
+}

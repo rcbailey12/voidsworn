@@ -1,0 +1,71 @@
+{
+  "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "D21_23_main_egg_fitted_c170.png",
+  "date": "2026-11-17T05:52:28Z",
+  "sources": [
+    {
+      "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "deathless_shield__c170.png",
+      "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-17T05:18:36Z",
+      "image_sha256": "3c2d8d9846f17c793d115b669a910c13f7ae2c2d18f3a361827af52ce5fdd93a",
+      "sources": [
+        {
+          "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_shield__c170.png",
+      "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-17T05:25:20Z",
+      "image_sha256": "f0ff3ed78a5d9b2b5755b9910ea50f119fac198870c9fcd8aa1a4103d480f9fa",
+      "sources": [
+        {
+          "source_commit": "d5ee38bfd974907ced8d24e93351f2f9e8309723",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    504,
+    720
+  ],
+  "strip_size": [
+    504,
+    98
+  ],
+  "strip_sha256": [
+    "ea115605dc6cb0fcb0f97e3f24a996c7416d2c1bd115203684ce78052dc8c478"
+  ],
+  "stamp_template_sha256": "ea115605dc6cb0fcb0f97e3f24a996c7416d2c1bd115203684ce78052dc8c478",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAIAAAAzwFa5AAABeklEQVR4nO3UMQ0AIQDAQHgFLKz4l/kqCElzp6BT59pnAND1vQ4A4C6jB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gNH2A6fRAQcjf2q9AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "c6327353f712583b1df6575bec6ba891b143dcfa2c4a8d08386c0041f6295461"
+}
