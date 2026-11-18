@@ -206,7 +206,11 @@ sweeps on the standing issue 906). Its scope is merge issues, bugs and other tec
 comment starts with "Artoo (technical review):", because it posts through Ryan's account and must never be read as his words,
 and names the commit it read. It never pushes, edits files, merges, closes, relabels or decides a rule; every finding is checked
 by the Board against live main before anything changes (0.10), and the Board replies with what it did. Before each merge the
-Board reads the PR's Artoo comments on its current head commit and settles each one first. Artoo went live Nov 16 (it wakes on
+Board reads the PR's Artoo comments on its current head commit and settles each one first. A finding that does not block
+the merge, or arrives after it (Artoo's or Muse's), is settled the same day: the Board fixes it in that turn or adds one line
+for it on issue 906 (fixed, queued as issue N, or declined and why). Why: the Nov 17 audit found five such findings (PRs 910,
+919, 924, 937, 571) with no reply and no tracking item, one of them six hours old, while blocking findings were answered in
+minutes (Ryan approved the audit fixes, Nov 17). Artoo went live Nov 16 (it wakes on
 PR events and checks issues about hourly). Why: "i want artoo
 commenting independently by itself for those comments and reviews. it shouldn't impact design or taste designs but looking for
 merge issues, bugs or other technical issues, absolutely should be independent" (Ryan, Nov 16, R295; replaces R270's read-only
