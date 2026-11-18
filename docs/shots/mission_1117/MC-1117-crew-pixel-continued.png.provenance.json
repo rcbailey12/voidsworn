@@ -1,0 +1,36 @@
+{
+  "source_commit": "1b5861b5ca0f6090b6ec8d25035cb568f6e7774e",
+  "source_dirty": true,
+  "source_diff_sha256": "0fd53a7f3d1f1fa2e4f4f8f27732faec0bcfce41bb4bdff0ee8bbafd08f0bf2d",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-1117-crew-pixel-continued.png",
+  "date": "2026-11-17T23:57:01Z",
+  "sources": [
+    {
+      "source_commit": "1b5861b5ca0f6090b6ec8d25035cb568f6e7774e",
+      "source_dirty": true,
+      "source_diff_sha256": "0fd53a7f3d1f1fa2e4f4f8f27732faec0bcfce41bb4bdff0ee8bbafd08f0bf2d",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "e8384a122bee302399c22a013b35a46ea1de7958b5ddaf1a6657657d7a2dcc6a"
+  ],
+  "stamp_template_sha256": "e8384a122bee302399c22a013b35a46ea1de7958b5ddaf1a6657657d7a2dcc6a",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "7f6ae4ebb12b7a7c2bac728f7dd9090efc637711782562fc6465fc994ac216df"
+}

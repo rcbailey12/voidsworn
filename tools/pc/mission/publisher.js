@@ -24,8 +24,17 @@ const iso = n => Number.isFinite(n) && n > 0 ? new Date(n).toISOString() : null;
 const time = s => { const n = Date.parse(s); return Number.isFinite(n) ? n : 0; };
 const maxTime = (...ns) => Math.max(0, ...ns.filter(Number.isFinite));
 const lanePattern = queue.filePattern;
+// Public diagnostics are built from known operations and error codes. Raw error
+// messages can include filesystem paths, request headers and response excerpts.
+const PC_ERRORS = {EACCES:'access denied',EPERM:'access denied',EBUSY:'file busy',ENOENT:'file or folder missing',
+  ENOTDIR:'expected a folder',EIO:'I/O error',EMFILE:'too many open files',ENFILE:'too many open files',ENOSPC:'disk full'};
+const NETWORK_ERRORS = {ENOTFOUND:'DNS lookup failed',EAI_AGAIN:'DNS lookup could not complete',ECONNRESET:'connection reset',
+  ECONNREFUSED:'connection refused',ETIMEDOUT:'connection timed out',UND_ERR_CONNECT_TIMEOUT:'connection timed out',
+  UND_ERR_SOCKET:'connection closed',CERT_HAS_EXPIRED:'TLS certificate expired',UNABLE_TO_VERIFY_LEAF_SIGNATURE:'TLS certificate could not be verified'};
+const knownError = (codes, code, fallback) => Object.hasOwn(codes,code) ? codes[code] : fallback;
 class Reader {
-  constructor() { this.cache = new Map(); this.imageHashes = new Map(); this.errors = new Set(); this.readBytes = 0; }
+  constructor() { this.cache = new Map(); this.imageHashes = new Map(); this.errors = new Set(); this.readBytes = 0; this.lastSuccessfulReadAt = null; }
+  error(operation, error) { this.errors.add(operation+': '+knownError(PC_ERRORS,error?.code,'read failed')); }
   imageHash(file, stat) {
     const key = `${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}`;
     const previous = this.imageHashes.get(file);
@@ -34,15 +43,15 @@ class Reader {
       const hash = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
       this.imageHashes.set(file, {key, hash});
       return hash;
-    } catch (_) { this.errors.add(file); return null; }
+    } catch (error) { this.error('Picture read',error); return null; }
   }
   stat(p) {
     try { const s = fs.lstatSync(p); return s.isFile() ? s : null; }
-    catch (e) { if (e.code !== 'ENOENT') this.errors.add(p); return null; }
+    catch (e) { if (e.code !== 'ENOENT') this.error('File metadata',e); return null; }
   }
-  dirs(p) {
+  dirs(p, required = false) {
     try { return fs.readdirSync(p, { withFileTypes: true }).filter(d => !d.isSymbolicLink()); }
-    catch (e) { if (e.code !== 'ENOENT') this.errors.add(p); return []; }
+    catch (e) { if (required || e.code !== 'ENOENT') this.error('Folder listing',e); return []; }
   }
   read(p, limit = 65536, tail = false) {
     const s = this.stat(p);
@@ -59,7 +68,7 @@ class Reader {
       const v = { text: buf.toString('utf8').replace(/^\uFEFF/, ''), mtime: s.mtimeMs, size: s.size, exists: true };
       this.cache.set(key, v);
       return v;
-    } catch (_) { this.errors.add(p); return { text: '', mtime: s.mtimeMs, exists: true, unreadable: true }; }
+    } catch (error) { this.error('File read',error); return { text: '', mtime: s.mtimeMs, exists: true, unreadable: true }; }
   }
 }
 
@@ -135,7 +144,13 @@ function resultVerdict(text) {
 function jobInfo(folder, issue, seat, reader, byLocation = false) {
   const state = reader.read(path.join(folder, 'status.json'));
   let status = null;
-  try { status = JSON.parse(state.text); } catch (_) { /* Missing evidence stays unknown. */ }
+  if (state.exists && !state.unreadable) {
+    try { status = JSON.parse(state.text); } catch (_) { /* Invalid status is reported below. */ }
+    if (!status || typeof status!=='object' || Array.isArray(status)) {
+      status = null;
+      reader.errors.add('Runner status file is invalid');
+    }
+  }
   const head = reader.read(path.join(folder, 'result.txt'), 65536);
   const tail = reader.read(path.join(folder, 'result.txt'), 16384, true);
   const result = {...tail, text:head.text + '\n' + tail.text};
@@ -182,6 +197,7 @@ function readJobs(root, seat, reader) {
       const valid = samePath && reader.dirs(p).some(x=>x.isDirectory() && x.name===run && /^\d{8}_\d{6}$/.test(run));
       if (valid) jobs.push(jobInfo(path.join(p,run,'out'),+m[1],seat[0],reader,true));
       else {
+        if (latest.exists && !latest.unreadable) reader.errors.add('DeepSeek run directory could not be verified');
         const missing = jobInfo(path.join(p,'out'),+m[1],seat[0],reader);
         missing.status = null; missing.run = null; missing.started = 0; missing.finished = 0; missing.activity = 0;
         missing.evidence = [{source:'latest.txt', at:iso(latest.mtime), association:'run directory unverified'}];
@@ -252,6 +268,7 @@ function githubData(issues, pulls, comments, previous, now) {
     if (branchPattern.test(branch)) put(data.pulls,{number:pr.number,branch,state,updatedAt:iso(time(pr.updated_at)),url:`${REPO}/pull/${pr.number}`},'number');
     if (own && /^opus\//.test(branch)) record('claude',pr.updated_at,'Branch update recorded',pr.number);
     if (own && /^muse\//.test(branch)) record('muse',pr.updated_at,pr.merged_at?'Merged PR recorded':'Branch update recorded',pr.number);
+    if (own && /^work\/issue-\d+-openai$/i.test(branch)) record('openai',pr.updated_at,pr.merged_at?'Merged PR recorded':'Branch update recorded',pr.number);
     // A merge commit is visible in this read. Direct Board commits are not exposed by these three endpoints.
     if (pr.merged_at && /^[a-f0-9]{40}$/i.test(pr.merge_commit_sha || '')) record('claude',pr.merged_at,'Board merge commit recorded',pr.number);
   }
@@ -272,6 +289,7 @@ function enrichJob(job, github) {
   const pr=github.pulls.filter(x=>x.branch===job.branch).sort((a,b)=>time(b.updatedAt)-time(a.updatedAt))[0];
   if(pr){job.prState=pr.state;job.prNumber=pr.number;job.prUrl=pr.url;}
 }
+class GithubReadError extends Error {}
 class GithubReader {
   constructor(fetcher = fetch, initial = emptyGithub(), budget = new Budget()) {
     this.fetcher = fetcher; this.data = initial; this.budget = budget; this.busy = false; this.started = null; this.pending = {};
@@ -279,15 +297,17 @@ class GithubReader {
     this.data.sources ||= Object.fromEntries(Object.keys(SOURCE_INTERVAL_MS).map(n=>[n,sourceRecord(n)]));
   }
   async request(url, now) {
-    if (!this.budget.spend(now)) throw Error('shared GitHub budget paused');
+    if (!this.budget.spend(now)) throw new GithubReadError('Shared GitHub budget paused');
     const res = await this.fetcher(url,{method:'GET',redirect:'error',headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'voidsworn-mission-control'},signal:AbortSignal.timeout(8000)});
     this.budget.headers(res.headers,res.status,now);
-    if (!res.ok) throw Error('GitHub read failed');
+    if (!res.ok) throw new GithubReadError(Number.isInteger(res.status) && res.status>=100 && res.status<=599 ? 'GitHub returned HTTP '+res.status : 'GitHub returned an HTTP error');
     let body = '', bytes = 0;
     const decoder = new TextDecoder();
-    for await (const chunk of res.body) { bytes += chunk.length; if (bytes > 4*1024*1024) throw Error('GitHub response too large'); body += decoder.decode(chunk,{stream:true}); }
-    const items = JSON.parse(body + decoder.decode());
-    if (!Array.isArray(items)) throw Error('Invalid GitHub list');
+    for await (const chunk of res.body) { bytes += chunk.length; if (bytes > 4*1024*1024) throw new GithubReadError('GitHub response too large'); body += decoder.decode(chunk,{stream:true}); }
+    let items;
+    try { items = JSON.parse(body + decoder.decode()); }
+    catch (_) { throw new GithubReadError('GitHub returned invalid JSON'); }
+    if (!Array.isArray(items)) throw new GithubReadError('GitHub response was not a list');
     // Build page URLs ourselves so a Link header can never send this reader elsewhere.
     const hasNext = /<[^>]+>;\s*rel="next"/.test(res.headers.get('link') || '');
     return {items, hasNext};
@@ -303,7 +323,7 @@ class GithubReader {
         const name = names[index], record = this.data.sources[name];
         const due = record.nextAttemptAt ? time(record.nextAttemptAt) : this.started + index*60000;
         if (now < due || !this.budget.canSpend(now)) continue;
-        record.lastAttemptAt = iso(now); record.complete = false; record.reason = 'not fully checked';
+        record.lastAttemptAt = iso(now); record.complete = false; record.reason = 'Reading pages';
         const watermark = this.watermarks[name];
         const since = iso(watermark ?? now-7*86400000);
         const query = name === 'questions' ? 'issues?state=open&labels=ryan&per_page=100' : name === 'issues' ? 'issues?state=all&sort=updated&direction=desc&per_page=100&since='+encodeURIComponent(since) :
@@ -325,7 +345,7 @@ class GithubReader {
             if (!result.hasNext || reachedPrevious) { complete = true; break; }
           }
           if (!complete) {
-            record.reason = name==='questions' ? 'questions not fully checked; shared budget paused' : 'source not fully checked; shared budget paused';
+            record.reason = 'Read incomplete: '+this.budget.snapshot(now).reason;
             record.nextAttemptAt = iso(this.budget.nextAvailableAt(now));
             continue;
           }
@@ -341,10 +361,11 @@ class GithubReader {
           record.lastSuccessfulReadAt = iso(completedAt); record.complete = true; record.reason = null; record.failures = 0;
           record.nextAttemptAt = iso(now + SOURCE_INTERVAL_MS[name]);
           delete this.pending[name];
-        } catch (_) {
+        } catch (error) {
           // Keep last good values, including questions. A partial page cannot prove a zero.
           record.failures++;
-          record.reason = name==='questions' ? 'questions not fully checked' : 'source not fully checked';
+          record.reason = error instanceof GithubReadError ? error.message : /^(?:Timeout|Abort)Error$/.test(error?.name) ? 'GitHub request timed out' :
+            'GitHub request: '+knownError(NETWORK_ERRORS,error?.cause?.code || error?.code,'request failed');
           record.nextAttemptAt = iso(now + backoff(record.failures));
           delete this.pending[name];
         }
@@ -362,7 +383,9 @@ class GithubReader {
 
 const PAGE = path.resolve(__dirname,'../../../docs/mission/index.html');
 const ASSETS = Object.fromEntries([
-  'artoo.svg','crew/artoo.svg','crew/claude.svg','crew/codex.svg','crew/deepseek.svg','crew/muse.svg',
+  'artoo.svg',
+  ...['artoo','claude','codex','deepseek','muse','openai'].map(name=>'crew/'+name+'.svg'),
+  ...['lanes','queue','gpu','pc','github','phone'].map(name=>'icons/'+name+'.svg'),
   'ChakraPetch-SemiBold.ttf','Barlow-Regular.ttf','AzeretMono-VF.ttf',
   'fonts/BigShouldersDisplay-VF.ttf','fonts/ChakraPetch-Medium.ttf','fonts/ChakraPetch-Bold.ttf',
   'fonts/Barlow-Medium.ttf','fonts/AzeretMono-VF.ttf'
@@ -462,14 +485,14 @@ function pictureIndex(repo, info, reader, gitRead = git) {
   for (const dir of ['docs/shots','docs/ship_pipeline']) {
     const target=path.join(repo,dir);
     // Reject junctions on every parent, not just a final file.
-    try { checkOutputParents(target); walk(target); } catch (_) { reader.errors.add(target); }
+    try { checkOutputParents(target); walk(target); } catch (error) { reader.error('Picture index',error); }
   }
   return pictures.sort((a,b)=>time(b.capturedAt)-time(a.capturedAt));
 }
 
 function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyGithub()) {
   reader.errors.clear();
-  const chains = queue.resolveQueue(reader.dirs(root).filter(d=>d.isFile() && lanePattern.test(d.name)).map(d=>readChain(root,d.name,reader)),now);
+  const chains = queue.resolveQueue(reader.dirs(root,true).filter(d=>d.isFile() && lanePattern.test(d.name)).map(d=>readChain(root,d.name,reader)),now);
   const jobFor = (issue, jobs) => jobs.find(j=>j.issue===issue)?.job || {issue,title:cleanTitle(null,issue),url:REPO+'/issues/'+issue};
   const lanes = SEATS.map(seat => {
     const own = chains.filter(c=>c.id===seat[0]), jobs = readJobs(root,seat,reader).sort((a,b)=>(b.started || b.updated)-(a.started || a.updated));
@@ -522,9 +545,13 @@ function snapshot(root, now = Date.now(), reader = new Reader(), github = emptyG
     enrichJob(job,github);
   }
   const publicGithub = {...github,sources:Object.fromEntries(Object.entries(github.sources || {}).map(([name,record])=>[name,{...record,stale:!record.lastSuccessfulReadAt || now-time(record.lastSuccessfulReadAt)>record.intervalSeconds*2000}]))};
+  if (chains.some(c=>c.missingBat && !['ended','cancelled','paused','superseded'].includes(c.state))) reader.errors.add('Chain script missing');
+  const complete = reader.errors.size===0;
+  if (complete) reader.lastSuccessfulReadAt = iso(now);
+  const pcSource = {complete,lastSuccessfulReadAt:reader.lastSuccessfulReadAt,lastAttemptAt:iso(now),reason:complete ? null : [...reader.errors].join(' · ')};
   return {schemaVersion:2,generatedAt:iso(now),staleAfterSeconds:STALE_SECONDS,offlineAfterSeconds:OFFLINE_SECONDS,
     thresholds:{pcFeedSeconds:OFFLINE_SECONDS,claimWithoutRunnerSeconds:CLAIM_SECONDS,workActivitySeconds:STALE_SECONDS,githubIntervalMultiplier:2},
-    build:buildInfo(),github:publicGithub,lanes,warnings:reader.errors.size ? ['Some PC sources could not be read; affected rows may be unknown.'] : []};
+    build:buildInfo(),github:publicGithub,pcSource,lanes,warnings:complete ? [] : ['Some PC sources could not be read; affected rows may be unknown.']};
 }
 
 function checkOutputParents(out) {
@@ -628,7 +655,7 @@ function scanInWorker() {
       const data = snapshot(root,Date.now(),reader,github);
       writeSnapshot(out,data);
       parentPort.postMessage({data,pictures:reader.pictureFiles});
-    } catch (_) { parentPort.postMessage({}); }
+    } catch (_) { parentPort.postMessage({failure:'PC snapshot could not be read or saved'}); }
   });
 }
 
@@ -644,8 +671,14 @@ function serve(opts, discover = tailscale.discover, githubReader = new GithubRea
   const tailnetHost = discover().host;
   const loadedPage = fs.readFileSync(PAGE);
   const assets = Object.fromEntries(Object.keys(ASSETS).map(route=>[route,fs.readFileSync(path.join(path.dirname(PAGE),route.slice(1)))]));
-  let status = Buffer.from(JSON.stringify({schemaVersion:2,state:'starting',generatedAt:null,build:buildInfo(),lanes:[]}));
+  let data = {schemaVersion:2,state:'starting',generatedAt:null,build:buildInfo(),lanes:[]};
+  let status = Buffer.from(JSON.stringify(data));
   let pictures = new Map(), scanner, busy = false, queued = false, closed = false, timer;
+  function scanFailed(reason) {
+    data = {...data,pcSource:{complete:false,lastSuccessfulReadAt:data.pcSource?.lastSuccessfulReadAt || null,lastAttemptAt:iso(Date.now()),reason}};
+    status = Buffer.from(JSON.stringify(data));
+    console.error(reason+'; last good snapshot kept.');
+  }
   function scan() {
     if (closed) return;
     if (busy) { queued = true; return; }
@@ -654,12 +687,16 @@ function serve(opts, discover = tailscale.discover, githubReader = new GithubRea
       scanner.on('message', result => {
         busy = false;
         if (result.data) {
-          status = Buffer.from(JSON.stringify(result.data));
+          if (result.data.pcSource && !result.data.pcSource.lastSuccessfulReadAt) {
+            result.data.pcSource.lastSuccessfulReadAt = data.pcSource?.lastSuccessfulReadAt || null;
+          }
+          data = result.data;
+          status = Buffer.from(JSON.stringify(data));
           pictures = result.pictures;
-        } else console.error('Snapshot failed; last good snapshot kept.');
+        } else scanFailed(result.failure || 'PC snapshot failed');
         if (queued) { queued = false; scan(); }
       });
-      scanner.on('error', () => console.error('Snapshot reader failed; last good snapshot kept.'));
+      scanner.on('error', () => scanFailed('PC snapshot reader failed'));
       scanner.on('exit', () => { scanner = null; busy = false; queued = false; });
     }
     busy = true;

@@ -1,0 +1,36 @@
+{
+  "source_commit": "1b5861b5ca0f6090b6ec8d25035cb568f6e7774e",
+  "source_dirty": true,
+  "source_diff_sha256": "0fd53a7f3d1f1fa2e4f4f8f27732faec0bcfce41bb4bdff0ee8bbafd08f0bf2d",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-1117-crew-desktop-continued.png",
+  "date": "2026-11-17T23:57:01Z",
+  "sources": [
+    {
+      "source_commit": "1b5861b5ca0f6090b6ec8d25035cb568f6e7774e",
+      "source_dirty": true,
+      "source_diff_sha256": "0fd53a7f3d1f1fa2e4f4f8f27732faec0bcfce41bb4bdff0ee8bbafd08f0bf2d",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "3dd770900439fa649f4fa5d68f99ef131ccda9918099f4c55a8da1d01949a2c9"
+  ],
+  "stamp_template_sha256": "3dd770900439fa649f4fa5d68f99ef131ccda9918099f4c55a8da1d01949a2c9",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMOAjwb9efgywo1Wwb3OfPQCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBMCouaf4AOJhSC+bAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "b83d566d50cd717463686c2b522ac0acce6e802e3ea5598ef1151540710042f2"
+}
