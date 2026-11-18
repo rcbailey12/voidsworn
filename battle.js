@@ -228,7 +228,7 @@ function genTerrain(map,shape,opt){
   if(opt.edgeFeature){ const hs=boardHexes().filter(h=>onBoard(h.q,h.r)), r=Math.min(...hs.map(h=>h.r))+1, c=offToAx(Math.floor(BW/2),r);
     const feature=opt.enc==='defend'?'station':'rock';
     for(const h of [c,{q:c.q+1,r:c.r},{q:c.q,r:c.r+1}]) if(onBoard(h.q,h.r)) T[hkey(h.q,h.r)]=feature;
-    if(feature==='station') TERRAIN_META.station=c;
+    if(feature==='station'){ TERRAIN_META.station=c; TERRAIN_META.stationR=1; }
     TERRAIN_META.shape='open'; return T; }
   const put=(h,t)=>{ if(onBoard(h.q,h.r)&&!T[hkey(h.q,h.r)]) T[hkey(h.q,h.r)]=t; };
   const blob=(type,n,c0,c1,r0=1,r1=BH-2)=>{ let cur=offToAx(ri(c0,c1),ri(r0,r1)); for(let k=0;k<n;k++){ put(cur,type); const d=pick(DIRS); cur={q:cur.q+d[0],r:cur.r+d[1]}; } };
@@ -240,10 +240,11 @@ function genTerrain(map,shape,opt){
       if(gaps.some(g=>Math.hypot(p.x-g.x,p.y-g.y)<1.6)) continue; if(d<1.1&&rnd()<.72) put(h,'rock'); else if(d<2.4&&rnd()<.16) put(h,'rock'); else if(d<3&&rnd()<.12) put(h,'debris'); }
     for(let i=0;i<2;i++) blob('neb',ri(5,9),5,BW-6); }
   if(m==='station'){ const want=opt.stationAt||{q:mid.q+ri(-1,1),r:mid.r+ri(-1,1)};
-    /* the station needs solid ground: its centre and ring on the board, and clear of any hole (a dead star, a shoal, a colossus) */
-    const okSite=h=>onBoard(h.q,h.r)&&DIRS.every(d=>onBoard(h.q+d[0],h.r+d[1]))&&!(VOID.holes||[]).some(o=>o.cells.some(([q,r])=>hdist(h,{q,r})<=3));
-    const c=okSite(want)?want:(all.filter(okSite).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||all.filter(h=>onBoard(h.q,h.r)&&DIRS.every(d=>onBoard(h.q+d[0],h.r+d[1]))).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||want); TERRAIN_META.station=c;
-    for(const h of all){ const d=hdist(h,c); if(d<=1) T[hkey(h.q,h.r)]='station'; else if(d<=3&&rnd()<.42) put(h,'debris'); }
+    /* R314: the big station blocks every hex within 2 of its centre (19 hexes), so the site needs its whole footprint on the board and clear of any hole (a dead star, a shoal, a colossus) */
+    const cellsAt=(h,rad)=>{ const o=[]; for(let dq=-rad;dq<=rad;dq++) for(let dr=Math.max(-rad,-dq-rad);dr<=Math.min(rad,-dq+rad);dr++) o.push({q:h.q+dq,r:h.r+dr}); return o; };
+    const okSite=h=>cellsAt(h,2).every(x=>onBoard(x.q,x.r))&&!(VOID.holes||[]).some(o=>o.cells.some(([q,r])=>hdist(h,{q,r})<=4));
+    const c=okSite(want)?want:(all.filter(okSite).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||all.filter(h=>onBoard(h.q,h.r)&&DIRS.every(d=>onBoard(h.q+d[0],h.r+d[1]))).sort((a,b)=>hdist(a,want)-hdist(b,want))[0]||want); TERRAIN_META.station=c; TERRAIN_META.stationR=2;
+    for(const h of all){ const d=hdist(h,c); if(d<=2) T[hkey(h.q,h.r)]='station'; else if(d<=4&&rnd()<.42) put(h,'debris'); }
     for(let i=0;i<3;i++) blob('rock',ri(2,4),5,BW-6); blob('neb',ri(5,8),5,BW-6); }
   if(m==='planet'){ const top=rnd()<.5, c=offToAx(Math.floor(BW/2)+ri(-3,3),top?-5:BH+4), R=8, edge=planetEdge(R), cw=hexXZ(c); TERRAIN_META.planet={q:c.q,r:c.r,R,top};
     /* block by the planet's real outline (a circle), so no ship or asteroid ever sits under its rim */
@@ -1260,6 +1261,8 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   checkEnd();
 }
 function sideCP(side){ return B.units.filter(u=>u.side===side&&!u.isSq&&!u.dead).reduce((a,u)=>a+(u.t.cp||1),0); }
+// R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre
+function stationRad(){ return (B&&B.map&&B.map.stationR)||0; }
 function setupObjective(type){ const o={type:type||'rout',score:0,escore:0};
   if(o.type==='flagship'&&caps('enemy').length<3) o.type=caps('enemy').some(u=>u.t&&u.t.boss)?'rout':'hunt'; // killing the "flagship" of a one- or two-ship fleet is just a rout
   if(o.type==='defend'&&!B.map.station) o.type='hold';
@@ -1272,9 +1275,9 @@ function setupObjective(type){ const o={type:type||'rout',score:0,escore:0};
     o.hex={q:best.q,r:best.r}; for(const h of boardHexes()) if(hdist(h,o.hex)<=1&&blocks(terr(h.q,h.r))) delete B.terrain[hkey(h.q,h.r)]; }
   B.obj=o; }
 function survivorsP(){ return B.units.filter(u=>u.side==='player'&&!u.isSq&&(!u.dead||u.exited)).length; }
-function objZone(q,r){ const o=B&&B.obj; if(!o||!onBoard(q,r)) return null; if(o.type==='break'&&q+Math.floor(r/2)>=o.exitC) return 'exit'; if(o.type==='intercept'&&r>=o.exitR) return 'texit'; if(o.type==='defend'&&hdist({q,r},o.hex)===2) return 'guard'; return null; }
+function objZone(q,r){ const o=B&&B.obj; if(!o||!onBoard(q,r)) return null; if(o.type==='break'&&q+Math.floor(r/2)>=o.exitC) return 'exit'; if(o.type==='intercept'&&r>=o.exitR) return 'texit'; if(o.type==='defend'&&hdist({q,r},o.hex)===stationRad()+2) return 'guard'; return null; }
 function stationFire(dq){ const o=B.obj; if(!o||o.type!=='defend') return; const src={q:o.hex.q,r:o.hex.r,facing:0};
-  const ts=caps('enemy').filter(u=>hdist(u,o.hex)<=5).sort((a,b)=>hdist(a,o.hex)-hdist(b,o.hex)).slice(0,2);
+  const ts=caps('enemy').filter(u=>hdist(u,o.hex)<=stationRad()+5).sort((a,b)=>hdist(a,o.hex)-hdist(b,o.hex)).slice(0,2);
   const att={side:'player',dealt:0,kills:0,crit:0,lockOn:false,fx:{}};
   for(const t of ts){ const r=applyHit(att,{crit:0,pierce:.2},t,12,shieldQuad(t,src)); try{ if(typeof fxText==='function') fxText(t,`Station \u2212${r.hull+r.shield}`,'#7fd6ff',-30); }catch(e){}
     log(`Station batteries hit ${t.name}: ${r.shield} shield, ${r.hull} hull.`,'p'); if(t.hp<=0&&!t.dead){ t.hp=0; queueDeath(t,dq); } } }
@@ -1285,7 +1288,7 @@ function aiObjScore(u,v){ const o=B.obj; if(!o||u.isSq) return 0;
   if(u.transport) return -(o.exitR-v.r)*14;
   if(o.type==='hunt'&&u.flagship){ const d=Math.min(30,...caps('player').map(p=>hdist(v,p))); return Math.min(d,9)*3; } // runs, but stops running once well clear
   const vet=aiVet(), urg=vet?aiObjUrgency(o):1; // v53-D: veterans feel the round clock and the station's integrity; standard keeps the flat pull
-  if(o.type==='defend') return -Math.max(0,hdist(v,o.hex)-2)*3*urg;
+  if(o.type==='defend') return -Math.max(0,hdist(v,o.hex)-(stationRad()+2))*3*urg;
   if(o.type==='break'){ const pl=caps('player'); if(!pl.length) return 0; const lead=Math.max(...pl.map(p=>p.q+Math.floor(p.r/2))), c=v.q+Math.floor(v.r/2); if(!vet) return -Math.max(0,lead+1-c)*1.2;
     // veterans block the exit lane in front of the leading ship, harder the further it has got
     const L=pl.find(p=>p.q+Math.floor(p.r/2)===lead), c0=o.c0!=null?o.c0:(o.c0=boardBounds().c0), prog=clamp((lead-c0)/Math.max(1,o.exitC-c0),0,1);
@@ -1302,7 +1305,7 @@ function aiObjUrgency(o){ const done=clamp(((B.round||1)-1)/(o.rounds||ENC_ROUND
   if(o.type==='hold') return 1+done*.8+(o.score>=2?.8:0)+(o.escore>=2?.4:0);
   return 1; }
 function objectiveTick(dq){ const o=B.obj; if(!o||B.over) return;
-  if(o.type==='defend'){ const near=caps('enemy').filter(u=>hdist(u,o.hex)<=2); if(near.length){ o.hp=Math.max(0,o.hp-near.length); log(`${near.length} enemy ship${near.length>1?'s':''} at the station. Integrity ${o.hp}/${o.hpMax}.`,'e'); }
+  if(o.type==='defend'){ const near=caps('enemy').filter(u=>hdist(u,o.hex)<=stationRad()+2); if(near.length){ o.hp=Math.max(0,o.hp-near.length); log(`${near.length} enemy ship${near.length>1?'s':''} at the station. Integrity ${o.hp}/${o.hpMax}.`,'e'); }
     if(o.hp>0&&B.round<=o.rounds) stationFire(dq); checkEnd(); return; }
   if(o.type==='hunt'){ if(B.round>o.rounds){ const f=B.units.find(u=>u.flagship&&u.side==='enemy'&&!u.dead); if(f){ f.dead=true; f.fled=true; o.escaped=true; try{ if(typeof fxWithdraw==='function') fxWithdraw(f); }catch(e){} log(`${f.name} jumps out. Its escorts follow.`,'e'); } } checkEnd(); return; }
   if(o.type!=='hold') return; const near=s=>alive(s).some(u=>!u.isSq&&hdist(u,o.hex)<=1); const p=near('player'), e=near('enemy');
@@ -1976,7 +1979,7 @@ function sqRole(s){ return s.t.sq==='fighter'?'fighter':'bomber'; }
 function sqWants(s,t){ if(t.dead||t.side===s.side) return false; if(sqRole(s)==='bomber') return !t.isSq; return alive(t.side).some(x=>x.isSq)?t.isSq:true; }
 function sqValue(t,e,s){ let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=25; if(t.isSq&&sqRole(t)==='bomber') v*=1.5; if(s&&s.side==='enemy'&&t===B.aiFocus&&aiVet()) v*=1.3; if(s&&(s.side==='player'||aiVet())&&sqObjNear(t)) v+=6; return v+(1-t.hp/t.maxHp)*10; }
 // v53-D: wings lean on the fleet focus (as evalOffenseVet does) and on targets close to the station or a transport in defend and intercept
-function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defend'&&o.hex) return hdist(t,o.hex)<=3; if(o.type==='intercept'){ for(const x of B.units) if(x.transport&&!x.dead&&hdist(x,t)<=3) return true; } return false; }
+function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defend'&&o.hex) return hdist(t,o.hex)<=stationRad()+3; if(o.type==='intercept'){ for(const x of B.units) if(x.transport&&!x.dead&&hdist(x,t)<=3) return true; } return false; }
 // a target is "in reach" only if some hex the squadron can actually fly to this round lets a weapon legally hit it (same range, arc and sight rules as manual fire)
 // wing orders (player only): 'strike' a chosen enemy, or 'guard' a friendly ship and hit whatever comes near it
 function sqOrder(s){ const o=s.wingOrder; if(!o) return null; const t=B.units.find(x=>x.id===o.id); if(!t||t.dead||(o.kind==='strike'?t.side===s.side:t.side!==s.side)){ s.wingOrder=null; return null; } return {kind:o.kind,t}; }
