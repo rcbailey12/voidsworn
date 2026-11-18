@@ -1,0 +1,14 @@
+{
+  "source_commit": "be03488c5d03aabb0aec3480e949461c1c4f067e",
+  "manifest_sha256": "bb6258bc3f2a8c9e530776c4fd9a228957462beee10a37db73a37da0dc6ff2d1",
+  "subjects": [
+    {"name": "Ashfall Hullbreakers", "id": "A16", "code": "C19_51", "rules_id": "c_boss", "fac": "corsair", "cls": "Battle-barge", "shielded": true, "scene_sha256": "6f7fac5384a35ab49b60658f97ac471b3fc4b5f5fed30619aa41784de73086c0"},
+    {"name": "Hegemony Navy", "id": "IM5", "code": "H4_11", "rules_id": "h_boss", "fac": "hegemony", "cls": "Super-dreadnought", "shielded": true, "close_focus_x": -9.0, "scene_sha256": "fae1aacdc83646543bf72f5cdc458404885eae0dc57da99020fd2638a052fa29"},
+    {"name": "Eclipse", "id": "E11", "code": "D22_23", "rules_id": "d_boss", "fac": "deathless", "cls": "Tomb-ark", "shielded": false, "scene_sha256": "f73a2f17080d868e82e40034a1e5c2c5cd922272caff007695af7ada06db8a53"}
+  ],
+  "pending": [
+    {"name": "Sunward Crusade", "issue": 1059, "detail": "S8 failed the wreck and scene 207 checks. The installed Daybreak remains A4."},
+    {"name": "The Chorus", "issue": 1058, "detail": "C11 finish approval and install pending."},
+    {"name": "The Glasswrights", "issue": 1058, "detail": "CD5 finish approval and install pending."}
+  ]
+}
