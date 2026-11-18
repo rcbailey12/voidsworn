@@ -9,6 +9,8 @@ extends RefCounted
 #   _hulk():     var n := A4P.hulk(code)     if n: n.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3.ONE * 11.0), c); props.add_child(n); return
 # with const A4P := preload("res://assets/ships/a4_props.gd"). A4 files are true chirality (+Z starboard): no mirrored scale.
 
+const LARGE_STATION_SIZE := 46.0
+
 static var _man = null
 
 
@@ -30,12 +32,12 @@ static func _scene(code: String) -> Node3D:
 	return (ps as PackedScene).instantiate() as Node3D
 
 
-# the station across a cluster of station hexes, `size` world units across (the board's 46 for a big cluster), in its own paint
+# the painted station across a cluster of station hexes
 static func station(size: float, debris_clearance := 0.0) -> Node3D:
-	# Refs #975. The T2 kit is authored in world units, unlike normalized A4 hulls.
-	# Its install is optional on a fresh checkout, with the old station fallback.
+	# Refs #975. T2 is authored in world units for the large cluster. Smaller
+	# clusters and fresh checkouts use the normalized O1_37 at the requested size.
 	var t2_path := "res://gen/ships/station_T2.scn"
-	if ResourceLoader.exists(t2_path):
+	if size == LARGE_STATION_SIZE and ResourceLoader.exists(t2_path):
 		var t2 := (load(t2_path) as PackedScene).instantiate() as Node3D
 		t2.set_meta("station_T2", true)
 		# Refs #863. Separate kit/cache leaves PR 977's painted station intact.

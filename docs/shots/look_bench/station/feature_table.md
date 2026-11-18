@@ -1,26 +1,24 @@
-# station_T2: production paint and preserved feature inventory
+# station_T2: run 3 production finish and retained feature inventory
 
-Issue 975 changes the finish and installation route, preserving PR 700's complete shape and working fittings.
-The accepted design remains `tools/blender/kits/hegemony_station/design.py`; neither it nor `parts.py` changes.
-The production route is `tools/recipe/station_paint.bat`, using `production.py`, `production_check.py` and `install.gd`.
-The [current paint method, measurements and review evidence](README.md) describe the delivered finish.
+Refs #975. The current [method, material fixes, loose-piece inventory, measurements and pictures](README.md) describe
+run 3. The station recipe entry is `tools/recipe/stations/station_T2.json`; the launcher is `tools/recipe/station_paint.bat`.
 
-| Production measurement | Value |
+| Production measurement | Run 3 |
 |---|---|
-| Evaluated triangles retained | 697,088, including 110,428 inside |
-| Exported surfaces / materials / mesh nodes | 12 / 9 / 2 |
-| Uniform scale and dimensions | 1.919133; 99.200 x 70.211 x 69.281 game units |
-| PBR detail tiles | Five 2048 sets; two game units per repeat |
-| Lowest material mean texture density | 862.88 texels per game unit |
-| Actual C15s_23 comparison cruiser | 42.30 mean; 191.86 finest triangle, texels per game unit |
-| Smallest new surface features | Vent slots, flush screw slots and cover seams in normal/roughness |
-| Existing silhouette fittings | Hatches, rails, pipes, window frames, docking jaws and tower arrays retained |
-| Local wear | Real mesh cavity rays, bevel normals and damaged-side grime; no rust added |
-| Measured station visible draw-call delta | 12, by hiding the station in the GPU studio |
-| Station-map 1080p frame medians | 4.112 / 4.113 / 4.143 ms |
-| Station-map 4K GPU medians | 6.639 / 6.569 / 6.565 ms |
-| Additional lit glazing | Six existing outer window faces beside the authored core light clusters |
-| Accepted-export shape comparison | Every world-space triangle matches PR 700 at 0.0001-unit precision |
+| Exported triangles | 702,516, including 110,428 inside |
+| Surfaces / materials / mesh nodes | 12 / 9 / 2 |
+| Draw-call delta, station visible versus hidden | 12 in all seven views |
+| Scale and dimensions | 1.919133 uniform; 99.200 x 70.211 x 69.281 game units, unchanged |
+| Tone hierarchy | Complete module family, structural zone, then +/-1.5 percent plate value |
+| Full PBR coverage | All nine materials; decoded maps and 267 module/material albedo samples pass |
+| Texture density | 862.88 minimum material mean texels/unit; cruiser 42.30 mean and 191.86 finest triangle |
+| Inside, layout and joints | Retained; 357 source meshes unchanged; only 32 scoped exterior meshes differ |
+| Loose-sheet repair | 19 old sheets become 18 attached torn assemblies; 66 roof beams and 10 spoke treads gain feet/braces |
+| Exported geometry comparison | 696,746 old triangles identical; 342 replaced, 5,770 added |
+| Glazing | Framed real-size room grid, reflection and dark interiors; all original lights and window bands retained |
+| 1080p frame medians | 7.917 / 6.907 / 5.652 ms |
+| 4K GPU medians | 6.938 / 6.913 / 6.915 ms |
+| 12.5 ms gate | All six pass on the installed station map, solo GPU |
 
 ## PR 700 shape inventory, before production paint
 

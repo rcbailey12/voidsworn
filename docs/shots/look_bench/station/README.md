@@ -1,86 +1,151 @@
-# station_T2: production paint, issue 975
+# station_T2: run 3 module paint and attached wreckage, issue 975
+
+Ryan asked for a station-wide method correction after run 2's random plate colours, plain black tower, blue patch and
+loose square debris. This run replaces that method across the station. The accepted layout, scale, insides, module joints,
+90 marker lights, five battery strips, lit window bands and hanging-radiator motion remain. Footprint and rules belong to 983.
 
 Issue 863 adds a separate damage-side debris kit on this painted base. Its current pictures, motion proof, triangle
 cost and per-piece cell clearances are in [the debris evidence](debris_README.md). The production paint record below
 belongs to issue 975 and remains the reference for the unchanged base station.
 
-Ryan approved PR 700's T2 shape on Nov 17. Issue 975 takes that exact kit through recipe stages 5 to 7.
-`design.py`, `parts.py`, towers, ring, arms, authored joints, damage and insides are unchanged. The production check
-compares every evaluated vertex and triangle before and after painting, then reads the exported GLB independently.
-It also compares all 697,088 world-space triangles against PR 700's actual review GLB at 0.0001 game-unit precision;
-they match exactly, despite the new UV, colour and material splits.
+Method: [build sheet and inventory](feature_table.md), [production manifest](production_manifest.json),
+[station recipe entry](../../../../tools/recipe/stations/station_T2.json). The PR 700 kit goes through stages 5 to 7 using
+[production.py](../../../../tools/blender/kits/hegemony_station/production.py) and the private
+[station Hegemony configuration](../../../../tools/blender/kits/hegemony_station/production_finish.py).
+The fleet and other factions' stacks are unchanged. All maps are procedural own work, dedicated CC0; no concept is projected.
 
-Method: the real [Hegemony stack](../../../../tools/blender/kits/hegemony/stack.py) and shared paint machinery bake
-five repeating PBR material sets, each with albedo, roughness/metalness and tangent-space detail normal. Each 2048-pixel
-tile covers two game units, rather than stretching one atlas across the 99.2-unit station. Geometry-derived cavity
-rays and bevel normals supply local wear, with stronger cold grime toward the damaged side. The station adapter adds
-recessed service covers, flush screws, small vent slots, handling scratches and low-contrast maintenance stencils in
-the normal, roughness and albedo maps. Existing hatches, pipes, window frames, docking jaws, cranes, rails and arrays
-remain real geometry. No generated concept paint, random boxes or shape simplification is used.
-New procedural tiles and drawn service markings are own work dedicated CC0; the bake writes their licence inventory.
-Six existing outer glass faces beside the two authored core light clusters take the Hegemony `hwin` emission.
-Most glazing stays dark; the one large observation pane and all 90 original marker lights remain.
+The tone hierarchy is now module, structural zone, then plate. Complete modules receive pale metal, warm tan, steel or
+Hegemony blue from the accepted beauty's palette. Core drum, habitat and tower families are explicit in `module_family`;
+arm 2 and two complete service fingers carry blue. Structural bands are darker, edge metal lighter, secondary panels only
+slightly lower in value. Each connected plate varies +/-1.5 percent in value within its module family. The privately loaded
+stack disables the inherited patchwork, object-random tone, mottle and colour grain. No single plate randomly becomes blue
+or tan. The manifest records every module's chosen family.
 
-Measured production cost: **697,088 triangles**, including **110,428 inside**, **12 exported surfaces**, nine materials
-and two mesh nodes. Full detail ships; no geometry LOD is substituted. The approved uniform 1.919133 scale retains
-the 99.200 x 70.211-unit plan and 69.281-unit height. The new optional scene cache is loaded by the actual board prop
-path; the old O1_37 asset remains available as the fallback. The local cache install verifies the board's readback.
+Cylindrical UVs follow core drums and towers; other faces keep physical box coordinates. The five 2048 metal PBR sets still
+repeat every two game units. Every zone now has structural seams, maintenance covers, flush fasteners, vent slots, detail
+normals and varying roughness. Seam dirt shoulders, vent-origin residue and service-cover scuffs make the detail readable
+at the native closest camera. Actual station cavity rays, existing bevels and continuous damaged-side exposure control
+local grime and worn edges. There is no per-plate random weather colour. Dark liner roughness has a readable metal range.
 
-Texture density is measured from the actual exported UV and world triangle areas, not map size divided by span.
-Every painted surface has a surface-area weighted density of at least **862.88 texels per game unit**. The real
-installed C15s_23 cruiser, fitted by its current 23.36-unit game length, averages **42.30 texels per game unit**;
-its finest triangle is **191.86**. Thus even the lowest station material mean is 20.40 times the cruiser mean and
-4.50 times its finest triangle. Individual original bevel slivers can have lower triangle minima; these and every
-material's measurements remain in the report. This is texture resolution, not a claim that every point contains
-unique detail. The PBR tiles deliberately repeat, while modelled modules and local wear vary over the actual structure.
+Every exported material was fixed, not only the highlighted tower:
 
-Reproduce by double-clicking `tools/recipe/station_paint.bat` after preparing the existing PC game assets.
-It stops on a failed bake, geometry/density check, install readback, capture or station-map gate. It preserves replaced
-T2 assets and caches, never deletes files, and puts scratch logs and native captures in TEMP. GPU work goes through
-the watchdog; the real 20-ship scene gate uses `--map station`, 1080p frame medians and 4K GPU medians with a solo claim.
-The launcher's final pass requires three sessions at each resolution below 12.5 ms and an actual installed T2 instance.
+| Material | Run 3 correction |
+|---|---|
+| `T2_painted_hgrey` | Calm module base; service covers, seam dirt, vent trails and scuffs |
+| `T2_painted_hpanel` | Small value step within the same family; full hull PBR detail |
+| `T2_painted_htrim` | Structural band tone; seams, handling wear, flush bolts and vent slots |
+| `T2_painted_hmetal` | Machined edge metal with non-flat albedo, normal and roughness detail |
+| `T2_painted_dark` | Readable liner, deck and rack metal; full panel, access and grime stack replaces the plain black fields |
+| `T2_glass_lit` | Real-size repeating frames, mullions, dark room silhouettes, reflective variation and frame relief |
+| `T2_glass_dark` | Same glazing detail with reduced emission, including the cold solar cells |
+| `T2_marker_lens` | Replaces flat `T2_blue` cards with face-fitted bezels, recessed ribbed lenses and masked blue emission |
+| `T2_battery_strip` | Replaces flat `T2_battery` material with a face-fitted bezel, ribbed lens and full PBR maps |
 
-Final station-map gate: three 1080p frame medians **4.112 / 4.113 / 4.143 ms** and three 4K GPU medians
-**6.639 / 6.569 / 6.565 ms**, all below 12.5 ms. The real 20-ship battle loads one installed T2, with effects, world,
-HUD, MSAA 4x and full geometry. The studio visibility comparison measures **12 added visible draw calls** for the
-station; the full station-map scene reports its own visible and shadow draw counts separately. The earlier cold-import
-measurement is superseded by this completed-import run. Late `exterior_alpha` shader registration remains one per
-mode in the existing effects path and is recorded in the gate report.
+Glazing repeats at .50 by .48 game units in actual surface UVs, instead of stretching one room grid over a pane. The large
+observation pane keeps its existing pressure-frame geometry and gains texture mullions, reflections and a dark interior.
+Marker and battery faces each fit one complete lens. Glazing stays opaque to avoid sorting the nested pressure shells.
+The unchanged geometry has 4,424 lit and 1,528 dark original glazing faces; these count skins and edges,
+not individual rooms. Solar cells remain dark. All nine materials have non-flat albedo, normal and roughness maps.
 
-Review evidence:
+[production_check.py](../../../../tools/blender/kits/hegemony_station/production_check.py) reads the actual GLB, including
+exported `_T2_MODULE` identities, rather than accepting the presence of a texture node. It checks each material's decoded
+maps and samples textured albedo on 267 module/material combinations. A missing detail map, a flat albedo map and flat
+albedo across a module are each planted and rejected by name in [the independent report](production_checks.json).
+The named `T2_geometry_wear` export remains `COLOR_0`; a white substitute still fails.
 
-- [Docking arm end, closest battle camera](station_T2_closest_docking.png).
-- [Habitat drum, framed window band and authored lights](station_T2_closest_habitat.png).
-- [Tower top and actual dish arrays](station_T2_closest_arrays.png).
-- [Camera 170 beside the accepted T2 concept](station_T2_compare170.png).
-- [Camera 60 beside the accepted T2 concept](station_T2_compare60.png).
+## Loose-piece inventory and the allowed geometry repair
 
-The three close pictures are 1920 x 720 crops from native 1920 x 1080 renders, with no resizing. The camera is at the
-game's actual minimum radius, 26, at pitch 0.98. The habitat view orbits 40 degrees away from the light cluster's
-radial bearing to clear the intervening dish tower. A crop of the actual C15s_23 cruiser stays in the same frame at the same target depth. The wide
-170 view shows the full cruiser. The 1280 x 720 overview sheets include the accepted concept as a reference;
-its lens is not calibrated. The finish follows the Hegemony palette and ordered panel language and is darker and
-more regular than the concept's worn pale metal. This is a visual difference for the Board's review.
+The original build and the repaired build are compared before painting. Only 32 named exterior source meshes differ;
+357 other meshes and every inside mesh match. Paint changes no geometry. [The source comparison](shape_preservation.json)
+and independent exported comparison retain the original bounds and authored joints. Of the prior GLB's 697,088 triangles,
+696,746 remain identical at 0.0001-unit precision. Only 342 old triangles are replaced; the attached replacements and feet
+add 5,770, for a net 5,428. No geometry LOD or interior reduction is substituted.
 
-Measured files: [production manifest](production_manifest.json), [geometry and density checks](production_checks.json),
-[complete retained geometry](shape_preservation.json), [per-object density](station_density.json),
-[camera and GPU draw measurements](production_captures.json), [station-map gate](station_gate.json),
-and [texture licences](production_licences.json). The editable blend, production GLB and PBR maps stay in the task's
-PC shots folder, following the existing ship-asset policy.
+Every former loose sheet has a continuous attachment root, thick bent skins, jagged distal edges and exposed frame ribs.
+The report lists the 18 measured replacement assemblies, their bounds and source triangles. They replace 19 old sheets:
 
-Validation: 63 standing PASS rows and two existing KNOWN rows; Godot loads 214 scripts and 16 scenes with zero failed;
-scale check passes 54 objects outside four existing KNOWN rows; C15s_23 install readback passes; T2 board readback
-passes. The double-click production route passes, including a source-verified stage-7 resume after capture target
-correction. Two final capture passes retain the second set. No commit or push.
+| Original piece IDs | What they became |
+|---|---|
+| `core_03`, minus-side and plus-side peeled teeth | Two torn sheets rooted at the existing breach |
+| `core_05`, minus-side and plus-side peeled teeth | Two torn sheets rooted at the existing breach |
+| `core_07`, minus-side and plus-side peeled teeth | Two torn sheets rooted at the existing breach |
+| `core_08`, minus-side and plus-side peeled teeth | Two torn sheets rooted at the existing breach |
+| `core_09`, minus-side and plus-side top-rim slabs | Two attached torn rim sheets with bent frame ribs |
+| `habitat_1_slot_00`, sprung bearing sheet | Torn hinged joint cover seated on the bearing top |
+| `habitat_2_slot_02`, sprung bearing sheet | Torn hinged joint cover seated on the bearing top |
+| `habitat_3_slot_05`, sprung bearing sheet | Torn hinged joint cover seated on the bearing top |
+| `habitat_5_slot_08`, sprung bearing sheet | Torn hinged joint cover seated on the bearing top |
+| `habitat_6_slot_10`, sprung bearing sheet | Torn hinged joint cover seated on the bearing top |
+| `tower_1`, left and right pad leaves | Two joined buckled sheets, torn edges and ribs; four feet seat them on the cap |
+| `folded_plate`, both walkway leaves | One connected folded torn assembly rooted on the existing arm roof, with two brackets |
 
-PC inputs: 246 ship files matched the tracked manifest. Six listed H10_23 files had no matching PC copy, so validation
-used the current local Dominion assets/cache. The scene-gate fleet does not use H10_23. The comparison C15s_23 matches
-its source manifest and installed-cache readback. No Dominion source or tracked manifest is changed by this job.
+The attachment sweep also seats all 66 existing ring roof stiffeners: crossbeam indices 0 to 5 on each of slots
+00, 01, 02, 03, 04, 05, 06, 07, 08, 09 and 10, in their existing `habitat_N_slot_XX` modules. Each now has two short
+welded feet from the roof to the beam. `spoke_3` tread plates 0 to 9 retain their shapes and gain two braces each to the
+existing buckled truss. Cargo pods already have ribs and cradle struts; solar cells have backing plates and trusses;
+radiator fins meet their headers; pressure doors, racks and hatches are functional parts. Those shapes remain unchanged.
+There is no new debris field and no footprint, board-cell or rules edit.
 
-Ryan's final paint judgement and the Board's outside review remain owed. The logical seven-cell station footprint is
-unchanged; the approved shape's
-previously reported visual overhang remains. This paint job does not change the rules, add a debris field or certify
-new tearing behavior.
+## Installed measurements
+
+| Measurement | Run 3 |
+|---|---|
+| Triangles, full detail | 702,516, including 110,428 inside |
+| Surfaces / materials / mesh nodes | 12 / 9 / 2 |
+| Visible station draw-call delta | 12 at every one of the seven views |
+| Scale and dimensions | Uniform 1.919133; 99.200 x 70.211 plan, 69.281 height, unchanged |
+| Lowest material mean texture density | 862.88 texels per game unit |
+| Actual fitted C15s_23 cruiser density | 42.30 mean; 191.86 finest triangle, texels per game unit |
+| Station minimum mean / cruiser mean | 20.40 times finer |
+| Station-map 1080p frame medians | 7.917 / 6.907 / 5.652 ms |
+| Station-map 4K GPU medians | 6.938 / 6.913 / 6.915 ms |
+
+All six final medians pass 12.5 ms. The unchanged 20-ship station-map gate runs with one installed T2, effects, world, HUD,
+MSAA 4x and a solo GPU claim. The final timing follows completion of the standing CPU fixture tests. Individual UV sliver
+minima and visible/shadow draw counts remain reported, never capped. These are repeated detail tiles, not unique atlases.
+
+## Same-camera pictures beside run 2
+
+- [Camera 170, run 2 and run 3, each beside the accepted concept](station_T2_before_after_compare170.png).
+- [Camera 60, run 2 and run 3, each beside the accepted concept](station_T2_before_after_compare60.png).
+- [Docking arm end, closest camera, run 2 and run 3](station_T2_before_after_closest_docking.png).
+- [Habitat and window bands, closest camera, run 2 and run 3](station_T2_before_after_closest_habitat.png).
+- [Tower arrays, closest camera, run 2 and run 3](station_T2_before_after_closest_arrays.png).
+- [Tall tower, closest camera](station_T2_closest_tall_tower.png).
+- [Habitat top deck and attached torn rim, closest camera](station_T2_closest_top_deck.png).
+
+Close views retain native 1920x1080 render pixels in 1920x720 crops, with the real fitted C15s_23 cruiser at the same depth.
+Pairs are 3840x720; concept-comparison pairs are 2560x720. No close image is resized. A readback comparison verifies the
+same radius, alpha, pitch, FOV, target and cruiser position on all five shared cameras. Closest radius is 26, pitch .98.
+Every image names station_T2, its source revision/working digest and installed stage. Both capture passes ran; only the
+second is presented. The five original [run 2 pictures](run2/station_T2_closest_habitat.png) and their sidecars are retained.
+Current single views: [docking](station_T2_closest_docking.png), [habitat](station_T2_closest_habitat.png),
+[arrays](station_T2_closest_arrays.png), [170](station_T2_compare170.png), [60](station_T2_compare60.png).
+
+The accepted beauty still has more irregular exposed structure and finer silhouette breaks. The retained kit has broader,
+more regular rims and repeated modules. This run fixes the station-wide finish and loose sheets within that shape; the
+pictures and numeric checks are submitted for the Board's and Ryan's visual review, not a claim of their acceptance.
+
+Reproduce with `tools/recipe/station_paint.bat`. It bakes the private stack, checks the GLB and density, preserves replaced
+assets, installs and verifies the board loader, captures twice, stamps the comparisons and runs the station-map gate.
+Stage 7 may resume with `STATION_START_STAGE=7`; `STATION_BASELINE` can name a retained prior GLB for the independent
+world-space comparison. No commit or push was made. PC blend, GLB and maps stay outside git under the existing asset policy.
+
+Evidence: [manifest](production_manifest.json), [checks and planted faults](production_checks.json),
+[geometry comparison](shape_preservation.json), [density](station_density.json), [cameras and draws](production_captures.json),
+[station gate](station_gate.json), [CC0 inventory](production_licences.json).
+
+Validation: final production route passes; nine detailed materials and all 267 module/material samples pass; all three
+planted faults fail; all five shared cameras match; all 17 new/current and retained run 2 pictures verify and are at most
+720 pixels high. Godot loads 215 scripts and 16 scenes with zero failures. Standing suite: 62 PASS, two existing KNOWN,
+one existing FAIL. The failure is untouched FINDINGS row R317, whose `landed in LOOP.md` points to a missing root file;
+`contrib/opus/LOOP.md` is the actual file. HEAD has the same row. That unrelated memory correction is left to the Board.
+
+PC inputs: 246 ship files match the tracked manifest. The six H10_23 files still lack matching local copies, as in run 2;
+current local Dominion assets/cache are used, and the measured fleet does not use H10_23. C15s_23 matches the tracked
+manifest. The fresh checkout's missing generated manifest and caches were supplied from the PC build; the placeholder
+and import guards stayed enabled. Editor-generated import-setting edits were preserved in TEMP and restored. Scratch
+logs and native renders stay in TEMP; final stamped pictures and sidecars are also in the required issue-975 shots folder.
 
 ## PR 700 geometry record
 

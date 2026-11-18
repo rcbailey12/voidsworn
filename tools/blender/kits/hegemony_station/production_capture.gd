@@ -96,6 +96,14 @@ func _run() -> void:
 		{"name":"station_T2_closest_docking", "radius":camera.min_r, "alpha":-2.08, "target":Vector3(-24,2,0)*scale_factor},
 		{"name":"station_T2_closest_habitat", "radius":camera.min_r, "alpha":habitat_alpha, "target":habitat_target},
 		{"name":"station_T2_closest_arrays", "radius":camera.min_r, "alpha":-0.8, "target":arrays_target}]
+	var tower: Dictionary = manifest.towers[0]
+	views.append({"name":"station_T2_closest_tall_tower", "radius":camera.min_r, "alpha":-2.08,
+		"target":Vector3(float(tower.x),float(tower.base)+float(tower.height)*0.65,-float(tower.y))*scale_factor})
+	var top_drum: Dictionary = manifest.drums[-1]
+	var top_angle := deg_to_rad(-70.0)
+	views.append({"name":"station_T2_closest_top_deck", "radius":camera.min_r, "alpha":-2.08,
+		"target":Vector3(float(top_drum.radius)*cos(top_angle),float(top_drum.bottom)+float(top_drum.height)*0.82,
+			-float(top_drum.radius)*sin(top_angle))*scale_factor})
 	for view in views:
 		camera.r = view.radius
 		camera.a = view.alpha
