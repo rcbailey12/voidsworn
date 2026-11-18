@@ -330,22 +330,20 @@ depsgraph). Prove a stack change on Blender 4.5 before the PC run.
 
 **The Sunward stack (issue 756; the direction contrib/muse/design/paint_direction_2026_11/sunward.md, approved by Ryan at the
 swatch review, Nov 14 2026).** `tools/blender/kits/voidsworn/stack.py` paints S8 (the Daybreak flagship) and every later Sunward
-sheet ship on the same shared machinery, with no change to it (the Eclipse and Hullbreaker stacks and `kits/shared` untouched).
-What is the faction's own, and where it lives:
-- colours: sunward.md's pairs sampled from S8 (black iron `#191615` to `#525151`, the recessed shade `#080807` to `#3b3532`,
-  two plate-family casts inside that band, the worked iron of rims and bands differing by finish, not by a pale tone); `lin()`
-  divides each by the light gain and by the Sunward battle lift read from `godot/render/look.gd` (1.45, never copied); no hue
-  boost (black iron is near neutral; a plain multiply swings no hue). Soot is carbon (`#080807`), rust 0 in every zone; wear
-  is dulled bright iron (`#656564` to `#848382`, wear tones only); roughness floor 0.55 in every zone; grime by place (body .55,
-  recessed .70, gun ports .60, spire roots .20, bells .30, by `ZONE_BY_KIND` on the part kinds gun, radiator, engine);
-- surface order (R243, sunward.md 1): `panel_nodes` lays sleek triangular plates on the hull's flat fields (long edge on the
-  hull axis, point forward; two rows pair up so their forward plates meet on one long edge as an arrowhead; on a deck the rows
-  run along the beam, on a flank along the height), the even rectangular grid at the small size on faces turned fore or aft
-  and on every part (spire roots, bell housings, turret domes), over-plates at the deck edges and on the spire roots only, rivet
-  rows along the triangles' long edges at `rivet_pitch` .011. The iron family follows the module and its surface duties.
-  `patch_warp`, `patch_band`
-  and `patch_split` are 0 with the R243 comment: the order is forged and deliberate, never warped; `panel_nodes` draws the
-  panels, so the shared `_grid` (which takes the warped path whenever the key is present) never sees those zeros;
+sheet ship. Issue 1036 sets the Sunward parameters for [the shared satin finish](../shots/ship_finish_1118/README.md).
+
+- Sunward uses the colours sampled from S8 in sunward.md (black iron `#191615` to `#525151`, recessed shade `#080807` to `#3b3532`,
+  two plate-family casts inside that band, and worked iron for the rims and bands). `lin()` divides each by the light gain
+  and the Sunward battle lift read from `godot/render/look.gd`. Carbon soot (`#080807`) collects in recesses and streaks
+  below overhangs. `ZONE_BY_KIND` sets the grime amount for gun ports, spire roots, and bells. Every zone is rust-free;
+- Body plates take a satin coat. Worked rims and bands are smoother, and recesses stay rough. The convex wear mask
+  exposes smoother, brighter dulled iron on raised edges, and handling scuffs polish worked fittings. The `WEAR_STEP` and
+  `IRON_STEP` settings keep the worn iron above the paint tones. `ZONES` and `LAYERS` hold the finish settings;
+- The iron family follows the module and its surface duties (R243, sunward.md 1). Authored forged plates take
+  one tone per connected plate, with a small step within the same iron family. Their seams and rivets come from the modeled
+  gaps and edges. On exposed shell fields, `panel_nodes` draws the existing ordered arrowhead plates and rivet rows, with
+  small rectangles on faces turned fore or aft and occasional over-plates at deck edges. Fittings use their built joints and
+  bevels. `patch_warp`, `patch_band` and `patch_split` stay at zero;
 - light (sunward.md 5): every value is the brightest linear channel of the emission times its strength, held under the game's
   0.8 glow threshold: bell throats 0.75 (the shared throat drawing in the game's Sunward engine colour), spire fins 0.78 at the
   tip (deep `#a94911` at the root to hot `#fcab3b` at the tip, hottest at the column, cooling out along each fin, cast as
@@ -359,6 +357,14 @@ What is the faction's own, and where it lives:
   a spine line, deck row numbers on each broadside, heat-shed marks beside the spire roots; worn, and edge wear runs over them;
   `FROST_CAP` 0.06 of any visible face;
 - the liner is sunward.md's dark warm liner; the reactor core keeps its ember light.
+
+The six installed Sunward ships use the [A4 ship definitions](../../tools/blender/a4/ships.py). The S8 sheet has the same
+game code as the installed Daybreak. Its prow, hull and fittings are a separate design. For an A4 repaint (issue 1036), use
+the same legacy atlas entry point as Eclipse, with `kits/voidsworn/stack.py` and the manifest-matched installed files.
+The original plates, rivets and livery supply the albedo. Connected pieces get small iron tone steps. The intact geometry
+supplies the convex wear and recessed soot masks. The emissive atlas, hard points and the intact, damage and wreck meshes
+are copied byte for byte. Package the new base, ORM and normal JPEGs at their original dimensions, then refresh the ship
+cache in an isolated Godot build and check the manifest and installed readback. [Sunward review](../shots/ship_finish_sunward/README.md)
 The builder's checks (sunward.md 6) are `contrib/opus/tools/issue756/audits.py`: the emissive audit (the stack's
 `emissive_audit()`: the map's brightest pixel and every flat light, against 0.8, and no blue over green), the frost coverage on
 the flat views against the cap, the lift hue test and the hull median at the battle camera. Sandbox previews:
