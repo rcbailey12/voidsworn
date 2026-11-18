@@ -15,6 +15,6 @@
  "outline_third_slack": 5.0,
  "lights": {},
  "light_min_px": 2.0,
- "notes": "CD5 r3 (R298). The sheet supplies all geometry, mounts, class length and break paths through the build contract. Issue 1058 paints the sheet through the Glasswright kit for isolated review.",
+ "notes": "CD5 r3 (R298). The sheet supplies geometry, mounts, class length and break paths through the build contract. The Glasswright stack bakes tinted PBR glass. Issue 1058 applies the optional blown glass shader in the isolated review project for angle-dependent colour.",
  "parts": []
 }

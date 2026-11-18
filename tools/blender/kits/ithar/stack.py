@@ -8,16 +8,17 @@ from paint3 import math_, mixc, node, ramp
 SCALE = 1.0
 SOFT_RIM = False
 LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14,
-              bump_distance=.00027, bump_strength=.26)
+              bump_distance=.0014, bump_strength=.44)
 
-# Silver stays solid. The optical caps and vessel skin share the same PBR maps
-# as their respective frames, with separate opacity on the actual glass.
+# A continuous blue-violet body tint is the low-quality PBR fallback. The
+# review shader adds angle-dependent colour and pulls the sky through the glass.
+# Each tuple is base tint, tint in denser glass, roughness and metallic.
 GLASS = {
-    'cd5_strand_glass': ((.53, .66, .73), (.82, .88, .91), .054, .86),
-    'cd5_clear': ((.50, .67, .76), (.78, .88, .93), .047, .82),
-    'cd5_body_clear': ((.50, .67, .76), (.78, .88, .93), .050, .84),
-    'cd5_pearl': ((.49, .58, .65), (.75, .81, .85), .084, .86),
-    'cd5_body_pearl': ((.56, .65, .71), (.81, .88, .91), .079, .86),
+    'cd5_strand_glass': ((.060, .28, .53), (.26, .25, .56), .085, .36),
+    'cd5_clear': ((.078, .31, .53), (.23, .29, .58), .068, .32),
+    'cd5_body_clear': ((.078, .31, .53), (.23, .29, .58), .072, .32),
+    'cd5_pearl': ((.13, .29, .49), (.34, .29, .55), .109, .39),
+    'cd5_body_pearl': ((.13, .29, .49), (.34, .29, .55), .104, .39),
 }
 ZONES = {
     **GLASS,
@@ -30,9 +31,9 @@ ATLAS_OPACITY = {'H': ZONE_OPACITY['cd5_strand_glass']}
 DECALS = ()
 
 STORED_LIGHT = {
-    'amber': ((1.0, .22, .008), 8.4),
-    'violet': ((.40, .019, .91), 7.2),
-    'green': ((.215, .61, .012), 5.5),
+    'amber': ((1.0, .73, .48), 5.7),
+    'violet': ((.74, .72, 1.0), 5.5),
+    'green': ((.58, .85, 1.0), 5.0),
 }
 GLOW = {
     'cd5_white': ((.73, .86, 1.0), 13.0),
@@ -41,7 +42,7 @@ GLOW = {
 }
 for colour, (rgb, power) in STORED_LIGHT.items():
     for zone, gain in ((colour, .72), (f'{colour}_deep', .22), (f'{colour}_hot', 1.32),
-                       (f'pane_{colour}', .73), (f'sliver_{colour}', 1.0)):
+                       (f'pane_{colour}', .22), (f'sliver_{colour}', .48)):
         GLOW[f'cd5_{zone}'] = (rgb, power * gain)
 GLOW_HULL = tuple(GLOW)
 
