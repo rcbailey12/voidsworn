@@ -531,20 +531,19 @@ real charge (balance before minus after): $charge
 }
 elseif ($mode -eq 'msg') {
   $n = $args[1]; $arm = $args[2]; $out = $args[3]
+  . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
   $title = Read-Txt (Join-Path $out 'title.txt')
   $last = Read-Txt (Join-Path $out 'last.md')
   if (-not $last) { $last = '(the agent left no final report; see board log on the PC)' }
   if ($last.Length -gt 6000) { $last = $last.Substring(0, 6000) + "`n(report cut at 6000 characters; full text on Ryan's PC in the run's out\last.md)" }
-  $stats = Read-Txt (Join-Path $out 'stats.txt')
-  $checks = Read-Txt (Join-Path $out 'checks.txt')
-  if (-not $checks) { $checks = '(the runner wrote no check output for this run; see the run folder on the PC)' }
-  $fence = '```'
-  $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
-  if (Read-Txt (Join-Path $out 'stop_reason.txt')) { $msg += "`n" + (Read-Txt (Join-Path $out 'resume.txt')) + "`n" }
   # Issue 953: this runner's own checkout is the sibling repo folder of out; a partial run takes -partial.
   $repo = Join-Path (Split-Path -Parent $out) 'repo'
   $branch = "work/issue-$n-$arm"
-  if (Read-Txt (Join-Path $out 'partial.txt')) { $branch += '-partial' }
+  $partial = Read-Txt (Join-Path $out 'partial.txt')
+  if (-not $partial) { $partial = Read-Txt (Join-Path $out 'stop_reason.txt') }
+  $checks = if ($partial) { 'SKIP: runner checks (partial run)' } else { Public-RunnerText 'checks' '' '' $out }
+  if ($partial) { $branch += '-partial'; $last = 'Stop reason: ' + (Public-RunnerText 'partial' $partial) }
+  $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$checks`n`nRefs #$n`n"
   $msg = Rewrite-ReportPaths $msg $repo $branch (Profile-Root)
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
@@ -625,6 +624,7 @@ elseif ($mode -eq 'guard') {
   exit 0
 }
 elseif ($mode -eq 'commit') {
+  . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
   # One commit for the run, made with git's plumbing (no hooks, no editor, its exit code checked). Its parents are the
   # agent's HEAD (with any merge the agent made under it) and the branch's earlier tip on GitHub, so a rerun pushes as a
   # fast-forward with no force and the earlier run stays reachable. Then the check the issue 541 trap needs: the commit
@@ -683,19 +683,15 @@ elseif ($mode -eq 'commit') {
   $n = ''; if ($br -match 'issue-(\d+)') { $n = $Matches[1] }
   if (-not $msg.Trim()) { $msg = "Runner commit for $br (the message step left no text; the agent's report is in the run's out folder on the PC)`n`nRefs #$n`n"; Write-Host 'WARNING: commit.txt was empty, the runner wrote a plain message' }
   $partial = Read-Txt (Join-Path $out 'partial.txt')
-  # The refuse step's text for this run: its own folder (out\guard_dir.txt), never an earlier run's.
-  $guard = ''
-  $gd = Read-Txt (Join-Path $out 'guard_dir.txt')
-  if ($gd) { $guard = Read-Txt (Join-Path $gd 'guard.md') }
   $base = Read-Txt (Join-Path $out 'base_commit.txt')
   $block = "## Runner (issue 377)`n`n"
   if ($partial) {
-    $msg = "PARTIAL RUN, not a finished job ($partial): " + $msg
-    $block += "PARTIAL RUN: $partial. This branch ends in -partial and opens no pull request. The Board reruns the job or takes the work by hand.`n`n"
+    $reason = Public-RunnerText 'partial' $partial
+    $msg = "PARTIAL RUN, not a finished job ($reason): " + $msg
+    $block += "PARTIAL RUN: $reason. This branch ends in -partial and opens no pull request. The Board reruns the job or takes the work by hand.`n`n"
   }
-  if ($guard) { $block += "$guard`n`n" }
   if ($base -and $base -ne $pre) {
-    $ac = @(Git-Lines log --format='%h %s' "$base..$pre")
+    $ac = @(Git-Lines log --format='%H' "$base..$pre" | Where-Object { $_ -cmatch '\A[0-9a-f]{40,64}\z' })
     if ($ac.Count) { $block += "Earlier commits (runner Base and resume merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
   }
   if ($old) { $block += "Earlier tip of $br kept: $old is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.`n" }
