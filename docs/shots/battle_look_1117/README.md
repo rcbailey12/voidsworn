@@ -14,6 +14,16 @@ Each craft used to weave less than one world unit sideways around a fixed spot i
 
 ![SQ3 before and three frames of the parked loop](../issue-1005-openai/SQ3-patrol.jpg)
 
+### SQ3B: Independent parked flight
+
+The first pass turned the whole arrowhead with one heading. SQ3B gives each craft a different loop, direction, and pace. The craft bank with their own turns, spread and close up again, and take turns climbing through a roll. Look at the Hegemony fighter at 2.05 s and the Sunward bomber at 4.70 s. The engine glow stays on the hull; each trail bends behind its own craft. The rings show the fixed hex anchors. A climbing craft can project above its ring even while its hull stays inside the hex footprint. Chorus keeps six craft on two staggered tiers. Wings use their existing formation between hexes.
+
+Both strips use the default r170, beta 0.98 battle camera and identical times and 1:1 crops from 1920x1080. [Capture script](sq3b_capture.gd).
+
+![SQ3B before: one orbit and heading per wing](../issue-1005-openai/SQ3B-before.jpg)
+
+![SQ3B after: the same two wings with separate paths](../issue-1005-openai/SQ3B-after.jpg)
+
 ## GRID-C: Cinematic fade
 
 `6ffcda5c` widened Look C's ship fade from 28-118 to 55-175 world units, then extended it to 280 at wide views. That left plain hexes across much of the battle frame, including the nebula. `a9751182` removed the far ticks but kept the wider range. C was still the default; the near-uniform grid was visible with tactical mode off. The restored 28-118 range now ends in an actual cutoff. The older Today look also loses its 30% far-grid floor. The cursor still lights its local patch, and Z still brings back the whole grid.
