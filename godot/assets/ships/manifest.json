@@ -558,8 +558,8 @@
      "sha256": "fbbabb4070c4b6fa758f649bd0331d96f96b762d55f439b3ea7cef867425cf64"
     },
     "D20_23_base.jpg": {
-     "bytes": 665173,
-     "sha256": "c233ae6372c0f001dde446aa5339f34dc436b5cc1a0966216a7a4b096f904e3c"
+     "bytes": 713685,
+     "sha256": "75523a685a5206a11678dd57003ca5b6300835f24f32647e0d61fb44051a1f5b"
     },
     "D20_23_damage.glb": {
      "bytes": 27048248,
@@ -570,12 +570,12 @@
      "sha256": "789af4ac1a46169beafe9fc9df17b4cfb830f765f9660cc0173fa5665b1c6426"
     },
     "D20_23_normal.jpg": {
-     "bytes": 1962836,
-     "sha256": "34c054484efdd146c93ba9fb1c20ab558eadd9d119d21f0d0575d56924608217"
+     "bytes": 1582370,
+     "sha256": "17b2d37b04e91fb1783fb881499f96ddb6c09d12494e6b1cffaf3149fbb832f7"
     },
     "D20_23_orm.jpg": {
-     "bytes": 1715772,
-     "sha256": "759bbebec98f2e3bbf567bc441ccc6cc04c4ea3e4288c6d9789502074d5e881a"
+     "bytes": 1567841,
+     "sha256": "2ee2a0d2d065b0551b59f10930f59281892431c1066e29d03eb5e24e657ce745"
     },
     "D20_23_wreck.glb": {
      "bytes": 3909172,
@@ -606,8 +606,8 @@
      "sha256": "4832716ce6bf5ead364e75b4374e9f8fea524213840b2a027458700d8c71a3a3"
     },
     "D21_23_base.jpg": {
-     "bytes": 758541,
-     "sha256": "d5b47fa99955b4a0528a6b71f349694d8747e92cacb687ba74f30981c5605e88"
+     "bytes": 790875,
+     "sha256": "05b5c68d0d18c3bff7387b2e0cd6e4a089ff088eae6e84193448f06163ef189e"
     },
     "D21_23_damage.glb": {
      "bytes": 17693588,
@@ -618,12 +618,12 @@
      "sha256": "bbf8e139cf8b4e012fd395db1d4f54940d21662c164f3289d7de86a109335323"
     },
     "D21_23_normal.jpg": {
-     "bytes": 2286995,
-     "sha256": "4dd5ce1c160df14c72739a42d1b13be8bbb19fe205a9af7f8983c576354ce1c2"
+     "bytes": 1838086,
+     "sha256": "cb90e9643174aefe3cb38e26d61568d29d59aa15f4fecfce75d8d1fee6f2c54f"
     },
     "D21_23_orm.jpg": {
-     "bytes": 1917036,
-     "sha256": "84fb79e42c7e699e2359de2a19da26f23256fa31794e1bb572e5ca9033623576"
+     "bytes": 1651565,
+     "sha256": "ad6fc6f1611540c25d963faf63802c327ca821906d77f57870fe104c4cabab43"
     },
     "D21_23_wreck.glb": {
      "bytes": 3530232,
@@ -654,8 +654,8 @@
      "sha256": "46bf4c648974b699e1e7cd8f633a633ed8737557d2ab7f41d7070adfd309aacf"
     },
     "D22_23_base.jpg": {
-     "bytes": 2492445,
-     "sha256": "76fb053330d14e740beac5fc4ac1bf66f7bb86607a412b740ac06a11e73c2fd6"
+     "bytes": 2597559,
+     "sha256": "1b8f643dd577cbfe3e34b3d10e01bd253e239d6f7b153f0e821a41a804feeb7c"
     },
     "D22_23_damage.glb": {
      "bytes": 9701376,
@@ -666,12 +666,12 @@
      "sha256": "358fabcaf8b73b3a71d25191a316bc81814194de01346a02a7ed4d9cc505909b"
     },
     "D22_23_normal.jpg": {
-     "bytes": 10310007,
-     "sha256": "3f8c75d9869f2a0953cfec78d96ac6d347bd2de262f0e112f15dbaa81d1c2f86"
+     "bytes": 8275230,
+     "sha256": "0e72c0cf575a042a0ad0554cc99e403224b788405890b6c970e1894c8d8b39c0"
     },
     "D22_23_orm.jpg": {
-     "bytes": 2096948,
-     "sha256": "c93d5841f02a6bf90dec4ac52855dade420b174fe39652f026a03c6e9704cab1"
+     "bytes": 1703324,
+     "sha256": "352e0404853f5a623c993f0848e25b817fc456c9454263072bc73bb3b3ce6029"
     },
     "D22_23_wreck.glb": {
      "bytes": 4982320,
@@ -702,8 +702,8 @@
      "sha256": "ecd2dd5147dd4d6c546407a1b0b21e733d1336fcac3df941f340a4681a2db0a2"
     },
     "D9_23_base.jpg": {
-     "bytes": 907698,
-     "sha256": "00307a038b45a72ed5955c243fce9562a50448ccb29c048255b6d7cd311d8979"
+     "bytes": 844384,
+     "sha256": "5147505f0fe2154eeedcfce4abefb28d227b372c5dad4187c4b509c3e300dc44"
     },
     "D9_23_damage.glb": {
      "bytes": 19152812,
@@ -714,12 +714,12 @@
      "sha256": "5e6c2614c25069130a63e521ed8430228d258faea8202eee9e33418baae7754d"
     },
     "D9_23_normal.jpg": {
-     "bytes": 2669185,
-     "sha256": "c9a091741f49e1c8660e0b769ef5c8a531f659ea93ff4e45b87c10d87f1a10bb"
+     "bytes": 2275123,
+     "sha256": "3bc0c2012071df38e2e6f055fe0703c86128236e56fe88040558aba0836b1a5d"
     },
     "D9_23_orm.jpg": {
-     "bytes": 2330751,
-     "sha256": "de1d6872741a8e26884c27e76827506f4009f165ef759f1ff41c57f9f42ff925"
+     "bytes": 1914546,
+     "sha256": "a0b5df0e2c3ab034f8b67c647c476d3581a0ceded7cd64f8d041180296d271dd"
     },
     "D9_23_wreck.glb": {
      "bytes": 1855532,

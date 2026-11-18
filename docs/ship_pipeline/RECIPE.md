@@ -289,11 +289,25 @@ and E12 (and every later Eclipse sheet ship) on the same shared machinery. What 
   anchor: a marked trim material passes, the same unmarked part material fails. Removing the real rim marker also fails;
 - surface (R243 and R318): dark seams that read at camera 170, brighter worn edges and a finish per duty (matte shades,
   satin body, worked-metal machines). `panel_nodes` draws the aligned lattice and periodic half-size columns. Its recessed
-  joints carry shallow relief (`panel_relief`) in the normal map. Lilac and bright metal belong to the sheet's bands and rims;
+  joints carry shallow relief (`panel_relief`) in the normal map. Related plates and fittings share an assembly tone. Lilac
+  and bright metal belong to the sheet's bands and rims. The satin coat varies with fine scuffs, convex edges expose smoother
+  violet metal, and long-reach occlusion gathers rough grime around recesses and under overhangs;
 - running lights: none added (`RUNNING_LIGHTS = None`, the builder's call, on each sheet): the corona line, the core, the
   engine rings and the sheet's corona strip lights are the Eclipse's only lights; no `lights.json` is written;
 - decals: the eclipse sigil, a line of archive glyphs (each ship's own, seeded by its game code), band ticks, all a dulled
   paler violet; the liner is a dark violet-black, the core keeps its light.
+
+The four Eclipse ships in the game manifest use the A4 meshes. For a paint-only rebuild, point the shared stack's Blender
+entry point at `kits/eclipse/stack.py`, the manifest-matched A4 GLB beside its original JPEGs, and an empty output folder.
+Pass those three paths after `--` and run Blender through the PC GPU watchdog. The intact mesh supplies the short and long
+occlusion and convex-edge masks. The bake reads the original UVs, relief and livery. It softens the fine ridges in the A4
+normal map and narrows the value range of ordinary violet plates around one base. The darker seams and the stronger
+livery bands retain their separation. It leaves
+the hidden breach and ram skins out of the mask bake and begins each new map with the old texels for areas used only on damaged
+ships. The game bundle uses the new base, ORM and normal maps at their original resolutions, with the original model,
+damage, wreck and emissive files. Check the LOD preview at the ship's class length, verify bundle hashes, then import and
+refresh the ship cache in the isolated game before reading the finished ship back.
+
 The shared changes are hooks whose defaults keep the Hullbreaker path as it was (A16 baked on main and on this branch: the
 same maps, byte for byte): `ENGINE_GLOW` `zones`, `kind`, `disc`, `base` and a stack's own `engine_glow_nodes`; a glow
 material a stack marks `ps_glow` counts as glow in the surface check and is left out of the density measure; a glow zone a stack lists in `GLOW_HULL` that the sheet lays on

@@ -447,6 +447,8 @@ def module_finish(c, S, zone, group, joints):
 def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, base_image=None, normal_image=None):
     """the procedural material of one zone in one atlas (group 'H' hull, 'P' parts), from the faction stack S"""
     z = S.ZONES[zone]
+    if base_image is not None:
+        z = {**z, **getattr(S, 'LEGACY_COAT', {})}
     m = bpy.data.materials.new(f'ps_{zone}_{group}'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
     c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
@@ -458,6 +460,9 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
         # A legacy atlas already carries its livery and the seams of its fitted pieces.
         # Keep that paint beneath the same satin coat, grime and exposed edge layers.
         col = atlas_colour(nt, base_image)
+        legacy_panel_colour = getattr(S, 'legacy_panel_colour', None)
+        if legacy_panel_colour is not None:
+            col = legacy_panel_colour(c, col)
     seam = None
     # The ship-frame lattice belongs to the shell. A fitting already has
     # its own joints, edges and clearances in the built geometry.
@@ -567,6 +572,7 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     bp = node(nt, 'ShaderNodeBump'); bp.inputs['Distance'].default_value = L['bump_distance']; bp.inputs['Strength'].default_value = L['bump_strength']
     if normal_image is not None:
         original_normal = node(nt, 'ShaderNodeNormalMap')
+        original_normal.inputs['Strength'].default_value = z.get('normal_strength', 1.0)
         nt.links.new(atlas_colour(nt, normal_image), original_normal.inputs['Color'])
         nt.links.new(original_normal.outputs['Normal'], bp.inputs['Normal'])
     nt.links.new(height, bp.inputs['Height']); nt.links.new(bp.outputs['Normal'], bs.inputs['Normal'])
@@ -1189,6 +1195,10 @@ def bake_existing_atlas(S, source, out, samples):
     if not geometry or any(not obj.data.uv_layers or {m.name for m in obj.data.materials if m} != expected
                            for obj in geometry):
         raise ValueError(f'{code}: expected the single textured A4 exterior atlas')
+    paint_mesh = getattr(S, 'legacy_paint_mesh', None)
+    exterior = geometry if paint_mesh is None else [obj for obj in geometry if paint_mesh(obj)]
+    if not exterior:
+        raise ValueError(f'{code}: no intact exterior meshes to paint')
     device = gpu(samples)
     print(f'[paint] {code}: {device}, {samples} samples', flush=True)
     images = {}
@@ -1200,7 +1210,7 @@ def bake_existing_atlas(S, source, out, samples):
             raise ValueError(f'{code}: invalid {kind} atlas size {tuple(image.size)}')
         images[kind] = image
 
-    atlas = bake_copy(geometry, code + '_finish')
+    atlas = bake_copy(exterior, code + '_finish')
     for obj in geometry:
         obj.hide_render = True
     mask = mask_material('ps_existing_mask', S)
