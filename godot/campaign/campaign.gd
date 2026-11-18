@@ -48,6 +48,7 @@ var yard_node = null
 var picked_admiral := "vex"
 var picked_faction := "voidsworn"
 var run_opt := {"alt": false, "cmdAlt": false, "heat": []}
+var map_trial_choice := false
 var prog_tab := "variants"
 var page := {"kind": "none", "data": {}, "acts": []}
 var modal_d = null       # {kind, data, acts} or null
@@ -1231,6 +1232,8 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
 		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "ambush": false, "over": false, "boons": [], "eatenCore": null, "eatCoreSeen": false}
+	# Missing means off, so old saves and default runs keep their existing save format.
+	if opt.get("mapTrial") == true: RUN["mapTrial"] = true
 	RUN["patrons"] = shuffle(PATRONS.keys()).slice(0, 4); RUN["aspect"] = null; RUN["flagUid"] = null; RUN["nem"] = null
 	if teaching_tips and float(z0(META["stats"].get("finishedRuns", META["stats"].get("runs")))) < 2: RUN["teachingGate"] = true
 	if jt(META["unlocked"].get("chest1")): RUN["credits"] += 75
@@ -1348,6 +1351,8 @@ func act(name: String, arg = "") -> void:
 			run_opt["alt"] = a == "1"; admiralScreen()
 		"optCmd":
 			run_opt["cmdAlt"] = a == "1"; admiralScreen()
+		"optMapTrial":
+			if page.get("kind") == "admiral": map_trial_choice = a == "1"
 		"optHeat":
 			var i = run_opt["heat"].find(a)
 			if i >= 0: run_opt["heat"].remove_at(i)
@@ -1407,6 +1412,7 @@ func act(name: String, arg = "") -> void:
 # ======================= campaign_meta.js: title, admiral, aspect, progression, help, run end =======================
 func titleScreen() -> void:
 	RUN = null; B = null
+	map_trial_choice = false
 	var acts = []
 	if SAVED_RUN != null: A(acts, "continueRun")
 	A(acts, "newRunScreen"); A(acts, "legacy"); A(acts, "help")
@@ -1478,7 +1484,9 @@ func admiralScreen() -> void:
 func ACT_startRun() -> void:
 	if not admiralOwned(picked_admiral): return
 	var ml = masteryLevel(picked_admiral)
-	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3, "heat": run_opt["heat"].duplicate() if heatUnlocked() else []})
+	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3,
+		"heat": run_opt["heat"].duplicate() if heatUnlocked() else [], "mapTrial": map_trial_choice})
+	map_trial_choice = false
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
 	aspectScreen()
 func aspectScreen() -> void:

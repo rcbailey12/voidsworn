@@ -206,7 +206,11 @@ sweeps on the standing issue 906). Its scope is merge issues, bugs and other tec
 comment starts with "Artoo (technical review):", because it posts through Ryan's account and must never be read as his words,
 and names the commit it read. It never pushes, edits files, merges, closes, relabels or decides a rule; every finding is checked
 by the Board against live main before anything changes (0.10), and the Board replies with what it did. Before each merge the
-Board reads the PR's Artoo comments on its current head commit and settles each one first. Artoo went live Nov 16 (it wakes on
+Board reads the PR's Artoo comments on its current head commit and settles each one first. A finding that does not block
+the merge, or arrives after it (Artoo's or Muse's), is settled the same day: the Board fixes it in that turn or adds one line
+for it on issue 906 (fixed, queued as issue N, or declined and why). Why: the Nov 17 audit found five such findings (PRs 910,
+919, 924, 937, 571) with no reply and no tracking item, one of them six hours old, while blocking findings were answered in
+minutes (Ryan approved the audit fixes, Nov 17). Artoo went live Nov 16 (it wakes on
 PR events and checks issues about hourly). Why: "i want artoo
 commenting independently by itself for those comments and reviews. it shouldn't impact design or taste designs but looking for
 merge issues, bugs or other technical issues, absolutely should be independent" (Ryan, Nov 16, R295; replaces R270's read-only
@@ -267,10 +271,11 @@ disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voids
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
 (project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
-Before setting aside an earlier checkout, the runner reuses it only when its working tree, including ignored files outside
-Godot's `.godot` and `.import` caches, is clean and all local history (including reflogs) is in the freshly fetched mirror.
-It fetches and switches to the new branch, leaving ignored caches in place; a cache collision or an uncertain
-check keeps the earlier checkout beside repo instead. More than two `repo-kept-*` copies triggers a warning naming each
+Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
+(including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
+`__pycache__` and `.pyc` caches, and ignored files under `godot/assets/ships/` whose size and SHA-256 match the same path
+in the shared build (issue 1107). It fetches and switches to the new branch with those files in place. A collision or an
+uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
 copy and its size, never deletion. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
 unique ignored work (issue 860, run 2, Board Nov 16). The no-deletion rule in 3.3 still applies.
 A checkout that changes while the runner starts is never reset; the job stops instead.

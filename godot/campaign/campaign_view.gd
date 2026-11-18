@@ -38,6 +38,7 @@ static func header(C) -> Dictionary:
 		"jump": (int(here["col"]) + 1) if here != null else 0,
 		"jumps": int(m["cols"].size()),
 		"fights": int(float(C.z0(R["stats"].get("battles")))),
+		"map_trial": R.get("mapTrial") == true,
 		"holder_fac": str(m["fac"]),
 		"holder": str(F.get("n", "")),
 		"holder_blurb": str(F.get("blurb", "")),

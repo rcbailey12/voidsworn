@@ -128,6 +128,14 @@ $end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
 Assert ($end.payload.body.Contains('Runner status: unverified') -and $end.payload.body.Contains('checks did not pass')) 'confirmed push with failed checks stays unverified publicly'
 Assert ((Calls)[-1].method -eq 'DELETE') 'unverified finish still clears the running label'
 Pass 'a zero-exit confirmed push with failed checks cannot report finished'
+Init 'private-exception'; Announce
+$secret = 'fake-secret-for-status-1100'
+$privatePath = 'Z:/private runner/' + $secret
+Base "Base: $privatePath" 14
+$end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
+Assert ($end.payload.body.Contains('Runner status: failed') -and -not $end.payload.body.Contains($secret) -and -not $end.payload.body.Contains('Z:/')) 'public comment leaked a raw runner exception'
+Assert ((Get-Content -LiteralPath (Join-Path $out 'result.txt') -Raw).Contains($privatePath)) 'the full exception should be available locally'
+Pass 'public failed status hides exception paths and secrets and keeps the local diagnostic'
 Init 'patch-failure'; Announce; $env:PC_TEST_GH_FAIL = 'PATCH'; Finish '0' 'CEILING'
 Assert ((Calls)[-1].method -eq 'DELETE') 'label clear after failed comment edit'
 Assert ((Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json).status -eq 'partial') 'report failure cannot change run outcome'
@@ -574,6 +582,102 @@ Assert ($state.status -eq 'failed' -and $state.reason.Contains('no agent started
 Assert ([IO.File]::ReadAllText((Join-Path $repo 'shared.txt')).Contains('<<<<<<<')) 'conflict evidence kept'
 Assert (-not (Test-Path (Join-Path $repo 'CODEX_TASK.md'))) 'no prompt generated on conflict'
 Pass 'conflicting Base keeps evidence and fails before the agent'
+
+$ship = 'godot/assets/ships/B16_23/B16_23.glb'
+foreach ($case in @(
+  @{ name = 'identical'; local = 'hull-A'; shared = 'hull-A' },
+  @{ name = 'different'; local = 'hull-A'; shared = 'hull-B' },
+  @{ name = 'missing'; local = 'hull-A' }
+)) {
+  $lane = 'ship-' + $case.name
+  $null = New-Item -ItemType Directory -Path (Join-Path $root $lane)
+  $repo = New-Repo "$lane/repo"
+  Put (Join-Path $repo '.git/info/exclude') 'godot/assets/ships/*/'
+  $localShip = Join-Path $repo $ship
+  $sharedPath = if ($case.shared) { $ship } else { 'godot/assets/ships/B16_23/other.glb' }
+  $env:USERPROFILE = Join-Path $root "$lane/profile"
+  $sharedShip = Join-Path (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test/build') $sharedPath
+  $sharedBytes = if ($case.shared) { $case.shared } else { $case.local }
+  $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $localShip), (Split-Path -Parent $sharedShip)
+  Put $localShip $case.local
+  Put $sharedShip $sharedBytes
+  Init "$lane/out" 'fixture/ship-reuse'
+  $env:PC_TEST_SOURCE = $upstream
+  $env:PC_TEST_MIRROR = Join-Path $root "$lane/mirror.git"
+  Shared @('checkout',$repo,$out,'fixture/ship-reuse','')
+  Assert ((& $script:git -C $repo symbolic-ref --short HEAD) -eq 'fixture/ship-reuse') 'runner switches to the new branch'
+  $result = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+  $kept = @(Get-ChildItem -LiteralPath (Split-Path -Parent $repo) -Directory -Filter 'repo-kept-*')
+  if ($case.name -eq 'identical') {
+    Assert ($kept.Count -eq 0 -and $result.Contains('earlier checkout reused in place')) 'identical ship must reuse checkout'
+    Assert ([IO.File]::ReadAllText($localShip) -ceq $case.local) 'reused ship bytes survive'
+  } else {
+    Assert ($kept.Count -eq 1 -and $result.Contains('shared ship copy could not be verified')) "$lane must keep the checkout"
+    Assert ([IO.File]::ReadAllText((Join-Path $kept[0].FullName $ship)) -ceq $case.local) 'kept ship bytes survive'
+    Assert (-not (Test-Path -LiteralPath $localShip)) 'fresh checkout has no ignored ship file'
+  }
+  Assert ([IO.File]::ReadAllText($sharedShip) -ceq $sharedBytes) 'shared ship bytes survive'
+  Pass "$lane preserves the earlier ship bytes and starts the next branch"
+}
+
+$parityOutputs = @(
+  'godot/campaign/test/golden/c1.jsonl',
+  'godot/campaign/test/out/c1.jsonl',
+  'godot/campaign/test/parity_campaign_log.txt',
+  'godot/rules/test/golden/s1.jsonl',
+  'godot/rules/test/out/s1.jsonl',
+  'godot/rules/test/parity_log.txt',
+  'godot/scenes/test script.gd.uid'
+)
+foreach ($case in @(
+  @{ name = 'outputs-only' },
+  @{ name = 'tracked-edit'; path = 'shared.txt'; status = ' M shared.txt' },
+  @{ name = 'untracked-uid'; path = 'godot/scenes/unsaved.gd.uid'; status = '?? godot/scenes/unsaved.gd.uid' },
+  @{ name = 'ignored-lookalike'; path = 'godot/campaign/test/out-notes/notes.txt'; status = '!! godot/campaign/test/out-notes/notes.txt' },
+  @{ name = 'nested-repo'; path = 'godot/campaign/test/out/nested/notes.txt'; status = '!! godot/campaign/test/out/nested/'; nested = $true }
+)) {
+  $lane = 'parity-' + $case.name
+  $null = New-Item -ItemType Directory -Path (Join-Path $root $lane)
+  $repo = New-Repo "$lane/repo"
+  Put (Join-Path $repo '.git/info/exclude') (@(
+    '/godot/campaign/test/golden/', '/godot/campaign/test/out/', '/godot/campaign/test/parity_campaign_log.txt',
+    '/godot/rules/test/golden/', '/godot/rules/test/out/', '/godot/rules/test/parity_log.txt',
+    '/godot/**/*.uid', '!/godot/scenes/unsaved.gd.uid', '/godot/campaign/test/out-notes/', ''
+  ) -join [Environment]::NewLine)
+  foreach ($name in $parityOutputs) {
+    $file = Join-Path $repo $name
+    $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $file)
+    Put $file 'generated output'
+  }
+  if ($case.path) {
+    $file = Join-Path $repo $case.path
+    $parent = Split-Path -Parent $file
+    $null = New-Item -ItemType Directory -Force -Path $parent
+    if ($case.nested) {
+      & $script:git init -q $parent
+      Assert ($LASTEXITCODE -eq 0) 'nested repo fixture'
+    }
+    Put $file 'local work'
+  }
+  Init "$lane/out" 'fixture/parity-reuse'
+  $env:PC_TEST_SOURCE = $upstream
+  $env:PC_TEST_MIRROR = Join-Path $root "$lane/mirror.git"
+  Shared @('checkout',$repo,$out,'fixture/parity-reuse','')
+  $result = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+  $kept = @(Get-ChildItem -LiteralPath (Split-Path -Parent $repo) -Directory -Filter 'repo-kept-*')
+  $earlier = $repo
+  if ($case.path) {
+    Assert ($kept.Count -eq 1 -and $result.Contains("working tree needs keeping: $($case.status)")) $result
+    $earlier = $kept[0].FullName
+    Assert ([IO.File]::ReadAllText((Join-Path $earlier $case.path)) -ceq 'local work') 'local work survives'
+  } else {
+    Assert ($kept.Count -eq 0 -and $result.Contains('earlier checkout reused in place')) $result
+  }
+  foreach ($name in $parityOutputs) {
+    Assert ([IO.File]::ReadAllText((Join-Path $earlier $name)) -ceq 'generated output') "$name survives"
+  }
+  Pass "$lane uses the rebuildable-file list and preserves checkout bytes"
+}
 Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 // Allow the same PC proof to run with pwsh, the engine used by Linux CI.
