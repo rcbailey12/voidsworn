@@ -1221,24 +1221,29 @@ static func _amount(fx, count: int) -> int:
 # Issue 538: larger cooling points and trails, with a longer ballistic tail. No added flash or light.
 static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, col: Color, count: int, speed: float,
 		spread: float, fam: String) -> void:
+	var shield := fam == "shield"
 	for j in _amount(fx, int(ceil(count * 1.5))):
 		# Shield crackle retains its recipe. Hull ejecta is faster, finer and fans across the struck face.
-		var shield: bool = fam == "shield"
 		var d := _outward(n, fx.rcone(axis, spread if shield else maxf(spread, 0.95)), 0.15)
 		var v: Vector3 = d * fx.rng.randf_range(speed * (0.35 if shield else 0.55), speed) * k * fx.unit
 		var drag: float = fx.rng.randf_range(0.45, 1.4) if shield else fx.rng.randf_range(0.25, 0.75)
 		var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y if shield else 1.15)
 		var t: float = T + fx.rng.randf() * 0.04
-		# pixel floors so a spark still reads as a point with a short trail at the battle camera (170)
-		fx.spr(p, t, life, col, 2.0 if shield else 3.2, 0.16 * k, 0.06 * k, 19, v, drag, 0.0, 0.0, 6.0 if shield else 3.0)
-		fx.stk(p, t, life * 0.75, col, 1.6 if shield else 2.4, 0.20 * k, 0.055 * k, 1, v, drag, 0.0, 2.2 if shield else 1.1, 10.0 if shield else 7.0)
+		if shield:
+			fx.spr(p, t, life, col, 2.0, 0.16 * k, 0.06 * k, 19, v, drag, 0.0, 0.0, 6.0)
+			fx.stk(p, t, life * 0.75, col, 1.6, 0.20 * k, 0.055 * k, 1, v, drag, 0.0, 2.2, 10.0)
+		else:
+			# The old sprite used one random draw. Use it for the streak length and width.
+			var form: float = fx.rng.randf()
+			fx.stk(p, t, life, col, lerpf(1.55, 2.75, form), lerpf(0.040, 0.125, form) * k,
+				lerpf(0.023, 0.041, form) * k, 8, v, drag)
 		_note(fx, "spark", fam, v, n, life)
 
 
 # Solid ejecta leaves the same contact as the sparks. The tips of the plume are small and fast;
 # the larger pieces peel off slowly along the surface, with a few loose pieces between them.
 static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, count: int, speed: float, size: float,
-		heat: float, fam: String, substance := "metal", macro := false) -> void:
+		heat: float, fam: String, substance := "metal", macro := false, target = null) -> void:
 	if substance == "chorus":
 		var tissue: Color = fx.faction_info("chorus").damage_glow
 		for j in _amount(fx, count):
@@ -1252,6 +1257,10 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 	var original := _amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)
 	var extra := ceili(original * 0.3) if macro and fx.quality != "low" else 0
 	var pieces := original + extra
+	if pieces <= 0:
+		return
+	var finish := FRAGMENTS.source(target, p, n)
+	(fx.pools["plate"] as FRAGMENTS.Pool).bind_finish(finish, fx.now, T + DEBRIS_LIFE.y + 0.025)
 	var shared_state: int = 0
 	for j in pieces:
 		# Extra fragments use a separate sequence. Soot, embers and later hits keep the original draw order.
@@ -1263,7 +1272,7 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 		var life: float = fx.rng.randf_range(DEBRIS_LIFE.x, DEBRIS_LIFE.y)
 		var born: float = T + fx.rng.randf() * 0.025
 		var shape: float = fx.rng.randf()
-		var variant := int(shape >= 0.5)
+		var variant := mini(FRAGMENTS.VARIANTS - 1, int(shape * FRAGMENTS.VARIANTS))
 		var turn: float = fx.rng.randf()
 		var lead := j == 0 or (j == 1 and pieces >= 6)
 		var quick := j >= 2 and j % 3 != 0
@@ -1287,7 +1296,7 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 		var v: Vector3 = _outward(n, aim, 0.34) * speed * speed_share * k
 		var origin := p + (n * 0.18 + tangent * (0.26 if lead else 0.11)) * k
 		fx.hit_fragment(origin, born, life, v, scale * size * k, heat,
-			spin if turn >= 0.5 else -spin, drag, paint, profile + variant, lead)
+			spin if turn >= 0.5 else -spin, drag, paint, profile + variant, lead, finish)
 		_note(fx, "debris", fam, v, n, life)
 	if extra > 0:
 		fx.rng.state = shared_state
@@ -1407,17 +1416,13 @@ static func _shell_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col
 	_staged_hit(fx, Tg, p, T, false, gk, n, px)
 	_note(fx, "flash", fam, Vector3.ZERO, n, 0.12, px)
 	var skip: Vector3 = _outward(n, (dir - n * 2.0 * dir.dot(n)) * 0.8 + n * 0.35, 0.25)
-	var ejecta := Color(0.95, 0.58, 0.24)
-	if substance == "ithar":
-		ejecta = Color(0.8, 0.9, 1.0)
-	elif substance == "chorus" and Tg != null:
-		ejecta = Tg.fac.damage_glow
+	var ejecta: Color = Tg.fac.damage_glow if Tg != null else Color(0.95, 0.58, 0.24)
 	var heavy: float = [0.0, 0.7, 1.0, 1.35][clampi(w, 1, 3)] * gk
 	if fam == "flak":
 		heavy *= 0.5
 	_throw_sparks(fx, p + n * 0.15 * k, n, skip, T, k, ejecta, int(round(17.0 * heavy)), 32.0, 0.45, fam)
 	if substance != "chorus" and fam != "flak":
-		_throw_debris(fx, p, n, skip, T, k, int(round(4.0 * heavy)), 11.0, 0.16, 0.7, fam, substance, lk == "macro")
+		_throw_debris(fx, p, n, skip, T, k, int(round(4.0 * heavy)), 11.0, 0.16, 0.7, fam, substance, lk == "macro", Tg)
 	_gas_cloud(fx, p + n * 0.3 * k, n, T, k, Color(0.40, 0.38, 0.36) if substance != "chorus" else Color(0.30, 0.34, 0.16), 1 if heavy < 0.9 else 2, 1.6 * heavy + 0.6, fam, 0.34, 20 if substance == "chorus" else 7, skip)
 	if substance != "chorus":
 		_embers(fx, p + n * 0.1 * k, n, T + 0.05, k, int(round(6.0 * heavy)), fam)
@@ -1456,7 +1461,7 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 		for j in 3:
 			fx.spr(p + n * 0.2 * k, T + j * 0.04, 0.35, col, 2.6, 0.5 * k, 0.9 * k, 16, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.6)
 	if lk == "plasma":
-		_throw_debris(fx, p, n, n, T, k, 2 + w, 5.0, 0.12, 1.0, "energy", Tg.faction if Tg != null else "metal")
+		_throw_debris(fx, p, n, n, T, k, 2 + w, 5.0, 0.12, 1.0, "energy", Tg.faction if Tg != null else "metal", false, Tg)
 	if lk == "plasma":
 		# a little slag vapour; las and prism leave no smoke (playbook: "A tiny hot spark. No smoke.")
 		_gas_cloud(fx, p + n * 0.2 * k, n, T, k, Color(0.36, 0.40, 0.46), 1, 1.4, "energy", 0.2)
@@ -1605,7 +1610,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 			fx.rib(pj, _outward(nj, fx.rdir(), 0.3), 1.8 * k, at, 0.09, Color(0.7, 0.85, 1.0), 1.2, 0.12 * k, 0.04 * k, 6)
 	if not ion:
 		_embers(fx, p, n, T + dur * 0.3, k, 6, "lance")
-		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance", Tg.faction if Tg != null else "metal")
+		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance", Tg.faction if Tg != null else "metal", false, Tg)
 	if ion:
 		_embers(fx, last, n, T + dur, k, 5, "lance", Color(0.06, 0.14, 0.3))
 	# the tail when the beam lifts: the contact glow fades over a third of a second
@@ -1655,7 +1660,7 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 			_vent(fx,xp+xn*0.3*k,xn,T+0.04,5.5*k,0.42,tint,1.2,dir*6.0*k,0.7,1.0,w,Tg)
 			# the exit spray leaves along the slug's own line, out of the far side
 			_throw_sparks(fx,xp,xn,(dir+xn).normalized(),T+0.04,k,Color(0.93,0.64,0.3),10,22.0,0.4,"shell")
-			_throw_debris(fx,xp,xn,dir,T+0.04,k,3,10.0,0.2,0.6,"shell",Tg.faction)
+			_throw_debris(fx, xp, xn, dir, T + 0.04, k, 3, 10.0, 0.2, 0.6, "shell", Tg.faction, false, Tg)
 			_gas_cloud(fx, xp + xn * 0.3 * k, xn, T + 0.08, k, Color(0.40, 0.39, 0.38), 1, 2.0, "shell", 0.26)
 			_embers(fx, xp, xn, T + 0.05, k, 4, "shell")
 	_heat_spot(fx, p + n * 0.15 * k, T, k, 0.8, "shell", 6.0, 2.0, Tg)
@@ -1755,11 +1760,11 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 	_staged_hit(fx, Tg, p, T, true, gk * rk, n)
 	_note(fx, "flash", "torp", Vector3.ZERO, n, 0.16, ladder_px(lk, 3, tg))
 	var organic: bool = Tg != null and Tg.faction == "chorus"
-	var debris_col: Color = Tg.fac.damage_glow if organic else tint.lerp(Color(0.93,0.48,0.20),0.5)
+	var debris_col: Color = Tg.fac.damage_glow if Tg != null else tint.lerp(Color(0.93,0.48,0.20),0.5)
 	var m: float = gk * rk
 	_throw_sparks(fx, p + n * 0.2 * k, n, n, T, k, debris_col, int(round(28.0 * m)), 38.0, 0.75, "torp")
 	if not organic:
-		_throw_debris(fx, p, n, n, T, k, int(round(9.0 * m)), 18.0, 0.28, 0.9, "torp", Tg.faction if Tg != null else "metal")
+		_throw_debris(fx, p, n, n, T, k, int(round(9.0 * m)), 18.0, 0.28, 0.9, "torp", Tg.faction if Tg != null else "metal", false, Tg)
 		_embers(fx, p + n * 0.2 * k, n, T + 0.1, k, int(round(10.0 * m)), "torp")
 	else:
 		for j in 8:
@@ -1778,8 +1783,8 @@ static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	_burst(fx,p+n*0.5*k,n,T,6.0*k,"flash",0.25,Color(0.94,0.71,0.4),4.5,40.0)
 	_vent(fx,p+n*k,n,T+0.05,6.0*k,0.45,Color(0.85,0.51,0.26),0.8,n*5.0*k,0.6,1.0,w,Tg)
-	_throw_sparks(fx,p,n,n,T,k,Color(0.92,0.6,0.3),10,18.0,0.8,"shell")
-	_throw_debris(fx,p,n,n,T,k,3,8.0,0.2,0.8,"shell",Tg.faction if Tg != null else "metal")
+	_throw_sparks(fx,p,n,n,T,k,Tg.fac.damage_glow if Tg != null else Color(0.92,0.6,0.3),10,18.0,0.8,"shell")
+	_throw_debris(fx,p,n,n,T,k,3,8.0,0.2,0.8,"shell",Tg.faction if Tg != null else "metal",false,Tg)
 	fx.light(p+n*2.0*k,T,0.3,7.5,Color(0.94,0.68,0.36),0)
 	fx.shake(T,0.15,p); fx.hit_pause(T,2); fx.punch(T,0.006,p)
 

@@ -631,9 +631,10 @@ Set: Ryan. Ids: R177, screens-06, briefing-05, rail-05.
 fleet size.** One floor, 17 (the old 12 px floor is retired). Why: Ryan asked for a readability pass (R176); text overlapped
 the flagship name (R177). Set: Ryan (R176); one floor Board. Ids: rail-06, uispec-02, R136b.
 
-9.5 **Battle screen: E1 Ledger. Glacier #92b8e8 is for shield readouts only, on every screen; the shields drawn in space keep
-faction colours.** Set: Ryan, Nov 11 (R210: "E1 Ledger", "Glacier pale blue", "Yes, that's right"). Replaces R3's "interface
-shield bars stay cyan". Ids: R3b, plan-02.
+9.5 **Battle screen: KEEL, the bottom shelf and two corner blocks.** Ryan picked KEEL v5 on Nov 17 (issue 1021) to open up
+the board, replacing the E1 Ledger rail. **Glacier #92b8e8 is for shield readouts only, on every screen; the shields drawn in
+space keep faction colours.** Set: Ryan, Nov 11 (R210: "Glacier pale blue", "Yes, that's right"). Replaces R3's "interface
+shield bars stay cyan". Ids: R3b, plan-02. See docs/playbooks/screens.md for the layout.
 
 9.6 **In battle, faction colour never touches names, plates, bars or panels; the enemy faction is its crest and plain name.**
 Why: one UI with faction colour only as a small accent (R141). Set: Board (R125). Ids: R125b, uistyle-06.
@@ -660,9 +661,9 @@ Why: a run is meant to be lost; the debrief names what the death bought (contrib
 
 9.13 **After a battle: one prize screen, one confirm; a prize may open for detail before the confirm.** Set: Ryan (R23, R216).
 
-9.14 **A fleet too big for the battle sheet shows its first ships (at least two lines) and folds the rest into "and N more",
-with a hover that lists them.** Why: the narrower sheet (R218) cannot list twenty ships. Set: Ryan, Nov 11 (R220: "yes that's
-fine").
+9.14 **Keep every ship reachable from the battle HUD when the fleet outgrows its space.** KEEL pages the fleet strip when it
+fills; hover gives the full name and health. This replaces E1's "and N more" hover (R220, Ryan: "yes that's fine"). Why: a
+large fleet can outgrow the available space, but the strip is also how the player picks a ship. See issue 1021.
 
 ## 10. The campaign map, space and the board
 

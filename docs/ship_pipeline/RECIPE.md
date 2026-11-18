@@ -151,16 +151,17 @@ R225: one home per fact):
    B ambient occlusion at a long reach (grime). The hull is baked with the parts in place and the parts with the hull in place;
 4. builds one procedural material per (zone, atlas). R318 picks a family for the module first. Hull modules follow the sheet's
    joints, and fittings take one family across the whole authored assembly, including mounts and turning pieces. The sheet's
-   zones identify surface duties within that family. The base finish takes one local value step of up to 1.5 percent, sampled
-   in ship space. Strong lilac and metal accents follow their authored bands. Hullbreaker shell armour can change colour across
-   its irregular repair and trophy seams. The ship-frame panel pattern belongs to the hull atlas. Fittings use the joints,
-   bevels and clearances built into each piece. Fine grain, trim-sheet scuffs and any fastener rows repeat at the same scale
-   on the hull and fittings (R224). Short-reach occlusion darkens cavities and raises roughness in the Hegemony and Hullbreaker
-   finishes. Long-reach occlusion puts grime under parts and in sheltered areas. The trim, rust and decals keep their faction
-   rules. Broken wear follows the convex edge mask and exposes lighter, smoother, more metallic material over the paint and
-   decals. Hegemony keeps its
-   smoother worked edges, mid-roughness painted plates and rougher machinery housings and recesses. Hullbreaker shell
-   patchwork and the rust layer keep their existing colours and placement;
+   zones identify surface duties within that family. Each stack sets the small value step sampled in ship space. Strong lilac
+   and metal accents follow their authored bands. Hullbreaker shell armour changes colour across irregular repair and trophy
+   seams. The ship-frame panel pattern belongs to the hull atlas. The Navy's modelled slabs use their own gaps and take a
+   single tone per connected plate, within 8 percent in linear value. Bands use their authored joints. Fittings use the joints,
+   bevels and clearances built into each piece.
+   Fine grain, trim-sheet scuffs and any fastener rows repeat at the same scale on the hull and fittings (R224). Hegemony and
+   Hullbreaker coats use a wider satin roughness range on clean surfaces, with rougher sheltered faces and directional
+   residue below overhangs. The coating, fine grain and scuff layer all contribute to the roughness map. Broken wear follows
+   the convex edge mask, and handling scuffs polish exposed collars and similar fittings. Both expose lighter, smoother,
+   more metallic material over the paint. Hullbreaker oxidation and soot stay rough and the rust and trophy colours follow
+   their own masks;
 5. bakes albedo, ORM and a detail normal for both atlases. The normal uses the same layer height for hull panels and fittings,
    so wide fittings carry repeated surface relief. `export7.py` identifies atlases by mesh role and checks that the sheet
    export binds both normal maps and uses the same packed ORM image for occlusion, roughness and metal on each atlas.

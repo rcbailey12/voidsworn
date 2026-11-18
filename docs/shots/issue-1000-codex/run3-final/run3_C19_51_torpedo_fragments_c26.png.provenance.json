@@ -1,0 +1,77 @@
+{
+  "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "run3_C19_51_torpedo_fragments_c26.png",
+  "date": "2026-11-18T03:14:52Z",
+  "sources": [
+    {
+      "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "7e070846244910ed69ce460252f31d2ea77f7dda",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "C19_51_torpedo_fragments__c26.png",
+      "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T01:12:47Z",
+      "image_sha256": "c60b5f0ef92acfd3c1d7c6d5412a24ca1f11205becb8948dcff6387d25216a70",
+      "sources": [
+        {
+          "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "C19_51_torpedo_fragments__c26.png",
+      "source_commit": "7e070846244910ed69ce460252f31d2ea77f7dda",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T03:10:22Z",
+      "image_sha256": "d6e69daab7d4f04d44524a8e93234e59b9f95dc93fcc1b24aef80307285ee264",
+      "sources": [
+        {
+          "source_commit": "7e070846244910ed69ce460252f31d2ea77f7dda",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    580,
+    504,
+    704
+  ],
+  "strip_size": [
+    504,
+    124
+  ],
+  "strip_sha256": [
+    "7b63566d7c8ce32333cfaf3c93506cad4c8ef871688d93e021e3e78e4a7264a3"
+  ],
+  "stamp_template_sha256": "7b63566d7c8ce32333cfaf3c93506cad4c8ef871688d93e021e3e78e4a7264a3",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfgAAAB8CAIAAAAKHDVSAAAB1UlEQVR4nO3UMQ0AIQDAQHgFLKz4l/kqCElzp6BT59pnAND1vQ4A4C6jB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoDR9gPElwE7/frMvQAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "297607f44ab0bc4dfab284ff550982075c0a88069600142e25d758d568cd42c6"
+}

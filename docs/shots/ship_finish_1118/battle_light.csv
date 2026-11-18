@@ -1,0 +1,7 @@
+ship,stage,hull_pixels,sky_luma_p50,ship_luma_p50,no_reflection_delta,no_direct_specular_delta,satin_only_delta,metal_only_delta,strong_specular_pixels,specular_center_shift_px,before_after_hull_delta
+H4_11,before,36151,3.28,68.31,0.51,15.823,8.306,8.516,386,81.28,0.0
+H4_11,after,36151,3.28,61.17,0.616,14.522,7.511,7.059,455,109.98,7.72
+H10_23,before,16673,3.28,67.16,0.487,14.293,8.43,8.848,545,84.95,0.0
+H10_23,after,16673,3.28,59.88,0.573,12.946,7.043,7.422,548,129.85,8.046
+C19_51,before,26769,3.28,57.63,0.489,15.531,10.274,12.674,23,26.16,0.0
+C19_51,after,26769,3.28,62.64,0.578,14.997,8.707,12.06,48,32.16,8.484

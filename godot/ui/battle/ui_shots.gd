@@ -38,7 +38,9 @@ func _parts() -> Array:
 	var out: Array = []
 	var lg = h.ledger
 	if lg != null and lg.is_visible_in_tree() and lg.modulate.a > 0.05:
-		out.append(["orders sheet", Rect2(lg.get_global_position() + lg.sheet_r.position, lg.sheet_r.size)])
+		out.append(["KEEL shelf", Rect2(lg.get_global_position() + lg.sheet_r.position, lg.sheet_r.size)])
+		if lg.log_r.has_area() and not h.log_open:
+			out.append(["floating log", lg.log_r])
 	var named := [["battle log", h.log_panel], ["legend", h.legend], ["hover tip", h.tip], ["tip card", h.tipcard],
 		["enemy chip", h.aichip]]
 	for n in named:
@@ -76,10 +78,10 @@ func _check(name: String) -> void:
 			if a.grow(-1.0).intersects(c.grow(-1.0)):
 				bad.append("%s %s overlaps %s %s" % [parts[i][0], _r(a), parts[j][0], _r(c)])
 	var h = b.hud
-	# the fleet at the foot of the sheet shows at least two lines at 1080 (more fold into "and N more")
+	# The fleet strip keeps more than one ship visible when paging is needed.
 	var fit: Dictionary = h.ledger.fleet_fit
-	if vs.y >= 1079.0 and int(fit.get("total", 0)) > 1 and int(fit.get("shown", 0)) < 2 and not bool(fit.get("summary", false)):
-		bad.append("the fleet shows fewer than two lines (%s)" % str(fit))
+	if vs.y >= 1079.0 and int(fit.get("total", 0)) > 1 and int(fit.get("shown", 0)) < 2:
+		bad.append("the fleet shows fewer than two slots (%s)" % str(fit))
 	# the Grid (Z) button is not on the screen: the sheet has no top bar, so board look C's button stays hidden
 	var gb = b.board.get("_look_btn") if b.board != null else null
 	if gb != null and is_instance_valid(gb) and (gb as Button).is_visible_in_tree():

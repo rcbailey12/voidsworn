@@ -137,6 +137,8 @@ def run():
             if re.search(r'\.save_(png|jpg)\(', line) and 'picture_provenance.gd' not in line:
                 if path.name == 'station_check.gd' and '_mask.png' in line:
                     continue  # Numeric silhouette mask, never a review picture.
+                if path.relative_to(ROOT).as_posix() == 'godot/ui/battle/icons/make_silhouettes.gd' and '.save_png(OUTPUT.path_join(code + ".png"))' in line:
+                    continue  # The in-game alpha mask. The labelled review sheet is stamped below it.
                 unstamped_saves.append(str(path.relative_to(ROOT)) + ':' + str(number))
     assert not unstamped_saves, 'capture saves bypass the shared stamp: ' + ', '.join(unstamped_saves)
     print('PASS capture save sweep: game, probes, recipe previews and tool captures use the shared writer')

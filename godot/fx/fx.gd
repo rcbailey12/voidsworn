@@ -247,10 +247,9 @@ func setup(opts := {}) -> void:
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
 	pools["shd"] = POOLS.Pool.new(768 if big else 384, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
-	var fragment_mat := _mat(SH.HIT_FRAGMENT, 0, "", "hit fragments")
-	fragment_mat.set_shader_parameter("fragment_meshes", FRAGMENTS.atlas())
-	fragment_mat.set_shader_parameter("fragment_stride", FRAGMENTS.VERTICES)
-	pools["plate"] = POOLS.Pool.new(384 if big else 192, fragment_mat, self, "fx_hit_fragments", FRAGMENTS.templates()[0])
+	var finish_slots := FRAGMENTS.COMPAT_FINISH_SLOTS if compat else FRAGMENTS.FINISH_SLOTS
+	var fragment_mat := _mat(SH.hit_fragment_code(finish_slots), 0, "", "hit fragments")
+	pools["plate"] = FRAGMENTS.Pool.new(384 if big else 192, fragment_mat, finish_slots, self, FRAGMENTS.templates()[0], FRAGMENTS.atlas())
 	if big:
 		pools["dst"] = POOLS.Pool.new(256, _mat(SH.DISTORT, -20), self, "fx_distort", POOLS.quad_shape())
 	for k in (64 if big else (24 if rich else 8)):
@@ -361,7 +360,10 @@ func step(delta: float) -> void:
 	t0 = pend("weap_death", t0)
 	_update_lights()
 	for k in pools:
-		(pools[k] as POOLS.Pool).flush()
+		if k == "plate":
+			(pools[k] as FRAGMENTS.Pool).flush(now)
+		else:
+			(pools[k] as POOLS.Pool).flush()
 	pend("lights_pools", t0)
 
 
@@ -509,11 +511,12 @@ func shd(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: flo
 
 # Hull ejecta shares one bounded ring. A negative profile key gives a lead piece the full screen-size floor.
 func hit_fragment(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin: float, drag: float,
-		paint: Color, profile: int, lead: bool) -> void:
+		paint: Color, profile: int, lead: bool, finish := {}) -> void:
 	var ax := rdir()
-	(pools["plate"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
+	var particle := POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, rng.randf(), -1 - profile if lead else profile, drag),
-		Vector4(paint.r, paint.g, paint.b, heat)))
+		Vector4(paint.r, paint.g, paint.b, heat))
+	(pools["plate"] as FRAGMENTS.Pool).emit(particle, finish)
 
 
 func dst(p: Vector3, t: float, life: float, s0: float, s1: float, kind: int, strength: float) -> void:
@@ -1355,7 +1358,7 @@ func tick(id: String, kind := "fire") -> void:
 func particles_emitted() -> int:
 	var n = 0
 	for k in pools:
-		n += (pools[k] as POOLS.Pool).emitted
+		n += pools[k].emitted
 	return n
 
 
