@@ -1,12 +1,14 @@
 'use strict';
 // Board chains wait for text, independently of the runner's checked-push wait.
 const STARTING_GRACE_MS = 3 * 60000;
-const filePattern = /^(?:codex_chain_[a-z0-9_]+|codex_lane_[bcd][a-z0-9_]*|ds_[a-z0-9_]+)\.txt$/i;
-const laneId = name => /^ds_/i.test(name) ? 'deepseek' : (name.match(/^codex_lane_([bcd])/i) || [0, 'main'])[1].toLowerCase();
+const fileStem = '(?:codex_chain_[a-z0-9_]+|codex_lane_[bcd][a-z0-9_]*|ds_[a-z0-9_]+|oa_[a-z0-9_]+)';
+const filePattern = new RegExp('^'+fileStem+'\\.txt$', 'i');
+const laneId = name => /^oa_/i.test(name) ? 'openai' : /^ds_/i.test(name) ? 'deepseek' : (name.match(/^codex_lane_([bcd])/i) || [0, 'main'])[1].toLowerCase();
 function normalise(value) {
   const s = String(value || '').trim().toLowerCase();
   const name = s.split(/[\\/]/).at(-1);
   if (filePattern.test(name)) return name;
+  if (filePattern.test(name+'.txt')) return name+'.txt';
   const old = /^(lane|chain)\s+([a-z0-9_]+)$/.exec(s);
   return old ? `codex_${old[1]}_${old[2]}.txt` : null;
 }
@@ -35,7 +37,7 @@ function parseChain({name, text = '', bat = '', mtime = 0, batMtime = 0, missing
   let current = null, lastIssue = null, currentAt = 0, endedAt = 0, cursor = 0, started = false, done = false, anchor = mtime, waitTarget = null;
   const issues = parseIssues(bat), lines = text.trim().split(/\r?\n/);
   for (const line of lines) {
-    const wait = /^waiting for (.+?)(?:\s+from\b.*)?\s*$/i.exec(line);
+    const wait = /^waiting for (.+?)(?:\s+from\b.*|\s+(?:\w+\s+)?\d{1,2}\/\d{1,2}\/\d{4}\b.*)?\s*$/i.exec(line);
     if (wait) waitTarget = normalise(wait[1]);
     if (/^(?:start|setup)\s/i.test(line)) { anchor = eventTime(line, anchor); if (/^start\s/i.test(line)) { started = true; currentAt = anchor; } }
     const e = /^\s*(\d+)\s+(start|end)\s/i.exec(line);
@@ -48,22 +50,29 @@ function parseChain({name, text = '', bat = '', mtime = 0, batMtime = 0, missing
     }
     if (/^all done\b/i.test(line)) { done = true; current = null; endedAt = eventTime(line, anchor); }
   }
-  // Inspect Select-String's Path expression, never execute a script or accept a path in the payload.
-  const expressions = [...bat.matchAll(/Select-String\b[^\r\n]*?-Path\s+([^\r\n]*?)(?=\s+-Pattern\b)/gi)];
-  const targets = expressions.flatMap(m => [...m[1].matchAll(/(?:codex_chain_[a-z0-9_]+|codex_lane_[bcd][a-z0-9_]*|ds_[a-z0-9_]+)\.txt/gi)].map(x => x[0].toLowerCase()));
+  // Read literal targets on the two Board wait forms. Do not execute the script.
+  const commands = bat.split(/\r?\n/).filter(line=>!/^\s*(?:rem\b|::)/i.test(line));
+  const expressions = commands.flatMap(line => {
+    const ps = /Select-String\b.*?-Path\s+(.+?)\s+-Pattern\b.*?["']all done["']/i.exec(line);
+    const cmd = /\bfindstr\s+\/c:"all done"\s+("[^"]+"|\S+)/i.exec(line);
+    return ps ? [{path:ps[1],source:'bat Select-String -Path'}] : cmd ? [{path:cmd[1],source:'bat findstr'}] : [];
+  });
+  const targets = [...new Set(expressions.flatMap(item =>
+    [...item.path.matchAll(new RegExp(fileStem+'\\.txt\\b','gi'))].map(x=>x[0].toLowerCase())))];
   const last = lines.at(-1) || '';
   const terminal = /cancelled by the Board/i.test(last) ? 'cancelled' : /paused by the Board/i.test(last) ? 'paused' : /\bstopped\b/i.test(last) ? 'cancelled' : null;
   const supersededBy = normalise((/^superseded by (\S+\.txt)/im.exec(text) || [])[1]);
   const replaces = [...bat.matchAll(/^\s*(?:rem\b|::).*?\breplaces\s+(\S+\.txt)/gim)].map(m => normalise(m[1])).filter(Boolean);
   return {name: name.toLowerCase(), id: laneId(name), issues, current, lastIssue, currentAt, endedAt, cursor, started, done,
     terminal, supersededBy, replaces, waitTargets: targets.length ? targets : waitTarget ? [waitTarget] : [],
-    waitSource: targets.length ? 'bat Select-String -Path' : waitTarget ? 'waiting line' : null, mtime, batMtime, missingBat, unreadable};
+    waitSource: targets.length ? [...new Set(expressions.map(item=>item.source))].join(' / ') : waitTarget ? 'waiting line' : null,
+    mtime, batMtime, missingBat, unreadable};
 }
 function supersededExplicitly(c, chains) {
   return c.supersededBy || chains.find(n => n.id === c.id && n.batMtime > c.batMtime && n.replaces.includes(c.name) && n.issues.some(i => c.issues.includes(i)))?.name || null;
 }
 function resolveQueue(input, now) {
-  const chains = input.map(c => ({...c, state: null, reason: null, targets: [], notes: []}));
+  const chains = input.map(c => ({...c, state: null, reason: null, targets: [], predecessor: null, notes: []}));
   const visiting = [];
   function resolve(c) {
     if (c.state) return c.state;
@@ -80,24 +89,34 @@ function resolveQueue(input, now) {
     if (c.unreadable || c.missingBat) { c.state = 'unknown'; c.reason = c.unreadable ? 'source unreadable' : 'chain script missing'; return c.state; }
     const hits = chains.filter(t => c.waitTargets.includes(t.name));
     c.targets = hits.map(t => t.name);
-    if (hits.length !== 1) { c.state = 'unknown'; c.reason = hits.length ? 'target ambiguous' : 'target not found'; return c.state; }
+    if (c.waitTargets.length > 1 || hits.length !== 1) {
+      c.state = 'unknown'; c.reason = c.waitTargets.length > 1 || hits.length > 1 ? 'target ambiguous' :
+        c.waitTargets.length ? 'target not found' : 'waiting target not recorded';
+      return c.state;
+    }
     visiting.push(c);
     const target = hits[0], state = resolve(target);
     visiting.pop();
+    c.predecessor = target.name;
     if (c.state === 'unknown') return c.state;
-    if (['started', 'linked', 'starting', 'stuck'].includes(state)) { c.state = 'linked'; c.reason = `up next after ${target.name}`; }
+    if (['started', 'linked', 'starting', 'stuck'].includes(state)) {
+      c.state = 'linked';
+      c.reason = state === 'stuck' ? 'predecessor is also blocked' : 'predecessor has no recorded ending';
+    }
     else if (state === 'ended') {
       c.state = 'starting'; c.readyAt = target.endedAt;
       c.amber = !target.endedAt || now - target.endedAt > STARTING_GRACE_MS;
-      c.reason = c.amber ? `not started ${Math.max(0, Math.floor((now - target.endedAt) / 60000))} min after its predecessor ended; the waiting window may be closed` : `starting after ${target.name}`;
-    } else if (['cancelled', 'paused'].includes(state)) { c.state = 'stuck'; c.amber = true; c.reason = 'waits on a cancelled chain'; }
+      c.reason = !target.endedAt ? 'predecessor ended at an unknown time; no start recorded' :
+        c.amber ? `no start recorded ${Math.max(0, Math.floor((now - target.endedAt) / 60000))} min after its predecessor ended; the waiting window may be closed` :
+          'predecessor ended; no start recorded yet';
+    } else if (['cancelled', 'paused'].includes(state)) { c.state = 'stuck'; c.amber = true; c.reason = `waits on a ${state} chain`; }
     else { c.state = 'unknown'; c.reason = state === 'unknown' && target.reason === 'cycle' ? 'cycle' : 'target state unknown'; }
     return c.state;
   }
   for (const c of chains) resolve(c);
   for (const c of chains.filter(x => ['linked', 'starting', 'stuck'].includes(x.state))) {
     const count = chains.filter(x => ['linked', 'starting', 'stuck'].includes(x.state) && x.targets[0] === c.targets[0]).length;
-    if (count > 1) c.notes.push(`${count} chains wait on ${c.targets[0]}`);
+    if (count > 1) c.notes.push(`${count} chains share this predecessor; their order is unverified`);
   }
   return chains;
 }

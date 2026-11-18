@@ -15,8 +15,10 @@ const REPO = 'https://github.com/rcbailey12/voidsworn';
 const SEATS = [
   ['main', 'Codex main', 'board'], ['b', 'Codex lane B', 'board_b'],
   ['c', 'Codex lane C', 'board_c'], ['d', 'Codex lane D', 'board_d'],
-  ['deepseek', 'DeepSeek', 'work217']
+  ['deepseek', 'DeepSeek', 'work217'], ['openai', 'OpenAI', 'work217']
 ];
+const WORKHORSE_ARMS = {deepseek:['deepseek','deepseekpro'],openai:['openai']};
+const branchFor = (issue, seat, arm = seat) => WORKHORSE_ARMS[seat] ? `work/issue-${issue}-${arm}` : `codex/issue-${issue}`;
 const STALE_SECONDS = 1800;
 const OFFLINE_SECONDS = 180;
 const CLAIM_SECONDS = 600;
@@ -141,7 +143,7 @@ function resultVerdict(text) {
   if (/all done/i.test(text)) return 'ended';
   return null;
 }
-function jobInfo(folder, issue, seat, reader, byLocation = false) {
+function jobInfo(folder, issue, seat, reader, byLocation = false, arm = seat) {
   const state = reader.read(path.join(folder, 'status.json'));
   let status = null;
   if (state.exists && !state.unreadable) {
@@ -154,15 +156,23 @@ function jobInfo(folder, issue, seat, reader, byLocation = false) {
   const head = reader.read(path.join(folder, 'result.txt'), 65536);
   const tail = reader.read(path.join(folder, 'result.txt'), 16384, true);
   const result = {...tail, text:head.text + '\n' + tail.text};
-  const tags = [...new Set([...result.text.matchAll(/job claimed: issue #\d+ by [a-z]+, run ([a-f0-9]{32})(?![a-f0-9])/gi)].map(m => m[1].toLowerCase()))];
+  const claims = [...result.text.matchAll(/job claimed: issue #(\d+) by ([a-z]+), run ([a-f0-9]{32})(?![a-f0-9])/gi)];
+  const tags = [...new Set(claims.map(m => m[3].toLowerCase()))];
   const run = runId(status?.run), tagged = tags.length === 1 ? tags[0] : null;
+  const branch = branchFor(issue,seat,arm);
+  const foreignRunner = WORKHORSE_ARMS[seat] && (
+    status && (status.branch && status.branch !== branch || seat === 'openai' && (!run || status.branch !== branch) ||
+      status.github?.seat && status.github.seat !== arm || status.github?.issue && Number(status.github.issue) !== issue) ||
+    claims.some(m => +m[1] !== issue || m[2].toLowerCase() !== arm));
   const resultStartLine = result.text.split(/\r?\n/).find(l=>/^started\s/i.test(l));
   const resultStarted = resultStartLine ? eventTime(resultStartLine,result.mtime) : 0;
   const mismatch = !!(run && tagged && run !== tagged);
   const previous = mismatch && (resultStarted && resultStarted < time(status?.started)-2000 || result.mtime < time(status?.started));
-  const resultMatches = !mismatch && tags.length <= 1 && (run && tagged === run || seat === 'deepseek' && byLocation && !tagged);
+  const resultMatches = !foreignRunner && !mismatch && tags.length <= 1 &&
+    (run && tagged === run || WORKHORSE_ARMS[seat] && byLocation && !tagged);
   const resultState = resultVerdict(result.text);
-  const conflict = tags.length > 1 ? 'result names multiple runs' : mismatch && !previous ? 'result run id differs; earlier run is not proved' : !previous && run && !tagged && !resultMatches && resultState &&
+  const conflict = foreignRunner ? 'Runner record does not match this seat, issue or branch.' :
+    tags.length > 1 ? 'result names multiple runs' : mismatch && !previous ? 'result run id differs; earlier run is not proved' : !previous && run && !tagged && !resultMatches && resultState &&
     !(resultState === 'ended' && status?.status !== 'running') ? 'result has no run id' : null;
   const started = time(status?.started), finished = time(status?.finished);
   const names = ['log.txt','events.jsonl','checks_node.txt','checks_parity.txt'];
@@ -172,37 +182,39 @@ function jobInfo(folder, issue, seat, reader, byLocation = false) {
   if (result.exists) evidence.push({source:'result.txt', at:iso(result.mtime), run:tagged?.slice(0,8) || null,
     association:previous ? 'previous run, ended ' + new Date(eventTime(result.text.split(/\r?\n/).filter(l=>/all done/i.test(l)).at(-1) || '',result.mtime)).toISOString().slice(11,16) : resultMatches ? byLocation && !tagged ? 'same run directory; no run id in result' : 'matching run id' : 'association unverified'});
   for (const w of writes.filter(w => w.at)) evidence.push({source:w.name, at:iso(w.at), association:started && w.at > started ? 'after run start' : 'from an earlier run'});
-  const activity = maxTime(started, ...writes.filter(w => started && w.at > started).map(w=>w.at),
+  const activity = foreignRunner ? 0 : maxTime(started, ...writes.filter(w => started && w.at > started).map(w=>w.at),
     started && state.mtime > started && state.mtime, started && resultMatches && result.mtime > started && result.mtime);
-  const title = cleanTitle(status?.title || titleFromLog(log.text, issue), issue);
-  const branch = seat === 'deepseek' ? 'work/issue-' + issue + '-' + (/deepseekpro/i.test(folder) ? 'deepseekpro' : 'deepseek') : 'codex/issue-' + issue;
+  const runnerTitle = WORKHORSE_ARMS[seat] ? reader.read(path.join(folder,'title.txt'),4096).text.trim() : '';
+  const title = cleanTitle(!foreignRunner && (status?.title || runnerTitle || titleFromLog(log.text, issue)), issue);
   return {issue, job:{issue,title,branch,url:REPO+'/issues/'+issue,prUrl:REPO+'/pulls?q='+encodeURIComponent('is:pr head:'+branch)},
-    folder, run, started, finished, activity, logAt:writes.find(w=>w.name==='log.txt')?.at, updated:maxTime(state.mtime, ...writes.map(w=>w.at)),
-    status, state, result, resultState, resultMatches, previous, conflict, evidence, byLocation,
+    folder, run:foreignRunner ? null : run, started:foreignRunner ? 0 : started, finished:foreignRunner ? 0 : finished,
+    activity, logAt:writes.find(w=>w.name==='log.txt')?.at, updated:maxTime(state.mtime, ...writes.map(w=>w.at)),
+    status:foreignRunner ? null : status, state, result, resultState, resultMatches, previous, conflict,
+    evidence:foreignRunner ? [{source:'Runner records',at:iso(state.mtime),association:'seat, issue or branch unverified'}] : evidence, byLocation,
     files:[state.exists && 'status.json', result.exists && 'result.txt', ...writes.filter(w=>w.at).map(w=>w.name)].filter(Boolean)};
 }
 function readJobs(root, seat, reader) {
-  const jobs = [], base = path.join(root,seat[2]);
+  const jobs = [], [id,label,directory] = seat, base = path.join(root,directory);
+  const arms = WORKHORSE_ARMS[id];
   for (const d of reader.dirs(base)) {
     if (!d.isDirectory()) continue;
-    const m = (seat[0] === 'deepseek' ? /^issue-(\d+)-(deepseek|deepseekpro)$/i : /^issue-(\d+)$/i).exec(d.name);
-    if (!m) continue;
+    const m = /^issue-(\d+)(?:-([a-z]+))?$/i.exec(d.name), arm = m?.[2]?.toLowerCase();
+    if (!m || (arms ? !arms.includes(arm) : arm)) continue;
     const p = path.join(base,d.name);
-    if (seat[0] !== 'deepseek') jobs.push(jobInfo(p,+m[1],seat[0],reader));
+    if (!arms) jobs.push(jobInfo(p,+m[1],id,reader));
     else {
       const latest = reader.read(path.join(p,'latest.txt'),4096), pointer = latest.text.trim().replace(/[\\/]/g,path.sep), run = path.basename(pointer);
       const expected = path.join(p,run), resolved = path.resolve(p,pointer);
       const samePath = process.platform === 'win32' ? expected.toLowerCase() === resolved.toLowerCase() : expected === resolved;
       // No fallback to another run: latest.txt is the authority for per-run location evidence.
       const valid = samePath && reader.dirs(p).some(x=>x.isDirectory() && x.name===run && /^\d{8}_\d{6}$/.test(run));
-      if (valid) jobs.push(jobInfo(path.join(p,run,'out'),+m[1],seat[0],reader,true));
+      if (valid) jobs.push(jobInfo(path.join(p,run,'out'),+m[1],id,reader,true,arm));
       else {
-        if (latest.exists && !latest.unreadable) reader.errors.add('DeepSeek run directory could not be verified');
-        const missing = jobInfo(path.join(p,'out'),+m[1],seat[0],reader);
-        missing.status = null; missing.run = null; missing.started = 0; missing.finished = 0; missing.activity = 0;
-        missing.evidence = [{source:'latest.txt', at:iso(latest.mtime), association:'run directory unverified'}];
-        missing.files = ['latest.txt']; missing.conflict = 'latest run directory is missing or unverified';
-        jobs.push(missing);
+        if (latest.exists && !latest.unreadable) reader.errors.add(label+' run directory could not be verified');
+        const issue = +m[1];
+        jobs.push({issue, job:{issue,title:cleanTitle(null,issue),branch:branchFor(issue,id,arm),url:REPO+'/issues/'+issue},
+          updated:latest.mtime, activity:0, evidence:[{source:'latest.txt',at:iso(latest.mtime),association:'run directory unverified'}],
+          files:latest.exists ? ['latest.txt'] : [], conflict:'Latest run directory is missing or unverified.'});
       }
     }
   }
