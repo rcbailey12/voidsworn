@@ -2,6 +2,8 @@ extends SceneTree
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
+const SV := preload("res://render/ship_view.gd")
+const HT := preload("res://render/hull_table.gd")
 var checks := 0
 var failures := 0
 
@@ -77,6 +79,61 @@ func replace_meshes(wing: Node3D, dimensions: Vector3, offset := Vector3.ZERO) -
 	wing.fit_formation()
 	wing.step(0.0)
 
+func exercise_parked(fac: String, kind: String) -> void:
+	var ship := SV.new()
+	root.add_child(ship)
+	var at := Vector3(24.0, 0.0, -40.0)
+	var id := fac + kind
+	ship.setup({"id": id, "fac": fac, "tpl": kind, "cls": "Squadron", "squadron": true, "facing": 2}, at)
+	var wing := ship.hull
+	var farthest := 0.0
+	var fastest := 0.0
+	var nearest := INF
+	var widest := 0.0
+	var trails_attached := true
+	var rolled := PackedByteArray()
+	rolled.resize(wing.craft.size())
+	var dt := 1.0 / 60.0
+	var edge := HT.HEX_S * sqrt(3.0) * 0.5
+	for frame in 2400:
+		var before: Array[Vector3] = []
+		for n in wing.craft: before.append(n.position)
+		wing.step(dt)
+		for i in wing.craft.size():
+			var n: Node3D = wing.craft[i]
+			fastest = maxf(fastest, n.position.distance_to(before[i]) / dt)
+			var box: AABB = n.get_child(0).get_aabb()
+			for corner in 8:
+				var p := n.to_global(box.get_endpoint(corner)) - at
+				farthest = maxf(farthest, Vector2(p.x, p.z).length())
+			if n.basis.y.normalized().dot(Vector3.UP) < -0.6: rolled[i] = 1
+			var hist: Array = wing.trails[i].hist
+			if not hist.is_empty() and hist[0][1] == wing.clock:
+				trails_attached = trails_attached and (hist[0][0] as Vector3).is_equal_approx(n.to_global(Vector3(-0.47, 0.0, 0.0)))
+		var gap: float = wing.craft[0].position.distance_to(wing.craft[1].position)
+		nearest = minf(nearest, gap)
+		widest = maxf(widest, gap)
+	check(farthest < edge and ship.position == at, "%s: all parked hull corners in the hex (%.2f / %.2f)" % [id, farthest, edge])
+	check(widest - nearest > 0.75 and rolled.count(1) >= 3, id + ": wingmates separate, regroup and take turns rolling")
+	check(fastest < 10.0 and trails_attached, "%s: local flight pace (%.2f u/s) and individual trail attachment" % [id, fastest])
+	var dest := at + Vector3(2.0 * edge, 0.0, 0.0)
+	ship.play_path([{"s": 0.0, "pos": at}, {"s": 2.0 * edge, "pos": dest}], [{"s": 0.0, "yaw": ship.cur_yaw}], [{"s": 0.0, "y": at.y}], 2.0 * edge, 1.0)
+	var transit := make_wing(fac, kind, ship.L, wing.craft.size(), ship.bob_seed)
+	var same := true
+	for frame in 60:
+		ship._process(dt)
+		wing.step(dt)
+		if frame == 33:
+			# The middle pose must still match a non-patrolling wing.
+			transit.clock = wing.clock
+			transit.step(0.0)
+			for i in wing.craft.size():
+				same = same and wing.craft[i].transform.is_equal_approx(transit.craft[i].transform)
+	check(ship.position.is_equal_approx(dest) and not ship.busy(), id + ": R131 travel ends at the same destination")
+	check(same, id + ": mid-travel craft use the unchanged arrowhead or wedge weave")
+	transit.free()
+	ship.free()
+
 func _run() -> void:
 	# Every craft kind the factory can draw, not only the faction defaults.
 	# Counts 3 and 6 are the arrowhead Ryan asked for (R280); 4 stays covered
@@ -86,6 +143,9 @@ func _run() -> void:
 			for count in [3, 4, 6]:
 				var wing := make_wing(fac, kind, 3.84, count, 2.731)
 				exercise(wing, "%s|%s count %d" % [fac, kind, count])
+		if fac != "deathless": # Eclipse has no squadron to park in battle.
+			for kind in (["spore"] if fac == "chorus" else ["fighter", "bomber"]):
+				exercise_parked(fac, kind)
 	# Read the accepted sheets' own measurements instead of copying their sizes.
 	var sheets := ProjectSettings.globalize_path("res://../docs/ship_pipeline/build_sheets")
 	for code in ["voidsworn_SF3", "voidsworn_SB4"]:
@@ -136,5 +196,5 @@ func _run() -> void:
 			check(wing.rests[1].z > 0.95 * wing.length if code == "corsair_KB1CC" else is_equal_approx(wing.rests[1].z, 0.95 * wing.length), code + ": wide craft spreads, slim craft retains original lateral spacing")
 			print("[formation] %s lateral step %.4f (original %.4f)" % [code, wing.rests[1].z, 0.95 * wing.length])
 			exercise(wing, code + " actual sheet meshes")
-	print("FORMATION_CHECK %d checks, %d failures; every factory craft and mesh regressions, 1920 flight samples per case" % [checks, failures])
+	print("FORMATION_CHECK %d checks, %d failures; travel formation, parked flight and mesh regressions" % [checks, failures])
 	quit(0 if failures == 0 else 1)
