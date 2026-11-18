@@ -78,15 +78,15 @@ def pair(k):
 # ------------------------------------------------------------------------------------------------------------ the layers
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
-    ao_short=.004, ao_long=.025, edge_radius=.0010, edge_gain=14.0,      # the masks (about 10 cm, 65 cm, 2.6 cm on the 26 unit barge)
+    ao_short=.004, ao_long=.025, edge_radius=.0018, edge_gain=22.0,      # the masks (about 10 cm, 65 cm, 4.7 cm on the 26 unit barge)
     patch_scale=4.0, side_dark=.25, grain_scale=260.0, mottle_scale=40.0, grain=.12,
-    rough=.70, metal=.40, wear=1.0, grime=.90, ao_dark=.88,
-    rough_floor=.58,     # pass 5 (Board, PC run): no sharp white specular at the game's key light; the concept's metal is dull and grimy
+    rough=.45, metal=.40, wear=1.25, grime=.90, ao_dark=.88,
+    rough_floor=.32, mottle_range=.10, rough_grain=.10, coat_roughness=.16,
     # the plate patchwork (issue 601 Board review: the concept's hull is a quilt of small plates, each its own tone): a grid of
     # panels at the concept's plate size, staggered, each panel and each modelled plate picks a family; black seams between them
     patch_big=(.052, .034, .028), patch_small=(.021, .015, .012), patch_over=(.044, .030, .024), patch_over_share=.10,
     patch_region=7.0, patch_seam=.0011, seam_dark=.85,
-    bare_roughness=.42, cavity_roughness=.10,
+    bare_roughness=.24, cavity_roughness=.14, scuff_roughness=.22, recess_streaks=1.2,
     # R240 (Ryan, Nov 13 2026): the patchwork is never even or ordered. Cell sizes wander along every axis, roughly two thirds to
     # twice the mean (patch_warp), rows come in bands of about 2.3 whose edges step every few columns (patch_band), and 55 percent of the plates
     # are split once more at a random place (patch_split); shared/paint_stack._grid
@@ -104,26 +104,26 @@ LAYERS = dict(
 ZONES = dict(
     soot=dict(rust=.45, grime=.75, patchwork=1.0),
     soot2=dict(rust=.40, grime=.85, patchwork=1.0),
-    iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, patchwork=1.0),
-    rust=dict(rust=.90, rough=.88, metal=.20, patchwork=.6),
-    blood=dict(rust=.40, rough=.86, metal=.15, patchwork=.4),
+    iron=dict(rust=.55, metal=.55, rough=.38, wear=1.25, patchwork=1.0),
+    rust=dict(rust=.90, rough=.72, metal=.20, patchwork=.6),
+    blood=dict(rust=.40, rough=.65, metal=.15, patchwork=.4),
     # R252 (issue 726): the sheet's pale zone (A20's big modelled trophy patches TP1, TP3, TP5 and a share of its plate courses)
     # takes no dark plate families; the trophy layer alone covers most of it (trophy_share) in the big pale and violet trophy
     # plates, so a pale course plate reads pale with its neighbours in a big patch and never as a lone small chalky plate
     # R274: the trophy plates are salvaged metal, so the pale zone (mostly trophy plates) takes a little metallic sheen (was metal
     # .25, rough .74)
-    pale=dict(rust=.20, rough=.64, metal=.45, grime=.70, patchwork=1.0, trophy_share=.65),
+    pale=dict(rust=.20, rough=.44, metal=.45, grime=.70, patchwork=1.0, trophy_share=.65),
     violet=dict(rust=.10, rough=.62, metal=.20),
     lilac=dict(rust=.10, rough=.66, metal=.20),     # issue 651: kept clean of new rust, as violet
-    steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0),
+    steel=dict(rust=.25, metal=.70, rough=.28, wear=1.30, handling_wear=.45),
     dark=dict(rust=0, grime=.2, wear=.15, scuff=.1, rivets=0, metal=.1, rough=.9),
     dish=dict(rust=.30, metal=.30, rough=.75, scuff=1.0),
-    bell=dict(base='steel', rust=.30, metal=.30, rough=.80, wear=.6, grime=1.0),   # engine bells and housings: matte, never mirror black
+    bell=dict(base='steel', rust=.30, metal=.35, rough=.57, wear=.85, grime=1.0),   # soot keeps the bells rough
     warhead=dict(rust=.35, metal=.30, rough=.65, rivets=0),
-    brass=dict(rust=.20, metal=.60, rough=.50, rivets=0),
-    iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.72, trim=('stripes',), trim_amount=.75),
+    brass=dict(rust=.20, metal=.64, rough=.34, rivets=0, handling_wear=.40),
+    iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.55, trim=('stripes',), trim_amount=.75),
     # R240: a hangar mouth's rim and torn teeth: worn iron edging, scuffed bright on the edges, no stripes and no plate patchwork
-    iron_edge=dict(base='iron', rust=.45, metal=.55, rough=.62, wear=1.0, scuff=1.0),
+    iron_edge=dict(base='iron', rust=.45, metal=.60, rough=.35, wear=1.3, scuff=1.0, handling_wear=.35),
 )
 _BASE = dict(soot='soot', soot2='soot2', iron='iron', rust='rust', blood='blood', pale='pale', violet='violet', lilac='lilac', steel='steel',
              dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', iron_edge='iron', bell='steel')
