@@ -13,3 +13,18 @@ The original matrix repeatedly started PowerShell, classified the fake commands 
 The final run finished 483.49 s faster than the measured original and 562.15 s inside the standing suite's 600 s limit.
 
 The updated stage 5 row also passed in both full standing runs, in 46.51 s and 87.54 s. The separate `runner_selftest` row hit a 90 s fixture limit on the first run and the 600 s row limit on retry. It also failed on lanes B and C during their own standing runs.
+
+## Run 2: runner selftest
+
+Measured on November 17, 2026, on lane D with bundled Node 22.11.0. Lane C started its full standing suite 72 s into the baseline and ran for the remaining 528 s. Lane C's suite and a separate full standing run on lane D were both active throughout the final measurement.
+
+| Windows standing row | Start (CST) | Wall time | Result |
+| --- | --- | ---: | --- |
+| Before, unchanged at `5ee5744e` | 18:53:47 | 600.58 s | FAIL: hit the 600 s limit |
+| After, warm PowerShell and parallel fixture groups | 19:10:48 | 88.15 s | PASS: all 118 checks |
+
+The baseline completed 86 batch invocations before the cutoff. Those invocations spent 989.50 s in total, including time when they overlapped. The repeated PowerShell launches and waits on the shared Git mirror dominated fixture time. The initial Git fixture took 0.22 s to set up.
+
+The copied launchers now send their real helper scripts through ten warm Windows PowerShell processes. The test-only watchdog runs the local stub agent and returns its exit code. Independent cases have their own homes, logs, and mirrors. The mirror contention case holds the first fetch until the second checkout reports the lock wait, and the preflight timeout still exercises the real process-tree kill. All original case labels and checked failure messages are preserved.
+
+The full lane D standing suite exited 0 with 66 PASS, 2 KNOWN and 0 FAIL. It ran `runner_selftest` in 56.96 s, the new `lane_tools_refresh_selftest` row in 0.12 s, and `stage5_fail_selftest` in 27.89 s.

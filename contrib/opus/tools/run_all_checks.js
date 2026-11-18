@@ -163,6 +163,7 @@ function buildChecks() {
   add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
   add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
+  add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks
   add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
   add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
   add(OPUS + 'nem_direct_reads_report.js', [], 'normal', 300, false, true); // #364: report only, the count of direct save reads outside godot/campaign/
