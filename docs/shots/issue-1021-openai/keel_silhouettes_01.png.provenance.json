@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAAAXNSR0IArs4c6QAAAdBJREFUeJzt1rENwCAAwLDSDxiY+P9OekQHFMm+IGPGXPs8AABh7+0AAIC/DA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyPnGYAgTDyB2rAAAAAElFTkSuQmCC"
+	],
+	"date": "2026-11-18T03:15:28Z",
+	"image_sha256": "550ef5fbd547700c25e3cb9fb965f50bea564727da2f2e09aebcbe67918f87e2",
+	"inputs": [],
+	"picture_name": "keel_silhouettes_01.png",
+	"schema": 1,
+	"source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+	"source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+			"source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+			"source_dirty": true,
+			"stage": "sheet built"
+		}
+	],
+	"stage": "sheet built",
+	"stamp_box": [
+		0,
+		622,
+		564,
+		720
+	],
+	"stamp_template_sha256": "ac1a9c2b74bc5d0acd14ca953c9684f5ff3f2936c81d9d3f94d54f510fc81df3",
+	"strip_sha256": [
+		"ac1a9c2b74bc5d0acd14ca953c9684f5ff3f2936c81d9d3f94d54f510fc81df3"
+	],
+	"strip_size": [
+		564,
+		98
+	]
+}

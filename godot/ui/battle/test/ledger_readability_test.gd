@@ -1,6 +1,5 @@
 extends SceneTree
-# Issue 271 step 2: the battle screen's orders sheet (E1 LEDGER) against the rail spec's readability checks, at 1920x1080
-# and 2560x1440, headless. contrib/opus/briefs/campaign_rail_orders_sheet.md, "The readability pass":
+# KEEL's readability checks at 1080, 1440, and in a narrow window.
 #   - nothing the player reads is smaller than 17 px at 1080; Big Shoulders only for names, never under 28 px;
 #   - three text strengths (TEXT, TEXT2, TEXT3), TEXT3 only for joining words; ember the accent, NEM the Nemesis only,
 #     Glacier for shield readouts only (R210), nothing lime;
@@ -16,6 +15,11 @@ extends SceneTree
 
 const HUD := preload("res://ui/battle/hud.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
+const Brand := preload("res://ui/battle/brand.gd")
+const Icons := preload("res://ui/battle/icons/keel_icons.gd")
+const Rig := preload("res://render/camera_rig.gd")
+const Main := preload("res://main/main.gd")
+const Battle := preload("res://scenes/battle/battle.gd")
 
 var fails := 0
 var report: Array = []
@@ -48,14 +52,14 @@ func _init() -> void:
 
 func weapons(odds := true) -> Array:
 	return [
-		{"i": 0, "name": "Sear battery", "arc": "P", "rng": "1-5", "hit": -1, "why": "out of range", "right": "ready", "ready": true, "armed": false, "dmg": -1, "cost": "free", "desc": "Port broadside, 3x6 damage, range 5", "arc_tip": "Port broadside, range 1 to 5 hexes."},
-		{"i": 1, "name": "Sear battery", "arc": "S", "rng": "1-5", "hit": -1, "why": "out of range", "right": "ready", "ready": true, "armed": false, "dmg": -1, "cost": "free", "desc": "Starboard broadside, 3x6 damage, range 5", "arc_tip": "Starboard broadside, range 1 to 5 hexes."},
-		{"i": 2, "name": "Oath lance", "arc": "F", "rng": "1-7", "hit": 92 if odds else -1, "why": "92%" if odds else "ready", "right": "92%", "ready": true, "armed": false, "dmg": 16, "cost": "CD 2", "desc": "Forward, 1x18 damage, range 7, reload 2", "arc_tip": "Forward, range 1 to 7 hexes."}]
+		{"i": 0, "name": "Sear battery", "arc": "P", "kind": "battery", "range": 5, "distance": 6, "hit": -1, "why": "out of range", "ready": true, "cost": "free", "desc": "Port broadside, 3x6 damage, range 5"},
+		{"i": 1, "name": "Sear battery", "arc": "S", "kind": "battery", "range": 5, "distance": 6, "hit": -1, "why": "out of range", "ready": true, "cost": "free", "desc": "Starboard broadside, 3x6 damage, range 5"},
+		{"i": 2, "name": "Oath lance", "arc": "F", "kind": "lance", "range": 7, "distance": 6, "hit": 92 if odds else -1, "ready": true, "dmg": 16, "cost": "CD 2", "desc": "Forward, 1x18 damage, range 7, reload 2"}]
 
 
 func orders(all := false) -> Array:
 	var o: Array = [{"text": "Brace (B)", "act": "brace", "on": true, "tip": "Hull damage -40% until its next turn."},
-		{"text": "Concentrated fire", "act": "ability", "on": true, "tip": "+15 aim this round."},
+		{"text": "Concentrated fire", "act": "ability", "ability": "focus", "on": true, "tip": "+15 aim this round."},
 		{"text": "Ram (X)", "act": "ram", "on": all, "tip": "Charge the first enemy dead ahead."},
 		{"text": "Board (G)", "act": "board", "on": all, "tip": "Send boarding crews into an adjacent enemy."}]
 	if all:
@@ -68,7 +72,7 @@ func orders(all := false) -> Array:
 
 
 func ship(name := "Unyielding Oath", cls := "Vigil-class cruiser", ws: Array = [], ords: Array = [], flags := "[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]") -> Dictionary:
-	return {"name": name, "cls": cls, "side": "player", "flag": true, "hp": 135, "maxHp": 135, "sh": [20, 20, 20, 20], "shMax": 20,
+	return {"name": name, "cls": cls, "side": "player", "flag": true, "hp": 135, "maxHp": 135, "sh": [12, 15, 20, 11], "shMax": 80, "shp": 73, "code": "V15_37",
 		"stats": "Hull 135/135   Armor 20%   Evasion 10\nMovement 0 of 4   Turns 1", "captain": "Captain Ilsa Marr", "move": [0, 4], "arm": 20, "turns": 1,
 		"tag": "UP", "danger": 2, "flags": flags, "weapons": ws if not ws.is_empty() else weapons(), "orders": ords if not ords.is_empty() else orders()}
 
@@ -79,14 +83,15 @@ func rows(n := 3, long := false) -> Array:
 	for i in n:
 		var nm: String = names[i] if i < names.size() and not long else ("Sunward Martyr of the Ninth Pyre" if long and i == 0 else "Ember Picket %d" % (i + 1))
 		var st := "Up" if i == 0 else ("Ready" if i < n / 2 else "Done")
-		out.append({"id": "p%d" % i, "name": nm, "cls": "Picket", "hp": 135 - i * 3 if i != 1 else 85, "maxHp": 135, "sh": [10, 10, 10, 10], "shMax": 10,
+		out.append({"id": "p%d" % i, "name": nm, "cls": "Picket", "code": ["V15_37", "V14_23", "V17_37"][i % 3], "hp": 135 - i * 3 if i != 1 else 85, "maxHp": 135, "shMax": 55, "shp": 43,
 			"status": st, "sel": i == 0, "done": st == "Done", "flag": i == 0, "new": false, "danger": 1 if i == 1 else 0})
 	return out
 
 
 func target(name := "Fleet Marshal Petra Valk") -> Dictionary:
-	return {"name": name, "flag": true, "nem": true, "hp": 120, "maxHp": 120, "sh": [20, 20, 20, 20], "shMax": 20, "exp_hull": 8.0, "exp_sh": [7.0, 0.0, 0.0, 0.0],
-		"line": "The bearing gun: about 15 damage, about 7 on its prow shield and 8 on hull."}
+	return {"name": name, "flag": true, "nem": true, "hp": 120, "maxHp": 120, "sh": [20, 20, 20, 20], "shMax": 80, "shp": 46,
+		"exp_hull": 9, "exp_shields": 7, "bearing": 1, "gun": "Oath lance", "kind": "lance", "hit": 92, "gun_index": 2,
+		"line": "The bearing gun: about 16 damage: 7 to shields, 9 to hull."}
 
 
 func card_fire() -> Dictionary:
@@ -152,7 +157,7 @@ func measure(h, label: String, need_strengths := false) -> Dictionary:
 			check(false, "%s: TEXT3 only for joining words ('%s', role %s)" % [label, it["t"], it["role"]])
 		if nm == "GLACIER" and str(it["role"]) != "shield":
 			check(false, "%s: Glacier only for shield readouts ('%s')" % [label, it["t"]])
-		if nm == "NEM" and not ("Nemesis" == str(it["t"]) or str(it["t"]).to_lower() == str(h.ledger.nem.get("name", "")).to_lower() or str(it["t"]) == str(h.ledger.target.get("name", "")).to_upper() or (str(it["t"]).length() > 3 and str(it["t"]) in str(h.ledger.target.get("name", "")).to_upper())):
+		if nm == "NEM" and not ("Nemesis" == str(it["t"]) or str(h.ledger.target.get("name", "")).to_upper().begins_with(str(it["t"]).trim_suffix("..."))):
 			check(false, "%s: NEM only for the Nemesis ('%s')" % [label, it["t"]])
 		var r: Rect2 = L.item_rect(it)
 		if not screen.encloses(r):
@@ -166,7 +171,7 @@ func measure(h, label: String, need_strengths := false) -> Dictionary:
 		var d := 1.0
 		for p in [r.position, r.position + Vector2(r.size.x, 0), r.end, r.position + Vector2(0, r.size.y), r.get_center()]:
 			d = minf(d, L.dark_at(p))
-		var bright := Color(1, 1, 1).lerp(Color(0, 0, 0), d)
+		var bright := Brand.KEEL_TEXT_EDGE if bool(it.edge) else Color(1, 1, 1).lerp(Color(0, 0, 0), d)
 		var c := minf(contrast(col, bright), contrast(col, Color(0, 0, 0)))
 		if c < worst:
 			worst = c
@@ -182,6 +187,16 @@ func measure(h, label: String, need_strengths := false) -> Dictionary:
 	check(under == 0, "%s: every word at 4.5 to 1 or better over white and black boards (lowest %.2f, %s)" % [label, worst, worst_t])
 	check(overl == 0, "%s: no words overlap (%d)" % [label, overl])
 	check(out == 0, "%s: no word leaves the screen (%d)" % [label, out])
+	var art: Array = L.marks.filter(func(m): return m.k in ["ship", "glyph"])
+	var art_errors := []
+	for a in art:
+		var ar: Rect2 = a.r
+		if not screen.encloses(ar) or (a.k == "glyph" and ar.size.x < L.px(20)):
+			art_errors.append(a.id)
+		for it in items:
+			if ar.grow(-1).intersects(L.item_rect(it).grow(-1)):
+				art_errors.append("%s overlaps %s" % [a.id, it.t])
+	check(art_errors.is_empty(), "%s: silhouettes and glyphs fit; glyphs are at least 20 design px (%s)" % [label, ", ".join(art_errors)])
 	if need_strengths:
 		check(used.has("TEXT") and used.has("TEXT2") and used.has("TEXT3"), "%s: three text strengths in use" % label)
 	report.append(res)
@@ -247,7 +262,8 @@ func plate_halo(h, tag: String) -> void:
 
 
 func _run() -> void:
-	for sz in [Vector2i(1920, 1080), Vector2i(2560, 1440)]:
+	_ship_art()
+	for sz in [Vector2i(1920, 1080), Vector2i(2560, 1440), Vector2i(1152, 1024)]:
 		root.size = sz
 		root.content_scale_size = Vector2i.ZERO
 		await process_frame
@@ -264,16 +280,33 @@ func _run() -> void:
 		feed(h, {})
 		await process_frame
 		var r1 := measure(h, tag + " your turn, target", sz.y == 1080)
+		if sz.y == 1080:
+			check(is_equal_approx(h.ledger.sheet_r.size.y, 248.0), "1080p: the KEEL shelf is 248 px tall")
 		var a := acts(h)
-		for need in ["confirm", "arm", "brace", "ability", "rotl", "rotr", "next", "command", "end", "pick", "menu", "log"]:
+		for need in ["confirm", "arm", "brace", "ability", "rotl", "rotr", "next", "command", "end", "pick", "menu", "log_collapse"]:
 			check(a.has(need), "%s: '%s' is reachable on the sheet" % [tag, need])
 		check(int(a.get("arm", 0)) == 3 and int(a.get("pick", 0)) == 3, "%s: every gun and every fleet line can be clicked" % tag)
 		var words := PackedStringArray()
 		for x in h.ledger.items:
 			words.append(str(x["t"]))
 		var joined := " | ".join(words)
-		check("FIRE THE OATH LANCE" in joined and "92%" in joined and "UNYIELDING OATH" in joined and "Hegemony Navy, 2 ships" in joined, "%s: the moment reads as E1 (FIRE THE OATH LANCE, 92%%, the ship, the enemy)" % tag)
-		check("About 15 damage: 7 to its prow shield, 8 to hull." in " ".join(words), "%s: the expected damage is one sentence" % tag)
+		check("FIRE THE OATH LANCE" in joined and "92%" in joined and "UNYIELDING OATH" in joined and "Hegemony Navy, 2 ships" in joined, "%s: the KEEL shelf shows the ship, target, odds and fire button" % tag)
+		check("About 16 damage" in words and "7 to shields" in words and "9 to hull" in words and "73 / 80" in words, "%s: plain damage words and the actual pool, without summing its facings" % tag)
+		if sz.y == 1080:
+			check("Fire for effect" in words, "1080p: Command keeps its full standing name")
+		check(h.ledger.items.all(func(it): return it.role != "key"), "%s: no shortcut badges on the HUD" % tag)
+		_log_states(h, tag)
+		if sz.y == 1080:
+			_log_settings(h)
+		var bare := target()
+		bare.exp_shields = 0
+		bare.exp_hull = 16
+		h.set_target(bare)
+		h.ledger.ensure_layout()
+		var hull_words := " ".join(h.ledger.items.map(func(it): return it.t)).to_lower()
+		check("about 16 damage" in hull_words and "all to hull" in hull_words and not "to shields" in hull_words, "%s: unshielded preview says all to hull" % tag)
+		h.set_target(target())
+		h.ledger.ensure_layout()
 		var tips_ok := true
 		for x in h.ledger.hits:
 			if str(x["act"]) == "" and str(x["tip"]) == "":
@@ -282,7 +315,7 @@ func _run() -> void:
 		check(h.ledger.detail_bb.contains("Armor") and h.ledger.detail_bb.contains("Captain") and h.ledger.detail_bb.contains("Tab"), "%s: the ship name's hover carries the captain, armour and the keys" % tag)
 		no_lime(h, tag)
 		# hover over the ship name shows the detail layer
-		h.ledger._gui_input(_motion(Vector2(h.ledger.px(80), h.ledger.px(140))))
+		h.ledger._gui_input(_motion(h.ledger.sheet_r.position + Vector2(h.ledger.px(80), h.ledger.px(40))))
 		check(h.dtip.visible and h.dtip_text.text.contains("Captain"), "%s: hovering the ship's name shows what moved off the sheet" % tag)
 		h.ledger._gui_input(_motion(Vector2(4, sz.y * 0.5)))
 		# a click on the action box fires (emits confirm)
@@ -294,8 +327,8 @@ func _run() -> void:
 				h.ledger._gui_input(_click(Rect2(x["r"]).get_center()))
 		check(got.has("confirm"), "%s: a click on FIRE sends the battle's confirm" % tag)
 		h.action.disconnect(cb)
-		check(h.over_ui(Vector2(h.ledger.px(200), sz.y * 0.5)) and not h.over_ui(Vector2(sz.x * 0.7, sz.y * 0.5)), "%s: clicks on the sheet stay off the board, clicks in the clear part reach it" % tag)
-		check(h.clear_shift() > 100.0, "%s: the camera looks at the middle of the clear part (shift %.0f px)" % [tag, h.clear_shift()])
+		check(h.over_ui(h.ledger.sheet_r.get_center()) and not h.over_ui(Vector2(h.ledger.px(80), sz.y * 0.5)), "%s: shelf catches clicks and the old rail is open to the board" % tag)
+		await _camera_clear(h, tag)
 		# 2. the enemy's turn
 		feed(h, {"turn": "Enemy turn", "card": {}, "target": {}, "ship": {}, "cmd": false, "phase_kind": "enemy",
 			"phase_text": "[b][color=#c4a4ff]ENEMY TURN[/color][/b]  ·  Hegemony Navy: Iron Warden  ·  [color=#8d86a0]Enter hurries[/color]", "phase_p": 0.4})
@@ -304,7 +337,7 @@ func _run() -> void:
 		var j2 := ""
 		for x in h.ledger.items:
 			j2 += str(x["t"]) + " | "
-		check("Enemy turn" in j2 and "Hegemony Navy: Iron Warden" in j2 and not "FIRE" in j2, "%s: the enemy's turn says whose turn and who is moving, no action" % tag)
+		check("Enemy turn" in j2 and "Hegemony Navy:" in j2 and not "FIRE" in j2, "%s: the enemy's turn says whose turn and who is moving, no action" % tag)
 		# 3. a "you may" prompt (issue 529, PR 533's words) in the shot's place
 		feed(h, {"ask": {"kind": "may", "key": "debtDue", "n": "Debt Comes Due", "q": "Delay the whole volley to the start of next round? It fires then with +20% damage.",
 			"opts": [{"id": "yes", "n": "Delay the volley"}, {"id": "no", "n": "Fire it now"}]}})
@@ -316,21 +349,30 @@ func _run() -> void:
 		# 4. the long cases: the longest names, six guns, every order, 20 ships
 		var ws: Array = weapons()
 		for i in 3:
-			ws.append({"i": 3 + i, "name": "Hellfire torpedo rack", "arc": "T", "rng": "2-9", "hit": 41 + i, "why": "", "right": "", "ready": true, "armed": i == 1, "dmg": 30, "cost": "CD 3", "desc": "Turret, 1x30 damage."})
+			ws.append({"i": 3 + i, "name": "Hellfire torpedo rack", "arc": "T", "kind": "torp", "range": 9, "distance": 6, "hit": 41 + i, "ready": true, "armed": i == 1, "dmg": 30, "cost": "CD 3", "desc": "Turret, 1x30 damage."})
 		var long_ship := ship("Sunward Martyr of the Ninth Pyre", "Pyre-Barge, elite captain", ws, orders(true),
 			"[color=#9fd4ff]Braced: hull damage -40% until its next turn.[/color] [color=#ff8a72]Torpedoes inbound: move 3 or more hexes from its marked hex to dodge.[/color]")
 		var big := rows(20, true)
 		feed(h, {"rows": big})
 		await process_frame
 		var r4 := measure(h, tag + " 20 ships")
-		check(int(r4["fleet"].get("shown", 0)) >= 2 and int(acts(h).get("pick", 0)) == int(r4["fleet"].get("shown", 0)), "%s: a 20-ship fleet shows %d lines and folds the rest into one (hover lists them)" % [tag, int(r4["fleet"].get("shown", 0))])
+		check(int(r4.fleet.shown) >= 2 and int(acts(h).get("pick", 0)) == int(r4.fleet.shown), "%s: each visible fleet slot can be picked" % tag)
+		var ids := {}
+		for page in int(r4.fleet.pages):
+			h.ledger.fleet_page = page
+			h.ledger.layout()
+			for hit in h.ledger.hits:
+				if hit.act == "pick":
+					ids[hit.arg] = true
+		check(ids.size() == 20, "%s: every one of 20 ships is reachable in the fleet strip" % tag)
+		h.ledger.fleet_page = 0
 		feed(h, {"ship": long_ship, "target": target("Grand Admiral Seraphine Voss-Haldane"), "rows": rows(3, true)})
 		await process_frame
 		measure(h, tag + " six guns, every order, the longest names")
 		feed(h, {"ship": long_ship, "target": target("Grand Admiral Seraphine Voss-Haldane"), "rows": big})
 		await process_frame
-		var r6 := measure(h, tag + " all of it at once (6 guns, every order, 20 ships)")
-		check(h.ledger.compact == 1 and (int(r6["fleet"].get("shown", 0)) >= 1 or bool(r6["fleet"].get("summary", false))), "%s: when the sheet runs out of room the guns that cannot fire fold into one line and the fleet keeps its foot" % tag)
+		measure(h, tag + " all of it at once (6 guns, every order, 20 ships)")
+		check(int(acts(h).get("arm", 0)) == 6, "%s: six guns stay individually clickable above the fleet" % tag)
 		# 5. no ship up yet: pick a ship
 		feed(h, {"ship": {}, "target": {}, "card": {"name": "Pick a ship", "tag": "YOUR TURN", "steps": [], "say": "Pick a ship: click one of yours or press Tab.",
 			"buttons": [{"text": "Next ship (Tab)", "act": "next", "on": true, "big": true}]}})
@@ -339,11 +381,76 @@ func _run() -> void:
 		check(acts(h).has("next"), "%s: with no ship up, the action is Next ship (Tab)" % tag)
 		h.queue_free()
 		await process_frame
-	print("ledger readability: %d checks failed" % fails)
+	print("%s: KEEL readability: %d checks failed" % ["PASS" if fails == 0 else "FAIL", fails])
 	var f := FileAccess.open("user://ledger_readability.json", FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(report, "  "))
 	quit(1 if fails > 0 else 0)
+
+
+func _ship_art() -> void:
+	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ships/manifest.json")).ships
+	var hashes := {}
+	for code: String in manifest:
+		var tex := Icons.silhouette(code)
+		if tex != null:
+			hashes[FileAccess.get_sha256(Icons.DIR + "ships/" + code + ".png")] = true
+	check(hashes.size() == manifest.size() and not hashes.has(""), "every installed hull has a distinct silhouette (%d of %d)" % [hashes.size(), manifest.size()])
+
+
+func _log_states(h, tag: String) -> void:
+	var L = h.ledger
+	check(L.log_r.end.y < L.sheet_r.position.y and L.items.filter(func(it): return it.role == "log").size() == 4,
+		"%s: floating log defaults to three lines above the shelf" % tag)
+	check(is_equal_approx(L.dark_at(L.log_r.get_center()), Brand.KEEL_LOG_VEIL) and L.dark_at(L.sheet_r.get_center()) > 1.8 * Brand.KEEL_LOG_VEIL,
+		"%s: log veil is roughly half the shelf's opacity" % tag)
+	h.set_log_preferences(true, true)
+	L.ensure_layout()
+	var ticker: Array = L.items.filter(func(it): return it.role == "log")
+	check(ticker.size() == 2 and str(ticker[1].t).begins_with("Contact:"), "%s: collapsed ticker shows only the newest line" % tag)
+	var header: Array = L.hits.filter(func(hit): return hit.act == "log_collapse")
+	check(header.size() == 1 and str(header[0].tip).begins_with("Contact:"), "%s: the collapsed log still exposes the whole line on hover" % tag)
+	var log_r: Rect2 = L.log_r
+	h.set_log_preferences(false, true)
+	L.ensure_layout()
+	check(not L.log_r.has_area() and not h.over_ui(log_r.get_center()) and not acts(h).has("log_collapse"), "%s: Off removes the log veil, words and hit region" % tag)
+	h.toggle_log()
+	check(h.log_panel.visible and h.log_text.get_parsed_text().contains("Contact:"), "%s: the manual history remains available with the ticker off" % tag)
+	h.toggle_log()
+	h.set_log_preferences(true, false)
+
+
+func _log_settings(h) -> void:
+	var main := Main.new()
+	var battle := Battle.new()
+	battle.hud = h
+	h.set_log_preferences(false, true)
+	main._settings_to_battle(battle)
+	check(h.log_enabled and not h.log_collapsed, "old settings with no log fields open the three-line log")
+	main.settings.merge({"battle_log_enabled": false, "battle_log_collapsed": true}, true)
+	main._settings_to_battle(battle)
+	check(not h.log_enabled and h.log_collapsed, "saved log visibility and collapse preferences apply independently")
+	h.set_log_preferences(true, false)
+	battle.free()
+	main.free()
+
+
+func _camera_clear(h, tag: String) -> void:
+	var cam := Rig.new()
+	root.add_child(cam)
+	cam.current = true
+	cam.focus(Vector3.ZERO, 170.0)
+	await process_frame
+	await process_frame
+	var shelf: Rect2 = h.ledger.sheet_r
+	# Bound a 28-world-unit hull around the focus at the played camera.
+	var clear := not shelf.has_point(cam.unproject_position(Vector3.ZERO))
+	for x in [-14, 14]:
+		for y in [-14, 14]:
+			for z in [-14, 14]:
+				clear = clear and cam.unproject_position(Vector3(x, y, z)).y < shelf.position.y
+	check(clear, "%s: the shelf clears a selected hull at the default camera" % tag)
+	cam.queue_free()
 
 
 func _motion(p: Vector2) -> InputEventMouseMotion:

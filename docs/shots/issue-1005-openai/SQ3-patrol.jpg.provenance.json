@@ -1,0 +1,111 @@
+{
+  "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "SQ3-patrol.jpg",
+  "date": "2026-11-17T21:20:52Z",
+  "sources": [
+    {
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": true,
+      "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "SQ3-patrol-main-still.png",
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-17T21:20:51Z",
+      "image_sha256": "f92ba5b5d68a6f659a3edc69303b52b64995a6feea34b2eaa4756ffe65957479",
+      "sources": [
+        {
+          "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "SQ3-patrol-final-still.png",
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": true,
+      "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+      "stage": "installed in game",
+      "date": "2026-11-17T21:20:52Z",
+      "image_sha256": "ea3d292394e5e54eac8d8705588b8793396c80a52a2b26338a1b036b9e118ee2",
+      "sources": [
+        {
+          "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+          "source_dirty": true,
+          "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "SQ3-patrol-final-flight_1.png",
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": true,
+      "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+      "stage": "installed in game",
+      "date": "2026-11-17T21:20:52Z",
+      "image_sha256": "c7f779af321c78473b5c6a5fa47907fd72802aff525994db07480ed30d1b1dc2",
+      "sources": [
+        {
+          "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+          "source_dirty": true,
+          "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "SQ3-patrol-final-flight_2.png",
+      "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+      "source_dirty": true,
+      "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+      "stage": "installed in game",
+      "date": "2026-11-17T21:20:52Z",
+      "image_sha256": "b07190d271296962f7014b2b6824d7454e7d47b9ca13eb5dcc7b0cd5a0a73554",
+      "sources": [
+        {
+          "source_commit": "db4885e1632f78ebed9fd54535c49e8678072da3",
+          "source_dirty": true,
+          "source_diff_sha256": "16a3ddacafdf9ba52f3e5499bf56c7b0904ca707c2d85218d24835fa4391fd38",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    472,
+    636,
+    596
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "c79eb59c15120d0f3dee0d2c4d073a33677525ab8abb8a130764001c4c4a6314"
+  ],
+  "stamp_template_sha256": "ed1faf691f454bfee8e1eb55d4cf3d5f30ae79d2d5e66f62bd6003b8213fe1c5",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgFNLT4l/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fqQcBO/eunywAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "962b02ce11fca1e8d93612c10c29bb69258ea1d2dd536e830d2f67f54fb46abd"
+}

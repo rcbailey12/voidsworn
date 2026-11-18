@@ -11,6 +11,14 @@ const BANK := Vector3(0.22, 0.12, 0.065)
 const SPORE_BANK := 0.29
 const BREATH := 0.025
 const CLEARANCE := 0.04 # visible air between swept hull bounds, in craft lengths
+# Parked flight: three pockets around the anchor, each with its own pace and turn direction.
+# A Chorus swarm uses two staggered tiers of the same three pockets.
+const PATROL_PERIODS := [5.2, -6.3, 4.6, -5.8, 4.9, -6.7]
+const PATROL_ASPECT := 0.54
+const JINK := 0.26
+const ROLL_SLOT := 3.65
+const ROLL_TIME := 1.45
+const TURN_SAMPLE := 0.06
 var craft: Array = []
 var trails: Array = []
 var rests: Array = []
@@ -19,6 +27,14 @@ var phase := 0.0
 var length := 3.84
 var faction := "hegemony"
 var active := true
+var patrol_limit := 0.0 # battle wings opt in; strike and intercept effects keep their original weave
+var patrol_target := 0.0
+var _patrol_center := 0.0
+var _patrol_span := 0.0
+var _patrol_tier := 0.0
+var _patrol_axes: Array[Vector3] = []
+var _attitudes: Array[Quaternion] = []
+var _patrol_blend := 0.0
 var sample_t := 0.0
 var trail_mat: ShaderMaterial
 # issue 221: the ribbon's ageing (drift back along the craft's wake, widening, fading) runs in the vertex shader from
@@ -77,6 +93,7 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		ribbon.global_transform = Transform3D.IDENTITY
 		trails.append({"node": ribbon, "hist": []})
 	fit_formation()
+	_patrol_blend = patrol_target
 	step(0.0)
 
 # Measure in each craft's local frame, including nested mesh transforms and
@@ -170,6 +187,75 @@ func fit_formation() -> void:
 	for i in rests.size():
 		rests[i].z *= width_k
 		rests[i].x *= depth_k
+	if patrol_limit > 0.0 and not rests.is_empty():
+		_fit_patrol(radii)
+
+
+func _fit_patrol(radii: Array[Vector3]) -> void:
+	# A sphere around each measured mesh covers any bank or roll. Every pocket
+	# fits inside the hex's incircle, and adjacent pockets on a tier are separated
+	# by a plane halfway between their centres.
+	var reach := 0.0
+	for r in radii:
+		reach = maxf(reach, r.length())
+	var pad := CLEARANCE * length * 0.5
+	var room := maxf(0.0, patrol_limit - reach - pad)
+	_patrol_center = room * 0.79
+	_patrol_tier = reach + pad
+	var half_gap := sqrt(3.0) * 0.5
+	var radial_projection := half_gap * PATROL_ASPECT / (1.0 + JINK)
+	# Support of the ellipse along the separating plane's normal, plus the jink.
+	var toward_neighbor := Vector2(radial_projection, 0.5).length() + radial_projection * JINK
+	var hi := clampf((_patrol_center * half_gap - reach - pad) / toward_neighbor, 0.0, 2.9)
+	var lo := 0.0
+	for attempt in 10:
+		var span := (lo + hi) * 0.5
+		if Vector2(_patrol_center + span * PATROL_ASPECT, span).length() <= room:
+			lo = span
+		else:
+			hi = span
+	_patrol_span = lo
+	_patrol_axes.clear()
+	for i in rests.size():
+		var angle := -TAU * float(i % 3) / 3.0 + (PI / 3.0 if i >= 3 else 0.0)
+		_patrol_axes.append(Vector3(cos(angle), 0.0, sin(angle)))
+
+
+func _roll_progress(i: int, t: float) -> float:
+	# Only one craft breaks into a climbing roll at a time, then another takes a turn.
+	var count := mini(craft.size(), PATROL_PERIODS.size())
+	var beat := fposmod(t + phase, ROLL_SLOT * count)
+	return smoothstep(0.0, ROLL_TIME, beat - i * ROLL_SLOT)
+
+
+func _patrol_position(i: int, t: float) -> Vector3:
+	var p := phase + i * 2.41
+	var a: float = t * TAU / PATROL_PERIODS[i % PATROL_PERIODS.size()] + p
+	# A quicker cut across one part of the loop, with a slower return to the wing.
+	a += 0.28 * sin(a + p) + 0.11 * sin(2.0 * a - p)
+	var spread := 0.76 + 0.24 * sin(t * 0.58 + phase) * cos(t * 0.22 + p)
+	var span := _patrol_span * (1.0 - 0.12 * float(i % 3))
+	var minor := (cos(a) + JINK * sin(2.0 * a + p)) / (1.0 + JINK)
+	var radial := _patrol_center + span * PATROL_ASPECT * (spread * minor - 0.6 * (1.0 - spread))
+	var axis := _patrol_axes[i]
+	var rise := sin(a + p) * (0.44 + 0.13 * float(i % 3))
+	var climb := 1.65 * pow(sin(PI * _roll_progress(i, t)), 2.0)
+	# Keep the tiers apart even during the dive or climb, without shrinking the spores.
+	var y := rise + climb
+	if craft.size() > 3:
+		y = (_patrol_tier + 0.7 + y) * (-1.0 if i >= 3 else 1.0)
+	return axis * radial + axis.cross(Vector3.UP) * (span * spread * sin(a)) + Vector3.UP * y
+
+
+func _patrol_attitude(i: int, pos: Vector3) -> Quaternion:
+	var enter := (pos - _patrol_position(i, clock - TURN_SAMPLE)).normalized()
+	var leave := (_patrol_position(i, clock + TURN_SAMPLE) - pos).normalized()
+	# Bow along the flight path; use signed curvature for the ordinary bank.
+	var bow := (enter + leave).normalized()
+	var side := bow.cross(Vector3.UP).normalized()
+	var bank := clampf(-enter.cross(leave).y * 4.5, -0.68, 0.68)
+	var roll := TAU * _roll_progress(i, clock) * (1.0 if i % 2 == 0 else -1.0)
+	return (Basis(bow, side.cross(bow), side) * Basis(Vector3.RIGHT, bank + roll)).get_rotation_quaternion()
 
 func _process(dt: float) -> void:
 	step(dt)
@@ -180,16 +266,38 @@ func step(dt: float) -> void:
 	var sample := sample_t >= 1.0 / 30.0
 	if sample: sample_t = 0.0
 	trail_mat.set_shader_parameter("clock_now", clock)
+	var gain := 0.0
+	if active and _patrol_span > 0.0:
+		_patrol_blend = maxf(patrol_target, _patrol_blend - 2.0 * dt)
+		gain = smoothstep(0.0, 1.0, _patrol_blend)
 	for i in craft.size():
 		var n: Node3D = craft[i]
 		if active:
 			var t := clock * (1.8 if faction == "chorus" else 1.25) + phase + i * 1.73
 			var sway := SPORE_SWAY if faction == "chorus" else WEAVE.z
-			n.position = rests[i] + length * Vector3(sin(t * 0.77) * WEAVE.x, sin(t * 1.19) * WEAVE.y, sin(t) * sway)
+			var pos: Vector3 = rests[i] + length * Vector3(sin(t * 0.77) * WEAVE.x, sin(t * 1.19) * WEAVE.y, sin(t) * sway)
 			# Bow follows the weave; roll anticipates the next turn.
-			n.rotation = Vector3(-cos(t) * (SPORE_BANK if faction == "chorus" else BANK.x), -cos(t) * BANK.y, cos(t * 1.19) * BANK.z)
-			if faction == "chorus":
-				n.scale = Vector3.ONE * length * (0.83 if i % 2 else 1.0) * (1.0 + BREATH * sin(t * 2.0))
+			var bank := Vector3(-cos(t) * (SPORE_BANK if faction == "chorus" else BANK.x), -cos(t) * BANK.y, cos(t * 1.19) * BANK.z)
+			var facing := Basis.from_euler(bank)
+			var attitude := facing.get_rotation_quaternion() if _patrol_span > 0.0 else Quaternion.IDENTITY
+			if gain > 0.0:
+				var parked := _patrol_position(i, clock)
+				pos = pos.lerp(parked, gain)
+				attitude = attitude.slerp(_patrol_attitude(i, parked), gain)
+				# Filter the hand-off when a craft turns through the travel pose's back side.
+				if dt > 0.0:
+					var last := _attitudes[i]
+					var weight := 1.0 - exp(-24.0 * dt)
+					if gain < 1.0:
+						var turn := 2.0 * acos(clampf(absf(last.dot(attitude)), 0.0, 1.0))
+						weight = minf(weight, 12.0 * dt / maxf(turn, 0.001))
+					attitude = last.slerp(attitude, weight).normalized()
+				facing = Basis(attitude)
+			if _patrol_span > 0.0:
+				if i == _attitudes.size(): _attitudes.append(attitude)
+				else: _attitudes[i] = attitude
+			var size := length * ((0.83 if i % 2 else 1.0) * (1.0 + BREATH * sin(t * 2.0)) if faction == "chorus" else 1.0)
+			n.transform = Transform3D(facing.scaled(Vector3.ONE * size), pos)
 		var tr: Dictionary = trails[i]
 		var hist: Array = tr.hist
 		var stern := n.to_global(Vector3(-0.47, 0.0, 0.0))

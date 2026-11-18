@@ -89,7 +89,7 @@ def part_module_tones(S, objs):
     }
 
 
-def bake_copy(objs, name, zone_by_kind=None, module_tones=None):
+def bake_copy(objs, name, zone_by_kind=None, module_tones=None, plate_mesh=None):
     """one joined copy of these objects (same UVs and material slots, world space, no modifiers), so Cycles syncs the scene once
     per bake instead of once per object (round 6 lesson, bakeAb6.py); the originals are hidden from the render meanwhile"""
     cps = []
@@ -100,6 +100,9 @@ def bake_copy(objs, name, zone_by_kind=None, module_tones=None):
         if module_tones is not None:
             tone = c.data.attributes.new('ps_module_tone', 'FLOAT', 'POINT')
             tone.data.foreach_set('value', np.full(len(c.data.vertices), module_tones[o.name], np.float32))
+        if plate_mesh is not None and plate_mesh(o):
+            plates = c.data.attributes.new('ps_authored_panels', 'FLOAT', 'POINT')
+            plates.data.foreach_set('value', np.ones(len(c.data.vertices), np.float32))
         z = (zone_by_kind or {}).get((o.get('part_kind'), o.data.materials[0].name if o.data.materials else ''))
         if z:      # the faction stack gives this part kind its own zone (a launch bay mouth's warning stripes)
             ph = bpy.data.materials.get(z) or bpy.data.materials.new(z)
@@ -448,17 +451,24 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
     c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
     L = S.LAYERS
+    bare_roughness = L.get('bare_roughness')
     col = module_finish(c, S, zone, group, joints)
     seam = None
+    # The ship-frame lattice belongs to the shell. A fitting already has
+    # its own joints, edges and clearances in the built geometry.
     if group == 'H' and z.get('patchwork', 0) > 0:
         col, seam = patchwork(c, S, col, z['patchwork'])
-    elif group == 'P' and z.get('patchwork_parts', 0) > 0:
-        col, seam = patchwork(c, S, col, z['patchwork_parts'], cells=L['patch_parts'])
-    # The finish varies by at most 1.5 percent in either direction, in ship space.
-    col = mulc(nt, col, math_(nt, 'ADD', .985, math_(nt, 'MULTIPLY', c.noise(L['mottle_scale'], 2), .03)))
+    mottle = c.noise(L['mottle_scale'], 2)
+    tone_range = z.get('mottle_range', L.get('mottle_range', .03))
+    col = mulc(nt, col, math_(nt, 'ADD', 1 - tone_range / 2, math_(nt, 'MULTIPLY', mottle, tone_range)))
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['side_dark'], math_(nt, 'MULTIPLY', c.up, L['side_dark'])))
-    height = math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 4, .6), L.get('grain', .05))
-    rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 2), .08))
+    grain = c.noise(L['grain_scale'], 2 if bare_roughness is not None else 4, .6)
+    height = math_(nt, 'MULTIPLY', grain, L.get('grain', .05))
+    rough_grain = grain if bare_roughness is not None else c.noise(L['grain_scale'], 2)
+    rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', rough_grain, L.get('rough_grain', .08)))
+    if L.get('coat_roughness'):
+        coat = ramp(nt, mottle, .34, .66)
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', coat, L['coat_roughness']))
     metal = z.get('metal', L['metal'])
     wear_amt = z.get('wear', L['wear'])
     # 2. the trim sheet: scuffs everywhere, rivet rows set back from plate edges, the zone's own rows (grille, tread, stripes)
@@ -466,6 +476,8 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
     scuff = math_(nt, 'MULTIPLY', sc_a, z.get('scuff', L['scuff']))
     col = mixc(nt, col, S.BARE, math_(nt, 'MULTIPLY', scuff, .55))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', scuff, -.25))
+    if L.get('scuff_roughness'):
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', scuff, L['scuff_roughness']))
     if z.get('rivets', L['rivets']):
         rv_c, rv_a = c.tile(tiles['rivets'], L['rivet_pitch'])
         band = c.edge_band(L['rivet_band'][0], L['rivet_band'][1])
@@ -497,15 +509,23 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
     g = math_(nt, 'ADD', g, math_(nt, 'MULTIPLY', ramp(nt, c.x, L['soot_x'][1], L['soot_x'][0]), L['soot_aft']))
     g = math_(nt, 'MULTIPLY', g, z.get('grime', L['grime']), clamp=True)
     col = mixc(nt, col, S.GRIME, math_(nt, 'MULTIPLY', g, .8))
-    run = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['streak_scale'] * .7, 2, .5, stretch=(30, 30, 1.6)), .55, .74), c.side), z.get('grime', L['grime']) * .5)
+    streaks = c.noise(L['streak_scale'] * .7, 2, .5, stretch=(30, 30, 1.6))
+    run = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ramp(nt, streaks, .55, .74), c.side), z.get('grime', L['grime']) * .5)
+    if L.get('recess_streaks'):
+        # Vertical tracks show strongly below overhangs and around vents.
+        shelter = ramp(nt, c.aol, .97, .58)
+        residue = math_(nt, 'MULTIPLY', run, shelter)
+        run = math_(nt, 'ADD', run, math_(nt, 'MULTIPLY', residue, L['recess_streaks']))
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', run, .30))
     col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, run))
     cav = math_(nt, 'POWER', c.ao, L.get('cavity_pow', 1.0))
     ao_dark = L.get('parts_ao_dark', L['ao_dark']) if group == 'P' else L['ao_dark']
     col = mulc(nt, col, math_(nt, 'ADD', 1 - ao_dark, math_(nt, 'MULTIPLY', cav, ao_dark)))
+    if L.get('cavity_roughness'):
+        sheltered = math_(nt, 'SUBTRACT', 1, cav)
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', sheltered, L['cavity_roughness']))
     if seam is not None:       # black seams between the panels
         seam_dark = L.get('seam_dark', .8)
-        if group == 'P':
-            seam_dark = L.get('parts_seam_dark', seam_dark)
         col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, seam_dark)))
         panel_height = math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5))
         panel_height.node.label = 'NORMAL_PATCHWORK_HEIGHT'
@@ -514,14 +534,27 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints):
     # 5. decals (hull atlas): before the wear, so the wear eats into them
     wear = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', c.edge, ramp(nt, c.noise(L['wear_scale'], 6, .6), L.get('wear_lo', .38), L.get('wear_hi', .62))), wear_amt)
     wear = math_(nt, 'MULTIPLY', wear, ramp(nt, c.noise(L['wear_patch'], 2), .30, .66), clamp=True)
+    if bare_roughness is not None:
+        wear = math_(nt, 'MULTIPLY', wear, cav)
+    if z.get('handling_wear'):
+        # The trim's scratches also polish exposed fittings such as collars
+        # and rims. Short occlusion keeps them out of sheltered corners.
+        handling = math_(nt, 'MULTIPLY', scuff, math_(nt, 'MULTIPLY', cav, z['handling_wear']))
+        wear = math_(nt, 'MAXIMUM', wear, handling)
     if decals and decal_atlas is not None:
         col, height, rough = decal_layer(c, col, height, rough, decals, decal_atlas, S.DECAL_CELLS, math_(nt, 'ADD', math_(nt, 'MULTIPLY', scuff, .7), wear))
     # 6. edge wear to bare metal: broken up, only in some areas
     col = mixc(nt, col, S.BARE, wear)
-    rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', wear, .30))
-    metal = math_(nt, 'ADD', metal, math_(nt, 'MULTIPLY', wear, .6), clamp=True)
-    height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', wear, .1))
+    if bare_roughness is None:
+        rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', wear, .30))
     rough = math_(nt, 'MAXIMUM', math_(nt, 'MINIMUM', rough, 1.0), L.get('rough_floor', .05))
+    if bare_roughness is not None:
+        # Coat and exposed metal have separate finishes. The paint's
+        # roughness floor still applies across broad panel faces.
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', wear, math_(nt, 'SUBTRACT', bare_roughness, rough)))
+    metal_gain = math_(nt, 'SUBTRACT', 1, metal) if bare_roughness is not None else .6
+    metal = math_(nt, 'ADD', metal, math_(nt, 'MULTIPLY', wear, metal_gain), clamp=True)
+    height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', wear, .1))
     nt.links.new(col, bs.inputs['Base Color']); nt.links.new(rough, bs.inputs['Roughness'])
     if isinstance(metal, float): bs.inputs['Metallic'].default_value = metal
     else: nt.links.new(metal, bs.inputs['Metallic'])
@@ -1046,7 +1079,8 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
         tones = part_module_tones(S, objs) if group == 'P' else None
-        J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None), tones)
+        plate_mesh = getattr(S, 'authored_panel_mesh', None) if group == 'H' else None
+        J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None), tones, plate_mesh)
         hid = {o.name: o.hide_render for o in objs}
         for o in objs: o.hide_render = True
         for o in I: o.hide_render = True

@@ -7,7 +7,7 @@ const http = require('http');
 const {spawn, spawnSync} = require('child_process');
 const assert = require('assert/strict');
 const {makeCases} = require('./selftest');
-const {ASSETS, servePicture} = require('./publisher');
+const {ASSETS} = require('./publisher');
 
 const repo = path.resolve(__dirname,'../../..');
 const pageRoot = path.join(repo,'docs/mission');
@@ -23,7 +23,9 @@ function fixtureServer(getFixture) {
       if (!fixture) return res.writeHead(503).end();
       return res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify(fixture.data));
     }
-    if (req.url.startsWith('/pic/')) return void servePicture(req,res,fixture?.pictures || new Map());
+    const picture = /^\/pic\/([a-f0-9]{64})$/.exec(req.url);
+    const indexed = picture && fixture?.pictures.get(picture[1]);
+    if (indexed) return res.writeHead(200,{'Content-Type':indexed.type}).end(fs.readFileSync(indexed.file));
     if (Object.hasOwn(ASSETS,req.url)) return res.writeHead(200,{'Content-Type':ASSETS[req.url]}).end(fs.readFileSync(path.join(pageRoot,req.url.slice(1))));
     res.writeHead(404).end();
   });
@@ -33,10 +35,10 @@ async function devTools(browser, profile) {
   const portFile = path.join(profile,'DevToolsActivePort');
   let port;
   for (let i=0; i<150; i++) {
-    if (fs.existsSync(portFile)) {
+    try {
       port = Number(fs.readFileSync(portFile,'utf8').split('\n')[0]);
-      break;
-    }
+      if (port) break;
+    } catch (error) { if (!['ENOENT','EBUSY'].includes(error.code)) throw error; }
     if (browser.exitCode!==null) throw Error('Headless browser exited');
     await pause(100);
   }
@@ -92,7 +94,6 @@ function checkLayout() {
     const style = getComputedStyle(node);
     let effective = over(background(node.parentElement),color(style.backgroundColor));
     if (node.classList.contains('striped')) effective = over(effective,[255,178,62,.063]);
-    if (node.classList.contains('picture') && !node.classList.contains('has-image')) effective = [21,28,21];
     return effective;
   }
   const low = [], dimPanels = [];
@@ -106,7 +107,7 @@ function checkLayout() {
     if (element.classList.contains('meta') && element.closest('.on-panel') &&
       getComputedStyle(element).color===getComputedStyle(document.querySelector('.brand small')).color) dimPanels.push(text.textContent);
   }
-  const targets = [...document.querySelectorAll('a[href],summary')].filter(node=>node.checkVisibility());
+  const targets = [...document.querySelectorAll('a[href],summary,button')].filter(node=>node.checkVisibility());
   return {low,dimPanels,overflow:document.documentElement.scrollWidth>innerWidth,
     small:targets.filter(node=>node.getBoundingClientRect().height<44 || node.getBoundingClientRect().width<44).map(node=>node.textContent)};
 }
@@ -160,7 +161,7 @@ async function run() {
     const {send,evaluate,waitFor} = cdp;
     await send('Page.enable');
     await send('Runtime.enable');
-    const size = width => send('Emulation.setDeviceMetricsOverride',{width,height:H,deviceScaleFactor:1,mobile:true});
+    const size = (width,height = H,mobile = true) => send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile});
     await size(W);
     await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
     const injected = await send('Page.addScriptToEvaluateOnNewDocument',{source:'window.missionClock='+now+'; Date.now=()=>window.missionClock;'});
@@ -168,8 +169,8 @@ async function run() {
     function has(selector,pattern) {
       return '('+pattern+').test(document.querySelector('+JSON.stringify(selector)+')?.innerText || "")';
     }
-    async function screen(name,hash,test) {
-      live = cases[name];
+    async function screen(name,hash,test,project) {
+      live = project ? {...cases[name],data:project(structuredClone(cases[name].data))} : cases[name];
       await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:clockScript});
       const clock = live.now || now;
       clockScript = (await send('Page.addScriptToEvaluateOnNewDocument',{source:'window.missionClock='+clock+'; Date.now=()=>window.missionClock;'})).identifier;
@@ -177,14 +178,18 @@ async function run() {
       await send('Page.navigate',{url:'http://127.0.0.1:'+server.address().port+'/?case='+name+hash});
       await waitFor(test);
       await evaluate('document.fonts.ready.then(()=>true)');
-      await waitFor('[...document.images].every(img=>img.complete && img.naturalWidth>0)');
+      await waitFor('[...document.images].every(img=>img.complete && (img.closest("figure") || img.naturalWidth>0))');
     }
     const shotNames = [];
     async function capture(name) {
-      const shot = 'MC-r3-'+name+'.png';
-      const code = 'MC-R3 / '+name.toUpperCase()+' / FIXTURE';
+      const shot = 'MC-1118-'+name+'-pixel.png';
+      const revision = live.data.build.sourceRevision;
+      assert.match(revision,/^[a-f0-9]{40}$/);
+      const code = 'MC-1118 / '+name.toUpperCase()+' / SAMPLE DATA / '+revision.slice(0,12);
       await evaluate('(()=>{const label=document.createElement("p"); label.className="fixture-label"; label.textContent='+JSON.stringify(code)+'; document.querySelector("header").after(label);})()');
-      const image = await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+      const width = await evaluate('innerWidth');
+      assert.equal(width,W);
+      const image = await send('Page.captureScreenshot',{format:'png',clip:{x:0,y:0,width,height:H,scale:1}});
       fs.writeFileSync(path.join(scratch,shot),Buffer.from(image.data,'base64'));
       shotNames.push(shot);
     }
@@ -192,6 +197,7 @@ async function run() {
       const layout = await evaluate('('+checkLayout.toString()+')()');
       assert.deepEqual(layout,{low:[],dimPanels:[],overflow:false,small:[]},name);
       const dom = await evaluate('(()=>{const body=document.body.cloneNode(true); body.querySelectorAll("script").forEach(node=>node.remove()); return body.outerHTML;})()');
+      assert(!/picture-empty|No picture yet/i.test(dom),name+' rendered a picture placeholder');
       const privacy = dom+'\n'+JSON.stringify(live.data);
       assert(!/(?:^|[^a-z])[a-z]:[\\/]|\\\\Users\\|(?:\\|\/)(?:Users|home)(?:\\|\/)|RAW-LOG-SENTINEL|PrivatePerson|FOLDER-SENTINEL|MARKER-SENTINEL|0123456789abcdef0123456789abcdef/i.test(privacy),name+' leaked PC data');
       if (process.env.USERNAME) {
@@ -201,89 +207,158 @@ async function run() {
       assert.equal(await evaluate('document.getAnimations().length'),0);
     }
 
+    const closedIssues = {
+      'running-closed-issue':'PC runner records this job as running. The issue is closed on GitHub.',
+      'running-closed-issue-stale':'PC runner records this job as running. Last known issue state on GitHub is closed.',
+      'finished-closed-issue':null
+    };
+    const statusView = hash=>hash==='#task/main/970' ? '.task-title' : hash==='#queue' ? '#queue-main .now' : '#now-main .now';
     const screens = [
-      ['overview','',has('.hero-title',/Working.*Iron Mandate/is)],
+      ['overview','',has('#now-main .now',/Iron Mandate.*Running/is)],
       ['task','#task/main/970',has('.task-title',/Iron Mandate/)],
       ['decision','',has('.question',/Keep the egg shield/)],
-      ['failure','',has('.failure',/Runner exit 8/)],
+      ['failure','#task/b/928',has('.task-title',/Runner exit 8/)],
       ['offline','',has('#alerts',/PC feed lost/i)],
       ['unknown','#task/main/970',has('.task-title',/unreadable or unrecognized/)],
-      ['no-picture','#task/main/970',has('.task-picture',/No picture yet/i)],
-      ['missing-picture','#task/main/970',has('.task-picture',/No picture yet/i)],
+      ['no-picture','#task/main/970',has('.task-title',/Iron Mandate/)],
+      ['missing-picture','#task/main/970',has('.task-title',/Iron Mandate/)],
       ['queue','#queue',has('#queue-main',/Ready, start pending/i)],
       ['crew','#crew',has('#crew-artoo',/Last seen on GitHub/)],
       ['blocked','#task/c/978',has('.task-title',/Blocked/i)],
       ['quiet','#task/d/979',has('.task-title',/Quiet/i)],
-      ['checked-push','#task/main/970',has('.timeline',/PC confirmed a checked push/)],
-      ['ended','#task/deepseek/916',has('.task-title',/Ended without a push/i)],
-      ['leftover','',has('#content',/Older Codex main record #944/)],
+      ['checked-push','#task/main/970',has('.timeline',/Checked push confirmed/)],
+      ['ended','#task/deepseek/916',has('.task-title',/run ended without a confirmed push/i)],
+      ['leftover','',has('#now-main',/Details/)],
       ['claim','#task/main/970',has('.task-title',/Claimed/i)],
       ['claim-old','#task/main/970',has('.task-title',/Claim not confirmed/i)],
       ['github-unread','',has('#content',/Checking for questions/)],
       ['legacy','',has('#alerts',/Restart with PHONE_ON/)],
+      ['legacy-listing','',has('#now-main',/#922.*Last listed, queue unverified/is)],
+      ['legacy-listing','#queue',has('#queue-main',/#922.*Last listed, queue unverified/is)],
+      ['legacy-listing','#task/main/922',has('.task-title',/Last listed, queue unverified/i)],
+      ['pr-only','#task/main/970',has('.timeline',/PR recorded.*#1008.*open/s)],
+      ['pr-merged','#task/main/970',has('.timeline',/PR recorded.*#1008.*merged/s)],
+      ['pr-closed','#task/main/970',has('.timeline',/PR recorded.*#1008.*closed/s)],
+      ['review','#task/main/970',has('.timeline',/Technical review recorded.*recorded PR head/s)],
+      ['needs-ryan','',has('#content',/Keep the blue glow on the bow gun/)],
+      ['question-partial','',has('#content',/Needs Ryan check incomplete/)],
+      ['pc-partial','',has('#alerts',/Chain script missing/)],
       ['no-build','',has('#alerts',/Restart with PHONE_ON/)],
       ['old-build','',has('#alerts',/Restart with PHONE_ON/)],
       ['starting','',has('#content',/first read of PC files is in progress/)],
       ['long-title','#task/main/970',has('.task-title',/L{240}/)],
       ['privacy','#task/main/970',has('.task-title',/title withheld/)],
+      ...Object.entries(closedIssues).flatMap(([name,reason])=>['','#queue','#task/main/970'].map(hash=>
+        [name,hash,has(statusView(hash),reason ? /Issue conflict/i : /Finished/i)])),
       ...['questions','issues','pulls','comments'].map(source=>['github-'+source,'',has('#alerts',/GitHub unavailable/i)]),
       ['nov17','#queue',has('#queue-d',/Codex lane D/)]
     ];
     for (const [name,hash,test] of screens) {
       await screen(name,hash,test);
-      if (name==='failure') await evaluate('document.querySelector(".failure details").open=true');
+      if (name==='failure') await evaluate('document.querySelector("details[data-keep=run-b]").open=true');
       if (name==='queue') await evaluate('document.querySelector("#queue-b details").open=true');
       await check(name);
       if (name==='overview') {
-        const main = cases[name].data.lanes[0];
-        const current = main.pictures.find(picture=>picture.association==='this run');
-        assert.equal(await evaluate('document.querySelector(".hero img").getAttribute("src")'),'/pic/'+current.id);
-        assert.match(await evaluate('document.querySelector(".hero figcaption").innerText'),/#970.*rev .*INSTALLED IN GAME/s);
-        assert(!await evaluate('document.querySelector(".hero .older")!==null'));
+        assert.match(await evaluate('document.querySelector("#now-main .next").innerText'),/After #970.*#982/is);
+        assert.match(await evaluate('document.querySelector("#queue-count").innerText'),/3 recorded waiting jobs/);
         assert(await evaluate('document.fonts.check("700 22px Chakra") && document.fonts.check("800 22px Shoulders")'));
-        assert.equal(await evaluate('document.querySelector(".mate-strip").querySelectorAll(".ring.github").length'),3);
+        assert.equal(await evaluate('document.querySelectorAll(".mate-strip .ring.github").length'),3);
+        assert.equal(await evaluate('document.querySelectorAll(".mate-strip img").length'),6);
       }
       if (name==='decision') {
-        assert.deepEqual(await evaluate('[...document.querySelectorAll(".option-picture .picture-caption.kicker")].map(node=>node.textContent)'),['Option A','Option B']);
-        assert.equal(await evaluate('document.querySelectorAll(".option-picture img").length'),2);
         assert.match(await evaluate('document.querySelector(".question").innerText'),/Answer the Board in chat/);
+        assert.match(await evaluate('document.querySelector(".question").innerText'),/View Board picture/);
       }
       if (name==='failure') {
-        assert.match(await evaluate('document.querySelector(".failure figcaption").innerText'),/OLDER PICTURE.*#928.*820cbaca88b8.*INSTALLED IN GAME/s);
-        assert.match(await evaluate('document.querySelector(".failure details").innerText'),/Evidence.*status.json/s);
+        assert.match(await evaluate('document.querySelector("details[data-keep=run-b]").innerText'),/Evidence.*status.json/s);
       }
       if (name==='offline') {
-        assert.match(await evaluate('document.querySelector(".hero .status").innerText'),/was working/i);
-        assert.match(await evaluate('getComputedStyle(document.querySelector(".hero img")).filter'),/grayscale\(1\)/);
+        assert.match(await evaluate('document.querySelector("#now-main .status").innerText'),/last known.*running/i);
+        assert(!await evaluate(has('#content',/Nothing waiting on you/)));
+      }
+      if (name==='legacy-listing') assert(!await evaluate(has('#queue-count',/recorded waiting jobs?/)));
+      if (['pr-only','pr-merged','pr-closed'].includes(name)) {
+        const stages = await evaluate('[...document.querySelectorAll(".timeline li")].map(stage=>[stage.querySelector("strong").textContent,stage.hasAttribute("data-proved")])');
+        assert.deepEqual(stages.slice(1),[['Checked push unconfirmed',false],['PR recorded',true],['Review evidence unavailable',false]]);
+        assert(!await evaluate(has('.timeline',/reviewed|checked push confirmed/i)));
+      }
+      if (name==='task') {
+        assert(await evaluate('document.querySelector("figure.job-picture").checkVisibility()'));
+        await evaluate('(()=>{Object.defineProperty(navigator,"clipboard",{value:undefined});document.querySelector(".copy-button").click();})()');
+        assert.match(await evaluate('document.querySelector(".check-in").value'),/Check-in for the Board.*#970/s);
+        assert(await evaluate('document.querySelector(".check-in").selectionEnd>0'));
+      }
+      if (name==='no-picture' || name==='missing-picture') assert(!await evaluate('document.querySelector("figure.job-picture")?.checkVisibility() || false'));
+      if (name==='needs-ryan' || name==='question-partial') {
+        assert(await evaluate(has('#content',/Needs Ryan flagged; question unavailable/)));
+        assert(await evaluate(has('#content',/Open issue #931/)));
+        assert(!await evaluate(has('#content',/Nothing waiting on you|just a draft|View Board picture/)));
+        if (name==='question-partial') assert(await evaluate(has('.question',/Needs Ryan · last known.*1 h 5 min ago/is)));
+      }
+      if (name==='crew') {
+        assert(await evaluate(has('#crew-openai',/OpenAI workhorse patch/)));
+        assert(await evaluate(has('#crew-deepseek',/Stage 5 self-test repair/)));
+        assert(!await evaluate(has('#crew-openai',/Stage 5 self-test repair/)));
+        assert(!await evaluate(has('#crew-deepseek',/OpenAI workhorse patch/)));
+      }
+      if (name==='leftover') {
+        assert(!await evaluate(has('#now-main',/Older Codex main record #944/)));
+        assert.match(await evaluate('(()=>{const d=document.querySelector("#now-main details");d.open=true;return d.innerText;})()'),/Older Codex main record #944/);
+      }
+      if (name==='pc-partial') {
+        const notes = await evaluate('(()=>{const row = document.querySelector("details[data-keep=now-sources]");row.open=true; return row.innerText;})()');
+        assert.match(notes,/PC files incomplete.*last successful scan.*3 min ago.*Chain script missing/s);
       }
       if (name==='unknown') assert.match(await evaluate('document.querySelector(".task-title .status").innerText'),/^unknown$/i);
+      if (Object.hasOwn(closedIssues,name)) {
+        const reason = closedIssues[name], task = hash==='#task/main/970';
+        const notes = task ? '.task-title' : (hash==='#queue' ? '#queue-main' : '#now-main')+' .attention';
+        const text = await evaluate('document.querySelector('+JSON.stringify(notes)+').innerText');
+        if (reason) {
+          assert(text.includes((task ? '' : '#970 · ')+reason));
+          assert.doesNotMatch(text,/No blockers recorded/);
+          assert(await evaluate(has(statusView(hash)+' .status.bad',/^Issue conflict$/i)));
+          if (task) assert(await evaluate(has('.timeline li:first-child[data-proved]',/Runner.*Running/s)));
+        } else {
+          assert.doesNotMatch(text,/Issue conflict|PC runner records this job as running/);
+          if (task) assert(await evaluate(has('.facts',/Closed on GitHub/)));
+          else assert.match(text,/No blockers recorded/);
+        }
+      }
       if (name==='queue') {
         assert.match(await evaluate('document.querySelector("#queue-main").innerText'),/40 min.*waiting window may be closed/s);
         assert.match(await evaluate('document.querySelector("#queue-main").innerText'),/Closed on GitHub; chain still lists it/);
+        assert.equal(await evaluate('document.querySelectorAll("#queue-main .next .chain-group").length'),2);
+        assert(await evaluate(has('#queue-main .next',/After #970.*#923.*After #920.*#921/s)));
+        assert(await evaluate(has('#queue-main .attention',/Old .*no recorded ending.*target not found.*#988/s)));
+        assert(!await evaluate(has('#queue-main',/codex_chain_.*\.txt/)));
         assert.match(await evaluate('document.querySelector("#queue-b details").innerText'),/cancelled/);
-        assert.match(await evaluate('document.querySelector("#queue-d").innerText'),/Stuck.*target not found/is);
+        assert.match(await evaluate('document.querySelector("#queue-d").innerText'),/cancelled chain.*target not found.*target ambiguous/is);
       }
       if (name.startsWith('github-') && name!=='github-unread') {
-        assert.match(await evaluate('document.querySelector(".hero .status").innerText'),/working/i);
+        assert.match(await evaluate('document.querySelector("#now-main .status").innerText'),/running/i);
         const source = name.slice(7);
         const label = {questions:'Questions',issues:'Issues',pulls:'Pull requests',comments:'Comments'}[source];
         assert((await evaluate('document.querySelector("#alerts h2").textContent')).endsWith(label));
         assert.equal(await evaluate(has('#content',/Nothing waiting on you/)),source!=='questions');
+        const rows = await evaluate('(()=>{const d=document.querySelector("details[data-keep=now-sources]");d.open=true;return [...d.querySelectorAll("li")].map(row=>row.innerText);})()');
+        const index = ['questions','issues','pulls','comments'].indexOf(source);
+        assert.match(rows[index],new RegExp('last known.*1 h 5 min ago.*GitHub returned HTTP '+(501+index),'s'));
+        assert.equal(rows.filter(row=>row.includes('GitHub returned HTTP')).length,1);
       }
-      await capture(name);
-      console.log('PASS 412 px · '+name);
+      console.log('PASS 412 px · '+name+(Object.hasOwn(closedIssues,name) ? ' · '+(hash || '#now') : ''));
     }
 
     await size(320);
     await screen('long-title','#task/main/970',has('.task-title',/L{240}/));
     await check('320 px title');
-    await screen('overview','',has('.hero-title',/Iron Mandate/));
+    await screen('overview','',has('#now-main',/Iron Mandate/));
     await check('320 px overview');
-    await evaluate('document.querySelector(".hero-open").click()');
+    await evaluate('document.querySelector("#now-main .now a").click()');
     await waitFor(has('.task-title',/Iron Mandate/));
     assert(await evaluate('document.activeElement.tagName==="H2"'));
     await evaluate('document.querySelector(".back").click()');
-    await waitFor(has('.hero-title',/Iron Mandate/));
+    await waitFor(has('#now-main',/Iron Mandate/));
     await evaluate('document.querySelector("#nav-crew").click()');
     await waitFor(has('#crew-artoo',/Last seen on GitHub/));
     await evaluate('document.querySelector("#nav-queue").click()');
@@ -292,12 +367,32 @@ async function run() {
     await size(W);
     await screen('starting','',has('#content',/Mission Control is starting/i));
     live = cases.overview;
-    await waitFor(has('.hero-title',/Iron Mandate/));
+    await waitFor(has('#now-main',/Iron Mandate/));
     await evaluate('window.missionClock+=181000; document.dispatchEvent(new Event("visibilitychange"))');
     await waitFor(has('#alerts',/PC feed lost/i));
     assert.deepEqual(cdp.errors,[]);
+    for (const [name,fixture,hash,seat,ready] of [
+      ['running','overview','#now','main',has('#now-main',/Running/i)],
+      ['queued','queue-photo','#queue','main',has('#queue-main',/Ready, start pending/i)],
+      ['blocked','blocked','#now','c',has('#now-c',/Blocked/i)],
+      ['unknown','unknown','#now','main',has('#now-main',/target not found/i)],
+      ['offline','offline','#now','main',has('#alerts',/PC feed lost/i)],
+      ['needs-ryan','needs-ryan','#now','main',has('#content',/question unavailable/i)],
+      ['issue-conflict','running-closed-issue','#now','main',has('#now-main .attention',/The issue is closed on GitHub/)]
+    ]) {
+      await screen(fixture,hash,ready,data=>{
+        data.lanes = data.lanes.filter(lane=>lane.id===seat);
+        const lane = data.lanes[0];
+        if (name==='unknown') lane.queue.groups = lane.queue.groups.filter(group=>group.state==='unknown');
+        if (name==='offline' || name==='issue-conflict') for (const group of lane.queue.groups) group.jobs = group.jobs.slice(0,1);
+        return data;
+      });
+      await check(name+' capture');
+      await capture(name);
+    }
+    assert.deepEqual(cdp.errors,[]);
     stampShots(process.env.MISSION_STAMP_PYTHON,scratch,out,shotNames);
-    console.log('PASS Mission Control browser: '+shotNames.length+' states at 412 px, 320 px, contrast, privacy, navigation and startup transition.');
+    console.log('PASS Mission Control browser: '+screens.length+' states, narrow layout, startup, and '+shotNames.length+' fixture captures.');
   } catch (error) {
     console.error(browserError?.message || browserLog);
     throw error;

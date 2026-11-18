@@ -151,15 +151,22 @@ R225: one home per fact):
    B ambient occlusion at a long reach (grime). The hull is baked with the parts in place and the parts with the hull in place;
 4. builds one procedural material per (zone, atlas). R318 picks a family for the module first. Hull modules follow the sheet's
    joints, and fittings take one family across the whole authored assembly, including mounts and turning pieces. The sheet's
-   zones identify surface duties within that family. The base finish takes one local value step of up to 1.5 percent, sampled
-   in ship space. Strong lilac and metal accents follow their authored bands. Hullbreaker armour can change colour across its
-   irregular repair and trophy seams. The trim sheet's scuffs and rivet rows repeat at the same ship scale on the hull and
-   fittings (R224). Then come the zone's trim rows, rust in
-   cavities, under edges and in a few blooms, running down the sides; grime low, under parts and toward the engines; the decals;
-   edge wear to bare metal last, so it eats into the decals;
+   zones identify surface duties within that family. Each stack sets the small value step sampled in ship space. Strong lilac
+   and metal accents follow their authored bands. Hullbreaker shell armour changes colour across irregular repair and trophy
+   seams. The ship-frame panel pattern belongs to the hull atlas. The Navy's modelled slabs use their own gaps and take a
+   single tone per connected plate, within 8 percent in linear value. Bands use their authored joints. Fittings use the joints,
+   bevels and clearances built into each piece.
+   Fine grain, trim-sheet scuffs and any fastener rows repeat at the same scale on the hull and fittings (R224). Hegemony and
+   Hullbreaker coats use a wider satin roughness range on clean surfaces, with rougher sheltered faces and directional
+   residue below overhangs. The coating, fine grain and scuff layer all contribute to the roughness map. Broken wear follows
+   the convex edge mask, and handling scuffs polish exposed collars and similar fittings. Both expose lighter, smoother,
+   more metallic material over the paint. Hullbreaker oxidation and soot stay rough and the rust and trophy colours follow
+   their own masks;
 5. bakes albedo, ORM and a detail normal for both atlases. The normal uses the same layer height for hull panels and fittings,
    so wide fittings carry repeated surface relief. `export7.py` identifies atlases by mesh role and checks that the sheet
-   export binds both normal maps. The bake keeps glow, ember and light as their own emissive
+   export binds both normal maps and uses the same packed ORM image for occlusion, roughness and metal on each atlas.
+   The battle sky provides environment reflections, and the battle key and fill supply the direct specular response.
+   The bake keeps glow, ember and light as their own emissive
    surfaces; the insides keep the sheet's own materials;
    For a ship with a large normal input, the normal bake connects the existing bump normal to a simple surface and restores the original links in
    `finally`. A20's normal input alone still exceeds Cycles' SVM stack (issue 726 run 3). Run 4 tried CPU OSL first: its

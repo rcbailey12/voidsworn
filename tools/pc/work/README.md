@@ -164,6 +164,14 @@ refused-file guards still apply. status.json records a run
 id, branch, state, reason and commit; updates are atomic, with previous versions kept. Unexpected stops stay running and a
 chain times out instead of guessing success. Helper failures use exit 14; other runner exit codes keep their earlier meaning.
 
+Lane tools refresh (issue 1018). Before each job, after any predecessor has finished, run
+`powershell -NoProfile -File "%V%\lane_tools_refresh.ps1" -Build build_c` followed by `if errorlevel 1 exit /b 1`.
+Here `%V%` is `%USERPROFILE%\Downloads\voidsworn_test` and `lane_tools_refresh.ps1` is the Board's launcher copy
+outside the folder being refreshed. Use `build_b`, `build_c`, `build_d`, `build_e` or `work217` for the runner being called.
+The command checks that seat's issue status, fetches public `origin/main` through `lane_tools_source`, and keeps the previous
+tools in `runner_backups\<build>_<yyyyMMdd_HHmmss>\tools` when it installs a change. Matching tools use no backup slot.
+A fourth backup or a running job stops the refresh. The installed commit or failure is recorded in `lane_tools_refresh.txt`.
+
 GPU claims (R276, issue 847): `tmo.bat` uses `gpu_slots.js` for Godot rendering, Blender and explicit
 `PC_GPU_MODE=shared|solo` launches. Two holders live in `voidsworn_test\gpu_slot_1` and `gpu_slot_2` (JSON: issue, PID,
 start time, mode, token); `gpu_solo` reserves priority for a solo waiter. Empty files mean released, dead PIDs are

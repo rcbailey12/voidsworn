@@ -1,0 +1,24 @@
+{
+  "chains": [
+    {"file":"codex_chain_next","target":"codex_chain_fixture.txt","issues":[982,923]},
+    {"file":"codex_chain_split","target":"codex_chain_other.txt","issues":[921]},
+    {"file":"codex_chain_unclear","target":"codex_chain_missing.txt","issues":[988]},
+    {"file":"codex_lane_d12","target":"codex_lane_b25.txt","issues":[985]},
+    {"file":"codex_lane_d13","target":"codex_lane_d99.txt","issues":[986]},
+    {"file":"codex_lane_d14","target":"codex_lane_d11.txt","alternative":"codex_lane_d99.txt","issues":[987]}
+  ],
+  "titles": {
+    "921":"Open the Chorus flagship's two maws",
+    "923":"Check destroyer bridge clearance",
+    "984":"Repair the runner's brief reader",
+    "985":"Verify the workhorse runner",
+    "986":"Check the latest wreckage clearance",
+    "987":"Check the parity saved results",
+    "988":"Verify the station lighting"
+  },
+  "questions": [
+    {"number":930,"state":"open","title":"Bow ion gun paint","labels":["ryan"],"body":"Ask Ryan: Keep the blue glow on the bow gun?"},
+    {"number":931,"state":"open","title":"Final deck paint","labels":["ryan"],"body":"```md\nAsk Ryan: Example inside a fence.\n```"},
+    {"number":933,"state":"open","title":"Station lights","labels":[],"body":"Ask Ryan: Is this just a draft?"}
+  ]
+}
