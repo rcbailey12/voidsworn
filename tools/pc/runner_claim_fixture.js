@@ -48,6 +48,15 @@ if ($endpoint -match '/issues/[0-9]+$' -and $method -eq 'GET') {
   $id = [int]$Matches[1]
   $comment = @($db.comments | Where-Object { $_.id -eq $id })[0]
   if (-not $comment) { throw 'Unknown comment' }
+  if ($method -eq 'PATCH' -and $env:PC_TEST_GH_HOLD_FINISH -and $payload.body -notmatch 'Runner status: running') {
+    $hold = $env:PC_TEST_GH_HOLD_FINISH
+    [IO.File]::WriteAllText("$hold.ready", 'final comment waiting')
+    $deadline = [DateTime]::UtcNow.AddSeconds(45)
+    while (-not (Test-Path -LiteralPath "$hold.release")) {
+      if ([DateTime]::UtcNow -ge $deadline) { throw 'fixture final comment was not released' }
+      Start-Sleep -Milliseconds 25
+    }
+  }
   if ($method -eq 'PATCH') { $comment.body = $payload.body }
   $comment | ConvertTo-Json -Compress
 } else { throw "Unexpected REST call: $method $endpoint" }

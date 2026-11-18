@@ -45,7 +45,8 @@ if /i "%LANEDIR%"=="build_e" set "BOARD=board_d"
 if not defined CODEX_TEST_ROOT if not defined BOARD (echo job refused: this runner copy is in %LANEDIR%, which is not a lane tools folder ^(build_b to build_e^); no agent started & exit /b 2)
 set "R=%ROOT%\%BOARD%\repo"
 set "O=%ROOT%\%BOARD%\issue-%N%"
-set "BR=codex/issue-%N%"
+set "ASSIGNED_BRANCH=codex/issue-%N%"
+set "BR=%ASSIGNED_BRANCH%"
 set "PUSHMODE=real"
 rem R276: all nested GPU launchers inherit the issue and the code-only lane.
 set "PC_GPU_ISSUE=%N%"
@@ -65,6 +66,12 @@ if not errorlevel 1 (echo CODEX_TEST_BRANCH must not start with codex/, muse/, w
 set "BR=%CODEX_TEST_BRANCH%"
 set "PUSHMODE=test"
 :setup
+rem The PowerShell parent owns the lane until this batch returns, including final reporting.
+if "%~2"=="locked" if /i "%CODEX_LOCKED_REPO%"=="%R%" goto :locked
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1" run "%N%" "%R%"
+exit /b %ERRORLEVEL%
+:locked
+set "CODEX_LOCKED_REPO="
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1""
 set "PSW=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%work_issue.ps1""
 set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%runner_common.ps1""
@@ -91,7 +98,7 @@ if errorlevel 1 exit /b 14
 if errorlevel 1 exit /b 14
 rem Validate and claim before checkout, Base/resume merges, preflight or agent work (issue 888).
 if not defined CODEX_CAP set "CODEX_CAP=21600"
-%COMMON% announce "%O%" "%N%" codex "%R%" "%CODEX_CAP%" "codex_issue.bat %N%" "%PUSHMODE%"
+%COMMON% announce "%O%" "%N%" codex "%R%" "%CODEX_CAP%" "codex_issue.bat %N%" "%PUSHMODE%" "%ASSIGNED_BRANCH%"
 if errorlevel 1 exit /b 14
 set "SPARSE="
 if defined CODEX_TEST_ROOT set "SPARSE=%CODEX_TEST_SPARSE%"

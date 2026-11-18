@@ -117,10 +117,17 @@ Finish '0' 'STALLED after 30 min'
 $end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
 Assert ($end.payload.body.Contains('Runner status: partial') -and $end.payload.body.Contains('Branch: codex/issue-846-partial') -and $end.payload.body.Contains('STALLED after 30 min')) 'partial branch and reason'
 Pass 'retry reuses one paginated comment; partial names its branch and stop reason'
-Init 'failed' 'work/issue-846-deepseek'; Announce; Finish '8'
+Init 'failed'; Announce; Finish '8'
 $end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
 Assert ($end.payload.body.Contains('Runner status: failed') -and $end.payload.body.Contains('runner exit 8')) 'failed comment'
 Pass 'failed publish still edits status and clears the label'
+Init 'failed-checks'; Announce
+Put (Join-Path $out 'run_commit.txt') ('a' * 40); Put (Join-Path $out 'confirmed_commit.txt') ('a' * 40)
+Shared @('finish',$out,'0','','real','0')
+$end = @(Calls | Where-Object { $_.method -eq 'PATCH' })[-1]
+Assert ($end.payload.body.Contains('Runner status: unverified') -and $end.payload.body.Contains('checks did not pass')) 'confirmed push with failed checks stays unverified publicly'
+Assert ((Calls)[-1].method -eq 'DELETE') 'unverified finish still clears the running label'
+Pass 'a zero-exit confirmed push with failed checks cannot report finished'
 Init 'patch-failure'; Announce; $env:PC_TEST_GH_FAIL = 'PATCH'; Finish '0' 'CEILING'
 Assert ((Calls)[-1].method -eq 'DELETE') 'label clear after failed comment edit'
 Assert ((Get-Content (Join-Path $out 'status.json') -Raw | ConvertFrom-Json).status -eq 'partial') 'report failure cannot change run outcome'
@@ -419,22 +426,24 @@ foreach ($boundary in @('## Run 1 (Board, Nov 16): DONE', '**Run 1 (Board, Nov 1
 }
 Pass '975 run 2 keeps long and short Run 1 prose; heading, bold and short plain labels still end the brief'
 foreach ($seat in @('deepseek','kimi','kimicode','opus')) {
-  $seatPrefix = if ($seat -eq 'opus') { 'opus' } else { 'work' }
-  Init ('no-effort-' + $seat) ($seatPrefix + '/issue-846')
+  $branch = if ($seat -eq 'opus') { 'opus/issue-846' } else { "work/issue-846-$seat" }
+  Init ('no-effort-' + $seat) $branch
   $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
-  $db.issue.body = $db.issue.body.Replace("Effort (Codex): high\n",'').Replace('Owner: codex', ('Owner: ' + $seat))
+  $db.issue.body = $db.issue.body.Replace("Effort (Codex): high\n",'').Replace('Owner: codex', ('Owner: ' + $seat)).Replace('Branch: codex/issue-846', "Branch: $branch")
   Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
   Shared @('announce',$out,'846',$seat,$repo,'21600','resume','real')
   Finish '8'
 }
 Pass 'work, Kimi and Opus jobs need no Codex Effort or Models line'
 foreach ($seat in @('codex','deepseek','kimi','kimicode','opus','muse')) {
-  $seatPrefix = if ($seat -in @('codex','opus','muse')) { $seat } else { 'work' }
+  $branch = if ($seat -in @('codex','opus','muse')) { "$seat/issue-846" } else { "work/issue-846-$seat" }
   foreach ($form in @('plain','fenced-crlf')) {
-    Init ('new-job-' + $seat + '-' + $form) ($seatPrefix + '/issue-846')
+    Init ('new-job-' + $seat + '-' + $form) $branch
     $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
     $fixed = $db.issue.body.Substring(0, $db.issue.body.IndexOf("\n\n## THIS IS THE JOB NOW"))
-    if ($seat -ne 'codex') { $fixed = $fixed.Replace("Effort (Codex): high\n",'') }
+    if ($seat -ne 'codex') {
+      $fixed = $fixed.Replace("Effort (Codex): high\n",'').Replace('Owner: codex', ('Owner: ' + $seat)).Replace('Branch: codex/issue-846', "Branch: $branch")
+    }
     $body = $fixed + "\n\nFinish the new job.\n## Checks\nKeep all new-job checks.\n"
     if ($form -eq 'fenced-crlf') { $body = ('\x60\x60\x60text' + "\n" + $fixed + "\n" + '\x60\x60\x60' + "\n\nFinish the new job.\n").Replace("\n","\r\n") }
     $db.issue.body = $body
@@ -448,7 +457,7 @@ foreach ($seat in @('codex','deepseek','kimi','kimicode','opus','muse')) {
 Pass 'new jobs with a single plain or fenced fixed block need no current-run marker on every seat'
 Init 'work-opus-prefix' 'work/issue-846-opus'
 $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
-$db.issue.body = $db.issue.body.Replace("Effort (Codex): high\n",'')
+$db.issue.body = $db.issue.body.Replace("Effort (Codex): high\n",'').Replace('Branch: codex/issue-846','Branch: work/issue-846-opus')
 $db.branches += @(@{ name = 'work/issue-846-opus' })
 $db.pulls = @(@{ number = 999; head = @{ ref = 'work/issue-846-deepseek' } })
 Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
@@ -496,7 +505,7 @@ $skip = $db.issue | ConvertTo-Json -Depth 12 | ConvertFrom-Json
 $skip.number = 848; $skip.labels = @(@{ name = 'ryan' })
 $muse = $db.issue | ConvertTo-Json -Depth 12 | ConvertFrom-Json
 $muse.number = 849; $muse.labels = @(@{ name = 'muse' })
-$muse.body = $muse.body.Substring(0, $muse.body.IndexOf("\n\n## THIS IS THE JOB NOW")) + "\n\nNew Muse job."
+$muse.body = $muse.body.Substring(0, $muse.body.IndexOf("\n\n## THIS IS THE JOB NOW")).Replace('Owner: codex','Owner: muse').Replace('Branch: codex/issue-846','Branch: muse/issue-849') + "\n\nNew Muse job."
 $db | Add-Member -NotePropertyName issues -NotePropertyValue @($accept,$refuse,$skip,$muse)
 $db.branches += @(@{ name = 'codex/issue-846' }); $db.pulls = @(@{ number = 900; head = @{ ref = 'codex/issue-846' } })
 Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
@@ -592,13 +601,13 @@ console.log('PASS PowerShell probes elapsed: ' + ((Date.now() - probeStarted) / 
     PC_TEST_GH_TRACE: trace, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '1' };
   const common = path.join(pc, 'runner_common.ps1');
   const args = words => ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', common, ...words];
-  const outs = ['codex', 'deepseek'].map(seat => {
-    const out = path.join(race, seat); fs.mkdirSync(out);
-    const init = spawnSync(ps, args(['init', out, seat + '/issue-846']), { env, encoding: 'utf8', windowsHide: true });
+  const outs = ['lane-a', 'lane-b'].map(lane => {
+    const out = path.join(race, lane); fs.mkdirSync(out);
+    const init = spawnSync(ps, args(['init', out, 'codex/issue-846']), { env, encoding: 'utf8', windowsHide: true });
     assert.equal(init.status, 0, init.stderr); return out;
   });
-  const results = await Promise.all(outs.map((out, n) => new Promise((resolve, reject) => {
-    const child = spawn(ps, args(['announce', out, '846', n ? 'deepseek' : 'codex', path.join(out, 'repo'), '21600', 'resume', 'real']), { env, windowsHide: true });
+  const results = await Promise.all(outs.map(out => new Promise((resolve, reject) => {
+    const child = spawn(ps, args(['announce', out, '846', 'codex', path.join(out, 'repo'), '21600', 'resume', 'real']), { env, windowsHide: true });
     let output = ''; child.stdout.on('data', b => output += b); child.stderr.on('data', b => output += b);
     child.on('error', reject); child.on('close', code => resolve({ code, output, out }));
   })));
@@ -609,5 +618,5 @@ console.log('PASS PowerShell probes elapsed: ' + ((Date.now() - probeStarted) / 
   assert.equal(JSON.parse(read(database)).comments.length, 1);
   const finish = spawnSync(ps, args(['finish', results.find(r => r.code === 0).out, '8', '', 'real', '0']), { env, encoding: 'utf8', windowsHide: true });
   assert.equal(finish.status, 0, finish.stderr); assert(!JSON.parse(read(database)).running);
-  console.log('PASS simultaneous Codex and work starts yield exactly one claim; losing run cannot clear it');
+  console.log('PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it');
 })().catch(e => { console.error(e.stack); process.exitCode = 1; });
