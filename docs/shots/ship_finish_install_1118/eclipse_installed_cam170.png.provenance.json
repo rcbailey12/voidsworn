@@ -1,0 +1,105 @@
+{
+  "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "eclipse_installed_cam170.png",
+  "date": "2026-11-18T14:03:42Z",
+  "sources": [
+    {
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "D9_23_cam170.jpg",
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T14:01:47Z",
+      "image_sha256": "0b846640d5b649d36ee17c7d30adae35577d00a48c7bc3d673b8eb527f1c80ad",
+      "sources": [
+        {
+          "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "D20_23_cam170.jpg",
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T14:01:47Z",
+      "image_sha256": "a7e1fdb7bea29e4168a60f2cef46ae71617abc73a3cacf97a1433b10f959c167",
+      "sources": [
+        {
+          "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "D21_23_cam170.jpg",
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T14:01:47Z",
+      "image_sha256": "76cf0fddda00f7da87e013fa3e1e2fb23f332fbdba39af6113c89699401af410",
+      "sources": [
+        {
+          "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "D22_23_cam170.jpg",
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T14:01:47Z",
+      "image_sha256": "2d6a6150b26e552fe1ab77719d052343028d15addffc3998cd6c79bfc5626696",
+      "sources": [
+        {
+          "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    504,
+    720
+  ],
+  "strip_size": [
+    504,
+    98
+  ],
+  "strip_sha256": [
+    "f35ef090e69b242955320e72aa9558d5ae5bc1dd264ef2b09b65f5a5c30a9daa"
+  ],
+  "stamp_template_sha256": "f35ef090e69b242955320e72aa9558d5ae5bc1dd264ef2b09b65f5a5c30a9daa",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfgAAABiCAIAAAAzwFa5AAABeklEQVR4nO3UMQ0AIQDAQHgFLKz4l/kqCElzp6BT59pnAND1vQ4A4C6jB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gNH2A6fRAQcjf2q9AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "c18060bd0856114c8b1b72c1e02a23915a37096812097b8e7a21043b969f2e8e"
+}
