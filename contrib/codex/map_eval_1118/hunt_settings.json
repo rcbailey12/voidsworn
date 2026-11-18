@@ -1,0 +1,7 @@
+[
+  {"exitOffset": 1, "screenGap": 5, "flee": 10, "exitLane": 0.45, "separation": 1, "approachTurns": 4},
+  {"exitOffset": 1, "screenGap": 5, "flee": 10, "exitLane": 0.45, "separation": 1, "approachTurns": 3.5},
+  {"exitOffset": 1, "screenGap": 5, "flee": 10, "exitLane": 0.45, "separation": 1, "approachTurns": 3.75},
+  {"exitOffset": 1, "screenGap": 5, "flee": 10, "exitLane": 0.45, "separation": 1, "approachTurns": 4.25},
+  {"exitOffset": 1, "screenGap": 5, "flee": 10, "exitLane": 0.45, "separation": 1, "approachTurns": 4.5}
+]
