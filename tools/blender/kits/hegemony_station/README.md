@@ -1,5 +1,29 @@
 # Hegemony station kit: station_T2 production paint
 
+## Issue 863: detached damage-side debris
+
+After installing the approved issue 975 run 3 paint, double-click `debris_run.bat` from the checkout. It builds the
+part set with the T2 paint, installs `gen/ships/station_T2_debris.scn`, checks the live board, captures twice and keeps
+the second pass. The final step runs the solo #207 station-map gate. `STATION_DEBRIS_RESUME=1` reuses a current build.
+`STATION_DEBRIS_RULES` can point to an upcoming Godot rules file for a second clearance check in the same run.
+Review pictures go to `board/issue-863/shots`. The launcher prints the TEMP folder for logs and measurements.
+The install preserves replaced debris caches.
+
+`debris.py` builds folded pressure skin with burnt backs and peeled ribs, open docking trusses with broken braces,
+a split pressure pod, a torn sensor dish and fine pieces of skin and rail. The CC0 geometry uses the approved T2
+Hegemony paint tiles at their two-unit repeat, with separate material tones for scorched interiors and torn edges.
+
+`godot/render/station_debris.gd` tumbles each piece independently around a fixed centre. The live board derives the
+blocked area from its station cells and shifts the group outward along the stub if a larger footprint needs room.
+`debris_check.gd` reads the rules radius from `TERRAIN_META.stationR` through the battle view, with a fallback of 1.
+It checks every loaded piece against every blocked cell, every station bearing and the full tumble sphere. It also checks
+vertical separation from fitted roster and boss hulls and verifies the PBR channels, hashes, triangles and motion.
+
+Review evidence and measured placement: `docs/shots/look_bench/station/debris_README.md`. The recipe entry is still
+`tools/recipe/stations/station_T2.json`; the station paint route and debris route can be reproduced separately.
+
+## Issue 975: production paint
+
 Issue 975 authorizes painting and installing the PR 700 shape approved by Ryan Nov 17. Double-click
 `tools/recipe/station_paint.bat` for the station adapter to recipe stages 5 to 7, two capture passes and the station-map
 frame gate. It retains every evaluated triangle and inside, preserves replaced T2 files, and changes no rules cells.

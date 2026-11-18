@@ -4,6 +4,10 @@ Ryan asked for a station-wide method correction after run 2's random plate colou
 loose square debris. This run replaces that method across the station. The accepted layout, scale, insides, module joints,
 90 marker lights, five battery strips, lit window bands and hanging-radiator motion remain. Footprint and rules belong to 983.
 
+Issue 863 adds a separate damage-side debris kit on this painted base. Its current pictures, motion proof, triangle
+cost and per-piece cell clearances are in [the debris evidence](debris_README.md). The production paint record below
+belongs to issue 975 and remains the reference for the unchanged base station.
+
 Method: [build sheet and inventory](feature_table.md), [production manifest](production_manifest.json),
 [station recipe entry](../../../../tools/recipe/stations/station_T2.json). The PR 700 kit goes through stages 5 to 7 using
 [production.py](../../../../tools/blender/kits/hegemony_station/production.py) and the private

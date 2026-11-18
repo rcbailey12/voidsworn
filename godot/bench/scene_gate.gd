@@ -627,9 +627,12 @@ func _build(mode: String, seed: int) -> void:
 		await get_tree().process_frame
 	if str(sc.map) == "station":
 		var installed := 0
+		var debris_pieces := 0
 		for child in b.board.find_children("*", "", true, false):
 			if child.has_meta("station_T2"): installed += 1
+			if child.has_meta("debris_kind"): debris_pieces += 1
 		report["station_T2_instances"] = installed
+		report["station_T2_debris_pieces"] = debris_pieces
 	# nobody drives this battle: no mouse or keys move the camera or pick a ship while it is measured
 	b.cam.input_enabled = false
 	b.cam.keyboard_enabled = false
