@@ -97,12 +97,12 @@ def pair(k):
 # ------------------------------------------------------------------------------------------------------------ the layers
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
-    ao_short=.004, ao_long=.025, edge_radius=.0014, edge_gain=18.0,      # the masks (a wider edge than the Hullbreakers': the machined bevels read)
-    # pass 2: no fine mottle, no grain, almost none of the per-island tone (the sheet's thousands of tiny plate islands each took
-    # their own tone, which read as grainy paint); the plate families and their seams carry the variety, in big calm panels
-    side_dark=.30, grain_scale=260.0, mottle_scale=40.0, grain=0.0,
-    rough=.66, metal=.40, wear=1.0, grime=.50, ao_dark=.92, red_tone=0.0,
-    rough_floor=.50,     # the roughness floor (ships.md section 0 item 2, pass 5): no white specular glare at the game's key light
+    ao_short=.004, ao_long=.025, edge_radius=.0014, edge_gain=24.0,
+    # The authored bands carry colour. Fine grain mainly changes the sheen of the coat.
+    side_dark=.18, grain_scale=260.0, mottle_scale=40.0, grain=.015, mottle_range=.05,
+    rough=.36, metal=.40, wear=1.25, grime=.50, ao_dark=.78, parts_ao_dark=.70, red_tone=0.0,
+    rough_floor=.30, bare_roughness=.22, rough_grain=.10, coat_roughness=.15,
+    cavity_roughness=.20, scuff_roughness=.24, recess_streaks=1.25,
     # R243: mechanically aligned panels with recessed seams and shallow relief, all in one ship coordinate frame.
     patch_big=(.090, .060, .050), patch_small=(.040, .026, .022), patch_over=(.110, .070, .060), patch_over_share=.06,
     patch_region=3.0, patch_seam=.0020, seam_dark=.95,
@@ -115,7 +115,7 @@ LAYERS = dict(
     wear_scale=40.0, wear_patch=3.0, bump_distance=.0008, bump_strength=.50, panel_relief=.95,
     # issue 783 (Ryan, Nov 15 2026 07:02 CST, R256: "let's make sure that the paint actually is even on each side, it's not
     # consistent now"): the paint mirrors across the centre line. Every pattern reads the ship's position folded to the port side
-    # (x, |y|, z), each plate's own random is shared with its mirror twin (shared paint_stack.mirror_islands), the starboard marks
+    # (x, |y|, z), the starboard marks
     # are the port marks mirrored and the top mark sits on the centre line; the corona line's arcs and breaks mirror too. The
     # engine rings keep their own pattern each (item 4 below): an engine is not a port and starboard pair of plates.
     mirror=True,
@@ -123,16 +123,16 @@ LAYERS = dict(
 # pass 2: the shade plates, the body behind them and the machinery differ in finish, not only colour: the shades a matte heat
 # shield, the body a satin metal, the machines (guns, engines, saddles, rails) a brighter worked metal
 ZONES = dict(
-    shade=dict(rust=0, grime=.50, patchwork=1.0, rough=.80, metal=.15),
-    shade2=dict(rust=0, grime=.55, patchwork=1.0, rough=.74, metal=.20),
-    violet=dict(rust=0, grime=.50, patchwork=.9, rough=.58, metal=.50, rivets=1),
-    mauve=dict(rust=0, grime=.50, patchwork=.7, rough=.60, metal=.45),
-    lilac=dict(rust=0, grime=.60, patchwork=.6, rough=.66, metal=.35),
-    gunv=dict(rust=0, metal=.78, rough=.50, wear=1.2),
-    steel=dict(rust=0, metal=.80, rough=.48, wear=1.1),
-    iron=dict(rust=0, metal=.60, rough=.55, rivets=0, scuff=.05),
+    shade=dict(rust=0, grime=.50, patchwork=1.0, rough=.47, metal=.17),
+    shade2=dict(rust=0, grime=.55, patchwork=1.0, rough=.41, metal=.24),
+    violet=dict(rust=0, grime=.50, patchwork=.9, rough=.33, metal=.42, rivets=1),
+    mauve=dict(rust=0, grime=.50, patchwork=.7, rough=.35, metal=.40),
+    lilac=dict(rust=0, grime=.60, patchwork=.6, rough=.38, metal=.35),
+    gunv=dict(rust=0, metal=.64, rough=.28, wear=1.42, handling_wear=.45),
+    steel=dict(rust=0, metal=.75, rough=.24, wear=1.40, handling_wear=.55),
+    iron=dict(rust=0, metal=.60, rough=.32, rivets=0, scuff=.05, handling_wear=.40),
     dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92),
-    bell=dict(base='gunv', rust=0, metal=.35, rough=.80, wear=.6, grime=.7),     # engine bells and housings: matte, never mirror black
+    bell=dict(base='gunv', rust=0, metal=.35, rough=.59, wear=.6, grime=.7),     # engine bells and housings stay matte
 )
 _BASE = dict(shade='shade', shade2='shade2', violet='violet', mauve='mauve', lilac='lilac', gunv='gunv', steel='steel', iron='iron',
              dark='grime', bell='gunv')
@@ -148,6 +148,30 @@ ZONE_BY_KIND = {('engine', 'gunv'): 'bell', ('engine', 'shade'): 'bell', ('engin
 BARE = lin(CONCEPT['bare'][1])
 GRIME = lin(CONCEPT['grime'][0])
 RUST = RUST_DARK = GRIME          # read by the shared rust layer only where a zone has rust, and no Eclipse zone has
+LEGACY_FINISH_ZONE = 'violet'
+LEGACY_ALBEDO_BLEND = .76
+# The A4 relief is much stronger than the sheet's. Soften its fine ridges
+# while keeping the seam shapes and giving clean faces a lower satin sheen.
+LEGACY_COAT = dict(rough=.24, metal=.46, wear=1.45, handling_wear=.40, normal_strength=.76)
+
+
+def legacy_paint_mesh(obj):
+    """The damage overlays can share UVs with the intact hull."""
+    return obj.get('kind') not in ('breach_skin', 'ram_skin')
+
+
+def legacy_panel_colour(c, colour):
+    """Pull ordinary violet faces towards one base while keeping dark joints and brighter livery bands."""
+    from paint_stack import node, math_, mixc, ramp
+
+    nt = c.nt
+    luma = node(nt, 'ShaderNodeRGBToBW')
+    nt.links.new(colour, luma.inputs[0])
+    value = luma.outputs[0]
+    above_joints = ramp(nt, value, .004, .010)
+    below_bands = ramp(nt, value, .033, .016)
+    weight = math_(nt, 'MULTIPLY', above_joints, below_bands)
+    return mixc(nt, colour, lin_raw((27, 20, 34)), math_(nt, 'MULTIPLY', weight, .66))
 
 
 def panel_nodes(c, col, amount, families=None, cells=None):
