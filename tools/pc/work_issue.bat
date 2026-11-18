@@ -285,7 +285,7 @@ set "TMO_REPO=%R%"
 set "TMO_OUT=%O%"
 set "TMO_LOG=%O%\log.txt"
 set "TMO_ERR_LOG=%O%\stderr.txt"
-if /i "%ARM%"=="openai" goto :agent_oc
+if /i "%ARM%"=="openai" goto :agent_openai
 if "%PC_RUNNER_TEST%"=="1" goto :testagent
 if /i "%MODE%"=="dryrun" goto :agent_oc
 rem The kimicode arm uses Kimi Code CLI and the PC user's plan login, matching its preflight.
@@ -313,6 +313,10 @@ call "%T%tmo.bat" %WORK_CAP% "%KIMIEXE%" -m %KMODEL% --output-format stream-json
 goto :agent_end
 :testagent
 call "%T%tmo.bat" %WORK_CAP% "%COMSPEC%" /d /s /c ""%WORK_TEST_AGENT%"" > "%O%\log.txt" 2> "%O%\stderr.txt"
+> "%O%\exit.txt" echo %ERRORLEVEL%
+goto :agent_end
+:agent_openai
+%PS% openai-agent "%O%" "%R%" "%OC%" "%MODEL%" "%VARIANT%" %WORK_CAP%
 > "%O%\exit.txt" echo %ERRORLEVEL%
 goto :agent_end
 :agent_oc
