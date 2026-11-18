@@ -3208,7 +3208,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 37107,
+  "seed": 37108,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -4462,7 +4462,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 37125,
+  "seed": 37126,
   "admiral": "razormaw",
   "fleet": [
    "b_razor",
@@ -5957,7 +5957,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 37104,
+  "seed": 37105,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -8250,7 +8250,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 37103,
+  "seed": 37104,
   "lineage": {
    "id": "sekhmar",
    "picks": [

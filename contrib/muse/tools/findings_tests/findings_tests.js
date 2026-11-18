@@ -36,12 +36,12 @@ const queue = [];
 // matches. Neither is a defect gate. They stay in this file as a reading list
 // but do not count toward the suite summary or the runner's pass/fail lines.
 const OUT_OF_GATE = new Set([
-  // opinion (26)
-  'ADM-1', 'AI-3', 'AI-4', 'AI-5', 'BF-2', 'BF-6', 'BF-7', 'BF-9', 'BF-10',
+  // opinion
+  'ADM-1', 'BF-2', 'BF-6', 'BF-7', 'BF-9', 'BF-10',
   'BN-1', 'BN-2', 'BN-5', 'ECO-2', 'ECO-3', 'KIT-2', 'KIT-4', 'MOD-4',
   'ROS-4', 'ROS-5', 'ROS-6', 'RWD-5', 'RWD-7', 'SQ-1', 'UI-8', 'WPN-2', 'WPN-5',
-  // stale (5)
-  'ADM-2', 'AI-1', 'BF-3', 'DRIFT-5', 'UI-7',
+  // stale
+  'ADM-2', 'BF-3', 'DRIFT-5', 'UI-7',
 ]);
 function test(id, fn) {
   const code = id.split(/\s+/)[0];
@@ -978,16 +978,14 @@ test('AI-1 veteran brace decision survives the mid-move volley path', async () =
   const m = B.units.find(u => u.side === 'enemy');
   const mh = offH(14, 7); place(m, mh.q, mh.r);
   pens.forEach(p => faceTowardG(p, m));
-  // one spent scattergun (never ready this activation), shields stripped, hull 60%:
-  // the ship must move to engage, its volley can never fire, and its numbers meet
-  // the veteran brace rule (threat over 45% of hp, no offense, hp under 70%)
-  // while missing the volley-path fallback's hp-under-50% gate.
-  m.weapons = [mkWG('scatter', 'T', 2)]; m.ab = null; m.maxHp = 100; m.hp = 60; m.sh = [0, 0, 0, 0]; m.shMax = 0;
+  // A loaded short-range gun moves into enemy reach before it has a shot of
+  // its own. At 60% hull, only the veteran pre-volley check can brace here.
+  m.weapons = [mkWG('scatter', 'T', 0)]; m.ab = null; m.maxHp = 100; m.hp = 60; m.sh = [0, 0, 0, 0]; m.shMax = 0;
   const d0 = Math.min(...pens.map(p => hdist2(m, p)));
   await activateEnemy(G, m);
   const d1 = Math.min(...pens.map(p => hdist2(m, p)));
   if (!(d1 < d0)) return 'scenario did not construct: the veteran ship never moved (distance ' + d0 + ' to ' + d1 + '), so the mid-move volley path was not taken';
-  if (m.weapons.some(w => w.fired)) return 'scenario did not construct: the ship fired on the move, after which brace is legally impossible in both paths';
+  if (m.postFire) return 'the ship fired on the move instead of bracing';
   if (m.braced) return '';
   G._sandbox.__u = m;
   const threat = runIn('evalThreat(__u, alive("player"))');
@@ -996,49 +994,69 @@ test('AI-1 veteran brace decision survives the mid-move volley path', async () =
 
 test('AI-3 death-cliff weight scales with ship value', async () => {
   setAiLevel(G, 'veteran');
-  const C = offH(10, 7);
-  const sweep = async (tpl) => {
-    let first = null;
-    for (const M of [0, 40, 80, 120, 200, 300]) {
-      const B = probeBattle(G, { player: ['penitent', 'penitent', 'penitent', 'cathedral'], enemies: [tpl], fac: 'voidsworn', seed: 14, arena: 'strip' });
+  const trap = offH(12, 7);
+  const sweep = async (cp) => {
+    for (const maxHp of [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 240, 280, 320, 360, 400, 480, 560]) {
+      const B = probeBattle(G, { player: ['cathedral', 'penitent'], enemies: ['warden'], fac: 'voidsworn', seed: 14, arena: 'strip' });
       clearTerrain(G);
-      const p0 = B.units.find(u => u.side === 'player' && u.tpl === 'cathedral');
-      const p0h = offH(6, 7); place(p0, p0h.q, p0h.r);
-      p0.weapons = []; p0.maxHp = M; p0.hp = 1; p0.ev = 0; p0.ab = null; p0.sh = [0, 0, 0, 0]; p0.shMax = 0;
-      const escs = B.units.filter(u => u.side === 'player' && u.tpl === 'penitent');
-      [[-3, -2], [-2, -3], [5, -3]].forEach((o, i) => { place(escs[i], C.q + o[0], C.r + o[1]); faceTowardG(escs[i], C); escs[i].ab = null; });
+      const [target, guard] = B.units.filter(u => u.side === 'player');
+      place(target, trap.q - 3, trap.r);
+      Object.assign(target, { weapons: [], hp: 1, maxHp, ev: 0, sh: [0, 0, 0, 0], shMax: 0 });
+      place(guard, trap.q - 3, trap.r + 1);
+      guard.weapons = [mkWG('scatter', 'T', 0)];
+      guard.weapons[0].dmg = 12;
       const m = B.units.find(u => u.side === 'enemy');
-      const mh = offH(13, 7); place(m, mh.q, mh.r); faceTowardG(m, C);
-      // identical normalised hull numbers for both movers (same gun, speed, hp,
-      // shields, armor, evasion): the only difference left is the hull's value
-      m.weapons = [mkWG('battery', 'T', 0)]; m.speed = 3; m.maxHp = 100; m.hp = 30; m.sh = [0, 0, 0, 0]; m.shMax = 0; m.armor = .1; m.ev = 10; m.ab = null;
+      place(m, trap.q + 1, trap.r, 3);
+      Object.assign(m, { t: { ...m.t, cp }, weapons: [mkWG('scatter', 'T', 0)], speed: 1, turns: 0,
+        hp: 24, maxHp: 24, armor: 0, ev: 0, ab: null, sh: [0, 0, 0, 0], shMax: 0 });
+      m.weapons[0].dmg = 2;
+      G._sandbox.__u = m;
+      G._sandbox.__trap = trap;
+      const [safe, danger] = runIn('[evalThreatVet(__u, alive("player")), evalThreatVet(stateView(__u, {...__trap, f:3}), alive("player"))]');
+      if (!(safe < m.hp && danger >= m.hp)) throw new Error('scenario needs a safe start and a lethal firing hex, got ' + safe + ' and ' + danger);
       await activateEnemy(G, m);
-      if (first == null && m.q === C.q && m.r === C.r) first = M;
+      if (m.q === trap.q && m.r === trap.r) return maxHp;
     }
-    return first;
+    return null;
   };
-  const cheap = await sweep('warden');
-  const expensive = await sweep('cathedral');
+  const cheap = await sweep(1);
+  const expensive = await sweep(5);
   if (cheap == null) return 'scenario did not construct: even the cp1 frigate never took the death-cliff hex in the sweep, so there is no switch point to compare';
   if (expensive == null || expensive > cheap) return '';
-  return 'the death-cliff switch point is identical for a cp1 frigate and a cp5 battleship (both first accept a hex where expected fire exceeds their hull once the kill behind it is worth ' + cheap + '): the cliff weight is a flat 25, unscaled to the value of the hull put at risk';
+  return 'the cp1 hull accepted the lethal hex at target max hull ' + cheap + ', and the cp5 hull accepted it at ' + expensive;
 });
 
 test('AI-4 a ship with no bearing guns kites instead of closing', async () => {
-  setAiLevel(G, 'veteran');
-  const B = probeBattle(G, { player: ['warden', 'warden'], enemies: ['warden'], fac: 'voidsworn', seed: 12, arena: 'strip' });
-  clearTerrain(G);
-  const ps = B.units.filter(u => u.side === 'player');
-  ps.forEach((p, i) => { const h = offH(5, 6 + i * 2); place(p, h.q, h.r); p.weapons = []; });
-  const m = B.units.find(u => u.side === 'enemy');
-  const mh = offH(14, 7); place(m, mh.q, mh.r);
-  m.weapons = [mkWG('torp', 'F', 2)]; m.ab = null;
-  const d0 = Math.min(...ps.map(p => hdist2(m, p)));
-  await activateEnemy(G, m);
-  const d1 = Math.min(...ps.map(p => hdist2(m, p)));
-  if (m.weapons[0].cdLeft <= 0 && !m.weapons[0].fired) return 'scenario did not construct: the torpedo became ready during the activation, so the ship had a bearing gun after all';
-  if (d1 >= d0) return '';
-  return 'a ship whose only gun is a reloading torpedo closed from ' + d0 + ' to ' + d1 + ' hexes against unarmed targets: the approach leash (-4 per hex beyond the spent gun\'s minimum range) drags a ship with no bearing guns toward the enemy instead of letting it kite while it reloads';
+  async function approach(level, cooldown, { atRange = false, spentGun = false } = {}) {
+    setAiLevel(G, level);
+    const B = probeBattle(G, { player: ['warden', 'warden'], enemies: ['warden'], fac: 'voidsworn', seed: 12, arena: 'strip' });
+    clearTerrain(G);
+    const ps = B.units.filter(u => u.side === 'player');
+    ps.forEach((p, i) => { const h = offH(5, 6 + i * 2); place(p, h.q, h.r); p.weapons = []; });
+    const m = B.units.find(u => u.side === 'enemy');
+    const mh = offH(14, 7); place(m, mh.q, mh.r);
+    m.weapons = [mkWG('torp', 'F', cooldown)]; m.ab = null;
+    if (atRange) {
+      place(ps[0], mh.q - m.weapons[0].opt, mh.r);
+      place(ps[1], mh.q - m.weapons[0].opt - 2, mh.r + 1);
+      m.facing = 0; m.speed = 1; m.turns = 0; // At torpedo range, but the tube points away.
+    }
+    if (spentGun) m.weapons.push(mkWG('scatter', 'T', 2));
+    const before = Math.min(...ps.map(p => hdist2(m, p)));
+    await activateEnemy(G, m);
+    return { before, after: Math.min(...ps.map(p => hdist2(m, p))), tube: m.weapons[0], pose: [m.q, m.r, m.facing].join(',') };
+  }
+  for (const level of ['standard', 'veteran']) {
+    const reloading = await approach(level, 2);
+    if (reloading.tube.cdLeft <= 0 || reloading.tube.fired) return level + ': the reloading tube was used';
+    if (reloading.after < reloading.before) return level + ': an unloaded torpedo boat closed from ' + reloading.before + ' to ' + reloading.after;
+    const loaded = await approach(level, 0);
+    if (loaded.after >= loaded.before) return level + ': a loaded torpedo boat failed to close';
+    const standoff = await approach(level, 0, { atRange:true });
+    const mixed = await approach(level, 0, { atRange:true, spentGun:true });
+    if (mixed.pose !== standoff.pose || mixed.after < mixed.before) return level + ': a reloading short-range gun pulled a boat inside torpedo range';
+  }
+  return '';
 });
 
 test('AI-5 wing launches account for the launch hex threat', async () => {
@@ -1049,19 +1067,34 @@ test('AI-5 wing launches account for the launch hex threat', async () => {
   ps.forEach((p, i) => { const h = offH(6, 6 + i * 2); place(p, h.q, h.r); });
   const c = B.units.find(u => u.side === 'enemy');
   const ch = offH(13, 7); place(c, ch.q, ch.r);
-  ps.forEach(p => faceTowardG(p, c));
+  ps.forEach(p => {
+    faceTowardG(p, c);
+    p.weapons = [mkWG('scatter', 'T', 0)];
+    p.weapons[0].r = 4; // The carrier's destination has safe and threatened neighbours.
+  });
   B.units.filter(u => u.isSq && u.side === 'enemy').forEach(w => { w.dead = true; }); // the opening wings are gone; this launch replaces them
-  G._sandbox.__u = c;
-  const hexes = runIn('launchHexes(__u)').map(h => ({ q: h.q, r: h.r, th: runIn('evalThreat(stateView(__u, {q:' + h.q + ',r:' + h.r + ',f:__u.facing}), alive("player"))') }));
-  if (!hexes.length) return 'scenario did not construct: the carrier has no launch hexes';
-  if (!hexes.some(h => h.th <= 0.01)) return 'scenario did not construct: every launch hex is under fire, so there is no safe choice to prefer';
-  await activateEnemy(G, c);
-  const wing = B.units.find(u => u.isSq && u.side === 'enemy' && !u.dead);
-  if (!wing) return 'scenario did not construct: the carrier never launched during its activation';
-  const chosen = hexes.find(h => h.q === wing.q && h.r === wing.r);
-  if (!chosen) return 'scenario did not construct: the wing did not launch from a launch hex of the carrier\'s start position';
-  if (chosen.th <= 0.01) return '';
-  return 'the carrier launched its wing into ' + Math.round(chosen.th) + ' expected threat while launch hexes with no incoming fire existed: aiAbilities launches before moving, from the launch hex nearest the enemy, sorted by distance only, so a launch can be baited into a kill zone';
+  runIn(`var __launchProbe = null, __originalLaunchWing = launchWing;
+    launchWing = (carrier, hex, kind) => {
+      const foes = alive('player');
+      const options = launchHexes(carrier);
+      __originalLaunchWing(carrier, hex, kind);
+      const wing = B.units.at(-1);
+      const score = h => [evalThreat(stateView(wing, {...h, f:wing.facing}), foes), Math.min(...foes.map(f => hdist(h, f)))];
+      __launchProbe = { q:carrier.q, r:carrier.r, chosen:score(hex), options:options.map(score) };
+    };`);
+  try {
+    await activateEnemy(G, c);
+    const launch = runIn('__launchProbe');
+    if (!launch) return 'scenario did not construct: the carrier never launched during its activation';
+    if (c.q === ch.q && c.r === ch.r) return 'scenario did not construct: the carrier stayed in its starting hex';
+    if (launch.q !== c.q || launch.r !== c.r) return 'the carrier launched before it moved to its firing position';
+    if (!launch.options.some(([th]) => th > 0) || !launch.options.some(([th]) => th === 0)) return 'scenario did not construct: the carrier needs both safe and threatened launch hexes';
+    const best = launch.options.sort(([a, ad], [b, bd]) => a - b || ad - bd)[0];
+    if (launch.chosen[0] !== best[0] || launch.chosen[1] !== best[1]) return 'the carrier did not pick the nearest launch hex at minimum threat';
+    return '';
+  } finally {
+    runIn('launchWing = __originalLaunchWing;');
+  }
 });
 
 function uiBattle(playerTpls, enemyTpls) {
