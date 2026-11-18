@@ -30,29 +30,53 @@ function trialSpot(unit, score, facing) {
 
 function trialHunt(player, enemy) {
   const bb = boardBounds();
+  const tuning = B.cfg.huntTuning;
+  const {exitOffset = 1, screenGap = 5, flee = 8, separation = 3} = tuning ?? {};
   const row = bb.r0 + 1;
   const [quarry, ...escorts] = enemy.slice().sort((a, b) => b.t.cp - a.t.cp || b.maxHp - a.maxHp);
   for (const [i, u] of player.entries()) {
     const start = offToAx(bb.c0 + i % 2, bb.r1 - Math.floor(i / 2));
     trialSpot(u, h => -hdist(h, start) - 4 * (trialCol(h) - bb.c0), 0);
   }
-  trialSpot(quarry, h => -4 * Math.abs(trialCol(h) - (bb.c1 - 1)) - 2 * Math.abs(h.r - row), 3);
+  trialSpot(quarry, h => -4 * Math.abs(trialCol(h) - (bb.c1 - exitOffset)) - 2 * Math.abs(h.r - row), 3);
   for (const [index, escort] of escorts.slice(0, 2).entries()) {
-    const target = {q: quarry.q - 5, r: quarry.r + (index ? 2 : 0)};
+    const target = tuning ? offToAx(trialCol(quarry) + screenGap, quarry.r - 2 * index)
+      : {q: quarry.q - screenGap, r: quarry.r + (index ? 2 : 0)};
     trialSpot(escort, h => {
       const d = hdist(h, quarry);
-      return -25 * Math.max(0, 4 - d, d - 6) - 20 * Math.max(0, trialCol(h) - trialCol(quarry) + 3) - hdist(h, target);
+      const forward = tuning ? trialCol(quarry) - trialCol(h) : trialCol(h) - trialCol(quarry) + screenGap - 2;
+      return -25 * Math.max(0, Math.abs(screenGap - d) - 1) -
+        20 * Math.max(0, forward) - hdist(h, target);
     }, 3);
     escort.trialScreen = true;
   }
   for (const [i, escort] of escorts.slice(2).entries()) {
-    const target = offToAx(bb.c1 - i % 2, row + 2 * Math.floor(i / 2));
+    const target = offToAx(bb.c1 - i % 2, row + (tuning ? -2 : 2) * Math.floor(i / 2));
     trialSpot(escort, h => -hdist(h, target) - 5 * Math.max(0, trialCol(quarry) - trialCol(h)), 3);
   }
+  if (tuning) {
+    // Put slower hunters closer so the fleet reaches the chase together.
+    const scale = stat => B.cfg.trialTempo ? trialScaledStat(stat) : stat;
+    for (const [i, u] of player.entries()) {
+      const reach = Math.max(0, ...u.weapons.filter(w => w.k !== 'flak').map(w => scale(w.r)));
+      const gap = reach + Math.ceil(scale(u.speed) * tuning.approachTurns);
+      const startRow = Math.round(bb.r1 - (bb.r1 - bb.r0) * 0.3) + (i % 3 - 1) * 2;
+      trialSpot(u, h => -8 * Math.abs(hdist(h, quarry) - gap) - 4 * Math.abs(h.r - startRow) -
+        40 * Math.max(0, trialCol(h) - (bb.c0 + 13)), 0);
+      trialFacing(u, quarry);
+    }
+  }
   B.trialQuarry = quarry;
-  B.trialExit = bb.c1;
-  B.trialExitHex = boardHexes().filter(h => trialCol(h) === bb.c1 && !blocks(terr(h.q, h.r)))
-    .sort((a, b) => hdist(a, quarry) - hdist(b, quarry))[0];
+  B.trialFlee = flee;
+  B.trialSeparation = separation;
+  const edgeGap = h => tuning ? trialCol(h) - bb.c0 : bb.c1 - trialCol(h);
+  const exitAim = tuning ? offToAx(bb.c0, Math.round(bb.r0 + (bb.r1 - bb.r0) * tuning.exitLane)) : quarry;
+  B.trialExitHex = boardHexes().filter(h => !blocks(terr(h.q, h.r)))
+    .sort((a, b) => {
+      const gap = edgeGap(a) - edgeGap(b);
+      const aim = hdist(a, exitAim) - hdist(b, exitAim);
+      return (tuning ? aim || gap : gap || aim) || hdist(a, quarry) - hdist(b, quarry);
+    })[0];
   for (const escort of escorts) escort.trialStation = {q: escort.q, r: escort.r};
 }
 
@@ -62,7 +86,7 @@ function trialHuntScore(u, v) {
   if (!quarry || quarry.dead) return 0;
   if (u === quarry) {
     const nearest = Math.min(30, ...caps('player').map(p => hdist(v, p)));
-    return 3 * Math.min(nearest, 9) - 8 * hdist(v, B.trialExitHex);
+    return B.trialSeparation * Math.min(nearest, 9) - B.trialFlee * hdist(v, B.trialExitHex);
   }
   // Hold the opening screen for two rounds. Weapons and turns remain legal.
   if (u.trialStation && B.round < 3) return -80 * hdist(v, u.trialStation);

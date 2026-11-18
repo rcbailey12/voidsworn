@@ -14,6 +14,8 @@ const core = replaceOnce(read('core.js'), "const newId = () => 'x'+Date.now().to
   "const newId = () => 'x'+String(UID++).padStart(8,'0');");
 const trial = fs.readFileSync(path.join(__dirname, 'trial_rules.js'), 'utf8');
 const setups = ['today', 'shapes', 'placement', 'tempo', 'all'];
+const followups = ['hunt_placement', 'hunt_all', 'recommended'];
+const huntSettings = JSON.parse(fs.readFileSync(path.join(__dirname, 'hunt_settings.json'), 'utf8'));
 const ordinary = ['rout', 'ambush', 'defend', 'hunt', 'intercept', 'break', 'hold', 'flagship'];
 const bosses = [1, 2, 3].flatMap(s => ['rout', 'ambush'].map(enc => `boss${s}_${enc}`));
 const encounters = [...ordinary, ...bosses];
@@ -83,9 +85,10 @@ function harness() {
 const runtime = `
 var STATS={rams:0,boards:0,caps:0};
 let meter=null;
+function trialScaledStat(value) { return Math.round(value*1.25); }
 function trialScale(u) {
-  u.speed=Math.round(u.speed*1.25);
-  for(const w of u.weapons) w.r=Math.round(w.r*1.25);
+  u.speed=trialScaledStat(u.speed);
+  for(const w of u.weapons) w.r=trialScaledStat(w.r);
 }
 const trialMake=makeUnit;
 makeUnit=function(...args) {
@@ -122,6 +125,7 @@ function trialShot(u,t,w) {
   const fire={acts:meter.acts,round:B.round,side:u.side,wing:!!u.isSq};
   meter.any??=fire;
   if(!u.isSq) meter.first??=fire;
+  if(!u.isSq&&!t.isSq) meter.capitalContact??=fire;
   if(t===meter.objective) meter.targetFirst??=fire;
   if(w.k==='torp'){ meter.torpShots++; meter.torpRange+=hdist(u,t); }
 }
@@ -186,8 +190,11 @@ function setupBattle(H, cell, seed) {
     kind: boss ? 'boss' : 'battle', fac: ef, col: boss ? 6 : 3,
     obj: enc, map, shape, arena, seed, noStar: sector === 1,
     dep: boss ? 'line' : pick(['line', 'line', 'flank'], draw(seed, channel + 4)),
-    trialPlacement: cell.setup === 'placement' || cell.setup === 'all',
-    trialTempo: cell.setup === 'tempo' || cell.setup === 'all',
+    trialPlacement: ['placement', 'all'].includes(cell.setup) ||
+      (['hunt_placement', 'hunt_all'].includes(cell.setup) && enc === 'hunt') ||
+      (cell.setup === 'recommended' && (boss || ['hunt', 'ambush'].includes(enc))),
+    trialTempo: ['tempo', 'all', 'hunt_all', 'recommended'].includes(cell.setup),
+    huntTuning: cell.huntTuning ?? (followups.includes(cell.setup) ? huntSettings[0] : null),
   };
   if (boss) config.trialEnemies = H.genEnemyFleet(ef, sector, config.col, 'boss');
   else config.enemies = e.map(tpl => ({tpl}));
@@ -216,7 +223,7 @@ function deployment(H) {
   const screened = target && enemy.length > 1 ? nearest(target, player).some(p =>
     enemy.some(u => u !== target && H.hdist(p, u) < H.hdist(p, target) && H.hdist(target, u) <= 6)) : null;
   const screenDistances = B.units.filter(u => u.trialScreen).map(u => H.hdist(u, target));
-  const home = cells.filter(h => h.q + Math.floor(h.r / 2) === B.trialExit);
+  const home = B.trialExitHex ? [B.trialExitHex] : [];
   const screenOrientation = B.obj.type === 'break' ? enemy.filter(u => u.q + Math.floor(u.r / 2) < 10).map(u => u.facing) : [];
   const metrics = {
     line_gap: gap(player, enemy), objective_gap: gap(player, goals),
@@ -240,6 +247,7 @@ function deployment(H) {
   return {metrics, target, picture: () => ({
     cells, terrain: B.terrain, shape: B.shape, map: B.map.map, arena: B.arena,
     approach: B.approach?.k ?? '', objective: B.obj.hex, exit, home, zone,
+    quarryExitGap: B.trialExitHex && target ? H.hdist(target, B.trialExitHex) : null,
     initial: metrics, station: B.map.station, mapHoles: B.map.holes,
     units: B.units.filter(u => !u.treeOff && !u.dead).map(u => ({
       q:u.q, r:u.r, f:u.facing, side:u.side, hull:u.tpl, name:u.name, wing:!!u.isSq,
@@ -251,7 +259,7 @@ function deployment(H) {
 async function fight(H, cell, seed, drawPicture = false) {
   const {B, config, ef} = setupBattle(H, cell, seed);
   const {metrics, target, picture} = deployment(H);
-  if (drawPicture) return {seed, encounter: cell.enc, ...picture()};
+  if (drawPicture) return {seed, setup: cell.setup, encounter: cell.enc, ...picture()};
   const m = {unit:null, acts:0, moves:0, distance:0, first:null, any:null, targetFirst:null,
     objective:target, torpShots:0, torpRange:0};
   const stat0 = {...H.stats};
@@ -315,6 +323,7 @@ async function fight(H, cell, seed, drawPicture = false) {
     escaped: B.obj.type === 'hunt' ? Number(!!B.obj.escaped) : null,
     quarry_kill: B.obj.type === 'hunt' ? Number(!!target.dead && !target.fled) : null,
     timeout: Number(!B.over), result: B.over || 'timeout',
+    ...(cell.huntTuning && {capital_contact_round: m.capitalContact?.round}),
   };
 }
 
@@ -334,11 +343,21 @@ function options() {
 
 function tasks(opt) {
   if (opt.mode === 'encounters' || opt.mode === 'smoke') {
+    const selected = opt.setup ? opt.setup.split(',') : setups;
+    assert(selected.every(setup => [...setups, ...followups].includes(setup)), 'Unknown encounter setup');
     return encounters.filter(enc => !opt.enc || opt.enc.split(',').includes(enc)).flatMap(enc =>
-      setups.filter(setup => !opt.setup || opt.setup.split(',').includes(setup)).map(setup => cell('encounter', enc, setup)));
+      selected.filter(setup => !setup.startsWith('hunt_') || enc === 'hunt').map(setup => cell('encounter', enc, setup)));
+  }
+  if (opt.mode === 'hunt-sweep') {
+    const candidates = opt.input ? JSON.parse(fs.readFileSync(opt.input, 'utf8')) : huntSettings;
+    return candidates.flatMap(tuning => ['hunt_placement', 'hunt_all'].map(setup => ({
+      ...cell('encounter', 'hunt', setup), huntTuning: tuning,
+    })));
   }
   assert.equal(opt.mode, 'factions');
-  return factions.flatMap(pf => factions.flatMap(ef => ['today','all'].filter(setup => !opt.setup || opt.setup === setup)
+  const selected = opt.setup ? opt.setup.split(',') : ['today', 'all', 'tempo', 'recommended'];
+  assert(selected.every(setup => ['today', 'all', 'tempo', 'recommended'].includes(setup)), 'Unknown faction setup');
+  return factions.flatMap(pf => factions.flatMap(ef => selected
     .map(setup => cell('faction', 'mix', setup, pf, ef))));
 }
 
@@ -347,7 +366,8 @@ async function runTask(H, task, opt) {
   for (let i = 0; i < opt.sims; i++) {
     const enc = task.group === 'faction' ? ordinary[i % ordinary.length] : task.enc;
     if (task.group === 'faction' && opt.enc && enc !== opt.enc) continue;
-    rows.push(await fight(H, {...task, enc}, opt.seed + i));
+    const row = await fight(H, {...task, enc}, opt.seed + i);
+    rows.push(opt.mode === 'hunt-sweep' ? {...row, ...task.huntTuning} : row);
   }
   return rows;
 }
@@ -394,9 +414,12 @@ async function main() {
   if (opt.mode === 'pictures') {
     const H = harness();
     const chosen = JSON.parse(fs.readFileSync(opt.input, 'utf8'));
+    const selected = Object.entries(chosen).filter(([enc]) => !opt.enc || opt.enc.split(',').includes(enc));
+    const after = opt.setup || 'all';
+    assert(selected.length && [...setups, ...followups].includes(after), 'Choose a picture encounter and valid setup');
     const pictures = {};
-    for (const [enc, seed] of Object.entries(chosen)) {
-      pictures[enc] = await Promise.all(['today','all'].map(setup => fight(H, cell('encounter',enc,setup), seed, true)));
+    for (const [enc, seed] of selected) {
+      pictures[enc] = await Promise.all(['today', after].map(setup => fight(H, cell('encounter', enc, setup), seed, true)));
     }
     fs.writeFileSync(opt.out, JSON.stringify(pictures));
     return;

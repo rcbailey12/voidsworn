@@ -1,25 +1,49 @@
 # Map evaluation on 30 × 22
 
-**Pick Shapes + x1.25 speed and range for the next side-by-side playtest on 30 × 22, with today's deployments.** Ships travelled farther on each move in all 14 encounter fixtures. In the standard engagement, they went from 2.90 to 3.52 hexes per move, spent 4.0% of activations only moving, down from 11.1%, and fired one activation sooner. The proposed Hunt starts bought the intended approach time with the full package. They also let the quarry escape in every Hegemony trial, up from 9%, which rules out that package for this playtest.
+**Playtest 30 × 22 with the new shape weights, x1.25 speed and range rounded to whole numbers, retuned Hunt, split Ambush banks and screened bosses. Keep today's starts for Engagement, Defend, Intercept, Breakthrough, Relay and Decapitation.** Engagement moves get longer and the quarry escapes 31% of the time, up from 9%. Hunt's first hull-to-hull shot lands in median round 3. Breakthrough and Decapitation are easier for the Hegemony mirror, by 28 and 16 points respectively.
 
-Breakthrough deserves particular attention in the playtest. The speed and range preset raised its Hegemony win rate from 37% to 65%. Decapitation rose from 36% to 52%. The faction sweep below compares the full package with today, so the exact faction effect of the playtest pick is still open.
-
-| Encounter | First gun act | Hexes per move | Move only | Player win |
+| Encounter | First gun act | Hexes per move | Move only | Player win / quarry kill |
 |---|---:|---:|---:|---:|
 | Engagement | 1 → 0 | 2.90 → 3.52 | 11.1% → 4.0% | 41% → 37% |
-| Ambush | 0 → 0 | 2.83 → 3.46 | 2.6% → 1.3% | 55% → 61% |
+| Ambush | 0 → 0 | 2.83 → 3.57 | 2.6% → 1.9% | 55% → 61% |
 | Hold the station | 6 → 0 | 3.04 → 3.68 | 21.2% → 6.0% | 38% → 30% |
-| Hunt | 0 → 0 | 3.41 → 3.99 | 7.5% → 1.6% | 91% → 80% quarry kills |
+| Hunt | 0 → 13 | 3.41 → 4.57 | 7.5% → 15.7% | 91% → 69% |
 | Intercept | 2 → 0 | 2.98 → 3.76 | 30.8% → 21.7% | 73% → 87% |
 | Breakthrough | 0 → 0 | 3.23 → 3.91 | 5.7% → 6.8% | 37% → 65% |
 | Relay | 0 → 0 | 2.97 → 3.35 | 11.4% → 2.4% | 50% → 59% |
 | Decapitation | 2 → 0 | 2.90 → 3.47 | 10.7% → 4.4% | 36% → 52% |
 
-The short table compares today with the playtest pick using 100 paired seeds per row. [All 14,200 battle rows](results.csv)
+Today → recommended package, with 100 paired seeds per row. Hunt counts quarry kills. Other rows use the game's win flag, which includes partial wins. [All 22,300 comparison rows](results.csv)
+
+## What changed since run 1
+
+- **Hunt has a chase.** Build 2 sent the quarry to its nearest east-edge exit and let it escape in all 100 seeds in both arms. The retune sends it across the board toward a west-side jump bearing and spreads the hunters by how far each ship can move and fire. Escape falls to 44% with placement alone and 31% with the full package. The first ship gun still fires in median round 2 and mostly engages wings at that point. Ship-on-ship fire and the first shot at the quarry both land in median round 3. [Hunt tuning data](hunt_tuning.csv)
+- **Defend keeps today's start.** With new shapes held fixed, moving two pickets forward reduced defender wins from 34% to 20%. The original start also gives the defenders 30% wins with x1.25. The 19-hex station stays in every arm.
+- **Sector 3 boss difficulty moves.** With shapes and x1.25, boss engagement wins were 54%. Screening the boss raises that to 69%, against 53% today. The test pick includes the screen and gives Ryan a chance to judge the easier approach.
+- **The new faction sweep flags six seatings in both arms.** The largest change is Chorus as player against Hegemony Navy, from 50% today to 76% with shapes and x1.25 and 78% with the placement fixes.
+- **Muse's feel test agrees on travel and move-only actions.** On 30 × 22, its x1.25 Engagement went from 2.75 to 3.24 hexes per move and from 15.9% to 3.8% move-only activations. With new shapes held fixed here, Engagement went from 2.90 to 3.52 and from 11.7% to 4.0%. Relay pace differed across the fixtures. Muse's length fell from 9.0 to 5.5 rounds, while this fixture averaged 7.9 → 8.1. Breakthrough was the exception to the move-only drop, rising from 5.0% to 6.8% at x1.25. Muse reported flat coverage with x1.25. This harness measured distance and activations, so there is no coverage comparison. [Muse feel test, section 6](../../muse/design/map_mechanics_2026_11/consolidated_results.md#6-feel-test-125-speed-and-range-whole-numbers-180-battles)
+- **The retests narrow the AI claims.** Muse measured more displacement and a combat cost for two-pass, and Hegemony wins of 66/96 → 63/96 with the damage-band falloff, inside paired noise. Multiplicative scoring widened the fight and cost about 1.5 rounds when used by both controllers, with wins flat at 5/24. Its veteran-only arm raised player wins from 5/24 to 13/24. Our Engagement moved farther and ended sooner with the stat preset. Those results measure different levers, and the present tests use the ordinary scoring and accuracy falloff throughout. [Two-pass and falloff retest](../../muse/design/map_mechanics_2026_11/retest_results.md) · [Multiplicative retest](../../muse/design/map_mechanics_2026_11/mult_retest_results.md) · [Muse status](../../muse/design/map_mechanics_2026_11/STATUS.md)
+- **DeepSeek's larger board showed a longer approach.** Its unchanged 30 × 22 Engagement fired on median activation 1, the same here. On 38 × 26, adding two speed still left its median first shot at activation 12. Its 19-hex Defend benchmark was 37.5% wins and 6.5 mean rounds, close to 38% and 6.5 here. Its no-shot metric counts more than move-only. [DeepSeek issue 1019](../../deepseek/map_pace_1117/README.md)
+
+## Hunt settings
+
+The quarry deploys one column in from the east edge. Its bearing is the nearest open hex to a point on the west edge, 45% of the way down the board. Two escorts start behind the quarry with a target separation of five hexes and are scored to hold their opening posts through round 2. The quarry adds 1 point per hex from the nearest hunter up to a distance of 9 and subtracts 10 points per hex from the jump bearing. It can move and fight from round 1. The jump still occurs at the end of round 6.
+
+Each hunter's target starting gap is its longest non-flak gun range plus its movement allowance times the approach value below. The same rule recalculates the gap with each arm's actual stats, so the x1.25 arm starts the hunters farther back. Terrain and occupied cells can move ships off their target hexes. Each arm uses 100 paired seeds. The four neighbours vary only the approach value.
+
+| Hunt approach value | Quarry escape, placement | Quarry escape, full | Hull contact in R3-4, placement / full |
+|---:|---:|---:|---:|
+| 3.5 | 34% | 19% | 88 / 56 |
+| 3.75 | 42% | 29% | 98 / 65 |
+| **4** | **44%** | **31%** | **94 / 72** |
+| 4.25 | 69% | 39% | 100 / 69 |
+| 4.5 | 78% | 40% | 100 / 73 |
+
+At 4, the median initial gap from the closest hunter to the quarry is 18 hexes in the placement arm and 24 with x1.25. The two screen escorts land 4 to 6 hexes from the quarry in both arms. In the separate seed set 1100 to 1199, escape was 44% and 37%, respectively. The first hull-to-hull shot and first quarry shot stayed in median round 3. The earlier ship-gun counter, which includes shots at wings, stayed at round 2.
 
 ## Deployment pictures
 
-Each sheet shows the same seed on the left and right. The left is today's rules. The right is the full test package, so Ryan can see the placement and shape changes together. The cards show the nearest player ship's distance to the goal. The arrows show facing. Gold marks objectives, the quarry or flagship, and the two Hunt screen ships. These diagrams come from the deployment code before the first activation.
+Each sheet shows today's rules on the left and the test setup on the right, using the same seed. The Hunt sheet shows the retune. The other sheets show the run 1 full trial, including the alternative placements studied for Defend, Intercept, Breakthrough and Decapitation. The cards show the nearest player ship's distance to the goal. The arrows show facing. Gold marks objectives, the quarry or flagship, and the two Hunt screen ships. These diagrams come from the deployment code before the first activation.
 
 | Encounter | Picture | Boss encounter | Picture |
 |---|---|---|---|
@@ -34,7 +58,7 @@ Each sheet shows the same seed on the left and right. The left is today's rules.
 
 ## Placement audit
 
-The table measures the closest ship to the encounter goal and to the enemy line. Values are median and observed range in hexes. Opening gun is the share of seeds with a legal shot from the deployment hex. The trial columns use new shapes and fixed placement at today's speed and range.
+The table measures the closest ship to the encounter goal and to the enemy line. Values are median and observed range in hexes. Opening gun is the share of seeds with a legal shot from the deployment hex. The trial columns use the run 1 placement fixes and new shapes at today's speed and range.
 
 | Encounter | Goal gap today | Goal gap fixed | Line gap today | Line gap fixed | Opening gun today P/E | Opening gun fixed P/E |
 |---|---:|---:|---:|---:|---:|---:|
@@ -63,14 +87,14 @@ The table measures the closest ship to the encounter goal and to the enemy line.
 - **Boss ambush, sectors 1 to 3.** Sector 1 put all ships on one bank in 52 of 100 seeds. A boss can also start ahead of its cover in each sector. The trial splits the two banks and moves the boss behind its own bank's escort when one is available. Every trial had two banks. Protection went from 66/84/88% by sector to 89/100/100%, and opening player fire fell to zero from 42/79/88%.
 - **Engagement and Relay.** The ordinary engagement opens a median 15 hexes apart and only reaches gun range after movement. The relay zone in Hold is a median 7 hexes from the player and 6 from the enemy. Neither side could fire from spawn in either fixture. The placement trial retains both starts.
 
-## The five setups
+## The five original setups and follow-ups
 
-Each encounter has 100 paired seeds per setup. Shapes is the comparison arm for the two isolated levers. `Shapes + placement` adds only the tested starts and Hunt movement scoring. `Shapes + x1.25` adds only the stat changes. `All three` combines them. Gun act and gun round are medians. Rounds is the mean. Win is the game's result and Escape applies to Hunt. Cap gives the runs still active at round 30.
+Each encounter has 100 paired seeds per setup. Shapes is the comparison arm for the two isolated levers. `Shapes + placement` adds the run 1 starts and Hunt movement scoring. `Shapes + x1.25` adds the stat changes. `All three` combines them and is also the recommended setup for Ambush and the six boss fixtures. The other starts use `Shapes + x1.25`, with Hunt using its retune. Gun act and gun round are medians. Rounds is the mean. Win is the game's result and Escape applies to Hunt. Cap gives the runs still active at round 30.
 
 The new weights increased realized Hourglass from 16 to 179 of 800 ordinary battles. Corridor appeared in 15 of 100 engagements, up from zero. Archipelago went from 36 of 244 to 67 of 250 realized belt and graveyard maps. Strip arenas rose from 553 to 627 of 800 ordinary battles, which is part of the shape effect. Shapes alone held median first fire within one activation in every ordinary encounter, with a 22-point decrease in the Hegemony mirror Engagement win rate. Adding tempo increased move distance in every encounter. The tested placements mainly changed what was reachable or screened at the start, and their effect varied by encounter.
 
 <details>
-<summary>All five setups for every encounter</summary>
+<summary>Every setup by encounter</summary>
 
 | Encounter | Setup | First gun act | First gun round | Rounds | Move only | Hex / move action | Win | Escape | Cap |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -94,6 +118,8 @@ The new weights increased realized Hourglass from 16 to 179 of 800 ordinary batt
 | hunt | Shapes + placement | 20 | 2 | 7.0 | 30.0% | 3.70 | 100% | 100% | 0 |
 | hunt | Shapes + x1.25 | 0 | 1 | 3.8 | 1.6% | 3.99 | 97% | 17% | 0 |
 | hunt | All three | 24 | 3 | 7.0 | 18.8% | 4.28 | 100% | 100% | 0 |
+| hunt | Shapes + retuned Hunt | 13 | 2 | 5.8 | 20.2% | 3.67 | 100% | 44% | 0 |
+| hunt | Recommended | 13 | 2 | 5.4 | 15.7% | 4.57 | 100% | 31% | 0 |
 | intercept | Today | 2 | 1 | 7.2 | 30.8% | 2.98 | 73% | - | 0 |
 | intercept | Shapes | 1 | 1 | 7.1 | 29.2% | 2.98 | 70% | - | 1 |
 | intercept | Shapes + placement | 4 | 1 | 6.6 | 33.5% | 3.00 | 78% | - | 0 |
@@ -149,18 +175,20 @@ The new weights increased realized Hourglass from 16 to 179 of 800 ordinary batt
 
 ## Faction check at matched CP
 
-Six factions across both seats give 30 ordered non-mirror cells and six mirrors. Each cell has 100 paired seeds per setup, with 12 or 13 seeds per ordinary encounter. Both fleets start at 16 CP. Intercept adds three mission transports to the enemy side. The player has the same fallback Vex Command across factions and neither fleet uses fitted speed items. The table reports shifts strictly greater than 10 percentage points. Paired wins up/down counts seeds that flipped outcome in either direction. Ranges are approximate paired 95% intervals with no adjustment across the 36 comparisons. Faction ids match the CSV.
+The six factions give 30 ordered non-mirror pairings and six mirrors, with 100 matched seeds and 16 CP on each side. Intercept adds three mission transports. The sweep cycles through eight ordinary encounters, so Hunt and Ambush each contribute 13 seeds per seating. The recommended package reuses the 74 identical battles per seating from shapes + x1.25. Boss starts have their own six paired fixtures above.
 
-| Player | Enemy | Today | All three | Change | Paired wins up/down | Approx. 95% range |
-|---|---|---:|---:|---:|---:|---:|
-| voidsworn | deathless | 72% | 83% | +11 pp | 16 / 5 | +2 to +20 pp |
-| corsair | voidsworn | 86% | 68% | -18 pp | 8 / 26 | -29 to -7 pp |
-| chorus | hegemony | 50% | 73% | +23 pp | 29 / 6 | +12 to +34 pp |
-| chorus | voidsworn | 57% | 39% | -18 pp | 12 / 30 | -30 to -6 pp |
-| deathless | hegemony | 82% | 96% | +14 pp | 15 / 1 | +7 to +21 pp |
-| deathless | corsair | 68% | 79% | +11 pp | 21 / 10 | +0 to +22 pp |
+Player win rates include partial wins. Both setups flagged the same six seatings strictly more than 10 percentage points from today. The two bot policies differ, and the player has the same fallback Vex Command across factions. [Full matched-CP results](results.csv)
 
-Six of 36 seatings crossed the threshold.
+Hunt escape in this sector 1 mix was 41 of 468 (9%) with the recommended package, compared with 35 of 468 (7%) today. The 25% to 50% tuning result applies to the sector 2 Hegemony fixture. The broader faction mix still gives the hunters an easier chase.
+
+| Player | Enemy | Today | Shapes + x1.25 | Recommended |
+|---|---|---:|---:|---:|
+| Hegemony Navy | Hegemony Navy | 70% | 88% (+18 pp) | 87% (+17 pp) |
+| Hegemony Navy | Ashfall Hullbreakers | 69% | 82% (+13 pp) | 83% (+14 pp) |
+| Ashfall Hullbreakers | Sunward Crusade | 86% | 69% (-17 pp) | 69% (-17 pp) |
+| Chorus | Hegemony Navy | 50% | 76% (+26 pp) | 78% (+28 pp) |
+| Chorus | Sunward Crusade | 57% | 42% (-15 pp) | 42% (-15 pp) |
+| Eclipse | Hegemony Navy | 82% | 95% (+13 pp) | 94% (+12 pp) |
 
 ## What whole-number x1.25 does
 
@@ -182,7 +210,7 @@ Maximum range maps `1 → 1`, `2 → 3`, `3 → 4`, `4 → 5`, `5 → 6`, `6 →
 - **Ramming.** `ramInfo` limits a straight run-up to the lower of remaining movement and effective speed minus engine damage. A ship at speed 5 can budget one more hex before collision, and speed 6 can budget two. The collision still needs open space ahead and the existing hull, shield, recoil and run-up formulas still set damage. A movement-only boost like Overburn can fill the movement budget without raising its speed cap. The CSV counts completed ram actions.
 - **Speed bonuses.** Grax, Razormaw, the Plasma drive, Born helmsman, the Founders' compass, Afterburners and the Aspect of the Ram modify effective speed before the trial rounds it. For a Wrecker, base 5 becomes 6. With one +1 speed source, 6 becomes 8, so the same bonus adds 2 movement to the scaled starting value. A Gutship goes from base 6 to scaled 8, or from 7 to 9 with a +1 source, a gain of 1 on the scaled value. The Surge Command's movement points are added during the fight. The faction matrix used unmodified hulls, so these stacks are a code reading.
 
-In the faction sweep, mean torpedo launch range rose from 3.44 to 4.07 hexes. Clean dodges rose from 19.0% to 25.7% of launches, and salvos landing a hit fell from 38.5% to 33.5%. Rams rose from 24.9 to 28.3 per 1,000 ship activations. These are effects of the combined package in the mixed encounter sweep.
+In the run 1 full trial, mean torpedo launch range rose from 3.44 to 4.07 hexes. Clean dodges rose from 19.0% to 25.7% of launches, and salvos landing a hit fell from 38.5% to 33.5%. Rams rose from 24.9 to 28.3 per 1,000 ship activations.
 
 ## Method and limits
 
@@ -190,26 +218,33 @@ In the faction sweep, mean torpedo launch range rose from 3.44 to 4.07 hexes. Cl
 - **Pairs.** Seeds 1000 to 1099 recur in every cell. The map request, opponent, fleet, deployment-mode draw, shape quantile and `startBattle` seed are paired. There are separate deterministic map and shape draws per encounter. Within a fight, different terrain or decisions can consume different random numbers. The harness resets unit ids per battle so tie-breaks stay stable across worker schedules.
 - **Fixtures.** The encounter table uses the earlier 16-CP Hegemony mirror in sector 2 with the same Vex bot policy. Boss rows use that player fleet against the live boss fleet generator at the last column in each sector, with factions drawn from that sector's pool and the fleet fixed across variants. The map request samples belt, graveyard, storm, planet and station, with Defend forced to station. The campaign's line/line/flank draw feeds ordinary encounters. The engine retains the placement overrides for objective encounters and its angled approaches for round and square fields. Teaching encounters, campaign events, Nemeses, compact two-ship starts and built-up campaign fleets are outside these fixtures.
 - **Shape weights.** The baseline reads the live encounter lists and boss shape pool. The trial keeps at least two Hourglass entries per encounter, at least two Corridor entries for Rout, and adds two Archipelago entries for belt and graveyard. Hourglass and Corridor use the strip to retain their cuts. Other shapes use the live arena weights and the existing compatibility, connectivity and rollback logic. The CSV records both requested and realized map and shape.
-- **Metrics.** First gun act is the number of completed ship activations before the first legal ship gun fires or launches a torpedo. `0` means the first activation. The raw file also records the first gun including wings and the first gun aimed at a flagged target. Nova, station batteries and reaction flak are outside the gun counter. Move-only means a ship travelled and had zero gunfire, ability use, orders, Commands, rams or boarding in that activation. Distance per move counts path hexes per move action, including charges and blink displacement. Each move in a multi-move activation counts separately. Distance to the goal uses the closest player ship and closest valid goal hex or marked enemy. It measures hex geometry, so obstacles can add travel. Battle length is `B.round`. A round-6 jump is recorded at the start of round 7. Capped runs stay in the denominator and count as zero wins.
+- **Metrics.** First gun act is the number of completed ship activations before the first legal ship gun fires or launches a torpedo. `0` means the first activation. The raw file also records the first gun including wings and the first gun aimed at a flagged target. The Hunt tuning file adds the first shot from one capital hull at another. Nova, station batteries and reaction flak are outside the gun counter. Move-only means a ship travelled and had zero gunfire, ability use, orders, Commands, rams or boarding in that activation. Distance per move counts path hexes per move action, including charges and blink displacement. Each move in a multi-move activation counts separately. Distance to the goal uses the closest player ship and closest valid goal hex or marked enemy. It measures hex geometry, so obstacles can add travel. Battle length is `B.round`. A round-6 jump is recorded at the start of round 7. Capped runs stay in the denominator and count as zero wins.
 - **Coverage.** 14 encounter cells per setup include the eight ordinary encounters and both boss encounters in each sector. The faction sweep is a paired screen covering all ordered pairings plus mirrors. The two bot policies differ, and the player can use a Command. Treat win shifts as playtest signals for these fleets and policies. The boss fixture is particularly strong for sector 1.
 
 ## Reproduce
 
-Run from the checkout root with Node 22 and Python with Pillow. Use fresh output paths. The renderer makes review diagrams on the CPU and verifies every provenance stamp.
+Run from the checkout root with Node 22 and Python 3 with Pillow. This uses the saved run 1 data from the Board's base commit. The renderer makes the Hunt sheet on the CPU and verifies its stamp.
 
 ```powershell
 $job = 'contrib/codex/map_eval_1118'
-$out = Join-Path $env:TEMP 'map-eval-1050'
+$out = Join-Path $env:TEMP ('map-eval-1050-' + [guid]::NewGuid().ToString('N'))
 [System.IO.Directory]::CreateDirectory($out) | Out-Null
-node "$job/sim.js" encounters --sims 100 --out "$out/encounters.csv"
-node "$job/sim.js" factions --sims 100 --out "$out/factions.csv"
-python -B "$job/report.py" --encounters "$out/encounters.csv" --factions "$out/factions.csv" --out "$out/results.csv" --pictures "$out/picks.json"
-node "$job/sim.js" pictures --input "$out/picks.json" --out "$out/deployment.json"
+python -B -c "from pathlib import Path; import subprocess, sys; Path(sys.argv[1]).write_bytes(subprocess.check_output(['git', 'show', sys.argv[2]]))" "$out/base.csv" "657ab403:$job/results.csv"
+node "$job/sim.js" encounters --setup recommended --enc ambush,boss1_rout,boss1_ambush,boss2_rout,boss2_ambush,boss3_rout,boss3_ambush --out "$out/encounters.csv"
+node "$job/sim.js" hunt-sweep --out "$out/hunt_tuning.csv"
+node "$job/sim.js" factions --setup tempo --out "$out/tempo.csv"
+node "$job/sim.js" factions --setup recommended --enc ambush --out "$out/ambush.csv"
+node "$job/sim.js" factions --setup recommended --enc hunt --out "$out/hunt.csv"
+python -B "$job/report.py" --base "$out/base.csv" --encounters "$out/encounters.csv" --factions "$out/tempo.csv" --factions "$out/ambush.csv" --factions "$out/hunt.csv" --hunt "$out/hunt_tuning.csv" --out "$out/results.csv" --pictures "$out/picks.json"
+node "$job/sim.js" pictures --setup hunt_all --enc hunt --input "$out/picks.json" --out "$out/deployment.json"
 python -B "$job/draw_deployment.py" "$out/deployment.json" "$out/shots"
 ```
 
+To repeat the extra Hunt sample, add `--seed 1100` to `hunt-sweep` with a fresh output filename. The first setting in `hunt_settings.json` is the pick.
+
 ## Verification
 
-- `node contrib/opus/tools/run_all_checks.js` finished with the two existing baseline rows and one Windows hard-link permission failure. The isolated `gpu_slots_tests` rerun with that permission passed all 12 groups. It used the suite's Node stub.
-- The browser `build.py test` passed with UTF-8 mode from a temporary source copy. Node syntax checks passed. Replaying the same Hunt and Relay cases with one and three workers produced byte-identical CSVs.
-- The data script checked every seed, both faction seatings, CP, and corresponding map inputs. The 30-round cap accounted for 32 of 7,000 encounter runs and 1 of 7,200 faction runs. The 14 diagrams and their provenance stamps were verified. Godot runs and captures were outside this sim-only job.
+- The standing checks reported 66 passes, two known baseline rows and a Windows hard-link permission failure. The isolated `gpu_slots_tests` rerun with hard-link permission passed all 12 groups using the suite's Node stub.
+- The browser `build.py test` passed in UTF-8 mode from a temporary source copy.
+- The final sim replay matched the saved Hunt sample across worker counts and reproduced 72 run 1 rows from Engagement, Defend and Hunt.
+- The report checked seeds, both faction seatings, CP and paired map inputs. The 30-round cap applied to 35 of 7,900 encounter rows and 1 of 14,400 faction rows. The Hunt tuning and the two new faction arms had zero caps. The runner's picture checker verified all 14 diagrams and provenance sidecars. This sim-only job used the browser rules and CPU diagrams.

@@ -112,6 +112,8 @@ def panel(draw, x, snap, heading, goal):
                        (cx + 7*cos(a + 2.48), cy + 7*sin(a + 2.48)),
                        (cx + 7*cos(a - 2.48), cy + 7*sin(a - 2.48))], color, '#0a1219')
     label(draw, x + 18, 522, f"Nearest player to {goal}   {snap['initial']['objective_gap']} hexes", 17, bold=True)
+    if snap.get('quarryExitGap') is not None and snap.get('setup') == 'hunt_all':
+        label(draw, x + 347, 522, f"Quarry to jump bearing   {snap['quarryExitGap']} hexes", 17, MUTED)
 
 
 def picture(enc, snapshots, dest):
@@ -127,7 +129,8 @@ def picture(enc, snapshots, dest):
     label(draw, 946, 43, f"30 x 22  /  Paired seed {a['seed']}", 20, MUTED)
     goal = 'boss' if boss else OBJECTS[enc]
     panel(draw, 30, a, 'Today', goal)
-    panel(draw, 652, b, 'All three', goal)
+    heading = 'Retuned Hunt + x1.25' if b.get('setup') == 'hunt_all' else 'All three'
+    panel(draw, 652, b, heading, goal)
     legend = [(30, 'Player fleet', PLAYER), (171, 'Enemy fleet', ENEMY), (322, 'Target / objective', GOAL),
               (524, 'Exit / jump bearing', EXIT), (741, 'Solid terrain', GROUND['rock']),
               (912, 'Nebula / storm / debris', '#8d809b')]
