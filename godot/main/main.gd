@@ -217,6 +217,8 @@ func _settings_to_battle(b: Node) -> void:
 	b._sync_teaching_switch()
 	b.set_fx_opts(bool(settings["reduce_flashing"]), float(settings["shake"]))
 	b.reduce_motion = bool(settings.get("reduce_motion", false))   # issue 521: no key in old settings reads off
+	if b.hud != null:
+		b.hud.set_log_preferences(bool(settings.get("battle_log_enabled", true)), bool(settings.get("battle_log_collapsed", false)))
 
 
 func _on_battle_option(key: String, value) -> void:
