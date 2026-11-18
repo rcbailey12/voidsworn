@@ -161,6 +161,7 @@ function buildChecks() {
   add(OPUS + 'tree_table_walk_test.js', [], 'normal', 300, false, true); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
   add(OPUS + 'tree_last_rows_test.js', [], 'normal', 300, false, true); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
   add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
+  add('contrib/deepseek/map_pace_1117/smoke_safety_test.js', [], 'normal', 300, false, true); // #1019: the documented smoke run leaves the saved 200-sim raw files byte for byte unchanged
   add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
   add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks
