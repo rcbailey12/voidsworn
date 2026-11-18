@@ -422,8 +422,7 @@ func _glb_to_scene(path: String, out: String, name: String) -> bool:
 	var doc := GLTFDocument.new()
 	var st := GLTFState.new()
 	st.handle_binary_image_mode = GLTFState.HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED
-	st.base_path = path.get_base_dir()
-	if doc.append_from_file(path, st) != OK:
+	if append_ship_glb(doc, path, st) != OK:
 		push_warning("glTF not loaded: " + path)
 		return false
 	for m in st.get_materials():
@@ -437,6 +436,39 @@ func _glb_to_scene(path: String, out: String, name: String) -> bool:
 	var ok := ResourceSaver.save(ps, out, ResourceSaver.FLAG_COMPRESS) == OK
 	scene.free()
 	return ok
+
+
+static func append_ship_glb(doc: GLTFDocument, path: String, state: GLTFState) -> Error:
+	state.base_path = path.get_base_dir()
+	# Set the key first: reading a key that was never set prints an engine error on every good import (Artoo, PR 1103).
+	state.set_additional_data(&"ship_image_error", null)
+	var source_images := ShipSourceImages.new()
+	GLTFDocument.register_gltf_document_extension(source_images)
+	var result := doc.append_from_file(path, state)
+	GLTFDocument.unregister_gltf_document_extension(source_images)
+	if state.get_additional_data(&"ship_image_error") != null:
+		return ERR_FILE_CANT_READ
+	return result
+
+
+class ShipSourceImages extends GLTFDocumentExtension:
+	func _import_preflight(state: GLTFState, _extensions: PackedStringArray) -> Error:
+		# Godot resolves external image URIs through ResourceLoader first. A stale editor
+		# import can put the old hull's paint on the new UVs, even in a fresh ship cache.
+		for image: Dictionary in state.json.get("images", []):
+			var uri := str(image.get("uri", ""))
+			if uri.is_empty() or uri.begins_with("data:"):
+				continue
+			var path := state.base_path.path_join(uri.uri_decode())
+			var bytes := FileAccess.get_file_as_bytes(path)
+			if bytes.is_empty():
+				push_warning("Ship map could not be read: " + path)
+				state.set_additional_data(&"ship_image_error", path)
+				return ERR_FILE_CANT_READ
+			var ext := path.get_extension().to_lower()
+			var mime := str(image.get("mimeType", "image/" + ("jpeg" if ext == "jpg" else ext)))
+			image["uri"] = "data:%s;base64,%s" % [mime, Marshalls.raw_to_base64(bytes)]
+		return OK
 
 
 func _compress_material(bm: BaseMaterial3D) -> void:

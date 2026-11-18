@@ -556,6 +556,10 @@ in that project. It rebuilds the cache for that ship, replaces `assets/ships/man
 hashes. `render/test/installed_ship_check.gd CODE` verifies the cache and the hard points and turrets that ShipView loads.
 An install or readback failure restores the old ship, manifest and cache. `tools/recipe/manifest_merge_selftest.py` exercises
 the install and rollback in a temporary project.
+The ship cache builder reads the image files beside the GLB directly, even when the editor has an imported image with the
+same path. An editor import can pair an old atlas with the new hull's UVs and leave black patches across its plating (issue 1082).
+`render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
+damage and wreck, then a new one installed over it, plus a planted stale texture).
 The target's install check also needs `tools/ci/check_guard.gd`, even when the playable build otherwise omits CI tools.
 The issue 726 paint helper supplies that file only when missing and verifies its copied hash before installation.
 It also backs up and refreshes the test-only `a4_shots.gd` and its scene in the playable build, so the requested camera 170
