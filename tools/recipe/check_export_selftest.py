@@ -15,6 +15,8 @@
 #   no_engine       every hp_eng renamed away                                      must FAIL (a required hard point missing)
 #   no_rcs          every hp_rcs renamed away                                      must FAIL (a required hard point missing)
 #   no_board        every hp_board renamed away                                    must FAIL (a required hard point missing)
+#   same_side_rcs   starboard braking points replaced with a port point           must FAIL (a side is missing)
+#   same_side_board starboard boarding points replaced with a port point          must FAIL (a side is missing)
 #   breach_count    the last breach anchor renamed away                            must FAIL (the class and faction count is not met)
 #   breach_near     the first breach anchor moved onto the first weapon's muzzle   must FAIL (closer than 0.03 to a part)
 #   breach_inward   the first breach anchor turned so +Y points into the ship      must FAIL (+Y is not the outward normal)
@@ -28,7 +30,7 @@
 #                   extras.radius doubled
 #   bell_plane      the same engine point moved half its radius down its exhaust       must FAIL (not the centre of an open bell)
 # usage: python check_export_selftest.py SHIP_JSON EXPORT_DIR [unbaked=1]      (exit code 1 when any case does not behave)
-import os, sys, json, struct, shutil, subprocess, re
+import copy, os, sys, json, struct, shutil, subprocess, re
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import check_export as CE, gamedata
 shipj, src = sys.argv[1], sys.argv[2]; ship = json.load(open(shipj)); code = ship.get('game_code') or ship['ship']
@@ -188,6 +190,20 @@ CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '),
          ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
          ('liner_only', liner_only, 1, 'no authored interior rooms'),
          ('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
+
+def sided_points(g, kind, side):
+    return [n for n in g['nodes'] if n.get('name', '').startswith(f'hp_{kind}_') and n.get('extras', {}).get('side') == side]
+
+def same_side(g, kind):
+    port = sided_points(g, kind, 'P')[0]
+    for starboard in sided_points(g, kind, 'S'):
+        name = starboard['name']
+        starboard.clear()
+        starboard.update(copy.deepcopy(port), name=name)
+
+for kind in ('rcs', 'board'):
+    if sided_points(_g0, kind, 'P') and sided_points(_g0, kind, 'S'):
+        CASES += ((f'same_side_{kind}', lambda g, kind=kind: same_side(g, kind), 1, f'hp_{kind} on each side'),)
 if any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
     CASES += (('no_trim_marker', no_trim_marker, 1, 'from a part (at least'),)
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
