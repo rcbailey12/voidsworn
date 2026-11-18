@@ -173,6 +173,65 @@ func _check_finish(fx) -> void:
 	target.free()
 
 
+func _two_mesh(mat0: Material, mat1: Material, first_tris: int) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	var surface := []
+	surface.resize(Mesh.ARRAY_MAX)
+	if first_tris == 1:
+		surface[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.ZERO, Vector3.RIGHT * 2, Vector3.BACK * 2])
+		surface[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2(0.25, 0.25), Vector2(0.75, 0.25), Vector2(0.25, 0.75)])
+		surface[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2])
+	else:
+		surface[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.ZERO, Vector3.RIGHT, Vector3.BACK * 2, Vector3.RIGHT + Vector3.BACK * 2])
+		surface[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2(0.1, 0.1), Vector2(0.2, 0.1), Vector2(0.1, 0.2), Vector2(0.2, 0.2)])
+		surface[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2, 1, 3, 2])
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	mesh.surface_set_material(0, mat0)
+	surface[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.UP, Vector3.UP + Vector3.RIGHT * 2, Vector3.UP + Vector3.BACK * 2])
+	surface[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2(0.25, 0.25), Vector2(0.75, 0.25), Vector2(0.25, 0.75)])
+	surface[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2])
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	mesh.surface_set_material(1, mat1)
+	return mesh
+
+
+# Issue 1117 finding 9: a dent refines the first surface, so the hit ray's face number for the second surface no
+# longer matches the live mesh's own triangle count. Decode must use the geometry the BVH was built from.
+func _check_dent(fx) -> void:
+	var target := Node3D.new()
+	root.add_child(target)
+	target.position = Vector3(-4, 3, -2)
+	var maps_a := [_swatch(Color.CORAL), _swatch(Color(0.35, 0.55, 0.2)), _swatch(Color(0.2, 0.2, 0.9))]
+	var maps_b := [_swatch(Color(0.51, 0.53, 1)), _swatch(Color(0.8, 0.3, 0.1)), _swatch(Color(0.1, 0.9, 0.4))]
+	var mat_a := ORMMaterial3D.new()
+	mat_a.albedo_texture = maps_a[0]
+	mat_a.orm_texture = maps_a[1]
+	mat_a.normal_enabled = true
+	mat_a.normal_texture = maps_a[2]
+	var mat_b := ORMMaterial3D.new()
+	mat_b.albedo_texture = maps_b[0]
+	mat_b.orm_texture = maps_b[1]
+	mat_b.normal_enabled = true
+	mat_b.normal_texture = maps_b[2]
+	var mi := MeshInstance3D.new()
+	mi.mesh = _two_mesh(mat_a, mat_b, 1)
+	target.add_child(mi)
+	fx.add_ship("dented", target, {"meshes": [mi], "shielded": false})
+	var p := target.global_position + Vector3(0.5, 1, 0.5)
+	var before := FRAGMENTS.source(fx.ships["dented"], p, Vector3.UP)
+	_check(before.get("maps") == maps_b, "The hit before a dent takes the second surface's paint")
+	# the way the damage rebuild refines an earlier surface: its triangle count grows and every later face shifts
+	mi.mesh = _two_mesh(mat_a, mat_b, 2)
+	var after := FRAGMENTS.source(fx.ships["dented"], p, Vector3.UP)
+	_check(after.get("maps") == maps_b, "A hit after a dent still decodes to the second surface's paint")
+	_check((after.get("uv", Vector2.ZERO) as Vector2).is_equal_approx(Vector2(0.375, 0.375)),
+		"The texture patch still comes from the second surface's UVs")
+	_check((before.get("uv", Vector2.ZERO) as Vector2).is_equal_approx(after.get("uv", Vector2.ZERO)),
+		"The dent changes neither the part nor the UV patch")
+	fx.remove_ship("dented")
+	target.free()
+
+
 func _run() -> void:
 	var templates := FRAGMENTS.templates()
 	_check(templates.size() >= 12 and FRAGMENTS.RIM >= 24 and FRAGMENTS.VERTICES >= 300,
@@ -192,6 +251,7 @@ func _run() -> void:
 			_check_bursts(fx)
 			_check_sparks(fx)
 			_check_finish(fx)
+			_check_dent(fx)
 		fx.free()
 	print("PASS hit fragment topology, layered walls, target textures and burst pool" if failures == 0 else "FAIL hit fragments: %d" % failures)
 	quit(0 if failures == 0 else 1)

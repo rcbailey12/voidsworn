@@ -30,6 +30,7 @@ var nozzles_from_kit = false        # true when the nozzles came from A4's hp_en
 var bow = Vector3.ZERO
 var mounts = {}                    # "port", "stb", "top" -> Array of {p, n}
 var tri_count = 0
+var bvh_ranges: Array = []         # issue 1117: face ranges of the BVH, {mi, surface, mesh, start, count}, in build order
 var authored := false
 var seams: Array = []             # version 1, transformed into this hull analysis frame
 var machines: Array = []          # issue 600: {name, kind, box (AABB)} from the export, in this hull analysis frame
@@ -469,6 +470,45 @@ static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
 	return faces
 
 
+# Issue 1117 finding 9: the surface ranges of the triangles faces_of feeds the BVH, in the same order. A hit's face
+# number is later resolved with this record, against the mesh the ray was cast at, even after a damage rebuild swaps the
+# live mesh. It stores the original mesh resource, not a copy of its arrays.
+static func face_ranges(meshes: Array) -> Array:
+	var out: Array = []
+	var start := 0
+	for m in meshes:
+		var mi = m as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			continue
+		if not mi.mesh is ArrayMesh:
+			# a stand-in block still contributes faces to the BVH, so its range keeps every later surface aligned;
+			# it has no external paint, so a hit on it decodes to nothing (the old live-mesh scan did the same)
+			var n: int = mi.mesh.get_faces().size() / 3
+			if n > 0:
+				out.append({"mi": mi, "surface": -1, "mesh": null, "start": start, "count": n})
+				start += n
+			continue
+		var has_inside := false
+		for si in mi.mesh.get_surface_count():
+			if interior_material(mi.mesh.surface_get_material(si)): has_inside = true
+		for si in mi.mesh.get_surface_count():
+			if has_inside and interior_material(mi.mesh.surface_get_material(si)): continue
+			var n := _surface_tris(mi.mesh, si)
+			if n <= 0:
+				continue
+			out.append({"mi": mi, "surface": si, "mesh": mi.mesh, "start": start, "count": n})
+			start += n
+	return out
+
+
+static func _surface_tris(mesh: Mesh, si: int) -> int:
+	if mesh.surface_get_primitive_type(si) != Mesh.PRIMITIVE_TRIANGLES:
+		return 0
+	var idx: int = mesh.surface_get_array_index_len(si)
+	var corners: int = idx if idx > 0 else mesh.surface_get_array_len(si)
+	return corners / 3
+
+
 func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_rng.seed = seed_v
 	_authored(root)
@@ -494,6 +534,7 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 		tm.create_from_faces(faces)
 	else:
 		tm = null
+	bvh_ranges = face_ranges(meshes) if tm != null else []
 	_samples(900)
 	_find_bow()
 	_find_nozzles()
@@ -971,8 +1012,11 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	return out
 
 
-# The authored muzzles for a weapon: that slot's points for that weapon; else that weapon's points on any slot that bear
-# on the target; else that slot's points (the hull was built for a sister ship whose slot holds another weapon).
+# The authored muzzles for a weapon: that slot's points for that weapon that bear; else that weapon's points on any slot
+# that bear; else that slot's points that bear (the hull was built for a sister ship whose slot holds another weapon).
+# Issue 1117 finding 5: every tier checks bearing and reach, so an exact slot can no longer fire from the far flank. The
+# right slot keeps its preference among the usable muzzles. When no authored muzzle bears, guns() falls to the surface
+# ray mounts on the target's side; when even those find no plating, the shots are skipped ({} entries).
 func _gun_points(slot: int, weapon: String, d: Vector3) -> Array:
 	var all: Array = points.get("gun", [])
 	if all.is_empty():
@@ -982,11 +1026,13 @@ func _gun_points(slot: int, weapon: String, d: Vector3) -> Array:
 	var by_slot: Array = []
 	for pt in all:
 		var ws: bool = weapon != "" and str(pt["weapon"]) == weapon
+		var bears := _bears(pt, d)
 		if slot >= 0 and int(pt["slot"]) == slot:
-			by_slot.append(pt)
-			if ws:
-				same.append(pt)
-		if ws and _bears(pt, d):
+			if bears:
+				by_slot.append(pt)
+				if ws:
+					same.append(pt)
+		if ws and bears:
 			by_weapon.append(pt)
 	if not same.is_empty():
 		return same
