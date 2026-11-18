@@ -1,24 +1,6 @@
 extends CanvasLayer
-# The battle HUD: the ember orders sheet, E1 LEDGER (issue 271 step 2; Ryan's pick R210, as captured in step 1,
-# docs/shots/ui_battle_ember/E1_ledger.jpg; the look is the campaign map's rail, contrib/opus/briefs/campaign_rail_orders_sheet.md,
-# R176). The sheet itself is godot/ui/battle/ledger.gd: one left sheet in decision order (whose turn, the ship, its hull
-# and four shields, its guns, the target and the odds, the action, the orders and the Command, the fleet at the foot),
-# the menu, the enemy, Heat and the Nemesis top right, the last three log lines bottom right. No panels: words on a
-# darkened edge of the scene; ember the one accent; Glacier for shield readouts only; square corners; one box.
-#
-# This file keeps the battle's HUD interface (the setters battle.gd calls, the menu, the end card, the tip card, the
-# hover tips, banners, toasts, floats and nameplates) and hands every setter's data to the sheet. Everything here that is
-# still visible is in the sheet's look. SAY LESS (R177): what the sheet does not show is one hover or one key away; the
-# list is in docs/playbooks/screens.md (battle screen).
-#
-# The Lime Tactical shell of the previous build is gone: the PC capture tools (ui_shots.gd, f1_trace.gd,
-# bench/scene_gate.gd) and story_beat3_test read the sheet (ledger.gd) now, so nothing is built for them (issue 578).
-#
-# Regions now: the sheet (left, ledger.sheet_r) | the clear part of the screen to its right, where the banner, toasts,
-# the tip card and hover tips sit (_column) | top right and bottom right corners (the sheet's own words).
-#
-# Every number shown comes from the battle (battle.gd builds the rows from the rules' own queries); this file only
-# draws them.
+# KEEL hands the battle's data to ledger.gd. This layer owns the full log,
+# menus, hover tips, banners, toasts, floats and nameplates.
 
 signal action(name: String, arg: Variant)
 signal rescaled   # the HUD was rebuilt at a new size; the battle refreshes what it shows
@@ -61,8 +43,6 @@ const FOE_RING := GS.FOE_RING
 const M := 12.0          # screen margin
 const COL_W := 440.0     # the tip card's offset from the sheet's margin
 const LOG_W := 600.0     # the full log
-const LOG_LINES := 4
-const LOG_H := 134.0
 # The battle log view keeps the newest 200 entries, the browser's own cap (ui3d.js log(): while el.childNodes.length > 200
 # remove the first). Only the view is capped: the rules' own log array keeps every entry for saves, the debrief and parity.
 const LOG_VIEW_MAX := 200
@@ -85,6 +65,8 @@ var _phase_kind := ""
 var log_panel: PanelContainer
 var log_text: RichTextLabel
 var log_open := false
+var log_enabled := true
+var log_collapsed := false
 var banner_lbl: Label
 var tip: PanelContainer
 var tip_text: RichTextLabel
@@ -161,7 +143,8 @@ func _build_ledger() -> void:
 	ledger.k = k
 	root.add_child(ledger)
 	ledger.log_lines = _log_lines
-	ledger.keys_bb = keys_text()
+	ledger.log_enabled = log_enabled
+	ledger.log_collapsed = log_collapsed
 	ledger.act.connect(func(n: String, arg: Variant) -> void: action.emit(n, arg))
 	ledger.hover_tip.connect(_ledger_tip)
 	# the board's hover tip belongs to the board: it goes when the pointer comes onto the sheet (the board gets no motion there)
@@ -179,6 +162,8 @@ func _rebuild() -> void:
 	var keep := {
 		"banner": banner_lbl.text, "banner_col": banner_lbl.get_theme_color("font_color"), "banner_a": banner_lbl.modulate.a,
 		"toast": toast_lbl.text, "toast_a": toast_lbl.modulate.a}
+	var fleet_page: int = ledger.fleet_page
+	var fleet_id: String = ledger._fleet_id
 	# N5 (#282): a rebuild while the menu is open keeps its keyboard row. Read the row before the menu is thrown away.
 	var keep_row := -1
 	if menu != null and is_instance_valid(menu):
@@ -200,6 +185,8 @@ func _rebuild() -> void:
 	k = nk
 	_scaled_fonts()
 	_build_all()
+	ledger.fleet_page = fleet_page
+	ledger._fleet_id = fleet_id
 	for key in ["set_crest", "set_info", "set_command", "set_top", "set_roster", "set_nemesis", "set_panel", "set_target", "set_legend", "set_chip", "set_phase", "set_card", "set_retreat"]:
 		if _last.has(key):
 			callv(key, _last[key])
@@ -387,10 +374,10 @@ func set_crest(_tex: Texture2D, _tip: String) -> void:
 	_last["set_crest"] = [_tex, _tip]
 
 
-# the Admiral's Command: the sheet draws it in the orders line with the C key
-func set_command(label: String, ready: bool) -> void:
-	_last["set_command"] = [label, ready]
-	ledger.cmd = {"label": label, "ready": ready}
+# The action is a once-per-battle Command, not a point counter.
+func set_command(label: String, ready: bool, available := false, armed := false) -> void:
+	_last["set_command"] = [label, ready, available, armed]
+	ledger.cmd = {"label": label, "id": label, "ready": ready, "available": available, "active": armed}
 	ledger.mark()
 
 
@@ -478,7 +465,8 @@ func _detail_bb(info: Dictionary) -> String:
 func _show_dtip() -> void:
 	if _panel_info.is_empty():
 		return
-	_ledger_tip(recol(_detail_bb(_panel_info)), Vector2(ledger.sheet_r.position.x, s(110)))
+	ledger.ensure_layout()
+	_ledger_tip(recol(_detail_bb(_panel_info)), ledger.sheet_r.position + Vector2(s(Ledger.MARGIN), s(28)))
 
 
 func keys_text() -> String:
@@ -488,7 +476,7 @@ func keys_text() -> String:
 
 
 # --- Target: the enemy you aim at (or hover), with what the volley is expected to take, hatched and labelled expected
-# info: {name, cls, hp, maxHp, sh: [4], shMax, exp_hull, exp_sh: [4], line (bbcode), flag}
+# Side coverage is hover detail; the standing preview reads the two pooled damage amounts.
 func set_target(info: Dictionary) -> void:
 	_last["set_target"] = [info]
 	ledger.target = info
@@ -509,7 +497,7 @@ func set_card(info: Dictionary) -> void:
 # ---------------------------------------------------------------- log ticker, banner, tip, chip, hint
 
 func _build_log() -> void:
-	# the full log (L, or "Log L" on the sheet): a box over the bottom right corner, where the sheet shows the last three lines
+	# L opens the full history. The shelf's separate ticker only shows recent outcomes.
 	log_panel = PanelContainer.new()
 	log_panel.name = "full_log"
 	log_panel.add_theme_stylebox_override("panel", _tipbox(16, 12))
@@ -518,10 +506,6 @@ func _build_log() -> void:
 	log_panel.anchor_right = 1.0
 	log_panel.anchor_top = 1.0
 	log_panel.anchor_bottom = 1.0
-	log_panel.offset_left = -s(52 + LOG_W + 16)
-	log_panel.offset_right = -s(36)
-	log_panel.offset_bottom = -s(24)
-	log_panel.offset_top = -s(24 + _log_h())
 	log_panel.visible = log_open
 	root.add_child(log_panel)
 	var v := VBoxContainer.new()
@@ -533,7 +517,7 @@ func _build_log() -> void:
 	var ht := _label("Battle log", 19, S_TEXT, font_semi)
 	ht.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hh.add_child(ht)
-	var lb := _button("Close  L", "log")
+	var lb := _button("Close", "log")
 	lb.tooltip_text = "Close the full battle log (L)"
 	hh.add_child(lb)
 	v.add_child(hh)
@@ -566,19 +550,37 @@ func _log_bar() -> void:
 	sb.mouse_filter = Control.MOUSE_FILTER_STOP if log_open else Control.MOUSE_FILTER_IGNORE
 
 
-# the full log's height: most of the screen's height
-func _log_h() -> float:
-	if root != null:
-		return maxf(200.0, root.get_viewport_rect().size.y / k * 0.62)
-	return 600.0
-
-
 func toggle_log() -> void:
 	log_open = not log_open
-	log_panel.offset_top = -s(24 + _log_h())
 	log_panel.visible = log_open
+	_layout_log()
 	_log_bar()
 	log_text.scroll_to_line(maxi(0, log_text.get_line_count() - 1))
+
+
+func set_log_preferences(enabled: bool, collapsed: bool) -> void:
+	if log_enabled == enabled and log_collapsed == collapsed:
+		return
+	log_enabled = enabled
+	log_collapsed = collapsed
+	if ledger != null:
+		ledger.log_enabled = enabled
+		ledger.log_collapsed = collapsed
+		ledger.mark()
+
+
+func _layout_log() -> void:
+	if not log_open:
+		return
+	ledger.ensure_layout()
+	var vs := root.get_viewport_rect().size
+	var bottom: float = ledger.sheet_r.position.y - s(12)
+	var h := minf(vs.y * 0.54, bottom - s(154))
+	var margin := s(Ledger.MARGIN)
+	log_panel.offset_right = -margin
+	log_panel.offset_left = -margin - minf(s(LOG_W), vs.x * 0.75)
+	log_panel.offset_bottom = bottom - vs.y
+	log_panel.offset_top = bottom - h - vs.y
 
 
 # the log in the sheet's strengths: your side and the story in TEXT, the enemy and the system in TEXT2 (no colour codes
@@ -673,7 +675,7 @@ func _build_tip() -> void:
 	root.add_child(dtip)
 
 
-# a hover on the sheet: its tip beside the sheet (for the corners' words, beside them, toward the middle)
+# Keep detail tips off the controls. Shelf tips open upward; corner tips face the board.
 func _ledger_tip(t: String, at: Vector2) -> void:
 	if t == "":
 		dtip.visible = false
@@ -683,12 +685,14 @@ func _ledger_tip(t: String, at: Vector2) -> void:
 	dtip.reset_size()
 	var vs := root.get_viewport_rect().size
 	var p: Vector2
-	if at.x < ledger.sheet_r.end.x:
-		p = Vector2(ledger.sheet_r.end.x + s(8), at.y - s(6))
+	if at.y >= ledger.sheet_r.position.y:
+		p = Vector2(at.x, ledger.sheet_r.position.y - dtip.size.y - s(10))
+		if p.x + dtip.size.x > vs.x * 0.67 and ledger.log_r.has_area():
+			p.y = ledger.log_r.position.y - dtip.size.y - s(10)
+	elif at.x < vs.x * 0.5:
+		p = at + Vector2(s(20), s(28))
 	else:
 		p = Vector2(at.x - dtip.size.x - s(16), at.y - s(6))
-		if at.y > vs.y * 0.5:
-			p.y = at.y - dtip.size.y - s(12)
 	p.y = clampf(p.y, float(s(8)), maxf(float(s(8)), vs.y - dtip.size.y - s(8)))
 	p.x = clampf(p.x, float(s(8)), maxf(float(s(8)), vs.x - dtip.size.x - s(8)))
 	dtip.position = p.round()
@@ -723,13 +727,17 @@ func _place_tip() -> void:
 		p.x = _tip_at.x - w - s(18)
 	p.x = clampf(p.x, col.x, maxf(col.x, col.y - w))
 	var t := float(s(8))
-	p.y = clampf(p.y, t, maxf(t, vs.y - h - gap))
+	ledger.ensure_layout()
+	var low: float = ledger.sheet_r.position.y - h - gap
+	p.y = clampf(p.y, t, maxf(t, low))
+	var avoid: Array = ledger.blockers.duplicate()
+	avoid.remove_at(avoid.find(ledger.sheet_r))
+	for c in [log_panel, tipcard, legend, aichip]:
+		if c != null and is_instance_valid(c) and c.visible and c.modulate.a >= 0.01:
+			avoid.append(c.get_global_rect())
 	for i in 3:
 		var moved := false
-		for c in [log_panel, tipcard, legend, aichip]:
-			if c == null or not is_instance_valid(c) or not c.visible or c.modulate.a < 0.01:
-				continue
-			var cr: Rect2 = c.get_global_rect()
+		for cr in avoid:
 			if Rect2(p, Vector2(w, h)).intersects(cr):
 				p.y = cr.position.y - h - gap if cr.position.y - h - gap >= t else cr.end.y + gap
 				moved = true
@@ -738,24 +746,12 @@ func _place_tip() -> void:
 	tip.position = p.round()
 
 
-# the clear part of the screen, right of the sheet: Vector2(left x, right x)
+# The clear board now spans the full width.
 func _column() -> Vector2:
 	var vs := root.get_viewport_rect().size
 	var l := float(s(M))
-	if ledger != null and ledger.visible:
-		l = ledger.sheet_r.end.x + float(s(10))
 	var r := vs.x - s(M)
 	return Vector2(l, maxf(l + s(200), r))
-
-
-# how far right of the screen's middle the clear part's middle is, in pixels: the camera puts the board's centre there
-# (camera_rig.gd screen_shift), so the ship it focuses is not under the sheet. 0 while the sheet is hidden (cut-ins).
-func clear_shift() -> float:
-	if root == null or ledger == null or not ledger.visible or ledger.modulate.a < 0.5 or not visible:
-		return 0.0
-	var vs := root.get_viewport_rect().size
-	var c := _column()
-	return maxf(0.0, (c.x + vs.x) * 0.5 - vs.x * 0.5)
 
 
 func _build_chip() -> void:
@@ -969,11 +965,9 @@ var plates_hidden := 0
 # screen rects of the HUD panels a ship name must not sit under
 func hud_blockers() -> Array:
 	var out: Array = []
-	if ledger != null and ledger.is_visible_in_tree():
-		out.append(Rect2(ledger.sheet_r.position, Vector2(ledger.sheet_r.size.x - s(24), ledger.sheet_r.size.y)))
-		for h in ledger.hits:
-			if not Rect2(h["r"]).intersects(ledger.sheet_r):
-				out.append(Rect2(h["r"]))
+	if ledger != null and ledger.is_visible_in_tree() and ledger.modulate.a > 0.5:
+		ledger.ensure_layout()
+		out.append_array(ledger.blockers)
 	for p in [log_panel, tipcard, legend]:
 		if p != null and is_instance_valid(p) and (p as Control).is_visible_in_tree():
 			out.append((p as Control).get_global_rect())
@@ -1343,6 +1337,7 @@ func _process(dt: float) -> void:
 func _layout() -> void:
 	var vs := root.get_viewport_rect().size
 	var col := _column()
+	_layout_log()
 	# top right, under the Nemesis line: the terrain key, right aligned at the sheet's right margin
 	var right := vs.x - s(52)
 	var below := float(s(150))
@@ -1368,7 +1363,7 @@ func _layout() -> void:
 	if banner_lbl.modulate.a > 0.0:
 		banner_lbl.reset_size()
 		var w := banner_lbl.size.x
-		banner_lbl.position = Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), vs.y * 0.42 - banner_lbl.size.y * 0.5).round()
+		banner_lbl.position = Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), s(72)).round()
 	# the menu and the end card: centred in the clear part
 	for m in [menu, endcard]:
 		if m != null and is_instance_valid(m):
@@ -1381,7 +1376,7 @@ func over_ui(p: Vector2) -> bool:
 	if ledger != null and ledger.is_visible_in_tree() and ledger.modulate.a > 0.5 and ledger._has_point(p):
 		return true
 	for c in [log_panel, tipcard, endcard, menu, legend]:
-		if c != null and is_instance_valid(c) and c.is_visible_in_tree() and c.get_global_rect().has_point(p):
+		if c != null and is_instance_valid(c) and c.is_visible_in_tree() and c.modulate.a > 0.5 and c.get_global_rect().has_point(p):
 			return true
 	return false
 
