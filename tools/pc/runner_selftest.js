@@ -244,7 +244,7 @@ const fs = require('fs'), path = require('path'), cp = require('child_process');
 const a = process.argv.slice(2), mode = process.env.STUB_GIT_FAULT || '';
 // This hook runs after reuse eligibility, immediately before the real branch switch.
 if (a.includes('checkout') && a.includes('-B') && process.env.STUB_CHECKOUT_EDIT) {
-  fs.writeFileSync(path.join(a[a.indexOf('-C') + 1], 'progress.txt'), process.env.STUB_CHECKOUT_EDIT);
+  fs.writeFileSync(path.join(a[a.indexOf('-C') + 1], process.env.STUB_CHECKOUT_EDIT_PATH || 'progress.txt'), process.env.STUB_CHECKOUT_EDIT);
   fs.writeFileSync(process.env.STUB_CHECKOUT_MARKER, 'edit injected before switch');
 }
 if (a.includes('status') && process.env.STUB_RECHECK_FAIL === '1' && fs.existsSync(process.env.STUB_CHECKOUT_MARKER)) {
@@ -280,6 +280,7 @@ const defaults = {
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '', STUB_CHECKOUT_EDIT: '', STUB_RECHECK_FAIL: '', STUB_CHECKOUT_MARKER: '',
+  STUB_CHECKOUT_EDIT_PATH: '',
   STUB_ACCOUNT_FAULT: '', STUB_EXPECT_FRESH: '',
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
@@ -525,7 +526,7 @@ async function checkoutFixture(source, label, prepare = () => {}, expectedKeep =
     assert.equal(fs.readdirSync(home).filter(n => n.startsWith('repo-kept-')).length, 0);
     assert(!r.text.includes('local clone attempt') && !r.text.includes('earlier checkout reused in place'), r.text);
     assert(!fs.existsSync(path.join(out, 'base_commit.txt')), 'stop before resume or agent work');
-    assert.equal(read(path.join(repo, 'progress.txt')), env.STUB_CHECKOUT_EDIT, 'late tracked edit bytes survive');
+    assert.equal(read(path.join(repo, env.STUB_CHECKOUT_EDIT_PATH || 'progress.txt')), env.STUB_CHECKOUT_EDIT, 'late edit bytes survive');
     return { home, repo, text: r.text };
   }
   assert.equal(r.code, 0, r.text);
@@ -591,6 +592,45 @@ async function testCleanAndCacheReuse() {
   });
   for (const [name, bytes] of Object.entries(pythonCaches)) assert.equal(read(path.join(python.repo, name)), bytes);
   pass('pushed checkout with only ignored Python caches reuses in place and preserves every cache byte');
+}
+async function testSharedShipCopySafety() {
+  const source = fixtureSource('reuse-ship-safety');
+  const ship = 'godot/assets/ships/B16_23/armor plate.glb';
+  const profile = path.join(root, 'ship-profile');
+  const sharedShip = path.join(profile, 'Downloads/voidsworn_test/build', ship);
+  write(sharedShip, 'hull-A');
+  function copyShip(repo) {
+    write(path.join(repo, '.git/info/exclude'), 'godot/assets/ships/*/\n');
+    fs.mkdirSync(path.dirname(path.join(repo, ship)), { recursive: true });
+    fs.copyFileSync(sharedShip, path.join(repo, ship));
+  }
+  const env = { USERPROFILE: profile };
+  await checkoutFixture(source, 'late-shared-ship-edit', copyShip, false, {
+    changed: true, env: { ...env, STUB_CHECKOUT_EDIT: 'hull-B', STUB_CHECKOUT_EDIT_PATH: ship }
+  });
+  pass('a byte change to a shared ship after eligibility stops the job and survives the switch');
+
+  const linked = await checkoutFixture(source, 'linked-shared-ship', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'godot/assets/ships/*/\n');
+    const linkedDir = path.dirname(path.join(repo, ship));
+    fs.mkdirSync(path.dirname(linkedDir), { recursive: true });
+    fs.symlinkSync(path.dirname(sharedShip), linkedDir, 'junction');
+  }, true, { env });
+  assert(linked.text.includes('shared ship copy could not be verified'), linked.text);
+  assert(fs.lstatSync(path.dirname(path.join(linked.old, ship))).isSymbolicLink());
+  assert.equal(read(path.join(linked.old, ship)), 'hull-A');
+  pass('a junction to the shared build keeps the checkout and the junction');
+
+  const collisionTip = fixtureCommit({ godot: 'incoming tracked file\n', 'progress.txt': 'base\n' }, base, '', source);
+  const collision = await checkoutFixture(source, 'shared-ship-collision', repo => {
+    copyShip(repo);
+    write(path.join(source, 'refs/heads/main'), collisionTip + '\n');
+  }, true, { env });
+  assert(collision.text.includes('cache would be overwritten by incoming file: ' + ship), collision.text);
+  assert.equal(read(path.join(collision.old, ship)), 'hull-A');
+  assert.equal(read(path.join(collision.repo, 'godot')), 'incoming tracked file\n');
+  assert.equal(read(sharedShip), 'hull-A');
+  pass('an incoming tracked file that collides with an identical ship copy keeps the checkout and both copies');
 }
 async function testKeptLookalikes() {
   const source = fixtureSource('reuse-lookalikes');
@@ -1056,7 +1096,7 @@ async function testRunnerStartChecks() {
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools]);
   await parallel([
     testAccounting, testAccountingFaults, testOpenAIModels,
-    testCleanAndCacheReuse, testKeptLookalikes, testLateCheckoutEdits,
+    testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testLateCheckoutEdits,
     testIncomingCheckoutCollisions, testKeptCheckoutHistory,
     testClaimRules, testClaimFailures, testResumeAndFailures, testGitRetries,
     testHeldCheckout, testMergedPartial, testResumeConflict, testChainRelease, testProbeTimeout,
