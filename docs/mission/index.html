@@ -384,7 +384,7 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     const pr = isIssue(job?.prNumber), prState = ['open','closed','merged'].includes(job?.prState) ? job.prState : 'state unverified';
     const review = pr && date(job.prReviewAt);
     return [
-      ['Runner',statusText(word)+' · '+entry.updated,current && lane.state!=='unknown'],
+      ['Runner',statusText(current ? laneState(lane)[0] : word)+' · '+entry.updated,current && lane.state!=='unknown'],
       [push ? 'Checked push confirmed' : 'Checked push unconfirmed',push ? statusText('PC runner')+' · '+dated(lane.finishedAt || lane.source?.updatedAt) : '',push],
       [pr ? 'PR recorded' : 'PR unconfirmed',pr ? '#'+job.prNumber+' · '+prState+' · '+sourceLine('pulls') : sourceLine('pulls'),pr && !sourceWarning('pulls')],
       [review ? 'Technical review recorded' : 'Review evidence unavailable',review ? 'Artoo comment names the recorded PR head · '+dated(job.prReviewAt)+' · '+sourceLine('comments') : '',review && !sourceWarning('comments') && !sourceWarning('pulls')]
@@ -444,7 +444,11 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
   // Keep each group's partial order and evidence for all three views.
   function flightPlan(lane) {
     const [word,tone] = laneState(lane);
-    const current = {job:lane.current,word,tone,current:true,updated:laneEvidence(lane),reason:laneReason(lane)};
+    const conflict = lane.state==='running' && !lane.stale && !lane.endedWithoutPush && lane.current?.githubState==='closed';
+    const conflictReason = conflict ? 'PC runner records this job as running. '+(sourceWarning('issues') ?
+      'Last known issue state on GitHub is closed.' : 'The issue is closed on GitHub.') : '';
+    const current = {job:lane.current,word:conflict ? 'Issue conflict' : word,tone:conflict ? 'bad' : tone,
+      current:true,updated:laneEvidence(lane),reason:conflictReason || laneReason(lane)};
     const raw = lane.queue?.groups || ((lane.next || []).length ? [{state:'legacy',jobs:lane.next,
       reason:'The older snapshot lists this issue without a verified chain.'}] : []);
     const groups = raw.map(group=>{
@@ -465,7 +469,8 @@ nav small { color: var(--dim); font: 500 12px var(--body); text-transform: none;
     const recorded = next.flatMap(entry=>entry.jobs);
     const waitingCount = new Set(recorded.filter(entry=>!entry.reason && !entry.group.blockedByPredecessor).map(entry=>entry.job.issue)).size;
     const attention = [];
-    if (current.reason && (lane.endedWithoutPush || lane.state!=='running' && lane.state!=='finished')) attention.push(current.reason);
+    if (conflict) attention.push('#'+current.job.issue+' · '+conflictReason);
+    else if (current.reason && (lane.endedWithoutPush || lane.state!=='running' && lane.state!=='finished')) attention.push(current.reason);
     for (const {group,jobs} of groups) {
       if (group.attention || group.amber && group.state==='starting') {
         const subject = group.predecessor?.issue || jobs[0]?.job.issue || current.job?.issue;

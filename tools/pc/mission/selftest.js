@@ -33,9 +33,11 @@ function makeCases(base) {
   const values = ['overview','task','decision','failure','offline','unknown','no-picture','missing-picture','queue','queue-photo','crew',
     'blocked','quiet','checked-push','ended','leftover','claim','claim-old','github-unread','legacy','no-build','old-build',
     'starting','long-title','privacy','legacy-listing','pr-only','pr-merged','pr-closed','review','needs-ryan','question-partial',
-    'pc-partial',...outageCases];
+    'pc-partial','running-closed-issue','running-closed-issue-stale','finished-closed-issue',...outageCases];
   const cases = {};
   for (const name of values) {
+    const finishedClosedIssue = name==='finished-closed-issue';
+    const staleIssueRead = name==='running-closed-issue-stale';
     const root = path.join(base,'display-'+name);
     const put = (file,contents,at=now-minute) => write(path.join(root,file),contents,at);
     function chainFile(file, log, issues, at = now-minute, bat = '') {
@@ -58,7 +60,7 @@ function makeCases(base) {
     }
     const start = Date.parse('2026-11-17T10:21:00Z'), claimStart = now-(name==='claim-old' ? 11 : 9)*minute;
     const chainStart = name.startsWith('claim') ? claimStart : start;
-    const chainEnd = name==='queue' ? now-40*minute : name==='queue-photo' ? now-2*minute : null;
+    const chainEnd = name==='queue' ? now-40*minute : name==='queue-photo' || finishedClosedIssue ? now-2*minute : null;
     const chainLog = '970 start '+nowText(chainStart)+(chainEnd ? '\n970 end '+nowText(chainEnd)+'\nall done '+nowText(chainEnd) : '');
     chainFile('codex_chain_fixture',chainLog,[970],chainEnd || chainStart);
     for (const [file,log,list] of [
@@ -80,7 +82,7 @@ function makeCases(base) {
       put('board/issue-970/status.json','{broken');
       put('board/issue-970/log.txt','Codex job: issue #970, "Iron Mandate: bow ion gun"');
     } else if (!name.startsWith('claim')) {
-      runner('board',970,title,['checked-push','queue','queue-photo'].includes(name) ? 'checked_push' : 'running',start);
+      runner('board',970,title,name==='checked-push' || chainEnd ? 'checked_push' : 'running',start);
     }
     if (name==='failure') {
       runner('board_b',928,'Hull hit redo', 'failed', now-18*minute,'runner exit 8',now-10*minute);
@@ -115,7 +117,8 @@ function makeCases(base) {
     }
     const issues = raw.issues.filter(issue=>issue.number!==855 && issue.number!==929).concat(
       {number:982,title:'Measure storm map cost at 4K',state:name==='queue' ? 'closed' : 'open',updated_at:iso(now-20*minute)},
-      {number:970,title:'Iron Mandate: bow ion gun',state:'open',updated_at:iso(now-20*minute)},
+      {number:970,title:'Iron Mandate: bow ion gun',state:name.includes('closed-issue') ? 'closed' : 'open',
+        updated_at:iso(finishedClosedIssue ? now-30000 : now-minute*(staleIssueRead ? 70 : 20))},
       {number:929,title:'Shield hit look',state:'open',labels:name==='decision' ? ['ryan'] : [],
         updated_at:iso(now-41*minute),body:'Ask Ryan: Keep the egg shield as the default, or switch to the fitted skin? | Picture: https://github.com/rcbailey12/voidsworn/issues/929'}
     );
@@ -139,10 +142,12 @@ function makeCases(base) {
     const github = p.githubData(issues,[...raw.pulls,pr,fixturePull(1005,'work/issue-1005-openai')],comments,p.emptyGithub(),now);
     for (const source of sourceNames) {
       const incomplete = name==='github-'+source || name==='question-partial' && source==='questions';
+      const stale = staleIssueRead && source==='issues';
+      const readAt = finishedClosedIssue && source==='issues' ? now-10000 : now-3*minute;
       Object.assign(github.sources[source],{
         complete:!incomplete,
-        lastSuccessfulReadAt:iso(now-minute*(incomplete ? 65 : 3)),
-        lastAttemptAt:iso(now-3*minute),nextAttemptAt:iso(now+7*minute),
+        lastSuccessfulReadAt:iso(incomplete || stale ? now-65*minute : readAt),
+        lastAttemptAt:iso(stale ? now-65*minute : readAt),nextAttemptAt:iso(now+7*minute),
         reason:incomplete ? name==='question-partial' ? 'Read incomplete: shared GitHub budget paused' : 'GitHub returned HTTP '+(501+sourceNames.indexOf(source)) : null
       });
     }
@@ -423,7 +428,19 @@ async function test(){
   await startupTests(check,base);
   await httpTests(check,base);
   await require('./phone_selftest').test(check,base,root);
-  console.log('PASS mission r3: '+count+' checks; fixtures and logs kept in '+base);return {base,cases:makeCases(base)};
+  const {cases} = makeCases(base);
+  check('current jobs keep their runner state and closed issue evidence through fresh and stale GitHub reads',()=>{
+    for (const [name,state,stale] of [['running-closed-issue','running',false],['running-closed-issue-stale','running',true],
+      ['finished-closed-issue','finished',false]]) {
+      const {data} = cases[name], row = lane(data,'main');
+      assert.equal(row.current.issue,970,name);
+      assert.equal(row.current.githubState,'closed',name);
+      assert.equal(row.state,state,name);
+      assert.equal(row.runnerState,state==='running' ? 'running' : 'checked_push',name);
+      assert.equal(data.github.sources.issues.stale,stale,name);
+    }
+  });
+  console.log('PASS mission r3: '+count+' checks; fixtures and logs kept in '+base);return {base,cases};
 }
 async function budgetTests(check){
   const requests=[],reader=new p.GithubReader(async(url,opts)=>{requests.push({url,opts});return new Response('[]');});

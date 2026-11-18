@@ -207,6 +207,12 @@ async function run() {
       assert.equal(await evaluate('document.getAnimations().length'),0);
     }
 
+    const closedIssues = {
+      'running-closed-issue':'PC runner records this job as running. The issue is closed on GitHub.',
+      'running-closed-issue-stale':'PC runner records this job as running. Last known issue state on GitHub is closed.',
+      'finished-closed-issue':null
+    };
+    const statusView = hash=>hash==='#task/main/970' ? '.task-title' : hash==='#queue' ? '#queue-main .now' : '#now-main .now';
     const screens = [
       ['overview','',has('#now-main .now',/Iron Mandate.*Running/is)],
       ['task','#task/main/970',has('.task-title',/Iron Mandate/)],
@@ -242,6 +248,8 @@ async function run() {
       ['starting','',has('#content',/first read of PC files is in progress/)],
       ['long-title','#task/main/970',has('.task-title',/L{240}/)],
       ['privacy','#task/main/970',has('.task-title',/title withheld/)],
+      ...Object.entries(closedIssues).flatMap(([name,reason])=>['','#queue','#task/main/970'].map(hash=>
+        [name,hash,has(statusView(hash),reason ? /Issue conflict/i : /Finished/i)])),
       ...['questions','issues','pulls','comments'].map(source=>['github-'+source,'',has('#alerts',/GitHub unavailable/i)]),
       ['nov17','#queue',has('#queue-d',/Codex lane D/)]
     ];
@@ -302,6 +310,21 @@ async function run() {
         assert.match(notes,/PC files incomplete.*last successful scan.*3 min ago.*Chain script missing/s);
       }
       if (name==='unknown') assert.match(await evaluate('document.querySelector(".task-title .status").innerText'),/^unknown$/i);
+      if (Object.hasOwn(closedIssues,name)) {
+        const reason = closedIssues[name], task = hash==='#task/main/970';
+        const notes = task ? '.task-title' : (hash==='#queue' ? '#queue-main' : '#now-main')+' .attention';
+        const text = await evaluate('document.querySelector('+JSON.stringify(notes)+').innerText');
+        if (reason) {
+          assert(text.includes((task ? '' : '#970 · ')+reason));
+          assert.doesNotMatch(text,/No blockers recorded/);
+          assert(await evaluate(has(statusView(hash)+' .status.bad',/^Issue conflict$/i)));
+          if (task) assert(await evaluate(has('.timeline li:first-child[data-proved]',/Runner.*Running/s)));
+        } else {
+          assert.doesNotMatch(text,/Issue conflict|PC runner records this job as running/);
+          if (task) assert(await evaluate(has('.facts',/Closed on GitHub/)));
+          else assert.match(text,/No blockers recorded/);
+        }
+      }
       if (name==='queue') {
         assert.match(await evaluate('document.querySelector("#queue-main").innerText'),/40 min.*waiting window may be closed/s);
         assert.match(await evaluate('document.querySelector("#queue-main").innerText'),/Closed on GitHub; chain still lists it/);
@@ -323,7 +346,7 @@ async function run() {
         assert.match(rows[index],new RegExp('last known.*1 h 5 min ago.*GitHub returned HTTP '+(501+index),'s'));
         assert.equal(rows.filter(row=>row.includes('GitHub returned HTTP')).length,1);
       }
-      console.log('PASS 412 px · '+name);
+      console.log('PASS 412 px · '+name+(Object.hasOwn(closedIssues,name) ? ' · '+(hash || '#now') : ''));
     }
 
     await size(320);
@@ -354,13 +377,14 @@ async function run() {
       ['blocked','blocked','#now','c',has('#now-c',/Blocked/i)],
       ['unknown','unknown','#now','main',has('#now-main',/target not found/i)],
       ['offline','offline','#now','main',has('#alerts',/PC feed lost/i)],
-      ['needs-ryan','needs-ryan','#now','main',has('#content',/question unavailable/i)]
+      ['needs-ryan','needs-ryan','#now','main',has('#content',/question unavailable/i)],
+      ['issue-conflict','running-closed-issue','#now','main',has('#now-main .attention',/The issue is closed on GitHub/)]
     ]) {
       await screen(fixture,hash,ready,data=>{
         data.lanes = data.lanes.filter(lane=>lane.id===seat);
         const lane = data.lanes[0];
         if (name==='unknown') lane.queue.groups = lane.queue.groups.filter(group=>group.state==='unknown');
-        if (name==='offline') for (const group of lane.queue.groups) group.jobs = group.jobs.slice(0,1);
+        if (name==='offline' || name==='issue-conflict') for (const group of lane.queue.groups) group.jobs = group.jobs.slice(0,1);
         return data;
       });
       await check(name+' capture');
