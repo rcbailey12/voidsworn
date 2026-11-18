@@ -32,7 +32,7 @@ The original Hunt tune still lands in the 25% to 50% band in the sector 2 Hegemo
 
 With the same Hegemony fleets, Vex and 100 seeds, moving the fixture to sector 1 drops escape from 34% to 17%. Both mirrors start with a median gap of 24 hexes, and the first hull-to-hull shot lands in median round 3. Sector 2 adds 12% to enemy hull, shield pool and regeneration and 8% to damage. The Dominion quarry has 258 hull in sector 2 and 230 in sector 1. Sector 1 also excludes Dead Star terrain. Across the 86 seeds where the realized map, shape, arena and approach match, escape still falls from 30 to 16.
 
-The sector 1 faction mix adds more variation. Its median quarry has 175 hull and its hunters start 22 hexes away. Hull-to-hull fire starts in median round 2, giving the fleets more time to shoot before the fixed six-round jump. The four factions whose quarries have 140 to 180 starting hull escaped in just 13 of 312 battles combined. Hull stats, weapons and hunter fleet composition vary together in that sweep.
+The sector 1 faction mix adds more variation. Its median quarry has 175 hull and its hunters start 22 hexes away. Hull-to-hull fire starts in median round 2, giving the fleets more time to shoot before the fixed six-round jump. The four factions whose quarries have 140 to 180 starting hull escaped in just 13 battles out of 312 combined. Hull stats, weapons and hunter fleet composition vary together in that sweep.
 
 ### A shared Hunt setting
 
