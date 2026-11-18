@@ -9013,7 +9013,7 @@
   }
  },
  "s983_station_defend": {
-  "note": "R314 station footprint: the big map station blocks every hex within 2 of its centre (19 hexes). Defend measures from the station edge: guard ring at 4, guns at 7, damage within 4, so the Hegemony attackers must come one more ring in",
+  "note": "R314 station footprint: the big map station blocks every hex within 2 of its centre (19 hexes). Defend measures from the station edge: the guard ring and the damage band are the hexes touching the station (1 hex out, 3 from the centre), guns reach 4 hexes out (6 from the centre), so the Hegemony attackers must press right up to the station body",
   "seed": 98311,
   "sector": 2,
   "admiral": "vex",

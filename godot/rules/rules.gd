@@ -3735,7 +3735,9 @@ func survivorsP() -> int:
 	for u in B["units"]:
 		if u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited"))): n += 1
 	return n
-# R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre
+# R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre.
+# The edge distances match the old 7-hex station: damage and the guard ring 1 hex out (the hexes touching the station body),
+# guns 4 hexes out, wing support 2 hexes out. The enemy pull aims one ring outside the damaging perimeter.
 func stationRad() -> int:
 	if B != null and jt(B.get("map")) and jt(B["map"].get("stationR")): return int(B["map"]["stationR"])
 	return 0
@@ -3744,14 +3746,14 @@ func objZone(q, r):
 	if o == null or not onBoard(q, r): return null
 	if o.type == "break" and q + floor(r / 2.0) >= o.exitC: return "exit"
 	if o.type == "intercept" and r >= o.exitR: return "texit"
-	if o.type == "defend" and hdist({"q": q, "r": r}, o.hex) == stationRad() + 2: return "guard"
+	if o.type == "defend" and hdist({"q": q, "r": r}, o.hex) == stationRad() + 1: return "guard"
 	return null
 func stationFire(dq) -> void:
 	var o = B.get("obj")
 	if o == null or o.type != "defend": return
 	var src = {"q": o.hex.q, "r": o.hex.r, "facing": 0}; var ts = []
 	for u in caps("enemy"):
-		if hdist(u, o.hex) <= stationRad() + 5: ts.append(u)
+		if hdist(u, o.hex) <= stationRad() + 4: ts.append(u)
 	JSM.ssort(ts, func(a, b): return hdist(a, o.hex) - hdist(b, o.hex))
 	ts = ts.slice(0, 2)
 	var att = {"side": "player", "dealt": 0, "kills": 0, "crit": 0, "lockOn": false, "fx": {}}
@@ -3823,7 +3825,7 @@ func objectiveTick(_dq) -> void:
 	if o.type == "defend":
 		var near = []
 		for u in caps("enemy"):
-			if hdist(u, o.hex) <= stationRad() + 2: near.append(u)
+			if hdist(u, o.hex) <= stationRad() + 1: near.append(u)
 		if near.size() > 0:
 			o["hp"] = max(0, o["hp"] - near.size()); logm(ns(near.size()) + " enemy ship" + ("s" if near.size() > 1 else "") + " at the station. Integrity " + ns(o["hp"]) + "/" + ns(o["hpMax"]) + ".", "e")
 		if o["hp"] > 0 and B["round"] <= o["rounds"]: stationFire(_dq)
@@ -5909,7 +5911,7 @@ func sqValue(t, e, s) -> float:
 func sqObjNear(t) -> bool:
 	var o = B.get("obj") if B != null else null
 	if o == null: return false
-	if o.type == "defend" and o.get("hex") != null: return hdist(t, o.hex) <= stationRad() + 3
+	if o.type == "defend" and o.get("hex") != null: return hdist(t, o.hex) <= stationRad() + 2
 	if o.type == "intercept":
 		for x in B["units"]:
 			if jt(x.get("transport")) and not jt(x.get("dead")) and hdist(x, t) <= 3: return true
