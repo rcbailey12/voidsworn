@@ -108,11 +108,12 @@ def pair(k):
 # ------------------------------------------------------------------------------------------------------------ the layers
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
-    ao_short=.004, ao_long=.025, edge_radius=.0012, edge_gain=16.0,
-    # sunward.md 1: forged variation by hull panel cell (panel_nodes), no fine mottle and no grain (R237: "grainy paint")
+    ao_short=.004, ao_long=.025, edge_radius=.0018, edge_gain=24.0,
+    # Sunward iron stays free of visible grain. The shared satin coat varies in roughness.
     side_dark=.25, grain_scale=260.0, mottle_scale=40.0, grain=0.0,
-    rough=.68, metal=.48, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
-    rough_floor=.55,     # sunward.md 3: the roughness floor in every zone (no white specular glare at the game's key light)
+    rough=.33, metal=.48, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
+    rough_floor=.28, bare_roughness=.21, rough_grain=.12, coat_roughness=.18,
+    cavity_roughness=.22, scuff_roughness=.30, recess_streaks=1.0, plate_tone_range=.08,
     # sunward.md 1: triangles on the flat fields (patch_big), rectangles on the curves and the triangular infill (patch_small),
     # over-plates at deck edges and spire roots only (patch_over, a share of .08 of their cells)
     patch_big=(.070, .038, .028), patch_small=(.030, .018, .014), patch_over=(.060, .036, .026), patch_over_share=.08,
@@ -120,8 +121,7 @@ LAYERS = dict(
     # R243 (Ryan, Nov 13 2026: "Sunward could have more triangle sleek panels"; a hull's order follows its faction's lore): the
     # Sunward plates are FORGED, not scavenged, so their order is deliberate and stays exact. patch_warp, patch_band and
     # patch_split are 0 and stay 0: the uneven warped grid is the Hullbreakers' opt-in only (R240, PR 682), never "fix" this order
-    # into warp. The forged variation comes instead from each hull panel cell taking one calm tone of its own: the Sunward
-    # panels are drawn by panel_nodes below (the shared patchwork hands them over before it reads any of these three), so the
+    # into warp. panel_nodes follows modeled plate islands and draws the Sunward pattern on exposed shell fields, so the
     # shared _grid never sees these zeros.
     patch_warp=0, patch_band=0, patch_split=0,
     cavity_pow=1.6, wear_lo=.22, wear_hi=.46,
@@ -133,11 +133,11 @@ LAYERS = dict(
     grime_z=(-.12, -.04), soot_x=(-.50, -.30), soot_aft=.30,              # soot gathers low and toward the ember bells
     wear_scale=50.0, wear_patch=3.0, bump_distance=.0008, bump_strength=.50, panel_relief=.90,
 )
-# sunward.md 3: per zone. Grime is carbon soot (GRIME below), rust 0 everywhere; the roughness floor .55 holds in every zone.
+# Grime is carbon soot (GRIME below), with rust 0 everywhere. Recesses keep a rougher coat than exposed iron.
 _Z = dict(
-    siron=dict(rust=0, grime=.55, patchwork=1.0, rough=.68, metal=.48),        # body plate
-    siron2=dict(rust=0, grime=.70, patchwork=.8, rough=.72, metal=.35),        # recessed iron
-    sworn=dict(rust=0, grime=.45, patchwork=1.0, rough=.58, metal=.62, wear=1.2),   # worked iron: bands, rims
+    siron=dict(rust=0, grime=.55, patchwork=1.0, rough=.33, metal=.48, wear=1.08),
+    siron2=dict(rust=0, grime=.70, patchwork=.8, rough=.52, metal=.35, wear=.48),
+    sworn=dict(rust=0, grime=.45, patchwork=1.0, rough=.26, metal=.62, wear=1.32, handling_wear=.50),
     dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92),
 )
 _BASE = dict(siron='iron', siron2='iron_shade', sworn='worked', dark='soot')
@@ -166,6 +166,11 @@ GRIME = lin(CONCEPT['soot'][0])       # carbon soot
 RUST = RUST_DARK = GRIME              # read by the shared rust layer only where a zone has rust, and no Sunward zone has
 
 
+def authored_panel_mesh(obj):
+    """The sheet's forged plates are disconnected mesh islands."""
+    return '_plates_' in obj.name
+
+
 def _zone_of(nt):
     """the zone of the material this node tree belongs to (the shared stack names it ps_<zone>_<group>)"""
     for m in bpy.data.materials:
@@ -177,17 +182,15 @@ def _zone_of(nt):
 def panel_nodes(c, col, amount, families=None, cells=None):
     """sunward.md 1 and R243: two regions, one forged order. On the hull (cells None), the flat fields carry sleek triangular
     plates: long edge on the hull axis, point forward, nested point to base, the rows running straight along the decks (on a
-    deck the rows run along y, on a flank along z); two rows pair up so their forward plates meet on a common long edge as one
-    arrowhead, every second pair set half a plate along. The curved faces (faces turned fore or aft: the tapered edges, the
-    stern) and every part (the parts atlas: spire roots, bell housings, turret domes) carry the even rectangular grid at the
-    small size, because a triangular grid shears on compound curves. The switch falls on a facet edge, where the face turns,
-    never across a plate. Over-plates (patch_over, share .08) sit at the deck edges and on the spire roots only. Rivet rows run
-    along the triangles' long edges (the deck bands). Returns the colour and the seam mask for the normal bake."""
-    from paint_stack import node, math_, mixc, ramp, _grid_even, _seams
+    deck the rows run along y, on a flank along z); two rows meet as an arrowhead. Curved shell faces carry small rectangles.
+    Painted over-plates sit at deck edges, and painted rivet rows follow the triangles' long edges. Modeled plates use
+    their actual rims and rivets and take one quiet tone per connected plate. Returns the colour and the seam mask."""
+    from paint_stack import node, math_, mixc, mulc, ramp, _grid_even, _seams
     from types import SimpleNamespace
     nt = c.nt; L = LAYERS; S_ = SimpleNamespace(LAYERS=LAYERS)
     hull = cells is None
     zone = _zone_of(nt)
+    base_col = col
 
     # the rectangles: the even grid (shared _grid_even, the pre-R240 grid), at the small size
     small = (cells[0] if cells else L['patch_small'])
@@ -240,6 +243,13 @@ def panel_nodes(c, col, amount, families=None, cells=None):
         ow = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(oid, ow.inputs['Vector'])
         on = math_(nt, 'MULTIPLY', math_(nt, 'LESS_THAN', ow.outputs['Value'], L['patch_over_share']), over_w)
         seam = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', seam, math_(nt, 'SUBTRACT', 1, on)), math_(nt, 'MULTIPLY', _seams(c, S_, olines), on))
+    if hull:
+        plates = node(nt, 'ShaderNodeAttribute', attribute_type='GEOMETRY', attribute_name='ps_authored_panels').outputs['Fac']
+        island = c.geo.outputs['Random Per Island']
+        shade = math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, island), L['plate_tone_range'])
+        plate_col = mulc(nt, base_col, math_(nt, 'SUBTRACT', 1, shade))
+        col = mixc(nt, col, plate_col, plates)
+        seam = math_(nt, 'MULTIPLY', seam, math_(nt, 'SUBTRACT', 1, plates))
     return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
 
 
