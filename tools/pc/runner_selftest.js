@@ -83,6 +83,7 @@ if (process.platform !== 'win32') {
   process.exit(0);
 }
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner687 proof '));
+const concurrency = 10;
 const testChildren = [];
 const testPidFiles = [];
 const gh = require('./runner_claim_fixture')(root);
@@ -103,12 +104,36 @@ function run(exe, args, env = {}, cwd = root) {
   if (p.error) throw p.error;
   return { code: p.status, text: (p.stdout || '') + (p.stderr || '') };
 }
-const ps = (args, env) => run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'runner_common.ps1'), ...args], env);
+let shell;
+async function runScript(name, args, env) {
+  const start = Date.now();
+  const result = await shell.run(path.join(here, name), args, env, root);
+  recordTiming(name + ':' + args[0], start, result.code);
+  return result;
+}
+const ps = (args, env) => runScript('runner_common.ps1', args, env);
+const entryQueue = [];
+let activeEntries = 0;
+function startEntries() {
+  while (activeEntries < concurrency && entryQueue.length) {
+    activeEntries++;
+    entryQueue.shift()();
+  }
+}
 function runEntryPoint(cmd, env) {
+  return new Promise((resolve, reject) => {
+    entryQueue.push(() => launchEntryPoint(cmd, env).then(resolve, reject).finally(() => {
+      activeEntries--;
+      startEntries();
+    }));
+    startEntries();
+  });
+}
+function launchEntryPoint(cmd, env) {
   const start = Date.now();
   return new Promise((resolve, reject) => {
     const child = spawn(process.env.COMSPEC, ['/d', '/s', '/c', cmd], {
-      cwd: root, env: { ...process.env, ...env }, windowsHide: true, windowsVerbatimArguments: true, timeout: 90000
+      cwd: root, env: { ...process.env, ...shell.env, ...env }, windowsHide: true, windowsVerbatimArguments: true, timeout: 90000
     });
     testChildren.push(child);
     let text = '', error;
@@ -120,31 +145,33 @@ function runEntryPoint(cmd, env) {
     });
   });
 }
-// Each arm owns its job folders and fake GitHub database. The real mirror lock still protects shared Git data.
-// Settle the whole batch before throwing so failure cleanup cannot race a runner that is still writing evidence.
-async function parallelArms(items, check) {
-  for (let i = 0; i < items.length; i += 4) {
-    const results = await Promise.allSettled(items.slice(i, i + 4).map(check));
-    const failed = results.find(r => r.status === 'rejected');
-    if (failed) throw failed.reason;
-  }
+// Let active fixtures finish writing their evidence before propagating a failure.
+async function parallel(items, check) {
+  const results = await Promise.allSettled(items.map(check));
+  const failed = results.find(r => r.status === 'rejected');
+  if (failed) throw failed.reason;
+}
+async function waitFor(condition, milliseconds) {
+  const deadline = Date.now() + milliseconds;
+  while (!condition() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 25));
+  return condition();
 }
 const source = path.join(root, 'upstream.git');
 assert.equal(run('git', ['init', '--bare', '-q', source]).code, 0);
-function object(type, value) {
+function object(type, value, repo) {
   const b = Buffer.isBuffer(value) ? value : Buffer.from(value);
   const raw = Buffer.concat([Buffer.from(type + ' ' + b.length + '\0'), b]);
   const id = crypto.createHash('sha1').update(raw).digest('hex');
-  write(path.join(source, 'objects', id.slice(0, 2), id.slice(2)), zlib.deflateSync(raw));
+  write(path.join(repo, 'objects', id.slice(0, 2), id.slice(2)), zlib.deflateSync(raw));
   return id;
 }
-function tree(files) {
+function tree(files, repo) {
   return object('tree', Buffer.concat(Object.entries(files).sort(([a], [b]) => a.localeCompare(b)).map(([name, value]) =>
-    Buffer.concat([Buffer.from('100644 ' + name + '\0'), Buffer.from(object('blob', value), 'hex')]))));
+    Buffer.concat([Buffer.from('100644 ' + name + '\0'), Buffer.from(object('blob', value, repo), 'hex')]))), repo);
 }
-function fixtureCommit(files, parent, note = '') {
-  return object('commit', 'tree ' + tree(files) + '\n' + (parent ? 'parent ' + parent + '\n' : '') +
-    'author Runner fixture <fixture@example.invalid> 1700000000 +0000\ncommitter Runner fixture <fixture@example.invalid> 1700000000 +0000\n\nTest fixture\n' + note);
+function fixtureCommit(files, parent, note = '', repo = source) {
+  return object('commit', 'tree ' + tree(files, repo) + '\n' + (parent ? 'parent ' + parent + '\n' : '') +
+    'author Runner fixture <fixture@example.invalid> 1700000000 +0000\ncommitter Runner fixture <fixture@example.invalid> 1700000000 +0000\n\nTest fixture\n' + note, repo);
 }
 const base = fixtureCommit({ 'progress.txt': 'base\n' });
 const partial = fixtureCommit({ 'progress.txt': 'from partial\n' }, base,
@@ -156,6 +183,11 @@ write(path.join(source, 'refs/heads/main'), base + '\n');
 write(path.join(source, 'refs/heads/opus/issue-687'), otherSeatTip + '\n');
 const arms = ['opus', 'sonnet', 'openai', 'deepseek', 'kimi', 'kimicode', 'codex'];
 for (const arm of arms) write(path.join(source, 'refs/heads', (arm === 'codex' ? 'codex/issue-687' : 'work/issue-687-' + arm) + '-partial'), partial + '\n');
+function fixtureSource(label) {
+  const copy = path.join(root, label + '.git');
+  fs.cpSync(source, copy, { recursive: true });
+  return copy;
+}
 const agent = path.join(root, 'stub agent.bat');
 const gitStub = path.join(root, 'stub git.bat');
 write(agent, '@echo off\r\n"' + process.execPath + '" "' + path.join(root, 'agent.js') + '" %*\r\nexit /b %ERRORLEVEL%\r\n');
@@ -172,7 +204,7 @@ if (probe) {
   }
   if (process.env.STUB_PROBE_TIMEOUT === '1') {
     fs.writeFileSync(process.env.PC_TEST_TRACE + '.pid', String(process.pid));
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,60000);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,15000);
   }
   if (a[0] === 'run') {
     console.log(JSON.stringify({type:'step_finish',part:{tokens:{input:100,output:10,reasoning:3,cache:{read:20,write:0}}}}));
@@ -195,7 +227,7 @@ if (probe) {
     const end = Date.now() + 10000;
     while (!fs.existsSync(process.env.PC_TEST_TRACE + '.locked')) {
       if (Date.now() > end) process.exit(37);
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,50);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,25);
     }
   }
   const tokens = {input:1000,output:100,reasoning:30,cache:{read:200,write:0}};
@@ -217,7 +249,15 @@ if (a.includes('status') && process.env.STUB_RECHECK_FAIL === '1' && fs.existsSy
   console.error('stub status failure after branch switch'); process.exit(55);
 }
 const op = a.includes('fetch') ? 'fetch' : a[0] === 'clone' ? 'clone' : '';
-if (op === 'fetch' && process.env.STUB_FETCH_HOLD === '1') Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,800);
+const hold = process.env.STUB_FETCH_HOLD;
+if (op === 'fetch' && hold) {
+  fs.writeFileSync(hold + '.ready', 'fetch holds the mirror');
+  const deadline = Date.now() + 30000;
+  while (!fs.existsSync(hold + '.release')) {
+    if (Date.now() >= deadline) { console.error('fixture mirror fetch was not released'); process.exit(56); }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,25);
+  }
+}
 if (op && mode.startsWith(op)) {
   const counter = process.env.PC_TEST_COUNTER + '-' + op;
   const n = fs.existsSync(counter) ? Number(fs.readFileSync(counter,'utf8')) + 1 : 1;
@@ -251,9 +291,55 @@ const defaults = {
 function gitEnvironment(env) {
   return { ...env, PC_TEST_GIT: env.STUB_GIT_FAULT || env.STUB_CHECKOUT_EDIT || env.STUB_RECHECK_FAIL || env.STUB_FETCH_HOLD ? gitStub : gitPath };
 }
+// Copy the launchers and run their real helpers through the warm fixture shell.
+// Only the agent watchdog is replaced. Its preflight kill path and the separate
+// runner_stall_tests row still exercise the real timeout code.
+function fixtureTools(name, accounting = false) {
+  const dir = path.join(root, name);
+  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'run_timeout.ps1', 'gpu_slots.js']) {
+    let body = read(path.join(here, file));
+    if (file.endsWith('.bat')) {
+      body = body.replace(/powershell -NoProfile (?:-ExecutionPolicy Bypass )?(?=-File |-Command "(?:\(Get-Date\)|Get-Date -Format))/g,
+        'node "%RUNNER_FIXTURE_PS%" ').replace(/\r?\n/g, '\r\n');
+      if (accounting && file === 'work_issue.bat') {
+        body = body.replace(/(%PS% openai-(?:budget|spend)[^\r\n]*)"%DRY%"/g, '$1"0"')
+          .replace('set "PUSHMODE=dry"', 'set "PUSHMODE=test"');
+      }
+    }
+    write(path.join(dir, file), body);
+  }
+  write(path.join(dir, 'tmo.bat'), [
+    '@echo off',
+    'setlocal',
+    'if not "%PC_RUNNER_TEST%"=="1" exit /b 125',
+    'set "STUB_WATCHDOG_ARGS=%*"',
+    'node "' + path.join(root, 'watchdog.js') + '"',
+    'exit /b %ERRORLEVEL%'
+  ].join('\r\n') + '\r\n');
+  return dir;
+}
+write(path.join(root, 'watchdog.js'), `
+const assert = require('assert');
+const { spawnSync } = require('child_process');
+const { COMSPEC, CODEX_TEST_AGENT, WORK_TEST_AGENT, STUB_WATCHDOG_ARGS } = process.env;
+const [, exe, args] = /^\\d+ "([^"]+)" (.*)$/.exec(STUB_WATCHDOG_ARGS);
+let cmd;
+if (exe.toLowerCase() === COMSPEC.toLowerCase()) {
+  assert([CODEX_TEST_AGENT, WORK_TEST_AGENT].some(agent => args === '/d /s /c ""' + agent + '""'), args);
+  cmd = args.slice('/d /s /c '.length);
+} else {
+  assert.strictEqual(exe, WORK_TEST_AGENT);
+  cmd = '""' + exe + '" ' + args + '"';
+}
+const result = spawnSync(COMSPEC, ['/d', '/s', '/c', cmd], { windowsVerbatimArguments: true, windowsHide: true, stdio: 'inherit', timeout: 10000 });
+if (result.error) throw result.error;
+process.exitCode = result.status ?? 125;
+`);
+const tools = fixtureTools('launchers');
+const faultTools = fixtureTools('accounting runner', true);
 async function job(arm, label, extra = {}) {
   const home = path.join(root, arm + '-' + label); fs.mkdirSync(home, { recursive: true });
-  const env = gitEnvironment({ ...defaults, WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
+  const env = gitEnvironment({ ...defaults, PC_TEST_MIRROR: path.join(home, 'mirror.git'), WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
     PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra });
   testPidFiles.push(env.PC_TEST_TRACE + '.pid');
   if (!fs.existsSync(env.PC_TEST_GH_DB)) {
@@ -284,7 +370,7 @@ async function job(arm, label, extra = {}) {
     if (label === 'two-current') db.issue.body += '\n## Run 2 THIS IS THE JOB NOW\nAnother job.\n';
     write(env.PC_TEST_GH_DB, JSON.stringify(db)); write(env.PC_TEST_GH_TRACE, '');
   }
-  const bat = path.join(extra.STUB_RUNNER_TOOLS || here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
+  const bat = path.join(extra.STUB_RUNNER_TOOLS || tools, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
@@ -292,77 +378,72 @@ async function job(arm, label, extra = {}) {
   const runHome = arm === 'codex' ? home : read(path.join(home, 'dryrun-687-' + arm, 'latest.txt')).trim();
   const out = path.join(runHome, arm === 'codex' ? 'issue-687' : 'out');
   const repo = path.join(runHome, 'repo');
-  write(path.join(home, 'console.txt'), r.text);
   return { ...r, out, repo, env, result: read(path.join(out, 'result.txt')), state: JSON.parse(read(path.join(out, 'status.json'))) };
 }
 const fixtureSetupSeconds = (Date.now() - started) / 1000;
 console.log('Fixture setup: ' + fixtureSetupSeconds.toFixed(2) + ' s (tiny shared source and stubs; retry delay 0 s)');
-(async () => { try {
+async function testAccounting() {
   // Issue 985: exercise real PS accounting with only token fixtures, never a key or provider call.
   const spendRoot = path.join(root, 'openai accounting'); fs.mkdirSync(spendRoot, { recursive: true });
   const spendOut = path.join(spendRoot, 'out'); write(path.join(spendOut, 'result.txt'), '');
   const spendSettings = path.join(spendRoot, 'runner_settings.txt');
   const ledger = path.join(spendRoot, 'openai_spend.txt');
-  const workPS = args => run('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'work_issue.ps1'), ...args], { ...defaults });
+  const workPS = args => runScript('work_issue.ps1', args, defaults);
   const budget = (model = openaiDefault, dry = '0') => workPS(['openai-budget', spendOut, spendRoot, spendSettings, model, dry]);
   const spend = (out = spendOut, model = openaiDefault, dry = '0') => workPS(['openai-spend', '985', out, spendRoot, spendSettings, model, dry]);
   const rows = () => read(ledger).trim().split(/\r?\n/).filter(Boolean).map(s => JSON.parse(s));
-  assert.equal(workPS(['openai-key', spendOut]).code, 3);
+  assert.equal((await workPS(['openai-key', spendOut])).code, 3);
   assert(read(path.join(spendOut, 'result.txt')).includes('no OpenAI API key saved: run OPENAI_API_KEY.bat'));
-  assert.equal(budget().code, 0); // Missing setting defaults to 94.
+  assert.equal((await budget()).code, 0); // Missing setting defaults to 94.
   const event = (input, cached, output) => JSON.stringify({type:'step_finish',part:{tokens:{input,output,reasoning:100000,cache:{read:cached,write:0}}}}) + '\n';
   write(path.join(spendOut, 'events.jsonl'), event(1000000, 2000000, 3000000));
   write(path.join(spendOut, 'preflight_log.txt'), event(100000, 100000, 100000));
-  assert.equal(spend().code, 0);
+  assert.equal((await spend()).code, 0);
   assert.equal(rows()[0].model, openaiDefault);
   assert.equal(rows().length, 1); assert.equal(rows()[0].estimated_usd, 35.41);
   assert.equal(rows()[0].running_total_usd, 35.41); assert.equal(rows()[0].budget_usd, 94);
   assert.equal(rows()[0].input, 1100000); assert.equal(rows()[0].cached_input, 2100000); assert.equal(rows()[0].output, 3300000);
-  assert.equal(spend().code, 0); assert.equal(rows().length, 1, 'finish must not double record');
+  assert.equal((await spend()).code, 0); assert.equal(rows().length, 1, 'finish must not double record');
   assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI estimate USD: 35.41'));
   write(spendSettings, 'openai_budget_usd=35.41\n');
-  assert.equal(budget().code, 3); assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI budget reached'));
-  assert.equal(budget('openai/gpt-6.1-sol', '1').code, 0, 'dry run ignores real spend');
-  assert.equal(budget('openai/gpt-6.1-sol').code, 3, 'legacy model stays priced and shares the same budget');
-  write(spendSettings, 'openai_budget_usd=36\n'); assert.equal(budget().code, 0);
-  write(spendSettings, 'openai_budget_usd=oops\n'); assert.equal(budget().code, 3);
-  write(spendSettings, 'openai_budget_usd=94\n'); assert.equal(budget('openai/unpriced').code, 3);
+  assert.equal((await budget()).code, 3); assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI budget reached'));
+  assert.equal((await budget('openai/gpt-6.1-sol', '1')).code, 0, 'dry run ignores real spend');
+  assert.equal((await budget('openai/gpt-6.1-sol')).code, 3, 'legacy model stays priced and shares the same budget');
+  write(spendSettings, 'openai_budget_usd=36\n'); assert.equal((await budget()).code, 0);
+  write(spendSettings, 'openai_budget_usd=oops\n'); assert.equal((await budget()).code, 3);
+  write(spendSettings, 'openai_budget_usd=94\n'); assert.equal((await budget('openai/unpriced')).code, 3);
   const old = rows()[0]; old.date = '2000-01-01T00:00:00Z'; write(ledger, JSON.stringify(old) + '\n');
-  write(spendSettings, 'openai_budget_usd=1\n'); assert.equal(budget().code, 0, 'previous month does not spend this month');
+  write(spendSettings, 'openai_budget_usd=1\n'); assert.equal((await budget()).code, 0, 'previous month does not spend this month');
   const terraOut = path.join(spendRoot, 'terra'); write(path.join(terraOut, 'result.txt'), '');
   write(path.join(terraOut, 'events.jsonl'), event(1000000, 2000000, 3000000));
-  assert.equal(spend(terraOut, openaiReview).code, 0);
+  assert.equal((await spend(terraOut, openaiReview)).code, 0);
   assert.equal(rows()[1].estimated_usd, 16.6); assert.equal(rows()[1].running_total_usd, 16.6);
-  assert.equal(budget().code, 3, 'run crossing budget stops the next start');
-  const beforeDry = read(ledger); assert.equal(spend(terraOut, openaiReview, '1').code, 0);
+  assert.equal((await budget()).code, 3, 'run crossing budget stops the next start');
+  const beforeDry = read(ledger); assert.equal((await spend(terraOut, openaiReview, '1')).code, 0);
   assert.equal(read(ledger), beforeDry);
   const unknownOut = path.join(spendRoot, 'unknown'); write(path.join(unknownOut, 'result.txt'), '');
   write(path.join(unknownOut, 'preflight_log.txt'), '{"type":"error","error":{"message":"fixture failed probe"}}\n');
-  assert.equal(spend(unknownOut).code, 3); assert.equal(rows()[2].status, 'unknown');
-  write(spendSettings, 'openai_budget_usd=94\n'); assert.equal(budget().code, 3);
+  assert.equal((await spend(unknownOut)).code, 3); assert.equal(rows()[2].status, 'unknown');
+  write(spendSettings, 'openai_budget_usd=94\n'); assert.equal((await budget()).code, 3);
   assert(read(path.join(spendOut, 'result.txt')).includes('OpenAI usage unknown'));
-  write(ledger, 'bad ledger\n'); assert.equal(budget().code, 3);
+  write(ledger, 'bad ledger\n'); assert.equal((await budget()).code, 3);
   pass('OpenAI missing key, named prices, probe plus agent usage, idempotent ledger, default/configured budget, dry isolation, month rollover and unknown-usage refusal');
+}
+async function testAccountingFaults() {
   // Run the real preservation path against our local remote. Only the TEMP copy enables live accounting in dryrun
   // and a local push; test agents and fake GitHub still isolate every provider and network operation.
-  const faultTools = path.join(root, 'accounting runner');
-  for (const name of ['work_issue.bat','work_issue.ps1','runner_common.ps1','run_timeout.ps1','tmo.bat','gpu_slots.js']) {
-    write(path.join(faultTools, name), read(path.join(here, name)));
-  }
-  write(path.join(faultTools, 'work_issue.bat'), read(path.join(faultTools, 'work_issue.bat'))
-    .replace(/(%PS% openai-(?:budget|spend)[^\r\n]*)"%DRY%"/g, '$1"0"')
-    .replace('set "PUSHMODE=dry"', 'set "PUSHMODE=test"'));
   const ledgerHolder = path.join(root, 'ledger holder.ps1');
-  write(ledgerHolder, `while (-not (Test-Path ($env:PC_TEST_TRACE + '.lock-request'))) { Start-Sleep -Milliseconds 100 }
+  write(ledgerHolder, `while (-not (Test-Path ($env:PC_TEST_TRACE + '.lock-request'))) { Start-Sleep -Milliseconds 25 }
 $s = [IO.File]::Open((Join-Path $env:WORK_ROOT 'openai_spend.txt'), 'OpenOrCreate', 'ReadWrite', 'None')
 try {
   [IO.File]::WriteAllText(($env:PC_TEST_TRACE + '.locked'), 'locked')
-  while (-not (Test-Path ($env:PC_TEST_TRACE + '.release'))) { Start-Sleep -Milliseconds 100 }
+  while (-not (Test-Path ($env:PC_TEST_TRACE + '.release'))) { Start-Sleep -Milliseconds 25 }
 } finally { $s.Dispose() }
 `);
-  for (const fault of ['missing', 'invalid', 'busy']) {
+  await parallel(['missing', 'invalid', 'busy'], async fault => {
+    const source = fixtureSource('accounting-' + fault);
     const extra = { STUB_RUNNER_TOOLS: faultTools, STUB_ACCOUNT_FAULT: fault,
-      PC_TEST_STOP_BEFORE_PUBLISH: '0' };
+      PC_TEST_STOP_BEFORE_PUBLISH: '0', PC_TEST_SOURCE: source };
     if (fault === 'busy') {
       const home = path.join(root, 'openai-account-busy');
       const child = spawn('powershell.exe', ['-NoProfile', '-File', ledgerHolder], { stdio: 'ignore', windowsHide: true,
@@ -392,21 +473,21 @@ try {
     assert.equal(refused.state.status, 'failed'); assert(refused.result.includes('OpenAI usage unknown'), refused.result);
     assert(!fs.existsSync(refused.repo), 'next paid start refused before checkout');
     assert.equal(read(r.env.PC_TEST_TRACE), probeBefore, 'next paid start never calls the probe');
-    // Restore the shared source partial so the existing resume matrix keeps its original fixture.
-    write(path.join(source, 'refs/heads', branch), partial + '\n');
     pass('OpenAI ' + fault + ' accounting: guarded partial push retains agent changes, never checked, next paid start refused');
+  });
+}
+function assertOpenAIEffort(r, model, effort) {
+  assert.equal(r.state.model, model);
+  assert.equal(r.state.effort, effort);
+  assert(r.result.includes('effort: ' + effort), r.result);
+  assert.equal(read(path.join(r.out, 'model.txt')).trim(), model + ' --variant ' + effort);
+  for (const trace of [r.env.PC_TEST_TRACE, r.env.PC_TEST_TRACE + '.agent']) {
+    const args = JSON.parse(read(trace));
+    assert.deepEqual(args.slice(args.indexOf('-m'), args.indexOf('-m') + 2), ['-m', model]);
+    assert.deepEqual(args.slice(args.indexOf('--variant'), args.indexOf('--variant') + 2), ['--variant', effort]);
   }
-  function assertOpenAIEffort(r, model, effort) {
-    assert.equal(r.state.model, model);
-    assert.equal(r.state.effort, effort);
-    assert(r.result.includes('effort: ' + effort), r.result);
-    assert.equal(read(path.join(r.out, 'model.txt')).trim(), model + ' --variant ' + effort);
-    for (const trace of [r.env.PC_TEST_TRACE, r.env.PC_TEST_TRACE + '.agent']) {
-      const args = JSON.parse(read(trace));
-      assert.deepEqual(args.slice(args.indexOf('-m'), args.indexOf('-m') + 2), ['-m', model]);
-      assert.deepEqual(args.slice(args.indexOf('--variant'), args.indexOf('--variant') + 2), ['--variant', effort]);
-    }
-  }
+}
+async function testOpenAIModels() {
   const openaiOverride = await job('openai', 'override', { WORK_MODEL: openaiReview, WORK_EFFORT: 'MeDiUm' });
   assert.equal(openaiOverride.code, 0, openaiOverride.text + openaiOverride.result);
   assertOpenAIEffort(openaiOverride, openaiReview, 'medium');
@@ -418,51 +499,54 @@ try {
   assert.equal(unpriced.code, 3, unpriced.text + unpriced.result);
   assert(!fs.existsSync(unpriced.env.PC_TEST_TRACE)); assert(!fs.existsSync(unpriced.repo));
   pass('OpenAI medium review effort reaches probe and agent and is stamped, other provider ignored and unpriced model refused');
-  // Issue 860 run 2: exercise the real checkout with local Git data, never publish or discard fixture files.
-  function checkoutFixture(label, prepare = () => {}, expectedKeep = false, options = {}) {
-    const home = path.join(root, 'reuse-' + label), repo = path.join(home, 'repo'), out = path.join(home, 'out');
-    fs.mkdirSync(home, { recursive: true }); write(path.join(out, 'result.txt'), '');
-    assert.equal(run('git', ['clone', '-q', '-c', 'core.autocrlf=false', source, repo]).code, 0);
-    const git = args => {
-      const r = run('git', ['-C', repo, ...args]); assert.equal(r.code, 0, r.text); return r.text.trim();
-    };
-    prepare(repo, git);
-    const existing = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-'));
-    const oldGit = fs.statSync(path.join(repo, '.git'));
-    assert.equal(ps(['init', out, 'fixture/reuse'], defaults).code, 0);
-    const env = gitEnvironment({ ...defaults, STUB_CHECKOUT_MARKER: path.join(home, 'switch-hook.txt'), ...options.env });
-    const r = ps(['checkout', repo, out, 'fixture/reuse', ''], env);
-    if (options.changed) {
-      assert.equal(r.code, 14, r.text);
-      assert(r.text.includes('checkout changed while starting; kept as is'), r.text);
-      assert.equal(JSON.parse(read(path.join(out, 'status.json'))).status, 'failed');
-      assert(fs.existsSync(env.STUB_CHECKOUT_MARKER), 'the edit hook ran between eligibility and the switch');
-      assert.equal(fs.statSync(path.join(repo, '.git')).ino, oldGit.ino);
-      assert.equal(fs.readdirSync(home).filter(n => n.startsWith('repo-kept-')).length, 0);
-      assert(!r.text.includes('local clone attempt') && !r.text.includes('earlier checkout reused in place'), r.text);
-      assert(!fs.existsSync(path.join(out, 'base_commit.txt')), 'stop before resume or agent work');
-      assert.equal(read(path.join(repo, 'progress.txt')), env.STUB_CHECKOUT_EDIT, 'late tracked edit bytes survive');
-      return { home, repo, text: r.text };
-    }
-    assert.equal(r.code, 0, r.text);
-    const kept = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-') && !existing.includes(n));
-    for (const name of existing) assert(fs.existsSync(path.join(home, name)), 'existing kept copy survives');
-    assert.equal(kept.length, expectedKeep ? 1 : 0, r.text);
-    assert.equal(git(['symbolic-ref', '--short', 'HEAD']), 'fixture/reuse');
-    assert.equal(git(['rev-parse', 'HEAD']), read(path.join(source, 'refs/heads/main')).trim());
-    assert.equal(git(['remote', 'get-url', 'origin']), source);
-    assert.equal(read(path.join(repo, 'progress.txt')), 'base\n');
-    if (!expectedKeep) {
-      assert.equal(fs.statSync(path.join(repo, '.git')).ino, oldGit.ino, 'reuse keeps the Git directory');
-      assert(r.text.includes('earlier checkout reused in place'), r.text);
-      assert(!r.text.includes('local clone attempt'), r.text);
-    }
-    return { home, repo, old: expectedKeep ? path.join(home, kept[0]) : repo, text: r.text };
+}
+// Issue 860 run 2: exercise the real checkout with local Git data, never publish or discard fixture files.
+async function checkoutFixture(source, label, prepare = () => {}, expectedKeep = false, options = {}) {
+  const home = path.join(root, 'reuse-' + label), repo = path.join(home, 'repo'), out = path.join(home, 'out');
+  fs.mkdirSync(home, { recursive: true }); write(path.join(out, 'result.txt'), '');
+  assert.equal(run('git', ['clone', '-q', '-c', 'core.autocrlf=false', source, repo]).code, 0);
+  const git = args => {
+    const r = run('git', ['-C', repo, ...args]); assert.equal(r.code, 0, r.text); return r.text.trim();
+  };
+  prepare(repo, git);
+  const existing = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-'));
+  const oldGit = fs.statSync(path.join(repo, '.git'));
+  assert.equal((await ps(['init', out, 'fixture/reuse'], defaults)).code, 0);
+  const env = gitEnvironment({ ...defaults, PC_TEST_SOURCE: source, PC_TEST_MIRROR: path.join(home, 'mirror.git'), STUB_CHECKOUT_MARKER: path.join(home, 'switch-hook.txt'), ...options.env });
+  const r = await ps(['checkout', repo, out, 'fixture/reuse', ''], env);
+  if (options.changed) {
+    assert.equal(r.code, 14, r.text);
+    assert(r.text.includes('checkout changed while starting; kept as is'), r.text);
+    assert.equal(JSON.parse(read(path.join(out, 'status.json'))).status, 'failed');
+    assert(fs.existsSync(env.STUB_CHECKOUT_MARKER), 'the edit hook ran between eligibility and the switch');
+    assert.equal(fs.statSync(path.join(repo, '.git')).ino, oldGit.ino);
+    assert.equal(fs.readdirSync(home).filter(n => n.startsWith('repo-kept-')).length, 0);
+    assert(!r.text.includes('local clone attempt') && !r.text.includes('earlier checkout reused in place'), r.text);
+    assert(!fs.existsSync(path.join(out, 'base_commit.txt')), 'stop before resume or agent work');
+    assert.equal(read(path.join(repo, 'progress.txt')), env.STUB_CHECKOUT_EDIT, 'late tracked edit bytes survive');
+    return { home, repo, text: r.text };
   }
-  const refreshedMain = fixtureCommit({ 'progress.txt': 'base\n', 'upstream.txt': 'fresh upstream\n' }, base);
+  assert.equal(r.code, 0, r.text);
+  const kept = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-') && !existing.includes(n));
+  for (const name of existing) assert(fs.existsSync(path.join(home, name)), 'existing kept copy survives');
+  assert.equal(kept.length, expectedKeep ? 1 : 0, r.text);
+  assert.equal(git(['symbolic-ref', '--short', 'HEAD']), 'fixture/reuse');
+  assert.equal(git(['rev-parse', 'HEAD']), read(path.join(source, 'refs/heads/main')).trim());
+  assert.equal(git(['remote', 'get-url', 'origin']), source);
+  assert.equal(read(path.join(repo, 'progress.txt')), 'base\n');
+  if (!expectedKeep) {
+    assert.equal(fs.statSync(path.join(repo, '.git')).ino, oldGit.ino, 'reuse keeps the Git directory');
+    assert(r.text.includes('earlier checkout reused in place'), r.text);
+    assert(!r.text.includes('local clone attempt'), r.text);
+  }
+  return { home, repo, old: expectedKeep ? path.join(home, kept[0]) : repo, text: r.text };
+}
+async function testCleanAndCacheReuse() {
+  const source = fixtureSource('reuse-clean');
+  const refreshedMain = fixtureCommit({ 'progress.txt': 'base\n', 'upstream.txt': 'fresh upstream\n' }, base, '', source);
   let clean;
   try {
-    clean = checkoutFixture('clean-pushed', (repo, git) => {
+    clean = await checkoutFixture(source, 'clean-pushed', (repo, git) => {
       git(['checkout', '-q', '-b', 'fixture/old-pushed', partial]);
       write(path.join(source, 'refs/heads/main'), refreshedMain + '\n');
       // These stand in for existing kept checkouts. Every byte must remain after the warning.
@@ -477,13 +561,13 @@ try {
     assert(clean.text.includes(copy + ': 11 logical bytes'), clean.text);
   }
   pass('clean pushed checkout reuses the Git directory, switches from old branch to main, warns with kept names and sizes, removes nothing');
-  const ignored = checkoutFixture('unique-ignored', repo => {
+  const ignored = await checkoutFixture(source, 'unique-ignored', repo => {
     write(path.join(repo, '.git/info/exclude'), 'unique work.blend\n');
     write(path.join(repo, 'unique work.blend'), 'unique ignored work');
   }, true);
   assert.equal(read(path.join(ignored.old, 'unique work.blend')), 'unique ignored work');
   pass('unique ignored file is kept aside and its bytes survive');
-  const cache = checkoutFixture('cache-only', repo => {
+  const cache = await checkoutFixture(source, 'cache-only', repo => {
     write(path.join(repo, '.git/info/exclude'), 'godot/.godot/\ngodot/*.import\n');
     write(path.join(repo, 'godot/.godot/imported/cached.bin'), 'cached import');
     write(path.join(repo, 'godot/texture.png.import'), 'import settings');
@@ -498,13 +582,16 @@ try {
     'module.pyc': 'standalone bytecode',
     'tools/compiled/module.pyc': 'nested standalone bytecode'
   };
-  const python = checkoutFixture('python-caches', (repo, git) => {
+  const python = await checkoutFixture(source, 'python-caches', (repo, git) => {
     git(['checkout', '-q', '-b', 'fixture/old-pushed', partial]);
     write(path.join(repo, '.git/info/exclude'), '__pycache__/\n*.pyc\n');
     for (const [name, bytes] of Object.entries(pythonCaches)) write(path.join(repo, name), bytes);
   });
   for (const [name, bytes] of Object.entries(pythonCaches)) assert.equal(read(path.join(python.repo, name)), bytes);
   pass('pushed checkout with only ignored Python caches reuses in place and preserves every cache byte');
+}
+async function testKeptLookalikes() {
+  const source = fixtureSource('reuse-lookalikes');
   for (const [label, name, exclude] of [
     ['untracked-pyc', 'module.pyc', ''],
     ['untracked-pycache', 'tools/__pycache__/module.pyc', ''],
@@ -514,7 +601,7 @@ try {
     ['pyc-lookalike', 'module.pyc.backup', '*.backup\n'],
     ['quoted-pyc', 'tools/folder with spaces/module.pyc', '*.pyc\n']
   ]) {
-    const kept = checkoutFixture(label, repo => {
+    const kept = await checkoutFixture(source, label, repo => {
       write(path.join(repo, '.git/info/exclude'), label.startsWith('untracked-') ? 'tools/__pycache__/safe.pyc\n' : '__pycache__/\n*.pyc\n' + exclude);
       write(path.join(repo, 'tools/__pycache__/safe.pyc'), 'ignored cache');
       write(path.join(repo, name), 'unique work');
@@ -525,30 +612,36 @@ try {
     if (label.startsWith('untracked-')) assert(kept.text.includes('?? ' + name), kept.text);
     pass(label + ': checkout and all bytes kept aside even beside a Python cache');
   }
+}
+async function testLateCheckoutEdits() {
+  const source = fixtureSource('reuse-late-edit');
   const lateEdit = 'tracked edit written during startup\r\n';
-  const changed = checkoutFixture('late-tracked-edit', () => {}, false, {
+  const changed = await checkoutFixture(source, 'late-tracked-edit', () => {}, false, {
     changed: true, env: { STUB_CHECKOUT_EDIT: lateEdit }
   });
   assert.equal(run('git', ['-C', changed.repo, 'symbolic-ref', '--short', 'HEAD']).text.trim(), 'fixture/reuse');
   pass('tracked edit after eligibility survives the branch switch and stops the job with failed status');
-  checkoutFixture('late-status-failure', () => {}, false, {
+  await checkoutFixture(source, 'late-status-failure', () => {}, false, {
     changed: true, env: { STUB_CHECKOUT_EDIT: lateEdit, STUB_RECHECK_FAIL: '1' }
   });
   pass('unreadable status after the branch switch fails closed and keeps late edit bytes');
   try {
-    checkoutFixture('late-edit-blocks-switch', () => write(path.join(source, 'refs/heads/main'), conflicting + '\n'), false, {
+    await checkoutFixture(source, 'late-edit-blocks-switch', () => write(path.join(source, 'refs/heads/main'), conflicting + '\n'), false, {
       changed: true, env: { STUB_CHECKOUT_EDIT: lateEdit }
     });
     pass('late tracked edit that blocks the branch switch survives and stops with the same clear message');
   } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
+}
+async function testIncomingCheckoutCollisions() {
+  const source = fixtureSource('reuse-collisions');
   for (const [label, incoming, cachePath] of [
     ['python-file-collision', 'module.pyc', 'module.pyc'],
     ['python-parent-collision', 'tools', 'tools/__pycache__/module.pyc']
   ]) {
-    const tip = fixtureCommit({ [incoming]: 'incoming tracked file\n', 'progress.txt': 'base\n' }, base);
+    const tip = fixtureCommit({ [incoming]: 'incoming tracked file\n', 'progress.txt': 'base\n' }, base, '', source);
     write(path.join(source, 'refs/heads/main'), tip + '\n');
     try {
-      const collision = checkoutFixture(label, (repo, git) => {
+      const collision = await checkoutFixture(source, label, (repo, git) => {
         git(['checkout', '-q', '--detach', base]);
         write(path.join(repo, '.git/info/exclude'), '__pycache__/\n*.pyc\n');
         write(path.join(repo, cachePath), 'Python cache must survive collision');
@@ -559,34 +652,10 @@ try {
       pass(label + ': incoming tracked collision keeps the checkout and Python cache intact');
     } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
   }
-  const privateTip = fixtureCommit({ 'progress.txt': 'private commit\n' }, base);
-  const unpushed = checkoutFixture('unpushed', (repo, git) => {
-    git(['fetch', '-q', source, privateTip]);
-    git(['checkout', '-q', '-b', 'fixture/private', privateTip]);
-  }, true);
-  assert.equal(read(path.join(unpushed.old, 'progress.txt')), 'private commit\n');
-  assert.equal(run('git', ['-C', unpushed.old, 'rev-parse', 'HEAD']).text.trim(), privateTip);
-  pass('unpushed commit is kept aside with its branch and work intact');
-  const abandoned = checkoutFixture('reflog-only', (repo, git) => {
-    git(['fetch', '-q', source, privateTip]);
-    git(['checkout', '-q', '--detach', privateTip]);
-    git(['checkout', '-q', 'main']);
-  }, true);
-  assert(run('git', ['-C', abandoned.old, 'reflog', '--format=%H']).text.includes(privateTip));
-  pass('unpushed history reachable only from the reflog is kept aside');
-  const dirty = checkoutFixture('dirty-tracked', repo => write(path.join(repo, 'progress.txt'), 'uncommitted edits\n'), true);
-  assert.equal(read(path.join(dirty.old, 'progress.txt')), 'uncommitted edits\n');
-  pass('dirty tracked file is kept aside with edits intact');
-  const hidden = checkoutFixture('hidden-tracked', (repo, git) => {
-    git(['update-index', '--assume-unchanged', 'progress.txt']);
-    write(path.join(repo, 'progress.txt'), 'hidden edits\n');
-  }, true);
-  assert.equal(read(path.join(hidden.old, 'progress.txt')), 'hidden edits\n');
-  pass('index flags that hide tracked edits cause the checkout to be kept');
-  const collisionTip = fixtureCommit({ 'godot': 'incoming tracked file\n', 'progress.txt': 'base\n' }, base);
+  const collisionTip = fixtureCommit({ 'godot': 'incoming tracked file\n', 'progress.txt': 'base\n' }, base, '', source);
   write(path.join(source, 'refs/heads/main'), collisionTip + '\n');
   try {
-    const collision = checkoutFixture('cache-collision', (repo, git) => {
+    const collision = await checkoutFixture(source, 'cache-collision', (repo, git) => {
       git(['checkout', '-q', '--detach', base]);
       write(path.join(repo, '.git/info/exclude'), 'godot/.godot/\n');
       write(path.join(repo, 'godot/.godot/cache.bin'), 'cache must survive collision');
@@ -595,10 +664,39 @@ try {
     assert.equal(read(path.join(collision.repo, 'godot')), 'incoming tracked file\n');
     pass('incoming tracked path that collides with an ignored cache keeps the old checkout and cache intact');
   } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
-  await parallelArms(['codex', 'deepseek', 'kimi', 'kimicode'], async arm => {
-    for (const [scenario, reason] of [['closed', 'not an open job'], ['claimed', 'already carries running'],
+}
+async function testKeptCheckoutHistory() {
+  const source = fixtureSource('reuse-history');
+  const privateTip = fixtureCommit({ 'progress.txt': 'private commit\n' }, base, '', source);
+  const unpushed = await checkoutFixture(source, 'unpushed', (repo, git) => {
+    git(['fetch', '-q', source, privateTip]);
+    git(['checkout', '-q', '-b', 'fixture/private', privateTip]);
+  }, true);
+  assert.equal(read(path.join(unpushed.old, 'progress.txt')), 'private commit\n');
+  assert.equal(run('git', ['-C', unpushed.old, 'rev-parse', 'HEAD']).text.trim(), privateTip);
+  pass('unpushed commit is kept aside with its branch and work intact');
+  const abandoned = await checkoutFixture(source, 'reflog-only', (repo, git) => {
+    git(['fetch', '-q', source, privateTip]);
+    git(['checkout', '-q', '--detach', privateTip]);
+    git(['checkout', '-q', 'main']);
+  }, true);
+  assert(run('git', ['-C', abandoned.old, 'reflog', '--format=%H']).text.includes(privateTip));
+  pass('unpushed history reachable only from the reflog is kept aside');
+  const dirty = await checkoutFixture(source, 'dirty-tracked', repo => write(path.join(repo, 'progress.txt'), 'uncommitted edits\n'), true);
+  assert.equal(read(path.join(dirty.old, 'progress.txt')), 'uncommitted edits\n');
+  pass('dirty tracked file is kept aside with edits intact');
+  const hidden = await checkoutFixture(source, 'hidden-tracked', (repo, git) => {
+    git(['update-index', '--assume-unchanged', 'progress.txt']);
+    write(path.join(repo, 'progress.txt'), 'hidden edits\n');
+  }, true);
+  assert.equal(read(path.join(hidden.old, 'progress.txt')), 'hidden edits\n');
+  pass('index flags that hide tracked edits cause the checkout to be kept');
+}
+async function testClaimRules() {
+  await parallel(['codex', 'deepseek', 'kimi', 'kimicode'], async arm => {
+    await parallel([['closed', 'not an open job'], ['claimed', 'already carries running'],
       ['other-pr', 'open PR #700'], ['other-branch', 'delivery branch opus/issue-687 from another seat exists'], ['no-current', 'found 0'], ['two-current', 'found 2'],
-      ['two-fixed', 'fixed blocks: 2']]) {
+      ['two-fixed', 'fixed blocks: 2']], async ([scenario, reason]) => {
       const r = await job(arm, scenario);
       assert.equal(r.code, 14, r.text + '\n' + r.result);
       assert.equal(r.state.status, 'failed'); assert(r.result.includes(reason), r.result);
@@ -608,7 +706,7 @@ try {
       assert(calls.every(c => c.method === 'GET'), 'refusal cannot change another claim');
       assert.equal(JSON.parse(read(r.env.PC_TEST_GH_DB)).running, scenario === 'claimed');
       pass(arm + ': ' + scenario + ' refuses before checkout, probe or agent, with no GitHub writes');
-    }
+    });
     const fromBase = await job(arm, 'other-branch-base');
     assert.equal(fromBase.code, 0, fromBase.text + '\n' + fromBase.result);
     assert(fromBase.result.includes("Base branch opus/issue-687 from another seat is this job's Base; does not block issue #687"), fromBase.result);
@@ -636,15 +734,19 @@ try {
   assert.equal(effortMissing.code, 14); assert(!fs.existsSync(effortMissing.repo));
   assert(effortMissing.result.includes('Codex fixed block needs Effort'), effortMissing.result);
   pass('Codex alone refuses a missing Effort line before checkout');
-  for (const arm of ['codex', 'deepseek', 'kimicode']) {
+}
+async function testClaimFailures() {
+  await parallel(['codex', 'deepseek', 'kimicode'], async arm => {
     const failure = await job(arm, 'claim-failure', { PC_TEST_GH_FAIL: 'POST repos/rcbailey12/voidsworn/issues/687/comments' });
     assert.equal(failure.code, 14, failure.text + failure.result);
     assert(!fs.existsSync(failure.repo)); assert(!fs.existsSync(failure.env.PC_TEST_TRACE));
     assert(!JSON.parse(read(failure.env.PC_TEST_GH_DB)).running, 'failed comment claim rolls back its label');
     assert(failure.result.includes('cannot validate or claim job'), failure.result);
     pass(arm + ': failed status-comment claim stops before checkout or model calls and releases only its label');
-  }
-  await parallelArms(arms, async arm => {
+  });
+}
+async function testResumeAndFailures() {
+  await parallel(arms, async arm => {
     const r = await job(arm, 'resume', arm === 'sonnet' ? { WORK_EFFORT: 'medium' } : {});
     assert.equal(r.code, 0, r.text + '\n' + r.result);
     assert(fs.existsSync(path.join(r.repo, 'agent_started.txt')), r.result);
@@ -694,18 +796,22 @@ try {
     assert(!fs.existsSync(stopped.repo)); assert(!fs.existsSync(stopped.env.PC_TEST_TRACE));
     pass(arm + ': three failed fetch attempts, then chain stops before clone or model');
   });
-  for (const fault of ['fetch-two', 'clone-two', 'clone-dead']) {
-    const r = await job('deepseek', fault, { STUB_GIT_FAULT: fault });
-    assert.equal(r.code, fault === 'clone-dead' ? 14 : 0, r.text + r.result);
-    const op = fault.split('-')[0]; assert.equal(read(r.env.PC_TEST_COUNTER + '-' + op), '3');
-    if (op === 'clone') assert.equal(fs.readdirSync(path.dirname(r.repo)).filter(n => n.startsWith('repo-clone-failed-')).length, fault === 'clone-dead' ? 3 : 2);
-    pass(fault + ': retry count and failed checkout preservation');
-  }
   const rerun = await job('codex','resume');
   const kept = fs.readdirSync(path.dirname(rerun.repo)).filter(n => n.startsWith('repo-kept-'));
   assert.equal(rerun.code,0); assert.equal(kept.length,1);
   assert(fs.existsSync(path.join(path.dirname(rerun.repo),kept[0],'agent_started.txt')));
   pass('Codex restart keeps the earlier checkout and its untracked work');
+}
+async function testGitRetries() {
+  await parallel(['fetch-two', 'clone-two', 'clone-dead'], async fault => {
+    const r = await job('deepseek', fault, { STUB_GIT_FAULT: fault });
+    assert.equal(r.code, fault === 'clone-dead' ? 14 : 0, r.text + r.result);
+    const op = fault.split('-')[0]; assert.equal(read(r.env.PC_TEST_COUNTER + '-' + op), '3');
+    if (op === 'clone') assert.equal(fs.readdirSync(path.dirname(r.repo)).filter(n => n.startsWith('repo-clone-failed-')).length, fault === 'clone-dead' ? 3 : 2);
+    pass(fault + ': retry count and failed checkout preservation');
+  });
+}
+async function testHeldCheckout() {
   // A previous agent's current directory pins repo on Windows. Run the real preservation path, then free it.
   async function holder(home) {
     const repo = path.join(home, 'repo'); write(path.join(repo, 'keep.txt'), 'untracked work must survive');
@@ -714,9 +820,9 @@ try {
     await new Promise((resolve, reject) => { child.once('error', reject); child.stdout.once('data', resolve); child.once('exit', code => reject(new Error('holder exited: ' + code))); });
     return child;
   }
-  function startCheckout(home, env = {}) {
+  async function startCheckout(home, env = {}) {
     const out = path.join(home, 'out'); write(path.join(out, 'result.txt'), '');
-    assert.equal(ps(['init', out, 'fixture/held'], defaults).code, 0);
+    assert.equal((await ps(['init', out, 'fixture/held'], defaults)).code, 0);
     const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'runner_common.ps1'), 'checkout', path.join(home, 'repo'), out, 'fixture/held', ''], {
       cwd: root, windowsHide: true, env: { ...process.env, ...defaults, PC_TEST_KEEP_SECONDS: '30', PC_TEST_KEEP_POLL_MS: '100', ...env }
     });
@@ -731,11 +837,9 @@ try {
     return state;
   }
   const pinnedHome = path.join(root, 'held-checkout'), pin = await holder(pinnedHome);
-  const waiting = startCheckout(pinnedHome);
-  const waitDeadline = Date.now() + 20000;
-  while (!waiting.text.includes('checkout rename held') && Date.now() < waitDeadline) await new Promise(resolve => setTimeout(resolve, 50));
-  assert(waiting.text.includes('checkout rename held'), waiting.text);
-  const other = startCheckout(path.join(root, 'other-lane'));
+  const waiting = await startCheckout(pinnedHome);
+  assert(await waitFor(() => waiting.text.includes('checkout rename held'), 20000), waiting.text);
+  const other = await startCheckout(path.join(root, 'other-lane'));
   assert.equal(await other.done, 0, other.text);
   assert.equal(pin.exitCode, null, 'test holder must still pin the first lane');
   pin.kill(); await new Promise(resolve => pin.once('exit', resolve));
@@ -747,7 +851,7 @@ try {
   assert(waiting.text.includes('holder: PID ' + pin.pid) || /Windows (holder lookup unavailable|could not name)/.test(waiting.text), waiting.text);
   pass('held checkout retries, keeps untracked work, logs holder diagnostics and lets another lane use the mirror');
   const stuckHome = path.join(root, 'permanent-holder'), stuck = await holder(stuckHome);
-  const expired = startCheckout(stuckHome, { PC_TEST_KEEP_SECONDS: '0.3' });
+  const expired = await startCheckout(stuckHome, { PC_TEST_KEEP_SECONDS: '0.3' });
   assert.equal(await expired.done, 14, expired.text);
   assert(expired.text.includes('checkout rename still held after 0.3 seconds'), expired.text);
   assert.equal(JSON.parse(read(path.join(expired.out, 'status.json'))).status, 'failed');
@@ -755,41 +859,48 @@ try {
   assert.equal(fs.readdirSync(stuckHome).filter(n => n.startsWith('repo-kept-')).length, 0);
   stuck.kill(); await new Promise(resolve => stuck.once('exit', resolve));
   pass('rename wait expires cleanly with failed status and the original checkout intact');
+}
+async function testResumeConflict() {
+  const source = fixtureSource('conflicting-source');
   // A conflicting partial stops before preflight and leaves MERGE_HEAD and conflicted files intact.
   write(path.join(source, 'refs/heads/main'), conflicting + '\n');
-  const conflict = await job('codex', 'conflict');
+  const conflict = await job('codex', 'conflict', { PC_TEST_SOURCE: source });
   assert.notEqual(conflict.code, 0); assert(conflict.result.includes('resume merge failed'));
   assert(fs.existsSync(path.join(conflict.repo, '.git/MERGE_HEAD'))); assert(!fs.existsSync(conflict.env.PC_TEST_TRACE));
   write(path.join(source, 'refs/heads/main'), base + '\n');
   pass('resume conflict keeps the checkout and stops before model use');
+}
+async function testChainRelease() {
   const stateOut = path.join(root, 'states'); fs.mkdirSync(stateOut); write(path.join(stateOut, 'result.txt'), '');
   const consumerOut = path.join(root, 'consumer'); fs.mkdirSync(consumerOut); write(path.join(consumerOut, 'result.txt'), '');
-  assert.equal(ps(['init', consumerOut, 'fixture/consumer'], defaults).code, 0);
+  assert.equal((await ps(['init', consumerOut, 'fixture/consumer'], defaults)).code, 0);
   for (const [code, partialReason, push, checks, expected] of [
     ['0', '', 'real', '1', 'checked_push'], ['0', '', 'dry', '1', 'unverified'], ['0', '', 'real', '0', 'unverified'],
     ['0', 'agent exit 124', 'real', '1', 'partial'], ['7', '', 'real', '1', 'no_changes'], ['8', '', 'real', '1', 'failed'], ['10', '', 'real', '1', 'failed']
   ]) {
-    assert.equal(ps(['init', stateOut, 'fixture/issue-687'], defaults).code, 0);
+    assert.equal((await ps(['init', stateOut, 'fixture/issue-687'], defaults)).code, 0);
     write(path.join(stateOut, 'run_commit.txt'), partial);
     write(path.join(stateOut, 'confirmed_commit.txt'), partial);
-    assert.equal(ps(['finish', stateOut, code, partialReason, push, checks], defaults).code, 0);
+    assert.equal((await ps(['finish', stateOut, code, partialReason, push, checks], defaults)).code, 0);
     assert.equal(JSON.parse(read(path.join(stateOut, 'status.json'))).status, expected);
-    const wait = ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json') });
+    const wait = await ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json') });
     assert.equal(wait.code, expected === 'checked_push' ? 0 : 14, wait.text);
   }
   pass('only a confirmed non-partial real push with passing checks releases a chain');
-  assert.equal(ps(['init', stateOut, 'fixture/issue-687'], defaults).code, 0);
+  assert.equal((await ps(['init', stateOut, 'fixture/issue-687'], defaults)).code, 0);
   write(path.join(stateOut, 'run_commit.txt'), partial);
-  assert.equal(ps(['finish', stateOut, '0', '', 'real', '1'], defaults).code, 0);
+  assert.equal((await ps(['finish', stateOut, '0', '', 'real', '1'], defaults)).code, 0);
   assert.equal(JSON.parse(read(path.join(stateOut,'status.json'))).status,'unverified');
   pass('a success exit without push confirmation cannot release a chain');
-  const missing = ps(['wait', stateOut], { ...defaults, PC_WAIT_FOR: path.join(root, 'old-result.txt') });
+  const missing = await ps(['wait', stateOut], { ...defaults, PC_WAIT_FOR: path.join(root, 'old-result.txt') });
   assert.equal(missing.code, 14);
   pass('missing or legacy predecessor status fails closed');
-  assert.equal(ps(['init', stateOut, 'fixture/issue-687'], defaults).code, 0);
-  assert.equal(ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json'), PC_WAIT_SECONDS: '1' }).code, 14);
-  assert.equal(ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json'), PC_WAIT_RUN: 'older-run' }).code, 14);
+  assert.equal((await ps(['init', stateOut, 'fixture/issue-687'], defaults)).code, 0);
+  assert.equal((await ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json'), PC_WAIT_SECONDS: '1' })).code, 14);
+  assert.equal((await ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json'), PC_WAIT_RUN: 'older-run' })).code, 14);
   pass('unfinished predecessor times out; a stale run id stops the chain');
+}
+async function testProbeTimeout() {
   const deniedKiller = path.join(root, 'denied taskkill.bat'); write(deniedKiller, '@echo off\r\necho Access denied\r\nexit /b 5\r\n');
   const slow = await job('codex', 'preflight-timeout', { STUB_PROBE_TIMEOUT: '1', PC_TEST_PREFLIGHT_SECONDS: '1', PC_TEST_TASKKILL: deniedKiller });
   assert.equal(slow.code, 14); assert(slow.result.includes('timed out after 1 seconds')); assert(!fs.existsSync(path.join(slow.repo, 'agent_started.txt')));
@@ -798,33 +909,57 @@ try {
   assert.throws(() => process.kill(slowPid, 0), e => e.code === 'ESRCH', 'preflight probe survived denied taskkill');
   testPidFiles.splice(testPidFiles.indexOf(slow.env.PC_TEST_TRACE + '.pid'), 1);
   pass('preflight timeout kills the probe tree and stops the job');
-  // Hold a real mirror fetch briefly so two simultaneous checkouts contend for the file lock.
-  async function concurrentCheckout(n) {
+}
+async function testMirrorAndConfirmation() {
+  const source = fixtureSource('confirmation-source');
+  const mirror = path.join(root, 'confirmation mirror.git');
+  // Release the first fetch as soon as the second checkout reports lock contention.
+  async function concurrentCheckout(n, hold = '') {
     const home = path.join(root, 'concurrent-' + n); fs.mkdirSync(home); const out = path.join(home, 'out'); fs.mkdirSync(out); write(path.join(out, 'result.txt'), '');
-    assert.equal(ps(['init', out, 'fixture/concurrent-' + n], defaults).code, 0);
-    const env = { ...process.env, ...gitEnvironment({ ...defaults, STUB_FETCH_HOLD: '1' }) };
+    assert.equal((await ps(['init', out, 'fixture/concurrent-' + n], defaults)).code, 0);
+    const env = { ...process.env, ...gitEnvironment({ ...defaults, PC_TEST_SOURCE: source, PC_TEST_MIRROR: mirror, STUB_FETCH_HOLD: hold }) };
     const args = ['-NoProfile','-ExecutionPolicy','Bypass','-File',path.join(here,'runner_common.ps1'),'checkout',path.join(home,'repo'),out,'fixture/concurrent-' + n,''];
-    return new Promise((resolve, reject) => {
-      const p = spawn('powershell.exe', args, { cwd: root, env, windowsHide: true }); let text = '';
-      p.stdout.on('data', b => text += b); p.stderr.on('data', b => text += b); p.on('error', reject);
-      p.on('close', code => { write(path.join(home,'console.txt'),text); resolve({code,text}); });
+    const p = spawn('powershell.exe', args, { cwd: root, env, windowsHide: true, timeout: 45000 });
+    testChildren.push(p);
+    const state = { text: '' };
+    p.stdout.on('data', b => state.text += b);
+    p.stderr.on('data', b => state.text += b);
+    p.once('error', e => state.text += e.message);
+    state.done = new Promise(resolve => {
+      p.once('close', code => {
+        write(path.join(home, 'console.txt'), state.text);
+        resolve({ code, text: state.text });
+      });
     });
+    return state;
   }
-  const concurrent = await Promise.all([concurrentCheckout(1), concurrentCheckout(2)]);
+  const hold = path.join(root, 'mirror-fetch');
+  const first = await concurrentCheckout(1, hold);
+  let second, concurrent;
+  try {
+    assert(await waitFor(() => fs.existsSync(hold + '.ready'), 20000), first.text);
+    second = await concurrentCheckout(2);
+    assert(await waitFor(() => second.text.includes('waiting for the shared repo copy'), 20000), second.text);
+  } finally {
+    write(hold + '.release', 'contender saw the lock');
+    concurrent = await Promise.all([first.done, second?.done]);
+  }
   assert(concurrent.every(r => r.code === 0), JSON.stringify(concurrent));
   assert(concurrent.some(r => r.text.includes('waiting for the shared repo copy')), JSON.stringify(concurrent));
   pass('two simultaneous jobs serialize mirror fetch and local clone');
   const confirmationOut = path.join(root,'confirmation'); fs.mkdirSync(confirmationOut); write(path.join(confirmationOut,'result.txt'),'');
-  assert.equal(ps(['init',confirmationOut,'fixture/pushed'],defaults).code,0);
+  assert.equal((await ps(['init',confirmationOut,'fixture/pushed'],defaults)).code,0);
   const confirmationRepo = path.join(root,'concurrent-1','repo');
   write(path.join(source,'refs/heads/fixture/pushed'),partial + '\n');
   write(path.join(confirmationOut,'pre_commit.txt'),base); write(path.join(confirmationOut,'run_commit.txt'),partial);
   write(path.join(confirmationOut,'diff_numstat.txt'),run('git',['-C',confirmationRepo,'diff','--numstat','--no-renames',base,partial]).text);
-  const confirmed = run('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',path.join(here,'work_issue.ps1'),'confirm',confirmationRepo,confirmationOut,'fixture/pushed','real'],defaults);
+  const confirmed = await runScript('work_issue.ps1', ['confirm', confirmationRepo, confirmationOut, 'fixture/pushed', 'real'], defaults);
   assert.equal(confirmed.code,0,confirmed.text); assert.equal(read(path.join(confirmationOut,'confirmed_commit.txt')),partial);
-  assert.equal(ps(['finish',confirmationOut,'0','','real','1'],defaults).code,0);
+  assert.equal((await ps(['finish',confirmationOut,'0','','real','1'],defaults)).code,0);
   assert.equal(JSON.parse(read(path.join(confirmationOut,'status.json'))).status,'checked_push');
   pass('real Git remote confirmation writes the marker required for chain success (fixture ref, no push)');
+}
+async function testRunnerStartChecks() {
   // ---- Issue 722 (audit 706 findings 6 and 7): model stamp, free-space floor, Board hashes ----
   // The stamp warns when the resolved model differs from the arm default, whatever the provider: a same-provider
   // WORK_MODEL override passes the provider guard silently, so the warning must come from the stamp itself.
@@ -835,8 +970,8 @@ try {
   assert.equal(overridden.state.model, 'deepseek/deepseek-v4-pro');
   pass('resolved model stamp warns when a same-provider override changes the model');
   const modelOut = path.join(root, 'modelstamp'); fs.mkdirSync(modelOut); write(path.join(modelOut, 'result.txt'), '');
-  assert.equal(ps(['init', modelOut, 'fixture/model'], defaults).code, 0);
-  assert.equal(ps(['model', modelOut, 'provider/x', 'provider/y'], defaults).code, 0);
+  assert.equal((await ps(['init', modelOut, 'fixture/model'], defaults)).code, 0);
+  assert.equal((await ps(['model', modelOut, 'provider/x', 'provider/y'], defaults)).code, 0);
   const modelResult = read(path.join(modelOut, 'result.txt'));
   assert(modelResult.includes('model: provider/x') && modelResult.includes('WARNING: resolved model provider/x differs from the arm default provider/y'), modelResult);
   assert.equal(JSON.parse(read(path.join(modelOut, 'status.json'))).model, 'provider/x');
@@ -845,16 +980,16 @@ try {
   // in runner_settings.txt; a missing line or file keeps the 60 default.
   const setFix = path.join(root, 'space_settings.txt'); write(setFix, 'remove_repo_copy_after_push=no\nmin_free_gb=60\n');
   const spaceOut = path.join(root, 'spacefloor'); fs.mkdirSync(spaceOut); write(path.join(spaceOut, 'result.txt'), '');
-  assert.equal(ps(['init', spaceOut, 'fixture/space'], defaults).code, 0);
-  const low = ps(['space', spaceOut, setFix, path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '100' });
+  assert.equal((await ps(['init', spaceOut, 'fixture/space'], defaults)).code, 0);
+  const low = await ps(['space', spaceOut, setFix, path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '100' });
   assert.equal(low.code, 14, low.text);
   assert.equal(JSON.parse(read(path.join(spaceOut, 'status.json'))).status, 'failed');
   const lowResult = read(path.join(spaceOut, 'result.txt'));
   assert(lowResult.includes('refusing to start') && lowResult.includes('below the min_free_gb=60 floor'), lowResult);
-  assert.equal(ps(['space', spaceOut, setFix, path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '70000' }).code, 0);
+  assert.equal((await ps(['space', spaceOut, setFix, path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '70000' })).code, 0);
   write(path.join(root, 'space_settings_low.txt'), 'min_free_gb=1\n');
-  assert.equal(ps(['space', spaceOut, path.join(root, 'space_settings_low.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '2000' }).code, 0);
-  assert.equal(ps(['space', spaceOut, path.join(root, 'missing_settings.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '100' }).code, 14);
+  assert.equal((await ps(['space', spaceOut, path.join(root, 'space_settings_low.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '2000' })).code, 0);
+  assert.equal((await ps(['space', spaceOut, path.join(root, 'missing_settings.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '100' })).code, 14);
   pass('free-space floor refuses below min_free_gb, honors the tuning value, defaults to 60');
   const noStart = await job('deepseek', 'nofreespace', { PC_TEST_SPACE_FREE_MB: '100' });
   assert.equal(noStart.code, 14, noStart.text + '\n' + noStart.result);
@@ -869,18 +1004,18 @@ try {
   const hashesGood = path.join(root, 'board_hashes_good.txt');
   write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
-  assert.equal(ps(['init', hashOut, 'fixture/hash'], defaults).code, 0);
+  assert.equal((await ps(['init', hashOut, 'fixture/hash'], defaults)).code, 0);
   const hashesWritten = path.join(root, 'board_hashes_written.txt');
-  assert.equal(ps(['hashwrite', here, hashesWritten], defaults).code, 0);
+  assert.equal((await ps(['hashwrite', here, hashesWritten], defaults)).code, 0);
   assert.equal(read(hashesWritten), read(hashesGood));
-  assert.equal(ps(['hashcheck', hashOut, here, hashesGood], defaults).code, 0);
+  assert.equal((await ps(['hashcheck', hashOut, here, hashesGood], defaults)).code, 0);
   assert(read(path.join(hashOut, 'result.txt')).includes(`runner files match the Board hashes (${runnerFiles.length} checked)`));
   pass('hashwrite and hashcheck agree on the runner and watchdog files');
   const hashesBad = path.join(root, 'board_hashes_bad.txt');
   write(hashesBad, read(hashesGood).split('\n').map(l => l.endsWith('runner_common.ps1') ? '0'.repeat(64) + '  runner_common.ps1' : l).join('\n'));
-  assert.equal(ps(['hashcheck', hashOut, here, hashesBad], defaults).code, 0);
+  assert.equal((await ps(['hashcheck', hashOut, here, hashesBad], defaults)).code, 0);
   assert(read(path.join(hashOut, 'result.txt')).includes('WARNING: these runner files differ from the Board-copied hashes: runner_common.ps1'));
-  assert.equal(ps(['hashcheck', hashOut, here, path.join(root, 'no_such_hashes.txt')], defaults).code, 0);
+  assert.equal((await ps(['hashcheck', hashOut, here, path.join(root, 'no_such_hashes.txt')], defaults)).code, 0);
   assert(read(path.join(hashOut, 'result.txt')).includes('WARNING: no Board hashes file'));
   pass('a hash mismatch and a missing hashes file warn without stopping');
   const hashWarn = await job('deepseek', 'hashwarn', { PC_TEST_HASHES: hashesBad });
@@ -888,10 +1023,23 @@ try {
   assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
   assert(hashWarn.result.includes('WARNING: these runner files differ'), hashWarn.result);
   pass('a run whose tools folder drifts from the Board hashes still starts and warns');
+}
+(async () => { try {
+  shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools]);
+  await parallel([
+    testAccounting, testAccountingFaults, testOpenAIModels,
+    testCleanAndCacheReuse, testKeptLookalikes, testLateCheckoutEdits,
+    testIncomingCheckoutCollisions, testKeptCheckoutHistory,
+    testClaimRules, testClaimFailures, testResumeAndFailures, testGitRetries,
+    testHeldCheckout, testResumeConflict, testChainRelease, testProbeTimeout,
+    testMirrorAndConfirmation, testRunnerStartChecks
+  ], check => check());
+  shell.assertHealthy();
   const note = 'PASS runner687+722+860+985: ' + passed + ' checks, Windows entry points, local Git and stub agents only. Preservation commits and pushes use TEMP remotes only; no model usage.\nEvidence: ' + root + '\n';
   write(path.join(root, 'summary.txt'), note); console.log(note.trim());
 } catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; }
 finally {
+  if (shell) await shell.close();
   for (const file of testPidFiles.filter(file => fs.existsSync(file))) {
     const pid = Number(read(file));
     try { process.kill(pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
