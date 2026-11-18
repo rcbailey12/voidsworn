@@ -213,6 +213,9 @@ if (probe) {
   else if (a[0] === 'exec') { fs.writeFileSync(a[a.indexOf('-o') + 1], 'RUNNER_READY'); console.log('stub codex'); }
   else console.log('RUNNER_READY');
 } else {
+  if (!process.env.PC_RUN_SCRATCH || process.env.TEMP !== process.env.PC_RUN_SCRATCH ||
+      process.env.TMP !== process.env.TEMP || process.env.TMPDIR !== process.env.TEMP) process.exit(38);
+  fs.writeFileSync(path.join(process.env.TEMP, 'agent-scratch.txt'), 'owned by the fixture');
   if (process.env.ARM === 'openai') fs.writeFileSync(process.env.PC_TEST_TRACE + '.agent', JSON.stringify(a));
   const task = fs.existsSync('CODEX_TASK.md') ? 'CODEX_TASK.md' : 'WORK_TASK.md';
   const brief = fs.readFileSync(task, 'utf8');
@@ -341,7 +344,8 @@ const tools = fixtureTools('launchers');
 const faultTools = fixtureTools('accounting runner', true);
 async function job(arm, label, extra = {}) {
   const home = path.join(root, arm + '-' + label); fs.mkdirSync(home, { recursive: true });
-  const env = gitEnvironment({ ...defaults, PC_TEST_MIRROR: path.join(home, 'mirror.git'), WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
+  const temp = path.join(home, 'temp'); fs.mkdirSync(temp, { recursive: true });
+  const env = gitEnvironment({ ...defaults, TEMP: temp, TMP: temp, TMPDIR: temp, PC_TEST_MIRROR: path.join(home, 'mirror.git'), WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
     PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra });
   testPidFiles.push(env.PC_TEST_TRACE + '.pid');
   if (!fs.existsSync(env.PC_TEST_GH_DB)) {
@@ -758,6 +762,8 @@ async function testResumeAndFailures() {
     const probe = JSON.parse(read(r.env.PC_TEST_TRACE).trim());
     assert.equal(probe[0], arm === 'codex' ? 'exec' : arm === 'kimicode' ? '-m' : 'run');
     assert.equal(r.state.status, 'unverified');
+    assert.equal(path.dirname(r.state.scratch.path), r.env.TEMP);
+    assert.equal(read(path.join(r.state.scratch.path, 'agent-scratch.txt')), 'owned by the fixture');
     const expectModel = {
       codex: 'gpt-6.2-sol', kimicode: 'kimi-code/kimi-for-coding', kimi: 'moonshotai/kimi-k3.1-pro',
       opus: 'anthropic/claude-opus-5-5', sonnet: 'anthropic/claude-sonnet-5-5',

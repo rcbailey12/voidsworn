@@ -780,6 +780,12 @@ elseif ($mode -eq 'tidy') {
     Write-Host "repo copy kept: safety check failed (the run folder must sit under $root and hold repo\.git and out\result.txt)"; exit 0
   }
   if ($dry -eq '1') { Write-Host ('dry run: the setting is on and the push was checked, so a real run would now remove {0} ({1:N2} GB) and keep out\; nothing removed' -f $repo, ($rs / 1GB)); exit 0 }
+  $pauseFlag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
+  if (Test-Path -LiteralPath $pauseFlag) {
+    try { $paused = (Get-Content -LiteralPath $pauseFlag -TotalCount 1 -ErrorAction Stop) -match '^GPU not cleared: paused by the Board\b' }
+    catch { Write-Host 'repo copy kept: could not read the PC pause flag'; exit 0 }
+    if ($paused) { Write-Host 'repo copy kept during the PC pause'; exit 0 }
+  }
   Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
   if (Test-Path -LiteralPath $repo) { & cmd.exe /c rd /s /q "\\?\$repo" 2>$null }
   if (Test-Path -LiteralPath $repo) { Write-Host ('repo copy only partly removed: {0:N2} GB left in {1}' -f ((SizeOf $repo) / 1GB), $repo) }
