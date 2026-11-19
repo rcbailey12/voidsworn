@@ -1431,6 +1431,7 @@ func act(name: String, arg = "") -> void:
 			admiralScreen()
 		"startRun": ACT_startRun()
 		"pickAspect": ACT_pickAspect(a)
+		"backToSetup": ACT_backToSetup()
 		"nameHeir": ACT_nameHeir(a)
 		"nextFac":
 			picked_faction = a; META["opts"]["lastFac"] = a; admiralScreen()
@@ -1573,9 +1574,18 @@ func aspectScreen() -> void:
 	W["aspOffer"] = opts
 	var acts = []
 	for k in opts: A(acts, "pickAspect", k)
+	A(acts, "backToSetup")
 	show_page("aspect", {"flag": f, "opts": opts}, acts)
 func _set_aspect(k) -> void:
 	RUN["aspect"] = k; ensureFlagship()
+# Issue 1217 phase 4: Back from the flagship page. The run newRun just made has no aspect yet and was never played: drop it,
+# its save and its count, and return to the faction and admiral desk with every pick kept. Twin: ACT.backToSetup in
+# campaign_meta.js.
+func ACT_backToSetup() -> void:
+	if RUN == null or jt(RUN.get("aspect")): return
+	META["stats"]["runs"] = max(0.0, float(z0(META["stats"].get("runs"))) - 1.0)
+	RUN = null; SAVED_RUN = null; persist_save()
+	admiralScreen()
 func ACT_pickAspect(k: String) -> void:
 	if not ASPECTS.has(k) or RUN == null: return
 	changeFleet(_set_aspect.bind(k))
