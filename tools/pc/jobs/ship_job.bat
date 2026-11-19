@@ -41,11 +41,11 @@ if defined MISSING (
 set "J=%V%\%JOB_DIR%"
 if not exist "%J%" mkdir "%J%"
 rem 1. run from this job's own copy
+rem Nov 19 chain 1119B: a wrapper's inputs, STAGES above all, stayed set in the calling chain and the next ship ran
+rem with them; 1157 and 1183 started at stage 4 with no stage 1 to 3 outputs. The launcher clears them in the caller on exit.
 if /i not "%~f0"=="%J%\ship_job_running.bat" (
   copy /y "%~f0" "%J%\ship_job_running.bat" > nul || exit /b 1
   call "%J%\ship_job_running.bat"
-  rem Nov 19 chain 1119B: a wrapper's inputs (STAGES above all) stayed set in the calling chain and the next ship ran
-  rem with them; 1157 and 1183 started at stage 4 with no stage 1 to 3 outputs. Clear them in the caller on the way out.
   if errorlevel 1 endlocal & set "SHIP=" & set "CODE=" & set "BRANCH=" & set "JOB_DIR=" & set "STAGES=" & set "SETS=" & set "FACS=" & set "PAINT_BASE=" & set "PC_GPU_ISSUE=" & exit /b 1
   endlocal & set "SHIP=" & set "CODE=" & set "BRANCH=" & set "JOB_DIR=" & set "STAGES=" & set "SETS=" & set "FACS=" & set "PAINT_BASE=" & set "PC_GPU_ISSUE=" & exit /b 0
 )
