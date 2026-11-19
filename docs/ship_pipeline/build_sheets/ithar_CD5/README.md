@@ -1,5 +1,17 @@
 # Glasswright flagship CD5: The Unfinished
 
+## Issue 1058 finish review on r3
+
+| Part | Work in this review | Reason |
+| --- | --- | --- |
+| Six rolled glass strands | Narrow chamfers on the rolled shoulders, capped glass boundary at the two ends | Give the star reflection an edge to break along and let the real inside show through. Optical thickness is carried by the finish. |
+| Decks and annealed frames | Fit to the lobed section, with deck joints at the transverse breaks and the forward frame below the optic peel | Keep the inside clear of the shatter paths and the narrow front of the ship. |
+| Braided light guides | Recessed guides in each compartment | Light the glass from within while leaving the joints clear. |
+
+The optical weapon assemblies, pivots, drive assemblies and six authored fracture
+paths follow r3. The r3 sheet pictures and numbers below record the source build.
+[Finish review and export checks](../../../shots/finish_chorus_glass_1118/README.md)
+
 Issue 912, R298, run 3. Stage: **sheet built**, revision **r3**. Built from run 2,
 commit `23f61877`, with six twisting poured-glass strands, deep grooves, rolled
 strand edges and 216 narrow amber, green and violet light slivers under clear glass.

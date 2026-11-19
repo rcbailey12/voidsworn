@@ -9,6 +9,7 @@
 # length to height 2.9 (C10 is 5.2 and 6.5: two classes).
 # +X bow, +Y port, +Z up. Throat rims x = +7.25, vent mouths x = -5.6, filament tips about x = -7.25.
 import math
+import random
 
 CODE = 'chorus_C11'
 NAME = 'The bladeback (Chorus cruiser)'
@@ -61,22 +62,60 @@ def dense(key, step=0.3):
 
 
 HULL = dense(KEY)
-PL = dict(size=(0.4, 0.85), thick=(0.02, 0.045), skip=0.15, stack=0.0, mats={'flesh': 5, 'hide': 3, 'flesh2': 2, 'scar': 0.3},
-          rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.03)
 SACS = (2.54, -0.14, -2.66)
 VENTS = 6
+
+
+def carapace(K):
+    """Grown shoulder scales root into the hide and overlap toward the stern."""
+    rng = random.Random(21)
+    for side in (1, -1):
+        for row, shoulder in enumerate((0.56, 0.88, 1.19)):
+            x = 5.35 - row * 0.34
+            index = 0
+            while x > -3.8 - row * 0.24:
+                length = rng.uniform(1.09, 1.52)
+                span = rng.uniform(0.20, 0.28)
+                rise = rng.uniform(0.13, 0.22)
+                sweep = rng.uniform(-0.12, 0.18)
+                angle = shoulder + rng.uniform(-0.075, 0.075)
+                verts = []
+                # The front is buried under the preceding plate. The rear lip
+                # stands proud and drops steeply back into the soft hide.
+                sections = ((0.0, 0.39, -0.07), (0.27, 0.88, 0.06),
+                            (0.60, 1.0, rise), (0.89, 0.82, rise * 0.94),
+                            (1.0, 0.61, -0.03))
+                across = (-1.0, -0.58, -0.22, 0.17, 0.54, 1.0)
+                for along, width, height in sections:
+                    for cross in across:
+                        th = angle + span * width * cross + sweep * along
+                        station = x - length * along + along * 0.20 * cross * cross
+                        relief = (height + 0.055 * max(0.0, 1.0 - abs(cross + 0.18) * 3.0)) * (1 - abs(cross) ** 2)
+                        out = relief - 0.055 * abs(cross) ** 3
+                        verts.append(tuple(K.hpt(station, th if side > 0 else math.pi - th, out=out)[0]))
+                n = len(across)
+                faces = []
+                for i in range(len(sections) - 1):
+                    for j in range(n - 1):
+                        corner = i * n + j
+                        face = (corner, corner + 1, corner + n + 1, corner + n)
+                        faces.append(face[::-1] if side > 0 else face)
+                zone = 'hide' if (index + 2 * row) % 4 == 0 else 'chitin'
+                K.hull_detail(f'carapace_{side}_{row}_{index:02d}', (verts, faces), zone)
+                x -= length * rng.uniform(0.69, 0.88)
+                index += 1
 
 
 def build(K):
     import kit as _k
     from mathutils import Vector, Matrix
     import bpy as _bpy
-    import random
     HP = _k.HP
 
-    hull = K.hull(HULL, 'flesh', shell=0.25, plates=dict(PL, seed=21, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
+    hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the short broad body', hull, 'dark olive flesh', note='blunt at the bow, widest at 40 percent, tapering hard aft')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
+    carapace(K)
 
     def side_th(th, side):
         return th if side > 0 else math.pi - th
@@ -209,6 +248,7 @@ def build(K):
                 vv, ff = HP.pore(pos, nrm, rnd.uniform(0.02, 0.045), n=6)
                 o = len(V); V += vv; F += [tuple(q + o for q in f) for f in ff]
         K.hull_detail('pores_' + name, (V, F), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
+    K.mark('hide', 'plate', ['pad', 'pore'])
     # veins: from the sacs forward to the throats
     for side in (1, -1):
         V, F = [], []
@@ -311,6 +351,8 @@ def build(K):
     K.change('The stern ends in a ring of six pulse vents, each with three glowing filaments splayed outward', 'factions.md: no nozzles; the picture\'s amber nodes and filament plume. The filaments are cut to about a third of the picture\'s so the ship is 14.5 throat rim to filament tip, and splayed so none hangs in a neighbour\'s jet')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
     K.change('The small spines along the lower stern are cut', 'no job (R221)')
+    K.change('Overlapping carapace grows down both shoulders in staggered courses', 'Issue 1058: raised rear lips and broad growth ridges need real relief at battle size.')
+    K.change('The soft inner hide is 0.22 units thick', 'Issue 1058: pull the liner back beneath the torn shoulder.')
     K.change('B-1 and B-2 run on straight past the flanks to 6.0 off the axis (issue 623, the recipe)', 'the game weighs the tear\'s height by how far across the path it is, so a path that stops at the flank tears the septa and the liner at different places from the plating near the flanks (death_seam_check: 171 triangles outside their piece); E11\'s paths run on the same way')
     K.change('Boarding origins on the flanks at x 0.8; the throats\' hard points are the bile glands\' faces deep in the throats (issue 623)', 'the game contract needs one boarding origin a side; the mouth\'s centre is open air, which the export check refuses as off the mesh, so the shot leaves from the gland and the arcs and the firing lane are still taken from the mouth')
     K.open_item('The belly is designed here; the sheet has no underside view')
