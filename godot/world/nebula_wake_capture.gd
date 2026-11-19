@@ -3,12 +3,13 @@ extends SceneTree
 # docs/shots/storm_cost/measure.gd) so the storm flare sits in the same frame.
 # A frigate and a capital of your fleet fly the same scripted line through the nebula with the wake off, then on.
 # The flight is visual only (ShipView positions; no rule, move or terrain is touched).
-#   godot --path godot --fixed-fps 30 --script res://world/nebula_wake_capture.gd -- OUT shots [max|high|low] [W H]
+#   godot --path godot --fixed-fps 30 --script res://world/nebula_wake_capture.gd -- OUT shots [max|high|low] [W H [camera radius]]
 #   godot --path godot --script res://world/nebula_wake_capture.gd -- OUT timing        (run through tmo.bat, GPU solo)
 #   godot --path godot --script res://world/nebula_wake_capture.gd -- OUT still [max|high|low] [W H]
 # still: OUT/still_<tier>_<on|off>.jpg, one frozen moment, the frigate and capital mid-line with their trails, wake on
 # and the same frame with no wake points (the only difference between the two pictures).
-# shots: OUT/<tier>_<off|on>/f0000.jpg ... one per frame at a fixed 30 frames a second, plus OUT/<tier>_meta.json.
+# Camera radius defaults to 170, the battle camera (Artoo on PR 1181); 120 is the closer extra view.
+# shots: OUT/<tier>_c<radius>_<off|on>/f0000.jpg ... one per frame at a fixed 30 frames a second, plus OUT/<tier>_meta.json.
 # timing: OUT/results.json; three sessions, wake off and on alternated, max and low, 1080p and 4K (scaling 2.0),
 # ships flying the line on a loop the whole time, plus a held worst case (every wake point live at full strength).
 const SCENE = preload("res://scenes/battle/battle.tscn")
@@ -24,6 +25,7 @@ var mode := ""
 var rows: Array = []
 var b = null
 var focus := Vector3.ZERO
+var cam_r := 170.0           # the battle camera's radius (c170); shots and still take another as their last argument
 
 
 # VS_DRAFT=1: a cloud draft on a checkout without the built hulls; placeholder blocks are allowed and every picture
@@ -50,12 +52,14 @@ func _run() -> void:
 	if mode == "still":
 		var tier := argv[2] if argv.size() > 2 else "max"
 		var size := Vector2i(int(argv[3]), int(argv[4])) if argv.size() > 4 else Vector2i(1280, 720)
+		if argv.size() > 5: cam_r = float(argv[5])
 		if not await _battle(tier, true): return
 		await _still(tier, size)
 		await _close()
 	elif mode == "shots":
 		var tier := argv[2] if argv.size() > 2 else "max"
 		var size := Vector2i(int(argv[3]), int(argv[4])) if argv.size() > 4 else Vector2i(1920, 1080)
+		if argv.size() > 5: cam_r = float(argv[5])
 		for wake in [false, true]:
 			if not await _battle(tier, wake): return
 			await _clip(tier, wake, size)
@@ -119,7 +123,7 @@ func _battle(tier: String, wake: bool) -> bool:
 	focus = _nebula_focus()
 	b.cam.a = -PI / 2.0
 	b.cam.b = 0.85
-	b.cam.r = 120.0
+	b.cam.r = cam_r
 	b.cam.t = focus
 	b.cam.snap()
 	# Same start for both runs: the gas clock, the storm bolts' schedule and the effect clock.
@@ -187,7 +191,7 @@ func _clip(tier: String, wake: bool, size: Vector2i) -> void:
 	_fly(pair, 0)
 	for i in 20: await process_frame
 	if b.world._living._wake != null: b.world._living._wake.forget()
-	var dir := out.path_join("%s_%s" % [tier, "on" if wake else "off"])
+	var dir := out.path_join("%s_c%d_%s" % [tier, int(cam_r), "on" if wake else "off"])
 	DirAccess.make_dir_recursive_absolute(dir)
 	_zero_clock()
 	for k in CLIP_FRAMES:
@@ -195,12 +199,12 @@ func _clip(tier: String, wake: bool, size: Vector2i) -> void:
 		await process_frame
 		await RenderingServer.frame_post_draw
 		PROV.save_jpg(root.get_texture().get_image(), dir.path_join("f%04d.jpg" % k), 0.92)
-	var meta := {"draft": draft, "tier": tier, "actual_quality": b.world.quality, "wake": wake, "frames": CLIP_FRAMES, "fps": 30, "size": [size.x, size.y],
+	var meta := {"draft": draft, "camera_r": cam_r, "tier": tier, "actual_quality": b.world.quality, "wake": wake, "frames": CLIP_FRAMES, "fps": 30, "size": [size.x, size.y],
 		"focus": [focus.x, focus.z], "frigate": [str(pair[0].u.get("cls")), str(pair[0].code), pair[0].L], "capital": [str(pair[1].u.get("cls")), str(pair[1].code), pair[1].L],
 		"adapter": RenderingServer.get_video_adapter_name(), "renderer": RenderingServer.get_current_rendering_method(),
 		"wake_sha256": FileAccess.get_sha256("res://world/nebula_wake.gd"), "living_sha256": FileAccess.get_sha256("res://world/world_living.gd"),
 		"wake_materials": b.world._living._wake_mats.size()}
-	var f := FileAccess.open(out.path_join("%s_%s_meta.json" % [tier, "on" if wake else "off"]), FileAccess.WRITE)
+	var f := FileAccess.open(out.path_join("%s_c%d_%s_meta.json" % [tier, int(cam_r), "on" if wake else "off"]), FileAccess.WRITE)
 	f.store_string(JSON.stringify(meta, "  ") + "\n")
 	print("WAKE1079 clip ", JSON.stringify(meta))
 
@@ -246,7 +250,7 @@ func _still(tier: String, size: Vector2i) -> void:
 		wake.apply(living._wake_mats)
 		for i in 12: await process_frame
 		await RenderingServer.frame_post_draw
-		PROV.save_jpg(root.get_texture().get_image(), out.path_join("still_%s_%s.jpg" % [tier, "on" if pass_i == 0 else "off"]), 0.95)
+		PROV.save_jpg(root.get_texture().get_image(), out.path_join("still_%s_c%d_%s.jpg" % [tier, int(cam_r), "on" if pass_i == 0 else "off"]), 0.95)
 	print("WAKE1079 still ", tier, " ", size)
 
 

@@ -21,7 +21,7 @@ Ships disturb the calm nebula as they pass. Visual only: no rule, move or terrai
 
 ## Evidence
 
-- `OPUS1079_RUN.bat` (PC, queued by the Board, R334): the clip (wake off then on, 1280x720, 30 fps), the stills (max
+- `OPUS1079_RUN2.bat` (PC, queued by the Board, R334; it replaces `OPUS1079_RUN.bat`, which reset a reused clone on a retry): a fresh clone per run, the clip frames (wake off then on, 1280x720, 30 fps, at the battle camera c170 and closer at c120; the video is assembled and checked in the cloud), the stills (max
   and low), the dense-storm fixture timing (GPU solo, wake off and on, max and low, 1080p and 4K, 3 sessions, plus a held
   worst case) and scene 207 (`bench/scene_gate.tscn` modes base, wake_idle, wake_full).
 - Capture script: `godot/world/nebula_wake_capture.gd` (modes still, shots, timing).
