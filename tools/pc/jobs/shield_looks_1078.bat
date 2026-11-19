@@ -31,11 +31,14 @@ if errorlevel 1 (
   goto finish
 )
 for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "SHA=%%H"
-set "OUT=%HOME1078%\work\%SHA%"
-set "RES=%HOME1078%\out\%SHA%"
+rem a fresh work folder per attempt, so a retry never mixes old stills, clip frames or json with new ones
+set "ATT=%SHA%_%RANDOM%%RANDOM%"
+if exist "%HOME1078%\work\%ATT%" set "ATT=%ATT%_b"
+set "OUT=%HOME1078%\work\%ATT%"
+set "RES=%HOME1078%\out\%ATT%"
 if not exist "%RES%" mkdir "%RES%"
 if not exist "%OUT%" mkdir "%OUT%"
-echo commit %SHA% >> "%ST%"
+echo commit %SHA% attempt %ATT%: results in out\%ATT% >> "%ST%"
 rem the installed hulls and the import cache a fresh clone lacks (copy only, never over newer files)
 if exist "%S1078_SHIPS%\gen" robocopy "%S1078_SHIPS%\gen" "%R%\godot\gen" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_gen.txt" 2>&1
 if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_ships.txt" 2>&1
@@ -67,7 +70,14 @@ if "%FF%"=="" (
   echo no ffmpeg: clip frames kept, no mp4 >> "%ST%"
   goto cost
 )
-for /d %%D in ("%OUT%\look\clip_*") do "%FF%" -y -loglevel error -framerate 30 -i "%%D\f_%%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 20 "%OUT%\look\%%~nxD.mp4"
+for /d %%D in ("%OUT%\look\clip_*") do (
+  "%FF%" -y -loglevel error -framerate 30 -i "%%D\f_%%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 20 "%OUT%\look\%%~nxD.mp4"
+  if errorlevel 1 (
+    echo FAILED: clip %%~nxD did not encode >> "%ST%"
+  ) else (
+    echo clip %%~nxD encoded >> "%ST%"
+  )
+)
 echo clips done %date% %time% >> "%ST%"
 
 :cost

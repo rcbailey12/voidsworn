@@ -57,6 +57,7 @@ var failed := false
 var stills := {}          # moment -> Image (the current story)
 var clip_dir := ""
 var clip_n := 0
+var clip_started := {}
 var report := {"rev": REV, "stories": [], "cost": []}
 
 
@@ -188,7 +189,10 @@ func _story(sid: String, shape: String, look: String, radius: int) -> void:
 	clip_dir = ""
 	if _env("PROBE_CLIP", "") == "1" and radius == 170:
 		clip_dir = out.path_join("clip_%s_%s_c%d" % [sid, shape, radius])
-		if not DirAccess.dir_exists_absolute(clip_dir):
+		# the frame count restarts for each clip folder this run opens (not on whether the folder exists: a retry into
+		# an old folder must never keep counting from another subject's frames)
+		if not clip_started.has(clip_dir):
+			clip_started[clip_dir] = true
 			DirAccess.make_dir_recursive_absolute(clip_dir)
 			clip_n = 0
 		var card := await _card("SHIELD1078 %s · prototype · %s shield · %s · camera %d" % [REV, shape, str(rules_hulls[sid].get("n", sid)), radius],
