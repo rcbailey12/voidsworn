@@ -1,14 +1,14 @@
 {
-  "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+  "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
   "source_dirty": false,
   "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "threequarter.jpg",
-  "date": "2026-11-19T16:53:45Z",
+  "date": "2026-11-19T17:14:20Z",
   "sources": [
     {
-      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built"
@@ -17,15 +17,15 @@
   "inputs": [
     {
       "picture_name": "threequarter.png",
-      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T16:53:38Z",
-      "image_sha256": "8903a3717c316346e9330bfa30661e682be3a6f0785c14638129033bdcca87e1",
+      "date": "2026-11-19T17:14:13Z",
+      "image_sha256": "0cee5d6909aeb485f03877806e47573637d040386dedc1cc8ddd876156848c33",
       "sources": [
         {
-          "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+          "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
           "source_dirty": false,
           "source_diff_sha256": "",
           "stage": "sheet built"
@@ -44,11 +44,11 @@
     98
   ],
   "strip_sha256": [
-    "d0e7c1199a74f0b3ce5148cf4ec0341523cf8a829af3f234a557d64a69e78534"
+    "7a8b0a0a0a5555215026cdfc8c82d866c70fcb9594b456f4cbb05237b41d81f2"
   ],
-  "stamp_template_sha256": "1f0dd1ceae1779b78d491b3bf238f49239794d18d1e6aa8f0cd7eaf38b019a81",
+  "stamp_template_sha256": "0e3d89b96df88067df513f7194a266859156fe4b957b32950e4870e75b22b5e2",
   "covered_pixels": [
-    "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"
+    "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"
   ],
-  "image_sha256": "714408599254bb17229b1113f34b4f2e03a3cc0e3495632aef6479043a459276"
+  "image_sha256": "29fd38ccf3b710dd89f651cf20f569126eb0e2e98ea334eb70af567abf588015"
 }

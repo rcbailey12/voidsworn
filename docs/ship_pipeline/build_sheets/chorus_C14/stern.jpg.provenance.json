@@ -1,14 +1,14 @@
 {
-  "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+  "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
   "source_dirty": false,
   "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "stern.jpg",
-  "date": "2026-11-19T16:53:45Z",
+  "date": "2026-11-19T17:14:19Z",
   "sources": [
     {
-      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built"
@@ -17,15 +17,15 @@
   "inputs": [
     {
       "picture_name": "stern.png",
-      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T16:53:38Z",
-      "image_sha256": "04b582298fd755c46a9352ad5c70687f2bfcd23f54d29a28b5dcaa6a8cae43ff",
+      "date": "2026-11-19T17:14:13Z",
+      "image_sha256": "74f0e94a1e493cf8e405b141ac89616d936bd2219a1c91719093511e83a8f737",
       "sources": [
         {
-          "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+          "source_commit": "df66222efd256ee7f85d8b11c1c837fed583f420",
           "source_dirty": false,
           "source_diff_sha256": "",
           "stage": "sheet built"
@@ -35,20 +35,20 @@
   ],
   "stamp_box": [
     0,
-    995,
+    1056,
     432,
-    1093
+    1154
   ],
   "strip_size": [
     432,
     98
   ],
   "strip_sha256": [
-    "6ca10c647d1ae1ca9fe5af7c1315f47acc3ccd994500390358ba48b65d1025a0"
+    "03e799065ae8e612b0bfaddba5929bef360e913a7a5d5facdda088334ae9b157"
   ],
-  "stamp_template_sha256": "8353cb34103813573ca30a54922cf8ba2ec83debc0d87333165075b4ba4b1d9b",
+  "stamp_template_sha256": "1b4823c5a8543d6a468cfad7684ffe430fe5591eb154b1c39005a6bd83b87d98",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABPElEQVR4nO3UMRHAMAzAQLewfOWPq4s4JMM/Ak16dr8BYOY9HQBwC0MEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIkB95fwF0Wpp7TwAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "ece3cafb5d2f925a75221d27ac5b204983f3fbf40dd9d179382bd697a4610f71"
+  "image_sha256": "061afbdba51dc028fc6068c212c7bdc87f69be538261f0f1f4d5b4d7cffb2bf1"
 }
