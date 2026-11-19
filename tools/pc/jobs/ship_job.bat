@@ -52,6 +52,10 @@ if not defined SETS set "SETS=battle,close"
 if not defined FACS for /f "delims=_" %%F in ("%SHIP%") do set "FACS=%%F"
 if not defined PC_GPU_WAIT_SECONDS set PC_GPU_WAIT_SECONDS=3600
 if not defined PC_GPU_ISSUE set "PC_GPU_ISSUE=%JOB_DIR%"
+rem The Nov 19 cold Godot imports on this PC took up to about 1150 s (opus1077\out\log_import.txt).
+set "SHIP_IMPORT_CAP=2400"
+set "SHIP_CHECK_CAP=600"
+set "SHIP_SHOTS_CAP=600"
 set "C=%J%\repo"
 set "O=%J%\out"
 set "STAMP="
@@ -136,7 +140,9 @@ git -C "%C%" log -1 --format=commit=%%H >> "%RES%" 2>&1
 
 rem 3. import, then the stages, each in a fresh cmd so the variables the stages set end with them
 cd /d "%C%"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+set "TMO_STEP_OUT=%C%\godot\.godot"
+set "TMO_STEP=ship import"
+call "%C%\tools\pc\tmo.bat" %SHIP_IMPORT_CAP% "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo import exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=import"
@@ -161,23 +167,28 @@ echo install fresh: %GLB% >> "%RES%"
 
 rem 5. the three checks on the installed glb; every one must pass
 set CHECKFAIL=
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_readback_gpu.txt" 2>&1
+set "TMO_STEP_OUT=%O%"
+set "TMO_STEP=ship GPU readback"
+call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_readback_gpu.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo gpu readback exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% readback"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%GLB%" > "%O%\log_interiors.txt" 2>&1
+set "TMO_STEP=ship authored interiors"
+call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%GLB%" > "%O%\log_interiors.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo authored interiors exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% interiors"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%GLB%" > "%O%\log_death_seam.txt" 2>&1
+set "TMO_STEP=ship death seam"
+call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%GLB%" > "%O%\log_death_seam.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo death seam exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% death_seam"
 if defined CHECKFAIL set "FAILED=checks:%CHECKFAIL%"
+set "TMO_STEP=ship shots"
 if defined FAILED goto collect
 
 rem 6. the shots, only now: everything above passed, so the installed glb is this run's and checked
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
+call "%C%\tools\pc\tmo.bat" %SHIP_SHOTS_CAP% "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo shots exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=shots"

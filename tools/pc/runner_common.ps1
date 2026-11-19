@@ -963,8 +963,8 @@ try {
       }
     }
     $root = [IO.Path]::GetPathRoot([IO.Path]::GetFullPath($target)).TrimEnd('\')
-    $free = (New-Object IO.DriveInfo($root)).AvailableFreeSpace
-    if ($test -and $env:PC_TEST_SPACE_FREE_MB) { $free = [int64]$env:PC_TEST_SPACE_FREE_MB * 1MB }
+    $free = if ($test -and $env:PC_TEST_SPACE_FREE_MB) { [int64]$env:PC_TEST_SPACE_FREE_MB * 1MB }
+            else { (New-Object IO.DriveInfo($root)).AvailableFreeSpace }
     $freeGB = [math]::Round($free / 1GB, 1)
     if ($free -lt ($floor * 1GB)) {
       $why = "refusing to start: drive $root has $freeGB GB free, below the min_free_gb=$floor floor"
