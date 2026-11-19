@@ -1,0 +1,158 @@
+{
+  "w_hbattery_void_shield__c170.png": {
+    "sheet_frame_zero_based": 6,
+    "before_repeat": {
+      "mean_rgb_of_255": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_rgb_of_255": [
+        0,
+        0,
+        0
+      ]
+    },
+    "after_repeat": {
+      "mean_rgb_of_255": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_rgb_of_255": [
+        0,
+        0,
+        0
+      ]
+    },
+    "before_after": {
+      "mean_rgb_of_255": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_rgb_of_255": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "w_hbattery_void_shield__c26.png": {
+    "sheet_frame_zero_based": 6,
+    "before_repeat": {
+      "mean_rgb_of_255": [
+        0.018523541988168725,
+        0.017496744791666668,
+        0.01946795428240741
+      ],
+      "max_rgb_of_255": [
+        88,
+        66,
+        64
+      ]
+    },
+    "after_repeat": {
+      "mean_rgb_of_255": [
+        0.01912334426440329,
+        0.018600903420781894,
+        0.022824636702674896
+      ],
+      "max_rgb_of_255": [
+        84,
+        61,
+        61
+      ]
+    },
+    "before_after": {
+      "mean_rgb_of_255": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_rgb_of_255": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "w_hbattery_void_hull__c170.png": {
+    "sheet_frame_zero_based": 11,
+    "before_repeat": {
+      "mean_rgb_of_255": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_rgb_of_255": [
+        0,
+        0,
+        0
+      ]
+    },
+    "after_repeat": {
+      "mean_rgb_of_255": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_rgb_of_255": [
+        0,
+        0,
+        0
+      ]
+    },
+    "before_after": {
+      "mean_rgb_of_255": [
+        0.3045860259130658,
+        0.3784772456918724,
+        0.34937930009002055
+      ],
+      "max_rgb_of_255": [
+        17,
+        18,
+        21
+      ]
+    }
+  },
+  "w_hbattery_void_hull__c26.png": {
+    "sheet_frame_zero_based": 11,
+    "before_repeat": {
+      "mean_rgb_of_255": [
+        0.006417984825102881,
+        0.006909280156893004,
+        0.007343307934670782
+      ],
+      "max_rgb_of_255": [
+        83,
+        61,
+        59
+      ]
+    },
+    "after_repeat": {
+      "mean_rgb_of_255": [
+        0.008533870241769548,
+        0.009505409272119342,
+        0.011533886316872428
+      ],
+      "max_rgb_of_255": [
+        79,
+        58,
+        59
+      ]
+    },
+    "before_after": {
+      "mean_rgb_of_255": [
+        0.2842459972993827,
+        0.32982795621141975,
+        0.275512192965535
+      ],
+      "max_rgb_of_255": [
+        5,
+        5,
+        5
+      ]
+    }
+  }
+}

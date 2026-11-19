@@ -29,9 +29,12 @@ func _protect(node) -> void:
 func _material(mat: Material) -> void:
 	if mat == null: return
 	if mat is BaseMaterial3D:
-		mat.disable_fog = true
-	elif mat is ShaderMaterial and mat.shader != null and not mat.shader.code.contains("fog_disabled"):
-		# Keep the same Shader resource: damage/death materials already sharing it inherit
-		# the policy too. Uniforms, hull lighting, depth and shadow passes stay intact.
-		mat.shader.code = mat.shader.code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+		if not mat.disable_fog:
+			mat.disable_fog = true
+	elif mat is ShaderMaterial and mat.shader != null:
+		# Fallback for custom hulls and overlays. Generated damage shaders take
+		# the mode from the source material when they are constructed.
+		var code: String = mat.shader.code
+		if not code.contains("fog_disabled"):
+			mat.shader.code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
 	if mat.next_pass != null: _material(mat.next_pass)
