@@ -519,14 +519,17 @@ def gun(barrels=1, cal=0.12, blen=1.6, size=1.0, mount='turret', pitch=0.0, vari
 
 
 # ---------------------------------------------------------------------------------------------------- the radiator spires
-def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0, lean=None, bars=None):
+def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0, lean=None, bars=None, glow='fins'):
     """a radiator spire, standing on the spine block: origin at the root's foot on the spine top, +X forward, +Z up. It sheds
     the reactor's heat (factions.md: the spires glow because they shed the reactor's heat), so it is all radiator: a tapering
     forged column whose two faces are a glowing heat core (the bar) behind a stack of horizontal iron heat fins standing out
     to each side (a heat sink, never a window or an organ pipe), iron posts fore and aft framing the core, a forged cap, gusset
     braces at the root. Never a steeple, a cross, a statue or a mast. profile 0 blade (the cap swept back), 1 stepped (a
     narrower upper tier on a shoulder), 2 twin (two columns sharing one fin stack), 3 raked (the leading edge raked back).
-    h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side."""
+    h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side.
+    glow: 'fins' (the first S8 build: the fins themselves glow, so the spire reads as a whole lit tower) or 'slats' (R331,
+    Nov 19 2026: iron fins over a glowing core, so the ember shows only in the slats between the fins)."""
+    assert glow in ('fins', 'slats')
     p = Part('radiator')
     p.type = 'radiator'
     zr = 0.26
@@ -568,9 +571,12 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
             return xa, xb, th
         # the heat core: a glowing slab through the column (the bars), then the iron posts fore and aft and the fin stack over it
         secs_core, post_a, post_b = [], [], []
+        # a glowing core stops under the cap's lowest edge, so no lit top shows above a swept or raked cap
+        ztop = h - {0: 0.42, 3: 0.26}.get(profile, 0.14) if glow == 'slats' else h
         for z in zs:
             xa, xb, th = edge(z, 0)
-            secs_core.append([(xa + 0.06, -th, z), (xb - 0.06, -th, z), (xb - 0.06, th, z), (xa + 0.06, th, z)])
+            zk = zr + (z - zr) * (ztop - zr) / max(0.01, h - zr)
+            secs_core.append([(xa + 0.06, -th, zk), (xb - 0.06, -th, zk), (xb - 0.06, th, zk), (xa + 0.06, th, zk)])
             post_a.append([(xa, -th - 0.02, z), (xa + 0.1, -th - 0.02, z), (xa + 0.1, th + 0.02, z), (xa, th + 0.02, z)])
             post_b.append([(xb - 0.1, -th - 0.02, z), (xb, -th - 0.02, z), (xb, th + 0.02, z), (xb - 0.1, th + 0.02, z)])
 
@@ -584,7 +590,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
                     F.append((a, b, b + 4, a + 4))
             F.append((3, 2, 1, 0)); o = (len(rs) - 1) * 4; F.append((o, o + 1, o + 2, o + 3))
             return V, F
-        p.add('bar%d' % ci, 'body', 'siron2', stack(secs_core))
+        p.add('bar%d' % ci, 'body', 'embar' if glow == 'slats' else 'siron2', stack(secs_core))
         p.add('column%d' % ci, 'body', 'siron', _join([stack(post_a), stack(post_b)]))
         xa, xb, th = edge(h, 0)
         zc = [cap_z(x, xa, xb) for x in (xa, xb)]
@@ -620,7 +626,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
             V = [(xa + e, y0, z - 0.018), (xb - e, y0, z - 0.018), (xb - e, y1, z - 0.018), (xa + e, y1, z - 0.018),
                  (xa + e + 0.025, y0, z + 0.018), (xb - e - 0.025, y0, z + 0.018), (xb - e - 0.025, y1 - sg * 0.025, z + 0.018), (xa + e + 0.025, y1 - sg * 0.025, z + 0.018)]
             fv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
-    p.add('fin', 'body', 'embar', _join(fv))
+    p.add('fin', 'body', 'siron' if glow == 'slats' else 'embar', _join(fv))
     # gusset braces at the root, fore and aft on both faces (they carry the column's weight into the root socket)
     gz = []
     for sg in (1, -1):
