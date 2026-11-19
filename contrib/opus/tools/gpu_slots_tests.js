@@ -125,6 +125,10 @@ async function main() {
   const gd = 'C:\\Godot_v4.7.2-stable_win64_console.exe';
   assert.equal(modeFor(gd, '--headless --import'), '');
   assert.equal(modeFor('blender.exe', '-b'), 'shared');
+  const cpuMode = modeFor('blender.exe', '-b', root, 'none');
+  assert.equal(cpuMode, '');
+  assert.equal(weightFor('blender.exe', '', cpuMode), 0);
+  assert.equal(weightFor('blender.exe', '2', 'none'), 0);
   assert.equal(weightFor('C:\\Blender\\blender.exe'), 2);
   assert.equal(weightFor(gd), 1);
   assert.equal(weightFor('python.exe', '2'), 2);
@@ -141,6 +145,7 @@ async function main() {
   assert.equal(modeFor(gd, '--bench timing.json'), 'solo');
   assert.equal(modeFor(gd, `--script "${path.join(project, 'timing.gd')}"`), 'solo');
   assert.equal(modeFor(gd, 'res://bench209r3.gd', root, 'shared'), 'solo');
+  assert.equal(modeFor(gd, 'res://bench209r3.gd', root, 'none'), 'solo');
   put(path.join(project, 'project.godot'), '[application]\nrun/main_scene="res://timing.tscn"');
   assert.equal(modeFor(gd, `--path "${project}"`), 'solo');
   pass('launch classification: capture shared, timing scene and known benches solo, headless and code skip');
@@ -326,6 +331,13 @@ setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`
   const blended = await run(fakeBlender, `"${probe}" "${marker}" 0 0`, { PC_GPU_MODE: '' });
   assert.equal(blended.code, 0, blended.output);
   assert.equal(JSON.parse(fs.readFileSync(marker, 'utf8')).claims.length, 2, 'Blender must default to weight 2');
+  put(path.join(home, 'gpu_go.txt'), 'GPU not cleared');
+  const cpuOnly = await run(fakeBlender, `"${probe}" "${marker}" 0 0`, { PC_GPU_MODE: 'none', PC_GPU_WEIGHT: '2', PC_GPU_WAIT_SECONDS: '1' });
+  assert.equal(cpuOnly.code, 0, cpuOnly.output);
+  assert.doesNotMatch(cpuOnly.output, /GPU: .*claim/);
+  assert.equal(JSON.parse(fs.readFileSync(marker, 'utf8')).claims.length, 0);
+  put(path.join(home, 'gpu_go.txt'), 'GPU cleared');
+  pass('Windows watchdog runs CPU-only Blender with zero claims while the GPU gate is closed');
   capacity(home, 3);
   const custom = await run(process.execPath, `"${probe}" "${marker}" 0 0`, { PC_GPU_WEIGHT: '3' });
   assert.equal(custom.code, 0, custom.output);
