@@ -1,35 +1,44 @@
 @echo off
-title Opus 1077 pass 3B: physics wreck fix, stronger tell, clips and solo timing, throwaway profile - GPU job
-rem Issue 1077, pass 3. The rerun at 1236bbc3 showed three things this pass needs fixed on the branch head (it refuses a
-rem head without them): the strained wreck's physics pieces did not slow (Jolt ignored their damping: 1.9 L apart), the
-rem strain tell was too faint to read, and the side-by-side was drawn at half size. Its prepared timing file was also
-rem overwritten by the cold run. Start after any frame-time job holding the GPU; it waits up to an hour per GPU claim.
-rem Runs both headless checks (the story check now also kills A16 with physics pieces), records the A16 clips off and
-rem strain at c170 and c26, the two side-by-side AVIs, then the frame times solo (R293): three sessions of the prepared
-rem timing and the cold case, off and strain. Writes only under opus1077\ (out_pass3 and scratch6, fresh folders).
-rem Never deletes anything. Logs to out_pass3\result.txt and ends with "all done".
-rem 3B (Board, issue 1228): every Godot start runs in a throwaway profile (opus1077\profile_<N>\appdata), and Ryan's real
-rem battle_opts.json and board_look.cfg are hashed before the first Godot start and at the end (and on any early stop);
-rem a difference is FAILED.
+title Opus 1077 pass 3C: physics wreck fix, stronger tell, clips and solo timing - GPU job
+rem Issue 1077, pass 3C (pass 3B plus Artoo on PR 1231: a fresh output folder per attempt, the exact commit checked out,
+rem every step checked, nonzero unless every clip and all 12 timing results are fresh and valid). Pass 3 exists because the
+rem rerun at 1236bbc3 showed the strained wreck's physics pieces did not slow (Jolt ignored their damping), the tell was too
+rem faint, the side-by-side was drawn at half size and the prepared timing file was overwritten.
+rem Start it after any frame-time job holding the GPU; it waits up to an hour per GPU claim.
+rem Steps: the pinned commit, both headless checks, the A16 clips off and strain at c170 and c26, the two side-by-side
+rem AVIs, then frame times solo (R293): three sessions of the prepared timing and the cold case, off and strain.
+rem Every Godot start runs in a throwaway profile (opus1077\profile_<N>\appdata); Ryan's real battle_opts.json and
+rem board_look.cfg are hashed before the first Godot start and at the end (and on any stop); a difference is FAILED.
+rem Writes only under opus1077\ (out_pass3c_<A> and scratch_pass3c_<A>, A the first unused attempt number). Never
+rem deletes anything. Logs to that folder's result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
+set EXPECT=66e55036710f2707b589e13178b70de74991b687
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1077
 set C=%W%\repo
-set O=%W%\out_pass3
-set S=%W%\scratch6
-if not exist "%O%" mkdir "%O%"
-if not exist "%S%" mkdir "%S%"
+set A=1
+:findattempt
+if exist "%W%\out_pass3c_%A%" (set /a A+=1 & goto findattempt)
+set O=%W%\out_pass3c_%A%
+set S=%W%\scratch_pass3c_%A%
+mkdir "%O%"
+mkdir "%S%"
 set RES=%O%\result.txt
-echo start %DATE% %TIME% > "%RES%"
+set BAD=0
+echo start %DATE% %TIME% attempt %A% > "%RES%"
 findstr /b /c:"GPU cleared" "%V%\gpu_go.txt" >nul 2>&1 || (echo gpu_go.txt is not GPU cleared: stopped >> "%RES%" & echo all done >> "%RES%" & exit /b 0)
 for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo drive bytes free %%F >> "%RES%"
-git -C "%C%" fetch -q --depth 1 origin opus/issue-1077 >> "%RES%" 2>&1
+if not exist "%C%\.git" (set "FAILMSG=no clone at %C%" & goto fail)
+git -C "%C%" fetch -q --depth 1 origin %EXPECT% >> "%RES%" 2>&1
+if errorlevel 1 (set "FAILMSG=git fetch of %EXPECT% failed" & goto fail)
 git -C "%C%" checkout -q FETCH_HEAD >> "%RES%" 2>&1
+if errorlevel 1 (set "FAILMSG=git checkout failed" & goto fail)
+set COMMIT=
 for /f %%H in ('git -C "%C%" rev-parse HEAD') do set COMMIT=%%H
 echo commit=%COMMIT% >> "%RES%"
-findstr /c:"touching neighbours shoved them" "%C%\godot\fx\fx_death.gd" >nul 2>&1 || (set "FAILMSG=%COMMIT% does not contain the physics wreck fix" & goto fail)
+if not "%COMMIT%"=="%EXPECT%" (set "FAILMSG=checked out %COMMIT%, expected %EXPECT%" & goto fail)
 echo {"commit": "%COMMIT%"} > "%C%\godot\build_info.json"
-rem the installed ships and generated hulls, copied again (robocopy /E only adds and updates; exit 0 to 7 is success, 8+ failed)
+rem the installed ships and generated hulls, copied (robocopy /E only adds and updates; exit 0 to 7 is success, 8+ failed)
 robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /NFL /NDL /NJH /NP > "%O%\log_copy_ships.txt" 2>&1
 set E=%ERRORLEVEL%
 echo copy ships robocopy %E% (0 to 7 is success) >> "%RES%"
@@ -41,6 +50,7 @@ if %E% GEQ 8 (set "FAILMSG=copy gen failed" & goto fail)
 certutil -hashfile "%C%\godot\assets\ships\C19_51\C19_51.glb" SHA256 >> "%RES%" 2>&1
 if not exist "%C%\godot\bench\opus1077" mkdir "%C%\godot\bench\opus1077"
 copy /y "%C%\contrib\opus\flagship_death_1077\*.gd" "%C%\godot\bench\opus1077\" > nul
+if errorlevel 1 (set "FAILMSG=copying the capture scripts failed" & goto fail)
 rem the throwaway profile: Ryan's real options are hashed first, then every Godot start below uses the profile
 set "REALU=%APPDATA%\Godot\app_userdata\Voidsworn"
 set N=1
@@ -59,45 +69,64 @@ set PC_GPU_ISSUE=1077
 cd /d "%C%"
 "%GD%" --version >> "%RES%" 2>&1
 call "%TM%" 3600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
-echo import exit %ERRORLEVEL% >> "%RES%"
+set E=%ERRORLEVEL%
+echo import exit %E% >> "%RES%"
+if not "%E%"=="0" (set "FAILMSG=import failed" & goto fail)
 call "%TM%" 1800 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_story_check.gd -- "%C%\godot\assets\ships\C19_51\C19_51.glb" > "%O%\log_death_story.txt" 2>&1
 set E=%ERRORLEVEL%
 echo death story exit %E% >> "%RES%"
-if not "%E%"=="0" (set "FAILMSG=STOPPED after death story" & goto fail)
+if not "%E%"=="0" (set "FAILMSG=death story check failed" & goto fail)
 call "%TM%" 1800 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\C19_51\C19_51.glb" > "%O%\log_death_seam.txt" 2>&1
 set E=%ERRORLEVEL%
 echo death seam exit %E% >> "%RES%"
-if not "%E%"=="0" (set "FAILMSG=STOPPED after death seam" & goto fail)
+if not "%E%"=="0" (set "FAILMSG=death seam check failed" & goto fail)
 rem 1. the clips (frames and stills), off and strain at radius 170 and 26
 call "%TM%" 5400 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1077/capture.gd -- clips "%S%" 170,26 > "%O%\log_clips.txt" 2>&1
 set E=%ERRORLEVEL%
 echo clips exit %E% >> "%RES%"
-if not "%E%"=="0" (set "FAILMSG=STOPPED after clips" & goto fail)
+if not "%E%"=="0" (set "FAILMSG=clips failed" & goto fail)
+for %%V in (off strain) do for %%R in (170 26) do (
+  if not exist "%S%\%%V_c%%R\timeline.json" (echo MISSING %%V_c%%R\timeline.json >> "%RES%" & set BAD=1)
+  if not exist "%S%\%%V_c%%R\cold_sheet.jpg" (echo MISSING %%V_c%%R\cold_sheet.jpg >> "%RES%" & set BAD=1)
+  mkdir "%O%\stills\%%V_c%%R"
+  copy /y "%S%\%%V_c%%R\*_sheet.jpg" "%O%\stills\%%V_c%%R\" > nul || set BAD=1
+  copy /y "%S%\%%V_c%%R\timeline.json" "%O%\stills\%%V_c%%R\" > nul || set BAD=1
+)
+if not "!BAD!"=="0" (set "FAILMSG=clip frames or stills missing" & goto fail)
 for %%R in (170 26) do (
   call "%TM%" 1800 "%GD%" --path "%C%\godot" --windowed --resolution 1920x600 --fixed-fps 30 --write-movie "%O%\FLAGSHIP1077_A16_c%%R_side_by_side.avi" --script res://bench/opus1077/compose.gd -- "%S%" %%R %COMMIT% > "%O%\log_compose_c%%R.txt" 2>&1
-  echo compose c%%R exit !ERRORLEVEL! >> "%RES%"
-)
-for %%V in (off strain) do for %%R in (170 26) do (
-  if not exist "%O%\stills\%%V_c%%R" mkdir "%O%\stills\%%V_c%%R"
-  copy /y "%S%\%%V_c%%R\*_sheet.jpg" "%O%\stills\%%V_c%%R\" > nul
-  copy /y "%S%\%%V_c%%R\timeline.json" "%O%\stills\%%V_c%%R\" > nul
+  set E=!ERRORLEVEL!
+  echo compose c%%R exit !E! >> "%RES%"
+  if not "!E!"=="0" set BAD=1
+  if not exist "%O%\FLAGSHIP1077_A16_c%%R_side_by_side.avi" (echo MISSING c%%R avi >> "%RES%" & set BAD=1)
+  findstr /c:"COMPOSE1077 frames=" "%O%\log_compose_c%%R.txt" >nul 2>&1 || (echo compose c%%R did not finish >> "%RES%" & set BAD=1)
+  findstr /c:"COMPOSE1077 frames=0" "%O%\log_compose_c%%R.txt" >nul 2>&1 && (echo compose c%%R drew no frames >> "%RES%" & set BAD=1)
 )
 for %%F in ("%O%\*.avi") do echo %%~nxF bytes %%~zF >> "%RES%"
+if not "!BAD!"=="0" (set "FAILMSG=a side-by-side failed" & goto fail)
 rem 2. frame times, solo on the GPU (R293): three sessions, each variant and the cold case in its own process
 set PC_GPU_MODE=solo
+set GOOD=0
 for %%N in (1 2 3) do for %%V in (off strain) do (
-  if not exist "%O%\timing\s%%N" mkdir "%O%\timing\s%%N"
+  mkdir "%O%\timing\s%%N" 2>nul
   set VS_DEATH_STORY=%%V
   call "%TM%" 1800 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1077/capture.gd -- timing "%O%\timing\s%%N" > "%O%\timing\s%%N\log_timing_%%V.txt" 2>&1
-  echo timing s%%N %%V exit !ERRORLEVEL! >> "%RES%"
+  set E=!ERRORLEVEL!
+  echo timing s%%N %%V exit !E! >> "%RES%"
+  if "!E!"=="0" findstr /c:"\"mode\": \"timing\"" "%O%\timing\s%%N\timing_%%V.json" >nul 2>&1 && set /a GOOD+=1
   call "%TM%" 1800 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1077/capture.gd -- cold "%O%\timing\s%%N" > "%O%\timing\s%%N\log_cold_%%V.txt" 2>&1
-  echo cold s%%N %%V exit !ERRORLEVEL! >> "%RES%"
+  set E=!ERRORLEVEL!
+  echo cold s%%N %%V exit !E! >> "%RES%"
+  if "!E!"=="0" findstr /c:"\"outcome\"" "%O%\timing\s%%N\cold_%%V.json" >nul 2>&1 && set /a GOOD+=1
 )
 set VS_DEATH_STORY=
+echo timing results valid !GOOD! of 12 >> "%RES%"
 for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo drive bytes free %%F >> "%RES%"
+if not "!GOOD!"=="12" (set "FAILMSG=only !GOOD! of 12 timing results are valid" & goto fail)
 call :realcheck
-if errorlevel 1 (set "FAILMSG=Ryan's real options changed during the run; see out_pass3\real_profile_*.txt" & goto fail)
+if errorlevel 1 (set "FAILMSG=Ryan's real options changed during the run; see real_profile_*.txt" & goto fail)
 echo real options unchanged >> "%RES%"
+echo PASSED >> "%RES%"
 echo all done %DATE% %TIME% >> "%RES%"
 exit /b 0
 :realcheck
