@@ -1,5 +1,5 @@
-Saved manifest before: af3613d11ba27438ebdad05797a9a4c04148fa2251f61ba528e6e2682004720b
-Saved manifest after: 26e311797c05c2f7faee5ab88eeec582e0557384e24934cb2950eb0b2968a4aa
+Saved manifest before: ed95e016a3054b7b42434b109502bb8736a296cb24303ec5908bbd79656c29c0
+Saved manifest after: 747ffb51f69ff0139a18d75906c44ca4a6c867e340ca85e56f3a3c9fff47d2cc
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
@@ -759,4 +759,4 @@ FAIL file threat_s4.json
   map.2.1,11: "40703d70a3d70a3d" -> "406ebd70a3d70a3d"
 FAIL file threat_s23.json
   map.2.10,11: "407745c28f5c28f6" -> "40745f5c28f5c290"
-FAIL: saved Godot results; 284 battles checked, 188 changed, 2 other files changed, 190 failures; 17.078 s
+FAIL: saved Godot results; 284 battles checked, 188 changed, 2 other files changed, 190 failures; 17.098 s

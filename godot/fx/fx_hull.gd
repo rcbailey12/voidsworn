@@ -244,7 +244,9 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 		src = StandardMaterial3D.new()
 	var base: ShaderMaterial = src if src is ShaderMaterial else _exterior(src)
 	var mat := ShaderMaterial.new()
-	var dmg := _damage_code(base.shader.code)
+	# The fog policy has already marked the painted source by the time this
+	# adapter is drawn. Compile with that mode on the first assignment.
+	var dmg := _damage_code(base.shader.code, src is BaseMaterial3D and src.disable_fog)
 	mat.shader = shared_shader(dmg, "damage " + str(dmg.hash()))
 	for param in _uniforms_of(base.shader):
 		var value = base.get_shader_parameter(param)
@@ -283,9 +285,10 @@ static func _uniforms_of(shader: Shader) -> Array:
 	return _uniform_names[key]
 
 
-static func _damage_code(source: String) -> String:
-	if _dmg_code.has(source):
-		return _dmg_code[source]
+static func _damage_code(source: String, disable_fog := false) -> String:
+	var key := [source, disable_fog]
+	if _dmg_code.has(key):
+		return _dmg_code[key]
 	var code: String = source
 	var cull := RegEx.new()
 	cull.compile("cull_(back|front|disabled)")
@@ -336,7 +339,9 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	EMISSION = max(EMISSION, structure);
 }
 """)
-	_dmg_code[source] = code
+	if disable_fog and not code.contains("fog_disabled"):
+		code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+	_dmg_code[key] = code
 	return code
 
 

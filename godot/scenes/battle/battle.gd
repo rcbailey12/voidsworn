@@ -26,6 +26,8 @@ const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
 const HT := preload("res://render/hull_table.gd")
+const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: faction colours come from fx/faction_looks.json only
+const WEAPON_FX := preload("res://fx/fx_weapons.gd")
 const HUD := preload("res://ui/battle/hud.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const Fx := preload("res://scenes/battle/fx_stub.gd")
@@ -124,6 +126,8 @@ var arcs_on := true
 var floats: Array = []
 var ended := false
 var fired_in_act := {}     # unit id -> weapons fired this activation (volley pace)
+var aim := {}              # issue 1211: the enemy volley playing now, {"a": attacker id, "t": target id}; its target is ringed and named
+const AIM_RING := Color("#ff4433")   # the target ring under an enemy volley (glass_shell ALERT: danger)
 var tips := {}
 var tips_off := false
 var tip_pending := ""
@@ -814,7 +818,7 @@ func _make_view(u: Dictionary) -> void:
 	sv.setup(u, board.hex_world(u["q"], u["r"]), true)
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
-	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
+	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
 	_register_fx_ship(u, sv)
 
 
@@ -879,7 +883,7 @@ func _sync(v: Dictionary) -> void:
 		if not views.has(u["id"]):
 			_make_view(u)
 		var sv = views[u["id"]]
-		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
+		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
 		sv.set_marker(u["side"] == "player")
 		if gfx != null and gfx.has_method("sync_ship"):
 			var su: Dictionary = u.duplicate()
@@ -1259,6 +1263,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				adaptation_heard = true
 				sfx.play("adapt_shift")
 		"round":
+			for d in disp.values():
+				d["regenLock"] = false
 			_log("Round %d." % int(e["round"]), "x")
 			if finale_fight and world != null and world.has_method("finale_for_round"):
 				world.finale_for_round(int(e["round"]))   # R78 Q18: one more sector catches the new sun
@@ -1318,7 +1324,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 		"blink":
 			var sv = views.get(e["unit"])
 			if sv != null:
-				var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "ithar")), HT.FAC3D["ithar"])["eng"]
+				var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "ithar")))
 				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 				sfx.play("phase", {"pos": sv.visual_position()})
 				await wait(250.0)
@@ -1385,7 +1391,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			var A = TBL.get("ABILITIES", {}).get(ab, {})
 			if ab != "launch":
 				_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
-			var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "hegemony")), HT.FAC3D["hegemony"])["eng"]
+			var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "hegemony")))
 			if gfx != null and gfx.has_method("ability"):
 				gfx.ability(str(e["unit"]), ab)
 			else:
@@ -1839,19 +1845,29 @@ func _fx_wait(done: float, impacts: Array, sp: float, kills := false, cap := INF
 
 func _wfam(u: Dictionary, w: Dictionary) -> String:
 	var k := str(w["kind"])
+	var wid := str(w.get("weapon_id", ""))
+	var faction := str(u.get("fac", ""))
 	if u.get("squadron", false):
 		return "sq"
+	match WEAPON_FX.look_of(k, wid, faction):
+		"macro":
+			if faction == "voidsworn":
+				return "shell"
+		"junk":
+			return "tracer"
+		"nlance":
+			return "lance"
 	if k == "flak":
 		return "flak"
 	if k == "torp":
 		return "torp"
 	if k == "lance":
-		return "ion" if str(w.get("weapon_id", "")) == "ion" else "lance"
+		return "ion" if wid == "ion" else "lance"
 	if k == "gauss":
 		return "rail"
 	if k == "bio":
-		return "spine" if str(w.get("weapon_id", "")) == "bioplasma" else "glob"
-	return {"voidsworn": "las", "hegemony": "plasma", "corsair": "tracer", "chorus": "spine", "ithar": "needle", "deathless": "rail"}.get(str(u.get("fac", "")), "shell")
+		return "spine" if wid == "bioplasma" else "glob"
+	return {"voidsworn": "las", "hegemony": "plasma", "corsair": "tracer", "chorus": "spine", "ithar": "needle", "deathless": "rail"}.get(faction, "shell")
 
 
 # fx3d.js cineWants and cineFrame: a side-on shot of the big moments (lances, torpedoes and novas on bosses or a nearly
@@ -1919,7 +1935,6 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		await wait(320.0)
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
-	var P: Dictionary = HT.FAC3D.get(fac, HT.FAC3D["hegemony"])
 	var fam := _wfam(u, e)
 	var shots: Array = e["shots"]
 	var n := shots.size()
@@ -1938,17 +1953,23 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			hits.append(g)
 		elif g["t"] == "system":
 			sys_txt = str(g["text"])
-	var col: Color = P["beam"] if fam in ["lance", "ion"] else P["bolt"]
-	if fam == "ion":
-		col = Color(0.45, 0.75, 1.0)
+	var col: Color = FLOOK.weapon(fac)
 	var tsv = views.get(t_id)
 	var L: float = tsv.L if tsv != null else 10.0
-	var shield_col: Color = HT.FAC3D.get(str(VU.get(t_id, {}).get("fac", "hegemony")), P)["shield"]
+	var shield_col: Color = FLOOK.shield(str(VU.get(t_id, {}).get("fac", "hegemony")))
 	var total := 0.0
 	var torp_result_scheduled := false
 	var hi := 0
 	# the browser's own length for this volley (fx3d.js timing), the cap for a paced wait
 	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
+	# issue 1211: what each landing hit does: its number (torpedoes keep their one result line), and the shield break with
+	# "Shields down" on the hit that empties the shield (the last hit the shield absorbed), not after the volley
+	var land := {"numbers": not e.has("torpedo"), "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
+		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false}
+	for g in grp:
+		if g["t"] == "shield_down":
+			land["downs"].append(g)
+	_aim_on(a_id, t_id, land)
 	if e.has("torpedo") and e.get("from") != null:
 		from = board.hex_world(int(e["from"]["q"]), int(e["from"]["r"]), 1.5)
 		_torp_clear(str(e["torpedo"]))
@@ -1960,13 +1981,14 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		var imp: Array = r.get("impacts", [])
 		var result_at := float(imp[-1]) if not imp.is_empty() else 1.0
 		var result_pos: Vector3 = r.get("at", to)
-		get_tree().create_timer(maxf(result_at, 0.001)).timeout.connect(func() -> void: _torpedo_result(hits, result_pos))
+		_at_fx(result_at, func() -> void: _torpedo_result(hits, result_pos))
 		torp_result_scheduled = true
 		for k in hits.size():
 			var at: float = float(imp[mini(k, imp.size() - 1)]) if not imp.is_empty() else 0.8
 			var h: Dictionary = hits[k]
-			get_tree().create_timer(maxf(at, 0.001)).timeout.connect(func() -> void:
-				_apply_hit(h)
+			var kk := k
+			_at_fx(at, func() -> void:
+				_land_hit(t_id, h, kk, land)
 				sfx.boom(0.8, _pos(t_id)))
 		# Every side sees the flight and its result before the next action, regardless of round budget.
 		total = maxf(float(r.get("done", 1.2)), result_at + 0.35) / maxf(sp, 0.01)
@@ -1975,23 +1997,33 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
 		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+		# issue 1211: lance and torpedo cues on the effect's own fire times, on the effect clock (they played at 0 before)
+		var fires: Array = r.get("fires", [])
+		land["fires"] = fires   # (the effect's own fire times, one per shot; the timing check reads them)
+		var fire0 := float(fires.min()) if not fires.is_empty() else -1.0
 		if fam in ["lance", "ion"]:
-			sfx.lance(fam == "ion", fac, from)
+			if str(e.get("weapon_id", "")) == "nlance" and not fires.is_empty():
+				sfx.lance(false, fac, from, -1.0, _at_fx, fires)
+			elif str(e.get("weapon_id", "")) != "nlance":
+				sfx.lance(fam == "ion", fac, from, fire0, _at_fx)
 		elif fam == "torp":
-			sfx.torp(fac, from)
+			sfx.torp(fac, from, fire0, _at_fx)
 		else:
 			# issue 506: one gun cue per shot, on the fire times the fx layer used for its muzzle effects
 			var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
-			var fires: Array = r.get("fires", [])
 			for i in mini(fires.size(), n):
 				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]))
 		var imp: Array = r.get("impacts", [])
 		var tfac := str(VU.get(t_id, {}).get("fac", ""))
+		# issue 1211: the fx gives one arrival per SHOT (misses too); each hit lands on its own shot's arrival, on the
+		# effect clock (hit pause slows it), with its sound, its HP drop, its number and any shield break it causes
+		var arr := hit_arrivals(shots, imp, hits.size())
 		for k in hits.size():
-			var at: float = float(imp[k]) if k < imp.size() else 0.3
+			var at: float = float(arr[k])
 			var h: Dictionary = hits[k]
-			get_tree().create_timer(maxf(at, 0.001)).timeout.connect(func() -> void:
-				_apply_hit(h)
+			var kk := k
+			_at_fx(at, func() -> void:
+				_land_hit(t_id, h, kk, land)
 				if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 					sfx.shield(_pos(t_id))
 				else:
@@ -2006,7 +2038,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var end := to if hit else to + (to - from).normalized() * 30.0 + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6))
 			fx.beam(from, end, col, 0.22 * sp, dl, 1.0 if fam == "lance" else 1.3)
 			if hit and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam)
+				_schedule_impact(t_id, hits[hi], dl + 0.05 * sp, L, shield_col, fam, hi, land)
 				hi += 1
 	elif fam == "torp":
 		sfx.torp(fac, from)
@@ -2015,7 +2047,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			var dl := (0.32 + i * 0.12) * sp
 			fx.bolt(from, to, col, 0.8 * sp, dl, 2.2, not shots[i])
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam)
+				_schedule_impact(t_id, hits[hi], dl + 0.8 * sp, L, shield_col, fam, hi, land)
 				hi += 1
 	else:
 		total = n * 0.07 + 0.49
@@ -2026,7 +2058,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			fx.bolt(from + off, to, col, 0.24 * sp, dl, 1.1 if fam != "rail" else 1.5, not shots[i])
 			sfx.gun(str(e["kind"]), fam == "sq", style, from, dl)
 			if shots[i] and hi < hits.size():
-				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam)
+				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam, hi, land)
 				hi += 1
 	if shots_dir != "" and fire_shots < 4 and bot:
 		fire_shots += 1
@@ -2060,35 +2092,136 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			parts.append("%d hull" % int(hull_sum))
 		if sh_sum <= 0 and hull_sum <= 0:
 			parts.append("no damage")
-		if not e.has("torpedo"):
-			_float_hit(t_id, sh_sum, hull_sum, crits > 0)
+		# (issue 1211: the numbers rose on each hit as it landed, _land_hit)
 	if crits > 0:
 		parts.append("%d criticals" % crits if crits > 1 else "critical")
 	_log("%s fires %s at %s: %s.%s" % [_name(a_id), str(e["name"]), _name(t_id), ", ".join(parts), " " + sys_txt + "!" if sys_txt != "" else ""], _who(a_id))
+	if hits.is_empty():
+		_shield_downs(land)   # (a break with no hit to carry it: as before, at the end)
 	for g in grp:
-		if g["t"] == "shield_down":
-			var d: Dictionary = disp.get(g["unit"], {})
-			if d.has("sh"):
-				d["sh"][int(g["quad"])] = 0
-			_float(g["unit"], "Shields down", Color("#9fe2ff"), -40)
-			sfx.shield(_pos(g["unit"]), true)
-			if gfx != null and gfx.has_method("shield_break"):
-				gfx.shield_break(str(g["unit"]), int(g["quad"]))
-			elif tsv != null:
-				fx.shield(tsv, L, int(g["quad"]), shield_col, 0.0, true)
-		elif g["t"] == "burning":
+		if g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
 	await wait(80.0)
 	if cined:
 		await wait(900.0)
 		_cine_release()
+	# the marker stays until the volley is over and its last hit has landed (a paced volley lets go before its tail)
+	land["ended"] = true
+	if int(land["left"]) <= 0:
+		_aim_off(land)
+
+
+# Issue 1211: the arrival time of each hit. The fx returns one time per shot, misses included; the k-th hit rides the
+# k-th shot that hit. A hit with no shot of its own (more hits than true shots) takes the last arrival, or 0.3 s.
+static func hit_arrivals(shots: Array, impacts: Array, n_hits: int) -> Array:
+	var out: Array = []
+	for i in shots.size():
+		if bool(shots[i]) and out.size() < n_hits:
+			out.append(float(impacts[i]) if i < impacts.size() else 0.3)
+	while out.size() < n_hits:
+		out.append(float(out[-1]) if not out.is_empty() else 0.3)
+	return out
+
+
+# Issue 1211: the hit that empties the shield. The rules drain one pool (R246) hit by hit, so once it is empty no later
+# hit is absorbed: the last hit with shield damage is the one that broke it (the last hit when none was absorbed).
+static func shield_break_hit(hits: Array) -> int:
+	var k := hits.size() - 1
+	for i in hits.size():
+		if float(hits[i]["shield"]) > 0:
+			k = i
+	return k
+
+
+# Issue 1211: run f after `at` seconds of the effect clock (the clock the impacts were planned on, which hit pause and
+# the kill beat slow); the scene timer when the G4 effects are not in the build.
+func _at_fx(at: float, f: Callable) -> void:
+	if gfx != null and gfx.has_method("later"):
+		gfx.later(float(gfx.now) + maxf(at, 0.0), f)
+	else:
+		get_tree().create_timer(maxf(at, 0.001)).timeout.connect(f)
+
+
+# Issue 1211: one hit lands. Its HP and shield drop, its number rises (one running total per volley for shield, one for
+# hull, so a broadside reads as a count, not a pile), and the hit that empties the shield breaks it there and then.
+func _land_hit(t_id, h: Dictionary, k: int, land: Dictionary) -> void:
+	_apply_hit(h)
+	land["left"] = int(land.get("left", 0)) - 1
+	if bool(land.get("ended", false)) and int(land["left"]) <= 0:
+		_aim_off(land)
+	if bool(land["numbers"]) and views.has(t_id):
+		land["sh"] = float(land["sh"]) + float(h["shield"])
+		land["hull"] = float(land["hull"]) + float(h["hull"])
+		if float(h["shield"]) > 0:
+			land["sh_f"] = _float_tally(land.get("sh_f"), t_id, "−%d shield" % int(land["sh"]), Color("#92b8e8"), -18)
+		if float(h["hull"]) > 0:
+			if bool(h["crit"]):
+				land["crit"] = true
+			land["hull_f"] = _float_tally(land.get("hull_f"), t_id, "−%d hull" % int(land["hull"]), Color("#ffd27a") if bool(land["crit"]) else Color("#ffad3b"), 0)
+		if bool(h["crit"]) and not bool(land.get("crit_f", false)):
+			land["crit_f"] = true
+			_float(t_id, "Critical", Color("#ffb23e"), 18)
+	if k == int(land["break_k"]):
+		_shield_downs(land)
+
+
+# A float that counts: the first hit makes it, later hits rewrite it and keep it up a little longer.
+func _float_tally(f, id, text: String, col: Color, dy: float):
+	if f is Dictionary and is_instance_valid((f as Dictionary)["lbl"]) and not ((f as Dictionary)["lbl"] as Node).is_queued_for_deletion():
+		var lbl: Label = f["lbl"]
+		lbl.text = text
+		lbl.add_theme_color_override("font_color", hud.col_of(col))
+		lbl.reset_size()
+		f["end"] = maxf(float(f.get("end", 1.6)), float(f["t"]) + 1.2)
+		return f
+	_float(id, text, col, dy)
+	return floats[-1] if not floats.is_empty() else null
+
+
+# The volley's shield breaks (each shield_down event once): the shield shatters, "Shields down" and the break sound.
+func _shield_downs(land: Dictionary) -> void:
+	if bool(land.get("downs_played", false)):
+		return
+	land["downs_played"] = true
+	for g in land["downs"]:
+		var d: Dictionary = disp.get(g["unit"], {})
+		if d.has("sh"):
+			d["sh"][int(g["quad"])] = 0
+		_float(g["unit"], "Shields down", Color("#9fe2ff"), -40)
+		sfx.shield(_pos(g["unit"]), true)
+		if gfx != null and gfx.has_method("shield_break"):
+			gfx.shield_break(str(g["unit"]), int(g["quad"]))
+		elif land["tsv"] != null:
+			fx.shield(land["tsv"], float(land["L"]), int(g["quad"]), land["shield_col"], 0.0, true)
+
+
+# Issue 1211: who is being shot. For every enemy volley the target gets the danger ring (the shared ship ring) and keeps
+# its name, also through a cut-in; the attacker keeps its purple activation ring. Cleared when the volley ends.
+func _aim_on(a_id, t_id, land: Dictionary) -> void:
+	if str(VU.get(a_id, {}).get("side", "")) != "enemy" or bot or showcase or str(a_id) == str(t_id):
+		return
+	if not aim.is_empty():
+		_aim_off(aim["land"])   # the last volley's tail is still landing: it lets go now
+	aim = {"a": str(a_id), "t": str(t_id), "land": land}
+	if views.has(t_id):
+		views[t_id].set_selected(true, AIM_RING)
+
+
+# Only the volley that set the marker clears it (an earlier volley's late hit on the same ship leaves it alone).
+func _aim_off(land: Dictionary) -> void:
+	if aim.is_empty() or not is_same(aim.get("land"), land):
+		return
+	var t_id = aim["t"]
+	aim = {}
+	if views.has(t_id):
+		views[t_id].set_selected(str(t_id) == sel and api != null and api.phase == "player", EMBER_3D)
 
 
 var torp_marks := {}      # salvo id -> placeholder marker (when G4's lanes are not in the build)
 
 
 func _torp_marker(id: String, a: Vector3, aim: Vector3, fac: String) -> void:
-	var col: Color = HT.FAC3D.get(fac, HT.FAC3D["hegemony"])["bolt"]
+	var col: Color = FLOOK.weapon(fac)
 	var root := Node3D.new()
 	add_child(root)
 	var dir := (aim - a)
@@ -2121,10 +2254,13 @@ func _torp_clear(id: String) -> void:
 		torp_marks.erase(id)
 
 
-func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String) -> void:
+func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String, k := -1, land := {}) -> void:
 	var tfac := str(VU.get(t_id, {}).get("fac", ""))
 	get_tree().create_timer(maxf(delay, 0.001)).timeout.connect(func() -> void:
-		_apply_hit(h)
+		if land.is_empty():
+			_apply_hit(h)
+		else:
+			_land_hit(t_id, h, k, land)
 		var sv = views.get(t_id)
 		if sv == null:
 			return
@@ -2146,6 +2282,8 @@ func _apply_hit(h: Dictionary) -> void:
 	if t_id == null or not disp.has(t_id):
 		return
 	var d: Dictionary = disp[t_id]
+	if bool(h.get("regenLock", false)):
+		d["regenLock"] = true
 	d["hp"] = maxf(0.0, float(d["hp"]) - float(h["hull"]))
 	var q := int(h.get("quad", 0))
 	if d["sh"] is Array and q < (d["sh"] as Array).size():
@@ -4234,7 +4372,10 @@ func _refresh_ui() -> void:
 			("  ·  [color=#e8eee0]%s[/color] is up" % _name(up)) if up != "" else "", maxi(0, pend - (1 if up != "" and not VU.get(up, {}).get("active", false) else 0))])
 	for id in views:
 		var sv = views[id]
-		sv.set_selected(id == sel, EMBER_3D)   # the ship that is up: the Hollow Sun's ember (issue 271, R191 retires lime)
+		# the ship that is up: the Hollow Sun's ember (issue 271, R191 retires lime); an enemy volley's target keeps its
+		# danger ring through a refresh (issue 1211)
+		var aimed := not aim.is_empty() and str(id) == str(aim["t"])
+		sv.set_selected(id == sel or aimed, AIM_RING if aimed else EMBER_3D)
 	_overlay()
 	_tutorial()
 	# F1: a click changes what the hovered thing means (targeted, planned): refresh its tip without waiting for the mouse
@@ -4817,7 +4958,9 @@ func _process(dt: float) -> void:
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
-		if u.is_empty() or sv.dead or not sv.visible or not cine_saved.is_empty():
+		# a cut-in hides the names, except the attacker and the target of the enemy volley playing (issue 1211)
+		var aimed := not aim.is_empty() and (str(id) == str(aim["t"]) or str(id) == str(aim["a"]))
+		if u.is_empty() or sv.dead or not sv.visible or (not cine_saved.is_empty() and not aimed):
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
 		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
@@ -4829,7 +4972,8 @@ func _process(dt: float) -> void:
 		for x in d["sh"]:
 			shs += float(x)
 		var is_up: bool = str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player"
-		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target}
+		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target or aimed,
+			"regenLock": bool(d.get("regenLock", false))}
 		if _tgt_plate.has(str(id)):
 			px["odds"] = _tgt_plate[str(id)]["odds"]
 			px["ghost"] = _tgt_plate[str(id)]["ghost"]
@@ -4858,6 +5002,8 @@ func _process(dt: float) -> void:
 		prio[sel] = 3
 	if target != "":
 		prio[target] = 3
+	if not aim.is_empty():
+		prio[str(aim["t"])] = 3
 	hud.declutter_plates(prio)
 	for i in range(floats.size() - 1, -1, -1):
 		var f: Dictionary = floats[i]
@@ -4866,8 +5012,9 @@ func _process(dt: float) -> void:
 		var wp: Vector3 = (f.pos as Vector3) + Vector3(0, 4.0 + f.t * 6.0, 0)
 		lbl.visible = not cam.is_position_behind(wp)
 		lbl.position = cam.unproject_position(wp) - lbl.size * 0.5 + Vector2(0, f.dy)
-		lbl.modulate.a = clampf(1.6 - f.t, 0.0, 1.0)
-		if f.t > 1.6:
+		var f_end := float(f.get("end", 1.6))
+		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0)
+		if f.t > f_end:
 			lbl.queue_free()
 			floats.remove_at(i)
 	if bot and not busy and not warming and not _threat_busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:

@@ -1228,7 +1228,7 @@ const KILL_CAUSES={cut:{w:'cut in two by a lance'},big:{w:'blown apart',scrap:1}
 function killCauseOf(w,t){ if(!w) return 'blast'; const k=w.k, tr=w.trait;
   if(tr==='gauss'||k==='gauss'||k==='doom') return 'flay';
   if(tr==='acid'||tr==='spines'||k==='bioplasma'||k==='tendril'||k==='sporeb') return 'melt';
-  if(k==='lance'||k==='beam'||tr==='plasma'&&/lance/i.test(w.n||'')) return 'cut';
+  if(k==='lance'||k==='beam'||tr==='plasma'&&(w.id==='turbo'||w.id==='hturbo')) return 'cut'; // Hegemony plasma batteries keep the cut death by weapon id, not name (issue 1213)
   if(k==='torp'||k==='htorp'||k==='startorp'||k==='bombs') return 'big';
   if((k==='battery'||k==='hbattery'||k==='turret'||k==='autocannon'||k==='scatter')&&(String(t&&t.id).split('').reduce((h,c)=>h*31+c.charCodeAt(0)|0,B?B.round||0:0)>>>0)%10<3) return 'dark'; // no rules RNG for looks
   return 'blast'; }
