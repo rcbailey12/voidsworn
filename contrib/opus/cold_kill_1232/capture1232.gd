@@ -115,6 +115,8 @@ func _kill(mode: String) -> Dictionary:
 	var kill_call_ms := (Time.get_ticks_usec() - t_kill) / 1000.0
 	var t_fx: float = bench.fx.now
 	var seen := {"frame": -1, "t": -1.0}
+	# 9 s of frames paced to real time: past the fix's 5 s real-time cap on the wait for a late cut (fx_death.cold_cut_wall)
+	var t_watch := Time.get_ticks_usec()
 	var kill := await _window(60 * 9, func(i: int) -> void:
 		if int(seen["frame"]) < 0 and s.has_meta("death_hidden"):
 			seen["frame"] = i
@@ -126,15 +128,22 @@ func _kill(mode: String) -> Dictionary:
 		for nd in wr.get("nodes", []): if is_instance_valid(nd): pieces += 1
 		for nd in wr.get("frags", []): if is_instance_valid(nd): frags += 1
 	var outcome := "unresolved" if int(seen["frame"]) < 0 else ("fractured" if pieces > 0 else "fallback (no pieces)")
-	var res := {"path": mode, "load_ms": load_ms, "warm_arrival": bench.fx.has_method("warm_arrival"),
+	var watched_real_s := (Time.get_ticks_usec() - t_watch) / 1e6
+	var res := {"path": mode, "watched_real_s": watched_real_s, "cap_real_s": _cap(), "load_ms": load_ms, "warm_arrival": bench.fx.has_method("warm_arrival"),
 		"arrive": arrive, "pipelines_compiled_arrive": pipes_arrive, "cut_ready_at_kill": cut_ready, "kill_call_ms": kill_call_ms,
 		"kill": kill, "pipelines_compiled_kill": _pipes() - pipes0 - pipes_arrive, "hidden_after_s": float(seen["t"]),
 		"held_for_cut": s.has_meta("death_cut_wait"), "hull_pieces": pieces, "fragments": frags, "outcome": outcome,
 		"late_shaders": Bench.HULL.late_shader_names()}
-	print("CAPTURE1232 %s outcome=%s pieces=%d frags=%d hidden_after=%.2fs held_for_cut=%s cut_ready_at_kill=%s arrive_worst=%.1f kill_call=%.1f kill_worst=%.1f kill_p95=%.1f gpu_worst=%.2f pipes_arrive=%d pipes_kill=%d late=%d" % [
-		mode, outcome, pieces, frags, float(seen["t"]), str(res["held_for_cut"]), str(cut_ready), arrive.wall.worst, kill_call_ms,
+	print("CAPTURE1232 %s watched=%.1fs outcome=%s pieces=%d frags=%d hidden_after=%.2fs held_for_cut=%s cut_ready_at_kill=%s arrive_worst=%.1f kill_call=%.1f kill_worst=%.1f kill_p95=%.1f gpu_worst=%.2f pipes_arrive=%d pipes_kill=%d late=%d" % [
+		mode, watched_real_s, outcome, pieces, frags, float(seen["t"]), str(res["held_for_cut"]), str(cut_ready), arrive.wall.worst, kill_call_ms,
 		kill.wall.worst, kill.wall.p95, kill.gpu.worst, pipes_arrive, res["pipelines_compiled_kill"], res["late_shaders"].size()])
 	return res
+
+
+# the fix's real-time cap on the wait for a late cut; -1 on a commit without it (the before run)
+func _cap() -> float:
+	var v = (Bench.FX.DEATH as Script).get("cold_cut_wall")
+	return float(v) if v != null else -1.0
 
 
 func _pipes() -> int:
