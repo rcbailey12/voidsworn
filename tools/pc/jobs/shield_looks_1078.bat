@@ -89,15 +89,37 @@ echo cost pass done %date% %time% >> "%ST%"
 rem the same cost pass on main (today's look only, the probe copied in), so the numbers compare against main itself
 copy /y "%R%\godot\fx\test\shield_fail_probe.gd" "%HOME1078%\probe_copy.gd" > nul
 git -C "%R%" checkout -f --detach origin/main >> "%HOME1078%\git.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: cannot check out origin/main, no main cost numbers >> "%ST%"
+  goto done
+)
+set "MSHA="
+set "WANT="
 for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "MSHA=%%H"
+for /f %%H in ('git -C "%R%" rev-parse --short^=8 origin/main') do set "WANT=%%H"
+if not "%MSHA%"=="%WANT%" (
+  echo FAILED: checkout is %MSHA%, origin/main is %WANT%, no main cost numbers >> "%ST%"
+  goto done
+)
 copy /y "%HOME1078%\probe_copy.gd" "%R%\godot\fx\test\shield_fail_probe.gd" > nul
-set "PROBE_OUT=%OUT%\cost_main_%MSHA%"
+rem a fresh folder per run, so an older run's json can never stand in for this one
+set "MRUN=cost_main_%MSHA%_%RANDOM%%RANDOM%"
+set "PROBE_OUT=%OUT%\%MRUN%"
 set "PROBE_LOOKS=today"
 set "PC_GPU_MODE=solo"
 call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\cost_main_log.txt" 2>&1
 set "PC_GPU_MODE="
 set "PROBE_LOOKS="
-echo main cost pass %MSHA% done %date% %time% >> "%ST%"
+findstr /c:"SHIELD1078_DONE" "%OUT%\cost_main_log.txt" > nul
+if errorlevel 1 (
+  echo FAILED: the main cost pass on %MSHA% did not finish, see cost_main_log.txt; no main cost numbers >> "%ST%"
+  goto done
+)
+if not exist "%OUT%\%MRUN%\shield1078.json" (
+  echo FAILED: the main cost pass on %MSHA% wrote no json; no main cost numbers >> "%ST%"
+  goto done
+)
+echo main cost pass %MSHA% done in %MRUN% %date% %time% >> "%ST%"
 
 :done
 git -C "%R%" checkout -f --detach %SHA% > nul 2>&1
