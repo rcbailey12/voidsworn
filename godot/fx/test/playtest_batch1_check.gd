@@ -58,7 +58,7 @@ func _run() -> void:
 	flush(s)
 	# issue 1235 (F1.1): a first torpedo on a light-damage section leaves a readable crater (it used to shrink to 12%),
 	# still short of the crater it leaves on a broken section
-	check(s._marks[0].R >= s.hull.L * 0.04 * 1.5 * BREACH.MARK_FLOOR - 1e-4 and s._marks[0].R < s.hull.L * 0.05, "light section damage keeps a readable but smaller torpedo crater")
+	check(s._marks[0].R >= s.hull.L * 0.02 and s._marks[0].R <= s.hull.L * BREACH.CRATER_MAX_L + 1e-4, "light section damage keeps a readable torpedo crater, clearly under the stage 4 hole")
 	var small_radius: float = s._marks[0].R
 	s.sync(fx, state(15.0))
 	flush(s)

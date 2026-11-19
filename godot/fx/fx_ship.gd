@@ -1150,8 +1150,62 @@ func _anchor(i: int, kind: String) -> Dictionary:
 						break
 		if h.is_empty():
 			return {}
+		if kind in ["a", "b"]:
+			h = _off_turrets(h, hull.L * BREACH.STAGE4_HOLE_L)
 		_anchors[key] = {"p": h["p"], "n": h["n"], "t": {}}
 	return _anchors[key]
+
+
+# Issue 1235 (Board review of PR 1245): turret meshes take no baked damage (they turn), so a stage 4 hole opened under a
+# turret's foot would leave the whole turret standing over the hole. A breach anchor inside a turret's footprint (its
+# meshes' box seen from above, at rest, plus the hole's radius) moves to the footprint's edge and is cast back onto the
+# plating there; if nothing is hit there it stays where it was.
+func _off_turrets(h: Dictionary, R: float) -> Dictionary:
+	for f in turret_feet():
+		var c: Vector3 = f[0]
+		var rad: float = float(f[1]) + R * 1.15
+		var d := Vector3(h["p"].x - c.x, 0.0, h["p"].z - c.z)
+		if d.length() >= rad:
+			continue
+		if d.length() < 1e-3:
+			d = Vector3(1, 0, 0)
+		var q: Vector3 = Vector3(c.x, h["p"].y, c.z) + d.normalized() * rad
+		var nn: Vector3 = h["n"]
+		var hit: Dictionary = hull.ray(q + nn * hull.L, -nn)
+		if not hit.is_empty():
+			h = {"p": hit["p"], "n": hit["n"]}
+	return h
+
+
+var _feet: Array = []
+var _feet_done := false
+
+
+# Each turret's footprint at rest in the ship frame: [centre, radius], from its meshes' boxes.
+func turret_feet() -> Array:
+	if _feet_done:
+		return _feet
+	_feet_done = true
+	if hull == null or not ("turrets" in hull) or not is_instance_valid(root):
+		return _feet
+	var inv: Transform3D = root.global_transform.affine_inverse()
+	for t in hull.turrets:
+		var node = t.get("node")
+		if not is_instance_valid(node):
+			continue
+		var box := AABB()
+		var any := false
+		for m in (node as Node).find_children("*", "MeshInstance3D", true, false):
+			var mi := m as MeshInstance3D
+			if mi.mesh == null:
+				continue
+			var b: AABB = (inv * mi.global_transform) * mi.mesh.get_aabb()
+			box = b if not any else box.merge(b)
+			any = true
+		if any:
+			var cen := box.get_center()
+			_feet.append([cen, 0.5 * Vector2(box.size.x, box.size.z).length()])
+	return _feet
 
 
 func _t0(a: Dictionary, st: int, fx) -> float:

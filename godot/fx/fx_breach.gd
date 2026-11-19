@@ -68,6 +68,9 @@ const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_
 const MARK_FLOOR := 0.7
 # Issue 1235 (F1.2): a stage 4 breach hole's radius as a share of the ship's length (was 0.032: 5 to 16 px at camera 170)
 const STAGE4_HOLE_L := 0.048
+# Issue 1235 (Board review): a weapon crater on a section short of stage 4 stays clearly smaller than the stage 4 hole,
+# so the first hit and the worst state never read as the same size (a weight 4 torpedo on a fresh section: 0.029)
+const CRATER_MAX_L := STAGE4_HOLE_L * 0.6
 
 
 static func mark_scale(section_damage: float) -> float:
@@ -1886,6 +1889,10 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			out.append(cluster(p, n, L * 0.012 * g, 5, L * 0.003, 0.0, seed_v, S_HATCH))
 	for j in out.size():
 		var e: Ent = out[j]
+		# below stage 4 (section damage under 0.8) a crater never reaches the stage 4 hole's size
+		if e.kind == K_CRATER and section_damage < 0.8 and e.R > hull.L * CRATER_MAX_L:
+			var k: float = hull.L * CRATER_MAX_L / e.R
+			e.R *= k; e.depth *= k; e.ov *= k; e.inf2 *= k * k; e.tess *= k; e.treach *= k
 		e.wound_kind = {"chorus": 1, "ithar": 2, "deathless": 3}.get(faction, 0)
 		if faction == "chorus" and e.kind == K_HOLE:
 			e.bend = 0.35; e.w = e.R * 0.22; e.buckle = 0.035

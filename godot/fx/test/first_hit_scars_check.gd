@@ -1,12 +1,14 @@
 extends SceneTree
 const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 1235 (Neon's damage audit, top fix 1): a ship looks hit from the first hit, on box stand-ins, no ship files.
-# 1. a first torpedo on a healthy section leaves a mark at least BREACH.MARK_FLOOR of its full size (F1.1)
+# 1. a first torpedo on a healthy section leaves a mark at least BREACH.MARK_FLOOR of its full size (F1.1), capped at
+#    BREACH.CRATER_MAX_L so it stays clearly under the stage 4 hole
 # 2. the per-section cap keeps the heavy and the newest marks, not the oldest (F1.3)
 # 3. a bomber run leaves a mark (F1.4)
 # 4. a turret's turning mesh is never gathered into the static damage rebuild (F3.4)
 # 5. only the meshes a damage entry reaches lose their automatic LOD (F1.5)
 # 6. the stage 4 hole is BREACH.STAGE4_HOLE_L of the ship's length (F1.2)
+# 7. a breach anchor under a turret's foot moves off it, so no whole turret stands over a stage 4 hole
 const FX := preload("res://fx/fx.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 var failures := 0
@@ -97,8 +99,11 @@ func _run() -> void:
 		flush(s)
 		var fresh: float = s._marks[0].R
 		var full: Array = BREACH.marks_for(s.hull, "torp", 4, Vector3(0, 2.5, 0), Vector3.UP, Vector3.DOWN, 1.0, faction, 1.0, 1.0)
-		check(fresh >= (full[0] as BREACH.Ent).R * BREACH.MARK_FLOOR - 1e-4,
-			"%s: first torpedo on a healthy section is at least %d%% of its full size (%.3f of %.3f)" % [faction, int(BREACH.MARK_FLOOR * 100), fresh, (full[0] as BREACH.Ent).R])
+		var want: float = minf((full[0] as BREACH.Ent).R * BREACH.MARK_FLOOR, s.hull.L * BREACH.CRATER_MAX_L)
+		check(fresh >= want - 1e-4 and fresh >= s.hull.L * 0.04 * 1.5 * 0.12 * 3.0,
+			"%s: first torpedo on a healthy section reads (%.3f, at least %.3f and 3x the old 12%% mark)" % [faction, fresh, want])
+		check(fresh <= s.hull.L * BREACH.CRATER_MAX_L + 1e-4 and fresh < s.hull.L * BREACH.STAGE4_HOLE_L * 0.65,
+			"%s: the first-hit crater stays clearly under the stage 4 hole (%.3f L against %.3f L)" % [faction, fresh / s.hull.L, BREACH.STAGE4_HOLE_L])
 		check(s._marks[0].halo >= float(BREACH.HALO_MIN[BREACH.S_BLAST]) - 1e-4, "%s: the first torpedo keeps its full battle-distance halo" % faction)
 		# the sync right after the volley (a 10% section loss) does not regrade and rebuild the mark again
 		var before = s._marks[0]
@@ -163,6 +168,25 @@ func _run() -> void:
 	var tail: MeshInstance3D = row2[2]
 	check(hm.lod_bias >= 128.0, "the damaged mesh draws its full detail")
 	check(tail.lod_bias < 2.0, "a mesh no damage reaches keeps its automatic LOD (%.1f)" % tail.lod_bias)
+
+	# 7. a breach under a turret's foot moves to the footprint's edge, onto the plating
+	var feet: Array = c.turret_feet()
+	check(feet.size() == 1, "the turret's footprint is measured (%d)" % feet.size())
+	if feet.size() == 1:
+		var fc: Vector3 = feet[0][0]
+		var fr: float = feet[0][1]
+		var Rh: float = c.hull.L * BREACH.STAGE4_HOLE_L
+		var moved: Dictionary = c._off_turrets({"p": Vector3(fc.x, 2.5, fc.z), "n": Vector3.UP}, Rh)
+		var dxz := Vector2(moved["p"].x - fc.x, moved["p"].z - fc.z).length()
+		check(dxz >= fr + Rh - 1e-3, "a hole at a turret's foot moves clear of the turret (%.2f from its centre, foot %.2f + hole %.2f)" % [dxz, fr, Rh])
+		check(absf(moved["p"].y - 2.5) < 0.05 and (moved["n"] as Vector3).y > 0.9, "the moved hole sits on the plating")
+		var free: Dictionary = c._off_turrets({"p": Vector3(-8, 2.5, 0), "n": Vector3.UP}, Rh)
+		check((free["p"] as Vector3).is_equal_approx(Vector3(-8, 2.5, 0)), "a hole away from every turret stays put")
+		c._anchors.erase("a2")
+		var a2: Dictionary = c._anchor(2, "a")
+		if not a2.is_empty():
+			var d2 := Vector2(a2["p"].x - fc.x, a2["p"].z - fc.z).length()
+			check(d2 >= fr + Rh - 1e-3, "a sampled stage 4 anchor in the turret's section is clear of the turret (%.2f)" % d2)
 
 	print("first_hit_scars_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)
