@@ -138,7 +138,7 @@ function buildChecks() {
   // Issue 975 timed fx_death_spawn_tests under 5 s with the real hull.
   // Re-time when a row's cost changes. Gate rows always run.
   const FAST_AUTO = new Set([
-    'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
+    'auto_pr_body_tests', 'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
     'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
     'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
     'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
@@ -152,8 +152,8 @@ function buildChecks() {
   ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
   // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
-  // and report_paths_tests.js (#953: both runner commit messages turn checkout paths into GitHub links and home paths into
-  // %USERPROFILE%\...). The glob below runs each one once; a second add() line would run it twice.
+  // and the report_paths_tests.js and check_em_dashes_tests.js publication and punctuation fixtures.
+  // The glob below runs each one once; a second add() line would run it twice.
   fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f, [], 'normal', 300, false, FAST_AUTO.has(path.basename(f, '.js'))));
   add(OPUS + 'progression_telemetry_test.js', [], 'normal', 300, false, true); // #27 step 11: per run XP by line and the F1 play log report
   add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick
@@ -162,7 +162,10 @@ function buildChecks() {
   add(OPUS + 'tree_last_rows_test.js', [], 'normal', 300, false, true); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
   add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
   add('contrib/deepseek/map_pace_1117/smoke_safety_test.js', [], 'normal', 300, false, true); // #1019: the documented smoke run leaves the saved 200-sim raw files byte for byte unchanged
+  add('contrib/deepseek/chorus_biomass_1118/spiral_test.js', [], 'normal', 300, false, true); // #1085: the loss spiral prices a 25 percent repair of the worst ship, capped at what it is missing
+  add('contrib/deepseek/ge_economy_1118/commission_test.js', [], 'normal', 300, false, true); // #1086: one shipyard visit queues at most one Glasswright commission, even with two affordable offers
   add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
+  add('tools/pc/g2_export_selftest.js'); // #1100: a stand-in exporter proves only checked builds become live on Windows
   add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
   add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks
   add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts

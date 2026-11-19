@@ -127,7 +127,9 @@ work_issue.ps1):
   old runner's commit aborted on an empty commit.txt (the disk was full) and its push carried only the agent's own merge.
 - **Disk.** Every run ends with "run folder size" in result.txt. work217\runner_settings.txt holds Ryan's switch
   (`remove_repo_copy_after_push=no` by default; WORKHORSE_CLEANUP.bat, from tools/pc/work_cleanup_setting.bat, turns it on).
-  With it on, a run whose push was checked removes its own repo\ copy and keeps out\. A dry run never removes anything.
+  With it on, cleanup requires a confirmed non-partial push and passing runner checks (`checked_push`). The runner keeps
+  its repo copy if it cannot verify the delivery branch, or if the checkout holds local history, edits, untracked files or
+  ignored files. The reason goes in result.txt. The out\ folder always stays.
 
 result.txt is for people. Chains use status.json as described below; matching words in result.txt cannot prove success.
 Exit codes: 0 pushed, 7 no changes, 8 push refused (change.patch kept), 10 diff mismatch, 11 commit failed, 12 the branch's
@@ -173,6 +175,15 @@ hashwrite <tools folder> <hash file>` so the issue 722 checks below can guard th
 refused-file guards still apply. status.json records a run
 id, branch, state, reason and commit; updates are atomic, with previous versions kept. Unexpected stops stay running and a
 chain times out instead of guessing success. Helper failures use exit 14; other runner exit codes keep their earlier meaning.
+
+Each Codex lane uses one exclusive lock beside its checkout (`repo.checkout.lock`). The launcher takes it before writing
+the issue folder and keeps it through final reporting. A second launch on that lane stops before touching any run files,
+even for another issue. Lane tools refresh takes the same lock. Update the Board's separate refresh script when deploying
+the launchers. The lock file stays on disk and Windows releases its handle when the owning process exits.
+
+Before claiming, the runner checks the fixed block's Owner and Branch against the launch. A workhorse branch must include
+the exact arm. Board-assigned workhorse jobs can use `Owner: codex` or name the arm. Dry-run push overrides still validate
+the assigned branch. GitHub's runner comment says `finished` only after `checked_push`.
 
 Lane tools refresh (issue 1018). Before each job, after any predecessor has finished, run
 `powershell -NoProfile -File "%V%\lane_tools_refresh.ps1" -Build build_c` followed by `if errorlevel 1 exit /b 1`.

@@ -62,6 +62,10 @@ func start(m: Node, o: Dictionary) -> void:
 	else:
 		C.persist_on = true
 		C.persist_load()
+	if o.get("continue", false) and C.SAVED_RUN == null:
+		# The save may have changed since the title was drawn.
+		run_over.emit({"result": "title"})
+		return
 	# story hook (story stream, godot/story/README.md): admiral lines, flagship name, titles, career records. Attached before
 	# the first screen and before the UI binds, so it sees every change first; bot runs keep the career in memory only.
 	if ResourceLoader.exists("res://story/story.gd"):
@@ -102,7 +106,13 @@ func _seed_campaign(s: int) -> void:
 
 
 static func has_save() -> bool:
-	return FileAccess.file_exists("user://voidsworn_campaign.json")
+	if not ResourceLoader.exists(CAMPAIGN):
+		return false
+	var c = load(CAMPAIGN).new()
+	if not FileAccess.file_exists(c.save_path) or c.load_tables() != "":
+		return false
+	c.persist_load()
+	return c.SAVED_RUN != null
 
 
 var _music_page := ""

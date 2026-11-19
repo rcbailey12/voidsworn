@@ -102,6 +102,8 @@ const BIG_HIT_RING := HIT_DISTORT_REACH
 # The baked flash a _burst draws blooms past its pixel floor by about half again at the battle camera (bench round 1:
 # a 40 px floor drew about 60 px of lit area), so ladder sizes are asked of it at this share.
 const BURST_PX_K := 0.65
+const SOFT_FLASH_POWER := 1.25
+const FLASH_LIFT_POWER := 0.6
 # Issue 281 run 6 (R150): the baked muzzle and impact gas read better about 1.5x bigger than run 5 shipped them.
 const WEAPON_GAS_SCALE := 1.5
 
@@ -600,25 +602,24 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 
 static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
 		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true) -> void:
-	var power: float = strength
-	var duration: float = life
-	if kind == "flash" and strength >= fx.FLASH_I:
-		# issue 461: booked at the size it is drawn, bloom included (the pixel floor over BURST_PX_K), never smaller
-		# gun flashes yield the budget to deaths and torpedoes (fx.flash_at yield_last); a torpedo's (gun false) books it
-		if fx.reduce_flashing or not fx.flash_at(p, T, size, px / BURST_PX_K, life, gun):
-			power = 1.25
-			duration = maxf(life, 0.4)
-			if fx.flash_lift:   # opus_check_524b: the field already holds three flashes this second: a slow, dim lift, no peak
-				power = 0.6
-				duration = maxf(life, 1.2)
 	var seed: float = fx.rng.randf()
 	fx.later(T, func l_burst() -> void:
+		var power := strength
+		var duration := life
+		var is_flash: bool = kind == "flash" and strength >= fx.FLASH_I
+		# Book the drawn envelope with bloom, at the camera the player has when the burst appears.
+		if is_flash and not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun):
+			power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
+			duration = maxf(life, 1.2 if fx.flash_lift else 0.4)
 		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small") as MeshInstance3D
 		node.name = "fx_weapon_" + kind
 		# The vent helper offsets its atlas to put the tip on the sampled surface.
 		var mat: ShaderMaterial = node.material_override
 		mat.shader = _weapon_shader(fx, mat.has_meta("route"))
 		mat.set_shader_parameter("born", T)
+		if is_flash:
+			mat.set_shader_parameter("calm_intensity", SOFT_FLASH_POWER)
+			mat.set_shader_parameter("soft_flash", 1.0 if fx.reduce_flashing else 0.0)
 		mat.set_shader_parameter("weapon_tint", Vector3(col.r, col.g, col.b))
 		mat.set_shader_parameter("opacity", opacity)
 		mat.set_shader_parameter("aspect", aspect)
@@ -1529,7 +1530,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	if torp:
 		spx = float(LADDER_PX["torp_shield"]) * gt * (0.65 if lk == "rockets" else 1.0)
 		rpx = float(LADDER_PX["torp_ripple"]) * gt * (0.65 if lk == "rockets" else 1.0)
-	# asked at the row's size less the bloom, like every hull hit, so it draws (and books) at its row (Muse's check of 524)
+	# The crackle uses the ladder width as its pixel floor for both drawing and booking.
 	_shield_crackle(fx, p, n, T, k, sc, spx, 3 if light else (8 if torp else 5), torp)
 	_note(fx, "flash", "shield", Vector3.ZERO, n, 0.30, spx)
 	# R303: hits[] draws the travelling ripple on the shield, without a flat disc.
@@ -1549,10 +1550,12 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 static func _shield_crackle(fx, p: Vector3, n: Vector3, t: float, k: float, col: Color, px: float, count: int, torp: bool) -> void:
 	var power := 4.2 if torp else 3.2
 	var life := 0.30
-	if fx.reduce_flashing or not fx.flash_at(p, t, 0.0, px, life, not torp):
-		power = 0.6 if fx.flash_lift else 1.25
+	var centre := p + n * 0.15 * k
+	var size := 2.0 * k
+	if not fx.flash_at(centre, t, size, SH.flash_sprite_floor(13, px), life, not torp):
+		power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
 		life = 0.4
-	fx.spr(p + n * 0.15 * k, t, life, col, power, 2.0*k, 0.5*k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+	fx._emit_spr(centre, t, life, col, power, size, 0.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	for j in _amount(fx, count):
 		var tangent: Vector3 = fx.rdir()
 		tangent = (tangent - n * tangent.dot(n)).normalized()
@@ -1678,13 +1681,13 @@ uniform float impact_tinted = 0.0;
 uniform vec3 impact_tint = vec3(1.0);""")
 	code = code.replace("float a = floor(frame);", """// The first hot cells unfold before the cool cells. Full white heat ends well before 0.25 s.
 	float body_frame = age < 0.68 ? age * (3.5 / 0.68) : 3.5 + (age - 0.68) * (11.5 / 0.32);
-	float flash_frame = mix(age, max(0.0, (age - 0.5) * 2.0), soft_flash) * 3.5;
+	float flash_frame = mix(age, max(0.0, (age - 0.5) * 2.0), softened) * 3.5;
 	frame = mix(flash_frame, body_frame, impact_body);
 	float a = floor(frame);""")
 	code = code.replace("max(extent * 0.1, 0.05)", "max(extent * 0.015, 0.035)")
 	code = code.replace("float fade = 1.0 - smoothstep(0.70, 1.0, age);", """float luminance = dot(gas.rgb, vec3(0.2126, 0.7152, 0.0722));
-	vec3 coloured = mix(impact_tint, vec3(0.95, 0.97, 1.0), smoothstep(0.65, 1.0, luminance)) * luminance * intensity * fx_gain * 1.8;
-	coloured *= mix(1.0, sin(age * 3.14159265), soft_flash);
+	vec3 coloured = mix(impact_tint, vec3(0.95, 0.97, 1.0), smoothstep(0.65, 1.0, luminance)) * luminance * power * fx_gain * 1.8;
+	coloured *= mix(1.0, sin(age * 3.14159265), softened);
 	ALBEDO = mix(ALBEDO, coloured, impact_tinted);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);""")
 	code = code.replace("ALPHA = gas.a * fade * soft", "ALPHA = gas.a * smoothstep(0.035, 0.18, thick.b) * fade * soft")
@@ -1702,15 +1705,24 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 	flash_px = rung if rung > 0.0 else flash_px
 	var body_px: float = flash_px * (0.72 if energy else (0.86 if torpedo else 0.94))
 	var life := 0.16 if torpedo else (0.08 if energy else 0.12)
-	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, T, flash_px * DEATH.STAGING_UNITS_PER_PIXEL, flash_px, life, src != null and not torpedo)
-	var lift: bool = soft and fx.flash_lift   # opus_check_524b: a full field: the flash rises slowly and dimly, no peak
+	var lift_from_plate: float = minf(float(src.hull.L) * 0.045, 1.1 * target_scale * ks) if src != null else 0.85
+	var centre := p + n * lift_from_plate
+	var extent: float = flash_px * DEATH.STAGING_UNITS_PER_PIXEL
+	# The flash callback goes first. Its one permit also sets the look of the later fire body.
+	var permit := {"soft": false, "lift": false}
 	var spin: float = fx.rng.randf() * TAU
 	var shape := Vector2(fx.rng.randf_range(0.9, 1.25), fx.rng.randf_range(0.85, 1.1))
 	for body in [false, true]:
 		var rel: String = ("weapons/impact/" if torpedo else "weapons/macro/") + ("impact_" if body else "flash_")
 		var at: float = T + (0.012 if body else 0.0)
-		var duration: float = (0.30 if energy else (0.65 if torpedo else 0.46)) if body else (1.2 if lift else ((0.50 if torpedo else 0.42) if soft else life))
 		fx.later(at, func l_staged_hit() -> void:
+			if not body:
+				# The envelope includes the bloom beyond the quad. The body stays inside that footprint.
+				permit.soft = not fx.flash_at(centre, T, extent / fx.unit, flash_px, life, src != null and not torpedo)
+				permit.lift = permit.soft and fx.flash_lift
+			var soft: bool = permit.soft or fx.reduce_flashing
+			var lift: bool = permit.lift
+			var duration: float = (0.30 if energy else (0.65 if torpedo else 0.46)) if body else (1.2 if lift else ((0.50 if torpedo else 0.42) if soft else life))
 			var mi := MeshInstance3D.new()
 			mi.name = "fx_staged_body" if body else "fx_staged_flash"
 			mi.set_meta("fx_picture_kind", "impact" if body else "flash")
@@ -1736,13 +1748,14 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0,
 			if body:
 				mat.set_shader_parameter("atlas_rect", Vector4(0.22, 0.24, 0.56, 0.52))
 				mat.set_shader_parameter("smoke_tone", 0.14)
-			mat.set_shader_parameter("intensity", (1.0 if soft else 3.8) if body else (0.6 if lift else (1.25 if soft else 5.2)))
+			var calm_power := 1.0 if body else SOFT_FLASH_POWER
+			mat.set_shader_parameter("calm_intensity", calm_power)
+			mat.set_shader_parameter("intensity", (FLASH_LIFT_POWER if lift and not body else calm_power) if soft else (3.8 if body else 5.2))
 			mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
 			mi.material_override = mat
 			fx.add_child(mi)
 			# The fire expands out of the actual impact face. Keep its recorded root on that face.
-			var lift_from_plate: float = minf(float(src.hull.L) * 0.045, 1.1 * target_scale * ks) if src != null else 0.85
-			mi.global_position = p + n * lift_from_plate
+			mi.global_position = centre
 			fx.record_spawn(src, p)
 			fx.later(at + duration + 0.1, fx.free_effect.bind(weakref(mi)))
 		)

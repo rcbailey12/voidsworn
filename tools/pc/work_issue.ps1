@@ -15,7 +15,7 @@
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
-#   work_issue.ps1 tidy    <run folder> <root> <settings> <ok> <dry>  run folder size; removes repo\ only if Ryan's setting allows
+#   work_issue.ps1 tidy    <run folder> <root> <settings> <dry>       run folder size; checks status.json and the repo before cleanup
 # Keys come from the environment (DEEPSEEK_API_KEY, MOONSHOT_API_KEY, KIMI_CODE_API_KEY) and are never written to any file.
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -531,20 +531,19 @@ real charge (balance before minus after): $charge
 }
 elseif ($mode -eq 'msg') {
   $n = $args[1]; $arm = $args[2]; $out = $args[3]
+  . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
   $title = Read-Txt (Join-Path $out 'title.txt')
   $last = Read-Txt (Join-Path $out 'last.md')
   if (-not $last) { $last = '(the agent left no final report; see board log on the PC)' }
   if ($last.Length -gt 6000) { $last = $last.Substring(0, 6000) + "`n(report cut at 6000 characters; full text on Ryan's PC in the run's out\last.md)" }
-  $stats = Read-Txt (Join-Path $out 'stats.txt')
-  $checks = Read-Txt (Join-Path $out 'checks.txt')
-  if (-not $checks) { $checks = '(the runner wrote no check output for this run; see the run folder on the PC)' }
-  $fence = '```'
-  $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
-  if (Read-Txt (Join-Path $out 'stop_reason.txt')) { $msg += "`n" + (Read-Txt (Join-Path $out 'resume.txt')) + "`n" }
   # Issue 953: this runner's own checkout is the sibling repo folder of out; a partial run takes -partial.
   $repo = Join-Path (Split-Path -Parent $out) 'repo'
   $branch = "work/issue-$n-$arm"
-  if (Read-Txt (Join-Path $out 'partial.txt')) { $branch += '-partial' }
+  $partial = Read-Txt (Join-Path $out 'partial.txt')
+  if (-not $partial) { $partial = Read-Txt (Join-Path $out 'stop_reason.txt') }
+  $checks = if ($partial) { 'SKIP: runner checks (partial run)' } else { Public-RunnerText 'checks' '' '' $out }
+  if ($partial) { $branch += '-partial'; $last = 'Stop reason: ' + (Public-RunnerText 'partial' $partial) }
+  $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$checks`n`nRefs #$n`n"
   $msg = Rewrite-ReportPaths $msg $repo $branch (Profile-Root)
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
@@ -625,6 +624,7 @@ elseif ($mode -eq 'guard') {
   exit 0
 }
 elseif ($mode -eq 'commit') {
+  . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
   # One commit for the run, made with git's plumbing (no hooks, no editor, its exit code checked). Its parents are the
   # agent's HEAD (with any merge the agent made under it) and the branch's earlier tip on GitHub, so a rerun pushes as a
   # fast-forward with no force and the earlier run stays reachable. Then the check the issue 541 trap needs: the commit
@@ -683,19 +683,15 @@ elseif ($mode -eq 'commit') {
   $n = ''; if ($br -match 'issue-(\d+)') { $n = $Matches[1] }
   if (-not $msg.Trim()) { $msg = "Runner commit for $br (the message step left no text; the agent's report is in the run's out folder on the PC)`n`nRefs #$n`n"; Write-Host 'WARNING: commit.txt was empty, the runner wrote a plain message' }
   $partial = Read-Txt (Join-Path $out 'partial.txt')
-  # The refuse step's text for this run: its own folder (out\guard_dir.txt), never an earlier run's.
-  $guard = ''
-  $gd = Read-Txt (Join-Path $out 'guard_dir.txt')
-  if ($gd) { $guard = Read-Txt (Join-Path $gd 'guard.md') }
   $base = Read-Txt (Join-Path $out 'base_commit.txt')
   $block = "## Runner (issue 377)`n`n"
   if ($partial) {
-    $msg = "PARTIAL RUN, not a finished job ($partial): " + $msg
-    $block += "PARTIAL RUN: $partial. This branch ends in -partial and opens no pull request. The Board reruns the job or takes the work by hand.`n`n"
+    $reason = Public-RunnerText 'partial' $partial
+    $msg = "PARTIAL RUN, not a finished job ($reason): " + $msg
+    $block += "PARTIAL RUN: $reason. This branch ends in -partial and opens no pull request. The Board reruns the job or takes the work by hand.`n`n"
   }
-  if ($guard) { $block += "$guard`n`n" }
   if ($base -and $base -ne $pre) {
-    $ac = @(Git-Lines log --format='%h %s' "$base..$pre")
+    $ac = @(Git-Lines log --format='%H' "$base..$pre" | Where-Object { $_ -cmatch '\A[0-9a-f]{40,64}\z' })
     if ($ac.Count) { $block += "Earlier commits (runner Base and resume merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
   }
   if ($old) { $block += "Earlier tip of $br kept: $old is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.`n" }
@@ -763,9 +759,8 @@ elseif ($mode -eq 'confirm') {
 }
 elseif ($mode -eq 'tidy') {
   # Every run: report the run folder's size. Only when Ryan's setting says yes (off by default) and the run ended in a
-  # checked push, remove the run's own repo\ copy; out\ (reports, logs, shots, refused files) is always kept.
-  $ErrorActionPreference = 'Continue'
-  $run = $args[1]; $root = $args[2]; $setf = $args[3]; $ok = $args[4]; $dry = $args[5]
+  # checked push with no local-only work, remove the run's own repo\ copy and keep out\.
+  $run = $args[1]; $root = $args[2]; $setf = $args[3]; $dry = $args[4]
   function SizeOf($p) { if (-not (Test-Path -LiteralPath $p)) { return [double]0 }; $s = (Get-ChildItem -LiteralPath $p -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum; if ($s) { return [double]$s } else { return [double]0 } }
   $repo = Join-Path $run 'repo'; $outd = Join-Path $run 'out'
   $rs = SizeOf $repo; $os = SizeOf $outd
@@ -774,14 +769,53 @@ elseif ($mode -eq 'tidy') {
   if (Test-Path -LiteralPath $setf) { foreach ($l in [IO.File]::ReadAllLines($setf)) { if ($l.Trim() -ieq 'remove_repo_copy_after_push=yes') { $on = $true } } }
   if (-not (Test-Path -LiteralPath $repo)) { exit 0 }
   if (-not $on) { Write-Host "repo copy kept: remove_repo_copy_after_push is not yes in $setf"; exit 0 }
-  if ($ok -ne '1') { Write-Host 'repo copy kept: the setting is on, but this run did not end in a checked push'; exit 0 }
-  $runFull = [IO.Path]::GetFullPath($run).TrimEnd('\'); $rootFull = [IO.Path]::GetFullPath($root).TrimEnd('\') + '\'
-  if (-not $runFull.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath (Join-Path $repo '.git')) -or -not (Test-Path -LiteralPath (Join-Path $outd 'result.txt'))) {
-    Write-Host "repo copy kept: safety check failed (the run folder must sit under $root and hold repo\.git and out\result.txt)"; exit 0
+  try {
+    $state = Get-Content -LiteralPath (Join-Path $outd 'status.json') -Raw | ConvertFrom-Json
+    if ($dry -eq '1' -or $state.status -ne 'checked_push' -or $state.commit -notmatch '^[0-9a-f]{40,64}$') {
+      throw 'this run did not end in a checked push'
+    }
+    $repo = [IO.Path]::GetFullPath($repo)
+    $rootFull = [IO.Path]::GetFullPath($root).TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
+    if (-not $repo.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase) -or
+        -not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container) -or
+        -not (Test-Path -LiteralPath (Join-Path $outd 'result.txt') -PathType Leaf)) {
+      throw 'the repo and result could not be verified under the workhorse root'
+    }
+    for ($dir = Get-Item -LiteralPath $repo -Force; $dir; $dir = $dir.Parent) {
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout path contains a link' }
+    }
+    if (@(Get-ChildItem -LiteralPath $repo -Recurse -Force -Attributes ReparsePoint | Select-Object -First 1).Count) {
+      throw 'checkout contains a link'
+    }
+    $top = Git-One -C $repo rev-parse --show-toplevel
+    if ($gx -ne 0 -or [IO.Path]::GetFullPath($top) -ne $repo) { throw 'checkout root could not be verified' }
+    $worktrees = @(Git-Lines -C $repo worktree list --porcelain | Where-Object { $_ -like 'worktree *' })
+    if ($gx -ne 0 -or $worktrees.Count -ne 1) { throw 'checkout may be shared with another worktree' }
+    # Check refs on the remote itself. Local tracking refs can be stale, and reflogs can hold work without a branch.
+    $refs = @(Git-Lines -C $repo ls-remote --refs origin)
+    if ($gx -ne 0 -or $refs -cnotcontains "$($state.commit)`trefs/heads/$($state.branch)") {
+      throw 'delivery branch could not be verified at the pushed commit'
+    }
+    $exclude = @($refs | ForEach-Object { if ($_ -match '^([0-9a-f]{40,64})\trefs/') { '^' + $Matches[1] } })
+    $local = @($exclude | & git -C $repo rev-list --all --reflog HEAD --max-count=1 --ignore-missing --stdin 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $local.Count) { throw 'checkout may contain local-only history' }
+    $head = Git-One -C $repo rev-parse HEAD
+    if ($gx -ne 0 -or $head -cne $state.commit) { throw 'checkout HEAD differs from the checked push' }
+    $flags = @(Git-Lines -C $repo ls-files -v)
+    if ($gx -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
+    $status = @(Git-Lines -C $repo status --porcelain=v1 --untracked-files=all --ignored --ignore-submodules=none)
+    if ($gx -ne 0 -or $status.Count) { throw 'checkout may contain tracked edits, untracked files or ignored files' }
+  } catch {
+    Write-Host "repo copy kept: $($_.Exception.Message)"
+    exit 0
   }
-  if ($dry -eq '1') { Write-Host ('dry run: the setting is on and the push was checked, so a real run would now remove {0} ({1:N2} GB) and keep out\; nothing removed' -f $repo, ($rs / 1GB)); exit 0 }
+  $pauseFlag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
+  if (Test-Path -LiteralPath $pauseFlag) {
+    try { $paused = (Get-Content -LiteralPath $pauseFlag -TotalCount 1 -ErrorAction Stop) -match '^GPU not cleared: paused by the Board\b' }
+    catch { Write-Host 'repo copy kept: could not read the PC pause flag'; exit 0 }
+    if ($paused) { Write-Host 'repo copy kept during the PC pause'; exit 0 }
+  }
   Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
-  if (Test-Path -LiteralPath $repo) { & cmd.exe /c rd /s /q "\\?\$repo" 2>$null }
   if (Test-Path -LiteralPath $repo) { Write-Host ('repo copy only partly removed: {0:N2} GB left in {1}' -f ((SizeOf $repo) / 1GB), $repo) }
   else { Write-Host ('repo copy removed after the checked push (Ryan''s setting): {0}, {1:N2} GB freed; out\ kept' -f $repo, ($rs / 1GB)) }
   exit 0

@@ -30,6 +30,8 @@ const Sfx := preload("res://audio/sfx.gd")
 const DeathAudio := preload("res://audio/death_audio.gd")
 const Backdrop := preload("res://render/backdrop.gd")
 const PG := preload("res://render/placeholder_guard.gd")
+const LOOK := preload("res://render/look.gd")
+const LIVING := preload("res://world/world_living.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -314,10 +316,8 @@ func _build_world() -> void:
 	fill.light_energy = 0.5
 	add_child(fill)
 	_apply_quality(str(args.get("quality", "max")))
-	# G4's look (tonemap, exposure, glow, ambient, key and fill) when it is in the build
-	if ResourceLoader.exists("res://render/look.gd"):
-		load("res://render/look.gd").apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
-		key.directional_shadow_max_distance = 600.0
+	LOOK.apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
+	key.directional_shadow_max_distance = 600.0
 	board = Board.new()
 	board.name = "Board"
 	add_child(board)
@@ -347,43 +347,22 @@ func _build_world() -> void:
 # the Graphics setting: max (everything), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
-	# Issue 368, R270: the selected volume at max, cards at high and low.
-	if load("res://world/world_living.gd").selected_route() == "fog" and q == "max":
-		RenderingServer.environment_set_volumetric_fog_volume_size(128, 128)
-	match q:
-		"low":
-			vp.msaa_3d = Viewport.MSAA_DISABLED
-			vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
-			RenderingServer.directional_shadow_atlas_set_size(2048, true)
-		"high":
-			vp.msaa_3d = Viewport.MSAA_2X
-			RenderingServer.directional_shadow_atlas_set_size(4096, true)
-		_:
-			vp.msaa_3d = Viewport.MSAA_4X
-			RenderingServer.directional_shadow_atlas_set_size(4096, true)
+	vp.msaa_3d = LOOK.msaa_for_quality(q)
+	if q == "low":
+		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
+	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
 	# Temporal AA (settings, off by default as in the browser): Max and High only
 	vp.use_taa = _jt(args.get("taa", false)) and q != "low"
 
 
 func _post_quality(q: String) -> void:
-	if load("res://world/world_living.gd").selected_route() == "fog" and q == "max":
-		env.volumetric_fog_enabled = true
-		env.volumetric_fog_density = 0.0001
-		env.volumetric_fog_length = maxf(250.0, cam.r + 200.0)
-		env.volumetric_fog_temporal_reprojection_enabled = false
-		# Short electrical flashes must not leave temporal ghosts.
-		if not has_node("NebulaHulls"):
-			var policy: Node = load("res://world/nebula_hulls.gd").new()
-			policy.name = "NebulaHulls"
-			add_child(policy)
+	LIVING.apply_fog(self, env, cam.r, q)
 	if q == "low":
 		env.ssao_enabled = false
 		env.ssil_enabled = false
-		env.volumetric_fog_enabled = false
 		env.glow_enabled = true
 	elif q == "high":
 		env.ssil_enabled = false
-		env.volumetric_fog_enabled = false
 
 
 func _build_arrow() -> void:
@@ -505,6 +484,8 @@ func begin_with(a) -> void:
 
 
 func _begin(a) -> void:
+	_api_join()
+	_threat_version = -1
 	api = a
 	warming = true
 	hud.loading(true)
@@ -2463,10 +2444,11 @@ func _attack_move(t_id: String):
 	# v51 attack-move (the rules' attack_plan): an enemy your guns can't reach yet; burn to the best hex and fire on the way
 	if not _api_join():
 		return null
-	var am = api.attack_plan(sel, t_id, [armed] if armed >= 0 else null)
+	var weapons = [armed] if armed >= 0 else null
+	var am = api.attack_plan(sel, t_id, weapons)
 	if am == null:
 		return null
-	return {"st": am["state"], "n": int(am["guns"]), "of": int(am["of"])}
+	return {"st": am["state"], "n": int(am["guns"]), "of": int(am["of"]), "weapons": weapons}
 
 
 # firing arcs as fans on the board under the selected ship (the game's arc fans): one per ready gun, its range and arc
@@ -2594,6 +2576,9 @@ func _clear_overlay() -> void:
 func _overlay() -> void:
 	if quitting or board == null or not is_instance_valid(board):
 		return
+	if (threat_on or _danger_shown()) and _threat_idle() and not _threat_busy and not _threat_current():
+		# Start after this UI pass, so its own rule reads do not immediately join the worker.
+		_threat_request.call_deferred()
 	if board != null and board.has_method("set_danger"):
 		board.set_danger(_danger_bands())
 	if not _can_act():
@@ -2652,6 +2637,8 @@ func _overlay() -> void:
 			if rings.get(ek) == TARGET_RING:
 				continue
 			for w in u["weapons"]:
+				if plan == null and atk["weapons"] != null and int(w["i"]) not in atk["weapons"]:
+					continue
 				if w["ready"] and w["kind"] != "flak" and api.in_reach(sel, int(w["i"]), e["id"], pst):
 					rings[ek] = TARGET_PLAN
 					break
@@ -2771,14 +2758,16 @@ func _hover_state(k: String):
 
 
 var _threat_cache := {}
-var _threat_key := ""
+var _threat_version := -1
+var _threat_pending_version := -1
 
 
 # ui3d.js computeThreat: for every enemy ship, every hex it can end its move on and every facing there, the guns that bear
 # on each hex (range, arc, line of sight); the best end state counts per enemy, summed over enemies. Darker = more damage.
 func _threat_fills() -> Dictionary:
-	_threat_request()
 	var out := {}
+	if not _threat_current():
+		return out
 	var mx := 1.0
 	for k in _threat_cache:
 		mx = maxf(mx, float(_threat_cache[k]))
@@ -2790,33 +2779,25 @@ func _threat_fills() -> Dictionary:
 	return out
 
 
-# the threat map and the reach counts, off the main thread (the rules' computeThreat, G1), once per change of the board:
-# nothing else calls the API while the player phase is idle
+# Only compute once the displayed view has caught up with the rules. At that point the API's version describes both.
+func _threat_idle() -> bool:
+	return api != null and not warming and not busy and not thinking and batches.is_empty() and api.phase == "player"
+
+
+func _threat_current() -> bool:
+	return _threat_version >= 0 and _threat_idle() and _threat_version == int(api.version)
+
+
+# The damage map and reach counts share the API's versioned result, computed off the main thread.
 func _threat_request() -> void:
-	# the threat map (R) follows every change; the reach counts alone only change when an enemy moves, turns or dies, so
-	# without R they are worked out once per enemy turn (the worker holds the rules, and clicks wait, while it runs)
-	var key := "%d|%d|%d" % [int(V.get("round", 0)), batches.size(), hud.log_text.get_line_count()]
-	if not threat_on:
-		var ek := PackedStringArray()
-		for e in V.get("units", []):
-			if e["side"] == "enemy" and not e["dead"]:
-				ek.append("%s:%d,%d,%d" % [str(e["id"]), int(e["q"]), int(e["r"]), int(e["facing"])])
-		key = "%d|%d|%s" % [int(V.get("round", 0)), batches.size(), ",".join(ek)]
-	if key != _threat_key and not _threat_busy and not busy and not thinking and api.phase == "player":
-		_threat_key = key
-		_threat_busy = true
-		if api.has_method("threat_both"):
-			var tid := WorkerThreadPool.add_task(func() -> void:
-				_threat_next = api.threat_both())
-			_threat_tid = tid
-			_threat_wait(tid)
-		elif api.has_method("threat_map"):
-			var tid := WorkerThreadPool.add_task(func() -> void:
-				_threat_next = {"dmg": api.threat_map(), "n": {}})
-			_threat_tid = tid
-			_threat_wait(tid)
-		else:
-			_threat_busy = false
+	if quitting or not _threat_idle() or _threat_busy or _threat_current() or not (threat_on or _danger_shown()):
+		return
+	_threat_pending_version = int(api.version)
+	_threat_busy = true
+	var tid := WorkerThreadPool.add_task(func() -> void:
+		_threat_next = api.threat_both())
+	_threat_tid = tid
+	_threat_wait(tid)
 
 
 # #271: how many enemies can bring guns on each hex next turn, as hatching bands on the board (1, 2, 3 or more), in your
@@ -2829,9 +2810,8 @@ func _danger_shown() -> bool:
 
 
 func _danger_bands() -> Dictionary:
-	if not _danger_shown():
+	if not _danger_shown() or not _threat_current():
 		return {}
-	_threat_request()
 	# R148: the board hatching shows only in the Move step, as in the mockup (a ship up that can still move, nothing
 	# targeted, not braced). The counts stay live for the danger badges on the fleet list and the shell either way.
 	if not _move_step():
@@ -2857,7 +2837,7 @@ func _move_step() -> bool:
 
 # enemies that can bring guns on a ship's hex next turn (0 when the counts are not in yet)
 func _danger_at(u: Dictionary) -> int:
-	if not _danger_shown() or board == null:
+	if not _danger_shown() or not _threat_current() or board == null:
 		return 0
 	return int(_danger.get(board.key(int(u["q"]), int(u["r"])), 0))
 
@@ -2877,9 +2857,13 @@ func _threat_wait(tid: int) -> void:
 
 
 func _threat_done() -> void:
-	_threat_cache = _threat_next.get("dmg", {}) if _threat_next.has("dmg") else _threat_next
-	_danger = _threat_next.get("n", {}) if _threat_next.has("n") else {}
 	_threat_busy = false
+	if not _threat_idle() or _threat_pending_version != int(api.version):
+		_threat_request.call_deferred()
+		return
+	_threat_version = _threat_pending_version
+	_threat_cache = _threat_next["dmg"]
+	_danger = _threat_next["n"]
 	if _danger_shown():
 		_refresh_ui.call_deferred()   # the danger badges on the fleet list and the shell
 	_overlay.call_deferred()
@@ -2904,6 +2888,17 @@ func _unit_at(q: int, r: int) -> Dictionary:
 
 # ---------------------------------------------------------------- input
 
+var _board_press := false
+var _board_release := false
+
+
+func _input(e: InputEvent) -> void:
+	if e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT:
+		# End the camera gesture even if the GUI consumes this release. Only an unhandled press can start one.
+		_board_release = not e.pressed and _board_press and not cam.handle_input(e)
+		_board_press = false
+
+
 func _unhandled_input(e: InputEvent) -> void:
 	if api == null:
 		return
@@ -2911,16 +2906,22 @@ func _unhandled_input(e: InputEvent) -> void:
 		_end_opening()
 	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
 		_kill_skip()
-	if e is InputEventMouseButton or e is InputEventMouseMotion:
-		if e is InputEventMouseButton and hud.over_ui((e as InputEventMouseButton).position) and (e as InputEventMouseButton).pressed:
-			return
-		var dragged: bool = cam.handle_input(e)
-		if e is InputEventMouseMotion:
-			_on_hover((e as InputEventMouseMotion).position)
-		elif e is InputEventMouseButton:
-			var mb := e as InputEventMouseButton
-			if mb.button_index == MOUSE_BUTTON_LEFT and not mb.pressed and not dragged:
+	if e is InputEventMouseButton:
+		if e.button_index == MOUSE_BUTTON_LEFT and not e.pressed:
+			if _board_release and not hud.over_ui(e.position):
+				_on_hover(e.position)
 				_on_click()
+			_board_release = false
+			return
+		if e.pressed and hud.over_ui(e.position):
+			return
+		if e.button_index == MOUSE_BUTTON_LEFT:
+			_board_press = true
+		cam.handle_input(e)
+		return
+	if e is InputEventMouseMotion:
+		cam.handle_input(e)
+		_on_hover(e.position)
 		return
 	if e is InputEventKey and CamRig.is_pan_key(e):
 		# A physical pan key can have Q/E/B on a different layout. Never also issue an order.
@@ -3024,6 +3025,8 @@ func _arm(i: int) -> void:
 	if u.is_empty() or i >= (u["weapons"] as Array).size():
 		return
 	armed = -1 if armed == i else i
+	if target != "":
+		_update_target_plan(target)
 	sfx.play("ui_click")
 	_refresh_ui()
 
@@ -3207,11 +3210,12 @@ func _on_click() -> void:
 	var s := _sel_unit()
 	if mode in ["nova", "blink"] and not s.is_empty():
 		var m := mode
-		mode = ""
 		var ok := false
 		for h in _ability_hexes():
 			if int(h["q"]) == hover.x and int(h["r"]) == hover.y:
 				ok = true
+				break
+		mode = ""
 		if ok:
 			var id := sel
 			var hx := {"q": hover.x, "r": hover.y}
@@ -3303,24 +3307,24 @@ func _on_click() -> void:
 func _target(tid: String) -> void:
 	plan = null
 	plan_k = ""
-	atk = null
 	inspect = tid
 	plog.note("targets")
-	if not _firing_set(tid).is_empty():
-		target = tid
+	_update_target_plan(tid)
+	if target != "":
 		sfx.play("ui_confirm", {"gain": 0.707946})
 	else:
-		var u := _sel_unit()
-		var am = _attack_move(tid) if int(u.get("moveLeft", 0)) > 0 else null
-		if am != null:
-			# out of reach from here: offer the attack-move, previewed (the ghost at the hex it would stop on, its path)
-			target = tid
-			atk = am
-			sfx.play("ui_confirm", {"gain": 0.707946})
-		else:
-			target = ""
-			hud.toast(_cant_fire_reason(tid))
+		hud.toast(_cant_fire_reason(tid))
 	_refresh_ui()
+
+
+func _update_target_plan(tid: String) -> void:
+	atk = null
+	if not _firing_set(tid).is_empty():
+		target = tid
+		return
+	# Out of reach from here: show the stop and path only if the current guns can fire on the way.
+	atk = _attack_move(tid) if int(_sel_unit().get("moveLeft", 0)) > 0 else null
+	target = tid if atk != null else ""
 
 
 # F1: drop the plan or the target; nothing was sent to the rules, so nothing changes
@@ -3353,7 +3357,7 @@ func _confirm() -> void:
 		return
 	var tid := target
 	if atk != null:
-		var wsel = [armed] if armed >= 0 else null
+		var wsel = atk["weapons"]
 		plog.act("attack_move", {"cost": int(atk["st"].cost), "guns": int(atk["n"]), "target": str(VU.get(tid, {}).get("cls", "")), "tid": tid})
 		atk = null
 		armed = -1
@@ -3623,7 +3627,7 @@ func _tip() -> String:
 		var t := "[b][color=#7fc4ff]%s[/color][/b]\n%d movement%s." % ["Planned move" if hk == plan_k else "Move here", int(st.cost), (", %d turn%s" % [int(st.get("t", 0)), "" if int(st.get("t", 0)) == 1 else "s"]) if int(st.get("t", 0)) > 0 else ""]
 		if int(st.get("gunsOf", 0)) > 0:
 			t += "\n%d of %d guns bear on an enemy from here." % [int(st.get("guns", 0)), int(st.get("gunsOf", 0))]
-		if _danger_shown() and not s.is_empty():
+		if _danger_shown() and _threat_current() and not s.is_empty():
 			var nh := int(_danger.get(hk, 0))
 			var nn := int(_danger.get(board.key(int(s["q"]), int(s["r"])), 0))
 			if nh > 0 or nn > 0:

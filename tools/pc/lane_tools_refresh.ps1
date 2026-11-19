@@ -89,7 +89,15 @@ function Copy-Tools([string]$From, [string]$To, [string]$Step) {
 }
 
 $lock = $null
+$checkoutLock = $null
 try {
+  if ($seat -ne 'work217') {
+    $repo = Join-Path $root "$seat\repo"
+    $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($repo))
+    # codex_issue.ps1 holds this same lock through final reporting.
+    try { $checkoutLock = [IO.File]::Open("$repo.checkout.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { throw 'refused: Codex checkout lock is busy or unavailable' }
+  }
   # Serialize the shared fetch, snapshot, log and backup allocation across lanes. Keep the lock file.
   $lockPath = Join-Path $root 'lane_tools_refresh.lock'
   $lockDeadline = [DateTime]::UtcNow.AddMinutes(2)
@@ -189,4 +197,5 @@ try {
   exit 1
 } finally {
   if ($lock) { $lock.Dispose() }
+  if ($checkoutLock) { $checkoutLock.Dispose() }
 }
