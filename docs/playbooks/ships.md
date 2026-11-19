@@ -129,8 +129,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    a faint warm glow, not flat lime; the bile light only in sac windows and deep in the vents. Round 3 (Neon): the hide deep wet
    maroon-umber well under the horn; pale weathered horn on the keel crests and lips (the shell's scute_ridge and
    scute_progress), charred at the roots, waxy crests and chalky grooves; a restrained yellow-green glow at each veil's root and
-   along its ribs (kit material veilroot), the torn tips dark; the sac windows narrow bile slits under the caps. Ryan picks
-   the glow colour from the sheet.
+   along its ribs (kit material veilroot), the torn tips dark; the sac windows narrow bile slits under the caps. Ryan accepted
+   round 3 on Nov 19 2026 23:38 UTC ("Accept, keep yellow-green glow"): the yellow-green glow stays. C13's bare stern and the
+   skin between its knolls are fixed in the C13 rebuild (issue 1154).
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
