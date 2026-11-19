@@ -16,6 +16,7 @@ extends SceneTree
 ##                    shield shape, the three looks back to back, each after a one second title card
 ##   PROBE_COST       1: the cost pass instead (PROBE_COST_SHIPS shielded ships, every one failing at once, GPU time)
 ##   PROBE_BLOCKS     1: allow placeholder blocks (a cloud preview of the script only, never a picture for Ryan)
+## After --: --quick for the short check run (h_boss, fitted, camera 170).
 ## Prints SHIELD1078_DONE (or SHIELD1078_FAILED) last.
 
 class Bench extends "res://bench/look_bench.gd":
@@ -65,8 +66,15 @@ func _initialize() -> void:
 	_run.call_deferred()
 
 
+# --quick (the PC GPU check list, godot_checks.txt): one subject, the fitted shape and camera 170 unless the
+# environment says otherwise
+const QUICK := {"PROBE_SUBJECTS": "h_boss", "PROBE_SHAPES": "fitted", "PROBE_RADII": "170"}
+
+
 func _env(k: String, d: String) -> String:
 	var v := OS.get_environment(k)
+	if v.is_empty() and OS.get_cmdline_user_args().has("--quick"):
+		v = str(QUICK.get(k, ""))
 	return d if v.is_empty() else v
 
 
