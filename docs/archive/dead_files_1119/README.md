@@ -12,7 +12,7 @@ git grep -n -I -F -e <term> -- . ':!contrib/' ':!docs/archive/' ':!docs/shots/'
 
 A reference from another file in this same list does not count (both moved together; the list was solved to a fixed point). Four files were cleared by hand because their only hits were a different file or a variable sharing the stem; the reason is in their row. I also checked for wildcard or folder runs (`jobs\*`, `c19_*`, `glob(...)` over these folders): none reach these files.
 
-Candidates: the Board's 15 plus every path in the Neon health audit section 5 (185 in all). 84 proved dead and are here; the rest stay, listed at the end with what still names them.
+Candidates: the Board's 15 plus every path in the Neon health audit section 5 (185 in all). 84 proved dead by grep on main; 82 are here. The two ui344 shot runners went back to tools/pc/jobs because open work still needs them (Artoo's review of PR 1214: issue 1223 keeps them as deliverables and PRs 1169 and 1224 edit them). I also checked every open pull request and open issue body for the other 82: none names them. The rest stay, listed at the end with what still names them.
 
 | Old path | Terms grepped | Result |
 | --- | --- | --- |
@@ -92,8 +92,6 @@ Candidates: the Board's 15 plus every path in the Neon health audit section 5 (1
 | `tools/pc/jobs/stall220_stills.bat` | `stall220_stills.bat` , `stall220_stills` | 0 hits |
 | `tools/pc/jobs/ui231_shots.bat` | `ui231_shots.bat` , `ui231_shots` | 0 hits |
 | `tools/pc/jobs/ui271_build_shots.bat` | `ui271_build_shots.bat` , `ui271_build_shots` | 0 hits |
-| `tools/pc/jobs/ui344_briefing_shots.bat` | `ui344_briefing_shots.bat` , `ui344_briefing_shots` | 0 hits |
-| `tools/pc/jobs/ui344_rollout_shots.bat` | `ui344_rollout_shots.bat` , `ui344_rollout_shots` | 0 hits |
 | `tools/pc/trellis_bakeoff.py` | `trellis_bakeoff.py` , `trellis_bakeoff` | 0 live hits (1 from other files in this list or itself) |
 | `tools/pc/vs_art_o.py` | `vs_art_o.py` , `vs_art_o` | 0 hits |
 | `tools/pc/vs_mesh12.py` | `vs_mesh12.py` , `vs_mesh12` | 0 hits; Board sample |
@@ -208,3 +206,5 @@ Strict rule: any mention outside the excluded folders keeps the file, including 
 | `godot/render/backdrop.gd` | godot/render/build_assets.gd:75 (108) |
 | `godot/tools/probes/rim_soft_probe.gd` | docs/ship_pipeline/RECIPE.md:221 (1) |
 | `godot/world/finale_shots.gd` | godot/fx/API.md:178 (1) |
+| `tools/pc/jobs/ui344_briefing_shots.bat` | open issue 1223 (deliverable), PRs 1169 and 1224 edit it |
+| `tools/pc/jobs/ui344_rollout_shots.bat` | open issue 1223 (deliverable), PRs 1169 and 1224 edit it |
