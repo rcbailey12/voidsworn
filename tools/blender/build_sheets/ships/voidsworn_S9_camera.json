@@ -15,7 +15,7 @@
   1024,
   1024
  ],
- "iou": 0.8439,
- "body_iou": 0.8658,
+ "iou": 0.8501,
+ "body_iou": 0.8729,
  "note": "Warden beauty: view angles from a coarse grid over azimuth, elevation and roll (contrib/opus/tools/issue738/grid.py), then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (edges over 28 or luminance 25 over the blurred picture, closed, filled, largest shape)"
 }

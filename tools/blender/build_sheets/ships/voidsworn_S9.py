@@ -318,7 +318,7 @@ def build(K):
     K.mass('Dorsal power trunk', K.loft_rings('S9_trunk', tr, 'siron2'), 'darker iron', note='armoured conduits from the reactor to the repeater (the concept\'s long centre rail)')
     for i in range(8):
         x = 1.75 - i * 0.28
-        K.rib('S9_trunkband_%d' % i, [(x, 0.053, deck_z(x, 0) - 0.004), (x, 0.0, deck_z(x, 0) + 0.046), (x, -0.053, deck_z(x, 0) - 0.004)], w=0.018, t=0.012, m='sworn')
+        K.rib('S9_trunkband_%d' % i, [(x, 0.053, deck_z(x, 0) - 0.004), (x, 0.0, deck_z(x, 0) + 0.046), (x, -0.053, deck_z(x, 0) - 0.004)], w=0.018, t=0.012, m='sworn', keep_r=0.03)
     K.mark('trunk', 'spine', ['block', 'step', 'slit'])
 
     # ---------------- fittings ----------------

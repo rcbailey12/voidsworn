@@ -1,0 +1,54 @@
+{
+  "source_commit": "b2177aa6541f014bd6146e92cb39636bbe51d7ac",
+  "source_dirty": true,
+  "source_diff_sha256": "6d9af49674859bca2e4e0be55cf54ba8ce6910e79d8bbd2755451e0ccaab63a0",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_flak.jpg",
+  "date": "2026-11-19T15:12:24Z",
+  "sources": [
+    {
+      "source_commit": "b2177aa6541f014bd6146e92cb39636bbe51d7ac",
+      "source_dirty": true,
+      "source_diff_sha256": "6d9af49674859bca2e4e0be55cf54ba8ce6910e79d8bbd2755451e0ccaab63a0",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_flak.png",
+      "source_commit": "b2177aa6541f014bd6146e92cb39636bbe51d7ac",
+      "source_dirty": true,
+      "source_diff_sha256": "6d9af49674859bca2e4e0be55cf54ba8ce6910e79d8bbd2755451e0ccaab63a0",
+      "stage": "sheet built",
+      "date": "2026-11-19T15:12:04Z",
+      "image_sha256": "895bbb960a45b9ebead6ddd967c50674903b17805e66f1eac19e7831974a1af6",
+      "sources": [
+        {
+          "source_commit": "b2177aa6541f014bd6146e92cb39636bbe51d7ac",
+          "source_dirty": true,
+          "source_diff_sha256": "6d9af49674859bca2e4e0be55cf54ba8ce6910e79d8bbd2755451e0ccaab63a0",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    511,
+    282,
+    560
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "c8b91ebe76ad16cde0d54c6f84c075f81b415151d7b7029757ea84cc2a8a51ed"
+  ],
+  "stamp_template_sha256": "1a4cd422fc6c5d8350aea99a21ffb72b313e71a86b5fe3a718ceb1d01f1cdf2f",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "055836b320e3d1cbe02207fb48c3ea099d4cc2356e3b84676dfa75a7584d4053"
+}

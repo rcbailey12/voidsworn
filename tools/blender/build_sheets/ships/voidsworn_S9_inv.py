@@ -69,4 +69,5 @@ LEFT_PLAIN = [
     'Frost-white markings, the half-sun crest, soot and wear: surface texture, painted by the Sunward paint stack (stage 5), not modelled.',
     'The concept\'s small panels and window dots along the hull are the paint stack\'s plate pattern and the band louvres; no portholes (factions.md).',
 ]
-INV_NOTES = {}
+INV_NOTES = {'bow_plates': 'the cheek plates are themselves the forged layer on the spearhead (built, shaped, with bevels); their faces are too narrow '
+                        'for a second plate course except at the root, which the casemate and the Q1 thrusters claim, so no rivet plates are laid on them'}
