@@ -1,0 +1,54 @@
+{
+  "source_commit": "8ac047c3ebb8706b725d42a69fe5e0a0bacead70",
+  "source_dirty": true,
+  "source_diff_sha256": "b820e37582d3aab7a1a006466e4cfc76dff10c65a584422f8dabb5488c5024fb",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "beauty_vs_blockout.jpg",
+  "date": "2026-11-19T15:36:46Z",
+  "sources": [
+    {
+      "source_commit": "8ac047c3ebb8706b725d42a69fe5e0a0bacead70",
+      "source_dirty": true,
+      "source_diff_sha256": "b820e37582d3aab7a1a006466e4cfc76dff10c65a584422f8dabb5488c5024fb",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "beauty_cam.png",
+      "source_commit": "8ac047c3ebb8706b725d42a69fe5e0a0bacead70",
+      "source_dirty": true,
+      "source_diff_sha256": "b820e37582d3aab7a1a006466e4cfc76dff10c65a584422f8dabb5488c5024fb",
+      "stage": "sheet built",
+      "date": "2026-11-19T15:36:10Z",
+      "image_sha256": "e9e46aa0c157a86e249355fd127293211df51af6fecaf805560ac693342c447b",
+      "sources": [
+        {
+          "source_commit": "8ac047c3ebb8706b725d42a69fe5e0a0bacead70",
+          "source_dirty": true,
+          "source_diff_sha256": "b820e37582d3aab7a1a006466e4cfc76dff10c65a584422f8dabb5488c5024fb",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "5137c7214f457bbd486911715f5f4314fdf54919b6fa9bac79adf84dda7417c7"
+  ],
+  "stamp_template_sha256": "da7ebf1189e5403b7c65d3fe02db850cbfa50c255541789c022ebdfdc29a9688",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAABaElEQVR4nO3XTYoTURiF4bpVlfpL0qjRFnEnjftfi4IhCG2PpK4DN5DW01Swn2f+wZm8XG55ePjSwAZK25bL5Xz+/rXWWpqm6/v7j5+X5VBrveq+lKenx8v52+n9p2lerrx6Uf3WA3i16rrWw+Hu5+OPuv5q23K8O+33x3Vdr72vdRimaT4M43QLLTVN0249gFet6/ppmtu23Q3jshzX9XlVdF337nRfSnmhec8lJ7ZUSjNNS611HJeu75vmJh6ZvyYnNjaMc9v103zYekiAnNhSrbXvuzdvP+x2w438f/6FnNhcmef91hsy5MT2/oN36Q85QYycIEZOECMniJETxMgJYuQEMXKCGDlBjJwgRk4QIyeIkRPEyAli5AQxcoIYOUGMnCBGThAjJ4iRE8TICWLkBDFyghg5QYycIEZOECMniJETxMgJYuQEMXKCGDlBjJwgRk4QIyeIkRPEyAli5AQxcoIYOUHMb3veOxKbeTDBAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "1565a082d745d5c383386ae9225236ac1a97f4aa4803fb8a93fd07181852b2bf"
+}

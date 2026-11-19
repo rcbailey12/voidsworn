@@ -203,8 +203,8 @@ def build(K):
 
     # ---------------- grown detail on the hull ----------------
     # stretch wrinkles: the skin drawn up into each opening's neck
-    V, F = [], []
-    for fid, x0, th0, lean in MOUTHS:
+    for fid, x0, th0, lean in MOUTHS:   # one fold set per opening (inventory count 5)
+        V, F = [], []
         for k in range(12):
             a = 2 * math.pi * (k + rnd.uniform(-0.25, 0.25)) / 12
             ln = rnd.uniform(1.0, 1.8)
@@ -223,7 +223,7 @@ def build(K):
                 continue
             vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
             o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-    K.hull_detail('stretch_folds', (V, F), 'flesh2', inv='stretch_folds', kind='welt', subs=['welt'])
+        K.hull_detail('stretch_folds_' + fid, (V, F), 'flesh2', inv='stretch_folds', kind='welt', subs=['welt'])
     # the folded sac: long broken fold rolls running fore and aft over the body between the openings (never a band or segment)
     V, F = [], []
     keep_clear = [(x, th) for _, x, th, _ in MOUTHS] + [(PATCH[0], math.pi / 2 - 0.28)] + [(x, side_th(th, s)) for x, th, _ in SIPHONS for s in (1, -1)]
