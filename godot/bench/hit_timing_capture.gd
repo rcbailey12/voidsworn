@@ -2,6 +2,7 @@ extends SceneTree
 # Issue 1211 pictures (PC only, needs a window and the PC-built hulls). One enemy volley at your ship, in a nebula or in
 # clear space, at whatever --resolution the run was started with (1920x1080 or 3840x2160). It stamps each still with its
 # revision (tools/picture_provenance.gd), so a main run and a branch run are told apart on the picture itself.
+# Run it from shots1211.bat (the Board's PC job): it refuses to start unless user:// is inside VS_CAPTURE_PROFILE.
 #   godot --path godot --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080
 #         --script res://bench/hit_timing_capture.gd -- --out DIR [--case nebula|clear] [--frames]
 # --frames also saves every frame of the volley (frame_###.png) for a short clip; with Godot's --write-movie the same
@@ -32,6 +33,16 @@ func _init() -> void:
 
 
 func _run() -> void:
+	# Artoo (PR 1220): the battle writes its options (and the look writes its cfg) to user://. Refuse to start unless the
+	# launcher pointed user:// at a disposable profile (VS_CAPTURE_PROFILE, the folder APPDATA was set to), so a capture
+	# never touches the player's own settings.
+	var prof := OS.get_environment("VS_CAPTURE_PROFILE").replace("\\", "/").to_lower().trim_suffix("/")
+	var udir := ProjectSettings.globalize_path("user://").replace("\\", "/").to_lower()
+	if prof == "" or not udir.begins_with(prof + "/"):
+		printerr("HIT_CAPTURE_REFUSED user:// is %s, not inside VS_CAPTURE_PROFILE (%s): run it from shots1211.bat" % [udir, prof])
+		quit(2)
+		return
+	print("HIT_CAPTURE profile ", udir)
 	OS.set_environment("VS_NEBULA_ROUTE", "fog")
 	LOOK.set_look("cine", false)
 	var out := str(args.get("out", "user://hit_timing_capture"))
