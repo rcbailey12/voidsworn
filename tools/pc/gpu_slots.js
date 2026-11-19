@@ -1,11 +1,12 @@
 'use strict';
 // R293: shared capacity by load, or one solo measurement. Node 22, no packages.
 // All tools copies read ROOT/gpu_slots.json: { "sharedSlots": 2 } (missing = 2).
-// The watchdog owns the claim, so killing its tree leaves a reclaimable dead PID.
+// A claim follows the watchdog and its GPU child until both are gone.
 const fs = require('fs');
 const path = require('path');
 const net = require('net');
 const crypto = require('crypto');
+const { spawnSync } = require('child_process');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const slotName = index => 'gpu_slot_' + index;
 const realClock = { now: () => performance.now(), sleep };
@@ -20,10 +21,64 @@ function positiveInteger(value, label) {
   }
   return number;
 }
-const alive = pid => {
-  if (!Number.isInteger(pid) || pid <= 0) return false;
-  try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; }
-};
+const validPid = pid => Number.isSafeInteger(pid) && pid > 0 && pid <= 0x7fffffff;
+const validIdentity = item => validPid(item?.pid) && typeof item.startTime === 'string' && item.startTime &&
+  typeof item.exe === 'string' && item.exe;
+function processIdentities(pids) {
+  const ids = [...new Set(pids.filter(validPid))];
+  if (!ids.length) return new Map();
+  if (process.platform === 'win32') {
+    // One query for the entire transaction. Use the same name and UTC file time as the watchdog.
+    const command = `$ErrorActionPreference = 'Stop'
+      foreach ($id in @(${ids.join(',')})) {
+        try {
+          $p = [Diagnostics.Process]::GetProcessById($id)
+          try {
+            $start = $p.StartTime.ToFileTimeUtc()
+            $name = $p.ProcessName.ToLowerInvariant()
+            if (-not $p.HasExited) { "$id|$start|$name" }
+          } finally { $p.Dispose() }
+        } catch [ArgumentException] {} catch [InvalidOperationException] {} catch [ComponentModel.Win32Exception] {}
+      }
+      exit 0`;
+    const query = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+      '[Console]::OutputEncoding = [Text.Encoding]::UTF8; ' + command], { encoding: 'utf8', windowsHide: true, timeout: 4000 });
+    if (query.status !== 0) throw new Error('GPU process lookup failed: ' + (query.error?.message || query.stderr.trim()));
+    return new Map(query.stdout.trim().split(/\r?\n/).filter(Boolean).map(line => {
+      const [pid, startTime, exe] = line.split('|');
+      return [Number(pid), { pid: Number(pid), startTime, exe }];
+    }));
+  }
+  const boot = fs.readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim();
+  const found = new Map();
+  for (const pid of ids) {
+    try {
+      const stat = fs.readFileSync(`/proc/${pid}/stat`, 'utf8');
+      const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
+      if (fields[0] === 'Z' || fields[0] === 'X') continue;
+      const exe = path.basename(fs.readlinkSync(`/proc/${pid}/exe`));
+      found.set(pid, { pid, startTime: `${boot}:${fields[19]}`, exe });
+    } catch (e) {
+      if (!['ENOENT', 'ESRCH', 'EACCES', 'EPERM'].includes(e.code)) throw e;
+    }
+  }
+  return found;
+}
+function matches(item, identities) {
+  const current = identities.get(item?.pid);
+  return !!current && current.startTime === item.startTime && current.exe === item.exe;
+}
+function processes(item) {
+  return item.state === 'orphaned_child' ? item.survivors : [item, item.child].filter(Boolean);
+}
+function claimLabel(issue, jobDir, exe, args) {
+  const explicit = [issue, jobDir].map(value => String(value ?? '').trim()).find(Boolean);
+  if (explicit) return explicit;
+  const script = /(?:^|\s)(?:"([^"]+)"|(\S+?))(?=\s|$)/g;
+  const scriptName = [exe, ...[...args.matchAll(script)].map(match => match[1] || match[2])]
+    .find(value => /\.(?:bat|cmd|ps1|gd|tscn|py|js|mjs|cjs|sh)$/i.test(value));
+  return scriptName ? path.win32.basename(scriptName) : '';
+}
 
 // An OS-owned localhost bind serializes short file transactions across ALL tools
 // copies. The OS drops it after a crash. No lock or job files are ever deleted.
@@ -47,7 +102,7 @@ async function transaction(fn, check = () => {}, deadline, clock = realClock) {
 }
 
 class Slots {
-  constructor(root, isAlive = alive) { this.root = root; this.isAlive = isAlive; }
+  constructor(root, identify = processIdentities) { this.root = root; this.identify = identify; }
   capacity() {
     const config = this.read('gpu_slots.json');
     // Only a missing file uses the default. A damaged setting fails closed.
@@ -64,13 +119,33 @@ class Slots {
       return text ? JSON.parse(text) : null;
     } catch (e) {
       if (e.code === 'ENOENT') return null;
-      // A damaged holder file must never silently grant another worker a slot.
       throw e;
+    }
+  }
+  // Only slot transactions can move a damaged claim. Settings never use this path.
+  readClaim(name) {
+    try {
+      const item = this.read(name);
+      if (item !== null && (typeof item.token !== 'string' || !item.token || !validPid(item.pid) ||
+          (item.child && !validIdentity(item.child)) ||
+          (item.state === 'orphaned_child' && (!Array.isArray(item.survivors) || !item.survivors.every(validIdentity))))) {
+        throw new SyntaxError('invalid GPU claim');
+      }
+      return item;
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) throw e;
+      const archive = `gpu_slot_corrupt_${Date.now()}_${crypto.randomUUID()}`;
+      fs.renameSync(path.join(this.root, name), path.join(this.root, archive));
+      console.error(`GPU claim: moved damaged ${name} to ${archive}`);
+      return null;
     }
   }
   write(name, value) {
     fs.mkdirSync(this.root, { recursive: true });
-    fs.writeFileSync(path.join(this.root, name), value ? JSON.stringify(value) + '\n' : '');
+    const target = path.join(this.root, name);
+    const temp = target + '.tmp-' + crypto.randomUUID();
+    fs.writeFileSync(temp, value ? JSON.stringify(value) + '\n' : '', { flag: 'wx' });
+    fs.renameSync(temp, target);
   }
   cleared() {
     try { return /^GPU cleared(?:\s*:.*)?$/i.test(fs.readFileSync(path.join(this.root, 'gpu_go.txt'), 'utf8').split(/\r?\n/)[0].trim()); }
@@ -82,14 +157,19 @@ class Slots {
     if (holder.mode === 'shared' && weight > capacity) throw new Error(`GPU weight ${weight} exceeds shared capacity ${capacity}`);
     return { capacity, weight };
   }
-  step(holder, waiterPid = holder.pid) {
+  step(holder, waiter = holder) {
     const { capacity, weight } = this.checkWeight(holder);
-    const state = this.names().map(name => {
-      const item = this.read(name);
-      if (item && !this.isAlive(item.pid)) { this.write(name, null); return null; }
+    if (!holder.issue?.trim()) throw new Error('GPU claim requires a label (PC_GPU_ISSUE, JOB_DIR or script name)');
+    const names = this.names();
+    const claims = names.map(name => this.readClaim(name));
+    const identities = this.identify([holder.pid, ...claims.filter(Boolean).flatMap(item => processes(item).map(p => p.pid))]);
+    if (!matches(holder, identities)) throw new Error('GPU admission cancelled: owner exited or identity changed');
+    // A child registered in any copy holds the whole weighted claim, even if a writer died between renames.
+    const liveTokens = new Set(claims.filter(item => item && processes(item).some(p => matches(p, identities))).map(item => item.token));
+    const state = claims.map((item, index) => {
+      if (item && !liveTokens.has(item.token)) { this.write(names[index], null); return null; }
       return item;
     });
-    if (!this.isAlive(holder.pid)) throw new Error('GPU admission cancelled: owner exited');
     if (!this.cleared()) return null;
     // Include claims above a lowered capacity until they exit or are reclaimed.
     const occupied = state.slice(0, -1).filter(Boolean);
@@ -99,7 +179,7 @@ class Slots {
       // Reserve priority before draining existing shared workers. New workers wait.
       // While draining, the waiting helper owns the reservation. If it is killed
       // outright, the next caller can reclaim it even if the watchdog is alive.
-      if (!pending) this.write('gpu_solo', { ...holder, pid: waiterPid });
+      if (!pending) this.write('gpu_solo', { ...holder, ...waiter });
       if (occupied.length) return null;
       this.write('gpu_slot_1', holder);
       this.write('gpu_solo', holder);
@@ -112,13 +192,30 @@ class Slots {
     const free = [];
     for (let index = 1; free.length < weight; index++) {
       const name = slotName(index);
-      if (!this.read(name)) free.push(name);
+      if (!this.readClaim(name)) free.push(name);
     }
     for (const name of free) this.write(name, holder);
     return holder;
   }
+  update(token, action, identities) {
+    if (!Array.isArray(identities) || !identities.length || !identities.every(validIdentity) ||
+        (action === 'track' && identities.length !== 1)) throw new Error('GPU claim update requires process identities');
+    let found = false;
+    for (const name of this.names()) {
+      const item = this.readClaim(name);
+      if (item?.token !== token) continue;
+      const changes = action === 'track' ? { child: identities[0] } : { state: 'orphaned_child', survivors: identities };
+      this.write(name, { ...item, ...changes });
+      found = true;
+    }
+    if (!found) throw new Error('GPU claim to update was not found');
+  }
   release(token) {
-    for (const name of this.names()) if (this.read(name)?.token === token) this.write(name, null);
+    const entries = this.names().map(name => [name, this.readClaim(name)]).filter(([, item]) => item && item.token === token);
+    const children = entries.flatMap(([, item]) => item.state === 'orphaned_child' ? item.survivors : [item.child].filter(Boolean));
+    const identities = this.identify(children.map(p => p.pid));
+    if (children.some(p => matches(p, identities))) throw new Error('GPU claim still has a live child');
+    for (const [name] of entries) this.write(name, null);
   }
 }
 
@@ -179,26 +276,39 @@ async function main() {
   if (action === 'classify') {
     const input = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''));
     const mode = modeFor(input.exe, input.args, input.cwd, input.requested);
-    console.log(JSON.stringify({ mode, weight: mode ? weightFor(input.exe, input.weight) : 1 }));
+    console.log(JSON.stringify({ mode, weight: mode ? weightFor(input.exe, input.weight) : 1,
+      label: claimLabel(input.issue, input.jobDir, input.exe, input.args) }));
     return;
   }
   if (!root) throw new Error('GPU root is required');
   const slots = new Slots(root);
   if (action === 'release') { await transaction(() => slots.release(issue)); return; }
+  if (action === 'track' || action === 'orphan') {
+    const identities = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''));
+    await transaction(() => slots.update(issue, action, identities));
+    return;
+  }
   if (action !== 'acquire' || !['shared', 'solo'].includes(mode)) throw new Error('Usage: gpu_slots.js acquire ROOT ISSUE PID shared|solo [WEIGHT]');
   const lane = codeOnlyLane(process.env.PC_GPU_LANE, process.cwd());
   if (lane) throw new Error(`Lane ${lane} is code only; GPU work refused`);
-  const holder = { token: crypto.randomUUID(), issue, pid: Number(pid), mode,
+  const label = claimLabel(issue, process.env.JOB_DIR, '', '');
+  if (!label) throw new Error('GPU claim requires a label (PC_GPU_ISSUE, JOB_DIR or script name)');
+  const holder = { token: crypto.randomUUID(), issue: label, pid: Number(pid), mode,
     weight: positiveInteger(weight, 'GPU weight'), started: new Date().toISOString() };
   const waitSeconds = positiveInteger(process.env.PC_GPU_WAIT_SECONDS ?? '300', 'PC_GPU_WAIT_SECONDS');
   if (waitSeconds > MAX_WAIT_SECONDS) throw new Error(`PC_GPU_WAIT_SECONDS must be at most ${MAX_WAIT_SECONDS}`);
   slots.checkWeight(holder); // Fail even if the go gate is closed or the slot lock is busy.
+  const identities = slots.identify([holder.pid, process.pid]);
+  const owner = identities.get(holder.pid);
+  if (!owner) throw new Error('GPU admission cancelled: owner exited or identity unavailable');
+  Object.assign(holder, owner);
   let cancelled = false;
   const cancel = () => { cancelled = true; };
   process.on('SIGINT', cancel);
   process.on('SIGTERM', cancel);
   try {
-    await admit(slots, holder, { waitSeconds, cancelled: () => cancelled, onWait: () => console.log('WAIT') });
+    await admit(slots, holder, { waitSeconds, waiter: identities.get(process.pid),
+      cancelled: () => cancelled, onWait: () => console.log('WAIT') });
     console.log(holder.token);
   } finally {
     process.off('SIGINT', cancel);
@@ -209,18 +319,18 @@ async function main() {
 // Wait for a claim until waitSeconds pass. Resolves with the holder once it is written; throws "admission timed out" or
 // "admission cancelled" (owner exited, or cancelled() turned true) and then releases anything it reserved. tx and clock are
 // for tests: tx defaults to the localhost lock, clock to the real one.
-async function admit(slots, holder, { waitSeconds, cancelled = () => false, onWait = () => {}, waiterPid = process.pid,
+async function admit(slots, holder, { waitSeconds, cancelled = () => false, onWait = () => {}, waiter = holder,
   clock = realClock, tx = transaction } = {}) {
   const deadline = clock.now() + waitSeconds * 1000;
   let handedOff = false, touched = false;
   const check = () => {
-    if (cancelled() || !slots.isAlive(holder.pid)) throw new Error('GPU admission cancelled');
+    if (cancelled()) throw new Error('GPU admission cancelled');
     if (clock.now() >= deadline) throw new Error(`GPU admission timed out after ${waitSeconds} seconds`);
   };
   let heartbeat = clock.now();
   try {
     for (;;) {
-      const claim = await tx(() => { touched = true; return slots.step(holder, waiterPid); }, check, deadline, clock);
+      const claim = await tx(() => { touched = true; return slots.step(holder, waiter); }, check, deadline, clock);
       check();
       if (claim) { handedOff = true; return claim; }
       if (clock.now() - heartbeat >= 60000) { onWait(); heartbeat = clock.now(); }
@@ -233,4 +343,4 @@ async function admit(slots, holder, { waitSeconds, cancelled = () => false, onWa
   }
 }
 if (require.main === module) main().catch(e => { console.error('GPU claim: ' + e.message); process.exitCode = 1; });
-module.exports = { Slots, modeFor, weightFor, transaction, codeOnlyLane, admit, MAX_WAIT_SECONDS };
+module.exports = { Slots, modeFor, weightFor, claimLabel, transaction, codeOnlyLane, admit, MAX_WAIT_SECONDS };

@@ -10,7 +10,7 @@ const net = require('net');
 const { spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const helper = path.join(pc, 'gpu_slots.js');
-const { Slots, modeFor, weightFor, codeOnlyLane, admit, transaction, MAX_WAIT_SECONDS } = require(helper);
+const { Slots, modeFor, weightFor, claimLabel, codeOnlyLane, admit, transaction, MAX_WAIT_SECONDS } = require(helper);
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gpu847 '));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const children = [];
@@ -45,13 +45,16 @@ const fails = async (promise, pattern) => {
   try { await promise; } catch (e) { assert.match(e.message, pattern); return; }
   throw new Error('expected a failure matching ' + pattern);
 };
-const holder = (pid, mode = 'shared') => ({ pid, mode, token: String(pid), issue: '847', started: 'fake start' });
+const identity = pid => ({ pid, startTime: 'fake time ' + pid, exe: 'fake.exe' });
+const holder = (pid, mode = 'shared') => ({ ...identity(pid), mode, token: String(pid), issue: '847', started: 'fake start' });
 const capacity = (root, count) => put(path.join(root, 'gpu_slots.json'), JSON.stringify({ sharedSlots: count }));
 const used = slots => slots.names().filter(name => name !== 'gpu_solo' && slots.read(name));
 async function main() {
   const fakeRoot = path.join(root, 'fake');
   const live = new Set([1, 2, 3, 4]);
-  const slots = new Slots(fakeRoot, pid => live.has(pid));
+  const replacements = new Map();
+  const identify = pids => new Map(pids.filter(pid => live.has(pid)).map(pid => [pid, replacements.get(pid) || identity(pid)]));
+  const slots = new Slots(fakeRoot, identify);
   assert.equal(slots.step(holder(1)), null, 'missing go must block');
   put(path.join(fakeRoot, 'gpu_go.txt'), 'GPU not cleared\nGPU cleared');
   assert.equal(slots.step(holder(1)), null);
@@ -87,7 +90,7 @@ async function main() {
   assert.equal(slots.step(heavy), null, 'weight 2 cannot fit in one free slot');
   assert.equal(used(slots).length, 1, 'a waiting heavy job must not hold a partial claim');
   capacity(fakeRoot, 3);
-  assert(new Slots(fakeRoot, pid => live.has(pid)).step(heavy), 'other tools copies must read the same raised capacity');
+  assert(new Slots(fakeRoot, identify).step(heavy), 'other tools copies must read the same raised capacity');
   assert.equal(used(slots).length, 3);
   slots.release('2'); assert.equal(used(slots).length, 1, 'release must clear the whole weight');
   assert(slots.step(holder(2))); assert(slots.step(holder(3)));
@@ -129,6 +132,67 @@ async function main() {
   }
   pass('invalid capacity and weights fail closed');
 
+  const recoveryRoot = path.join(root, 'recovery');
+  const recovering = new Slots(recoveryRoot, identify);
+  put(path.join(recoveryRoot, 'gpu_go.txt'), 'GPU cleared');
+  capacity(recoveryRoot, 2);
+  for (const name of ['gpu_slot_1', 'gpu_solo']) put(path.join(recoveryRoot, name), '{"half":');
+  put(path.join(recoveryRoot, 'gpu_slot_2.tmp-interrupted'), '{"half":');
+  assert(recovering.step(holder(1)));
+  assert.equal(recovering.read('gpu_slot_1').pid, 1);
+  const archives = fs.readdirSync(recoveryRoot).filter(name => /^gpu_slot_corrupt_/.test(name));
+  assert.equal(archives.length, 2);
+  for (const name of archives) assert.equal(fs.readFileSync(path.join(recoveryRoot, name), 'utf8'), '{"half":');
+  assert.equal(fs.readFileSync(path.join(recoveryRoot, 'gpu_slot_2.tmp-interrupted'), 'utf8'), '{"half":');
+  const rename = fs.renameSync;
+  try {
+    fs.renameSync = (source, target) => {
+      assert.equal(target, path.join(recoveryRoot, 'gpu_slot_1'));
+      assert.equal(path.dirname(source), recoveryRoot);
+      assert.equal(JSON.parse(fs.readFileSync(source, 'utf8')).pid, 2);
+      assert.equal(recovering.read('gpu_slot_1').pid, 1);
+      throw new Error('simulated interruption before rename');
+    };
+    assert.throws(() => recovering.write('gpu_slot_1', holder(2)), /interruption/);
+  } finally { fs.renameSync = rename; }
+  assert.equal(recovering.read('gpu_slot_1').pid, 1);
+  pass('interrupted writes leave the previous claim whole and damaged slot and solo files are archived');
+
+  for (const changed of [{ startTime: 'new start' }, { exe: 'service.exe' }]) {
+    replacements.set(1, { ...identity(1), ...changed });
+    assert(recovering.step({ ...holder(2), weight: 2 }), 'reused owner PID must be reclaimed');
+    recovering.release('2');
+    replacements.delete(1);
+    assert(recovering.step(holder(1)));
+  }
+  recovering.release('1');
+  assert(recovering.step({ ...holder(1), weight: 2 }));
+  // Only one copy was updated when the writer died. The surviving child holds both units.
+  recovering.write('gpu_slot_1', { ...recovering.read('gpu_slot_1'), child: identity(2) });
+  live.delete(1);
+  assert.equal(recovering.step(holder(3)), null, 'watchdog death must not free its GPU child');
+  assert.throws(() => recovering.release('1'), /live child/);
+  recovering.update('1', 'orphan', [identity(2), identity(3)]);
+  assert.equal(recovering.read('gpu_slot_2').state, 'orphaned_child');
+  replacements.set(2, { ...identity(2), startTime: 'reused child PID' });
+  const nextSolo = { ...holder(2, 'solo'), ...replacements.get(2) };
+  assert.equal(recovering.step(nextSolo), null, 'one survivor still holds the whole claim');
+  live.delete(3);
+  assert(recovering.step(nextSolo), 'dead survivors must free the claim');
+  recovering.release('2');
+  pass('PID reuse, watchdog death, and orphaned child claims use the full process identity');
+
+  assert.equal(claimLabel(' 847 ', 'job', '', ''), '847');
+  assert.equal(claimLabel(' ', ' opus1193 ', '', ''), 'opus1193');
+  assert.equal(claimLabel('', '', 'blender.exe', '-P "C:\\Ship Tools\\render.py" -- out'), 'render.py');
+  assert.equal(claimLabel('', '', 'godot.exe', '--script res://fx/check.gd'), 'check.gd');
+  assert.equal(claimLabel('', '', 'job.cmd', ''), 'job.cmd');
+  assert.throws(() => recovering.step({ ...holder(2), issue: ' ' }), /requires a label/);
+  const anonymous = await client(['acquire', recoveryRoot, '', String(process.pid), 'shared'], { JOB_DIR: '' }).result;
+  assert.notEqual(anonymous.code, 0); assert.match(anonymous.error, /requires a label/);
+  assert.equal(used(recovering).length, 0);
+  pass('claims use issue, job directory or script and refuse empty labels');
+
   const project = path.join(root, 'project');
   put(path.join(project, 'capture.gd'), 'extends SceneTree\n# capture only\n');
   put(path.join(project, 'timing.gd'), 'var sample = Performance.get_monitor(Performance.TIME_PROCESS)');
@@ -165,7 +229,7 @@ async function main() {
   catch { throw new Error('impossible GPU weight waited for admission'); }
   assert.match((await tooHeavy.result).error, /exceeds.*capacity/i);
   // The go gate closed: admission ends with "admission timed out" after exactly its own wait, on the fake clock.
-  const closedSlots = new Slots(closed);
+  const closedSlots = new Slots(closed, pids => new Map(pids.map(pid => [pid, identity(pid)])));
   const gateClock = fakeClock();
   await fails(admit(closedSlots, { ...holder(process.pid), token: 'gate', weight: 1 }, { waitSeconds: 1, clock: gateClock }),
     /admission timed out after 1 seconds/);
@@ -216,8 +280,9 @@ async function main() {
   // release the reservation it made.
   let sawReservation = false;
   const soloClock = fakeClock(() => { if (rs.read('gpu_solo')) sawReservation = true; });
-  await fails(admit(rs, { ...holder(workers[3].pid, 'solo'), token: 'timed-solo', weight: 1 },
-    { waitSeconds: 1, clock: soloClock, waiterPid: workers[3].pid }), /admission timed out/);
+  const waiterIdentity = rs.identify([workers[3].pid]).get(workers[3].pid);
+  await fails(admit(rs, { ...holder(workers[3].pid, 'solo'), ...waiterIdentity, token: 'timed-solo', weight: 1 },
+    { waitSeconds: 1, clock: soloClock }), /admission timed out/);
   assert(sawReservation, 'the solo waiter never reserved gpu_solo');
   assert.equal(rs.read('gpu_solo'), null, 'timeout must release the pending solo reservation');
   pass('pending solo releases on cancellation and on admission timeout');
@@ -290,8 +355,6 @@ async function main() {
     assert(fs.readFileSync(path.join(pc, name + '.ps1'), 'utf8').includes('tmo.bat'));
     assert(fs.readFileSync(path.join(pc, name + '.ps1'), 'utf8').includes('PC_GPU_WEIGHT=2'));
   }
-  const watchdog = fs.readFileSync(path.join(pc, 'run_timeout.ps1'), 'utf8');
-  assert(watchdog.includes('finally {\n  if ($gpuToken)'));
   const lb = fs.readFileSync(path.join(pc, 'jobs/look_bench.bat'), 'utf8');
   assert(!lb.includes('GEQ 60 goto gpufree'));
   assert(fs.readFileSync(path.resolve(pc, '../recipe/2_shape_ref.bat'), 'utf8').includes('PC_GPU_WEIGHT=2'));
@@ -305,24 +368,38 @@ async function main() {
 async function windowsWatchdog() {
   const home = path.join(root, 'watchdog');
   put(path.join(home, 'gpu_go.txt'), 'GPU cleared');
+  function fakeExecutable(source, name) {
+    const target = path.join(home, name);
+    try { fs.linkSync(source, target); }
+    catch (e) {
+      if (e.code !== 'EPERM' && e.code !== 'EXDEV') throw e;
+      fs.copyFileSync(source, target);
+    }
+    return target;
+  }
   const probe = path.join(home, 'probe.js');
   put(probe, `const fs = require('fs'); const { Slots } = require(${JSON.stringify(helper)});
 const slots = new Slots(${JSON.stringify(home)});
 const claims = slots.names().filter(n => n !== 'gpu_solo').map(n => slots.read(n)).filter(Boolean);
-fs.writeFileSync(process.argv[2], JSON.stringify({ claims, weightEnv: process.env.PC_GPU_WEIGHT, modeEnv: process.env.PC_GPU_MODE }));
+const marker = process.argv[2];
+fs.writeFileSync(marker + '.tmp', JSON.stringify({ claims, pid: process.pid, weightEnv: process.env.PC_GPU_WEIGHT, modeEnv: process.env.PC_GPU_MODE }));
+fs.renameSync(marker + '.tmp', marker);
 setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`);
-  async function run(exe, args, extra = {}) {
+  function start(exe, args, extra = {}, seconds = 1) {
     const p = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'run_timeout.ps1')], {
       cwd: root, windowsHide: true, env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GPU_ROOT: home,
         PC_GPU_LANE: '', PC_GPU_MODE: 'shared', PC_GPU_WEIGHT: '', PC_GPU_ISSUE: '847', PC_GPU_WAIT_SECONDS: '300', PC_TEST_POLL_MS: '30',
         PC_TEST_TIMEOUT_LOG: path.join(home, 'timeouts.log'), TMO_REPO: '', TMO_OUT: '', TMO_LOG: '',
-        TMO_ARGS: `1 "${exe}" ${args}`, ...extra }
+        JOB_DIR: '', TMO_ARGS: `${seconds} "${exe}" ${args}`, ...extra }
     });
     children.push(p);
     let output = ''; p.stdout.on('data', b => { output += b; }); p.stderr.on('data', b => { output += b; });
-    const code = await new Promise((resolve, reject) => { p.on('error', reject); p.on('exit', resolve); });
-    return { code, output };
+    p.result = new Promise((resolve, reject) => {
+      p.on('error', reject); p.on('exit', code => resolve({ code, output }));
+    });
+    return p;
   }
+  const run = (exe, args, extra) => start(exe, args, extra).result;
   const marker = path.join(home, 'started.txt');
   const rs = new Slots(home);
   const notStarted = path.join(home, 'admission_started.txt');
@@ -338,6 +415,8 @@ setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`
     assert.equal(r.code, expect, r.output); assert(fs.existsSync(marker));
     const observed = JSON.parse(fs.readFileSync(marker, 'utf8'));
     assert.equal(observed.claims.length, 2); assert(observed.claims.every(c => c.weight === 2));
+    assert(observed.claims.every(c => c.child?.pid === observed.pid && c.child.startTime && c.child.exe),
+      'the child must be registered in both slots before it runs');
     assert(!observed.weightEnv && !observed.modeEnv, 'a forced load must not leak to nested commands');
     assert.equal(rs.read('gpu_slot_1'), null); assert.equal(rs.read('gpu_slot_2'), null);
   }
@@ -349,8 +428,7 @@ setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`
   const invalidMarker = path.join(home, 'invalid_started.txt');
   const invalid = await run(process.execPath, `"${probe}" "${invalidMarker}" 0 0`, { PC_GPU_WEIGHT: '0' });
   assert.notEqual(invalid.code, 0); assert(!fs.existsSync(invalidMarker));
-  const fakeBlender = path.join(home, 'blender.exe');
-  fs.linkSync(process.execPath, fakeBlender);
+  const fakeBlender = fakeExecutable(process.execPath, 'blender.exe');
   const blended = await run(fakeBlender, `"${probe}" "${marker}" 0 0`, { PC_GPU_MODE: '' });
   assert.equal(blended.code, 0, blended.output);
   assert.equal(JSON.parse(fs.readFileSync(marker, 'utf8')).claims.length, 2, 'Blender must default to weight 2');
@@ -361,10 +439,55 @@ setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`
   assert.equal(used(rs).length, 0);
   pass('Windows watchdog uses weights and live capacity, clears nested overrides, releases on exit/timeout/start failure, refuses lane C and invalid weights');
 
-  // A hard link to Node is a fake Godot executable: it writes a marker instead of
+  for (const [jobDir, label] of [['job 1193', 'job 1193'], ['', 'probe.js']]) {
+    const named = await run(process.execPath, `"${probe}" "${marker}" 0 0`, { PC_GPU_ISSUE: '', JOB_DIR: jobDir });
+    assert.equal(named.code, 0, named.output);
+    assert.equal(JSON.parse(fs.readFileSync(marker, 'utf8')).claims[0].issue, label);
+  }
+  const anonymous = await run(process.execPath, '-e "process.exit(99)"', { PC_GPU_ISSUE: ' ' });
+  assert.equal(anonymous.code, 126, anonymous.output);
+  assert.match(anonymous.output, /set PC_GPU_ISSUE or JOB_DIR/);
+  assert.equal(used(rs).length, 0);
+  pass('Windows watchdog resolves a missing issue label before launching and refuses anonymous launches');
+
+  capacity(home, 1);
+  const brokenKiller = path.join(home, 'failed_kill.cmd');
+  put(brokenKiller, '@echo off\r\nexit /b 1\r\n');
+  for (const failedKill of [false, true]) {
+    const lifeMarker = path.join(home, failedKill ? 'failed_kill.json' : 'dead_watchdog.json');
+    const extra = failedKill ? { PC_TEST_TASKKILL: brokenKiller, PC_TEST_FAIL_KILL: '1' } : {};
+    const watchdog = start(process.execPath, `"${probe}" "${lifeMarker}" 0 10000`, extra, failedKill ? 1 : 30);
+    await until(() => fs.existsSync(lifeMarker));
+    const { pid: childPid } = JSON.parse(fs.readFileSync(lifeMarker, 'utf8'));
+    try {
+      if (!failedKill) watchdog.kill();
+      const stopped = await watchdog.result;
+      assert.notEqual(stopped.code, 0, stopped.output);
+      assert.doesNotThrow(() => process.kill(childPid, 0), 'the probe must outlive its watchdog');
+      const held = rs.read('gpu_slot_1');
+      if (failedKill) {
+        assert.match(stopped.output, /KILL FAILED: surviving PIDs/);
+        assert.equal(held.state, 'orphaned_child');
+        assert.deepEqual(held.survivors, [held.child]);
+        assert.match(fs.readFileSync(path.join(home, 'timeouts.log'), 'utf8'), /retaining claim .* as orphaned_child/);
+      } else { assert.equal(held.child.pid, childPid); }
+      const release = await client(['release', home, held.token]).result;
+      assert.notEqual(release.code, 0); assert.match(release.error, /live child/);
+      const blocked = await client(['acquire', home, 'other', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '1' }).result;
+      assert.notEqual(blocked.code, 0); assert.match(blocked.error, /admission timed out/);
+    } finally {
+      try { process.kill(childPid); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+    }
+    const next = await client(['acquire', home, 'other', String(process.pid), 'shared']).result;
+    assert.equal(next.code, 0, next.error);
+    assert.equal((await client(['release', home, next.text]).result).code, 0);
+    assert.equal(rs.read('gpu_slot_1'), null);
+  }
+  pass('Windows watchdog loss and failed kills hold capacity until the real surviving child exits');
+
+  // Node under a different name is a fake Godot executable: it writes a marker instead of
   // rendering. This exercises automatic classification through the real watchdog.
-  const fakeGodot = path.join(home, 'Godot_fake.exe');
-  fs.linkSync(process.execPath, fakeGodot);
+  const fakeGodot = fakeExecutable(fakeBlender, 'Godot_fake.exe');
   const held = await client(['acquire', home, '847', String(process.pid), 'shared']).result;
   assert.equal(held.code, 0, held.error);
   const soloMarker = path.join(home, 'solo_started.txt');
