@@ -1,16 +1,16 @@
 @echo off
 rem Issue 1217 front-end pictures with the live title battle (built ships), for Ryan via the Board (R334).
-rem Usage: OPUS1217_FRONTEND.bat [branch]   default branch opus/issue-1217-p2 (phase 2, the title screen).
+rem Usage: OPUS1217_FRONTEND.bat [branch]   default branch opus/issue-1217-p4 (phases 2 to 4: title, desk, flagship podium).
 rem Its own clone in Downloads\voidsworn_test\opus1217\repo; built ships copied in from the audit2 checkout (copy only,
 rem robocopy without purge). Nothing on the PC is deleted. Each Godot run goes through tmo.bat, so the GPU slots hold.
-rem Runs godot/ui/test/front_end_shots.gd (title, Settings drawer, Credits drawer at Normal and Larger, then the setup
-rem page) at 1920x1080 and 3840x2160. Output: Downloads\voidsworn_test\opus1217\shots\<1080|2160>\ and status.txt.
+rem Runs godot/ui/test/front_end_shots.gd (title, Settings drawer, Credits drawer at Normal and Larger, the setup desk
+rem and the flagship podium) at 1920x1080 and 3840x2160. Output: Downloads\voidsworn_test\opus1217\shots\<1080|2160>\ and status.txt.
 setlocal enabledelayedexpansion
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "H=%VT%\opus1217"
 set "R=%H%\repo"
 set "BR=%~1"
-if "%BR%"=="" set "BR=opus/issue-1217-p2"
+if "%BR%"=="" set "BR=opus/issue-1217-p4"
 if "%LB_SHIPS%"=="" set "LB_SHIPS=%VT%\audit2\repo\godot"
 set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
