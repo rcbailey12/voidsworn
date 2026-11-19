@@ -11,7 +11,7 @@ mkdir "%P%\.godot\shader_cache" 2>nul
 robocopy "%~dp0..\.." "%P%" /E /XD .godot gen /NFL /NDL /NJH /NJS >nul
 if errorlevel 8 goto failed
 if not exist "%P%\gen" mklink /J "%P%\gen" "%VSROOT%\build\godot\gen" >nul
-robocopy "%VSROOT%\build\godot\assets\ships" "%P%\assets\ships" *.jpg *.jpg.import /S /NFL /NDL /NJH /NJS >nul
+robocopy "%VSROOT%\build\godot\assets\ships" "%P%\assets\ships" *.jpg *.jpg.import *.png *.png.import /S /NFL /NDL /NJH /NJS >nul
 if errorlevel 8 goto failed
 for /d %%D in ("%VSROOT%\build\godot\assets\ships\*") do (
   robocopy "%VSROOT%\build\godot\.godot\imported" "%P%\.godot\imported" %%~nxD*.ctex /NFL /NDL /NJH /NJS >nul
