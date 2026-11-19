@@ -1,0 +1,54 @@
+{
+  "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+  "source_dirty": true,
+  "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "sheet.jpg",
+  "date": "2026-11-19T15:19:00Z",
+  "sources": [
+    {
+      "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+      "source_dirty": true,
+      "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "sheet.jpg",
+      "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+      "source_dirty": true,
+      "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+      "stage": "sheet built",
+      "date": "2026-11-19T15:18:54Z",
+      "image_sha256": "7c32788b90c5ada08b7ecb49b1419482c191ce54bfcb23701d84ad0533453ccd",
+      "sources": [
+        {
+          "source_commit": "d1b04f89f5951b455688e3e523271b7b065c82e9",
+          "source_dirty": true,
+          "source_diff_sha256": "d68e5fb859364bf302540b45a94bae8f2b90873769877f52bf61cbc3891bb799",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    9946,
+    564,
+    10044
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "43207eedf1031501366591fbc3329067a2a0dce4080fb3f3b56060c4ef20378c"
+  ],
+  "stamp_template_sha256": "cf126f50d0dc94bdbcb428940e4393c2ed8bf1016d59383302f8caf0a735f82f",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEAPwb88fgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBEDOBQEuAUp54xaKAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "7e183d1681785f98076af9bc60f8194957983195ae40c190ef8da2716d54ba8e"
+}

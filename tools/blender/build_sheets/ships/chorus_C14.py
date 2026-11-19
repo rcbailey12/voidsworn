@@ -22,7 +22,7 @@ BEAUTY = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v
 KIT = 'chorus'
 CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_sheet_v5.jpg'
 # the sheet's true side view (bow LEFT) and its plan, drawn with the bow DOWN: turned 90 degrees clockwise to bow left (turn -90)
-CONCEPT_VIEWS = dict(top=dict(box=(20, 40, 590, 680), largest=True, flip=False, turn=-90), side=dict(box=(605, 120, 1180, 700), largest=True, flip=False))
+CONCEPT_VIEWS = dict(top=dict(box=(20, 40, 590, 680), largest=True, flip=False, rot=-90), side=dict(box=(605, 120, 1180, 700), largest=True, flip=False))
 CROPS = [('bow (the front folds and the spine pore)', (605, 200, 900, 560)), ('midships (the openings and the pore patch)', (760, 120, 1060, 640)),
          ('stern (membranes)', (950, 20, 1600, 560))]
 SHEET = dict(version=1, round='first layout (issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',

@@ -854,7 +854,7 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
                 for k in range(q):
                     u = k / (q - 1) - 0.5
                     cup = 0.22 * w * (u * u * 4 - 1) * (0.4 + 0.6 * t)   # cupped across its width
-                    edge = 0.05 * w * math.sin(t * 17 + k * 2.1 + ph) * (abs(u) * 2) ** 2   # rippled edges
+                    edge = 0.12 * w * math.sin(t * 17 + k * 2.1 + ph) * (abs(u) * 2) ** 2   # rippled edges
                     row.append(c + wv * (u * w) + nv * (cup + edge))
                 tops.append((row, nv))
             th = 0.008

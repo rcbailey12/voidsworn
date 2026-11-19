@@ -21,7 +21,7 @@ GAME = "data.js b_drone (cls 'Frigate'); length from godot/render/hull_table.gd 
 BEAUTY = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_v10.jpg'
 KIT = 'chorus'
 CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_sheet_v2.jpg'
-CONCEPT_VIEWS = dict(side=dict(box=(790, 140, 1880, 640), largest=True, flip=False))
+CONCEPT_VIEWS = dict(top=dict(box=(130, 20, 660, 940), largest=True, flip=False, rot=-90), side=dict(box=(790, 140, 1880, 640), largest=True, flip=False))
 CROPS = [('bow (the knoll and its spine crown)', (230, 350, 1050, 1000)), ('midships (the tendril knot and the domes)', (700, 200, 1500, 900)),
          ('stern (the trailing membranes)', (1150, 50, 1920, 750))]
 SHEET = dict(version=1, round='the first build sheet (issue 1153)', date='2026-11-19', blend='opus1153\\chorus_C12', px_per_unit=180, label_scale=1.6, bar_units=1.0,
@@ -63,7 +63,7 @@ def dense(key, step=0.15):
 HULL = dense(KEY)
 # the hide: callused pads at frigate scale (the plates are the hide's grain; R325's grown chitin plates are the paint stack's)
 PL = dict(size=(0.22, 0.45), thick=(0.012, 0.028), skip=0.15, stack=0.0, mats={'flesh': 5, 'hide': 3, 'flesh2': 2, 'scar': 0.3},
-          rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.016)
+          rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.016, stride=3)   # every third section: the loft is dense for a 6.5 hull
 MOUND_X = -0.45
 DOMES = (1.3, 0.5, -1.12)
 SACS = ((0.3, 1, 0.38), (-0.6, -1, 0.34))   # (x, side, r): the regrow reserve, one each side, staggered
@@ -79,7 +79,7 @@ def build(K):
     import random
     HP = _k.HP
 
-    hull = K.hull(HULL, 'flesh', shell=0.14, plates=dict(PL, seed=31, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
+    hull = K.hull(HULL, 'flesh', shell=0.14, plates=dict(PL, seed=31, inv='hide'), rounded=True, pexp=PEXP, n=30, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the compact knot of flesh', hull, 'dark olive flesh', note='narrow at the prow, widest a little aft of the middle, rounding into the stern')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
 
@@ -163,8 +163,8 @@ def build(K):
         a = 2 * math.pi * (k + 0.25) / VENTS
         y, z = 0.22 * math.cos(a), 0.01 + 0.2 * math.sin(a)
         K.engine('E%d' % (k + 1), (-1.93, y, z), 0.075, 0.42, bell=1.0, body_r=0.1, inv='vents', src='picture',
-                 kw=dict(trail='veil', trails=2, trail_len=1.55, veil=3.6, fan=0.785, splay=30.0, out_dir=(0, math.cos(a), math.sin(a)), seed=k),
-                 note='pulse vent with two wide flowing veils that fan, cup and curl, splayed away from the ring\'s centre')
+                 kw=dict(trail='veil', trails=3, trail_len=1.55, veil=2.7, fan=0.52, splay=30.0, out_dir=(0, math.cos(a), math.sin(a)), seed=k),
+                 note='pulse vent with three wide flowing veils that fan, cup and curl, splayed away from the ring\'s centre')
     K.mass('Vent ring', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents round the stern\'s end, their veils streaming aft')
 
     # ---------------- the back folds ----------------
@@ -181,7 +181,7 @@ def build(K):
             th = th0 + 0.05 * math.sin(t * 7 + k * 1.3) + 0.03 * math.sin(t * 17 + k)
             p_, n0 = K.hpt(x, th, out=-0.012); pts.append(p_); nrms.append(n0)
             env = math.sin(math.pi * (0.04 + 0.92 * t)) ** 0.5 * (1 + 0.25 * math.sin(t * 11 + k * 2.3))
-            ws.append(w * env + 0.02); hs.append(h * env + 0.005)
+            ws.append(w * env + 0.02); hs.append(0.6 * h * env + 0.004)
         vv, ff = HP.welt(pts, nrms, ws, hs, n=6)
         o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
     K.hull_detail('back_folds', (V, F), 'flesh2', inv='back_folds', kind='welt', subs=['welt'])
@@ -296,7 +296,7 @@ def build(K):
     K.change('The tendrils are laid on the hull clear of the hide and hang free below the waterline at their tips', 'they must not sit in the hull (fit check CLASH); the picture\'s tips hang off the flanks')
     K.change('The domes on the flanks are bile stores feeding the knoll; veins run forward to it', 'every part has a job (R221); designs.md does not name them; the picture shows three a side')
     K.change('The two hanging sacs are the regrow reserve, one each side, staggered', 'designs.md (regen 3); staggered so neither hides behind the other in the side view')
-    K.change('The stern is a ring of four pulse vents with two wide flowing veils each (a new kit trail, veil: thin sheets that fan, cup and curl), about 1.45 long', 'factions.md: no nozzles, trailing membranes; the picture\'s veils, cut to fit the 6.5 length; the Board on blockout v2: fewer, wider, curved sheets, never stiff blades')
+    K.change('The stern is a ring of four pulse vents with three wide flowing veils each (a new kit trail, veil: thin sheets that fan, cup and curl), about 1.45 long', 'factions.md: no nozzles, trailing membranes; the picture\'s veils, cut to fit the 6.5 length; the Board on blockout v2: fewer, wider, curved sheets, never stiff blades')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
     K.change('The back is wrinkled flesh with seven long folds running bow to stern under the tendrils; no bone on the back', 'the Board on blockout v2: the picture\'s back reads as lengthwise folds and ridges, and the scattered bone chunks read as debris; large relief that reads at camera 170')
     K.open_item('The belly is designed here: the sheet\'s bow-on view shows only the two sacs below')
