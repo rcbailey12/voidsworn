@@ -6,7 +6,8 @@ const { harness, setupBattle, encounters, sources, huntSettings } =
 // Use the recommended arm with the confirmed Hunt values. Generate bosses at
 // battle start, as the live campaign does, with the same JS trial placements.
 const rules = 'current';
-const trial = harness({ rules, revision: sources[rules] });
+const revision = require('child_process').execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+const trial = harness({ rules, revision });
 const huntTuning = { ...huntSettings[0], approachTurns: 6, exitLane: 0.15 };
 const factions = Object.keys(trial.FACTIONS);
 const fixtures = [];
