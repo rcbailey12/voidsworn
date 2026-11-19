@@ -1,0 +1,54 @@
+{
+  "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "underside.jpg",
+  "date": "2026-11-19T15:28:01Z",
+  "sources": [
+    {
+      "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "underside.png",
+      "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-19T15:27:48Z",
+      "image_sha256": "94d33654f681ba8b2775794351b59110f0529144b3c84f3c96354da8c6e34977",
+      "sources": [
+        {
+          "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    1609,
+    216,
+    1658
+  ],
+  "strip_size": [
+    216,
+    49
+  ],
+  "strip_sha256": [
+    "cbbad4f238bc1c7cc537da093a8b2a31f96887f158e0e2e39b3d21146c831083"
+  ],
+  "stamp_template_sha256": "9304352439f0ae9ee38f9a2aec8c89e1cba07b88189b35ca2747d77f7948b226",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAACo0lEQVR4nO3ZPWgTcRjH8TtJLlbr3aWmSojtIhZfsIhQgknAWkERESeLgy+DICgiFReVOIkFB8Gh6KSjYFFEF10MYtFitVpxML5Ba1vP2LyQ+MIlocbhD2eQ5pIL3OX5h99nekKeg2f4DgknhkIRgU/hLT2nTx1jc+zx06Gr1833OzsCVy5fYHP8/adz5wftvQ+sWNToA+qn5/PG7JHcVfclSfr3rJ432QTn8RxiWUzlkVUilcWq67otN0G9OA7x56/fxqwoctV9r6os+CxQwHGImpYolUpsbvctr7rvK9vRtG92nQV14TjEQqHwfS7FZlWVl7S0mO/7/SuNeXrmq42XgXUchygIwuTUFzaIotjVtdp8ed3aNWUPzth4FljHd4jj42+MeVP3BpPNtjbvqoCfzZNT08lkyt7LwCK+Qxx7OWH8TOzdGnK5XJU2t2+LiKLI5udjr5w4DqzgO8Rc7sez0RdsluVle3bvWHBNVWTjq2Kx+Cg24tB9UDO+QxQE4eatu/Pzf9i8v39v98b1/y0s9ngGTh5tbV3KPj54GEum0o6eCDXgPkRNSwzfvsdmt9sdPTtw+GB/Z0dAkiSvV4mEg5cGo0ads7Pa8J37jTsWKhL5fddc7sTxI329YfOdbDZ3JnoxkZhz5iSwpElCFEVx186+Qwf2VXrX93ri7dC1G5lM1uHDoEZNEiKjKnIkEgz2bF7R7lNVRdf1dDoT//D5ycjou/jHRl8HZpoqROAX939WoDkgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCQgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCQgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCQgRCABIQIJCBFIQIhAAkIEEhAikIAQgQSECCT8BUKIlbCmcjTfAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "ef3b8caf3b15db8eea62fdcca66fcacc7d4a02188fda9a3f6a387079ede6151c"
+}

@@ -1,0 +1,54 @@
+{
+  "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_battery.jpg",
+  "date": "2026-11-19T15:28:06Z",
+  "sources": [
+    {
+      "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_battery.png",
+      "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-19T15:27:39Z",
+      "image_sha256": "4bc461a59bdc0492d53447bfa9d3ac73bcc474a3f4e5ecff9b13b41aab60c507",
+      "sources": [
+        {
+          "source_commit": "3cdb8ec560bf74ba70c027737ee6ef50cb3314e2",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    511,
+    216,
+    560
+  ],
+  "strip_size": [
+    216,
+    49
+  ],
+  "strip_sha256": [
+    "72ccbfa025daa862813596fa4e0e39368d007e4f306f3c7cc5caf13d1c7a483e"
+  ],
+  "stamp_template_sha256": "ecf0cc2703a027d891cd5e4f8c138c9dda7bb8357cd92feafffde9cf87097d21",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAAoElEQVR4nO3SMREAIBDAsAdZHP51IYMOiYIOXefcgd/27wCYMSIRRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIwgOvUwESapuuagAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "2b7d2443793c9fa63a7eef4468dba95592d9d45430e9a8ff1c0b3e1b77295863"
+}
