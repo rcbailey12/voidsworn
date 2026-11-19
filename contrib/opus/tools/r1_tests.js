@@ -23,7 +23,7 @@ async function animPath(u,path,opt){ if(opt&&opt.onLate) await opt.onLate(); } a
 async function animNova(){} async function animBlink(){} function fxGravPull(){}
 show=h=>{ LAST_HTML=h; }; modal=h=>{ LAST_HTML=h; }; toast=t=>{ TOASTS.push(t); }; saveRun=()=>{}; closeModal=()=>{}; relicStep=()=>{}; mapScreen=()=>{};
 SPEED=0;
-global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, set AI(v){ AI_LEVEL=v; }, set REACH(v){ AI_REACH_W=v; }, runDefaults, newShip, newRun, startBattle, HULLS, W, EVENTS, BOONS, BOON_NEED, PATRONS, MODULES,
+global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, set AI(v){ AI_LEVEL=v; }, runDefaults, newShip, newRun, startBattle, HULLS, W, EVENTS, BOONS, BOON_NEED, PATRONS, MODULES,
   derive, applyOutcome, genSector, canFitModule, ACT, rollBoonOffer, boonStep, boonReroll, boonRerollOk, boonOfferCan, rndSeed, META, needMet, eventFlags, verbFree, FAC_VERBS,
   ensureNemesis, nemAdapt, nemAfterBattle, NEM_ADAPT_FAC, relicUseful, shipyardScreen, endRun, admiralScreen, legacyScreen, ADMIRALS, LEGACY, HEAT, FAC_PRICE, HULL_VARIANTS,
   fitEncounter, rollEncounter, bossEncounter, BOSS_ENC, ENCOUNTERS, offToAx, hdist, mkWeapon, DIRS, turnStart, aiUnit, alive, evalThreat, defaultMeta, prizeScrap,
@@ -91,16 +91,16 @@ check('EVT-5 every fight-start event has a free way out (haven gets one)', () =>
   const free = o => !o.need && o.r && Object.keys(o.r).every(k => k === 'cred' || k === 'xp');
   const bad = T.EVENTS.filter(e => e.o.some(o => o.r && o.r.fight) && !e.o.some(free)).map(e => e.id); return bad.length === 0 && T.EVENTS.find(e => e.id === 'haven').o.some(o => o.k === 'leave'); });
 check('AI-1 a veteran that moves under heavy fire with nothing to shoot braces (mid-move path)', async () => {
-  // issue 1160: Veteran now stops short of guns that can move into range (AI_REACH_W .8); the old .2 weight lets the ship close so the brace path is probed
-  T.AI = 'veteran'; T.REACH = .2; fresh('voidsworn', ['penitent', 'penitent', 'penitent']);
+  // issue 1160: the enemy line starts 6 hexes off (was 8). At 8 a Veteran, which now prices guns that can move into range at 0.8, rightly waits outside them
+  T.AI = 'veteran'; fresh('voidsworn', ['penitent', 'penitent', 'penitent']);
   T.startBattle({ kind: 'battle', fac: 'deathless', col: 3, obj: 'rout', shape: 'open', map: 'storm', dep: 'line', arena: 'strip', seed: 11, enemies: [{ tpl: 'd_jackal' }] });
   const B = T.B; B.terrain = {}; const pens = B.units.filter(u => u.side === 'player'), m = B.units.find(u => u.side === 'enemy');
-  [[6, 5], [6, 7], [6, 9]].forEach((p, i) => { const h = T.offToAx(p[0], p[1]); pens[i].q = h.q; pens[i].r = h.r; }); const mh = T.offToAx(14, 7); m.q = mh.q; m.r = mh.r;
+  [[8, 5], [8, 7], [8, 9]].forEach((p, i) => { const h = T.offToAx(p[0], p[1]); pens[i].q = h.q; pens[i].r = h.r; }); const mh = T.offToAx(14, 7); m.q = mh.q; m.r = mh.r;
   for (const p of pens) { let bf = 0, bd = 1e9; for (let f = 0; f < 6; f++) { const d = T.hdist({ q: p.q + T.DIRS[f][0], r: p.r + T.DIRS[f][1] }, m); if (d < bd) { bd = d; bf = f; } } p.facing = bf; }
   // A loaded short-range gun lets the ship close, but stays out of reach at the firing position.
   const w = T.mkWeapon('scatter', 'T', {}); w.fired = false; w.cdLeft = 0; w.off = 0; m.weapons = [w]; m.ab = null; m.maxHp = 100; m.hp = 60; m.sh = [0, 0, 0, 0]; m.shMax = 0;
   const d0 = Math.min(...pens.map(p => T.hdist(m, p))); B.side = 'enemy'; await T.turnStart('enemy'); await T.aiUnit(m); const d1 = Math.min(...pens.map(p => T.hdist(m, p)));
-  T.AI = 'standard'; T.REACH = .8; return d1 < d0 && m.braced === true && !m.postFire; });
+  T.AI = 'standard'; return d1 < d0 && m.braced === true && !m.postFire; });
 check('WPN-1 Null sentries are no longer a copy of the flak battery (and stay point defense)', () => {
   const a = T.W.flak, b = T.W.gsentry; const same = Object.keys(Object.assign({}, a, b)).filter(k => k !== 'n').every(k => a[k] === b[k]); return !same && b.k === 'flak' && b.vsSq > 0; });
 check('salvage (relics): none offered that can never act (coils without abilities, logbook at top rank, chalked roll for a lone ship)', () => {

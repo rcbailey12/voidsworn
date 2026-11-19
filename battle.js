@@ -2108,11 +2108,13 @@ function evalOffense(a, ready, targets){
 }
 // how each faction fights: threat weight (caution), weight when badly hurt, and a preferred range
 // range>0 keeps at least that many hexes away (kiting); range<0 wants to be within that many hexes (closing in)
+// rs (the ramming factions, RAM_FAC): how much a lined-up ram is worth in move scoring (issue 1160: .35 made the Hullbreakers and the
+// Chorus 7 to 11 points easier once it ran at Standard, and weaker at Veteran too; .15 keeps the habit without the nose-first charges)
 const FACTION_AI={
-  voidsworn:{tw:1,hurt:1,range:0,rw:0},
-  hegemony:{tw:1.15,hurt:1.3,range:3,rw:1.2},   // hold a gun line at range
-  corsair:{tw:.8,hurt:1.4,range:-2,rw:1.2},     // close fast, cut and run when hurt
-  chorus:{tw:.6,hurt:.7,range:-1,rw:1.8},       // swarm into tendril range
+  voidsworn:{tw:1,hurt:1,range:0,rw:0,rs:.15},
+  hegemony:{tw:1.15,hurt:1.3,range:3,rw:.6},    // hold a gun line at range (issue 1160: rw 1.2 to .6 once it ran at Standard, which it made 5 points easier)
+  corsair:{tw:.8,hurt:1.4,range:-2,rw:1.2,rs:.15},     // close fast, cut and run when hurt
+  chorus:{tw:.6,hurt:.7,range:-1,rw:1.8,rs:.15},       // swarm into tendril range
   ithar:{tw:1.3,hurt:1.6,range:2,rw:1.2},       // hit and fade
   deathless:{tw:.55,hurt:.6,range:-3,rw:.8}};   // advance and never flinch
 // ---------- veteran AI helpers ----------
@@ -2124,7 +2126,7 @@ function evalThreatVet(v,foes){ let tot=0; for(const p of foes){ const d=hdist(p
       else if(d<=w.r+Math.max(1,(p.speed||2)-1)&&aiArcSoon(p,v,w.arc)&&(ls==null?(ls=los(p,v)):ls)){ const e=expectedVs(p,w,v); tot+=(e.hull+e.shield*.2)*AI_REACH_W; } } } return tot+aiStormCost(v); }
 // issue 1160 (Veteran tuning): a gun that can move into range and fire before this ship acts again counts 0.8 of a gun already bearing (was 0.2),
 // so a Veteran does not step just inside the reach of guns that will strike first
-var AI_REACH_W=.8; // a var so the AI tests can pin the old weight to probe the brace and death-cliff paths alone
+const AI_REACH_W=.8;
 // can this gun still fire before the round ends? In alternating play a gun that fired (or a braced hull) is done until the next round; flak never fires at ships
 function aiGunLive(p,w){ if(w.k==='flak') return false; if(B&&B.alt&&(w.fired||p.braced)) return false; return true; }
 // would the target sit in this arc now, or after a one-step turn (if the ship has a turn)?
@@ -2289,7 +2291,7 @@ async function aiUnit(u){
       // A 3 CP hull keeps the old price. Limit the spread to keep fleets engaged.
       let score=off-threat*tw; if(vet&&threat>=u.hp) score-=25+3*(clamp(u.t.cp||1,1,7)-3);
       if(!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
-      if(!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u,Math.min(u.mp-s.cost,(u.speed||2)-(u.st&&u.st.engine||0)))*.35;
+      if(!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u,Math.min(u.mp-s.cost,(u.speed||2)-(u.st&&u.st.engine||0)))*prof.rs;
       if(!u.isSq&&prof.rear) score+=aiRearScore(v,ready,foes)*prof.rear; // issue 1160: a persona with the rear flag (Cunning) works round to your flanks
       if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=flE; if(fl){ const dv=hdist(v,fl); score-=Math.max(0,dv-3)*(escIn>=2?.6:2); if(dv<=3) for(const x of escO) if(hdist(x,v)===1) score-=1; } } // two escorts in the ring cap the pull, and escorts spread out instead of stacking
       if(off<=0||unloaded){

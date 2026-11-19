@@ -5071,7 +5071,7 @@
   "kind": "battle",
   "rounds": 8,
   "bot": "full",
-  "seed": 37112,
+  "seed": 37114,
   "admiral": "grax",
   "fleet": [
    "c_raider",

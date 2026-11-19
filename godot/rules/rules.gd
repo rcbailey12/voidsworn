@@ -7071,7 +7071,7 @@ func aiUnit(u) -> void:
 		if score_range:
 			if prof["range"] > 0: score -= max(0, prof["range"] - hd) * prof["rw"]
 			else: score -= max(0, hd + prof["range"]) * prof["rw"]
-		if score_ram: score += ramSetup(candidate, u, min(u["mp"] - s.cost, (u["speed"] if jt(u.get("speed")) else 2) - z0(u["st"].get("engine")))) * 0.35
+		if score_ram: score += ramSetup(candidate, u, min(u["mp"] - s.cost, (u["speed"] if jt(u.get("speed")) else 2) - z0(u["st"].get("engine")))) * float(prof["rs"])
 		if rear_w != 0.0:   # issue 1160: a persona with the rear flag (Cunning) works round to your flanks
 			score += aiRearScore(candidate, ready, foes) * rear_w
 		if flE != null:
