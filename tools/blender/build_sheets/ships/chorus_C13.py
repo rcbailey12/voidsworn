@@ -24,7 +24,7 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spit
 CONCEPT_VIEWS = dict(top=dict(box=(20, 60, 1270, 660), largest=True, flip=False), side=dict(box=(20, 700, 1270, 1240), largest=True, flip=False))
 CROPS = [('bow (the prow gland)', (100, 650, 1000, 1250)), ('midships (dorsal glands and sacs)', (550, 100, 1450, 1050)),
          ('stern (spine bed and membranes)', (1150, 30, 1920, 900))]
-SHEET = dict(version=1, round='first build sheet (issue 1154)', date='2026-11-19', blend='opus1154\\chorus_C13',
+SHEET = dict(version=2, round='shaping pass v2 (issue 1154, the Board on v1)', date='2026-11-19', blend='opus1154\\chorus_C13',
              before='First full layout', before_note='The first complete C13 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.0, 1.85)    # round over the back, round in the belly: no flat faces (the family's rule from PR 628)
@@ -32,17 +32,17 @@ WOBBLE = (0.12, 3.4)  # lumpier than C11: the spitter is the scarred, asymmetric
 # (x, half-width port, half-width starboard, z bottom, z top): a rounded nose bulb, a slight waist behind it, broad in the
 # middle, short at the tail; port a little fuller than starboard (asymmetric, as the picture)
 KEY = [
-    (4.22, 0.55, 0.53, -0.62, 0.12),
-    (3.98, 0.98, 0.95, -0.92, 0.48),
-    (3.58, 1.14, 1.1, -1.05, 0.66),
-    (3.2, 1.06, 1.0, -1.05, 0.74),
-    (2.3, 1.45, 1.38, -1.25, 1.08),
-    (1.2, 1.78, 1.68, -1.42, 1.38),
-    (0.0, 1.9, 1.78, -1.5, 1.5),
-    (-1.1, 1.8, 1.7, -1.44, 1.42),
-    (-1.95, 1.48, 1.4, -1.25, 1.18),
-    (-2.6, 1.0, 0.95, -0.92, 0.85),
-    (-2.95, 0.62, 0.6, -0.58, 0.56),
+    (4.4, 0.42, 0.41, -0.52, 0.12),
+    (4.1, 0.68, 0.66, -0.72, 0.36),
+    (3.5, 0.8, 0.76, -0.82, 0.52),
+    (2.7, 1.0, 0.95, -0.97, 0.74),
+    (1.7, 1.26, 1.2, -1.15, 1.02),
+    (0.6, 1.42, 1.35, -1.28, 1.24),
+    (-0.5, 1.45, 1.38, -1.3, 1.28),
+    (-1.5, 1.3, 1.24, -1.2, 1.15),
+    (-2.25, 0.98, 0.94, -0.92, 0.88),
+    (-2.75, 0.66, 0.63, -0.62, 0.6),
+    (-3.0, 0.45, 0.44, -0.42, 0.42),
 ]
 
 
@@ -69,14 +69,14 @@ PL = dict(size=(0.3, 0.62), thick=(0.018, 0.04), skip=0.15, stack=0.0, mats={'fl
 # the glands: (id, slot, mouth point, aim, opening radius, knoll radius, spines)
 GLAND_R = 0.25
 GLANDS = (
-    ('W1', 'F', (4.46, 0.03, 0.02), (0.9, 0.0, 0.44), 0.27, 0.6, 16),     # the prow gland, low in the nose bulb behind its round front
-    ('W2', 'T', (2.0, 0.25, 1.85), (0.3, 0.12, 0.95), GLAND_R, 0.66, 18),  # the fore dorsal knoll
-    ('W3', 'T', (0.2, -0.32, 2.18), (-0.12, -0.1, 0.99), GLAND_R, 0.72, 18),  # the great dorsal knoll amidships
+    ('W1', 'F', (4.52, 0.02, 0.02), (0.92, 0.0, 0.38), 0.25, 0.5, 14),     # the prow gland, low in the nose bulb behind its round front
+    ('W2', 'T', (1.75, 0.2, 1.48), (0.3, 0.12, 0.95), GLAND_R, 0.62, 16),  # the fore dorsal knoll
+    ('W3', 'T', (-0.1, -0.26, 1.72), (-0.12, -0.1, 0.99), GLAND_R, 0.68, 16),  # the great dorsal knoll amidships
 )
 # bile sacs on the lower flanks: (x, section angle, radius) per side; port and starboard differ (asymmetric)
-SACS = {1: ((2.7, -0.55, 0.5), (1.35, -0.3, 0.82), (-0.45, -0.52, 0.74), (-1.85, -0.28, 0.6)),
-        -1: ((2.45, -0.38, 0.56), (0.85, -0.58, 0.78), (-0.85, -0.3, 0.68), (-2.15, -0.6, 0.46))}
-HANGING = ((1.95, 0.3, 0.46), (0.15, -0.25, 0.56), (-1.45, 0.3, 0.5))   # (x, y, radius): sacs hanging under the belly
+SACS = {1: ((2.5, -0.55, 0.4), (1.2, -0.32, 0.62), (-0.45, -0.52, 0.6), (-1.85, -0.3, 0.48)),
+        -1: ((2.3, -0.4, 0.44), (0.75, -0.58, 0.62), (-0.85, -0.32, 0.55), (-2.1, -0.6, 0.38))}
+HANGING = ((1.85, 0.25, 0.38), (0.1, -0.22, 0.46), (-1.45, 0.25, 0.4))   # (x, y, radius): sacs hanging under the belly
 VENTS = ((0.0, 0.18, 0.16), (0.36, -0.16, 0.14), (-0.36, -0.16, 0.14))  # (y, z, radius) at the stern
 
 
@@ -112,9 +112,9 @@ def build(K):
     K.mass('Spine bed', _bpy.data.objects['SB1_mount_flesh'], 'flesh knoll', note='the knoll aft of the dorsal glands')
     # the lumps of the back and shoulders: knolls of grown flesh between the glands (the picture's lumpy mass)
     items = []
-    for k, (x, th, rr) in enumerate(((3.0, 1.1, 0.62), (1.2, 2.0, 0.78), (-0.8, 0.95, 0.85), (-0.55, 2.3, 0.7), (2.75, 2.15, 0.55), (-2.1, 1.5, 0.55),
-                                     (1.0, 0.55, 0.6), (-1.3, 2.75, 0.55), (3.55, 1.7, 0.42))):
-        pos, nrm = K.hpt(x, th, out=-rr * 0.42)
+    for k, (x, th, rr) in enumerate(((2.9, 1.1, 0.55), (0.9, 2.0, 0.7), (-0.9, 0.95, 0.75), (-0.75, 2.3, 0.62), (2.55, 2.15, 0.5), (-2.0, 1.5, 0.5),
+                                     (0.8, 0.55, 0.55), (-1.35, 2.75, 0.5), (3.4, 1.7, 0.38))):
+        pos, nrm = K.hpt(x, th, out=-rr * 0.5)
         items.append((HP.knoll(rr, seed=70 + k), HP.frame(pos, (1, 0, 0), nrm)))
     K.grown_hull('knolls', items, inv='knolls', kind='knoll')
     K.mass('Back and shoulder knolls', _bpy.data.objects['knolls_flesh'], 'flesh', note='lumps of grown flesh over the back and shoulders')
@@ -152,13 +152,13 @@ def build(K):
     for k, (y, z, r) in enumerate(VENTS):
         od = (0, 0.2, 1) if k == 0 else (0, 0.6 if y > 0 else -0.6, -0.8)
         K.engine('E%d' % (k + 1), (-3.25, y, z), r, 0.6, bell=1.0, body_r=r * 1.35, inv='vents', src='picture',
-                 kw=dict(trail='veil', trails=2, trail_len=1.42, out_dir=od, seed=k + 3, veil=3.0, fan=0.785, splay=26.0),
+                 kw=dict(trail='veil', trails=2, trail_len=1.45, out_dir=od, seed=k + 3, veil=3.0, fan=0.785, splay=26.0),
                  note='pulse vent with two wide trailing veils, fanned away from the stern\'s centre')
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='three pulse vents at the short stern')
 
     # ---------------- grown detail on the hull ----------------
     # pore fields: the nose bulb and the upper flanks
-    for name, x0, x1, t0, t1, nper in (('nose', 3.0, 4.7, -0.3, 1.4, 160), ('flank', -2.2, 2.8, 0.1, 0.75, 130)):
+    for name, x0, x1, t0, t1, nper in (('nose', 3.0, 4.5, -0.3, 1.4, 55), ('flank', -2.2, 2.8, 0.1, 0.75, 45)):
         V, F = [], []
         for side in (1, -1):
             for _ in range(nper):
@@ -185,19 +185,20 @@ def build(K):
     # skin folds: broken runs swept back from the nose, wrapping the knolls (the picture's wrinkled flesh)
     V, F = [], []
     for side in (1, -1):
-        for k in range(30):
-            th0 = rnd.choice((rnd.uniform(0.05, 1.2), rnd.uniform(-1.25, -0.75)))
-            xa = rnd.uniform(-2.0, 4.2); ln = rnd.uniform(0.8, 2.0)
+        for k in range(34):
+            th0 = rnd.choice((rnd.uniform(0.05, 1.3), rnd.uniform(-1.25, -0.75)))
+            xa = rnd.uniform(-1.6, 4.4); ln = rnd.uniform(1.6, 3.6)
             pts = []; nrms = []; ws = []; hs = []
             for j in range(10):
                 t = j / 9
                 x = xa - ln * t
-                if x < -2.6 or any(abs(x - sx) < 0.45 and abs(th0 - st) < 0.4 for sx, st in ((3.55, -0.15), (-2.45, 0.35))):
-                    break   # stop short of the siphons
+                if x < -2.6 or any(abs(x - sx) < 0.45 and abs(th0 - st) < 0.4 for sx, st in ((3.55, -0.15), (-2.45, 0.35))) or \
+                        any(abs(x - sx) < sr * 1.15 and abs(th0 - st) < 0.45 for sx, st, sr in SACS[side]):
+                    break   # stop short of the siphons and the flank sacs
                 th = th0 + 0.03 * math.sin(j * 1.1 + k) + (0.06 * t if th0 > 0 else -0.04 * t)
                 p_, n_ = K.hpt(x, side_th(th, side), out=-0.015); pts.append(p_); nrms.append(n_)
                 env = math.sin(math.pi * (0.08 + 0.84 * t))
-                ws.append(0.26 * env + 0.03); hs.append(0.06 * env + 0.008)
+                ws.append(0.36 * env + 0.04); hs.append(0.12 * env + 0.01)
             if len(pts) < 4:
                 continue
             vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
@@ -205,7 +206,7 @@ def build(K):
     K.hull_detail('skin_folds', (V, F), 'flesh2', inv='skin_folds', kind='welt', subs=['welt'])
     # regrown hide: ragged scar patches on the shoulders and flanks (regen 4)
     for k, (x, th, r, side) in enumerate(((2.9, 0.95, 0.34, 1), (1.6, 0.85, 0.4, -1), (-0.4, 0.7, 0.36, 1), (-1.8, 0.95, 0.3, -1), (0.9, -0.2, 0.28, 1),
-                                          (3.6, 0.45, 0.24, -1))):
+                                          (3.0, 0.5, 0.24, -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
         (pv, pf), (kv, kf) = HP.scar(pos, nrm, r, seed=20 + k, knits=3)
         K.hull_detail('scar%d_patch' % k, (pv, pf), 'scar', inv='scars', kind='scar', subs=['patch', 'knit'])

@@ -396,14 +396,14 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         nsp = int(kw.get('spines', 16))
         # the knoll: a lumpy dome whose crown is the vent; its body runs back into the hull (mount)
         kc = L * 0.98 - RK * 0.92
-        p.add('knoll', 'mount', 'flesh', blob(RK * 0.92, RK, RK * 0.96, centre=(kc, 0, 0), nu=30, nv=16, seed=seed + 5, amp=0.1))
+        p.add('knoll', 'mount', 'flesh', blob(RK * 0.92, RK * 1.12, RK * 1.08, centre=(kc, 0, 0), nu=30, nv=16, seed=seed + 5, amp=0.1))
         # the puckered lip: a thick lumpy ring sunk a little into the crown, pucker folds gathered into the hole
         m = 60; pts = []; rad = []
         for k in range(m):
             a = 2 * math.pi * k / m
             Ra = r * (1.08 + 0.07 * math.sin(5 * a + seed) + 0.05 * math.sin(9 * a))
-            pts.append(Vector((L * 0.96 + r * 0.05 * math.sin(3 * a + seed), Ra * math.cos(a), Ra * math.sin(a))))
-            rad.append(r * (0.17 + 0.05 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.3)))))
+            pts.append(Vector((L * 1.0 + r * 0.05 * math.sin(3 * a + seed), Ra * math.cos(a), Ra * math.sin(a))))   # a raised rim over a deep crater
+            rad.append(r * (0.25 + 0.06 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.3)))))
         pts.append(pts[0]); rad.append(rad[0])
         p.add('lip0', 'mount', 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
         for k in range(22):
@@ -581,18 +581,19 @@ def knoll(rk, seed=0):
     import random
     rp = random.Random(seed)
     p = Part('knoll')
-    p.add('dome', 'mount', 'flesh', blob(rk * rp.uniform(0.95, 1.2), rk * rp.uniform(0.85, 1.05), rk * 0.85, centre=(0, 0, 0), nu=24, nv=12, seed=seed, amp=0.12))
+    # a blister rising out of the flesh, not a ball sitting on it: low and wide, its foot skinned into the hull by the rolls
+    p.add('dome', 'mount', 'flesh', blob(rk * rp.uniform(1.05, 1.3), rk * rp.uniform(0.95, 1.15), rk * 0.62, centre=(0, 0, 0), nu=24, nv=12, seed=seed, amp=0.12))
     for k in range(3):
         a0 = rp.uniform(0, 2 * math.pi); pts = []
         for j in range(9):
             a = a0 + 1.6 * j / 8
-            pts.append(Vector((rk * 1.02 * math.cos(a), rk * 0.94 * math.sin(a), rk * (0.12 + 0.05 * math.sin(3 * a)))))
+            pts.append(Vector((rk * 1.12 * math.cos(a), rk * 1.02 * math.sin(a), rk * (0.08 + 0.05 * math.sin(3 * a)))))
         p.add('roll%d' % k, 'mount', 'flesh2', tube(pts, [rk * 0.06, rk * 0.1, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.1, rk * 0.05], n=6))
     PV, PF = [], []
     for k in range(24):
         a = rp.uniform(0, 2 * math.pi); th = rp.uniform(0.3, 1.3)
         n_ = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
-        vv, ff = pore(Vector((n_.x * rk, n_.y * rk * 0.92, n_.z * rk * 0.85)), n_, rk * rp.uniform(0.025, 0.05), n=6)
+        vv, ff = pore(Vector((n_.x * rk * 1.15, n_.y * rk * 1.05, n_.z * rk * 0.62)), n_, rk * rp.uniform(0.025, 0.05), n=6)
         o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
     p.add('pore', 'mount', 'pore', (PV, PF))
     p.fit = dict(radius=rk)
