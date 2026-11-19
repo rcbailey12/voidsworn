@@ -1076,7 +1076,7 @@ static func _lance_recut(fx, s) -> void:
 
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
-static func precompute(fx, s, cause := "blast") -> void:
+static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 	if s.weight <= 0 or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
@@ -1144,7 +1144,8 @@ static func precompute(fx, s, cause := "blast") -> void:
 			job["geo"] = geo
 		job["out"] = pieces)
 	s.set_meta("cut_task", tid)
-	fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
+	if not under_cover:
+		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
 
 
 static func _collect_later(fx, tid: int) -> void:
@@ -1157,17 +1158,22 @@ static func _collect_later(fx, tid: int) -> void:
 # When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
 # (the first break-up cost a 35 ms frame when it built them on the spot).
 static func _prebuild(fx, s) -> void:
+	if not finish_precompute(fx, s):
+		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
+
+
+static func finish_precompute(fx, s) -> bool:
 	if not s.has_meta("cut_task") or s.has_meta("death_hidden"):
-		return
+		return true
 	var tid: int = s.get_meta("cut_task")
 	if not WorkerThreadPool.is_task_completed(tid):
-		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
-		return
+		return false
 	WorkerThreadPool.wait_for_task_completion(tid)
 	s.remove_meta("cut_task")
 	var job: Dictionary = s.get_meta("cut_job", {})
 	job["meshes"] = []
-	_prebuild_step(fx, s, job)
+	fx.queue_death_pieces(s, job)
+	return true
 
 
 # Issue 600 (R118): the pieces' materials and colliders are built a few at a time, PREBUILD_BUDGET of main-thread time a
@@ -1175,9 +1181,9 @@ static func _prebuild(fx, s) -> void:
 # is missing on the spot, as it always could; job "built" says all are done.
 const PREBUILD_BUDGET := 4000   # microseconds a frame; a tuning value
 
-static func _prebuild_step(fx, s, job: Dictionary) -> void:
-	if s.has_meta("death_hidden"):
-		return
+static func build_pieces(fx, s, job: Dictionary, deadline: int) -> bool:
+	if s.has_meta("death_hidden") or fx.ships.get(s.id) != s:
+		return true
 	var t0 := Time.get_ticks_usec()
 	var meshes: Array = job["meshes"]
 	var geo: Array = job.get("geo", [])
@@ -1185,21 +1191,19 @@ static func _prebuild_step(fx, s, job: Dictionary) -> void:
 	while meshes.size() < pieces.size():
 		var i := meshes.size()
 		var pc: Dictionary = pieces[i]
-		meshes.append(_piece_materials(geo[i], pc) if i < geo.size() else _piece_mesh(pc))
+		meshes.append(_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
 		if pc.has("hull"): pc["shape"] = safe_convex(pc["hull"])
-		if Time.get_ticks_usec() - t0 > PREBUILD_BUDGET: break
+		if Time.get_ticks_usec() >= deadline: break
 	job["build_max_usec"] = maxi(int(job.get("build_max_usec", 0)), Time.get_ticks_usec() - t0)
 	fx.pend("piece_meshes", t0)
-	if meshes.size() < pieces.size():
-		fx.later(fx.now + 0.001, func l_prebuild_step() -> void: _prebuild_step(fx, s, job))
-	else:
-		job["built"] = true
+	job["built"] = meshes.size() == pieces.size()
+	return job["built"]
 
 
 # Hull attributes keep their vertex format; private damage materials add burnt backs.
 # The opaque slag surface is built here with the piece, before death when possible.
-static func _piece_mesh(pc: Dictionary, weathered := false) -> ArrayMesh:
-	return _piece_materials(_piece_geometry(pc), pc, weathered)
+static func _piece_mesh(pc: Dictionary, weathered := false, fx = null) -> ArrayMesh:
+	return _piece_materials(_piece_geometry(pc), pc, weathered, fx)
 
 
 # The piece's surfaces, no materials (safe on a worker thread: no shaders or static caches are touched).
@@ -1213,14 +1217,19 @@ static func _piece_geometry(pc: Dictionary) -> ArrayMesh:
 
 
 # The piece's materials, in surface order (main thread).
-static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) -> ArrayMesh:
+static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, fx = null) -> ArrayMesh:
 	var si := 0
 	for sd in pc["surfs"]:
 		if bool(sd.get("interior", false)):
 			am.surface_set_material(si, sd["mat"])
 			si += 1
 			continue
-		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, float(pc.get("section_scale", 1.0)), bool(pc.get("organic", false)))
+		var length := float(pc.get("section_scale", 1.0))
+		var organic := bool(pc.get("organic", false))
+		var base: ShaderMaterial = fx.hull_damage_template(sd["mat"], 1.0, organic) if fx != null else null
+		var hull_mat: ShaderMaterial = base.duplicate() if base != null else HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, length, organic)
+		if base != null:
+			hull_mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(length * 0.05, 0.001))
 		hull_mat.set_shader_parameter("fx_power", 0.0)
 		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
 		# issue 484: blackened, heat-stained plating round the wound (fx_hull.gd DAMAGE_UNIFORMS, fx_scorch)
@@ -2013,7 +2022,7 @@ static func power_material(mat: ShaderMaterial) -> ShaderMaterial:
 
 # Issue 616 (R118): the power-down materials (one damage material per hull surface, about 0.7 ms each on A16) were all
 # built on the kill frame, 11 to 12 ms of it. The kill frame now builds them for POWER_BUDGET of main-thread time and
-# the rest follow on the next fx steps, the same budget-and-carry-on pattern as the piece build (_prebuild_step, issue
+# the rest follow on the next fx steps, the same budget-and-carry-on pattern as the piece build (issue
 # 600). The poses (the shudder and the spin) are all taken on the kill frame. A surface still waiting keeps its live
 # material for a frame or two, while the first band's 0.15 s fade has barely begun; _update_dying sets death_age on each
 # new material before it is drawn, so it starts at the same point of the fade it would have reached.
@@ -2058,7 +2067,7 @@ static func _power_down_step(fx, s, budget: int) -> void:
 		var i: int = prepared.size()
 		if i < mi.mesh.get_surface_count():
 			var inside: bool = s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(i))
-			var mat := _power_surface(s, mi, i, q["pose"])
+			var mat := _power_surface(fx, s, mi, i, q["pose"])
 			prepared.append(mat)
 			if not inside: mats.append(mat)
 		if prepared.size() >= mi.mesh.get_surface_count():
@@ -2076,18 +2085,18 @@ static func _power_down_step(fx, s, budget: int) -> void:
 
 
 # One surface's power-down material (an inside surface of an authored hull: a dark copy of its own material).
-static func _power_surface(s, mi: MeshInstance3D, i: int, pose: Transform3D) -> Material:
+static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D) -> Material:
 	var source: Material = mi.get_active_material(i)
 	if s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(i)):
-		var inside: Material = source.duplicate()
-		if inside is BaseMaterial3D: inside.emission_enabled = false
-		return inside
+		return fx.dark_interior(source)
+	var template: ShaderMaterial = fx.hull_damage_template(source, s.hull.L, s.faction == "chorus", true)
 	var mat: ShaderMaterial
 	if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 		mat = source.duplicate()
+		mat.shader = template.shader
 	else:
-		mat = HULL.damage_material(source, pose, {}, s.hull.L, s.faction == "chorus")
-	mat = power_material(mat)
+		mat = template.duplicate()
+		HULL.set_damage_pose(mat, pose, {})
 	var box: AABB = s.hull.box
 	if s.death_tier == "capital":
 		# deck by deck, top to bottom
@@ -2666,7 +2675,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			continue
 		var pre: Array = job.get("meshes", [])
 		var geo: Array = job.get("geo", [])
-		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc) if i < geo.size() else _piece_mesh(pc))
+		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		if not pc.has("cen"):
 			for p in (pc["pts"] as PackedVector3Array):
@@ -2797,7 +2806,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 					bd = dd
 					lip = nd
 			local = bc - (lip.get_meta("piece_cen", Vector3.ZERO) as Vector3)
-			_make_frags(fx, s, wreck, pieces, n_main, xf, inherited, T, T + tl.core_delay)
+			_make_frags(fx, s, wreck, job, pieces, n_main, xf, inherited, T, T + tl.core_delay)
 			fx.later(T + tl.core_delay, _throw_frags.bind(fx, s, wreck, plan, weakref(lip), tl))
 		fx.later(T + tl.core_delay, _big_core.bind(fx, s, weakref(lip), local, R, tint, cause, tl))
 		_schedule_secondaries(fx, s, wreck, pieces, seeds, T, tl)
@@ -2821,14 +2830,13 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
 # scorched plating). They ride with the wreck until the core flash, then fly out from the bite, tumbling fast. They
 # are kinematic (no physics bodies): the 20-death fleet probe keeps its collider count.
-static func _make_frags(fx, s, wreck: Dictionary, pieces: Array, n_main: int, xf: Transform3D, inherited: Vector3, T: float, hold_until: float) -> void:
-	var job: Dictionary = s.get_meta("cut_job", {})
+static func _make_frags(fx, s, wreck: Dictionary, job: Dictionary, pieces: Array, n_main: int, xf: Transform3D, inherited: Vector3, T: float, hold_until: float) -> void:
 	var pre: Array = job.get("meshes", [])
 	var geo: Array = job.get("geo", [])
 	for i in range(n_main, pieces.size()):
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty(): continue
-		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc) if i < geo.size() else _piece_mesh(pc))
+		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc, false, fx) if i < geo.size() else _piece_mesh(pc, false, fx))
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		var node := Node3D.new()
 		node.name = "fx_wreck_frag_%s_%d" % [s.id, i]

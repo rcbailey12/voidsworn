@@ -890,12 +890,14 @@ const TRAIL := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled, skip_vertex_transform;
 """ + COMMON + """
+uniform float trail_elapsed = 0.0;
+uniform float trail_style = 0.0;
 varying vec4 vCol;
 varying vec4 vInfo;
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 wd = snorm((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	float s = UV.x;
+	float s = clamp(UV.x + trail_elapsed, 0.0, 1.0);
 	float w = mix(CUSTOM1.x, CUSTOM1.y, s);
 	vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - wp));
 	float seed = CUSTOM1.z;
@@ -904,7 +906,7 @@ void vertex() {
 	wp += side * UV.y * w;
 	VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;
 	vCol = CUSTOM0;
-	vInfo = vec4(s, UV.y * 2.0, seed, CUSTOM1.w);
+	vInfo = vec4(s, UV.y * 2.0, seed, trail_style);
 }
 void fragment() {
 	float s = vInfo.x; float x = abs(vInfo.y); float seed = vInfo.z; int st = int(vInfo.w + 0.5);
