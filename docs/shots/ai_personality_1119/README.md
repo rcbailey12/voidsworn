@@ -5,11 +5,11 @@ Veteran got harder by itself (-4.8), and Standard moved +1.5, with every faction
 (largest: the Hullbreakers +4.2). Medians held at 6 rounds on both levels. Veteran fights at the same range as before (3.5 hexes
 to the nearest player ship, 83% of its activations fire), so the new reach weight does not make it hover.
 
-**Unmet: long fights on Standard.** Battles past round 12 on Standard rose from 56 to 63 of 3,600 (1.6% to 1.75%). Veteran fell
+**Long fights on Standard: accepted by Board decision (Nov 19, 23:01 UTC), range bands kept.** Battles past round 12 on Standard rose from 56 to 63 of 3,600 (1.6% to 1.75%). Veteran fell
 from 65 to 53. The rise is in the kiting and gun-line factions now that their range bands run at Standard: Hegemony 3 to 11,
 Sunward 15 to 19, Glasswrights 9 to 12; the Hullbreakers and Eclipse fell (5 to 1, 14 to 9). Counts this small wander by
-about 11 run to run, but the gate asks for no rise, so it is reported as not met. Bringing it down further means weakening the
-range bands that are the faction personality.
+about 11 run to run. The Board ruled it small and in character (range-band factions dragging fights out a little) and said not
+to weaken the range bands.
 
 ## Per faction (all sectors, 600 battles each per level)
 
