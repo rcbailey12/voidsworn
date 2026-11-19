@@ -96,7 +96,7 @@ ACT.enterNode=id=>{
   if(showBeat3()) return;
   const n=findNode(id); RUN.pos=id; RUN.curNode=id;
   tel('node',{type:n.type,col:n.col});
-  if(n.type==='battle'||n.type==='elite'||n.type==='boss'){
+  if(n.type==='battle'||n.type==='elite'||n.type==='boss'||nemNodeIs(n)){ // issue 1175: an unmet Nemesis meets you at any column 4 stop
     let kind=n.type, fac=nodeFaction(n);
     if(nemNodeIs(n)){ const N=nemActive(); const fa=nemBeh().fleet; battleScreen(Object.assign({kind:'elite',fac:N.fac,col:n.col,node:id,nemesis:nemBattleCfg()},ARCHETYPES[fa]?{arch:fa}:{})); return; } // B4: the Nemesis fight (marked on the map beforehand)
     if(RUN.ambush && kind==='battle'){ kind='elite'; fac=RUN.fac==='hegemony'?RUN.map.fac:'hegemony'; RUN.ambush=false; toast('The Hegemony escort you robbed has found you.'); }
@@ -345,7 +345,7 @@ function nemStrike(){ const N=nemActive(), s=nemBeh().strike;
   if(s==='challenge') return 'His flagship will challenge yours to single combat; screen your flagship.';
   return ''; }
 // is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
-function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||(n.type!=='battle'&&n.type!=='elite')) return false; return !!RUN.nemStrike||n.col>=(RUN.map.cols.length-3); }
+function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||n.type==='boss') return false; const c4=RUN.map.cols.length-3; if(n.type!=='battle'&&n.type!=='elite') return n.col===c4; return !!RUN.nemStrike||n.col>=c4; } // issue 1175: unmet, every column 4 stop is his, whatever its type
 // Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance. The meeting
 // is mandatory once a sector and belongs to the sector's assigned hunter; the run's one clock only brings it sooner.
 function nemNodeTag(n){ return nemNodeIs(n)?'Nemesis meeting':''; }

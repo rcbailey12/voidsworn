@@ -702,7 +702,7 @@ func _refresh() -> void:
 		# your stop and the next jumps keep full models; stops further on are smaller and darker; behind you or cut off, dimmer still
 		_set_tier(d, 0 if (current or av.has(id)) else (2 if (done or bypassed) else 1))
 		if not done: _danger[id] = intel.danger(n)
-		d["nem"] = not done and n["type"] in ["battle", "elite"] and View.nem_node_is(C, n)
+		d["nem"] = not done and View.nem_node_is(C, n)   # issue 1175: rest and event stops in column 4 too
 		if not done or current: _kb_order.append(id)
 	_kb_order.sort_custom(func(a, b):
 		var na = _nodes[a]["n"]; var nb = _nodes[b]["n"]

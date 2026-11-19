@@ -33,6 +33,7 @@ var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var W
 var META: Dictionary = {}
 var RUN = null          # the run (Dictionary) or null
 var SAVED_RUN = null    # the last saved copy of the run
+var saved_in_yard := true   # issue 1175: the save was taken inside a shipyard (Continue reopens it); old saves count as in the yard
 var B = null            # the battle in progress (the stub's, or the rules' B handed back by finish_battle)
 var UID := 1
 var W: Dictionary = {}  # the JS window._* transients: rewardCfg, rw, relicChoice, wrecks, boonOffer, modOffer, aspOffer
@@ -428,7 +429,7 @@ func _enc(v):
 	if v is float and (v != floor(v) or absf(v) >= 9007199254740992.0): return "#d:" + JSM.hex64(v)
 	return v
 func save_text() -> String:
-	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "tel": tel_log}))
+	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log}))
 func persist_save(meta_only: bool = false) -> void:
 	var now = now_ms()
 	META["updated"] = now
@@ -480,6 +481,7 @@ func _apply_save(o: Dictionary) -> void:
 		META = migrateMeta(m, tel_log)
 	var r = o.get("run")
 	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	saved_in_yard = o.get("yard") != false
 	if o.get("uid") is float or o.get("uid") is int: UID = max(UID, int(o["uid"]))
 
 func load_save_text(s: String, bak: String = "") -> void:
@@ -1080,6 +1082,10 @@ func genSector(s: int) -> Dictionary:
 		for n in col:
 			n["map"] = regionMap(region, n["col"], COLS); fitEncounter(n, s)
 	var biome = rollBiome(region)
+	# issue 1175: the flagship fight's objective and board shape are rolled with the map (after the regions, so its board is
+	# the one the fight always used) and shown on the boss stop; the fight reads them (an old save without them rolls there)
+	for n in cols[COLS - 1]:
+		if n["type"] == "boss": n.merge(bossEncounter(), true)
 	if RUN != null and RUN.get("teachingGate") == true and s == 1:
 		cols[0][0]["teachingShape"] = cols[0][0]["shape"]; cols[0][0]["shape"] = "open"
 	return {"fac": fac, "cols": cols, "edges": edges, "cond": cond, "region": region, "biome": biome}
@@ -1326,6 +1332,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	saveRun()
 func saveRun() -> void:
 	SAVED_RUN = clone(RUN) if (RUN != null and not jt(RUN.get("over"))) else null
+	saved_in_yard = page.get("kind") == "shipyard" or (page.get("kind") == "fleet" and page.get("data") is Dictionary and page["data"].get("back") == "shipyard")
 	persist_save()
 func availableNodes() -> Array:
 	var m = RUN["map"]
@@ -1778,7 +1785,7 @@ func ACT_enterNode(id: String) -> void:
 	if showBeat3(): return
 	var n = findNode(id); RUN["pos"] = id; RUN["curNode"] = id
 	tel("node", {"type": n["type"], "col": n["col"]})
-	if _is(n, ["battle", "elite", "boss"]):
+	if _is(n, ["battle", "elite", "boss"]) or nemNodeIs(n):   # issue 1175: an unmet Nemesis meets you at any column 4 stop
 		_enter_battle_node(n)
 	elif n["type"] == "event": eventScreen(n)
 	elif n["type"] == "shipyard": shipyardScreen(n)
@@ -1806,12 +1813,12 @@ func _resume_node() -> bool:
 		_advance_sector()
 		return true
 	if RUN.get("curNode") != n["id"]: return false
-	if n["type"] == "shipyard":
-		shipyardScreen(n)
-		return true
-	if _is(n, ["battle", "elite", "boss"]):
+	if _is(n, ["battle", "elite", "boss"]) or nemNodeIs(n):   # issue 1175: a Nemesis meeting at a rest stop resumes as the fight
 		_restore_legacy_story_modifier()
 		_enter_battle_node(n)
+		return true
+	if n["type"] == "shipyard" and saved_in_yard:   # issue 1175: a save taken on the map after leaving through the fleet screen opens the map, as the browser game does
+		shipyardScreen(n)
 		return true
 	if n["type"] == "event" and not RUN["seenEvents"].is_empty():
 		var id = RUN["seenEvents"].back()
@@ -2335,13 +2342,16 @@ func nemStrike() -> String:
 	if st == "reinforce": return "His line will bring reinforcements in round 3; end the fight before the line doubles."
 	if st == "challenge": return "His flagship will challenge yours to single combat; screen your flagship."
 	return ""
-# is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
+# is this stop his? (strike pending: the next fight; unmet this sector: every stop of the column before the rest stop, whatever
+# its type, so no route reaches the flagship without the meeting nemMeetingLine promises; issue 1175)
 func nemNodeIs(n, N0 = null) -> bool:
 	var N = N0 if jt(N0) else nemActive()
-	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or (n["type"] != "battle" and n["type"] != "elite"): return false
-	return jt(RUN.get("nemStrike")) or float(n["col"]) >= float(RUN["map"]["cols"].size() - 3)
+	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or n["type"] == "boss": return false
+	var c4 = float(RUN["map"]["cols"].size() - 3)
+	if n["type"] != "battle" and n["type"] != "elite": return float(n["col"]) == c4
+	return jt(RUN.get("nemStrike")) or float(n["col"]) >= c4
 # Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance.
-func nemNodeTag(n) -> String: return "Nemesis meeting" if nemNodeIs(n) else ""
+func nemNodeTag(n, N0 = null) -> String: return "Nemesis meeting" if nemNodeIs(n, N0) else ""
 func nemMeetingLine(N0 = null) -> String:
 	var N = N0 if jt(N0) else nemActive()
 	if not jt(N): return ""
@@ -3397,7 +3407,7 @@ func battleScreen(cfg: Dictionary) -> void:
 		if not jt(nd.get("map")) and RUN.get("map") != null and jt(RUN["map"].get("region")): nd["map"] = regionMap(RUN["map"]["region"], nd["col"], 7)
 		fitEncounter(nd)
 	var ro
-	if cfg["kind"] == "boss": ro = bossEncounter()
+	if cfg["kind"] == "boss": ro = {"enc": nd["enc"], "shape": nd.get("shape")} if (nd != null and jt(nd.get("enc"))) else bossEncounter()
 	elif nd != null and jt(nd.get("enc")): ro = {"enc": nd["enc"], "shape": nd.get("shape")}
 	else: ro = rollEncounter(cfg["kind"], or_(cfg.get("col"), 1))
 	var mp = nd.get("map") if nd != null else null
