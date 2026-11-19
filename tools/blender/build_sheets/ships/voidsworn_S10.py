@@ -55,7 +55,7 @@ BWF = 0.58         # the belly's half-width share of hw
 SHELL = 0.16       # hull thickness (the solidify shell)
 GUN_X = (1.74, 0.435, -0.87, -2.175)   # the four battery ports a side, stations 38 / 47 / 56 / 65 percent (battery: 4 shots)
 BALL_Z = 0.0       # the broadside deck line
-GUN_S = 0.8        # the Sear battery's size against S8's heavy broadside (1.0)
+GUN_S = 1.0        # the Sear battery's size against S8's heavy broadside (1.0): the concept's heavy, barrel-like collars
 PL = dict(size=(0.3, 0.56), thick=(0.02, 0.045))
 SPIRE_K = 0.6      # the spires are built at S8's detail and scaled down by this (their fins and posts keep the family pitch)
 TIP = 7.25
@@ -157,22 +157,35 @@ def build(K):
 
     # ---------------- the bow: the spearhead runs into the Oath lance's muzzle collar (one emitter in the point) ----------------
     LZ = -0.02   # the point's height (mid height: a blade, never a stem)
-    K.spinal('L1', (5.85, 0.0, LZ), TIP - 5.85, r=0.2, point=(0.4, 0.47, 0.72), slot='F', weapon='lance', inv='lance',
-             note='the Oath lance (lance F, 1 shot): one emitter set in the spearhead\'s point, a small ember lens deep in a dark bore')
+    K.spinal('L1', (5.75, 0.0, LZ), TIP - 5.75, r=0.3, point=(0.5, 0.47, 0.72), depth=0.26, slot='F', weapon='lance', inv='lance',
+             note='the Oath lance (lance F, 1 shot): one emitter set in the spearhead\'s point: a heavy forged collar, a dark bore about 0.45 across (a third of the concept\'s opening), an ember lens set shallow in it')
     K.features[-1].update(what='oath lance, one emitter in the point (fixed)', route='hand-built')
-    # the dorsal power trunk along the centre ridge, from the lance housing back to station 30 percent (x 2.9)
+    # the dorsal ridge (the Board, rev 2: the concept's strongest line): a raised, plated armoured spine from the lance housing to
+    # the spire block, so the top view reads as a blade with a keel. Its forward run to station 30 percent is the lance's power
+    # trunk (designs.md); aft of it the ridge carries the reactor's feeds on to the spine block.
+    RX = (6.2, 6.0, 5.4, 4.5, 3.6, 2.6, 1.4, 0.2, -0.6, -1.05, -1.2)
+
+    def ridge_hw(x):
+        return 0.12 + 0.16 * min(1.0, (6.2 - x) / 3.0)
+
     tr = []
-    for x in (6.15, 6.0, 5.4, 4.5, 3.6, 3.1, 3.0):
-        z0 = deck_z(x, 0.0) - 0.03; k = 0.0 if x in (6.15, 3.0) else 1.0
-        w = 0.09 + 0.07 * (6.15 - x) / 3.15
-        tr.append([(x, w + 0.04, z0), (x, w + 0.04, z0 + 0.05 + 0.04 * k), (x, w, z0 + 0.09 + 0.06 * k), (x, -w, z0 + 0.09 + 0.06 * k), (x, -w - 0.04, z0 + 0.05 + 0.04 * k), (x, -w - 0.04, z0)])
-    K.mass('Lance power trunk (the centre ridge)', K.loft_rings('S10_trunk', tr, 'siron2'), 'darker iron',
-           note='the armoured power trunk feeding the lance, along the centre ridge to station 30 percent (designs.md)')
-    for i in range(6):
-        x = 5.75 - i * 0.48
-        hz = deck_z(x, 0.0)
-        w = 0.09 + 0.07 * (6.15 - x) / 3.15 + 0.05
-        K.rib('S10_trunkband_%d' % i, [(x, w, hz - 0.02), (x, 0.0, hz + 0.16), (x, -w, hz - 0.02)], w=0.05, t=0.03, m='sworn')
+    for x in RX:
+        z0 = deck_z(x, 0.0) - 0.03
+        k = 0.0 if x in (RX[0], RX[-1]) else 1.0
+        hgt = 0.08 + 0.12 * min(1.0, (6.2 - x) / 2.5)
+        w = ridge_hw(x)
+        tr.append([(x, w + 0.06, z0), (x, w + 0.06, z0 + (0.4 + 0.2 * k) * hgt), (x, w * 0.6, z0 + hgt * (0.3 + 0.7 * k) + 0.02),
+                   (x, -w * 0.6, z0 + hgt * (0.3 + 0.7 * k) + 0.02), (x, -w - 0.06, z0 + (0.4 + 0.2 * k) * hgt), (x, -w - 0.06, z0)])
+    K.mass('Dorsal ridge (the lance power trunk forward)', K.loft_rings('S10_trunk', tr, 'siron2'), 'darker iron',
+           note='a raised armoured spine from the lance to the spire block; forward of station 30 percent it is the lance\'s power trunk (designs.md)')
+    plate_jobs.append(('ridge', tr, dict(PL, faces=[1, 2, 3], mats={'siron': 2, 'siron2': 2}, seed=27, inv='trunk_plates', size=(0.18, 0.4), closed=False)))
+    for i, x in enumerate([5.7 - j * 0.62 for j in range(11)]):
+        if x < -0.9:
+            break
+        hz = deck_z(x, 0.0) - 0.03
+        hgt = 0.08 + 0.12 * min(1.0, (6.2 - x) / 2.5)
+        w = ridge_hw(x) + 0.07
+        K.rib('S10_trunkband_%d' % i, [(x, w, hz + 0.01), (x, w * 0.62, hz + hgt + 0.035), (x, -w * 0.62, hz + hgt + 0.035), (x, -w, hz + 0.01)], w=0.05, t=0.03, m='sworn')
     K.mark('trunk', 'spine', ['block', 'step', 'slit'])
     # the paired cheek housings: the lance's capacitor banks on the upper facets either side of the ridge (the faction's "one
     # heavy pair at the bow" in form, designs.md chair ruling)
@@ -217,7 +230,7 @@ def build(K):
         sn = 'P' if side > 0 else 'S'
         for i, x in enumerate(GUN_X):
             hw = st_at(x)[1]
-            K.gun('%s%d' % (sn, i + 1), (x, side * (hw - 0.04), BALL_Z), 90 * side, 0.0, barrels=1, cal=0.09, blen=0.14, size=GUN_S, mount='casemate',
+            K.gun('%s%d' % (sn, i + 1), (x, side * (hw - 0.04), BALL_Z), 90 * side, 0.0, barrels=1, cal=0.1, blen=0.14, size=GUN_S, mount='casemate',
                   normal=(0, side, 0), slot=sn, weapon='battery', inv='broadside',
                   note='%s battery port %d of 4 (Sear battery, battery %s)' % ('port' if side > 0 else 'starboard', i + 1, sn))
 
@@ -240,13 +253,13 @@ def build(K):
         K.slit('W%d' % (i + 1), (SPX[0] + 0.004, y, deck_z(SPX[0], 0.0) - 0.05 + 0.16), (1, 0, 0), 0.1, 0.04, inv='bridge_slits',
                note='command deck window, ember-lit, in the spine block\'s face')
     K.mark('spine', 'spine', ['block', 'step', 'slit'])
-    # five radiator spires at stations 64 / 70 / 76 / 82 / 88 percent, tallest (1.2) in the middle, each its own profile;
+    # five radiator spires at stations 66 / 71 / 76 / 81 / 86 percent (rev 2: one tight row), tallest (1.2) in the middle, each its own profile;
     # lit fin slats spaced wider and reaching less far, about half the old lit area (R331; the same radiator glow='slats' as S8's issue 1158)
-    SPIRES = [(-2.03, 0.8, 0), (-2.9, 1.02, 3), (-3.77, 1.2, 2), (-4.64, 1.0, 1), (-5.51, 0.78, 0)]
+    SPIRES = [(-2.33, 0.8, 0), (-3.05, 1.02, 3), (-3.77, 1.2, 2), (-4.49, 1.0, 1), (-5.21, 0.78, 0)]   # rev 2: one tight row (the Board)
     PROF = ('blade', 'stepped', 'twin', 'raked')
     k = SPIRE_K
     for i, (x, h, prof) in enumerate(SPIRES):
-        L = 0.58
+        L = 0.62
         hs = h / k
         part = HP.radiator(hs, L / k, profile=prof, spread=(0.2 + 0.42 * hs / 2.6) * 0.6, seed=i, glow='slats')   # S8's R331 spires (issue 1158)
         part.transform(Matrix.Scale(k, 4))
@@ -292,7 +305,7 @@ def build(K):
         K.hatch('H%d' % (i + 1), (x, y, deck_z(x, y) + 0.04), (0, -0.05 * (1 if y > 0 else -1), 1), 0.26, round_=True, inv='hatches', note='deck hatch')
     for i, (x, y) in enumerate(((1.5, 0.36), (1.5, -0.36), (-3.4, 0.36), (-3.4, -0.36))):
         K.hatch('H%d' % (i + 5), (x, y, st_at(x)[3] - 0.08 - 0.02), (0, 0, -1), 0.28, round_=True, inv='hatches', note='belly hatch on the armour step')
-    K.hatchbox('HB1', (0.6, 0.0, deck_z(0.6, 0.0)), 0.38, 0.5, 0.18, inv='lift_heads', note='the hoist head over the gun deck: shells up from the shell rooms')
+    K.hatchbox('HB1', (-0.2, 0.6, deck_z(-0.2, 0.6)), 0.34, 0.46, 0.16, inv='lift_heads', note='the hoist head over the gun deck: shells up from the shell rooms')
 
     # ---------------- colour zones ----------------
     K.colour('black iron plate, frost-white markings (paint stage)', TIP, -TIP, 'whole hull')
