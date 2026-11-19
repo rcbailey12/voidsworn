@@ -49,7 +49,7 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
 - **The start screens use the orders kit (godot/ui/theme/orders_kit.gd, issue 1217, RULEBOOK 9.15 and 2.17).** Title,
   Settings, Credits, the faction and admiral desk, the flagship aspect, Progression, Lineage and Help take their fonts,
   buttons (Kit.button: primary, quiet, back; Kit.link), labels (Kit.label, Kit.wrap_safe: a label never widens its
-  container), rows (Kit.row: one control column of one width), section heads, cards (Kit.card plus Kit.equal_heights) and the
+  container; Kit.fit_words: a name in a narrow tile shrinks a step instead of breaking mid-word), side drawers (Kit.drawer), rows (Kit.row: one control column of one width), section heads, cards (Kit.card plus Kit.equal_heights) and the
   action bar (Back left, primary right) from it, and every kit button plays the ui_* cues through main.gd's front-end sound
   node (Kit.sound). A fix to any of these goes into the kit, never into one screen. Esc goes Back on every start page
   (campaign_ui.gd ESC_BACK). The UI scale is never capped; each layout fits 831 design pixels tall. Checked by

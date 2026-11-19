@@ -336,25 +336,7 @@ func _ensure_dim() -> void:
 
 
 func _drawer(w: float, slide := true) -> PanelContainer:
-	var p := PanelContainer.new()
-	var box := Kit.sheet_box(k, 40, 36)
-	box.set_border_width_all(0)
-	box.border_width_left = maxi(1, s(1))
-	p.add_theme_stylebox_override("panel", box)
-	p.anchor_left = 1.0
-	p.anchor_right = 1.0
-	p.anchor_bottom = 1.0
-	p.offset_left = -w
-	p.offset_right = 0
-	root.add_child(p)
-	Kit.play(Kit.OPEN_CUE)
-	if slide and not bool(main.settings.get("reduce_motion", false)):
-		p.offset_left = 0
-		p.offset_right = w
-		var tw := p.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		tw.tween_property(p, "offset_left", -w, 0.22)
-		tw.tween_property(p, "offset_right", 0.0, 0.22)
-	return p
+	return Kit.drawer(root, k, w, slide, bool(main.settings.get("reduce_motion", false)))
 
 
 func _settings() -> void:
