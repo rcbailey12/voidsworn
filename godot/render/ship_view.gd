@@ -6,6 +6,7 @@ extends Node3D
 # MAP_EMBER; issue 271 step 2, lime retired by R191)
 const EMBER := Color(1.0, 0.541, 0.227)
 const HT := preload("res://render/hull_table.gd")
+const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: the one source for faction colours
 const ATTACH := preload("res://fx/fx_hull.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
@@ -52,6 +53,11 @@ static func clear_static() -> void:
 	_gt = null
 
 
+# issue 1204: battle.gd drops the per-hull look copies when a battle leaves the tree (keys are that battle's materials)
+static func clear_look_cache() -> void:
+	_look_cache.clear()
+
+
 func _exit_tree() -> void:
 	# The dummy renderer can query instance shader parameters during hull teardown,
 	# after a damaged mesh's surface materials have been freed. Detach the render
@@ -71,7 +77,7 @@ static func yaw_of(f) -> float:
 func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	u = unit
 	fac = str(u.get("fac", "hegemony"))
-	if not HT.FAC3D.has(fac):
+	if not FLOOK.has(fac):
 		fac = "hegemony"
 	var cls := str(u.get("cls", "Frigate")) if u.get("cls") != null else "Frigate"
 	L = HT.CLS_LEN.get(cls, 10.0) * HT.SHIP_K
@@ -179,6 +185,10 @@ func _look() -> void:
 			if not _look_cache.has(k):
 				_look_cache[k] = LOOK.hull(src, fac, true)
 			mi.set_surface_override_material(i, _look_cache[k])
+	# issue 1204: a hull already in the scene gets its rim and fog guard from the shared watcher this frame (a mesh
+	# just added is queued once already; touch does not queue it twice)
+	if is_inside_tree():
+		load("res://render/mesh_watch.gd").touch(self)
 
 
 func _collect(n: Node) -> void:
@@ -236,15 +246,17 @@ func _rel(n: Node3D) -> Transform3D:
 	return xf
 
 
+const PILOT_GLOW := 0.3  # fallback sprites at rest, like G4's pilot glow
+
+
 func _engines() -> void:
-	var col: Color = HT.FAC3D[fac]["eng"]
+	var col: Color = FLOOK.engine(fac)
 	var n := 2 if L < 20.0 else 3
 	for i in n:
 		var s := Sprite3D.new()
 		s.texture = _glow_tex()
 		s.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		s.modulate = Color(col.r * 2.2, col.g * 2.2, col.b * 2.2, 1.0)
-		s.pixel_size = L * 0.0009
 		s.shaded = false
 		s.transparent = true
 		s.no_depth_test = false
@@ -253,6 +265,16 @@ func _engines() -> void:
 		s.position = Vector3(-L * 0.52, hull_lift, zoff)
 		add_child(s)
 		engines.append(s)
+	set_fallback_drive(0.0)
+
+
+# The campaign token flies as a parent formation and feeds its burn here directly.
+func set_fallback_drive(burn: float) -> void:
+	var level := lerpf(PILOT_GLOW, 1.0, clampf(burn, 0.0, 1.0))
+	for e: Sprite3D in engines:
+		e.visible = not fx_engines and not dead
+		e.pixel_size = L * 0.0014 * level
+		e.modulate.a = level
 
 
 static var _gt: Texture2D = null
@@ -528,6 +550,7 @@ var segs: Array = []
 var seg_i := 0
 var seg_t := 0.0
 var fx_engines := false       # G4 draws the engines at the real nozzles: the old guessed glows stay hidden
+var campaign_map := false     # the map moves the formation and feeds the drive; ships only drift at rest
 var half_w := 1.0             # half the hull's beam and height (from the fitted box), to aim the jets (issue 370)
 var half_h := 0.6
 var attach = null             # issue 370: the attach point service for this hull (fx/fx_hull.gd), set by fx_ship.setup
@@ -538,6 +561,7 @@ var _prev_yaw := 0.0
 var _yaw_v := 0.0
 var _yaw_a := 0.0
 var _puff_cd := {}
+var _idle_time := 0.0
 var puffs: Array = []
 
 
@@ -1443,6 +1467,8 @@ func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	# issue 521 (carried item 2): in a flown move no jet starts smaller than PUFF_MIN world units, about 18 px at the
 	# battle camera (r 170), so a frigate's small jets read; the bigger hulls were already past it
 	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), PUFF_MIN if glide else 1.4, lerpf(2.8, 4.6, mk)) / 64.0 * (0.6 + 0.4 * k)
+	if path_dur <= 0.0:  # station-keeping puffs are half the size of a movement jet
+		sp.pixel_size *= 0.5
 	sp.top_level = true
 	add_child(sp)
 	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it
@@ -1528,20 +1554,20 @@ func _process(dt: float) -> void:
 		if fleeing > 1.5:
 			visible = false
 		return
-	# Sparse matched station-keeping jets, independent of the smooth flight curve.
-	if not dead and visible and path_dur <= 0.0 and squad_kind.is_empty():
-		var idle_t := Time.get_ticks_msec() / 1000.0
-		if idle_t >= float(_puff_cd.get("idle_at", 0.0)):
-			_side_puffs(1.0 if sin(idle_t + bob_seed) > 0.0 else -1.0, 0.32)
-			_puff_cd["idle_at"] = idle_t + 1.6 + fposmod(bob_seed, 0.8)
+	# Let a battle ship settle before it vents a small pair. Each ship has its own cadence.
+	if not campaign_map and not dead and visible and path_dur <= 0.0 and squad_kind.is_empty():
+		_idle_time += dt
+		if _idle_time >= lerpf(8.0, 15.0, bob_seed * 0.1):
+			var phase := Time.get_ticks_msec() / 1000.0 + bob_seed
+			_side_puffs(1.0 if sin(phase) > 0.0 else -1.0, 0.16)
+			_idle_time = 0.0
+	else:
+		_idle_time = 0.0
 	# A slow idle drift, separate from the cinematic flight bank.
 	var bob := Vector3(0, sin(Time.get_ticks_msec() / 1000.0 * 0.6 + bob_seed) * 0.25, 0)
 	if not dead:
 		hull.position = hull_base + bob
-	# the fallback engine glows (only when G4's fx is not drawing the real nozzles) swell only while the drive pushes
-	var eg := 0.45 + 1.1 * thrust
-	for e in engines:
-		(e as Sprite3D).visible = not fx_engines and not dead
-		(e as Sprite3D).pixel_size = L * 0.0009 * eg
+	if not campaign_map:
+		set_fallback_drive(thrust)
 	if ring.visible:
 		ring.rotation.y = -rotation.y

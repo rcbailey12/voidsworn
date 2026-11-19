@@ -3009,11 +3009,13 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	if B != null and B.get("tr") != null and B["tr"].get("grandTarget") == t["id"] and att != null and att["side"] == "player":
 		if not jt(B["tr"].get("grandFirstDone")): B["tr"]["grandFirstDone"] = 1
 		else: pierce = 1.0   # Vex capstone 1
+	var locks_regen := false
 	if not jt(t.get("isSq")):
 		if t.get("shHit") == null: t["shHit"] = [0, 0, 0, 0]
 		t["shHit"][quad] = 1
 		if jt(w.get("ion")) and att != null and att.get("fac") == "hegemony" and t["shMax"] > 0:
 			t["regenLock"] = 1   # v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
+			locks_regen = true
 	var shieldable: float = dmg * (1.0 - pierce); var through: float = dmg - shieldable
 	var s = z0(t["sh"][quad]); var sh0 = s; var sp0: float = float(z0(t.get("shp"))); var absorbed: float = min(shieldable, float(s) / ion)
 	if absorbed > 0: _spend_shield(t, quad, absorbed * ion)
@@ -3085,7 +3087,10 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 		if jt(w.get("acid")): t["st"]["acid"] = 2
 	if jt(of.get("pyre")) and not jt(t.get("isSq")) and t["hp"] < t["maxHp"] / 2.0: t["pyre"] = true
 	t["hp"] = t["hp"] - hull; att["dealt"] = att["dealt"] + hull
-	emit({"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit})
+	var hit_event := {"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
+	if locks_regen:
+		hit_event["regenLock"] = true
+	emit(hit_event)
 	var hard = false
 	var hl = treeSkill("hardLight")
 	if hl != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(t.get("treeHardUsed")) and t["shMax"] > 0 and sp0 > 0:
@@ -3805,7 +3810,7 @@ func killCauseOf(w, t) -> String:
 	var k = w.get("k"); var trt = w.get("trait")
 	if trt == "gauss" or k == "gauss" or k == "doom": return "flay"
 	if trt == "acid" or trt == "spines" or k == "bioplasma" or k == "tendril" or k == "sporeb": return "melt"
-	if k == "lance" or k == "beam" or (trt == "plasma" and String(w.get("n") if w.get("n") != null else "").to_lower().contains("lance")): return "cut"
+	if k == "lance" or k == "beam" or (trt == "plasma" and (w.get("id") == "turbo" or w.get("id") == "hturbo")): return "cut"   # Hegemony plasma batteries keep the cut death by weapon id, not name (issue 1213)
 	if k == "torp" or k == "htorp" or k == "startorp" or k == "bombs": return "big"
 	if k == "battery" or k == "hbattery" or k == "turret" or k == "autocannon" or k == "scatter":
 		var h: int = int(B["round"]) if B != null and jt(B.get("round")) else 0
@@ -4224,20 +4229,24 @@ func cmdDesc(c, tier, fac) -> String:
 	var pct = func(x): return ns(JSM.jsround(x * 100.0)) + "%"
 	match c["id"]:
 		"barrage": return "Every ship fires a free extra volley right now at the best target in range" + ((", with +" + pct.call(v) + " damage") if jt(v) else "") + ". Its normal shots this round still happen."
-		"hunt": return ("Every ship deals +" + pct.call(v) + " damage for the rest of this round.") if fac == "hegemony" else ("Torpedoes reload at once and every ship deals +" + pct.call(v) + " damage for the rest of this round.")
+		"hunt":
+			var damage := "Every ship deals +%s damage for the rest of this round." % pct.call(v)
+			if fac == "deathless": return damage + " Any ships carrying torpedoes reload them at once."
+			if fac == "hegemony": return damage
+			return "Torpedoes reload at once and every ship deals +%s damage for the rest of this round." % pct.call(v)
 		"scramble": return "Every " + car + " launches " + ("two extra wings" if tier >= 2 else "an extra wing") + " right now if there are open adjacent hexes, even past its hangar limit. Then every " + sq + " you have makes a bonus attack immediately, with +" + pct.call(v) + " damage."
 		"iron": return ("Your ships take " + pct.call(v + 0.1) + " less hull damage for the rest of this round.") if (fac == "chorus" or fac == "deathless") else ("All shields refill and your ships take " + pct.call(v) + " less hull damage for the rest of this round.")
 		"restore": return "Every ship repairs " + pct.call(v) + " of its hull right now."
 		"surge": return "Every ship gains +" + ns(v) + " movement and " + ("+2 turns" if tier >= 2 else "+1 turn") + " this round, and enemy fire loses 20 accuracy against you."
 	return String(c.get("d")) if jt(c.get("d")) else ""
 func bossCmdText(c, fac) -> String: return cmdDesc(c, 1, fac).replace("your ships", "its ships").replace("against you", "against them").replace("Every ship", "Every enemy ship")
-func cmdTier() -> float:
+func cmdTier(rounds_ahead: int = 0) -> float:
 	if B == null or B["round"] < 1: return 0.0
 	var bonus = 0; var lost = 0
 	for u in B["units"]:
 		if u["side"] == "player" and not jt(u.get("dead")) and jt(u.get("fx")) and jt(u["fx"].get("cmdTier")): bonus = 1
 		if u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("transport")) and jt(u.get("dead")): lost = 1
-	return max(0, min(2, B["round"] - 1 + bonus + lost - (1 if heatOn("h_cmd") else 0)))
+	return max(0, min(2, B["round"] + rounds_ahead - 1 + bonus + lost - (1 if heatOn("h_cmd") else 0)))
 # ---------- admiral tree effects (issue #305 job 1: H0 plumbing, H1 choice, H2 counters, H3 next round) ----------
 func treeBuild() -> Array:
 	var out = []; if RUN == null or RUN.get("lineage") == null: return out

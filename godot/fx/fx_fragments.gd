@@ -37,7 +37,7 @@ const PROFILES := [
 const CROWN := [0.095, -0.06, 0.045, -0.035, 0.03, 0.055]
 const CENTRE_DEPTH := [0.075, 0.075, 0.15, 0.15, 0.12, 0.105]
 
-static var _meshes: Array[Array] = []
+static var _meshes: Array[Array] = []   # not GPU: vertex arrays (Packed arrays), not meshes
 static var _atlas_image: Image
 
 
@@ -199,14 +199,24 @@ static func _source_at(target, p: Vector3, out: Vector3) -> Dictionary:
 				return {}
 			var at: Vector3 = (row["to_part"] as Transform3D) * (hit["position"] as Vector3)
 			var corners := HULL.face_corners(face - start, row["strip"])
-			return _finish(mi.global_transform.basis, row["mesh"], row["paint"], int(row["surface"]), corners, at)
+			var paint: BaseMaterial3D = row["paint"]
+			if paint == null or paint.albedo_texture == null:
+				return {}
+			var arrays: Array = target.arrays_of(row["mesh"], int(row["surface"]))
+			return _finish(mi.global_transform.basis, arrays, paint, corners, at)
 	return {}
 
 
-static func _finish(world: Basis, mesh: ArrayMesh, material: BaseMaterial3D, surface: int, corners: Vector3i, at: Vector3) -> Dictionary:
-	if material == null or material.albedo_texture == null:
-		return {}
-	var arrays := mesh.surface_get_arrays(surface)
+# Use the original BVH ranges. Damage can replace the visible surface, but the
+# fragment paint still comes from the original UVs.
+static func warm_source(target) -> void:
+	for row in target.hull.bvh_ranges:
+		var paint: BaseMaterial3D = row["paint"]
+		if paint != null and paint.albedo_texture != null:
+			target.arrays_of(row["mesh"], int(row["surface"]))
+
+
+static func _finish(world: Basis, arrays: Array, material: BaseMaterial3D, corners: Vector3i, at: Vector3) -> Dictionary:
 	var uv: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV] if arrays[Mesh.ARRAY_TEX_UV] != null else PackedVector2Array()
 	if uv.is_empty():
 		return {}
@@ -231,8 +241,15 @@ static func _finish(world: Basis, mesh: ArrayMesh, material: BaseMaterial3D, sur
 		return {}
 	var along_uv := (uv[b] - uv[a]) / edge.length()
 	var across_uv := (uv[c] - uv[a] - along_uv * across.dot(tangent)) / rise
+	var maps := finish_maps(material)
+	return {"maps": maps, "uv": centre * scale + offset, "u": (along_uv * scale).limit_length(0.4),
+		"v": (across_uv * scale).limit_length(0.4), "tint": material.albedo_color.srgb_to_linear(),
+		"finish": Vector4(material.roughness, material.metallic, material.metallic_specular, 1.0 if maps[1] != null else 0.0),
+		"normal_scale": material.normal_scale if material.normal_enabled else 0.0, "slot": -1}
+
+
+static func finish_maps(material: BaseMaterial3D) -> Array:
 	var orm := material.get_texture(BaseMaterial3D.TEXTURE_ORM)
-	var packed := 1.0 if orm != null else 0.0
 	if orm == null:
 		var rough := material.get_texture(BaseMaterial3D.TEXTURE_ROUGHNESS)
 		var metal := material.get_texture(BaseMaterial3D.TEXTURE_METALLIC)
@@ -240,12 +257,7 @@ static func _finish(world: Basis, mesh: ArrayMesh, material: BaseMaterial3D, sur
 		if rough != null and rough == metal and material.roughness_texture_channel == BaseMaterial3D.TEXTURE_CHANNEL_GREEN \
 				and material.metallic_texture_channel == BaseMaterial3D.TEXTURE_CHANNEL_BLUE:
 			orm = rough
-			packed = 1.0
-	return {"maps": [material.albedo_texture, orm, material.normal_texture if material.normal_enabled else null],
-		"uv": centre * scale + offset, "u": (along_uv * scale).limit_length(0.4),
-		"v": (across_uv * scale).limit_length(0.4), "tint": material.albedo_color.srgb_to_linear(),
-		"finish": Vector4(material.roughness, material.metallic, material.metallic_specular, packed),
-		"normal_scale": material.normal_scale if material.normal_enabled else 0.0, "slot": -1}
+	return [material.albedo_texture, orm, material.normal_texture if material.normal_enabled else null]
 
 
 class Pool:
