@@ -464,8 +464,15 @@ func _charged(shot: String, charge: String, pos) -> void:
 	play(shot, {"pos": pos, "delay": float(CHARGE_LEAD[charge])})
 
 
-func lance(ion: bool, fac: String, pos = null) -> void:
-	_charged("lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance", "lance_charge", pos)
+func lance(ion: bool, fac: String, pos = null, fires := []) -> void:
+	var shot := "lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance"
+	if fires.is_empty():
+		_charged(shot, "lance_charge", pos)
+		return
+	if not legacy:
+		play("lance_charge", {"pos": pos, "delay": maxf(float(fires.min()) - float(CHARGE_LEAD["lance_charge"]), 0.0)})
+	for t in fires:
+		play(shot, {"pos": pos, "delay": float(t)})
 
 
 func torp(fac: String, pos = null) -> void:
@@ -488,25 +495,28 @@ func hit(pos = null, heavy := false) -> void:
 	play("hit_heavy" if heavy else "hit", {"pos": pos})
 
 
-# Issue 506: the weapon family and the struck faction choose the hull-hit cue. One table, easy to edit. A critical
-# keeps the heavy cue instead of the family cue, so it never doubles the voices; shield hits keep their own cue.
+# The struck material takes priority over the weapon family. Glass and tissue
+# retain their contact cue on a critical, with a quieter heavy tail under it.
 const HIT_BY_WEAPON := {
 	"las": "hit_las", "lance": "hit_las", "plasma": "hit_plasma",
 	"rail": "hit_rail", "gauss": "hit_rail", "ion": "hit_ion",
 }
 const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass"}
+const CRIT_BEAT := preload("res://fx/fx_weapons.gd").CRIT_BEAT
 
 
 func impact_cue(fam: String, target_fac: String, heavy := false) -> String:
-	if heavy:
-		return "hit_heavy"
 	if HIT_BY_TARGET.has(target_fac):
 		return str(HIT_BY_TARGET[target_fac])
+	if heavy:
+		return "hit_heavy"
 	return str(HIT_BY_WEAPON.get(fam, "hit"))
 
 
 func impact(fam: String, target_fac: String, pos = null, heavy := false) -> void:
 	play(impact_cue(fam, target_fac, heavy), {"pos": pos})
+	if heavy and HIT_BY_TARGET.has(target_fac):
+		play("hit_heavy", {"pos": pos, "delay": CRIT_BEAT, "gain": 0.55})
 
 
 func shield(pos = null, big := false) -> void:

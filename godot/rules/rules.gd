@@ -3009,11 +3009,13 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	if B != null and B.get("tr") != null and B["tr"].get("grandTarget") == t["id"] and att != null and att["side"] == "player":
 		if not jt(B["tr"].get("grandFirstDone")): B["tr"]["grandFirstDone"] = 1
 		else: pierce = 1.0   # Vex capstone 1
+	var locks_regen := false
 	if not jt(t.get("isSq")):
 		if t.get("shHit") == null: t["shHit"] = [0, 0, 0, 0]
 		t["shHit"][quad] = 1
 		if jt(w.get("ion")) and att != null and att.get("fac") == "hegemony" and t["shMax"] > 0:
 			t["regenLock"] = 1   # v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
+			locks_regen = true
 	var shieldable: float = dmg * (1.0 - pierce); var through: float = dmg - shieldable
 	var s = z0(t["sh"][quad]); var sh0 = s; var sp0: float = float(z0(t.get("shp"))); var absorbed: float = min(shieldable, float(s) / ion)
 	if absorbed > 0: _spend_shield(t, quad, absorbed * ion)
@@ -3085,7 +3087,10 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 		if jt(w.get("acid")): t["st"]["acid"] = 2
 	if jt(of.get("pyre")) and not jt(t.get("isSq")) and t["hp"] < t["maxHp"] / 2.0: t["pyre"] = true
 	t["hp"] = t["hp"] - hull; att["dealt"] = att["dealt"] + hull
-	emit({"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit})
+	var hit_event := {"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
+	if locks_regen:
+		hit_event["regenLock"] = true
+	emit(hit_event)
 	var hard = false
 	var hl = treeSkill("hardLight")
 	if hl != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(t.get("treeHardUsed")) and t["shMax"] > 0 and sp0 > 0:
