@@ -321,13 +321,13 @@ function debriefNemName(entry){
 }
 function nemLessonHtml(nz,run={}){
   nz=nz||{met:0,lessons:[]}; const ls=Array.isArray(nz.lessons)?nz.lessons:[], lines=[];
-  for(const l of ls){ const w=NEM_WEAK[l.w];
+  for(const l of ls){ const w=nemEntry(NEM_WEAK,l.w,l.fac);
     lines.push(`<p>Nemesis lesson: ${l.taught===false?'you broke ':''}<span class="nem" title="${esc(l.name)}">${esc(debriefNemName(l))}</span>${l.taught===false?'. Weakness found: ':' beat you and taught you a weakness: '}${esc(w?w.n:"the hunter's tactics")}.</p>${l.text?`<p class="muted">${esc(l.text)}</p>`:''}`);
   }
   for(const N of Object.values(run.nems||{})){
     if(!(N.met||N.beaten||N.scars)) continue;
     const who=`<span class="nem">${esc(debriefNemName(N))}</span>`;
-    for(const w of N.revealed||[]) if(NEM_WEAK[w]&&!ls.some(l=>l.fac===N.fac&&l.w===w)) lines.push(`<p>Nemesis lesson: you broke ${who}. Weakness found: ${esc(NEM_WEAK[w].n)}.</p>`);
+    for(const w of N.revealed||[]) if(NEM_WEAK[w]&&!ls.some(l=>l.fac===N.fac&&l.w===w)) lines.push(`<p>Nemesis lesson: you broke ${who}. Weakness found: ${esc(nemEntry(NEM_WEAK,w,N.fac).n)}.</p>`);
     for(const ad of N.adapt||[]) lines.push(`<p>Nemesis lesson: ${who} adapted. ${esc(nemAdaptName(ad,N.fac))}: ${esc(nemAdaptWhyLine(ad,N))}.</p>`);
     if(N.loot) lines.push(`<p>Raided: <span class="nem">${esc(N.name)}</span>'s Hullbreakers took ${N.loot} credits this run. One raider line crossed.</p>`);
     if(N.dead) lines.push(`<p>Nemesis lesson: ${who} is dead. What he taught you is yours to keep.</p>`);
