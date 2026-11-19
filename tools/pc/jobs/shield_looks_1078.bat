@@ -199,6 +199,15 @@ if errorlevel 1 (
   set "JOBFAIL=1"
   exit /b 1
 )
+rem staged edits: the HEAD patch below records only the net worktree difference, so a staged change that the worktree undoes
+rem would vanish from it and then be reset. Nothing in this job stages, so any staged change stops it (Artoo, PR 1170)
+git -C "%R%" diff --cached --quiet >> "%SC_DIR%\backup_errors.txt" 2>&1
+if errorlevel 1 (
+  git -C "%R%" diff --cached --binary > "%SC_DIR%\clone_staged_changes.patch" 2>> "%SC_DIR%\backup_errors.txt"
+  echo FAILED: checkout %SC_REF%: the clone has staged changes ^(saved in %SC_DIR%\clone_staged_changes.patch^) or git failed; nothing was touched >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
 git -C "%R%" diff --binary HEAD > "%SC_DIR%\clone_changes_before_checkout.patch" 2>> "%SC_DIR%\backup_errors.txt"
 if errorlevel 1 (
   echo FAILED: checkout %SC_REF%: could not save the patch, nothing was touched >> "%ST%"
