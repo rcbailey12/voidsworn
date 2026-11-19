@@ -168,7 +168,7 @@ function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   // B2: your fleet's power scales the budget both ways around the sector's reference fleet (was: a battered fleet met less, a strong one never more)
   if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ budget*=Math.max(RAMP.pwMin,Math.min(RAMP.pwMax,Math.pow(Math.max(.5,fleetPower())/RAMP.refP[s],RAMP.pw))); }
   if(typeof AI_LEVEL!=='undefined'&&AI_LEVEL==='standard') budget*=RAMP.std;
-  if(typeof AI_LEVEL!=='undefined'&&AI_LEVEL==='veteran') budget*=RAMP.vet;
+  if(aiVet()) budget*=RAMP.vet; // the level as aiVet reads it: an unset level is Veteran, as in Godot (AI_LEVEL defaults to veteran there)
   if(heatOn('h_hunted')) budget*=1.15;
   if(mod==='bounty') budget*=1.1;
   let roster=F.roster.map(id=>({id,cp:HULLS[id].cp,car:HULLS[id].ab==='launch'}));
