@@ -8,7 +8,10 @@ extends SceneTree
 ##   timing  three A16 side by side at the battle camera, no frame grabs. The first death in a fresh process (the
 ##           first-use spike), then one, two and three at once. Per frame: wall time between drawn frames, the
 ##           viewport's CPU and GPU render times. The variant comes from VS_DEATH_STORY ("strain" or off), so each
-##           variant runs in its own process. Output: <scratch>/timing_<variant>.json.
+##           variant runs in its own process. Output: <scratch>/timing_<variant>.json. The preparation frames are
+##           timed too, and "prepared" says whether every cut finished before the kills.
+##   cold    a fresh process, one A16 killed the frame its damage arrives, nothing prepared (the cold spike).
+##           Output: <scratch>/cold_<variant>.json.
 ## Run with --fixed-fps 60 at 1920x1080, Forward+, through tools/pc/tmo.bat (run.bat beside this file).
 
 class Bench extends "res://bench/look_bench.gd":
@@ -91,6 +94,9 @@ func _run() -> void:
 		_write("capture.json", info, out)
 	elif mode == "timing":
 		info["timing"] = await _timing()
+	elif mode == "cold":
+		info["timing"] = await _cold()
+		_write("cold_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
 		_write("timing_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
 	bench._clear()
 	bench.queue_free()
@@ -112,7 +118,7 @@ func _fail(message: String) -> void:
 	push_error("CAPTURE1077 " + message)
 
 
-func _scene(variant: String, radius: int, targets: Array) -> void:
+func _scene(variant: String, radius: int, targets: Array, warm := true) -> void:
 	bench._clear()
 	OS.set_environment("VS_DEATH_STORY", variant)
 	bench._make_fx()
@@ -131,9 +137,10 @@ func _scene(variant: String, radius: int, targets: Array) -> void:
 	if bench.fx.death_story != (variant == "strain"):
 		_fail("The death_story switch did not take")
 		return
-	await bench.fx.warmup(bench.cam)
-	for i in 60:
-		await bench._step()
+	if warm:
+		await bench.fx.warmup(bench.cam)
+		for i in 60:
+			await bench._step()
 	bench.fx.rng.seed = 11
 	seed(2070)
 
@@ -251,16 +258,25 @@ func _timing() -> Dictionary:
 	RenderingServer.viewport_set_measure_render_time(vrid, true)
 	for id in ids:
 		bench.fx.sync_ship(id, bench._unit(0.199, 0))
-	# every cut job done and its pieces built before the first kill, as a battle prepares them under cover
+	# every cut job done and its pieces built before the first kill, as a battle prepares them under cover. These
+	# preparation frames are timed too (Artoo on PR 1171: the prebuild is where a player may pay the cost); a run that
+	# times out says so ("prepared": false) instead of timing deaths on unprepared hulls silently.
+	var prep_wall: Array = []
+	var prep_gpu: Array = []
 	var t_wait := Time.get_ticks_msec()
+	var all_built := false
 	while Time.get_ticks_msec() - t_wait < 120000:
-		await _frame()
-		var all_built := true
+		prep_wall.append(await _frame())
+		prep_gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(vrid))
+		all_built = true
 		for id in ids:
 			if not (bench.fx.ship(id).get_meta("cut_job", {}) as Dictionary).get("built", false): all_built = false
 		if all_built: break
-	var res := {"variant": variant, "idle": await _window(120), "deaths": []}
-	# the first death in this process (first use of the death and fracture materials), then one, two and three at once
+	if not all_built: _fail("the cut jobs did not finish within 120 s: the prepared timing below is not valid")
+	var res := {"variant": variant, "path": "prepared: warm-up at load, cut jobs and pieces built before each kill",
+		"prepared": all_built, "prepare": {"frames": prep_wall.size(), "wall": _stats(prep_wall), "gpu": _stats(prep_gpu),
+			"wall_ms": prep_wall.map(func(x: float) -> float: return snappedf(x, 0.01))}, "idle": await _window(120), "deaths": []}
+	# the first death after preparation (first use of the death and fracture materials), then one, two and three at once
 	var groups := [["T0"], ["T1"], ["T2", "T3"]]
 	await _settle_frames(60)
 	for g in groups:
@@ -271,6 +287,7 @@ func _timing() -> Dictionary:
 		w["kill_call_ms"] = kill_ms
 		w["ships"] = g.size()
 		w["first_use"] = res["deaths"].is_empty()
+		w["first_use_meaning"] = "first kill in this process after warm-up and prepared pieces; the cold spike is the cold mode"
 		res["deaths"].append(w)
 		print("CAPTURE1077 timing ", variant, " ships=", g.size(), " first=", w["first_use"], " wall_p50=%.2f p95=%.2f worst=%.2f gpu_p50=%.2f p95=%.2f worst=%.2f" % [
 			w.wall.p50, w.wall.p95, w.wall.worst, w.gpu.p50, w.gpu.p95, w.gpu.worst])
@@ -303,6 +320,37 @@ func _timing() -> Dictionary:
 		w3.wall.p50, w3.wall.p95, w3.wall.worst, w3.gpu.p50, w3.gpu.p95, w3.gpu.worst])
 	res["late_shaders"] = Bench.HULL.late_shader_names()
 	return res
+
+
+# The cold case (Artoo on PR 1171): a fresh process, no warm-up and no prepared cut (the game warms and cuts every ship
+# under the loading cover, or a few tenths of a second after it is added, so this is the worst case, not the usual
+# one): one A16 killed a few frames after it appears; the death starts the cut itself and the break waits for it.
+# Records whether anything was prepared at the kill, so the path that ran is stated.
+func _cold() -> Dictionary:
+	record = false
+	var variant := "strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"
+	await _scene(variant, 170, ["C0"], false)
+	if failed: return {}
+	var vrid: RID = bench.vp.get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(vrid, true)
+	var idle := await _window(6)
+	var s = bench.fx.ship("C0")
+	var had_job: bool = s.has_meta("cut_job") or s.has_meta("cut_task")
+	var t0 := Time.get_ticks_usec()
+	bench.fx.sync_ship("C0", bench._unit(0.199, 0))
+	bench.fx.death("C0", "big")
+	var kill_ms := (Time.get_ticks_usec() - t0) / 1000.0
+	var w := await _window(int(6.5 * 60))
+	w["kill_call_ms"] = kill_ms
+	w["ships"] = 1
+	w["first_use"] = true
+	w["cut_job_before_kill"] = had_job
+	w["split_waited_s"] = float(s.get_meta("death_split", 0.0)) - float(s.get_meta("death_start", 0.0)) if s.has_meta("death_start") else -1.0
+	w["broke_up"] = s.has_meta("death_hidden")
+	print("CAPTURE1077 cold ", variant, " prepared_before_kill=", had_job, " wall_p50=%.2f p95=%.2f worst=%.2f gpu_worst=%.2f" % [
+		w.wall.p50, w.wall.p95, w.wall.worst, w.gpu.worst])
+	return {"variant": variant, "path": "cold: fresh process, no warm-up, killed with no prepared cut", "idle": idle, "deaths": [w],
+		"late_shaders": Bench.HULL.late_shader_names()}
 
 
 func _frame() -> float:

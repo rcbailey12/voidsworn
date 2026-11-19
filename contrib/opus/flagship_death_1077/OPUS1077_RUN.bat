@@ -3,7 +3,7 @@ title Opus 1077: flagship death prototype clips and solo GPU timing - GPU job
 rem Issue 1077 (Opus worker thread "Prototype the flagship death"): A16 (C19_51) dying on today's path and with the strain
 rem prototype (rendering/effects/death_story, off by default), at the battle camera and close; then frame times solo on
 rem the GPU (R293) for the first death in a process and one, two and three A16 dying at once, off and strain, three
-rem sessions each. Fresh clone of branch opus/issue-1077 in opus1077\repo; the installed ships are COPIED into the clone
+rem sessions each, plus a cold case per session (fresh process, no warm-up, no prepared cut: Artoo on PR 1171). Fresh clone of branch opus/issue-1077 in opus1077\repo; the installed ships are COPIED into the clone
 rem (the shared build is only read). Writes only under opus1077\. Never deletes anything. Every step logs to out\result.txt.
 setlocal EnableDelayedExpansion
 set V=%USERPROFILE%\Downloads\voidsworn_test
@@ -64,6 +64,8 @@ for %%N in (1 2 3) do for %%V in (off strain) do (
   set VS_DEATH_STORY=%%V
   call "%TM%" 1800 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1077/capture.gd -- timing "%O%\timing\s%%N" > "%O%\timing\s%%N\log_%%V.txt" 2>&1
   echo timing s%%N %%V exit !ERRORLEVEL! >> "%RES%"
+  call "%TM%" 1800 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1077/capture.gd -- cold "%O%\timing\s%%N" > "%O%\timing\s%%N\log_cold_%%V.txt" 2>&1
+  echo cold s%%N %%V exit !ERRORLEVEL! >> "%RES%"
 )
 set VS_DEATH_STORY=
 echo all done %DATE% %TIME% >> "%RES%"
