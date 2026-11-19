@@ -1,17 +1,19 @@
 'use strict';
 // Issue 1174: static checks of the shared ship job, tools/pc/jobs/ship_job.bat, and of the helper wrappers that call it.
-// Runs on any host (no cmd needed). What it holds:
+// The static checks and stage 7 fixture run on any host. The launcher TEMP probe also runs on Windows.
 //   the guard: after every step that can fail, "if defined FAILED goto collect" comes before the next command, so a failed
 //     stage, install or check never reaches the shots; the shots line sits right behind that guard;
 //   all three installed-glb checks (readback, interiors, death seam) count toward the guard (S10_RUN_1157.bat let a failed
 //     death seam through to the shots);
 //   the GPU wait default (3600, the gpu_slots.js MAX_WAIT_SECONDS that every ship checkout's helper accepts) is set before any GPU step;
 //   the last line: every way out of the main job writes "done PASS" or "done FAILED: ..." and then "all done";
-//   no delete or move commands, and output only under the job folder;
+//   no delete or move commands, and output only under the job folder and the helper's own TEMP;
 //   every wrapper in docs/ship_pipeline/ship_job/wrappers/ is three lines that set the inputs and call ship_job.bat.
 const assert = require('assert');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 const JOB = path.join(ROOT, 'tools/pc/jobs/ship_job.bat');
 const WRAPPERS = path.join(ROOT, 'docs/ship_pipeline/ship_job/wrappers');
@@ -101,12 +103,60 @@ for (const l of code) {
   for (const m of l.s.matchAll(/>>?\s*("[^"]*"|\S+)/g)) {
     const target = m[1].replace(/"/g, '');
     if (target === 'nul' || target === '&1') continue;
+    if (l.s.startsWith('call :run_tools 9>') && target === '%TEMP%\\.voidsworn-run-active') continue;
     assert(/^%(O|RES)%/.test(target), `line ${l.n} writes outside the job's out folder: ${target}`);
   }
 }
 assert(/^ren "%O%" "out_before_%STAMP%"$/m.test(text.replace(/^if exist "%O%" /m, '')), 'an earlier out folder is renamed, not removed');
 assert(/^xcopy \/e \/i \/y \/q "%V%\\recipe\\%SHIP%" "%O%\\recipe"/m.test(text), 'the recipe folder is copied, never moved');
 pass('no deletes or moves; logs only under out; the recipe folder copied into out\\recipe');
+
+const bench = fs.readFileSync(path.join(ROOT, 'tools/pc/jobs/look_bench.bat'), 'utf8');
+function tempSetup(script) {
+  const start = script.indexOf('powershell -NoProfile -Command "$ErrorActionPreference=\'Stop\'; $id=');
+  const end = script.indexOf(':run_tools', script.indexOf('exit /b %ERRORLEVEL%', start));
+  assert(start >= 0 && end > start, 'sets the helper temp before its tools run');
+  return script.slice(start, end);
+}
+const setups = [tempSetup(text), tempSetup(bench)];
+for (const setup of setups) {
+  assert.match(setup, /voidsworn-run-.*\.voidsworn-run-owner/);
+  assert.match(setup, /set \/p TEMP=.*\r?\nset "TMP=%TEMP%"\r?\nset "TMPDIR=%TEMP%"/);
+  assert.match(setup, /call :run_tools 9>"%TEMP%\\\.voidsworn-run-active"/);
+}
+if (process.platform === 'win32') {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'helper-temp-proof-'));
+  try {
+    for (const [number, setup] of setups.entries()) {
+      const probe = path.join(tmp, `helper${number}.bat`);
+      const lines = ['@echo off', 'setlocal', 'set "O=%PROOF_HOME%"', 'set "LB_HOME=%PROOF_HOME%"',
+        'set "RES=%PROOF_HOME%\\setup.log"', 'set "ST=%RES%"', setup,
+        ':run_tools', 'powershell -NoProfile -Command "try { [IO.File]::Open((Join-Path $env:TEMP \'.voidsworn-run-active\'),\'Open\',\'Read\',\'None\').Dispose(); exit 1 } catch [IO.IOException] { exit 0 }"',
+        'if errorlevel 1 exit /b 1', 'echo TMP=%TMP%', 'echo TEMP=%TEMP%', 'echo TMPDIR=%TMPDIR%',
+        'exit /b 0', ':collect', ':finish', 'exit /b 1'];
+      fs.writeFileSync(probe, lines.map(line => line.replace(/\r?\n/g, '\r\n')).join('\r\n') + '\r\n');
+      const run = spawnSync('cmd.exe', ['/d', '/c', probe], { env: { ...process.env, TEMP: tmp, PROOF_HOME: tmp }, encoding: 'utf8', timeout: 15000 });
+      assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}\n${fs.readFileSync(path.join(tmp, 'setup.log'), 'utf8')}`);
+      const fromEnv = run.stdout.trim().split(/\r?\n/).map(line => line.split('=')[1]);
+      assert.equal(fromEnv.length, 3);
+      const [dir] = fromEnv;
+      assert(fromEnv.every(value => value === dir));
+      assert.equal(path.dirname(dir), tmp);
+      assert.equal(fs.readFileSync(path.join(dir, '.voidsworn-run-owner'), 'utf8'), path.basename(dir).slice('voidsworn-run-'.length));
+      assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')));
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
+pass('both helper launchers give their tools separate owned TEMP folders');
+
+const stage7 = spawnSync(process.env.PYTHON || 'python', ['-B', path.join(ROOT, 'tools/recipe/manifest_merge_selftest.py')],
+  { encoding: 'utf8', timeout: 20000 });
+assert.equal(stage7.status, 0, `${stage7.error || ''}\n${stage7.stdout}\n${stage7.stderr}`);
+assert.match(stage7.stdout, /PASS stage 7 scratch removed after successful install/);
+assert.match(stage7.stdout, /PASS stage 7 scratch kept after failed install/);
+pass('stage 7 removes the checked export scratch after success and keeps it after a failure');
 
 // the wrappers
 const wrappers = fs.existsSync(WRAPPERS) ? fs.readdirSync(WRAPPERS).filter(f => /\.bat$/i.test(f)) : [];
