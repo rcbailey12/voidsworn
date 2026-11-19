@@ -4224,20 +4224,24 @@ func cmdDesc(c, tier, fac) -> String:
 	var pct = func(x): return ns(JSM.jsround(x * 100.0)) + "%"
 	match c["id"]:
 		"barrage": return "Every ship fires a free extra volley right now at the best target in range" + ((", with +" + pct.call(v) + " damage") if jt(v) else "") + ". Its normal shots this round still happen."
-		"hunt": return ("Every ship deals +" + pct.call(v) + " damage for the rest of this round.") if fac == "hegemony" else ("Torpedoes reload at once and every ship deals +" + pct.call(v) + " damage for the rest of this round.")
+		"hunt":
+			var damage := "Every ship deals +%s damage for the rest of this round." % pct.call(v)
+			if fac == "deathless": return damage + " Any ships carrying torpedoes reload them at once."
+			if fac == "hegemony": return damage
+			return "Torpedoes reload at once and every ship deals +%s damage for the rest of this round." % pct.call(v)
 		"scramble": return "Every " + car + " launches " + ("two extra wings" if tier >= 2 else "an extra wing") + " right now if there are open adjacent hexes, even past its hangar limit. Then every " + sq + " you have makes a bonus attack immediately, with +" + pct.call(v) + " damage."
 		"iron": return ("Your ships take " + pct.call(v + 0.1) + " less hull damage for the rest of this round.") if (fac == "chorus" or fac == "deathless") else ("All shields refill and your ships take " + pct.call(v) + " less hull damage for the rest of this round.")
 		"restore": return "Every ship repairs " + pct.call(v) + " of its hull right now."
 		"surge": return "Every ship gains +" + ns(v) + " movement and " + ("+2 turns" if tier >= 2 else "+1 turn") + " this round, and enemy fire loses 20 accuracy against you."
 	return String(c.get("d")) if jt(c.get("d")) else ""
 func bossCmdText(c, fac) -> String: return cmdDesc(c, 1, fac).replace("your ships", "its ships").replace("against you", "against them").replace("Every ship", "Every enemy ship")
-func cmdTier() -> float:
+func cmdTier(rounds_ahead: int = 0) -> float:
 	if B == null or B["round"] < 1: return 0.0
 	var bonus = 0; var lost = 0
 	for u in B["units"]:
 		if u["side"] == "player" and not jt(u.get("dead")) and jt(u.get("fx")) and jt(u["fx"].get("cmdTier")): bonus = 1
 		if u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("transport")) and jt(u.get("dead")): lost = 1
-	return max(0, min(2, B["round"] - 1 + bonus + lost - (1 if heatOn("h_cmd") else 0)))
+	return max(0, min(2, B["round"] + rounds_ahead - 1 + bonus + lost - (1 if heatOn("h_cmd") else 0)))
 # ---------- admiral tree effects (issue #305 job 1: H0 plumbing, H1 choice, H2 counters, H3 next round) ----------
 func treeBuild() -> Array:
 	var out = []; if RUN == null or RUN.get("lineage") == null: return out

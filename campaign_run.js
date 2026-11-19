@@ -553,7 +553,7 @@ function showCoreEat(){
 ACT.eatCore=p=>{ if(!eatCore(p)) return; try{ tel('core_eat',{p,sector:RUN.sector}); }catch(e){} saveRun(); closeModal(); ACT.beat3(); };
 ACT.refuseCoreEat=()=>{ if(!refuseCoreEat()) return; try{ tel('core_eat_refuse',{sector:RUN.sector}); }catch(e){} saveRun(); closeModal(); ACT.beat3(); };
 ACT.beat3=()=>{ if(showCoreEat()) return; if(!showBeat3()) closeModal(); };
-function beat3Debrief(){ const a=RUN&&STORY_BEAT3[RUN.fac]; return a&&RUN.flags&&RUN.flags[a.id]!=null?a.debrief:''; }
+function beat3Debrief(){ const a=RUN&&STORY_BEAT3[RUN.fac]; return a&&RUN.sector===3&&!RUN.beat3DebriefSeen&&RUN.flags&&RUN.flags[a.id]!=null?a.debrief:''; }
 function applyBeat3Outcome(r){
   const out=applyOutcome({...r,cred:r.credits,healAll:r.repair,nemIntel:r.weak,nemClock:r.clock}).filter(l=>l!=='You move on.');
   if(r.dmgFlag){ const f=flagshipOf(); if(f){ const dmg=Math.round(derive(f).maxHp*r.dmgFlag); f.hp=Math.max(1,f.hp-dmg); out.push(`The ${f.name} takes ${dmg} hull damage.`); } }
@@ -602,10 +602,12 @@ function rewardFlow(summary){
   // B1 (reload during rewards): the node completes the moment the rewards are banked, and the picks still to make (with their offers fixed) ride in the save.
   // A reload then resumes the chain (resumeReward) instead of losing the boon, refit or relic, or replaying the node for double pay.
   const prizes=(summary.prizes||[]).filter(p=>p&&HULLS[p.tpl]);
-  RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null}; completeNode();
+  RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null};
+  const debrief=beat3Debrief(); if(debrief) RUN.beat3DebriefSeen=true;
+  completeNode();
   const next=RUN.reward.prizes.length?`<button class="primary" data-act="prizeStep">Decide on the prize ship${RUN.reward.prizes.length>1?'s':''}</button>`:window._wrecks.length?'<button class="primary" data-act="salvageStep">Strip the wrecks</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a protocol</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
   modal(`<h2>${cfg.kind==='boss'?'Flagship destroyed':'Victory'}</h2>
-    ${beat3Debrief()?`<p class="gilt">${esc(beat3Debrief())}</p>`:''}
+    ${debrief?`<p class="gilt">${esc(debrief)}</p>`:''}
     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra}
     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Protocols in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.</p>':''; })()}
     ${flagMoved?`<p class="gilt">The admiral transfers the flag to the ${esc(flagMoved.name)}. Its aspect goes with it.</p>`:''}

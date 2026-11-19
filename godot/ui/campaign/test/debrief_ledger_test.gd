@@ -174,7 +174,7 @@ func run() -> void:
 		if code == KEY_S:
 			for row in paid["cores"]: check(text.contains(str(C.PATRONS[row["id"]]["n"])) and text.contains(C.numstr(row["total"])), "sync keeps count for " + str(row["id"]))
 		if code == KEY_R:
-			check(text.contains(str(C.TB.STORY_BEAT3[run_data["fac"]]["learning"])), "record keeps story payoff")
+			check(not text.contains(str(C.TB.STORY_BEAT3[run_data["fac"]]["learning"])), "record does not invent a story payoff for this Sector II run")
 			for card in UI.CampaignTips.CARDS:
 				if card[0] == "c_loss": check(text.contains(str(card[2])), "record keeps original next-run teaching card")
 		if code == KEY_F:

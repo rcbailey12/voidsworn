@@ -132,3 +132,74 @@ FAIL battle t7a_rearreckoning
   state.units[1].sh[3]: 9 -> 7
   later changed records: 3; total records: 72 -> 72
 FAIL: saved Godot results; 284 battles checked, 32 changed, 0 other files changed, 32 failures; 16.595 s
+
+Issue 1147 branch (merged with main; the merged saved results pass: 284 battles checked, 0 changed):
+Saved manifest after: dc7eda5b1f6f5830a15d4bd5ab1ae7f59fe907313d198330b98d49f0a288f698
+
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle s1
+  turn 0, round 1, after tick player; unit x05 (player warden)
+  state.units[1].name: "Pale Crusader" -> "Pale Sentinel"
+  later changed records: 160; total records: 161 -> 161
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x05 (player ascendant)
+  state.units[0].name: "Pale Crusader" -> "Pale Sentinel"
+  later changed records: 324; total records: 325 -> 325
+FAIL battle s10
+  turn 0, round 1, after tick player; unit x05 (player reliquary)
+  state.units[0].name: "Pale Crusader" -> "Pale Sentinel"
+  later changed records: 242; total records: 243 -> 243
+FAIL battle s17
+  turn 0, round 1, after tick player; unit x05 (player warden)
+  state.units[1].name: "Pale Crusader" -> "Pale Sentinel"
+  later changed records: 118; total records: 119 -> 119
+FAIL battle t_wingsdebt
+  turn 0, round 1, after tick player; unit x04 (player penitent)
+  state.units[1].name: "Pale Crusader" -> "Pale Sentinel"
+  later changed records: 79; total records: 80 -> 80
+FAIL battle t_unpaid
+  turn 0, round 1, after tick player; unit x04 (player warden)
+  state.units[0].name: "Pale Crusader" -> "Pale Sentinel"
+  later changed records: 132; total records: 133 -> 133
+FAIL battle t_ecl_copiedbehind
+  turn 23, round 2, after command player; unit none (battle state)
+  state.b.log[6].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 32; total records: 56 -> 56
+FAIL battle t_ecl_unseenarchive
+  turn 26, round 2, after command player; unit none (battle state)
+  state.b.log[10].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 33; total records: 60 -> 60
+FAIL battle t_ecl_uncopiedtarget
+  turn 21, round 2, after command player; unit none (battle state)
+  state.b.log[4].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 36; total records: 58 -> 58
+FAIL battle t_ecl_iterationkill
+  turn 23, round 2, after command player; unit none (battle state)
+  state.b.log[6].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 32; total records: 56 -> 56
+FAIL battle t_ecl_silentarchive
+  turn 23, round 2, after command player; unit none (battle state)
+  state.b.log[6].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 55; total records: 79 -> 79
+FAIL battle t_ecl_outshadow
+  turn 27, round 2, after command player; unit none (battle state)
+  state.b.log[10].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 58; total records: 86 -> 86
+FAIL battle t_ecl_longcopy
+  turn 22, round 2, after command player; unit none (battle state)
+  state.b.log[3].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 44; total records: 67 -> 67
+FAIL battle t7a_torpfirst
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].name: "Pale Crusader" -> "Pale Sentinel"
+  later changed records: 69; total records: 70 -> 70
+FAIL battle t7b_ecl_formation_c
+  turn 24, round 2, after command player; unit none (battle state)
+  state.b.log[5].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 76; total records: 101 -> 101
+FAIL battle t7b_ecl_shadow
+  turn 23, round 2, after command player; unit none (battle state)
+  state.b.log[7].m: "Admiral's Command at power 2 of 3: Out of the shadow. Torpedoes reload at once and every ship deals +45% damage for the rest of this round." -> "Admiral's Command at power 2 of 3: Out of the shadow. Every ship deals +45% damage for the rest of this round. Any ships carrying torpedoes reload them at once."
+  later changed records: 52; total records: 76 -> 76
+FAIL: saved Godot results; 284 battles checked, 16 changed, 0 other files changed, 16 failures; 35.952 s
