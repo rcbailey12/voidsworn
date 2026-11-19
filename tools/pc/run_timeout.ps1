@@ -1,4 +1,4 @@
-# Run a program with a ceiling (PC watchdog). Agent runs also stop when progress stalls (issue 818).
+# Run a program with a ceiling and a progress watchdog (issues 818 and 1192).
 # The program's output goes to this window (so "tmo.bat ... > log.txt 2>&1" captures it).
 # Call it through tools\pc\tmo.bat <seconds> <exe> [args ...]: the bat hands the whole command line over in TMO_ARGS, so
 # arguments that start with "-" or "--" reach the program untouched (PowerShell would read them as its own parameters).
@@ -120,8 +120,15 @@ function Update-RunTree($Tree) {
 }
 function Write-KillLog($Log, $Line) {
   Write-Output "run_timeout: $Line"
-  try { "$(Get-Date -Format s) $Line" | Out-File -LiteralPath $Log -Append -Encoding utf8 }
-  catch { Write-Output "run_timeout: could not append kill log: $($_.Exception.Message)" }
+  for ($attempt = 1; ; $attempt++) {
+    try { [IO.File]::AppendAllText($Log, "$(Get-Date -Format s) $Line`r`n"); return }
+    catch [IO.IOException] {
+      # Several watchdogs can report to the same queue log.
+      if ($attempt -ge 10) { Write-Output "run_timeout: could not append kill log: $($_.Exception.Message)"; return }
+      Start-Sleep -Milliseconds 25
+    }
+    catch { Write-Output "run_timeout: could not append kill log: $($_.Exception.Message)"; return }
+  }
 }
 function Stop-RunTree($Process, $Tree, $Log) {
   Update-RunTree $Tree
@@ -155,6 +162,242 @@ function Stop-RunTree($Process, $Tree, $Log) {
   Write-KillLog $Log $failure
   throw $failure
 }
+function Initialize-StepWatchdog {
+  # Start suspended and assign the job before any child code can spawn a process. Windows keeps descendants in
+  # the job even after their parent exits and accounts for CPU used by children that exit between polls.
+  Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+
+public sealed class RunnerStep : IDisposable {
+  [StructLayout(LayoutKind.Sequential)]
+  struct Startup {
+    public int size;
+    public IntPtr reserved, desktop, title;
+    public int x, y, width, height, xChars, yChars, fill, flags;
+    public short show, reservedSize;
+    public IntPtr reservedBytes, input, output, error;
+  }
+  [StructLayout(LayoutKind.Sequential)]
+  struct ProcessInfo {
+    public IntPtr process, thread;
+    public int pid, tid;
+  }
+  [StructLayout(LayoutKind.Sequential)]
+  public struct Usage {
+    public long UserTime, KernelTime, PeriodUserTime, PeriodKernelTime;
+    public uint PageFaults, Total, Active, Terminated;
+    public long CpuTime { get { return UserTime + KernelTime; } }
+  }
+  [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr CreateJobObject(IntPtr attrs, IntPtr name);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetInformationJobObject(IntPtr job, int kind, byte[] data, int size);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool QueryInformationJobObject(IntPtr job, int kind, out Usage data, int size, IntPtr written);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool QueryInformationJobObject(IntPtr job, int kind, IntPtr data, int size, IntPtr written);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateJobObject(IntPtr job, uint code);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool TerminateProcess(IntPtr process, uint code);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern uint ResumeThread(IntPtr thread);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetHandleInformation(IntPtr handle, uint mask, uint flags);
+  [DllImport("kernel32.dll")] static extern IntPtr GetStdHandle(int number);
+  [DllImport("kernel32.dll")] static extern IntPtr GetCurrentProcess();
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool DuplicateHandle(IntPtr source, IntPtr handle, IntPtr target, out IntPtr copy, uint access, bool inherit, uint options);
+  [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+  static extern bool CreateProcess(string exe, StringBuilder command, IntPtr processAttrs, IntPtr threadAttrs,
+    bool inherit, uint flags, IntPtr env, string cwd, ref Startup startup, out ProcessInfo info);
+
+  readonly IntPtr job;
+  public Process Root { get; private set; }
+  public RunnerStep(bool gpu) {
+    job = CreateJobObject(IntPtr.Zero, IntPtr.Zero);
+    if (job == IntPtr.Zero) throw new Win32Exception();
+    if (!gpu) return; // A successful ordinary queue launcher may leave background work running.
+    // JOBOBJECT_EXTENDED_LIMIT_INFORMATION, LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE.
+    byte[] limits = new byte[IntPtr.Size == 8 ? 144 : 112];
+    limits[17] = 0x20;
+    if (!SetInformationJobObject(job, 9, limits, limits.Length)) {
+      var error = new Win32Exception();
+      CloseHandle(job);
+      throw error;
+    }
+  }
+  public void Start(string exe, string args, string cwd, string output, string error) {
+    using (var stdout = new FileStream(output, FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite))
+    using (var stderr = new FileStream(error, FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite)) {
+      var startup = new Startup { size = Marshal.SizeOf(typeof(Startup)), flags = 0x100 }; // STARTF_USESTDHANDLES
+      startup.output = stdout.SafeFileHandle.DangerousGetHandle();
+      startup.error = stderr.SafeFileHandle.DangerousGetHandle();
+      if (!SetHandleInformation(startup.output, 1, 1) || !SetHandleInformation(startup.error, 1, 1))
+        throw new Win32Exception();
+      // A caller may have no stdin (for example, the queue running under a service).
+      IntPtr self = GetCurrentProcess();
+      DuplicateHandle(self, GetStdHandle(-10), self, out startup.input, 0, true, 2);
+      ProcessInfo info;
+      try {
+        var command = new StringBuilder("\"" + exe + "\" " + args);
+        if (!CreateProcess(exe, command, IntPtr.Zero, IntPtr.Zero, true, 4, IntPtr.Zero, cwd, ref startup, out info))
+          throw new Win32Exception();
+      } finally {
+        if (startup.input != IntPtr.Zero) CloseHandle(startup.input);
+      }
+      bool started = false;
+      try {
+        if (!AssignProcessToJobObject(job, info.process)) throw new Win32Exception();
+        Root = Process.GetProcessById(info.pid);
+        var handle = Root.Handle; // Keep the process identity and its exit code after exit.
+        if (ResumeThread(info.thread) == UInt32.MaxValue) throw new Win32Exception();
+        started = true;
+      } finally {
+        if (!started) TerminateProcess(info.process, 125);
+        CloseHandle(info.thread);
+        CloseHandle(info.process);
+      }
+    }
+  }
+  public Usage ReadUsage() {
+    Usage usage;
+    if (!QueryInformationJobObject(job, 1, out usage, Marshal.SizeOf(typeof(Usage)), IntPtr.Zero))
+      throw new Win32Exception();
+    return usage;
+  }
+  public long[] ActivePids() {
+    // JOBOBJECT_BASIC_PROCESS_ID_LIST has two DWORD counts followed by pointer-sized PIDs.
+    int capacity = 16;
+    while (true) {
+      int size = 8 + capacity * IntPtr.Size;
+      IntPtr data = Marshal.AllocHGlobal(size);
+      try {
+        if (QueryInformationJobObject(job, 3, data, size, IntPtr.Zero)) {
+          long[] pids = new long[Marshal.ReadInt32(data, 4)];
+          for (int i = 0; i < pids.Length; i++) pids[i] = Marshal.ReadIntPtr(data, 8 + i * IntPtr.Size).ToInt64();
+          return pids;
+        }
+        int error = Marshal.GetLastWin32Error();
+        if (error != 234) throw new Win32Exception(error); // ERROR_MORE_DATA
+        capacity = Math.Max(capacity * 2, Marshal.ReadInt32(data));
+      } finally { Marshal.FreeHGlobal(data); }
+    }
+  }
+  public void Kill() {
+    if (!TerminateJobObject(job, 124)) throw new Win32Exception();
+  }
+  public void Dispose() {
+    if (Root != null) Root.Dispose();
+    CloseHandle(job);
+  }
+}
+
+public sealed class RunnerStepFiles : IDisposable {
+  readonly FileSystemWatcher watcher;
+  readonly string folder;
+  int changes;
+  public RunnerStepFiles(string output) {
+    if (String.IsNullOrEmpty(output)) return;
+    folder = Path.GetFullPath(output).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+    string parent = folder;
+    while (!Directory.Exists(parent)) parent = Path.GetDirectoryName(parent.TrimEnd('\\', '/'));
+    watcher = new FileSystemWatcher(parent) { IncludeSubdirectories = true, NotifyFilter = NotifyFilters.FileName };
+    watcher.Created += Changed;
+    watcher.Renamed += Changed;
+    watcher.Error += (sender, e) => Interlocked.Increment(ref changes); // An overflow also means file activity.
+    watcher.EnableRaisingEvents = true;
+  }
+  void Changed(object sender, FileSystemEventArgs e) {
+    if (e.FullPath.StartsWith(folder, StringComparison.OrdinalIgnoreCase)) Interlocked.Increment(ref changes);
+  }
+  public int Changes { get { return Volatile.Read(ref changes); } }
+  public void Dispose() { if (watcher != null) watcher.Dispose(); }
+}
+
+public sealed class RunnerStepOutput : IDisposable {
+  static readonly Regex joltFatal = new Regex("Jolt Physics job system exceeded", RegexOptions.IgnoreCase);
+  readonly Regex extraFatal;
+  readonly FileStream source;
+  readonly Stream target;
+  readonly byte[] bytes = new byte[65536];
+  readonly char[] chars = new char[65536];
+  readonly Decoder decoder = Encoding.UTF8.GetDecoder();
+  readonly StringBuilder line = new StringBuilder();
+  public string KnownFatal { get; private set; }
+  public bool Pending { get { return source.Position < source.Length; } }
+  public RunnerStepOutput(string path, bool stderr, Regex extraFatal) {
+    source = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+    target = stderr ? Console.OpenStandardError() : Console.OpenStandardOutput();
+    this.extraFatal = extraFatal;
+  }
+  public bool Drain(bool scan) {
+    int count = source.Read(bytes, 0, bytes.Length);
+    if (count == 0) return false;
+    target.Write(bytes, 0, count);
+    target.Flush();
+    if (!scan) return true;
+    int length = decoder.GetChars(bytes, 0, count, chars, 0);
+    for (int i = 0; i < length; i++) {
+      if (chars[i] == '\n') {
+        ScanFatal(line.ToString().Trim());
+        line.Clear();
+      } else if (line.Length == 8192) {
+        ScanFatal(line.ToString());
+        line.Remove(0, 4096);
+        line.Append(chars[i]);
+      } else line.Append(chars[i]);
+    }
+    ScanFatal(line.ToString());
+    return true;
+  }
+  void ScanFatal(string text) {
+    if (KnownFatal != null) return;
+    var match = joltFatal.Match(text);
+    if (!match.Success && extraFatal != null) match = extraFatal.Match(text);
+    if (match.Success) KnownFatal = match.Value;
+  }
+  public void Dispose() { source.Dispose(); }
+}
+'@
+}
+function Get-StepLimit($Value, $Default, $Name) {
+  $number = $Default
+  if ($Value -and ($Value -notmatch '^\d+$' -or -not [int]::TryParse($Value, [ref]$number) -or $number -lt 1)) {
+    throw "$Name must be a positive number of seconds"
+  }
+  return $number
+}
+function Stop-StepTree($Job, $Log, $Step, $ReportSeconds = 60) {
+  # Keep the owner alive until Windows verifies the tree is gone. The slot helper reclaims dead owners.
+  $clock = [Diagnostics.Stopwatch]::StartNew()
+  $nextReport = 1.0
+  $nextKill = 0.0
+  $killError = ''
+  while ($true) {
+    $usage = $null
+    try { $usage = $Job.ReadUsage() }
+    catch { $killError = $_.Exception.Message }
+    if ($null -ne $usage -and -not $usage.Active) { break }
+
+    $elapsed = $clock.Elapsed.TotalSeconds
+    if ($elapsed -ge $nextReport) {
+      try { $pids = ($Job.ActivePids() | Sort-Object) -join ', ' }
+      catch { $pids = "unavailable ($($_.Exception.Message))" }
+      if (-not $pids) { $pids = 'none in latest snapshot' }
+      $detail = if ($killError) { " ($killError)" } else { '' }
+      Write-KillLog $Log "KILL FAILED $Step; surviving PIDs: $pids. Still retrying with any GPU claim held$detail"
+      $nextReport = $elapsed + $ReportSeconds
+    }
+    if ($elapsed -ge $nextKill) {
+      try { $Job.Kill(); $killError = '' }
+      catch { $killError = $_.Exception.Message }
+      $nextKill = $elapsed + 1
+    }
+    Start-Sleep -Milliseconds 50
+  }
+  Write-KillLog $Log "$Step kill verified: all $($usage.Total) processes gone (root PID $($Job.Root.Id))"
+}
 if ($LibraryOnly) { return }
 $raw = $env:TMO_ARGS
 if (-not $raw) { Write-Output 'usage: tmo.bat <seconds> <exe> [args ...]'; exit 125 }
@@ -179,6 +422,24 @@ if ($watch) {
   $base = $before.Head
   $bp = Join-Path $watchOut 'base_commit.txt'
   if (Test-Path -LiteralPath $bp) { $base = [IO.File]::ReadAllText($bp).Trim() }
+  Initialize-RunTree
+} else {
+  Initialize-StepWatchdog
+  $stepName = $env:TMO_STEP
+  if (-not $stepName) { $stepName = [IO.Path]::GetFileName($Exe) }
+  $stepOut = $env:TMO_STEP_OUT
+  if (-not $stepOut) { $stepOut = $watchOut }
+  if (-not $stepOut -and $argLine -match '(?:^|\s)--out(?:\s+|=)(?:"([^"]+)"|(\S+))') {
+    $stepOut = if ($Matches[1]) { $Matches[1] } else { $Matches[2] }
+  }
+  $idleDefault = if ([IO.Path]::GetFileName($Exe) -match '^(Godot|Voidsworn)') { 300 } else { 600 }
+  $idleSeconds = Get-StepLimit $env:TMO_IDLE_S $idleDefault 'TMO_IDLE_S'
+  if ($env:PC_RUNNER_TEST -ne '1') { $idleSeconds = [Math]::Max($idleDefault, $idleSeconds) }
+  $extraFatal = $null
+  if ($env:TMO_FATAL_PATTERN) {
+    $extraFatal = [regex]::new($env:TMO_FATAL_PATTERN, [Text.RegularExpressions.RegexOptions]::IgnoreCase,
+      [TimeSpan]::FromMilliseconds(250))
+  }
 }
 # Nov 1: a test job ran all through Ryan's first Godot playtest, slowing the PC and overwriting the game's log.
 # Wait while Ryan is playing: the game is Voidsworn.exe or a windowed Godot started with no job arguments
@@ -211,12 +472,19 @@ if (Test-Path -LiteralPath $bundledNode) { $gpuNode = $bundledNode }
 $gpuRoot = $root
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_GPU_ROOT) { $gpuRoot = $env:PC_TEST_GPU_ROOT }
 $gpuToken = ''
+$canReleaseGpu = $true
 try {
 $classify = @{ exe = $Exe; args = $argLine; cwd = (Get-Location).Path; requested = [string]$env:PC_GPU_MODE; weight = [string]$env:PC_GPU_WEIGHT } | ConvertTo-Json -Compress
 $gpuClass = ($classify | & $gpuNode $gpuHelper classify) -join ''
 if ($LASTEXITCODE -ne 0) { throw 'GPU command classification failed' }
 $gpuClass = $gpuClass | ConvertFrom-Json
 $gpuMode = $gpuClass.mode
+$soloMax = 0
+if ($gpuMode -and $watch) { throw 'a GPU claim must wrap one step; clear TMO_REPO, TMO_OUT and TMO_LOG' }
+# Without an override, the step ceiling also bounds its solo claim.
+if ($gpuMode -eq 'solo' -and $env:PC_GPU_SOLO_MAX_S) {
+  $soloMax = Get-StepLimit $env:PC_GPU_SOLO_MAX_S $Seconds 'PC_GPU_SOLO_MAX_S'
+}
 if ($gpuMode) {
   Write-Output "GPU: waiting for $gpuMode claim, weight $($gpuClass.weight) (issue $env:PC_GPU_ISSUE)"
   # Admission has its own clock in gpu_slots.js (PC_GPU_WAIT_SECONDS, default 300).
@@ -227,7 +495,10 @@ if ($gpuMode) {
     & $gpuNode $gpuHelper acquire $gpuRoot ([string]$env:PC_GPU_ISSUE + ':gpu') $PID $gpuMode $gpuClass.weight 2>&1 | ForEach-Object {
       $line = [string]$_
       if ($line -eq 'WAIT') { Write-Host "GPU: still waiting for $gpuMode claim" }
-      elseif ($line -cmatch '\A[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z') { $gpuToken = $line }
+      elseif ($line -cmatch '\A[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z') {
+        $gpuToken = $line
+        $claimTimer = [Diagnostics.Stopwatch]::StartNew()
+      }
       else { Write-Output $line }
     }
     $admissionExit = $LASTEXITCODE
@@ -241,14 +512,113 @@ if ($gpuMode) {
 # A forced claim applies to this command only, never a nested watchdog.
 $env:PC_GPU_MODE = ''
 $env:PC_GPU_WEIGHT = ''
-Initialize-RunTree
+$env:PC_GPU_SOLO_MAX_S = ''
+$env:TMO_IDLE_S = ''; $env:TMO_STEP = ''; $env:TMO_STEP_OUT = ''
+$env:TMO_FATAL_PATTERN = ''
+# Child commands may use tmo.bat too. Their own timeout must never overwrite this agent's resume note.
+$env:TMO_REPO = ''; $env:TMO_OUT = ''; $env:TMO_LOG = ''; $env:TMO_ERR_LOG = ''
+if (-not $watch) {
+  $spool = Join-Path ([IO.Path]::GetTempPath()) ("runner-step-" + [Guid]::NewGuid().ToString('N'))
+  $outPath = Join-Path $spool 'stdout.log'
+  $errPath = Join-Path $spool 'stderr.log'
+  $job = $files = $stdout = $stderr = $null
+  $keepSpool = $true
+  $finished = $false
+  try {
+    $cwd = (Get-Location).Path
+    $target = if (Test-Path -LiteralPath $Exe -PathType Leaf) { (Get-Item -LiteralPath $Exe).FullName }
+              else { (Get-Command -Name $Exe -CommandType Application | Select-Object -First 1).Source }
+    $arguments = $argLine
+    if ($target -match '\.(bat|cmd)$') {
+      $arguments = '/d /s /c ""' + $target + '" ' + $argLine + '"'
+      $target = $env:ComSpec
+    }
+    if ($stepOut) { $stepOut = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($stepOut) }
+    $files = [RunnerStepFiles]::new([string]$stepOut)
+    $job = [RunnerStep]::new([bool]$gpuToken)
+    $null = [IO.Directory]::CreateDirectory($spool)
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    $job.Start($target, $arguments, $cwd, $outPath, $errPath)
+    $canReleaseGpu = $false
+  } catch {
+    # No child code runs unless Start attached it to the job and resumed it.
+    if ($job -and $job.Root) { Stop-StepTree $job $log $stepName }
+    if ($job) { $job.Dispose() }
+    if ($files) { $files.Dispose() }
+    Write-KillLog $log "START FAILED $stepName ($Exe): $($_.Exception.Message)"
+    exit 125
+  }
+  try {
+    $stdout = [RunnerStepOutput]::new($outPath, $false, $extraFatal)
+    $stderr = [RunnerStepOutput]::new($errPath, $true, $extraFatal)
+    $lastProgress = 0.0
+    $lastCpu = 0
+    $lastFiles = 0
+    while ($true) {
+      $readOut = $stdout.Drain($true)
+      $readErr = $stderr.Drain($true)
+      $fatal = if ($stdout.KnownFatal) { $stdout.KnownFatal } else { $stderr.KnownFatal }
+      $elapsed = $timer.Elapsed.TotalSeconds
+      $usage = $job.ReadUsage()
+      $fileCount = $files.Changes
+      if ($readOut -or $readErr -or $usage.CpuTime -gt $lastCpu -or $fileCount -ne $lastFiles) {
+        $lastProgress = $elapsed
+      }
+      $lastCpu = $usage.CpuTime
+      $lastFiles = $fileCount
+      # Once the root has exited, its final output is visible to the pending check.
+      $rootExited = $job.Root.HasExited
+      $pendingOutput = $stdout.Pending -or $stderr.Pending
+      if ($fatal) { $reason = "FATAL $fatal"; break }
+      if ($soloMax -and $claimTimer.Elapsed.TotalSeconds -ge $soloMax) { $reason = "SOLO CAP after $soloMax s"; break }
+      if ($rootExited -and (-not $gpuToken -or -not $usage.Active) -and -not $pendingOutput) {
+        $finished = $true
+        $keepSpool = [bool]$usage.Active
+        if ($keepSpool) { Write-Output "run_timeout: background output continues in $spool" }
+        exit $job.Root.ExitCode
+      }
+      if ($elapsed -ge $Seconds) { $reason = 'CEILING'; break }
+      if ($elapsed - $lastProgress -ge $idleSeconds) { $reason = "IDLE after $idleSeconds s without output, new files or CPU progress"; break }
+      if (-not $pendingOutput) {
+        $waitMs = [Math]::Min(250, ($Seconds - $elapsed) * 1000)
+        $waitMs = [Math]::Min($waitMs, ($idleSeconds - ($elapsed - $lastProgress)) * 1000)
+        if ($soloMax) { $waitMs = [Math]::Min($waitMs, ($soloMax - $claimTimer.Elapsed.TotalSeconds) * 1000) }
+        Start-Sleep -Milliseconds ([int][Math]::Max(1, $waitMs))
+      }
+    }
+    $stoppedAfter = [Math]::Round($elapsed, 3)
+    Write-KillLog $log "STOPPING $stepName ($Exe): $reason at $stoppedAfter s"
+    Stop-StepTree $job $log $stepName
+    $canReleaseGpu = $true
+    $finished = $true
+    # Descendants have closed their streams. Copy the last bytes before reporting the stop.
+    while ($stdout.Drain($false)) { }
+    while ($stderr.Drain($false)) { }
+    Write-KillLog $log "TIMEOUT $stepName ($Exe): $reason at $stoppedAfter s (ceiling $Seconds s). Child logs: $spool"
+    exit 124
+  } finally {
+    if (-not $finished) { Stop-StepTree $job $log $stepName }
+    $canReleaseGpu = $true
+    if ($stdout) { $stdout.Dispose() }
+    if ($stderr) { $stderr.Dispose() }
+    $files.Dispose()
+    $job.Dispose()
+    if (-not $keepSpool) {
+      # Only delete these two files and the empty scratch directory we created.
+      try {
+        [IO.File]::Delete($outPath)
+        [IO.File]::Delete($errPath)
+        [IO.Directory]::Delete($spool)
+      } catch { Write-Output "run_timeout: child log cleanup failed in $spool : $($_.Exception.Message)" }
+    }
+  }
+}
+# Outer agents keep their original separate logs and repo/commit progress checks.
 $timer = [Diagnostics.Stopwatch]::StartNew()
 $lastProgress = 0.0
 $scanEvery = 60.0
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_SCAN_S) { $scanEvery = [double]$env:PC_TEST_SCAN_S }
 $nextScan = $scanEvery
-# Child commands may use tmo.bat too. Their own timeout must never overwrite this agent's resume note.
-$env:TMO_REPO = ''; $env:TMO_OUT = ''; $env:TMO_LOG = ''; $env:TMO_ERR_LOG = ''
 try {
   if ($argLine -ne '') { $p = Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }
   else { $p = Start-Process -FilePath $Exe -NoNewWindow -PassThru }
@@ -267,25 +637,20 @@ while ($true) {
   Update-RunTree $tree
   $remaining = [Math]::Max(1, [Math]::Min($poll, ($Seconds - $timer.Elapsed.TotalSeconds) * 1000))
   if ($p.WaitForExit([int]$remaining)) { $p.WaitForExit(); $completed = $true; exit $p.ExitCode }
-  if ($watch) {
-    # Scan the checkout once a minute, not every poll: a full walk of a big checkout every 5 s would load Ryan's PC for hours,
-    # and a 30 minute stall window does not need finer steps (Board review, Nov 15).
-    if ($timer.Elapsed.TotalSeconds -ge $nextScan) {
-      $after = Get-RunProgress $watchRepo $logs
-      if (Test-RunProgress $before $after) { $lastProgress = $timer.Elapsed.TotalSeconds }
-      $before = $after
-      $nextScan = $timer.Elapsed.TotalSeconds + $scanEvery
-    }
-    $reason = Get-StopReason $timer.Elapsed.TotalSeconds ($timer.Elapsed.TotalSeconds - $lastProgress) $Seconds $stall
-  } else {
-    $reason = if ($timer.Elapsed.TotalSeconds -ge $Seconds) { 'CEILING' } else { '' }
+  # Scan the checkout once a minute to avoid walking a large repo on every poll.
+  if ($timer.Elapsed.TotalSeconds -ge $nextScan) {
+    $after = Get-RunProgress $watchRepo $logs
+    if (Test-RunProgress $before $after) { $lastProgress = $timer.Elapsed.TotalSeconds }
+    $before = $after
+    $nextScan = $timer.Elapsed.TotalSeconds + $scanEvery
   }
+  $reason = Get-StopReason $timer.Elapsed.TotalSeconds ($timer.Elapsed.TotalSeconds - $lastProgress) $Seconds $stall
   if ($p.HasExited) { $p.WaitForExit(); $completed = $true; exit $p.ExitCode }
   if ($reason) { break }
 }
 $secs = [int]$timer.Elapsed.TotalSeconds
 Stop-RunTree $p $tree $log
-if ($watch) { Save-RunResume $watchRepo $watchOut $logs $reason $base }
+Save-RunResume $watchRepo $watchOut $logs $reason $base
 "$(Get-Date -Format s) TIMEOUT $reason after $secs s (ceiling $Seconds s), verified dead tree of PID $($p.Id): $Exe $argLine" | Out-File $log -Append -Encoding utf8
 Write-Output "run_timeout: TIMEOUT $reason after $secs s, killed $Exe (PID $($p.Id)) and its children"
 exit 124
@@ -299,7 +664,10 @@ exit 124
 }
 } finally {
   if ($gpuToken) {
-    & $gpuNode $gpuHelper release $gpuRoot $gpuToken
-    if ($LASTEXITCODE -ne 0) { Write-Output "GPU: release failed; dead owner PID $PID will be reclaimed" }
+    if ($canReleaseGpu) {
+      & $gpuNode $gpuHelper release $gpuRoot $gpuToken
+      if ($LASTEXITCODE -ne 0) { Write-Output "GPU: release failed; dead owner PID $PID will be reclaimed" }
+      else { Write-Output "GPU: released $gpuMode claim $gpuToken" }
+    }
   }
 }
