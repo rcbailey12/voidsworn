@@ -269,8 +269,9 @@ static func stop_name(C, n) -> String:
 static func stop(C, n) -> Dictionary:
 	if n == null or C.RUN == null: return {}
 	var t := str(n["type"])
-	var fight := t in ["battle", "elite", "boss"]
 	var done := _jt(n.get("done"))
+	var nem_here := not done and nem_node_is(C, n)   # issue 1175: an unmet Nemesis holds every column 4 stop, rest stops too
+	var fight := t in ["battle", "elite", "boss"] or nem_here
 	var row := {"id": str(n["id"]), "kind": t, "kind_word": str(KIND_WORD.get(t, t)), "name": stop_name(C, n), "fight": fight, "done": done,
 		"fac": "", "fac_name": "", "rival": false, "what": "", "note": "", "objective": "", "arch": "", "arch_d": "", "mod": "", "mod_d": "",
 		"shape": "", "place": "", "reward": "", "reward_min": false, "nemesis": false}
@@ -282,9 +283,17 @@ static func stop(C, n) -> Dictionary:
 	var fac = C.nodeFaction(n) if t != "boss" else C.RUN["map"]["fac"]
 	row["fac"] = str(fac); row["fac_name"] = str(C.FACTIONS[fac]["n"]) if C.FACTIONS.has(fac) else ""
 	row["rival"] = t == "battle" and str(fac) != str(C.RUN["map"]["fac"])
-	row["nemesis"] = not done and nem_node_is(C, n)
+	row["nemesis"] = nem_here
 	if t == "boss":
-		row["objective"] = "The sector's command ship and its escort. Beat it to end the sector."
+		# issue 1175: the flagship fight's objective and board are rolled with the map, so the stop says them before you commit
+		if _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]):
+			var d := str(C.ENCOUNTERS[n["enc"]]["d"]); row["boss_enc"] = str(C.ENCOUNTERS[n["enc"]]["n"])
+			row["objective"] = str(C.ENCOUNTERS[n["enc"]]["n"]) + ": " + d.substr(0, 1).to_lower() + d.substr(1) + " Sinking the command ship also ends it."
+			if _jt(n.get("shape")) and C.SHAPES.has(n["shape"]): row["shape"] = str(C.SHAPES[n["shape"]])
+		else:
+			row["objective"] = "The sector's command ship and its escort. Beat it to end the sector."
+	elif not (t in ["battle", "elite"]):
+		row["objective"] = "His fleet holds this " + str(row["kind_word"]).to_lower() + ": you fight him here instead of using it."
 	elif _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]):
 		row["objective"] = str(C.ENCOUNTERS[n["enc"]]["d"])
 		if _jt(n.get("arch")) and C.ARCHETYPES.has(n["arch"]):
@@ -307,11 +316,13 @@ static func stop(C, n) -> Dictionary:
 	else:
 		row["what"] = row["kind_word"] + " against " + who
 	if row["rival"] and not row["nemesis"]: row["what"] += " (rival raiders)"
+	if t == "boss" and row["shape"] != "": row["what"] += ", board: " + str(row["shape"])   # issue 1175
 	var rw = n.get("rw")
 	if rw is Dictionary and not done:
 		row["reward"] = reward_label(C, rw) + (" (rare or better)" if _jt(rw.get("min")) else "")
 		row["reward_min"] = _jt(rw.get("min"))
-	if t == "elite" and not done: row["reward"] = (str(row["reward"]) + " and salvage") if row["reward"] != "" else "Salvage"
+	if nem_here and not (t in ["battle", "elite", "boss"]): row["reward"] = "A patron's signal (rare or better)"; row["reward_min"] = true   # his elite fight pays rewardFlow's fallback: a random patron's boon, rare or better
+	if (t == "elite" or (nem_here and not (t in ["battle", "boss"]))) and not done: row["reward"] = (str(row["reward"]) + " and salvage") if row["reward"] != "" else "Salvage"
 	return row
 
 
@@ -351,7 +362,7 @@ static func here_name(C) -> String:
 	if C.RUN == null or not _jt(C.RUN.get("pos")): return ""
 	var n = C.findNode(C.RUN["pos"])
 	if n == null: return ""
-	if _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]): return str(C.ENCOUNTERS[n["enc"]]["n"])
+	if n["type"] != "boss" and _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]): return str(C.ENCOUNTERS[n["enc"]]["n"])   # issue 1175: the boss stop keeps its own name
 	return stop_name(C, n)
 
 
