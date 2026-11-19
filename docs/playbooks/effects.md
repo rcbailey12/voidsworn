@@ -42,6 +42,10 @@ effect: a weapon hit, a shield response, a trail, a death.
   The band is drawn by the shader, not a sprite flash, so the flash budget never sees it: under reduce flashing it is
   softer, and the probe's flash pass (`PROBE_FLASH=1`) counts screen flashes with several Glasswright ships, then several Hullbreaker ships, failing at once.
   Sheets, clips, cost and flash: `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`.
+- Issue 1211 (Board brief from the Nov 19 weapon effects audit): every effect shader and every mark on a hull carries
+  `fog_disabled`, like the hulls (nebula_hulls.gd, R82), so a nebula never dulls a blast; pixel floors and caps are in
+  1080-line pixels (px_world, or the raw size times VIEWPORT_SIZE.y / 1080), so a streak keeps its shape at 4K. A hit's
+  sound, HP drop, number and shield break land on that hit's own shot arrival, on the effect clock (battle.gd _land_hit).
 - Directions researched for the remaining options sheets (contrib/muse/design/look_references_2026_11/synthesis.md): sky
   Regional Colour Calmed, True Dark One Band, Planet Limb. Trails and beams are being built (issues 367, 800, 815).
 
