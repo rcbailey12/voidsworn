@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory=$true)][string]$Work,
     [string]$Label = 'proof',
-    [switch]$Storm
+    [switch]$Storm,
+    [switch]$StormHighOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -17,7 +18,10 @@ $env:PC_GPU_MODE = 'solo'
 $env:VS_SHIELD_SHAPE = 'fitted'
 $cases = 'gate:max:1:base'
 $count = 4
-if ($Storm) {
+if ($StormHighOnly) {
+    $cases = 'dense:high:2:native_lod'
+    $count = 2
+} elseif ($Storm) {
     $cases += ',dense:high:2:native_lod,dense:max:2:native_lod'
     $count += 4
 }
