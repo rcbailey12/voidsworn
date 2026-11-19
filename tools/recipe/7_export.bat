@@ -26,7 +26,10 @@ echo RUNNING > "%EX%\export_status.txt"
 "%BPY%" "%RC%\standing.py" all --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing_all.txt" 2>&1
 if errorlevel 1 (type "%JOB%\log_standing_all.txt" & echo Stage 7 FAILED: a standing ship check did not pass. See %JOB%\log_standing_all.txt & goto bad)
 type "%JOB%\log_standing_all.txt"
+setlocal
+set "PC_GPU_MODE=none"
 call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 %UNB% > "%JOB%\log_export.txt" 2>&1
+endlocal
 findstr /c:"[export7]" "%JOB%\log_export.txt"
 findstr /b /c:"WRITTEN" "%EX%\export_status.txt" > nul
 if errorlevel 1 (echo Stage 7 FAILED: the export was not written. See %JOB%\log_export.txt & goto bad)

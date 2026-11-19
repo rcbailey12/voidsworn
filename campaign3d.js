@@ -43,7 +43,7 @@ function fieldRepairs(n){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp;
 // campaign battles run in the 3D engine
 // v53: owner's rule, a reload replays the same node and enemy fleet. Every fight node gets a seed when the map first shows it (saved with the run);
 // battleScreen seeds the pre-battle rolls from it and hands it to startBattle, so the same saved run always rebuilds the same battle
-function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss'||nd.type==='event')){ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
+function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss'||nd.type==='event'||(RUN&&RUN.map&&nd.col===RUN.map.cols.length-3))){ /* issue 1175: every column 4 stop can hold the Nemesis fight */ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
 function teachingBattle(cfg){
   if(!RUN||RUN.teachingGate!==true) return cfg;
   const key=RUN.sector+':'+String(cfg.node||'event')+(cfg.eventRelic?':event':'');
@@ -68,7 +68,7 @@ function battleScreen(cfg){
   { const sn=cfg.node&&findNode(cfg.node); if(sn){ nodeSeeds([sn]); if(sn.seed!=null&&cfg.seed==null){ const sd=cfg.eventRelic?((sn.seed^0x27d4eb2f)>>>0):sn.seed; cfg=Object.assign({},cfg,{seed:sd}); rndSeed((sd^0x5bd1e995)>>>0); } } } // v53: seeded before any pre-battle roll; B1: event fights are seeded too (own salt), so a reload replays the same fight // v53: seeded before any pre-battle roll
   if(RUN.fleet.length<=1&&(RUN.reinf||0)<RUN.sector){ RUN.reinf=RUN.sector; const sh=newShip('warden'); RUN.fleet.push(sh); setTimeout(()=>toast(`The sector garrison sends the ${sh.name} to reinforce you.`),600); tel('reinforced',{}); }
   const nd=cfg.node&&findNode(cfg.node); if(nd&&!nd.enc&&cfg.kind!=='boss'){ Object.assign(nd,rollEncounter(nd.type,nd.col)); if(!nd.map&&RUN.map&&RUN.map.region) nd.map=regionMap(RUN.map.region,nd.col,7); fitEncounter(nd); }
-  const ro=cfg.kind==='boss'?bossEncounter():nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
+  const ro=cfg.kind==='boss'?(nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:bossEncounter()):nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
   const c=Object.assign({map:(nd&&nd.map)||(RUN.map&&RUN.map.region&&regionMap(RUN.map.region,cfg.kind==='boss'?6:(nd?nd.col:3),7))||(cfg.kind==='boss'&&FAC_MAP[cfg.fac]?FAC_MAP[cfg.fac][0]:'random'),dep:cfg.kind==='boss'?'line':pick(['line','line','flank']),obj:ro.enc,shape:ro.shape,arch:cfg.kind!=='boss'&&nd?nd.arch:null,mod:cfg.kind!=='boss'&&nd?nd.mod:null,noStar:RUN.sector===1},cfg); // R1: no dead star in sector 1 // bosses fight on their faction's home ground
   Object.assign(c,teachingBattle(c)); saveTeachingHistory();
   if(RUN.verbNext&&!c.verb) c.verb=RUN.verbNext; // B4: a next-battle faction verb
@@ -95,7 +95,7 @@ function finishBattle(result){
   if(B.cfg&&B.cfg.verb) RUN.verbNext=null;
   if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled),{found:B.nemFound||[],fled:!!B.nemFled,beat:nemBeatOf(B.usage,(B.units.filter(u=>u.side==='player'&&!u.isSq).reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,B.units.filter(u=>u.side==='player'&&!u.isSq).length))>=20),cause:fl&&fl.killCause,myFlagDead:B.units.some(u=>u.pflag&&u.dead)}); } else if(result==='win'&&nemActive()){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
   { const lostN=B.units.filter(u=>u.side==='player'&&u.ship&&u.dead&&!u.exited).length; if(lostN){ const fm=nemFeedLosses(lostN); if(fm) summary.nemFeed=fm; } } // R42: a Chorus Nemesis grows from your losses (and says so)
-  { const fw=nemFoundMerge(B.nemFound); if(fw.length) summary.nemFound=`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`; } // R42: weaknesses you triggered in battle stay known
+  { const fw=nemFoundMerge(B.nemFound); if(fw.length) summary.nemFound=`Weakness confirmed: ${fw.map(k=>nemEntryName(NEM_WEAK,k,nemActive()?.fac)).join(', ')}.`; } // R42: weaknesses you triggered in battle stay known
   for(const sh of RUN.fleet){ const k=wingK[sh.uid]; if(k){ const g=wingVetAfter(sh,k); if(g.length) (summary.wingPerks=summary.wingPerks||[]).push({ship:sh.name,perks:g}); } }
   summary.kills=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship).length;
   RUN.stats.kills+=summary.kills;

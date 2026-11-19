@@ -22,6 +22,7 @@ var title: CanvasLayer
 var battle: Node
 var campaign: Node
 var bot_mode := false
+var player_path: Node
 
 
 # every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static)
@@ -78,9 +79,18 @@ var music: Node              # godot/music/music_player.gd (the music helper's p
 func _ready() -> void:
 	name = "Main"
 	_args()
+	if args.has("player-path"):
+		var recorder = load("res://main/player_path.gd")
+		var profile_error: String = recorder.prepare_profile()
+		if profile_error != "":
+			printerr("[player-path] FAIL ", profile_error)
+			get_tree().quit(1)
+			return
+		player_path = recorder.new()
+		add_child(player_path)
 	if DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_title(load("res://ui/battle/brand.gd").TITLE)  # brand.gd: the one place to rename the game
-	bot_mode = args.has("bot-runs")
+	bot_mode = player_path == null and args.has("bot-runs")
 	# a fresh profile starts on Standard enemy AI (onboarding fix 1, campaign3d.js:3); bot runs ignore the player's
 	# settings file and play Veteran, as sim3d does, unless --ai says otherwise
 	if bot_mode:
@@ -100,7 +110,9 @@ func _ready() -> void:
 		get_tree().create_timer(lim, true, false, true).timeout.connect(func() -> void:
 			print("[main] quit-after %d s reached, quitting" % int(lim))
 			quit_clean(3))
-	if args.has("check-export"):
+	if player_path != null:
+		player_path.start.call_deferred(self)
+	elif args.has("check-export"):
 		_check_export.call_deferred()
 	elif bot_mode:
 		_bot_runs.call_deferred()
@@ -187,10 +199,14 @@ func _apply_settings() -> void:
 	load("res://ui/ui_scale.gd").set_player(settings.get("ui_scale", 1.0))
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
 	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot") or args.has("career-shot")
-	if capture and args.has("window") and DisplayServer.get_name() != "headless":
+	var player_path_window := args.has("player-path") and DisplayServer.get_name() != "headless"
+	if player_path_window:
+		# Only the recording window's size differs from the fresh profile's settings.
+		_capture_window.call_deferred("1920x1080")
+	elif capture and args.has("window") and DisplayServer.get_name() != "headless":
 		# --window WxH: an exact window for capture jobs (the project starts maximised, and Godot's --windowed does not undo that)
 		_capture_window.call_deferred(str(args["window"]))
-	if not bot_mode and not capture and DisplayServer.get_name() != "headless":
+	if not bot_mode and not capture and not player_path_window and DisplayServer.get_name() != "headless":
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
 			DisplayServer.window_set_mode(want)
@@ -313,6 +329,9 @@ func new_run(opts := {}) -> void:
 		campaign.queue_free()
 		campaign = null
 		show_title(), CONNECT_ONE_SHOT)
+	if player_path != null:
+		opts = opts.duplicate()
+		opts["player_path_seed"] = int(args["player-path-seed"])
 	campaign.start(self, opts)
 
 
@@ -387,6 +406,8 @@ func play_api(a, opts := {}) -> Dictionary:
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
+	if player_path != null:
+		player_path.watch_battle(b, a, campaign)
 	b.begin_with(a)
 	var r: Dictionary = await b.finished
 	battle = null

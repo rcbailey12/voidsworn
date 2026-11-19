@@ -33,6 +33,7 @@ var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var W
 var META: Dictionary = {}
 var RUN = null          # the run (Dictionary) or null
 var SAVED_RUN = null    # the last saved copy of the run
+var saved_in_yard := true   # issue 1175: the save was taken inside a shipyard (Continue reopens it); old saves count as in the yard
 var B = null            # the battle in progress (the stub's, or the rules' B handed back by finish_battle)
 var UID := 1
 var W: Dictionary = {}  # the JS window._* transients: rewardCfg, rw, relicChoice, wrecks, boonOffer, modOffer, aspOffer
@@ -428,7 +429,7 @@ func _enc(v):
 	if v is float and (v != floor(v) or absf(v) >= 9007199254740992.0): return "#d:" + JSM.hex64(v)
 	return v
 func save_text() -> String:
-	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "tel": tel_log}))
+	return JSON.stringify(_enc({"format": "voidsworn-godot-campaign", "v": 1, "uid": UID, "meta": META, "run": SAVED_RUN if SAVED_RUN != null else {"none": true}, "yard": saved_in_yard, "tel": tel_log}))
 func persist_save(meta_only: bool = false) -> void:
 	var now = now_ms()
 	META["updated"] = now
@@ -480,6 +481,7 @@ func _apply_save(o: Dictionary) -> void:
 		META = migrateMeta(m, tel_log)
 	var r = o.get("run")
 	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	saved_in_yard = o.get("yard") != false
 	if o.get("uid") is float or o.get("uid") is int: UID = max(UID, int(o["uid"]))
 
 func load_save_text(s: String, bak: String = "") -> void:
@@ -1015,6 +1017,42 @@ func genSector(s: int) -> Dictionary:
 		var cand = col.filter(func(n): return n["type"] == "event" or (n["type"] == "battle" and fights.size() > 1))
 		if cand.size() > 0:
 			var nf = pick(cand); nf["type"] = "field"
+	var edges = []
+	for c in range(COLS - 1):
+		var from_col: Array = cols[c]
+		var to_col: Array = cols[c + 1]
+		if to_col.size() == 1 or (from_col.size() == 1 and to_col.size() > 2):
+			for a in from_col:
+				for b in to_col: edges.append([a["id"], b["id"]])
+			continue
+		# Keep two types available and give each repeated type enough distinct origins.
+		var max_copies := mini(from_col.size(), to_col.size() - 1)
+		var counts := {}
+		for b in to_col:
+			if counts.get(b["type"], 0) == max_copies:
+				if c == COLS - 3: b["type"] = "shipyard" if b["type"] == "drydock" else "drydock"
+				else: b["type"] = "event" if b["type"] == "battle" else "battle"
+			counts[b["type"]] = counts.get(b["type"], 0) + 1
+		var routes := from_col.map(func(a): return {"a": a, "stops": []})
+		# Cover every stop, placing repeated types first while the most origins are free.
+		for b in ssort(to_col.duplicate(), func(x, y): return counts[y["type"]] - counts[x["type"]]):
+			var nearest = ssort(routes.duplicate(), func(x, y): return absf(x["a"]["y"] - b["y"]) - absf(y["a"]["y"] - b["y"]))
+			for route in nearest:
+				var stops: Array = route["stops"]
+				if stops.size() < 2 and stops.all(func(n): return n["type"] != b["type"]):
+					stops.append(b)
+					break
+		for route in routes:
+			var a: Dictionary = route["a"]
+			var stops: Array = route["stops"]
+			var nearest = ssort(to_col.duplicate(), func(x, y): return absf(x["y"] - a["y"]) - absf(y["y"] - a["y"]))
+			for b in nearest:
+				if stops.size() == 2: break
+				if stops.all(func(n): return n["type"] != b["type"]): stops.append(b)
+			stops = ssort(stops, func(x, y):
+				var distance := absf(x["y"] - a["y"]) - absf(y["y"] - a["y"])
+				return distance if distance != 0.0 else x["row"] - y["row"])
+			for b in stops: edges.append([a["id"], b["id"]])
 	for col in cols:
 		for n in col:
 			if n["type"] == "battle" or n["type"] == "elite": n.merge(rollEncounter(n["type"], n["col"]), true)
@@ -1030,19 +1068,6 @@ func genSector(s: int) -> Dictionary:
 			if f[i]["enc"] == f[i - 1]["enc"]:
 				var cur = f[i]["enc"]
 				var e2 = pick(ENC_POOL.filter(func(x): return x != cur)); f[i]["enc"] = e2; f[i]["shape"] = pick(ENCOUNTERS[e2]["shapes"])
-	var edges = []
-	for c in range(COLS - 1):
-		var Acol = cols[c]; var Bcol = cols[c + 1]
-		for a in Acol:
-			var ay = float(a["y"])
-			var near = ssort(Bcol.duplicate(), func(x, y): return absf(float(x["y"]) - ay) - absf(float(y["y"]) - ay))
-			edges.append([a["id"], near[0]["id"]])
-			if near.size() > 1 and rnd() < 0.45 and absf(float(near[1]["y"]) - ay) < 0.5: edges.append([a["id"], near[1]["id"]])
-		for b in Bcol:
-			if not edges.any(func(e): return e[1] == b["id"]):
-				var by = float(b["y"])
-				var near2 = ssort(Acol.duplicate(), func(x, y): return absf(float(x["y"]) - by) - absf(float(y["y"]) - by))[0]
-				edges.append([near2["id"], b["id"]])
 	for col in cols:
 		for n in col:
 			if n["type"] == "battle" or n["type"] == "elite":
@@ -1057,6 +1082,10 @@ func genSector(s: int) -> Dictionary:
 		for n in col:
 			n["map"] = regionMap(region, n["col"], COLS); fitEncounter(n, s)
 	var biome = rollBiome(region)
+	# issue 1175: the flagship fight's objective and board shape are rolled with the map (after the regions, so its board is
+	# the one the fight always used) and shown on the boss stop; the fight reads them (an old save without them rolls there)
+	for n in cols[COLS - 1]:
+		if n["type"] == "boss": n.merge(bossEncounter(), true)
 	if RUN != null and RUN.get("teachingGate") == true and s == 1:
 		cols[0][0]["teachingShape"] = cols[0][0]["shape"]; cols[0][0]["shape"] = "open"
 	return {"fac": fac, "cols": cols, "edges": edges, "cond": cond, "region": region, "biome": biome}
@@ -1303,6 +1332,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	saveRun()
 func saveRun() -> void:
 	SAVED_RUN = clone(RUN) if (RUN != null and not jt(RUN.get("over"))) else null
+	saved_in_yard = page.get("kind") == "shipyard" or (page.get("kind") == "fleet" and page.get("data") is Dictionary and page["data"].get("back") == "shipyard")
 	persist_save()
 func availableNodes() -> Array:
 	var m = RUN["map"]
@@ -1755,7 +1785,7 @@ func ACT_enterNode(id: String) -> void:
 	if showBeat3(): return
 	var n = findNode(id); RUN["pos"] = id; RUN["curNode"] = id
 	tel("node", {"type": n["type"], "col": n["col"]})
-	if _is(n, ["battle", "elite", "boss"]):
+	if _is(n, ["battle", "elite", "boss"]) or nemNodeIs(n):   # issue 1175: an unmet Nemesis meets you at any column 4 stop
 		_enter_battle_node(n)
 	elif n["type"] == "event": eventScreen(n)
 	elif n["type"] == "shipyard": shipyardScreen(n)
@@ -1783,10 +1813,10 @@ func _resume_node() -> bool:
 		_advance_sector()
 		return true
 	if RUN.get("curNode") != n["id"]: return false
-	if n["type"] == "shipyard":
+	if n["type"] == "shipyard" and saved_in_yard:   # issue 1175: a save taken on the map after leaving through the fleet screen opens the map, as the browser game does
 		shipyardScreen(n)
 		return true
-	if _is(n, ["battle", "elite", "boss"]):
+	if _is(n, ["battle", "elite", "boss"]) or nemNodeIs(n):   # issue 1175: a Nemesis meeting at a rest stop resumes as the fight
 		_restore_legacy_story_modifier()
 		_enter_battle_node(n)
 		return true
@@ -2025,7 +2055,10 @@ func needText(nd) -> String:
 	if jt(nd.get("relic")): p.append("a piece of salvage" if ((nd["relic"] is float or nd["relic"] is int) and float(nd["relic"]) == 1.0) else relicName(nd["relic"]))
 	if jt(nd.get("mod")): p.append("a refit in the hold")
 	if jt(nd.get("cred")): p.append(numstr(nd["cred"]) + " credits")
-	if jt(nd.get("vet")): p.append("a " + str(RANKS[int(nd["vet"])]) + " or better")
+	if jt(nd.get("vet")):
+		var fac = RUN["fac"]
+		var ranks = CAPTAINS[fac]["ranks"] if fac in ["chorus", "deathless"] else RANKS
+		p.append("a " + str(ranks[int(nd["vet"])]) + " or better")
 	if jt(nd.get("flag")): p.append("an earlier choice")
 	if jt(nd.get("intel")): p.append(numstr(nd["intel"]) + " Nemesis weakness" + ("es" if float(nd["intel"]) > 1 else "") + " known")
 	return "Needs " + ", ".join(PackedStringArray(p))
@@ -2309,13 +2342,16 @@ func nemStrike() -> String:
 	if st == "reinforce": return "His line will bring reinforcements in round 3; end the fight before the line doubles."
 	if st == "challenge": return "His flagship will challenge yours to single combat; screen your flagship."
 	return ""
-# is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
+# is this stop his? (strike pending: the next fight; unmet this sector: every stop of the column before the rest stop, whatever
+# its type, so no route reaches the flagship without the meeting nemMeetingLine promises; issue 1175)
 func nemNodeIs(n, N0 = null) -> bool:
 	var N = N0 if jt(N0) else nemActive()
-	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or (n["type"] != "battle" and n["type"] != "elite"): return false
-	return jt(RUN.get("nemStrike")) or float(n["col"]) >= float(RUN["map"]["cols"].size() - 3)
+	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or n["type"] == "boss": return false
+	var c4 = float(RUN["map"]["cols"].size() - 3)
+	if n["type"] != "battle" and n["type"] != "elite": return float(n["col"]) == c4
+	return jt(RUN.get("nemStrike")) or float(n["col"]) >= c4
 # Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance.
-func nemNodeTag(n) -> String: return "Nemesis meeting" if nemNodeIs(n) else ""
+func nemNodeTag(n, N0 = null) -> String: return "Nemesis meeting" if nemNodeIs(n, N0) else ""
 func nemMeetingLine(N0 = null) -> String:
 	var N = N0 if jt(N0) else nemActive()
 	if not jt(N): return ""
@@ -2408,7 +2444,8 @@ func nemAdaptLine(N, a) -> String:
 func nemLessonText(N, w) -> String:
 	var V = NEM_VOICE.get(N.get("fac")) if jt(N) else null
 	if V is Dictionary and V.get("lessons") is Dictionary and jt(V["lessons"].get(w)): return nemSay(V["lessons"][w], N)
-	return (str(NEM_WEAK[w]["n"]) + ": " + str(NEM_WEAK[w]["d"])) if (w != "strike" and NEM_WEAK.has(w)) else ""
+	var entry = BattleAPI.nem_entry(NEM_WEAK, w, N.get("fac") if N != null else null)
+	return (str(entry["n"]) + ": " + str(entry["d"])) if entry != null else ""
 func nemLessonAdd(N, w, taught: bool = false) -> String:
 	if not (N.get("lessons") is Array): N["lessons"] = []
 	for l in N["lessons"]:
@@ -2437,7 +2474,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		if jt(o.get("beat")):
 			N["last_beat"] = o["beat"]; nemBeatTeach(o["beat"])
 		var w = nemReveal()
-		if w != null: out.append(nemSay("His captured logs reveal a weakness: " + str(NEM_WEAK[w]["n"]) + ".", N))
+		if w != null: out.append(nemSay("His captured logs reveal a weakness: " + BattleAPI.nem_entry_name(NEM_WEAK, w, N["fac"]) + ".", N))
 		if jt(o.get("fled")):
 			if beh.get("strike") == "raid": N["riches"] = float(z0(N.get("riches"))) + 1
 			if beh.get("strike") == "duel": N["honed"] = float(z0(N.get("honed"))) + 1
@@ -2475,7 +2512,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		var w = learned[0] if not learned.is_empty() else nemReveal()
 		if w != null:
 			var ws = learned if not learned.is_empty() else [w]
-			var names = ws.map(func(k): return str(NEM_WEAK[k]["n"]))
+			var names = ws.map(func(k): return BattleAPI.nem_entry_name(NEM_WEAK, k, N["fac"]))
 			out.append("Your analysts piece together the engagement. " + ("Weaknesses" if ws.size() > 1 else "Weakness") + " found: " + ", ".join(PackedStringArray(names)) + ".")
 			for k in ws:
 				var lt = nemLessonAdd(N, k, true)
@@ -2486,7 +2523,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 			if ls != "": out.append("Lesson: " + ls)
 	if result == "win":
 		var fw = nemFoundMerge(o.get("found"))
-		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(NEM_WEAK[k]["n"])))) + ".")
+		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return BattleAPI.nem_entry_name(NEM_WEAK, k, N["fac"])))) + ".")
 	if jt(beh.get("adaptFast")):
 		N["adaptSector"] = 0
 		var a = nemAdapt(false, N)
@@ -2740,7 +2777,10 @@ func applyOutcome(r) -> Array:
 		RUN["credits"] = float(RUN["credits"]) + float(r["cred"]); out.append("+" + numstr(r["cred"]) + " credits.")
 	if jt(r.get("xp")):
 		for s in RUN["fleet"]: addXp(s, r["xp"])
-		out.append("Every captain gains " + numstr(r["xp"]) + " experience.")
+		if RUN["fac"] in ["chorus", "deathless"]:
+			out.append("+" + numstr(r["xp"]) + " experience per ship.")
+		else:
+			out.append("Every captain gains " + numstr(r["xp"]) + " experience.")
 	if jt(r.get("xpLow")):
 		var s = ssort(RUN["fleet"].duplicate(), func(a, b): return float(a["cap"]["xp"]) - float(b["cap"]["xp"]))[0]
 		addXp(s, r["xpLow"]); out.append(str(s["cap"]["name"]) + " of the " + str(s["name"]) + " gains " + numstr(r["xpLow"]) + " experience.")
@@ -2771,7 +2811,7 @@ func applyOutcome(r) -> Array:
 			var s = newShip(tp, r.get("vet")); RUN["fleet"].append(s)
 			out.append("The " + str(s["name"]) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
 		else:
-			RUN["credits"] = float(RUN["credits"]) + float(z0(r.get("cost"))); out.append("You don’t have the command points to take her on. Your credits are returned.")
+			RUN["credits"] = float(RUN["credits"]) + float(z0(r.get("cost"))); out.append("You don’t have the command points to add this ship. Your credits are returned.")
 	var upgraded_uid = null   # R1 (TXT-2, Codex PR #1): the shipwright's repair goes to the next most damaged ship, not back to the one he upgraded
 	if jt(r.get("upgradeOne")):
 		var s = ssort(RUN["fleet"].duplicate(), func(a, b): return float(a["hp"]) / float(derive(a)["maxHp"]) - float(b["hp"]) / float(derive(b)["maxHp"]))[0]
@@ -2826,7 +2866,7 @@ func applyOutcome(r) -> Array:
 			var s = newShip(r["shipRaw"], r.get("vet")); RUN["fleet"].append(s)
 			out.append("The " + str(s["name"]) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
 		else:
-			RUN["credits"] = float(RUN["credits"]) + 40; out.append("No command points to crew her. You sell the berth for 40 credits.")
+			RUN["credits"] = float(RUN["credits"]) + 40; out.append("No command points to add this ship. You sell the berth for 40 credits.")
 	if jt(r.get("wingPerk")):
 		var cs = ssort(RUN["fleet"].filter(func(s): return jt(HULLS[s["tpl"]].get("hangar"))), func(a, b): return float(or_(HULLS[b["tpl"]].get("cp"), 1)) - float(or_(HULLS[a["tpl"]].get("cp"), 1)))
 		if cs.size() > 0:
@@ -2834,7 +2874,8 @@ func applyOutcome(r) -> Array:
 			out.append(("The " + str(c["name"]) + "’s wings gain a veteran perk: " + str(WING_PERKS[got]["n"]) + ".") if got != null else ("The " + str(c["name"]) + "’s wings already hold every perk they can."))
 	if jt(r.get("nemIntel")):
 		var w = nemReveal()
-		out.append(("Nemesis weakness revealed: " + str(NEM_WEAK[w]["n"]) + ". " + str(NEM_WEAK[w]["d"])) if w != null else "You learn nothing new about the enemy commander.")
+		var entry = BattleAPI.nem_entry(NEM_WEAK, w, nemRead()["fac"]) if w != null else null
+		out.append(("Nemesis weakness revealed: " + str(entry["n"]) + ". " + str(entry["d"])) if entry is Dictionary else (("Nemesis weakness revealed: " + str(w) + ".") if w != null else "You learn nothing new about the enemy commander."))
 	if jt(r.get("nemClock")):
 		var m2 = nemClockAdd(r["nemClock"])
 		if m2 != "": out.append(m2)
@@ -3305,7 +3346,9 @@ func _advance_sector() -> void:
 func nodeSeeds(nodes: Array) -> int:
 	var n = 0
 	for nd in nodes:
-		if nd != null and not jt(nd.get("done")) and nd.get("seed") == null and _is(nd, ["battle", "elite", "boss", "event"]):
+		# issue 1175: every column 4 stop can hold the Nemesis fight, so each carries a battle seed like a fight stop
+		var c4 = RUN != null and RUN.get("map") is Dictionary and nd != null and float(nd.get("col", -1)) == float(RUN["map"]["cols"].size() - 3)
+		if nd != null and not jt(nd.get("done")) and nd.get("seed") == null and (_is(nd, ["battle", "elite", "boss", "event"]) or c4):
 			nd["seed"] = floor(rnd() * 4294967296.0); n += 1
 	return n
 func initFinishedRuns() -> void:
@@ -3366,7 +3409,7 @@ func battleScreen(cfg: Dictionary) -> void:
 		if not jt(nd.get("map")) and RUN.get("map") != null and jt(RUN["map"].get("region")): nd["map"] = regionMap(RUN["map"]["region"], nd["col"], 7)
 		fitEncounter(nd)
 	var ro
-	if cfg["kind"] == "boss": ro = bossEncounter()
+	if cfg["kind"] == "boss": ro = {"enc": nd["enc"], "shape": nd.get("shape")} if (nd != null and jt(nd.get("enc"))) else bossEncounter()
 	elif nd != null and jt(nd.get("enc")): ro = {"enc": nd["enc"], "shape": nd.get("shape")}
 	else: ro = rollEncounter(cfg["kind"], or_(cfg.get("col"), 1))
 	var mp = nd.get("map") if nd != null else null
@@ -3483,7 +3526,9 @@ func finishBattle(result: String) -> void:
 		var fm = nemFeedLosses(lostN)
 		if fm != "": summary["nemFeed"] = fm
 	var fw = nemFoundMerge(B.get("nemFound"))   # R42: weaknesses you triggered in battle stay known
-	if fw.size() > 0: summary["nemFound"] = "Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(NEM_WEAK[k]["n"])))) + "."
+	if fw.size() > 0:
+		var fac = nemRead()["fac"]
+		summary["nemFound"] = "Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return BattleAPI.nem_entry_name(NEM_WEAK, k, fac)))) + "."
 	for sh in RUN["fleet"]:
 		var wk = wingK.get(sh["uid"])
 		if jt(wk):

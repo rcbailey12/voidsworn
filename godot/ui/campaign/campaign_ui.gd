@@ -847,9 +847,10 @@ func _briefing_column() -> Control:
 	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
 	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
 	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
-	var trial_status := _sheet_words("Test map package " + ("on" if H["map_trial"] else "off"), 17, GS.TEXT2)
-	trial_status.name = "MapTrialStatus"
-	upper.add_child(trial_status)
+	if H["map_trial"]:   # issue 1175: the issue 1050 trial label shows only while the trial is on
+		var trial_status := _sheet_words("Test map package on", 17, GS.TEXT2)
+		trial_status.name = "MapTrialStatus"
+		upper.add_child(trial_status)
 	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
 	upper.add_child(gap(28)); _rows.clear()
 	for r in _routes:
@@ -887,6 +888,10 @@ func _briefing_column() -> Control:
 
 func _objective_line(r: Dictionary) -> String:
 	var short = {"Engagement": "Break their fleet to make it flee.", "Ambush": "Break the fleets closing in from both sides.", "Hold the station": "Keep enemies off the station through round 6.", "Hunt": "Destroy their flagship before round 6 ends.", "Intercept": "Destroy the transports before they escape.", "Breakthrough": "Get your ships onto the far jump hexes.", "Relay": "Hold the relay, unopposed, for 3 rounds.", "Decapitation": "Destroy their flagship to scatter the fleet.", "Sector flagship": "Beat the command ship to end the sector."}
+	var be := str(r.get("boss_enc", ""))
+	if be != "" and short.has(be):   # issue 1175: the flagship stop names the fight it rolled with the map
+		var o := str(short[be]).trim_suffix(".")
+		return be + ": " + o.substr(0, 1).to_lower() + o.substr(1) + ", or sink the command ship."
 	return str(short.get(r["name"], str(r["objective"]).split(". ")[0].trim_suffix(".") + ".")) if r["objective"] != "" else ""
 
 func _route_row(r: Dictionary) -> Control:
@@ -909,7 +914,7 @@ func _route_row(r: Dictionary) -> Control:
 		elif not r["fight"]: danger.add_child(_sheet_words("No fight", 19, GS.TEXT2))
 		tv.add_child(danger)
 	else:
-		var note = (str(dg.get("band", "")) + " fight." if r["fight"] else "No fight")
+		var note = ("Nemesis meeting. " if r.get("nemesis", false) else "") + (str(dg.get("band", "")) + " fight." if r["fight"] else "No fight")   # issue 1175
 		if r["fight"] and r["reward"] != "": note += " Pays " + str(r["reward"])
 		tv.add_child(_sheet_words(note, 18, GS.TEXT2))
 	var row_height = 132 if on else (54 if _routes.size() >= 4 else 62)
@@ -1563,7 +1568,7 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 	if lessons.is_empty() and int(nz.get("met", 0)) > 0:
 		v.add_child(lbl("No weakness was taught this run.", 18, GS.TEXT2)); shown = true
 	for l in lessons:
-		var nw = C.NEM_WEAK.get(l.get("w"))
+		var nw = C.BattleAPI.nem_entry(C.NEM_WEAK, l.get("w"), l.get("fac"))
 		var lead = " beat you and taught you a weakness: " if l.get("taught", true) else ". Weakness found: "
 		v.add_child(rich("Nemesis lesson: " + ("you broke " if not l.get("taught", true) else "") + c(esc(_end_nem_name(l)), GS.NEM) + lead + esc(nw["n"] if nw != null else "the hunter's tactics") + ".", 18)); shown = true
 		if str(l.get("text", "")) != "": v.add_child(lbl(str(l["text"]), 17, GS.TEXT2))
@@ -1574,7 +1579,8 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 		var who = c(esc(_end_nem_name(N)), GS.NEM)
 		for w in N.get("revealed", []):
 			if lessons.any(func(l): return l.get("fac") == N.get("fac") and l.get("w") == w): continue
-			if C.NEM_WEAK.has(w): v.add_child(rich("Nemesis lesson: you broke " + who + ". Weakness found: " + esc(C.NEM_WEAK[w]["n"]) + ".", 18)); shown = true
+			var entry = C.BattleAPI.nem_entry(C.NEM_WEAK, w, N.get("fac"))
+			if entry != null: v.add_child(rich("Nemesis lesson: you broke " + who + ". Weakness found: " + esc(entry["n"]) + ".", 18)); shown = true
 		for ad in N.get("adapt", []):
 			v.add_child(rich("Nemesis lesson: " + who + " adapted. " + esc(C.nemAdaptName(ad, N["fac"])) + ": " + esc(C.nemAdaptWhyLine(ad, N)) + ".", 18)); shown = true
 		if float(N.get("loot", 0)) > 0:

@@ -156,8 +156,8 @@ try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE
 // not counted). More ships come mostly from lighter hulls (light: weight on 1 to 2 cp hulls) and a bigger budget (grow); per-ship toughness eases
 // a little as numbers rise (thin) so total threat follows the old difficulty curve. Your fleet's power scales the budget both ways (refP), so a
 // strong fleet meets more and a battered one less (this replaces the old 'never outgrow the player' floor). ceil is a soft ceiling for
-// performance, not a design cap. AI difficulty: Standard meets 10% less. Sims can override any field with RAMP='{...}'.
-let RAMP={grow:[0,1.2,1.2,1.24], light:[0,4,4,5], thin:[0,.73,.67,.62], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.5,.6], escort:.78, std:.9}; // stream B Oct 27 and Nov 1 (step 9b): sectors 2 and 3 eased (grow 1.25/1.35 to 1.2/1.24, thin .68/.64 to .67/.62, boss escorts .55/.65 to .5/.6) to bring sim full-run wins from 13.5% back to about 20% with the bosses still a fight; sector 1 unchanged // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
+// performance, not a design cap. AI difficulty: Standard meets 10% less, Veteran RAMP.vet more (issue 1160). Sims can override any field with RAMP='{...}'.
+let RAMP={grow:[0,1.2,1.2,1.24], light:[0,4,4,5], thin:[0,.73,.67,.62], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.5,.6], escort:.78, std:.9, vet:1.1}; // issue 1160 (Ryan via the Board, Nov 19): vet is Veteran's fleet budget edge, the shared difficulty lever (issue 1178 tunes it) // stream B Oct 27 and Nov 1 (step 9b): sectors 2 and 3 eased (grow 1.25/1.35 to 1.2/1.24, thin .68/.64 to .67/.62, boss escorts .55/.65 to .5/.6) to bring sim full-run wins from 13.5% back to about 20% with the bosses still a fight; sector 1 unchanged // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
 try{ if(process_env('RAMP')) Object.assign(RAMP,JSON.parse(process_env('RAMP'))); }catch(e){ console.warn('RAMP override ignored (not valid JSON):',e.message); }
 function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
 function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
@@ -168,6 +168,7 @@ function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   // B2: your fleet's power scales the budget both ways around the sector's reference fleet (was: a battered fleet met less, a strong one never more)
   if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ budget*=Math.max(RAMP.pwMin,Math.min(RAMP.pwMax,Math.pow(Math.max(.5,fleetPower())/RAMP.refP[s],RAMP.pw))); }
   if(typeof AI_LEVEL!=='undefined'&&AI_LEVEL==='standard') budget*=RAMP.std;
+  if(typeof AI_LEVEL!=='undefined'&&AI_LEVEL==='veteran') budget*=RAMP.vet;
   if(heatOn('h_hunted')) budget*=1.15;
   if(mod==='bounty') budget*=1.1;
   let roster=F.roster.map(id=>({id,cp:HULLS[id].cp,car:HULLS[id].ab==='launch'}));
@@ -432,7 +433,7 @@ function startSideTurn(side){
     if(side==='player'&&u.burnCarry){ u.mp+=u.burnCarry.mp||0; u.turnsLeft+=u.burnCarry.turns||0; } // Grax capstone 1: the last burn carries over
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
-    u.route=[0,0,0,0]; if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg0=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)), rg=u.chainCut>0?Math.round(rg0*(1-u.chainCut)):rg0; if(!u.regenLock){ u.shp=Math.min(u.shMax,(u.shp||0)+rg); syncShields(u); } }
+    u.route=[0,0,0,0]; if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg0=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)), rg=u.chainCut>0?Math.round(rg0*(1-u.chainCut)):rg0; if(!u.regenLock) u.shp=Math.min(u.shMax,(u.shp||0)+rg); syncShields(u); } // route just cleared: re-derive the catches even when an ion lock skips the regen
     ithChargeTurn(u); u.regenLock=null; u.chainCut=0; // B3 Ithar prism charge (after the normal regen); an ion lock and a Chain Lightning cut last one turn start
     if(u.hullRegen && u.hp<u.maxHp && !u.pyre){ const mm=treeRoleMul(u), hr=mm!==1?Math.round(u.hullRegen*mm):u.hullRegen; u.hp=Math.min(u.maxHp,u.hp+hr); treeMarkRepair(u); if(mm!==1) treeFx(u,'roles','mend: the regrowth is 10% stronger'); }
     if(u.st.acid>0&&!u.isSq){ u.st.acid--; u.hp-=4; if(typeof fxText==='function') fxText(u,'Acid \u22124','#c8e04a',-12); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} dissolves.`, u.side==='player'?'e':'p'); u.killCause='melt'; queueDeath(u,deaths); } }
@@ -606,7 +607,7 @@ function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=storyModi
   if(u.fac==='deathless'&&u.t&&u.t.reanimate){ if(u.ripped) out.push('Links ripped out: the Archive does not answer, no restore.'); else { const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Archive restore: the first to fall reassembles next round.':'Archive restore spent.'); } }
   for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
   if(u.ab==='launch'||(u.fx&&u.fx.hive)){ const st=WING_STANCES[u.stance||'strike']; out.push(`Wing stance: ${st.n}. ${st.d}${u.side==='player'?(canStance(u)?' One free change this round.':' Changed this round.'):''}`); const pk=wingPerks(u); if(pk.length) out.push('Wing veterans: '+pk.map(k=>WING_PERKS[k].n+' ('+WING_PERKS[k].d.replace(/\.$/,'')+')').join(', ')+'.'); }
-  if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>NEM_WEAK[w].n+' ('+NEM_WEAK[w].d.replace(/\.$/,'')+')').join('; ')+'.'); }
+  if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>{ const entry=nemEntry(NEM_WEAK,w,B.nem.fac)||{}; return (entry.n??w)+' ('+String(entry.d??'').replace(/\.$/,'')+')'; }).join('; ')+'.'); }
   return out; }
 // ---------- B3 travelling torpedoes ----------
 // A torpedo-kind weapon (not squadron bombs) launches now and strikes at the start of the firing side's next turn. Its lane runs from the launch hex
@@ -673,7 +674,7 @@ function nemSig(kind){ if(!B||!B.nem) return; (B.nemSigs=B.nemSigs||[]).push({ki
 // R42 weaknesses found by triggering them: logged once, known for the rest of the run (finishBattle merges B.nemFound). No random draws.
 const NEM_BEAT_COUNTER={lance:'shields',torp:'pd',sq:'pd',ram:'armor',board:'armor',battery:'evasion',evasive:'aim'};
 function nemTrip(k){ if(!B||!B.nem||!nemWeak(k)) return; B.nemFound=B.nemFound||[]; if(B.nemFound.includes(k)||(B.nem.revealed||[]).includes(k)) return; B.nemFound.push(k); (B.nem.revealed=B.nem.revealed||[]).push(k);
-  log(`Weakness found: ${NEM_WEAK[k].n}. ${NEM_WEAK[k].d}`,'s'); }
+  const entry=nemEntry(NEM_WEAK,k,B.nem.fac); log(entry?`Weakness found: ${entry.n}. ${entry.d}`:`Weakness found: ${k}.`,'s'); }
 // a proud flagship (weakness): once it falls below 60% hull, his escorts break and flee
 function nemBreak(){ if(!B||!B.nem||B.nemBroken||!nemWeak('anchor')) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f||f.hp>f.maxHp*.6) return;
   B.nemBroken=true; nemTrip('anchor'); const esc=alive('enemy').filter(u=>u!==f&&!u.isSq&&!u.transport); for(const e of esc){ e.dead=true; e.fled=true; try{ if(typeof fxWithdraw==='function') fxWithdraw(e); }catch(x){} }
@@ -2134,7 +2135,8 @@ function aiArcSoon(p,v,arc){ if(arc==='T'||inArc(p,v,arc)) return true; if(!((p.
 function ramSetup(v,u,left){ if(left==null) left=u.speed||2; if(left<1) return 0; const d=DIRS[v.facing]; let q=v.q,r=v.r; for(let i=0;i<=left;i++){ q+=d[0]; r+=d[1]; if(!onBoard(q,r)||blocks(terr(q,r))) return 0; const o=unitAt(q,r); if(o&&o!==u){ return (o.side!==u.side&&!o.isSq&&i>=1)?ramEstimate(Object.assign(Object.create(u),{q:v.q,r:v.r,facing:v.facing}),o).dmg:0; } } return 0; }
 // issue 1160: an ion storm drains 10 shield from a shielded hull at the start of its turn, so both threat models (and every side and level
 // that reads them) count that cover as lost when a ship would end its move in one
-function aiStormCost(v){ return !v.isSq&&v.shMax>0&&terr(v.q,v.r)==='storm'?Math.min(10,v.shMax):0; }
+// priced like shield damage in the threat models (0.2 a point), and only the shield the ship still has
+function aiStormCost(v){ return !v.isSq&&v.shMax>0&&terr(v.q,v.r)==='storm'?Math.min(10,v.shp||0)*.2:0; }
 // issue 1160 (Cunning Nemesis, rear flag): a hex behind a ship (or on its flank) that a ready gun reaches from there; the best one counts
 function aiRearScore(v,ready,foes){ let best=0; for(const f of foes){ if(f.isSq) continue; const qd=shieldQuad(f,v), k=qd===2?8:qd===1||qd===3?3:0; if(k<=best) continue; if(ready.some(w=>inReach(v,w,f))) best=k; } return best; }
 // the fleet-wide focus target: the most valuable ship that is closest to dying

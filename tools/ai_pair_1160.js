@@ -6,7 +6,7 @@
 //
 //   node tools/ai_pair_1160.js run <out.json> [n per row, default 200] [workers, default 4]
 //   node tools/ai_pair_1160.js table <before.json> <after.json>     (markdown table, before and after)
-//   EQUAL=1 in the environment gives Standard the Veteran fleet budget (AI decisions only).
+//   EQUAL=1 in the environment gives both levels the same fleet budget (AI decisions only).
 const fs = require('fs'), path = require('path'), os = require('os'), { spawn } = require('child_process');
 const FACS = ['voidsworn', 'hegemony', 'corsair', 'chorus', 'ithar', 'deathless'];
 const NAMES = { voidsworn: 'Sunward Crusade', hegemony: 'Hegemony Navy', corsair: 'Ashfall Hullbreakers', chorus: 'the Chorus', ithar: 'the Glasswrights', deathless: 'Eclipse' };
@@ -22,9 +22,9 @@ function jobs(n, facs, secs, levels) {
 }
 function median(a) { const s = a.slice().sort((x, y) => x - y); return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : 0; }
 function summarize(results) {
-  const rows = {}, add = (key, r) => { const R = rows[key] || (rows[key] = { n: 0, wins: 0, rounds: [], past12: 0, timeouts: 0, eShips: 0 }); R.n++; R.wins += r.win; R.rounds.push(r.rounds); if (r.rounds > 12) R.past12++; if (r.over === 'timeout') R.timeouts++; R.eShips += r.eShips; };
+  const rows = {}, add = (key, r) => { const R = rows[key] || (rows[key] = { n: 0, wins: 0, rounds: [], past12: 0, timeouts: 0, eShips: 0, acts: 0, fired: 0, dist: 0 }); R.n++; R.acts += r.acts || 0; R.fired += r.fired || 0; R.dist += r.dist || 0; R.wins += r.win; R.rounds.push(r.rounds); if (r.rounds > 12) R.past12++; if (r.over === 'timeout') R.timeouts++; R.eShips += r.eShips; };
   for (const r of results) { const [lvl, sec, fac] = r.k.split('|'); add([lvl, sec, fac].join('|'), r); add([lvl, 'all', fac].join('|'), r); add([lvl, sec, 'all'].join('|'), r); add([lvl, 'all', 'all'].join('|'), r); }
-  const o = {}; for (const [k, R] of Object.entries(rows)) o[k] = { n: R.n, win: +(R.wins / R.n * 100).toFixed(1), median: median(R.rounds), past12: R.past12, timeouts: R.timeouts, eShips: +(R.eShips / R.n).toFixed(1) };
+  const o = {}; for (const [k, R] of Object.entries(rows)) o[k] = { n: R.n, win: +(R.wins / R.n * 100).toFixed(1), median: median(R.rounds), past12: R.past12, timeouts: R.timeouts, eShips: +(R.eShips / R.n).toFixed(1), firePct: +(R.fired / Math.max(1, R.acts) * 100).toFixed(1), range: +(R.dist / Math.max(1, R.acts)).toFixed(2) };
   return o;
 }
 function runShard(list, i) {

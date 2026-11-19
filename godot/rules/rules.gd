@@ -1550,6 +1550,7 @@ func genEnemyFleet(fac, s, col, kind, arch, mod) -> Array:
 		list.append({"tpl": F["boss"]}); budget *= RAMP.boss[s]
 	if RUN != null and RUN.get("fleet") != null: budget *= max(RAMP.pwMin, min(RAMP.pwMax, JSM.pow(max(0.5, fleetPower()) / RAMP.refP[s], RAMP.pw)))
 	if AI_LEVEL == "standard": budget *= RAMP.std
+	if AI_LEVEL == "veteran": budget *= RAMP.vet   # issue 1160: Veteran's fleet budget edge (shared table entry)
 	if heatOn("h_hunted"): budget *= 1.15
 	if mod == "bounty": budget *= 1.1
 	var roster = []
@@ -1673,7 +1674,8 @@ func startSideTurn(side) -> int:
 			var rg = u["regen"] * (B["condRegen"] if B != null and jt(B.get("condRegen")) else 1)
 			if float(z0(u.get("chainCut"))) > 0: rg = JSM.jsround(rg * (1.0 - float(u["chainCut"])))   # Chain Lightning (R246 pool): the broken shield's next recharge is cut
 			if not jt(u.get("regenLock")):
-				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg); syncShields(u)
+				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg)
+			syncShields(u)   # route just cleared: re-derive the catches even when an ion lock skips the regen
 		ithChargeTurn(u); u["regenLock"] = null; u["chainCut"] = 0
 		if jt(u.get("hullRegen")) and u["hp"] < u["maxHp"] and not jt(u.get("pyre")):
 			var mmH = treeRoleMul(u); var hrH = JSM.jsround(u["hullRegen"] * mmH) if mmH != 1.0 else u["hullRegen"]
@@ -2100,6 +2102,14 @@ func torpThreat(u, v) -> float:
 			if d <= 2: tot += sv["w"]["dmg"] * sv["w"]["shots"] * [0.62, 0.52, 0.38][int(d)]
 		elif d == 0: tot += sv["w"]["dmg"] * sv["w"]["shots"] * 0.5
 	return tot
+static func nem_entry(table: Dictionary, key, fac) -> Variant:
+	var entry = table.get(key)
+	return entry.get("v", {}).get(fac, entry) if entry != null else null
+# Issue 1182: a save from an older build can hold a trait or weakness key the table no longer has; show the raw key, never crash.
+static func nem_entry_name(table: Dictionary, key, fac) -> String:
+	var entry = nem_entry(table, key, fac)
+	return str(entry.get("n", key)) if entry is Dictionary else str(key)
+
 func nemWeak(k) -> bool: return B != null and B.get("nem") != null and B["nem"].get("weak") != null and B["nem"]["weak"].has(k)
 func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, faction behaviour, duel fleet, honed, riches, artillery line, memory lines)
 	B["nem"] = N; var es = []
@@ -2320,7 +2330,8 @@ func nemTrip(k: String) -> void:
 	B["nemFound"].append(k)
 	if B["nem"].get("revealed") == null: B["nem"]["revealed"] = []
 	B["nem"]["revealed"].append(k)
-	logm("Weakness found: " + String(TB.NEM_WEAK[k]["n"]) + ". " + String(TB.NEM_WEAK[k]["d"]), "s")
+	var entry = nem_entry(TB.NEM_WEAK, k, B["nem"].get("fac"))
+	logm(("Weakness found: " + str(entry["n"]) + ". " + str(entry["d"])) if entry is Dictionary else ("Weakness found: " + str(k) + "."), "s")
 func nemBreak() -> void:
 	if B == null or B.get("nem") == null or jt(B.get("nemBroken")) or not nemWeak("anchor"): return
 	var f = null
@@ -6542,8 +6553,8 @@ func aiGunLive(p, w) -> bool:
 # issue 1160: an ion storm drains 10 shield from a shielded hull at the start of its turn, so both threat models (and every side and level
 # that reads them) count that cover as lost when a ship would end its move in one
 func aiStormCost(v) -> float:
-	var sm := float(z0(v.get("shMax")))
-	return min(10.0, sm) if not jt(v.get("isSq")) and sm > 0 and terr(v["q"], v["r"]) == "storm" else 0.0
+	var sm := float(z0(v.get("shMax")))   # priced like shield damage in the threat models (0.2 a point), and only the shield the ship still has
+	return min(10.0, float(z0(v.get("shp")))) * 0.2 if not jt(v.get("isSq")) and sm > 0 and terr(v["q"], v["r"]) == "storm" else 0.0
 # issue 1160 (Cunning Nemesis, rear flag): a hex behind a ship (or on its flank) that a ready gun reaches from there; the best one counts
 func aiRearScore(v, ready: Array, foes: Array) -> float:
 	var best := 0.0

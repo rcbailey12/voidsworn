@@ -1,13 +1,23 @@
 ---
 name: screenshot-verdict
-description: Use whenever a change affects anything the player sees in Embers of the Hollow Sun (ships, weapon and hit effects, shields, deaths, sky, board). Run the look bench (tools/pc/jobs/look_bench.bat) on Ryan's PC for the change and for main, compare with the baseline, and report exactly what differs before any visual work is called done.
+description: Use for visual and teaching changes in Embers of the Hollow Sun. Record Battles 1 to 3 on the shared installed build with the player defaults, then use the look bench for fixed-camera comparisons.
 ---
 
-# Screenshot verdict: run the look bench, compare with the baseline, report what differs
+# Screenshot verdict: record the player path and compare the look bench
 
-The product is the Godot game in `godot/`. Acceptance is Ryan's eye plus automatic checks (FINDINGS R6). No visual change is done until a
-bench sheet shows it and Ryan has seen the picture, not a description. The bench (issue 351) is the standing capture set every looks
-job is judged on, so rounds are compared on the same moments at the same cameras (R157).
+The product is the Godot game in `godot/`. Acceptance is Ryan's eye plus automatic checks (FINDINGS R6). RULEBOOK 12.6
+makes the player-path recording the acceptance check. The bench (issue 351) compares the same moments and cameras across
+revisions (R157).
+
+## Player-path acceptance (R328)
+
+1. Run `tools/pc/jobs/player_path.bat` on Ryan's PC with the branch's shared installed build. Use both fresh Sunward runs
+   through Battles 1 to 3. The launcher gives each run an isolated profile with the player's default settings and writes the full
+   1080p masters and the verified review copies. Export the installed build from a clean commit first.
+2. Watch both runs and judge the change in context. Report the moments where it shows up, including what the teaching cards,
+   target and danger overlays, cut-ins, and battle log are doing. Include the stamped clip and battle contact sheet for Ryan.
+3. Use the bench procedure below for matched cameras and effect timing. Ryan accepts visual and teaching changes from
+   the player-path recording.
 
 ## The bench in one line
 

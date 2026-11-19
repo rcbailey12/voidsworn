@@ -7,6 +7,7 @@
 # usage: blender -b -P bakeAb.py -- OUT_DIR B0_GLB [RES]
 import os, sys, math, json, time
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+from cycles_devices import configure_cycles_device
 import bpy
 import common as C
 import armA2 as A2
@@ -20,16 +21,7 @@ INFO = {}
 
 def gpu():
     sc = bpy.context.scene; sc.render.engine = 'CYCLES'
-    prefs = bpy.context.preferences.addons['cycles'].preferences
-    for t in ('OPTIX', 'CUDA'):
-        try:
-            prefs.compute_device_type = t; prefs.get_devices()
-            gp = [d for d in prefs.devices if d.type == t]
-            if not gp: continue
-            for d in prefs.devices: d.use = True
-            sc.cycles.device = 'GPU'; return t
-        except Exception: pass
-    return 'CPU'
+    return configure_cycles_device(sc)
 
 def prepare(S):
     t0 = time.time()

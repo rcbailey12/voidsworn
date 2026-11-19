@@ -10,7 +10,7 @@ const net = require('net');
 const { spawn } = require('child_process');
 const pc = path.resolve(__dirname, '../../../tools/pc');
 const helper = path.join(pc, 'gpu_slots.js');
-const { Slots, modeFor, weightFor, codeOnlyLane } = require(helper);
+const { Slots, modeFor, weightFor, codeOnlyLane, admit, transaction, MAX_WAIT_SECONDS } = require(helper);
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gpu847 '));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const children = [];
@@ -34,6 +34,17 @@ async function until(fn, ms = 10000) {
   for (let i = 0; i < ms / 50; i++) { if (fn()) return; await sleep(50); }
   throw new Error('timed out waiting for fake GPU client');
 }
+// Issue 1174: a fake clock for every admission timeout, so no test races the wall clock. Time moves only when the code
+// under test sleeps; each fake sleep still yields to the event loop. onSleep sees the state while the waiter waits.
+function fakeClock(onSleep = () => {}) {
+  const clock = { t: 0, sleeps: 0, now: () => clock.t,
+    sleep: async ms => { clock.sleeps++; clock.t += Math.max(ms, 1); onSleep(); await new Promise(r => setImmediate(r)); } };
+  return clock;
+}
+const fails = async (promise, pattern) => {
+  try { await promise; } catch (e) { assert.match(e.message, pattern); return; }
+  throw new Error('expected a failure matching ' + pattern);
+};
 const holder = (pid, mode = 'shared') => ({ pid, mode, token: String(pid), issue: '847', started: 'fake start' });
 const capacity = (root, count) => put(path.join(root, 'gpu_slots.json'), JSON.stringify({ sharedSlots: count }));
 const used = slots => slots.names().filter(name => name !== 'gpu_solo' && slots.read(name));
@@ -125,6 +136,10 @@ async function main() {
   const gd = 'C:\\Godot_v4.7.2-stable_win64_console.exe';
   assert.equal(modeFor(gd, '--headless --import'), '');
   assert.equal(modeFor('blender.exe', '-b'), 'shared');
+  const cpuMode = modeFor('blender.exe', '-b', root, 'none');
+  assert.equal(cpuMode, '');
+  assert.equal(weightFor('blender.exe', '', cpuMode), 0);
+  assert.equal(weightFor('blender.exe', '2', 'none'), 0);
   assert.equal(weightFor('C:\\Blender\\blender.exe'), 2);
   assert.equal(weightFor(gd), 1);
   assert.equal(weightFor('python.exe', '2'), 2);
@@ -141,6 +156,7 @@ async function main() {
   assert.equal(modeFor(gd, '--bench timing.json'), 'solo');
   assert.equal(modeFor(gd, `--script "${path.join(project, 'timing.gd')}"`), 'solo');
   assert.equal(modeFor(gd, 'res://bench209r3.gd', root, 'shared'), 'solo');
+  assert.equal(modeFor(gd, 'res://bench209r3.gd', root, 'none'), 'solo');
   put(path.join(project, 'project.godot'), '[application]\nrun/main_scene="res://timing.tscn"');
   assert.equal(modeFor(gd, `--path "${project}"`), 'solo');
   pass('launch classification: capture shared, timing scene and known benches solo, headless and code skip');
@@ -150,22 +166,32 @@ async function main() {
   const closed = path.join(root, 'closed');
   capacity(closed, 1);
   const tooHeavy = client(['acquire', closed, '1100', String(process.pid), 'shared', '2'], { PC_GPU_WAIT_SECONDS: '60' });
-  try { await until(() => tooHeavy.done, 2500); }
+  try { await until(() => tooHeavy.done, 20000); }
   catch { throw new Error('impossible GPU weight waited for admission'); }
   assert.match((await tooHeavy.result).error, /exceeds.*capacity/i);
-  const closedGate = client(['acquire', closed, '1100', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '1' });
-  await until(() => closedGate.done, 3500);
-  const expired = await closedGate.result;
-  assert.notEqual(expired.code, 0); assert.match(expired.error, /admission timed out/i);
+  // The go gate closed: admission ends with "admission timed out" after exactly its own wait, on the fake clock.
+  const closedSlots = new Slots(closed);
+  const gateClock = fakeClock();
+  await fails(admit(closedSlots, { ...holder(process.pid), token: 'gate', weight: 1 }, { waitSeconds: 1, clock: gateClock }),
+    /admission timed out after 1 seconds/);
+  assert(gateClock.t >= 1000 && gateClock.t < 1300, 'timed out at ' + gateClock.t + ' fake ms, not after its 1 s wait');
   pass('GPU admission fails promptly at impossible weight and times out with the go gate closed');
+  // The slot lock held for the whole wait: the lock's loop reports the admission timeout, never its own message, however
+  // the two deadline readings fall (the Nov 19 CI failure said "GPU slot lock timed out" at the old line 159).
   const heldLock = net.createServer();
   await new Promise((resolve, reject) => {
     heldLock.once('error', reject); heldLock.listen(47847, '127.0.0.1', resolve);
   });
   try {
-    const waiter = client(['acquire', raceRoot, '1100', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '1' });
-    await until(() => waiter.done, 3500);
-    assert.match((await waiter.result).error, /admission timed out/i);
+    const lockClock = fakeClock();
+    await fails(admit(new Slots(raceRoot), { ...holder(process.pid), token: 'lock', weight: 1 }, { waitSeconds: 1, clock: lockClock }),
+      /admission timed out after 1 seconds/);
+    assert(lockClock.t >= 1000, 'gave up on a busy lock before the wait ran out');
+    // The race itself: check() reads the clock just before the deadline, the lock's own reading lands on it.
+    const reads = [999];
+    const edgeClock = { now: () => (reads.length ? reads.shift() : 1000), sleep: async () => {} };
+    const edgeCheck = () => { if (edgeClock.now() >= 1000) throw new Error('GPU admission timed out after 1 seconds'); };
+    await fails(transaction(() => 'never', edgeCheck, 1000, edgeClock), /admission timed out/);
   } finally { await new Promise(resolve => heldLock.close(resolve)); }
   pass('admission deadline also covers a busy slot lock');
   const workers = [1, 2, 3, 4].map(() => {
@@ -185,18 +211,25 @@ async function main() {
   const cancelled = claim(workers[3], 'solo');
   await until(() => !!rs.read('gpu_solo'));
   workers[3].kill();
-  await until(() => cancelled.done, 3500);
+  await until(() => cancelled.done, 20000);
   const cancelResult = await cancelled.result;
   assert.notEqual(cancelResult.code, 0); assert.match(cancelResult.error, /cancelled/i);
   assert.equal(rs.read('gpu_solo'), null, 'cancellation must release the pending solo reservation');
   workers[3] = spawn(process.execPath, ['-e', 'setInterval(()=>{},1000)'], { windowsHide: true });
   children.push(workers[3]);
-  const timedSolo = client(['acquire', raceRoot, '1100', String(workers[3].pid), 'solo'], { PC_GPU_WAIT_SECONDS: '1' });
-  await until(() => !!rs.read('gpu_solo'));
-  await until(() => timedSolo.done, 3500);
-  assert.match((await timedSolo.result).error, /admission timed out/i);
+  // Two shared slots stay held, so a solo waiter reserves gpu_solo and drains; on the fake clock it times out and must
+  // release the reservation it made.
+  let sawReservation = false;
+  const soloClock = fakeClock(() => { if (rs.read('gpu_solo')) sawReservation = true; });
+  await fails(admit(rs, { ...holder(workers[3].pid, 'solo'), token: 'timed-solo', weight: 1 },
+    { waitSeconds: 1, clock: soloClock, waiterPid: workers[3].pid }), /admission timed out/);
+  assert(sawReservation, 'the solo waiter never reserved gpu_solo');
   assert.equal(rs.read('gpu_solo'), null, 'timeout must release the pending solo reservation');
   pass('pending solo releases on cancellation and on admission timeout');
+  // Issue 1174: ship_job.bat waits up to 3600 s for the GPU; more than that is refused before any waiting.
+  assert.equal(MAX_WAIT_SECONDS, 3600);
+  const tooLong = await client(['acquire', closed, '1100', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '3601' }).result;
+  assert.notEqual(tooLong.code, 0); assert.match(tooLong.error, /at most 3600/);
   const solo = claim(workers[3], 'solo');
   await until(() => !!rs.read('gpu_solo'));
   const newcomer = claim(workers[2]);
@@ -326,6 +359,13 @@ setTimeout(()=>process.exit(Number(process.argv[3])), Number(process.argv[4]));`
   const blended = await run(fakeBlender, `"${probe}" "${marker}" 0 0`, { PC_GPU_MODE: '' });
   assert.equal(blended.code, 0, blended.output);
   assert.equal(JSON.parse(fs.readFileSync(marker, 'utf8')).claims.length, 2, 'Blender must default to weight 2');
+  put(path.join(home, 'gpu_go.txt'), 'GPU not cleared');
+  const cpuOnly = await run(fakeBlender, `"${probe}" "${marker}" 0 0`, { PC_GPU_MODE: 'none', PC_GPU_WEIGHT: '2', PC_GPU_WAIT_SECONDS: '1' });
+  assert.equal(cpuOnly.code, 0, cpuOnly.output);
+  assert.doesNotMatch(cpuOnly.output, /GPU: .*claim/);
+  assert.equal(JSON.parse(fs.readFileSync(marker, 'utf8')).claims.length, 0);
+  put(path.join(home, 'gpu_go.txt'), 'GPU cleared');
+  pass('Windows watchdog runs CPU-only Blender with zero claims while the GPU gate is closed');
   capacity(home, 3);
   const custom = await run(process.execPath, `"${probe}" "${marker}" 0 0`, { PC_GPU_WEIGHT: '3' });
   assert.equal(custom.code, 0, custom.output);
