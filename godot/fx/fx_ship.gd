@@ -1246,7 +1246,8 @@ func visible_marks(fx) -> Array:
 			pick[idx[k]] = true
 	var out: Array = []
 	for j in _marks.size():
-		if pick.has(j):
+		# a mark with no hull section (one placed by hand, not through add_mark) is never capped
+		if pick.has(j) or int(_marks[j].sec) < 0 or int(_marks[j].sec) > 2:
 			out.append(_marks[j])
 	return out
 
