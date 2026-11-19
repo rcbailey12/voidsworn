@@ -1410,16 +1410,19 @@ void fragment() {
 			// collapse: one even flash, then a single clean band closes from the far side into the breach in 0.7 s
 			// (COLLAPSE_CLOSE); nothing is left behind it; the field pinches out in a knot at the breach
 			// (r1: a strong flash and a wide band at the far side read as a solid white slab at +0.1 s)
+			// the Glasswrights' pale prismatic field barely read against their pale hulls (Board, R340 sheets): their band
+			// and knot are brighter and a little wider, and keep the prismatic colour instead of burning toward white
+			float gw = style == 3 ? 1.0 : 0.0;
 			float flash = exp(-ba * 12.0) * 0.3 * calm;
 			float bp = 1.0 - clamp((ba - 0.08) / 0.62, 0.0, 1.0);
-			float bw = 0.03 + 0.025 * bp;
+			float bw = 0.03 + 0.025 * bp + 0.02 * gw;
 			float bd = (dist - bp) / bw;
-			float band = exp(-bd * bd) * 2.4 * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
+			float band = exp(-bd * bd) * 2.4 * (1.0 + gw) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
 			alive = smoothstep(bp + bw, bp - bw, dist);
 			float kt = ba - 0.7;
-			float knot = kt > 0.0 ? exp(-dist * dist * 600.0) * exp(-kt * 5.0) * 3.0 * calm : 0.0;
+			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw) * calm : 0.0;
 			add += (flash * pat * 0.5 + band * (0.55 + 0.45 * pat)) * stut + knot;
-			hot += band * 0.25 + knot * 0.5;
+			hot += (band * 0.25 + knot * 0.5) * (1.0 - gw);
 		}
 		// what is left of the field stays faintly visible until the failure reaches it
 		add += alive * 0.28 * pat * (0.3 + 0.7 * fres);
