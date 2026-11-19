@@ -1044,24 +1044,6 @@ def craft_spire(h, L, t, spread, fins=4):
                  (-L * 0.26, y0, z + th), (L * 0.26, y0, z + th), (L * 0.26, y1 - sg * th, z + th), (-L * 0.26, y1 - sg * th, z + th)]
             fv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
     p.add('fin', 'body', 'embar', _join(fv))
-    if slats:
-        # the slats: a thin ember strip set into both core faces in every gap between two fins, so the glow reads as lines
-        # between dark iron fins (R331), never as a lit tower
-        fz = sorted({round(zr + 0.2 + i * (h - zr - 0.42) / max(1, n - 1), 5) for i in range(n)})
-        sv = []
-        for za, zb in zip(fz, fz[1:]):
-            zm = (za + zb) / 2; hh = (zb - za) * 0.16
-            for ci, (cx, _) in enumerate(cols):
-                xa, xb, th = span(zm)
-                if profile == 2:
-                    w = (xb - xa) * 0.4; c = (xa + xb) / 2 + cx * (xb - xa) * 0.3
-                    xa, xb = c - w / 2, c + w / 2; th *= 0.85
-                for sg in (1, -1):
-                    y0, y1 = sg * (th - 0.004), sg * (th + 0.012)
-                    V = [(xa + 0.1, y0, zm - hh), (xb - 0.1, y0, zm - hh), (xb - 0.1, y1, zm - hh), (xa + 0.1, y1, zm - hh),
-                         (xa + 0.1, y0, zm + hh), (xb - 0.1, y0, zm + hh), (xb - 0.1, y1, zm + hh), (xa + 0.1, y1, zm + hh)]
-                    sv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
-        p.add('bar_slat', 'body', 'embar', _join(sv))
     gz = []
     for sg in (1, -1):
         for x in (-L * 0.35, L * 0.35):
