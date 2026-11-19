@@ -58,6 +58,10 @@ var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
 var _shield_until = -1.0
+# Issue 1078: which shield failure look plays (0 today's per-faction break, 1 energy shear, 2 clean collapse) and the
+# shear's quality (true: the cheaper crack network). Read once per ship from the settings (see _fail_look_setting).
+var _fail_look := 0
+var _fail_low := false
 var _last_sh = -1.0
 var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
@@ -448,6 +452,10 @@ func _build_shield(fx) -> void:
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
 	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
+	_fail_look = fail_look_setting()
+	_fail_low = fail_low_setting()
+	_shield_mat.set_shader_parameter("brk_look", _fail_look)
+	_shield_mat.set_shader_parameter("brk_low", _fail_low)
 	var se = fac.get("shield_edge")
 	if se is Color:
 		_shield_mat.set_shader_parameter("edge_mode", 1)
@@ -742,8 +750,36 @@ func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, 
 	_shield_until = maxf(_shield_until, T + life + 0.05)
 
 
+# Issue 1078 (prototype for Ryan to choose from): the shield failure look, for every shielded ship and both shield
+# shapes. "today" (the default) keeps each faction's own break; "shear" tears the field along one connected crack network
+# that runs from the struck side over the whole shield; "collapse" flashes once and closes cleanly into the breach.
+# Select with rendering/effects/shield_failure or VS_SHIELD_FAILURE; rendering/effects/shield_failure_quality="low" (or
+# VS_SHIELD_FAILURE_Q=low) gives the shear its cheaper crack network.
+const FAIL_LOOKS := ["today", "shear", "collapse"]
+
+
+static func fail_look_setting() -> int:
+	var v := OS.get_environment("VS_SHIELD_FAILURE")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure", "today"))
+	return maxi(FAIL_LOOKS.find(v), 0)
+
+
+static func fail_low_setting() -> bool:
+	var v := OS.get_environment("VS_SHIELD_FAILURE_Q")
+	if v.is_empty():
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure_quality", "high"))
+	return v == "low"
+
+
 func shield_break(fx, quad: int) -> void:
 	if _shield_mat == null:
+		return
+	if _fail_look == 1:
+		_break_shear(fx, quad)
+		return
+	if _fail_look == 2:
+		_break_collapse(fx, quad)
 		return
 	var qd: Vector3 = hull.quad_dir(quad)
 	var T: float = fx.now
@@ -790,6 +826,91 @@ func shield_break(fx, quad: int) -> void:
 				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.5, 1.2 + fx.rng.randf() * 0.8, sc, 2.2, 0.7 * k, 0.2 * k, 16,
 					fx.rcone(wn, 1.2) * (2 + fx.rng.randf() * 4) * k, 0.4, 1.5)
 			fx.spr(wp, T, 1.0, sc, 1.6, 6.0 * k, 14.0 * k, 18)
+
+
+# Issue 1078, shear: one crack network runs from the struck side over the whole field (the shader draws it, timed by
+# how far each point is from the struck facing); sparks race along the surface with the front, so the failure reads as
+# one connected tear, not scattered pops. Each faction keeps its colour and character (R163): the Navy tears along its
+# hex lattice and throws cells, the Hullbreakers' cracks stutter, the Glasswrights' glint.
+const SHEAR_FRONT := 0.75   # seconds for the crack front to cross from the struck facing to the far side (shader too)
+
+
+func _break_shear(fx, quad: int) -> void:
+	var qd: Vector3 = hull.quad_dir(quad)
+	var T: float = fx.now
+	_shield_mat.set_shader_parameter("brk_t", T)
+	_shield_mat.set_shader_parameter("brk_dir", qd)
+	_shield_until = maxf(_shield_until, T + 1.45)
+	var rad = hull.shield_radii()
+	var reach: float = rad.length() * 2.0
+	var contact := shield_point(to_world(hull.shield_centre() + qd * reach))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.8)
+	var sc: Color = fac["shield"]
+	var st: int = fac["shield_style"]
+	var k = scale_k()
+	var hot := sc.lerp(Color.WHITE, 0.55)
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.4), 8.0 * k, 8.0, 0.18)
+	fx.light(wp + wn * 2.0, T, 0.7, 6.0, sc, 0)
+	fx.shake(T, 0.16, wp)
+	# the front: points spread from the contact to the far side, each lit when the front reaches it
+	var n := 16 if st != 1 else 12
+	for i in n:
+		var spread := lerpf(0.25, 2.6, float(i) / float(n - 1))
+		var d: Vector3 = (qd + fx.rdir() * spread).normalized()
+		var ti: float = T + (1.0 - d.dot(qd)) * 0.5 * SHEAR_FRONT
+		var pi := shield_point(to_world(hull.shield_centre() + d * reach))
+		var pw: Vector3 = pi["p"]
+		var nw: Vector3 = pi["n"]
+		var run: Vector3 = (pw - wp).slide(nw)
+		run = run.normalized() if run.length() > 1e-3 else fx.rcone(nw, 1.5).slide(nw).normalized()
+		var stut := 1.0 if st != 2 else (0.5 + 0.5 * float(i % 2))
+		for j in 3:
+			fx.stk(pw, ti + j * 0.03, 0.22 + fx.rng.randf() * 0.12, hot, 6.0 * stut, 0.1, 0.12, 1,
+				(run + fx.rdir() * 0.25) * (14 + fx.rng.randf() * 10) * k, 2.2)
+		if st == 1:
+			# Navy: a cell of the lattice comes loose where the crack passes
+			fx.spr(pw, ti, 0.6 + fx.rng.randf() * 0.4, sc, 2.6, 0.45 * k, 0.25 * k, 16, (nw + run * 0.5) * (4 + fx.rng.randf() * 4) * k, 0.8)
+		elif st == 3:
+			# Glasswrights: a prismatic glint rides the crack
+			fx.spr(pw, ti, 0.9 + fx.rng.randf() * 0.5, sc, 2.0, 0.6 * k, 0.2 * k, 16, nw * (1.5 + fx.rng.randf() * 2) * k, 0.4, 1.5)
+
+
+# Issue 1078, collapse: the cleaner failure. The field flashes once, evenly, then one bright band closes over it from the
+# far side into the breach and the field pinches out there in a small knot and a flat ring of sparks. No crackle, no
+# scattered pops; the faction still shows in colour and in the band's pattern.
+const COLLAPSE_CLOSE := 0.7   # seconds until the band reaches the breach (shader too)
+
+
+func _break_collapse(fx, quad: int) -> void:
+	var qd: Vector3 = hull.quad_dir(quad)
+	var T: float = fx.now
+	_shield_mat.set_shader_parameter("brk_t", T)
+	_shield_mat.set_shader_parameter("brk_dir", qd)
+	_shield_until = maxf(_shield_until, T + 1.45)
+	var rad = hull.shield_radii()
+	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 0.7, rad.length() * 0.3 / fx.unit, 0.5)
+	var sc: Color = fac["shield"]
+	var k = scale_k()
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.3), 6.0 * k, 6.0, 0.15)
+	fx.light(wp + wn * 2.0, T, 0.4, 4.0, sc, 0)
+	fx.shake(T, 0.12, wp)
+	# the knot where the field closes, and its ring of sparks flat along the hull
+	var Tk: float = T + COLLAPSE_CLOSE
+	_shield_flash(fx, wp, Tk, sc.lerp(Color.WHITE, 0.5), 5.0 * k, 7.0, 0.14)
+	fx.light(wp + wn * 1.5, Tk, 0.35, 5.0, sc, 0)
+	var t1: Vector3 = wn.cross(Vector3.UP if absf(wn.y) < 0.9 else Vector3.RIGHT).normalized()
+	var t2: Vector3 = wn.cross(t1)
+	for i in 18:
+		var a: float = TAU * (float(i) + fx.rng.randf() * 0.4) / 18.0
+		var v: Vector3 = (t1 * cos(a) + t2 * sin(a) + wn * 0.15) * (10 + fx.rng.randf() * 6) * k
+		fx.stk(wp, Tk, 0.25 + fx.rng.randf() * 0.1, sc.lerp(Color.WHITE, 0.4), 5.0, 0.08, 0.12, 1, v, 2.5)
 
 
 # Match pop's comfort booking and soft fallback, without its free-standing disc.
