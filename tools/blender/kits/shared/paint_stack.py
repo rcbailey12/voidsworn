@@ -1141,6 +1141,9 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         INFO[f'zones_{group}'] = sorted(mats)
     HM = textured(f'{cell}_hull_mat', maps['H']['albedo'], maps['H']['orm'], maps['H']['normal'])
     PM = textured(f'{cell}_parts_mat', maps['P']['albedo'], maps['P']['orm'], maps['P']['normal'])
+    if getattr(S, 'AUTHORED_LOOK', False):
+        for material in (HM, PM):
+            material['authored_look'] = 1
     # issue 601: these surfaces carry the stack's own roughness; the game gives them the soft rim light (godot/render/look.gd RIM
     # soft), not the full specular that flared white on them at the close cameras. glTF writes it as the material's extras.
     if getattr(S, 'SOFT_RIM', True):

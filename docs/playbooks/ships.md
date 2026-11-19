@@ -105,6 +105,10 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
    Each engine ring shares the ship's normalized pattern (R308).
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
+   R329 (Nov 19 2026). Every new no-wear stack writes `authored_look: 1` in the glTF material extras for hull, parts,
+   inside and glow. Godot uses the authored albedo, emission, metallic and specular values so the old A4 calibration
+   cannot wash out the shell or dim the lights. Put the accepted `C19_51` beside the candidate on every finish sheet,
+   at radii 170 and 26 under matching light, so Ryan has a familiar brightness reference at both scales.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).

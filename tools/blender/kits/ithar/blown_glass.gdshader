@@ -34,7 +34,18 @@ vec3 sky_reflection(vec3 ray) {
 	vec3 gas = textureLod(nebula, sky_uv(sky_turn * ray), 0.4).rgb;
 	vec2 uv = sky_uv(ray);
 	vec3 stars = textureLod(panorama, vec2(1.0 - uv.x, uv.y), 0.65).rgb;
-	return pow(gas, vec3(2.2)) * nebula_gain + stars * panorama_gain;
+	vec3 sun = normalize(sun_direction);
+	vec3 across = normalize(cross(abs(sun.y) < 0.95 ? vec3(0, 1, 0) : vec3(0, 0, 1), sun));
+	vec3 up = cross(sun, across);
+	vec3 strip_axis = normalize(sun + 0.55 * across + 0.18 * up);
+	float along = dot(ray, up);
+	float width = dot(ray, normalize(cross(up, strip_axis)));
+	float ends = (1.0 - smoothstep(0.42, 0.82, abs(along))) * smoothstep(0.18, 0.70, dot(ray, strip_axis));
+	float broad_band = 1.0 - smoothstep(0.025, 0.115, abs(width + 0.075));
+	float soft_band = 1.0 - smoothstep(0.018, 0.065, abs(width - 0.095));
+	float bright_line = 1.0 - smoothstep(0.004, 0.020, abs(width - 0.015));
+	vec3 strip = vec3(0.66, 0.82, 1.0) * ends * (1.9 * broad_band + 1.15 * soft_band + 3.25 * bright_line);
+	return pow(gas, vec3(2.2)) * nebula_gain + stars * panorama_gain + strip;
 }
 
 void fragment() {
@@ -59,8 +70,11 @@ void fragment() {
 	vec3 sun = normalize(sun_direction);
 	float star = pow(max(dot(ray, sun), 0.0), 430.0);
 	float glint = pow(max(dot(ray, sun), 0.0), 125.0);
+	vec3 lobe_direction = normalize(sun + vec3(-0.10, 0.075, 0.10));
+	float broad_lobe = pow(max(dot(ray, lobe_direction), 0.0), 43.0);
 	vec3 reflected = sky_reflection(ray);
-	vec3 key = vec3(1.0, 0.94, 0.84) * (star * 8.0 + glint * 0.19) * sun_gain;
+	vec3 key = (vec3(1.0, 0.94, 0.84) * (star * 8.0 + glint * 0.19)
+		+ vec3(0.74, 0.88, 1.0) * broad_lobe * 0.85) * sun_gain;
 	vec3 reflected_glass = reflected * fresnel + key * max(0.28, fresnel);
 	reflected_glass += (neutral_glass ? vec3(0.42) : vec3(0.30, 0.45, 0.58)) * rim;
 
@@ -73,7 +87,7 @@ void fragment() {
 
 	// Chromatic separation is visible at grazing edges and around a sharp glint.
 	float edge_fringe = clear_glass ? smoothstep(0.50, 0.89, rim) : smoothstep(0.12, 0.62, rim);
-	float fringe = dispersion * max(edge_fringe, glint);
+	float fringe = dispersion * (clear_glass ? edge_fringe : max(edge_fringe, glint));
 	if (fringe > 0.015) {
 		vec2 split = bend * fringe * 0.54;
 		through.r = textureLod(opaque_scene, uv - split, blur).r;

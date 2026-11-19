@@ -1,5 +1,23 @@
 # chorus_C11 build sheet: the bladeback, the Chorus cruiser (version 4: the recipe)
 
+## Issue 1058 run 6 finish review
+
+Five unequal plates grow across each shoulder. Smaller plates wrap the belly
+and narrow tail. The plates overlap at different lengths, with scalloped lips
+and edges that sink back into the hide. The flank edges curve around the sac
+sockets. The new shape puts shell over most of the body and breaks up the
+repeated crosswise bands that read as body segments at battle distance.
+
+The plates are dark olive-ochre, matte and ridged, with fine striations and
+pits. They vary in tone and darken toward their root seams. The dorsal crests
+return to pale weathered bone, while the olive-umber hide, joints and sockets
+keep a wet sheen. The throat geometry, flank sacs, interior and two authored
+tears use the existing sheet. Lime and amber are review options for the maw.
+The starboard engine-section breach point moves aft to open hide at the
+lower edge of the tail shell. The new plate crowded its original position.
+
+[Finish review and export checks](../../../shots/finish_chorus_glass_1118/README.md)
+
 ## Issue 1058 run 5 finish review
 
 The shoulder bands carry a paint coordinate from their root to their trailing

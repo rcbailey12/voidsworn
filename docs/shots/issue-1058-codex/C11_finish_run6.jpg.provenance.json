@@ -1,0 +1,173 @@
+{
+  "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+  "source_dirty": true,
+  "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "C11_finish_run6.jpg",
+  "date": "2026-11-19T15:29:11Z",
+  "sources": [
+    {
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "B21_11_A4_170.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:03Z",
+      "image_sha256": "081317f08b70ecc765dc4daadd32642f0aa09293eb01b304fe62cd08376bec42",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "B21_11_A4_26.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:04Z",
+      "image_sha256": "8d97dee774ab07925e228f305a38feaad76038d9e06046b726a84815e09b2955",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "B21_11_lime_170.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:05Z",
+      "image_sha256": "8901f1960dd50c911054bd3c0638e0b9ac86e05ab2e22efbda523b439b433c57",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "B21_11_lime_26.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:06Z",
+      "image_sha256": "64c85b75456b2196a467f8d100b84f70d1712ef59a5258631ebaf5243c71e203",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "C19_51_reference_170.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:07Z",
+      "image_sha256": "3ea9ddac19f2fea30b3583a3e7bb4291b505d23192c92d33e692606641d2334f",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "C19_51_reference_26.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:08Z",
+      "image_sha256": "9ea6eddc7cb409eb39c128a501646cc7764e3faa6c2de7c8e5d50079f546ad8d",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "B21_11_lime_maw_26.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:09Z",
+      "image_sha256": "552af20fd54fe068ac8b1b01e72c82d63d329c6188fbe25a35b04df359c18894",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "B21_11_amber_26.png",
+      "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+      "source_dirty": true,
+      "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+      "stage": "installed in game",
+      "date": "2026-11-19T15:29:10Z",
+      "image_sha256": "56c0bf664bc18edbd611f15342795fdbd40b90a39e2e98df2b0a2e33a6d7ad32",
+      "sources": [
+        {
+          "source_commit": "661324cd23821a4e141161da129a51bbeb4f20b3",
+          "source_dirty": true,
+          "source_diff_sha256": "995f36d435834565a386710f6e132c6864fb50d7e577bc1130ad747c7fc4e535",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "0ddcc32a2496348232886faae602a7954992c3f22d1de403191bd0e01e1b7ec2"
+  ],
+  "stamp_template_sha256": "d2410b8211bdd824085fea2fd27aacc1cd96ce8bd0933733fbec228aed4ff770",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMUABIyv+TaKCnxIDHf8697kDAPhvBRsAgOgCQMfTBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARuMBG9oBDUGFfiIAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "18cc6ce18c981ae89308dc56c9dcb3f096f55b316c5eb8c38371e94e945808f1"
+}

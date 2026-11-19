@@ -12,14 +12,15 @@ if FINISH not in ('flesh', 'chitin'):
     raise ValueError('CHORUS_FINISH must be flesh or chitin')
 
 SCALE = 1.0
+AUTHORED_LOOK = True
 LAYERS = dict(ao_short=.013, ao_long=.045, edge_radius=.0008, edge_gain=16,
               bump_distance=.006 if FINISH == 'chitin' else .0005,
               bump_strength=.78 if FINISH == 'chitin' else .34)
 
-# Linear RGB under the Chorus battle lift. Keep the actual joints, throats and
+# Authored linear RGB. Keep the actual joints, throats and
 # organ seams soft in both takes. Callus and armour zones carry the harder shell.
 ZONES = {
-    'flesh': ((.105, .095, .042), (.044, .031, .012), .26),
+    'flesh': ((.075, .067, .031), (.033, .027, .011), .26),
     'flesh2': ((.073, .053, .024), (.021, .013, .006), .28),
     'hide': ((.136, .124, .053), (.052, .039, .014), .25),
     'scar': ((.125, .091, .037), (.063, .044, .017), .37),
@@ -32,11 +33,11 @@ ZONES = {
     'amber': ((.29, .15, .025), (.15, .066, .011), .55),
 }
 HARD_SHELL = {
-    'hide': ((.132, .090, .041), (.061, .040, .016), .38),
-    'chitin': ((.147, .096, .042), (.067, .041, .016), .35),
-    'bone': ((.162, .110, .052), (.080, .049, .020), .41),
-    'carapace': ((.147, .096, .042), (.074, .043, .016), .59),
-    'carapace_joint': ((.041, .026, .012), (.016, .010, .005), .28),
+    'hide': ((.093, .078, .032), (.043, .034, .013), .28),
+    'chitin': ((.128, .093, .031), (.060, .040, .013), .63),
+    'bone': ((.49, .36, .18), (.24, .16, .07), .63),
+    'carapace': ((.129, .102, .037), (.048, .034, .011), .64),
+    'carapace_joint': ((.041, .026, .012), (.016, .010, .005), .24),
 }
 if FINISH == 'chitin':
     ZONES.update(HARD_SHELL)
@@ -53,12 +54,12 @@ GLOW = {
 GLOW_HULL = tuple(GLOW)
 
 
-def growth_ridges(c):
+def growth_ridges(c, progress):
     """Curved growth fronts in the recipe's length-one ship coordinates."""
     nt = c.nt
     bend = math_(nt, 'ADD', math_(nt, 'MULTIPLY', c.y, c.y), math_(nt, 'MULTIPLY', c.z, c.z))
     wander = c.noise(7.0, 2, .54, stretch=(.62, .94, 1.25))
-    front = math_(nt, 'ADD', c.x, math_(nt, 'MULTIPLY', bend, 3.2))
+    front = math_(nt, 'ADD', c.x, math_(nt, 'MULTIPLY', bend, 3.2)) if progress is None else progress
     front = math_(nt, 'ADD', front, math_(nt, 'MULTIPLY', wander, .13))
     broad = math_(nt, 'SINE', math_(nt, 'MULTIPLY', front, 53.5))
     faint = math_(nt, 'SINE', math_(nt, 'MULTIPLY', front, 226.0))
@@ -69,9 +70,12 @@ def growth_ridges(c):
     return crest, groove, line
 
 
-def hard_layers(c, base, shade, roughness):
+def hard_layers(c, zone, base, shade, roughness):
     nt = c.nt
-    crest, groove, line = growth_ridges(c)
+    progress = None
+    if zone == 'carapace':
+        progress = node(nt, 'ShaderNodeAttribute', attribute_name='scute_progress').outputs['Fac']
+    crest, groove, line = growth_ridges(c, progress)
     # The sheet's own overlapping shell and seams drive this shadow. The growth
     # ridges ride across the curved faces, with their finer lines inside each front.
     seam = ramp(nt, c.ao, .98, .62)
@@ -81,6 +85,9 @@ def hard_layers(c, base, shade, roughness):
     tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', colour_flow, .59),
                  math_(nt, 'MULTIPLY', groove, .78), clamp=True)
     tone = math_(nt, 'MAXIMUM', tone, math_(nt, 'MULTIPLY', depth, .97))
+    if progress is not None:
+        variation = node(nt, 'ShaderNodeAttribute', attribute_name='scute_tone').outputs['Fac']
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', variation, .39), clamp=True)
     col = mixc(nt, base, shade, tone)
     ridge_colour = tuple(v * gain for v, gain in zip(base, (1.62, 1.37, 1.08)))
     col = mixc(nt, col, ridge_colour, math_(nt, 'MULTIPLY', crest, .68))
@@ -93,46 +100,23 @@ def hard_layers(c, base, shade, roughness):
     rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', crest, .16))
     rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', depth, .24))
     rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', grain, .07), clamp=True)
-    return col, height, rough, 0.0
-
-
-def carapace_layers(c, base, shade, roughness):
-    nt = c.nt
-    tone = node(nt, 'ShaderNodeAttribute', attribute_name='scute_tone').outputs['Fac']
-    progress = node(nt, 'ShaderNodeAttribute', attribute_name='scute_progress').outputs['Fac']
-    trailing = ramp(nt, progress, .53, .96)
-    dark = math_(nt, 'ADD', math_(nt, 'MULTIPLY', tone, .69),
-                 math_(nt, 'MULTIPLY', trailing, .36), clamp=True)
-    col = mixc(nt, base, shade, dark)
-    shadow = ramp(nt, c.ao, .92, .42)
-    col = mixc(nt, col, (.034, .021, .009), math_(nt, 'MULTIPLY', shadow, .46))
-
-    # Growth follows the swept lip of each scute. Vary spacing and break up
-    # the fine lines across the face, with sparse pits in the harder shell.
-    warp = c.noise(28, 2, .54, stretch=(.60, 1.10, 1.35))
-    front = math_(nt, 'ADD', progress, math_(nt, 'MULTIPLY', warp, .15))
-    growth = math_(nt, 'SINE', math_(nt, 'MULTIPLY', front, 58.0))
-    growth = ramp(nt, growth, .20, .93)
-    fine = c.noise(180, 2, .57, stretch=(1.85, .54, .67))
-    striations = ramp(nt, fine, .39, .68)
-    pits = ramp(nt, c.noise(255, 2, .56), .33, .19)
-    height = math_(nt, 'ADD', math_(nt, 'MULTIPLY', growth, .16),
-                   math_(nt, 'MULTIPLY', striations, .11))
-    height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', pits, .16))
-    rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', striations, .12))
-    rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', pits, .08))
-    rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', growth, .06), clamp=True)
+    if progress is not None:
+        root = ramp(nt, progress, .32, .015)
+        col = mixc(nt, col, (.025, .018, .007), math_(nt, 'MULTIPLY', root, .88))
+        striations = ramp(nt, c.noise(180, 2, .57, stretch=(1.85, .54, .67)), .39, .68)
+        pits = ramp(nt, c.noise(255, 2, .56), .33, .19)
+        height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', striations, .11))
+        height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', pits, .16))
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', pits, .08))
+        rough = math_(nt, 'MINIMUM', math_(nt, 'MAXIMUM', rough, .60), .80)
     return col, height, rough, 0.0
 
 
 def surface_layers(c, zone, tiles):
     nt = c.nt
     base, shade, roughness = ZONES[zone]
-    if FINISH == 'chitin':
-        if zone == 'carapace':
-            return carapace_layers(c, base, shade, roughness)
-        if zone in HARD_SHELL and zone != 'carapace_joint':
-            return hard_layers(c, base, shade, roughness)
+    if FINISH == 'chitin' and zone in ('chitin', 'bone', 'carapace'):
+        return hard_layers(c, zone, base, shade, roughness)
     broad = c.noise(11, 3, .61, stretch=(.74, 1.25, 1.25))
     flow = c.noise(38, 3, .64, stretch=(.31, 1.42, 1.42), w=.19)
     folds = ramp(nt, flow, .37, .62)
@@ -172,6 +156,7 @@ def glow_material(zone, hull=False):
     bsdf.inputs['Emission Color'].default_value = (*colour, 1)
     bsdf.inputs['Emission Strength'].default_value = power
     material['ps_glow'] = 1
+    material['authored_look'] = 1
     if hull:
         material['hull_surface'] = 1
     return material
@@ -186,4 +171,5 @@ def inside_material(zone):
     bsdf.inputs['Base Color'].default_value = tuple(v * .54 for v in colour[:3]) + (1,)
     bsdf.inputs['Roughness'].default_value = .34
     material['ps_inside'] = 1
+    material['authored_look'] = 1
     return material

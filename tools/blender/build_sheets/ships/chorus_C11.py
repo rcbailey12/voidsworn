@@ -67,33 +67,48 @@ VENTS = 6
 
 
 def carapace(K):
-    """Broad scutes root beneath the preceding lip and flare towards the stern."""
-    rng = random.Random(21)
-    sections = ((0.0, -0.055), (0.14, 0.012), (0.38, 0.045),
-                (0.66, 0.079), (0.82, 0.103), (0.92, 0.167),
-                (0.97, 0.151), (1.0, -0.045))
-    steps = 20
+    """Grow overlapping shell along the shoulders and around the sac sockets."""
+    # Root x, length, angular extent, sweep, lip scallops and shade per plate.
+    shoulders = (
+        (5.66, 2.38, -0.38, 1.37, 0.64, 2.0, 0.15),
+        (4.13, 2.85, -0.32, 1.19, -0.49, 2.5, 0.73),
+        (2.05, 3.34, -0.40, 1.38, 0.94, 1.5, 0.34),
+        (-0.62, 2.85, -0.33, 1.22, -0.62, 2.0, 0.87),
+        (-2.87, 1.86, -0.12, 1.43, 0.42, 1.5, 0.49),
+    )
+    belly = (
+        (5.48, 3.37, -1.49, -0.49, -0.42, 2.0, 0.66),
+        (2.68, 3.52, -1.48, -0.57, 0.68, 1.5, 0.42),
+        (-0.33, 3.44, -1.53, -0.49, -0.43, 2.5, 0.78),
+        (-3.00, 1.90, -1.51, -0.38, 0.29, 1.5, 0.56),
+    )
+    sections = ((0.0, -0.075), (0.17, 0.012), (0.38, 0.049),
+                (0.62, 0.079), (0.81, 0.108), (0.92, 0.181),
+                (0.97, 0.143), (1.0, -0.068))
+    steps = 24
     row = steps + 1
     for side, name in ((1, 'port'), (-1, 'starboard')):
         verts, shell_faces, joint_faces, tones, progress = [], [], [], [], []
-        front = 5.65
-        for band in range(8):
-            pitch = rng.uniform(1.10, 1.21)
-            length = pitch + 0.24
-            tone = rng.uniform(0.12, 0.90)
+        for i, (root, length, lo, hi, sweep, scallops, tone) in enumerate(shoulders + belly):
+            upper = i < len(shoulders)
+            stagger = 0.0 if side > 0 else 0.13 * math.sin(i * 2.3 + 0.7)
             base = len(verts)
             for along, rise in sections:
                 for j in range(row):
                     t = j / steps
-                    shoulder = 0.21 + 1.18 * t
-                    # The rear edge sweeps forward at the two ends of the scute.
-                    # Its wide face stays close to the hide all the way across.
-                    rounding = (2 * t - 1) ** 4
-                    th = shoulder + 0.028 * math.sin(band * 1.4 + along * math.pi)
-                    x = front - along * length + (0.32 + 0.09 * along) * rounding
-                    sink = 0.105 * rounding
-                    crest = 0.013 * math.sin(12 * t + band * 0.65) * math.sin(math.pi * along)
-                    relief = rise - sink + crest
+                    edge = 2.0 * t - 1.0
+                    lip = math.sin(math.tau * scallops * t + i * 1.7)
+                    taper = .15 * (1.0 - along) ** 2 + .08 * along ** 4
+                    across = taper + t * (1.0 - 2.0 * taper)
+                    x = root + stagger - along * length + sweep * edge * (.25 + .75 * along)
+                    x += .32 * edge ** 2 * along + .17 * lip * along ** 3
+                    x = min(HULL[0][0], x)
+                    socket = max(math.exp(-((x - sac) / 1.02) ** 4) for sac in SACS)
+                    low = lo + (.50 * socket if upper else 0.0)
+                    high = hi - (0.0 if upper else .56 * socket)
+                    th = low + (high - low) * across + .055 * math.sin(i * 1.2 + along * math.pi)
+                    relief = rise - .15 * edge ** 6
+                    relief += .022 * math.sin(13.0 * t + i) * math.sin(math.pi * along)
                     verts.append(tuple(K.hpt(x, th if side > 0 else math.pi - th, out=relief)[0]))
                     tones.append(tone)
                     progress.append(along)
@@ -103,11 +118,10 @@ def carapace(K):
                     v = base + i * row + j
                     face = (v, v + 1, v + row + 1, v + row)
                     faces.append(face[::-1] if side > 0 else face)
-            front -= pitch
         shell = K.hull_detail('carapace_' + name, (verts, shell_faces), 'carapace',
                               inv='side_blades', kind='chitin', subs=['plate', 'rim', 'growth'])
         K.mass('Shingled carapace (' + name + ')', shell, 'ochre-brown chitin',
-               note='Eight broad grown bands, each with a raised rear lip over a recessed joint.')
+               note='Unequal shoulder plates and smaller belly and tail plates frame the open sac sockets.')
         attr = shell.data.attributes.new('scute_tone', 'FLOAT', 'POINT')
         attr.data.foreach_set('value', tones)
         attr = shell.data.attributes.new('scute_progress', 'FLOAT', 'POINT')
@@ -299,7 +313,8 @@ def build(K):
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 7.25, -5.6, 'whole body')
-    K.colour('dark ochre-brown chitin', 5.7, -4.0, 'the shingled shoulders and spine crests')
+    K.colour('dark olive-ochre chitin', 5.7, -4.9, 'the shingled shoulders, flanks and belly')
+    K.colour('pale weathered bone', 4.7, -0.5, 'the spine crests')
     K.colour('raw transition tissue', 4.8, -1.2, 'the wound along the spine')
     K.colour('bile yellow-green light', 7.25, 6.4, 'the throat glands')
     K.colour('bile yellow-green light', -5.6, -7.25, 'the vents and the filament nodes')
@@ -339,9 +354,10 @@ def build(K):
                                                           'then the body tears open along ragged lines (R186).'))
     K.point('core', 'hp_core', (0.6, 0.0, -0.05))
     # four breach anchors (Cruiser base 4; the Chorus extra is for the big ones only): prow, mid, mid, engine, alternating sides
-    for i, (x, th, sec, side) in enumerate(((4.0, 0.1, 'prow', 1), (1.3, -0.75, 'mid', -1), (-1.4, -0.75, 'mid', 1), (-3.4, -0.4, 'eng', -1))):
+    for i, (x, th, sec, side) in enumerate(((4.0, 0.1, 'prow', 1), (1.3, -0.75, 'mid', -1), (-1.4, -0.75, 'mid', 1), (-4.2, -0.65, 'eng', -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
-        K.point('breach', 'hp_breach_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd', section=sec, note='open hide beside a sac')
+        note = 'open hide at the lower edge of the tail shell' if sec == 'eng' else 'open hide beside a sac'
+        K.point('breach', 'hp_breach_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd', section=sec, note=note)
     for i, (x, th, side) in enumerate(((4.55, -0.62, 1), (4.55, -0.62, -1), (-3.95, 0.25, 1), (-3.95, 0.25, -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
@@ -359,7 +375,8 @@ def build(K):
     K.change('The stern ends in a ring of six pulse vents, each with three glowing filaments splayed outward', 'factions.md: no nozzles; the picture\'s amber nodes and filament plume. The filaments are cut to about a third of the picture\'s so the ship is 14.5 throat rim to filament tip, and splayed so none hangs in a neighbour\'s jet')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
     K.change('The small spines along the lower stern are cut', 'no job (R221)')
-    K.change('Eight broad overlapping scutes on each shoulder replace the small plates and shoulder crests', 'Issue 1058 run 4: a flatter shingle with a raised trailing lip and a recessed flesh joint reads as hard shell at battle size.')
+    K.change('Irregular overlapping chitin covers the shoulders and wraps around the flanks, belly and tail, with open sac sockets',
+             'Issue 1058 run 6: staggered lengths and scalloped lips read as grown shell instead of repeated body bands at battle size.')
     K.change('The soft inner hide is 0.22 units thick', 'Issue 1058: pull the liner back beneath the torn shoulder.')
     K.change('B-1 and B-2 run on straight past the flanks to 6.0 off the axis (issue 623, the recipe)', 'the game weighs the tear\'s height by how far across the path it is, so a path that stops at the flank tears the septa and the liner at different places from the plating near the flanks (death_seam_check: 171 triangles outside their piece); E11\'s paths run on the same way')
     K.change('Boarding origins on the flanks at x 0.8; the throats\' hard points are the bile glands\' faces deep in the throats (issue 623)', 'the game contract needs one boarding origin a side; the mouth\'s centre is open air, which the export check refuses as off the mesh, so the shot leaves from the gland and the arcs and the firing lane are still taken from the mouth')
