@@ -56,7 +56,12 @@ class and faction (issue 363), never from a constant.
 **In one line:** a black iron blade with burning spires.
 
 - **Silhouette:** long, narrow dagger or spearhead, widest at the stern third. A row of tall radiator spires along the spine,
-  tallest amidships. Symmetric.
+  tallest amidships. Symmetric. The spires stand at about 70 percent of the concept table heights, with the same count,
+  stations and profiles, and the ember shows in the fin slats, never as a whole lit tower: every Sunward build makes them
+  with the one shared spire option, `radiator(..., glow='slats')` in tools/blender/kits/voidsworn/parts.py (glowing fins
+  at least 0.26 apart over the dark iron core, about half the old towers' lit area). Why: Ryan, Nov 19 2026 (R331), on the
+  Sunward concepts: "can we scale down the giant radiator/orange towers on each ship a bit too?"; S8 first (issue 1158),
+  then Warden, Vigil, Harrow, Hearth and Bastion (R333).
 - **Shape language:** forged, heavy, vertical. Broadside gun decks in long straight rows. Big engine bells. Plate with rivet
   lines, never rust.
 - **Colours:** black iron, frost-white markings, bright ember (windows, engines, and the spires, which glow because they shed

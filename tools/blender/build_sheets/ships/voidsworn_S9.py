@@ -277,7 +277,7 @@ def build(K):
     SC = 0.42
     SPIRES = [(-1.17, 0.47, 0.22, 3), (-1.69, 0.65, 0.24, 1), (-2.21, 0.52, 0.22, 0)]
     for i, (x, h, L, prof) in enumerate(SPIRES):
-        part = HP.radiator(h, L, profile=prof, spread=SC * 0.3 * (0.2 + 0.42 * (h / SC) / 2.6), seed=i, scale=SC, glow='slats')
+        part = HP.radiator(h, L, profile=prof, spread=SC * (0.2 + 0.42 * (h / SC) / 2.6), seed=i, scale=SC, glow='slats')
         K.organ('R%d' % (i + 1), part, (x, 0.0, SPZ), (0, 0, 1), fwd=(1, 0, 0), inv='spires', what='radiator spire, %.2f tall, profile %s' % (h, ('blade', 'stepped', 'twin', 'raked')[prof]),
                 kind='radiator', note='sheds the reactor\'s heat: a stack of glowing radiator fins, spaced so the dark iron core shows between every pair')
         K.mass('Radiator spire R%d (%s, %.2f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fin slats on iron',

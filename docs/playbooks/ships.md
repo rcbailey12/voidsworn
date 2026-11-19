@@ -156,6 +156,13 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks
    carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow
    and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
+13. **One fix reaches every ship of its kind (R333, Ryan, Nov 19 2026).** A fix or look change lands in the faction kit, the
+   paint stack, the shared parts or a shared helper, never in one ship's file alone, and its pull request names which other
+   ships pick it up and how (rebuilt from the kit, rebaked from the stack, or already calling the shared option). A change
+   that is truly one ship's says why in its pull request. Why: "let's make sure all the changes we're doing are cohesive and
+   tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
+   treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
+   later Sunward build.
 
 ### Named variant parts (issue 812)
 
