@@ -223,7 +223,7 @@ def build(K):
             K.mass('Band %s lip, %s' % (lip, nm), ob, 'darker iron', note='the armoured shelf over (under) the plated band; its ends are angled')
         for i, x in enumerate((1.05, 0.35, -0.35, -1.85)):
             p, n = band_pt(x, side)
-            K._surface_part('U%d%s' % (i + 1, nm[0]), HP.vent(0.15, 0.06, 3, depth=0.025, fr=0.012), tuple(p + n * 0.045), tuple(n), (0, 0, 1), 'band_louvres',
+            K._surface_part('U%d%s' % (i + 1, nm[0]), HP.vent(0.15, 0.06, 3, depth=0.025, fr=0.012), tuple(p + n * 0.042), tuple(n), (0, 0, 1), 'band_louvres',
                             'band louvre 0.15 x 0.06', 'vent', 'picture', 'a heat louvre in the plated band (the gallery spaces behind it breathe out here)', aperture=0.4)
     K.mark('gun_deck', 'belt', ['band', 'plate'])
 
