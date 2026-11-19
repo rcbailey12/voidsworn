@@ -32,9 +32,8 @@ ZONES = {
     'amber': ((.29, .15, .025), (.15, .066, .011), .55),
 }
 HARD_SHELL = {
-    'flesh': ((.138, .132, .042), (.026, .033, .008), .34),
-    'hide': ((.24, .173, .052), (.040, .047, .013), .33),
-    'chitin': ((.36, .217, .058), (.083, .067, .019), .31),
+    'hide': ((.22, .26, .081), (.044, .054, .013), .34),
+    'chitin': ((.38, .23, .067), (.088, .061, .016), .31),
     'bone': ((.48, .365, .174), (.238, .173, .073), .43),
 }
 if FINISH == 'chitin':
@@ -71,8 +70,8 @@ def hard_layers(c, base, shade, roughness):
     crest, groove, line = growth_ridges(c)
     # The sheet's own overlapping shell and seams drive this shadow. The growth
     # ridges ride across the curved faces, with their finer lines inside each front.
-    seam = ramp(nt, c.ao, .97, .48)
-    cavity = ramp(nt, c.aol, .95, .44)
+    seam = ramp(nt, c.ao, .98, .62)
+    cavity = ramp(nt, c.aol, .95, .51)
     depth = math_(nt, 'MAXIMUM', seam, math_(nt, 'MULTIPLY', cavity, .64))
     colour_flow = ramp(nt, c.noise(8.0, 3, .62, stretch=(.67, 1.28, 1.28)), .25, .75)
     tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', colour_flow, .59),
@@ -81,7 +80,7 @@ def hard_layers(c, base, shade, roughness):
     col = mixc(nt, base, shade, tone)
     ridge_colour = tuple(v * gain for v, gain in zip(base, (1.62, 1.37, 1.08)))
     col = mixc(nt, col, ridge_colour, math_(nt, 'MULTIPLY', crest, .68))
-    grain = c.noise(132, 3, .58, stretch=(.70, 1.50, 1.50), w=.19)
+    grain = c.noise(172, 3, .58, stretch=(.70, 1.50, 1.50), w=.19)
     height = math_(nt, 'ADD', math_(nt, 'MULTIPLY', crest, .55), math_(nt, 'MULTIPLY', groove, -.36))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', line, .17))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', grain, .19))

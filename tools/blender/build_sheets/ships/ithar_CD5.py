@@ -82,6 +82,7 @@ def run2_skin(x, a, inset=0.0):
 
 STRANDS = 6
 BODY_NU, BODY_NV = 240, 144
+TRANSVERSE = (-10.95, -7.45, -4.55, -1.45, 1.45)
 
 
 def strand_phase(x):
@@ -110,7 +111,9 @@ def skin(x, a, inset=0.0):
     # The full section is lobed geometry, not thin lines over a smooth bulb.
     # Shoulder ridges at either edge of a strand catch the long studio reflections.
     crest = (0.5 + 0.5 * math.cos(q)) ** 0.70
-    edge = math.exp(-((math.cos(q) - 0.12) / 0.28) ** 2)
+    # Two narrow chamfer faces on the rolled shoulder. A smooth Gaussian here
+    # spread the star over the whole strand without defining its edge.
+    edge = max(0.0, 1.0 - abs(math.cos(q) - 0.12) / 0.32)
     poured = 0.018 * math.cos(3 * q + 0.65 * x) * crest
     radius = 0.61 + 0.48 * crest + 0.045 * edge + poured
     y = w * radius * math.cos(a)
@@ -144,6 +147,27 @@ def grid_surface(fn, nu, nv, u0, u1, v0=0.0, v1=2 * math.pi, wrap=True):
               (i + 1) * row + (j + 1) % row, (i + 1) * row + j)
              for i in range(nu) for j in range(nv)]
     return verts, faces
+
+
+def deck_edges(x, z):
+    """Fit a glass deck to the actual lobed section at its height."""
+    ring = [skin(x, a * math.tau / BODY_NV, inset=0.34) for a in range(BODY_NV)]
+    crossings = []
+    for a, b in zip(ring, ring[1:] + ring[:1]):
+        if (a[2] > z) != (b[2] > z):
+            crossings.append(a[1] + (b[1] - a[1]) * (z - a[2]) / (b[2] - a[2]))
+    if len(crossings) != 2:
+        return -0.14, 0.14
+    left, right = sorted(crossings)
+    middle = (left + right) * 0.5
+    half = min(1.65, (right - left) * 0.40)
+    return middle - half, middle + half
+
+
+def interior_spans(bow):
+    """Leave the shatter joints clear between the built compartments."""
+    joints = (-12.50, *TRANSVERSE, bow + 0.72)
+    return [(a + 0.72, b - 0.72) for a, b in zip(joints, joints[1:])]
 
 
 def ellipsoid(c, r, n=40, rings=20):
@@ -315,19 +339,20 @@ def lance(K, side, fid):
 def build(K):
     import kit
     material_setup()
-    vf = grid_surface(skin, BODY_NU, BODY_NV, -12.75, 10.25)
-    hull = K._obj(CODE + '_flowing_skin', *vf, 'cd5_strand_glass', smooth=True)
+    verts, faces = grid_surface(skin, BODY_NU, BODY_NV, -12.75, 10.25)
+    # Close the glass boundary at the draw ends. A second, opaque cloned skin
+    # blocked the light guides and left shards of liner proud of several tears.
+    faces.append(tuple(range(BODY_NV - 1, -1, -1)))
+    faces.append(tuple(range(BODY_NU * BODY_NV, len(verts))))
+    hull = K._obj(CODE + '_flowing_skin', verts, faces, 'cd5_strand_glass', smooth=True)
     pearl = hull.data.attributes.new('pearl_flow', 'FLOAT', 'POINT')
     for i, value in enumerate(pearl.data):
         ix, ia = divmod(i, BODY_NV)
         x = -12.75 + 23.0 * ix / BODY_NU
         a = ia * 2 * math.pi / BODY_NV
         value.value = 0.82 * max(0, math.cos(STRANDS * strand_coordinate(x, a))) ** 0.65
-    md = hull.modifiers.new('shell', 'SOLIDIFY')
-    md.thickness = 0.065
-    md.offset = -1
-    K.mass('Single flowing leaf', hull, 'clear and milky blown glass',
-           note='Six twisted glass strands joined in one thick skin, deep grooves and rolled edges; unchanged lens roots, no panels.')
+    K.mass('Single flowing leaf', hull, 'clear blown glass',
+           note='Six twisted glass strands with narrow chamfers on the rolled shoulders, deep grooves and unchanged lens roots.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
     # Many narrow, tapered light slivers live beneath the six groove floors.
     # Neighbouring lanes are staggered, with space between their ends. They never
@@ -405,20 +430,33 @@ def build(K):
                             subs=['grown root', 'recessed lens', 'stored light', 'bloom']))
     # Full internal construction follows the leaf, not rectangular room boxes.
     for z, name in ((-0.55, 'lower'), (0.20, 'upper')):
-        vv, ff = grid_surface(lambda x, t: (x, (width(x) - 0.40) * t, z),
-                             80, 14, -11.8, 8.6, -0.73, 0.73, False)
-        ob = K._obj('in_deck_' + name, vv, ff, 'cd5_frame', inside=True)
-        mod = ob.modifiers.new('shell', 'SOLIDIFY'); mod.thickness = 0.06
-        K.inside.append(dict(kind='deck', name=name, z=z, x=(-11.8, 8.6), note='layered glass deck follows the leaf'))
-    for i in range(15):
-        x = -11.6 + 1.35 * i
-        pts = [skin(x, a * 2 * math.pi / 64, inset=0.23) for a in range(65)]
+        for i, (aft, fore) in enumerate(interior_spans(7.10)):
+            def deck(x, t):
+                left, right = deck_edges(x, z)
+                return x, left + t * (right - left), z
+            vv, ff = grid_surface(deck, max(2, round((fore - aft) * 4)), 8,
+                                  aft, fore, 0.0, 1.0, False)
+            ob = K._obj(f'in_deck_{name}_{i}', vv, ff, 'cd5_frame', inside=True)
+            mod = ob.modifiers.new('shell', 'SOLIDIFY'); mod.thickness = 0.06
+            K.inside.append(dict(kind='deck', name=f'{name} bay {i + 1}', z=z, x=(aft, fore),
+                                 note='inset glass deck stops at the compartment joint'))
+    frames = [aft + (fore - aft) * t for aft, fore in interior_spans(7.10)
+              for t in ((0.5,) if fore - aft < 0.5 else (0.08, 0.5, 0.92))]
+    for i, x in enumerate(frames):
+        # The fore frame follows the lower half under the optical peel.
+        top = max(0.38, 1.16 - 0.12 * max(0, x - 4.0))
+        pts = [(px, py, min(pz, top)) for px, py, pz in
+               (skin(x, a * math.tau / 64, inset=0.40) for a in range(65))]
         K._obj('in_frame_%02d' % i, *tube_mesh(pts, [0.065] * len(pts), 8), 'cd5_frame', inside=True)
         K.inside.append(dict(kind='bulkhead', name='annealed frame %02d' % i, x=x, note='open structural glass frame'))
     for k, col in enumerate(('amber', 'violet', 'green')):
-        pts = [(-11.8 + 21.0 * i / 100, 0.42 * math.cos(i * 0.07 + k * 2.1),
-                -0.10 + 0.30 * math.sin(i * 0.07 + k * 2.1)) for i in range(101)]
-        K._obj('in_light_core_' + col, *tube_mesh(pts, [0.14] * len(pts), 12), 'cd5_' + col, inside=True, smooth=True)
+        for bay, (aft, fore) in enumerate(interior_spans(7.65)):
+            count = max(2, round((fore - aft) * 5))
+            xs = [aft + (fore - aft) * i / count for i in range(count + 1)]
+            pts = [(x, 0.42 * math.cos(x * 0.34 + k * 2.1),
+                    -0.10 + 0.30 * math.sin(x * 0.34 + k * 2.1)) for x in xs]
+            K._obj(f'in_light_core_{col}_{bay}', *tube_mesh(pts, [0.14] * len(pts), 12),
+                   'cd5_' + col, inside=True, smooth=True)
     for x, fid, _, col in OPTICS:
         K._obj('in_reservoir_' + fid, *ellipsoid((x, 0, 0.55), (0.9, 0.75, 0.50)),
                'cd5_' + col, inside=True, smooth=True)
@@ -426,10 +464,10 @@ def build(K):
                              y=(-0.75, 0.75), z=(0.05, 1.05), mat='cd5_' + col, note='optic power and steering chamber'))
     K.inside.append(dict(kind='space', name='continuous light core and stern drive chamber', x=(-12, 9),
                          y=(-0.8, 0.8), z=(-0.6, 0.9), mat='layered glass and light', note='three braided waveguides throughout the hull'))
-    K.armour('annealed outer glass', 0.065, 'actual shell thickness; layered blown glass, no armour plates')
+    K.armour('annealed outer glass', 0.065, 'nominal glass thickness; sealed optical boundary over separate internal structure')
     # Jagged transverse tears bracket each secondary bay. Forward lances stay whole
     # on the bow piece. The three stern drives each retain their own machine group.
-    for i, x in enumerate((-10.95, -7.45, -4.55, -1.45, 1.45)):
+    for i, x in enumerate(TRANSVERSE):
         path = [(x + dx, y) for dx, y in ((0, -6), (0.13, -3), (-0.12, -1.4),
                                          (0.09, 0), (-0.14, 1.3), (0.12, 3), (0, 6))]
         K.break_line('B%d' % (i + 1), x, 'ragged shatter path at the lens bay; whole optics, never a straight saw cut', path=path)
@@ -460,6 +498,9 @@ def build(K):
              'Keep Ryan\'s loved long forward lances; the model uses the game\'s two F slots and visible optical exits.')
     K.change('Six twisted poured-glass strands joined in one deep skin, with rolled edges and 216 narrow internal light slivers',
              'Run 3: replace the swollen bulb and broad colour blobs with deep grooves and warmer stored light; retain the rounded middle and full glass insides.')
+    K.change('Narrow chamfers along each rolled shoulder', 'Issue 1058: the smooth shoulder spread the star highlight across the glass.')
+    K.change('One sealed glass boundary with thickness in the finish', 'Issue 1058: clear the optical path to the real inner geometry and remove the duplicate opaque liner from the shatter edge.')
+    K.change('Inset decks and frames, with open joints between the light-guide runs', 'Issue 1058: keep the insides clear of the shatter paths and beneath the forward optical peel.')
     K.change('Breaks bracket the lens bays; O3 is an upper peel clear of both lances',
              'Glasswrights shatter; each large optic remains a whole part. The forward lances cannot be cut by a new transverse seam.')
     K.open_item('Schematic physical glass and colour-zone materials only. No Glasswright paint stack exists; no other faction stack applied.')

@@ -1,6 +1,106 @@
 # Chorus and Glasswright finish review
 
-Refs #1058, run 2. The finish review uses an isolated Godot project. The two hulls still need Ryan's approval for the shared build.
+Refs #1058. The finish review uses an isolated Godot project. The two hulls still need Ryan's approval for the shared build.
+
+## Run 3 finishes
+
+- **C11 Bladeback / B21_11.** The chitin has overlapping shoulder plates with raised
+  rear lips and broad growth ridges. Soft olive hide shows in the gaps. Ochre and
+  olive vary between the plates, and finer grain shows at radius 26.
+  [Build sheet and changes](../../ship_pipeline/build_sheets/chorus_C11/README.md) |
+  [Manifest](../../ship_pipeline/build_sheets/chorus_C11/manifest.json) |
+  [Chorus stack](../../../tools/blender/kits/chorus/stack.py)
+- **CD5 The Unfinished / I8_37.** A is clear enough to see the light guides and
+  frames, with a bright rim and sharp glints. B uses smoked glass and the same
+  chamfers. C puts stronger colour separation at grazing edges and glints.
+  The blended blue glass in the exported GLB provides the lower-quality finish.
+  [Build sheet and changes](../../ship_pipeline/build_sheets/ithar_CD5/README.md) |
+  [Manifest](../../ship_pipeline/build_sheets/ithar_CD5/manifest.json) |
+  [Recipe](../../../tools/recipe/ships/ithar_CD5.json) |
+  [Glass shader](../../../tools/blender/kits/ithar/blown_glass.gdshader)
+
+The CD5 strands are capped at the ends. The sealed glass surface takes its
+optical thickness from the finish. The decks, frames and braided light guides
+are real geometry. Separate compartments leave their joints clear for the six
+authored shatter paths. C11 keeps its own organs, bone hoops and two tears.
+Both bakes use two 4096-pixel atlases at 64 OptiX samples. Stage 7 writes
+2048-pixel game maps.
+
+The 1280 by 720 sheets put A4, run 2 and run 3 side by side at radii 170 and 26.
+The headings and crops match across the columns. The archived A4 and run 2
+captures have a darker reverse-side background. The three run 3 options share
+the current Look Bench nebula. Each CD5 option has a rod and sphere in the same
+light. The three turntables show one orbit each at radius 58.
+
+- [C11 comparison](C11_finish_run3.jpg)
+- [CD5 comparison and tinted fallback](CD5_finish_run3.jpg)
+- CD5 turntables [A clear](CD5_run3_A_turntable.webp), [B smoked](CD5_run3_B_turntable.webp),
+  [C prism](CD5_run3_C_turntable.webp)
+
+### Run 3 export and damage checks
+
+Both ships passed the six-view surface check, the Stage 6 LOD bench, the Stage 7
+hard-point check and planted-fault checks, and the isolated ShipView readback.
+Godot's cached albedo was checked against the exported hull and parts maps.
+The authored-interior probe exercised wounds and breaks on both exports.
+
+The wreck check found **zero protruding triangles** and **zero split machines**
+on either ship. C11 has 13 machines and two seams. CD5 has eight machines and
+six seams. CD5 still records 316 triangles in the separate whole-hull ray count.
+A cross-section check on the unpainted export found all 87 distinct flagged
+corners inside the authored outline at their stations.
+
+| Export | Triangles | GLB surfaces | Stage 6 draws, 20 full-detail copies at 1080p |
+| --- | ---: | ---: | ---: |
+| C11 / B21_11 | 196,716 | 14 | 130 |
+| CD5 / I8_37 | 385,086 | 24 | 170 |
+
+CD5's 385,086 triangles include 21,504 in the three turning optics. The source
+r3 export had 461,770 triangles and 334 unjoined pieces. The deck and light-guide
+joints raise the piece count to 360 before export. Those pieces share 24 GLB
+surfaces. The 256,768-triangle capital from the original
+Scene 207 is a reference. The binding flagship budget is the measured frame time.
+[Scene 207 reference](../ship_pipeline/bench207/README.md) |
+[Rulebook section 3](../../RULEBOOK.md#3-pc-and-tools)
+
+The A16 fixture record was stale on this branch. A fresh export with the branch
+exporter matched the existing fixture's decompressed GLB byte for byte. The record
+uses the current source hash and the existing compressed file. It passed the
+record check and the Godot wreck check.
+[Fixture record](../../../godot/fx/test/fixtures/C19_51_unbaked.sheet.txt)
+
+Standing checks returned 74 passes and two known baselines.
+
+### Run 3 Scene 207 cost at 1080p
+
+The isolated project uses battle source `eb6b7371` and the installed ship
+manifest SHA-256 `44caaa5251ec9decc70ec9eabce5749f0c80060740f110abbd7aa9f860cf903b`.
+C11 takes the Chorus Spitter's slot and CD5 takes the Glasswright Lancet's
+slot in the same 24-ship scene. The probe uses issue 1070's sampling method.
+Three separate Godot 4.7.2 processes ran under solo GPU claims on the RTX 5080
+with driver 617.42.
+Each process ran A, B, C and the baked fallback in a different order, with
+180 warm-up frames followed by at least 720 frames and eight measured seconds.
+The scene used Forward+, fitted shields, 4x MSAA, full mesh detail and vsync
+off. Each full finish still had five glass surfaces after the volleys and
+damage. The baked fallback uses the same export and lit scene.
+[Issue 1070 method](../../../contrib/codex/perf_1118/README.md)
+
+The installed hull snapshot counted **196,944 triangles and 16 surfaces** for
+C11, and **385,182 triangles and 26 surfaces** for CD5, including damage geometry.
+
+| CD5 finish | Frame median | Frame p95 | Frame p99 | Worst frame | GPU median | Visible + shadow draws |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| A clear | 4.25 ms | 7.14 ms | 10.06 ms | 78.21 ms | 2.74 ms | 477 + 303 |
+| B smoked | 4.45 ms | 7.43 ms | 10.56 ms | 71.93 ms | 2.74 ms | 483 + 323 |
+| C prism | 3.89 ms | 6.92 ms | 10.25 ms | 64.01 ms | 2.74 ms | 483 + 323 |
+| Baked tinted fallback | 3.94 ms | 6.44 ms | 9.56 ms | 64.26 ms | 2.80 ms | 485 + 323 |
+
+All four finishes passed the **12.5 ms median frame budget** in each session.
+The medians, percentiles and draws are the middle of the three session
+statistics. Worst frame is the largest sample from any session. The largest
+frame spikes are still visible in the worst-frame column. The smoke in B keeps
+the glass outline easiest to follow while the guides and frames show through.
 
 ## Run 2 pictures
 

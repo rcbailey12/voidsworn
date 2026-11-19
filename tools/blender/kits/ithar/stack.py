@@ -8,17 +8,17 @@ from paint3 import math_, mixc, node, ramp
 SCALE = 1.0
 SOFT_RIM = False
 LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14,
-              bump_distance=.0014, bump_strength=.44)
+              bump_distance=.00035, bump_strength=.22)
 
-# A continuous blue-violet body tint is the low-quality PBR fallback. The
-# review shader adds angle-dependent colour and pulls the sky through the glass.
-# Each tuple is base tint, tint in denser glass, roughness and metallic.
+# Pale blue on thin glass grades into a deeper blue at the thicker shoulders.
+# The review shader reads the atlas's red channel as an optical depth proxy.
+# Each tuple is thin tint, thick tint, roughness and metallic.
 GLASS = {
-    'cd5_strand_glass': ((.060, .28, .53), (.26, .25, .56), .085, .36),
-    'cd5_clear': ((.078, .31, .53), (.23, .29, .58), .068, .32),
-    'cd5_body_clear': ((.078, .31, .53), (.23, .29, .58), .072, .32),
-    'cd5_pearl': ((.13, .29, .49), (.34, .29, .55), .109, .39),
-    'cd5_body_pearl': ((.13, .29, .49), (.34, .29, .55), .104, .39),
+    'cd5_strand_glass': ((.58, .76, .86), (.16, .34, .53), .068, .0),
+    'cd5_clear': ((.52, .70, .83), (.27, .45, .63), .052, .0),
+    'cd5_body_clear': ((.51, .71, .85), (.19, .37, .59), .057, .0),
+    'cd5_pearl': ((.36, .54, .72), (.14, .30, .49), .079, .0),
+    'cd5_body_pearl': ((.37, .56, .73), (.15, .31, .50), .079, .0),
 }
 ZONES = {
     **GLASS,
@@ -26,7 +26,7 @@ ZONES = {
     'cd5_frame': ((.14, .22, .26), (.30, .38, .42), .12, .88),
 }
 FALLBACK = 'cd5_frame'
-ZONE_OPACITY = dict.fromkeys(GLASS, .58)
+ZONE_OPACITY = dict.fromkeys(GLASS, .34)
 ATLAS_OPACITY = {'H': ZONE_OPACITY['cd5_strand_glass']}
 DECALS = ()
 
@@ -53,9 +53,10 @@ def surface_layers(c, zone, tiles):
     flow = c.noise(12, 2, .54, stretch=(.28, 1.28, 1.28))
     if zone == 'cd5_strand_glass':
         pearl = node(nt, 'ShaderNodeAttribute', attribute_name='pearl_flow')
-        flow = math_(nt, 'ADD', math_(nt, 'MULTIPLY', pearl.outputs['Fac'], .73),
-                     math_(nt, 'MULTIPLY', flow, .27))
+        flow = pearl.outputs['Fac']
     col = mixc(nt, low, high, ramp(nt, flow, .22, .76))
+    if zone in GLASS:
+        return col, math_(nt, 'ADD', 0.0, 0.0), math_(nt, 'ADD', roughness, 0.0), metal
     rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', flow, .031))
     return col, flow, rough, metal
 
@@ -92,8 +93,8 @@ def inside_material(zone):
     material.name = f'ithar_inside_{zone}'
     bsdf = material.node_tree.nodes.get('Principled BSDF')
     rgb = bsdf.inputs['Base Color'].default_value
-    bsdf.inputs['Base Color'].default_value = tuple(v * .20 for v in rgb[:3]) + (1,)
-    bsdf.inputs['Emission Strength'].default_value *= .35
+    bsdf.inputs['Base Color'].default_value = tuple(v * .48 for v in rgb[:3]) + (1,)
+    bsdf.inputs['Emission Strength'].default_value *= .44
     bsdf.inputs['Transmission Weight'].default_value = 0.0
     material['ps_inside'] = 1
     return material

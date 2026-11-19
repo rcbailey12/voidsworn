@@ -4,10 +4,15 @@ extends RefCounted
 
 const GLASS := preload("blown_glass.gdshader")
 const ShipView := preload("res://render/ship_view.gd")
+const VARIANTS := {
+	"A": Vector2(0.0, 0.0),
+	"B": Vector2(0.78, 0.0),
+	"C": Vector2(0.04, 1.0),
+}
 
 
-static func apply(ship: ShipView, environment: Environment) -> int:
-	if ship.code != "I8_37" or environment.sky == null:
+static func apply(ship: ShipView, environment: Environment, variant := "A") -> int:
+	if ship.code != "I8_37" or environment.sky == null or not VARIANTS.has(variant):
 		return 0
 	var sky := environment.sky.sky_material as ShaderMaterial
 	if sky == null:
@@ -18,20 +23,29 @@ static func apply(ship: ShipView, environment: Environment) -> int:
 		var instance := mesh as MeshInstance3D
 		for surface in instance.mesh.get_surface_count():
 			var source := instance.get_active_material(surface) as BaseMaterial3D
-			if source == null or source.albedo_color.a >= 0.99 or source.albedo_texture == null or source.normal_texture == null:
+			if source == null or source.albedo_color.a >= 0.99 or source.albedo_texture == null:
 				continue
 			if not materials.has(source):
-				materials[source] = _material(source, sky)
+				var material := _material(sky, variant)
+				material.set_shader_parameter("glass_tint", source.albedo_texture)
+				materials[source] = material
 			instance.set_surface_override_material(surface, materials[source])
 			count += 1
 	return count
 
 
-static func _material(source: BaseMaterial3D, sky: ShaderMaterial) -> ShaderMaterial:
+static func reference_material(environment: Environment, variant: String) -> ShaderMaterial:
+	var material := _material(environment.sky.sky_material as ShaderMaterial, variant)
+	material.set_shader_parameter("reference_glass", true)
+	return material
+
+
+static func _material(sky: ShaderMaterial, variant: String) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = GLASS
-	material.set_shader_parameter("glass_tint", source.albedo_texture)
-	material.set_shader_parameter("glass_normal", source.normal_texture)
+	var finish: Vector2 = VARIANTS[variant]
+	material.set_shader_parameter("smoke", finish.x)
+	material.set_shader_parameter("dispersion", finish.y)
 	var nebula = sky.get_shader_parameter("neb_tex")
 	if nebula is Texture2D:
 		material.set_shader_parameter("nebula", nebula)
