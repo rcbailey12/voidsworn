@@ -446,6 +446,51 @@ function Protect-GpuStepClaim($Job, $Log) {
     Start-Sleep -Seconds 1
   }
 }
+function New-GodotProfile($Target, $Arguments) {
+  if ($env:PC_REAL_PROFILE -ceq '1') { return }
+  if ([IO.Path]::GetFileName($Target) -notmatch '^(Godot|Voidsworn)(.*\.exe)?$') {
+    # A caller can override the engine path and rename the Windows executable.
+    $app = Get-Command -Name $Target -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $app -or $app.FileVersionInfo.FileDescription -notlike 'Godot Engine*') { return }
+  }
+  $scratch = $env:PC_RUN_SCRATCH
+  if ($scratch) {
+    $owner = Join-Path $scratch '.voidsworn-run-owner'
+    if ([IO.File]::ReadAllText($owner) -cnotmatch '\A[0-9a-f]{32}\z') {
+      throw "Invalid runner scratch ownership token: $owner"
+    }
+  } else {
+    # Standalone queue jobs use the same owned scratch format as the agent runners.
+    $scratch = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-run-" + [Guid]::NewGuid().ToString('N'))
+    $null = New-Item -ItemType Directory -Path $scratch
+    [IO.File]::WriteAllText((Join-Path $scratch '.voidsworn-run-owner'), [Guid]::NewGuid().ToString('N'))
+  }
+  $profile = Join-Path $scratch ("godot-profile-" + [Guid]::NewGuid().ToString('N'))
+  $null = New-Item -ItemType Directory -Path $profile
+  if ($env:PC_GODOT_EXPORT_TEMPLATES -and $Arguments -match '(?:^|\s)--export-release\s') {
+    # Exporting needs these shared tools, but does not need the player's user data.
+    $templates = $env:PC_GODOT_EXPORT_TEMPLATES
+    $destination = Join-Path $profile ('Godot\export_templates\' + (Split-Path -Leaf $templates))
+    $null = New-Item -ItemType Directory -Path $destination -Force
+    foreach ($name in @('windows_release_x86_64.exe', 'windows_release_x86_64_console.exe')) {
+      Copy-Item -LiteralPath (Join-Path $templates $name) -Destination $destination
+    }
+  }
+  return $profile
+}
+function Start-WithGodotProfile($Profile, [scriptblock]$Start) {
+  if (-not $Profile) { return (& $Start) }
+  $appData = $env:APPDATA
+  $localAppData = $env:LOCALAPPDATA
+  try {
+    $env:APPDATA = $Profile
+    $env:LOCALAPPDATA = $Profile
+    & $Start
+  } finally {
+    $env:APPDATA = $appData
+    $env:LOCALAPPDATA = $localAppData
+  }
+}
 if ($LibraryOnly) { return }
 $raw = $env:TMO_ARGS
 if (-not $raw) { Write-Output 'usage: tmo.bat <seconds> <exe> [args ...]'; exit 125 }
@@ -586,7 +631,9 @@ if (-not $watch) {
       Initialize-RunTree
       $files = [RunnerStepFiles]::new([string]$stepOut)
       $null = [IO.Directory]::CreateDirectory($spool)
-      $job = [RunnerStep]::new($command, $cwd, $outPath, $errPath)
+      $profile = New-GodotProfile $target $argLine
+      if ($profile) { Write-Output "run_timeout: Godot profile: $profile" }
+      $job = Start-WithGodotProfile $profile { [RunnerStep]::new($command, $cwd, $outPath, $errPath) }
       $p = [Diagnostics.Process]::GetProcessById($job.Pid)
       $null = $p.Handle
       $stdout = [RunnerStepOutput]::new($outPath, $false, $extraFatal)
@@ -690,8 +737,12 @@ $scanEvery = 60.0
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_SCAN_S) { $scanEvery = [double]$env:PC_TEST_SCAN_S }
 $nextScan = $scanEvery
 try {
-  if ($argLine -ne '') { $p = Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }
-  else { $p = Start-Process -FilePath $Exe -NoNewWindow -PassThru }
+  $profile = New-GodotProfile $Exe $argLine
+  if ($profile) { Write-Output "run_timeout: Godot profile: $profile" }
+  $p = Start-WithGodotProfile $profile {
+    if ($argLine -ne '') { Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }
+    else { Start-Process -FilePath $Exe -NoNewWindow -PassThru }
+  }
 } catch {
   "$(Get-Date -Format s) START FAILED $Exe $argLine : $_" | Out-File $log -Append -Encoding utf8
   Write-Output "run_timeout: could not start $Exe : $_"
