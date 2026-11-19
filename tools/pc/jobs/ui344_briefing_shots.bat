@@ -15,7 +15,10 @@ set "R=%U%\repo"
 set "O=%U%\b1"
 if not "%~1"=="" set "O=%U%\%~1"
 set "GD=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
-set "SRC=%VT%\audit2\repo\godot"
+rem Built ships: the shared PC build (build\godot), else the old audit2 checkout; UI_SHIPS overrides (issue 1223).
+set "SRC=%UI_SHIPS%"
+if "%SRC%"=="" if exist "%VT%\build\godot\gen" set "SRC=%VT%\build\godot"
+if "%SRC%"=="" set "SRC=%VT%\audit2\repo\godot"
 if not exist "%O%" mkdir "%O%"
 echo start %date% %time% > "%O%\status.txt"
 rem ---- the clone: fresh, or fetch and check out the branch

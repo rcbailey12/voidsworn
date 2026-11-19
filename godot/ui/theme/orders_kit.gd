@@ -1,0 +1,335 @@
+extends RefCounted
+# The orders kit (issue 1217, R333): the one set of front-end pieces every start screen builds from, so a fix made here
+# reaches the title, Settings, Credits, the faction and admiral desk, the flagship aspect, Progression, Lineage and Help
+# at once. It sits on glass_shell.gd's orders sheet (sheet_name, sheet_body, sheet_medium, sheet_veil, sheet_theme,
+# plain_button, focus_ring) and adds only what the screens kept re-making on their own:
+#   - one font set: Big Shoulders Display for headings, Barlow for words, Azeret Mono for numbers;
+#   - one button set: one ember primary per screen (filled, dark caps), quiet secondary, back, and plain links;
+#   - labels that wrap inside their container instead of pushing it wider (wrap_safe);
+#   - rows (words left, control right, every control in a column the same width), section heads, cards whose bottoms
+#     line up with a spacer before their actions, and an action bar (Back on the left, the primary on the right);
+#   - the front-end sound: every kit button plays the ui_* cues (hover and arrow-key focus, press, back, confirm) through
+#     the sound node main.gd owns (OrdersKit.sound). Without that node (headless checks) nothing plays.
+# Every size is written at the 1080 design height and scaled by k (ui_scale.gd); no text is set below UiScale.MIN_TEXT.
+
+const GS := preload("res://ui/theme/glass_shell.gd")
+const UiScale := preload("res://ui/ui_scale.gd")
+
+# The sound node (godot/audio/sfx.gd loaded with only the ui_* cues), set by main.gd. A test may put any node with
+# play(name) here.
+static var sound: Node = null
+
+# The cue each kind of button plays when pressed; hover and arrow-key focus play HOVER_CUE.
+const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select"}
+const HOVER_CUE := "ui_select"
+const OPEN_CUE := "ui_panel"
+
+# Every face the game ships, for Credits (title.gd) and the font check (godot/ui/test/front_end_test.gd fails when a .ttf
+# under these folders is missing from this list, so Credits can never fall out of date again).
+const FONT_FACES := {
+	"Michroma": "res://ui/campaign/fonts/Michroma-Regular.ttf",
+	"Oxanium": "res://ui/campaign/fonts/Oxanium-Variable.ttf",
+	"Big Shoulders Display": "res://ui/theme/fonts/BigShouldersDisplay-VF.ttf",
+	"Barlow": "res://ui/theme/fonts/Barlow-Regular.ttf",
+	"Barlow Semi Condensed": "res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf",
+	"Azeret Mono": "res://ui/theme/fonts/AzeretMono-VF.ttf",
+	"Chakra Petch": "res://ui/theme/fonts/ChakraPetch-Regular.ttf",
+}
+const FONT_DIRS := ["res://ui/theme/fonts/", "res://ui/battle/fonts/", "res://ui/campaign/fonts/"]
+
+
+static func px(v: float, k: float) -> int:
+	return UiScale.px(v, k)
+
+
+# ---------------------------------------------------------------- type
+
+static func head_font() -> Font:
+	return GS.sheet_name()
+
+
+static func body_font() -> Font:
+	return GS.sheet_body()
+
+
+static func medium_font() -> Font:
+	return GS.sheet_medium()
+
+
+static func mono_font() -> Font:
+	return GS.num()
+
+
+static func credits_fonts() -> String:
+	var names: Array = FONT_FACES.keys()
+	return ", ".join(PackedStringArray(names.slice(0, names.size() - 1))) + " and " + str(names[-1])
+
+
+# The theme a kit screen sets on its root: the orders sheet's theme, kit buttons and the shared focus ring.
+static func theme(k: float) -> Theme:
+	var th := GS.sheet_theme(k)
+	var q := button_boxes(k, "quiet")
+	for st in q:
+		th.set_stylebox(st, "Button", q[st])
+	th.set_stylebox("focus", "Button", GS.focus_ring(k))
+	th.set_font("font", "Button", medium_font())
+	th.set_font_size("font_size", "Button", px(18, k))
+	for st in ["font_color", "font_focus_color"]:
+		th.set_color(st, "Button", GS.TEXT2)
+	for st in ["font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
+		th.set_color(st, "Button", GS.TEXT)
+	th.set_color("font_disabled_color", "Button", GS.TEXT3)
+	th.set_color("font_color", "Label", GS.TEXT)
+	th.set_font("font", "Label", body_font())
+	th.set_font_size("font_size", "Label", px(18, k))
+	return th
+
+
+# ---------------------------------------------------------------- words
+
+# A label that never pushes its container wider: it wraps by words, and its minimum width is its own one-line width up to
+# cap (in pixels). A short label keeps its natural width (a row of short labels lays out as before); a long one starts at
+# cap and fills whatever width its container gives it, wrapping inside. Replaces the old "wrap past 30 characters" rule
+# (campaign_ui.gd lbl), which let names of 20 to 29 characters widen their cards.
+static func wrap_safe(l: Label, f: Font, size_px: int, cap_px: float) -> void:
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var w := 0.0
+	if f != null:
+		w = f.get_multiline_string_size(l.text, HORIZONTAL_ALIGNMENT_LEFT, -1, size_px).x
+	l.custom_minimum_size.x = ceilf(minf(w, cap_px)) + 1.0
+	if w > cap_px:
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+
+static func label(text: String, size: float, k: float, col := GS.TEXT, f: Font = null, wrap := true, cap := 200.0) -> Label:
+	var l := Label.new()
+	l.text = text
+	var ff := f if f != null else body_font()
+	l.add_theme_font_override("font", ff)
+	l.add_theme_font_size_override("font_size", px(maxf(size, UiScale.MIN_TEXT), k))
+	l.add_theme_color_override("font_color", col)
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if wrap:
+		wrap_safe(l, ff, px(maxf(size, UiScale.MIN_TEXT), k), px(cap, k))
+	return l
+
+
+# A heading: Big Shoulders Display, heavy, in capitals.
+static func heading(text: String, size: float, k: float, col := GS.TEXT) -> Label:
+	var l := label(text.to_upper(), size, k, col, head_font(), true, 1200.0)
+	return l
+
+
+# A section head: small tracked capitals in the dim text colour over a hairline that runs the width of the column.
+static func section(text: String, k: float) -> Control:
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", px(4, k))
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var l := label(text.to_upper(), 17, k, GS.TEXT3, medium_font(), false)
+	var sp := maxi(1, int(round(17.0 * 0.12 * k)))
+	var fv := FontVariation.new()
+	fv.base_font = medium_font()
+	fv.spacing_glyph = sp
+	l.add_theme_font_override("font", fv)
+	v.add_child(l)
+	var r := ColorRect.new()
+	r.color = GS.SHEET_HAIR
+	r.custom_minimum_size = Vector2(0, maxi(1, px(1, k)))
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(r)
+	return v
+
+
+# ---------------------------------------------------------------- buttons
+
+# role: "primary" (the one ember action on a screen: filled, dark caps), "quiet" (secondary, dark with a hairline),
+# "back" (quiet, plays the back cue), "tab" (quiet; a picked tab gets an ember underline from tab_picked).
+static func button_boxes(k: float, role := "quiet") -> Dictionary:
+	if role == "primary":
+		var fb := GS.finish_boxes(k)
+		for st in fb:
+			var b := (fb[st] as StyleBoxFlat).duplicate() as StyleBoxFlat
+			b.content_margin_left = px(22, k)
+			b.content_margin_right = px(22, k)
+			b.content_margin_top = px(8, k)
+			b.content_margin_bottom = px(8, k)
+			fb[st] = b
+		return fb
+	var n := GS.flat(Color(GS.CAREER_INK, 0.92), 16, 6, k)
+	n.border_color = GS.SHEET_HAIR
+	n.set_border_width_all(maxi(1, px(1, k)))
+	var h := n.duplicate() as StyleBoxFlat
+	h.bg_color = Color(GS.CAREER_PICTURE, 0.97)
+	h.border_color = GS.TEXT3
+	var d := n.duplicate() as StyleBoxFlat
+	d.bg_color = Color(GS.CAREER_INK, 0.8)
+	d.border_color = GS.LINE
+	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+
+
+static func button(text: String, k: float, role := "quiet", cb := Callable(), size := 18.0) -> Button:
+	var b := Button.new()
+	b.text = text
+	style_button(b, k, role, size)
+	if cb.is_valid():
+		b.pressed.connect(cb)
+	return b
+
+
+static func style_button(b: Button, k: float, role := "quiet", size := 18.0) -> void:
+	var bx := button_boxes(k, role)
+	for st in bx:
+		b.add_theme_stylebox_override(st, bx[st])
+	b.add_theme_stylebox_override("focus", GS.focus_ring(k))
+	b.focus_mode = Control.FOCUS_ALL
+	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	b.add_theme_font_size_override("font_size", px(maxf(size, UiScale.MIN_TEXT), k))
+	if role == "primary":
+		b.add_theme_font_override("font", GS.action_font(k))
+		for st in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+			b.add_theme_color_override(st, GS.ON_EMBER)
+		b.add_theme_color_override("font_disabled_color", GS.TEXT3)
+	else:
+		b.add_theme_font_override("font", medium_font())
+		for st in ["font_color", "font_focus_color"]:
+			b.add_theme_color_override(st, GS.TEXT2)
+		for st in ["font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
+			b.add_theme_color_override(st, GS.TEXT)
+		b.add_theme_color_override("font_disabled_color", GS.TEXT3)
+	wire_sound(b, role)
+
+
+# A plain text link (no box): glass_shell's plain_button in the kit's face, with the kit's sound.
+static func link(text: String, k: float, cb := Callable(), size := 18.0) -> Button:
+	var b := Button.new()
+	b.text = text
+	GS.plain_button(b, k, maxf(size, UiScale.MIN_TEXT), medium_font())
+	b.add_theme_color_override("font_color", GS.TEXT2)
+	b.add_theme_color_override("font_hover_color", GS.TEXT)
+	b.add_theme_color_override("font_focus_color", GS.TEXT)
+	b.add_theme_color_override("font_pressed_color", GS.TEXT)
+	b.add_theme_stylebox_override("focus", GS.focus_ring(k))
+	wire_sound(b, "link")
+	if cb.is_valid():
+		b.pressed.connect(cb)
+	return b
+
+
+# The press and hover cues for any button (kit or not). Hover plays when the pointer arrives; focus plays only when the
+# player moved it with the arrow keys, Tab or a pad (not when a screen puts the first focus somewhere on opening).
+static func wire_sound(b: BaseButton, role := "quiet") -> void:
+	if b.has_meta("kit_sound"):
+		b.set_meta("kit_sound", role)
+		return
+	b.set_meta("kit_sound", role)
+	b.pressed.connect(func() -> void: play(str(PRESS_CUE.get(str(b.get_meta("kit_sound", "quiet")), "ui_click"))))
+	b.mouse_entered.connect(func() -> void:
+		if not b.disabled:
+			play(HOVER_CUE))
+	b.focus_entered.connect(func() -> void:
+		if _moved_by_keys():
+			play(HOVER_CUE))
+
+
+static func _moved_by_keys() -> bool:
+	for a in ["ui_up", "ui_down", "ui_left", "ui_right", "ui_focus_next", "ui_focus_prev"]:
+		if InputMap.has_action(a) and Input.is_action_pressed(a):
+			return true
+	return false
+
+
+static func play(cue: String) -> void:
+	if sound != null and is_instance_valid(sound) and sound.has_method("play"):
+		sound.play(cue)
+
+
+# ---------------------------------------------------------------- rows, cards and bars
+
+# One settings row: the words on the left (wrapping, never pushing the row wider), the control on the right at a fixed
+# width so every control in the column lines up.
+static func row(text: String, control: Control, k: float, control_w: float) -> HBoxContainer:
+	var r := HBoxContainer.new()
+	r.add_theme_constant_override("separation", px(16, k))
+	var l := label(text, 18, k, GS.TEXT, body_font(), true, 200.0)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	r.add_child(l)
+	control.custom_minimum_size.x = control_w
+	control.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	r.add_child(control)
+	r.set_meta("row_label", text)
+	return r
+
+
+# The width (in pixels) that fits the widest of these button texts, so a column of choice buttons is one width.
+static func fit_width(texts: Array, k: float, size := 18.0, f: Font = null) -> float:
+	var ff := f if f != null else medium_font()
+	var w := 0.0
+	for t in texts:
+		w = maxf(w, ff.get_string_size(str(t), HORIZONTAL_ALIGNMENT_LEFT, -1, px(size, k)).x)
+	return ceilf(w) + px(16, k) * 2 + px(8, k)
+
+
+# A card: an orders-sheet well (no chamfers, no brackets) at a fixed width. Returns [panel, body, foot]: words go in body,
+# actions in foot. A spacer between them keeps the foot at the card's bottom, so in a row of cards (equal_heights) every
+# card's actions sit on one line.
+static func card(k: float, width: float, picked := false) -> Array:
+	var p := PanelContainer.new()
+	p.custom_minimum_size.x = px(width, k)
+	var sb := GS.well(k, GS.TEXT3 if picked else Color.TRANSPARENT, 14, 12)
+	p.add_theme_stylebox_override("panel", sb)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", px(6, k))
+	p.add_child(v)
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", px(6, k))
+	v.add_child(body)
+	var gap := Control.new()
+	gap.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(gap)
+	var foot := VBoxContainer.new()
+	foot.add_theme_constant_override("separation", px(6, k))
+	v.add_child(foot)
+	return [p, body, foot]
+
+
+# Gives every card in the list the height of the tallest, so their bottoms (and their foot actions) line up.
+static func equal_heights(cards: Array) -> void:
+	var h := 0.0
+	for c in cards:
+		if c is Control:
+			h = maxf(h, (c as Control).get_combined_minimum_size().y)
+	for c in cards:
+		if c is Control:
+			(c as Control).custom_minimum_size.y = h
+
+
+# The bottom bar: Back (or anything quiet) on the left, an optional middle, the screen's one primary at the right edge.
+static func action_bar(k: float, left: Array, primary: Control = null, mid: Control = null) -> HBoxContainer:
+	var r := HBoxContainer.new()
+	r.add_theme_constant_override("separation", px(12, k))
+	for b in left:
+		if b != null:
+			r.add_child(b)
+	var s1 := Control.new()
+	s1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	s1.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.add_child(s1)
+	if mid != null:
+		r.add_child(mid)
+		var s2 := Control.new()
+		s2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		s2.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		r.add_child(s2)
+	if primary != null:
+		r.add_child(primary)
+	return r
+
+
+# A modal backing for Settings and Credits: the orders-sheet well with a hairline edge, opaque under the words.
+static func sheet_box(k: float, pad_x := 32.0, pad_y := 24.0) -> StyleBoxFlat:
+	var box := GS.flat(Color(GS.CAREER_INK, 0.97), pad_x, pad_y, k)
+	box.border_color = GS.SHEET_HAIR
+	box.set_border_width_all(maxi(1, px(1, k)))
+	return box

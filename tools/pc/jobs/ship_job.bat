@@ -14,19 +14,18 @@ rem   PAINT_BASE  optional: a branch merged in after the checkout; the pictures 
 rem   PC_GPU_WAIT_SECONDS  optional: how long each GPU step waits for its claim (default 3600, the most gpu_slots.js
 rem               allows; the old 300 s default failed 1155, 1157 and 1158 on Nov 19 when several helpers queued at once)
 rem
-rem What it does, in order. Any failure skips every later step, the checks and the shots (the recipe folder is still copied
-rem back, step 7, for the logs), and the last two lines of out\result.txt are always "done PASS" or "done FAILED: <step>" and then "all done".
+rem What it does, in order. Any failure skips the remaining build steps (step 7 still collects logs and other deliverables),
+rem and the last two lines of out\result.txt are "done PASS" or "done FAILED: <step>" and then "all done".
 rem   1. runs from its own copy in JOB_DIR (cmd reads a .bat as it goes, so a checkout must never rewrite the running file)
-rem   2. its own clone JOB_DIR\repo (depth 50), the branch checked out (install files restored after a
+rem   2. its own clone JOB_DIR\repo from the shared mirror, the branch checked out (install files restored after a
 rem      saved diff, never a forced checkout; any other local change or file collision stops the job), PAINT_BASE merged if set, a commit= line
 rem   3. the headless import, then each stage logged with its exit code (stage 7 installs into the clone's own godot folder,
 rem      never into Ryan's game)
 rem   4. the installed glb must be this run's (written after the run started), else the install counts as failed
 rem   5. the GPU readback, the authored interiors check and the death seam check on the installed glb; all three must pass
 rem   6. the in-game shots at camera 170 and 60, only when everything above passed
-rem   7. the recipe folder copied (never moved) into out\recipe
-rem Writes only under voidsworn_test\JOB_DIR and voidsworn_test\recipe\SHIP (the stages' own folder). Deletes nothing: an earlier
-rem run's out folder is renamed out_before_<time>, never removed.
+rem   7. logs, reports, shots and export\CODE copied into out\recipe
+rem The earlier out folder becomes out_before_<time>. Backups older than the newest two are listed for the janitor.
 if "%~1"=="ship" goto ship
 setlocal EnableExtensions
 set "V=%USERPROFILE%\Downloads\voidsworn_test"
@@ -43,20 +42,29 @@ set "J=%V%\%JOB_DIR%"
 if not exist "%J%" mkdir "%J%"
 rem 1. run from this job's own copy
 if /i not "%~f0"=="%J%\ship_job_running.bat" (
-  copy /y "%~f0" "%J%\ship_job_running.bat" > nul
+  copy /y "%~f0" "%J%\ship_job_running.bat" > nul || exit /b 1
   call "%J%\ship_job_running.bat"
-  exit /b
+  if errorlevel 1 exit /b 1
+  exit /b 0
 )
 if not defined STAGES set "STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export"
 if not defined SETS set "SETS=battle,close"
 if not defined FACS for /f "delims=_" %%F in ("%SHIP%") do set "FACS=%%F"
 if not defined PC_GPU_WAIT_SECONDS set PC_GPU_WAIT_SECONDS=3600
 if not defined PC_GPU_ISSUE set "PC_GPU_ISSUE=%JOB_DIR%"
+rem The Nov 19 cold Godot imports on this PC took up to about 1150 s (opus1077\out\log_import.txt).
+set "SHIP_IMPORT_CAP=2400"
+set "SHIP_CHECK_CAP=600"
+set "SHIP_SHOTS_CAP=600"
 set "C=%J%\repo"
 set "O=%J%\out"
-for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "(Get-Date).ToString('yyyyMMdd_HHmmss')"`) do set "STAMP=%%T"
-if exist "%O%" ren "%O%" "out_before_%STAMP%"
-mkdir "%O%"
+set "STAMP="
+for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "(Get-Date).ToString('yyyyMMdd_HHmmss_fffffff')"`) do set "STAMP=%%T"
+if exist "%O%" (
+  if not defined STAMP exit /b 1
+  ren "%O%" "out_before_%STAMP%" || exit /b 1
+)
+mkdir "%O%" || exit /b 1
 set "RES=%O%\result.txt"
 for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "[DateTime]::UtcNow.Ticks"`) do set "START_TICKS=%%T"
 echo start %SHIP% %CODE% %BRANCH% %DATE% %TIME% > "%RES%"
@@ -64,11 +72,33 @@ echo inputs STAGES=%STAGES% SETS=%SETS% FACS=%FACS% PAINT_BASE=%PAINT_BASE% PC_G
 if exist "%J%\out_before_%STAMP%" echo the earlier run's out folder is now out_before_%STAMP% >> "%RES%"
 set FAILED=
 set "GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe"
+set "RECIPE=%V%\recipe\%SHIP%"
 
-rem 2. own clone, the branch, PAINT_BASE
-if not exist "%C%\.git" git clone -q --depth 50 https://github.com/rcbailey12/voidsworn "%C%" >> "%RES%" 2>&1
-git -C "%C%" fetch -q --depth 50 origin %BRANCH% >> "%RES%" 2>&1
-if errorlevel 1 set "FAILED=fetch %BRANCH%"
+rem Keep the newest two out_before folders out of the janitor list. Listing carries no permission to delete.
+powershell -NoProfile -Command "$ErrorActionPreference = 'Stop'; Get-ChildItem -LiteralPath $env:J -Directory -Filter 'out_before_*' | Sort-Object Name -Descending | Select-Object -Skip 2 -ExpandProperty FullName" > "%O%\out_before_for_janitor.txt" 2>> "%RES%"
+if errorlevel 1 set "FAILED=could not list old out folders for the janitor"
+if defined FAILED goto collect
+
+rem 2. Own clone and branch fetches. Use the same mirror lock as runner_common.ps1 around refresh and local Git reads.
+set "MIRROR=%V%\repo-mirror.git"
+powershell -NoProfile -Command ^
+  "$ErrorActionPreference = 'Stop'; $mirror = $env:MIRROR; $source = 'https://github.com/rcbailey12/voidsworn';" ^
+  "function Run-Git { & git.exe @args; if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ')) } }" ^
+  "$lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30);" ^
+  "while (-not $lock) { try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }" ^
+  "  catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 } }" ^
+  "try {" ^
+  "  if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init --bare $mirror; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source }" ^
+  "  if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }" ^
+  "  Write-Output ('refreshing shared mirror ' + $mirror);" ^
+  "  Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch --prune origin;" ^
+  "  Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main;" ^
+  "  if (-not (Test-Path -LiteralPath (Join-Path $env:C '.git'))) { Write-Output ('local clone ' + $env:C); Run-Git -c core.autocrlf=false clone --local -q $mirror $env:C }" ^
+  "  $depth = @(); if ((Run-Git -C $env:C rev-parse --is-shallow-repository) -eq 'true') { $depth = @('--unshallow') }" ^
+  "  Run-Git -C $env:C fetch -q --no-tags @depth $mirror ('refs/heads/' + $env:BRANCH);" ^
+  "  if ($env:PAINT_BASE) { Run-Git -C $env:C fetch -q --no-tags --no-write-fetch-head $mirror ('+refs/heads/' + $env:PAINT_BASE + ':refs/ship-job/paint-base') }" ^
+  "} finally { $lock.Dispose() }" >> "%RES%" 2>&1
+if errorlevel 1 set "FAILED=mirror clone or fetch %BRANCH% (see Git output above)"
 if defined FAILED goto collect
 rem the checkout, in this job's own clone: stage 7 rewrites the tracked godot\assets\ships files here (manifest.json, the CODE
 rem folder), and a plain checkout then refuses every rerun after the branch moved. So: list and save every tracked change
@@ -100,10 +130,7 @@ git -C "%C%" checkout -q --no-overwrite-ignore -B shipjob FETCH_HEAD >> "%RES%" 
 if errorlevel 1 set "FAILED=checkout %BRANCH%"
 if defined FAILED goto collect
 if not defined PAINT_BASE goto based
-git -C "%C%" fetch -q --depth 50 origin %PAINT_BASE% >> "%RES%" 2>&1
-if errorlevel 1 set "FAILED=fetch PAINT_BASE %PAINT_BASE%"
-if defined FAILED goto collect
-git -C "%C%" -c user.name=%JOB_DIR% -c user.email=%JOB_DIR%@localhost merge -q --no-edit --no-overwrite-ignore FETCH_HEAD >> "%RES%" 2>&1
+git -C "%C%" -c "user.name=%JOB_DIR%" -c "user.email=%JOB_DIR%@localhost" merge -q --no-edit --no-overwrite-ignore refs/ship-job/paint-base >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=merge PAINT_BASE %PAINT_BASE%"
 if defined FAILED git -C "%C%" merge --abort >> "%RES%" 2>&1
 if defined FAILED goto collect
@@ -113,7 +140,9 @@ git -C "%C%" log -1 --format=commit=%%H >> "%RES%" 2>&1
 
 rem 3. import, then the stages, each in a fresh cmd so the variables the stages set end with them
 cd /d "%C%"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+set "TMO_STEP_OUT=%C%\godot\.godot"
+set "TMO_STEP=ship import"
+call "%C%\tools\pc\tmo.bat" %SHIP_IMPORT_CAP% "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo import exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=import"
@@ -138,38 +167,50 @@ echo install fresh: %GLB% >> "%RES%"
 
 rem 5. the three checks on the installed glb; every one must pass
 set CHECKFAIL=
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_readback_gpu.txt" 2>&1
+set "TMO_STEP_OUT=%O%"
+set "TMO_STEP=ship GPU readback"
+call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_readback_gpu.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo gpu readback exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% readback"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%GLB%" > "%O%\log_interiors.txt" 2>&1
+set "TMO_STEP=ship authored interiors"
+call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%GLB%" > "%O%\log_interiors.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo authored interiors exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% interiors"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%GLB%" > "%O%\log_death_seam.txt" 2>&1
+set "TMO_STEP=ship death seam"
+call "%C%\tools\pc\tmo.bat" %SHIP_CHECK_CAP% "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%GLB%" > "%O%\log_death_seam.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo death seam exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "CHECKFAIL=%CHECKFAIL% death_seam"
 if defined CHECKFAIL set "FAILED=checks:%CHECKFAIL%"
+set "TMO_STEP=ship shots"
 if defined FAILED goto collect
 
 rem 6. the shots, only now: everything above passed, so the installed glb is this run's and checked
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
+call "%C%\tools\pc\tmo.bat" %SHIP_SHOTS_CAP% "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs %FACS% --sets %SETS% --codes %CODE% > "%O%\log_shots.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo shots exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=shots"
 
-rem 7. copy (never move) the recipe folder into out\recipe, so the Board can bring it back (R334)
+rem 7. Copy the Board's deliverables. Robocopy exits 0 through 7 for successful copies.
 :collect
-if not exist "%V%\recipe\%SHIP%" (
+if not exist "%RECIPE%" (
   echo collect: no recipe\%SHIP% folder >> "%RES%"
   if not defined FAILED set "FAILED=collect (no recipe\%SHIP% folder)"
   goto finish
 )
-xcopy /e /i /y /q "%V%\recipe\%SHIP%" "%O%\recipe" > "%O%\log_collect.txt" 2>&1
-set EL=%ERRORLEVEL%
-echo collect exit %EL% >> "%RES%"
-if not "%EL%"=="0" if not defined FAILED set "FAILED=collect"
+robocopy "%RECIPE%" "%O%\recipe" *.txt *.json *.md *.jpg /S /XJ /R:1 /W:1 /XD sil "%RECIPE%\godot\proj" "%RECIPE%\export" > "%O%\log_collect.txt" 2>&1
+if errorlevel 8 if not defined FAILED set "FAILED=collect (reports)"
+for /d %%D in ("%RECIPE%\clay" "%RECIPE%\r" "%RECIPE%\close" "%RECIPE%\surface" "%RECIPE%\godot" "%RECIPE%\shots" "%RECIPE%\shots_*") do if exist "%%~fD\" (
+  robocopy "%%~fD" "%O%\recipe\%%~nxD" *.png *.jpg *.jpeg *.gif /S /XJ /R:1 /W:1 /XD sil "%RECIPE%\godot\proj" >> "%O%\log_collect.txt" 2>&1
+  if errorlevel 8 if not defined FAILED set "FAILED=collect (shots)"
+)
+if exist "%RECIPE%\export\%CODE%\" (
+  robocopy "%RECIPE%\export\%CODE%" "%O%\recipe\export\%CODE%" /E /XJ /R:1 /W:1 /XD sil "%RECIPE%\export\%CODE%\godot\proj" /XF *.blend b0.npz >> "%O%\log_collect.txt" 2>&1
+  if errorlevel 8 if not defined FAILED set "FAILED=collect (export)"
+)
+echo collect: see log_collect.txt >> "%RES%"
 echo %STAGES% | findstr /c:"7_export" > nul
 if errorlevel 1 goto finish
 if not exist "%O%\recipe\export\%CODE%\%CODE%.glb" if not defined FAILED set "FAILED=collect (out\recipe\export\%CODE%\%CODE%.glb missing)"

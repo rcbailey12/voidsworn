@@ -34,7 +34,7 @@ const KIND_NAME = {battery:'Battery',lance:'Lance',torp:'Torpedo',flak:'Point de
 // v46: each faction names (and draws) its guns its own way; the numbers underneath are unchanged until the v47 mechanics pass
 const FAC_WNAMES={
   voidsworn:{autocannon:'Sear repeater',battery:'Sear battery',hbattery:'Heavy sear broadside',turret:'Sear turret',lance:'Oath lance',torp:'Cinder torpedo',flak:'Spark flak'},
-  hegemony:{laser:'Plasma cannon',turbo:'Plasma lance',hturbo:'Heavy plasma lance',ion:'Ion cannon',flak:'Picket lasers'},
+  hegemony:{laser:'Plasma cannon',turbo:'Plasma battery',hturbo:'Heavy plasma battery',ion:'Ion cannon',flak:'Picket lasers'},
   corsair:{autocannon:'Autocannon',scatter:'Scrap scatter gun',turret:'Junk turret',torp:'Rattle-rocket pod',htorp:'Heavy rocket pod',flak:'Chaff guns'},
   chorus:{bioplasma:'Spine volley',tendril:'Boarding tendrils',spores:'Spore cloud',sporeb:'Acid sacs'},
   ithar:{shard:'Prism shards',pulsar:'Prism lance',startorp:'Star torpedo',turret:'Needle beam',flak:'Mirror veil'},
@@ -249,7 +249,7 @@ Object.assign(ADMIRALS,{
   mirelle:{fac:'ithar',n:'Brin of the Fourth Lens',doc:'Prism hulls',d:'All ships +15% shields, and shields recharge 20% faster.',fx:{shPct:.15,regenPct:.2},start:['i_song','i_wisp','i_wisp'],cost:80,cmd:{id:'iron',n:'Prism ward',d:'All shields refill and your ships take 40% less hull damage this round.'}},
   nekhet:{fac:'deathless',n:'Nadir Aurex, Ninth Frame',doc:'Endless restoration',d:'Ships rebuild 4% of their hull each round.',fx:{hullRegenPct:.04},start:['d_harvester','d_jackal'],cost:0,cmd:{id:'restore',n:'Release the repair swarms',d:'Every ship rebuilds 25% of its hull and mends damaged sections, even destroyed ones.'}},
   sekhmar:{fac:'deathless',n:'Umbra Vessane, Third-Housed',doc:'Corona strikes',d:'Corona arcs deal +20% damage and every weapon +10%.',fx:{lancePct:.2,dmgPct:.1},start:['d_harvester','d_scythe','d_scythe'],cost:30,cmd:{id:'barrage',n:'Noon volley',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
-  anuket:{fac:'deathless',n:'Ostrel of the Long Copy',doc:'Silent hunters',d:'+20% damage on rear-arc hits and +10 evasion.',fx:{rearPct:.2,ev:10},start:['d_jackal','d_jackal','d_scythe','d_scythe'],cost:45,cmd:{id:'hunt',n:'Out of the shadow',d:'Torpedoes reload at once and every ship deals +30% damage this round.'}},
+  anuket:{fac:'deathless',n:'Ostrel of the Long Copy',doc:'Silent hunters',d:'+20% damage on rear-arc hits and +10 evasion.',fx:{rearPct:.2,ev:10},start:['d_jackal','d_jackal','d_scythe','d_scythe'],cost:45,cmd:{id:'hunt',n:'Out of the shadow',d:'Every ship deals +30% damage this round. Any ships carrying torpedoes reload them at once.'}},
   khepra:{fac:'deathless',n:'Seveth, Twice-Restored',doc:'Layered plates',d:'All ships +20% hull.',fx:{hpPct:.2},start:['d_jackal','d_jackal','d_jackal'],cost:80,cmd:{id:'iron',n:'Sunshade wall',d:'Your ships take 50% less hull damage this round. Gets stronger each round you hold it.'}},
 });
 
@@ -268,7 +268,7 @@ const LEGACY = {
   salvagers:{n:'Recovery crews',d:'+20% credits from battles.',cost:40,group:'Supply'},
 };
 
-const SHIP_NAMES = ['Unyielding Oath','Wrath of Vesper','Ashen Vigil','Long Watch','Bright Censure','Banked Fire','Oathkeeper','Merciless Frost','Cinder Vow','Pale Crusader','Everwatch','Debt of Vesper','Cold Fury','Iron Dusk','Dawn of Cinders','Resolve of the Reach','Judgement Bell','Oath Flame','Edge of Winter','Unpaid Debt','Relentless Ember','Obsidian Brand','Black Anvil','Debt Paid','Burning Spire','Cold Reckoning','Thorn of the Reach','Vigilant Ash'];
+const SHIP_NAMES = ['Unyielding Oath','Wrath of Vesper','Ashen Vigil','Long Watch','Bright Censure','Banked Fire','Oathkeeper','Merciless Frost','Cinder Vow','Pale Sentinel','Everwatch','Debt of Vesper','Cold Fury','Iron Dusk','Dawn of Cinders','Resolve of the Reach','Judgement Bell','Oath Flame','Edge of Winter','Unpaid Debt','Relentless Ember','Obsidian Brand','Black Anvil','Debt Paid','Burning Spire','Cold Reckoning','Thorn of the Reach','Vigilant Ash'];
 const CAP_FIRST = ['Ilse','Corvin','Mathilde','Tobias','Anselm','Vera','Casimir','Odile','Lucan','Sabine','Emeric','Helka','Brannoc','Rosalind','Garrick','Margery','Dagan','Thessaly','Rourke','Elsbeth','Aldous','Yara','Osric','Ninette','Hadrian','Clemence','Lysander','Calla'];
 const CAP_LAST = ['Varrow','Kade','Morrow','Ashdown','Quell','Harrowgate','Vane','Stroud','Rennick','Draeger','Holloway','Sedley','Wyndham','Corvane','Ostrava','Marchetti','Blackwood','Ferro','Vashti','Kellan','Maddox','Serrano','Ivers','Lachance','Okonkwo','Ashby','Salo','Teague'];
 
@@ -278,7 +278,7 @@ const MOD_NAMES={
   hegemony:{prow:'Reinforced bow plating',auspex:'Fire-control computer',drive:'Ion drive upgrade',gyro:'Attitude thrusters',capacitor:'Deflector capacitor',regen:'Deflector regenerator',loaders:'Pulse cyclers',crystal:'Ion focus lens',magazine:'Fusion magazine',flakplus:'Point-defense array',damcon:'Damage control teams',hangar:'Expanded hangar bay',cogitator:'Targeting computer'},
   corsair:{prow:'Scrap ram plating',auspex:'Stolen gun sights',drive:'Overbored thrusters',gyro:'Jury-rigged gyros',capacitor:'Salvaged shield cells',regen:'Hot-wired regenerator',loaders:'Ammo hoppers',crystal:'Cracked lens array',magazine:'Extra rocket racks',flakplus:'Bolted-on flak',damcon:'Welding gangs',hangar:'Welded-on hangar',cogitator:'Gunner’s lucky charm'},
   chorus:{prow:'Chitin layers',auspex:'Tasting pores',drive:'Propulsion sacs',gyro:'Fin clusters',capacitor:'Membrane bloom',regen:'Membrane regrowth',loaders:'Spine glands',crystal:'Venom lens',magazine:'Spore bladders',flakplus:'Stinger pores',damcon:'Mending tissue',hangar:'Brood chamber',cogitator:'Predator instinct'},
-  ithar:{prow:'Waveguide spine',auspex:'Interferometer lens',drive:'Solar vane extension',gyro:'Starwind vanes',capacitor:'Prism capacitor',regen:'Stored-light reservoir',loaders:'Shard hoppers',crystal:'Starlight focus',magazine:'Star torpedo cradle',flakplus:'Shard screen',damcon:'Annealing kilns',hangar:'Wing cradle',cogitator:'Clear eye'},
+  ithar:{prow:'Waveguide spine',auspex:'Interferometer lens',drive:'Crystal drive extension',gyro:'Crystal vanes',capacitor:'Prism capacitor',regen:'Stored-light reservoir',loaders:'Shard hoppers',crystal:'Starlight focus',magazine:'Star torpedo cradle',flakplus:'Shard screen',damcon:'Annealing kilns',hangar:'Wing cradle',cogitator:'Clear eye'},
   deathless:{prow:'Sunshade plating',auspex:'Long-memory sight',drive:'Fold engine',gyro:'Gravitic stabilisers',capacitor:'Corona-ward node',regen:'Corona-ward regenerator',loaders:'Null accelerators',crystal:'Corona-arc focus',magazine:'Arc capacitors',flakplus:'Sentry nodes',damcon:'Repair drones',hangar:'Drone bay',cogitator:'Long-count reckoner'}};
 const RELIC_NAMES={
   hegemony:{martyr:'Medal of the Grand Fleet',cogitator:'Registry targeting array',lattice:'Deflector matrix prototype',spore:'Captured Chorus culture',ledger:'Smuggler’s ledger',compass:'Jump-drive regulator',banner:'Captured war banner',salvage:'Scrap rig',coils:'Overclocked reactors',logbook:'Admiralty logbook',armourweave:'Hardsteel weave'},
@@ -626,7 +626,7 @@ const NEM_TRAITS={
   veterans:{n:'Veteran crews',d:'Enemy ships have 12% more hull.'}, deadeye:{n:'Deadeyes',d:'Enemy ships have 10% more critical chance.'}, shielded:{n:'Overcharged shields',d:'Enemy ships have 20% more shields.'},
   boarders:{n:'Boarding gangs',d:'Enemy ships carry 30% more crew.',v:{chorus:{n:'Breach broods',d:'Enemy ships have 30% more boarding organisms.'}}}, regrowth:{n:'Deep regrowth',d:'Enemy ships regrow 4 more hull each turn.'}, brood:{n:'Swollen broods',d:'Enemy launch ships can replace one more wing and carry one more spare.'},
   undying:{n:'Spare frames',d:'One more eligible enemy ship can reassemble after falling.'}, veil:{n:'Veil-dancers',d:'Enemy ships are 8 harder to hit.'}, artillery:{n:'Artillery line',d:'Enemy guns other than point defense and squadron weapons reach 1 hex further.'},
-  zeal:{n:'Zealots',d:'Enemy ships deal 12% more damage to a ship next to them.'}, rockets:{n:'Rocket hoarders',d:'Enemy torpedoes reload a turn faster.'}};
+  zeal:{n:'Close assault',d:'Enemy ships deal 12% more damage to a ship next to them.'}, rockets:{n:'Rocket hoarders',d:'Enemy torpedoes reload a turn faster.'}};
 function nemEntry(table,key,fac){ const entry=table[key]; return entry?.v?.[fac] || entry; }
 // Issue 1182: a save from an older build can hold a trait or weakness key the table no longer has; show the raw key, never crash.
 function nemEntryName(table,key,fac){ const entry=nemEntry(table,key,fac); return entry&&entry.n!=null?entry.n:String(key); }
@@ -653,13 +653,13 @@ const NEM_FAC={
     beh:{clock:1,strike:'reinforce',fleet:'heavy',line:1,d:'Methodical: his escorts hold an artillery line around his flagship (their guns lose less aim at range, and they keep close to it), and his fights always bring reinforcements in round 3. He adapts by drilling his formation tighter.'}},
   voidsworn:{pre:['Leofric','Margit','Osmund','Ida','Berthold','Hedda','Wendel','Agathe','Gunther','Edda'],post:['Varrow','Ashdown','Quell','Harrowgate','Vane','Stroud','Draeger','Holloway','Blackwood','Corvane'],titles:['High Warden','Warden of the Roll','Dawnwarden','Oath-warden'],
     personas:['zealous','proud','cruel','methodical'],g:null,fem:['Margit','Ida','Hedda','Agathe','Edda'],masc:['Leofric','Osmund','Berthold','Wendel','Gunther'],traits:['zeal','boarders','armored','veterans','gunnery','artillery'],scars:['the Branded','Iron-Armed','the Frost-Scarred','Burnt-Oath','the Debt-Bound','Ashface'],scarBy:{fled:['the Debt-Bound'],burn:['the Branded','Burnt-Oath','Ashface'],wound:['Iron-Armed','the Frost-Scarred']},
-    beh:{clock:1.5,noFlee:1,strike:'challenge',fleet:'line',ai:{hunt:1,charge:1},d:'A zealot: his clock moves fast, he never flees, and his flagship charges yours and challenges it to single combat (the two deal 20% more damage to each other; if your flagship falls, he turns on your strongest ship).'}}};
+    beh:{clock:1.5,noFlee:1,strike:'challenge',fleet:'line',ai:{hunt:1,charge:1},d:'His clock moves fast, he never flees, and his flagship charges yours and challenges it to single combat (the two deal 20% more damage to each other; if your flagship falls, he turns on your strongest ship).'}}};
 // faction-specific adaptations: the same counters as NEM_ADAPT, in each faction's own words, plus one faction-only adaptation (special) that he
 // takes when nothing in particular stood out in how you fought
 const NEM_ADAPT_FAC={
   corsair:{shields:'Stolen shield cells',pd:'Chaff launchers',armor:'Scrap ram plating',evasion:'Overbored burners',aim:'Stolen gun sights',special:{id:'riches',n:'Bigger fleet',d:'One more ship joins the fleet.'}},
   deathless:{shields:'Corona ward',pd:'Null spires',armor:'Sunshade shell',evasion:'Fold skips',aim:'Long-memory sight',special:{id:'legion',n:'Deeper backups',d:'One more eligible enemy ship can reassemble.'}},
-  ithar:{shields:'Prism matrix',pd:'Mirror veil',armor:'Waveguide spine',evasion:'Starwind vanes',aim:'Interferometer lenses',special:{id:'veil',n:'Deeper veil',d:'Enemy ships are 6 harder to hit.'}},
+  ithar:{shields:'Prism matrix',pd:'Mirror veil',armor:'Waveguide spine',evasion:'Crystal vanes',aim:'Interferometer lenses',special:{id:'veil',n:'Deeper veil',d:'Enemy ships are 6 harder to hit.'}},
   chorus:{shields:'Membrane bloom',pd:'Spore curtains',armor:'Chitin layers',evasion:'Fin clusters',aim:'Tasting pores',special:{id:'hunger',n:'Hunger',d:'Enemy ships regrow 3 more hull each turn.'}},
   hegemony:{shields:'Deflector drills',pd:'Picket screens',armor:'Bow plating',evasion:'Attitude drills',aim:'Fire-control drills',special:{id:'formation',n:'Tight formation',d:'Synchronized fire reaches one hex further.'}},
   voidsworn:{shields:'Screen drills',pd:'Spark flak',armor:'Riveted plate',evasion:'Oath of speed',aim:'Hand-laid sights',special:{id:'zeal',n:'Fervour',d:'Enemy ships deal 8% more damage.'}}};
@@ -870,7 +870,7 @@ ithar: {
     shields: 'Prism matrix is set. Your lance light is split.',
     pd: 'Mirror veil is up. Your torpedoes reflect away.',
     armor: 'Waveguide spine is fitted. Your ram meets glass.',
-    evasion: 'Starwind vanes turn. Your batteries lose the line.',
+    evasion: 'Crystal vanes turn. Your batteries lose the line.',
     aim: 'Interferometer lenses are set. Your evasive light is read.',
     special: 'Deeper veil. Ships are 6 harder to hit.'
   },
@@ -1035,7 +1035,7 @@ const MORE_SHIP_NAMES={
 // other factions showed 'Buy for NaN', had no refit slots, and the Voidsworn dreadnought wasn't marked as a boss)
 // B3 price ladder (Oct 26, Claude's numbers, vetoable): each faction prices its own classes. Hegemony is the 1.0 baseline; Chorus swarms cheap and
 // prices its big hulls up; Corsairs go cheap small and dear heavy; Ithar tax everything (elite glass); Deathless pay most for few, durable hulls;
-// Voidsworn keep their carriers (Ashgrove's whole kit) at a 25% premium. Shipyard prices, ransom, strip and scrap values all follow h.cost.
+// Sunward carriers have a 10% premium before rounding. Shipyard prices, ransom, strip and scrap values all follow h.cost.
 // Enemy fleets are still built by command points, so battle difficulty does not move with this table.
 const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.1},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
   ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.55,Destroyer:1.6,Cruiser:1.65,Battleship:1.6}}; // R1 (FS-2): a future Eclipse battleship never prices below the Eclipse cruiser
@@ -1060,7 +1060,7 @@ const HULL_VARIANTS={
   vs_harrow_t:{base:'harrow',n:'Harrow torpedo-destroyer',d:'Twin prow torpedo tubes and no turret: a one-shot assassin.',w:[['torp','F'],['torp','F']],cost:20},
   vs_penitent_g:{base:'penitent',n:'Vigil gun-cruiser',d:'Swaps the prow lance for a dorsal sear battery: guns in every arc.',w:[['battery','P'],['battery','S'],['battery','T']],cost:25},
   h_picket_i:{base:'h_picket',n:'Picket interceptor',d:'Turret laser and +6 evasion: screens wherever it points.',w:[['laser','T'],['flak','T']],mod:{ev:24},cost:15},
-  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar or automatic wings; a third plasma lance turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
+  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar or automatic wings; a third plasma battery turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
   c_reaver_t:{base:'c_reaver',n:'Turret gutship',d:'Scatter cannons on a turret instead of one broadside.',w:[['torp','F'],['scatter','T']],cost:15},
   c_hulk_g:{base:'c_hulk',n:'Gun-hulk',d:'No hangar or automatic wings; scatter broadsides, a turret and 20 more hull.',w:[['scatter','P'],['scatter','S'],['turret','T']],mod:{ab:null,hangar:0,hp:190},cost:25},
   b_spitter_s:{base:'b_spitter',n:'Spitter stinger',d:'Trades a prow gun for boarding tendrils: brutal up close.',w:[['bioplasma','T'],['tendril','T']],cost:15},

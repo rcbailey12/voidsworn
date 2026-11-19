@@ -189,8 +189,8 @@ violet-white): the green stays, as the light of an eclipse.
   slots in a shade. E14 is the exception being redesigned: its ring stands upright as in the concept, built around one larger
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
 - **Colours:** dark violet-black plates, the green-white corona line, a small bright core. Engines and weapon bolts are
-  violet with a green weapon core, as godot/fx/faction_looks.json sets them (issue 1205 removes the all-green hull_table
-  override in the game).
+  violet with a green weapon core, as godot/fx/faction_looks.json sets them (issue 1205 removed the all-green hull_table
+  FAC3D override; faction_looks.json is the one source).
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
   slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
   patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows

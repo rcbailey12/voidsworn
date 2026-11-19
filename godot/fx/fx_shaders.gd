@@ -876,11 +876,23 @@ void fragment() {
 		tint = mix(tint, rainbow, 0.65);
 	} else if (k == 8) {
 		motion *= 0.7 + 0.5 * spow(0.5 + 0.5 * sin(s * 63.0 - age * 28.0), 6.0);
+		// A white needle with a thin, moving spectrum along either edge.
+		vec3 rainbow = clamp(abs(fract(vSide * 0.30 + s * 0.45 - age * 0.35 + seed + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+		tint = mix(tint, rainbow, smoothstep(1.1, 3.0, px) * 0.90);
 	} else if (k == 9) {
 		float tissue = fbm(vec2(s * 14.0 - age * 3.0, vSide * 2.0 + seed));
 		core *= 0.5 + tissue;
 		sheath *= smoothstep(0.2, 0.7, tissue + 0.2);
 		hot = mix(hot, tint, 0.5);
+	} else if (k == 11) {
+		// Null lance: two pinched rails around a violet-white core.
+		float pinch = 2.0 + 3.5 * sin(s * 3.14159);
+		float d = (px - pinch) / 1.15;
+		float rails = exp(-d*d) * (0.75 + 0.25 * fast);
+		hot = mix(hot, tint, 0.45);
+		core *= 0.8;
+		sheath = sheath * 0.30 + rails * 1.35;
+		motion = 1.0;
 	}
 	vec3 colour = hot * (core * 1.35 + fork_hot) + tint * (sheath * (0.55 + slow * 0.7) + fork_glow * 0.5);
 	ALBEDO = clamp(colour * vCol.a * motion * env * ends * fx_gain, 0.0, 512.0);

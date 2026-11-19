@@ -10,37 +10,53 @@ rem camera when the json has none, builds the sheet hull and reports its outline
 call "%~dp0env.bat"
 if not exist "%B0%" (echo Stage 3 FAILED: no shape reference at %B0%. Run stage 2 first. & goto bad)
 if "%HULL%"=="" (echo Stage 3 FAILED: no hull module in ships\%SHIP%.json. Copy tools\blender\r209\armA5.py as the ship's hull module, set its block table to the concept's blocks, and name it in the json. & goto bad)
-"%BPY%" "%RC%\ship.py" %SHIP% concept "%JOB%\concept.png"
+set "TMO_STEP=recipe 3 write concept"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\ship.py" %SHIP% concept "%JOB%\concept.png"
 if errorlevel 1 (echo Stage 3 FAILED: the concept PNG was not written. & goto bad)
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\b0.npz" b0 "%B0%" > "%JOB%\log_b0dump.txt" 2>&1
+set "TMO_STEP=recipe 3 reference silhouette"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\b0.npz" b0 "%B0%" > "%JOB%\log_b0dump.txt" 2>&1
+if errorlevel 1 (echo Stage 3 FAILED: the reference dump exited %ERRORLEVEL%. See %JOB%\log_b0dump.txt & goto bad)
 findstr /L /c:"[sil] dumped" "%JOB%\log_b0dump.txt" > nul || (echo Stage 3 FAILED: the shape reference could not be read. See %JOB%\log_b0dump.txt & goto bad)
 rem issue 618 PC run: a job that runs two ships in one window kept the first ship's CAMJ, so the second skipped its camera fit
 rem and scored against a file that was never written; clear it first, as stages 4 and 5 do
 set CAMJ=
 for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get concept_camera"`) do set CAMJ=%%L
-if "%CAMJ%"=="" (set "CAMJ=%JOB%\concept_camera.json" & "%BPY%" "%R%\silhouette4.py" fit "%JOB%\concept.png" "%JOB%\b0.npz" "%JOB%\concept_camera.json") else (set CAMJ=%REPO%\%CAMJ%)
+if "%CAMJ%"=="" (
+  set "CAMJ=%JOB%\concept_camera.json"
+  set "TMO_STEP=recipe 3 fit concept camera"
+  call "%REPO%\tools\pc\tmo.bat" %RECIPE_TRACE_CAP% "%BPY%" -u "%R%\silhouette4.py" fit "%JOB%\concept.png" "%JOB%\b0.npz" "%JOB%\concept_camera.json"
+  if errorlevel 1 (echo Stage 3 FAILED: the concept camera fit failed. & goto bad)
+) else (set CAMJ=%REPO%\%CAMJ%)
 if not exist "%CAMJ%" (echo Stage 3 FAILED: no concept camera at %CAMJ%: the camera fit wrote nothing. & goto bad)
-"%BPY%" "%R%\b0trace.py" slices "%JOB%\b0.npz" "%JOB%\slices.npz" > "%JOB%\log_trace.txt" 2>&1
+set "TMO_STEP=recipe 3 trace reference slices"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%R%\b0trace.py" slices "%JOB%\b0.npz" "%JOB%\slices.npz" > "%JOB%\log_trace.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the trace failed. See %JOB%\log_trace.txt & goto bad)
 if not "%SHEET%"=="" (echo The hull is the build sheet %SHEET%: no tune. & goto tuned)
 if not "%R209_TUNE_JSON%"=="" goto tuned
 echo Tuning the hull on the concept outline (about 10 minutes)...
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -P "%R%\tune5.py" -- "%JOB%\concept.png" "%CAMJ%" "%JOB%\b0.npz" "%JOB%\tune.json" 2 512 .25 > "%JOB%\log_tune.txt" 2>&1
+set "TMO_STEP=recipe 3 outline tune"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_TRACE_CAP% "%B%" -b -P "%R%\tune5.py" -- "%JOB%\concept.png" "%CAMJ%" "%JOB%\b0.npz" "%JOB%\tune.json" 2 512 .25 > "%JOB%\log_tune.txt" 2>&1
+if errorlevel 1 (echo Stage 3 FAILED: the outline tune exited %ERRORLEVEL%. See %JOB%\log_tune.txt & goto bad)
 if not exist "%JOB%\tune.json" (echo Stage 3 FAILED: the tune wrote nothing. See %JOB%\log_tune.txt & goto bad)
 set R209_TUNE_JSON=%JOB%\tune.json
 echo Tuned numbers: %JOB%\tune.json (commit it beside the hull module and name it as "tune" in ships\%SHIP%.json to keep it)
 :tuned
 rem issue 592 PC run: the sil folder was made only by the tune step, so a build-sheet ship (no tune) had none and scoring failed
 if not exist "%JOB%\sil" mkdir "%JOB%\sil"
-call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\%CELL%.npz" build %HULL% %CELL% > "%JOB%\log_sildump.txt" 2>&1
+set "TMO_STEP=recipe 3 hull silhouette"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_TRACE_CAP% "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\%CELL%.npz" build %HULL% %CELL% > "%JOB%\log_sildump.txt" 2>&1
+if errorlevel 1 (echo Stage 3 FAILED: the hull silhouette exited %ERRORLEVEL%. See %JOB%\log_sildump.txt & goto bad)
 findstr /L /c:"[sil] dumped" "%JOB%\log_sildump.txt" > nul || (echo Stage 3 FAILED: the hull could not be built. See %JOB%\log_sildump.txt & goto bad)
-"%BPY%" "%R%\silhouette4.py" score "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_sil.txt" 2>&1
+set "TMO_STEP=recipe 3 score outline"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%R%\silhouette4.py" score "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_sil.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the outline could not be scored. See %JOB%\log_sil.txt & goto bad)
 rem Issue 363: the standing checks the recipe keeps (outside audit pass 2, finding 13): the score per third and the inner
 rem edge check, recorded beside the whole outline score. The overlap is reported, not a pass bar (RULEBOOK 5.8).
-"%BPY%" "%R%\outline_thirds.py" "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_thirds.txt" 2>&1
+set "TMO_STEP=recipe 3 check outline thirds"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%R%\outline_thirds.py" "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_thirds.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the outline per third and inner edge check did not run. See %JOB%\log_thirds.txt & goto bad)
-"%BPY%" "%RC%\standing.py" outline --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing.txt" 2>&1
+set "TMO_STEP=recipe 3 check outline record"
+call "%REPO%\tools\pc\tmo.bat" %RECIPE_CHECK_CAP% "%BPY%" -u "%RC%\standing.py" outline --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing.txt" 2>&1
 if errorlevel 1 (type "%JOB%\log_standing.txt" & echo Stage 3 FAILED: the standing outline record is incomplete. See %JOB%\log_standing.txt & goto bad)
 type "%JOB%\log_standing.txt"
 "%BPY%" "%RC%\ship.py" %SHIP% gate "%JOB%\sil\silhouette_scores.json"

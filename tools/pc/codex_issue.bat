@@ -50,6 +50,7 @@ set "BR=%ASSIGNED_BRANCH%"
 set "PUSHMODE=real"
 rem R276: all nested GPU launchers inherit the issue and the code-only lane.
 set "PC_GPU_ISSUE=%N%"
+if not defined PC_GPU_WAIT_SECONDS set "PC_GPU_WAIT_SECONDS=1500"
 set "PC_GPU_LANE="
 echo %R%| findstr /i /c:"board_c" >nul
 if not errorlevel 1 set "PC_GPU_LANE=C"
@@ -137,6 +138,7 @@ call "%TP%tmo.bat" %CODEX_CAP% "%COMSPEC%" /d /s /c ""%CODEX_TEST_AGENT%"" > "%O
 set "CX=%ERRORLEVEL%"
 :ran
 set "TMO_REPO="
+set "TMO_FATAL_PATTERN="
 set "TMO_OUT="
 set "TMO_LOG="
 echo codex exit %CX% >> "%O%\result.txt"

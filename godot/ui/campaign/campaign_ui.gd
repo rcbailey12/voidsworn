@@ -14,6 +14,7 @@ const Crest = preload("res://ui/campaign/crest.gd")
 const UiScale = preload("res://ui/ui_scale.gd")
 
 const GS = preload("res://ui/theme/glass_shell.gd")
+const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1217: the shared front-end kit (wrap-safe labels, sound)
 const View = preload("res://campaign/campaign_view.gd")   # read-only views of the run for the screens (audit pass 1, finding 12)
 # The colours come from glass_shell.gd. Keep the existing campaign text roles and use the orders-sheet strengths.
 const INK := GS.INK
@@ -166,10 +167,13 @@ func esc(s) -> String: return str(s).replace("[", "[lb]")
 func lbl(text: String, size: float = 17, col: Color = BONE, f: Font = null, wrap: bool = true) -> Label:
 	var l = Label.new(); l.text = text; l.add_theme_font_size_override("font_size", px(size)); l.add_theme_color_override("font_color", col)
 	if f != null: l.add_theme_font_override("font", f)
-	if wrap and text.length() > 30:   # short labels keep their natural width (a wrapping label in a row would shrink to nothing)
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# issue 1217: every label wraps inside its container (the kit's wrap_safe). A short label keeps its natural width; a
+	# longer one starts at LBL_CAP and wraps to whatever room it is given, so a long admiral name no longer widens its card
+	# (the old rule wrapped only past 30 characters).
+	if wrap: Kit.wrap_safe(l, f if f != null else font, px(size), px(LBL_CAP))
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return l
+const LBL_CAP := 200.0
 func num(text: String, size: float = 17, col: Color = BONE, bold: bool = true) -> Label:   # a number that decides something: Azeret Mono
 	return lbl(text, size, col, font_num_b if bold else font_num, false)
 func rich(bb: String, size: float = 17) -> RichTextLabel:
@@ -267,6 +271,7 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
 	var aa = found[1]
 	b.pressed.connect(func(): _campaign_action(act, aa))
+	Kit.wire_sound(b, "back" if act in BACK_ACTS else ("primary" if primary and not act in ["pickFaction", "pickAdmiral", "progTab"] else "quiet"))
 	return b
 # The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the filled ember button, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
@@ -288,6 +293,7 @@ func fin(text: String, act: String, arg = "", list = null) -> Button:
 	GS.finish_sheen(b, k)
 	var aa = found[1]
 	b.pressed.connect(func(): _campaign_action(act, aa))
+	Kit.wire_sound(b, "primary")
 	return b
 # A footer row: the other buttons on the left of the finishing action, the finishing action last, at the right edge.
 func foot(buttons: Array) -> HBoxContainer:
@@ -329,9 +335,11 @@ func add(parent: Node, child) -> void:
 	if child != null: parent.add_child(child)
 func _boon_fleet_line(id: String, rarity: int) -> String:
 	var relevance: Dictionary = C.boonFleetRelevance(id, rarity)
+	if relevance.get("brace_blocked", false): return "No effect on this fleet: none of its ships can Brace."
 	var kit: String = {
 		"lance": "with lances", "torp": "with torpedoes", "broad": "with broadside guns",
 		"still": "with broadside guns or batteries", "shields": "with shields",
+		"brace": "that can Brace",
 		"carrier": "with hangars", "sq": "with squadrons",
 	}.get(relevance.get("need"), "")
 	if kit == "": return ""
@@ -397,17 +405,11 @@ func _teaching_screen() -> void:
 	var pos := str(C.RUN.get("pos", "")) if C.RUN != null else ""
 	var ids: Array = []
 	if modal == "victory": ids = ["c_reward"]
-	elif modal == "drydock": ids = ["c_shipyard"]
 	elif modal == "":
 		match kind:
-			"map":
-				var n = C.findNode(pos) if pos != "" else null
-				ids = ["c_shipyard"] if n != null and n.get("type") == "field" else ["c_map", "c_clock"]
+			"map": ids = ["c_map", "c_clock"]
 			"shipyard": ids = ["c_shipyard"]
 			"end": ids = [] # First-loss teaching is on The record R, beside the receipt.
-			"admiral":
-				# Automatic mastery is not spendable experience. Keep this hook ready for the skill-tree port.
-				if C.has_method("admiralXPToSpend") and float(C.call("admiralXPToSpend", C.picked_admiral)) > 0: ids = ["c_tree"]
 	# the first-visit card stays off the Map key and the Dossier (it waits while one is open) and off the shipyard's repair bar
 	var clear: Array = []
 	if kind == "shipyard" and modal == "" and _yard_bar != null and is_instance_valid(_yard_bar): clear.append(_yard_bar)
@@ -506,12 +508,13 @@ func _title() -> Control:
 func _admiral() -> Control:
 	var v = vbox(10)
 	v.add_child(gothic("Choose your faction"))
-	v.add_child(lbl("Your faction sets your ships and shipyards. Each run you face three of the other five, in a random order, with rival raiders along the way.", 18, BONE2))
+	v.add_child(lbl("Your faction determines which hulls and battle rules you start with. Each run you face three rival factions, with raiders along the way.", 18, BONE2))
 	var fr = flow(8)
 	for f in C.RUN_FACTIONS:
 		var b = abtn(C.FACTIONS[f]["n"], "pickFaction", f, C.picked_faction == f)
 		add(fr, b)
 	v.add_child(fr)
+	v.add_child(lbl(str(C.TB.FAC_RULES[C.picked_faction]["d"]), 18, BONE2))
 	v.add_child(gothic("Choose your admiral"))
 	v.add_child(lbl("Your admiral sets the fleet you start with and a doctrine that shapes every battle.", 18, BONE2))
 	var cards = flow()
@@ -1137,7 +1140,7 @@ func _map_key() -> Control:
 	for icon_kind in GS.STOP_ICONS:
 		var icon_row = row0(8); icon_row.add_child(GS.stop_key(icon_kind, k)); icon_row.add_child(tl(GS.STOP_ICONS[icon_kind], 17, 26, GS.TEXT))
 		body.add_child(icon_row)
-	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
+	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "a free hull patch", "event": "anything can happen", "boss": "ends the sector"}
 	var st: Array = []
 	for kk in C.NODE_INFO.keys(): st.append("[b]" + esc(C.NODE_INFO[kk]["n"]) + "[/b] " + esc(LEG.get(kk, "")))
 	body.add_child(_over_text(". ".join(PackedStringArray(st)) + ".", 17))
@@ -1302,7 +1305,7 @@ func _shipyard() -> Control:
 	var rb = abtn("Refits", "yardFleet")
 	if rb != null: rb.size_flags_vertical = Control.SIZE_SHRINK_CENTER; head.add_child(rb)
 	v.add_child(head)   # Leave shipyard is the finishing action, fixed at the bottom right (_page_finish)
-	v.add_child(lbl("Repairs cost 1 credit per 2 hull. A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh lieutenant.", 18, BONE2))
+	v.add_child(lbl("Repairs cost %s per 2 hull, rounded up. A Mark upgrade adds 20%% hull and shields and 15%% damage. New hulls come with a fresh lieutenant." % ("1 credit" if pm == 1.0 else C.numstr(snappedf(pm, 0.0001)) + " credits"), 18, BONE2))
 	var allMiss = 0.0
 	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
 	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm))) if allMiss > 0 else "Fleet fully repaired", "repairAll")   # the teaching card keeps off this bar
@@ -1653,7 +1656,6 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 	var receipt = cy["inheritance"]; var flown = receipt["flown"]
 	var first = not victory and not d["abandoned"] and int(C.META["stats"].get("losses", 0)) == 1
 	var crusade = R["fac"] == "voidsworn"
-	var payoff = str(C.TB.STORY_BEAT3[R["fac"]]["learning"])
 	var v = vbox(10)
 	if section == "renown":
 		var r1 = _end_row(v, "Doctrine and renown")
@@ -1741,9 +1743,10 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 		for teaching_card in CampaignTips.CARDS:
 			if teaching_card[0] == "c_loss": v.add_child(lbl(str(teaching_card[2]), 18, GS.TEXT2))
 		v.add_child(lbl(_story_text(), 18, GS.TEXT2))
-		v.add_child(lbl(payoff, 18, GS.TEXT))
+		var payoff: String = C.beat3Payoff(R)
+		if payoff != "": v.add_child(lbl(payoff, 18, GS.TEXT))
 		if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): v.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GS.TEXT2))
-		if first: v.add_child(lbl("No crusade wins the first dark. That is the oath working, not failing. What this run bought is already written: renown in the vault, mastery in the bloodline, and the weakness the enemy showed you at cost. The next crusade stands at this same dark and reads what you chose. Do not mourn the fleet. Read the record." if crusade else "You will lose runs. That is the design, not a verdict. Every death names what the next generation carries: renown in the vault, mastery in the bloodline, and a lesson the enemy taught you at cost. Read the panel below as an inheritance, not a score.", 18, GS.TEXT))
+		if first: v.add_child(lbl("No crusade wins the first dark. That is the oath working, not failing. What this run bought is already written: renown in the vault, mastery in the bloodline, and the weakness the enemy showed you at cost. Do not mourn the fleet. Read the record." if crusade else "You will lose runs. That is the design, not a verdict. Every death names what the next generation carries: renown in the vault, mastery in the bloodline, and a lesson the enemy taught you at cost. Read the panel below as an inheritance, not a score.", 18, GS.TEXT))
 		if victory:
 			var wf = []
 			for f in C.or_(C.META["stats"].get("wonFacs"), []): wf.append(C.FACTIONS[f]["n"])
@@ -1884,7 +1887,7 @@ func _modal(md: Dictionary) -> void:
 			h2.call("Decommission the " + str(d["ship"]["name"]) + "?"); p.call("Its captain retires and its refits return to the hold. You receive " + C.numstr(d["value"]) + " credits.", BONE2)
 			v.add_child(foot([abtn("Keep it", "closeModal", "", false, false, acts), fin("Decommission", "sellConfirm", d["ship"]["uid"], acts)]))
 		"drydock":
-			h2.call("Drydock"); p.call("Your crews work around the clock under a friendly station’s floodlights. Repair teams restore 60% of every ship’s missing hull.")
+			h2.call("Drydock"); p.call("Repair teams restore %s of each ship's missing hull for free." % d["rate"])
 			if d["lines"].size() > 0:
 				for l in d["lines"]: p.call("• " + l)
 			else: p.call("The fleet was already in good order.", BONE2)
@@ -1902,7 +1905,7 @@ func _modal(md: Dictionary) -> void:
 		"victory":
 			var sm = d["summary"]; var cfg = sm["cfg"]
 			h2.call("Flagship destroyed" if cfg["kind"] == "boss" else "Victory")
-			if C.beat3Debrief() != "": p.call(C.beat3Debrief(), VERD)
+			if str(d.get("beat3Debrief", "")) != "": p.call(d["beat3Debrief"], VERD)
 			v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["credits"]), VERD) + c(" credits.", VERD), 17))
 			if sm["lost"].size() > 0:
 				var ls = []
@@ -2020,8 +2023,23 @@ func _well_text(v: VBoxContainer) -> void:
 			var w = blk(Color(0, 0, 0, 0), 6, 14, 10); v.add_child(w[0]); v.move_child(w[0], ch.get_index()); cur = w[1]
 		v.remove_child(ch); cur.add_child(ch)
 
+# Esc goes Back on the start pages (issue 1217): the first enabled action of the page's list below, the same action its
+# Back button runs. The flagship aspect page has no back action yet (phase 4 adds one to both twins), so Esc does nothing
+# there until then.
+const BACK_ACTS := ["title", "backToSetup"]
+const ESC_BACK := {"admiral": [["title", ""]], "aspect": [["backToSetup", ""]], "legacy": [["title", ""]], "help": [["title", ""]], "lineage": [["progTab", "mastery"]]}
+func esc_back() -> bool:
+	if C == null or C.modal_d != null: return false
+	var kind := str(C.page.get("kind", ""))
+	if not ESC_BACK.has(kind): return false
+	for pair in ESC_BACK[kind]:
+		var found = _find(C.page.get("acts", []), pair[0], pair[1])
+		if not found.is_empty() and found[2] == 1:
+			Kit.play("ui_cancel"); _campaign_action(pair[0], pair[1]); return true
+	return false
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if e.keycode == KEY_ESCAPE and esc_back(): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
 		if fleet_manifest.handle_key(e): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "map":   # the map: Esc shuts a slide-over, 1 to 9 pick a route, Enter flies it
