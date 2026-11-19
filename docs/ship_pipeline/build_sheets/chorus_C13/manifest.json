@@ -45,7 +45,7 @@
    "kind": "spine_bed",
    "what": "spine bed, 1.2 across",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "spine_bed"

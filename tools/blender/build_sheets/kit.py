@@ -942,7 +942,7 @@ class Kit:
         what_ = ('%s, %s (fixed)' % (wn_.lower(), getattr(part, 'type', 'organ'))) if getattr(part, 'type', '') == 'throat' and wn_ else \
             'spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector')
         self.features.append(dict(id=fid, kind='gun', what=what_, count=1, pos=tuple(p), aim=(round(math.degrees(math.atan2(av.y, av.x)), 1), round(math.degrees(math.asin(max(-1.0, min(1.0, av.z)))), 1)), slot=slot,
-                                  weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=tuple(av),
+                                  weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0) if aim is None else tuple(av),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
 
     def core(self, fid, centre, r, src='picture', note='', inv=(), part=None):

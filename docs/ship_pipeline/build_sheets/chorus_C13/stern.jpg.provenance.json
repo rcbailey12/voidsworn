@@ -1,33 +1,33 @@
 {
-  "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
-  "source_dirty": false,
-  "source_diff_sha256": "",
+  "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+  "source_dirty": true,
+  "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "stern.jpg",
-  "date": "2026-11-19T15:24:45Z",
+  "date": "2026-11-19T16:13:06Z",
   "sources": [
     {
-      "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
-      "source_dirty": false,
-      "source_diff_sha256": "",
+      "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+      "source_dirty": true,
+      "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "stern.png",
-      "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
-      "source_dirty": false,
-      "source_diff_sha256": "",
+      "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+      "source_dirty": true,
+      "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
       "stage": "sheet built",
-      "date": "2026-11-19T15:24:40Z",
-      "image_sha256": "562290f22a241db1bdad9caec0207ed4da91b5af4eed8f4b5695d9781ba4f349",
+      "date": "2026-11-19T16:13:01Z",
+      "image_sha256": "afd6b8183f7f0ecf2f5e53b6a510bb32a4b45de2ada04209a44658b90eeae773",
       "sources": [
         {
-          "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
-          "source_dirty": false,
-          "source_diff_sha256": "",
+          "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+          "source_dirty": true,
+          "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
           "stage": "sheet built"
         }
       ]
@@ -36,19 +36,19 @@
   "stamp_box": [
     0,
     580,
-    216,
+    282,
     629
   ],
   "strip_size": [
-    216,
+    282,
     49
   ],
   "strip_sha256": [
-    "e948bfc8bfdfc9b33584c1ba882708eb1a25c29f2b8419c705bab9fceec5f763"
+    "897ba0bf7c66026a464a3fd8479e927191ff5fe77cc73a36ec7fe053b49aa043"
   ],
-  "stamp_template_sha256": "a1966b936907cf6d64919fe44994dfdede17b0446052c653998b6027aa1bfe76",
+  "stamp_template_sha256": "cef758ce3758ef8ec38ec19b32491e65a2618353bcc21bc4f4519279996395f1",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAAoElEQVR4nO3SMREAIBDAsAdZHP51IYMOiYIOXefcgd/27wCYMSIRRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIwgOvUwESapuuagAAAABJRU5ErkJggg=="
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "352bdacb2144a4d1d2f7735b28103aa4c5c9ecb890f4f0d9a9c79f5fa7f9afcf"
+  "image_sha256": "2afc3cb771f079e87bc9da002a3a0e3ac2ebd094738cbc166a54ad18e2369ada"
 }
