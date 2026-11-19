@@ -61,6 +61,7 @@ $mode = $args[0]
 $utf8 = New-Object Text.UTF8Encoding($false)
 $test = $env:PC_RUNNER_TEST -eq '1'
 $scratchOwnerFile = '.voidsworn-run-owner'
+$scratchFailedFile = '.voidsworn-run-failed'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 function Put($path, $value) { [IO.File]::WriteAllText($path, [string]$value, $utf8) }
 function Read($path) { if (Test-Path -LiteralPath $path) { return [IO.File]::ReadAllText($path).Trim() }; return '' }
@@ -96,8 +97,11 @@ function Git([string[]]$words) {
   $ErrorActionPreference = $ea
   # Writing the log must never fail the job (Nov 16: four starts died when another process briefly held git_log.txt,
   # 'The process cannot access the file because it is being used by another process'). One append, retried, never thrown.
-  $gl = Join-Path $script:out 'git_log.txt'; $text = (@($lines | ForEach-Object { [string]$_ }) -join "`r`n")
-  if ($text) { for ($t = 0; $t -lt 40; $t++) { try { [IO.File]::AppendAllText($gl, $text + "`r`n", (New-Object Text.UTF8Encoding($false))); break } catch { Start-Sleep -Milliseconds 500 } } }
+  $text = (@($lines | ForEach-Object { [string]$_ }) -join "`r`n")
+  if ($script:out -and $text) {
+    $gl = Join-Path $script:out 'git_log.txt'
+    for ($t = 0; $t -lt 40; $t++) { try { [IO.File]::AppendAllText($gl, $text + "`r`n", $utf8); break } catch { Start-Sleep -Milliseconds 500 } }
+  }
   return @($lines | ForEach-Object { [string]$_ })
 }
 function Must-Git([string[]]$words) {
@@ -246,15 +250,18 @@ function Test-SharedShipCopy($repo, $path) {
          (Get-FileHash -LiteralPath $shared.FullName -Algorithm SHA256).Hash
 }
 function Reuse-Caches($repo) {
-  $status = @(Git @('-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
-  if ($gitExit -ne 0) { throw 'working tree status not verified' }
+  $status = @(Git @('--no-optional-locks','-C',$repo,'-c','core.quotePath=false','status','--porcelain=v1','--untracked-files=all','--ignored','--ignore-submodules=none'))
+  if ($gitExit -ne 0) {
+    $detail = $status | Select-Object -First 1
+    throw "working tree status not verified (Git exit ${gitExit}: $detail)"
+  }
   foreach ($line in $status) {
-    if ($line -match '^!! (godot/\.godot/.*|godot/[^"\r\n]+\.import|([^"\r\n]*/)?__pycache__/[^"\r\n]+|[^"\r\n]+\.pyc)$') {
-      $line.Substring(3)
+    # Match ignored files only. A nested repository can show up as an ignored directory with a trailing slash.
+    if ($line -match '^!! (godot/(?:\.godot/[^"\\:\r\n]+|[^"\\:\r\n]+\.import)|(?:[^"\\:\r\n]*/)?__pycache__/[^"\\:\r\n]+|[^"\\:\r\n]+\.pyc)(?<!/)$') {
+      $Matches[1]
       continue
     }
-    # Ignored parity outputs and UIDs are rebuildable files. Git can also list a nested repo with a trailing slash.
-    if ($line -match '^!! ("?)(godot/(?:(?:campaign|rules)/test/(?:golden|out)/[^"\\:\r\n]+|campaign/test/parity_campaign_log\.txt|rules/test/parity_log\.txt|[^"\\:\r\n]+\.uid))(?<!/)\1$') {
+    if ($line -match '^!! ("?)(godot/(?:gen/[^"\\:\r\n]+|[^"\\:\r\n]+\.uid|(?:campaign|rules)/test/(?:golden|out)/[^"\\:\r\n]+|campaign/test/parity_campaign_log\.txt|rules/test/parity_log\.txt)|\.onboarding_checks/[^"\\:\r\n]+)(?<!/)\1$') {
       $Matches[2]
       continue
     }
@@ -342,61 +349,132 @@ function Assert-NoLinkedChildren($directory) {
     }
   }
 }
-function Remove-OwnedScratch($record) {
+function Read-ScratchOwner($directory) {
+  $owner = Get-Item -LiteralPath (Join-Path $directory $scratchOwnerFile) -Force -ErrorAction SilentlyContinue
+  if (-not $owner) { throw 'ownership token file is missing' }
+  if ($owner -isnot [IO.FileInfo] -or ($owner.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $owner.Length -ne 32) {
+    throw 'ownership token file changed'
+  }
+  $token = [IO.File]::ReadAllText($owner.FullName)
+  if ($token -cnotmatch '\A[0-9a-f]{32}\z') { throw 'ownership token file changed' }
+  return $token
+}
+function Get-OwnedScratch($record, $expected) {
+  $temp = [IO.Path]::GetFullPath($env:PC_RUN_TEMP).TrimEnd('\','/')
+  $full = [IO.Path]::GetFullPath($record.path)
+  if ($full -ne $record.path -or $full -ne $expected -or (Split-Path -Parent $full) -ne $temp -or
+      (Split-Path -Leaf $full) -notmatch '^voidsworn-run-(?:[1-9][0-9]*-)?[0-9a-f]{32}$') {
+    throw 'recorded path does not match this run and its TEMP directory'
+  }
+  if (-not (Test-Path -LiteralPath $full)) { return }
+  $dir = Get-Item -LiteralPath $full -Force
+  Assert-PlainDirectory $dir
+  if ((Read-ScratchOwner $full) -cne $record.token) { throw 'ownership token file changed' }
+  # Linux filesystems do not always expose a stable directory birth time.
+  if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and
+      [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
+  return $dir
+}
+function Remove-CleanupDirectory($dir) {
+  Assert-PlainDirectory (Get-Item -LiteralPath $dir.FullName -Force)
+  if (Cleanup-Paused) { throw 'PC pause is active' }
+  Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
+  if (Test-Path -LiteralPath $dir.FullName) { throw 'directory could not be fully removed' }
+}
+function Complete-RunScratch($record, $keepFailed) {
   if (-not $record) { return }
   try {
-    $temp = [IO.Path]::GetFullPath($env:PC_RUN_TEMP).TrimEnd('\','/')
-    $full = [IO.Path]::GetFullPath($record.path)
-    if ($full -ne $record.path -or $full -ne $env:PC_RUN_SCRATCH -or (Split-Path -Parent $full) -ne $temp) {
-      throw 'recorded path does not match this run and its TEMP directory'
+    $dir = Get-OwnedScratch $record $env:PC_RUN_SCRATCH
+    if (-not $dir) { return }
+    if (-not $keepFailed) {
+      Assert-NoLinkedChildren $dir.FullName
+      Remove-CleanupDirectory $dir
+      Log "run scratch removed: $($dir.FullName)"
+      return
     }
-    if (-not (Test-Path -LiteralPath $full)) { return }
-    $dir = Get-Item -LiteralPath $full -Force
-    Assert-PlainDirectory $dir
-    $ownerPath = Join-Path $full $scratchOwnerFile
-    if ($record.token -cnotmatch '\A[0-9a-f]{32}\z') { throw 'ownership token was not recorded' }
-    $owner = Get-Item -LiteralPath $ownerPath -Force -ErrorAction SilentlyContinue
-    if (-not $owner) { throw 'ownership token file is missing' }
-    if ($owner -isnot [IO.FileInfo] -or ($owner.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
-        $owner.Length -ne 32 -or [IO.File]::ReadAllText($ownerPath) -cne $record.token) {
-      throw 'ownership token file changed'
-    }
-    # Linux filesystems do not always expose a stable directory birth time.
-    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and
-        [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
-    Assert-NoLinkedChildren $full
+    if ($dir.Name -notmatch '^voidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}$') { return }
+    $issue = $Matches[1]
+    # Only the runner holding the issue across this run can replace its retry scratch.
+    if ($env:PC_RUNNER_LOCKED_ISSUE -ne $issue) { throw 'run does not hold the issue lock' }
+    $marker = Join-Path $dir.FullName $scratchFailedFile
+    if (Test-Path -LiteralPath $marker) { return }
     if (Cleanup-Paused) { throw 'PC pause is active' }
-    Remove-Item -LiteralPath $full -Recurse -Force -ErrorAction Stop
-    Log "run scratch removed: $full"
+    $file = [IO.File]::Open($marker, 'CreateNew', 'Write', 'None')
+    $file.Dispose()
+    Log "run scratch kept for a retry for one day: $($dir.FullName)"
+    foreach ($old in $dir.Parent.GetDirectories("voidsworn-run-$issue-*")) {
+      if ($old.FullName -eq $dir.FullName -or $old.Name -notmatch "^voidsworn-run-$issue-[0-9a-f]{32}$") { continue }
+      try {
+        Assert-PlainDirectory $old
+        if (-not (Get-FailedScratchMarker $old)) { continue }
+        $null = Read-ScratchOwner $old.FullName
+        Assert-NoLinkedChildren $old.FullName
+        Remove-CleanupDirectory $old
+        Log "older failed run scratch removed: $($old.FullName)"
+      } catch { Log "older failed run scratch kept: $($old.FullName) ($($_.Exception.Message))" }
+    }
   } catch { Log "run scratch kept: $($record.path) ($($_.Exception.Message))" }
 }
-function Remove-OlderKeptRepos($repo) {
-  if (-not $repo) { return }
-  $full = [IO.Path]::GetFullPath($repo)
-  if ([IO.Path]::GetFileName($full) -ne 'repo') { throw "unexpected checkout path $full" }
-  $board = Split-Path -Parent $full
-  Assert-PlainDirectory (Get-Item -LiteralPath $board -Force)
-  $copies = @(Get-ChildItem -LiteralPath $board -Directory -Force |
-    Where-Object { $_.Name -like 'repo-kept-*' } | Sort-Object LastWriteTimeUtc, CreationTimeUtc, Name -Descending)
-  if ($copies.Count -le 1) { return }
-  $mirror = Repo-Mirror
-  Log "kept checkout retained (newest): $($copies[0].FullName)"
-  foreach ($copy in ($copies | Select-Object -Skip 1)) {
-    try {
-      $candidate = [IO.Path]::GetFullPath($copy.FullName)
-      if ((Split-Path -Parent $candidate) -ne $board) { throw 'outside the board directory' }
-      Assert-PlainDirectory (Get-Item -LiteralPath $candidate -Force)
-      Assert-NoLinkedChildren $candidate
-      $gitDir = Join-Path $candidate '.git'
-      foreach ($state in @('index.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules','worktrees')) {
-        if (Test-Path -LiteralPath (Join-Path $gitDir $state)) { throw "Git holds local state: $state" }
-      }
-      $null = Get-RebuildableRepoFiles $candidate $mirror ''
-      if (Cleanup-Paused) { throw 'PC pause is active' }
-      Remove-Item -LiteralPath $candidate -Recurse -Force -ErrorAction Stop
-      Log "kept checkout removed (rebuildable): $candidate"
-    } catch { Log "kept checkout retained: $($copy.FullName) ($($_.Exception.Message))" }
+function Get-FailedScratchMarker($dir) {
+  $marker = Get-Item -LiteralPath (Join-Path $dir.FullName $scratchFailedFile) -Force -ErrorAction SilentlyContinue
+  if ($marker -and ($marker -isnot [IO.FileInfo] -or ($marker.Attributes -band [IO.FileAttributes]::ReparsePoint))) {
+    throw 'retry marker is not a plain file'
   }
+  return $marker
+}
+function Measure-CleanupDirectory($directory) {
+  Assert-PlainDirectory $directory
+  $bytes = 0L; $latest = $directory.LastWriteTimeUtc
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  $pending.Push($directory)
+  while ($pending.Count) {
+    foreach ($item in $pending.Pop().EnumerateFileSystemInfos()) {
+      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "linked path: $($item.FullName)" }
+      if ($item -is [IO.DirectoryInfo]) { $pending.Push($item); continue }
+      $bytes += $item.Length
+      if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
+    }
+  }
+  return [pscustomobject]@{ Bytes = $bytes; Latest = $latest }
+}
+function Open-CleanupLock($path, $existingOnly = $false) {
+  $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+  if ($item -and ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint))) {
+    throw "lock is not a plain file: $path"
+  }
+  if ($existingOnly -and -not $item) { return }
+  if ($existingOnly) { return [IO.File]::Open($path, 'Open', 'Read', 'None') }
+  return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None')
+}
+function Remove-OlderKeptRepos($board, $mirror, $dryRun = $false) {
+  Assert-PlainDirectory (Get-Item -LiteralPath $board -Force)
+  $lock = $null
+  try { $lock = Open-CleanupLock (Join-Path $board 'repo.cleanup.lock') $dryRun } catch { Log "kept checkout scan kept: $board ($($_.Exception.Message))"; return }
+  try {
+    $copies = @(Get-ChildItem -LiteralPath $board -Directory -Force |
+      Where-Object { $_.Name -like 'repo-kept-*' } | Sort-Object LastWriteTimeUtc, CreationTimeUtc, Name -Descending)
+    foreach ($copy in $copies) {
+      $size = 'size unavailable'
+      try {
+        $candidate = [IO.Path]::GetFullPath($copy.FullName)
+        if ((Split-Path -Parent $candidate) -ne $board) { throw 'outside the board directory' }
+        $stats = Measure-CleanupDirectory $copy
+        $size = "$($stats.Bytes) bytes"
+        if ($copy -eq $copies[0]) { Log "kept checkout retained (newest): $candidate ($size)"; continue }
+        $gitDir = Join-Path $candidate '.git'
+        foreach ($state in @('index.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules','worktrees')) {
+          if (Test-Path -LiteralPath (Join-Path $gitDir $state)) { throw "Git holds local state: $state" }
+        }
+        $null = Get-RebuildableRepoFiles $candidate $mirror ''
+        if (Cleanup-Paused) { throw 'PC pause is active' }
+        if ($dryRun) { Log "kept checkout would remove (rebuildable): $candidate ($size)" }
+        else {
+          Remove-CleanupDirectory $copy
+          Log "kept checkout removed (rebuildable): $candidate ($size)"
+        }
+      } catch { Log "kept checkout retained: $($copy.FullName) ($size; $($_.Exception.Message))" }
+    }
+  } finally { if ($lock) { $lock.Dispose() } }
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
@@ -612,19 +690,46 @@ function Validate-Job($i, $issue, $seat, $pulls, $branches, $launchBranch = "$se
   }
   return $body
 }
+function Runner-Temp {
+  if ($env:PC_RUN_TEMP) { return $env:PC_RUN_TEMP }
+  return [IO.Path]::GetTempPath()
+}
+function Issue-LockPath($issue, $temp = (Runner-Temp)) {
+  if ($issue -notmatch '\A[1-9][0-9]*\z') { throw 'invalid job issue number; no agent started' }
+  if ($test -and $env:PC_TEST_GH_DB) { return Join-Path (Split-Path -Parent $env:PC_TEST_GH_DB) "issue-$issue.lock" }
+  return Join-Path $temp "voidsworn-runner-issue-$issue.lock"
+}
 function Issue-Lock($issue) {
-  # All PC lanes and seats use the same OS temp folder. Hold this only through validation and the claim, not agent work.
-  $path = Join-Path ([IO.Path]::GetTempPath()) "voidsworn-runner-issue-$issue.lock"
-  if ($test) { $path = Join-Path (Split-Path -Parent $env:PC_TEST_GH_DB) "issue-$issue.lock" }
+  $path = Issue-LockPath $issue
   $deadline = [DateTime]::UtcNow.AddSeconds(30)
   while ($true) {
-    try { return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None') }
+    try { return Open-CleanupLock $path }
     catch [IO.IOException] {
       if ([DateTime]::UtcNow -ge $deadline) { throw 'job claim stayed locked for 30 seconds; no agent started' }
       Start-Sleep -Milliseconds 100
     }
   }
 }
+function Invoke-LockedRunner($start, $issue) {
+  # Keep the lock until the child finishes recording its result and cleaning its scratch.
+  $lock = Open-CleanupLock (Issue-LockPath $issue)
+  try {
+    $start.EnvironmentVariables['PC_RUNNER_LOCKED_ISSUE'] = $issue
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $child = [Diagnostics.Process]::Start($start)
+    try {
+      $stderr = $child.StandardError.ReadToEndAsync()
+      while ($null -ne ($line = $child.StandardOutput.ReadLine())) { Write-Host $line }
+      $child.WaitForExit()
+      $errors = $stderr.GetAwaiter().GetResult()
+      if ($errors) { [Console]::Error.Write($errors) }
+      return $child.ExitCode
+    }
+    finally { $child.Dispose() }
+  } finally { $lock.Dispose() }
+}
+if ($mode -eq 'cleanup-library') { return }
 function End-Announcement($s) {
   if (-not $s.github -or -not $s.github.claimed) { return }
   try {
@@ -661,7 +766,9 @@ try {
     if ($s.status -ne 'running' -or $s.scratch) { throw 'scratch directory can only be created once for a running job' }
     $temp = Get-Item -LiteralPath $env:PC_RUN_TEMP -Force
     Assert-PlainDirectory $temp
-    $dir = New-Item -ItemType Directory -Path (Join-Path $temp.FullName "voidsworn-run-$([guid]::NewGuid().ToString('N'))")
+    $issue = $env:PC_RUNNER_LOCKED_ISSUE
+    $prefix = if ($issue -match '\A[1-9][0-9]*\z') { "voidsworn-run-$issue-" } else { 'voidsworn-run-' }
+    $dir = New-Item -ItemType Directory -Path (Join-Path $temp.FullName ($prefix + [guid]::NewGuid().ToString('N')))
     $token = [guid]::NewGuid().ToString('N')
     Put (Join-Path $dir.FullName $scratchOwnerFile) $token
     $s | Add-Member -NotePropertyName scratch -NotePropertyValue @{
@@ -831,7 +938,8 @@ try {
     $issue = $args[2]
     if ($issue -notmatch '^[1-9][0-9]*$') { throw 'invalid job issue number; no agent started' }
     if ($test -and (-not $env:PC_TEST_GH -or -not $env:PC_TEST_GH_DB)) { throw 'test claim requires fake gh and PC_TEST_GH_DB (no live GitHub); no agent started' }
-    $lock = Issue-Lock $issue
+    $lock = $null
+    if (($args[7] -eq 'real' -or $test) -and $env:PC_RUNNER_LOCKED_ISSUE -ne $issue) { $lock = Issue-Lock $issue }
     try {
       $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
       $repo = $args[4]
@@ -883,7 +991,7 @@ try {
         throw
       }
       Log "job claimed: issue #$issue by $($g.seat), run $($s.run); current instruction validated"
-    } finally { $lock.Dispose() }
+    } finally { if ($lock) { $lock.Dispose() } }
     exit 0
   }
   elseif ($mode -eq 'fetch') {
@@ -955,16 +1063,24 @@ try {
     # low disk also fails a chained child closed instead of burning a wait.
     $script:out = $args[1]; $setf = $args[2]; $target = $args[3]
     if ($test -and $env:PC_TEST_SETTINGS) { $setf = $env:PC_TEST_SETTINGS }
-    $floor = 60
+    $floor = 60; $janitorFloor = 150
     if (Test-Path -LiteralPath $setf) {
       foreach ($l in [IO.File]::ReadAllLines($setf)) {
         $m = [regex]::Match($l, '^\s*min_free_gb\s*=\s*(\d+)\s*$')
         if ($m.Success) { $floor = [int]$m.Groups[1].Value }
+        $m = [regex]::Match($l, '^\s*janitor_free_gb\s*=\s*(\d+)\s*$')
+        if ($m.Success) { $janitorFloor = [int]$m.Groups[1].Value }
       }
     }
     $root = [IO.Path]::GetPathRoot([IO.Path]::GetFullPath($target)).TrimEnd('\')
     $free = (New-Object IO.DriveInfo($root)).AvailableFreeSpace
     if ($test -and $env:PC_TEST_SPACE_FREE_MB) { $free = [int64]$env:PC_TEST_SPACE_FREE_MB * 1MB }
+    if (-not $test -and $args[4] -eq 'real' -and $free -lt ($janitorFloor * 1GB)) {
+      Log "drive $root is below janitor_free_gb=$janitorFloor; checking for automatic cleanup"
+      try { & (Join-Path $PSScriptRoot 'janitor.ps1') --low-space }
+      catch { Log "janitor could not start: $($_.Exception.Message)" }
+      $free = (New-Object IO.DriveInfo($root)).AvailableFreeSpace
+    }
     $freeGB = [math]::Round($free / 1GB, 1)
     if ($free -lt ($floor * 1GB)) {
       $why = "refusing to start: drive $root has $freeGB GB free, below the min_free_gb=$floor floor"
@@ -977,7 +1093,7 @@ try {
   elseif ($mode -eq 'hashwrite') {
     # The Board runs this right after copying the runner files to a PC tools folder; hashcheck then guards the copies.
     $tools = $args[1]; $hashf = $args[2]
-    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1','run_timeout.ps1','tmo.bat','gpu_slots.js')
+    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','review_evidence.ps1','run_timeout.ps1','tmo.bat','gpu_slots.js','janitor.ps1','janitor.bat')
     $lines = @()
     foreach ($n in $names) {
       $p = Join-Path $tools $n
@@ -1048,17 +1164,24 @@ try {
     }
     elseif ($partial) { $status = 'partial'; $reason = $partial }
     elseif ($code -eq '7') { $status = 'no_changes'; $reason = 'no changes pushed' }
-    if ($status -eq 'checked_push') {
+    Log "runner status: $status ($reason)"
+    if ($push -eq 'real') {
       try {
         if (Cleanup-Paused) { Log 'run cleanup skipped during the PC pause' }
         else {
-          Remove-OwnedScratch $old.scratch
-          Remove-OlderKeptRepos $args[6]
+          Complete-RunScratch $old.scratch ($status -notin @('checked_push','no_changes'))
+          if ($status -eq 'checked_push' -and $args[6]) {
+            $repo = [IO.Path]::GetFullPath($args[6])
+            $board = Split-Path -Parent $repo
+            if ($test -or ((Split-Path -Leaf $repo) -eq 'repo' -and (Split-Path -Leaf $board) -in @('board','board_b','board_c','board_d') -and
+                (Split-Path -Parent $board) -eq (Join-Path $env:USERPROFILE 'Downloads/voidsworn_test'))) {
+              Remove-OlderKeptRepos $board (Repo-Mirror)
+            }
+          }
         }
       } catch { Log "run cleanup stopped: $($_.Exception.Message)" }
     }
     State $status $reason
-    Log "runner status: $status ($reason)"
     # State is authoritative; reporting errors never change it or the runner exit code.
     $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
     End-Announcement $s
