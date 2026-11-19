@@ -151,7 +151,6 @@ var _dim_t0 := -1.0
 
 static var _globals_added := false
 static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
-var shield_skins := {}             # fitted render meshes and ray trees, shared by this battle's hulls
 var hull_arrays := {}
 var _damage_templates := {}
 var _power_templates := {}
@@ -196,7 +195,6 @@ func release() -> void:
 		for l in w.get("lights", []):
 			l["on"] = false
 	ships.clear()
-	shield_skins.clear()
 	hull_arrays.clear()
 	_damage_templates.clear()
 	_power_templates.clear()

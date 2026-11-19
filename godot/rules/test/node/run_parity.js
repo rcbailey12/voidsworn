@@ -19,6 +19,52 @@ function present(file) { return fs.existsSync(file) && fs.statSync(file).size > 
 function read(file) { return fs.existsSync(file) ? fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n') : ''; }
 function result(r) { return (r.error || r.signal || String(r.code)) + (r.timeout ? ', timeout' : ''); }
 function cleanExit(r) { return r.code === 0 && !r.timeout && !r.error; }
+async function waitForAll(tasks) {
+  const failed = (await Promise.allSettled(tasks)).find(r => r.status === 'rejected');
+  if (failed) throw failed.reason;
+}
+function paused() {
+  if (!windows || !process.env.USERPROFILE) return false;
+  const file = path.join(process.env.USERPROFILE, 'Downloads', 'voidsworn_test', 'gpu_go.txt');
+  try {
+    return /^GPU not cleared: paused by the Board\b/i.test(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+  } catch (e) {
+    if (e.code === 'ENOENT') return false;
+    throw e;
+  }
+}
+async function withRunRoot(check) {
+  const chosen = process.env.PARITY_RUN_ROOT;
+  const temp = path.resolve(process.env.RUNNER_TEMP || os.tmpdir());
+  const dir = chosen ? path.resolve(chosen) : fs.mkdtempSync(path.join(temp, 'voidsworn-parity-'));
+  // Keep caller-selected output and GitHub's parity evidence available for inspection.
+  const owned = !chosen && process.env.GITHUB_ACTIONS !== 'true';
+  const created = owned ? fs.lstatSync(dir) : null;
+  let code = 1;
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    if (fs.readdirSync(dir).length) throw new Error(`PARITY_RUN_ROOT must be empty: ${dir}`);
+    code = await check(dir);
+  } finally {
+    if (owned) {
+      try {
+        if (paused()) console.log(`Parity scratch kept during the PC pause: ${dir}`);
+        else {
+          const current = fs.lstatSync(dir, { throwIfNoEntry: false });
+          if (current) {
+            if (!current.isDirectory() || current.dev !== created.dev || current.ino !== created.ino) throw new Error('directory was replaced');
+            fs.rmSync(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+            console.log(`Parity scratch removed: ${dir}`);
+          }
+        }
+      } catch (e) {
+        console.error(`FAIL: could not clean up parity scratch at ${dir}: ${e.message}`);
+        code = 1;
+      }
+    }
+  }
+  return code;
+}
 function isolated(dir) {
   fs.mkdirSync(dir, { recursive: true });
   // Windows Godot uses APPDATA rather than XDG_DATA_HOME. Isolate both, including the engine log.
@@ -112,9 +158,13 @@ async function run(names = process.argv.slice(2)) {
   const retrySeconds = positive('PARITY_RETRY_SECONDS', 300);
   if (!names.length) names = Object.keys(S);
   if (new Set(names).size !== names.length || names.some(n => !Object.hasOwn(S, n) || !/^[a-zA-Z0-9_]+$/.test(n))) throw new Error('unknown or duplicate battle name');
-  root = process.env.PARITY_RUN_ROOT ? path.resolve(process.env.PARITY_RUN_ROOT) : fs.mkdtempSync(path.join(process.env.RUNNER_TEMP || os.tmpdir(), 'voidsworn-parity-'));
-  fs.mkdirSync(root, { recursive: true });
-  if (fs.readdirSync(root).length) throw new Error(`PARITY_RUN_ROOT must be empty: ${root}`);
+  return withRunRoot(dir => {
+    root = dir;
+    failures = 0;
+    return runChecks(names, count, seconds, retrySeconds);
+  });
+}
+async function runChecks(names, count, seconds, retrySeconds) {
   for (const dir of ['golden', 'out', 'workers']) fs.mkdirSync(path.join(root, dir));
   const env = isolated(path.join(root, 'user')), started = Date.now();
   say(`Voidsworn rules parity: ${names.length} battles, ${Math.min(count, names.length)} workers`);
@@ -143,11 +193,12 @@ async function run(names = process.argv.slice(2)) {
     fs.writeFileSync(file, JSON.stringify(Object.fromEntries(list.map(n => [n, S[n]]))));
     manifest.workers.push({ id, names: list, file, log, browser: {} });
   }
-  await Promise.all(manifest.workers.map(async w => {
+  await waitForAll(manifest.workers.map(async w => {
     const browser = async () => {
       for (const name of w.names) w.browser[name] = await js('golden.js', ['scenario', name, path.join(root, 'golden', name + '.jsonl')], path.join(root, 'workers', `browser_${name}.log`));
     };
-    await Promise.all([browser(), gd(['batch', w.file, path.join(root, 'out')], w.log, isolated(path.join(root, 'workers', `user${w.id}`)), seconds, true).then(r => { w.godot = r; })]);
+    const env = isolated(path.join(root, 'workers', `user${w.id}`));
+    await waitForAll([browser(), gd(['batch', w.file, path.join(root, 'out')], w.log, env, seconds, true).then(r => { w.godot = r; })]);
     say(`  worker ${w.id}: batch ended (${w.names.length} assigned battles; Godot exit ${result(w.godot)})`);
   }));
   fs.writeFileSync(path.join(root, 'batches.json'), JSON.stringify(manifest, null, 2));
@@ -189,5 +240,5 @@ async function verify(savedRoot) {
   await verifyBattles(JSON.parse(read(path.join(root, 'batches.json'))));
   return failures ? 1 : 0;
 }
-module.exports = { run, verify, execute, isolated };
+module.exports = { run, verify, execute, isolated, withRunRoot };
 if (require.main === module) run().then(c => { process.exitCode = c; }).catch(e => { console.error('FAIL: ' + e.stack); process.exitCode = 1; });

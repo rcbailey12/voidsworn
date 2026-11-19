@@ -48,6 +48,7 @@ static func manifest() -> Dictionary:
 static func clear_static() -> void:
 	_manifest = null
 	_look_cache.clear()
+	_pm = null
 	_gt = null
 
 

@@ -38,7 +38,7 @@ func _save() -> void:
 	report["terrain_case"] = map_case
 	report["route"] = route
 	report["adapter_sha256"] = FileAccess.get_sha256("res://world/nebula_bench.gd")
-	report["map"] = "graveyard with nebula condition" if map_case == "nebula" else "storm"
+	report["map"] = "graveyard with nebula condition" if map_case == "nebula" else str(args.get("map", "storm"))
 	super._save()
 
 
@@ -158,34 +158,27 @@ func _geometry_check(api) -> Array:
 	return rows
 
 
-func _build(mode: String, seed: int) -> void:
-	await super._build(mode, seed)
-	if PG.stop_if_any(): return
-	var tier := str(args.get("terrain-tier", "max"))
-	if map_case == "nebula" or tier != "max":
-		var camera := {"t": b.cam.t, "r": b.cam.r, "a": b.cam.a, "b": b.cam.b}
-		if map_case == "nebula": _nebula_terrain(b.api)
-		b.args["quality"] = tier
-		b._apply_quality(tier)
-		b.begin_with(b.api)
-		var began := Time.get_ticks_msec()
-		while b.warming or b.busy:
-			if Time.get_ticks_msec() - began > 30000:
-				push_error("Issue 368: nebula scene warmup timed out")
-				get_tree().quit(1)
-				return
-			await get_tree().process_frame
-		for key in camera: b.cam.set(key, camera[key])
-		b.cam.snap()
+func _configure_battle(api) -> void:
+	b.args["quality"] = str(args.get("terrain-tier", "max"))
+	if map_case == "nebula":
+		_nebula_terrain(api)
+
+
+func _build(mode: String, seed: int) -> bool:
+	if not await super._build(mode, seed) or PG.stop_if_any(): return false
 	# The gate's engagement camera may be farther away than 250. Never time invisible fog.
 	if route == "fog": b.env.volumetric_fog_length = maxf(250.0, b.cam.r + 200.0)
 	patch_rows = _patch_metadata(b.api)
 	measured_camera = {"r": b.cam.r, "near": b.cam.near, "t": [b.cam.t.x, b.cam.t.y, b.cam.t.z]}
+	return true
 
 
 func _mode(mode: String, session: int) -> Dictionary:
 	var row: Dictionary = await super._mode(mode, session)
+	if row.is_empty(): return row
 	row["terrain_case"] = map_case
+	row["terrain_tier"] = b.world.quality
+	row["seed"] = b.battle_cfg.seed
 	row["route"] = route
 	row["patches"] = patch_rows
 	row["gate_ms"] = 12.5
@@ -196,8 +189,7 @@ func _mode(mode: String, session: int) -> Dictionary:
 
 
 func _capture_routes() -> void:
-	await _build("base", 4207)
-	if PG.stop_if_any(): return
+	if not await _build("base", 4207) or PG.stop_if_any(): return
 	volleys_on = false
 	b.hud.visible = false
 	b.set_process(false)

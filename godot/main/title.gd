@@ -202,7 +202,7 @@ func _label(t: String, size: int, col: Color, f: Font) -> Label:
 	return l
 
 
-func _button(t: String, cb: Callable, primary := false) -> Button:
+func _button(t: String, cb := Callable(), primary := false) -> Button:
 	var b := Button.new()
 	b.text = t
 	b.focus_mode = Control.FOCUS_ALL  # keyboard and controller reach every title and settings button (WCAG 2.1.1)
@@ -233,7 +233,8 @@ func _button(t: String, cb: Callable, primary := false) -> Button:
 	var fc := Color("#1c1405") if primary else T_BONE
 	b.add_theme_color_override("font_color", fc)
 	b.add_theme_color_override("font_hover_color", fc)
-	b.pressed.connect(cb)
+	if cb.is_valid():
+		b.pressed.connect(cb)
 	return b
 
 
@@ -450,10 +451,10 @@ func _row(t: String) -> HBoxContainer:
 func _toggle(t: String, key: String) -> Control:
 	var r := _row(t)
 	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
-	var b: Button
 	if not main.settings.has(key):
 		main.settings[key] = true
-	b = _button("On" if main.settings[key] else "Off", func() -> void:
+	var b := _button("On" if main.settings[key] else "Off")
+	b.pressed.connect(func() -> void:
 		main.settings[key] = not bool(main.settings[key])
 		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
@@ -465,13 +466,13 @@ func _toggle(t: String, key: String) -> Control:
 
 func _choice(t: String, key: String, opts: Array) -> Control:
 	var r := _row(t)
-	var b: Button
 	var label_of := func() -> String:
 		for o in opts:
 			if str(o[0]) == str(main.settings[key]):
 				return o[1]
 		return str(opts[0][1])
-	b = _button(label_of.call(), func() -> void:
+	var b := _button(label_of.call())
+	b.pressed.connect(func() -> void:
 		var i := 0
 		for j in opts.size():
 			if str(opts[j][0]) == str(main.settings[key]):

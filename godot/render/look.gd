@@ -99,6 +99,13 @@ static func rim_of() -> Dictionary:
 	return r
 
 
+static func msaa_for_quality(quality: String) -> Viewport.MSAA:
+	match quality:
+		"low": return Viewport.MSAA_DISABLED
+		"high": return Viewport.MSAA_2X
+		_: return Viewport.MSAA_4X
+
+
 static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLight3D, opts := {}) -> void:
 	var tm := String(opts.get("tonemap", TONEMAP))
 	var q := String(opts.get("quality", "max"))
