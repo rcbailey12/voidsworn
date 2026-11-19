@@ -21,6 +21,7 @@ const CARDS := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 %NOISE%
+%CARD_SUPPORT%
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
 uniform sampler2D mask_tex : filter_linear, repeat_disable;
 uniform vec4 mask_box;
@@ -35,8 +36,7 @@ varying vec3 world;
 void vertex() {
 	cloud = INSTANCE_CUSTOM;
 	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float a = cloud.y * 6.2831;
-	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
+	vec2 q = gas_card_offset(VERTEX.xy, cloud, c, INV_VIEW_MATRIX, height_scale);
 	disc = VERTEX.xy * 2.0;
 	c.xy += q * cloud.x;
 	world = (INV_VIEW_MATRIX * c).xyz;
@@ -48,26 +48,34 @@ void fragment() {
 	vec2 uv = (world.xz - mask_box.xy) * mask_box.zw;
 	if (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0)))) { discard; }
 	vec2 mask = texture(mask_tex, uv).rg;
+	float band = floor(cloud.w);
+	float foot = mask.g * smoothstep(0.08, 0.55, mask.r);
+	float layer = gas_layer(band, world.y / height_scale);
+	float shape = (1.0 - smoothstep(0.25, 1.0, radius)) * foot * layer;
+#ifdef HIGH_GAS_CARDS
+	// Field and contact are at most one. Skip noise for fragments too faint to draw.
+	if (shape * cloud.z < GAS_DENSITY_BOUND) { discard; }
+#else
+	if (shape * cloud.z <= 0.0) { discard; }
+#endif
 	float depth = texture(depth_tex, SCREEN_UV).r;
 	vec4 view_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth, 1.0);
 	vec3 opaque = (INV_VIEW_MATRIX * vec4(view_pos.xyz / view_pos.w, 1.0)).xyz;
 	if (depth > 0.000001 && opaque.y > -20.0) { discard; }
-	float band = floor(cloud.w);
 	float rate = band < 0.5 ? 0.6 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.6 : -0.4));
 	vec3 p = world * vec3(0.055, 0.075, 0.055) + vec3(0.027, 0.009, 0.015) * gas_time * rate;
 	float warp = wfbm3(p * 0.5 + 4.0);
 	float n = wfbm3(p + vec3(warp * 0.8));
+#ifndef HIGH_GAS_CARDS
 	float detail = wfbm3(p * 2.3 + vec3(3.7, 1.2, 7.4));
-	float foot = mask.g * smoothstep(0.08, 0.55, mask.r);
-	float lo = band < 0.5 ? -4.0 : (band < 1.5 ? 1.0 : (band < 2.5 ? 6.0 : 12.0));
-	float hi = band < 0.5 ? 2.0 : (band < 1.5 ? 8.0 : (band < 2.5 ? 14.0 : 18.0));
-	float y = world.y / height_scale;
-	float layer = smoothstep(lo, lo + 1.5, y) * (1.0 - smoothstep(hi - 1.5, hi, y));
+#endif
 	float field = smoothstep(0.38, 0.74, n);
-	float shape = (1.0 - smoothstep(0.25, 1.0, radius)) * foot * layer;
 	float density = shape * field * cloud.z;
 	density *= clamp((-view_pos.z / view_pos.w + VERTEX.z) / 5.0, 0.0, 1.0);
-	if (density < 0.002) { discard; }
+	if (density < MIN_GAS_DENSITY) { discard; }
+#ifdef HIGH_GAS_CARDS
+	float detail = wfbm3(p * 2.3 + vec3(3.7, 1.2, 7.4));
+#endif
 	float sun = wfbm3(p + vec3(warp * 0.8) + vec3(0.12, 0.20, 0.15));
 	float rim = clamp(0.45 + (n - sun) * 5.0, 0.0, 1.0);
 	float charge = smoothstep(0.47, 0.70, detail) * smoothstep(0.38, 0.65, n);
