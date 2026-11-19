@@ -109,6 +109,14 @@ pushd "%R%"
 if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
 %COMMON% effort "%O%" "%EFF%"
+rem Give the probe, agent, and checks one private scratch directory, recorded before use.
+set "PC_RUN_TEMP=%TEMP%"
+%COMMON% scratch "%O%"
+if errorlevel 1 goto :probefail
+set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
+set "TEMP=%PC_RUN_SCRATCH%"
+set "TMP=%PC_RUN_SCRATCH%"
+set "TMPDIR=%PC_RUN_SCRATCH%"
 set "PROBE=%APPDATA%\npm\codex.cmd"
 if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
 %COMMON% preflight "%O%" "%R%" codex "%PROBE%" %CODEX_MODEL% ""
@@ -187,7 +195,7 @@ if errorlevel 1 goto :pushfail
 set "SX=%ERRORLEVEL%"
 if not "%SX%"=="0" goto :stopped
 if "%PUSHMODE%"=="dry" (echo dry run: push to %PB% would work, nothing pushed >> "%O%\result.txt") else (echo pushed %PB% >> "%O%\result.txt")
-%COMMON% finish "%O%" 0 "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%"
+%COMMON% finish "%O%" 0 "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%" "%R%"
 if errorlevel 1 (popd & exit /b 14)
 popd
 exit /b 0
