@@ -755,3 +755,9 @@ drifted (R155). Set: Board. Id: R155b.
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
 a new baseline is committed only when the Board accepts the change.** Why: the first run pays for shader warm-up (R162).
 Set: Board. Ids: R162c, program-07, skill-sv-02, skill-sv-03.
+
+12.6 **The player-path recording of Battles 1 to 3 is the acceptance check for visual and teaching changes.** Use
+`tools/pc/jobs/player_path.bat` on the shared installed build with a fresh, isolated profile and player defaults. Judge the change
+in those recordings. Use the look bench and bot captures for comparison and diagnosis. Earlier captures hid the
+cut-ins, danger overlay, teaching cards, target card and battle voice that a new player encounters. The look bench also
+draws meshes at full detail. Set: Ryan, Nov 19 (R328).
