@@ -11,8 +11,8 @@ rem   STAGES      optional: the recipe stages, in order (default 1_concept_in to
 rem   SETS        optional: the a4_shots sets (default battle,close)
 rem   FACS        optional: the a4_shots faction (default the part of SHIP before its first underscore)
 rem   PAINT_BASE  optional: a branch merged in after the checkout; the pictures are then a labelled PREVIEW of that stack
-rem   PC_GPU_WAIT_SECONDS  optional: how long each GPU step waits for its claim (default 21600, the watchdog's own ceiling;
-rem               the old 300 s default failed 1155, 1157 and 1158 on Nov 19 when several helpers queued at once)
+rem   PC_GPU_WAIT_SECONDS  optional: how long each GPU step waits for its claim (default 3600, the most gpu_slots.js
+rem               allows; the old 300 s default failed 1155, 1157 and 1158 on Nov 19 when several helpers queued at once)
 rem
 rem What it does, in order. Any failure skips every later step, the checks and the shots (the recipe folder is still copied
 rem back, step 7, for the logs), and the last two lines of out\result.txt are always "done PASS" or "done FAILED: <step>" and then "all done".
@@ -49,7 +49,7 @@ if /i not "%~f0"=="%J%\ship_job_running.bat" (
 if not defined STAGES set "STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export"
 if not defined SETS set "SETS=battle,close"
 if not defined FACS for /f "delims=_" %%F in ("%SHIP%") do set "FACS=%%F"
-if not defined PC_GPU_WAIT_SECONDS set PC_GPU_WAIT_SECONDS=21600
+if not defined PC_GPU_WAIT_SECONDS set PC_GPU_WAIT_SECONDS=3600
 if not defined PC_GPU_ISSUE set "PC_GPU_ISSUE=%JOB_DIR%"
 set "C=%J%\repo"
 set "O=%J%\out"

@@ -158,7 +158,7 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
 13. **One shared ship job (issue 1174, Board, Nov 19 2026).** Every ship build run on the PC is a three-line wrapper around
    `tools/pc/jobs/ship_job.bat` (docs/ship_pipeline/ship_job/README.md): it stops after a failed stage, takes shots only of
-   this run's own checked install, waits up to 21600 s for the GPU and ends "done PASS" or "done FAILED: <step>", then
+   this run's own checked install, waits up to 3600 s for the GPU and ends "done PASS" or "done FAILED: <step>", then
    "all done". Why: on Nov 19 the C12 and C13 runners and S9's first run took pictures after a failed build, and 1155, 1157
    and 1158 failed a stage on the old 300 s GPU wait.
 

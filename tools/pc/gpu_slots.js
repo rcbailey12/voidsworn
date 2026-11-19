@@ -9,9 +9,10 @@ const crypto = require('crypto');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const slotName = index => 'gpu_slot_' + index;
 const realClock = { now: () => performance.now(), sleep };
-// The longest admission wait: the watchdog's own ceiling (tmo.bat runners use 21600). Waiting never spends a command's
-// limit. ship_job.bat defaults to it (issue 1174): on Nov 19 three helpers queued at once and the old 300 s default failed them.
-const MAX_WAIT_SECONDS = 21600;
+// The longest admission wait. ship_job.bat defaults to it (issue 1174): on Nov 19 three helpers queued at once and the
+// 300 s default failed them. Ship jobs run the helper from their own branch checkout, so raising this only helps once every
+// ship branch carries the change.
+const MAX_WAIT_SECONDS = 3600;
 function positiveInteger(value, label) {
   const number = Number(value);
   if (!/^[0-9]+$/.test(String(value)) || !Number.isSafeInteger(number) || number < 1) {

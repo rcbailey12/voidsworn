@@ -20,7 +20,7 @@ call "%USERPROFILE%\Downloads\voidsworn_test\ship_job\ship_job.bat"
 Optional inputs go on the second line the same way: `STAGES` (default all seven, `1_concept_in` to `7_export`; a front run
 sets `"STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit"`), `SETS` (a4_shots sets, default `battle,close`), `FACS`
 (default the part of SHIP before its first underscore), `PAINT_BASE` (a branch merged in after the checkout; the pictures are
-then a labelled PREVIEW of that paint stack) and `PC_GPU_WAIT_SECONDS` (default 21600).
+then a labelled PREVIEW of that paint stack) and `PC_GPU_WAIT_SECONDS` (default 3600).
 
 What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, each log to `JOB_DIR\out\log_<step>.txt`):
 
@@ -39,14 +39,15 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 The last two lines of `result.txt` are always `done PASS` or `done FAILED: <step>`, then `all done`.
 
 It writes only under `voidsworn_test\JOB_DIR` and `voidsworn_test\recipe\SHIP` (the stages' own folder) and deletes nothing:
-an earlier run's `out` folder is renamed `out_before_<time>`. Every GPU step waits up to 21600 seconds for its claim
-(gpu_slots.js now accepts up to 21600, the watchdog's own ceiling; waiting never spends a command's time limit).
+an earlier run's `out` folder is renamed `out_before_<time>`. Every GPU step waits up to 3600 seconds for its claim, the
+most gpu_slots.js accepts (waiting never spends a command's time limit). The stages and tmo.bat run from the ship branch's own
+checkout, so a longer cap would only work once every ship branch carries it (Artoo on PR 1179: the S10 head rejects 21600).
 
 Two runs of the same SHIP at once share `recipe\SHIP` and would overwrite each other, as before: the Board queues one at a time
 per ship.
 
 Static test: `contrib/opus/tools/ship_job_tests.js` (in the standing checks, fast): the FAILED guard after every step that
-can fail and right before the shots, all three checks counted, the installed glb's age checked before the checks, the 21600
+can fail and right before the shots, all three checks counted, the installed glb's age checked before the checks, the 3600
 default before the first GPU step, `done` then `all done` on every way out, no delete or move, logs only under `out`, and
 every wrapper in `wrappers/` three lines long. Removing a guard line or the death seam's CHECKFAIL line makes it fail.
 
@@ -64,7 +65,7 @@ every wrapper in `wrappers/` three lines long. Removing a guard line or the deat
 | shots at 170 and 60, `--facs voidsworn --sets battle,close` | the same (FACS from SHIP, SETS default) |
 | recipe copied to `out\recipe`, export glb present | the same |
 | last lines `done` or `done FAILED`, `all done` | `done PASS` or `done FAILED: <step>`, `all done` |
-| GPU wait: whatever the launcher set (300 s unless set) | 21600 s by default |
+| GPU wait: whatever the launcher set (300 s unless set) | 3600 s by default |
 
 The proof wrapper uses `JOB_DIR=opus1174`, so it never touches 1157's own clone or out folder. It does rebuild
 `recipe\voidsworn_S10`, so queue it only when 1157 is not running. Not run on the PC from this thread (R334): the Board queues it.
@@ -78,7 +79,7 @@ LOOP.md PC notes line to add (after the R334 line):
 
 > - Ship build runs use the shared job (issue 1174): a helper's OPUS<N>_RUN.bat is three lines (`@echo off`; one `set` line
 >   with SHIP, CODE, BRANCH, JOB_DIR and any of STAGES, SETS, FACS, PAINT_BASE; `call "%USERPROFILE%\Downloads\voidsworn_test\ship_job\ship_job.bat"`),
->   docs/ship_pipeline/ship_job/README.md. It stops after a failed stage, shoots only this run's checked install, waits 21600 s
+>   docs/ship_pipeline/ship_job/README.md. It stops after a failed stage, shoots only this run's checked install, waits 3600 s
 >   for the GPU, and ends "done PASS" or "done FAILED: <step>", then "all done". The Board refreshes the shared copy after
 >   each merge that changes it.
 

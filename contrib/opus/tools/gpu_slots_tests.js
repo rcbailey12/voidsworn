@@ -221,10 +221,10 @@ async function main() {
   assert(sawReservation, 'the solo waiter never reserved gpu_solo');
   assert.equal(rs.read('gpu_solo'), null, 'timeout must release the pending solo reservation');
   pass('pending solo releases on cancellation and on admission timeout');
-  // Issue 1174: ship_job.bat waits up to 21600 s for the GPU; more than that is refused before any waiting.
-  assert.equal(MAX_WAIT_SECONDS, 21600);
-  const tooLong = await client(['acquire', closed, '1100', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '21601' }).result;
-  assert.notEqual(tooLong.code, 0); assert.match(tooLong.error, /at most 21600/);
+  // Issue 1174: ship_job.bat waits up to 3600 s for the GPU; more than that is refused before any waiting.
+  assert.equal(MAX_WAIT_SECONDS, 3600);
+  const tooLong = await client(['acquire', closed, '1100', String(process.pid), 'shared'], { PC_GPU_WAIT_SECONDS: '3601' }).result;
+  assert.notEqual(tooLong.code, 0); assert.match(tooLong.error, /at most 3600/);
   const solo = claim(workers[3], 'solo');
   await until(() => !!rs.read('gpu_solo'));
   const newcomer = claim(workers[2]);

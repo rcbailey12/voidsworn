@@ -1,4 +1,4 @@
-node contrib/opus/tools/gpu_slots_tests.js, 20 runs in a row (cloud, Linux, node v22.23.5, 2026-11-19T16:09:59Z); runs 11 to 20 beside 6 busy CPU loops
+node contrib/opus/tools/gpu_slots_tests.js, 20 runs in a row (cloud, Linux, node v22.23.5, 2026-11-19T16:09:59Z); runs 11 to 20 beside 6 busy CPU loops [rerun after the cap went back to 3600: 20 of 20 again, 2026-11-19T16:16:01Z]
 run 1: exit 0, 2949 ms, PASS GPU slot checks (13 groups)
 run 2: exit 0, 2969 ms, PASS GPU slot checks (13 groups)
 run 3: exit 0, 2938 ms, PASS GPU slot checks (13 groups)

@@ -5,7 +5,7 @@
 //     stage, install or check never reaches the shots; the shots line sits right behind that guard;
 //   all three installed-glb checks (readback, interiors, death seam) count toward the guard (S10_RUN_1157.bat let a failed
 //     death seam through to the shots);
-//   the GPU wait default (21600, within gpu_slots.js MAX_WAIT_SECONDS) is set before any GPU step;
+//   the GPU wait default (3600, the gpu_slots.js MAX_WAIT_SECONDS that every ship checkout's helper accepts) is set before any GPU step;
 //   the last line: every way out of the main job writes "done PASS" or "done FAILED: ..." and then "all done";
 //   no delete or move commands, and output only under the job folder;
 //   every wrapper in docs/ship_pipeline/ship_job/wrappers/ is three lines that set the inputs and call ship_job.bat.
@@ -59,12 +59,12 @@ assert(/if defined FAILED \(\s*\r?\n\s*echo %1 SKIPPED/.test(stage), 'a failed s
 pass('the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count');
 
 // the wait default
-const wait = code.findIndex(l => /^if not defined PC_GPU_WAIT_SECONDS set PC_GPU_WAIT_SECONDS=21600$/.test(l.s));
-assert(wait > 0, 'PC_GPU_WAIT_SECONDS defaults to 21600');
+const wait = code.findIndex(l => /^if not defined PC_GPU_WAIT_SECONDS set PC_GPU_WAIT_SECONDS=3600$/.test(l.s));
+assert(wait > 0, 'PC_GPU_WAIT_SECONDS defaults to 3600');
 assert(wait < code.findIndex(l => /tmo\.bat/.test(l.s)), 'the wait default is set before the first GPU step');
 const { MAX_WAIT_SECONDS } = require(path.join(ROOT, 'tools/pc/gpu_slots.js'));
-assert(21600 <= MAX_WAIT_SECONDS, 'gpu_slots.js accepts the 21600 s wait');
-pass('the GPU wait: 21600 s by default for every GPU step, accepted by gpu_slots.js');
+assert.equal(MAX_WAIT_SECONDS, 3600, 'the default is the most gpu_slots.js accepts');
+pass('the GPU wait: 3600 s by default for every GPU step, accepted by gpu_slots.js');
 
 // the last line
 const finish = code.findIndex(l => l.s === ':finish');
