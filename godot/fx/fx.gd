@@ -1295,6 +1295,7 @@ func warm_arrival(s: SHIP) -> void:
 		return
 	var fresh := false
 	for m in s.meshes:
+		if not is_instance_valid(m): continue   # a ship part freed under a live ship (1204 bot runs)
 		var mi := m as MeshInstance3D
 		if mi != null and mi.mesh != null and not _warm_seen.has(mi.mesh.get_instance_id()):
 			fresh = true
@@ -1732,6 +1733,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 # arrival warm-up, issue 1232). Returns the next free slot in the warm grid.
 func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
 	for m in sh.meshes:
+		if not is_instance_valid(m): continue   # a ship part freed under a live ship (1204 bot runs)
 		var smi := m as MeshInstance3D
 		if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
 			continue

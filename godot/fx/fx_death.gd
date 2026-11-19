@@ -1110,6 +1110,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 		# Seams and damage entries live in the analysis pose; ShipView may since have bobbed or banked the mesh.
 		inv = s.hull_motion().affine_inverse() * inv
 	for m in s.meshes:
+		if not is_instance_valid(m): continue   # a ship part freed under a live ship (1204 bot runs)
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
@@ -2084,6 +2085,7 @@ static func _power_down(fx, s) -> void:
 	var queue: Array = []
 	var inv: Transform3D = s.root.global_transform.affine_inverse()
 	for mesh in s.meshes:
+		if not is_instance_valid(mesh): continue   # a ship part freed under a live ship (1204 bot runs)
 		var mi := mesh as MeshInstance3D
 		if not is_instance_valid(mi) or mi.mesh == null: continue
 		var pose: Transform3D = inv * mi.global_transform
@@ -2739,6 +2741,7 @@ static func _hulk(fx, s) -> void:
 	fx.phys_root.add_child(node)
 	node.global_transform = s.xf()
 	for source in s.meshes:
+		if not is_instance_valid(source): continue   # a ship part freed under a live ship (1204 bot runs)
 		var original := source as MeshInstance3D
 		if not is_instance_valid(original) or original.mesh == null: continue
 		var copy := MeshInstance3D.new()
