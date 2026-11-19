@@ -207,6 +207,7 @@ static func setup_physics(fx) -> void:
 	st["debris"] = []
 	st["debris_next"] = 0
 	st["wrecks"] = []
+	st["anchors"] = {}
 	st["physics_on"] = fx.quality != "low"
 
 
@@ -423,13 +424,13 @@ static func _fold(v: Vector3, crease: float, bend: float) -> Vector3:
 
 # `damp` (issue 1077's prototype): the plates slow and settle instead of drifting off for good; 0, the default, is today's
 # constant drift. A pooled plate takes the damping of the death that last threw it.
-static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0) -> void:
+static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0, leash := "") -> void:
 	var t0 := Time.get_ticks_usec()
-	_spawn_debris_inner(fx, pos, vel, count, size, damp)
+	_spawn_debris_inner(fx, pos, vel, count, size, damp, leash)
 	fx.pend("debris", t0)
 
 
-static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0) -> void:
+static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size: float, damp := 0.0, leash := "") -> void:
 	var st: Dictionary = fx.dstate
 	if not bool(st.get("physics_on", false)) or count <= 0:
 		return
@@ -473,6 +474,9 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		b.angular_velocity = Vector3(fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6))
 		b.linear_damp = damp
 		b.angular_damp = damp * 0.5
+		# issue 1236: a plate from a wreck that blocks its hex is kept in that hex (_leash); a reused plate forgets its old one
+		b.set_meta("leash_id", leash)
+		b.remove_meta("leash_r")
 		b.sleeping = false
 		b.visible = true
 		var mesh := b.get_node("mesh") as MeshInstance3D
@@ -2411,7 +2415,7 @@ static func _groan(fx, s, i: int) -> void:
 			fx.stk(p, fx.now, 0.32 + 0.1 * fx.rng.randf(), Color(1.0, 0.66, 0.32), 2.6, L * 0.018, 0.035, 1, inherited + d * L * fx.rng.randf_range(0.25, 0.45), 1.6, 0.0, 1.5, 6.0)
 		fx.spr(p + nw * L * 0.01, fx.now, 1.1, Color(0.50, 0.47, 0.45), 0.7, L * 0.010, L * 0.05, 20, inherited + nw * L * 0.06, 1.0)
 	if i % 2 == 1:
-		spawn_debris(fx, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9)
+		spawn_debris(fx, p + nw * L * 0.015, inherited + nw * L * 0.05, 1, L * 0.008, 0.9, s.id)
 	if s.death_tier == "capital":
 		s.set_meta("death_jolt", fx.now)
 
@@ -2785,9 +2789,9 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	if organic:
 		_organic_spill(fx, center, h.L, tint)
 	elif story:
-		spawn_debris(fx, center, inherited, 2 + w * 2, h.L * 0.025, STORY_DEBRIS_DAMP)
+		spawn_debris(fx, center, inherited, 2 + w * 2, h.L * 0.025, STORY_DEBRIS_DAMP, s.id)
 	else:
-		spawn_debris(fx, center, inherited, 4 + w * 3, h.L * 0.025)
+		spawn_debris(fx, center, inherited, 4 + w * 3, h.L * 0.025, 0.0, s.id)
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
@@ -2962,7 +2966,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		# Restored by the Board (Muse opus_check_701 condition 1): a hull with no pre-cut pieces at the kill frame (a class
 		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
 		# and smoke alone.
-		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
+		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3), 0.0, s.id)
 		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
@@ -3033,12 +3037,12 @@ static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: We
 	var p: Vector3 = frame * (bc + out_l * float(bite["ry"]) * 1.2)
 	var big := tl.tier == "capital"
 	if fx.death_story:
-		spawn_debris(fx, p, inherited, 6 if big else 4, L * 0.012, STORY_DEBRIS_DAMP)
-		spawn_debris(fx, p, inherited, 2, L * 0.03, STORY_DEBRIS_DAMP)
+		spawn_debris(fx, p, inherited, 6 if big else 4, L * 0.012, STORY_DEBRIS_DAMP, s.id)
+		spawn_debris(fx, p, inherited, 2, L * 0.03, STORY_DEBRIS_DAMP, s.id)
 		return
 	# Issue 484 profiling: each plate is a physics body; keep the cloud lean (it adds to the plates at the break)
-	spawn_debris(fx, p, inherited, 10 if big else 7, L * 0.012)
-	spawn_debris(fx, p, inherited, 4 if big else 3, L * 0.03)
+	spawn_debris(fx, p, inherited, 10 if big else 7, L * 0.012, 0.0, s.id)
+	spawn_debris(fx, p, inherited, 4 if big else 3, L * 0.03, 0.0, s.id)
 
 
 # A fast radial spill of luminous spores and darker membrane clots, near the board.
@@ -3159,8 +3163,15 @@ static func _edge_sites(pc: Dictionary, cen: Vector3, view: Vector3, count: int)
 
 static func _cap_wrecks(fx) -> void:
 	var ws: Array = fx.dstate["wrecks"]
+	var anchors: Dictionary = fx.dstate.get("anchors", {})
 	while ws.size() > 24:
-		var w: Dictionary = ws.pop_front()
+		# issue 1236: the oldest wreck goes first, but a wreck that blocks its hex stays while any other can go
+		var at := 0
+		for i in ws.size():
+			if not anchors.has(ws[i]["id"]):
+				at = i
+				break
+		var w: Dictionary = ws.pop_at(at)
 		_free_wreck(w)
 
 
@@ -3176,6 +3187,7 @@ static func _free_wreck(w: Dictionary) -> void:
 
 
 static func clear_wreck(fx, id: String) -> void:
+	fx.dstate.get("anchors", {}).erase(id)
 	var ws: Array = fx.dstate["wrecks"]
 	var keep: Array = []
 	for w in ws:
@@ -3236,3 +3248,102 @@ static func update(fx, dt: float) -> void:
 					n.global_rotate(a.normalized(), a.length() * dt)
 		for l in w["lights"]:
 			l["base"] = 0.7 * gate
+	# issue 1236: a wreck that blocks its hex stays in it
+	_leash(fx, dt)
+
+
+# ---------------------------------------------------------------- wrecks that block their hex (issue 1236)
+# The rules turn a dead cruiser or capital's hex into a wreck that blocks movement and fire (rules "wreck" event). The
+# battle anchors that death here, so its pieces, fragments and plates come to rest inside the hex instead of drifting
+# across the board. Each piece may move out to LEASH_R from the hex centre, or LEASH_SLACK past where it was born when a
+# long hull already overhangs that; past LEASH_SOFT of that distance it brakes, and at the limit it stops going outward.
+const LEASH_SOFT := 0.6        # share of a piece's limit where its brake starts
+const LEASH_BRAKE := 4.0       # per second, the brake at the limit (it ramps up from zero at LEASH_SOFT)
+const LEASH_SLACK := 0.2       # share of the hex radius a piece born past the radius may still drift out
+
+
+# The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's radius in world units.
+static func anchor_wreck(fx, id: String, centre: Vector3, radius: float) -> void:
+	if not fx.dstate.has("anchors"): fx.dstate["anchors"] = {}
+	fx.dstate["anchors"][id] = {"c": centre, "r": radius}
+
+
+# how many pieces of a ship's wreck are still on the board (the battle's fallback hull when a death left none)
+static func wreck_pieces(fx, id: String) -> int:
+	var n := 0
+	for w in fx.dstate.get("wrecks", []):
+		if w["id"] != id: continue
+		for nd in w["nodes"]:
+			if is_instance_valid(nd) and not nd.is_queued_for_deletion(): n += 1
+	return n
+
+
+# every piece of an anchored wreck: its main pieces, its fragments and the plates it threw
+static func leashed_nodes(fx, id: String) -> Array:
+	var out: Array = []
+	for w in fx.dstate.get("wrecks", []):
+		if w["id"] != id: continue
+		for nd in w["nodes"] + w.get("frags", []):
+			if is_instance_valid(nd): out.append(nd)
+	for b in fx.dstate.get("debris", []):
+		if is_instance_valid(b) and b.visible and str(b.get_meta("leash_id", "")) == id: out.append(b)
+	return out
+
+
+static func _leash(fx, dt: float) -> void:
+	var anchors: Dictionary = fx.dstate.get("anchors", {})
+	if anchors.is_empty() or dt <= 0.0: return
+	for w in fx.dstate["wrecks"]:
+		var an = anchors.get(w["id"])
+		if an == null: continue
+		# the kinematic tiers (and a frozen physics piece before its release) move by their fire entries
+		for f in w["fires"]:
+			if f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
+				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt)
+		for nd in w["nodes"] + w.get("frags", []):
+			if not is_instance_valid(nd): continue
+			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
+				(nd as RigidBody3D).linear_velocity = _leash_vel(nd, (nd as RigidBody3D).linear_velocity, an, dt)
+			_leash_clamp(nd, an)
+	for b in fx.dstate.get("debris", []):
+		if not is_instance_valid(b) or not b.visible: continue
+		var an = anchors.get(str(b.get_meta("leash_id", "")))
+		if an == null: continue
+		b.linear_velocity = _leash_vel(b, b.linear_velocity, an, dt)
+		_leash_clamp(b, an)
+
+
+# how far from the hex centre this piece may go, fixed the first time the leash sees it
+static func leash_limit(nd: Node3D, an: Dictionary) -> float:
+	if nd.has_meta("leash_r"): return float(nd.get_meta("leash_r"))
+	var off: Vector3 = nd.global_position - (an["c"] as Vector3)
+	off.y = 0.0
+	var r: float = an["r"]
+	var lim := maxf(r, off.length() + r * LEASH_SLACK) if off.length() > r else r
+	nd.set_meta("leash_r", lim)
+	return lim
+
+
+static func _leash_vel(nd: Node3D, v: Vector3, an: Dictionary, dt: float) -> Vector3:
+	var off: Vector3 = nd.global_position - (an["c"] as Vector3)
+	off.y = 0.0
+	var lim := leash_limit(nd, an)
+	var d := off.length()
+	var soft := lim * LEASH_SOFT
+	if d <= soft: return v
+	v *= exp(-LEASH_BRAKE * clampf((d - soft) / maxf(lim - soft, 0.001), 0.0, 1.0) * dt)
+	if d >= lim:
+		var n := off / d
+		var out := v.x * n.x + v.z * n.z
+		if out > 0.0: v -= n * out
+	return v
+
+
+static func _leash_clamp(nd: Node3D, an: Dictionary) -> void:
+	var c: Vector3 = an["c"]
+	var off: Vector3 = nd.global_position - c
+	off.y = 0.0
+	var lim := leash_limit(nd, an)
+	if off.length() > lim:
+		var p := c + off.normalized() * lim
+		nd.global_position = Vector3(p.x, nd.global_position.y, p.z)
