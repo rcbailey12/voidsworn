@@ -95,8 +95,8 @@ def tri_dist(p, A, B, C):
     P = np.broadcast_to(p, A.shape); edge = np.minimum(np.minimum(seg_dist(P, A, B), seg_dist(P, B, C)), seg_dist(P, C, A))
     return np.where(inside, plane, edge)
 
-def open_bell(p, fwd, R, V, tol):
-    """is p the centre of an open engine bell of radius R exhausting along fwd? (issue 592; RECIPE.md stage 7)
+def open_bell(p, fwd, R, V, tol, *, require_clear_mouth=False):
+    """Check the centre of a round engine or bomb-tube exit of radius R along fwd (RECIPE.md stage 7).
     rim:    mesh vertices on the exit plane (within min(tol, 0.25 R) along the axis) at the recorded radius (0.7 R to 1.15 R off the axis)
             in at least 10 of 12 sectors round the axis: the bell is there, at that size, facing that way;
     throat: mesh inside 0.9 R of the axis upstream of the plane (within 2 R): the bell has a throat behind its mouth;
@@ -115,6 +115,11 @@ def open_bell(p, fwd, R, V, tol):
     why = [] if sectors >= 10 else [f'its rim at radius {R:.4f} on the exit plane covers {sectors} of 12 sectors']
     if not throat: why.append('no throat upstream of the exit')
     if plug: why.append(f'{plug} mesh points in the exhaust path')
+    if require_clear_mouth:
+        # Check a thin slice at the mouth. A recessed load is outside this slice, while a smaller
+        # inner rim gives away a falsely enlarged radius even if surrounding armour forms a ring.
+        mouth = int(((np.abs(ax) <= plane_tol * .25) & (rad < .7 * R)).sum())
+        if mouth: why.append(f'{mouth} mesh points inside the claimed opening on the exit plane')
     out.update(ok=not why, why='; '.join(why)); return out
 
 def open_rectangular_exhaust(p, fwd, up, aperture, vertices, tol):
@@ -248,8 +253,9 @@ def main():
             if not (np.all(p >= lo) and np.all(p <= hi)): probs.append('hp_core is outside the hull')
             rows.append(row); continue
         d = float(tri_dist(p, A, B, C).min()); row['off_mesh'] = round(d, 4)
-        engine_extras = n.get('extras') or {}
-        aperture = engine_extras.get('aperture') if nm.startswith('hp_eng_') else None
+        extras = n.get('extras') or {}
+        m = re.fullmatch(r'hp_w(\d+)_([A-Za-z0-9_]+)_([FTPS])_(\d+)', nm)
+        aperture = extras.get('aperture') if nm.startswith('hp_eng_') else None
         if aperture is not None:
             exhaust = open_rectangular_exhaust(p, fwd, up, aperture, VERTS, TOL)
             row['exhaust'] = exhaust
@@ -259,11 +265,16 @@ def main():
             # issue 592: an engine point is the centre of its bell's exit, and an open bell has no mesh at its centre. It passes
             # when the authored bell is there: its rim on the exit plane at the recorded radius, all round, its throat upstream
             # and its exhaust path clear (open_bell); the 0.012 limit is not loosened for any point
-            bell = open_bell(p, fwd, float(engine_extras.get('radius') or 0), VERTS, TOL)
+            bell = open_bell(p, fwd, float(extras.get('radius') or 0), VERTS, TOL)
             row['bell'] = bell
             if not bell.get('ok'): probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f}) and is not the centre of an open engine bell: {bell["why"]}')
+        elif d > TOL and wing and m and m.group(2) == 'bombs':
+            # A bomb launches from the open centre of its authored tube. Prove the rim, bore and clear exit.
+            tube = open_bell(p, fwd, float(extras.get('radius') or 0), VERTS, TOL, require_clear_mouth=True)
+            row['bomb_tube'] = tube
+            if not tube['ok']:
+                probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f}) and is not the centre of an open bomb tube: {tube["why"]}')
         elif d > TOL: probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f})')
-        m = re.fullmatch(r'hp_w(\d+)_([A-Za-z0-9_]+)_([FTPS])_(\d+)', nm)
         if m:
             slot, wk, arc = int(m.group(1)), m.group(2), m.group(3); count['gun'] = count.get('gun', 0) + 1
             if slot >= len(weapons) or weapons[slot] != (wk, arc):
