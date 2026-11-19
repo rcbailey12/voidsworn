@@ -1,0 +1,10 @@
+start run 3 Thu 11/19/2026 14:37:35.88 
+run folder C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run2 
+commit 078455909936c9dc11aedad1efc40487045ee01b 
+copied ships, gen and import cache from build\godot 14:38:29.06 
+import ok 14:49:45.44 
+clip frames ok (c170 and c120) 14:55:35.83 
+stills ok 15:03:52.73 
+storm fixture timing ok 15:17:59.58 
+FAILED: scene 207 gate failed; see out\gate_log.txt 
+all done 
