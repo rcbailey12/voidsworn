@@ -166,9 +166,9 @@ those old jobs were already merged? That's a big miss."). Set: Board (R288).
 | Work | Seat | Why |
 |---|---|---|
 | Board: reviews, merges, specs, visual calls, picks put to Ryan | One Claude thread, Opus 5.5 | judgement is the bottleneck (R128, R194) |
-| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two or three at once | Ryan: "I think builds in blender should come from Opus" (R205); "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) |
+| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers; not capped while Ryan's ultra plan clears the backlog (Ryan, Nov 19), back to two or three at once when it ends | Ryan: "I think builds in blender should come from Opus" (R205); the earlier "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) is lifted for the backlog push (Ryan, Nov 19) |
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
-| Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, one job at a time, while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
+| Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, up to four local lanes, one job per lane (lanes C and D code only; R268, R301), while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
 | Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
@@ -298,9 +298,18 @@ side, heavy bakes and Blender renders take more of it, and nothing is started th
 graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
 Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
 bakes 2, with PC_GPU_WEIGHT for the job's chosen weight), or a solo claim that waits for every slot
-to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
-work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
-unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
+to empty and blocks new GPU work while it measures. Slot files are replaced atomically. A slot or solo claim with damaged JSON
+is moved to a retained `gpu_slot_corrupt_*` file so admission can resume. Damaged capacity settings stop admission.
+Claims name the issue, job directory or script. The watchdog and its GPU child each have a recorded PID, start time and
+executable name. The child is recorded before it can start work. A failed kill logs the survivors and leaves an
+`orphaned_child` claim until those exact processes are gone. Claims from older ship checkouts stay held while their PID
+is alive. Admission checks a snapshot outside the shared lock at most once a second. If the lookup fails or the claim files
+change during the lookup, admission waits and checks again. Child registration waits for the lock before starting the child.
+Drain GPU jobs before updating all shared tools copies together, since older launchers cannot track the child.
+A partial write or a reused PID could block the queue, and losing
+the watchdog or failing to kill its child could free capacity while the child was still using it (Board, issue 1193).
+`gpu_go.txt` still wins: no new GPU work starts unless its first line is `GPU cleared` (optionally followed by `: reason`);
+the gaming pause in 3.11 is unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
 graphicsa card can actually handle as a 5080. we don't want to overwhelm it but we don't want to artificially restrict small
 jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
 (R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
@@ -755,3 +764,9 @@ drifted (R155). Set: Board. Id: R155b.
 12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
 a new baseline is committed only when the Board accepts the change.** Why: the first run pays for shader warm-up (R162).
 Set: Board. Ids: R162c, program-07, skill-sv-02, skill-sv-03.
+
+12.6 **The player-path recording of Battles 1 to 3 is the acceptance check for visual and teaching changes.** Use
+`tools/pc/jobs/player_path.bat` on the shared installed build with a fresh, isolated profile and player defaults. Judge the change
+in those recordings. Use the look bench and bot captures for comparison and diagnosis. Earlier captures hid the
+cut-ins, danger overlay, teaching cards, target card and battle voice that a new player encounters. The look bench also
+draws meshes at full detail. Set: Ryan, Nov 19 (R328).

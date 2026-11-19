@@ -93,6 +93,7 @@ var fac_of := {}
 var shadow_scan := 0
 var kill_shadows := false
 var build_ms := 0.0
+var build_wait_usec := 60_000_000
 var vol_looks: Array = []   # --trace: the volleys fired this frame (faction:kind:weapon)
 var film_focus: Array = [] # issue 538: actual impact positions and times, for the proof camera only
 
@@ -618,7 +619,7 @@ func _build(mode: String, seed: int) -> bool:
 	b.tips_off = true
 	b.begin_with(api)
 	# A cold build can wait separately for world bakes, FX and shader settling.
-	var deadline := Time.get_ticks_usec() + 60000000
+	var deadline := Time.get_ticks_usec() + build_wait_usec
 	while (b.warming or b.busy) and Time.get_ticks_usec() < deadline:
 		await get_tree().process_frame
 	if b.warming or b.busy:
