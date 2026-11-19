@@ -156,7 +156,7 @@ Concept counts read off the concept sheet by eye (C12 sheet: bow = the knoll, th
 |---|---:|---:|---|
 | bow/top | 3 | 6 | Hull: the compact knot of flesh; Prow knoll; Bile dome 1 (port); Bile dome 1 (starboard); Bile dome 2 (port); Bile dome 2 (starboard) |
 | bow/side | 3 | 4 | Hull: the compact knot of flesh; Prow knoll; Bile dome 1 (port); Bile dome 2 (port) |
-| bow/below | 2 | 1 | Hull: the compact knot of flesh |
+| bow/below | 2 | 2 | Hull: the compact knot of flesh; Prow knoll |
 | mid/top | 4 | 8 | Hull: the compact knot of flesh; Tendril knot; Bile dome 2 (port); Bile dome 2 (starboard); Bile dome 3 (port); Bile dome 3 (starboard); Reserve sac 1 (port); Reserve sac 2 (starboard) |
 | mid/side | 4 | 5 | Hull: the compact knot of flesh; Tendril knot; Bile dome 2 (port); Bile dome 3 (port); Reserve sac 1 (port) |
 | mid/below | 2 | 3 | Hull: the compact knot of flesh; Reserve sac 1 (port); Reserve sac 2 (starboard) |
@@ -171,6 +171,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.90 | 2.22 | 2.45 | 3.43 |
-| build | 2.09 | 2.22 | 2.69 | 3.77 |
+| build | 2.09 | 2.21 | 2.69 | 3.76 |
 
 Lines not present, shaped and detailed without a reason: 0.

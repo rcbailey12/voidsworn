@@ -15,10 +15,10 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 
 | Check | Value |
 |---|---|
-| model length | 6.499 |
+| model length | 6.497 |
 | length side | 6.511 |
-| length top | 6.511 |
-| length disagreement percent | 0.0 |
+| length top | 6.506 |
+| length disagreement percent | 0.09 |
 | beam top | 3.111 |
 | beam bow | 3.122 |
 | beam disagreement percent | 0.17 |
@@ -31,16 +31,16 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | L to B hull | 2.59 |
 | L to H hull | 3.89 |
 | prow overhang | 0.67 |
-| outline iou percent | 76.8 |
-| mass outline iou percent | 78.5 |
+| outline iou percent | 75.5 |
+| mass outline iou percent | 76.9 |
 | PASS | True |
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
 
 | ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
 |---|---|---:|---:|---:|---:|---|---|---|---|
-| M1 | spine volley, throat (fixed) | 1 barrel | 12.6 | 0.00 | 0.00 | forward | F bioplasma | picture | the knoll: the head ends in a round puckered mouth of raw flesh, a big deep dark bore (about half the head's width) with a fat lip ringed by short bone hooks; the bile gland lies deep down the bore |
-| T1 | boarding tendrils, knot of 5 heavy blunt tendrils draped over the hull (fixed) | 2 barrels | 53.4 | 0.00 | 0.87 | forward | T tendril | picture | boarding tendrils: a low mound of knotted muscle holding five heavy tendrils with blunt rounded tips and no claws, draped back over the hull and down its flanks at rest (fixed: they reach every way at once) |
+| M1 | spine volley, throat (fixed) | 1 barrel | 13.3 | 0.00 | 0.00 | forward | F bioplasma | picture | the knoll: the head ends in a round puckered mouth of raw flesh, a big deep dark bore (about half the head's width) with a fat lip ringed by short bone hooks; the bile gland lies deep down the bore |
+| T1 | boarding tendrils, knot of 5 heavy blunt tendrils draped over the hull (fixed) | 2 barrels | 53.3 | 0.00 | 0.87 | forward | T tendril | picture | boarding tendrils: a low mound of knotted muscle holding five heavy tendrils with blunt rounded tips and no claws, draped back over the hull and down its flanks at rest (fixed: they reach every way at once) |
 | S1p | bile dome, 0.6 across | 1 | 26.5 | 0.92 | -0.09 | - | - | picture | a bile store in a wrinkled socket, fed forward to the knoll by the veins |
 | S1s | bile dome, 0.6 across | 1 | 26.5 | -0.86 | -0.08 | - | - | picture | a bile store in a wrinkled socket, fed forward to the knoll by the veins |
 | S2p | bile dome, 0.7 across | 1 | 38.8 | 1.14 | -0.05 | - | - | picture | a bile store in a wrinkled socket, fed forward to the knoll by the veins |
@@ -65,10 +65,10 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Zone | From % | To % | Where | Note |
 |---|---:|---:|---|---|
-| dark olive flesh, hard chitin plates over most of the hull (paint stage, R325) | 10.3 | 73.3 | whole body |  |
-| raw puckered flesh | 0.3 | 12.6 | the prow knoll |  |
-| pale ochre bone | 0.3 | 3.3 | the short hooks round the bore |  |
-| bile yellow-green light | 0.3 | 9.5 | the gland deep in the knoll's vent |  |
+| dark olive flesh, hard chitin plates over most of the hull (paint stage, R325) | 10.3 | 73.4 | whole body |  |
+| raw puckered flesh | 0.2 | 12.6 | the prow knoll |  |
+| pale ochre bone | 0.2 | 3.3 | the short hooks round the bore |  |
+| bile yellow-green light | 0.2 | 9.5 | the gland deep in the knoll's vent |  |
 | bile yellow-green light | 72.6 | 96.4 | the vents and the light in the membranes |  |
 | dim bile | 12.6 | 69.5 | the veins, the dome windows, the tendril tips' acid pores |  |
 
@@ -76,8 +76,8 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
-| Hull: the compact knot of flesh | 10.3 to 74.1 | -1.22 to 1.29 | -0.73 to 0.94 | dark olive flesh | narrow at the prow, widest a little aft of the middle, rounding into the stern |
-| Prow knoll | 1.5 to 16.9 | -0.46 to 0.46 | -0.44 to 0.45 | raw flesh, bone hooks | the gun and nothing else at the prow (Ryan's edits, issue 631) |
+| Hull: the compact knot of flesh | 10.2 to 74.1 | -1.22 to 1.29 | -0.73 to 0.94 | dark olive flesh | narrow at the prow, widest a little aft of the middle, rounding into the stern |
+| Prow knoll | 2.0 to 17.7 | -0.66 to 0.69 | -0.65 to 0.64 | raw flesh, bone hooks | the gun and nothing else at the prow (Ryan's edits, issue 631) |
 | Tendril knot | 38.4 to 68.2 | -0.83 to 0.86 | 0.46 to 1.27 | flesh mound, tendrils | the knot with a crown on the back: the frigate's mark from above (R233) |
 | Bile dome 1 (port) | 20.8 to 31.8 | 0.62 to 1.23 | -0.45 to 0.28 | flesh dome | a dome on the flank |
 | Bile dome 1 (starboard) | 20.8 to 31.8 | -1.16 to -0.55 | -0.45 to 0.28 | flesh dome | a dome on the flank |
@@ -98,7 +98,7 @@ Bulkhead and frame stations: F0 16.4%, F1 24.9%, F2 33.3%, F3 41.8%, F4 50.3%, F
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
 | bile gland (gland) | 14.6 to 24.4 | -0.26 to 0.26 | -0.29 to 0.19 | the knoll's bile gland: the shot's magazine |
-| ganglion (ganglion) | 24.3 to 31.7 | -0.20 to 0.20 | 0.35 to 0.65 | the Node: the knot of nerve that steers the body |
+| ganglion (ganglion) | 24.3 to 31.6 | -0.20 to 0.20 | 0.35 to 0.65 | the Node: the knot of nerve that steers the body |
 | bile store 1p (gland) | 23.0 to 29.8 | 0.55 to 0.89 | -0.31 to 0.01 | the bile store behind the dome |
 | bile store 1s (gland) | 23.0 to 29.8 | -0.89 to -0.55 | -0.31 to 0.01 | the bile store behind the dome |
 | bile store 2p (gland) | 35.3 to 42.1 | 0.50 to 0.84 | -0.31 to 0.01 | the bile store behind the dome |
@@ -122,7 +122,7 @@ Bulkhead and frame stations: F0 16.4%, F1 24.9%, F2 33.3%, F3 41.8%, F4 50.3%, F
 
 | Break line | Station % | What it opens |
 |---|---|---|
-| B-1 | 33.3 (seam wanders 31.0 to 35.7) | ahead of the knot: the prow and the knoll tear away, opening the gland, the Node and the gut; the fore domes burst first |
+| B-1 | 33.3 (seam wanders 31.0 to 35.6) | ahead of the knot: the prow and the knoll tear away, opening the gland, the Node and the gut; the fore domes burst first |
 
 Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, then the body tears open along a ragged line (R186).
 
@@ -143,7 +143,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 132 objects, 18 parts, 472 close pairs, 207 rays, 2 guns, 0 sensor pairs, 0 turrets swept, 8 cones, 0 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 132 objects, 18 parts, 480 close pairs, 207 rays, 2 guns, 0 sensor pairs, 0 turrets swept, 8 cones, 0 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -152,7 +152,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 ## Changed from the picture (R207)
 
 - **Colour: bile yellow-green light over dark olive flesh, pale ochre bone; hard chitin plates over most of the hull in the paint (R325, Ryan Nov 19).** R204 and the lore: the colour is fixed in the build; the picture renders the family's grey-amber anchor palette.
-- **The head's puckered mouth is the spine volley (bioplasma F): one deep dark bore with a fat lip and twelve short bone hooks (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body).** data.js b_drone has one bioplasma slot (issue 649, Ryan's "send the frigate back on guns"); 2 shots leave the one vent in turn.
+- **The head's puckered mouth is the spine volley (bioplasma F): one deep dark bore about half the lip's width, in a soft puckered lip that flares from a waist, twelve short bone hooks set into the lip (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body; Board on v3: open the bore so it dominates bow-on, no straight collar).** data.js b_drone has one bioplasma slot (issue 649, Ryan's "send the frigate back on guns"); 2 shots leave the one vent in turn.
 - **The tendril mound is fixed, not a turret: a knot of muscle holding five draped tendrils (new kit part type drape; accepted by the Board on blockout v2).** the slot is all round (T); tendrils lying over the hull reach every way at once, as C11's mane (issue 623); a turning crown would sweep them through the hull.
 - **The tendrils are laid on the hull clear of the hide and hang free below the waterline at their tips.** they must not sit in the hull (fit check CLASH); the picture's tips hang off the flanks.
 - **The domes on the flanks are bile stores feeding the knoll; veins run forward to it.** every part has a job (R221); designs.md does not name them; the picture shows three a side.

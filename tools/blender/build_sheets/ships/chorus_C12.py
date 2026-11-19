@@ -87,7 +87,7 @@ def build(K):
         return th if side > 0 else math.pi - th
 
     # ---------------- the prow knoll (bioplasma F, the spine volley) ----------------
-    K.spinal('M1', (2.2, 0.0, 0.0), 0.72, r=0.22, slot='F', weapon='bioplasma', inv='knoll', style='knoll', lip_r=0.52, teeth=8, seed=7,
+    K.spinal('M1', (2.15, 0.0, 0.0), 0.72, r=0.42, slot='F', weapon='bioplasma', inv='knoll', style='knoll', lip_r=0.74, teeth=8, seed=7,
              gland_at=0.12, crown=12,
              note='the knoll: the head ends in a round puckered mouth of raw flesh, a big deep dark bore (about half the head\'s width) with a fat lip ringed by short bone hooks; the bile gland lies deep down the bore')
     K.mass('Prow knoll', _bpy.data.objects['M1_mount_tissue'], 'raw flesh, bone hooks', note='the gun and nothing else at the prow (Ryan\'s edits, issue 631)')
@@ -290,7 +290,7 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone; hard chitin plates over most of the hull in the paint (R325, Ryan Nov 19)',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette')
-    K.change('The head\'s puckered mouth is the spine volley (bioplasma F): one deep dark bore with a fat lip and twelve short bone hooks (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body)',
+    K.change('The head\'s puckered mouth is the spine volley (bioplasma F): one deep dark bore about half the lip\'s width, in a soft puckered lip that flares from a waist, twelve short bone hooks set into the lip (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body; Board on v3: open the bore so it dominates bow-on, no straight collar)',
              'data.js b_drone has one bioplasma slot (issue 649, Ryan\'s "send the frigate back on guns"); 2 shots leave the one vent in turn')
     K.change('The tendril mound is fixed, not a turret: a knot of muscle holding five draped tendrils (new kit part type drape; accepted by the Board on blockout v2)', 'the slot is all round (T); tendrils lying over the hull reach every way at once, as C11\'s mane (issue 623); a turning crown would sweep them through the hull')
     K.change('The tendrils are laid on the hull clear of the hide and hang free below the waterline at their tips', 'they must not sit in the hull (fit check CLASH); the picture\'s tips hang off the flanks')
