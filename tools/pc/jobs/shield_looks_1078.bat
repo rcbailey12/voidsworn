@@ -30,11 +30,9 @@ if not exist "%TMO%" (
 set "R=%HOME1078%\repo"
 if not exist "%R%\.git" git -c core.autocrlf=false clone https://github.com/rcbailey12/voidsworn "%R%" > "%HOME1078%\git.txt" 2>&1
 git -C "%R%" fetch origin >> "%HOME1078%\git.txt" 2>&1
-git -C "%R%" checkout -f --detach %REF% >> "%HOME1078%\git.txt" 2>&1
-if errorlevel 1 (
-  echo FAILED: cannot check out %REF% >> "%ST%"
-  goto finish
-)
+set "OUT="
+call :safe_checkout %REF% first
+if errorlevel 1 goto finish
 for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "SHA=%%H"
 rem a fresh work folder per attempt, so a retry never mixes old stills, clip frames or json with new ones
 set "ATT=%SHA%_%RANDOM%%RANDOM%"
@@ -113,7 +111,7 @@ copy /y "%OUT%\cost_log.txt" "%RES%\" > nul 2>&1
 
 rem the same cost pass on main (today's look only, the probe copied in), so the numbers compare against main itself
 copy /y "%R%\godot\fx\test\shield_fail_probe.gd" "%HOME1078%\probe_copy.gd" > nul
-git -C "%R%" checkout -f --detach origin/main >> "%HOME1078%\git.txt" 2>&1
+call :safe_checkout origin/main main
 if errorlevel 1 (
   echo FAILED: cannot check out origin/main, no main cost numbers >> "%ST%"
   goto done
@@ -126,13 +124,14 @@ if not "%MSHA%"=="%WANT%" (
   echo FAILED: checkout is %MSHA%, origin/main is %WANT%, no main cost numbers >> "%ST%"
   goto done
 )
-copy /y "%HOME1078%\probe_copy.gd" "%R%\godot\fx\test\shield_fail_probe.gd" > nul
+rem the probe goes in under a name main does not track, so checking the branch out again never collides with it
+copy /y "%HOME1078%\probe_copy.gd" "%R%\godot\fx\test\shield1078_main_probe.gd" > nul
 rem a fresh folder per run, so an older run's json can never stand in for this one
 set "MRUN=cost_main_%MSHA%_%RANDOM%%RANDOM%"
 set "PROBE_OUT=%OUT%\%MRUN%"
 set "PROBE_LOOKS=today"
 set "PC_GPU_MODE=solo"
-call "%TMO%" 900 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\cost_main_log.txt" 2>&1
+call "%TMO%" 900 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield1078_main_probe.gd > "%OUT%\cost_main_log.txt" 2>&1
 set "PC_GPU_MODE="
 set "PROBE_LOOKS="
 findstr /c:"SHIELD1078_DONE" "%OUT%\cost_main_log.txt" > nul
@@ -147,7 +146,7 @@ if not exist "%OUT%\%MRUN%\shield1078.json" (
 echo main cost pass %MSHA% done in %MRUN% %date% %time% >> "%ST%"
 
 :done
-git -C "%R%" checkout -f --detach %SHA% > nul 2>&1
+call :safe_checkout %SHA% back
 echo DONE %SHA% %date% %time% >> "%ST%"
 
 :finish
@@ -160,3 +159,31 @@ for /d %%D in ("%OUT%\cost*") do copy /y "%%D\shield1078.json" "%RES%\%%~nxD.jso
 echo shield1078 end %date% %time% >> "%ST%"
 echo all done >> "%ST%"
 endlocal
+exit /b 0
+
+rem ---------------------------------------------------------------- :safe_checkout REF TAG
+rem Never a forced checkout (file loss, issue 1179; the ship_job.bat pattern). Save the clone's tracked changes first
+rem (git status and a binary patch, in out\), stop if any is outside godot\assets\ships (the only tracked files this job
+rem writes: the installed hulls copied in), restore only those from the clone's own commit, then a plain checkout that
+rem also refuses to overwrite ignored files, then copy the installed hulls in again.
+:safe_checkout
+set "SC_REF=%~1"
+set "SC_TAG=%~2"
+set "SC_DIR=%HOME1078%\out\checkout_%SC_TAG%_%RANDOM%"
+mkdir "%SC_DIR%"
+git -C "%R%" status --porcelain --untracked-files=no > "%SC_DIR%\clone_changes_before_checkout.txt" 2>&1
+git -C "%R%" diff --binary HEAD > "%SC_DIR%\clone_changes_before_checkout.patch" 2>> "%SC_DIR%\clone_changes_before_checkout.txt"
+findstr /v /r /c:"^.. godot/assets/ships/" "%SC_DIR%\clone_changes_before_checkout.txt" > "%SC_DIR%\clone_changes_unexpected.txt"
+for %%Z in ("%SC_DIR%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 (
+  echo FAILED: checkout %SC_REF%: the clone has local changes outside godot\assets\ships, listed in %SC_DIR%\clone_changes_unexpected.txt and saved as a patch; nothing was reset >> "%ST%"
+  exit /b 1
+)
+git -C "%R%" checkout -q HEAD -- godot/assets/ships >> "%HOME1078%\git.txt" 2>&1
+git -C "%R%" checkout -q --no-overwrite-ignore --detach %SC_REF% >> "%HOME1078%\git.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: checkout %SC_REF% refused, see git.txt; nothing was forced >> "%ST%"
+  exit /b 1
+)
+echo checked out %SC_REF% safely, saved changes in %SC_DIR% >> "%ST%"
+if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%SC_DIR%\copy_ships.txt" 2>&1
+exit /b 0
