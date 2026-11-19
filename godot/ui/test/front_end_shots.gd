@@ -109,6 +109,23 @@ func _run() -> void:
 	root.get_viewport().size_changed.emit()
 	await _wait(1.0)
 	await _shot("F3_setup_larger", "%s, UI scale Larger, faction and admiral" % res)
+	# phase 4: the flagship podium (the live ship turns on the PC; the cloud shows the KEEL silhouette)
+	if host != null and "ui" in host and host.ui != null and "aspect_pick" in host.ui:
+		host.C.act("startRun"); await _wait(1.5)
+		await _shot("F4_flagship_larger", "%s, UI scale Larger, flagship and aspect" % res)
+		host.C.act("backToSetup"); await _wait(0.5)
+		main.settings["ui_scale"] = 1.0
+		UiScale.set_player(1.0)
+		root.get_viewport().size_changed.emit()
+		await _wait(1.0)
+		for f in ["voidsworn", "hegemony", "chorus", "ithar"]:
+			host.C.act("pickFaction", f); host.C.act("startRun"); await _wait(2.5)
+			await _shot("F4_flagship_" + f, "%s, UI scale Normal, %s flagship" % [res, str(host.C.FACTIONS[f]["n"])])
+			if f == "voidsworn":
+				host.ui.aspect_pick = str(host.C.W["aspOffer"][0]); host.ui._dirty = true; await _wait(1.0)
+				await _shot("F4_flagship_picked", "%s, UI scale Normal, an aspect picked, Launch ready" % res)
+			host.C.act("backToSetup"); await _wait(0.5)
+		host.C.act("pickFaction", "voidsworn"); await _wait(0.3)
 	main.settings["ui_scale"] = 1.0
 	UiScale.set_player(1.0)
 	if _saved_settings != null:

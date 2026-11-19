@@ -6,6 +6,7 @@ extends Control
 const Ship = preload("res://render/ship_view.gd")
 const HT = preload("res://render/hull_table.gd")
 const Kit = preload("res://ui/theme/orders_kit.gd")
+const GS = preload("res://ui/theme/glass_shell.gd")
 const TURN_DEG_PER_S := 5.0
 const START_YAW := -35.0
 var code := ""
@@ -33,7 +34,7 @@ func setup(C, ship: Dictionary, accent: Color, still := false) -> void:
 		if tex != null:
 			var tr = TextureRect.new(); tr.texture = tex; tr.set_anchors_preset(Control.PRESET_FULL_RECT)
 			tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			tr.modulate = Color(accent.lerp(Color.WHITE, 0.55), 0.85); tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			tr.modulate = Color(accent.lerp(GS.TEXT3, 0.45), 0.6); tr.mouse_filter = Control.MOUSE_FILTER_IGNORE   # a stand-in outline, quieter than a ship
 			tr.offset_left = 24; tr.offset_right = -24; tr.offset_top = 40; tr.offset_bottom = -40
 			add_child(tr)
 		return
