@@ -255,10 +255,10 @@ def build(K):
     K.organ_room('ganglion', 'ganglion', (1.2, 0.0, 0.5), (0.24, 0.2, 0.15), note='the Node: the knot of nerve that steers the body', seed=3)
     for i, x in enumerate(DOMES):
         for side in (1, -1):
-            K.organ_room('bile_store_%d%s' % (i + 1, 'p' if side > 0 else 's'), 'gland', (x, side * (0.72 - 0.05 * i), -0.15), (0.22, 0.17, 0.16),
+            K.organ_room('bile_store_%d%s' % (i + 1, 'p' if side > 0 else 's'), 'gland', (x, side * (0.56 - 0.06 * i), -0.15), (0.2, 0.14, 0.15),
                          note='the bile store behind the dome', seed=10 + i)
     K.organ_room('heart_vat', 'vat', (0.25, 0.0, 0.0), (0.42, 0.34, 0.3), note='the heart vat: the core (hp_core), lit bile-green', seed=20)
-    K.organ_room('gut', 'gut', (0.95, 0.0, -0.5), (0.6, 0.38, 0.22), note='the gut', seed=21)
+    K.organ_room('gut', 'gut', (0.95, 0.0, -0.4), (0.55, 0.34, 0.2), note='the gut (kept well off the belly skin: death seam check, issue 1153 run 1)', seed=21)
     for i, (x, side, r) in enumerate(SACS):
         K.organ_room('regrowth_%d' % (i + 1), 'organ', (x, side * 0.32, -0.5), (0.26, 0.2, 0.16), note='regrowth tissue over the reserve sac (regen 3)', seed=23 + i)
     K.organ_room('knot_muscle', 'organ', (MOUND_X, 0.0, 0.52), (0.42, 0.3, 0.16), note='the knot\'s root muscle: it throws the tendrils', seed=25)
