@@ -1,5 +1,6 @@
 extends SceneTree
-# Issue 1217: pictures of the front-end screens through the real main scene (no showcase battle, no built ships needed).
+# Issue 1217: pictures of the front-end screens through the real main scene. With --no-showcase no built ships are
+# needed (the cloud); without it the script waits for the title battle to fade in (the PC).
 # godot --path godot --resolution 1920x1080 --script res://ui/test/front_end_shots.gd -- <out dir> [tag] [--no-showcase]
 # In the cloud run it under xvfb-run with --rendering-driver opengl3. Each picture is 1280x720 with its code name on it.
 
@@ -9,7 +10,12 @@ var tag := ""
 var main: Node
 
 
+var _saved_settings = null   # the player's settings file, put back byte for byte at the end (the game shares user://)
+
+
 func _initialize() -> void:
+	if FileAccess.file_exists("user://settings.json"):
+		_saved_settings = FileAccess.get_file_as_string("user://settings.json")
 	var a := OS.get_cmdline_user_args()
 	out = a[0] if a.size() > 0 else "user://front_end_shots"
 	tag = a[1] if a.size() > 1 and not str(a[1]).begins_with("--") else ""
@@ -56,6 +62,13 @@ func _scale(v: float) -> void:
 
 func _run() -> void:
 	await _wait(1.5)
+	# with the showcase battle (the PC, built ships): wait for it to load and fade in behind the title
+	if not main.args.has("no-showcase"):
+		var t0 := Time.get_ticks_msec()
+		while Time.get_ticks_msec() - t0 < 120000 and (main.showcase == null or not is_instance_valid(main.showcase) or not main.showcase.showcase_ready):
+			await process_frame
+		print("[front-end-shots] showcase ", "ready, enemy " + str(main.showcase.args.get("fac", "")) if main.showcase != null and is_instance_valid(main.showcase) else "missing")
+		await _wait(4.0)
 	var vs := root.get_viewport().get_visible_rect().size
 	var res := "%dx%d" % [int(vs.x), int(vs.y)]
 	for pair in [[1.0, "normal"], [1.3, "larger"]]:
@@ -64,23 +77,29 @@ func _run() -> void:
 		if t.has_method("_settings"):
 			t._settings()
 		await _wait(0.6)
-		await _shot("F1_settings_%s" % pair[1], "%s, UI scale %s" % [res, "Normal" if pair[0] == 1.0 else "Larger"])
-		if t.has_method("_close_settings"):
-			t._close_settings()
-		elif t.settings_panel != null:
+		await _shot("F2_settings_%s" % pair[1], "%s, UI scale %s" % [res, "Normal" if pair[0] == 1.0 else "Larger"])
+		if t.settings_panel != null:   # closed without saving: the player's own settings file is never written
 			t.settings_panel.queue_free(); t.settings_panel = null
 			if t.settings_dim != null: t.settings_dim.queue_free(); t.settings_dim = null
 		await _wait(0.3)
-		await _shot("F1_title_%s" % pair[1], "%s, UI scale %s" % [res, "Normal" if pair[0] == 1.0 else "Larger"])
+		await _shot("F2_title_%s" % pair[1], "%s, UI scale %s" % [res, "Normal" if pair[0] == 1.0 else "Larger"])
+		if t.has_method("_credits"):
+			t._credits(); await _wait(0.6)
+			await _shot("F2_credits_%s" % pair[1], "%s, UI scale %s" % [res, "Normal" if pair[0] == 1.0 else "Larger"])
+			t._close_credits(); await _wait(0.3)
 	await _scale(1.0)
 	main.new_run({})
 	await _wait(2.0)
-	await _shot("F1_setup_normal", "%s, UI scale Normal, faction and admiral" % res)
+	await _shot("F3_setup_normal", "%s, UI scale Normal, faction and admiral" % res)
 	main.settings["ui_scale"] = 1.3
 	UiScale.set_player(1.3)
 	root.get_viewport().size_changed.emit()
 	await _wait(1.0)
-	await _shot("F1_setup_larger", "%s, UI scale Larger, faction and admiral" % res)
+	await _shot("F3_setup_larger", "%s, UI scale Larger, faction and admiral" % res)
 	main.settings["ui_scale"] = 1.0
 	UiScale.set_player(1.0)
+	if _saved_settings != null:
+		var f := FileAccess.open("user://settings.json", FileAccess.WRITE)
+		f.store_string(_saved_settings)
+		f.close()
 	quit(0)
