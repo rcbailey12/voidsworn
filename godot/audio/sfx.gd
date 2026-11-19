@@ -456,21 +456,25 @@ func gun(k: String, sq: bool, style, pos = null, delay := 0.0) -> void:
 const CHARGE_LEAD := {"lance_charge": 0.26, "torp_charge": 0.30}
 
 
-func _charged(shot: String, charge: String, pos) -> void:
+# fire_at (issue 1211): when the effect knows its real fire time (seconds from now), the shot cue lands on it and the
+# charge leads it by its usual lead (from now at the earliest); -1 keeps the fixed lead.
+func _charged(shot: String, charge: String, pos, fire_at := -1.0) -> void:
+	var lead := float(CHARGE_LEAD.get(charge, 0.0))
+	var at := fire_at if fire_at >= 0.0 else lead
 	if legacy or not cues.has(charge):
-		play(shot, {"pos": pos})
+		play(shot, {"pos": pos, "delay": at if fire_at >= 0.0 else 0.0})
 		return
-	play(charge, {"pos": pos})
-	play(shot, {"pos": pos, "delay": float(CHARGE_LEAD[charge])})
+	play(charge, {"pos": pos, "delay": maxf(at - lead, 0.0)})
+	play(shot, {"pos": pos, "delay": at})
 
 
-func lance(ion: bool, fac: String, pos = null) -> void:
-	_charged("lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance", "lance_charge", pos)
+func lance(ion: bool, fac: String, pos = null, fire_at := -1.0) -> void:
+	_charged("lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance", "lance_charge", pos, fire_at)
 
 
-func torp(fac: String, pos = null) -> void:
+func torp(fac: String, pos = null, fire_at := -1.0) -> void:
 	var m := {"corsair": "torp_rocket", "chorus": "torp_sac", "ithar": "torp_star", "voidsworn": "torp_heavy"}
-	_charged(m.get(fac, "torp"), "torp_charge", pos)
+	_charged(m.get(fac, "torp"), "torp_charge", pos, fire_at)
 
 
 # The death bed: a looped low rumble held for the whole death picture. Its length comes from the death beats.
