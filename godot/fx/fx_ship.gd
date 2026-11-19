@@ -1151,30 +1151,53 @@ func _anchor(i: int, kind: String) -> Dictionary:
 		if h.is_empty():
 			return {}
 		if kind in ["a", "b"]:
-			h = _off_turrets(h, hull.L * BREACH.STAGE4_HOLE_L)
+			h = _off_turrets(h, hull.L * BREACH.STAGE4_HOLE_L, i)
+			if h.is_empty():
+				_anchors[key] = {}   # no clear plating: this anchor opens nothing (kept, so it is not searched again)
+				return {}
 		_anchors[key] = {"p": h["p"], "n": h["n"], "t": {}}
 	return _anchors[key]
 
 
 # Issue 1235 (Board review of PR 1245): turret meshes take no baked damage (they turn), so a stage 4 hole opened under a
-# turret's foot would leave the whole turret standing over the hole. A breach anchor inside a turret's footprint (its
-# meshes' box seen from above, at rest, plus the hole's radius) moves to the footprint's edge and is cast back onto the
-# plating there; if nothing is hit there it stays where it was.
-func _off_turrets(h: Dictionary, R: float) -> Dictionary:
+# turret's foot would leave the whole turret standing over the hole. A breach anchor inside any turret's footprint (its
+# meshes' box seen from above, at rest, plus the hole's radius) is moved: first to points round the footprints it is in,
+# cast back onto the plating, then to other plating samples of its section; every candidate is checked against EVERY
+# footprint (Artoo, PR 1245: two seats side by side could push it from one into the other). If no clear spot is found
+# the section opens no hole there ({}), never one under a turret.
+func _off_turrets(h: Dictionary, R: float, sec := -1) -> Dictionary:
+	if _clear_of_turrets(h["p"], R):
+		return h
+	var nn: Vector3 = h["n"]
+	var p0: Vector3 = h["p"]
 	for f in turret_feet():
 		var c: Vector3 = f[0]
 		var rad: float = float(f[1]) + R * 1.15
-		var d := Vector3(h["p"].x - c.x, 0.0, h["p"].z - c.z)
-		if d.length() >= rad:
+		if Vector2(p0.x - c.x, p0.z - c.z).length() >= rad:
 			continue
-		if d.length() < 1e-3:
-			d = Vector3(1, 0, 0)
-		var q: Vector3 = Vector3(c.x, h["p"].y, c.z) + d.normalized() * rad
-		var nn: Vector3 = h["n"]
-		var hit: Dictionary = hull.ray(q + nn * hull.L, -nn)
-		if not hit.is_empty():
-			h = {"p": hit["p"], "n": hit["n"]}
-	return h
+		var d0 := Vector3(p0.x - c.x, 0.0, p0.z - c.z)
+		var a0 := atan2(d0.z, d0.x) if d0.length() > 1e-3 else 0.0
+		for k in 16:
+			var an := a0 + (k + 1) / 2 * (TAU / 16.0) * (1.0 if k % 2 == 0 else -1.0)
+			for grow in [1.0, 1.5, 2.2]:
+				var q := Vector3(c.x + cos(an) * rad * grow, p0.y, c.z + sin(an) * rad * grow)
+				var hit: Dictionary = hull.ray(q + nn * hull.L, -nn)
+				if not hit.is_empty() and _clear_of_turrets(hit["p"], R):
+					return {"p": hit["p"], "n": hit["n"]}
+	if sec >= 0:
+		for t in 48:
+			var c2: Dictionary = hull.random_sample(sec, 0.0)
+			if not c2.is_empty() and (c2["n"] as Vector3).dot(nn) > 0.3 and _clear_of_turrets(c2["p"], R):
+				return {"p": c2["p"], "n": c2["n"]}
+	return {}
+
+
+func _clear_of_turrets(p: Vector3, R: float) -> bool:
+	for f in turret_feet():
+		var c: Vector3 = f[0]
+		if Vector2(p.x - c.x, p.z - c.z).length() < float(f[1]) + R * 1.15 - 1e-4:
+			return false
+	return true
 
 
 var _feet: Array = []

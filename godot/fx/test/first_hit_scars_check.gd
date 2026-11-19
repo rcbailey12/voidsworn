@@ -188,5 +188,31 @@ func _run() -> void:
 			var d2 := Vector2(a2["p"].x - fc.x, a2["p"].z - fc.z).length()
 			check(d2 >= fr + Rh - 1e-3, "a sampled stage 4 anchor in the turret's section is clear of the turret (%.2f)" % d2)
 
+	# 7b. two seats side by side (Artoo, PR 1245): a move out of one footprint must not land in the other
+	var row3: Array = _ship("pair", "voidsworn", Vector3(0, 0, 40))
+	var pr = row3[0]
+	var t2 := Node3D.new()
+	t2.name = "turret_2"
+	t2.position = Vector3(9, 2.5, 0)
+	(row3[3] as Node).get_parent().get_parent().add_child(t2)
+	var tm2 := MeshInstance3D.new()
+	tm2.mesh = _box(Vector3(2, 1, 2), 2)
+	tm2.position = Vector3(0, 0.5, 0)
+	t2.add_child(tm2)
+	pr.hull._read_turrets(pr.root)
+	pr._feet_done = false
+	var pf: Array = pr.turret_feet()
+	check(pf.size() == 2, "both seats of the pair are measured (%d)" % pf.size())
+	var Rp: float = pr.hull.L * BREACH.STAGE4_HOLE_L
+	for x in [6.0, 7.5, 9.0]:
+		var hp: Dictionary = pr._off_turrets({"p": Vector3(x, 2.5, 0), "n": Vector3.UP}, Rp, 2)
+		check(hp.is_empty() or pr._clear_of_turrets(hp["p"], Rp), "a hole between two seats (x %.1f) ends clear of both, or opens nowhere" % x)
+		if not hp.is_empty():
+			check(absf(hp["p"].y - 2.5) < 0.05, "the moved hole between two seats sits on the plating")
+	for k in 3:
+		pr._anchors.erase("a%d" % k)
+		var ak: Dictionary = pr._anchor(k, "a")
+		check(ak.is_empty() or pr._clear_of_turrets(ak["p"], Rp), "section %d's sampled stage 4 anchor is clear of both seats" % k)
+
 	print("first_hit_scars_check: ", "PASS" if failures == 0 else "FAIL (%d)" % failures)
 	quit(1 if failures > 0 else 0)
