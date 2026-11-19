@@ -27,6 +27,7 @@ const fakeGh = [
   '        *) return 2 ;;',
   '      esac ;;',
   '    "api repos/example/voidsworn/issues/1098") echo "Fixture title" ;;',
+  '    "api repos/example/voidsworn/pulls/42") printf "%s\\n" "$PR_BODY" ;;',
   '    "pr create"|"pr edit")',
   '      [ "$2" = "$PR_ACTION" ] && [ "${@: -2:1}" = --body-file ] || return 2',
   '      [ "$(wc -c < "${!#}")" -le 65536 ] || { echo "Body is too long" >&2; return 1; }',
@@ -48,14 +49,14 @@ const windowsSetup = [
   'fi',
 ].join('\n');
 
-function send(action, message, head = branch) {
+function send(action, message, head = branch, currentBody = '') {
   const payload = JSON.stringify({ head_commit: { message } });
   fs.writeFileSync(event, payload);
   const result = spawnSync(bash, ['--noprofile', '--norc', '-e', '-s'], {
     cwd: tmp,
     input: [windows ? windowsSetup : '', fakeGh, step].join('\n'),
     encoding: 'utf8',
-    env: { ...process.env, PR_ACTION: action, BRANCH: head, REPO: 'example/voidsworn',
+    env: { ...process.env, PR_ACTION: action, PR_BODY: currentBody, BRANCH: head, REPO: 'example/voidsworn',
       STANDING: '256', GITHUB_EVENT_PATH: 'event.json' },
     timeout: 30000,
     windowsHide: true,
@@ -133,4 +134,29 @@ for (const action of ['create', 'edit']) {
   assert.match(send(action, museShort, 'muse/look-pass-726'), /^Refs #726$/m);
 }
 
-console.log('PASS auto_pr_body_tests: create and edit keep short bodies and bound long workhorse, Codex, plain and issue-less Muse bodies');
+// Issue 1135: a refresh keeps the Board's decision to leave the issue open.
+const latest = title + '\n\nLatest run report';
+const previousRefs = 'Previous run report\n\nRefs #1098';
+const preservedRefs = send('edit', latest, branch, previousRefs);
+assert.match(preservedRefs, /^Refs #1098$/m);
+assert.doesNotMatch(preservedRefs, /^Closes #1098$/m);
+
+const refreshedRefs = send('edit', latest + '\n\nFixes: #1098\nCloses #10980', branch, previousRefs);
+assert.match(refreshedRefs, /^Latest run report$/m);
+assert.doesNotMatch(refreshedRefs, /Previous run report/);
+assert.match(refreshedRefs, /^Refs #1098$/m);
+assert.doesNotMatch(refreshedRefs, /^(?:Closes|Fixes):? #1098$/mi);
+assert.match(refreshedRefs, /^Closes #10980$/m);
+
+for (const currentBody of ['Previous run report\n\nCloses #1098', 'Previous run report',
+  'Refs #10980', 'Refs #1098\nResolves: #1098']) {
+  const refreshedCloses = send('edit', latest, branch, currentBody);
+  assert.match(refreshedCloses, /^Closes #1098$/m);
+  assert.doesNotMatch(refreshedCloses, /^Refs #1098$/m);
+}
+
+const standing = send('edit', latest + '\n\nFIXES: #256', 'codex/issue-256', 'Closes #256');
+assert.match(standing, /^Refs #256$/m);
+assert.doesNotMatch(standing, /^(?:Closes|Fixes):? #256$/mi);
+
+console.log('PASS auto_pr_body_tests: bounded bodies on create and edit, with refresh coverage for issue directives');
