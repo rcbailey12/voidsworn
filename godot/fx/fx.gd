@@ -1267,13 +1267,54 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	DEATH.add_collider(self, s)
 	if defer_initial_cuts:
 		return
-	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
-	var n = ships.size()
-	later(now + 0.4 + 0.25 * n, func l_cut_first() -> void:
+	# cut the hull for its death on a worker thread, staggered so a battle start does not stall. Issue 1232: the stagger
+	# counts the cuts still waiting to start, not every ship in the battle (a reinforcement in a 20 ship battle waited
+	# 5.4 s before its cut began, and the cut itself takes seconds), so a late arrival is ready for its death sooner.
+	var n := _arrival_cuts
+	_arrival_cuts += 1
+	later(now + 0.1 + 0.25 * n, func l_cut_first() -> void:
+		_arrival_cuts = maxi(_arrival_cuts - 1, 0)
 		if ships.get(id) == s and not s.dead and not s.gone:
 			var t_c := Time.get_ticks_usec()
 			DEATH.precompute(self, s)
 			pend("cut_first", t_c))
+	if warmed and DisplayServer.get_name() != "headless":
+		warm_arrival.call_deferred(s)
+
+
+# Issue 1232: a ship that arrives after the battle's warm-up (a reinforcement) draws its hull once with the death
+# overlays and its cuttable surface, so its first death never builds them in the kill frame. A hull already warmed this
+# battle costs nothing. Drawn a thousandth of its size in front of the camera for two frames: never seen.
+var warmed := false
+var _warm_seen := {}
+var _arrival_cuts := 0
+
+
+func warm_arrival(s: SHIP) -> void:
+	if s == null or s.gone or s.dead:
+		return
+	var fresh := false
+	for m in s.meshes:
+		var mi := m as MeshInstance3D
+		if mi != null and mi.mesh != null and not _warm_seen.has(mi.mesh.get_instance_id()):
+			fresh = true
+	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if not fresh or cam == null:
+		return
+	var tmp := Node3D.new()
+	tmp.name = "fx_warm_arrival"
+	add_child(tmp)
+	tmp.global_transform = Transform3D(cam.global_basis, cam.global_transform * Vector3(0, 0, -30.0 * unit))
+	tmp.scale = Vector3.ONE * 0.001
+	var paused := HULL.late_watch
+	HULL.pause_late_watch()
+	var t0 := Time.get_ticks_usec()
+	_warm_hull_meshes(tmp, s, _warm_seen.duplicate(), 0)
+	pend("warm_arrival", t0)
+	for i in 2:
+		await RenderingServer.frame_post_draw
+	tmp.queue_free()
+	if paused: HULL.start_late_watch()
 
 
 # Issue 370: what the attach point service answered for each ship this battle (per point type: authored "hp", surface
@@ -1565,7 +1606,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	sail_src.albedo_color = Color(1, 1, 1, 0.55)
 	mats.append(HULL.damage_material(sail_src, Transform3D.IDENTITY, {}, 1.0))
 	if not compat:
-		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
+		mats.append(mat(SH.SPRITE, 1, "#define SOFT\n"))
 	for band in ["small", "cruiser", "capital"]:
 		for kind in ["flash", "vent", "cool"]:
 			var baked := DEATH.flipbook_material(self, kind, band)
@@ -1622,14 +1663,13 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	harr[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.BACK, Vector3.BACK, Vector3.BACK])
 	harr[Mesh.ARRAY_COLOR] = PackedColorArray([Color.WHITE, Color.WHITE, Color.WHITE])
 	# A cap has position/normal/colour only, unlike the textured hull. Warm its
-	# opaque pass and CHUNK overlay in that exact format before the first death.
+	# opaque pass in that exact format before the first death.
 	var cap_arr: Array = harr.duplicate()
 	var cap_mesh := ArrayMesh.new()
 	cap_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, cap_arr)
 	var cap_mi := MeshInstance3D.new()
 	cap_mi.mesh = cap_mesh
 	cap_mi.material_override = mat(DEATH.SLAG, 0)
-	cap_mi.material_overlay = mat(SH.CHUNK, 1)
 	tmp.add_child(cap_mi)
 	var c4 = PackedFloat32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 	for ci in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
@@ -1644,56 +1684,14 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		hmi.rotation.y = 0.0 if sd == Vector3.BACK else PI
 		hmi.scale = Vector3.ONE * unit * 2.0
 		tmp.add_child(hmi)
-	# overlays (death pieces and cracks) over a plain lit material, and a debris body
-	var base = StandardMaterial3D.new()
-	for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]:
-		var mi = MeshInstance3D.new()
-		mi.mesh = box
-		mi.material_override = base
-		mi.material_overlay = ov
-		tmp.add_child(mi)
-	# every hull as it is drawn, with the death overlays on top: the overlay pipelines are per vertex format, so warming
-	# them on a box (above) does not cover the hulls, and the first break-up would compile them
+	# every hull as it is drawn, with the death tear overlay on top: the overlay pipelines are per vertex format, so warming
+	# it on a box (above) does not cover the hulls, and the first death would compile them. Issue 1232 (Neon's death audit
+	# F8.1): this drew three overlays no game path uses (CHUNK, CRACKS, HULLIN, now deleted with VOL) and not the tear the
+	# tell puts on every dying hull.
 	var seen := {}
 	var hk := 0
 	for sid in ships:
-		var sh: SHIP = ships[sid]
-		for m in sh.meshes:
-			var smi := m as MeshInstance3D
-			if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
-				continue
-			seen[smi.mesh.get_instance_id()] = true
-			var overlays := [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]
-			if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
-			for ov in overlays:
-				var wm := MeshInstance3D.new()
-				wm.mesh = smi.mesh
-				for si in smi.mesh.get_surface_count():
-					var am: Material = smi.get_active_material(si)
-					if am != null:
-						wm.set_surface_override_material(si, am)
-				wm.material_overlay = ov
-				var ext: float = maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
-				wm.scale = Vector3.ONE * (0.6 * unit / ext)
-				wm.position = Vector3((hk % 6 - 2.5) * 1.0, -2.0 - (hk / 6) * 1.0, 1.0) * unit
-				tmp.add_child(wm)
-				hk += 1
-			# Warm the actual cuttable PBR surface in this hull's vertex format too.
-			var dm := MeshInstance3D.new()
-			var pm := MeshInstance3D.new()
-			dm.mesh = smi.mesh
-			pm.mesh = smi.mesh
-			for si in smi.mesh.get_surface_count():
-				var source := smi.get_active_material(si)
-				dm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus"))
-				pm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus", true))
-			var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
-			dm.scale = Vector3.ONE * (0.6 * unit / dext)
-			dm.position = Vector3(0, -2, 1) * unit
-			pm.scale = dm.scale
-			pm.position = dm.position + Vector3.RIGHT * unit
-			tmp.add_child(dm)
-			tmp.add_child(pm)
+		hk = _warm_hull_meshes(tmp, ships[sid], seen, hk)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]
@@ -1726,4 +1724,48 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()
+	warmed = true
 	HULL.start_late_watch()
+
+
+# Every hull as it is drawn, with the death overlays on top, and its cuttable PBR surface (from warmup, shared with the
+# arrival warm-up, issue 1232). Returns the next free slot in the warm grid.
+func _warm_hull_meshes(tmp: Node3D, sh: SHIP, seen: Dictionary, hk: int) -> int:
+	for m in sh.meshes:
+		var smi := m as MeshInstance3D
+		if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
+			continue
+		seen[smi.mesh.get_instance_id()] = true
+		_warm_seen[smi.mesh.get_instance_id()] = true
+		var overlays := [dstate["tear_mat"] if dstate.has("tear_mat") else mat(SH.TEAR, 1)]
+		if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
+		for ov in overlays:
+			var wm := MeshInstance3D.new()
+			wm.mesh = smi.mesh
+			for si in smi.mesh.get_surface_count():
+				var am: Material = smi.get_active_material(si)
+				if am != null:
+					wm.set_surface_override_material(si, am)
+			wm.material_overlay = ov
+			var ext: float = maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
+			wm.scale = Vector3.ONE * (0.6 * unit / ext)
+			wm.position = Vector3((hk % 6 - 2.5) * 1.0, -2.0 - (hk / 6) * 1.0, 1.0) * unit
+			tmp.add_child(wm)
+			hk += 1
+		# Warm the actual cuttable PBR surface in this hull's vertex format too.
+		var dm := MeshInstance3D.new()
+		var pm := MeshInstance3D.new()
+		dm.mesh = smi.mesh
+		pm.mesh = smi.mesh
+		for si in smi.mesh.get_surface_count():
+			var source := smi.get_active_material(si)
+			dm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus"))
+			pm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus", true))
+		var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
+		dm.scale = Vector3.ONE * (0.6 * unit / dext)
+		dm.position = Vector3(0, -2, 1) * unit
+		pm.scale = dm.scale
+		pm.position = dm.position + Vector3.RIGHT * unit
+		tmp.add_child(dm)
+		tmp.add_child(pm)
+	return hk

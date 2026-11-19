@@ -1431,6 +1431,8 @@ static func _torn(plan: Dictionary, vl: PackedVector3Array, vp: PackedInt32Array
 	return vp[a] != vp[b] or vp[b] != vp[c]
 
 
+static var cut_serial := false   # issue 1232: the one-thread cut, for fx/test/cold_kill_check.gd to compare against
+
 static func _cut(job: Dictionary) -> Array:
 	var seeds: PackedVector3Array = job["seeds"]
 	var plan: Dictionary = job.get("plan", {})
@@ -1440,152 +1442,191 @@ static func _cut(job: Dictionary) -> Array:
 	if not plan.is_empty():
 		n_main = int(plan["n_main"])
 		ns = n_main + int(plan["n_frag"])
+	var pieces: Array = _blank_pieces(job, plan, ns, n_main)
+	# Issue 1232: each surface is cut on its own worker, then merged in surface order, so the pieces match a one-thread
+	# cut. A16's headless cut was 2.8 s, about 1 s of it one plating surface cut after all the others; on the PC it was
+	# 5.4 s, longer than a capital's 2.67 s death, so a kill before the cut was ready lost its pieces.
+	var surfs: Array = job["surfs"]
+	if plan.is_empty() or surfs.size() < 2 or cut_serial:
+		for sd in surfs:
+			_cut_surface(job, sd, pieces, ns, plan, warp, seeds)
+	else:
+		var parts: Array = []
+		for i in surfs.size():
+			parts.append({"pieces": _blank_pieces(job, plan, ns, n_main)})
+		var gid := WorkerThreadPool.add_group_task(func(i: int) -> void:
+			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds), surfs.size(), -1, true, "death cut surfaces")
+		WorkerThreadPool.wait_for_group_task_completion(gid)
+		for part in parts:
+			var own: Array = part["pieces"]
+			for c in ns:
+				var src: Dictionary = own[c]
+				if (src["surfs"] as Array).is_empty(): continue
+				var pc: Dictionary = pieces[c]
+				(pc["surfs"] as Array).append_array(src["surfs"])
+				pc["n"] = int(pc["n"]) + int(src["n"])
+				var pts: PackedVector3Array = pc["pts"]
+				pts.append_array(src["pts"])
+				pc["pts"] = pts
+	# each piece seals its own boundary loops (no shared state), so the pieces seal side by side too
+	if pieces.size() < 2 or cut_serial:
+		for pc in pieces:
+			_seal_piece(pc)
+	else:
+		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), -1, true, "death cut seals")
+		WorkerThreadPool.wait_for_group_task_completion(sid)
+	return pieces
+
+
+static func _blank_pieces(job: Dictionary, plan: Dictionary, ns: int, n_main: int) -> Array:
 	var pieces: Array = []
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
 			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false)})
-	for sd in job["surfs"]:
-		var arr: Array = sd["arrays"]
-		var xf: Transform3D = sd["xf"]
-		var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
-		var vl = xf * v
-		# a mirrored hull (negative determinant) turns its triangles inside out: flip the winding back
-		var flip = xf.basis.determinant() < 0.0
-		var idx = PackedInt32Array()
-		if arr[Mesh.ARRAY_INDEX] != null and (arr[Mesh.ARRAY_INDEX] as PackedInt32Array).size() > 0:
-			idx = arr[Mesh.ARRAY_INDEX]
-		else:
-			idx.resize(v.size())
-			for i in v.size():
-				idx[i] = i
-		# issue 600: where each triangle goes. A turret's turning mesh rides whole with the piece under its pivot; an
-		# authored hull's triangles that cross a tear are split along it first (_refine), so no deck, bulkhead or plate is
-		# left whole across a break; a machine's triangles go with its own piece (_piece_at).
-		var tri_piece := PackedInt32Array()
-		var nv: int = v.size()
-		if not plan.is_empty():
-			if sd.has("anchor"):
-				tri_piece.resize(idx.size() / 3)
-				tri_piece.fill(_piece_at(plan, sd["anchor"]))
-			elif bool(job.get("authored", false)):
-				var inside := bool(sd.get("interior", false))
-				# the plating and the insides follow the tear; a machine's box holds only on the parts surfaces
-				var sp: Dictionary = plan
-				if (inside or bool(sd.get("skin", false))) and plan.has("mach"):
-					sp = plan.duplicate()
-					sp.erase("mach")
-				var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside)
-				vl = rf["vl"]
-				arr = rf["arr"]
-				idx = rf["idx"]
-				tri_piece = rf["piece"]
-				nv = vl.size()
-		var buckets: Array = []
-		for c in ns:
-			buckets.append(PackedInt32Array())
-		for t in range(0, idx.size() - 2, 3):
-			var a = idx[t]
-			var b = idx[t + 1]
-			var cc = idx[t + 2]
-			var q = (vl[a] + vl[b] + vl[cc]) / 3.0
-			var best = 0
-			var bd = 1e18
-			var bd2 = 1e18
-			if not tri_piece.is_empty():
-				best = tri_piece[t / 3]
-			elif not plan.is_empty():
-				best = _piece_at(plan, q)
-			else:
-				# issue 484: a Chorus rupture tears along warped lines, not flat Voronoi planes
-				var qw: Vector3 = q
-				if not warp.is_empty(): qw = q + Vector3(1.0, 0.4, 0.6) * _wave_sum(warp, q)
-				for c in ns:
-					var dd = qw.distance_squared_to(seeds[c])
-					if dd < bd:
-						bd2 = bd
-						bd = dd
-						best = c
-					elif dd < bd2:
-						bd2 = dd
-			buckets[best].append(a)
-			buckets[best].append(cc if flip else b)
-			buckets[best].append(b if flip else cc)
-			var pc: Dictionary = pieces[best]
-			if plan.is_empty() and (pc["edge"] as PackedVector3Array).size() < 64 and sqrt(bd2) - sqrt(bd) < 0.6:
-				var edge: PackedVector3Array = pc["edge"]
-				edge.append(q)
-				pc["edge"] = edge
-		for c in ns:
-			var tri: PackedInt32Array = buckets[c]
-			if tri.is_empty():
-				continue
-			var remap = PackedInt32Array()
-			remap.resize(nv)
-			remap.fill(-1)
-			var order = PackedInt32Array()
-			var nidx = PackedInt32Array()
-			nidx.resize(tri.size())
-			for i in tri.size():
-				var o = tri[i]
-				var m = remap[o]
-				if m < 0:
-					m = order.size()
-					remap[o] = m
-					order.append(o)
-				nidx[i] = m
-			var na = []
-			na.resize(Mesh.ARRAY_MAX)
-			var pv = PackedVector3Array()
-			pv.resize(order.size())
-			for i in order.size():
-				pv[i] = vl[order[i]]
-			na[Mesh.ARRAY_VERTEX] = pv
-			if arr[Mesh.ARRAY_NORMAL] != null and (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).size() == nv:
-				var src: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
-				var dn = PackedVector3Array()
-				dn.resize(order.size())
-				for i in order.size():
-					dn[i] = (xf.basis * src[order[i]]).normalized()
-				na[Mesh.ARRAY_NORMAL] = dn
-			if arr[Mesh.ARRAY_TANGENT] != null and (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).size() == nv * 4:
-				var src4: PackedFloat32Array = arr[Mesh.ARRAY_TANGENT]
-				var dt = PackedFloat32Array()
-				dt.resize(order.size() * 4)
-				for i in order.size():
-					var o4 = order[i] * 4
-					var tv = (xf.basis * Vector3(src4[o4], src4[o4 + 1], src4[o4 + 2])).normalized()
-					dt[i * 4] = tv.x
-					dt[i * 4 + 1] = tv.y
-					dt[i * 4 + 2] = tv.z
-					dt[i * 4 + 3] = src4[o4 + 3]
-				na[Mesh.ARRAY_TANGENT] = dt
-			for key in [Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
-				if arr[key] != null and (arr[key] as PackedVector2Array).size() == nv:
-					var s2: PackedVector2Array = arr[key]
-					var d2 = PackedVector2Array()
-					d2.resize(order.size())
-					for i in order.size():
-						d2[i] = s2[order[i]]
-					na[key] = d2
-			if arr[Mesh.ARRAY_COLOR] != null and (arr[Mesh.ARRAY_COLOR] as PackedColorArray).size() == nv:
-				var sc: PackedColorArray = arr[Mesh.ARRAY_COLOR]
-				var dc = PackedColorArray()
-				dc.resize(order.size())
-				for i in order.size():
-					dc[i] = sc[order[i]]
-				na[Mesh.ARRAY_COLOR] = dc
-			na[Mesh.ARRAY_INDEX] = nidx
-			var pc: Dictionary = pieces[c]
-			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "interior": sd.get("interior", false), "fmt": int(sd.get("fmt", 0)), "tur": int(sd.get("tur", -1)), "skin": bool(sd.get("skin", false))})
-			pc["n"] = int(pc["n"]) + order.size()
-			var step = maxi(1, order.size() / 120)
-			var points: PackedVector3Array = pc["pts"]
-			for i in range(0, order.size(), step):
-				points.append(pv[i])
-			pc["pts"] = points
-	for pc in pieces:
-		_seal_piece(pc)
 	return pieces
+
+
+# One surface of the hull, cut into the given pieces (issue 1232: on its own worker when the cut has a plan).
+static func _cut_surface(job: Dictionary, sd: Dictionary, pieces: Array, ns: int, plan: Dictionary, warp: Array, seeds: PackedVector3Array) -> void:
+	var arr: Array = sd["arrays"]
+	var xf: Transform3D = sd["xf"]
+	var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+	var vl = xf * v
+	# a mirrored hull (negative determinant) turns its triangles inside out: flip the winding back
+	var flip = xf.basis.determinant() < 0.0
+	var idx = PackedInt32Array()
+	if arr[Mesh.ARRAY_INDEX] != null and (arr[Mesh.ARRAY_INDEX] as PackedInt32Array).size() > 0:
+		idx = arr[Mesh.ARRAY_INDEX]
+	else:
+		idx.resize(v.size())
+		for i in v.size():
+			idx[i] = i
+	# issue 600: where each triangle goes. A turret's turning mesh rides whole with the piece under its pivot; an
+	# authored hull's triangles that cross a tear are split along it first (_refine), so no deck, bulkhead or plate is
+	# left whole across a break; a machine's triangles go with its own piece (_piece_at).
+	var tri_piece := PackedInt32Array()
+	var nv: int = v.size()
+	if not plan.is_empty():
+		if sd.has("anchor"):
+			tri_piece.resize(idx.size() / 3)
+			tri_piece.fill(_piece_at(plan, sd["anchor"]))
+		elif bool(job.get("authored", false)):
+			var inside := bool(sd.get("interior", false))
+			# the plating and the insides follow the tear; a machine's box holds only on the parts surfaces
+			var sp: Dictionary = plan
+			if (inside or bool(sd.get("skin", false))) and plan.has("mach"):
+				sp = plan.duplicate()
+				sp.erase("mach")
+			var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside)
+			vl = rf["vl"]
+			arr = rf["arr"]
+			idx = rf["idx"]
+			tri_piece = rf["piece"]
+			nv = vl.size()
+	var buckets: Array = []
+	for c in ns:
+		buckets.append(PackedInt32Array())
+	for t in range(0, idx.size() - 2, 3):
+		var a = idx[t]
+		var b = idx[t + 1]
+		var cc = idx[t + 2]
+		var q = (vl[a] + vl[b] + vl[cc]) / 3.0
+		var best = 0
+		var bd = 1e18
+		var bd2 = 1e18
+		if not tri_piece.is_empty():
+			best = tri_piece[t / 3]
+		elif not plan.is_empty():
+			best = _piece_at(plan, q)
+		else:
+			# issue 484: a Chorus rupture tears along warped lines, not flat Voronoi planes
+			var qw: Vector3 = q
+			if not warp.is_empty(): qw = q + Vector3(1.0, 0.4, 0.6) * _wave_sum(warp, q)
+			for c in ns:
+				var dd = qw.distance_squared_to(seeds[c])
+				if dd < bd:
+					bd2 = bd
+					bd = dd
+					best = c
+				elif dd < bd2:
+					bd2 = dd
+		buckets[best].append(a)
+		buckets[best].append(cc if flip else b)
+		buckets[best].append(b if flip else cc)
+		var pc: Dictionary = pieces[best]
+		if plan.is_empty() and (pc["edge"] as PackedVector3Array).size() < 64 and sqrt(bd2) - sqrt(bd) < 0.6:
+			var edge: PackedVector3Array = pc["edge"]
+			edge.append(q)
+			pc["edge"] = edge
+	for c in ns:
+		var tri: PackedInt32Array = buckets[c]
+		if tri.is_empty():
+			continue
+		var remap = PackedInt32Array()
+		remap.resize(nv)
+		remap.fill(-1)
+		var order = PackedInt32Array()
+		var nidx = PackedInt32Array()
+		nidx.resize(tri.size())
+		for i in tri.size():
+			var o = tri[i]
+			var m = remap[o]
+			if m < 0:
+				m = order.size()
+				remap[o] = m
+				order.append(o)
+			nidx[i] = m
+		var na = []
+		na.resize(Mesh.ARRAY_MAX)
+		var pv = PackedVector3Array()
+		pv.resize(order.size())
+		for i in order.size():
+			pv[i] = vl[order[i]]
+		na[Mesh.ARRAY_VERTEX] = pv
+		if arr[Mesh.ARRAY_NORMAL] != null and (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).size() == nv:
+			var src: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+			var dn = PackedVector3Array()
+			dn.resize(order.size())
+			for i in order.size():
+				dn[i] = (xf.basis * src[order[i]]).normalized()
+			na[Mesh.ARRAY_NORMAL] = dn
+		if arr[Mesh.ARRAY_TANGENT] != null and (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).size() == nv * 4:
+			var src4: PackedFloat32Array = arr[Mesh.ARRAY_TANGENT]
+			var dt = PackedFloat32Array()
+			dt.resize(order.size() * 4)
+			for i in order.size():
+				var o4 = order[i] * 4
+				var tv = (xf.basis * Vector3(src4[o4], src4[o4 + 1], src4[o4 + 2])).normalized()
+				dt[i * 4] = tv.x
+				dt[i * 4 + 1] = tv.y
+				dt[i * 4 + 2] = tv.z
+				dt[i * 4 + 3] = src4[o4 + 3]
+			na[Mesh.ARRAY_TANGENT] = dt
+		for key in [Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
+			if arr[key] != null and (arr[key] as PackedVector2Array).size() == nv:
+				var s2: PackedVector2Array = arr[key]
+				var d2 = PackedVector2Array()
+				d2.resize(order.size())
+				for i in order.size():
+					d2[i] = s2[order[i]]
+				na[key] = d2
+		if arr[Mesh.ARRAY_COLOR] != null and (arr[Mesh.ARRAY_COLOR] as PackedColorArray).size() == nv:
+			var sc: PackedColorArray = arr[Mesh.ARRAY_COLOR]
+			var dc = PackedColorArray()
+			dc.resize(order.size())
+			for i in order.size():
+				dc[i] = sc[order[i]]
+			na[Mesh.ARRAY_COLOR] = dc
+		na[Mesh.ARRAY_INDEX] = nidx
+		var pc: Dictionary = pieces[c]
+		pc["surfs"].append({"arrays": na, "mat": sd["mat"], "interior": sd.get("interior", false), "fmt": int(sd.get("fmt", 0)), "tur": int(sd.get("tur", -1)), "skin": bool(sd.get("skin", false))})
+		pc["n"] = int(pc["n"]) + order.size()
+		var step = maxi(1, order.size() / 120)
+		var points: PackedVector3Array = pc["pts"]
+		for i in range(0, order.size(), step):
+			points.append(pv[i])
+		pc["pts"] = points
+
 
 
 # Trace the actual welded boundary loops. Ear clipping uses boundary vertices only:
@@ -1897,6 +1938,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 	if s.dead or s.gone: return 0.0
 	s.dead = true
 	var T: float = fx.now
+	s.set_meta("death_wall_usec", Time.get_ticks_usec())   # issue 1232: the break's wait for a late cut is in real time
 	s.remove_collider()
 	if s.squadron:
 		return _wing_death(fx, s)
@@ -2184,33 +2226,24 @@ static func _update_dying(fx, s) -> void:
 
 
 # An unfinished worker never blocks the death frame, even past its nominal split time.
-# Use a previous cut immediately, or wait through the death's deadline and then use the existing no-pieces pop.
+# Use a previous cut immediately. With none, the hull holds its tell until its own cut is done: issue 1232, a capital
+# killed before its first cut was ready (A16's cut ran 5.4 s on the PC against a 2.67 s death) popped with no pieces.
+# Only a cut still running cold_cut_wall seconds of real time after the death (a stuck worker) ends in the no-pieces pop.
+static var cold_cut_wall := 12.0   # a tuning value; fx/test/kill_slowmo_check.gd lowers it to test the pop
+
 static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: float) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
 		fx.resolve_death_core(s, false)
 		return
-	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and fx.now < deadline:
-		if not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
-			fx.later(minf(fx.now + 0.05, deadline), func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
+	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
+		var waited := float(Time.get_ticks_usec() - int(s.get_meta("death_wall_usec", Time.get_ticks_usec()))) / 1e6
+		if fx.now < deadline or waited < cold_cut_wall:
+			if fx.now >= deadline and not s.has_meta("death_cut_wait"):
+				s.set_meta("death_cut_wait", fx.now)
+				fx.notes.append("cut wait %s" % str(s.id))
+			fx.later(minf(fx.now + 0.05, deadline) if fx.now < deadline else fx.now + 0.05, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
 			return
 	_break_up(fx, s, cause, tint)
-
-
-# One thermal tear in ship coordinates, on the same bisector as the prepared halves.
-static func _cracks(fx, s, t0: float, dur: float, tint: Color, at: Vector3, axis: Vector3) -> void:
-	var m: ShaderMaterial = fx.mat(SH.CRACKS, 1)
-	m.set_shader_parameter("t0", t0)
-	m.set_shader_parameter("dur", maxf(dur, 0.3))
-	m.set_shader_parameter("cut_at", at)
-	m.set_shader_parameter("cut_axis", axis)
-	m.set_shader_parameter("width", maxf(s.hull.L * 0.009, 0.01))
-	m.set_shader_parameter("glow", Vector3(tint.r, tint.g, tint.b))
-	for mm in s.meshes:
-		if is_instance_valid(mm):
-			var mi := mm as MeshInstance3D
-			var local: ShaderMaterial = m.duplicate()
-			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
-			mi.material_overlay = local
 
 
 # ---------------------------------------------------------------- issue 462: the tell, chain blasts, the aftermath
