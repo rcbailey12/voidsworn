@@ -25,7 +25,7 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C14_broo
 CONCEPT_VIEWS = dict(top=dict(box=(20, 40, 590, 680), largest=True, flip=False, rot=-90), side=dict(box=(605, 120, 1180, 700), largest=True, flip=False))
 CROPS = [('bow (the front folds and the spine pore)', (605, 200, 900, 560)), ('midships (the openings and the pore patch)', (760, 120, 1060, 640)),
          ('stern (membranes)', (950, 20, 1600, 560))]
-SHEET = dict(version=3, round='blockout v3, the Board\'s notes on v2 (issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
+SHEET = dict(version=4, round='blockout v4, the Board\'s notes on v3 (issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
              before='First full layout', before_note='The first complete C14 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.1, 2.0)    # a domed back, a round belly: a sac, no flat face anywhere
@@ -81,9 +81,10 @@ FIELD = (2.55, math.pi / 2 + 0.12, 1.75, 2.35)
 PATCH = (3.05, math.pi / 2 + 0.08, 0.72)    # the turning cluster: station x, section angle, radius
 # the teardrop sacs under the belly (spore feed and regrowth flesh): (station, section angle on the port side, radius)
 # Board v1 note 5: bigger, longer teardrops in a fringe low on the belly's edge, so they hang below the outline at the beauty camera
-SACS = ((2.85, -0.86, 0.5), (1.15, -0.84, 0.62), (-0.6, -0.84, 0.64), (-2.3, -0.88, 0.56), (-3.75, -0.95, 0.4),
-        (2.0, -1.24, 0.5), (0.27, -1.22, 0.58), (-1.45, -1.22, 0.58), (-3.05, -1.25, 0.46))
-SAC_LEN = 3.1         # a sac's length as a share of its radius
+# Board v3 note 1: one clear row of long pale teardrops hanging well below the hull, spaced apart, each on a long thin neck
+SACS = ((3.85, -1.0, 0.4), (2.8, -0.96, 0.46), (1.75, -1.04, 0.5), (0.7, -0.96, 0.52), (-0.35, -1.04, 0.52),
+        (-1.4, -0.96, 0.52), (-2.45, -1.04, 0.5), (-3.5, -0.98, 0.46), (-4.45, -1.06, 0.4))
+SAC_HANG = (5.2, 4.4, 5.6, 4.6, 5.4, 4.5, 5.5, 4.7, 5.0)   # each sac's length as a share of its radius: long necks, uneven drop
 SIPHONS = ((0.6, -0.6, 0.3), (-3.1, -0.5, 0.27))
 VENTS = ((0.0, 0.62, 0.2, 2, (0, 0, 1)), (0.55, 0.05, 0.19, 3, (0, 1, 0.1)), (-0.55, 0.05, 0.19, 3, (0, -1, 0.1)), (0.0, -0.5, 0.17, 2, (0, 0, -1)))
 
@@ -142,10 +143,14 @@ def build(K):
     # the front skin (Board v1 note 1): one skin of the hull's own flesh over the face and the front quarter, folded by deep
     # creases that start at the rim and sink in toward the mouth (the beauty's puckered front); grooves cut in, nothing added
     rnd = random.Random(1155)
-    NCR = 11
+    # Board v3 note 2: fewer, bigger, uneven lobes (not even pumpkin segments), the folds pulling round toward the mouth
+    NCR = 6
+    GAPS = (1.45, 0.75, 1.2, 0.85, 1.05, 0.7)   # the lobes' widths round the mouth, as shares of an even split
     creases = []
+    a_ = 0.35
     for k in range(NCR):
-        creases.append((2 * math.pi * (k + 0.5) / NCR + rnd.uniform(-0.16, 0.16), rnd.uniform(-0.3, 0.3), rnd.uniform(1.75, 1.98), rnd.uniform(0.9, 1.1)))
+        creases.append((a_, rnd.uniform(-0.45, 0.45), rnd.uniform(1.7, 1.98), rnd.uniform(0.95, 1.15), rnd.uniform(0.85, 1.25)))
+        a_ += 2 * math.pi * GAPS[k] / sum(GAPS)
 
     def x_back(t):   # where the skin ends behind the front: further forward on top, where the honeycomb field begins
         return 3.65 + 0.75 * max(0.0, math.sin(t)) ** 3
@@ -175,14 +180,16 @@ def build(K):
                 d = math.hypot(q.x - cx, rad * math.atan2(math.sin(t - ct), math.cos(t - ct)))
                 a = min(a, -0.07 + 0.32 * min(1.0, max(0.0, (d - 2.0) / 0.8)))
         g = 0.0
-        for a0, tw, reach, dep in creases:
+        for a0, tw, reach, dep, wk in creases:
             if s_ > reach:
                 continue
             fade = min(1.0, (reach - s_) / 0.25)
-            ang = a0 + tw * s_ + 0.05 * math.sin(4 * s_ + a0 * 3)
+            ang = a0 + tw * s_ * s_ * 0.6 + 0.05 * math.sin(4 * s_ + a0 * 3)
             dw = rad * abs(math.atan2(math.sin(t - ang), math.cos(t - ang)))
-            w = rad * 2 * math.pi / NCR * 0.2   # each lobe a rounded cushion between two deep folds
+            w = rad * 2 * math.pi / 11 * 0.2 * wk   # each lobe a rounded cushion between two deep folds
             g = max(g, dep * fade * math.exp(-(dw / w) ** 2))
+        if a > 0:   # each lobe swells by its own amount, so no two match
+            a *= 0.6 + 0.4 * (0.5 + 0.3 * math.sin(2 * t + 1.3) + 0.2 * math.sin(3 * t + 0.4))
         off = a - (a + 0.1) * min(1.0, g)
         return q + n_ * off, n_, off
     NS, NT2 = 46, 300
@@ -203,11 +210,11 @@ def build(K):
     front = K.hull_detail('front_lobes', (V, F), 'flesh2', inv='front_lobes', kind='welt', subs=['welt'])
     # the folds run dark: a thin wet line down the bottom of every crease
     V, F = [], []
-    for a0, tw, reach, dep in creases:
+    for a0, tw, reach, dep, wk in creases:
         pts = []; rads = []
         for j in range(30):
             s_ = 0.04 + (reach - 0.2) * j / 29
-            ang = a0 + tw * s_ + 0.05 * math.sin(4 * s_ + a0 * 3)
+            ang = a0 + tw * s_ * s_ * 0.6 + 0.05 * math.sin(4 * s_ + a0 * 3)
             q, n_, off = skin(s_, ang); pts.append(q + n_ * 0.01); rads.append(0.035 + 0.035 * math.sin(math.pi * j / 29))
         vv, ff = HP.tube(pts, rads, n=6, flat=0.5)
         o = len(V); V += vv; F += [tuple(x + o for x in f_) for f_ in ff]
@@ -288,16 +295,16 @@ def build(K):
         for side in (1, -1):
             sn = 'p' if side > 0 else 's'
             pos, nrm = K.hpt(x, side_th(th, side), out=-0.05)
-            hang = (Vector(nrm) * 0.5 + Vector((0, 0, -1))).normalized()
+            hang = (Vector(nrm) * 0.3 + Vector((0, 0, -1))).normalized()   # straight down, a little out
             fid = 'S%d%s' % (i + 1, sn)
-            sac = HP.sac(r, h=r * SAC_LEN, seed=70 + 2 * i + (side > 0), kind='sac', glow=1, hang=3.0, creases=1, veins=2)
+            sac = HP.sac(r, h=r * SAC_HANG[i], seed=70 + 2 * i + (side > 0), kind='sac', glow=1, hang=3.0, creases=1, veins=2)
             for c_ in sac.comps:   # pale smooth teardrops (Board v2 note 4): the bulb in pale hide, nothing standing off it
                 if c_['name'] == 'sac':
                     c_['mat'] = 'hide'
-            cz_ = r * SAC_LEN - r
+            cz_ = r * SAC_HANG[i] - r
             # the neck: the sac hangs from the belly on a thin soft stalk that swells into the bulb (a teardrop, never a ball floating free)
-            sac.add('root_neck', 'mount', 'flesh', HP.tube([Vector((0, 0, -0.05)), Vector((0, 0, cz_ * 0.35)), Vector((0, 0, cz_ * 0.7)), Vector((0, 0, cz_ - r * 0.3))],
-                                                          [r * 0.55, r * 0.3, r * 0.34, r * 0.8], n=14))
+            sac.add('root_neck', 'mount', 'flesh', HP.tube([Vector((0, 0, -0.05)), Vector((0, 0, cz_ * 0.3)), Vector((0, 0, cz_ * 0.55)), Vector((0, 0, cz_ * 0.75)), Vector((0, 0, cz_ * 0.9)), Vector((0, 0, cz_ - r * 0.2))],
+                                                          [r * 0.5, r * 0.24, r * 0.3, r * 0.45, r * 0.68, r * 0.88], n=14))
             K.organ(fid, sac, pos, hang, fwd=(1, 0, 0), inv='teardrop_sacs',
                     what='teardrop sac, %.1f across' % (2 * r), note='spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly')
     K.mass('Teardrop sacs', _bpy.data.objects['S3p_mount_flesh'], 'flesh sacs', note='a fringe of teardrops under the belly')
@@ -312,7 +319,7 @@ def build(K):
     # ---------------- the stern: four pulse vents and their membranes ----------------
     for k, (y, z, r, nt, od) in enumerate(VENTS):
         K.engine('E%d' % (k + 1), (-5.5, y, z), r, 0.9, bell=1.0, body_r=r * 1.35, inv='vents', src='picture',
-                 kw=dict(trail='veil', trails=2, trail_len=4.55, veil=3.6, fan=0.785, splay=30.0, out_dir=od, seed=k + 3),   # the family's veils (C12, R333)
+                 kw=dict(trail='veil', trails=2, trail_len=4.59, veil=3.6, fan=0.785, splay=30.0, out_dir=od, seed=k + 3),   # the family's veils (C12, R333)
                  note='pulse vent with two wide trailing veils lit from within (the family\'s veil, as C12), splayed away from the stern\'s centre')
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents at the stern, the membranes streaming aft')
 
@@ -471,10 +478,10 @@ def build(K):
     K.change('The openings are drawn empty: a deep dark chamber 2.2 deep, a dim glow at its floor, nothing in it; 2.1 across, fat round lips on short necks 0.6 tall close to the rim (the Board on v1 note 3 and v2 note 5)',
              'Ryan, Nov 13: no pods shown; squadron capacity (hangar 3) is an internal fact, a brood chamber under each opening')
     K.change('One spine pore (bioplasma F): a small dark pinch where the front\'s cushioned folds meet, no ring lip; the small hole above it is a sense pit (an eye-hole that tastes)',
-             'data.js b_brood has one bioplasma slot: one throat; blockout v3 (the Board on v2, notes 1 and 2): the v2 ring lip read as a porthole, so the mouth is a pinch; the front is rounded cushions between deep dark folds')
+             'data.js b_brood has one bioplasma slot: one throat; blockout v3 (the Board on v2, notes 1 and 2): the v2 ring lip read as a porthole, so the mouth is a pinch; the front is rounded cushions between deep dark folds; blockout v4 (the Board on v3, note 2): six lobes, not eleven, uneven in width and swell, the folds curving round toward the mouth')
     K.change('The honeycomb is a sunk field of pores over the upper front (about a fifth of the top) in a raised rim; the spore cloud (spores T) is the ragged cluster at its front that leans toward the craft (a turret)',
              'the weapon-match table puts spores on a turning spore organ, and a turret the size of the field could not turn on a curved body; the three biggest pores fire the three shots of each volley. Blockout v2, the Board\'s note 4')
-    K.change('Eighteen big teardrop sacs on soft necks in a fringe low on the belly\'s edge (nine a side), hanging below the outline (blockout v2, the Board\'s note 5)',
+    K.change('Eighteen pale teardrop sacs in one spaced row low on the belly\'s edge (nine a side), each on a long thin neck that swells into the bulb, hanging well below the hull (blockout v2 note 5, v4 note 1)',
              'designs.md: a row of teardrop sacs, spore feed and regrowth flesh (regen 6); the picture\'s count (about fourteen) does not settle counts')
     K.change('Four pulse vents at the stern, the membranes cut to about 0.4 of the body\'s length',
              'factions.md: no nozzles, pulsing vents or trailing membranes; the picture\'s membranes are nearly as long again as the body, which would make '

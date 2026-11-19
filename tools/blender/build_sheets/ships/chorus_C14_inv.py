@@ -10,8 +10,8 @@ INVENTORY = [
          reads='pucker folds gathered into the hole, a dark wet edge, an inner sphincter, a ring of chitin spines, a dark bore, the bile gland glowing deep inside',
          src='picture', note='deliberately modest: the carrier is all chamber (designs.md)'),
     dict(id='front_lobes', job='the front\'s muscle: the folds draw shut over the spine pore and take the first hits', type='welt',
-         what='the front\'s skin folds, parted by deep creases that start at the rim and sink in toward the mouth', count=1, cells=['bow/top', 'bow/side', 'bow/below'],
-         reads='rounded cushions between deep dark folds, uneven in width and reach', src='picture', note='Board v1 note 1 and v2 note 2'),
+         what='the front\'s skin folds: six big uneven lobes parted by deep creases that start at the rim and curve in toward the mouth', count=1, cells=['bow/top', 'bow/side', 'bow/below'],
+         reads='rounded cushions between deep dark folds, uneven in width and reach', src='picture', note='Board v1 note 1, v2 note 2, v3 note 2'),
     dict(id='pore_fields', job='sense: it tastes the dark through pore fields (no eyes; lore 5.8)', type='pore',
          what='pore fields over the front folds and the shoulders, and one small eye-hole above the mouth', count=3, cells=['bow/top', 'bow/side', 'mid/top'],
          reads='a raised rim round a sunk pit', src='picture'),
@@ -39,8 +39,8 @@ INVENTORY = [
          cells=['bow/top', 'mid/top', 'mid/side', 'stern/top'], reads='a raised irregular patch, knit ridges across it', src='picture'),
     # ---------------- below ----------------
     dict(id='teardrop_sacs', job='spore feed storage for the squadrons and regrowth flesh (regen 6); they rupture first', type='sac',
-         what='a fringe of pale smooth teardrop sacs, fat at the bottom, on thin necks, low on the belly\'s edge, hanging below the outline', count=18, cells=['bow/side', 'bow/below', 'mid/side', 'mid/below', 'stern/below'],
-         reads='a soft neck, a pendulous sac, creases, veins, a glow window', src='picture', note='Board v1 note 5, v2 note 4'),
+         what='a fringe of pale smooth teardrop sacs, fat at the bottom, on long thin necks, in one spaced row low on the belly\'s edge, hanging well below the outline', count=18, cells=['bow/side', 'bow/below', 'mid/side', 'mid/below', 'stern/below'],
+         reads='a soft neck, a pendulous sac, creases, veins, a glow window', src='picture', note='Board v1 note 5, v2 note 4, v3 note 1'),
     # ---------------- the whole body ----------------
     dict(id='body', job='the body: one giant sac, its chambers the hangar, the heart vat and the guts', type='hull',
          what='a vast sac of folded, scarred flesh, as long as it is wide', count=1,
