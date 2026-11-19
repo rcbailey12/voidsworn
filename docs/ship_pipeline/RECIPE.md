@@ -564,6 +564,8 @@ Squadron exports keep the design sheet's exterior and hard points. The build she
 wing deaths use the small-craft effect. Stage 7 requires an authored engine exit for the ribbon and writes `wing_role` on painted
 exports. `SquadronWing` uses that role and the faction id from the asset manifest to find its cached scene. Give each craft its
 own `game_code`, even when two craft use the same rules template. Installed readback exercises the faction wing through `ShipView`.
+An off-surface squadron bomb outlet passes when its exported radius matches a round rim around its exit point, with a bore behind
+it and a clear path ahead. The export self-test doubles the radius and moves the outlet to prove the check rejects both faults.
 The Navy craft kit records the mouth width and height of its rectangular exhaust. Stage 7 reads those dimensions to verify the
 four rim corners, recessed throat and clear exhaust at the authored exit plane. The export self-test moves the exit and doubles
 each dimension separately to prove the check rejects each fault.

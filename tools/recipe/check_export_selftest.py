@@ -210,15 +210,16 @@ if not wing and any((m.get('extras') or {}).get('hull_surface') for m in _g0.get
     CASES += (('no_trim_marker', no_trim_marker, 1, 'from a part (at least'),)
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
     CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
-def open_engines():       # the engines the check passed as open (its own record of the export as written)
+def checked_points():
     cj = os.path.join(src, code + '_check.json')
     # Read this check's result, never an older check's cached list of bells.
     subprocess.run([sys.executable, os.path.join(HERE, 'check_export.py'), shipj, src] + sys.argv[3:], capture_output=True)
     if not os.path.exists(cj): return []
     return json.load(open(cj)).get('rows', [])
-ENGINES = open_engines()
-BELLS = [r['name'] for r in ENGINES if (r.get('bell') or {}).get('ok')]
-RECTANGULAR_EXHAUSTS = [r['name'] for r in ENGINES if (r.get('exhaust') or {}).get('ok')]
+POINTS = checked_points()
+BELLS = [r['name'] for r in POINTS if (r.get('bell') or {}).get('ok')]
+RECTANGULAR_EXHAUSTS = [r['name'] for r in POINTS if (r.get('exhaust') or {}).get('ok')]
+BOMB_TUBES = [r['name'] for r in POINTS if (r.get('bomb_tube') or {}).get('ok')]
 def bell_node(g, name): return next(n for n in g['nodes'] if n.get('name') == name)
 def bell_radius(g, name): n = bell_node(g, name); n['extras']['radius'] = 2 * float(n['extras']['radius'])
 def bell_plane(g, name):
@@ -235,6 +236,11 @@ for k, name in enumerate(BELLS):
     suffix = '' if k == 0 else '_' + name
     CASES += (('bell_radius' + suffix, lambda g, name=name: bell_radius(g, name), 1, 'not the centre of an open engine bell'),
               ('bell_plane' + suffix, lambda g, name=name: bell_plane(g, name), 1, 'not the centre of an open engine bell'))
+
+for name in BOMB_TUBES:
+    error = 'not the centre of an open bomb tube'
+    CASES += ((f'bomb_radius_{name}', lambda g, name=name: bell_radius(g, name), 1, error),
+              (f'bomb_exit_{name}', lambda g, name=name: bell_plane(g, name), 1, error))
 
 def double_exhaust_size(g, name, axis):
     bell_node(g, name)['extras']['aperture'][axis] *= 2
