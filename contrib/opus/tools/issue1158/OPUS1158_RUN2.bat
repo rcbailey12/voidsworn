@@ -24,6 +24,9 @@ set JOB=%V%\recipe\voidsworn_S8
 set INSTALL_TO=%C%\godot
 set FAIL=
 cd /d "%C%"
+set HEAD=
+for /f %%H in ('git -C "%C%" rev-parse HEAD') do set HEAD=%%H
+if not "%HEAD%"=="0200981052b4d8b940fb12ccf44f7a3ce8aa26cd" set FAIL=checkout %HEAD% is not the stage 5 bake commit 0200981052b4
 if not exist "%JOB%\S8.blend" set FAIL=no stage 5 blend
 if not defined FAIL call :stage 6_lod
 if not defined FAIL call :stage 7_export
@@ -61,7 +64,9 @@ if not exist "%O%\surface" mkdir "%O%\surface"
 if exist "%JOB%\surface" copy /y "%JOB%\surface\*.*" "%O%\surface\" > nul
 if not exist "%O%\godot_bench" mkdir "%O%\godot_bench"
 if exist "%JOB%\godot" copy /y "%JOB%\godot\*.*" "%O%\godot_bench\" > nul
+if defined FAIL echo RUN2 FAILED: %FAIL% >> "%RES%"
 echo all done %DATE% %TIME% >> "%RES%"
+if defined FAIL exit /b 1
 exit /b 0
 :stage
 echo %1 start %TIME% >> "%RES%"
