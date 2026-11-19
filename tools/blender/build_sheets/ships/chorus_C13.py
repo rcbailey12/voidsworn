@@ -152,8 +152,8 @@ def build(K):
     for k, (y, z, r) in enumerate(VENTS):
         od = (0, 0.2, 1) if k == 0 else (0, 0.6 if y > 0 else -0.6, -0.8)
         K.engine('E%d' % (k + 1), (-3.25, y, z), r, 0.6, bell=1.0, body_r=r * 1.35, inv='vents', src='picture',
-                 kw=dict(trail='membrane', trails=2, trail_len=1.42, out_dir=od, seed=k + 3, veil=2.3),
-                 note='pulse vent with two trailing membrane veils, splayed away from the stern\'s centre')
+                 kw=dict(trail='veil', trails=2, trail_len=1.42, out_dir=od, seed=k + 3, veil=3.0, fan=0.785, splay=26.0),
+                 note='pulse vent with two wide trailing veils, fanned away from the stern\'s centre')
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='three pulse vents at the short stern')
 
     # ---------------- grown detail on the hull ----------------
@@ -269,8 +269,8 @@ def build(K):
              'every part has a job (R221): the spines round a vent are the shot it spits, the bed regrows them; the stern quills had none and would sit in the vents\' wash')
     K.change('Bile sacs: four a side along the lower flank, port and starboard at different sizes, three more hanging under the belly',
              'the picture\'s round sacs; uneven sides keep the asymmetric, scarred read (designs.md); every sac stores bile for the volleys')
-    K.change('Three pulse vents with two membrane veils each at the short stern', 'factions.md: no nozzles; the picture\'s three glow points and ragged membranes. The membranes are cut '
-             'to about 1.8 so the ship is 9.5 nose to membrane tip, and splayed so none hangs in a neighbour\'s jet')
+    K.change('Three pulse vents with two wide veils each at the short stern (the kit\'s veil trail, shared with C12, R333)', 'factions.md: no nozzles; the picture\'s three glow points and ragged membranes. The veils are cut '
+             'to about 1.4 so the ship is 9.5 nose to veil tip, and fanned so none hangs in a neighbour\'s jet')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
     K.change('No boarding origins: data.js b_spitter has no tendril, so the ship has nothing that boards', 'the stinger variant (b_spitter_s, tendril T) is its own job')
     K.open_item('The variant b_spitter_s (Spitter stinger: bioplasma T, tendril T) is not built here; it needs a named variant (ships.md, issue 812)')

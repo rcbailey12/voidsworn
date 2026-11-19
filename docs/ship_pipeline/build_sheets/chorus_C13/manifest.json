@@ -327,7 +327,7 @@
  "break_pieces": [
   {
    "name": "bow piece",
-   "stations": "0.0 to 19.5 percent",
+   "stations": "0.0 to 19.4 percent",
    "bounded_by": [
     "B-1"
    ],
@@ -335,7 +335,7 @@
   },
   {
    "name": "midships piece 1",
-   "stations": "19.5 to 60.9 percent",
+   "stations": "19.4 to 60.9 percent",
    "bounded_by": [
     "B-1",
     "B-2"

@@ -15,7 +15,7 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 
 | Check | Value |
 |---|---|
-| model length | 9.525 |
+| model length | 9.527 |
 | length side | 9.55 |
 | length top | 9.55 |
 | length disagreement percent | 0.0 |
@@ -58,9 +58,9 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | Q2p | attitude thruster quad | 1 | 76.5 | 1.01 | 0.28 | - | - | designed | siphon aft: swings the stern |
 | Q1s | attitude thruster quad | 1 | 13.6 | -1.00 | -0.29 | - | - | designed | siphon behind the nose: swings the bow |
 | Q2s | attitude thruster quad | 1 | 76.5 | -0.98 | 0.29 | - | - | designed | siphon aft: swings the stern |
-| E1 | pulse vent, mouth 0.3 across | 1 | 85.1 | 0.00 | 0.18 | exhaust aft | - | picture | pulse vent with two trailing membrane veils, splayed away from the stern's centre |
-| E2 | pulse vent, mouth 0.3 across | 1 | 85.1 | 0.36 | -0.16 | exhaust aft | - | picture | pulse vent with two trailing membrane veils, splayed away from the stern's centre |
-| E3 | pulse vent, mouth 0.3 across | 1 | 85.1 | -0.36 | -0.16 | exhaust aft | - | picture | pulse vent with two trailing membrane veils, splayed away from the stern's centre |
+| E1 | pulse vent, mouth 0.3 across | 1 | 85.1 | 0.00 | 0.18 | exhaust aft | - | picture | pulse vent with two wide trailing veils, fanned away from the stern's centre |
+| E2 | pulse vent, mouth 0.3 across | 1 | 85.1 | 0.36 | -0.16 | exhaust aft | - | picture | pulse vent with two wide trailing veils, fanned away from the stern's centre |
+| E3 | pulse vent, mouth 0.3 across | 1 | 85.1 | -0.36 | -0.16 | exhaust aft | - | picture | pulse vent with two wide trailing veils, fanned away from the stern's centre |
 
 Totals: 3 gun mounts with 3 barrels; 0 launcher tubes; 3 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
@@ -72,9 +72,9 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | dark olive flesh, callused olive hide (paint stage) | 1.1 | 81.9 | whole body |  |
 | pale ochre bone | 1.6 | 71.9 | the spines of the glands and the spine bed |  |
 | raw transition tissue | 1.6 | 71.9 | the vent lips and the spine collars |  |
-| bile yellow-green light | 1.6 | 51.0 | deep in the three gland vents |  |
+| bile yellow-green light | 1.6 | 50.9 | deep in the three gland vents |  |
 | bile yellow-green light | 81.9 | 100.0 | the vents and the membranes' roots |  |
-| dim bile | 19.5 | 77.2 | the veins, the sac windows, the pores |  |
+| dim bile | 19.4 | 77.2 | the veins, the sac windows, the pores |  |
 
 ## Major masses
 
@@ -82,7 +82,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 |---|---|---|---|---|---|
 | Hull: the broad lumpy body | 6.6 to 81.9 | -1.81 to 1.98 | -1.46 to 1.50 | dark olive flesh | a rounded nose bulb, broad in the middle, short at the tail |
 | Spine gland W1 | 2.5 to 17.5 | -0.59 to 0.61 | -0.85 to 0.43 | flesh knoll | the prow gland |
-| Spine gland W2 | 25.3 to 38.7 | -0.47 to 0.87 | 0.57 to 1.95 | flesh knoll | a dorsal spine gland |
+| Spine gland W2 | 25.2 to 38.7 | -0.47 to 0.87 | 0.57 to 1.95 | flesh knoll | a dorsal spine gland |
 | Spine gland W3 | 40.7 to 55.2 | -0.95 to 0.45 | 0.86 to 2.23 | flesh knoll | a dorsal spine gland |
 | Spine bed | 60.8 to 72.9 | -0.83 to 0.31 | 0.60 to 1.66 | flesh knoll | the knoll aft of the dorsal glands |
 | Back and shoulder knolls | 9.0 to 78.2 | -1.84 to 1.89 | -0.07 to 1.64 | flesh | lumps of grown flesh over the back and shoulders |
@@ -93,7 +93,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Bile sac 1 (starboard) | 19.3 to 31.4 | -1.74 to -0.65 | -1.03 to 0.09 | flesh dome |  |
 | Bile sac 2 (starboard) | 33.0 to 51.2 | -2.17 to -0.61 | -1.51 to 0.01 | flesh dome |  |
 | Bile sac 3 (starboard) | 52.3 to 68.0 | -2.33 to -0.97 | -1.05 to 0.28 | flesh dome |  |
-| Bile sac 4 (starboard) | 68.8 to 78.4 | -1.58 to -0.70 | -1.14 to -0.25 | flesh dome |  |
+| Bile sac 4 (starboard) | 68.7 to 78.4 | -1.58 to -0.70 | -1.14 to -0.25 | flesh dome |  |
 | Hanging sac 1 | 25.8 to 35.4 | -0.17 to 0.71 | -1.82 to -0.90 | flesh sac |  |
 | Hanging sac 2 | 43.4 to 55.2 | -0.82 to 0.26 | -2.05 to -0.92 | flesh sac |  |
 | Hanging sac 3 | 60.8 to 71.4 | -0.18 to 0.77 | -1.98 to -0.98 | flesh sac |  |
@@ -103,7 +103,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 Deck levels (height): lower deck -0.75 (8% to 77%); upper deck 0.55 (13% to 76%).
 
-Bulkhead and frame stations: F0 8.4%, F1 15.8%, F2 23.7%, F3 32.1%, F4 41.0%, F5 49.9%, F6 58.8%, F7 67.7%, F8 75.6%.
+Bulkhead and frame stations: F0 8.4%, F1 15.8%, F2 23.6%, F3 32.0%, F4 41.0%, F5 49.9%, F6 58.8%, F7 67.7%, F8 75.6%.
 
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
@@ -112,12 +112,12 @@ Bulkhead and frame stations: F0 8.4%, F1 15.8%, F2 23.7%, F3 32.1%, F4 41.0%, F5
 | spine sac t2 (gland) | 42.8 to 52.8 | -0.62 to 0.22 | 0.80 to 1.30 | the great dorsal gland's spine sac |
 | ganglion (ganglion) | 16.1 to 24.9 | -0.35 to 0.35 | -0.03 to 0.53 | the Node: the knot of nerve that aims the glands |
 | heart vat (vat) | 35.7 to 51.5 | -0.60 to 0.60 | -0.45 to 0.55 | the heart vat: the core (hp_core), lit bile-green |
-| bile main (gland) | 27.9 to 51.0 | -0.75 to 0.75 | -1.15 to -0.45 | the main bile store, fed by the flank sacs |
+| bile main (gland) | 27.8 to 50.9 | -0.75 to 0.75 | -1.15 to -0.45 | the main bile store, fed by the flank sacs |
 | bile store 0 (gland) | 36.0 to 44.9 | 0.68 to 1.32 | -0.85 to -0.25 | the bile store behind a flank sac |
 | bile store 1 (gland) | 54.4 to 63.2 | 0.68 to 1.32 | -0.85 to -0.25 | the bile store behind a flank sac |
 | bile store 2 (gland) | 39.2 to 48.0 | -1.32 to -0.68 | -0.85 to -0.25 | the bile store behind a flank sac |
-| bile store 3 (gland) | 57.0 to 65.9 | -1.32 to -0.68 | -0.85 to -0.25 | the bile store behind a flank sac |
-| gut (gut) | 46.8 to 67.7 | -0.70 to 0.70 | -0.75 to 0.15 | the gut |
+| bile store 3 (gland) | 57.0 to 65.8 | -1.32 to -0.68 | -0.85 to -0.25 | the bile store behind a flank sac |
+| gut (gut) | 46.7 to 67.7 | -0.70 to 0.70 | -0.75 to 0.15 | the gut |
 | regrowth p (organ) | 62.3 to 71.1 | 0.43 to 1.07 | 0.19 to 0.71 | regrowth tissue (regen 4) |
 | regrowth s (organ) | 62.3 to 71.1 | -1.07 to -0.43 | 0.19 to 0.71 | regrowth tissue |
 | pulse bladder (engroom) | 69.8 to 79.3 | -0.42 to 0.42 | -0.36 to 0.36 | the pulse bladder: fills and squeezes the three vents (the engine room) |
@@ -132,7 +132,7 @@ Bulkhead and frame stations: F0 8.4%, F1 15.8%, F2 23.7%, F3 32.1%, F4 41.0%, F5
 
 | Break line | Station % | What it opens |
 |---|---|---|
-| B-1 | 19.5 (seam wanders 16.3 to 22.1) | behind the nose bulb: the prow gland and the nose tear away, opening the spine sac and the Node |
+| B-1 | 19.4 (seam wanders 16.3 to 22.1) | behind the nose bulb: the prow gland and the nose tear away, opening the spine sac and the Node |
 | B-2 | 60.9 (seam wanders 58.8 to 64.1) | behind the great dorsal knoll: the stern tears away through the gut and the regrowth tissue, the aft sacs bursting first |
 
 Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, then the body tears open along ragged lines (R186).
@@ -153,7 +153,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 781 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 777 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -166,7 +166,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **The dorsal glands are fixed organs facing up, not turrets.** the slot is all round (T); a vent at the crown of a knoll spits every way at once, as C11's mane reaches every way (the Board's reading of R241 for organs, weapon_match FITS bioplasma: fixed).
 - **Spines only round the three vents and on one spine bed aft of them; the long quills at the stern quarter and under the stern are cut.** every part has a job (R221): the spines round a vent are the shot it spits, the bed regrows them; the stern quills had none and would sit in the vents' wash.
 - **Bile sacs: four a side along the lower flank, port and starboard at different sizes, three more hanging under the belly.** the picture's round sacs; uneven sides keep the asymmetric, scarred read (designs.md); every sac stores bile for the volleys.
-- **Three pulse vents with two membrane veils each at the short stern.** factions.md: no nozzles; the picture's three glow points and ragged membranes. The membranes are cut to about 1.8 so the ship is 9.5 nose to membrane tip, and splayed so none hangs in a neighbour's jet.
+- **Three pulse vents with two wide veils each at the short stern (the kit's veil trail, shared with C12, R333).** factions.md: no nozzles; the picture's three glow points and ragged membranes. The veils are cut to about 1.4 so the ship is 9.5 nose to veil tip, and fanned so none hangs in a neighbour's jet.
 - **Siphons added, a pair forward and a pair aft.** a ship in space must turn; the picture shows none.
 - **No boarding origins: data.js b_spitter has no tendril, so the ship has nothing that boards.** the stinger variant (b_spitter_s, tendril T) is its own job.
 

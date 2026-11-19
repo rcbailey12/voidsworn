@@ -1,10 +1,10 @@
 {
  "length_from_game": 9.5,
- "model_length": 9.525,
+ "model_length": 9.527,
  "length_side": 9.55,
  "length_top": 9.55,
  "length_disagreement_percent": 0.0,
- "model_vs_game_percent": 0.26,
+ "model_vs_game_percent": 0.28,
  "beam_top": 4.75,
  "beam_bow": 4.938,
  "beam_disagreement_percent": 1.97,

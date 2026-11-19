@@ -45,6 +45,7 @@ SUBPARTS = {
     'throat': ['root', 'fold|lip', 'sphincter', 'tooth', 'bore', 'gland'],
     'tendril': ['root', 'sphincter', 'stalk', 'ring', 'barb', 'pore'],
     'mane': ['root', 'crest', 'stalk', 'ring', 'barb'],
+    'drape': ['root', 'knot', 'stalk', 'ring', 'tip'],
     'spore': ['root', 'sac', 'vein', 'spout', 'pore'],
     'engine': ['root', 'fold', 'sphincter', 'throat', 'glow', 'membrane|filament'],
     'thruster': ['collar', 'lip', 'bore'],
@@ -312,11 +313,12 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
     nf = _noise(seed)
     # root: a muscular collar from the hull face to the mouth, swelling behind the lip
     # the root: a muscle collar ringed with wrinkle ridges (mostly inside the head)
-    prof = [(-0.3, lr * 0.82)]
+    lq = lr * (0.72 if style == 'knoll' else 1.0)   # a knoll's collar stays inside the knoll (C12): its ribs would read as a can
+    prof = [(-0.3, lq * 0.82)]
     for j in range(9):
         x_ = -0.3 + (L * 0.8 + 0.3) * (j + 0.5) / 9
-        prof += [(x_ - 0.05, lr * 0.86), (x_, lr * 0.92), (x_ + 0.05, lr * 0.86)]
-    prof += [(L * 0.8, lr * 0.8), (L * 0.95, r * 1.12), (L * 0.95, r * 0.98), (L * 0.6, r * 0.92), (-0.3, r * 0.9)]
+        prof += [(x_ - 0.05, lq * 0.86), (x_, lq * 0.92), (x_ + 0.05, lq * 0.86)]
+    prof += [(L * 0.8, lq * 0.8), (L * 0.95, r * 1.12), (L * 0.95, r * 0.98), (L * 0.6, r * 0.92), (-0.3, r * 0.9)]
     V, F = revolve(prof, 32, closed=True)
     V = [(x, y * (1 + 0.05 * nf(Vector((x, y, z)).normalized())), z * (1 + 0.05 * nf(Vector((x, z, y)).normalized()))) for (x, y, z) in V]
     p.add('root', 'mount', 'flesh', (V, F))
@@ -414,6 +416,56 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
                                                 for k in range(41)], [r * 0.08] * 41, n=6, cap0=False, cap1=False))
         # the spines: short bone quills growing out of the knoll round the vent (the shot it spits), none across the mouth
         _spine_field(p, Vector((kc, 0, 0)), RK, nsp, r, rp, (26, 72), seed)
+    elif style == 'knoll':
+        # a puckered knoll of raw flesh standing out of the prow, a dark vent in its centre and a crown of short thick bone
+        # spines round the vent, angled forward (C12, the drone-spawn's spine volley; issue 1153): the spines are the shot
+        import random
+        rp = random.Random(seed + 41)
+        # the head's own end: it carries on the snout's taper (never a cap standing out of it) to a fat puckered lip round a big bore
+        kp = [(-0.25, lr * 0.8), (L * 0.2, lr * 0.84), (L * 0.5, lr * 0.86), (L * 0.74, lr * 0.82), (L * 0.88, r * 1.9), (L * 0.97, r * 1.55),
+              (L * 1.0, r * 1.15)]
+
+        def krad(x_):
+            for (xa, ra), (xb, rb) in zip(kp, kp[1:]):
+                if xa <= x_ <= xb:
+                    return ra + (rb - ra) * (x_ - xa) / max(1e-6, xb - xa)
+            return kp[-1][1] if x_ > kp[-1][0] else kp[0][1]
+        V, F = revolve(kp + [(L * 0.97, r * 1.0), (L * 0.6, r * 0.95), (-0.25, r * 0.92)], 48, closed=True)
+        # puckered: lumps that wander round and along the knoll, never a smooth turned bulb
+        V = [(x + 0.05 * L * nf(Vector((x * 3, y, z)).normalized()), y * (1 + 0.14 * nf(Vector((y, z, x * 2)).normalized())),
+              z * (1 + 0.14 * nf(Vector((z, x * 2, y)).normalized()))) for (x, y, z) in V]
+        p.add('lip0', 'mount', 'tissue', (V, F))
+        # pucker folds: short creases radiating back from the vent over the knoll's face
+        for k in range(22):
+            a = 2 * math.pi * (k + rp.uniform(-0.25, 0.25)) / 22
+            x0_ = L * rp.uniform(0.95, 0.99); x1_ = L * rp.uniform(0.45, 0.72)
+            pts = []
+            for j in range(6):
+                t = j / 5; x_ = x0_ + (x1_ - x0_) * t; aa = a + 0.12 * math.sin(t * 3 + k)
+                rr_ = krad(x_) * 1.0
+                pts.append(Vector((x_, rr_ * math.cos(aa), rr_ * math.sin(aa))))
+            p.add('fold%d' % k, 'mount', 'tissue' if k % 3 else 'flesh2', tube(pts, [r * 0.07, r * 0.1, r * 0.11, r * 0.09, r * 0.07, r * 0.04], n=5, flat=0.6))
+        # pores over the knoll
+        PV, PF = [], []
+        for k in range(120):
+            x_ = L * rp.uniform(0.1, 0.9); a = rp.uniform(0, 2 * math.pi); rr_ = krad(x_)
+            c = Vector((x_, rr_ * math.cos(a), rr_ * math.sin(a))); nn = Vector((0.3, math.cos(a), math.sin(a))).normalized()
+            vv, ff = pore(c, nn, r * rp.uniform(0.05, 0.09), n=5)
+            o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
+        p.add('lipp', 'mount', 'pore', (PV, PF))
+        # the crown: short thick bone spines round the vent, leaning forward and out (the picture's ring of spines)
+        ns = kw.get('crown', 10)
+        for k in range(ns):
+            a = 2 * math.pi * (k + 0.5) / ns + rp.uniform(-0.12, 0.12)
+            ca, sa = math.cos(a), math.sin(a)
+            # short hooks on the lip, curving forward and in over the bore (the picture's crown, a quarter of a spike's length)
+            x_ = L * rp.uniform(0.9, 0.95); rr_ = krad(x_) * 0.97
+            out = Vector((0, ca, sa)); lean = math.radians(rp.uniform(35, 50))
+            d = (Vector((1, 0, 0)) * math.cos(lean) + out * math.sin(lean)).normalized()
+            ln = r * rp.uniform(0.5, 0.65); b = Vector((x_, rr_ * ca, rr_ * sa)) - d * r * 0.12
+            pts = [b, b + d * ln * 0.45, b + d * ln * 0.8 + Vector((ln * 0.2, 0, 0)) - out * ln * 0.1, b + d * ln * 0.9 + Vector((ln * 0.45, 0, 0)) - out * ln * 0.3]
+            p.add('crown%d' % k, 'body', 'bone', tube(pts, [r * 0.17, r * 0.13, r * 0.07, 0.003], n=7))
+            p.add('crownc%d' % k, 'mount', 'tissue', tube([b - d * r * 0.08, b + d * r * 0.12], [r * 0.2, r * 0.18], n=8))
     else:
         # flared rim: a thick lip rolled outward, with radial creases on its face
         # a rolled lip: the throat wall curls out and back over itself in a fat round roll
@@ -599,13 +651,49 @@ def _tendril(p, name, root, d0, length, r0, seed, curl=1.0, role='turn', rings=T
 
 
 def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, variant=0, seg=6, weapon='tendril', count=14,
-        spread=1.0, seed=0, mane_len=0.0, mane_drop=0.0):
+        spread=1.0, seed=0, mane_len=0.0, mane_drop=0.0, drape=None):
     """a Chorus weapon organ, built from what it is (WEAPONS). Origin on the hull at the mount centre, +Z the mount normal,
     +X the rest aim. tendril: a crown of `count` hooked tendrils `blen` long from a sphincter on a muscle mound (turns);
     with mane_len > 0 a mane: the tendrils rooted along a crest mane_len long (fixed, mount 'spinal' in the fit check).
     spores: a spore gland hanging from its neck (the belly), its spout curling forward to a rosette of pores (turns)."""
     p = Part('gun')
     s = size
+    if weapon == 'tendril' and drape:
+        # the drape (C12, issue 1153): a low mound of knotted muscle holding a few heavy tendrils, cables of flesh with blunt
+        # rounded tips and no claws, lying back over the hull and down its flanks at rest (fixed: they reach every way at once).
+        # drape: one path per tendril in the mount's frame (the ship lays each on its own hull), with its root radius.
+        p.type = 'drape'
+        import random
+        rnd = random.Random(seed + 13)
+        R = 0.42 * s
+        p.add('root', 'mount', 'flesh', blob(R * 1.55, R * 1.35, R * 0.62, centre=(0, 0, -0.04), nu=30, nv=14, seed=seed, amp=0.12))
+        # the knot: thick muscle cords looping over the mound, the tendrils' roots twisted together
+        for k in range(9):
+            a0 = rnd.uniform(0, 2 * math.pi); sw = rnd.uniform(1.2, 2.4)
+            pts = []
+            for j in range(7):
+                t = j / 6; a = a0 + sw * t
+                rr = R * (0.35 + 0.95 * math.sin(math.pi * t) * rnd.uniform(0.85, 1.0))
+                pts.append(Vector((rr * math.cos(a) * 1.15, rr * math.sin(a), R * (0.5 - 0.25 * (rr / R) ** 2) + R * 0.08)))
+            p.add('knot%d' % k, 'mount', 'flesh2' if k % 2 else 'flesh', tube(pts, [R * 0.12, R * 0.17, R * 0.2, R * 0.2, R * 0.17, R * 0.13, R * 0.09], n=7, flat=0.75))
+        tips = []; tops = []
+        for i, d in enumerate(drape):
+            pts = [Vector(q) for q in d['pts']]; r0 = d['r']
+            n_ = len(pts)
+            rad = [r0 * (1.0 - 0.28 * (j / (n_ - 1)) ** 1.4) * (1 + 0.06 * math.sin(j * 1.9 + i)) for j in range(n_)]
+            p.add('stalk%02d' % i, 'body', 'flesh' if i % 2 else 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
+            _add_tube_rings(p, 'ring%02d' % i, pts, rad, 3, r0 * 0.28, k=1.12, mat='flesh2', role='body', n=10)
+            # the blunt tip: a rounded swollen end with a puckered acid pore (no claw)
+            tp = pts[-1]; tt = (pts[-1] - pts[-2]).normalized()
+            p.add('tip%02d' % i, 'body', 'flesh', blob(rad[-1] * 1.18, rad[-1] * 1.12, rad[-1] * 1.12, centre=tuple(tp + tt * rad[-1] * 0.35), nu=14, nv=9, seed=seed + i, amp=0.08))
+            p.add('pore%02d' % i, 'body', 'bilewet', pore(tp + tt * rad[-1] * 1.5, tt, rad[-1] * 0.35, n=6))
+            tips.append(tp); tops.append(pts[min(2, n_ - 1)])
+        pivot = Vector((0, 0, R * 0.62))
+        # the lash leaves from the knot's top, where every tendril rises from the mound
+        mz = [Vector((R * 0.5 * math.cos(2 * math.pi * k / max(1, barrels)), R * 0.5 * math.sin(2 * math.pi * k / max(1, barrels)), R * 0.62)) for k in range(max(1, barrels))]
+        p.fit = dict(pivot=P(pivot), trunnion=P(pivot), muzzles=[P(m) for m in mz], reach=max((t - pivot).length for t in tips),
+                     aim=D((1, 0, 0)), up=D((0, 0, 1)), mount='spinal', radius=R * 1.55)
+        return p
     if weapon == 'tendril' and mane_len <= 0:
         p.type = 'tendril'
         R = 0.42 * s
@@ -713,7 +801,7 @@ def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, vari
 
 # ------------------------------------------------------------------------------------------------ the pulse vent (engine)
 def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, nose='flat', seg=24, trail='membrane',
-                trails=3, trail_len=None, out_dir=None, seed=0, veil=1.0):
+                trails=3, trail_len=None, out_dir=None, seed=0, veil=1.0, fan=0.75, splay=22.0):
     """the pulse vent (no nozzle): exhaust leaves along -X; origin at the centre of the vent's mouth.
     root: a muscular cone running forward body_len into the hull (mount); fold: radial folds round the mouth; sphincter: the
     muscle ring that squeezes each pulse; throat: the dark funnel; glow: bile light deep in it. trail: 'membrane' veils (C10)
@@ -742,9 +830,55 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
     import random
     rnd = random.Random(seed + 9)
     for i in range(trails):
-        a0 = math.atan2(od.z, od.y) + (i - (trails - 1) / 2) * 0.75
+        a0 = math.atan2(od.z, od.y) + (i - (trails - 1) / 2) * fan
         rv = Vector((0, math.cos(a0), math.sin(a0)))
-        sp = math.radians(22 + 6 * rnd.random())
+        sp = math.radians(splay + 6 * rnd.random())
+        if trail == 'veil':
+            # a veil (C12, issue 1153): a thin, wide, flowing sheet from the rim that fans out, cups across its width and curls
+            # and waves along its length, fraying narrower at its end; never a straight stiff blade
+            m, q = 24, 7; V, F = [], []
+            wv0 = rv.cross(Vector((1, 0, 0))).normalized()
+            ph = rnd.uniform(0, 6.3)
+            tops = []
+            for j in range(m + 1):
+                t = j / m
+                tw = 0.8 * t * t + 0.25 * math.sin(t * 3.0 + ph) * t   # the sheet twists as it flows
+                wv = (wv0 * math.cos(tw) + rv * math.sin(tw)).normalized(); nv = wv.cross(Vector((-1, 0, 0))).normalized()
+                c = rv * r_exit * 0.95 + Vector((-tl * t, 0, 0)) + rv * tl * t * math.tan(sp) \
+                    + wv0 * 0.16 * tl * math.sin(t * 4.2 + ph) * t + rv * 0.12 * tl * math.sin(t * 5.5 + 2 * ph) * t
+                w = veil * r_exit * 2.2 * (0.12 + 0.88 * math.sin(math.pi * min(1.0, 0.05 + 0.75 * t)) ** 1.5) * (1 + 0.18 * math.sin(t * 9 + i))
+                row = []
+                for k in range(q):
+                    u = k / (q - 1) - 0.5
+                    cup = 0.22 * w * (u * u * 4 - 1) * (0.4 + 0.6 * t)   # cupped across its width
+                    edge = 0.05 * w * math.sin(t * 17 + k * 2.1 + ph) * (abs(u) * 2) ** 2   # rippled edges
+                    row.append(c + wv * (u * w) + nv * (cup + edge))
+                tops.append((row, nv))
+            th = 0.008
+            for row, nv in tops:
+                for pt in row:
+                    V.append(tuple(pt + nv * th))
+            for row, nv in tops:
+                for pt in row:
+                    V.append(tuple(pt - nv * th))
+            nb = (m + 1) * q
+            for j in range(m):
+                for k in range(q - 1):
+                    a, b, c_, d_ = j * q + k, j * q + k + 1, (j + 1) * q + k + 1, (j + 1) * q + k
+                    F.append((a, b, c_, d_)); F.append((nb + d_, nb + c_, nb + b, nb + a))
+                for k in (0, q - 1):
+                    a, d_ = j * q + k, (j + 1) * q + k
+                    F.append((a, d_, nb + d_, nb + a) if k == 0 else (d_, a, nb + a, nb + d_))
+            for j in (0, m):
+                for k in range(q - 1):
+                    a, b = j * q + k, j * q + k + 1
+                    F.append((b, a, nb + a, nb + b) if j == 0 else (a, b, nb + b, nb + a))
+            p.add('membrane%d' % i, 'body', 'membrane', (V, F))
+            # veins of light along the veil
+            for q_, kk in enumerate((1, 3, 5)):
+                pts = [Vector(V[j * q + kk]) for j in range(m + 1)]
+                p.add('membranev%d_%d' % (i, q_), 'body', 'bilewet' if q_ == 1 else 'membrane', tube(pts, [r_exit * (0.06 if q_ == 1 else 0.035) * (1 - 0.6 * j / m) for j in range(m + 1)], n=4))
+            continue
         if trail == 'membrane':
             # a veil: a thin, wavy, tapering strip from the rim, splaying out at 22 to 28 degrees from the axis
             m = 20; V, F = [], []
@@ -752,7 +886,7 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
             for j in range(m + 1):
                 t = j / m
                 c = rv * r_exit * 0.95 + Vector((-tl * t, 0, 0)) + rv * tl * t * math.tan(sp) + wv * 0.1 * tl * math.sin(t * 5 + i) * t + rv * 0.06 * tl * math.sin(t * 7 + 2 * i) * t
-                w = veil * r_exit * 2.2 * (0.55 + 0.45 * math.sin(math.pi * (0.15 + 0.85 * t))) * (1 - 0.6 * t) * (1 + 0.15 * math.sin(t * 9 + i) + 0.08 * (veil - 1.0) * math.sin(t * 23 + 3 * i))
+                w = veil * r_exit * 2.2 * (0.55 + 0.45 * math.sin(math.pi * (0.15 + 0.85 * t))) * (1 - 0.6 * t) * (1 + 0.15 * math.sin(t * 9 + i))
                 th = 0.012 + 0.02 * (1 - t)
                 for q in (c - wv * w / 2, c + wv * w / 2, c + wv * w / 2 + rv * th, c - wv * w / 2 + rv * th):
                     V.append(tuple(q))
@@ -962,6 +1096,7 @@ def gun_what(part, kind):
     t = getattr(part, 'type', '')
     n = sum(1 for c in part.comps if c['name'].startswith('stalk'))
     return {'tendril': 'crown of %d hooked tendrils (turns)' % n, 'mane': 'mane of %d hooked tendrils (fixed)' % n,
+            'drape': 'knot of %d heavy blunt tendrils draped over the hull (fixed)' % n,
             'spore': 'spore gland, pore rosette (swings on its neck)'}.get(t, kind)
 
 
@@ -1146,9 +1281,9 @@ _base_engine_bell = engine_bell
 
 
 def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, nose='flat', seg=24, trail='membrane',
-                trails=3, trail_len=None, out_dir=None, seed=0, craft=False, veil=1.0):
+                trails=3, trail_len=None, out_dir=None, seed=0, craft=False, veil=1.0, fan=0.75, splay=22.0):
     """the pulse vent (above); craft=True (issue 793): one orifice of a craft's orifice cluster, craft_vent (sizes from r_exit)"""
     if craft:
         return craft_vent(r_exit, body_len, seed=seed)
     return _base_engine_bell(r_exit, body_len, bell_len=bell_len, body_r=body_r, throat=throat, rings=rings, nose=nose, seg=seg, trail=trail,
-                             trails=trails, trail_len=trail_len, out_dir=out_dir, seed=seed, veil=veil)
+                             trails=trails, trail_len=trail_len, out_dir=out_dir, seed=seed, veil=veil, fan=fan, splay=splay)
