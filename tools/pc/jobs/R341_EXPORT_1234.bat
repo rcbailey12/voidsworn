@@ -15,9 +15,10 @@ rem   2. Publish: only when every ship and every check passed, each checked expo
 rem      stage 7 installer (snapshot, lock, backups, hash check, readback, old files restored on its own failure). Publish
 rem      stops at the first failure and result.txt names the ships already live.
 rem   Right after each ship's stage 7, its export is copied into this run's own folder opus1234\checked\<run>\<code>, and
-rem   every file there must match, byte for byte, the copy stage 7 installed into the staging project (the bytes the checks
-rem   then read). Publish installs from that private copy and checks the bytes again first, so a later build of the same
-rem   ship in recipe\<ship>\ cannot slip in between the checks and the publish.
+rem   tools\recipe\staged_identity.py proves it is what stage 7 installed into the staging project (what the checks then
+rem   read), both ways: the GLB, the same set of map files with the same bytes, and manifest_entry.json equal to the staged
+rem   manifest row. Publish reruns that proof against the hashes recorded then and installs from the private copy, so a
+rem   later build of the same ship in recipe\<ship>\ cannot slip in between the checks and the publish.
 rem Writes only opus1234\, the recipe job folders recipe\<ship>\ and, in phase 2, build\godot\assets\ships\<code>\ and the
 rem game's ship cache. Nothing is deleted.
 rem Throwaway profile guard (issue 1228): every program this job starts sees APPDATA and LOCALAPPDATA in opus1234\profile, so
@@ -33,8 +34,9 @@ if not exist "%OUT%" mkdir "%OUT%"
 set RES=%OUT%\result.txt
 set BAD=
 echo start %DATE% %TIME% > "%RES%"
-rem the accepted round 3 commit (opus/issue-1234 15abb1fb; the commits after it change only docs and this file)
-if "%PIN%"=="" set PIN=15abb1fb2b6cd75799dd91fcf8fa58dea0c19878
+rem the accepted round 3 look (opus/issue-1234 15abb1fb) plus staged_identity.py: c4c80c82 changes nothing in the kits,
+rem sheets or recipe stages after 15abb1fb, only docs, this file and that one new script
+if "%PIN%"=="" set PIN=c4c80c82d59e2205725213ddcc0fe39d2889c0d5
 if not exist "%C%\.git" (
   git clone -q --depth 1 --no-checkout https://github.com/rcbailey12/voidsworn "%C%" >> "%RES%" 2>&1
   if errorlevel 1 (
@@ -149,29 +151,20 @@ if defined FAILED (
 )
 rem keep the exact staged bytes: copy the export, then every file must match what stage 7 installed for the checks
 set "SNAP=%CHECKED%\%CODE%"
-set "LIVEDIR=%STAGE_GAME%\assets\ships\%CODE%"
 xcopy /e /i /q /y "%V%\recipe\%SHIP%\export\%CODE%" "%SNAP%" > "%O%\log_snapshot.txt" 2>&1
 if errorlevel 1 (
   echo %SHIP% FAILED: could not copy the export aside >> "%RES%"
   set BAD=1
   exit /b 0
 )
-if not exist "%SNAP%\%CODE%.glb" set FAILED=snapshot
-if not exist "%LIVEDIR%\%CODE%.glb" set FAILED=snapshot
-for %%F in ("%SNAP%\*") do (
-  if exist "%LIVEDIR%\%%~nxF" (
-    fc /b "%%~fF" "%LIVEDIR%\%%~nxF" > nul 2>&1
-    if errorlevel 1 set FAILED=snapshot
-  )
-)
-if defined FAILED (
-  echo %SHIP% FAILED: the export copied aside is not the bytes installed for the checks >> "%RES%"
+"%BPY%" -B "%C%\tools\recipe\staged_identity.py" "%SNAP%" "%STAGE_GAME%" %CODE% "%SNAP%.identity.json" > "%O%\log_identity.txt" 2>&1
+if errorlevel 1 (
+  type "%O%\log_identity.txt" >> "%RES%"
+  echo %SHIP% FAILED: the export copied aside is not what stage 7 installed for the checks >> "%RES%"
   set BAD=1
   exit /b 0
 )
-certutil -hashfile "%SNAP%\%CODE%.glb" SHA256 | findstr /v ":" > "%SNAP%.sha256"
-set /p GLBSHA=< "%SNAP%.sha256"
-echo %SHIP% checked copy %CODE%.glb sha256 %GLBSHA% >> "%RES%"
+type "%O%\log_identity.txt" >> "%RES%"
 set DONE=%DONE% %SHIP%
 echo %SHIP% staged as %CODE% >> "%RES%"
 exit /b 0
@@ -221,18 +214,13 @@ set SHIP=%1
 call :code %SHIP%
 set "JOB=%V%\recipe\%SHIP%"
 set "SNAP=%CHECKED%\%CODE%"
-set "LIVEDIR=%STAGE_GAME%\assets\ships\%CODE%"
-for %%F in ("%SNAP%\*") do (
-  if exist "%LIVEDIR%\%%~nxF" (
-    fc /b "%%~fF" "%LIVEDIR%\%%~nxF" > nul 2>&1
-    if errorlevel 1 set BAD=1
-  )
-)
-if defined BAD (
+"%BPY%" -B "%C%\tools\recipe\staged_identity.py" "%SNAP%" "%STAGE_GAME%" %CODE% "%SNAP%.identity.json" --expect > "%OUT%\log_identity_publish_%CODE%.txt" 2>&1
+if errorlevel 1 (
+  type "%OUT%\log_identity_publish_%CODE%.txt" >> "%RES%"
   echo %SHIP% publish REFUSED: the checked copy of %CODE% changed since the checks >> "%RES%"
+  set BAD=1
   exit /b 0
 )
-echo %SHIP% publish %CODE% start %TIME% >> "%RES%"
 "%BPY%" -B "%C%\tools\recipe\manifest_merge.py" --install "%SNAP%" "%GAME%" "%CODE%" "%GD%" "%JOB%" "%C%\tools\recipe\ships\%SHIP%.json" > "%OUT%\log_publish_%CODE%.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% publish %CODE% exit %EL% >> "%RES%"
