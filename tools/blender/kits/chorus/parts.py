@@ -51,6 +51,8 @@ SUBPARTS = {
     'sac': ['root', 'sac', 'crease', 'vein', 'glow'],
     'brood': ['root', 'sac', 'crease', 'slit', 'lip', 'vein'],
     'spine': ['collar', 'blade', 'growth', 'edge'],
+    'knoll': ['dome', 'roll', 'pore'],
+    'spine_bed': ['knoll', 'spine', 'knollp'],
     'chitin': ['plate', 'rim', 'growth'],
     'plate': ['pad', 'pore'],
     'hull': ['ridge', 'fold', 'pore'],
@@ -381,6 +383,37 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             p.add('fold%d' % k, 'mount', 'flesh2', tube(q, [r * 0.05, r * 0.06, r * 0.03], n=5, flat=0.6))
         p.add('lipt', 'mount', 'tissue', tube([Vector((L * 1.0 - r * 0.12, r * 0.86 * math.cos(2 * math.pi * k / 40), r * 0.86 * math.sin(2 * math.pi * k / 40)))
                                                 for k in range(41)], [r * 0.07] * 41, n=6, cap0=False, cap1=False))
+    elif style == 'gland':
+        # a spine gland (C13, the spitter, issue 1154): a knoll of the hull's own flesh with a puckered vent at its crown and
+        # short bone spines growing out of the knoll round it (the spines it spits). No mouth, no collar, no rim standing
+        # out: the vent's lip is gathered into pucker folds running in to the hole, and the spines lean out of the knoll's
+        # skin at uneven lengths and angles. knoll: the knoll's radius (default 2.3 r); spines: how many.
+        import random
+        rp = random.Random(seed + 43)
+        RK = kw.get('knoll') or r * 2.3
+        nsp = int(kw.get('spines', 16))
+        # the knoll: a lumpy dome whose crown is the vent; its body runs back into the hull (mount)
+        kc = L * 0.98 - RK * 0.92
+        p.add('knoll', 'mount', 'flesh', blob(RK * 0.92, RK, RK * 0.96, centre=(kc, 0, 0), nu=30, nv=16, seed=seed + 5, amp=0.1))
+        # the puckered lip: a thick lumpy ring sunk a little into the crown, pucker folds gathered into the hole
+        m = 60; pts = []; rad = []
+        for k in range(m):
+            a = 2 * math.pi * k / m
+            Ra = r * (1.08 + 0.07 * math.sin(5 * a + seed) + 0.05 * math.sin(9 * a))
+            pts.append(Vector((L * 0.96 + r * 0.05 * math.sin(3 * a + seed), Ra * math.cos(a), Ra * math.sin(a))))
+            rad.append(r * (0.17 + 0.05 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.3)))))
+        pts.append(pts[0]); rad.append(rad[0])
+        p.add('lip0', 'mount', 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
+        for k in range(22):
+            a = 2 * math.pi * (k + rp.uniform(-0.25, 0.25)) / 22
+            ca, sa = math.cos(a), math.sin(a)
+            q = [Vector((L * 0.93 - r * 0.55, r * 2.0 * ca, r * 2.0 * sa)), Vector((L * 0.97 - r * 0.12, r * 1.5 * ca, r * 1.5 * sa)),
+                 Vector((L * 1.0, r * 1.12 * ca, r * 1.12 * sa))]
+            p.add('fold%d' % k, 'mount', 'flesh', tube(q, [r * 0.09, r * 0.13, r * 0.07], n=5, flat=0.6))
+        p.add('lipt', 'mount', 'tissue', tube([Vector((L * 0.985 - r * 0.08, r * 0.84 * math.cos(2 * math.pi * k / 40), r * 0.84 * math.sin(2 * math.pi * k / 40)))
+                                                for k in range(41)], [r * 0.08] * 41, n=6, cap0=False, cap1=False))
+        # the spines: short bone quills growing out of the knoll round the vent (the shot it spits), none across the mouth
+        _spine_field(p, Vector((kc, 0, 0)), RK, nsp, r, rp, (26, 72), seed)
     else:
         # flared rim: a thick lip rolled outward, with radial creases on its face
         # a rolled lip: the throat wall curls out and back over itself in a fat round roll
@@ -463,6 +496,66 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
     # the arcs and the firing lane are taken from the mouth
     p.fit = dict(muzzles=[P((xg + r * 0.22, 0, 0))], pivot=P((L * 1.02, 0, 0)), trunnion=P((L * 1.02, 0, 0)), reach=0.3, aim=D((1, 0, 0)), bore=r * 0.7, lane_from=P((L * 1.02, 0, 0)),
                  up=D((0, 0, 1)), mount='spinal', radius=r * 1.15)   # the shot leaves the bore: its lane is the bore's width
+    return p
+
+
+def _spine_field(p, c, RK, nsp, r, rp, th_deg, seed, axis=None):
+    """short bone spines out of a knoll of radius RK centred at c (issue 1154): each a tapering shaft with a knuckle knob at
+    its tip and a collar of raw tissue at its root, uneven lengths and leans, between th_deg degrees off the knoll's axis
+    (local +X unless axis), plus sense pores between them. Every piece is grown into the knoll (mount)."""
+    ax = Vector(axis or (1, 0, 0)).normalized(); u0 = ax.orthogonal().normalized(); v0 = ax.cross(u0)
+    PV, PF = [], []
+    for k in range(nsp):
+        a = 2 * math.pi * (k + rp.uniform(-0.35, 0.35)) / nsp
+        th = math.radians(rp.uniform(*th_deg))
+        u = ax * math.cos(th) + (u0 * math.cos(a) + v0 * math.sin(a)) * math.sin(th)
+        base = c + u * RK * 0.97
+        d = (u + Vector((rp.uniform(-0.2, 0.2), rp.uniform(-0.2, 0.2), rp.uniform(-0.2, 0.2)))).normalized()
+        ln = r * rp.uniform(0.55, 1.35); w0 = r * rp.uniform(0.1, 0.15)
+        p.add('spine%d' % k, 'mount', 'bone', tube([base - d * w0 * 2, base + d * ln * 0.45, base + d * ln], [w0, w0 * 0.75, w0 * 0.45], n=6))
+        p.add('spinek%d' % k, 'mount', 'bone', blob(w0 * 0.9, w0 * 0.75, w0 * 0.75, centre=tuple(base + d * ln), nu=8, nv=5, seed=seed + k, amp=0.2))
+        p.add('spinec%d' % k, 'mount', 'tissue', blob(w0 * 2.2, w0 * 2.2, w0 * 2.2, centre=tuple(base), nu=10, nv=6, seed=seed + 50 + k, amp=0.2))
+        for _ in range(2):
+            th2 = th + rp.uniform(-0.3, 0.3); a2 = a + rp.uniform(-0.4, 0.4)
+            n2 = ax * math.cos(th2) + (u0 * math.cos(a2) + v0 * math.sin(a2)) * math.sin(th2)
+            vv, ff = pore(c + n2 * RK, n2, r * rp.uniform(0.04, 0.08), n=6)
+            o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
+    p.add('knollp', 'mount', 'pore', (PV, PF))
+
+
+def knoll(rk, seed=0):
+    """a knoll of grown flesh (issue 1154, the spitter's lumpy back): a lumpy dome half sunk into the hull (local +Z out of the
+    hull), a few wrinkle rolls round its foot and pores over it. Structure: it tears with the hull."""
+    import random
+    rp = random.Random(seed)
+    p = Part('knoll')
+    p.add('dome', 'mount', 'flesh', blob(rk * rp.uniform(0.95, 1.2), rk * rp.uniform(0.85, 1.05), rk * 0.85, centre=(0, 0, 0), nu=24, nv=12, seed=seed, amp=0.12))
+    for k in range(3):
+        a0 = rp.uniform(0, 2 * math.pi); pts = []
+        for j in range(9):
+            a = a0 + 1.6 * j / 8
+            pts.append(Vector((rk * 1.02 * math.cos(a), rk * 0.94 * math.sin(a), rk * (0.12 + 0.05 * math.sin(3 * a)))))
+        p.add('roll%d' % k, 'mount', 'flesh2', tube(pts, [rk * 0.06, rk * 0.1, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.1, rk * 0.05], n=6))
+    PV, PF = [], []
+    for k in range(24):
+        a = rp.uniform(0, 2 * math.pi); th = rp.uniform(0.3, 1.3)
+        n_ = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
+        vv, ff = pore(Vector((n_.x * rk, n_.y * rk * 0.92, n_.z * rk * 0.85)), n_, rk * rp.uniform(0.025, 0.05), n=6)
+        o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
+    p.add('pore', 'mount', 'pore', (PV, PF))
+    p.fit = dict(radius=rk)
+    return p
+
+
+def spine_bed(rk, spines=14, seed=0):
+    """the spine bed (issue 1154): a knoll studded with growing bone spines, where a spitter regrows the spines it has spat
+    (regrow). Local +Z out of the hull. Structure, not a weapon: it fires nothing."""
+    import random
+    rp = random.Random(seed + 9)
+    p = Part('spine_bed')
+    p.add('knoll', 'mount', 'flesh', blob(rk * 1.05, rk, rk * 0.9, centre=(0, 0, 0), nu=28, nv=14, seed=seed, amp=0.1))
+    _spine_field(p, Vector((0, 0, 0)), rk * 0.92, spines, rk * 0.42, rp, (5, 62), seed, axis=(0, 0, 1))
+    p.fit = dict(radius=rk)
     return p
 
 
@@ -620,7 +713,7 @@ def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, vari
 
 # ------------------------------------------------------------------------------------------------ the pulse vent (engine)
 def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, nose='flat', seg=24, trail='membrane',
-                trails=3, trail_len=None, out_dir=None, seed=0):
+                trails=3, trail_len=None, out_dir=None, seed=0, veil=1.0):
     """the pulse vent (no nozzle): exhaust leaves along -X; origin at the centre of the vent's mouth.
     root: a muscular cone running forward body_len into the hull (mount); fold: radial folds round the mouth; sphincter: the
     muscle ring that squeezes each pulse; throat: the dark funnel; glow: bile light deep in it. trail: 'membrane' veils (C10)
@@ -659,7 +752,7 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
             for j in range(m + 1):
                 t = j / m
                 c = rv * r_exit * 0.95 + Vector((-tl * t, 0, 0)) + rv * tl * t * math.tan(sp) + wv * 0.1 * tl * math.sin(t * 5 + i) * t + rv * 0.06 * tl * math.sin(t * 7 + 2 * i) * t
-                w = r_exit * 2.2 * (0.55 + 0.45 * math.sin(math.pi * (0.15 + 0.85 * t))) * (1 - 0.6 * t) * (1 + 0.15 * math.sin(t * 9 + i))
+                w = veil * r_exit * 2.2 * (0.55 + 0.45 * math.sin(math.pi * (0.15 + 0.85 * t))) * (1 - 0.6 * t) * (1 + 0.15 * math.sin(t * 9 + i) + 0.08 * (veil - 1.0) * math.sin(t * 23 + 3 * i))
                 th = 0.012 + 0.02 * (1 - t)
                 for q in (c - wv * w / 2, c + wv * w / 2, c + wv * w / 2 + rv * th, c - wv * w / 2 + rv * th):
                     V.append(tuple(q))
@@ -1053,9 +1146,9 @@ _base_engine_bell = engine_bell
 
 
 def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, nose='flat', seg=24, trail='membrane',
-                trails=3, trail_len=None, out_dir=None, seed=0, craft=False):
+                trails=3, trail_len=None, out_dir=None, seed=0, craft=False, veil=1.0):
     """the pulse vent (above); craft=True (issue 793): one orifice of a craft's orifice cluster, craft_vent (sizes from r_exit)"""
     if craft:
         return craft_vent(r_exit, body_len, seed=seed)
     return _base_engine_bell(r_exit, body_len, bell_len=bell_len, body_r=body_r, throat=throat, rings=rings, nose=nose, seg=seg, trail=trail,
-                             trails=trails, trail_len=trail_len, out_dir=out_dir, seed=seed)
+                             trails=trails, trail_len=trail_len, out_dir=out_dir, seed=seed, veil=veil)

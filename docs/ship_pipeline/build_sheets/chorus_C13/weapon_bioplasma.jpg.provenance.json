@@ -1,0 +1,54 @@
+{
+  "source_commit": "7b778393304efb499a82501eab44be8b0a1cb442",
+  "source_dirty": true,
+  "source_diff_sha256": "7e2c800eae14fdc00bedc805402289244d55cce191adf94c73f1d251ddc2c9e3",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "weapon_bioplasma.jpg",
+  "date": "2026-11-19T15:01:25Z",
+  "sources": [
+    {
+      "source_commit": "7b778393304efb499a82501eab44be8b0a1cb442",
+      "source_dirty": true,
+      "source_diff_sha256": "7e2c800eae14fdc00bedc805402289244d55cce191adf94c73f1d251ddc2c9e3",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "weapon_bioplasma.png",
+      "source_commit": "7b778393304efb499a82501eab44be8b0a1cb442",
+      "source_dirty": true,
+      "source_diff_sha256": "7e2c800eae14fdc00bedc805402289244d55cce191adf94c73f1d251ddc2c9e3",
+      "stage": "sheet built",
+      "date": "2026-11-19T15:01:13Z",
+      "image_sha256": "1008fd70c163e09c26298d59013f7c2c16782b3bc1404e3f9f367e41fb203d40",
+      "sources": [
+        {
+          "source_commit": "7b778393304efb499a82501eab44be8b0a1cb442",
+          "source_dirty": true,
+          "source_diff_sha256": "7e2c800eae14fdc00bedc805402289244d55cce191adf94c73f1d251ddc2c9e3",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    511,
+    282,
+    560
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "1a340595000f79a2f681645f4cb08bf6a42beac1a655e41aac240937a4ea4a60"
+  ],
+  "stamp_template_sha256": "41e0dc818b6797d7e39360289351caaa22b90ddfd2826b53840693b228f8534e",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "1d7421caf7ab3cda9a626572b0c5d4a4dae457ec05403463014c6de6e91c461d"
+}
