@@ -77,12 +77,17 @@ rem only godot\assets\ships from the clone's own commit; then a plain checkout, 
 rem untracked or ignored files, so a local file the branch now tracks stops the job instead of being replaced (Artoo, PR 1179).
 git -C "%C%" status --porcelain --untracked-files=no > "%O%\clone_changes_before_checkout.txt" 2> "%O%\log_clone_status.txt"
 git -C "%C%" diff --binary HEAD > "%O%\clone_changes_before_checkout.patch" 2>> "%O%\log_clone_status.txt"
-findstr /v /r /c:"^.. godot/assets/ships/" "%O%\clone_changes_before_checkout.txt" > "%O%\clone_changes_unexpected.txt"
+findstr /v /r /c:"^.. godot/assets/ships/" /c:"^.. godot/.*\.import$" "%O%\clone_changes_before_checkout.txt" > "%O%\clone_changes_unexpected.txt"
 for %%Z in ("%O%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 set "FAILED=checkout: the clone has local changes outside godot\assets\ships, listed in clone_changes_unexpected.txt and saved in clone_changes_before_checkout.patch; nothing was reset"
 if defined FAILED goto collect
 for %%Z in ("%O%\clone_changes_before_checkout.txt") do if %%~zZ GTR 0 echo restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch >> "%RES%"
 git -C "%C%" checkout -q HEAD -- godot/assets/ships >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout: could not restore godot\assets\ships in the clone"
+if defined FAILED goto collect
+rem the headless import rewrites tracked *.import files under godot (Nov 19: S9 run 2 stopped on 18 death atlas .import
+rem files); they are saved in the patch above and restored from the clone's own commit like the install files
+git -C "%C%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%RES%" 2>&1
+if errorlevel 1 set "FAILED=checkout: could not restore the godot *.import files in the clone"
 if defined FAILED goto collect
 git -C "%C%" checkout -q --no-overwrite-ignore -B shipjob FETCH_HEAD >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout %BRANCH%"
