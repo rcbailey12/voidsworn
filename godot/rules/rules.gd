@@ -3805,7 +3805,7 @@ func killCauseOf(w, t) -> String:
 	var k = w.get("k"); var trt = w.get("trait")
 	if trt == "gauss" or k == "gauss" or k == "doom": return "flay"
 	if trt == "acid" or trt == "spines" or k == "bioplasma" or k == "tendril" or k == "sporeb": return "melt"
-	if k == "lance" or k == "beam" or (trt == "plasma" and String(w.get("n") if w.get("n") != null else "").to_lower().contains("lance")): return "cut"
+	if k == "lance" or k == "beam" or (trt == "plasma" and (w.get("id") == "turbo" or w.get("id") == "hturbo")): return "cut"   # Hegemony plasma batteries keep the cut death by weapon id, not name (issue 1213)
 	if k == "torp" or k == "htorp" or k == "startorp" or k == "bombs": return "big"
 	if k == "battery" or k == "hbattery" or k == "turret" or k == "autocannon" or k == "scatter":
 		var h: int = int(B["round"]) if B != null and jt(B.get("round")) else 0
