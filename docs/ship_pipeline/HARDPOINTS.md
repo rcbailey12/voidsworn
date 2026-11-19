@@ -100,7 +100,7 @@ slot gets more weapon points.
 
 | Class | Weapon points | Engines | Bays | Breach | Core | Braking origins | Boarding origins |
 |---|---|---|---|---|---|---|---|
-| Squadron | one per weapon slot | 0 | 0 | 0 | 1 | 0 | 0 |
+| Squadron | one per weapon slot | 1 | 0 | 0 | 1 | 0 | 0 |
 | Frigate | one per slot | at least 1 | 1 when `hangar` is above 0 | table | 1 | 2 (port and starboard) | 2 (port and starboard) |
 | Destroyer | one per slot | at least 1 | 1 when `hangar` is above 0 | table | 1 | 2 | 2 |
 | Cruiser | one per slot | at least 1 | 1 when `hangar` is above 0 | table | 1 | 2 | 2 |

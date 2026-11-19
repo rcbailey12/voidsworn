@@ -124,6 +124,7 @@ def main():
     weapons = gamedata.weapons(ship['game_ship'])
     cls = gamedata.ship_attr(ship['game_ship'], 'cls', default='Cruiser')
     fac = gamedata.ship_attr(ship['game_ship'], 'fac', default=ship.get('faction'))
+    wing = cls == 'Squadron'
     hangar = int(gamedata.ship_attr(ship['game_ship'], 'hangar', default=0) or 0)
     req = HP_CONTRACT.required_points(weapons, cls, fac, hangar)
     expected_breach = req['breach']
@@ -132,11 +133,15 @@ def main():
     if root is None or 'mesh' not in nodes[root]: probs.append(f'no ship node named {code} with a mesh'); return finish(out, code, probs, notes, {})
     for k in ('translation', 'rotation', 'scale', 'matrix'):
         if k in nodes[root]: probs.append(f'the ship node has a {k}: its mesh and hard points must be in the ship frame as written')
-    contract = nodes[root].get('extras', {}).get('voidsworn_destruct', {})
+    extras = nodes[root].get('extras', {})
+    contract = extras.get('voidsworn_destruct', {})
     interiors = contract.get('interior_materials', [])
-    if contract.get('version') != 1: probs.append('no authored interior/seams contract version 1')
     seams = contract.get('seams', [])
-    if not seams: probs.append('no authored break seams')
+    if wing:
+        if 'voidsworn_destruct' in extras: probs.append('wing carries an authored destruction contract')
+    else:
+        if contract.get('version') != 1: probs.append('no authored interior/seams contract version 1')
+        if not seams: probs.append('no authored break seams')
     signatures = set()
     for seam in seams:
         try:
@@ -160,6 +165,8 @@ def main():
         if M is not None: pos = pos @ M[:3, :3].T + M[:3, 3]
         idx = accessor(g, blob, pr['indices']).reshape(-1, 3).astype(np.int64) if 'indices' in pr else np.arange(len(pos)).reshape(-1, 3)
         mat = g['materials'][pr['material']].get('name', '') if 'material' in pr else ''
+        if wing and mat.startswith(code + '_inside_'):
+            probs.append(f'wing carries interior surface {mat}')
         if mat in interiors:
             IT.append(pos[idx]); interior_seen.add(mat)
             if mat != code + '_inside_skin': rooms.append(pos[idx])
@@ -173,17 +180,18 @@ def main():
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)
     PT = np.concatenate(PT) if PT else np.zeros((0, 3, 3))
     LEN = float(hi[0] - lo[0]); TOL = TOL_FRAC * LEN; VERTS = np.unique(T.reshape(-1, 3).round(6), axis=0)
-    if not IT: probs.append('no authored interior geometry')
-    else:
-        inside = np.concatenate(IT)
-        area = np.linalg.norm(np.cross(inside[:, 1] - inside[:, 0], inside[:, 2] - inside[:, 0]), axis=1).sum() * .5
-        if not np.isfinite(inside).all() or area <= 1e-10: probs.append('no usable authored interior geometry')
-        notes.append(f'authored interiors: {len(inside)} triangles, {len(IT)} surfaces; authored seams: {len(seams)}')
-    if not rooms: probs.append('no authored interior rooms: an inner liner alone is not comprehensive insides')
-    else:
-        room_geo = np.concatenate(rooms)
-        if np.linalg.norm(np.cross(room_geo[:, 1] - room_geo[:, 0], room_geo[:, 2] - room_geo[:, 0]), axis=1).sum() <= 1e-10:
-            probs.append('no authored interior rooms: room geometry has no area')
+    if not wing:
+        if not IT: probs.append('no authored interior geometry')
+        else:
+            inside = np.concatenate(IT)
+            area = np.linalg.norm(np.cross(inside[:, 1] - inside[:, 0], inside[:, 2] - inside[:, 0]), axis=1).sum() * .5
+            if not np.isfinite(inside).all() or area <= 1e-10: probs.append('no usable authored interior geometry')
+            notes.append(f'authored interiors: {len(inside)} triangles, {len(IT)} surfaces; authored seams: {len(seams)}')
+        if not rooms: probs.append('no authored interior rooms: an inner liner alone is not comprehensive insides')
+        else:
+            room_geo = np.concatenate(rooms)
+            if np.linalg.norm(np.cross(room_geo[:, 1] - room_geo[:, 0], room_geo[:, 2] - room_geo[:, 0]), axis=1).sum() <= 1e-10:
+                probs.append('no authored interior rooms: room geometry has no area')
     if set(interiors) != interior_seen: probs.append('authored interior material list does not match its nonempty surfaces')
     for seam in seams:
         if len(seam.get('p', [])) != 3: continue
@@ -328,6 +336,10 @@ def main():
             probs.append(f'manifest_entry.json breaches {entry.get("breaches")} do not match the written {count.get("breach", 0)}')
         if entry.get('cls') != cls:
             probs.append(f'manifest_entry.json cls {entry.get("cls")!r} is not {cls!r} (data.js)')
+        if wing:
+            wanted_role = None if unb else ship['game_ship']
+            if entry.get('wing_role') != wanted_role or entry.get('faction') != HP_CONTRACT.faction_key(fac):
+                probs.append('manifest_entry.json wing faction or role differs from the recipe')
     info = dict(cls=cls, faction=HP_CONTRACT.faction_key(fac), expected_breach=expected_breach,
                 required=req, weapons=[dict(slot=s, weapon=wk, arc=arc, hard_points=sorted(by_slot.get(s, []))) for s, (wk, arc) in enumerate(weapons)],
                 hardpoints=count, maps=imgs, tolerance=TOL, tolerance_of_length=TOL_FRAC, ship_length=LEN, breach_clearance=BREACH_CLEAR, rows=rows, turrets=tinfo)
@@ -339,7 +351,7 @@ def finish(out, code, probs, notes, info):
     for w in info.get('weapons', []): print(f"[check] slot {w['slot']} {w['weapon']} {w['arc']}: {len(w['hard_points'])} hard points")
     print('[check] hard points:', json.dumps(info.get('hardpoints', {})))
     for p in probs: print('[check] PROBLEM:', p)
-    print('PASS' if ok else 'FAIL', f'{code} game export:', 'authored rooms and seams retained; every required point is there, the breach count matches the class and faction, and every hard point is on the mesh' if ok else f'{len(probs)} problems')
+    print('PASS' if ok else 'FAIL', f'{code} game export:', 'every required point is there and every hard point passes the mesh checks' if ok else f'{len(probs)} problems')
     sys.exit(0 if ok else 1)
 
 if __name__ == '__main__':

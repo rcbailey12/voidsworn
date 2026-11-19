@@ -11,12 +11,12 @@
  "concept_camera": "",
  "hull": "sheet_hull",
  "tune": "",
- "bake": "none",
+ "bake": "stack",
  "cell": "HF1D",
  "outline_gate": 0.9,
  "outline_third_slack": 5.0,
  "lights": {},
  "light_min_px": 2.0,
- "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/hegemony_HF1D/ (design file tools/blender/build_sheets/ships/hegemony_HF1D.py; issue 793). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, the seam, the small inside and the length (LENGTH 1.6, CLS_LEN Squadron; drawn 3.84 on the board, scale.md) come from it through tools/blender/build_sheets/contract.py. game_ship fighter is the data.js wing (the Hegemony launches fighters, data.js FACTIONS hegemony sq 'fighter'); game_code is a placeholder: the game builds every craft in code today (godot/render/squadron_craft.gd, drawn by squadron_wing.gd) and no glb route for a sheet craft exists yet, so no stage 7 install until the Board opens that job. bake none: the Hegemony paint stack (tools/blender/kits/hegemony/stack.py, issue 780) is applied later.",
+ "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/hegemony_HF1D/ (design file tools/blender/build_sheets/ships/hegemony_HF1D.py; issue 793). The sheet provides the masses, parts, mounts and length (1.6, drawn at 3.84 on the board). The Hegemony paint stack applies the approved satin finish. Stage 7 uses the fighter rules and writes a Hegemony fighter entry under its own export code.",
  "parts": []
 }

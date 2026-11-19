@@ -60,6 +60,9 @@ try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, f
 except ValueError as e: die(str(e))
 CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
 FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
+WING = CLS == 'Squadron'
+if WING:
+    FAC = HP_CONTRACT.faction_key(FAC)
 HANGAR = int(gamedata.ship_attr(GAME, 'hangar', default=0) or 0)
 EXPECTED_BREACH = HP_CONTRACT.expected_breach(CLS, FAC)
 sc = bpy.context.scene
@@ -101,24 +104,25 @@ for pv, ms in PIVOTS:
 TURRETS_MARKED = [pv.name[:-len('_turret')] if pv.name.endswith('_turret') else pv.name for pv, _ in PIVOTS]
 
 # ---------------------------------------------------------------------------------------------------------------- the ship mesh
-src = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and not o.get('proxy')]
+src = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and not o.get('proxy')
+       and (not WING or o.get('role') != 'interior')]
 hull_src = [o for o in src if o.get('role') == 'hull']; part_src = [o for o in src if o.get('role') not in ('hull', 'interior')]
 if not hull_src: die('no hull in this blend')
-if not any(o.get('role') == 'interior' for o in src): die('no authored interior in this blend')
-if not sc.get('r209_t_lines'): die('no authored break seams in this blend')
-# issue 618: a build sheet may author several longitudinal seams, each in one compartment (r209_l_lines, the contract's home);
-# an older build has at most the one r209_l_line
-longitudinal = json.loads(sc['r209_l_lines']) if 'r209_l_lines' in sc else ([list(sc['r209_l_line'])] if list(sc.get('r209_l_line', [])) else [])
-if any(len(v) != 3 for v in longitudinal): die('invalid authored longitudinal break seam')
-# Version 1 is defined in RECIPE.md stage 7. Store geometry and seams together in the GLB.
-T_PATHS = json.loads(sc.get('r209_t_paths', 'null')) or [None] * len(sc['r209_t_lines'])
-# a transverse seam's plan path (R226: it kinks round machines), when the build has one: [x, z] points in the GLB ship frame
-seams = [dict(p=[float(x), 0, 0], n=[1, 0, 0], **({'path': [[float(px), float(-py)] for px, py in pth]} if pth else {}))
-         for x, pth in sorted(zip(sc['r209_t_lines'], T_PATHS), key=lambda t: t[0])]
-for v in longitudinal:
-    z, x0, x1 = map(float, v)
-    seams.append(dict(p=[0, z, 0], n=[0, 1, 0], span=[x0, x1]))
-destruction = dict(version=1, seams=seams, interior_materials=[])
+destruction = dict(interior_materials=[])
+if not WING:
+    if not any(o.get('role') == 'interior' for o in src): die('no authored interior in this blend')
+    if not sc.get('r209_t_lines'): die('no authored break seams in this blend')
+    # Issue 618: the older contract has at most one longitudinal seam.
+    longitudinal = json.loads(sc['r209_l_lines']) if 'r209_l_lines' in sc else ([list(sc['r209_l_line'])] if list(sc.get('r209_l_line', [])) else [])
+    if any(len(v) != 3 for v in longitudinal): die('invalid authored longitudinal break seam')
+    # A transverse seam's path uses [x, z] points in the GLB ship frame.
+    paths = json.loads(sc.get('r209_t_paths', 'null')) or [None] * len(sc['r209_t_lines'])
+    seams = [dict(p=[float(x), 0, 0], n=[1, 0, 0], **({'path': [[float(px), float(-py)] for px, py in pth]} if pth else {}))
+             for x, pth in sorted(zip(sc['r209_t_lines'], paths), key=lambda t: t[0])]
+    for v in longitudinal:
+        z, x0, x1 = map(float, v)
+        seams.append(dict(p=[0, z, 0], n=[0, 1, 0], span=[x0, x1]))
+    destruction = dict(version=1, seams=seams, interior_materials=[])
 
 def machine_boxes():
     """issue 600 (R226, RULEBOOK 5.17): where each machine sits, so a death rides it whole with one piece. The build stamps
@@ -138,7 +142,8 @@ def machine_boxes():
             for i in range(3): row['lo'][i] = min(row['lo'][i], q[i]); row['hi'][i] = max(row['hi'][i], q[i])
     return [dict(r, lo=[round(v, 6) for v in r['lo']], hi=[round(v, 6) for v in r['hi']]) for _, r in sorted(out.items())]
 
-destruction['machines'] = machine_boxes()
+if not WING:
+    destruction['machines'] = machine_boxes()
 
 def world_bvh(objs):
     bm = bmesh.new(); dg = bpy.context.evaluated_depsgraph_get()
@@ -283,7 +288,9 @@ def prep(o):
     elif not c.data.materials:
         c.data.materials.append(bpy.data.materials.new(CODE + ('_hull' if o.get('role') == 'hull' else '_parts')))
     sk = c.modifiers.get('skin')
-    if sk:
+    if sk and WING:
+        c.modifiers.remove(sk)
+    elif sk:
         sk.show_viewport = True; sk.show_render = True
         c.data.materials.append(inside_material(None, liner=True))
         sk.material_offset = len(c.data.materials) - 1
@@ -438,7 +445,8 @@ if req_probs: die('; '.join(req_probs))
 missing = [f'slot {i} ({wk} {arc})' for i, (wk, arc) in enumerate(WEAPONS) if i not in by_slot]
 J['length_world'] = LENGTH_WORLD; J['recipe_cell'] = ship.get('cell', ''); J['faction'] = ship.get('faction', '')
 J['cls'] = CLS; J['band'] = HP_CONTRACT.band(CLS)
-J['voidsworn_destruct'] = destruction
+if not WING:
+    J['voidsworn_destruct'] = destruction
 
 # ---------------------------------------------------------------------------------------------------------------- write
 tmp = os.path.join(OUT, '_gltf_source'); os.makedirs(tmp, exist_ok=True)      # the exporter's own files; kept (nothing is deleted)
@@ -500,6 +508,8 @@ manifest = dict(name=ship.get('name') or CODE, faction=FAC, cls=CLS, band=HP_CON
                 game_ship=GAME,
                 length_world=LENGTH_WORLD, hardpoints={k: v for k, v in counts.items() if v},
                 breaches=counts['breach'], turrets=len(TURRET_NODES), files=files, pc_path=f'godot/assets/ships/{CODE}/')
+if WING and not UNBAKED:
+    manifest['wing_role'] = GAME
 json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
 rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
            band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
