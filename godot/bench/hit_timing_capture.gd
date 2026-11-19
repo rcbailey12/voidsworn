@@ -48,6 +48,18 @@ func _run() -> void:
 	var out := str(args.get("out", "user://hit_timing_capture"))
 	DirAccess.make_dir_recursive_absolute(out)
 	var kase := str(args.get("case", "nebula"))
+	# --size WxH: the window is forced windowed at that size (the project starts maximized, which overrode --resolution:
+	# the first PC run drew every capture at 3840x2066). --shot beam|gun: the enemy's own first weapon (a lance on the
+	# s1 enemy) or a gun battery (tracers, for the 4K streak caps). --shield: three hits, the second empties the shield.
+	if args.has("size"):
+		var wh := str(args["size"]).split("x")
+		get_root().mode = Window.MODE_WINDOWED
+		get_root().size = Vector2i(int(wh[0]), int(wh[1]))
+		for f in 10:
+			await process_frame
+	var shot := str(args.get("shot", "beam"))
+	var shielded := args.has("shield")
+	var tag := "%s_%s%s" % [kase, shot, "_shield" if shielded else ""]
 	var api := API.new()
 	var err := api.load_rules()
 	if err != "":
@@ -81,9 +93,16 @@ func _run() -> void:
 		await process_frame
 	# the enemy's real first gun, three shots: miss, miss, hit (the case the old timing got wrong)
 	var w: Dictionary = (api.unit(a_id)["weapons"] as Array)[0]
-	var e := {"t": "fire", "unit": a_id, "target": t_id, "kind": str(w.get("k", "battery")), "name": str(w.get("name", "gun")),
-		"weapon": 0, "weapon_id": str(w.get("id", "")), "shots": [false, false, true], "quad": 0, "pd": 0}
+	var kind := str(w.get("k", "battery")) if shot == "beam" else "battery"
+	var e := {"t": "fire", "unit": a_id, "target": t_id, "kind": kind, "name": str(w.get("name", "gun")),
+		"weapon": 0, "weapon_id": str(w.get("id", "")) if shot == "beam" else "", "shots": [false, false, true], "quad": 0, "pd": 0}
 	var grp := [{"t": "hit", "unit": a_id, "target": t_id, "quad": 0, "section": "mid", "shield": 0, "hull": 7, "crit": false}]
+	if shielded:
+		e["shots"] = [true, true, true]
+		grp = [{"t": "hit", "unit": a_id, "target": t_id, "quad": 0, "section": "mid", "shield": 6, "hull": 0, "crit": false},
+			{"t": "hit", "unit": a_id, "target": t_id, "quad": 0, "section": "mid", "shield": 4, "hull": 0, "crit": false},
+			{"t": "hit", "unit": a_id, "target": t_id, "quad": 0, "section": "mid", "shield": 0, "hull": 8, "crit": false},
+			{"t": "shield_down", "unit": t_id, "quad": 0}]
 	# the enemy's activation ring, as the battle draws it
 	if b.views.has(a_id):
 		b.views[a_id].set_selected(true, Color(0.79, 0.64, 1.0))
@@ -106,20 +125,20 @@ func _run() -> void:
 		if img == null or img.is_empty():
 			continue   # (no picture this frame: a due still waits for the next drawn frame, it is never skipped)
 		if args.has("frames"):
-			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [kase, h, frame])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [tag, h, frame])) == OK:
 				frames_ok += 1
 			else:
 				failed += 1
 		if due:
-			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [kase, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [tag, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
 				stills += 1
 			else:
 				failed += 1
 			n += 1
 	# Artoo (PR 1220): only real, written stills count; a missing or failed still fails the run
 	if stills == AT.size() and failed == 0:
-		print("HIT_CAPTURE_DONE case %s height %d stills %d of %d frames %d" % [kase, h, stills, AT.size(), frames_ok])
+		print("HIT_CAPTURE_DONE case %s height %d stills %d of %d frames %d" % [tag, h, stills, AT.size(), frames_ok])
 		quit(0)
 	else:
-		printerr("HIT_CAPTURE_FAILED case %s height %d stills %d of %d, failed writes %d (headless draws no pictures)" % [kase, h, stills, AT.size(), failed])
+		printerr("HIT_CAPTURE_FAILED case %s height %d stills %d of %d, failed writes %d (headless draws no pictures)" % [tag, h, stills, AT.size(), failed])
 		quit(1)
