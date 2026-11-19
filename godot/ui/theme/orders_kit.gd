@@ -19,6 +19,13 @@ const UiScale := preload("res://ui/ui_scale.gd")
 # play(name) here.
 static var sound: Node = null
 
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit):
+# the sound node reference and the silhouette textures.
+static func clear_static() -> void:
+	sound = null
+	_sil.clear()
+
 # The cue each kind of button plays when pressed; hover and arrow-key focus play HOVER_CUE.
 const PRESS_CUE := {"primary": "ui_confirm", "quiet": "ui_click", "link": "ui_click", "back": "ui_cancel", "tab": "ui_select"}
 const HOVER_CUE := "ui_select"

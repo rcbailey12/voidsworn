@@ -34,14 +34,8 @@ func quit_clean(code := 0) -> void:
 		campaign.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
-	load("res://render/ship_view.gd").clear_static()
-	load("res://scenes/battle/fx_stub.gd").clear_static()
-	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
-	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd", "res://portraits/portraits.gd"]:
-		if ResourceLoader.exists(sp):
-			var sc = load(sp)
-			if sc != null and sc.has_method("clear_static"):
-				sc.clear_static()
+	# issue 1204: every script with a GPU-holding static is on one list (render/static_caches.gd)
+	load("res://render/static_caches.gd").clear_all()
 	get_tree().quit(code)
 
 
