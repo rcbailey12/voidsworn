@@ -150,6 +150,8 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 | hp_rcs_1 | 13.4 | -0.71 | -0.23 | stbd |  |  |
 | hp_rcs_2 | 76.5 | 0.81 | 0.26 | port |  |  |
 | hp_rcs_3 | 76.5 | -0.79 | 0.26 | stbd |  |  |
+| hp_board_0 | 37.0 | 1.21 | 0.47 | port |  |  |
+| hp_board_1 | 37.0 | -1.23 | 0.50 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
@@ -168,7 +170,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Bile sacs: four a side along the lower flank, port and starboard at different sizes, three more hanging under the belly.** the picture's round sacs; uneven sides keep the asymmetric, scarred read (designs.md); every sac stores bile for the volleys.
 - **Three pulse vents with two wide veils each at the short stern (the kit's veil trail, shared with C12, R333).** factions.md: no nozzles; the picture's three glow points and ragged membranes. The veils are cut to about 1.4 so the ship is 9.5 nose to veil tip, and fanned so none hangs in a neighbour's jet.
 - **Siphons added, a pair forward and a pair aft.** a ship in space must turn; the picture shows none.
-- **No boarding origins: data.js b_spitter has no tendril, so the ship has nothing that boards.** the stinger variant (b_spitter_s, tendril T) is its own job.
+- **Boarding origins on the upper flanks at x 1.3, though b_spitter carries no tendril.** the export contract needs one boarding origin a side on every ship (check_export.py); the stinger variant (b_spitter_s, tendril T) is its own job.
 
 ## Designed here, not shown in the picture
 

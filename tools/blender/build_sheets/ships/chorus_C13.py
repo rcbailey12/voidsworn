@@ -259,6 +259,10 @@ def build(K):
     for i, (x, th, side) in enumerate(((3.55, -0.15, 1), (3.55, -0.15, -1), (-2.45, 0.35, 1), (-2.45, 0.35, -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
+    # boarding origins (export7: one port, one starboard on the mid hull): where a boarding party leaves the body
+    for i, side in enumerate((1, -1)):
+        pos, nrm = K.hpt(1.3, side_th(0.45, side), out=0.02)
+        K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone', 'R204 and the lore: the colour is fixed in the build; the picture\'s hide is grey-brown with amber light')
@@ -274,5 +278,5 @@ def build(K):
     K.change('Three pulse vents with two wide veils each at the short stern (the kit\'s veil trail, shared with C12, R333)', 'factions.md: no nozzles; the picture\'s three glow points and ragged membranes. The veils are cut '
              'to about 1.4 so the ship is 9.5 nose to veil tip, and fanned so none hangs in a neighbour\'s jet')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
-    K.change('No boarding origins: data.js b_spitter has no tendril, so the ship has nothing that boards', 'the stinger variant (b_spitter_s, tendril T) is its own job')
+    K.change('Boarding origins on the upper flanks at x 1.3, though b_spitter carries no tendril', 'the export contract needs one boarding origin a side on every ship (check_export.py); the stinger variant (b_spitter_s, tendril T) is its own job')
     K.open_item('The variant b_spitter_s (Spitter stinger: bioplasma T, tendril T) is not built here; it needs a named variant (ships.md, issue 812)')

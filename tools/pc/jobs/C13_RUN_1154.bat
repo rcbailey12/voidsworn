@@ -58,6 +58,8 @@ echo import exit %ERRORLEVEL% >> "%RES%"
 rem Stages 1 and 2 ran in the front run (the concept and the AI shape reference do not change with the sheet); set FULL=1 to rerun them.
 set STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export
 if "%FULL%"=="1" set STAGES=1_concept_in 2_shape_ref %STAGES%
+rem SKIP3=1 starts at stage 4 when stage 3 already ran on this sheet outline (a hard point or paint change only).
+if "%SKIP3%"=="1" set STAGES=4_parts_kit 5_paint_bake 6_lod 7_export
 for %%S in (%STAGES%) do call :stage %%S
 if defined FAILED (
   echo checks SKIPPED: stage %FAILED% failed, so the installed glb is not this run's >> "%RES%"
