@@ -1225,9 +1225,9 @@ uniform vec4 hitw[6];
 uniform float brk_t = -100.0;
 uniform vec3 brk_dir = vec3(1.0, 0.0, 0.0);
 uniform float regen_t = -100.0;
-// issue 1078 (a prototype for Ryan to choose from): the failure look, 0 today's per-faction break, 1 energy shear,
-// 2 clean collapse; brk_low gives the shear its cheaper crack network
-uniform int brk_look = 0;
+// issue 1078, R340: the failure look is 2, the clean collapse; 0 the old per-faction break and 1 energy shear stay only
+// for dev comparisons; brk_low gives the shear its cheaper crack network
+uniform int brk_look = 2;
 uniform bool brk_low = false;
 // the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
 uniform int edge_mode = 0;

@@ -33,13 +33,13 @@ effect: a weapon hit, a shield response, a trail, a death.
   Its hit collider uses that same mesh. Impact and collapse ripples use the shader's
   hits array, including the soft flash fallback; do not add a separate flat ring.
   Check C15s, H9 and E12 at cameras 170 and 60, plus the fitted skin from the side.
-- Shield failure looks (issue 1078, a prototype for Ryan to pick one or none; not a ruling): `rendering/effects/shield_failure`
-  (or `VS_SHIELD_FAILURE`) is `today` (the default, each faction's own break), `shear` (one connected crack network runs
-  from the struck side over the whole shield, hits light the same cracks) or `collapse` (one even flash, one band closes
-  into the breach, a knot and a flat ring of sparks). `rendering/effects/shield_failure_quality="low"` gives the shear a
-  cheaper crack network. All of it is in the shared shield code (fx_ship.gd, the SHIELD shader), so every shielded ship of
-  Sunward, Hegemony, Ashfall and the Glasswrights on both shapes picks it up. Sheets, clips and cost:
-  `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`.
+- Shield failure (R340, Ryan Nov 19 2026, issue 1078): every shielded ship fails with the clean collapse, on both shapes:
+  one even flash, then one band closes from the far side into the breach in 0.7 s, a knot and a flat ring of sparks
+  there, nothing left behind. Faction colour stays (R163); hits are unchanged. It lives only in the shared shield code
+  (fx_ship.gd `_break_collapse`, the SHIELD shader), so Sunward, Hegemony, Ashfall and the Glasswrights all pick up any
+  change to it; never add a per-ship failure. The old per-faction break (`today`) and the energy shear (`shear`) stay
+  only for dev comparisons through `rendering/effects/shield_failure` (or `VS_SHIELD_FAILURE`); they are not game looks.
+  Sheets, clips and cost: `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`.
 - Directions researched for the remaining options sheets (contrib/muse/design/look_references_2026_11/synthesis.md): sky
   Regional Colour Calmed, True Dark One Band, Planet Limb. Trails and beams are being built (issues 367, 800, 815).
 

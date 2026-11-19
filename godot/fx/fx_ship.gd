@@ -58,9 +58,10 @@ var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
 var _shield_until = -1.0
-# Issue 1078: which shield failure look plays (0 today's per-faction break, 1 energy shear, 2 clean collapse) and the
-# shear's quality (true: the cheaper crack network). Read once per ship from the settings (see _fail_look_setting).
-var _fail_look := 0
+# Issue 1078: which shield failure look plays (2 clean collapse, the game's look since R340; 0 the old per-faction break
+# and 1 energy shear stay only for side-by-side checks) and the shear's quality (true: the cheaper crack network).
+# Read once per ship from the settings (see fail_look_setting).
+var _fail_look := 2
 var _fail_low := false
 var _last_sh = -1.0
 var section_fraction := [1.0, 1.0, 1.0]
@@ -790,19 +791,20 @@ func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, 
 	_shield_until = maxf(_shield_until, T + life + 0.05)
 
 
-# Issue 1078 (prototype for Ryan to choose from): the shield failure look, for every shielded ship and both shield
-# shapes. "today" (the default) keeps each faction's own break; "shear" tears the field along one connected crack network
-# that runs from the struck side over the whole shield; "collapse" flashes once and closes cleanly into the breach.
-# Select with rendering/effects/shield_failure or VS_SHIELD_FAILURE; rendering/effects/shield_failure_quality="low" (or
-# VS_SHIELD_FAILURE_Q=low) gives the shear its cheaper crack network.
+# Issue 1078, R340 (Ryan picked it Nov 19 2026): the shield failure is the clean collapse, for every shielded ship of
+# every faction and both shield shapes: one even flash, then one band closes from the far side into the breach, a knot
+# and a flat ring of sparks. Dev comparison only: rendering/effects/shield_failure (or VS_SHIELD_FAILURE) = "today"
+# (the old per-faction break) or "shear" (one connected crack network); rendering/effects/shield_failure_quality="low"
+# (or VS_SHIELD_FAILURE_Q=low) gives the shear its cheaper crack network. Anything else plays the collapse.
 const FAIL_LOOKS := ["today", "shear", "collapse"]
 
 
 static func fail_look_setting() -> int:
 	var v := OS.get_environment("VS_SHIELD_FAILURE")
 	if v.is_empty():
-		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure", "today"))
-	return maxi(FAIL_LOOKS.find(v), 0)
+		v = str(ProjectSettings.get_setting("rendering/effects/shield_failure", "collapse"))
+	var i := FAIL_LOOKS.find(v)
+	return i if i >= 0 else 2
 
 
 static func fail_low_setting() -> bool:

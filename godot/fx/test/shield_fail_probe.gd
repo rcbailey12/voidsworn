@@ -50,7 +50,7 @@ const CROP := {170: Vector2i(384, 216), 60: Vector2i(1152, 648), 26: Vector2i(19
 const FAIL_AT := [0.1, 0.3, 0.55, 0.85]
 const FAIL_WINDOW := 168   # cost pass frames per failure (2.8 s at 60)
 const SETTLE := 60         # cost pass frames between failures (1 s)
-const LOOK_NAMES := {"today": "Today's look (default)", "shear": "Energy shear", "shear_low": "Energy shear, lower quality",
+const LOOK_NAMES := {"today": "Old per-faction break", "shear": "Energy shear", "shear_low": "Energy shear, lower quality",
 	"collapse": "Clean collapse"}
 
 var bench: Bench
