@@ -90,6 +90,7 @@ headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes o
 headless|assets/ships/test/station_size_check.gd|-|-|issue 975: an installed T2 is used at unit scale for the large station; the teaching station uses O1_37 at its own scale
 headless|render/test/formation_check.gd|-|-|issue 843: no projected wingmate footprints overlap through flight for every factory craft kind, sheet-sized Sunward hulls and wide, long, tall, nested and breathing mesh regressions
 headless|render/test/hull_lift_check.gd|-|-|issue 811: only E14 lifts after fitting; movement and revival keep its height; markers, camera, hard points and shields follow
+headless|render/test/faction_colour_source_check.gd|-|-|issue 1205 (R333): no script reads or defines hull_table FAC3D again; engine, weapon and shield colours come from fx/faction_looks.json (Eclipse violet, Hegemony blue)
 headless|render/test/variant_ship_check.gd|-|-|issue 812: named variant hull selection, base fallback, inherited scale and board clearance; VARIANT_EXPORTS adds real GLB cache readback
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
