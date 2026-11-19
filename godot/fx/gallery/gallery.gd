@@ -161,7 +161,7 @@ func _abs(p: String) -> String:
 func _build_view() -> void:
 	vp = SubViewport.new()
 	vp.size = res
-	vp.msaa_3d = Viewport.MSAA_4X if quality != "low" else Viewport.MSAA_DISABLED
+	vp.msaa_3d = LOOK.msaa_for_quality(quality)
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(vp)
 	var show := TextureRect.new()

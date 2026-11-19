@@ -439,7 +439,7 @@ func _authored(root: Node3D) -> void:
 		return
 
 
-static func faces_of(root: Node3D, meshes: Array, ranges: Variant = null) -> PackedVector3Array:
+static func faces_of(root: Node3D, meshes: Array, ranges: Variant = null, frames := {}) -> PackedVector3Array:
 	var faces = PackedVector3Array()
 	var inv = root.global_transform.affine_inverse()
 	for m in meshes:
@@ -449,7 +449,7 @@ static func faces_of(root: Node3D, meshes: Array, ranges: Variant = null) -> Pac
 		var mesh: Mesh = mi.mesh
 		var array_mesh := mesh as ArrayMesh
 		var record_ranges := ranges != null and array_mesh != null
-		var xf: Transform3D = inv * mi.global_transform
+		var xf: Transform3D = frames.get(mi, inv * mi.global_transform)
 		var identity := xf.is_equal_approx(Transform3D.IDENTITY)
 		var f := PackedVector3Array()
 		var has_inside := false

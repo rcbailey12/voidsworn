@@ -809,6 +809,12 @@ elseif ($mode -eq 'tidy') {
     Write-Host "repo copy kept: $($_.Exception.Message)"
     exit 0
   }
+  $pauseFlag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
+  if (Test-Path -LiteralPath $pauseFlag) {
+    try { $paused = (Get-Content -LiteralPath $pauseFlag -TotalCount 1 -ErrorAction Stop) -match '^GPU not cleared: paused by the Board\b' }
+    catch { Write-Host 'repo copy kept: could not read the PC pause flag'; exit 0 }
+    if ($paused) { Write-Host 'repo copy kept during the PC pause'; exit 0 }
+  }
   Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
   if (Test-Path -LiteralPath $repo) { Write-Host ('repo copy only partly removed: {0:N2} GB left in {1}' -f ((SizeOf $repo) / 1GB), $repo) }
   else { Write-Host ('repo copy removed after the checked push (Ryan''s setting): {0}, {1:N2} GB freed; out\ kept' -f $repo, ($rs / 1GB)) }

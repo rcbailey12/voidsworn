@@ -1,6 +1,6 @@
 @echo off
 rem Rules parity: the same five steps and diagnostics as run_parity.sh, with separate start /b workers.
-rem Double-click, or parity.bat nopause from a watcher. Records and parity_log.txt are kept in TEMP.
+rem Double-click, or parity.bat nopause from a watcher. Set PARITY_RUN_ROOT to keep detailed rules records.
 setlocal enableextensions disabledelayedexpansion
 set "HERE=%~dp0"
 set "GAME="

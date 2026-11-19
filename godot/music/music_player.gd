@@ -183,6 +183,7 @@ func play_map(sector := 1) -> void:
 
 
 func _play_single(id: String, mode: String) -> void:
+	_stop_sting()
 	if _single != null and _single.playing and _single.get_meta("id", "") == id:
 		_mode = mode
 		_single_target = 1.0
@@ -212,6 +213,7 @@ func _fade_out_single(dur: float) -> void:
 # ---------- battle ----------
 
 func play_battle(player_fac := "", enemy_fac := "", boss := false) -> void:
+	_stop_sting()
 	_fade_out_single(FADE_IN)
 	_mode = "battle"
 	intensity = 0.0
@@ -296,6 +298,7 @@ func defeat() -> void:
 
 
 func _sting_play(kind: String, slot := "") -> void:
+	_stop_sting()
 	_battle_target = 0.0
 	_fade_out_single(1.2)
 	_mode = "sting"
@@ -304,7 +307,6 @@ func _sting_play(kind: String, slot := "") -> void:
 	if s == null:
 		sting_finished.emit(kind)
 		return
-	_sting.stop()
 	_sting.stream = s
 	_sting.volume_db = _gain(id)
 	_sting.set_meta("kind", kind)
@@ -315,7 +317,15 @@ func _on_sting_done() -> void:
 	sting_finished.emit(String(_sting.get_meta("kind", "")))
 
 
+func _stop_sting() -> void:
+	_sting.stop()
+	_sting.stream = null
+	if _sting.has_meta("kind"):
+		_sting.remove_meta("kind")
+
+
 func stop(dur := 2.0) -> void:
+	_stop_sting()
 	_fade_out_single(dur)
 	_battle_target = 0.0
 	_mode = ""

@@ -254,6 +254,14 @@ if errorlevel 1 exit /b 14
 pushd "%R%"
 %PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :prepfail
+rem Give the probe, agent, and checks one private scratch directory, recorded before use.
+set "PC_RUN_TEMP=%TEMP%"
+%COMMON% scratch "%O%"
+if errorlevel 1 goto :probefail
+set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
+set "TEMP=%PC_RUN_SCRATCH%"
+set "TMP=%PC_RUN_SCRATCH%"
+set "TMPDIR=%PC_RUN_SCRATCH%"
 rem Tiny model call before ship copying or the full agent. CLI login and billing failures stop here.
 if "%PC_RUNNER_TEST%"=="1" goto :testpreflight
 if /i "%MODE%"=="dryrun" goto :ocpreflight
@@ -463,8 +471,11 @@ if /i "%ARM%"=="openai" (
   if errorlevel 1 set "RC=14"
 )
 popd
-%COMMON% finish "%O%" "%RC%" "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%"
+%COMMON% finish "%O%" "%RC%" "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%" "%R%"
 if errorlevel 1 set "RC=14"
+if defined PC_RUN_TEMP set "TEMP=%PC_RUN_TEMP%"
+if defined PC_RUN_TEMP set "TMP=%PC_RUN_TEMP%"
+if defined PC_RUN_TEMP set "TMPDIR=%PC_RUN_TEMP%"
 rem (disk) The run folder's size, and the repo copy removed only when Ryan's setting allows it and the push was checked.
 %PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" "%DRY%" >> "%O%\result.txt" 2>&1
 exit /b %RC%
