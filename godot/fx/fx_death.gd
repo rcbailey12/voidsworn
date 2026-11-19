@@ -1053,7 +1053,10 @@ static func _lance_recut(fx, s) -> void:
 		# a damage refresh of the cut is still running (bench round 1: a damaged ship nearly always has one): leave it to
 		# finish on its own and start the lance cut beside it. If the refresh had not finished, the ship breaks along the
 		# last finished cut (cut_prev) only if the lance cut is late; otherwise it waits for the lance cut.
-		_collect_later(fx, int(s.get_meta("cut_task")))
+		var tid: int = s.get_meta("cut_task")
+		if not WorkerThreadPool.is_task_completed(tid):
+			s.remove_meta("cut_job")  # the detached worker still owns this result
+		fx.collect_death_cut(tid)
 		s.remove_meta("cut_task")
 	var h = s.hull
 	# with no recent hit on record, a per-ship point a little off the middle (an even split reads as sliced, Ryan, Nov 11)
@@ -1077,7 +1080,7 @@ static func _lance_recut(fx, s) -> void:
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
 static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
-	if s.weight <= 0 or s.has_meta("cut_task") or s.has_meta("cut_job"):
+	if s.weight <= 0 or s.gone or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
 		return   # F3: the ship's node was freed before its staggered cut came round
@@ -1125,7 +1128,7 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
 	s.set_meta("cut_job", job)
 	_init_dirs()
-	var tid = WorkerThreadPool.add_task(func() -> void:
+	var tid: int = fx.submit_death_cut(func() -> void:
 		var tc := Time.get_ticks_usec()
 		var pieces := _cut(job)
 		job["cut_usec"] = Time.get_ticks_usec() - tc
@@ -1148,13 +1151,6 @@ static func precompute(fx, s, cause := "blast", under_cover := false) -> void:
 		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
 
 
-static func _collect_later(fx, tid: int) -> void:
-	if WorkerThreadPool.is_task_completed(tid):
-		WorkerThreadPool.wait_for_task_completion(tid)
-		return
-	fx.later(fx.now + 0.25, func l_collect() -> void: _collect_later(fx, tid))
-
-
 # When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
 # (the first break-up cost a 35 ms frame when it built them on the spot).
 static func _prebuild(fx, s) -> void:
@@ -1168,7 +1164,7 @@ static func finish_precompute(fx, s) -> bool:
 	var tid: int = s.get_meta("cut_task")
 	if not WorkerThreadPool.is_task_completed(tid):
 		return false
-	WorkerThreadPool.wait_for_task_completion(tid)
+	fx.join_death_cut(tid)
 	s.remove_meta("cut_task")
 	var job: Dictionary = s.get_meta("cut_job", {})
 	job["meshes"] = []
@@ -1892,12 +1888,10 @@ static func death(fx, s, cause: String) -> float:
 
 
 static func _death_inner(fx, s, cause: String) -> float:
-	if s.dead: return 0.0
+	if s.dead or s.gone: return 0.0
 	s.dead = true
 	var T: float = fx.now
-	if s.has_meta("collider"):
-		var cb: Node = s.get_meta("collider")
-		if is_instance_valid(cb): cb.queue_free()
+	s.remove_collider()
 	if s.squadron:
 		return _wing_death(fx, s)
 	var tint := Color(0.95, 0.34, 0.08) if cause != "melt" else Color(0.55, 0.65, 0.12)
@@ -2117,7 +2111,7 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 
 
 static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
-	if not is_instance_valid(s.root) or s.has_meta("death_hidden") or fx.quality == "low": return
+	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or s.has_meta("death_hidden") or fx.quality == "low": return
 	# Issue 354: the gas root is the real plating, found the same way as the braking puffs since PR 327: cast from
 	# outside, a further L along the tear normal, back toward the hull. A ray that misses has no plating behind it, so
 	# skip the vent rather than float it beside the ship.
@@ -2175,13 +2169,14 @@ static func _update_dying(fx, s) -> void:
 
 
 # An unfinished worker never blocks the death frame, even past its nominal split time.
-# A previous completed cut is usable immediately; otherwise hold the dark dying hull.
+# Use a previous cut immediately, or wait through the death's deadline and then use the existing no-pieces pop.
 static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: float) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
+		fx.resolve_death_core(s, false)
 		return
-	if s.has_meta("cut_task") and not s.has_meta("cut_prev"):
+	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and fx.now < deadline:
 		if not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
-			fx.later(fx.now + 0.05, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
+			fx.later(minf(fx.now + 0.05, deadline), func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
 			return
 	_break_up(fx, s, cause, tint)
 
@@ -2426,11 +2421,14 @@ static func _smoke_one(fx, src, p: Vector3, px: float, life: float, frame, vel: 
 # the break (a torpedo or ram: in a cone away from the impact) and, behind a switch, the capital's scene dim.
 static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: Color, cause: String, tl: DeathTimeline) -> void:
 	var node := node_ref.get_ref() as Node3D
-	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
+	if not is_instance_valid(node) or node.is_queued_for_deletion():
+		fx.resolve_death_core(s, false)
+		return
 	var p: Vector3 = node.to_global(local)
 	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
 	var capital := tl.tier == "capital"
 	_core_flash(fx, p, R, 70.0, tint, null, Vector3.ZERO, s, tl.tier, frame)
+	fx.resolve_death_core(s, true)
 	var body_px := 380.0 if capital else 260.0
 	# light first, then matter: the body is born as the core's full heat ends, so its smoke never covers the flash
 	var away_l: Vector3 = (s.get_meta("death_grow", [Vector3.UP])[0] as Vector3)
@@ -2550,21 +2548,7 @@ static func _hide_ship(s) -> void:
 	s.set_meta("death_hidden", true)
 	s.remove_meta("death_power")
 	s.remove_meta("death_poses")
-	for m in s.meshes:
-		if is_instance_valid(m):
-			(m as Node3D).visible = false
-	if is_instance_valid(s._eng_node):
-		s._eng_node.visible = false
-	if is_instance_valid(s._dmg_root):
-		s._dmg_root.visible = false
-	for sec in 3:
-		s._clear_lights(sec)
-	for l in s._hole_lights:
-		l["on"] = false
-	s._hole_lights = []
-	for t in s._trails:
-		if is_instance_valid(t["mi"]):
-			(t["mi"] as Node3D).visible = false
+	s.hide_live_hull()
 
 
 # One independent copy of the damaged hull, no fracture upload, fire or lights.
@@ -2631,17 +2615,20 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	var k: float = s.scale_k()
 	var organic: bool = s.faction == "chorus"
 	var center: Vector3 = s.to_world(h.c)
-	var job: Dictionary = s.get_meta("cut_job", {})
+	var job: Dictionary
 	if s.has_meta("cut_task"):
 		var tid: int = int(s.get_meta("cut_task"))
-		if not WorkerThreadPool.is_task_completed(tid) and s.has_meta("cut_prev"):
-			# r18: a fresher cut is still running; break up along the last finished one (a little out of date, never a
-			# stall) and collect the running task when it is done
-			job = s.get_meta("cut_prev")
-			_collect_later(fx, tid)
+		if not WorkerThreadPool.is_task_completed(tid):
+			# Never read a live worker's result. Use the previous cut, or the pop fallback at the deadline.
+			job = s.get_meta("cut_prev", {})
+			s.remove_meta("cut_job")
+			fx.collect_death_cut(tid)
 		else:
-			WorkerThreadPool.wait_for_task_completion(tid)
+			fx.join_death_cut(tid)
+			job = s.get_meta("cut_job", {})
 		s.remove_meta("cut_task")
+	else:
+		job = s.get_meta("cut_job", {})
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
 	var plan: Dictionary = job.get("plan", {})
@@ -2816,6 +2803,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var lip: Node3D = wreck["nodes"][0]
 		flash_site = lip.to_global(lip.get_meta("tear_site", Vector3.ZERO))
 	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s, s.death_tier, xf)
+	fx.resolve_death_core(s, true)
 	# The pop is light first, then a short body. The 384 px cells cover both small rows without a rebake.
 	var body_px := 218.0 if s.death_tier == "destroyer" else 180.0
 	fx.later(T + 0.12, _smoke_one.bind(fx, s, flash_site, body_px, 1.0, xf, inherited * 0.5, {"seed": 0}))
