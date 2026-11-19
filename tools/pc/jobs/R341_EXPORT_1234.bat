@@ -2,19 +2,24 @@
 title Chorus armour R341: C11, C12, C13 export into the game (issue 1234) - GPU job
 rem Issue 1234 (R341, Ryan accepted round 3 on Nov 19 2026, 23:38 UTC: "Accept, keep yellow-green glow"): the whole-body
 rem armour shell from the shared Chorus kit on chorus_C11 (b_razor, B21_11), chorus_C12 (b_drone, B19_11) and chorus_C13
-rem (b_spitter, B20_11), each through recipe stages 3 to 7 at the standard 4096 bake, installed into build\godot (the game).
-rem   R341_EXPORT_1234.bat            all three ships, one after the other
+rem (b_spitter, B20_11), each through recipe stages 3 to 7 at the standard 4096 bake, then into build\godot (the game).
+rem   R341_EXPORT_1234.bat            all three ships
 rem   R341_EXPORT_1234.bat chorus_C12 one ship only
 rem   FULL=1 reruns stages 1 and 2 as well (the concept and the shape reference do not change with the armour).
-rem Clones its own folder opus1234\repo (shallow) on branch opus/issue-1234; writes only opus1234\, the recipe job folders
-rem recipe\<ship>\ and, by stage 7's install, build\godot\assets\ships\<code>\ (the old files copied aside first by stage 7).
-rem Nothing is deleted.
+rem   PIN=<commit> builds another commit; the default is the accepted round 3 commit below.
+rem Two phases (Artoo's review on PR 1242):
+rem   1. Stage: clone opus1234\repo at the pinned commit (stops if the fetch, checkout or commit check fails), run the stages
+rem      with stage 7 installing into the clone's own godot project, import it once, then the GPU readback, authored
+rem      interiors, death seam and in-game shots (camera 170 and close) for every ship. build\godot is not touched.
+rem   2. Publish: only when every ship and every check passed, each checked export goes into build\godot through the shared
+rem      stage 7 installer (snapshot, lock, backups, hash check, readback, old files restored on its own failure). Publish
+rem      stops at the first failure and result.txt names the ships already live.
+rem Writes only opus1234\, the recipe job folders recipe\<ship>\ and, in phase 2, build\godot\assets\ships\<code>\ and the
+rem game's ship cache. Nothing is deleted.
 rem Throwaway profile guard (issue 1228): every program this job starts sees APPDATA and LOCALAPPDATA in opus1234\profile, so
 rem a Godot run here can never rewrite Ryan's real settings (battle_opts.json and the rest of the game's user folder).
-rem After the three installs: the GPU readback, the authored interiors and death seam checks, and the in-game shots at camera
-rem 170 and close, for each installed ship, on build\godot. Every step logs to opus1234\out\<ship>\log_<step>.txt;
-rem out\result.txt lists each exit code. A failed stage skips that ship's later stages and its checks; the other ships run.
-rem Last line of result.txt: all done.
+rem Every step logs to opus1234\out\; result.txt lists each exit code and ends in "all done" with PASS or FAILED.
+rem The job exits 0 only when everything passed and was published; otherwise 1.
 setlocal enabledelayedexpansion
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1234
@@ -22,11 +27,34 @@ set C=%W%\repo
 set OUT=%W%\out
 if not exist "%OUT%" mkdir "%OUT%"
 set RES=%OUT%\result.txt
+set BAD=
 echo start %DATE% %TIME% > "%RES%"
-if not exist "%C%\.git" git clone -q --depth 50 https://github.com/rcbailey12/voidsworn "%C%" >> "%RES%" 2>&1
-git -C "%C%" fetch -q --depth 50 origin opus/issue-1234 >> "%RES%" 2>&1
-git -C "%C%" checkout -q -B run1234 FETCH_HEAD >> "%RES%" 2>&1
-git -C "%C%" log -1 --format=commit=%%H >> "%RES%" 2>&1
+rem the accepted round 3 commit (opus/issue-1234 15abb1fb; the commits after it change only docs and this file)
+if "%PIN%"=="" set PIN=15abb1fb2b6cd75799dd91fcf8fa58dea0c19878
+if not exist "%C%\.git" (
+  git clone -q --depth 1 --no-checkout https://github.com/rcbailey12/voidsworn "%C%" >> "%RES%" 2>&1
+  if errorlevel 1 (
+    echo FAILED: git clone >> "%RES%"
+    goto fail
+  )
+)
+git -C "%C%" fetch -q --depth 1 origin %PIN% >> "%RES%" 2>&1
+if errorlevel 1 (
+  echo FAILED: git fetch of %PIN% >> "%RES%"
+  goto fail
+)
+git -C "%C%" checkout -q -f -B run1234 %PIN% >> "%RES%" 2>&1
+if errorlevel 1 (
+  echo FAILED: git checkout of %PIN% >> "%RES%"
+  goto fail
+)
+set HEADSHA=
+for /f "usebackq delims=" %%H in (`git -C "%C%" rev-parse HEAD`) do set HEADSHA=%%H
+if /i not "%HEADSHA%"=="%PIN%" (
+  echo FAILED: the clone is at %HEADSHA%, not %PIN% >> "%RES%"
+  goto fail
+)
+echo commit=%HEADSHA% >> "%RES%"
 rem the throwaway profile (after git, which reads its own settings from the real profile)
 set "PROF=%W%\profile"
 if not exist "%PROF%\Roaming" mkdir "%PROF%\Roaming"
@@ -40,50 +68,78 @@ set PC_GPU_ISSUE=1234
 set "GAME=%V%\build\godot"
 if not exist "%GAME%\project.godot" (
   echo FAILED: no game project at %GAME% >> "%RES%"
-  goto end
+  goto fail
 )
-set INSTALL_TO=%GAME%
+set "STAGE_GAME=%C%\godot"
 set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
+set BPY=%V%\blender\blender-4.5.14-windows-x64\4.5\python\bin\python.exe
+set TMO=%C%\tools\pc\tmo.bat
 set SHIPS=chorus_C11 chorus_C12 chorus_C13
 if not "%1"=="" set SHIPS=%1
 set STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export
 if "%FULL%"=="1" set STAGES=1_concept_in 2_shape_ref %STAGES%
-set DONE_CODES=
+set DONE=
 cd /d "%C%"
-for %%P in (%SHIPS%) do call :ship %%P
-if "%DONE_CODES%"=="" (
-  echo checks SKIPPED: no ship installed >> "%RES%"
-  goto end
+
+rem ---- phase 1: stage into the clone's own game project ----
+set INSTALL_TO=%STAGE_GAME%
+call "%TMO%" 21600 "%GD%" --headless --path "%STAGE_GAME%" --import > "%OUT%\log_import_before.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: first import of the staging project >> "%RES%"
+  goto fail
 )
-rem the game project re-imports once with every new ship in it, then the checks run per installed ship
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%GAME%" --import > "%OUT%\log_import.txt" 2>&1
-echo import exit %ERRORLEVEL% >> "%RES%"
-for %%K in (%DONE_CODES%) do call :checks %%K
-:end
-echo all done %DATE% %TIME% >> "%RES%"
+for %%P in (%SHIPS%) do call :ship %%P
+if defined BAD goto fail
+call "%TMO%" 21600 "%GD%" --headless --path "%STAGE_GAME%" --import > "%OUT%\log_import.txt" 2>&1
+set EL=%ERRORLEVEL%
+echo staging import exit %EL% >> "%RES%"
+if not "%EL%"=="0" (
+  set BAD=1
+  goto fail
+)
+for %%P in (%DONE%) do call :checks %%P
+if defined BAD goto fail
+
+rem ---- phase 2: publish the checked exports into build\godot ----
+set LIVE=
+for %%P in (%DONE%) do (
+  if not defined BAD call :publish %%P
+)
+if defined BAD (
+  echo PUBLISH STOPPED: live in build\godot from this run:%LIVE% >> "%RES%"
+  goto fail
+)
+echo published into build\godot:%LIVE% >> "%RES%"
+echo all done PASS %DATE% %TIME% >> "%RES%"
 exit /b 0
+
+:fail
+echo all done FAILED, build\godot changed only for:%LIVE% %DATE% %TIME% >> "%RES%"
+exit /b 1
 
 :ship
 set SHIP=%1
-set O=%OUT%\%SHIP%
-if not exist "%O%" mkdir "%O%"
-set FAILED=
 set CODE=
 if /i "%SHIP%"=="chorus_C11" set CODE=B21_11
 if /i "%SHIP%"=="chorus_C12" set CODE=B19_11
 if /i "%SHIP%"=="chorus_C13" set CODE=B20_11
 if "%CODE%"=="" (
   echo %SHIP% FAILED: not one of chorus_C11, chorus_C12, chorus_C13 >> "%RES%"
+  set BAD=1
   exit /b 0
 )
+set O=%OUT%\%SHIP%
+if not exist "%O%" mkdir "%O%"
+set FAILED=
 echo %SHIP% ^(%CODE%^) start %TIME% >> "%RES%"
 for %%S in (%STAGES%) do call :stage %%S
 if defined FAILED (
-  echo %SHIP% NOT INSTALLED: stage %FAILED% failed >> "%RES%"
+  echo %SHIP% FAILED: stage %FAILED% >> "%RES%"
+  set BAD=1
   exit /b 0
 )
-set DONE_CODES=%DONE_CODES% %CODE%
-echo %SHIP% installed as %CODE% >> "%RES%"
+set DONE=%DONE% %SHIP%
+echo %SHIP% staged as %CODE% >> "%RES%"
 exit /b 0
 
 :stage
@@ -98,16 +154,45 @@ echo %SHIP% %1 exit %EL% at %TIME% >> "%RES%"
 if not "%EL%"=="0" set FAILED=%1
 exit /b 0
 
+:code
+set CODE=
+if /i "%1"=="chorus_C11" set CODE=B21_11
+if /i "%1"=="chorus_C12" set CODE=B19_11
+if /i "%1"=="chorus_C13" set CODE=B20_11
+exit /b 0
+
 :checks
-set K=%1
+call :code %1
+set K=%CODE%
 set O=%OUT%\checks_%K%
 if not exist "%O%" mkdir "%O%"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%GAME%" --script res://render/test/installed_ship_check.gd -- %K% > "%O%\log_readback_gpu.txt" 2>&1
-echo %K% gpu readback exit %ERRORLEVEL% >> "%RES%"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%GAME%" --script res://fx/test/authored_interiors_check.gd -- "%GAME%\assets\ships\%K%\%K%.glb" > "%O%\log_interiors.txt" 2>&1
-echo %K% authored interiors exit %ERRORLEVEL% >> "%RES%"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%GAME%" --script res://fx/test/death_seam_check.gd -- "%GAME%\assets\ships\%K%\%K%.glb" > "%O%\log_death_seam.txt" 2>&1
-echo %K% death seam exit %ERRORLEVEL% >> "%RES%"
-call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%GAME%" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs chorus --sets battle,close --codes %K% > "%O%\log_shots.txt" 2>&1
-echo %K% shots exit %ERRORLEVEL% >> "%RES%"
+call "%TMO%" 21600 "%GD%" --path "%STAGE_GAME%" --script res://render/test/installed_ship_check.gd -- %K% > "%O%\log_readback_gpu.txt" 2>&1
+call :mark %K% "gpu readback" %ERRORLEVEL%
+call "%TMO%" 21600 "%GD%" --headless --path "%STAGE_GAME%" --script res://fx/test/authored_interiors_check.gd -- "%STAGE_GAME%\assets\ships\%K%\%K%.glb" > "%O%\log_interiors.txt" 2>&1
+call :mark %K% "authored interiors" %ERRORLEVEL%
+call "%TMO%" 21600 "%GD%" --headless --path "%STAGE_GAME%" --script res://fx/test/death_seam_check.gd -- "%STAGE_GAME%\assets\ships\%K%\%K%.glb" > "%O%\log_death_seam.txt" 2>&1
+call :mark %K% "death seam" %ERRORLEVEL%
+call "%TMO%" 21600 "%GD%" --path "%STAGE_GAME%" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs chorus --sets battle,close --codes %K% > "%O%\log_shots.txt" 2>&1
+call :mark %K% "shots" %ERRORLEVEL%
+exit /b 0
+
+:mark
+set EL=%3
+echo %1 %~2 exit %EL% >> "%RES%"
+if not "%EL%"=="0" set BAD=1
+exit /b 0
+
+:publish
+set SHIP=%1
+call :code %SHIP%
+set "JOB=%V%\recipe\%SHIP%"
+echo %SHIP% publish %CODE% start %TIME% >> "%RES%"
+"%BPY%" -B "%C%\tools\recipe\manifest_merge.py" --install "%JOB%\export\%CODE%" "%GAME%" "%CODE%" "%GD%" "%JOB%" "%C%\tools\recipe\ships\%SHIP%.json" > "%OUT%\log_publish_%CODE%.txt" 2>&1
+set EL=%ERRORLEVEL%
+echo %SHIP% publish %CODE% exit %EL% >> "%RES%"
+if not "%EL%"=="0" (
+  set BAD=1
+  exit /b 0
+)
+set LIVE=%LIVE% %CODE%
 exit /b 0
