@@ -1,33 +1,33 @@
 {
-  "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+  "source_commit": "c6fbae456111f624d9c6d917bd534e1835087516",
   "source_dirty": true,
-  "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
+  "source_diff_sha256": "52d56f1ebb4fe2cba7acedf5c72782de8431ae8848e832a846ede5c3c14568d5",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_bioplasma.jpg",
-  "date": "2026-11-19T16:13:11Z",
+  "date": "2026-11-19T17:31:00Z",
   "sources": [
     {
-      "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+      "source_commit": "c6fbae456111f624d9c6d917bd534e1835087516",
       "source_dirty": true,
-      "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
+      "source_diff_sha256": "52d56f1ebb4fe2cba7acedf5c72782de8431ae8848e832a846ede5c3c14568d5",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "weapon_bioplasma.png",
-      "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+      "source_commit": "c6fbae456111f624d9c6d917bd534e1835087516",
       "source_dirty": true,
-      "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
+      "source_diff_sha256": "52d56f1ebb4fe2cba7acedf5c72782de8431ae8848e832a846ede5c3c14568d5",
       "stage": "sheet built",
-      "date": "2026-11-19T16:13:00Z",
-      "image_sha256": "87ec1dfda9d0bf0a23b70d34c93222b4bafdedd7976264e7935893d3a6e4a29c",
+      "date": "2026-11-19T17:30:49Z",
+      "image_sha256": "f96e665db1672886d0b46a21f13078938cb3dbea331080a375314d3f5e019057",
       "sources": [
         {
-          "source_commit": "4ed83a723f18d6bc92339831aeb5995213fc82e6",
+          "source_commit": "c6fbae456111f624d9c6d917bd534e1835087516",
           "source_dirty": true,
-          "source_diff_sha256": "bf2ceb9cba80901c2ff730245f3da7d1207e36c856ded170fbdc37313104dece",
+          "source_diff_sha256": "52d56f1ebb4fe2cba7acedf5c72782de8431ae8848e832a846ede5c3c14568d5",
           "stage": "sheet built"
         }
       ]
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "efdffb4b77c7f831fac87924407b4e09df3942122aaa6087bf9ea6029be7fb42"
+    "6437b7d2cf16eb65cd288ce37a3413cd016c1be6ab25b3862aee87e510438317"
   ],
-  "stamp_template_sha256": "9f63d5020ffa8090dbcd13d2893d15f7e13e702ab13f839950e4c85d69dcb1c0",
+  "stamp_template_sha256": "de0430f27f280e62e035f658eedfef2d3f6c0a972e5204eafd88af1f54924505",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
   ],
-  "image_sha256": "49b08b69cadf4026a0ed223b71354e268bdfbee84fe4af7fe4dd720af0af1df3"
+  "image_sha256": "b3c1971e3ed4349c5b9cb2cede475799b5bb5aa27bafff31f28585b7606825f8"
 }

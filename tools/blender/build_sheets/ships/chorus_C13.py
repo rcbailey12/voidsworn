@@ -71,7 +71,7 @@ GLAND_R = 0.25
 GLANDS = (
     ('W1', 'F', (4.52, 0.02, 0.02), (0.92, 0.0, 0.38), 0.25, 0.5, 14),     # the prow gland, low in the nose bulb behind its round front
     ('W2', 'T', (1.75, 0.2, 1.48), (0.3, 0.12, 0.95), GLAND_R, 0.62, 16),  # the fore dorsal knoll
-    ('W3', 'T', (-0.1, -0.26, 1.72), (-0.12, -0.1, 0.99), GLAND_R, 0.68, 16),  # the great dorsal knoll amidships
+    ('W3', 'T', (-0.1, -0.26, 1.72), (0.0, -0.1, 0.99), GLAND_R, 0.68, 16),  # the great dorsal knoll amidships (aimed straight up: the stage 4 audit refuses a gun aimed backward)
 )
 # bile sacs on the lower flanks: (x, section angle, radius) per side; port and starboard differ (asymmetric)
 SACS = {1: ((2.5, -0.55, 0.4), (1.2, -0.32, 0.7), (-0.45, -0.52, 0.68), (-1.85, -0.3, 0.48)),
@@ -246,8 +246,8 @@ def build(K):
     # two break lines (Destroyer: 2), torn by the Chorus rule: sacs rupture first, then the body tears open on ragged lines
     K.break_line('B-1', 3.0, 'behind the nose bulb: the prow gland and the nose tear away, opening the spine sac and the Node',
                  path=[(3.3, 6.0), (3.3, 2.2), (2.8, 1.2), (3.2, 0.3), (2.75, -0.7), (3.15, -1.6), (2.85, -6.0)])
-    K.break_line('B-2', -0.95, 'behind the great dorsal knoll: the stern tears away through the gut and the regrowth tissue, the aft sacs bursting first',
-                 path=[(-0.75, 6.0), (-0.75, 2.4), (-1.2, 1.3), (-0.8, 0.3), (-1.25, -0.8), (-0.85, -2.3), (-0.85, -6.0)])
+    K.break_line('B-2', -1.3, 'behind the great dorsal knoll: the stern tears away through the gut and the regrowth tissue, the aft sacs bursting first',
+                 path=[(-1.1, 6.0), (-1.1, 2.4), (-1.55, 1.3), (-1.15, 0.3), (-1.6, -0.8), (-1.2, -2.3), (-1.2, -6.0)])   # 0.35 aft of v2: the stage 4 audit found the great gland W3 across it
     K.inside.append(dict(kind='note', name='insides', note='Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, '
                                                           'membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, '
                                                           'then the body tears open along ragged lines (R186).'))
