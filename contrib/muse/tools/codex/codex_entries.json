@@ -130,7 +130,7 @@
   "category": "hull",
   "name": "Cordon column escort",
   "hook": "Flak added, hull lightened: an escort for the column.",
-  "body": "A variant of the Cordon destroyer. Destroyer class, 2 command points, 130 credits. Hull 60, shields 18 recharging 7 a round, armor 15%, speed 3, turn 2, evasion 10. Carries Ion cannon (prow), Plasma lance (turret), Picket lasers (turret). Fits 1 module. Ability, Ion pulse (cooldown 3): every enemy ship within 4 hexes loses half of each shield facing. It is earned by finishing the story arc of Hegemony Navy, never sold for renown.",
+  "body": "A variant of the Cordon destroyer. Destroyer class, 2 command points, 130 credits. Hull 60, shields 18 recharging 7 a round, armor 15%, speed 3, turn 2, evasion 10. Carries Ion cannon (prow), Plasma battery (turret), Picket lasers (turret). Fits 1 module. Ability, Ion pulse (cooldown 3): every enemy ship within 4 hexes loses half of each shield facing. It is earned by finishing the story arc of Hegemony Navy, never sold for renown.",
   "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
   "source": "data.js HULL_VARIANTS.h_interdictor_e; HULLS.h_interdictor_e (derived from HULLS.h_interdictor)"
  },
@@ -139,7 +139,7 @@
   "category": "hull",
   "name": "Cordon destroyer",
   "hook": "The Cordon: ion fire that says no to shields.",
-  "body": "The Cordon exists to say no: no shields, no approach, no exceptions, delivered by ion fire. Destroyer class, 2 command points, 130 credits. Hull 74, shields 18 recharging 7 a round, armor 15%, speed 4, turn 2, evasion 10. Carries Ion cannon (prow), Plasma lance (turret). Fits 1 module. Ability, Ion pulse (cooldown 3): every enemy ship within 4 hexes loses half of each shield facing.",
+  "body": "The Cordon exists to say no: no shields, no approach, no exceptions, delivered by ion fire. Destroyer class, 2 command points, 130 credits. Hull 74, shields 18 recharging 7 a round, armor 15%, speed 4, turn 2, evasion 10. Carries Ion cannon (prow), Plasma battery (turret). Fits 1 module. Ability, Ion pulse (cooldown 3): every enemy ship within 4 hexes loses half of each shield facing.",
   "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
   "source": "data.js HULLS.h_interdictor; ABILITIES.ionpulse; faction Hegemony Navy"
  },
@@ -157,7 +157,7 @@
   "category": "hull",
   "name": "Dominion dreadnought",
   "hook": "The Dominion: capital plasma on both flanks.",
-  "body": "The Dominion is the wedge grown to capital scale: plasma on both flanks and the patience of a state behind it. Battleship class, 6 command points, 370 credits. Hull 230, shields 32 recharging 12 a round, armor 25%, speed 2, turn 1, evasion 0. Carries Heavy plasma lance (port broadside), Heavy plasma lance (starboard broadside), Ion cannon (prow), Picket lasers (turret). Hangar for 1 wings. Fits 3 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "body": "The Dominion is the wedge grown to capital scale: plasma on both flanks and the patience of a state behind it. Battleship class, 6 command points, 370 credits. Hull 230, shields 32 recharging 12 a round, armor 25%, speed 2, turn 1, evasion 0. Carries Heavy plasma battery (port broadside), Heavy plasma battery (starboard broadside), Ion cannon (prow), Picket lasers (turret). Hangar for 1 wings. Fits 3 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
   "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
   "source": "data.js HULLS.h_dominion; ABILITIES.launch; faction Hegemony Navy"
  },
@@ -382,7 +382,7 @@
   "category": "hull",
   "name": "The Iron Mandate",
   "hook": "The Iron Mandate: the Registry final word.",
-  "body": "The Iron Mandate is the Registry final word in a battle: a super-dreadnought named like an order, because it is one. Super-dreadnought class, 12 command points. Hull 560, shields 40 recharging 10 a round, armor 30%, speed 1, turn 1, evasion 0. Carries Heavy plasma lance (port broadside), Heavy plasma lance (starboard broadside), Plasma lance (turret), Ion cannon (prow), Picket lasers (turret). Ability, Spinal cannon (cooldown 3): 40 damage to a hex 3 to 9 away and 20 to everything beside that hex, friends included. It is a boss hull: the enemy flagship of its faction, met at the end of a sector, not a shipyard purchase.",
+  "body": "The Iron Mandate is the Registry final word in a battle: a super-dreadnought named like an order, because it is one. Super-dreadnought class, 12 command points. Hull 560, shields 40 recharging 10 a round, armor 30%, speed 1, turn 1, evasion 0. Carries Heavy plasma battery (port broadside), Heavy plasma battery (starboard broadside), Plasma battery (turret), Ion cannon (prow), Picket lasers (turret). Ability, Spinal cannon (cooldown 3): 40 damage to a hex 3 to 9 away and 20 to everything beside that hex, friends included. It is a boss hull: the enemy flagship of its faction, met at the end of a sector, not a shipyard purchase.",
   "note": "A flagship and a battle objective in itself; build the fleet around killing or protecting it.",
   "source": "data.js HULLS.h_boss; ABILITIES.nova; faction Hegemony Navy"
  },
@@ -445,7 +445,7 @@
   "category": "hull",
   "name": "Vanguard cruiser",
   "hook": "A cruiser that carries a wing and holds the line.",
-  "body": "A vanguard cruiser is a carrier that refused to be only a carrier: guns forward, a wing in reserve, a place in the line. Cruiser class, 4 command points, 250 credits. Hull 140, shields 24 recharging 10 a round, armor 20%, speed 3, turn 1, evasion 4. Carries Plasma lance (turret), Plasma lance (turret), Ion cannon (prow). Hangar for 1 wings. Fits 2 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "body": "A vanguard cruiser is a carrier that refused to be only a carrier: guns forward, a wing in reserve, a place in the line. Cruiser class, 4 command points, 250 credits. Hull 140, shields 24 recharging 10 a round, armor 20%, speed 3, turn 1, evasion 4. Carries Plasma battery (turret), Plasma battery (turret), Ion cannon (prow). Hangar for 1 wings. Fits 2 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
   "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
   "source": "data.js HULLS.h_vanguard; ABILITIES.launch; faction Hegemony Navy"
  },
@@ -454,7 +454,7 @@
   "category": "hull",
   "name": "Vanguard gunship",
   "hook": "The hangar traded for a third plasma turret.",
-  "body": "A variant of the Vanguard cruiser. Cruiser class, 4 command points, 250 credits. Hull 140, shields 24 recharging 10 a round, armor 20%, speed 3, turn 1, evasion 4. Carries Plasma lance (turret), Plasma lance (turret), Plasma lance (turret), Ion cannon (prow). Fits 2 modules. It is bought once with 25 renown, then sold in the shipyards of Hegemony Navy beside the standard hull at the same 250 credits.",
+  "body": "A variant of the Vanguard cruiser. Cruiser class, 4 command points, 250 credits. Hull 140, shields 24 recharging 10 a round, armor 20%, speed 3, turn 1, evasion 4. Carries Plasma battery (turret), Plasma battery (turret), Plasma battery (turret), Ion cannon (prow). Fits 2 modules. It is bought once with 25 renown, then sold in the shipyards of Hegemony Navy beside the standard hull at the same 250 credits.",
   "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
   "source": "data.js HULL_VARIANTS.h_vanguard_g; HULLS.h_vanguard_g (derived from HULLS.h_vanguard)"
  },
@@ -598,7 +598,7 @@
   "category": "weapon",
   "name": "Heavy pulse laser",
   "hook": "Three heavy pulses at the longest laser reach.",
-  "body": "The heavy pulse laser: the pulse beaten bigger, for capital work. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 3 shots of 9 damage. Range 6, most accurate inside 4 hexes: base accuracy 72, losing 7 per hex beyond that. Critical chance 6%. Names vary by fleet: Hegemony Navy call it the heavy plasma lance.",
+  "body": "The heavy pulse laser: the pulse beaten bigger, for capital work. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 3 shots of 9 damage. Range 6, most accurate inside 4 hexes: base accuracy 72, losing 7 per hex beyond that. Critical chance 6%. Names vary by fleet: Hegemony Navy call it the heavy plasma battery.",
   "note": "",
   "source": "data.js W.hturbo; FAC_WNAMES; battle.js weapon resolution"
  },
@@ -679,7 +679,7 @@
   "category": "weapon",
   "name": "Pulse laser",
   "hook": "Two heavier pulses, light blue over Hegemony hulls.",
-  "body": "A pulse laser, firing in hard beats; Hegemony ships light theirs light blue. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 2 shots of 9 damage. Range 5, most accurate inside 3 hexes: base accuracy 74, losing 8 per hex beyond that. Critical chance 5%. Names vary by fleet: Hegemony Navy call it the plasma lance.",
+  "body": "A pulse laser, firing in hard beats; Hegemony ships light theirs light blue. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 2 shots of 9 damage. Range 5, most accurate inside 3 hexes: base accuracy 74, losing 8 per hex beyond that. Critical chance 5%. Names vary by fleet: Hegemony Navy call it the plasma battery.",
   "note": "",
   "source": "data.js W.turbo; FAC_WNAMES; battle.js weapon resolution"
  },
