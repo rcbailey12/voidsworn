@@ -1180,6 +1180,7 @@ static var _wreck_mesh_cache: Array = []
 # Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
 static func clear_static() -> void:
 	_wreck_mesh_cache = []
+	_piece_radii.clear()   # keyed by those meshes' instance ids
 
 
 # Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A

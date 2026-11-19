@@ -22,10 +22,12 @@ const SCRIPTS := [
 ]
 
 
-# A script that was never loaded holds nothing, so only loaded scripts are cleared (loading one here would only fill it).
+# Every listed script is loaded and cleared, loaded before or not: its statics start empty, so loading one fills nothing,
+# and no cache check can silently skip a script (an exported build's cache is not tested in the cloud).
 static func clear_all() -> void:
 	for p in SCRIPTS:
-		if not ResourceLoader.has_cached(p):
+		if not ResourceLoader.exists(p):
+			push_error("static_caches: listed script missing: " + p)
 			continue
 		var sc = load(p)
 		if sc != null and sc.has_method("clear_static"):

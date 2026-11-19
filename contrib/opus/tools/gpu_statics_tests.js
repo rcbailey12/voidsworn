@@ -85,18 +85,22 @@ for (const f of walk(GODOT, [])) {
   const body = clearBody(lines);
   for (let n = 0; n < lines.length; n++) {
     const line = lines[n];
-    const m = /^static var (\w+)\s*(?::\s*([\w\[\]]+))?\s*(:?=\s*(.*))?$/.exec(stripComment(line).trimEnd());
+    // any indentation (inner classes), typed collections like Dictionary[String, Texture2D], a trailing setter colon
+    const m = /^\s*static var (\w+)\s*(?::\s*([\w]+(?:\[[\w\s,]*\])?))?\s*(?::?=\s*(.*?))?\s*:?$/.exec(stripComment(line).trimEnd());
     if (!m) continue;
-    const [, name, type, , initRaw] = m;
+    const [, name, type, initRaw] = m;
     const init = (initRaw || '').trim();
     const baseType = type ? type.replace(/\[.*$/, '') : '';
+    const inner = type && type.includes('[') ? type.slice(type.indexOf('[') + 1, -1).split(',').map(t => t.trim()) : [];
     let gpu = false;
-    if (type && GPU_TYPE.test(baseType)) gpu = true;
+    if (type && (GPU_TYPE.test(baseType) || inner.some(t => GPU_TYPE.test(t)))) gpu = true;
+    // a static built or loaded where it is declared holds whatever it made (ShaderMaterial.new(), preload, load)
+    else if (/\.new\(|\bpreload\(|\bload\(/.test(init) && !(type && PLAIN_TYPE.test(baseType)) && !PLAIN_TYPE.test((/^(\w+)\.new\(/.exec(init) || [])[1] || '')) gpu = true;
     else if (type && PLAIN_TYPE.test(baseType)) gpu = false;
     else {
       // untyped, Variant, Dictionary, Array or another object type: a holder when it starts empty and its script
       // touches GPU types (a filled literal is constant data)
-      const empty = init === '' || /^(\{\}|\[\]|null|Array\(\)|Dictionary\(\))$/.test(init);
+      const empty = init === '' || /^(\{|\[\]?|null|Array\(\)|Dictionary\(\))$/.test(init) || init === '{}';
       gpu = empty && touchesGpu;
     }
     if (!gpu) continue;
