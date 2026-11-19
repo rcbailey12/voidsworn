@@ -19,6 +19,7 @@ const SCRIPTS := [
 	"res://ui/battle/brand.gd",
 	"res://ui/battle/icons/keel_icons.gd",
 	"res://ui/theme/glass_shell.gd",
+	"res://ui/theme/orders_kit.gd",
 ]
 
 
