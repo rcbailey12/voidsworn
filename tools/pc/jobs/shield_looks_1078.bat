@@ -163,8 +163,8 @@ exit /b 0
 
 rem ---------------------------------------------------------------- :safe_checkout REF TAG
 rem Never a forced checkout (file loss, issue 1179; the ship_job.bat pattern). Save the clone's tracked changes first
-rem (git status and a binary patch, in out\), stop if any is outside godot\assets\ships (the only tracked files this job
-rem writes: the installed hulls copied in), restore only those from the clone's own commit, then a plain checkout that
+rem (git status and a binary patch, in out\), stop if any is outside godot\assets\ships and the .import files (the only tracked
+rem files this job writes: the installed hulls copied in, and the import), restore only those from the clone's own commit, then a plain checkout that
 rem also refuses to overwrite ignored files, then copy the installed hulls in again.
 :safe_checkout
 set "SC_REF=%~1"
@@ -173,12 +173,14 @@ set "SC_DIR=%HOME1078%\out\checkout_%SC_TAG%_%RANDOM%"
 mkdir "%SC_DIR%"
 git -C "%R%" status --porcelain --untracked-files=no > "%SC_DIR%\clone_changes_before_checkout.txt" 2>&1
 git -C "%R%" diff --binary HEAD > "%SC_DIR%\clone_changes_before_checkout.patch" 2>> "%SC_DIR%\clone_changes_before_checkout.txt"
-findstr /v /r /c:"^.. godot/assets/ships/" "%SC_DIR%\clone_changes_before_checkout.txt" > "%SC_DIR%\clone_changes_unexpected.txt"
+rem expected: the copied hulls, and the .import files the headless import rewrites (the ship_job.bat fix, opus/issue-1174)
+findstr /v /r /c:"^.. godot/assets/ships/" /c:"^.. godot/.*\.import$" "%SC_DIR%\clone_changes_before_checkout.txt" > "%SC_DIR%\clone_changes_unexpected.txt"
 for %%Z in ("%SC_DIR%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 (
   echo FAILED: checkout %SC_REF%: the clone has local changes outside godot\assets\ships, listed in %SC_DIR%\clone_changes_unexpected.txt and saved as a patch; nothing was reset >> "%ST%"
   exit /b 1
 )
 git -C "%R%" checkout -q HEAD -- godot/assets/ships >> "%HOME1078%\git.txt" 2>&1
+git -C "%R%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%HOME1078%\git.txt" 2>&1
 git -C "%R%" checkout -q --no-overwrite-ignore --detach %SC_REF% >> "%HOME1078%\git.txt" 2>&1
 if errorlevel 1 (
   echo FAILED: checkout %SC_REF% refused, see git.txt; nothing was forced >> "%ST%"
