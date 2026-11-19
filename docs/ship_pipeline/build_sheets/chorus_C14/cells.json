@@ -21,8 +21,8 @@
   {
    "cell": "bow/top",
    "id": "pore_fields",
-   "built": 2,
-   "listed": 2,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -32,6 +32,24 @@
    "id": "launch_mouths",
    "built": 5,
    "listed": 5,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "spore_patch",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "spore_field",
+   "built": 1,
+   "listed": 1,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -84,8 +102,8 @@
   {
    "cell": "bow/side",
    "id": "pore_fields",
-   "built": 2,
-   "listed": 2,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -201,8 +219,8 @@
   {
    "cell": "mid/top",
    "id": "pore_fields",
-   "built": 2,
-   "listed": 2,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -227,6 +245,15 @@
   },
   {
    "cell": "mid/top",
+   "id": "spore_field",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
    "id": "stretch_folds",
    "built": 5,
    "listed": 5,
@@ -237,8 +264,8 @@
   {
    "cell": "mid/top",
    "id": "body_folds",
-   "built": 1,
-   "listed": 1,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -281,7 +308,7 @@
   },
   {
    "cell": "mid/side",
-   "id": "spore_patch",
+   "id": "spore_field",
    "built": 1,
    "listed": 1,
    "present": true,
@@ -300,8 +327,8 @@
   {
    "cell": "mid/side",
    "id": "body_folds",
-   "built": 1,
-   "listed": 1,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -354,8 +381,8 @@
   {
    "cell": "mid/below",
    "id": "body_folds",
-   "built": 1,
-   "listed": 1,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -471,8 +498,8 @@
   {
    "cell": "stern/side",
    "id": "body_folds",
-   "built": 1,
-   "listed": 1,
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -546,27 +573,27 @@
   {
    "cell": "bow/top",
    "concept": 4,
-   "build": 7
+   "build": 6
   },
   {
    "cell": "bow/side",
    "concept": 4,
-   "build": 6
+   "build": 5
   },
   {
    "cell": "bow/below",
    "concept": 3,
-   "build": 1
+   "build": 0
   },
   {
    "cell": "mid/top",
    "concept": 5,
-   "build": 9
+   "build": 8
   },
   {
    "cell": "mid/side",
    "concept": 5,
-   "build": 7
+   "build": 6
   },
   {
    "cell": "mid/below",
@@ -597,10 +624,10 @@
    "hull_LH": 0.99
   },
   "build": {
-   "env_LB": 1.41,
-   "env_LH": 1.74,
-   "hull_LB": 1.74,
-   "hull_LH": 2.26
+   "env_LB": 1.28,
+   "env_LH": 1.65,
+   "hull_LB": 1.63,
+   "hull_LH": 2.08
   }
  }
 }

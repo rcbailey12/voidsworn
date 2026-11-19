@@ -1356,17 +1356,20 @@ def spore_patch(R, barrels=3, seed=0, mount='turret'):
     return p
 
 
-def launch_mouth(r, depth, neck=None, seed=0):
+def launch_mouth(r, depth, neck=None, seed=0, lip=1.0, flare=1.0):
     """a launch opening of the hangar (C14, the brood-sac carrier; data.js hangar 3): local +Z out of the hull. root: a neck of
     flesh rising out of the body and flaring into it at the base (mount); lip: one thick rolled lip of flesh round the mouth,
     lumpy, never a ring; crease: creases across the lip and stretch wrinkles down the neck; bore: a deep dark wet chamber,
-    nothing in it (Ryan: no pods shown); glow: a dim warm bile light deep at the bottom. Fit: the opening along +Z."""
+    nothing in it (Ryan: no pods shown); glow: a dim warm bile light deep at the bottom. lip: the rolled lip's thickness as a
+    share of the default (C14 v2: 1.45, a fat round lip standing off the body); flare: how far the neck's foot spreads into
+    the body, as a share of the default (C14 v2: 0.6, so five openings fit round the rim). Fit: the opening along +Z."""
     import random
     p = Part('launch')
     rnd = random.Random(seed + 5)
     nf = _noise(seed)
     H = neck if neck is not None else r * 1.0
-    prof = [(-r * 1.0, r * 2.15), (-r * 0.35, r * 1.95), (H * 0.25, r * 1.6), (H * 0.7, r * 1.42), (H * 0.96, r * 1.36),
+    fl = lambda k: r * (1.36 + (k - 1.36) * flare)
+    prof = [(-r * 1.0, fl(2.15)), (-r * 0.35, fl(1.95)), (H * 0.25, fl(1.6)), (H * 0.7, fl(1.42)), (H * 0.96, r * 1.36),
             (H * 0.96, r * 1.0), (H * 0.55, r * 0.98), (H * 0.1, r * 0.96)]
     V, F = revolve(prof, 48, closed=True, axis='Z')
     V = [(x * (1 + 0.06 * nf(Vector((x, y, 0.3)).normalized())), y * (1 + 0.06 * nf(Vector((y, x, 0.7)).normalized())), z) for (x, y, z) in V]
@@ -1375,9 +1378,9 @@ def launch_mouth(r, depth, neck=None, seed=0):
     m = 72; pts = []; rad = []
     for k in range(m):
         a = 2 * math.pi * k / m
-        Ra = r * (1.2 + 0.05 * math.sin(3 * a + seed) + 0.035 * math.sin(7 * a + 2 * seed))
+        Ra = r * (0.93 + 0.27 * lip + 0.05 * math.sin(3 * a + seed) + 0.035 * math.sin(7 * a + 2 * seed))
         pts.append(Vector((Ra * math.cos(a), Ra * math.sin(a), H + r * 0.06 * math.sin(2 * a + seed))))
-        rad.append(r * (0.27 + 0.05 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.5)))))
+        rad.append(r * (0.27 * lip + 0.05 * math.sin(4 * a + seed) + 0.04 * nf(Vector((math.cos(a), math.sin(a), 0.5)))))
     pts.append(pts[0]); rad.append(rad[0])
     p.add('lip', 'body', 'flesh', tube(pts, rad, n=10, cap0=False, cap1=False))
     # creases over the lip (fine radial wrinkles from the inner edge over the roll) and stretch wrinkles down the neck
@@ -1392,7 +1395,7 @@ def launch_mouth(r, depth, neck=None, seed=0):
         for j in range(6):
             t = j / 5
             zz = H * 0.85 - (H * 0.85 + r * 0.55) * t
-            rr_ = r * (1.38 + 0.6 * t * t) + r * 0.02
+            rr_ = r * (1.38 + 0.6 * flare * t * t) + r * 0.02
             q.append(Vector((rr_ * math.cos(a + 0.05 * math.sin(j + k)), rr_ * math.sin(a + 0.05 * math.sin(j + k)), zz)))
         p.add('neckcrease%d' % k, 'mount', 'flesh2', tube(q, [r * 0.05 * (1 - 0.4 * j / 5) for j in range(6)], n=5, flat=0.6))
     # the bore: a deep dark chamber below the lip, the wet wall wrinkled, a dim warm glow at its floor and nothing in it

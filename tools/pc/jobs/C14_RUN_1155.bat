@@ -33,6 +33,8 @@ if not "%PAINT_BASE%"=="" (
 )
 git -C "%C%" log -1 --format=commit=%%H >> "%RES%" 2>&1
 set RECIPE_NOPAUSE=1
+rem the GPU queue is shared by every helper: wait up to an hour for a GPU slot (gpu_slots.js caps it at 3600) (the Board, Nov 19)
+set PC_GPU_WAIT_SECONDS=3600
 set INSTALL_TO=%C%\godot
 set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
 set SHIP=chorus_C14
@@ -44,20 +46,20 @@ if "%MODE%"=="front" (
   for %%S in (1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit) do call :stage %%S
   goto end
 )
-call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_%MODE%_import.txt" 2>&1
+call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_%MODE%_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
 for %%S in (1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export) do call :stage %%S
 if defined FAILED (
   echo checks SKIPPED: stage %FAILED% failed, so the installed glb is not this run's >> "%RES%"
   goto end
 )
-call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%MODE%_readback_gpu.txt" 2>&1
+call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%MODE%_readback_gpu.txt" 2>&1
 echo gpu readback exit %ERRORLEVEL% >> "%RES%"
-call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%MODE%_interiors.txt" 2>&1
+call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%MODE%_interiors.txt" 2>&1
 echo authored interiors exit %ERRORLEVEL% >> "%RES%"
-call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%MODE%_death_seam.txt" 2>&1
+call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%MODE%_death_seam.txt" 2>&1
 echo death seam exit %ERRORLEVEL% >> "%RES%"
-call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs chorus --sets battle,close,cams --codes %CODE% > "%O%\log_%MODE%_shots.txt" 2>&1
+call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs chorus --sets battle,close,cams --codes %CODE% > "%O%\log_%MODE%_shots.txt" 2>&1
 echo shots exit %ERRORLEVEL% >> "%RES%"
 :end
 rem copy this run's recipe pictures and records into out, so the Board brings them back (copies only, nothing deleted)
