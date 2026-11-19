@@ -628,6 +628,8 @@ const NEM_TRAITS={
   undying:{n:'Spare frames',d:'One more eligible enemy ship can reassemble after falling.'}, veil:{n:'Veil-dancers',d:'Enemy ships are 8 harder to hit.'}, artillery:{n:'Artillery line',d:'Enemy guns other than point defense and squadron weapons reach 1 hex further.'},
   zeal:{n:'Zealots',d:'Enemy ships deal 12% more damage to a ship next to them.'}, rockets:{n:'Rocket hoarders',d:'Enemy torpedoes reload a turn faster.'}};
 function nemEntry(table,key,fac){ const entry=table[key]; return entry?.v?.[fac] || entry; }
+// Issue 1182: a save from an older build can hold a trait or weakness key the table no longer has; show the raw key, never crash.
+function nemEntryName(table,key,fac){ const entry=nemEntry(table,key,fac); return entry&&entry.n!=null?entry.n:String(key); }
 const NEM_PERSONA={
   cunning:{n:'Cunning',d:'Strikes your flanks and your weakest ship.',ai:{focusWeak:1,rear:1}}, zealous:{n:'Zealous',d:'Charges in and never backs off.',ai:{tw:.6,range:-2}},
   cruel:{n:'Cruel',d:'Finishes crippled ships first.',ai:{focusWeak:1}}, patient:{n:'Patient',d:'Waits for you to close in.',ai:{tw:1.3,range:2}},

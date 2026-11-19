@@ -95,7 +95,7 @@ function finishBattle(result){
   if(B.cfg&&B.cfg.verb) RUN.verbNext=null;
   if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled),{found:B.nemFound||[],fled:!!B.nemFled,beat:nemBeatOf(B.usage,(B.units.filter(u=>u.side==='player'&&!u.isSq).reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,B.units.filter(u=>u.side==='player'&&!u.isSq).length))>=20),cause:fl&&fl.killCause,myFlagDead:B.units.some(u=>u.pflag&&u.dead)}); } else if(result==='win'&&nemActive()){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
   { const lostN=B.units.filter(u=>u.side==='player'&&u.ship&&u.dead&&!u.exited).length; if(lostN){ const fm=nemFeedLosses(lostN); if(fm) summary.nemFeed=fm; } } // R42: a Chorus Nemesis grows from your losses (and says so)
-  { const fw=nemFoundMerge(B.nemFound); if(fw.length) summary.nemFound=`Weakness confirmed: ${fw.map(k=>nemEntry(NEM_WEAK,k,nemActive()?.fac).n).join(', ')}.`; } // R42: weaknesses you triggered in battle stay known
+  { const fw=nemFoundMerge(B.nemFound); if(fw.length) summary.nemFound=`Weakness confirmed: ${fw.map(k=>nemEntryName(NEM_WEAK,k,nemActive()?.fac)).join(', ')}.`; } // R42: weaknesses you triggered in battle stay known
   for(const sh of RUN.fleet){ const k=wingK[sh.uid]; if(k){ const g=wingVetAfter(sh,k); if(g.length) (summary.wingPerks=summary.wingPerks||[]).push({ship:sh.name,perks:g}); } }
   summary.kills=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship).length;
   RUN.stats.kills+=summary.kills;

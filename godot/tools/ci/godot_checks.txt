@@ -30,6 +30,7 @@ headless|campaign/test/map_readonly_test.gd|step:Nemesis scenarios (JS game and 
 headless|campaign/test/map_travel_test.gd|-|-|map reachability, lanes, flight at 30, 60 and 144 fps; no models or bakes needed
 headless|campaign/test/nem_read_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 364: Nemesis readers ask the campaign)
 headless|campaign/test/nem_scenarios.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step
+headless|campaign/test/nem_unknown_key_test.gd|-|-|issue 1182: an older save naming a Nemesis trait or weakness the tables lack opens the Dossier, battle log, after-battle text and summary without an error; browser twin contrib/opus/tools/nem_unknown_key_tests.js
 headless|campaign/test/nem_dodge_test.gd|-|-|issue 1175: 3,000 seeded sectors, an unmet Nemesis is never dodged, every column 4 stop is tagged and every boss stop carries its objective and board
 headless|campaign/test/nemesis_clash_test.gd|fixture:nemesis_clash_tests.js|{fixture}|12482 Nemesis clash cases match the live browser
 headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fixture}|Nemesis teaching debrief and map line match the browser

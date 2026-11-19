@@ -2474,7 +2474,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		if jt(o.get("beat")):
 			N["last_beat"] = o["beat"]; nemBeatTeach(o["beat"])
 		var w = nemReveal()
-		if w != null: out.append(nemSay("His captured logs reveal a weakness: " + str(BattleAPI.nem_entry(NEM_WEAK, w, N["fac"])["n"]) + ".", N))
+		if w != null: out.append(nemSay("His captured logs reveal a weakness: " + BattleAPI.nem_entry_name(NEM_WEAK, w, N["fac"]) + ".", N))
 		if jt(o.get("fled")):
 			if beh.get("strike") == "raid": N["riches"] = float(z0(N.get("riches"))) + 1
 			if beh.get("strike") == "duel": N["honed"] = float(z0(N.get("honed"))) + 1
@@ -2512,7 +2512,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		var w = learned[0] if not learned.is_empty() else nemReveal()
 		if w != null:
 			var ws = learned if not learned.is_empty() else [w]
-			var names = ws.map(func(k): return str(BattleAPI.nem_entry(NEM_WEAK, k, N["fac"])["n"]))
+			var names = ws.map(func(k): return BattleAPI.nem_entry_name(NEM_WEAK, k, N["fac"]))
 			out.append("Your analysts piece together the engagement. " + ("Weaknesses" if ws.size() > 1 else "Weakness") + " found: " + ", ".join(PackedStringArray(names)) + ".")
 			for k in ws:
 				var lt = nemLessonAdd(N, k, true)
@@ -2523,7 +2523,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 			if ls != "": out.append("Lesson: " + ls)
 	if result == "win":
 		var fw = nemFoundMerge(o.get("found"))
-		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(BattleAPI.nem_entry(NEM_WEAK, k, N["fac"])["n"])))) + ".")
+		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return BattleAPI.nem_entry_name(NEM_WEAK, k, N["fac"])))) + ".")
 	if jt(beh.get("adaptFast")):
 		N["adaptSector"] = 0
 		var a = nemAdapt(false, N)
@@ -2875,7 +2875,7 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("nemIntel")):
 		var w = nemReveal()
 		var entry = BattleAPI.nem_entry(NEM_WEAK, w, nemRead()["fac"]) if w != null else null
-		out.append(("Nemesis weakness revealed: " + str(entry["n"]) + ". " + str(entry["d"])) if entry != null else "You learn nothing new about the enemy commander.")
+		out.append(("Nemesis weakness revealed: " + str(entry["n"]) + ". " + str(entry["d"])) if entry is Dictionary else (("Nemesis weakness revealed: " + str(w) + ".") if w != null else "You learn nothing new about the enemy commander."))
 	if jt(r.get("nemClock")):
 		var m2 = nemClockAdd(r["nemClock"])
 		if m2 != "": out.append(m2)
@@ -3528,7 +3528,7 @@ func finishBattle(result: String) -> void:
 	var fw = nemFoundMerge(B.get("nemFound"))   # R42: weaknesses you triggered in battle stay known
 	if fw.size() > 0:
 		var fac = nemRead()["fac"]
-		summary["nemFound"] = "Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(BattleAPI.nem_entry(NEM_WEAK, k, fac)["n"])))) + "."
+		summary["nemFound"] = "Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return BattleAPI.nem_entry_name(NEM_WEAK, k, fac)))) + "."
 	for sh in RUN["fleet"]:
 		var wk = wingK.get(sh["uid"])
 		if jt(wk):
