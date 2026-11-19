@@ -51,12 +51,20 @@ func _run() -> void:
 	# --size WxH: the window is forced windowed at that size (the project starts maximized, which overrode --resolution:
 	# the first PC run drew every capture at 3840x2066). --shot beam|gun: the enemy's own first weapon (a lance on the
 	# s1 enemy) or a gun battery (tracers, for the 4K streak caps). --shield: three hits, the second empties the shield.
+	var want := Vector2i.ZERO
 	if args.has("size"):
 		var wh := str(args["size"]).split("x")
-		get_root().mode = Window.MODE_WINDOWED
-		get_root().size = Vector2i(int(wh[0]), int(wh[1]))
-		for f in 10:
+		want = Vector2i(int(wh[0]), int(wh[1]))
+		var screen := DisplayServer.screen_get_size(get_root().current_screen)
+		# a window as big as the screen is clamped by the taskbar (3840x2066 on run 1): use fullscreen for that size
+		if want.x >= screen.x and want.y >= screen.y:
+			get_root().mode = Window.MODE_EXCLUSIVE_FULLSCREEN
+		else:
+			get_root().mode = Window.MODE_WINDOWED
+			get_root().size = want
+		for f in 20:
 			await process_frame
+		print("HIT_CAPTURE size requested %dx%d, screen %dx%d, window %dx%d" % [want.x, want.y, screen.x, screen.y, get_root().size.x, get_root().size.y])
 	var shot := str(args.get("shot", "beam"))
 	var shielded := args.has("shield")
 	var tag := "%s_%s%s" % [kase, shot, "_shield" if shielded else ""]
@@ -129,6 +137,11 @@ func _run() -> void:
 				frames_ok += 1
 			else:
 				failed += 1
+		if due and want != Vector2i.ZERO and img.get_size() != want:
+			# Artoo (PR 1220): a requested size is a promise; a clamped picture fails the run instead of passing as 4K
+			printerr("HIT_CAPTURE_FAILED size requested %dx%d, picture %dx%d" % [want.x, want.y, img.get_width(), img.get_height()])
+			quit(1)
+			return
 		if due:
 			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [tag, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
 				stills += 1
