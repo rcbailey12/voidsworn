@@ -1177,11 +1177,14 @@ func prepare_battle_hulls() -> void:
 				continue
 			for si in mi.mesh.get_surface_count():
 				var source := mi.get_active_material(si)
-				if ship.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(si)):
+				var original := mi.mesh.surface_get_material(si)
+				var inside := ship.hull.authored and HULL.interior_material(original)
+				if inside:
 					dark_interior(source)
-				else:
-					ship.damage_surface(self, mi, si, source)
+				if not inside:
 					hull_damage_template(source, ship.hull.L, ship.faction == "chorus", true)
+				if not inside or original.resource_name.ends_with("_inside_skin"):
+					ship.damage_surface(self, mi, si, source)
 		pending.append(ship)
 		await get_tree().process_frame
 	# Limit simultaneous cuts so the hull workers and renderer can make progress

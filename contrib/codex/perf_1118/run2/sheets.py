@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,9 +25,9 @@ STORM = (
 )
 
 
-def load_capture(work, name, source):
-    capture = work / "proof_2" / f"{name}.png"
-    marked = work / "proof_2" / f"{name}_source.png"
+def load_capture(folder, name, source):
+    capture = folder / f"{name}.png"
+    marked = folder / f"{name}_source.png"
     capture_date = datetime.fromtimestamp(capture.stat().st_mtime, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with Image.open(capture) as image:
         save_picture(image, marked, STAGE, sources=[{
@@ -70,37 +69,44 @@ def compare(one, two):
         return {"mean_rgb_of_255": stats.mean, "max_rgb_of_255": [max(v) for v in stats.extrema]}
 
 
+def provenance(work):
+    build = json.loads((work / "godot/build_info.json").read_text(encoding="utf-8-sig"))
+    diff = work / "source_diff.sha256"
+    source = {"source_commit": build["commit"], "source_dirty": diff.is_file(),
+              "source_diff_sha256": diff.read_text().strip() if diff.is_file() else "", "stage": STAGE}
+    if not source["source_dirty"]:
+        source["source_commit_date"] = build["commit_date"]
+    return source
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("before", type=Path)
     parser.add_argument("after", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("results", type=Path)
+    parser.add_argument("--label", default="proof")
     options = parser.parse_args()
-    commit, date = subprocess.check_output(
-        ["git", "show", "-s", "--format=%H%n%cI", "HEAD"], cwd=ROOT, text=True
-    ).splitlines()
-    date = datetime.fromisoformat(date).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    before = {"source_commit": commit, "source_commit_date": date, "source_dirty": False,
-              "source_diff_sha256": "", "stage": STAGE}
-    after = {"source_commit": commit, "source_dirty": True, "stage": STAGE,
-             "source_diff_sha256": (options.after / "source_diff.sha256").read_text().strip()}
+    before = provenance(options.before)
+    after = provenance(options.after)
+    before_take = options.before / f"{options.label}_2"
+    after_take = options.after / f"{options.label}_2"
     battle = []
     differences = {}
     for name, label in BATTLE:
-        battle.append((label, (("Before", load_capture(options.before, name, before)),
-                               ("After", load_capture(options.after, name, after)))))
-        files = [work / f"proof_{take}" / f"{name}.png"
+        battle.append((label, (("Before", load_capture(before_take, name, before)),
+                               ("After", load_capture(after_take, name, after)))))
+        files = [work / f"{options.label}_{take}" / f"{name}.png"
                  for work in (options.before, options.after) for take in (1, 2)]
         differences[name] = {"before_repeat": compare(files[0], files[1]),
                              "after_repeat": compare(files[2], files[3]),
                              "before_after": compare(files[1], files[3])}
-    storm = [(label, (("High", load_capture(options.before, a, before)),
-                      ("Max", load_capture(options.before, b, before))))
+    storm = [(label, (("High", load_capture(before_take, a, before)),
+                      ("Max", load_capture(before_take, b, before))))
              for a, b, label in STORM]
     sheet("Scene 207   /   V1b_r_23", battle, options.output / "PERF1070_RUN2_BATTLE.jpg")
     sheet("Dense storm   /   seed 4103", storm, options.output / "PERF1070_RUN2_STORM.jpg")
-    options.results.write_text(json.dumps(differences, indent=2) + "\n", encoding="utf-8")
+    options.results.write_text(json.dumps(differences, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 if __name__ == "__main__":

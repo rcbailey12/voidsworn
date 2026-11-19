@@ -1313,11 +1313,11 @@ func arrays_of(am: ArrayMesh, si: int) -> Array:
 func damage_surface(fx, mi: MeshInstance3D, si: int, src: Material) -> ShaderMaterial:
 	var template: ShaderMaterial = fx.hull_damage_template(src, hull.L, faction == "chorus")
 	var key := [mi.get_instance_id(), si]
-	var surface: ShaderMaterial = _damage_surfaces.get(key)
-	if surface == null or surface.get_meta("fx_hull_source") != template.get_meta("fx_hull_source"):
-		surface = template.duplicate()
-		_damage_surfaces[key] = surface
-	return surface
+	var entry: Array = _damage_surfaces.get(key, [])
+	if entry.is_empty() or entry[0] != template:
+		entry = [template, template.duplicate()]
+		_damage_surfaces[key] = entry
+	return entry[1]
 
 
 # The arrays the hull is drawn with now, per mesh instance and surface (rebuilt by damage, or the original).

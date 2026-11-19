@@ -1,5 +1,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$Work,
+    [string]$Label = 'proof',
     [switch]$Storm
 )
 
@@ -21,7 +22,7 @@ if ($Storm) {
     $count += 4
 }
 foreach ($take in 1,2) {
-    $out = Join-Path $Work "proof_$take"
+    $out = Join-Path $Work "${Label}_$take"
     if (Test-Path -LiteralPath $out) { throw "Proof output already exists: $out" }
     New-Item -ItemType Directory -Path $out | Out-Null
     $log = Join-Path $out 'engine.log'

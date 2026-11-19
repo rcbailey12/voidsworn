@@ -4,7 +4,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$backup = Join-Path $Work 'isolation_sources'
+$backup = Join-Path $Work ('isolation_sources_' + $Label + '_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
 if (Test-Path -LiteralPath $backup) { throw "Isolation backup already exists: $backup" }
 New-Item -ItemType Directory -Path $backup | Out-Null
 $files = 'fx.gd','fx_ship.gd','fx_breach.gd'

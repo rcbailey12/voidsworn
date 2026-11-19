@@ -19,8 +19,8 @@ def trail_and_shield(source):
         source = replace_once(source, '\t\t\tmat.set_shader_parameter("trail_style", float(style))',
                               '\t\t\tmat.set_shader_parameter("trail_style", float(style))\n'
                               '\t\tfx.pend("trail_update", trail_started)')
-        source = replace_once(source, '\t\tsurface = template.duplicate()',
-                              '\t\tsurface = template.duplicate()\n'
+        anchor = '\t\tentry = [template, template.duplicate()]'
+        source = replace_once(source, anchor, anchor + '\n'
                               '\t\tfx.prof["live_damage_materials"] = int(fx.prof.get("live_damage_materials", 0)) + 1')
     else:
         anchor = "\t\t_trail_mesh(fx, t, eng)"
