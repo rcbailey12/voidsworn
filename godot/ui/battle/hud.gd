@@ -375,9 +375,9 @@ func set_crest(_tex: Texture2D, _tip: String) -> void:
 
 
 # The action is a once-per-battle Command, not a point counter.
-func set_command(label: String, ready: bool, available := false, armed := false) -> void:
-	_last["set_command"] = [label, ready, available, armed]
-	ledger.cmd = {"label": label, "id": label, "ready": ready, "available": available, "active": armed}
+func set_command(label: String, ready: bool, available := false, armed := false, tip := "") -> void:
+	_last["set_command"] = [label, ready, available, armed, tip]
+	ledger.cmd = {"label": label, "id": label, "ready": ready, "available": available, "active": armed, "tip": tip}
 	ledger.mark()
 
 

@@ -64,7 +64,11 @@ function migrateMeta(m){ { const d=defaultMeta(); for(const k in d) if(k!=='v'&&
   if(!m.wonFix41){ m.wonFix41=1; try{ let fac=null; const won=new Set((m.stats&&m.stats.wonFacs)||[]); for(const e of (m.tel||[])){ if(e.ev==='run_start'&&e.fac) fac=e.fac; else if(e.ev==='run_end'){ if(e.victory&&(e.fac||fac)) won.add(e.fac||fac); fac=null; } } if(m.stats) m.stats.wonFacs=[...won]; }catch(e){} }
   return m; }
 function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
-  if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return normalizeRun(r); }
+  if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; }
+  r=normalizeRun(r);
+  if(r&&r.sector===3&&r.beat3DebriefSeen==null&&r.t0>0&&r.flags&&typeof STORY_BEAT3!=='undefined'&&STORY_BEAT3[r.fac]&&r.flags[STORY_BEAT3[r.fac].id]!=null&&
+      Array.isArray(META.tel)&&META.tel.some(e=>e&&e.ev==='battle_end'&&e.result==='win'&&e.sector===3&&e.t>=r.t0)) r.beat3DebriefSeen=true;
+  return r; }
 // v53: the one place that knows every field a RUN carries. newRun sets the real starting values; this fills anything an older or partial save lacks
 function runDefaults(){ return {fac:'voidsworn',foes:null,admiral:'vex',credits:0,cpCap:10,sector:1,relics:[],inventory:[],fleet:[],pos:null,stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},t0:0,fallen:[],ambush:false,over:false,boons:[],patrons:[],aspect:null,flagUid:null,
   heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0,flags:{},nem:null,verbUsed:0,verbNext:null,classTrack:{},boonRerolls:0,

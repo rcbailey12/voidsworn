@@ -544,12 +544,12 @@ const SYNC_R=3, SYNC_DMG=.12, SYNC_AIM=6; // pass 2 tuning: was .15 and 8 // Heg
 const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.12; // pass 3 tuning: .15 to .12 (pass 2: .2 to .15) // tuned Oct 26 after the first PC pass (enemy Chorus rose from 41 to 51 enemy-side wins in fmatrix) // Chorus: hull share regrown by the killer, by others within FEED_R of the kill, cap per ship per round
 const LEGION_HP=.35; // Deathless: hull a reassembled ship comes back with
 const FAC_RULES={
-  hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their flagship fire as one: a target another synced ship already fired on this round is ${SYNC_AIM} easier to hit and takes +${Math.round(SYNC_DMG*100)}% damage. Lose the flagship and sync is gone for the rest of the battle. Does not stack with Anchored Volley.`},
-  ithar:{n:'Prism charge',d:'At the start of its turn, a shield pool that was not hit since its last turn recharges to full, and a pool that was hit recharges twice. Glasswright hulls cannot Brace.'},
-  chorus:{n:'Feed',d:`When an enemy ship dies, the Chorus ship that killed it regrows ${Math.round(FEED_KILL*100)}% of its hull and every other Chorus ship within ${FEED_R} hexes regrows ${Math.round(FEED_NEAR*100)}%, up to ${Math.round(FEED_CAP*100)}% per ship each round.`},
-  deathless:{n:'Archive restore',d:`The first Eclipse ship to fall each battle (never the flagship) reassembles at the start of the next round with ${Math.round(LEGION_HP*100)}% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.`},
-  corsair:{n:'Close in',d:'Hullbreakers field no lance weapons, and their rocket pods fire salvos that point defense can thin.'},
-  voidsworn:{n:'Line of battle',d:'Broadsides hit harder after a hard burn (drive rule); carriers cost 25% more.'}};
+  hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their command ship gain aim and damage against targets another synced ship fired on this round. They can also back away for 1 movement instead of 2. Lose the command ship and sync is gone for the battle.`},
+  ithar:{n:'Prism charge',d:'Shields refill at the start of a turn if untouched since the last turn, or recharge twice if hit. Ships can slip away after firing, but cannot Brace.'},
+  chorus:{n:'Feed',d:'Living ships regrow hull each round, and ship kills let the killer and nearby allies regrow more. Their own hulls have no shields.'},
+  deathless:{n:'Archive restore',d:`An eligible fallen ship reassembles next round with ${Math.round(LEGION_HP*100)}% hull, but never the flagship. Fold drives pass through ships, rocks and wrecks at no extra cost. Eclipse hulls have no shields.`},
+  corsair:{n:'Close in',d:'Boarding crews have extra strength, and rocket pods fire salvos that point defense can thin. Hullbreakers cannot field lance weapons.'},
+  voidsworn:{n:'Line of battle',d:`Side guns hit harder after moving at least 2 hexes, and Brace covers one adjacent ally facing the same way. Carrier base prices have a ${Math.round((FAC_PRICE.voidsworn.Carrier-1)*100)}% premium before rounding.`}};
 // telemetry for the sims: per-faction counters in B.fstat (never read by rules)
 function fstat(fac,k,n){ if(!B||!fac) return; const F=(B.fstat=B.fstat||{})[fac]||(B.fstat[fac]={}); F[k]=(F[k]||0)+(n==null?1:n); }
 // Hegemony anchor: the player's flagship (or the biggest Hegemony hull when the flagship is not Hegemony); for the enemy a sector flagship, the
@@ -1387,7 +1387,7 @@ function cmdPow(id,tier,side){ const p=CMD_POW[id]; if(!p) return 0; if(tier==nu
 function cmdDesc(c,tier,fac){ if(!c) return ''; const v=cmdPow(c.id,tier), car=fac==='chorus'?'brood':'launch ship', sq=fac==='chorus'?'swarm':'squadron', pct=x=>Math.round(x*100)+'%';
   switch(c.id){
     case 'barrage': return `Every ship fires a free extra volley right now at the best target in range${v?`, with +${pct(v)} damage`:''}. Its normal shots this round still happen.`;
-    case 'hunt': return fac==='hegemony'?`Every ship deals +${pct(v)} damage for the rest of this round.`:`Torpedoes reload at once and every ship deals +${pct(v)} damage for the rest of this round.`;
+    case 'hunt': return fac==='deathless'?`Every ship deals +${pct(v)} damage for the rest of this round. Any ships carrying torpedoes reload them at once.`:fac==='hegemony'?`Every ship deals +${pct(v)} damage for the rest of this round.`:`Torpedoes reload at once and every ship deals +${pct(v)} damage for the rest of this round.`;
     case 'scramble': return `Every ${car} launches ${tier>=2?'two extra wings':'an extra wing'} right now if there are open adjacent hexes, even past its hangar limit. Then every ${sq} you have makes a bonus attack immediately, with +${pct(v)} damage.`;
     case 'iron': return fac==='chorus'||fac==='deathless'?`Your ships take ${pct(v+.1)} less hull damage for the rest of this round.`:`All shields refill and your ships take ${pct(v)} less hull damage for the rest of this round.`;
     case 'restore': return `Every ship repairs ${pct(v)} of its hull right now.`;
@@ -1967,7 +1967,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     if(ct&&side==='player'){ for(const sq of alive(side).filter(x=>x.isSq&&x.treeTwice)){ const t=B.units.find(x=>x.id===sq.treeTgt); if(!t||t.dead||(t.hexMoved||0)!==0) continue; let fired=false; for(const w of sq.weapons) w.fired=false; for(let i=0;i<sq.weapons.length;i++){ if(t.dead||B.over) break; if(canFire(sq,sq.weapons[i],t)){ await fireWeapon(sq,i,t,{half:true}); fired=true; } } if(fired) treeFx(sq,'castTwice','the recorded strike repeats at half damage'); } } }
   if(B===bStart) checkEnd(); return true; }
 // enemy flagships carry a Command of their own: announced a round ahead, fired once, at power 2
-const BOSS_CMD={hegemony:{id:'barrage',n:'Registry broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Brood regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Restore from the Archive'},voidsworn:{id:'hunt',n:'Crusader\u2019s wrath'}};
+const BOSS_CMD={hegemony:{id:'barrage',n:'Registry broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Brood regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Restore from the Archive'},voidsworn:{id:'hunt',n:'Sunward wrath'}};
 function bossCmdText(c,fac){ return cmdDesc(c,1,fac).replace(/your ships/g,'its ships').replace(/against you/g,'against them').replace(/Every ship/g,'Every enemy ship'); }
 function bossCmdTick(){ if(!B||B.over||B.cmdEUsed) return; const boss=B.units.find(u=>u.side==='enemy'&&u.t&&u.t.boss&&!u.dead); if(!boss) return; const c=BOSS_CMD[boss.fac]; if(!c) return;
   if(B.cmdENext==null){ if(B.round>=2||boss.hp<boss.maxHp*.6){ B.cmdENext=B.round+1; log(`${boss.name} is preparing ${c.n}. ${bossCmdText(c,boss.fac)} It strikes next round.`,'e'); try{ if(typeof fxText==='function') fxText(boss,'Preparing: '+c.n,'#ff8a6a',-56); }catch(e){} try{ if(typeof toast==='function'&&typeof document!=='undefined') toast(`${boss.name} is preparing ${c.n}. It strikes next round.`); if(typeof banner==='function'&&typeof document!=='undefined') setTimeout(()=>{ try{ banner(`${c.n} next round`,'#ff8a6a'); }catch(e){} },900); }catch(e){} /* v45: the boss Command gets a banner too */ } return; } }

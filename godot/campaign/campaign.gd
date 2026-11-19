@@ -157,6 +157,9 @@ static func hull_text(n) -> String: # a hull figure as a whole number, rounded u
 	var f = float(n)
 	if f <= 0.0: return "0"
 	return str(int(ceil(f)))
+static func ship_with_article(ship_name: String, sentence_start := false) -> String:
+	if ship_name.to_lower().begins_with("the "): return ship_name
+	return ("The " if sentence_start else "the ") + ship_name
 func toast(msg: String) -> void: toasts.append(msg)
 func tel(ev: String, d: Dictionary = {}) -> void:
 	var e = {"t": now_ms(), "ev": ev, "sector": RUN["sector"] if RUN != null else 0}
@@ -480,6 +483,11 @@ func _apply_save(o: Dictionary) -> void:
 		META = migrateMeta(m, tel_log)
 	var r = o.get("run")
 	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	# Older builds showed the line on every Sector III win. Use the saved log when it can prove it already appeared.
+	if SAVED_RUN != null and not SAVED_RUN.has("beat3DebriefSeen") and _beat3_line(SAVED_RUN, "debrief") != "":
+		var started: float = float(z0(SAVED_RUN.get("t0")))
+		if started > 0 and tel_log.any(func(e): return e is Dictionary and e.get("ev") == "battle_end" and e.get("result") == "win" and e.get("sector") == 3 and float(z0(e.get("t"))) >= started):
+			SAVED_RUN["beat3DebriefSeen"] = true
 	if o.get("uid") is float or o.get("uid") is int: UID = max(UID, int(o["uid"]))
 
 func load_save_text(s: String, bak: String = "") -> void:
@@ -605,16 +613,23 @@ func _ship_kit(hull: Dictionary, d: Dictionary) -> Dictionary:
 # The offer card explains an existing pick. Only the kit is shared with offer eligibility:
 # caps and possible future fits here never add, remove or reweight an offer.
 func boonFleetRelevance(id: String, rarity: int) -> Dictionary:
-	if RUN == null or not BOON_NEED.has(id): return {}
-	var need: String = BOON_NEED[id]
+	if RUN == null: return {}
+	# These three protocols only act when a hull braces. This read does not feed the offer pool.
+	var brace := id in ["d_bastion", "i_brace", "i_wall"]
+	var need: String = "brace" if brace else BOON_NEED.get(id, "")
+	if need == "": return {}
 	var fx: Dictionary = BOON_FX[id][rarity]
 	var ships := PackedStringArray()
 	var capped := false
+	var can_brace := false
 	for sh in RUN["fleet"]:
+		if brace and not _boon_can_brace(sh["tpl"]): continue
+		if brace: can_brace = true
 		var d = derive(sh)
-		if not _ship_kit(HULLS[sh["tpl"]], d).has(need): continue
+		if need != "brace" and not _ship_kit(HULLS[sh["tpl"]], d).has(need): continue
 		if _boon_has_room(d, fx): ships.append(sh["name"])
 		else: capped = true
+	if brace and not can_brace: return {"brace_blocked": true}
 	var result := {"need": need, "ships": ships, "capped": capped}
 	if not ships.is_empty() or capped: return result
 	for mod in or_(RUN.get("inventory"), []):
@@ -635,14 +650,19 @@ func boonFleetRelevance(id: String, rarity: int) -> Dictionary:
 	return result
 
 func _boon_fits_ship(ship: Dictionary, need: String, fx: Dictionary) -> bool:
+	if need == "brace" and not _boon_can_brace(ship["tpl"]): return false
 	var d = derive(ship)
-	return _ship_kit(HULLS[ship["tpl"]], d).has(need) and _boon_has_room(d, fx)
+	return (need == "brace" or _ship_kit(HULLS[ship["tpl"]], d).has(need)) and _boon_has_room(d, fx)
+
+func _boon_can_brace(tpl) -> bool:
+	return not jt(HULLS[tpl].get("sq")) and not jt(FAC_GATES.get(factionOfTpl(tpl), {}).get("noBrace"))
 
 func _boon_has_room(derived: Dictionary, fx: Dictionary) -> bool:
 	var current: Dictionary = derived["fx"]
 	var with_boon := sumFx([current, fx])
 	for key in fx:
 		if with_boon[key] <= z0(current.get(key)): continue
+		if key == "bastion" and derived["shMax"] <= 0: continue
 		# Hot Tubes can hit the weapon's reload floor before the stacked bonus cap.
 		if key == "torpCd" and not derived["weapons"].any(func(w): return w["k"] == "torp" and w["cd"] > 1): continue
 		return true
@@ -1931,7 +1951,7 @@ func ACT_buyHull(h: String) -> void:
 	RUN["credits"] = float(RUN["credits"]) - cost
 	tel("shop", {"k": "hull", "id": h, "cost": cost})
 	var s = newShip(h); if captured: s["ripped"] = true
-	RUN["fleet"].append(s); toast("The " + str(s["name"]) + " joins the fleet."); shipyardScreen(yard_node)
+	RUN["fleet"].append(s); toast(ship_with_article(s["name"], true) + " joins the fleet."); shipyardScreen(yard_node)
 func ACT_buyMod(a: String) -> void:
 	var i = int(a); var st = yard_node["stock"]; var m = st["mods"][i]; var cost = jsround(float(MODULES[m]["cost"]) * priceMult())
 	if _has_num(st["sold"], i) or float(RUN["credits"]) < cost: return
@@ -1982,12 +2002,12 @@ func drydockScreen(_n) -> void:
 		if fix != 0: lines.append(str(s["name"]) + ": +" + numstr(fix) + " hull")
 	completeNode(); mapScreen()
 	var acts = []; A(acts, "closeModal"); A(acts, "fleetFromModal")
-	show_modal("drydock", {"lines": lines}, acts)
+	show_modal("drydock", {"lines": lines, "rate": pct(0.6 * repairMult())}, acts)
 func fieldRepairs(_n) -> void:
 	for sh in RUN["fleet"]:
 		var mx = float(derive(sh)["maxHp"]); sh["hp"] = min(mx, float(sh["hp"]) + jsround(mx * 0.2 * repairMult()))
 	tel("field_repairs", {})
-	completeNode(); mapScreen(); toast("Field repairs: every ship recovers 20% of its hull.")
+	completeNode(); mapScreen(); toast("Field repairs: crews patch damaged hulls for free.")
 func _ev_fits(e) -> bool: return not (jt(e.get("not")) and e["not"].has(RUN["fac"])) and e["id"] != EVENT_FALLBACK
 # B4: blue options. needMet says whether the fleet meets a requirement; needText says it in plain words (shown on the option either way)
 func needMet(nd) -> bool:
@@ -2781,7 +2801,7 @@ func applyOutcome(r) -> Array:
 		var tp = equivHull(r["ship"], RUN["fac"])
 		if fleetCP() + float(HULLS[tp]["cp"]) <= float(RUN["cpCap"]):
 			var s = newShip(tp, r.get("vet")); RUN["fleet"].append(s)
-			out.append("The " + str(s["name"]) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
+			out.append(ship_with_article(s["name"], true) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
 		else:
 			RUN["credits"] = float(RUN["credits"]) + float(z0(r.get("cost"))); out.append("You don’t have the command points to take her on. Your credits are returned.")
 	var upgraded_uid = null   # R1 (TXT-2, Codex PR #1): the shipwright's repair goes to the next most damaged ship, not back to the one he upgraded
@@ -2836,7 +2856,7 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("shipRaw")) and HULLS.has(r["shipRaw"]):
 		if fleetCP() + float(or_(HULLS[r["shipRaw"]].get("cp"), 1)) <= float(RUN["cpCap"]):
 			var s = newShip(r["shipRaw"], r.get("vet")); RUN["fleet"].append(s)
-			out.append("The " + str(s["name"]) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
+			out.append(ship_with_article(s["name"], true) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
 		else:
 			RUN["credits"] = float(RUN["credits"]) + 40; out.append("No command points to crew her. You sell the berth for 40 credits.")
 	if jt(r.get("wingPerk")):
@@ -2971,10 +2991,14 @@ func ACT_refuseCoreEat() -> void:
 	if not refuseCoreEat(): return
 	tel("core_eat_refuse", {"sector": RUN["sector"]})
 	saveRun(); close_modal(); act("beat3")
+func _beat3_line(run: Dictionary, key: String) -> String:
+	if int(run["sector"]) != 3 or not (run.get("flags") is Dictionary): return ""
+	var row: Dictionary = TB.STORY_BEAT3[run["fac"]]
+	return str(row[key]) if run["flags"].get(row["id"]) != null else ""
+func beat3Payoff(run: Dictionary) -> String:
+	return _beat3_line(run, "learning")
 func beat3Debrief() -> String:
-	if RUN == null: return ""
-	var row: Dictionary = TB.STORY_BEAT3[RUN["fac"]]
-	return str(row["debrief"]) if RUN.get("flags", {}).has(row["id"]) else ""
+	return _beat3_line(RUN, "debrief") if RUN != null and not jt(RUN.get("beat3DebriefSeen")) else ""
 func applyBeat3Outcome(r: Dictionary) -> Array:
 	var adapted = r.duplicate()
 	for pair in [["credits", "cred"], ["repair", "healAll"], ["weak", "nemIntel"], ["clock", "nemClock"]]:
@@ -3030,12 +3054,14 @@ func rewardFlow(summary: Dictionary) -> void:
 	var prizes = or_(summary.get("prizes"), []).filter(func(p): return p != null and HULLS.has(p.get("tpl")))
 	RUN["reward"] = {"kind": cfg["kind"], "node": cfg.get("node"), "rw": rw, "relics": W["relicChoice"], "wrecks": W["wrecks"], "prizes": prizes,
 		"stage": "prize" if prizes.size() > 0 else ("salvage" if W["wrecks"].size() > 0 else "pick"), "boonOffer": null, "modOffer": null}
+	var debrief := beat3Debrief()
+	if debrief != "": RUN["beat3DebriefSeen"] = true
 	completeNode()
 	var acts = []
 	if RUN["reward"]["prizes"].size() > 0: A(acts, "prizeStep")
 	elif W["wrecks"].size() > 0: A(acts, "salvageStep")
 	else: A(acts, "rewardNext")
-	show_modal("victory", {"summary": summary, "credits": credits, "extra": extra, "flagMoved": flagMoved, "rw": rw}, acts)
+	show_modal("victory", {"summary": summary, "credits": credits, "extra": extra, "flagMoved": flagMoved, "rw": rw, "beat3Debrief": debrief}, acts)
 func salvageYield(w: Dictionary) -> Dictionary:
 	var pool = modulePool(); var wk = or_(w.get("wk"), [])
 	var cand = []
@@ -3115,7 +3141,7 @@ func ACT_prizeConfirm() -> void:
 		if r["k"] == "add":
 			var sh = newShip(p["tpl"]); sh["name"] = p["name"]; var mx = float(derive(sh)["maxHp"]); sh["hp"] = clampv(jsround(mx * float(or_(p.get("hpf"), 1))), 1, mx)
 			if jt(r.get("rip")): sh["ripped"] = true   # R78 Q9: a kept Hegemony or Eclipse prize joins with its links ripped out
-			RUN["fleet"].append(sh); got.append("the " + str(p["name"]) + " joins")
+			RUN["fleet"].append(sh); got.append(ship_with_article(p["name"]) + " joins")
 		elif r["k"] == "strip":
 			if jt(o["strip"]["mod"]): RUN["inventory"].append(o["strip"]["mod"])
 			RUN["credits"] = float(RUN["credits"]) + float(o["strip"]["cred"]); got.append("the " + str(p["name"]) + " is stripped (+" + numstr(o["strip"]["cred"]) + ")")
@@ -3152,7 +3178,7 @@ func ACT_takeSalvage(a: String) -> void:
 		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast("No command points to crew " + ("" if str(w["name"]).begins_with("The ") else "the ") + str(w["name"]) + ". She is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
 	elif k == "tow" and jt(y.get("tow")):
 		var sh = newShip(w["tpl"]); sh["name"] = w["name"]; sh["hp"] = max(1.0, jsround(float(derive(sh)["maxHp"]) * 0.35)); RUN["fleet"].append(sh)
-		toast("The " + str(w["name"]) + " is under tow. Patch her up at a shipyard.")
+		toast(ship_with_article(w["name"], true) + " is under tow. Patch her up at a shipyard.")
 	else:
 		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast(("" if str(w["name"]).begins_with("The ") else "The ") + str(w["name"]) + " is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
 	tel("salvage_pick", {"k": k, "cause": w.get("cause")})
@@ -3371,7 +3397,7 @@ func battleScreen(cfg: Dictionary) -> void:
 			JSM.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
 	if RUN["fleet"].size() <= 1 and float(z0(RUN.get("reinf"))) < float(RUN["sector"]):
 		RUN["reinf"] = RUN["sector"]; var sh = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh)
-		toast("The sector garrison sends the " + str(sh["name"]) + " to reinforce you."); tel("reinforced", {})
+		toast("The sector garrison sends " + ship_with_article(sh["name"]) + " to reinforce you."); tel("reinforced", {})
 	var nd = findNode(cfg["node"]) if jt(cfg.get("node")) else null
 	if nd != null and not jt(nd.get("enc")) and cfg["kind"] != "boss":
 		nd.merge(rollEncounter(nd["type"], nd["col"]), true)
@@ -3570,7 +3596,7 @@ func finishBattle(result: String) -> void:
 	B = null
 	if result == "win" and RUN["fleet"].size() == 0:
 		var sh2 = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh2); ensureFlagship()
-		toast("The last ships traded themselves for the win. The sector garrison sends the " + str(sh2["name"]) + " to carry the flag."); tel("reinforced", {"why": "pyrrhic"})
+		toast("The last ships traded themselves for the win. The sector garrison sends " + ship_with_article(sh2["name"]) + " to carry the flag."); tel("reinforced", {"why": "pyrrhic"})
 	if result == "loss" or RUN["fleet"].size() == 0:
 		endRun(false); return
 	if result == "retreat":
