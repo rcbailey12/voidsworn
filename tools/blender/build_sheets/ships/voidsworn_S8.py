@@ -330,14 +330,20 @@ def build(K):
         K.slit('W%d' % (i + 1), (SPX[0] + 0.005, y, deck_z(SPX[0], 0.0) - 0.08 + 0.19), (1, 0, 0), 0.17, 0.06, inv='bridge_slits',
                note='command deck window, ember-lit, in the spine block\'s face')
     K.mark('spine', 'spine', ['block', 'step', 'slit'])
-    # seven radiator spires: heights rise to the tallest at the row's middle (amidships of the line), each profile its own
+    # seven radiator spires: heights rise to the tallest at the row's middle (amidships of the line), each profile its own.
+    # R331 (Ryan, Nov 19 2026): every spire at 70 percent of the first build's height (SPIRE_SCALE), the same stations, lengths
+    # and profiles, and the ember in the fin slats (glow='slats': three to five glowing fins at least 0.26 apart, was 0.17, with
+    # the dark iron core between them), never a whole lit tower; the fins reach 60 percent as far out, so the stripes read from
+    # the battle camera's 34 degrees and from above (about half the old towers' lit area at both cameras)
+    SPIRE_SCALE = 0.7
     SPIRES = [(-3.75, 1.6, 0.7, 0), (-4.6, 2.0, 0.72, 3), (-5.45, 2.35, 0.72, 1), (-6.3, 2.6, 0.74, 2), (-7.15, 2.35, 0.72, 1),
               (-8.0, 2.0, 0.72, 3), (-8.85, 1.55, 0.62, 0)]
+    SPIRES = [(x, round(h * SPIRE_SCALE, 3), L, prof) for (x, h, L, prof) in SPIRES]
     for i, (x, h, L, prof) in enumerate(SPIRES):
-        part = HP.radiator(h, L, profile=prof, spread=0.2 + 0.42 * h / 2.6, seed=i)
+        part = HP.radiator(h, L, profile=prof, spread=(0.2 + 0.42 * h / 2.6) * 0.6, seed=i, glow='slats')
         K.organ('R%d' % (i + 1), part, (x, 0.0, SPZ), (0, 0, 1), fwd=(1, 0, 0), inv='spires', what='radiator spire, %.1f tall, profile %s' % (h, ('blade', 'stepped', 'twin', 'raked')[prof]),
-                kind='radiator', note='sheds the reactor\'s heat: a stack of radiator fins glowing ember between iron posts')
-        K.mass('Radiator spire R%d (%s, %.1f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fins on iron',
+                kind='radiator', note='sheds the reactor\'s heat: a few glowing radiator fins standing apart between iron posts, the dark iron core between them')
+        K.mass('Radiator spire R%d (%s, %.1f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fin slats on iron',
                note='one of the seven spires of the spire line')
 
     # ---------------- the stern: the stern hood over the drums, two big ember bells ----------------

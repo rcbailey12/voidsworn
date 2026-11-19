@@ -56,10 +56,7 @@ class and faction (issue 363), never from a constant.
 **In one line:** a black iron blade with burning spires.
 
 - **Silhouette:** long, narrow dagger or spearhead, widest at the stern third. A row of tall radiator spires along the spine,
-  tallest amidships. Symmetric. Spire size (R331, Ryan, Nov 19 2026, on the starter concepts: "can we scale down the giant
-  radiator/orange towers on each ship a bit too?"): every new Sunward build stands its spires at about 70 percent of the
-  heights in its concept table, the same count, and the ember shows in the slats between iron fins, never as a whole lit
-  tower. The S8 Daybreak keeps its built spires unless Ryan says otherwise.
+  tallest amidships. Symmetric.
 - **Shape language:** forged, heavy, vertical. Broadside gun decks in long straight rows. Big engine bells. Plate with rivet
   lines, never rust.
 - **Colours:** black iron, frost-white markings, bright ember (windows, engines, and the spires, which glow because they shed
