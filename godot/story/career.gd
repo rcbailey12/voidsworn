@@ -155,15 +155,21 @@ func last_run_of(fac: String) -> Dictionary:
 func load_profile() -> void:
 	P = default_profile()
 	for p in [save_path, save_path + ".bak"]:
-		if not FileAccess.file_exists(p):
-			continue
-		var f := FileAccess.open(p, FileAccess.READ)
-		if f == null:
-			continue
-		var d = JSON.parse_string(f.get_as_text())
-		if d is Dictionary and d.get("v") != null:
+		var d := _read_profile(FileAccess.get_file_as_string(p))
+		if not d.is_empty():
 			P = _migrate(d)
 			return
+
+
+static func _read_profile(text: String) -> Dictionary:
+	var j := JSON.new()
+	if j.parse(text) != OK or not (j.data is Dictionary): return {}
+	var d: Dictionary = j.data
+	if not (d.get("v") is int or d.get("v") is float): return {}
+	var base := default_profile()
+	for k in base:
+		if k != "v" and d.has(k) and typeof(d[k]) != typeof(base[k]): return {}
+	return d
 
 
 func _migrate(d: Dictionary) -> Dictionary:
@@ -181,11 +187,29 @@ func _migrate(d: Dictionary) -> Dictionary:
 func save_profile() -> void:
 	if not persist:
 		return
-	if FileAccess.file_exists(save_path):
-		DirAccess.copy_absolute(ProjectSettings.globalize_path(save_path), ProjectSettings.globalize_path(save_path + ".bak"))
-	var f := FileAccess.open(save_path, FileAccess.WRITE)
-	if f != null:
-		f.store_string(JSON.stringify(P, " "))
+	var path := ProjectSettings.globalize_path(save_path)
+	var tmp := path + ".tmp"
+	if not _stage_profile(tmp, JSON.stringify(P, " ")):
+		push_warning("Career: could not write the new profile.")
+		return
+	var previous := FileAccess.get_file_as_string(path)
+	if not _read_profile(previous).is_empty():
+		var backup := path + ".bak"
+		if not _stage_profile(backup + ".tmp", previous) or DirAccess.rename_absolute(backup + ".tmp", backup) != OK:
+			push_warning("Career: could not refresh the backup; the current profile was kept.")
+			return
+	if DirAccess.rename_absolute(tmp, path) != OK:
+		push_warning("Career: could not replace the profile.")
+
+
+static func _stage_profile(path: String, text: String) -> bool:
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null: return false
+	f.store_string(text)
+	f.flush()
+	var ok := f.get_error() == OK and f.get_length() == text.to_utf8_buffer().size()
+	f.close()
+	return ok
 
 
 # ---------------------------------------------------------------- the live run
