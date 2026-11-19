@@ -76,7 +76,11 @@ rem (clone_changes_before_checkout.txt and .patch); stop on a tracked change any
 rem only godot\assets\ships from the clone's own commit; then a plain checkout, never forced, that also refuses to overwrite
 rem untracked or ignored files, so a local file the branch now tracks stops the job instead of being replaced (Artoo, PR 1179).
 git -C "%C%" status --porcelain --untracked-files=no > "%O%\clone_changes_before_checkout.txt" 2> "%O%\log_clone_status.txt"
+if errorlevel 1 set "FAILED=checkout: could not save the clone's change list or patch, nothing was reset"
+if defined FAILED goto collect
 git -C "%C%" diff --binary HEAD > "%O%\clone_changes_before_checkout.patch" 2>> "%O%\log_clone_status.txt"
+if errorlevel 1 set "FAILED=checkout: could not save the clone's change list or patch, nothing was reset"
+if defined FAILED goto collect
 rem git filters the list itself (findstr $ needs a CR and git writes LF only; Fable on PR 1190)
 git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" > "%O%\clone_changes_unexpected.txt" 2>> "%O%\log_clone_status.txt"
 if errorlevel 1 set "FAILED=checkout: git status of the clone failed, nothing was reset"
