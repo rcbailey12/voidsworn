@@ -9,6 +9,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
+const SHIELD_CACHE := preload("res://fx/fx_shield_cache.gd")
 const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
@@ -61,6 +62,8 @@ var _shield_until = -1.0
 var _last_sh = -1.0
 var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
+var death_core_pending := false
+var slow_core := false
 var _sec_nodes = [[], [], []]
 var _sec_lights = [[], [], []]
 var _burn_nodes: Array = []
@@ -188,8 +191,51 @@ func _hide_placeholder_engines() -> void:
 				(e as Node3D).visible = false
 
 
-func teardown(fx) -> void:
-	wait_damage()
+func remove_collider() -> void:
+	if not has_meta("collider"):
+		return
+	var body = get_meta("collider")
+	remove_meta("collider")
+	if is_instance_valid(body):
+		body.collision_layer = 0
+		body.queue_free()
+
+
+func _hide_attachments() -> void:
+	remove_collider()
+	for node in [_dmg_root, _eng_node, _shield_mi]:
+		if is_instance_valid(node):
+			node.visible = false
+	for t in _trails:
+		if is_instance_valid(t["mi"]):
+			t["mi"].visible = false
+	for sec in 3:
+		_clear_lights(sec)
+	for l in _hole_lights:
+		l["on"] = false
+	_hole_lights.clear()
+	for n in _burn_nodes:
+		if n is Dictionary:
+			n["on"] = false
+
+
+func _hide_meshes() -> void:
+	for m in meshes:
+		if is_instance_valid(m):
+			(m as Node3D).visible = false
+
+
+func hide_live_hull() -> void:
+	_hide_meshes()
+	_hide_attachments()
+
+
+func teardown(fx, wait_for_damage := true) -> void:
+	gone = true
+	_hide_attachments()
+	fx.discard_ship_cut(self)
+	if wait_for_damage:
+		wait_damage()
 	BREACH.clear_nodes(self)
 	for t in _trails:
 		if is_instance_valid(t["mi"]):
@@ -200,11 +246,6 @@ func teardown(fx) -> void:
 		_eng_node.queue_free()
 	if is_instance_valid(_shield_mi):
 		_shield_mi.queue_free()
-	for sec in 3:
-		_clear_lights(sec)
-	for n in _burn_nodes:
-		if n is Dictionary:
-			n["on"] = false
 
 
 static func _find_meshes(n: Node) -> Array:
@@ -439,7 +480,7 @@ func _build_shield(fx) -> void:
 	var shape := OS.get_environment("VS_SHIELD_SHAPE")
 	if shape.is_empty():
 		shape = str(ProjectSettings.get_setting("rendering/effects/shield_shape", "fitted"))
-	var skin: Mesh = _shield_skin() if shape == "fitted" else sph
+	var skin: Mesh = _shield_skin(fx) if shape == "fitted" else sph
 	if skin == null:
 		skin = sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
@@ -475,7 +516,7 @@ func _build_shield(fx) -> void:
 	root.add_child(_shield_mi)
 
 
-func _shield_skin() -> ArrayMesh:
+func _shield_skin(fx = null) -> ArrayMesh:
 	var frames := {}
 	var box := AABB()
 	var view := root as SHIP_VIEW
@@ -502,21 +543,47 @@ func _shield_skin() -> ArrayMesh:
 	var faces := HULL.faces_of(root, meshes, null, frames)
 	if faces.is_empty():
 		return null
-	var digest := HashingContext.new()
-	digest.start(HashingContext.HASH_SHA256)
-	digest.update(var_to_bytes(box))
-	digest.update(faces.to_byte_array())
-	var key := digest.finish().hex_encode()
-	if not _shield_skin_arrays.has(key):
-		var arrays := _bake_shield_skin(box, faces)
-		if arrays.is_empty():
+	var key := SHIELD_CACHE.key_for(box, faces)
+	var arrays: Array = _shield_skin_arrays.get(key, [])
+	if arrays.is_empty():
+		arrays = SHIELD_CACHE.read_skin(key)
+		if not arrays.is_empty():
+			_remember_shield_skin(key, arrays)
+		elif fx != null and fx.defer_initial_cuts:
+			fx.queue_shield_skin(self, key, box, faces, bob)
 			return null
-		if _shield_skin_arrays.size() >= SHIELD_SKIN_CACHE_LIMIT:
-			_shield_skin_arrays.erase(_shield_skin_arrays.keys()[0])
-		_shield_skin_arrays[key] = arrays
+		else:
+			arrays = _bake_shield_skin(box, faces)
+			if arrays.is_empty():
+				return null
+			save_shield_skin(key, arrays)
+	return _pose_shield_skin(arrays, bob)
+
+
+static func _remember_shield_skin(key: String, arrays: Array) -> void:
+	if not _shield_skin_arrays.has(key) and _shield_skin_arrays.size() >= SHIELD_SKIN_CACHE_LIMIT:
+		_shield_skin_arrays.erase(_shield_skin_arrays.keys()[0])
+	_shield_skin_arrays[key] = arrays
+
+
+static func save_shield_skin(key: String, arrays: Array) -> void:
+	_remember_shield_skin(key, arrays)
+	SHIELD_CACHE.write_skin(key, arrays)
+
+
+func install_shield_skin(arrays: Array, bob: Vector3) -> void:
+	if not is_instance_valid(_shield_mi) or gone:
+		return
+	_shield_mi.mesh = _pose_shield_skin(arrays, bob)
+	_shield_mat.set_shader_parameter("fitted_shape", true)
+	_shield_pose = Transform3D(Basis.IDENTITY, hull.shield_centre())
+	_shield_mi.transform = _shield_pose
+
+
+func _pose_shield_skin(arrays: Array, bob: Vector3) -> ArrayMesh:
 	# The cache is in the unbobbed frame. Hits and the shader use coordinates
 	# relative to the active core, just as they do for the egg.
-	var posed: Array = _shield_skin_arrays[key].duplicate()
+	var posed := arrays.duplicate()
 	posed[Mesh.ARRAY_VERTEX] = Transform3D(Basis.IDENTITY, bob - hull.shield_centre()) * (posed[Mesh.ARRAY_VERTEX] as PackedVector3Array)
 	var skin := ArrayMesh.new()
 	skin.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, posed)
@@ -525,7 +592,11 @@ func _shield_skin() -> ArrayMesh:
 	return skin
 
 
-func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
+static func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
+	return finish_shield_geometry(bake_shield_geometry(box, faces))
+
+
+static func bake_shield_geometry(box: AABB, faces: PackedVector3Array) -> Array:
 	# R303: offset sampled hull surfaces, rather than stretching a sphere from the
 	# core. Uniform cells along the whole hull preserve waists and open ring holes.
 	# Only the outside of the offset volume is meshed, never interior armour skins.
@@ -596,49 +667,43 @@ func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
 		if outside[i] == 0 and field[i] > 0.0: field[i] = -threshold
 	# Marching tetrahedra share every edge vertex, including cell diagonals. This
 	# removes the ambiguous saddle faces that can leave seams at thin hull details.
-	var corners := [Vector3i(0,0,0), Vector3i(1,0,0), Vector3i(0,1,0), Vector3i(1,1,0), Vector3i(0,0,1), Vector3i(1,0,1), Vector3i(0,1,1), Vector3i(1,1,1)]
-	var tetrahedra := [[0,1,3,7],[0,3,2,7],[0,2,6,7],[0,6,4,7],[0,4,5,7],[0,5,1,7]]
+	var plane := stride.z
+	var row := stride.y
+	var corners := PackedInt32Array([0, 1, row, row + 1, plane, plane + 1, plane + row, plane + row + 1])
+	var cases := _shield_cases(corners)
 	var vertices := PackedVector3Array()
 	var indices := PackedInt32Array()
 	var shared := {}
+	var quad := PackedInt32Array([0, 0, 0, 0])
 	for z in range(size.z - 1):
 		for y in range(size.y - 1):
+			var start := y * row + z * plane
 			for x in range(size.x - 1):
-				var base := x + y * stride.y + z * stride.z
-				var nodes := PackedInt32Array()
+				var base := start + x
 				var mask := 0
 				for k in 8:
-					var c: Vector3i = corners[k]
-					var node := base + c.x + c.y * stride.y + c.z * stride.z
-					nodes.append(node)
-					if field[node] <= 0.0: mask |= 1 << k
-				if mask == 0 or mask == 255: continue
-				for tet in tetrahedra:
-					var inside := []
-					var air := []
-					var outward := Vector3.ZERO
-					for k in tet:
-						if field[nodes[k]] <= 0.0: inside.append(k)
-						else: air.append(k)
-					if inside.is_empty() or air.is_empty(): continue
-					for k in air: outward += Vector3(corners[k]) / air.size()
-					for k in inside: outward -= Vector3(corners[k]) / inside.size()
-					var quad := PackedInt32Array()
-					if inside.size() == 2:
-						for pair in [[inside[0],air[0]],[inside[0],air[1]],[inside[1],air[1]],[inside[1],air[0]]]:
-							quad.append(_shield_vertex(nodes[pair[0]], nodes[pair[1]], field, size, stride, origin, step, shared, vertices))
-					else:
-						var one: int = inside[0] if inside.size() == 1 else air[0]
-						for other in (air if inside.size() == 1 else inside):
-							quad.append(_shield_vertex(nodes[one], nodes[other], field, size, stride, origin, step, shared, vertices))
-					_shield_face(quad[0], quad[1], quad[2], outward, vertices, indices)
-					if quad.size() == 4: _shield_face(quad[0], quad[2], quad[3], outward, vertices, indices)
+					if field[base + corners[k]] <= 0.0:
+						mask |= 1 << k
+				for polygon in cases[mask]:
+					var edges: Array[Vector2i] = polygon[0]
+					for i in edges.size():
+						var edge := edges[i]
+						quad[i] = _shield_vertex(base + edge.x, base + edge.y, field, size, stride, origin, step, shared, vertices)
+					_shield_face(quad[0], quad[1], quad[2], polygon[1], vertices, indices)
+					if edges.size() == 4:
+						_shield_face(quad[0], quad[2], quad[3], polygon[1], vertices, indices)
 	if indices.is_empty():
 		return []
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_INDEX] = indices
+	return arrays
+
+
+static func finish_shield_geometry(arrays: Array) -> Array:
+	if arrays.is_empty():
+		return []
 	var raw := ArrayMesh.new()
 	raw.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	var st := SurfaceTool.new()
@@ -647,7 +712,44 @@ func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
 	return st.commit().surface_get_arrays(0)
 
 
-func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, stride: Vector3i, origin: Vector3, step: float, shared: Dictionary, vertices: PackedVector3Array) -> int:
+static func _shield_cases(offsets: PackedInt32Array) -> Array[Array]:
+	# Every cell uses the same six tetrahedra. Keep their edge order and winding
+	# while doing the inside/outside classification only once per corner mask.
+	var corners := [Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0),
+		Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(0, 1, 1), Vector3(1, 1, 1)]
+	var tetrahedra := [[0, 1, 3, 7], [0, 3, 2, 7], [0, 2, 6, 7], [0, 6, 4, 7], [0, 4, 5, 7], [0, 5, 1, 7]]
+	var cases: Array[Array] = []
+	for mask in 256:
+		var polygons := []
+		for tet in tetrahedra:
+			var inside: Array[int] = []
+			var air: Array[int] = []
+			for k in tet:
+				if mask & (1 << k):
+					inside.append(k)
+				else:
+					air.append(k)
+			if inside.is_empty() or air.is_empty():
+				continue
+			var outward := Vector3.ZERO
+			for k in air:
+				outward += corners[k] / air.size()
+			for k in inside:
+				outward -= corners[k] / inside.size()
+			var edges: Array[Vector2i] = []
+			if inside.size() == 2:
+				edges = [Vector2i(offsets[inside[0]], offsets[air[0]]), Vector2i(offsets[inside[0]], offsets[air[1]]),
+					Vector2i(offsets[inside[1]], offsets[air[1]]), Vector2i(offsets[inside[1]], offsets[air[0]])]
+			else:
+				var one := inside[0] if inside.size() == 1 else air[0]
+				for other in (air if inside.size() == 1 else inside):
+					edges.append(Vector2i(offsets[one], offsets[other]))
+			polygons.append([edges, outward])
+		cases.append(polygons)
+	return cases
+
+
+static func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, stride: Vector3i, origin: Vector3, step: float, shared: Dictionary, vertices: PackedVector3Array) -> int:
 	var key := mini(a,b) * field.size() + maxi(a,b)
 	if shared.has(key): return shared[key]
 	var pa := Vector3(a % size.x, (a / size.x) % size.y, a / stride.z)
@@ -659,21 +761,25 @@ func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, s
 	return index
 
 
-func _shield_face(a: int, b: int, c: int, outward: Vector3, vertices: PackedVector3Array, indices: PackedInt32Array) -> void:
+static func _shield_face(a: int, b: int, c: int, outward: Vector3, vertices: PackedVector3Array, indices: PackedInt32Array) -> void:
 	# Godot front faces wind clockwise.
+	indices.append(a)
 	if (vertices[c] - vertices[a]).cross(vertices[b] - vertices[a]).dot(outward) < 0.0:
-		indices.append_array(PackedInt32Array([a,c,b]))
+		indices.append(c)
+		indices.append(b)
 	else:
-		indices.append_array(PackedInt32Array([a,b,c]))
+		indices.append(b)
+		indices.append(c)
 
 
-func _shield_sample(field: PackedFloat32Array, size: Vector3i, stride: Vector3i, p: Vector3, reach: float) -> void:
+static func _shield_sample(field: PackedFloat32Array, size: Vector3i, stride: Vector3i, p: Vector3, reach: float) -> void:
 	var lo := Vector3i(p - Vector3.ONE * reach).max(Vector3i.ZERO)
 	var hi := (Vector3i(p + Vector3.ONE * reach) + Vector3i.ONE).min(size - Vector3i.ONE)
 	for z in range(lo.z, hi.z + 1):
 		for y in range(lo.y, hi.y + 1):
+			var start := y * stride.y + z * stride.z
 			for x in range(lo.x, hi.x + 1):
-				var i := x + y * stride.y + z * stride.z
+				var i := start + x
 				field[i] = minf(field[i], Vector3(x,y,z).distance_squared_to(p))
 
 
@@ -1344,8 +1450,8 @@ func _repair_marks(fx, i: int) -> void:
 		_dmg_request(fx)
 
 
-# A hull resource is read back once per battle. Both the damage rebuild and the
-# death cut use these arrays until the ship has a rebuilt surface of its own.
+# Read a hull surface once per battle. Fragments keep sampling these original
+# UVs even when the damage rebuild and death cut need the changed surface.
 var _arr_cache := {}
 
 
@@ -1601,6 +1707,8 @@ func tick_flare(fx, kind: String) -> void:
 
 
 func jump_out(fx) -> void:
+	if dead or gone:
+		return
 	var T: float = fx.now
 	var bow = dir_world(Vector3(1, 0, 0))
 	var c: Color = fac["engine"]
@@ -1612,14 +1720,9 @@ func jump_out(fx) -> void:
 	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
 	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
 	fx.later(T + 0.4, func l_jump() -> void:
-		gone = true
-		for m in meshes:
-			if is_instance_valid(m):
-				(m as Node3D).visible = false
-		if is_instance_valid(_eng_node):
-			_eng_node.visible = false
-		for tr in _trails:
-			(tr["mi"] as Node3D).visible = false)
+		if fx.ships.get(id) == self and not dead and not gone:
+			_hide_meshes()
+			teardown(fx, false))  # damage polling can finish its own job; do not block the jump frame
 
 
 # A mark's geometry follows the section's actual damage, including repairs.

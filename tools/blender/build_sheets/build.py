@@ -22,7 +22,9 @@ import bpy
 from mathutils import Vector, Matrix
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), 'r209'))
 sys.path.insert(0, HERE)
+from cycles_devices import configure_cycles_device
 import kit  # noqa: E402
 import variants  # noqa: E402
 
@@ -160,14 +162,8 @@ sun('fill', (-0.66, -0.66, -0.35), 0.8, angle=20)
 
 sc.render.engine = 'CYCLES'
 sc.cycles.device = os.environ.get('SHEET_DEVICE', 'GPU' if os.name == 'nt' else 'CPU').upper()
-if sc.cycles.device == 'GPU' and os.name == 'nt':
-    try:
-        prefs = bpy.context.preferences.addons['cycles'].preferences
-        prefs.compute_device_type = 'OPTIX'; prefs.get_devices()
-        for d in prefs.devices:
-            d.use = True
-    except Exception as ex:
-        print('gpu setup', ex)
+if sc.cycles.device == 'GPU':
+    configure_cycles_device(sc)
 sc.cycles.samples = int(os.environ.get('SHEET_SAMPLES', 8 if QUICK else 48))
 sc.cycles.use_denoising = True
 sc.render.film_transparent = True

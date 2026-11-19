@@ -1,0 +1,3 @@
+temperature.gpu, clocks.current.graphics [MHz], clocks.current.memory [MHz], pstate, power.draw [W], memory.used [MiB]
+41, 2917 MHz, 15001 MHz, P0, 63.94 W, 1626 MiB
+39, 2917 MHz, 7001 MHz, P3, 62.87 W, 1749 MiB

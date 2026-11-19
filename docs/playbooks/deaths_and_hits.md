@@ -108,6 +108,13 @@ The cruiser's death, longer and heavier:
 - Board proposal for Ryan's eye on the sheet: straight after the core flash the whole scene dims a little for a fifth of a
   second, so the flash feels like it took the light with it. Off under reduce flashing.
 
+Prototype, not installed (issue 1077, off by default until Ryan picks it): `rendering/effects/death_story="strain"` (or
+`VS_DEATH_STORY=strain`) adds strain to every cruiser and capital death before the split above, in the shared death code
+(fx_death.gd `_strain_begin`), on the fracture plan's break lines (the authored seams on a new build): the plating along
+each line bulges and ripples, hairline cracks light, and the hull groans between the chain blasts (sparks, a breath of
+gas, a small plate, a jolt). After the split the pieces part by about a fifth of the length and settle, fragments slow,
+and a warm light sits in each gap. Chorus ruptures and burnt-out hulks are unchanged. Check: fx/test/death_story_check.gd.
+
 ### Frigate, escort, destroyer
 
 Fast, because they die often and must not clutter the board:

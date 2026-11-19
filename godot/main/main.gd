@@ -11,6 +11,7 @@ extends Node
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Title := preload("res://main/title.gd")
 const Host := preload("res://main/campaign_host.gd")
+const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 
@@ -22,6 +23,7 @@ var title: CanvasLayer
 var battle: Node
 var campaign: Node
 var bot_mode := false
+var player_path: Node
 
 
 # every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static)
@@ -73,14 +75,24 @@ class ErrCount extends Logger:
 
 var errlog: ErrCount
 var music: Node              # godot/music/music_player.gd (the music helper's player), one for the whole game
+var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.gd with the ui_* cues only), OrdersKit.sound
 
 
 func _ready() -> void:
 	name = "Main"
 	_args()
+	if args.has("player-path"):
+		var recorder = load("res://main/player_path.gd")
+		var profile_error: String = recorder.prepare_profile()
+		if profile_error != "":
+			printerr("[player-path] FAIL ", profile_error)
+			get_tree().quit(1)
+			return
+		player_path = recorder.new()
+		add_child(player_path)
 	if DisplayServer.get_name() != "headless":
 		DisplayServer.window_set_title(load("res://ui/battle/brand.gd").TITLE)  # brand.gd: the one place to rename the game
-	bot_mode = args.has("bot-runs")
+	bot_mode = player_path == null and args.has("bot-runs")
 	# a fresh profile starts on Standard enemy AI (onboarding fix 1, campaign3d.js:3); bot runs ignore the player's
 	# settings file and play Veteran, as sim3d does, unless --ai says otherwise
 	if bot_mode:
@@ -94,13 +106,22 @@ func _ready() -> void:
 		add_child(music)
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	if not args.has("bot-runs") and ResourceLoader.exists("res://audio/sfx.gd"):
+		ui_sound = load("res://audio/sfx.gd").new()
+		ui_sound.only = "ui_"
+		ui_sound.name = "UiSound"
+		add_child(ui_sound)
+		OrdersKit.sound = ui_sound
+		_settings_to_ui_sound()
 	if args.has("quit-after"):
 		# a hard stop for test jobs, on every screen (real time, whatever the clock speed)
 		var lim := float(args["quit-after"])
 		get_tree().create_timer(lim, true, false, true).timeout.connect(func() -> void:
 			print("[main] quit-after %d s reached, quitting" % int(lim))
 			quit_clean(3))
-	if args.has("check-export"):
+	if player_path != null:
+		player_path.start.call_deferred(self)
+	elif args.has("check-export"):
 		_check_export.call_deferred()
 	elif bot_mode:
 		_bot_runs.call_deferred()
@@ -187,10 +208,14 @@ func _apply_settings() -> void:
 	load("res://ui/ui_scale.gd").set_player(settings.get("ui_scale", 1.0))
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
 	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot") or args.has("career-shot")
-	if capture and args.has("window") and DisplayServer.get_name() != "headless":
+	var player_path_window := args.has("player-path") and DisplayServer.get_name() != "headless"
+	if player_path_window:
+		# Only the recording window's size differs from the fresh profile's settings.
+		_capture_window.call_deferred("1920x1080")
+	elif capture and args.has("window") and DisplayServer.get_name() != "headless":
 		# --window WxH: an exact window for capture jobs (the project starts maximised, and Godot's --windowed does not undo that)
 		_capture_window.call_deferred(str(args["window"]))
-	if not bot_mode and not capture and DisplayServer.get_name() != "headless":
+	if not bot_mode and not capture and not player_path_window and DisplayServer.get_name() != "headless":
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
 			DisplayServer.window_set_mode(want)
@@ -199,6 +224,13 @@ func _apply_settings() -> void:
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	_settings_to_ui_sound()
+
+
+func _settings_to_ui_sound() -> void:
+	if ui_sound != null and is_instance_valid(ui_sound):
+		ui_sound.set_on(bool(settings.get("sound", true)))
+		ui_sound.set_volume(float(settings.get("volume", 0.8)))
 
 
 func _settings_to_battle(b: Node) -> void:
@@ -260,6 +292,39 @@ func _career_shot(path: String) -> void:
 var showcase: Node = null
 
 
+# Issue 1217 phase 2: the title's battle cycles the enemy through every faction that has built ships (your side is the
+# Sunward line, so all six show over a few visits), starting at a random one each launch. Built ships are listed in
+# res://gen/manifest.json on the PC; a build without it falls back to the repo's ship list.
+static var _showcase_i := -1
+
+static func showcase_factions() -> Array:
+	var out: Array = []
+	for path in ["res://gen/manifest.json", "res://assets/ships/manifest.json"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var m = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not (m is Dictionary) or not (m.get("ships") is Dictionary):
+			continue
+		for id in m["ships"]:
+			var e = m["ships"][id]
+			var f := str(e.get("faction", "")) if e is Dictionary else ""
+			if f != "" and f != "voidsworn" and not out.has(f):
+				out.append(f)
+		if not out.is_empty():
+			break
+	out.sort()
+	return out if not out.is_empty() else ["hegemony", "corsair"]
+
+
+static func next_showcase_fac() -> String:
+	var facs := showcase_factions()
+	if _showcase_i < 0:
+		_showcase_i = randi() % facs.size()
+	else:
+		_showcase_i = (_showcase_i + 1) % facs.size()
+	return str(facs[_showcase_i])
+
+
 func _start_showcase() -> void:
 	if title == null or not is_instance_valid(title) or showcase != null:
 		return
@@ -267,7 +332,7 @@ func _start_showcase() -> void:
 	showcase.showcase = true
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
-	showcase.args["fac"] = ["hegemony", "corsair"][randi() % 2]
+	showcase.args["fac"] = next_showcase_fac()
 	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
@@ -313,6 +378,9 @@ func new_run(opts := {}) -> void:
 		campaign.queue_free()
 		campaign = null
 		show_title(), CONNECT_ONE_SHOT)
+	if player_path != null:
+		opts = opts.duplicate()
+		opts["player_path_seed"] = int(args["player-path-seed"])
 	campaign.start(self, opts)
 
 
@@ -387,6 +455,8 @@ func play_api(a, opts := {}) -> Dictionary:
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
+	if player_path != null:
+		player_path.watch_battle(b, a, campaign)
 	b.begin_with(a)
 	var r: Dictionary = await b.finished
 	battle = null

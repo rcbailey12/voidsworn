@@ -416,7 +416,8 @@ hard points.
 - A model's own visual check is a hint, never proof (an AI inspector once passed a prop clipping through a sill); the scripted
   stage 4 audit is the check. Generators drop thin wires, text and fine greebles: build those in code (from the archived
   harness brief, docs/archive/briefs/blender_build_harness.md).
-- Heavy work runs on the PC; GPU work is sized to the job (RULEBOOK 3.4, R293). Never delete anything on the PC.
+- Heavy work runs on the PC; GPU work is sized to the job (RULEBOOK 3.4, R293). Deleting on the PC follows RULEBOOK 3.3:
+  jobs and the cleanup janitor may remove their own rebuildable leftovers under its safe rules; nothing else without Ryan.
 - A hull whose weapon list changes in data.js needs stage 7 again, or check_export.py fails on a missing hard point.
 
 ## 6. Worked example
