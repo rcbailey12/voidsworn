@@ -1354,13 +1354,12 @@ void fragment() {
 	float ba = scene_t - brk_t;
 	bool breaking = ba > 0.0 && ba < 1.6;
 	// issue 1078, shear: one connected crack network over the whole shield (cell borders join up, so a crack never
-	// ends in open field). The Navy tears along its own hex lattice. x = distance to the nearest crack, y = the plate.
+	// ends in open field), coarser than any faction's pattern so it reads as a tear, not as the pattern lighting up
+	// (r1: the Navy's tear along its own hex lattice looked like today's look). x = distance to the crack, y = plate.
 	vec2 net = vec2(1.0, 0.0);
 	float hot = 0.0;
 	if (brk_look == 1 && (breaking || web > 0.002)) {
-		if (style == 1) {
-			net = vec2(max(hexEdge, 0.0) * 0.7, h21(hexId + vec2(3.7, 1.3)));
-		} else if (brk_low) {
+		if (brk_low) {
 			// the cheaper network: ridge lines of one noise field (one 2D lookup set against 27 cell tests)
 			float rn = fbm(lp.xy * 0.32 + lp.zx * 0.24 + vec2(4.1, 2.7));
 			net = vec2(abs(rn * 2.0 - 1.0) * 0.22, floor(rn * 7.0) / 7.0);
@@ -1393,15 +1392,15 @@ void fragment() {
 		float pid = brk_look == 1 ? net.y : h21(floor(un.xy * 2.5) + floor(un.z * 2.5) * 7.0);
 		float stut = style == 2 ? mix(mix(0.45, 1.0, step(0.45, h21(vec2(pid * 31.0 + 1.0, floor(scene_t * 4.5))))), 0.8, fx_calm) : 1.0;
 		if (brk_look == 1) {
-			// the crack front leaves the struck facing and crosses to the far side in 0.75 s (SHEAR_FRONT)
-			float ct = ba - (dist * 0.75 + net.y * 0.06);
+			// the crack front leaves the struck facing and crosses to the far side in 0.55 s (SHEAR_FRONT)
+			float ct = ba - (dist * 0.55 + net.y * 0.05);
 			float line = smoothstep(0.06, 0.0, net.x);
 			// white-hot where the front is running along the cracks, faction colour behind it, then cooling
 			float lead = line * exp(-ct * ct * 160.0) * 3.0 * calm;
-			float glow = line * step(0.0, ct) * exp(-ct * 1.6) * 1.7;
+			float glow = line * step(0.0, ct) * exp(-ct * 2.6) * 1.7;
 			// each plate the crack frees flares, then shears away along the front and is gone (staggered per plate)
-			float pt = ct - net.y * 0.16;
-			alive = pt < 0.0 ? 1.0 : exp(-pt * 5.0);
+			float pt = ct - net.y * 0.12;
+			alive = pt < 0.0 ? 1.0 : exp(-pt * 8.0);
 			vec3 along = cross(un, normalize(brk_dir));
 			float sh = pt > 0.0 ? exp(-pt * 4.0) * (0.5 + 0.5 * sin(dot(un, along) * 34.0 + net.y * 20.0 - ba * 16.0)) * 0.6 * calm : 0.0;
 			float flare = smoothstep(-0.05, 0.0, pt) * exp(-max(pt, 0.0) * 9.0) * 0.9 * calm;
@@ -1410,11 +1409,12 @@ void fragment() {
 		} else {
 			// collapse: one even flash, then a single clean band closes from the far side into the breach in 0.7 s
 			// (COLLAPSE_CLOSE); nothing is left behind it; the field pinches out in a knot at the breach
-			float flash = exp(-ba * 9.0) * 0.8 * calm;
+			// (r1: a strong flash and a wide band at the far side read as a solid white slab at +0.1 s)
+			float flash = exp(-ba * 12.0) * 0.3 * calm;
 			float bp = 1.0 - clamp((ba - 0.08) / 0.62, 0.0, 1.0);
-			float bw = 0.035 + 0.05 * bp;
+			float bw = 0.03 + 0.025 * bp;
 			float bd = (dist - bp) / bw;
-			float band = exp(-bd * bd) * 2.4 * step(0.08, ba) * step(0.001, bp);
+			float band = exp(-bd * bd) * 2.4 * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
 			alive = smoothstep(bp + bw, bp - bw, dist);
 			float kt = ba - 0.7;
 			float knot = kt > 0.0 ? exp(-dist * dist * 600.0) * exp(-kt * 5.0) * 3.0 * calm : 0.0;

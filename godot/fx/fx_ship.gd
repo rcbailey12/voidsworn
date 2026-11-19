@@ -870,9 +870,9 @@ func shield_break(fx, quad: int) -> void:
 
 # Issue 1078, shear: one crack network runs from the struck side over the whole field (the shader draws it, timed by
 # how far each point is from the struck facing); sparks race along the surface with the front, so the failure reads as
-# one connected tear, not scattered pops. Each faction keeps its colour and character (R163): the Navy tears along its
-# hex lattice and throws cells, the Hullbreakers' cracks stutter, the Glasswrights' glint.
-const SHEAR_FRONT := 0.75   # seconds for the crack front to cross from the struck facing to the far side (shader too)
+# one connected tear, not scattered pops. Each faction keeps its colour and character (R163): the Navy throws lattice
+# cells loose as the crack passes, the Hullbreakers' cracks stutter, the Glasswrights' glint.
+const SHEAR_FRONT := 0.55   # seconds for the crack front to cross from the struck facing to the far side (shader too)
 
 
 func _break_shear(fx, quad: int) -> void:
@@ -887,7 +887,7 @@ func _break_shear(fx, quad: int) -> void:
 	var lp: Vector3 = contact["local"]
 	var wp: Vector3 = contact["p"]
 	var wn: Vector3 = contact["n"]
-	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.8)
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.6 / fx.unit, 0.6)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
