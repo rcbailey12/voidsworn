@@ -34,10 +34,11 @@ rem each ship in a fresh cmd: the variables its stages set end with it
 cmd /c ""%~f0" ship voidsworn_S10 V16_37"
 set SHIPEL=%ERRORLEVEL%
 echo voidsworn_S10 ship exit %SHIPEL% >> "%RES%"
+if "%SHIPEL%"=="0" set SHIPOK=1
 rem the in-game shots only after this run's export, install and checks all passed: the clone can still hold an older V16_37
 if not "%SHIPEL%"=="0" (
   echo shots SKIPPED: the ship's stages or checks failed, so the installed V16_37 is not this run's >> "%RES%"
-  echo done FAILED %DATE% %TIME% >> "%RES%"
+  set SHIPFAIL=1
   call :collect
   exit /b 1
 )
@@ -45,19 +46,36 @@ call "%C%\tools\pc\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x10
 set SHOTEL=%ERRORLEVEL%
 echo shots exit %SHOTEL% >> "%RES%"
 if not "%SHOTEL%"=="0" (
-  echo done FAILED %DATE% %TIME% >> "%RES%"
+  set SHIPFAIL=1
   call :collect
   exit /b 1
 )
-echo done %DATE% %TIME% >> "%RES%"
 call :collect
+if errorlevel 1 exit /b 1
 exit /b 0
 
 :collect
-rem copy (never move) the recipe job folder into out\recipe so the Board can bring it back (R334); then the last line
+rem copy (never move) the recipe job folder into out\recipe so the Board can bring it back (R334), check the copied export is
+rem there, then write the last line; a failed copy or a missing export is reported and returns 1
+set COLLECTFAIL=
+if not exist "%V%\recipe\voidsworn_S10" (
+  echo collect FAILED: no recipe\voidsworn_S10 folder >> "%RES%"
+  set COLLECTFAIL=1
+  goto collected
+)
 xcopy /e /i /y /q "%V%\recipe\voidsworn_S10" "%O%\recipe" >> "%O%\log_collect.txt" 2>&1
-echo collect exit %ERRORLEVEL% >> "%RES%"
+set XEL=%ERRORLEVEL%
+echo collect exit %XEL% >> "%RES%"
+if not "%XEL%"=="0" set COLLECTFAIL=1
+if defined SHIPOK if not exist "%O%\recipe\export\V16_37\V16_37.glb" (
+  echo collect FAILED: out\recipe\export\V16_37\V16_37.glb is missing >> "%RES%"
+  set COLLECTFAIL=1
+)
+:collected
+if defined SHIPFAIL set COLLECTFAIL=1
+if defined COLLECTFAIL (echo done FAILED %DATE% %TIME% >> "%RES%") else (echo done %DATE% %TIME% >> "%RES%")
 echo all done >> "%RES%"
+if defined COLLECTFAIL exit /b 1
 exit /b 0
 
 :ship
