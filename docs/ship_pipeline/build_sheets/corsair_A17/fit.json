@@ -12,9 +12,9 @@
   "LANE": 0
  },
  "tested": {
-  "objects": 370,
+  "objects": 372,
   "parts": 54,
-  "close_pairs": 938,
+  "close_pairs": 936,
   "rays": 451,
   "guns": 6,
   "sensor_pairs": 72,
@@ -1394,14 +1394,14 @@
    "id": "SL1",
    "kind": "slit",
    "pos": [
-    0.5479961037635803,
-    0.6499999761581421,
-    1.11119544506073
+    0.25,
+    1.8700000047683716,
+    0.9200000166893005
    ],
    "dir": [
-    0.6499674916267395,
     0.0,
-    0.7599620223045349
+    1.0,
+    0.0
    ],
    "length": 0.5,
    "blocked": false
@@ -1426,14 +1426,14 @@
    "id": "SL2",
    "kind": "slit",
    "pos": [
-    0.5479961037635803,
-    -0.75,
-    1.11119544506073
+    0.25,
+    -1.9700000286102295,
+    0.9200000166893005
    ],
    "dir": [
-    0.6499674916267395,
     0.0,
-    0.7599620223045349
+    -1.0,
+    0.0
    ],
    "length": 0.5,
    "blocked": false
@@ -1937,6 +1937,10 @@
   [
    "Crest and belly turret housings sunk in the crest and the belly",
    "turrets sit on their rings on block tops and the belly band, plates cleared under each mount"
+  ],
+  [
+   "Rocket pod reads as a narrow plinth above a sunken foredeck, with gaps to the next blocks",
+   "R289 and R292: the broad fore block rises to 1.56 with plated steps down to the neck and ramp; the ramp overlaps the mid block, with the insides kept at their fitted positions"
   ]
  ],
  "allowed": []

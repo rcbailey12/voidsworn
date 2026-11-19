@@ -1,0 +1,23 @@
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle s9
+  turn 77, round 3, after tick player; unit x017 (enemy d_scythe)
+  state.units[12].q: 19 -> 16
+  later changed records: 345; total records: 423 -> 306
+FAIL battle s17
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.spawnCleared: 3 -> 0
+  later changed records: 201; total records: 159 -> 202
+FAIL battle s25
+  turn 192, round 4, after tick player; unit x034 (enemy h_picket)
+  state.units[28].r: 10 -> 12
+  later changed records: 233; total records: 426 -> 426
+FAIL battle s35
+  turn 0, round 1, after tick player; unit x022 (enemy c_raider)
+  state.units[16].q: 20 -> 9
+  later changed records: 232; total records: 198 -> 233
+FAIL battle s38
+  turn 136, round 4, after tick player; unit x020 (enemy h_picket)
+  state.units[14].q: 19 -> 14
+  later changed records: 193; total records: 330 -> 284
+FAIL: saved Godot results; 271 battles checked, 5 changed, 0 other files changed, 5 failures; 22.082 s

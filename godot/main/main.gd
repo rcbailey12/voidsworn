@@ -217,6 +217,8 @@ func _settings_to_battle(b: Node) -> void:
 	b._sync_teaching_switch()
 	b.set_fx_opts(bool(settings["reduce_flashing"]), float(settings["shake"]))
 	b.reduce_motion = bool(settings.get("reduce_motion", false))   # issue 521: no key in old settings reads off
+	if b.hud != null:
+		b.hud.set_log_preferences(bool(settings.get("battle_log_enabled", true)), bool(settings.get("battle_log_collapsed", false)))
 
 
 func _on_battle_option(key: String, value) -> void:
@@ -250,7 +252,7 @@ func _career_shot(path: String) -> void:
 	load("res://story/story.gd").open_standalone(title)
 	await get_tree().create_timer(2.5).timeout
 	await RenderingServer.frame_post_draw
-	get_viewport().get_texture().get_image().save_png(path)
+	preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), path)
 	print("[career] shot saved ", path)
 	quit_clean(0)
 
@@ -281,7 +283,7 @@ func _start_showcase() -> void:
 			title._settings()
 			await get_tree().create_timer(0.5).timeout
 		await RenderingServer.frame_post_draw
-		get_viewport().get_texture().get_image().save_png(str(args["title-shot"]))
+		preload("res://tools/picture_provenance.gd").save_png(get_viewport().get_texture().get_image(), str(args["title-shot"]))
 		print("[title] shot saved ", args["title-shot"])
 		quit_clean(0)
 

@@ -13,6 +13,16 @@ const TAGLINE := "Command a fleet through three contested sectors to the Hollow 
 const DISPLAY_PATH := "res://ui/campaign/fonts/Michroma-Regular.ttf"
 const CAPS_PATH := "res://ui/campaign/fonts/Oxanium-Variable.ttf"
 const BODY_DIR := "res://ui/battle/fonts/"
+const GS := preload("res://ui/theme/glass_shell.gd")
+
+# KEEL uses the same orders-sheet colours and faces as the other game screens.
+const KEEL_VEIL := 0.94
+const KEEL_LOG_VEIL := 0.48
+const KEEL_TEXT_EDGE := Color("#08090b")
+
+
+static func keel_faces() -> Array[Font]:
+	return [GS.sheet_name(), GS.sheet_body(), GS.sheet_medium(), GS.num()]
 
 static var _cache := {}
 

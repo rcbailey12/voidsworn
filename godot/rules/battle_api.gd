@@ -37,6 +37,23 @@ var _depth := 0
 var _err0 := 0
 var _ui_cache := {}; var _ui_ver := -1
 var _threat_cache := {}; var _threat_ver := -1
+
+# The objective may be lost while the fleet still escapes. Keep the raw rules result for playback and parity.
+static func settled_result(raw: String, battle: Dictionary) -> String:
+	if raw == "loss" and RulesScript.jt(battle.get("withdraw")) and RulesScript.count_player_survivors(battle["units"]) > 0:
+		return "retreat"
+	return raw
+
+static func nem_entry(table: Dictionary, key, fac) -> Variant:
+	return RulesScript.nem_entry(table, key, fac)
+
+func battle_result() -> String:
+	_mutex.lock()
+	var raw := str(R.B.get("over"))
+	var outcome := settled_result(raw, R.B) if RulesScript.jt(R.B.get("campaign")) else raw
+	_mutex.unlock()
+	return outcome
+
 class RulesErrors extends Logger:
 	var n := 0
 	var first := ""

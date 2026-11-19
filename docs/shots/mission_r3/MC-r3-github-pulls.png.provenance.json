@@ -1,0 +1,36 @@
+{
+  "source_commit": "ec120d1a4c0ec0740af095d4812f81c7cf308ed0",
+  "source_dirty": true,
+  "source_diff_sha256": "63b2623ce7524c6ef9025749d5abfd2662fb3f286ff484cac90ce3e08911d906",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-r3-github-pulls.png",
+  "date": "2026-11-17T20:21:31Z",
+  "sources": [
+    {
+      "source_commit": "ec120d1a4c0ec0740af095d4812f81c7cf308ed0",
+      "source_dirty": true,
+      "source_diff_sha256": "63b2623ce7524c6ef9025749d5abfd2662fb3f286ff484cac90ce3e08911d906",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "02470b54592cc604d41e40a559527da4c5f78e28381adfe3d1440448a587a68c"
+  ],
+  "stamp_template_sha256": "02470b54592cc604d41e40a559527da4c5f78e28381adfe3d1440448a587a68c",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "78d677b0eedc395dacf6344bc6dc515f242073dfabe85553cd698ea504f6f879"
+}

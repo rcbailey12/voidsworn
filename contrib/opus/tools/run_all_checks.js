@@ -128,32 +128,71 @@ function buildChecks() {
   const OPUS = 'contrib/opus/tools/';
   const MUSE = 'contrib/muse/tools/';
   const checks = [];
-  const add = (file, extra = [], kind = 'normal', timeout = 300, gate = false) => {
-    checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout, gate });
+  const add = (file, extra = [], kind = 'normal', timeout = 300, gate = false, fast = false) => {
+    checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout, gate, fast });
   };
+  // Issue 946: mark fast rows in add() or FAST_AUTO using a complete run under 30 s.
+  // A timing must include any platform-specific work. On Windows issue 962 timed
+  // runner_selftest at 205 s and stage5_fail_selftest at 126 s, so both stay unmarked.
+  // The same run timed the Windows gpu_slots and runner_stall probes under 15 s.
+  // Issue 975 timed fx_death_spawn_tests under 5 s with the real hull.
+  // Re-time when a row's cost changes. Gate rows always run.
+  const FAST_AUTO = new Set([
+    'auto_pr_body_tests', 'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
+    'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
+    'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
+    'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
+    'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
+    'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_tests',
+    'lineage_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
+    'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
+    'paint_sheet_camera_tests', 'reporting_238_tests', 'runner_stall_tests',
+    'shadow_xp_tests', 'shield_pool_tests', 'squadron_auto_tests', 'story_beat3_tests',
+    'ui_spec_tests', 'weapon_match_tests',
+  ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
-  // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md).
-  fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f));
-  add(OPUS + 'progression_telemetry_test.js'); // #27 step 11: per run XP by line and the F1 play log report
+  // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md)
+  // and the report_paths_tests.js and check_em_dashes_tests.js publication and punctuation fixtures.
+  // The glob below runs each one once; a second add() line would run it twice.
+  fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f, [], 'normal', 300, false, FAST_AUTO.has(path.basename(f, '.js'))));
+  add(OPUS + 'progression_telemetry_test.js', [], 'normal', 300, false, true); // #27 step 11: per run XP by line and the F1 play log report
   add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick
-  add(OPUS + 'tree_handoff_test.js'); // #335: a tree pick made through the real campaign reaches the battle in both twins
-  add(OPUS + 'tree_table_walk_test.js'); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
-  add(OPUS + 'tree_last_rows_test.js'); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
-  add(OPUS + 'oracle_copy_test.js'); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
+  add(OPUS + 'tree_handoff_test.js', [], 'normal', 300, false, true); // #335: a tree pick made through the real campaign reaches the battle in both twins
+  add(OPUS + 'tree_table_walk_test.js', [], 'normal', 300, false, true); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
+  add(OPUS + 'tree_last_rows_test.js', [], 'normal', 300, false, true); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
+  add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
+  add('contrib/deepseek/map_pace_1117/smoke_safety_test.js', [], 'normal', 300, false, true); // #1019: the documented smoke run leaves the saved 200-sim raw files byte for byte unchanged
+  add('contrib/deepseek/chorus_biomass_1118/spiral_test.js', [], 'normal', 300, false, true); // #1085: the loss spiral prices a 25 percent repair of the worst ship, capped at what it is missing
+  add('contrib/deepseek/ge_economy_1118/commission_test.js', [], 'normal', 300, false, true); // #1086: one shipyard visit queues at most one Glasswright commission, even with two affordable offers
   add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
-  add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
-  add(OPUS + 'nem_direct_reads_report.js'); // #364: report only, the count of direct save reads outside godot/campaign/
-  add(OPUS + 'naming_lint_game.test.js');
+  add('tools/pc/g2_export_selftest.js'); // #1100: a stand-in exporter proves only checked builds become live on Windows
+  add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
+  add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks
+  add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
+  add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
+  add(OPUS + 'nem_direct_reads_report.js', [], 'normal', 300, false, true); // #364: report only, the count of direct save reads outside godot/campaign/
+  add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
   add(OPUS + 'naming_lint_game.js', [], 'naming');
-  add(OPUS + 'checkpack/checks.js', [], 'pack');
-  for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT]);
-  add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings');
-  add(MUSE + 'oracle_drift/oracle_drift_guard.js', [ROOT], 'drift');
-  add(MUSE + 'cutover_gate/fixture_check.js', [ROOT, path.join(ROOT, MUSE, 'importer_fixtures'), path.join(ROOT, MUSE, 'harness/game_loader.js')], 'optional');
+  add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
+  add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row
+  for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT], 'normal', 300, false, file !== 'softlock_sweep.js');
+  add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings', 300, false, true);
+  add(MUSE + 'oracle_drift/oracle_drift_guard.js', [ROOT], 'drift', 300, false, true);
+  add(MUSE + 'cutover_gate/fixture_check.js', [ROOT, path.join(ROOT, MUSE, 'importer_fixtures'), path.join(ROOT, MUSE, 'harness/game_loader.js')], 'optional', 300, false, true);
   return checks;
 }
 
+// Issue 946: under --fast a row runs when it is marked fast or it is the gate.
+function fastSelected(checks) {
+  return checks.filter(c => c.fast || c.gate);
+}
+
 // ---------- running ----------
+
+function printRow(row) {
+  console.log(row.result + ': ' + row.check + ' (' + row.seconds.toFixed(2) + ' s) | ' + row.detail);
+  if (row.result === 'FAIL') console.log('\nFAIL ' + row.check + ' (first 15 output lines):\n' + row.output.split(/\r?\n/).slice(0, 15).join('\n'));
+}
 
 async function execute(c, baseline) {
   const start = Date.now();
@@ -231,23 +270,23 @@ async function main() {
   const report = [];
   for (const c of checks.filter(c => !only || c.name === only || c.file === only)) {
     // A gating row is never downgraded to SKIP: --fast still runs it, and a SKIP that still happens is a FAIL.
-    if (args.includes('--fast') && c.timeout > 120 && !c.gate) {
+    // Issue 946: --fast selects by the fast mark from the timed run, not by the limit.
+    if (args.includes('--fast') && !c.fast && !c.gate) {
       const row = { check: c.name, result: 'SKIP', seconds: 0, detail: 'SKIP: fast', output: '' };
       report.push(row);
       console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
-      console.log(row.detail);
+      printRow(row);
       continue;
     }
     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
     const row = await execute(c, baseline);
     if (c.gate && row.result === 'SKIP') { row.result = 'FAIL'; row.detail = 'FAIL: gating row would skip: ' + row.detail; }
     report.push(row);
-    console.log(row.detail);
+    printRow(row);
   }
   console.log('\ncheck | result | seconds | detail');
   console.log('--- | --- | --- | ---');
   for (const r of report) console.log(`${r.check} | ${r.result} | ${r.seconds.toFixed(2)} | ${r.detail}`);
-  for (const r of report.filter(r => r.result === 'FAIL')) console.log('\nFAIL ' + r.check + ' (first 15 output lines):\n' + r.output.split(/\r?\n/).slice(0, 15).join('\n'));
   const skipped = report.filter(r => r.result === 'SKIP').map(r => r.check);
   if (skipped.length) console.log('\nSKIP: ' + skipped.join(', '));
   if (args.includes('--json')) fs.writeFileSync(path.join(ROOT, 'checks_report.json'), JSON.stringify(report, null, 2) + '\n');
@@ -258,4 +297,4 @@ if (require.main === module) {
   main().catch(e => { console.error(ascii(e.stack)); process.exitCode = 1; });
 }
 
-module.exports = { classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT };
+module.exports = { classifyFindings, classifyPack, classifyDrift, classifyNaming, classifyGeneric, verdictLine, parseFindings, exitCodeFor, ROOT, buildChecks, fastSelected };

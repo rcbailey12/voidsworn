@@ -1,0 +1,809 @@
+{
+	"comparisons": [
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Destroyer",
+			"code": "V15_37",
+			"file": "game_compare170_destroyer.png",
+			"length": 15.2,
+			"ship_pixels": [
+				889.626647949219,
+				349.522094726563,
+				974.184814453125,
+				370.508941650391
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Frigate",
+			"code": "V14_23",
+			"file": "game_compare170_frigate.png",
+			"length": 10.4,
+			"ship_pixels": [
+				902.146057128906,
+				351.715759277344,
+				961.277770996094,
+				368.344268798828
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Cruiser",
+			"code": "V16_37",
+			"file": "game_compare170_cruiser.png",
+			"length": 23.2,
+			"ship_pixels": [
+				868.004455566406,
+				344.896026611328,
+				997.1376953125,
+				375.250396728516
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 1.32,
+			"camera_radius": 170.0,
+			"class": "Cruiser",
+			"code": "V16_37",
+			"file": "game_compare_low.png",
+			"length": 23.2,
+			"ship_pixels": [
+				868.3974609375,
+				347.221954345703,
+				996.501831054688,
+				373.045776367188
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				133.260879516602,
+				135.797515869141,
+				798.188354492188,
+				559.232055664063
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Carrier",
+			"code": "V18_51",
+			"file": "game_compare170_carrier.png",
+			"length": 26.4,
+			"ship_pixels": [
+				854.157592773438,
+				327.213684082031,
+				1016.04559326172,
+				394.525848388672
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Battleship",
+			"code": "V17_37",
+			"file": "game_compare170_battleship.png",
+			"length": 33.6,
+			"ship_pixels": [
+				839.290954589844,
+				335.068176269531,
+				1029.47338867188,
+				385.51806640625
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Dreadnought",
+			"code": "V1b_r_23",
+			"file": "game_compare170_dreadnought.png",
+			"length": 43.2,
+			"ship_pixels": [
+				812.160827636719,
+				317.210205078125,
+				1063.53686523438,
+				403.948883056641
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Super-dreadnought",
+			"code": "H4_11",
+			"file": "game_compare170_super_dreadnought.png",
+			"length": 49.6,
+			"ship_pixels": [
+				796.3828125,
+				318.507049560547,
+				1081.45397949219,
+				403.193817138672
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Battle-barge",
+			"code": "C19_51",
+			"file": "game_compare170_battle_barge.png",
+			"length": 41.6,
+			"ship_pixels": [
+				811.487670898438,
+				296.342712402344,
+				1071.96337890625,
+				427.0
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Bio-titan",
+			"code": "B16_23",
+			"file": "game_compare170_bio_titan.png",
+			"length": 44.8,
+			"ship_pixels": [
+				792.005737304688,
+				224.041946411133,
+				1125.39318847656,
+				506.172821044922
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Ark",
+			"code": "I8_37",
+			"file": "game_compare170_ark.png",
+			"length": 41.6,
+			"ship_pixels": [
+				809.755798339844,
+				307.752593994141,
+				1077.19091796875,
+				421.274963378906
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		},
+		{
+			"beta": 0.98,
+			"camera_radius": 170.0,
+			"class": "Tomb-ark",
+			"code": "D22_23",
+			"file": "game_compare170_tomb_ark.png",
+			"length": 44.8,
+			"ship_pixels": [
+				788.197509765625,
+				191.808456420898,
+				1143.39343261719,
+				537.201171875
+			],
+			"ship_position": [
+				61.0,
+				0.0,
+				0.0
+			],
+			"station_pixels": [
+				96.1603927612305,
+				82.5127563476563,
+				809.77001953125,
+				575.117553710938
+			]
+		}
+	],
+	"detail": {
+		"alpha": -2.08,
+		"annotations": [
+			{
+				"kind": "airlock",
+				"module": "core_09",
+				"pixel": [
+					602.820678710938,
+					200.478652954102
+				],
+				"visible_surface": true,
+				"world": [
+					-27.1337203979492,
+					24.9103507995605,
+					10.1640882492065
+				]
+			},
+			{
+				"kind": "maintenance_hatch",
+				"module": "habitat_5_slot_09",
+				"pixel": [
+					318.611083984375,
+					617.415710449219
+				],
+				"visible_surface": true,
+				"world": [
+					-48.2113456726074,
+					4.18065881729126,
+					13.4064197540283
+				]
+			},
+			{
+				"kind": "service_pipe",
+				"module": "core_09",
+				"pixel": [
+					606.226623535156,
+					177.896530151367
+				],
+				"visible_surface": true,
+				"world": [
+					-26.849048614502,
+					26.2249565124512,
+					10.1076803207397
+				]
+			},
+			{
+				"kind": "handrail",
+				"module": "equipment_deck",
+				"pixel": [
+					630.646484375,
+					622.228149414063
+				],
+				"visible_surface": true,
+				"world": [
+					-31.868278503418,
+					3.11859154701233,
+					21.9365234375
+				]
+			},
+			{
+				"kind": "viewport",
+				"module": "observation_window",
+				"pixel": [
+					603.4375,
+					365.679351806641
+				],
+				"visible_surface": true,
+				"world": [
+					-26.9105834960938,
+					12.5959119796753,
+					9.17670154571533
+				]
+			},
+			{
+				"kind": "thruster_quad",
+				"module": "ring_attitude_control",
+				"pixel": [
+					221.446914672852,
+					624.677062988281
+				],
+				"visible_surface": true,
+				"world": [
+					-53.624813079834,
+					1.48732829093933,
+					8.47384262084961
+				]
+			}
+		],
+		"beta": 0.98,
+		"camera_radius": 60.0,
+		"file": "game_detail60.png",
+		"framing": "partial close view",
+		"target": [
+			-24.0,
+			12.0,
+			9.0
+		]
+	},
+	"details": [
+		{
+			"alpha": -2.08,
+			"annotations": [
+				{
+					"kind": "airlock",
+					"module": "core_09",
+					"pixel": [
+						602.820678710938,
+						200.478652954102
+					],
+					"visible_surface": true,
+					"world": [
+						-27.1337203979492,
+						24.9103507995605,
+						10.1640882492065
+					]
+				},
+				{
+					"kind": "maintenance_hatch",
+					"module": "habitat_5_slot_09",
+					"pixel": [
+						318.611083984375,
+						617.415710449219
+					],
+					"visible_surface": true,
+					"world": [
+						-48.2113456726074,
+						4.18065881729126,
+						13.4064197540283
+					]
+				},
+				{
+					"kind": "service_pipe",
+					"module": "core_09",
+					"pixel": [
+						606.226623535156,
+						177.896530151367
+					],
+					"visible_surface": true,
+					"world": [
+						-26.849048614502,
+						26.2249565124512,
+						10.1076803207397
+					]
+				},
+				{
+					"kind": "handrail",
+					"module": "equipment_deck",
+					"pixel": [
+						630.646484375,
+						622.228149414063
+					],
+					"visible_surface": true,
+					"world": [
+						-31.868278503418,
+						3.11859154701233,
+						21.9365234375
+					]
+				},
+				{
+					"kind": "viewport",
+					"module": "observation_window",
+					"pixel": [
+						603.4375,
+						365.679351806641
+					],
+					"visible_surface": true,
+					"world": [
+						-26.9105834960938,
+						12.5959119796753,
+						9.17670154571533
+					]
+				},
+				{
+					"kind": "thruster_quad",
+					"module": "ring_attitude_control",
+					"pixel": [
+						221.446914672852,
+						624.677062988281
+					],
+					"visible_surface": true,
+					"world": [
+						-53.624813079834,
+						1.48732829093933,
+						8.47384262084961
+					]
+				}
+			],
+			"beta": 0.98,
+			"camera_radius": 60.0,
+			"file": "game_detail60.png",
+			"framing": "partial close view",
+			"target": [
+				-24.0,
+				12.0,
+				9.0
+			]
+		},
+		{
+			"alpha": -2.08,
+			"annotations": [
+				{
+					"kind": "docking_port",
+					"module": "arm_3",
+					"pixel": [
+						418.679351806641,
+						418.134002685547
+					],
+					"visible_surface": true,
+					"world": [
+						-70.2662048339844,
+						6.50970029830933,
+						4.6270546913147
+					]
+				},
+				{
+					"kind": "cargo_crane",
+					"module": "arm_3",
+					"pixel": [
+						576.773193359375,
+						285.349334716797
+					],
+					"visible_surface": true,
+					"world": [
+						-58.1931915283203,
+						9.65272617340088,
+						0.285532474517822
+					]
+				},
+				{
+					"kind": "hangar_door",
+					"module": "arm_3",
+					"pixel": [
+						674.508666992188,
+						351.406646728516
+					],
+					"visible_surface": true,
+					"world": [
+						-53.5217628479004,
+						5.68063449859619,
+						4.70571231842041
+					]
+				},
+				{
+					"kind": "maintenance_hatch",
+					"module": "habitat_5_slot_09",
+					"pixel": [
+						804.373901367188,
+						426.382904052734
+					],
+					"visible_surface": true,
+					"world": [
+						-49.6345062255859,
+						4.04937124252319,
+						13.4229793548584
+					]
+				},
+				{
+					"kind": "handrail",
+					"module": "arm_3",
+					"pixel": [
+						574.021911621094,
+						353.298828125
+					],
+					"visible_surface": true,
+					"world": [
+						-60.0902252197266,
+						7.00291776657104,
+						3.58810544013977
+					]
+				},
+				{
+					"kind": "cargo_pod",
+					"module": "cargo_3",
+					"pixel": [
+						654.965148925781,
+						415.657409667969
+					],
+					"visible_surface": true,
+					"world": [
+						-56.6851348876953,
+						3.66554474830627,
+						7.7054443359375
+					]
+				}
+			],
+			"beta": 0.98,
+			"camera_radius": 60.0,
+			"file": "game_detail60_docking.png",
+			"framing": "partial close view",
+			"target": [
+				-54.0,
+				3.0,
+				1.0
+			]
+		},
+		{
+			"alpha": -0.8,
+			"annotations": [
+				{
+					"kind": "cold_radiator",
+					"module": "service_finger_5",
+					"pixel": [
+						193.414581298828,
+						421.762786865234
+					],
+					"visible_surface": true,
+					"world": [
+						-43.0651321411133,
+						0.394345343112946,
+						27.5013580322266
+					]
+				},
+				{
+					"kind": "sensor_mast",
+					"module": "tower_2",
+					"pixel": [
+						884.221313476563,
+						299.899261474609
+					],
+					"visible_surface": true,
+					"world": [
+						-3.86418914794922,
+						18.3846263885498,
+						10.1714067459106
+					]
+				},
+				{
+					"kind": "dish_array",
+					"module": "tower_2",
+					"pixel": [
+						892.275329589844,
+						221.319473266602
+					],
+					"visible_surface": true,
+					"world": [
+						-3.68221664428711,
+						22.2824306488037,
+						11.0434455871582
+					]
+				},
+				{
+					"kind": "cargo_pod",
+					"module": "cargo_3",
+					"pixel": [
+						381.184020996094,
+						220.60823059082
+					],
+					"visible_surface": true,
+					"world": [
+						-55.3225555419922,
+						3.66554474830627,
+						4.7833776473999
+					]
+				},
+				{
+					"kind": "maintenance_truss",
+					"module": "equipment_deck",
+					"pixel": [
+						817.497375488281,
+						562.777587890625
+					],
+					"visible_surface": true,
+					"world": [
+						-5.12760162353516,
+						1.59394502639771,
+						9.83401393890381
+					]
+				}
+			],
+			"beta": 0.98,
+			"camera_radius": 60.0,
+			"file": "game_detail60_systems.png",
+			"framing": "partial close view",
+			"target": [
+				-24.0,
+				3.0,
+				4.0
+			]
+		},
+		{
+			"alpha": -1.0,
+			"annotations": [
+				{
+					"kind": "radiator",
+					"module": "radiator_3",
+					"pixel": [
+						430.611694335938,
+						305.063079833984
+					],
+					"visible_surface": true,
+					"world": [
+						-30.9650135040283,
+						-10.7471466064453,
+						10.6573505401611
+					]
+				},
+				{
+					"kind": "coolant_manifold",
+					"module": "radiator_4",
+					"pixel": [
+						719.706176757813,
+						312.850341796875
+					],
+					"visible_surface": true,
+					"world": [
+						-11.4168243408203,
+						-10.209789276123,
+						8.60372066497803
+					]
+				},
+				{
+					"kind": "maintenance_truss",
+					"module": "radiator_4",
+					"pixel": [
+						693.982055664063,
+						301.682067871094
+					],
+					"visible_surface": true,
+					"world": [
+						-12.696252822876,
+						-9.63665866851807,
+						9.13762283325195
+					]
+				}
+			],
+			"beta": 1.4,
+			"camera_radius": 60.0,
+			"file": "game_detail60_thermal.png",
+			"framing": "partial close view",
+			"target": [
+				-22.0,
+				-15.0,
+				0.0
+			]
+		},
+		{
+			"alpha": -0.8,
+			"annotations": [
+				{
+					"kind": "solar_panel",
+					"module": "service_finger_6",
+					"pixel": [
+						724.651916503906,
+						624.301025390625
+					],
+					"visible_surface": true,
+					"world": [
+						9.11619186401367,
+						0.953138768672943,
+						17.326057434082
+					]
+				},
+				{
+					"kind": "maintenance_truss",
+					"module": "service_finger_6",
+					"pixel": [
+						757.354309082031,
+						608.7001953125
+					],
+					"visible_surface": true,
+					"world": [
+						9.70528793334961,
+						0.953704535961151,
+						15.3361749649048
+					]
+				},
+				{
+					"kind": "thruster_quad",
+					"module": "ring_attitude_control",
+					"pixel": [
+						686.552978515625,
+						594.110107421875
+					],
+					"visible_surface": true,
+					"world": [
+						6.49441337585449,
+						1.18103110790253,
+						17.3553028106689
+					]
+				}
+			],
+			"beta": 0.98,
+			"camera_radius": 60.0,
+			"file": "game_detail60_power.png",
+			"framing": "partial close view",
+			"target": [
+				-8.0,
+				4.0,
+				6.0
+			]
+		}
+	],
+	"renderer": "forward_plus",
+	"scope": "GPU studio comparisons, not the station-map performance gate",
+	"size": [
+		1280,
+		720
+	],
+	"station_bounds": {
+		"size": [
+			99.1999816894531,
+			69.2807083129883,
+			70.210578918457
+		]
+	}
+}

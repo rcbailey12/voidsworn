@@ -113,6 +113,17 @@ For CPU-only review renders on Windows set `SHEET_DEVICE=CPU` before running `bu
 uses the stage 4 build unchanged at stage 5, exports the stage 6 LOD chain, then runs the stage 7 unbaked export and
 readback/self-test. It does not replace the faction's queued paint bake or the measured scene gate.
 
+Every review picture is stamped at its save step by `tools/picture_provenance.py` (Godot uses
+`godot/tools/picture_provenance.gd`): its name, full source commit in the `.provenance.json` sidecar, short revision on the
+picture, working-change digest when needed, stage (`sheet built`, `paint proof`, or `installed in game`) and UTC date.
+The stage 6 LOD studio preview is `paint proof`; only captures of the installed game say `installed in game`.
+Sheet helpers read stamped inputs and keep their source revisions, including both sides of a comparison; they refuse
+unstamped captures rather than relabel old files. The sidecar preserves the corner pixels hidden by the strip, so sheet
+measurements use `open_picture`/`Review.open` and retain their original alpha and dimensions. Keep each review picture and
+its sidecar in the PR and link by relative repo path. The PC runners can copy linked, stamped files from the run's `shots`
+folder and rewrite those links; before committing they refuse PC/web picture links, missing stamps, altered pictures, and
+picture/sidecar pairs absent from the staged PR tree. Rerun a capture with its source revision to replace missing evidence.
+
 ## The paint stack for sheet ships (issue 601; ships.md section 0 item 2)
 
 The method is R96 Q1, binding: procedural materials driven by masks baked from the ship's own geometry, plus a trim sheet and
@@ -123,7 +134,8 @@ R225: one home per fact):
 | Fact | Its one home | Read by |
 |---|---|---|
 | where each colour zone sits on the ship | the build sheet: each object's material is its zone (soot, soot2, rust, iron, blood, pale, violet, lilac, steel, dark, dish, warhead, brass; glow, ember, light glow) | the stack, per object |
-| what each zone is made of: two tones sampled from the concept, rust, grime, wear, scuffs, rivets, roughness, metal | `tools/blender/kits/<kit>/stack.py` `CONCEPT` and `ZONES` (the samples' method is written there, `sample_concept()` repeats it) | `kits/shared/paint_stack.py` |
+| module families and surface duties, including panel, structural band, edge metal, machinery and recess | `tools/blender/kits/<kit>/stack.py` `MODULE_TONES`, `HULL_FAMILIES`, `PART_FAMILIES` and `SURFACE_DUTIES` | `kits/shared/paint_stack.py` |
+| each zone's finish: concept palette, rust, grime, wear, scuffs, rivets, roughness and metal | the faction stack's `CONCEPT` and `ZONES` (`sample_concept()` repeats the colour sampling) | the shared stack |
 | the layers' sizes in ship lengths (mask reach, rivet pitch, scuff tile, rust streaks) | the faction stack's `LAYERS` | the shared stack |
 | the trim sheet and the decal art | drawn by the faction stack (`trim_sheet()`, `decal_atlas()`), written to the job's `textures\` with a licence line each (CC0, own work) | the shared stack; `standing.py licences` |
 | where decals go | rules in the faction stack's `DECALS` (station along the ship, height band, face, size), placed on each ship's own surfaces by ray cast | the shared stack (`place_decals`, reported in `CELL.json`) |
@@ -137,14 +149,47 @@ R225: one home per fact):
 3. bakes the masks per atlas from the ship's own geometry into `CELL_hull_masks.png` and `CELL_parts_masks.png`: R ambient
    occlusion at a short reach (cavities), G convex edges (bevel normal against the face normal, occluded corners removed),
    B ambient occlusion at a long reach (grime). The hull is baked with the parts in place and the parts with the hull in place;
-4. builds one procedural material per (zone, atlas): the plate's own tone per UV island plus a soft patch and fine mottle; the
-   trim sheet's scuffs and rivet rows set back from every plate edge (box projected at ship scale, so a gun and a hull plate
-   carry the same density, R224); the zone's own trim rows (`ZONE_BY_KIND`: the launch bay mouth's warning stripes; never a hangar mouth's, R240); rust in
-   cavities, under edges and in a few blooms, running down the sides; grime low, under parts and toward the engines; the decals;
-   edge wear to bare metal last, so it eats into the decals;
-5. bakes albedo and ORM for both atlases and the hull's detail normal (the layers' height through a bump), then puts the
-   textured materials on the ship (`export7.py` reads them as before) and keeps glow, ember and light as their own emissive
+4. builds one procedural material per (zone, atlas). R318 picks a family for the module first. Hull modules follow the sheet's
+   joints, and fittings take one family across the whole authored assembly, including mounts and turning pieces. The sheet's
+   zones identify surface duties within that family. Each stack sets the small value step sampled in ship space. Strong lilac
+   and metal accents follow their authored bands. Hullbreaker shell armour changes colour across irregular repair and trophy
+   seams. The ship-frame panel pattern belongs to the hull atlas. The Navy's modelled slabs use their own gaps and take a
+   single tone per connected plate, within 8 percent in linear value. Bands use their authored joints. Fittings use the joints,
+   bevels and clearances built into each piece.
+   Fine grain, trim-sheet scuffs and any fastener rows repeat at the same scale on the hull and fittings (R224). Hegemony and
+   Hullbreaker coats use a wider satin roughness range on clean surfaces, with rougher sheltered faces and directional
+   residue below overhangs. The coating, fine grain and scuff layer all contribute to the roughness map. Broken wear follows
+   the convex edge mask, and handling scuffs polish exposed collars and similar fittings. Both expose lighter, smoother,
+   more metallic material over the paint. Hullbreaker oxidation and soot stay rough and the rust and trophy colours follow
+   their own masks;
+5. bakes albedo, ORM and a detail normal for both atlases. The normal uses the same layer height for hull panels and fittings,
+   so wide fittings carry repeated surface relief. `export7.py` identifies atlases by mesh role and checks that the sheet
+   export binds both normal maps and uses the same packed ORM image for occlusion, roughness and metal on each atlas.
+   The battle sky provides environment reflections, and the battle key and fill supply the direct specular response.
+   The bake keeps glow, ember and light as their own emissive
    surfaces; the insides keep the sheet's own materials;
+   For a ship with a large normal input, the normal bake connects the existing bump normal to a simple surface and restores the original links in
+   `finally`. A20's normal input alone still exceeds Cycles' SVM stack (issue 726 run 3). Run 4 tried CPU OSL first: its
+   4096-pixel control baked, but a retry crashed in Windows LLVM. The retained route bakes the existing labelled patchwork
+   height term per large trophy material to a Raw, single-channel 16-bit PNG, reloads it as Non-Color, then samples it on the same
+   UVs for one combined normal pass. Only the stack with the trophy layer opts in (`ps_height_bake`);
+   other factions keep their original path regardless of graph size. The 800 reachable-node budget selects this route; it is not a shader
+   validity test. Other height detail (rivets, wear, scuffs, decals) stays procedural. Smaller materials keep their original
+   normal inputs. A ship with no large input keeps the original full-surface bake, including Eclipse. Inactive materials
+   target a disposable image during each height pass, so no material's padding can
+   overwrite a neighbour's normal. The original image targets, surface and height links, and clear setting are restored
+   even on failure. Heights stay in TEMP; their paths, bit depths and times are recorded in the ship's paint report.
+   Albedo, ORM, faction stacks and Cycles device/shading settings are unchanged.
+   Stage 5 rejects compile errors, including `out of SVM stack space`, even if Blender exits zero and writes its completion
+   marker. Never install a bake that failed this guard. The repeatable OSL, height and restoration diagnostics are in
+   `contrib/codex/issue726/`; the five-ship PC route is `tools/pc/jobs/HB_PAINT_726.bat`.
+   Sheet-ship stage 5 selects concept, hero, side, top, below and battle views explicitly. The old four-piece break preview
+   assumes a longitudinal cut and cannot represent these authored seam layouts; the installed interior and death-seam
+   checks prove their actual breaks. All three paint render calls still have to finish, each with its own exit-code check
+   and `RENDER DONE` marker in `log_render.txt`, `log_render_concept.txt` and `log_render_far.txt`. The issue 726 helper
+   checks one completion in each log. Every Blender call, including the surface check and close-ups, rejects positive
+   and negative nonzero exits; Python exceptions also fail the call. `tools/recipe/stage5_fail_selftest.js` proves the
+   guards and the helper's log reader with fake executables and TEMP fixtures, without a Blender run.
 6. gives every inside the faction's dark liner (`inside_material`: one material per room, the liner's dark with a faint tint, the
    core keeps its light), so an inside seen through an opening or a gap never shows a sheet room colour (R99 Q1);
 7. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square
@@ -161,13 +206,15 @@ and trim lights. Plate patchwork, seams and brick rust (R228) are the faction st
 axis, lays rows in bands whose edges step every few columns, shifts every column and strip by its own amount and splits a share
 of the cells once more; the faction stack sets how much (`patch_warp`, `patch_band`, `patch_split` in `LAYERS`; zero for all
 three gives the old even grid). Over that patchwork the Hullbreaker stack lays its trophy patches (issue 726, R252: big like
-the A20 concept; R274: dark grey salvaged metal, never white): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `panel_nodes` hook, which runs the shared patchwork
-unchanged first. One more uneven grid at the concept's trophy plate size (`cell`, about 0.13 by 0.085 ship lengths, warped, banded
-and split as above); a share of its cells (`share` times the zone's patchwork amount, more in some broad regions, `cluster`) takes
-dark grey salvaged metal or violet Eclipse plate (`families`, sampled from the KB1C-C and A20 concepts), one colour per trophy cell, never per mesh
-island; parts keep the plain patchwork. The sheet's `pale` zone keeps its own
+the A20 concept; R274: dark grey salvaged metal, never white): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `panel_nodes` hook. `panel_nodes` runs the shared patchwork
+first on the ordinary hull zones. A zone with its own `trophy_share` (the sheet's `pale` zone) takes the trophy layer over its
+base finish. An uneven grid at trophy plate size (`cell`, about 0.13 by 0.085 ship lengths) supplies the trophy seams. Neighbouring
+seam cells share a repair register within the authored shell section. Trophy clusters take dark grey salvaged metal or violet
+Eclipse plate (`families`, sampled from the KB1C-C and A20 concepts). Machinery takes a quieter finish and deep bay walls use
+their dark recess zone. The sheet's `pale` zone is the trophy layer (R252, dark grey under R274). It keeps its own
 dark grey with no dark plate families over it, and the trophy layer covers about 65 percent of it (`trophy_share`), a third of
-that in violet, so a sheet-placed pale patch reads dark grey metal or violet (the zone itself is a weathered dark grey with a little metallic sheen, R274). The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
+that in violet, so a sheet-placed pale patch reads as weathered dark grey metal or violet. The game's rim light
+(`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
 cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
 glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
 `RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe
@@ -175,8 +222,9 @@ glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces o
 an old hull 0 pixels changed). Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's throat and bell lining, which the
 stack gives one emissive surface with the plug cone, with its own map (`bake_engine_glow`: the hot core on the axis, the plug
-hottest, to deep red at the wall, each engine its own reach, hot spots, soot streaks, the lining
-dark toward the lip, each engine its own; written by stage 7 as `<code>_glow_emission.jpg`).
+hottest, to deep red at the wall, hot spots, soot streaks and the lining dark toward the lip;
+R308: one colour, strength, core reach and normalized pattern shared by every engine on a ship,
+scaled to bell size, as ships.md section 0 specifies; written by stage 7 as `<code>_glow_emission.jpg`).
 
 Kinds and zones a new sheet ship may bring (issue 651, A18 to A20; each is a kit rule, never a ship rule):
 - a flank hangar mouth (part kind `hangar`) reads as a dark, deep bay (R240, replacing issue 651's warning stripes): its rim
@@ -205,6 +253,15 @@ and measures the bow, midships and stern windows on its own camera; `paint_compa
 compare crop holds the same third of the ship on both sides) (and the game's camera 170
 and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`; for both Hullbreaker sheet ships (A16, A17) `tools/pc/jobs/PAINT_RUN_601.bat`.
 
+**Finish on existing Navy A4 exports (issue 1016).** For a Navy ship with a single published A4 atlas, run Blender in the PC
+watchdog with `-b --python-exit-code 1 -P tools/blender/kits/shared/paint_stack.py --` followed by the Navy `stack.py`,
+the installed GLB and a temporary output folder. The original atlas supplies the livery and the seams. The bake uses the
+same convex wear, cavity, scuff and satin roughness layers as the Navy sheet ships, and adds fine relief over the existing
+normal. `LEGACY_ALBEDO_BLEND` tempers the coat where the old atlas already has painted shadows. Each new map uses the
+original map's dimensions and UVs. Encode base and ORM at JPEG quality 90 and normal at 95 for the legacy A4 bundle, and
+keep its GLBs and emission. Verify the hashes, import and refresh the ship cache in the review build, and run the install
+readback and paint lint on the packaged ship.
+
 **The Eclipse stack (issue 642; ships.md section 0 item 2, "The Eclipse paint").** `tools/blender/kits/eclipse/stack.py` paints E11
 and E12 (and every later Eclipse sheet ship) on the same shared machinery. What is the faction's own, and where it lives:
 - the battle lift is in the colours: every `CONCEPT` tone is the tone the plate must show in the game, and `lin()` divides it
@@ -223,25 +280,34 @@ and E12 (and every later Eclipse sheet ship) on the same shared machinery. What 
   hottest and deeper green dim. Round 3 raises its brightness to read at camera 170. The core and lens: green with a small
   green-white centre.
   The engine ring: pale light in the game's Eclipse engine colour (`faction_looks.json` deathless `engine`, paled, a touch of
-  its `accent`) with hot spots and dim gaps, each engine its own, round the black shade disc; no flame. The map is half the
+  its `accent`) with hot spots and dim gaps shared by every engine on one ship (R308), round the black shade disc; no flame. The map is half the
   atlas size (`res_frac`). Round 3 (R243): the same thin rim strip emits more light over a broader soft profile so it reads
   at camera 170; the core is bright green across its face, white-hot only within its central 0.18 radius. Because the light
   map also carries the hull's own rim line, `GLOW_HULL` gives only that trim its own copied material, marked `hull_surface`.
   Engine rings, core, lens and part-mounted corona use the unmarked material with the same image. `check_export.py` exempts
   only marked root primitives; sharing the image is never an exemption. Its selftest duplicates one hull triangle beside an
   anchor: a marked trim material passes, the same unmarked part material fails. Removing the real rim marker also fails;
-- surface (pass 2, Ryan: "it looks like grainy paint almost. Everything kind of blends together"): big calm panels with value
-  steps between plate families, dark seams that read at camera 170, brighter worn edges, a finish per zone (matte shades, satin
-  body, worked-metal machines), no mottle or grain, and `island_tone` 0.15 (a new shared layer setting, default 0.75 as before:
-  the sheet's thousands of tiny plate islands each took their own tone, which read as grain). R243: `panel_nodes` in the
-  Eclipse stack replaces the offset patchwork with a single aligned lattice, periodic half-size columns, calm cell tones
-  using the accepted colour pairs, dark recessed joints and shallow relief (`panel_relief`) baked into the hull normal map.
-  The hull's existing modelled plates remain the geometry. The Hullbreaker stack uses the same hook only to lay its trophy
-  patches over the unchanged shared patchwork (issue 726);
+- surface (R243 and R318): dark seams that read at camera 170, brighter worn edges and a finish per duty (matte shades,
+  satin body, worked-metal machines). `panel_nodes` draws the aligned lattice and periodic half-size columns. Its recessed
+  joints carry shallow relief (`panel_relief`) in the normal map. Related plates and fittings share an assembly tone. Lilac
+  and bright metal belong to the sheet's bands and rims. The satin coat varies with fine scuffs, convex edges expose smoother
+  violet metal, and long-reach occlusion gathers rough grime around recesses and under overhangs;
 - running lights: none added (`RUNNING_LIGHTS = None`, the builder's call, on each sheet): the corona line, the core, the
   engine rings and the sheet's corona strip lights are the Eclipse's only lights; no `lights.json` is written;
 - decals: the eclipse sigil, a line of archive glyphs (each ship's own, seeded by its game code), band ticks, all a dulled
   paler violet; the liner is a dark violet-black, the core keeps its light.
+
+The four Eclipse ships in the game manifest use the A4 meshes. For a paint-only rebuild, point the shared stack's Blender
+entry point at `kits/eclipse/stack.py`, the manifest-matched A4 GLB beside its original JPEGs, and an empty output folder.
+Pass those three paths after `--` and run Blender through the PC GPU watchdog. The intact mesh supplies the short and long
+occlusion and convex-edge masks. The bake reads the original UVs, relief and livery. It softens the fine ridges in the A4
+normal map and narrows the value range of ordinary violet plates around one base. The darker seams and the stronger
+livery bands retain their separation. It leaves
+the hidden breach and ram skins out of the mask bake and begins each new map with the old texels for areas used only on damaged
+ships. The game bundle uses the new base, ORM and normal maps at their original resolutions, with the original model,
+damage, wreck and emissive files. Check the LOD preview at the ship's class length, verify bundle hashes, then import and
+refresh the ship cache in the isolated game before reading the finished ship back.
+
 The shared changes are hooks whose defaults keep the Hullbreaker path as it was (A16 baked on main and on this branch: the
 same maps, byte for byte): `ENGINE_GLOW` `zones`, `kind`, `disc`, `base` and a stack's own `engine_glow_nodes`; a glow
 material a stack marks `ps_glow` counts as glow in the surface check and is left out of the density measure; a glow zone a stack lists in `GLOW_HULL` that the sheet lays on
@@ -264,22 +330,20 @@ depsgraph). Prove a stack change on Blender 4.5 before the PC run.
 
 **The Sunward stack (issue 756; the direction contrib/muse/design/paint_direction_2026_11/sunward.md, approved by Ryan at the
 swatch review, Nov 14 2026).** `tools/blender/kits/voidsworn/stack.py` paints S8 (the Daybreak flagship) and every later Sunward
-sheet ship on the same shared machinery, with no change to it (the Eclipse and Hullbreaker stacks and `kits/shared` untouched).
-What is the faction's own, and where it lives:
-- colours: sunward.md's pairs sampled from S8 (black iron `#191615` to `#525151`, the recessed shade `#080807` to `#3b3532`,
-  two plate-family casts inside that band, the worked iron of rims and bands differing by finish, not by a pale tone); `lin()`
-  divides each by the light gain and by the Sunward battle lift read from `godot/render/look.gd` (1.45, never copied); no hue
-  boost (black iron is near neutral; a plain multiply swings no hue). Soot is carbon (`#080807`), rust 0 in every zone; wear
-  is dulled bright iron (`#656564` to `#848382`, wear tones only); roughness floor 0.55 in every zone; grime by place (body .55,
-  recessed .70, gun ports .60, spire roots .20, bells .30, by `ZONE_BY_KIND` on the part kinds gun, radiator, engine);
-- surface order (R243, sunward.md 1): `panel_nodes` lays sleek triangular plates on the hull's flat fields (long edge on the
-  hull axis, point forward; two rows pair up so their forward plates meet on one long edge as an arrowhead; on a deck the rows
-  run along the beam, on a flank along the height), the even rectangular grid at the small size on faces turned fore or aft
-  and on every part (spire roots, bell housings, turret domes), over-plates at the deck edges and on the spire roots only, rivet
-  rows along the triangles' long edges at `rivet_pitch` .011. Every plate cell takes one calm tone from a family or the zone's
-  own pair (the shared base's broad noise read as camouflage blotches on the first sandbox bake). `patch_warp`, `patch_band`
-  and `patch_split` are 0 with the R243 comment: the order is forged and deliberate, never warped; `panel_nodes` draws the
-  panels, so the shared `_grid` (which takes the warped path whenever the key is present) never sees those zeros;
+sheet ship. Issue 1036 sets the Sunward parameters for [the shared satin finish](../shots/ship_finish_1118/README.md).
+
+- Sunward uses the colours sampled from S8 in sunward.md (black iron `#191615` to `#525151`, recessed shade `#080807` to `#3b3532`,
+  two plate-family casts inside that band, and worked iron for the rims and bands). `lin()` divides each by the light gain
+  and the Sunward battle lift read from `godot/render/look.gd`. Carbon soot (`#080807`) collects in recesses and streaks
+  below overhangs. `ZONE_BY_KIND` sets the grime amount for gun ports, spire roots, and bells. Every zone is rust-free;
+- Body plates take a satin coat. Worked rims and bands are smoother, and recesses stay rough. The convex wear mask
+  exposes smoother, brighter dulled iron on raised edges, and handling scuffs polish worked fittings. The `WEAR_STEP` and
+  `IRON_STEP` settings keep the worn iron above the paint tones. `ZONES` and `LAYERS` hold the finish settings;
+- The iron family follows the module and its surface duties (R243, sunward.md 1). Authored forged plates take
+  one tone per connected plate, with a small step within the same iron family. Their seams and rivets come from the modeled
+  gaps and edges. On exposed shell fields, `panel_nodes` draws the existing ordered arrowhead plates and rivet rows, with
+  small rectangles on faces turned fore or aft and occasional over-plates at deck edges. Fittings use their built joints and
+  bevels. `patch_warp`, `patch_band` and `patch_split` stay at zero;
 - light (sunward.md 5): every value is the brightest linear channel of the emission times its strength, held under the game's
   0.8 glow threshold: bell throats 0.75 (the shared throat drawing in the game's Sunward engine colour), spire fins 0.78 at the
   tip (deep `#a94911` at the root to hot `#fcab3b` at the tip, hottest at the column, cooling out along each fin, cast as
@@ -293,6 +357,14 @@ What is the faction's own, and where it lives:
   a spine line, deck row numbers on each broadside, heat-shed marks beside the spire roots; worn, and edge wear runs over them;
   `FROST_CAP` 0.06 of any visible face;
 - the liner is sunward.md's dark warm liner; the reactor core keeps its ember light.
+
+The six installed Sunward ships use the [A4 ship definitions](../../tools/blender/a4/ships.py). The S8 sheet has the same
+game code as the installed Daybreak. Its prow, hull and fittings are a separate design. For an A4 repaint (issue 1036), use
+the same legacy atlas entry point as Eclipse, with `kits/voidsworn/stack.py` and the manifest-matched installed files.
+The original plates, rivets and livery supply the albedo. Connected pieces get small iron tone steps. The intact geometry
+supplies the convex wear and recessed soot masks. The emissive atlas, hard points and the intact, damage and wreck meshes
+are copied byte for byte. Package the new base, ORM and normal JPEGs at their original dimensions, then refresh the ship
+cache in an isolated Godot build and check the manifest and installed readback. [Sunward review](../shots/ship_finish_sunward/README.md)
 The builder's checks (sunward.md 6) are `contrib/opus/tools/issue756/audits.py`: the emissive audit (the stack's
 `emissive_audit()`: the map's brightest pixel and every flat light, against 0.8, and no blue over green), the frost coverage on
 the flat views against the cap, the lift hue test and the hull median at the battle camera. Sandbox previews:
@@ -309,18 +381,19 @@ Sunward stacks and `kits/shared` untouched). What is the faction's own, and wher
 - colours: hegemony.md's pairs sampled from H10 (the steel-blue grey hull `#141c2a` to `#48505e`, recessed `#0b101c` to
   `#212b3b`, trim `#2b394d` to `#626d7d`, nozzle housings, a cold dark liner); `lin()` divides each by the light gain and by the
   Hegemony battle lift read from `godot/render/look.gd` (0.4, never copied) and holds the steel-blue with a small hue boost
-  (`SAT` 1.3, as the Eclipse's `SAT`: AgX and the warm key grey the blue out; 1.5 before the R262 step, lowered so the battle
-  hue holds). Every zone and plate family is a narrow slice of its pair (`slice_()`, plate_var .07, the lowest variation of any
-  faction), the plates at the pair's light end (`TONE_AT` 1.0, the R256 lesson), and the plate tones one step toward the cap
+  (`SAT` 1.3, as the Eclipse's `SAT`: AgX and the warm key grey the blue out). The steel family changes at authored module
+  bands. Fittings use close steel-blue steps by duty. The base tones start near the pairs' light end (`TONE_AT` 1.0, the
+  R256 lesson), then move one step toward the cap
   (R262, Ryan's "Fix engines, lighten a step", the S8 method of R258: `stepped()`, each tone's brightest channel x to
   cap x (x / cap) ** `PLATE_STEP`, the others scaled with it, so the hue and the family order hold). The value cap: no plate shows brighter than `#626d7d`; wear and scuffs go toward the cap itself (`BARE`), never
-  past it. Rust 0 in every zone; roughness floor .52; grime body .30, recessed .45, trim .20, nozzle housings .30 (the engine
-  and thruster plates take the nozzle zone by `ZONE_BY_KIND`);
+  past it. Fittings use a gentler cavity and seam shadow in their base colour. Their ORM and normal maps carry the local depth.
+  Rust 0 in every zone; roughness floor .52; grime body .30, recessed .45, trim .20, nozzle housings .30 (the engine and
+  thruster plates take the nozzle zone by `ZONE_BY_KIND`);
 - surface order (R243, hegemony.md 1): `panel_nodes` draws one plain even grid anchored to the ship (no stagger, warp or split;
   the beam measured from the centreline, so port and starboard mirror), `patch_big` on the body modules (zone `hgrey`) and
   `patch_small` on the small module plates, the recessed fields and every part. `patch_warp`, `patch_band` and `patch_split`
   are 0 with the R243 comment (the even grid is the lore; never warp it). The sheets model the grid as flush slabs
-  (`module_panels`), so on the plated zones the painted seams are faint (`grid_seam` .35) and the cells' calm tones carry it.
+  (`module_panels`), so on the plated zones the painted seams are faint (`grid_seam` .35).
   The module band: every hull object named `*_bandseam_*` (with the `*_band_*` trim rings beside it) is a joint; there the
   joint between the two rings is seam all across (0.08 world: .0038 ship lengths on H10, .0026 on IM5, against hegemony.md's
   "about three times patch_seam", .0048), a one-sided seam 1.5 patch_seam wide (`band_seam` / 2) runs where each ring meets the
@@ -345,6 +418,22 @@ need a shared change). Sandbox previews: `contrib/opus/tools/issue780/preview.py
 sheet's battle camera, a module band close and the port flank) and `pictures.py`; pictures in
 `docs/ship_pipeline/build_sheets/hegemony_H10/paint/` and `hegemony_IM5/paint/`.
 
+
+### Station T2 production adapter (issue 975 run 3)
+
+`tools/recipe/station_paint.bat` reads the station route in `tools/recipe/stations/station_T2.json`.
+The approved kit supplies the layout and insides. Stages 5 to 7 use the private Hegemony stack configured by
+`hegemony_station/production_finish.py`: one base family per complete module, darker structural bands, lighter edge
+metal and only +/-1.5 percent variation per connected plate. Disable the inherited scavenged-plate patchwork on this
+station stack. Blue and warm accents identify modules, never isolated random plates. Fleet stacks are separate work.
+Every station material, including liner, glass, marker lenses and battery bezels, must export non-flat albedo, roughness
+and normal maps. UVs follow cylindrical modules or physical face dimensions. Wear reads real bevels, cavities, seams,
+vents and damaged-side exposure. Loose damage sheets have thickness, jagged bent edges, a continuous root and frame
+ribs; intact loose fittings get attachment feet. The production check compares both builds and permits only those source
+meshes to change, preserving the bounds and inside geometry. It samples each module in the actual GLB and rejects absent
+maps, flat maps or flat module albedo; its three planted faults must fail. Preserve the full-detail density and station-map
+12.5 ms gate. Capture twice, keep the second pass, and compare the same five cameras with run 2 plus the tall tower and
+top deck, at native 1080p close pixels and no more than 720 pixels high. All captures use the GPU watchdog.
 
 ## What a ship needs (the per-ship data)
 
@@ -418,19 +507,20 @@ What it writes (`tools/recipe/export7.py`), in the game's frame (+X bow, +Y up, 
 | `hp_board_<n>` | two boarding origins, one port and one starboard on the mid hull: -Z out toward the target, `extras.side` |
 | `turret_<n>` | issue 560 (RULEBOOK 6.17): one per turret the kit marks, a child of the ship node at the ring centre: +Y the turning axis, -Z the rest aim. Its turning mesh `turret_<n>_turn` and its muzzles (`hp_w`, with `extras.turret`) hang under it; the ring stays in the ship mesh. Extras: kind, id, socket, slot, weapon, arc_lo, arc_hi, rest_yaw, rest_pitch (docs/ship_pipeline/HARDPOINTS.md "Turrets") |
 | `<code>_base.jpg`, `_orm.jpg`, `_normal.jpg` | the hull atlas at 2048 |
-| `<code>_parts_base.jpg`, `<code>_parts_orm.jpg` | the parts atlas at 2048 |
+| `<code>_parts_base.jpg`, `<code>_parts_orm.jpg`, `<code>_parts_normal.jpg` | the sheet parts atlas at 2048 |
 | `manifest_entry.json` | the ship's manifest entry: class, band, length and the point counts (gun, engine, bay, breach, core, rcs, board) |
 | `<code>_export.json`, `<code>_check.json` | every hard point, the weapon slots, triangles, every file with size and sha256; the check's result |
 
 The check (`tools/recipe/check_export.py`, plain Python) reads the written glb the way the game will. It fails the export when: a
 weapon slot has no hard point, or a weapon hard point names a slot, weapon or arc `data.js` does not have; a required point is
-missing (a weapon point for every slot, `hp_core`, `hp_eng`, two `hp_rcs`, two `hp_board`, and `hp_bay` when `data.js` gives the
+missing (a weapon point for every slot, `hp_core`, `hp_eng`, one `hp_rcs` and one `hp_board` on each side, and `hp_bay` when `data.js` gives the
 ship a hangar); the breach count is not the class and faction count, the anchors do not cover the sections the count needs, or the
 sides are more than one apart; a hard point is more than 0.012 of the ship's length off the mesh (the length is the x extent of the
 glb's mesh box, so the limit scales with the ship; `hp_core` must be inside the hull's box). An engine point is the centre of
 its bell's exit, and an open bell has no mesh there: an engine point over the limit passes only when the authored bell is there
-(`open_bell`, issue 592): mesh on its exit plane (within the limit along the axis) at 0.7 to 1.15 of `extras.radius` from the
-axis in at least 10 of 12 sectors round it, a throat upstream (mesh inside 0.9 of the radius within two radii forward), and
+(`open_bell`, issues 592, 967): mesh on its exit plane (within the smaller of the mesh limit and 0.25 of `extras.radius`
+along the axis) at 0.7 to 1.15 of `extras.radius` from the axis in at least 10 of 12 sectors round it, a throat upstream
+(mesh inside 0.9 of the radius within two radii forward), and
 nothing in the exhaust path (no mesh inside 0.6 of the radius within two radii aft). The limit is not loosened for any point; a weapon rests aimed backward, a port
 mount sits to starboard or the other way round, a forward weapon does not point forward, an engine does not point aft; a weapon
 point lacks one of the eight extras in the table above or its extras slot, weapon or arc disagree with its name; a breach anchor
@@ -443,7 +533,7 @@ where the turret puts it. `check_export_selftest.py` then breaks copies of the r
 export (a slot's points removed, a point moved 0.05 of the ship's length off the hull, a gun turned aft, a port point mirrored to
 starboard (a port weapon point, or on a ship with no port arc its port boarding origin, issue 618), `hp_core` removed, a weapon's `extras.socket` removed, an engine, rcs and board origin removed, a breach anchor removed,
 a breach anchor moved onto a muzzle, a breach anchor turned to face in; on an export with turrets, the turrets folded back into
-the ship mesh and the turning meshes taken away; on an export with an open bell, that engine's radius doubled and its point
+the ship mesh and the turning meshes taken away; for each open bell identified by a fresh check, that engine's radius doubled and its point
 moved half a radius down its exhaust) and the check must refuse every copy, each for its own reason. `contract_selftest.py` proves the same check on the round 7 ship (C15s_23) in the sandbox, with its real `data.js` weapon
 list and the 5 anchors the cruiser of the Hullbreakers gets from the table. An `unbaked=1` test export names its surfaces
 `<code>_hull` and `<code>_parts` too, so the clearance is measured in the sandbox as on a baked ship.
@@ -460,15 +550,29 @@ test hull with the recipe kit's own turret parts, exported by this script with `
 (`godot/render/test/fixtures/T560_fx/`, `godot/render/test/turret_check.gd`).
 
 Stage 7 never copies into the game on its own (the build's ship folder is shared). Set `INSTALL_TO` to a Godot project folder to
-install a checked export there: what it replaces is copied to `export\replaced_<date>\` first, the old ship's wreck and damage
-files are moved there too (they belong to the old hull), and `manifest_entry.json` is merged into
-`assets/ships/manifest.json`. Nothing is deleted. Copying is not the install (issue 587 finding 8): the game draws ships from its
-asset cache (`gen/manifest.json`, `gen/ships/`), so stage 7 then refreshes the ship cache (`render/build_assets.gd
---ships-only`: a ship whose files changed is rebuilt, and its entry names no damage or wreck scene the folder no longer has) and
-reads the ship back the way the game draws it (`render/test/installed_ship_check.gd CODE`: the cache was built from the
-installed files, no old damage or wreck entry, and ShipView loads the ship with every hard point and turret node of the glb).
-Either failing fails the stage. `render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
-damage and wreck, then a new one installed over it).
+install a checked export there. Stage 7 checks and hashes a snapshot of the GLB, its named maps and the manifest entry. It locks
+the target project, stages and verifies the new files, and saves the old ship folder and cache files under `.stage7-replaced-*`
+in that project. It rebuilds the cache for that ship, replaces `assets/ships/manifest.json` atomically, and checks the installed
+hashes. `render/test/installed_ship_check.gd CODE` verifies the cache and the hard points and turrets that ShipView loads.
+An install or readback failure restores the old ship, manifest and cache. `tools/recipe/manifest_merge_selftest.py` exercises
+the install and rollback in a temporary project.
+The ship cache builder reads the image files beside the GLB directly, even when the editor has an imported image with the
+same path. An editor import can pair an old atlas with the new hull's UVs and leave black patches across its plating (issue 1082).
+`render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
+damage and wreck, then a new one installed over it, plus a planted stale texture).
+Squadron exports keep the design sheet's exterior and hard points. The build sheet's test rooms and seams stay in the blend because
+wing deaths use the small-craft effect. Stage 7 requires an authored engine exit for the ribbon and writes `wing_role` on painted
+exports. `SquadronWing` uses that role and the faction id from the asset manifest to find its cached scene. Give each craft its
+own `game_code`, even when two craft use the same rules template. Installed readback exercises the faction wing through `ShipView`.
+An off-surface squadron bomb outlet passes when its exported radius matches a round rim around its exit point, with a bore behind
+it and a clear path ahead. The export self-test doubles the radius and moves the outlet to prove the check rejects both faults.
+The Navy craft kit records the mouth width and height of its rectangular exhaust. Stage 7 reads those dimensions to verify the
+four rim corners, recessed throat and clear exhaust at the authored exit plane. The export self-test moves the exit and doubles
+each dimension separately to prove the check rejects each fault.
+The target's install check also needs `tools/ci/check_guard.gd`, even when the playable build otherwise omits CI tools.
+The issue 726 paint helper supplies that file only when missing and verifies its copied hash before installation.
+It also backs up and refreshes the test-only `a4_shots.gd` and its scene in the playable build, so the requested camera 170
+capture cannot silently fall back to an older harness's close views. Gameplay scripts are retained.
 
 ### Authored insides and weak seams (issue 557)
 

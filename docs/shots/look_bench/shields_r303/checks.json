@@ -1,0 +1,677 @@
+{
+  "standing": [
+    {
+      "check": "b1_tests",
+      "result": "PASS",
+      "seconds": 0.48,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "b3_tests",
+      "result": "PASS",
+      "seconds": 0.24,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "b4_tests",
+      "result": "PASS",
+      "seconds": 0.82,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "backlog_tests",
+      "result": "PASS",
+      "seconds": 0.23,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "build_manifest_tests",
+      "result": "PASS",
+      "seconds": 0.37,
+      "detail": "PASS build_manifest_tests: 19 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, voidsworn_S8, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason"
+    },
+    {
+      "check": "campaign_start_test",
+      "result": "PASS",
+      "seconds": 0.44,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "capstone_mastery_tests",
+      "result": "PASS",
+      "seconds": 0.43,
+      "detail": "PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect."
+    },
+    {
+      "check": "checks_truth_tests",
+      "result": "PASS",
+      "seconds": 0.27,
+      "detail": "PASS: the checks runner result words behave as issue 358 requires"
+    },
+    {
+      "check": "chorus_eat_core_tests",
+      "result": "PASS",
+      "seconds": 0.15,
+      "detail": "PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15."
+    },
+    {
+      "check": "cinder_prizes_tests",
+      "result": "PASS",
+      "seconds": 0.21,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "core_sync_tests",
+      "result": "PASS",
+      "seconds": 0.16,
+      "detail": "PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings."
+    },
+    {
+      "check": "doc_check_tests",
+      "result": "PASS",
+      "seconds": 1.1,
+      "detail": "PASS: 139 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 83 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 281) or latest record, and the two stale entry-document claims stay gone"
+    },
+    {
+      "check": "effect_caps_tests",
+      "result": "PASS",
+      "seconds": 0.1,
+      "detail": "PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged."
+    },
+    {
+      "check": "env_reconcile_tests",
+      "result": "PASS",
+      "seconds": 0.17,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "free_exit_tests",
+      "result": "PASS",
+      "seconds": 0.24,
+      "detail": "PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save."
+    },
+    {
+      "check": "fx_death_spawn_tests",
+      "result": "PASS",
+      "seconds": 2.2,
+      "detail": "PASS: every fx_death picture records its spawn and the vent uses the hull ray"
+    },
+    {
+      "check": "fx_late_shader_tests",
+      "result": "PASS",
+      "seconds": 1.55,
+      "detail": "PASS: the late shader behaviour check passed"
+    },
+    {
+      "check": "gen_open_work_tests",
+      "result": "PASS",
+      "seconds": 0.43,
+      "detail": "PASS: 13 open work generator tests (offline)"
+    },
+    {
+      "check": "gpu_slots_tests",
+      "result": "PASS",
+      "seconds": 16.82,
+      "detail": "PASS GPU slot checks (12 groups)"
+    },
+    {
+      "check": "hardpoint_contract_tests",
+      "result": "PASS",
+      "seconds": 0.24,
+      "detail": "PASS the hard point contract tables and standing gate behave"
+    },
+    {
+      "check": "heat_tests",
+      "result": "PASS",
+      "seconds": 0.12,
+      "detail": "PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool."
+    },
+    {
+      "check": "inheritance_tests",
+      "result": "PASS",
+      "seconds": 0.12,
+      "detail": "PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP."
+    },
+    {
+      "check": "ion_tests",
+      "result": "PASS",
+      "seconds": 0.17,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "lineage_tests",
+      "result": "PASS",
+      "seconds": 0.42,
+      "detail": "PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets."
+    },
+    {
+      "check": "memory_lint_tests",
+      "result": "PASS",
+      "seconds": 0.28,
+      "detail": "PASS: 173 cited ruling ids all have a contrib/opus/FINDINGS.md row; 29 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 15 LATEST lines (target 15 or fewer)"
+    },
+    {
+      "check": "nemesis_121_tests",
+      "result": "PASS",
+      "seconds": 0.29,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "nemesis_122_tests",
+      "result": "PASS",
+      "seconds": 0.26,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "nemesis_395_tests",
+      "result": "PASS",
+      "seconds": 0.2,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "nemesis_clash_tests",
+      "result": "PASS",
+      "seconds": 0.3,
+      "detail": "PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121)."
+    },
+    {
+      "check": "nemesis_teach_tests",
+      "result": "PASS",
+      "seconds": 0.13,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "paint_sheet_camera_tests",
+      "result": "PASS",
+      "seconds": 1.35,
+      "detail": "PASS paint sheet camera: 19 saved cameras and clip edge cases"
+    },
+    {
+      "check": "picture_provenance_tests",
+      "result": "PASS",
+      "seconds": 11.31,
+      "detail": "PASS picture provenance self-test; artifacts kept in C:\\Users\\rcbai\\AppData\\Local\\Temp\\picture889-4eongve8"
+    },
+    {
+      "check": "r1_tests",
+      "result": "PASS",
+      "seconds": 82.24,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "reporting_238_tests",
+      "result": "PASS",
+      "seconds": 0.42,
+      "detail": "PASS MP8 danger bands"
+    },
+    {
+      "check": "runner_job_tests",
+      "result": "PASS",
+      "seconds": 55.64,
+      "detail": "PASS simultaneous Codex and work starts yield exactly one claim; losing run cannot clear it"
+    },
+    {
+      "check": "runner_stall_tests",
+      "result": "PASS",
+      "seconds": 28.62,
+      "detail": "PASS runner stall checks (11 groups)"
+    },
+    {
+      "check": "shadow_xp_tests",
+      "result": "PASS",
+      "seconds": 0.51,
+      "detail": "PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP."
+    },
+    {
+      "check": "shield_pool_tests",
+      "result": "PASS",
+      "seconds": 0.63,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "squadron_auto_tests",
+      "result": "PASS",
+      "seconds": 0.18,
+      "detail": "PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders."
+    },
+    {
+      "check": "story_beat3_tests",
+      "result": "PASS",
+      "seconds": 0.3,
+      "detail": "PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry."
+    },
+    {
+      "check": "ui_spec_tests",
+      "result": "PASS",
+      "seconds": 0.24,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "weapon_match_tests",
+      "result": "PASS",
+      "seconds": 0.3,
+      "detail": "PASS weapon match self-test (36 planted faults, 19 sheet ships in the table)"
+    },
+    {
+      "check": "progression_telemetry_test",
+      "result": "PASS",
+      "seconds": 0.13,
+      "detail": "PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin."
+    },
+    {
+      "check": "tree_effects_test",
+      "result": "PASS",
+      "seconds": 118.84,
+      "detail": "PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says"
+    },
+    {
+      "check": "tree_handoff_test",
+      "result": "PASS",
+      "seconds": 0.15,
+      "detail": "PASS: real campaign picks reach the battle for all six factions (four skills each):"
+    },
+    {
+      "check": "tree_table_walk_test",
+      "result": "PASS",
+      "seconds": 0.58,
+      "detail": "PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked"
+    },
+    {
+      "check": "tree_last_rows_test",
+      "result": "PASS",
+      "seconds": 3.51,
+      "detail": "PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers"
+    },
+    {
+      "check": "oracle_copy_test",
+      "result": "PASS",
+      "seconds": 0.28,
+      "detail": "PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files"
+    },
+    {
+      "check": "runner_selftest",
+      "result": "PASS",
+      "seconds": 571.73,
+      "detail": "PASS runner687+722+860: 93 checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage."
+    },
+    {
+      "check": "stage5_fail_selftest",
+      "result": "PASS",
+      "seconds": 87.21,
+      "detail": "PASS stage5_fail_selftest: 37 checks, fake executables only, no GPU, no network."
+    },
+    {
+      "check": "nem_assign_enum",
+      "result": "PASS",
+      "seconds": 0.67,
+      "detail": "PASS: all issue 120 enumeration checks"
+    },
+    {
+      "check": "nem_direct_reads_report",
+      "result": "PASS",
+      "seconds": 0.23,
+      "detail": "PASS: report only, 202 direct save reads outside godot/campaign (main 9, render 7, scenes 48, story 41, tools 3, ui 92, world 2)"
+    },
+    {
+      "check": "naming_lint_game.test",
+      "result": "PASS",
+      "seconds": 0.43,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "naming_lint_game",
+      "result": "PASS",
+      "seconds": 60.94,
+      "detail": "PASS: naming lint within the baseline"
+    },
+    {
+      "check": "checks",
+      "result": "PASS",
+      "seconds": 0.14,
+      "detail": "PASS: within the pack baseline"
+    },
+    {
+      "check": "fleet_invariants",
+      "result": "PASS",
+      "seconds": 0.5,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "save_fuzz",
+      "result": "PASS",
+      "seconds": 0.1,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "softlock_sweep",
+      "result": "PASS",
+      "seconds": 22.31,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "table_xref",
+      "result": "PASS",
+      "seconds": 0.08,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "findings_tests",
+      "result": "KNOWN",
+      "seconds": 1.34,
+      "detail": "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5"
+    },
+    {
+      "check": "oracle_drift_guard",
+      "result": "KNOWN",
+      "seconds": 0.25,
+      "detail": "KNOWN: 12 constant difference(s) within the baseline"
+    },
+    {
+      "check": "fixture_check",
+      "result": "PASS",
+      "seconds": 0.35,
+      "detail": "PASS fixture corrupt2 pair"
+    }
+  ],
+  "frame_gate": {
+    "main": {
+      "frame_medians_1080_ms": [
+        4.393,
+        5.271,
+        5.639
+      ],
+      "gpu_medians_4k_ms": [
+        5.34800004959106,
+        5.31799983978271,
+        5.31799983978271
+      ],
+      "frame_range": [
+        4.393,
+        5.639
+      ],
+      "gpu_range": [
+        5.31799983978271,
+        5.34800004959106
+      ],
+      "first_build_ms": 18201.002,
+      "solo": true
+    },
+    "egg": {
+      "frame_medians_1080_ms": [
+        3.731,
+        4.56,
+        4.422
+      ],
+      "gpu_medians_4k_ms": [
+        5.28499984741211,
+        5.28700017929077,
+        5.34200000762939
+      ],
+      "frame_range": [
+        3.731,
+        4.56
+      ],
+      "gpu_range": [
+        5.28499984741211,
+        5.34200000762939
+      ],
+      "first_build_ms": 17133.297,
+      "solo": true
+    },
+    "fitted": {
+      "frame_medians_1080_ms": [
+        4.101,
+        4.225,
+        3.846
+      ],
+      "gpu_medians_4k_ms": [
+        5.32000017166138,
+        5.30200004577637,
+        5.32299995422363
+      ],
+      "frame_range": [
+        3.846,
+        4.225
+      ],
+      "gpu_range": [
+        5.30200004577637,
+        5.32299995422363
+      ],
+      "first_build_ms": 33176.413,
+      "solo": true
+    }
+  },
+  "geometry": {
+    "C15s_23": {
+      "vertices": 65800,
+      "triangles": 131612,
+      "nonmanifold_edges": 0,
+      "components": 1,
+      "euler": -6,
+      "gap_samples": 256,
+      "gap_min": 0.4044052531527032,
+      "gap_median": 0.6145741599233372,
+      "gap_max": 0.6772009744969762,
+      "gap_median_by_length_bin": [
+        0.6199149519348603,
+        0.61347866343132,
+        0.6186329501043552,
+        0.618023956490029,
+        0.6134983396122689,
+        0.6168398717104878,
+        0.5818583698949215,
+        0.6054435247580309
+      ]
+    },
+    "H9_23": {
+      "vertices": 30328,
+      "triangles": 60652,
+      "nonmanifold_edges": 0,
+      "components": 1,
+      "euler": 2,
+      "gap_samples": 256,
+      "gap_min": 0.19909008216442584,
+      "gap_median": 0.39285817939652967,
+      "gap_max": 0.468582296719923,
+      "gap_median_by_length_bin": [
+        0.38391116631034167,
+        0.4035177911987349,
+        0.38190573504394576,
+        0.39356922636796576,
+        0.40180554487196496,
+        0.397540565945537,
+        0.3988509093141691,
+        0.37947696122894276
+      ]
+    },
+    "D21_23": {
+      "vertices": 45070,
+      "triangles": 90184,
+      "nonmanifold_edges": 0,
+      "components": 1,
+      "euler": -22,
+      "gap_samples": 256,
+      "gap_min": 0.06243556297895796,
+      "gap_median": 0.2862229520035907,
+      "gap_max": 0.39296054021422205,
+      "gap_median_by_length_bin": [
+        0.27420667993047254,
+        0.280997614078955,
+        0.3068400831158438,
+        0.2846713719582479,
+        0.2961446490816482,
+        0.2571435749699213,
+        0.28571989140642917,
+        0.2926498325634261
+      ]
+    }
+  },
+  "pictures": {
+    "repeatability": {
+      "main_egg_corsair_170": true,
+      "main_egg_corsair_60": true,
+      "main_egg_hegemony_170": true,
+      "main_egg_hegemony_60": true,
+      "main_egg_deathless_170": true,
+      "main_egg_deathless_60": true,
+      "main_fitted_corsair_170": true,
+      "main_fitted_corsair_60": true,
+      "main_fitted_hegemony_170": true,
+      "main_fitted_hegemony_60": true,
+      "main_fitted_deathless_170": true,
+      "main_fitted_deathless_60": true,
+      "after_egg_corsair_170": true,
+      "after_egg_corsair_60": true,
+      "after_egg_hegemony_170": true,
+      "after_egg_hegemony_60": true,
+      "after_egg_deathless_170": true,
+      "after_egg_deathless_60": true,
+      "after_fitted_corsair_170": true,
+      "after_fitted_corsair_60": true,
+      "after_fitted_hegemony_170": true,
+      "after_fitted_hegemony_60": true,
+      "after_fitted_deathless_170": true,
+      "after_fitted_deathless_60": true
+    },
+    "repeatability_pixel_sha256": {
+      "main_egg_corsair_170": {
+        "r1": "bb3bcea6f1a689058449d470bf8ab502136490705cada4853556f27592c8fe6f",
+        "r2": "bb3bcea6f1a689058449d470bf8ab502136490705cada4853556f27592c8fe6f"
+      },
+      "main_egg_corsair_60": {
+        "r1": "ae4e82617b44a825799db1bd670a61711f775a6277cf64ee05a8754aac2aa148",
+        "r2": "ae4e82617b44a825799db1bd670a61711f775a6277cf64ee05a8754aac2aa148"
+      },
+      "main_egg_hegemony_170": {
+        "r1": "db2d7266737ea460c7ada4d0730a17cfecc4dda67ddbe505cd718529a9716864",
+        "r2": "db2d7266737ea460c7ada4d0730a17cfecc4dda67ddbe505cd718529a9716864"
+      },
+      "main_egg_hegemony_60": {
+        "r1": "44870f0fda04ffe2784c7b65d6548b32f9b80945af19a8bfeb7c962b70b7dbfd",
+        "r2": "44870f0fda04ffe2784c7b65d6548b32f9b80945af19a8bfeb7c962b70b7dbfd"
+      },
+      "main_egg_deathless_170": {
+        "r1": "8d746cd37abef473ece4b2aab6cc2eb42ebcd2011873ac991bd3d24ea569ad5b",
+        "r2": "8d746cd37abef473ece4b2aab6cc2eb42ebcd2011873ac991bd3d24ea569ad5b"
+      },
+      "main_egg_deathless_60": {
+        "r1": "8bee8fd701a8620d11ab70f9800a3fd254afe7a857c7c9c4f240fb8020a31ad2",
+        "r2": "8bee8fd701a8620d11ab70f9800a3fd254afe7a857c7c9c4f240fb8020a31ad2"
+      },
+      "main_fitted_corsair_170": {
+        "r1": "9dd5541f74a9bd9739c5385d65f46741a2e8da5b3ee5beaab61eb74ed2d98822",
+        "r2": "9dd5541f74a9bd9739c5385d65f46741a2e8da5b3ee5beaab61eb74ed2d98822"
+      },
+      "main_fitted_corsair_60": {
+        "r1": "5f155ffa5c0e462ddfce6e9d7422fa35e77bbac499e45d10e4436260dce66296",
+        "r2": "5f155ffa5c0e462ddfce6e9d7422fa35e77bbac499e45d10e4436260dce66296"
+      },
+      "main_fitted_hegemony_170": {
+        "r1": "21e44056b955c44860c064a1bfe4131f46b94d1212dd1d06e9af10d8c0cd8ba1",
+        "r2": "21e44056b955c44860c064a1bfe4131f46b94d1212dd1d06e9af10d8c0cd8ba1"
+      },
+      "main_fitted_hegemony_60": {
+        "r1": "1a92e52807fe146d37bb55bce664722ff9c77b8e14a837074304da71e7a863bb",
+        "r2": "1a92e52807fe146d37bb55bce664722ff9c77b8e14a837074304da71e7a863bb"
+      },
+      "main_fitted_deathless_170": {
+        "r1": "7d6265815e9aa7440cb8cfe8f719e8513fb81adaab19566db3da46bdbab6128e",
+        "r2": "7d6265815e9aa7440cb8cfe8f719e8513fb81adaab19566db3da46bdbab6128e"
+      },
+      "main_fitted_deathless_60": {
+        "r1": "2cf90680b55215b767880cd8d00ceff6532845111c72fa863e7ee5b08587a01a",
+        "r2": "2cf90680b55215b767880cd8d00ceff6532845111c72fa863e7ee5b08587a01a"
+      },
+      "after_egg_corsair_170": {
+        "r1": "dd44df2c636d627306cec3687c031dfa34212c03e39cc8cc79c2547c9bc88a37",
+        "r2": "dd44df2c636d627306cec3687c031dfa34212c03e39cc8cc79c2547c9bc88a37"
+      },
+      "after_egg_corsair_60": {
+        "r1": "b0f3db86db9e3e50e61b7ec0edfefb2047412dd130897f15af003618a0699061",
+        "r2": "b0f3db86db9e3e50e61b7ec0edfefb2047412dd130897f15af003618a0699061"
+      },
+      "after_egg_hegemony_170": {
+        "r1": "2ab528d07c5b1b991ad5d057167324383fcad0d051807d7b439f7233a373f6cd",
+        "r2": "2ab528d07c5b1b991ad5d057167324383fcad0d051807d7b439f7233a373f6cd"
+      },
+      "after_egg_hegemony_60": {
+        "r1": "da877c73500fcd27908eac9ca97b2eb5596630bb8120303077504db3ad3bd495",
+        "r2": "da877c73500fcd27908eac9ca97b2eb5596630bb8120303077504db3ad3bd495"
+      },
+      "after_egg_deathless_170": {
+        "r1": "05b6019b974d41977c3e4ce3dc263a67fb2216c902bde397da263049dc96c289",
+        "r2": "05b6019b974d41977c3e4ce3dc263a67fb2216c902bde397da263049dc96c289"
+      },
+      "after_egg_deathless_60": {
+        "r1": "40efb498e7d8bce832bf713d255e3082c7e7e477ab89b3ca2e5a4d51692ef5a0",
+        "r2": "40efb498e7d8bce832bf713d255e3082c7e7e477ab89b3ca2e5a4d51692ef5a0"
+      },
+      "after_fitted_corsair_170": {
+        "r1": "a7df7f1f8d0b0d228ab2af872114058b7a0981868d5a5498d8132413f838a632",
+        "r2": "a7df7f1f8d0b0d228ab2af872114058b7a0981868d5a5498d8132413f838a632"
+      },
+      "after_fitted_corsair_60": {
+        "r1": "ce174d39e85dbf13b0afcc823a646e695fba1665216aae53f071f2deccf0ee3e",
+        "r2": "ce174d39e85dbf13b0afcc823a646e695fba1665216aae53f071f2deccf0ee3e"
+      },
+      "after_fitted_hegemony_170": {
+        "r1": "a95be70034f975f99a90bfdb4070b713a53ab874d41fbb5c70e6f56ce4034d3a",
+        "r2": "a95be70034f975f99a90bfdb4070b713a53ab874d41fbb5c70e6f56ce4034d3a"
+      },
+      "after_fitted_hegemony_60": {
+        "r1": "a7a2fe3c1904c9ad98d15a6b7aa45856700a146e452d2579273a75579b595d08",
+        "r2": "a7a2fe3c1904c9ad98d15a6b7aa45856700a146e452d2579273a75579b595d08"
+      },
+      "after_fitted_deathless_170": {
+        "r1": "8ef647dda888bf394522db095ff303c757a85dada62b6a6b6c44e8cfc7b58b06",
+        "r2": "8ef647dda888bf394522db095ff303c757a85dada62b6a6b6c44e8cfc7b58b06"
+      },
+      "after_fitted_deathless_60": {
+        "r1": "1ff9bf1b61071b61827aa2b91273e444de4fb85aee5d3fb6030bf855db8eb275",
+        "r2": "1ff9bf1b61071b61827aa2b91273e444de4fb85aee5d3fb6030bf855db8eb275"
+      }
+    },
+    "pictures": [
+      "C15s_23_main_egg_fitted_c170.png",
+      "H9_23_main_egg_fitted_c170.png",
+      "D21_23_main_egg_fitted_c170.png",
+      "C15s_23_main_egg_fitted_c60.png",
+      "H9_23_main_egg_fitted_c60.png",
+      "D21_23_main_egg_fitted_c60.png",
+      "C15s_23_after_egg_fitted_c170.png",
+      "H9_23_after_egg_fitted_c170.png",
+      "D21_23_after_egg_fitted_c170.png",
+      "C15s_23_after_egg_fitted_c60.png",
+      "H9_23_after_egg_fitted_c60.png",
+      "D21_23_after_egg_fitted_c60.png",
+      "C15s_23_fitted_skin_side_top.png",
+      "H9_23_fitted_skin_side_top.png",
+      "D21_23_fitted_skin_side_top.png"
+    ],
+    "all_repeats_identical": true
+  },
+  "contact_probe": {
+    "fitted_aimed_contacts": 384,
+    "fitted_cardinal_contacts": 48,
+    "max_contact_error_limit": 0.001,
+    "normal_and_reduced_flashing": true,
+    "impact_and_collapse_discs": 0,
+    "result": "PASS"
+  },
+  "destruction": "PASS",
+  "docs": "PASS",
+  "base_928_patch_applies": true,
+  "source_files": {
+    "godot/fx/fx_ship.gd": "c4b7351cff6ca23b114373ef198ef327dbcbbfbf385320a64139bd8a3f945270",
+    "godot/fx/fx_shaders.gd": "6f356c62acc5a4fe838224c8eba8100a2e57fe09a0dab4eeee2e0b4a5711af37",
+    "godot/fx/fx_weapons.gd": "15248ac204f44517058dfa6134292d5ab8a0ec75d05dd645c2f3f965e75010a3"
+  },
+  "logs": {
+    "standing.log": "95c5dc2683743531f085c3e7085c556cd1c63496f14b2613cce0e8e98c239ba6",
+    "surface_hits_stdout.log": "44162b4ecc348a00d7a6c4bed11e9e1d14ed05c385ffaf2bc5357ba3d57a02fa",
+    "destruction_final_stdout.log": "5c40760594f6e8330834877a36283a02e89641c057dbf04cb9ce99beb73c7fe4",
+    "baseline_spawn_stdout.log": "df2ce4c1ce1756ff2bcc52ab94078f00c696fb9226e3e5078a533f73078e8826",
+    "docs.log": "38c23200ef6b541adaa264d1f4d922a6b5540fe9e814e2a9f502e2e0c238ded7",
+    "final_fx_source.log": "e4651b558c8b2fb901c80a1b8fa7803ab5ead116dbb930eab7f99d9086b6ac3d"
+  }
+}

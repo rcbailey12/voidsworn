@@ -1,0 +1,61 @@
+{
+  "result": "PASS",
+  "design_sha256": "711e7b5bfffcb2c97f1bc99d6526d6a8ff5d3ba1a6c6c576e830e56566ead13e",
+  "review_pictures": [
+    {
+      "file": "docs/ship_pipeline/build_sheets/ithar_CD5/compare.jpg",
+      "sha256": "17d4e18bde131db1778b05dd6ba625fa1ab600dd0d24daeb0dc65a0f8691044e",
+      "stage": "sheet built",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745"
+    },
+    {
+      "file": "docs/ship_pipeline/build_sheets/ithar_CD5/top.jpg",
+      "sha256": "1dbb3b019c2b2260d975db82c3f4c0a177b02518113f1dec570a3a8647cecc92",
+      "stage": "sheet built",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745"
+    },
+    {
+      "file": "docs/ship_pipeline/build_sheets/ithar_CD5/side.jpg",
+      "sha256": "95a395cbf0f9a9829a84673553be4e8ad5d0958b7851a9d9854bb1ae17ffe303",
+      "stage": "sheet built",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745"
+    },
+    {
+      "file": "docs/ship_pipeline/build_sheets/ithar_CD5/camera170.jpg",
+      "sha256": "69b8c5f076aa8b2458060de0edfb53181fe2d5ffca45a02399c00edcd559b26b",
+      "stage": "sheet built",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745"
+    },
+    {
+      "file": "docs/ship_pipeline/build_sheets/ithar_CD5/sheet.jpg",
+      "sha256": "cb2ee397579d164cc1f01613ae1e587de0b51f86b614e699339e360664e27fe4",
+      "stage": "sheet built",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745"
+    },
+    {
+      "file": "docs/ship_pipeline/build_sheets/ithar_CD5/inside.jpg",
+      "sha256": "96ec85aea5973db7df0ecba0df1271f9efa6ab1712999e7f7e7bc4c32cf336c0",
+      "stage": "sheet built",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745"
+    },
+    {
+      "file": "docs/ship_pipeline/build_sheets/ithar_CD5/fit_view.jpg",
+      "sha256": "3b5a6e3f945be99df20fd7c681639d96be65cd90f22c0bc7e451a19c37ce12b8",
+      "stage": "sheet built",
+      "source_commit": "23a9f63ab3bad2b5d6fb3ed32f127e0d7e9822e4",
+      "source_diff_sha256": "c02a7c7dc9f2e6842dda6b263085ad80ce01ab76ca9251f710bed7b3e637b745"
+    }
+  ],
+  "concept": {
+    "file": "docs/ship_pipeline/build_sheets/ithar_CD5/concept.jpg",
+    "width": 1536,
+    "format": "JPEG",
+    "sha256": "1e52a4f70ead837a32b9edc29d91d6de34fdd069dd711ec9492d09577f814719"
+  }
+}

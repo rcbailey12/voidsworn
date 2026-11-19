@@ -1,0 +1,138 @@
+{
+ "seeds": [
+  1000,
+  1001,
+  1002,
+  1003,
+  1004,
+  1005,
+  1006,
+  1007,
+  1008,
+  1009,
+  1010,
+  1011
+ ],
+ "configs": [
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "name": "rout-base"
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "name": "rout-125",
+   "spm": 1.25,
+   "rng": 1.25
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "name": "rout-15",
+   "spm": 1.5,
+   "rng": 1.5
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "name": "h3-base",
+   "obj": "hold",
+   "sites3": 1
+  },
+  {
+   "map": "belt",
+   "shape": "open",
+   "arena": "strip",
+   "player": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "enemy": [
+    "h_vanguard",
+    "h_interdictor",
+    "h_interdictor",
+    "h_picket",
+    "h_picket",
+    "h_dominion"
+   ],
+   "name": "h3-125",
+   "obj": "hold",
+   "sites3": 1,
+   "spm": 1.25,
+   "rng": 1.25
+  }
+ ]
+}

@@ -1,0 +1,105 @@
+{
+  "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+  "source_dirty": true,
+  "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "KB1CC.jpg",
+  "date": "2026-11-19T03:33:31Z",
+  "sources": [
+    {
+      "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+      "source_dirty": true,
+      "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "corsair_KB1CC_old.png",
+      "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+      "source_dirty": true,
+      "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+      "stage": "installed in game",
+      "date": "2026-11-19T03:32:52Z",
+      "image_sha256": "e492ef07a2f06adfca2b9a2fccd87b66271d2dec7cd00162db9cb0c5c6d21b60",
+      "sources": [
+        {
+          "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+          "source_dirty": true,
+          "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_KB1CC_new.png",
+      "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+      "source_dirty": true,
+      "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+      "stage": "installed in game",
+      "date": "2026-11-19T03:32:52Z",
+      "image_sha256": "a47a377847cf4f2f20baf041528c5681e334017b23bd8a77c582d7c6abe6e7f1",
+      "sources": [
+        {
+          "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+          "source_dirty": true,
+          "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_KB1CC_close.png",
+      "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+      "source_dirty": true,
+      "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+      "stage": "installed in game",
+      "date": "2026-11-19T03:32:52Z",
+      "image_sha256": "04ef039e308c82433ebecf56b1b81b4f7c95f2ad97f2d43a0e9d23f4f5bcc1f8",
+      "sources": [
+        {
+          "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+          "source_dirty": true,
+          "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_KB1CC_launch.png",
+      "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+      "source_dirty": true,
+      "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+      "stage": "installed in game",
+      "date": "2026-11-19T03:32:52Z",
+      "image_sha256": "28db0b9070109eb003214a9aaa4f26bbeb380a52169a2a8811520373bdf0c40b",
+      "sources": [
+        {
+          "source_commit": "8142648205c97ab7101b93eee7b9658dc8441cf0",
+          "source_dirty": true,
+          "source_diff_sha256": "45f2e94de72879bbad8a068c42a03ad72747b1831477b2b276142c202efef101",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "521dedf4b4379787da8179f4050d2663e5bdd18cea32b440d1703a3a94399960"
+  ],
+  "stamp_template_sha256": "4a46e31541b94529e336164e7b298d140136a59f90c82146a79dd333fe5b0a4f",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABtElEQVR4nO3VsQ2CUABFUT4TWNmyK7WtdnauREiYxi0uCZyzwHvdHY/nMsHVra/37/s59u3sI8CtDdEFgMYc7QDA7YkuAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAwNf4ImQdNY0FuqgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "394c30130b4f04ddc40c177b5a71e743daabb9bd10851acad5ff82807d154e67"
+}

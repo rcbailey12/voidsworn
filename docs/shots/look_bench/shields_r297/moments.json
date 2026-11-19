@@ -1,0 +1,378 @@
+{
+ "cameras": [
+  170,
+  60
+ ],
+ "cell": [
+  300,
+  200
+ ],
+ "crop": {
+  "170": [
+   300,
+   200
+  ],
+  "60": [
+   600,
+   400
+  ]
+ },
+ "rows": [
+  {
+   "id": "voidsworn_shield",
+   "label": "voidsworn torpedo shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "voidsworn_hull",
+   "label": "voidsworn torpedo hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "hegemony_shield",
+   "label": "hegemony torpedo shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "hegemony_hull",
+   "label": "hegemony torpedo hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "corsair_shield",
+   "label": "corsair torpedo shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "corsair_hull",
+   "label": "corsair torpedo hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "ithar_shield",
+   "label": "ithar torpedo shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "ithar_hull",
+   "label": "ithar torpedo hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "shots": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0,
+     1
+    ],
+    [
+     "impact",
+     0.1,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "corsair_break",
+   "label": "corsair shield collapse smoke",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Cruiser"
+   ],
+   "do": "break",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0,
+     1
+    ],
+    [
+     "event",
+     0.1,
+     1
+    ],
+    [
+     "event",
+     0.3,
+     1
+    ],
+    [
+     "event",
+     0.6,
+     1
+    ]
+   ]
+  }
+ ]
+}

@@ -1,5 +1,53 @@
 # corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups, into the recipe)
 
+**Issue 876 run 2 / R292, Nov 16: the rocket support is a taller, terraced block.** Built on run 1, PR 884
+(`ed59692f`), the outer support roof rises from 1.2 to 1.56 at the same broad 3.9 width. Two plated terraces at 1.12
+and 1.32 step down toward the foredeck; a rear step at 1.4 joins the existing ramp. The fixed rocket magazine sits
+inside this outer block. The pod, plinth, weapons, hard points, break lines, hatch, slits and all 20 inside objects stay
+where run 1 put them. Only U2, its roof patches and the two new step plates change from run 1.
+
+**Current pictures:** [concept, run 0, run 1 and run 2 in one row, with the support crop](r292_revisions.jpg);
+[true side and three-quarter, all three runs](r292_side_threequarter.jpg). Each is 1280 by 720, labelled with revision
+and stage. Run 2 is identified by the design file's SHA256 in [the proof](r292_proof.json). All renders use the unchanged
+saved beauty camera and lighting, Blender 4.5.14, Cycles CPU, 16 samples. [Picture bake](r292_review.py).
+
+**Current sheet proof:** [record](r292_proof.json), [manifest](manifest.json), [weapon match](weapon_match.json),
+[fit](fit.json). Weapon match PASS; all eight fit counts zero; sheet-to-recipe contract PASS; inventory zero failing.
+The [geometry comparison](r292_geometry.py) checks evaluated triangles and materials against both earlier sources:
+all interiors, weapons and hardpoints are unchanged. From run 1, every changed triangle lies within the rocket support.
+Unpainted authoring budget: 85,888 exterior triangles plus 592 inside triangles, 86,480 total, 22 materials; 40 fewer
+triangles than run 1. Costs are reported, never capped. The complete sheet and its annotated views are rebuilt here.
+Fresh outline overlap at the same camera: run 0 62.82 percent, run 1 63.24 percent, run 2 63.45 percent.
+The current checks and feature table use these fresh measurements; the saved camera is unchanged.
+
+**Visual comparison:** the broad block under the pod now has a clear raised roof and two forward terraces instead of
+run 1's low, nearly flat shoulder. The outer spine joins the neck, ramp and mid block without an open deck gap.
+The concept's finer recesses and weathered plate finish remain different. This is an unpainted sheet revision;
+paint, installed game assets and the scene-gate measurement are unchanged. Repaint remains with issue 726.
+
+## Earlier run 1, retained as the comparison baseline
+
+**Issue 876 / R289, Nov 16: raised rocket support restored.** The outer fore block rises from 0.9 to 1.2, widens from
+3.7 to 3.9, and extends into the neck and ramp. The ramp joins the mid block with a shorter front slope. The red roof
+plates follow the raised roof; its two slits move to the ramp flanks. The rocket pod, plinth, every weapon, hard point,
+break line and all 20 inside objects are unchanged. See the [before and after beside the concept](r289_before_after.jpg)
+and the [side and three-quarter comparison](r289_side_threequarter.jpg), each 1280 by 720. These are unpainted sheet
+renders, Blender 4.5.14, Cycles CPU, 16 samples, using the unchanged beauty camera. [Review picture bake](r289_review.py).
+
+**History verified.** PR 682 (`737c8cf0`, R240) changed gun barbettes and antenna heights; PR 676 (`069b4930`, R241)
+removed the two flank casemates P3 and S3. Neither removed the rocket pod, plinth, magazine or outer fore block. The outer
+fore block's low 0.9 roof and 1.85 half-width date to the round 3b massing change (`8bbcd8dc`). The earlier interior-fit
+change (`ec258053`) lowered the internal top deck from 0.9 to 0.3 and reduced the magazine and crew spaces; it did not
+lower or narrow that outer block. This repair adds outer mass around the fitted insides, preserving that interior work.
+
+**Run 1 sheet proof (historical):** [record](r289_proof.json). Weapon match PASS; all eight fit counts zero;
+sheet-to-recipe contract PASS; inventory zero failing. The current manifest and views above belong to run 2.
+Unpainted authoring geometry: 85,928 exterior triangles plus 592 inside triangles, 86,520 total, 22 materials. This is
+312 triangles above the before sheet. These are sheet costs, not a new game export or scene-gate measurement. The outline
+picture is rescored with the current recipe mask and fixed camera: before 62.82 percent, after 63.24 percent. This is
+a fresh pair of measurements, separate from the older cached 73.8 percent entry; overlap is reported, not gated.
+The paint and game install remain the earlier versions below; repaint follows in issue 726.
+
 **Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 27 machines, zero split, zero inside triangles beyond their piece. Budget: 86208 triangles, 18 surfaces, 8473 inside triangles. Costs reported; the scene gate was not measured.
 
 **Issue 676, PC verification (Nov 14, CPU).** The latest sheet and named [weapon picture](weapon_review.jpg) were rebuilt on this PC with Blender 4.5.14, Cycles CPU, 12 samples. [Weapon match](weapon_match.json): PASS, zero problems; the [feature table](feature_table.md) lists every data slot, its shots and its visible mounts. The outline comparison remains the earlier reported reference. This is an unpainted weapon proof; the Board queues the paint bake.

@@ -57,6 +57,11 @@ His scope answers:
 6. **Roll out.** The rest of that kind (the other 34 hulls, the other weapons, the other hexes) becomes jobs written from the
    playbook's template, for DeepSeek, Codex or Opus. Fable only reviews their pictures.
 
+Standing rules for every flow (Nov 16 2026, issue 880): the run brief lives in the issue body, one current instruction
+(R281); an open issue is not proof of undone work, and a merge closes its issue in the same step when its scope is done
+(R288); every picture carries its revision and stage; and visual work is compared with its concept and ruling, with the
+misses stated plainly, before it merges (RULEBOOK 2.3 and 2.4).
+
 ## Who does what (rewritten Nov 11 2026 evening; the live list is contrib/opus/LOOP.md "The seats")
 
 Ryan, Nov 11, 06:43 CST: "I just used the final fable reset, so let's cool it on fable usage outside of this chat. Opus worker
@@ -160,7 +165,7 @@ A playbook is done when a model that has never seen this repo ships the next ite
 
 - Ryan's Fable resets are all used (R180). The Board and Opus workers draw the Claude plan: two Opus workers at most while the
   Board thread is active (the five-hour limit was hit on Nov 11 with three; LOOP.md duties item 9).
-- Codex gives about 100 minutes of work per five-hour window; one Codex job and one GPU job at a time on the PC.
+- Codex gives about 100 minutes of work per five-hour window; one Codex job per lane; GPU work sized to the job (RULEBOOK 3.4, R293).
 - If a limit is hit, nothing stops: DeepSeek, Muse and Codex keep running the rows that are theirs, and the Board's picks wait
   in LOOP.md.
 

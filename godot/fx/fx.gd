@@ -9,6 +9,7 @@ extends Node3D
 const BREACH := preload("res://fx/fx_breach.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
+const FRAGMENTS := preload("res://fx/fx_fragments.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
@@ -28,9 +29,7 @@ const REACH_ATTEN := 0.6
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
 const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1 general flash threshold)
 const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
-const FLASH_SCREEN := 0.06   # ... and only when it covers at least this share of the screen height (small sparks are free)
 const FLASH_LIGHT := 8.0     # light peak from which a decaying event light counts (it lights a big patch of hull)
-const FLASH_KINDS := [0, 2, 12, 13, 24]   # includes the distance-readable death core
 
 # --- the flash counter's assumptions, all in one place (issue 504; W3C Understanding SC 2.3.1)
 # W3C counts a general flash only when "the combined area of flashes occurring concurrently" passes ".006 steradians
@@ -120,7 +119,7 @@ var rng = RandomNumberGenerator.new()
 
 # --- lights
 var _lpool: Array = []
-var _lev: Array = []        # [pos, t0, life, peak, col, shape, reach]
+var _lev: Array = []        # [pos, t0, life, peak, col, shape, reach, started]
 var _lsrc: Array = []       # persistent: {node, off, col, base, flick, seed}
 
 # --- feel
@@ -152,6 +151,12 @@ var _dim_t0 := -1.0
 
 static var _globals_added := false
 static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
+var hull_arrays := {}
+var _damage_templates := {}
+var _power_templates := {}
+var _dark_interiors := {}
+var defer_initial_cuts := false
+var _piece_builds: Array = []
 
 
 static func register_globals() -> void:
@@ -190,6 +195,11 @@ func release() -> void:
 		for l in w.get("lights", []):
 			l["on"] = false
 	ships.clear()
+	hull_arrays.clear()
+	_damage_templates.clear()
+	_power_templates.clear()
+	_dark_interiors.clear()
+	_piece_builds.clear()
 	_later.clear()
 	_lev.clear()
 	_lsrc.clear()
@@ -246,6 +256,9 @@ func setup(opts := {}) -> void:
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
 	pools["shd"] = POOLS.Pool.new(768 if big else 384, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
+	var finish_slots := FRAGMENTS.COMPAT_FINISH_SLOTS if compat else FRAGMENTS.FINISH_SLOTS
+	var fragment_mat := _mat(SH.hit_fragment_code(finish_slots), 0, "", "hit fragments")
+	pools["plate"] = FRAGMENTS.Pool.new(384 if big else 192, fragment_mat, finish_slots, self, FRAGMENTS.templates()[0], FRAGMENTS.atlas())
 	if big:
 		pools["dst"] = POOLS.Pool.new(256, _mat(SH.DISTORT, -20), self, "fx_distort", POOLS.quad_shape())
 	for k in (64 if big else (24 if rich else 8)):
@@ -345,6 +358,7 @@ func step(delta: float) -> void:
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
 	_run_later()
+	_build_death_pieces()
 	t0 = pend("later", t0)
 	_update_feel(delta)
 	_update_dim()
@@ -356,7 +370,10 @@ func step(delta: float) -> void:
 	t0 = pend("weap_death", t0)
 	_update_lights()
 	for k in pools:
-		(pools[k] as POOLS.Pool).flush()
+		if k == "plate":
+			(pools[k] as FRAGMENTS.Pool).flush(now)
+		else:
+			(pools[k] as POOLS.Pool).flush()
 	pend("lights_pools", t0)
 
 
@@ -443,14 +460,16 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 	# every bright, short, flash-like sprite goes through the flash budget here, whoever calls it (muzzle cores, beam
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
 	# Issue 504: the counter adds this sprite's lit area to the bright ones around it (flash_at).
-	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or not flash_at(p, t, maxf(s0, s1), px, life)):
-		kind = 18
-		i = minf(i, 3.0) * 0.4
-		life = maxf(life * 3.0, 0.4)
+	if i >= FLASH_I and life <= 0.6 and SH.FLASH_SPRITE_FLOORS.has(kind):
+		var size := s0 if kind == 13 else maxf(s0, s1) # The crackle does not grow.
+		if not flash_at(p, t, size, SH.flash_sprite_floor(kind, px), life):
+			kind = 18
+			i = minf(i, 3.0) * 0.4
+			life = maxf(life * 3.0, 0.4)
 	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px)
 
 
-# The sprite itself, after the flash decision (pop books its own, so it must not be booked twice).
+# The sprite itself, after the flash decision. Pop and shield crackle book their own pictures.
 func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
 		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
@@ -500,6 +519,16 @@ func shd(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: flo
 	var ax = rdir()
 	(pools["shd"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
 		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, 0.0, tint, drag), Vector4(heat, rng.randf(), 0.0, 0.0)))
+
+
+# Hull ejecta shares one bounded ring. A negative profile key gives a lead piece the full screen-size floor.
+func hit_fragment(p: Vector3, t: float, life: float, vel: Vector3, size: float, heat: float, spin: float, drag: float,
+		paint: Color, profile: int, lead: bool, finish := {}) -> void:
+	var ax := rdir()
+	var particle := POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
+		Vector4(ax.x, ax.y, ax.z, spin), Vector4(size * unit, rng.randf(), -1 - profile if lead else profile, drag),
+		Vector4(paint.r, paint.g, paint.b, heat))
+	(pools["plate"] as FRAGMENTS.Pool).emit(particle, finish)
 
 
 func dst(p: Vector3, t: float, life: float, s0: float, s1: float, kind: int, strength: float) -> void:
@@ -694,15 +723,24 @@ func _flash_vh() -> float:
 	return 1080.0
 
 
-# Where a flash sits on screen and how wide it is drawn: [x, y, d] in viewport pixels, or empty when behind the camera.
+# [Screen x, y, diameter]. Like the billboard shaders, project a camera-facing extent at its view-space Z.
+# Match px_world in fx_shaders.gd for the floor, including orthographic cameras and the near-depth clamp.
 func _flash_disc(p: Vector3, size: float, px: float) -> PackedFloat64Array:
 	if camera == null or not is_instance_valid(camera) or not camera.is_inside_tree() or camera.is_position_behind(p):
 		return PackedFloat64Array()
-	var d := maxf(camera.global_position.distance_to(p), 0.01)
-	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
-	var shown := maxf(size * unit / h, maxf(px, 14.0) * min_px / 1080.0)   # the same drawn size _flash_sized uses
+	var projection := camera.get_camera_projection()
+	var depth := -(camera.get_camera_transform().affine_inverse() * p).z
+	var ortho := projection.w.w > 0.5
+	var p11 := absf(projection.y.y)
+	var clip_w := 1.0 if ortho else depth
+	if clip_w <= 0.0:
+		return PackedFloat64Array()
+	var floor_depth := 1.0 if ortho else maxf(depth, 0.01)
+	var vh := _flash_vh()
+	var world_px := size * float(unit) * p11 * vh / (2.0 * clip_w)
+	var floor_px := px * float(min_px) * (vh / 1080.0) * (floor_depth / clip_w) * (p11 / maxf(p11, 0.0001))
 	var sp := camera.unproject_position(p)
-	return PackedFloat64Array([sp.x, sp.y, ceilf(shown * _flash_vh())])
+	return PackedFloat64Array([sp.x, sp.y, ceilf(maxf(world_px, floor_px))])
 
 
 func _flash_remember(T: float, life: float, c: PackedFloat64Array) -> void:
@@ -776,14 +814,11 @@ func _flash_lit_max(T: float, life: float, c: PackedFloat64Array) -> float:
 
 
 # A bright pop (impact flash, explosion core) through the budget: the full flash, or a ring and a gentle lift.
-# F3 round 2: a pop smaller on screen than the WCAG area threshold (6% of the screen height, `_flash_sized`, the same
-# rule spr uses) is not a counted flash and never waits on the budget; before, every pop booked a flash, so in a busy
-# fight most hits (and a dying ship's cook-off) used up the 3 a second and drew as faint lifts, and the kill's own blast
-# was refused. `px` is the pop's own pixel floor (see spr).
+# `px` is the pop's own pixel floor (see spr); a pop only spends a slot if the combined area calls for it.
 func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.UP, life := 0.14, px := 0.0) -> void:
 	# Issue 504: one booking by area (flash_at), whatever its brightness (as on main: every pop is a candidate); the
 	# bright sprite is then drawn without a second booking.
-	if not reduce_flashing and flash_at(p, T, size, px, life):
+	if flash_at(p, T, size, SH.flash_sprite_floor(0, px), life):
 		_emit_spr(p, T, life, col, i, size * 0.6, size, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	else:
 		spr(p, T, maxf(life * 3.0, 0.4), col, minf(i, 3.0) * 0.4, size * 0.5, size * 1.2, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
@@ -799,7 +834,7 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 #
 # Issue 504: a light that goes with a refused flash is no longer dropped. It keeps its colour and place and rises softly
 # (shape 3: a 0.1 s or longer rise, then the same fall) at most just under the peak that counts, so the hulls around a
-# refused flash are still lit without a sharp step. Reduce flashing is untouched (its own path below).
+# refused flash are still lit without a sharp step. Reduce Flashing also softens queued or already visible lights.
 # Issue 461 (audit item 11): `reach` is how far the light carries, in world units (0: the pool's standing 30, about 1.7
 # hexes). A torpedo hit and a death's core flash pass two to three hexes, so the hulls round them are lit for the length
 # of the flash. Reach changes only how far the light falls off, never its peak, so the flash counter's rules are the same.
@@ -819,19 +854,8 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
-	_lev.append([p, t, life, peak, col, shape, reach])
-
-
-# Whether a sprite of this size at p is big enough on screen to count as a flash (WCAG counts flashes by area; small
-# muzzle flashes and sparks at battle zoom are below it). With no camera every bright sprite counts.
-func _flash_sized(p: Vector3, size: float, px := 0.0) -> bool:
-	if camera == null or not is_instance_valid(camera):
-		return true
-	var d := maxf(camera.global_position.distance_to(p), 0.01)
-	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
-	# the shaders' pixel floors grow a sprite on screen: count the size it is drawn at (round 2)
-	var shown := maxf(size * unit / h, maxf(px, 14.0) * min_px / 1080.0)
-	return shown >= FLASH_SCREEN
+		shape = 3
+	_lev.append([p, t, life, peak, col, shape, reach, false])
 
 
 func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3) -> Dictionary:
@@ -846,13 +870,29 @@ func _update_lights() -> void:
 	var cp = camera.global_position if camera != null else Vector3.ZERO
 	for e in _lev:
 		var a: float = now - float(e[1])
+		if a < 0.0:
+			keep.append(e)
+			continue
 		var life: float = e[2]
 		if a > life:
 			continue
+		if int(e[5]) == 0:
+			if reduce_flashing:
+				# A light scheduled while normal gets the same soft rise as a light scheduled in calm mode.
+				e[3] *= 0.45
+				e[2] *= 1.8
+				e[5] = 3
+			elif not bool(e[7]):
+				# Baked pictures book when they appear, after some of their lights were queued.
+				for f in _refused:
+					if absf(f - float(e[1])) < FLASH_WINDOW:
+						e[3] = minf(float(e[3]), FLASH_LIGHT * 0.9)
+						e[2] = maxf(life * 1.8, 0.4)
+						e[5] = 3
+						break
+		e[7] = true
 		keep.append(e)
-		if a < 0.0:
-			continue
-		var u = a / life
+		var u = a / float(e[2])
 		var I = 0.0
 		match int(e[5]):
 			0: I = pow(1.0 - u, 2.0)
@@ -1082,6 +1122,86 @@ func _end_dim() -> void:
 
 # ---------------------------------------------------------------- ships (API.md 2)
 
+func hull_damage_template(source: Material, length: float, organic: bool, power := false) -> ShaderMaterial:
+	if source != null and source.has_meta("fx_hull_source"):
+		source = source.get_meta("fx_hull_source")
+	var key := [source, maxf(length * 0.05, 0.001), organic]
+	if not _damage_templates.has(key):
+		_damage_templates[key] = HULL.damage_material(source, Transform3D.IDENTITY, {}, length, organic)
+	if not power:
+		return _damage_templates[key]
+	if not _power_templates.has(key):
+		_power_templates[key] = DEATH.power_material(_damage_templates[key].duplicate())
+	return _power_templates[key]
+
+
+func dark_interior(source: Material) -> Material:
+	if not _dark_interiors.has(source):
+		var dark: Material = source.duplicate()
+		if dark is BaseMaterial3D:
+			dark.emission_enabled = false
+		_dark_interiors[source] = dark
+	return _dark_interiors[source]
+
+
+func queue_death_pieces(ship: SHIP, job: Dictionary) -> void:
+	_piece_builds.append([ship, job])
+
+
+func _build_death_pieces() -> void:
+	if _piece_builds.is_empty():
+		return
+	var deadline := Time.get_ticks_usec() + DEATH.PREBUILD_BUDGET
+	while not _piece_builds.is_empty():
+		var entry: Array = _piece_builds[0]
+		if not DEATH.build_pieces(self, entry[0], entry[1], deadline):
+			return
+		_piece_builds.pop_front()
+		if Time.get_ticks_usec() >= deadline:
+			return
+
+
+func prepare_battle_hulls() -> void:
+	HULL.pause_late_watch()
+	_warm_hull_adapters()
+	var pending: Array[SHIP] = []
+	for value in ships.values():
+		var ship: SHIP = value
+		if ship.weight <= 0:
+			continue
+		for mesh in ship.meshes:
+			var mi := mesh as MeshInstance3D
+			if not is_instance_valid(mi) or mi.mesh == null:
+				continue
+			for si in mi.mesh.get_surface_count():
+				var source := mi.get_active_material(si)
+				var original := mi.mesh.surface_get_material(si)
+				var inside := ship.hull.authored and HULL.interior_material(original)
+				if inside:
+					dark_interior(source)
+				if not inside:
+					hull_damage_template(source, ship.hull.L, ship.faction == "chorus", true)
+				if not inside or original.resource_name.ends_with("_inside_skin"):
+					ship.damage_surface(self, mi, si, source)
+		pending.append(ship)
+		await get_tree().process_frame
+	# Limit simultaneous cuts so the hull workers and renderer can make progress
+	# together while the loading cover is up.
+	var active: Array[SHIP] = []
+	while not pending.is_empty() or not active.is_empty():
+		while active.size() < 3 and not pending.is_empty():
+			var ship: SHIP = pending.pop_front()
+			DEATH.precompute(self, ship, "blast", true)
+			active.append(ship)
+		for i in range(active.size() - 1, -1, -1):
+			if DEATH.finish_precompute(self, active[i]):
+				active.remove_at(i)
+		await get_tree().process_frame
+	while not _piece_builds.is_empty():
+		await get_tree().process_frame
+	defer_initial_cuts = false
+
+
 func add_ship(id: String, root: Node3D, info := {}) -> void:
 	if ships.has(id):
 		remove_ship(id)
@@ -1091,6 +1211,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
 	DEATH.add_collider(self, s)
+	if defer_initial_cuts:
+		return
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
 	var n = ships.size()
 	later(now + 0.4 + 0.25 * n, func l_cut_first() -> void:
@@ -1341,24 +1463,27 @@ func tick(id: String, kind := "fire") -> void:
 func particles_emitted() -> int:
 	var n = 0
 	for k in pools:
-		n += (pools[k] as POOLS.Pool).emitted
+		n += pools[k].emitted
 	return n
 
 
 # ---------------------------------------------------------------- shader warm-up (API.md 1)
 
-# Draws every effect material once in front of the camera, in the battle's own environment and lights, so no shader
-# pipeline compiles for the first time in the middle of a fight (the first lance, shield ripple or death). Await it on
-# the loading screen after the ships, lights and world are built: `await fx.warmup(cam)`. Takes a few frames.
-func warmup(cam: Camera3D, frames := 4) -> void:
-	if cam == null:
-		return
-	# Issue 376: a warm-up builds shaders by design, and a bench may warm more than once, so the late log is off while
-	# this runs and on again when it ends. Anything built after this is a miss in the hand-kept list.
-	HULL.pause_late_watch()
+func _warm_hull_adapters() -> void:
 	# The temporary PBR adapter is queried for uniforms at death too. Keep its
 	# shader alive so that query never recompiles it for each new ship.
 	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
+	_shaders["hull_exterior_alpha"] = HULL.shared_shader(HULL.exterior_alpha_code(), "exterior_alpha")
+
+
+# Draw the effect materials under the loading cover so their pipelines are ready for battle.
+func warmup(cam: Camera3D, frames := 4) -> void:
+	if cam == null:
+		return
+	# Issue 376: rebuilds under the load cover are expected. Start the late watch
+	# once the warm objects have drawn.
+	HULL.pause_late_watch()
+	_warm_hull_adapters()
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -1371,6 +1496,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
+	hit_fragment(at, T, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1, c, FRAGMENTS.PLATE, false)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	var tmp = Node3D.new()
@@ -1414,6 +1540,11 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		wgas.set_shader_parameter("intensity", 0.01)
 		mats.append(wgas)
 	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
+		if rel.begins_with("weapons/"):
+			var hit := WEAP.hull_impact_material(self, rel)
+			hit.set_shader_parameter("born", now)
+			hit.set_shader_parameter("intensity", 0.01)
+			mats.append(hit)
 		for variant in 3:
 			var production := DEATH.route_material(self, SH.DEATH_FLIPBOOK, rel, true, variant)
 			production.set_shader_parameter("born", now)
@@ -1497,15 +1628,20 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				hk += 1
 			# Warm the actual cuttable PBR surface in this hull's vertex format too.
 			var dm := MeshInstance3D.new()
+			var pm := MeshInstance3D.new()
 			dm.mesh = smi.mesh
+			pm.mesh = smi.mesh
 			for si in smi.mesh.get_surface_count():
-				dm.set_surface_override_material(si, HULL.damage_material(smi.get_active_material(si), Transform3D.IDENTITY, {}, 1.0))
-				var hs: Shader = (dm.get_surface_override_material(si) as ShaderMaterial).shader
-				_shaders["warm:" + str(hs.code.hash())] = hs
+				var source := smi.get_active_material(si)
+				dm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus"))
+				pm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus", true))
 			var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
 			dm.scale = Vector3.ONE * (0.6 * unit / dext)
 			dm.position = Vector3(0, -2, 1) * unit
+			pm.scale = dm.scale
+			pm.position = dm.position + Vector3.RIGHT * unit
 			tmp.add_child(dm)
+			tmp.add_child(pm)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]

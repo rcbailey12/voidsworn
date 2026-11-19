@@ -161,7 +161,7 @@ func _abs(p: String) -> String:
 func _build_view() -> void:
 	vp = SubViewport.new()
 	vp.size = res
-	vp.msaa_3d = Viewport.MSAA_4X if quality != "low" else Viewport.MSAA_DISABLED
+	vp.msaa_3d = LOOK.msaa_for_quality(quality)
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(vp)
 	var show := TextureRect.new()
@@ -604,7 +604,7 @@ func _capture(path: String) -> void:
 	var img := vp.get_texture().get_image()
 	if img != null and not img.is_empty():
 		img.convert(Image.FORMAT_RGB8)
-		img.save_png(path)
+		preload("res://tools/picture_provenance.gd").save_png(img, path)
 		print("[gallery] wrote %s at t=%.2f" % [path, clock])
 	pending -= 1
 
@@ -674,7 +674,7 @@ func _process_clip() -> void:
 		var img := vp.get_texture().get_image()
 		if img != null and not img.is_empty():
 			img.convert(Image.FORMAT_RGB8)
-			img.save_jpg(dir.path_join("f%04d.jpg" % clip_n), 0.88)
+			preload("res://tools/picture_provenance.gd").save_jpg(img, dir.path_join("f%04d.jpg" % clip_n), 0.88)
 			clip_n += 1
 	if clock > t1:
 		print("[gallery] clip: %d frames" % clip_n)

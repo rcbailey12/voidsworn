@@ -10,6 +10,7 @@
 # canyon floor, low flush bridges).
 # +X bow, +Y port, +Z up. Bow face x = +15.5, the hull's stern face -14.3, nozzle exits -15.5. The hull datum is z 0.
 import math
+from ships.hegemony_H10 import ion_trench
 
 CODE = 'hegemony_IM5'
 NAME = 'The Iron Mandate, super-dreadnought (Hegemony Navy flagship, the boss)'
@@ -245,7 +246,7 @@ def loft_closed(K, name, rings, m):
     """a solid through section rings with each end capped by real triangles: the section is concave (the canyon), and an n-gon
     cap would be fanned across the canyon by the fit check's triangle tree"""
     from mathutils import Vector
-    from mathutils.geometry import tessellate_polygon
+    from mathutils.geometry import delaunay_2d_cdt, tessellate_polygon
     n = len(rings[0])
     V = [tuple(v) for r in rings for v in r]
     F = []
@@ -254,7 +255,15 @@ def loft_closed(K, name, rings, m):
             a, b = i * n + j, i * n + (j + 1) % n
             F.append((a, b, b + n, a + n))
     for k, r in ((0, rings[0]), (len(rings) - 1, rings[-1])):
-        tris = tessellate_polygon([[Vector((0.0, v[1], v[2])) for v in r]])
+        if k == 0:
+            tris = tessellate_polygon([[Vector((0.0, v[1], v[2])) for v in r]])
+        else:
+            # The stern rim has collinear deck edges. Keep each edge in the cap
+            # without zero-area faces that turn the inner shell out past the stern.
+            profile = [Vector((v[1], v[2])) for v in r]
+            _, _, cap, original, _, _ = delaunay_2d_cdt(profile, [], [list(range(n))], 1, 1e-6)
+            assert sorted(original) == [[i] for i in range(n)], 'stern cap must use the existing rim'
+            tris = [tuple(original[q][0] for q in triangle) for triangle in cap]
         o = k * n
         for t in tris:
             t = tuple(o + q for q in t)
@@ -348,9 +357,7 @@ def build(K):
     K.box('IM5_bowtrim_b', XF, XF + 0.08, -tw - 0.04, tw + 0.04, tz - th - 0.04, tz - th, 'htrim', grp='hull')
     for s_ in (1, -1):
         K.box('IM5_bowtrim_%s' % ('p' if s_ > 0 else 's'), XF, XF + 0.08, tw if s_ > 0 else -tw - 0.04, tw + 0.04 if s_ > 0 else -tw, tz - th, tz + th, 'htrim', grp='hull')
-    K.spinal('I1', (XB, 0.0, tz), XF - XB, r=0.45, slot='F', weapon='ion', inv='ion_trench', w=TRENCH['w'], h=TRENCH['h'], coils=8,
-             note='the ion cannon (ion F, 1 shot): an emitter trench recessed in the blunt bow face at the canyon\'s mouth, coil-lined walls, a blue lens on the emitter block at its back')
-    K.features[-1]['what'] = 'ion cannon, emitter trench in the bow face (fixed)'
+    ion_trench(K, (XB, 0.0, tz), XF - XB, TRENCH['w'], TRENCH['h'], coils=8, r=0.45)
 
     # ---------------- the stern face: a trim frame round the nozzle row ----------------
     K.box('IM5_sterntrim_t', XS - 0.05, XS + 0.02, -4.5, 4.5, 0.62, 0.7, 'htrim', grp='hull')
@@ -722,6 +729,8 @@ def build(K):
              'design notes 758 (DeepSeek, adopted: the canyon kept narrow so the ridges never read as separate hulls); R244: no flat walls; the depth keeps the canyon floor in view from the battle camera (34 degrees above the board)')
     K.change('The canyon runs from the bow deck (10.5) to the stern deck (-12.4); ahead of it a low bow deck (0.45 to 0.6 below the ridge tops) carries the sensor fin, the ion trench is recessed in the bow face under it',
              'design notes 758: the fin on the bow deck ahead of the canyon mouth, the trench at the canyon\'s mouth; R240: the bow deck sits low so the bridge lance fires over the fin (the fin\'s top 0.55 under the lance\'s pivot, 0.4 with the check\'s calibre pad)')
+    K.change('The bow trench carries a large blue emitter lens, eight nested octagonal accelerator rings, lit emitter buses and an inset muzzle lip',
+             'Ryan R289: the wide plain opening read as a carrier bay. It uses the Dominion correction (R287) inside IM5\'s existing mouth, without changing the concept outline, insides or single ion F slot')
     K.change('Three low bridge decks (bow 4.4, midships -3.4, stern -9.0) flush with the ridge decks, their undersides chamfered, two girders under each, a crossing corridor inside, a trim band and a blue strip on each face',
              'IM5 and its notes (bridges at about 64, 40 and 21 percent from the stern, flush with the ridge tops: never above the hull line, no naval read); R244: shaped, not boxes')
     K.change('The heavy plasma lances (hturbo P and S) are low twin turrets sunk in shoulder pits on the ridges\' outer shoulders at -3.4, abreast of the midships bridge, each turning through its own broadside arc (30 to 150 degrees off the bow)',

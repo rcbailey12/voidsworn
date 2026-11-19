@@ -1,19 +1,12 @@
 extends CanvasLayer
-# The title screen (campaign_meta.js titleScreen) and the settings panel. Words and colours as today's game.
+# The title screen (campaign_meta.js titleScreen), Settings and Credits.
 
 const HUD := preload("res://ui/battle/hud.gd")
 const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
-# The palette this screen had before the battle HUD moved to Lime Tactical (R149, #271). The screen keeps it until its own
-# rollout moves it onto godot/ui/theme/glass_shell.gd (contrib/opus/briefs/ui_style.md section 8), so it never shows a
-# half-changed look. The focus ring stays HUD.BONE, the battle ring's own colour (ui_spec.md 6).
-const T_GILT := Color("#d0a64b")
-const T_GILT2 := Color("#8c6d2c")
-const T_BONE := Color("#e6dcc4")
-const T_BONE2 := Color("#b3aa95")
-const T_BONE3 := Color("#7d7768")
-const T_IRON3 := Color("#2d3a56")
-const T_EMBER := Color("#f0b35a")
+const GS := preload("res://ui/theme/glass_shell.gd")
+
+const T_GILT := Color("#d0a64b")  # The title wordmark keeps its original gold.
 
 var main: Node
 var k := 1.0
@@ -83,7 +76,7 @@ func _build() -> void:
 	root.add_child(bg)
 	var shade := ColorRect.new()
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
-	shade.color = Color(0.03, 0.04, 0.07, 0.55)
+	shade.color = Color(GS.HALO, 0.55)
 	root.add_child(shade)
 	_bg = bg
 	_shade = shade
@@ -104,16 +97,16 @@ func _build() -> void:
 	h.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	title_lbl = h
 	v.add_child(h)
-	var sub := _label(Brand.TAGLINE, 19, T_BONE2, font)
+	var sub := _label(Brand.TAGLINE, 19, GS.TEXT2, font)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sub.custom_minimum_size = Vector2(minf(vw * 0.86, font.get_string_size(Brand.TAGLINE, HORIZONTAL_ALIGNMENT_LEFT, -1, s(19)).x + s(4)), 0)
 	sub.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	v.add_child(sub)
-	# the playtest switch (R1, Nov 1): every admiral, hull and variant unlocked; the line says so in gold on the title
+	# The playtest notice (R1, Nov 1) reports whether every admiral, hull and variant is unlocked.
 	var pt := _playtest_on()
 	if pt != null:
-		var pl := _label("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants)" if pt else "Playtest unlocks are off: unlock admirals and hulls with renown", 17, T_GILT if pt else T_BONE3, font_semi)
+		var pl := _label("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants)" if pt else "Playtest unlocks are off: unlock admirals and hulls with renown", 17, GS.TEXT if pt else GS.TEXT2, font_semi)
 		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		pl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		pl.custom_minimum_size = Vector2(minf(vw * 0.86, font_semi.get_string_size(pl.text, HORIZONTAL_ALIGNMENT_LEFT, -1, s(17)).x + s(4)), 0)
@@ -140,7 +133,7 @@ func _build() -> void:
 	menu.add_child(_button("Credits", func() -> void: _credits()))
 	menu.add_child(_button("Quit", func() -> void: main.quit_clean()))
 	(menu.get_child(0) as Control).grab_focus.call_deferred()  # arrow keys, Enter and a controller work from the start
-	toast_lbl = _label("", 17, T_EMBER, font_semi)
+	toast_lbl = _label("", 17, GS.TEXT, font_semi)
 	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -202,38 +195,37 @@ func _label(t: String, size: int, col: Color, f: Font) -> Label:
 	return l
 
 
-func _button(t: String, cb: Callable, primary := false) -> Button:
+func _button(t: String, cb := Callable(), primary := false) -> Button:
 	var b := Button.new()
 	b.text = t
 	b.focus_mode = Control.FOCUS_ALL  # keyboard and controller reach every title and settings button (WCAG 2.1.1)
 	b.add_theme_font_override("font", font_semi if primary else font)
 	b.add_theme_font_size_override("font_size", s(19))
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = T_GILT if primary else Color(0.133, 0.176, 0.267, 0.85)
-	sb.border_color = T_GILT if primary else T_IRON3
-	sb.set_border_width_all(1)
-	sb.set_corner_radius_all(s(4))
+	sb.bg_color = Color(GS.CAREER_INK, 0.85)
+	sb.border_color = GS.MAP_EMBER if primary else GS.SHEET_HAIR
+	sb.set_border_width_all(maxi(2, s(2)) if primary else 1)
 	sb.content_margin_top = s(9)
 	sb.content_margin_bottom = s(9)
 	sb.content_margin_left = s(20)   # a short label (Done) keeps clear of its own edges
 	sb.content_margin_right = s(20)
 	var sh := sb.duplicate() as StyleBoxFlat
-	sh.bg_color = Color("#e2bb62") if primary else T_IRON3
-	sh.border_color = T_GILT2 if not primary else T_GILT
+	sh.bg_color = GS.MAP_EMBER if primary else GS.CAREER_PICTURE
+	sh.border_color = GS.MAP_EMBER if primary else GS.TEXT3
 	b.add_theme_stylebox_override("normal", sb)
 	b.add_theme_stylebox_override("hover", sh)
 	b.add_theme_stylebox_override("pressed", sh)
-	var sf := StyleBoxFlat.new()  # a visible focus ring (WCAG 2.4.7)
-	sf.draw_center = false
-	sf.border_color = HUD.BONE
-	sf.set_border_width_all(maxi(2, s(2)))
-	sf.set_corner_radius_all(s(4))
-	sf.expand_margin_left = 3; sf.expand_margin_right = 3; sf.expand_margin_top = 3; sf.expand_margin_bottom = 3
+	var sf := GS.focus_ring(k)  # a visible focus ring (WCAG 2.4.7)
+	sf.border_color = GS.TEXT
 	b.add_theme_stylebox_override("focus", sf)
-	var fc := Color("#1c1405") if primary else T_BONE
-	b.add_theme_color_override("font_color", fc)
-	b.add_theme_color_override("font_hover_color", fc)
-	b.pressed.connect(cb)
+	var idle := GS.MAP_EMBER if primary else GS.TEXT2
+	var active := GS.ON_EMBER if primary else GS.TEXT
+	for state in ["font_color", "font_focus_color"]:
+		b.add_theme_color_override(state, idle)
+	for state in ["font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
+		b.add_theme_color_override(state, active)
+	if cb.is_valid():
+		b.pressed.connect(cb)
 	return b
 
 
@@ -258,6 +250,13 @@ func _process(dt: float) -> void:
 
 # ---------------------------------------------------------------- settings (the game's options menu)
 
+func _dialog_box() -> StyleBoxFlat:
+	var box := GS.flat(GS.CAREER_INK, 28, 20, k)
+	box.border_color = GS.SHEET_HAIR
+	box.set_border_width_all(1)
+	return box
+
+
 func _settings() -> void:
 	if settings_panel != null:
 		settings_panel.queue_free()
@@ -266,20 +265,11 @@ func _settings() -> void:
 	if settings_dim == null:
 		settings_dim = ColorRect.new()
 		settings_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-		settings_dim.color = Color(0.016, 0.024, 0.043, 0.93)
+		settings_dim.color = Color(GS.HALO, 0.93)
 		settings_dim.mouse_filter = Control.MOUSE_FILTER_STOP
 		root.add_child(settings_dim)
 	settings_panel = PanelContainer.new()
-	var g := StyleBoxFlat.new()
-	g.bg_color = Color(0.047, 0.07, 0.12, 1.0)
-	g.border_color = Color(0.816, 0.651, 0.294, 0.3)
-	g.set_border_width_all(1)
-	g.set_corner_radius_all(s(8))
-	g.content_margin_left = s(28)
-	g.content_margin_right = s(28)
-	g.content_margin_top = s(20)
-	g.content_margin_bottom = s(20)
-	settings_panel.add_theme_stylebox_override("panel", g)
+	settings_panel.add_theme_stylebox_override("panel", _dialog_box())
 	settings_panel.set_anchors_preset(Control.PRESET_CENTER)
 	settings_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	settings_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -288,7 +278,7 @@ func _settings() -> void:
 	v.add_theme_constant_override("separation", s(10))
 	v.custom_minimum_size = Vector2(s(460), 0)
 	settings_panel.add_child(v)
-	v.add_child(_label("Settings", 24, T_GILT, font_goth))
+	v.add_child(_label("Settings", 24, GS.TEXT, font_goth))
 	# the rows scroll when the panel would be taller than the window at the larger UI scales, while the title and Done stay put
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -343,21 +333,12 @@ func _credits() -> void:
 	if settings_dim == null:
 		settings_dim = ColorRect.new()
 		settings_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-		settings_dim.color = Color(0.016, 0.024, 0.043, 0.93)
+		settings_dim.color = Color(GS.HALO, 0.93)
 		settings_dim.mouse_filter = Control.MOUSE_FILTER_STOP
 		root.add_child(settings_dim)
 	var vs := get_viewport().get_visible_rect().size
 	credits_panel = PanelContainer.new()
-	var g := StyleBoxFlat.new()
-	g.bg_color = Color(0.047, 0.07, 0.12, 1.0)
-	g.border_color = Color(0.816, 0.651, 0.294, 0.3)
-	g.set_border_width_all(1)
-	g.set_corner_radius_all(s(8))
-	g.content_margin_left = s(28)
-	g.content_margin_right = s(28)
-	g.content_margin_top = s(20)
-	g.content_margin_bottom = s(20)
-	credits_panel.add_theme_stylebox_override("panel", g)
+	credits_panel.add_theme_stylebox_override("panel", _dialog_box())
 	credits_panel.set_anchors_preset(Control.PRESET_CENTER)
 	credits_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	credits_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -365,7 +346,7 @@ func _credits() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(10))
 	credits_panel.add_child(v)
-	v.add_child(_label("Credits", 24, T_GILT, font_goth))
+	v.add_child(_label("Credits", 24, GS.TEXT, font_goth))
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.custom_minimum_size = Vector2(minf(float(s(760)), vs.x * 0.8), minf(float(s(560)), vs.y * 0.62))
@@ -380,7 +361,7 @@ func _credits() -> void:
 	t.add_theme_font_override("bold_font", font_semi)
 	t.add_theme_font_size_override("normal_font_size", s(17))
 	t.add_theme_font_size_override("bold_font_size", s(17))
-	t.add_theme_color_override("default_color", T_BONE2)
+	t.add_theme_color_override("default_color", GS.TEXT2)
 	t.text = credits_bbcode()
 	sc.add_child(t)
 	var row := HBoxContainer.new()
@@ -408,7 +389,9 @@ func _unhandled_input(e: InputEvent) -> void:
 
 # the credits text: the game, then every music track from music.json (title, author, licence, the attribution line)
 func credits_bbcode() -> String:
-	var out := "[b][color=#d0a64b]%s[/color][/b]\nA game by Ryan Bailey. Made with the Godot Engine (MIT licence, godotengine.org).\nFonts: Michroma, Oxanium and Barlow Semi Condensed (SIL Open Font Licence).\n\n[b][color=#d0a64b]Music[/color][/b]\nEvery track comes from OpenGameArt.org. The game plays edited versions (cut, looped, levelled, re-encoded).\n" % Brand.TITLE
+	var text_hex := GS.TEXT.to_html(false)
+	var detail_hex := GS.TEXT2.to_html(false)
+	var out := "[b][color=#%s]%s[/color][/b]\nA game by Ryan Bailey. Made with the Godot Engine (MIT licence, godotengine.org).\nFonts: Michroma, Oxanium and Barlow Semi Condensed (SIL Open Font Licence).\n\n[b][color=#%s]Music[/color][/b]\nEvery track comes from OpenGameArt.org. The game plays edited versions (cut, looped, levelled, re-encoded).\n" % [text_hex, Brand.TITLE, text_hex]
 	var p := "res://music/music.json"
 	var d = JSON.parse_string(FileAccess.get_file_as_string(p)) if FileAccess.file_exists(p) else null
 	if not (d is Dictionary) or not (d.get("tracks") is Dictionary):
@@ -422,7 +405,7 @@ func credits_bbcode() -> String:
 		if seen.has(key):
 			continue
 		seen[key] = true
-		var line := "\n[b][color=#e6dcc4]%s[/color][/b] by %s  [color=#7d7768](%s)[/color]" % [str(c.get("title", "")), str(c.get("author", "")), str(c.get("licence", ""))]
+		var line := "\n[b][color=#%s]%s[/color][/b] by %s  [color=#%s](%s)[/color]" % [text_hex, str(c.get("title", "")), str(c.get("author", "")), detail_hex, str(c.get("licence", ""))]
 		var at := str(c.get("attribution", ""))
 		if at != "":
 			line += "\n[font_size=%d]%s[/font_size]" % [s(17), at.replace("[", "(").replace("]", ")")]
@@ -441,7 +424,7 @@ func _focus_first(n: Node) -> void:
 
 func _row(t: String) -> HBoxContainer:
 	var r := HBoxContainer.new()
-	var l := _label(t, 18, T_BONE, font)
+	var l := _label(t, 18, GS.TEXT, font)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	r.add_child(l)
 	return r
@@ -450,10 +433,10 @@ func _row(t: String) -> HBoxContainer:
 func _toggle(t: String, key: String) -> Control:
 	var r := _row(t)
 	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
-	var b: Button
 	if not main.settings.has(key):
 		main.settings[key] = true
-	b = _button("On" if main.settings[key] else "Off", func() -> void:
+	var b := _button("On" if main.settings[key] else "Off")
+	b.pressed.connect(func() -> void:
 		main.settings[key] = not bool(main.settings[key])
 		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
@@ -465,13 +448,13 @@ func _toggle(t: String, key: String) -> Control:
 
 func _choice(t: String, key: String, opts: Array) -> Control:
 	var r := _row(t)
-	var b: Button
 	var label_of := func() -> String:
 		for o in opts:
 			if str(o[0]) == str(main.settings[key]):
 				return o[1]
 		return str(opts[0][1])
-	b = _button(label_of.call(), func() -> void:
+	var b := _button(label_of.call())
+	b.pressed.connect(func() -> void:
 		var i := 0
 		for j in opts.size():
 			if str(opts[j][0]) == str(main.settings[key]):

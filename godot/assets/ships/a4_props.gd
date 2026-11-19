@@ -9,6 +9,8 @@ extends RefCounted
 #   _hulk():     var n := A4P.hulk(code)     if n: n.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3.ONE * 11.0), c); props.add_child(n); return
 # with const A4P := preload("res://assets/ships/a4_props.gd"). A4 files are true chirality (+Z starboard): no mirrored scale.
 
+const LARGE_STATION_SIZE := 46.0
+
 static var _man = null
 
 
@@ -30,8 +32,38 @@ static func _scene(code: String) -> Node3D:
 	return (ps as PackedScene).instantiate() as Node3D
 
 
-# the station across a cluster of station hexes, `size` world units across (the board's 46 for a big cluster), in its own paint
-static func station(size: float) -> Node3D:
+# the painted station across a cluster of station hexes
+static func station(size: float, debris_clearance := 0.0) -> Node3D:
+	# Refs #975. T2 is authored in world units for the large cluster. Smaller
+	# clusters and fresh checkouts use the normalized O1_37 at the requested size.
+	var t2_path := "res://gen/ships/station_T2.scn"
+	if size == LARGE_STATION_SIZE and ResourceLoader.exists(t2_path):
+		var t2 := (load(t2_path) as PackedScene).instantiate() as Node3D
+		t2.set_meta("station_T2", true)
+		# Refs #863. Separate kit/cache leaves PR 977's painted station intact.
+		var debris_path := "res://gen/ships/station_T2_debris.scn"
+		if ResourceLoader.exists(debris_path):
+			var debris := (load(debris_path) as PackedScene).instantiate() as Node3D
+			debris.name = "station_T2_debris"
+			debris.set_script(load("res://render/station_debris.gd"))
+			t2.add_child(debris)
+			debris.keep_outside(debris_clearance)
+		var look = load("res://render/look.gd")
+		var painted := {}
+		for child in t2.find_children("*", "MeshInstance3D", true, false):
+			for i in child.mesh.get_surface_count():
+				var source: Material = child.get_active_material(i)
+				if not painted.has(source):
+					painted[source] = look.hull(source, "hegemony", true)
+				child.set_surface_override_material(i, painted[source])
+		for player in t2.find_children("*", "AnimationPlayer", true, false):
+			var names: PackedStringArray = player.get_animation_list()
+			for anim in names:
+				if anim != "RESET":
+					player.get_animation(anim).loop_mode = Animation.LOOP_LINEAR
+					player.play(anim)
+					break
+		return t2
 	var n := _scene("O1_37")
 	if n == null:
 		return null

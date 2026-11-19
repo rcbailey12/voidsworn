@@ -1,0 +1,258 @@
+{
+  "source": {
+    "source_commit": "820cbaca88b869806e965a8d65d60f5449a0b177",
+    "source_dirty": true,
+    "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+  },
+  "source_files": {
+    "godot/fx/fx.gd": {
+      "before_sha256": "6b49b911e1503817a3e1703386c4dc1d3ebf79d4ee95be70fa98ddb4b614e7d6",
+      "after_sha256": "e9913cdab19aa521c8fce61aae54fb7c3db7187e96b2111bf56cf31c8b64f207"
+    },
+    "godot/fx/fx_weapons.gd": {
+      "before_sha256": "4b1d8d7a8f637cd67df69c9a71f282ff777795508368db988521bb3eb89b5daf",
+      "after_sha256": "e899eecb1e2fbe5bcbbcb9b018de6a3466c639eb5464141cde481bcd8c7085a4"
+    }
+  },
+  "standing": {
+    "PASS": 60,
+    "KNOWN": 2
+  },
+  "destruction": "PASS",
+  "focused_cases": 51,
+  "scale": "PASS, 0 of 54 failures outside six known rows",
+  "review_photos": [
+    {
+      "file": "B21_11_torpedo_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "77d8c017e97cd004e5d343682739cb8da181747ff0bad9ad121576c6988ab6af",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "B21_11_torpedo_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "46b4b0af4a555ae0b4db6034f143ff98187d4bfc2c83f0eebd1ce164c6bf8096",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "C15s_23_heavy_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "6bca4c2f36462abce497aa91aae7eb442c1016cd6cac294184d348579ff7f78d",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "C15s_23_heavy_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "b73332179a266eee9ebf6b1d936cb662a5d2ef4dc49663da57e490fe72d58962",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "C15s_23_light_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "2040257b45e046f404a9d5ae15deca51bda3143f7fc3a173626ff8547c17a442",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "C15s_23_light_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "600aab240076d8e7c15207d61317cc0f0f0d84b61902905ff4f6cdbeca88b34c",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "C15s_23_torpedo_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "b24b6c325a51cbef821abca6dd93f3325b98a709370239b9a6c2b816bbfd974a",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "C15s_23_torpedo_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "161057804fe232d4dbb76ac0be1b83de3390beea8eca1b6e6decaf6d137488f6",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "D21_23_heavy_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "05bf1e0838963b4ff2b93705cca768e020a54cb1e225117b69429cca7a53120e",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "D21_23_heavy_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "56472628a6307a7db7f5d2be6e945395aa9840d9e94ccd56bf5e89acf51a414d",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "D21_23_light_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "4d81d385d2a13ca6f585029406aa7af4d91d5e286171a1fe9103b78c4283d02a",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "D21_23_light_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "25dc67bc0c0ec7adede8cee25079781d0422c65c3eee749037adff96f6b1cabc",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "D21_23_torpedo_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "abb21afabaa61237b3a6f498f9947f2dab148f2b3e6ac9b0bbe642a3750ff973",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "D21_23_torpedo_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "60fe5f066f9af6361bf5a8afad867ce018f86a70bb7c24bf632af886dbb31f3b",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "H9_23_heavy_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "fd823901a8581db638b8b1191e4fb83fc63fcff11b4818f79cef4ff731c90ba8",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "H9_23_heavy_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "fdcc2798c079ea816cbf16b8324e99c1368532143081bf080066ac126a7a6565",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "H9_23_light_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "dc57823633de7fd667e7a2b167ef9518356c5fad6bef328f0a1e4b649f4ea386",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "H9_23_light_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "abb160f7581fa68d949df2e0c4b64caa62b3c4a14ddb3728f7c2ed3ccca2772b",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "H9_23_torpedo_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "330cafa47f11b0cf401f86fd2251df3ed64dc28912970f2bd4c02fcd61737e68",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "H9_23_torpedo_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "e2d00455ef3f84578bceb995ea2ae3b1d4997e439eee8f74764244cdcf0a69aa",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "I15_11_torpedo_before_after_c170.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "ce50cb634910a94074099587971d9c3164fc0dca9ecd3c39e5ba995d9bae771f",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    },
+    {
+      "file": "I15_11_torpedo_before_after_c60.png",
+      "size": [
+        1280,
+        660
+      ],
+      "sha256": "367e623ccad4c2c02bef4d2e59a4bf627caa2fb186ee52afeafae1f5ad14a17b",
+      "source_diff_sha256": "67aa4415398eb41e3d6e188341bcfd38a1ceb1176c4304ec2f569ed30cca45bf"
+    }
+  ],
+  "after_strips_repeat_exactly": true,
+  "baseline_rounding_differences": [],
+  "existing_spawn_frame_messages": {
+    "before": 2,
+    "after": 2
+  },
+  "gate": {
+    "exclusive_gpu": true,
+    "frame_gate_ms": 12.5,
+    "warmup": 120,
+    "frames": 720,
+    "after_sessions": 3,
+    "base_frame_medians_ms": [
+      4.5,
+      5.66,
+      5.035
+    ],
+    "gpu_4k_medians_ms": [
+      5.33500003814697,
+      5.43200016021729,
+      5.45499992370605
+    ],
+    "late_shaders": [
+      [
+        "exterior_alpha frame 908 21276.0 ms"
+      ],
+      [
+        "exterior_alpha frame 6727 97502.0 ms"
+      ],
+      [
+        "exterior_alpha frame 8762 122494.0 ms"
+      ]
+    ]
+  }
+}

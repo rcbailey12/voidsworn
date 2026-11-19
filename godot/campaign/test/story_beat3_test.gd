@@ -17,6 +17,11 @@ func text_of(node: Node) -> String:
 	for child in node.get_children(): text += text_of(child)
 	return text
 
+func all_text(n: Node) -> String:
+	var t = str(n.text) + "\n" if n is Label or n is RichTextLabel or n is Button else ""
+	for child in n.get_children(): t += all_text(child)
+	return t
+
 # the words the orders sheet lays out (the battle HUD's only screen since issue 578)
 func sheet_text(h) -> String:
 	h.ledger.layout()
@@ -29,7 +34,7 @@ func shot(name_: String) -> void:
 	await process_frame
 	await process_frame
 	await RenderingServer.frame_post_draw
-	root.get_texture().get_image().save_png(screenshot_dir.path_join(name_ + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(root.get_texture().get_image(), screenshot_dir.path_join(name_ + ".png"))
 
 func settle() -> void:
 	for i in range(4): await process_frame
@@ -79,7 +84,7 @@ func reward_checks(c, ui) -> void:
 		check(c.RUN["storyNext"] == pending, "pending modifier survives reload")
 		if row[0] == "chorus" and row[1] == 0: c.act("storyCore"); c.act("boonDecline")
 		var b = real_battle(c, api); var r = api.R
-		check(c.RUN.get("storyNext") == null and c.SAVED_RUN.get("storyNext") == null, "battle entry saves consumption")
+		check(c.RUN.get("storyNext") == null and c.SAVED_RUN.get("storyNext") == pending, "battle entry spends the live modifier and keeps the retry checkpoint")
 		check(" ".join(PackedStringArray(r.storyModifierLines())).contains(row[3]), "battle modifier visible")
 		for u in b["units"]:
 			var wanted = row[2] if u["side"] == "player" and (row[0] != "voidsworn" or c.jt(u.get("pflag"))) else 1.0
@@ -92,6 +97,7 @@ func reward_checks(c, ui) -> void:
 			check(actual == base * wanted, "exact weapon damage multiplier")
 		check(r.storyDamageMult({"side": "player", "isSq": true}) == (1.0 if row[0] == "voidsworn" else row[2]), "later wings share fleet damage only")
 		await battle_shot(api, ui, str(row[0]) + ("_power_battle" if row[0] == "voidsworn" else "_damage_down_battle" if row[1] == 0 else "_damage_up_battle"))
+		c.finish_battle("retreat", c.B)
 		c.RUN = c.clone(c.SAVED_RUN); real_battle(c, api)
 		check(api.R.storyDamageMult(c.B["units"][0]) == 1.0, "following battle is normal")
 	choose(c, "hegemony", 0)
@@ -189,7 +195,8 @@ func _initialize() -> void:
 			await shot(str(fac) + ("_win" if won else "_loss"))
 			# DB1 (R261, issue 805) moved the story payoff off the after-run page into The record (key R).
 			ui.debrief.open_detail("record"); await settle()
-			check(text_of(ui).contains(row["learning"]), str(fac) + " learning renders in The record after " + str(won))
+			check(is_instance_valid(ui.debrief.overlay), str(fac) + " The record opens after " + str(won))
+			check(all_text(ui.debrief.overlay).contains(row["learning"]), str(fac) + " learning renders in The record after " + str(won))
 			ui.debrief.close_detail(); await settle()
 	await reward_checks(c, ui)
 	ui.queue_free()

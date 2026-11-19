@@ -3,6 +3,8 @@ setlocal
 rem Issue 195 review assets only. Does not install, commit, push or swap props.
 set "ROOT=%USERPROFILE%\Downloads\voidsworn_test"
 set "REPO=%ROOT%\board\repo"
+set "PICTURE_SOURCE_REPO=%REPO%"
+set "PICTURE_STAMP_TOOL=%REPO%\tools\picture_provenance.py"
 set "BEFORE=%ROOT%\board\issue-183\shots"
 set "SHOTS=%ROOT%\board\issue-195\shots"
 set "GODOT=%ROOT%\godot\Godot_v4.7.2-stable_win64_console.exe"

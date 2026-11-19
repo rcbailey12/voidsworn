@@ -54,6 +54,13 @@ def clean(o):
     bm.to_mesh(o.data); bm.free(); o.data.validate(clean_customdata=False); o.data.update()
 
 sc = bpy.context.scene
+game_ship = sc.get('r209_game_ship')
+if game_ship:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'recipe')))
+    import gamedata
+    if gamedata.ship_attr(game_ship, 'cls') == 'Squadron':
+        # LOD0 measures the same exterior geometry as the Stage 7 wing.
+        RULES[0].update(interior=False, skin=False)
 src = [o for o in sc.objects if o.type == 'MESH' and (not o.hide_render or o.get('proxy'))]
 for m in bpy.data.materials:
     if m.get('p3_textured'): add_occlusion(m)

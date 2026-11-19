@@ -49,18 +49,16 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
 - Palette and faces come from godot/ui/theme/glass_shell.gd (MAP_EMBER, TEXT, TEXT2, TEXT3, NEM, GLACIER, sheet_name,
   sheet_body, sheet_medium, num). A screen adds what is missing to the theme, never loose numbers of its own.
 
-### The battle screen (E1 LEDGER, issue 271)
+### The battle screen (KEEL, issue 1021)
 
-The orders sheet takes about a fifth of the screen width (380 px from a 40 px margin at 1080), never more than a quarter, and
-shows detail only for the decision in front of the player; everything else waits behind a key or a hover (R218). A fleet too
-big for it folds into "and N more" with a hover (R220). The camera centres the board in the part the sheet leaves clear.
-
-One left sheet, read in the order the player decides: whose turn and how many ships still act; the ship (name, class, hull,
-movement, its four shields as a small plan in Glacier); its status line; its guns (name, arc and range, then the odds or why
-it cannot fire); the target and the odds, large, with one sentence of expected damage; the action; the orders that can be
-given now; the Command and End ship; the fleet at the foot. Top right: Menu, the enemy and Heat, the Nemesis. Bottom right:
-the last three log lines. Names on the board only for the ship that is up and the target. The camera centres the board in
-the part the sheet leaves clear (camera_rig.gd screen_shift).
+Use `contrib/muse/design/battle_hud_split_2026_11/mockups/keel_v5.png` as the layout reference. Turn and objective sit at
+top left, fleet and Heat, Nemesis, and Menu at top right. The board is sharp and centred. The 248 px bottom shelf at 1080p
+reads left to right: ship, one shield pool and one hull bar, weapon checklist, target and damage in words, then the main
+action and orders. The fleet strip shows names, hull and shield bars, and each ship's own silhouette. It pages in a narrow
+window or when the whole fleet cannot fit. The floating log above the shelf is about half as dark as the shelf. It starts
+with three lines; click Log to show only the latest, or switch it off in Menu > Controls. The L key opens the full history.
+Shortcut labels stay off the shelf. Read the ship asset code from the same ShipView that draws the board. Rebuild icons from
+the reviewed GLBs with `godot/ui/battle/icons/make_silhouettes.gd` when the installed ship set changes.
 
 What moved behind a hover or a key (all still reachable):
 
@@ -68,18 +66,18 @@ What moved behind a hover or a key (all still reachable):
 |---|---|
 | captain, armour, evasion, turns, sections, perks, the key list | hover the ship's name |
 | a gun's damage, cost, reload, arc words | hover the gun; click it or press its number to arm it alone |
-| the target's hull and four shields | hover the target's name |
+| the target's hull, shield pool and side coverage | hover the target's name |
 | the Nemesis block (aboard, flees when, adaptations, weakness) | hover the Nemesis line |
 | Heat gauge | "Heat 3"; hover for the rules behind it |
 | the unacted set, who the enemy can reach first | the count in the top line; hover it |
-| fleet bars, status words, LOW, NEW, danger badges | hover a fleet line (click picks the ship) |
-| orders that cannot be given now (Ram, Board, a cooling ability) | hidden until they can; their keys work as before |
+| fleet status, exact health, NEW and danger | hover a fleet slot (click picks the ship) |
+| orders that cannot be given now | muted, with cooldown shown where it applies; Ram and Board appear when available |
 | the step hints (Move, Fire, End) | one short sentence; the full hint on the action's hover |
 | Cancel button | Esc |
 | speed, threat map, top-down, grid buttons | Esc menu (and R, T, Z keys) |
-| the key line along the bottom | Esc menu, Keys; and the ship name's hover |
+| the key line along the bottom | Menu > Controls, and the ship name's hover |
 | nameplates with bars on every ship | hover a ship |
-| the four-line log ticker | three lines; L (or "Log L") opens the full log |
+| the old log | three lines or a one-line ticker above the shelf; L opens the full history |
 | the status line's state words | hover the status line for their definitions |
 
 ### The after-run screen (DB1, issue 805)
@@ -137,6 +135,30 @@ read-only drawing, moved-content routes, progression returns and heir gates, and
 1080 and 1440 across all factions, the long flagship name and a 20-ship fleet. The optional --shots DIR arguments capture
 the same scenarios with a renderer. Keep 1920x1080 originals in the issue's shots folder and comparison sheets at no taller
 than 720 px in docs/shots/debrief_db1/. Stage the installed model cache before captures; a missing model fails the capture.
+
+### Career (CR4, issue 869)
+
+Ryan settled CR4, The Honours Board (R286). Its source notes and CR4.png are on the design branch muse/issue-794 at
+609262f9, under contrib/muse/design/ui_upgrade_2026_11/career/. Review pictures live in docs/shots/ui/career_cr4/.
+Recognition is the page's job: seven lifetime figures without boxes, served admirals first, then the unserved roster.
+Every served admiral has a picture band and six labelled figures: runs, won, best sector, battles, kills and ships lost.
+Vex uses his chosen portrait; other bands carry the recorded flagship name in display type until flagship art exists.
+All earned titles and counts, arc honours and flagship names stay on the surface. The unserved Sunward admirals use the
+same crests as the debrief's heirs. Other unserved admirals remain text, with their doctrine under their full name.
+
+The hero grid has three columns and grows by rows. A fourth served admiral starts the next row. The original 12-admiral
+reference profile fits on one page; the current six-faction, 24-admiral roster and longer careers scroll below the fixed
+heading, word tabs and lifetime band. No admiral or faction is dropped. Tabs use 1 to 5 and a neutral active underline;
+Close is the one ember box, with Esc on the right. The other four tabs retain their existing content and actions in the
+same neutral orders-sheet frame. The scale is 17 detail and keys, 18 links and unserved names, 28 section heads and honours,
+34 admiral and flagship names and service figures, 40 lifetime figures, 52 page title, all at 1080.
+
+Check: godot --headless --path godot --script res://ui/career/test/career_honours_test.gd, plus career_readability_test.gd
+and story/test/story_test.gd. The new check opens through Story, browses all five tabs, verifies figures against the saved
+record, checks the fourth row and the full roster, measures bounds at 1080, 1440 and 2160, and proves browsing leaves the
+profile, campaign run and meta unchanged without writing a save. For GPU captures, omit --headless and add -- --shots DIR.
+Capture the original 12-admiral reference, current roster, fourth row, long names, empty state, tabs and Close hover. Rules
+and save data are unchanged.
 
 ## 3. Steps
 

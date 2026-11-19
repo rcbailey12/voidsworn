@@ -2,9 +2,9 @@
 rem Windows build of Voidsworn (Godot): writes build\export\Voidsworn.exe (+ Voidsworn.pck) and a log.
 rem Queue job from Downloads\voidsworn_test\build. Downloads the Godot export templates once (about 1 GB) if missing.
 rem After this, play_godot.bat runs the exported game.
-rem Every step stops the job on failure (exit code 1, FAIL in the log); the previous exe is moved to export\previous first,
-rem so a failed export never leaves an old exe that looks fresh. Optional first argument: the project folder (default godot).
-setlocal
+rem Build and check a separate candidate before replacing the whole live export folder.
+rem Optional first argument: the project folder (default godot).
+setlocal EnableExtensions DisableDelayedExpansion
 set "ROOT=%CD%\"
 set /p G=<"%ROOT%..\godot_path.txt"
 set "TMO=%ROOT%tools\pc\tmo.bat"
@@ -28,24 +28,35 @@ if not exist "%PROJ%\gen\v3.txt" (
 echo importing >> "%LOG%"
 call "%TMO%" 1800 "%G%" --headless --path "%PROJ%" --import >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
-if not exist "%ROOT%export" mkdir "%ROOT%export"
-rem the last build moves aside, so only a fresh export can pass the checks below (play_godot.bat needs a fresh one)
-if not exist "%ROOT%export\previous" mkdir "%ROOT%export\previous"
-for %%F in (Voidsworn.exe Voidsworn.console.exe Voidsworn.pck) do if exist "%ROOT%export\%%F" move /y "%ROOT%export\%%F" "%ROOT%export\previous\%%F" > nul
-if exist "%ROOT%export\Voidsworn.exe" goto failed
-echo exporting >> "%LOG%"
-call "%TMO%" 1800 "%G%" --headless --path "%PROJ%" --export-release "Windows Desktop" "%ROOT%export\Voidsworn.exe" >> "%LOG%" 2>&1
+set "BUILD_ID="
+for /f %%I in ('powershell -NoProfile -Command "[guid]::NewGuid().ToString()"') do set "BUILD_ID=%%I"
+if not defined BUILD_ID goto failed
+set "LIVE_EXPORT=%ROOT%export"
+set "CANDIDATE_EXPORT=%ROOT%export-candidate-%BUILD_ID%"
+set "BACKUP_EXPORT=%ROOT%export-previous-%BUILD_ID%"
+mkdir "%CANDIDATE_EXPORT%" >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
-if not exist "%ROOT%export\Voidsworn.exe" goto failed
-echo OK: %ROOT%export\Voidsworn.exe >> "%LOG%"
+echo exporting >> "%LOG%"
+call "%TMO%" 1800 "%G%" --headless --path "%PROJ%" --export-release "Windows Desktop" "%CANDIDATE_EXPORT%\Voidsworn.exe" >> "%LOG%" 2>&1
+if errorlevel 1 goto failed
+for %%F in (Voidsworn.exe Voidsworn.console.exe Voidsworn.pck) do if not exist "%CANDIDATE_EXPORT%\%%F" goto failed
 rem what is in the package: no test folders, the real campaign UI, fx, story and music player
-call "%TMO%" 300 "%ROOT%export\Voidsworn.console.exe" --headless -- --check-export >> "%LOG%" 2>&1
+call "%TMO%" 300 "%CANDIDATE_EXPORT%\Voidsworn.console.exe" --headless -- --check-export >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
 rem a quick headless smoke of the exported build: 2 bot battles
-call "%TMO%" 900 "%ROOT%export\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%ROOT%..\shots\g2_export_smoke.json" >> "%LOG%" 2>&1
+call "%TMO%" 900 "%CANDIDATE_EXPORT%\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%ROOT%..\shots\g2_export_smoke.json" >> "%LOG%" 2>&1
 if errorlevel 1 goto failed
+rem Keep the old folder intact. Roll it back if the second same-volume move fails.
+powershell -NoProfile -Command ^
+  "$ErrorActionPreference = 'Stop'; $live = $env:LIVE_EXPORT; $backup = $env:BACKUP_EXPORT; $saved = $false;" ^
+  "$lock = [IO.File]::Open(($live + '-promote.lock'), 'OpenOrCreate', 'ReadWrite', 'None');" ^
+  "try { if ([IO.Directory]::Exists($live)) { [IO.Directory]::Move($live, $backup); $saved = $true };" ^
+  "      try { [IO.Directory]::Move($env:CANDIDATE_EXPORT, $live) } catch { if ($saved) { [IO.Directory]::Move($backup, $live) }; throw }" ^
+  "} finally { $lock.Dispose() }" >> "%LOG%" 2>&1
+if errorlevel 1 goto failed
+echo OK: %LIVE_EXPORT%\Voidsworn.exe >> "%LOG%"
 exit /b 0
 
 :failed
-echo FAIL: an export or check step failed (see above); no fresh build. The last build is in export\previous. >> "%LOG%"
+echo FAIL: an export, check or promotion step failed (see above); no candidate was published. >> "%LOG%"
 exit /b 1

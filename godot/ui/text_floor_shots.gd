@@ -64,7 +64,7 @@ func _shot(name: String, top: Node = null) -> void:
 	await _frames(6)
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
-	img.save_png(dir.path_join(name + ".png"))
+	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png"))
 	var m := _measure(top if top != null else root)
 	var line := "TEXT_FLOOR %s smallest=%d at %s overlaps=%d %s" % [name, int(m["min"]), str(m["min_at"]), m["over"].size(), " | ".join(m["over"].slice(0, 4))]
 	print(line)
@@ -220,9 +220,9 @@ func _campaign() -> void:
 # ---------------------------------------------------------------- the battle HUD (sample moment from ledger_readability_test.gd)
 func _bweapons() -> Array:
 	return [
-		{"i": 0, "name": "Sear battery", "arc": "P", "rng": "1-5", "hit": -1, "why": "out of range", "right": "ready", "ready": true, "armed": false, "dmg": -1, "cost": "free", "desc": "Port broadside, 3x6 damage, range 5", "arc_tip": "Port broadside, range 1 to 5 hexes."},
-		{"i": 1, "name": "Sear battery", "arc": "S", "rng": "1-5", "hit": -1, "why": "out of range", "right": "ready", "ready": true, "armed": false, "dmg": -1, "cost": "free", "desc": "Starboard broadside, 3x6 damage, range 5", "arc_tip": "Starboard broadside, range 1 to 5 hexes."},
-		{"i": 2, "name": "Oath lance", "arc": "F", "rng": "1-7", "hit": 92, "why": "92%", "right": "92%", "ready": true, "armed": false, "dmg": 16, "cost": "CD 2", "desc": "Forward, 1x18 damage, range 7, reload 2", "arc_tip": "Forward, range 1 to 7 hexes."}]
+		{"i": 0, "name": "Sear battery", "arc": "P", "kind": "battery", "range": 5, "distance": 6, "hit": -1, "why": "out of range", "ready": true, "cost": "free", "desc": "Port broadside, 3x6 damage, range 5"},
+		{"i": 1, "name": "Sear battery", "arc": "S", "kind": "battery", "range": 5, "distance": 6, "hit": -1, "why": "out of range", "ready": true, "cost": "free", "desc": "Starboard broadside, 3x6 damage, range 5"},
+		{"i": 2, "name": "Oath lance", "arc": "F", "kind": "lance", "range": 7, "distance": 6, "hit": 92, "ready": true, "dmg": 16, "cost": "CD 2", "desc": "Forward, 1x18 damage, range 7, reload 2"}]
 
 
 func _brows(n: int) -> Array:
@@ -231,7 +231,7 @@ func _brows(n: int) -> Array:
 	for i in n:
 		var nm: String = names[i] if i < names.size() else ("Sunward Martyr of the Ninth Pyre" if i == 3 else "Ember Picket %d" % (i + 1))
 		var st := "Up" if i == 0 else ("Ready" if i < n / 2 else "Done")
-		out.append({"id": "p%d" % i, "name": nm, "cls": "Picket", "hp": 135 - i * 3 if i != 1 else 85, "maxHp": 135, "sh": [10, 10, 10, 10], "shMax": 10,
+		out.append({"id": "p%d" % i, "name": nm, "cls": "Picket", "code": ["V15_37", "V14_23", "V17_37"][i % 3], "hp": 135 - i * 3 if i != 1 else 85, "maxHp": 135, "shMax": 55, "shp": 43,
 			"status": st, "sel": i == 0, "done": st == "Done", "flag": i == 0, "new": false, "danger": 1 if i == 1 else 0})
 	return out
 
@@ -253,13 +253,13 @@ func _battle() -> void:
 		h.set_top(1, "Your turn (%d ready)" % maxi(1, n / 2), "Objective: break their fleet", "End ship (Space)", true, false, false)
 		h.set_nemesis({"name": "Fleet Marshal Petra Valk", "ship": "Dominion", "flee": "flees below 25% hull", "adapted": [["Layered screens", "Shields +10%.", "you leaned on lances"]], "weak": [], "state": ""})
 		h.set_roster(_brows(n))
-		h.set_panel({"name": "Unyielding Oath", "cls": "Vigil-class cruiser", "side": "player", "flag": true, "hp": 135, "maxHp": 135, "sh": [20, 20, 20, 20], "shMax": 20,
+		h.set_panel({"name": "Unyielding Oath", "cls": "Vigil-class cruiser", "side": "player", "flag": true, "hp": 135, "maxHp": 135, "shMax": 80, "shp": 73, "code": "V15_37",
 			"stats": "Hull 135/135   Armor 20%   Evasion 10\nMovement 0 of 4   Turns 1", "captain": "Captain Ilsa Marr", "move": [0, 4], "arm": 20, "turns": 1,
 			"tag": "UP", "danger": 2, "flags": "[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]", "weapons": _bweapons(),
-			"orders": [{"text": "Brace (B)", "act": "brace", "on": true, "tip": "Hull damage -40% until its next turn."}, {"text": "Concentrated fire", "act": "ability", "on": true, "tip": "+15 aim this round."},
+			"orders": [{"text": "Brace (B)", "act": "brace", "on": true, "tip": "Hull damage -40% until its next turn."}, {"text": "Concentrated fire", "act": "ability", "ability": "focus", "on": true, "tip": "+15 aim this round."},
 				{"text": "Turn left (Q)", "act": "rotl", "on": true}, {"text": "Turn right (E)", "act": "rotr", "on": true}]})
-		h.set_target({"name": "Fleet Marshal Petra Valk", "flag": true, "nem": true, "hp": 120, "maxHp": 120, "sh": [20, 20, 20, 20], "shMax": 20, "exp_hull": 8.0, "exp_sh": [7.0, 0.0, 0.0, 0.0],
-			"line": "The bearing gun: about 15 damage, about 7 on its prow shield and 8 on hull."})
+		h.set_target({"name": "Fleet Marshal Petra Valk", "flag": true, "nem": true, "hp": 120, "maxHp": 120, "sh": [20, 20, 20, 20], "shMax": 80, "shp": 68, "exp_hull": 9, "exp_shields": 7, "bearing": 1, "gun": "Oath lance", "kind": "lance", "hit": 92, "gun_index": 2,
+			"line": "The bearing gun: about 16 damage: 7 to shields, 9 to hull."})
 		h.set_card({"name": "Unyielding Oath", "cls": "Vigil-class cruiser", "flag": true, "tag": "UP", "more": "2 more ready",
 			"steps": [{"n": 1, "label": "Move", "detail": "0 of 4 left", "st": "done"}, {"n": 2, "label": "Fire", "detail": "3 of 3 guns ready", "st": "now"}, {"n": 3, "label": "End ship", "detail": "Space", "st": "todo"}],
 			"hint": "[color=#ff8a6a]Target: Fleet Marshal Petra Valk.[/color] 1 gun bears from here. [b]Click it again or press Enter to fire.[/b] Esc cancels.", "say": "",

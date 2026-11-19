@@ -15,21 +15,18 @@ const UiScale = preload("res://ui/ui_scale.gd")
 
 const GS = preload("res://ui/theme/glass_shell.gd")
 const View = preload("res://campaign/campaign_view.gd")   # read-only views of the run for the screens (audit pass 1, finding 12)
-# Lime Tactical (R149, issue #344): the palette is glass_shell.gd's; these names stay so every screen keeps its meanings
-# (ui_style.md section 5). No colour value is written in this file: a new one goes into glass_shell.gd first.
+# The colours come from glass_shell.gd. Keep the existing campaign text roles and use the orders-sheet strengths.
 const INK := GS.INK
 const IRON := GS.IRON
 const IRON2 := GS.IRON2
 const IRON3 := GS.IRON3
-const BONE := GS.BONE
-const BONE2 := GS.BONE2
-const BONE3 := GS.BONE3
-const GILT := GS.GILT            # neon lime: the next action only
-const GILT2 := GS.GILT2
+const BONE := GS.TEXT
+const BONE2 := GS.TEXT2
+const BONE3 := GS.TEXT3
 const VERD := GS.VERD
 const BLOOD := GS.BLOOD
 const EMBER := GS.EMBER
-const ALERT := GS.ALERT
+const ALERT := GS.NEM
 const HULL := GS.HULL
 const HULL_LOW := GS.HULL_LOW
 const FRIEND := GS.FRIEND
@@ -137,7 +134,7 @@ func _process(delta: float) -> void:
 		C.toasts.clear()
 
 # ---------------- theme ----------------
-# Lime Tactical (R149; ui_style.md, section 8 for the campaign): every piece comes from godot/ui/theme/glass_shell.gd.
+# The existing campaign shapes and metrics take their colours from the orders sheet.
 func _sb(bgc: Color, border: Color, bw: int = 1, rad: int = 0, pad: float = 8.0) -> StyleBoxFlat:   # a plain square box (rare: a few bars)
 	var s = StyleBoxFlat.new(); s.bg_color = bgc; s.border_color = border
 	s.set_border_width_all(bw); s.set_corner_radius_all(0)
@@ -151,7 +148,12 @@ func _make_theme() -> Theme:
 	var t = GS.make_theme(k, font, font_semi, 17)   # campaign and menus keep base 17 (ui_spec.md 4.2; the default label was 18)
 	t.set_font_size("font_size", "Button", px(17))
 	for f in ["normal_font_size", "bold_font_size", "mono_font_size"]: t.set_font_size(f, "RichTextLabel", px(17))
-	t.set_color("font_focus_color", "Button", BONE)
+	for state in ["font_color", "font_focus_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"]:
+		t.set_color(state, "Button", BONE)
+	t.set_color("font_disabled_color", "Button", BONE3)
+	t.set_color("font_color", "Label", BONE)
+	t.set_color("default_color", "RichTextLabel", BONE)
+	t.set_color("font_color", "TooltipLabel", BONE)
 	t.set_font_size("font_size", "TooltipLabel", px(17))
 	t.set_stylebox("panel", "PanelContainer", GS.well(k))
 	var sep = StyleBoxLine.new(); sep.color = GS.LINE; sep.thickness = max(1, px(1))
@@ -196,38 +198,38 @@ func spacer() -> Control:
 func flow(sep: float = 14) -> HFlowContainer:
 	var f = HFlowContainer.new(); f.add_theme_constant_override("h_separation", px(sep)); f.add_theme_constant_override("v_separation", px(sep)); return f
 # A block of text on a solid well (ui_style.md 3). The border colour, when it is not the quiet IRON3, becomes the well's left
-# bar (a core's colour, VERD for calm information, lime for the lit block). A box filled with its own border colour is a tag.
+# bar (for example a core's colour). A box filled with its own border colour is a tag.
 func panel(border: Color = IRON3, bgc: Color = IRON, pad: float = 14) -> PanelContainer:
 	var p = PanelContainer.new()
 	var sb: StyleBoxFlat
 	if bgc.a > 0.9 and bgc == border: sb = GS.tag(k, border, true); sb.content_margin_left = px(pad); sb.content_margin_right = px(pad)
 	elif border == IRON3 or border.a == 0.0: sb = GS.well(k, Color(0, 0, 0, 0), pad, pad * 0.7)
-	elif border == GILT: sb = GS.well(k, GILT, pad, pad * 0.7)   # the lit block
+	elif border == BONE3: sb = GS.well(k, BONE3, pad, pad * 0.7)
 	else: sb = GS.well(k, Color(0, 0, 0, 0), pad, pad * 0.7, border)
 	p.add_theme_stylebox_override("panel", sb); return p
-# A card: a well; the selected one is lit (lime edge all round), nothing else lights a well.
+# A card: a well with a neutral outline when selected or owned.
 func card(sel: bool = false, width: float = 300) -> Array: # [PanelContainer, VBoxContainer]
 	var p = PanelContainer.new(); p.custom_minimum_size.x = px(width)
-	p.add_theme_stylebox_override("panel", GS.well(k, GILT if sel else Color(0, 0, 0, 0), 14, 12))
+	p.add_theme_stylebox_override("panel", GS.well(k, BONE3 if sel else Color.TRANSPARENT, 14, 12))
 	var v = vbox(6); p.add_child(v); return [p, v]
 # One panel per region (ui_style.md 2): the matte slab with its chamfers, scanline, bevel and brackets.
 func shell_panel(pad: float = 14) -> PanelContainer:
 	var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", GS.shell(k, pad)); GS.frame_marks(p, k); return p
-# A section head inside a panel: lime caps, tracked (GS.caps), as the battle HUD's "1 MOVE"
+# A section head inside a panel: neutral tracked caps (GS.caps).
 func sec_head(t: String, right: String = "", right_col: Color = BONE3) -> Control:
 	var h = hbox(8); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	h.add_child(lbl(t.to_upper(), 17, GILT, font_caps, false))
+	h.add_child(lbl(t.to_upper(), 17, BONE, font_caps, false))
 	if right != "": h.add_child(spacer()); h.add_child(lbl(right, 17, right_col, font_caps, false))
 	return h
 # A small square tag (UP, NEMESIS, ELITE, LOCKED): filled for a state, outlined for a side or a kind
 func tagl(t: String, col: Color, filled: bool = false, size: float = 17) -> Label:
-	var l = lbl(t.to_upper(), size, GS.ON_GILT if filled and col == GILT else (INK if filled else col), font_caps, false)
+	var l = lbl(t.to_upper(), size, INK if filled else col, font_caps, false)
 	l.add_theme_stylebox_override("normal", GS.tag(k, col, filled)); l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	return l
 # A key cap beside an action ("1", "Esc"): the key always shows next to what it does
-func keycap(key: String, on_gilt: bool = false) -> Label:
-	var l = lbl(key, 17, GS.ON_GILT if on_gilt else GS.KEY_FG, font_num_b, false)
-	l.add_theme_stylebox_override("normal", GS.keycap_on_gilt(k) if on_gilt else GS.keycap(k))
+func keycap(key: String, on_ember: bool = false) -> Label:
+	var l = lbl(key, 17, GS.ON_EMBER if on_ember else BONE2, font_num_b, false)
+	l.add_theme_stylebox_override("normal", GS.keycap_on_ember(k) if on_ember else GS.keycap(k))
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER; l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return l
 func bar(f: float, w: float = 0) -> Control:   # a hull bar: segmented, HULL_LOW under the one hull-low line (HD9)
@@ -252,21 +254,21 @@ func _key_for(list, act: String, arg) -> String:
 	for i in range(min(9, on.size())):
 		if on[i][0] == act and on[i][1] == a0: return str(i + 1)
 	return ""
-# primary: a lit button (dark fill, lime edge, lime words), for a step's own confirm when the screen's finishing action is
-# the filled lime slab (fin). Only one filled lime button at a time (R148).
+# A highlighted button either confirms an action (ember) or shows the current selection (bone).
 func abtn(text: String, act: String, arg = "", primary: bool = false, small: bool = false, list = null) -> Button:
 	var found = _find(list if list != null else _acts, act, arg)
 	if found.is_empty(): return null
 	var b = Button.new(); b.text = "Back to ledger" if _end_return and act == "title" else text; b.disabled = found[2] == 0; b.focus_mode = Control.FOCUS_ALL
 	if small: b.add_theme_font_size_override("font_size", px(17))
 	if primary:
-		var lb = GS.lit_boxes(k)
+		var accent = BONE2 if act in ["pickFaction", "pickAdmiral", "progTab"] else GS.MAP_EMBER
+		var lb = GS.lit_boxes(k, accent)
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
-		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]: b.add_theme_color_override(fc, GILT)
+		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
 	var aa = found[1]
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	return b
-# The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the one filled lime slab, its label
+# The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the filled ember button, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
 func fin(text: String, act: String, arg = "", list = null) -> Button:
 	var found = _find(list if list != null else _acts, act, arg)
@@ -275,15 +277,15 @@ func fin(text: String, act: String, arg = "", list = null) -> Button:
 	var fb = GS.finish_boxes(k)
 	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, fb[st])
 	var h = hbox(10); h.alignment = BoxContainer.ALIGNMENT_CENTER; h.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var l = lbl(text.to_upper(), 17, BONE3 if b.disabled else GS.ON_GILT, font_act, false); l.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(l)
+	var l = lbl(text.to_upper(), 17, BONE3 if b.disabled else GS.ON_EMBER, font_act, false); l.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(l)
 	var kk = _key_for(list, act, arg)
-	if kk != "": var kc = keycap(kk, true); kc.add_theme_color_override("font_color", BONE3 if b.disabled else GS.ON_GILT); h.add_child(kc)
+	if kk != "": h.add_child(keycap(kk, not b.disabled))
 	b.add_child(h)
 	# the width from the faces' own metrics (a container's minimum size is not known before it is drawn; hud.gd _kb_width)
 	var tw = font_act.get_string_size(text.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, px(17)).x
 	if kk != "": tw += font_num_b.get_string_size(kk, HORIZONTAL_ALIGNMENT_LEFT, -1, px(13)).x + px(10) + px(10) + px(10)
 	b.custom_minimum_size = Vector2(ceil(tw) + px(24) + px(28), px(46))
-	GS.gilt_sheen(b, k)
+	GS.finish_sheen(b, k)
 	var aa = found[1]
 	b.pressed.connect(func(): _campaign_action(act, aa))
 	return b
@@ -303,14 +305,14 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	var b = ChoiceScript.new(); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var bar_c = accent if accent != null else Color(0, 0, 0, 0)
 	if off: bar_c = GS.LINE
-	var n = GS.well(k, GILT if sel else Color(0, 0, 0, 0), 12, 9, bar_c)
-	var h = GS.well(k, Color(GILT, 0.55), 12, 9, bar_c); h.shadow_size = 0
+	var n = GS.well(k, BONE2 if sel and not off else Color.TRANSPARENT, 12, 9, bar_c)
+	var h = GS.well(k, BONE2 if sel else BONE3, 12, 9, bar_c)
 	b.setup(n, h, h, off)
 	b.ring = GS.focus_ring(k)
 	var row = hbox(10); row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var v = vbox(2); v.mouse_filter = Control.MOUSE_FILTER_IGNORE; v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tag_t != "": v.add_child(lbl(tag_t.to_upper(), 17, BONE3 if off else tagcol, font_caps))
-	v.add_child(lbl(title, 18, BONE3 if off else (GILT if sel else BONE), font_semi))
+	v.add_child(lbl(title, 18, BONE3 if off else BONE, font_semi))
 	if small != "": v.add_child(lbl(small, 17, BONE3 if off else BONE2))
 	for l in v.get_children():
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -325,6 +327,28 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	return b
 func add(parent: Node, child) -> void:
 	if child != null: parent.add_child(child)
+func _boon_fleet_line(id: String, rarity: int) -> String:
+	var relevance: Dictionary = C.boonFleetRelevance(id, rarity)
+	var kit: String = {
+		"lance": "with lances", "torp": "with torpedoes", "broad": "with broadside guns",
+		"still": "with broadside guns or batteries", "shields": "with shields",
+		"carrier": "with hangars", "sq": "with squadrons",
+	}.get(relevance.get("need"), "")
+	if kit == "": return ""
+	var ships: PackedStringArray = relevance["ships"]
+	var count := ships.size()
+	if count > 0:
+		var condition := " that have not moved" if relevance["need"] == "still" else ""
+		if count == 1 and condition != "": condition = " that has not moved"
+		var names := ", ".join(ships.slice(0, 3))
+		if count > 3: names += " and %d more" % (count - 3)
+		return "Affects %d %s %s%s: %s" % [count, "ship" if count == 1 else "ships", kit, condition, names]
+	if relevance["capped"]: return "No added benefit: ships %s are already at the limit." % kit
+	if relevance.has("refit"):
+		return "No ship %s now; could use later with the %s refit in your hold." % [kit, C.modName(relevance["refit"])]
+	if relevance.has("hull"): return "No ship %s now; could use later on a fitting hull." % kit
+	return "No current ship %s." % kit
+
 func _toast(msg: String) -> void:   # a strip with a calm VERD bar (ui_style.md 3): toasts here are news, not warnings
 	var p = PanelContainer.new(); var sb = GS.strip(k, VERD); sb.content_margin_left = px(14); sb.content_margin_right = px(18); sb.content_margin_top = px(8); sb.content_margin_bottom = px(8)
 	p.add_theme_stylebox_override("panel", sb); p.add_child(lbl(msg, 18, BONE)); p.custom_minimum_size.x = px(min(900, 260 + msg.length() * 7))
@@ -352,7 +376,7 @@ func render() -> void:
 		"admiral": body = _wrap_page(_admiral())
 		"aspect": body = _wrap_page(_aspect())
 		"map": body = _map()
-		"fleet": body = _wrap_page(_fleet(pg["data"]))
+		"fleet": body = _fleet(pg["data"])
 		"shipyard": body = _wrap_page(_shipyard())
 		"battle":   # the test battle's panel; a dialog over the battle (the rewards) shows over the scene alone, as in the game shell
 			body = _battle_stub(pg["data"]) if (C.modal_d == null or C.modal_d["kind"] == "retreat") else Control.new()
@@ -391,6 +415,9 @@ func _teaching_screen() -> void:
 	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
 
 func _focus_first() -> void:
+	if C.modal_d == null and C.page.get("kind") == "fleet":
+		get_viewport().gui_release_focus()
+		return
 	# the map page: the keys go to the chart (arrows, Enter, zoom), so no button wears a ring when the screen opens;
 	# with a slide-over open they go to its Close
 	if modal_box.get_child_count() == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
@@ -434,7 +461,6 @@ func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
 func _page_finish(kind: String) -> void:
 	var b: Button = null
 	match kind:
-		"fleet": b = fin("Done", "backShipyard" if C.page["data"].get("back") == "shipyard" else "backMap")
 		"shipyard": b = fin("Leave shipyard", "leaveYard")
 	if b == null: return
 	b.anchor_left = 1.0; b.anchor_top = 1.0; b.anchor_right = 1.0; b.anchor_bottom = 1.0
@@ -464,7 +490,7 @@ func _title() -> Control:
 	var mc = CenterContainer.new(); mc.add_child(menu); v.add_child(mc)
 	if C.has_method("playtestAll"):   # R1 (Ryan, Nov 1): the playtest switch, one plain line and a toggle (not a campaign act, so parity is untouched)
 		var on = C.playtestAll()
-		var pl = lbl("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants). " + ("On." if on else "Off: unlock them with renown."), 18, GILT if on else BONE3)
+		var pl = lbl("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants). " + ("On." if on else "Off: unlock them with renown."), 18, BONE if on else BONE2)
 		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(pl)
 		var pb = Button.new(); pb.text = "Switch playtest unlocks " + ("off" if on else "on"); pb.focus_mode = Control.FOCUS_ALL
 		pb.add_theme_font_size_override("font_size", px(17))
@@ -473,7 +499,7 @@ func _title() -> Control:
 	var st = C.META["stats"]; var best = float(C.z0(st.get("best"))); var wins = int(C.z0(st.get("wins")))
 	if best > 0:
 		var t = "Best: sector " + C.roman(min(3, best)) + ((" · " + str(wins) + " full victor" + ("ies" if wins > 1 else "y")) if wins > 0 else "")
-		var r = lbl(t, 17, GILT); r.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(r)
+		var r = lbl(t, 17, BONE2); r.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(r)
 	cc.add_child(v); return cc
 
 # ---------------- admiral and run options ----------------
@@ -496,8 +522,8 @@ func _admiral() -> Control:
 		if face != null:   # godot/portraits: the painting when one is picked, else the crest
 			var hr = hbox(10); var tr = TextureRect.new(); tr.texture = face; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			tr.custom_minimum_size = Vector2(px(84), px(84)); hr.add_child(tr)
-			var nv = vbox(2); nv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; nv.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); nv.add_child(lbl(a["doc"], 18, GILT)); hr.add_child(nv); col.add_child(hr)
-		else: col.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); col.add_child(lbl(a["doc"], 18, GILT))
+			var nv = vbox(2); nv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; nv.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); nv.add_child(lbl(a["doc"], 18, BONE2)); hr.add_child(nv); col.add_child(hr)
+		else: col.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); col.add_child(lbl(a["doc"], 18, BONE2))
 		col.add_child(lbl(a["d"], 18, BONE2))
 		col.add_child(_mastery_bar(id))
 		if C.LINEAGE_TREES.has(id): add(col, abtn("View lineage tree", "lineage", id))
@@ -506,10 +532,10 @@ func _admiral() -> Control:
 		col.add_child(rich(c("Starting fleet:", BONE3) + " " + esc(", ".join(PackedStringArray(fleet))), 18))
 		if C.jt(a.get("cmd")):
 			# issue 644 (say less at 17 px): "Gets stronger each round you hold it." moved to the hover on the Command line
-			var cmd_l = rich(c("Command:", BONE3) + " [b]" + c(esc(a["cmd"]["n"]), GILT) + "[/b]. " + esc(_cmd_text(a["cmd"], C.picked_faction)), 18)
+			var cmd_l = rich(c("Command:", BONE3) + " [b]" + esc(a["cmd"]["n"]) + "[/b]. " + esc(_cmd_text(a["cmd"], C.picked_faction)), 18)
 			cmd_l.tooltip_text = "Gets stronger each round you hold it."; col.add_child(cmd_l)
 		if un: add(col, abtn("Selected" if C.picked_admiral == id else "Select", "pickAdmiral", id, C.picked_admiral == id))
-		else:   # R1 (PROG-2): unlock it here with renown; the card reads locked (dimmed), the button stays bright and gilt when you can afford it
+		else:   # R1 (PROG-2): the locked card dims, but the unlock action stays bright when you can afford it.
 			for ch in col.get_children(): ch.modulate.a = 0.55
 			var can = float(C.z0(C.META.get("renown"))) >= float(C.z0(a.get("cost")))
 			var ub = abtn("Unlock for " + C.numstr(a.get("cost")) + " renown", "buyAdmiral", id, can)
@@ -530,7 +556,7 @@ func _story_text() -> String:
 	return str(st.campaign_line()) if st != null else ""
 func _story_line(v: Control) -> void:
 	var t = _story_text()
-	if t != "": v.add_child(lbl(t, 17, VERD))   # the admiral's voice: calm information, not an action (lime is the next action only)
+	if t != "": v.add_child(lbl(t, 17, VERD))   # the admiral's voice: calm information, not an action
 func _admiral_title(id) -> String:   # the admiral's name with the latest earned title
 	var st = _story()
 	if st != null:
@@ -566,13 +592,22 @@ func _mastery_bar(id) -> Control:
 		right = (C.numstr(x) + "/" + C.numstr(nx) + ": next " + str(C.masteryPerk(l + 1)["n"]).to_lower()) if nx != null else ("Level 8 reached: choose a Command evolution" if tree else "mastered")
 		f = min(1.0, (x - float(thresholds[l])) / (float(nx) - float(thresholds[l]))) if nx != null else 1.0
 	var v = vbox(3)
-	v.add_child(rich(c(label, GILT) + " " + c(right, BONE3), 17))
+	v.add_child(rich(c(label, BONE) + " " + c(right, BONE3), 17))
 	var b = GS.seg_bar(k, f, VERD, GS.BAR_TRACK, 6, 10); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; v.add_child(b)   # progress, not an action: VERD
 	v.add_child(lbl(("Heir: 50%" if C.META["heirs"].get(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn")) == id else "Shadow: 25%") + " XP while benched", 17, BONE3))
 	return v
 func _run_options() -> Control:
 	var v = vbox(10)
 	v.add_child(gothic("Run options", 52))
+	var trial = CheckBox.new()
+	trial.name = "MapTrialToggle"
+	trial.text = "Test new battle maps, faster ships and longer gun ranges"
+	trial.tooltip_text = "Also changes where ships start in Hunt, Ambush and boss fights. Applies to this whole run."
+	trial.add_theme_font_size_override("font_size", px(18))
+	trial.button_pressed = C.map_trial_choice
+	trial.toggled.connect(func(on): C.act("optMapTrial", "1" if on else "0"))
+	trial.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	v.add_child(trial)
 	var cards = flow(); var o = C.page["data"]["opts"]; var id = C.picked_admiral; var a = C.ADMIRALS[id]
 	if int(o["ml"]) >= 1:
 		var cv = card(false, 380); cv[1].add_child(lbl("Starting fleet", 20, BONE, font_semi))
@@ -592,7 +627,7 @@ func _run_options() -> Control:
 	if o["heat"]:
 		var hl = C.heatLevel(C.run_opt["heat"]); var best = float(C.z0(C.META["heatBest"].get(C.picked_faction)))
 		var cv3 = card(false, 420)
-		cv3[1].add_child(rich("[b]Heat " + c(C.numstr(hl), GILT) + "[/b] " + c("+" + C.numstr(hl * 10) + "% renown" + ((" · best win with this faction: Heat " + C.numstr(best)) if best > 0 else ""), BONE3), 19))
+		cv3[1].add_child(rich("[b]Heat " + C.numstr(hl) + "[/b] " + c("+" + C.numstr(hl * 10) + "% renown" + ((" \u00b7 best win with this faction: Heat " + C.numstr(best)) if best > 0 else ""), BONE3), 19))
 		cv3[1].add_child(lbl("Optional rules that make the run harder. Pick any.", 17, BONE3))
 		for kk in C.HEAT.keys():
 			var h = C.HEAT[kk]
@@ -616,7 +651,7 @@ func _aspect() -> Control:
 	v.add_child(cards)
 	var R = C.RUN
 	if C.jt(R.get("giftBoon")):
-		var gb = R["giftBoon"]; v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", now Synced with you: [b]" + esc(C.BOONS[gb]["n"]) + "[/b].", GILT), 17))
+		var gb = R["giftBoon"]; v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", now Synced with you: [b]" + esc(C.BOONS[gb]["n"]) + "[/b].", BONE2), 17))
 	if R.get("heat") is Array and R["heat"].size() > 0:
 		var hn = []
 		for kk in R["heat"]: hn.append(C.HEAT[kk]["n"])
@@ -628,9 +663,9 @@ func _aspect() -> Control:
 
 # ---------------- the sector map: the Briefing layout (Ryan's pick, Nov 10 2026, FINDINGS R165) ----------------
 # The first spec (archived) is docs/archive/briefs/campaign_map_briefing.md; the live look is contrib/opus/briefs/campaign_rail_orders_sheet.md; the first picture is contrib/opus/ui_map_design/map_option_C_briefing.jpg.
-# Left: one flat column, 480 wide (the sector, the routes you can take as numbered rows, the one filled lime button, the
+# Left: one flat column, 480 wide (the sector, the routes you can take as numbered rows, the ember action, the
 # Nemesis in a few lines, the fleet). Right: the real 3D chart with plain words on it (map3d.gd). Two colours on top of the
-# sage text: lime is the next action and the next jumps, ALERT red is the Nemesis. Everything else the old screen said is one
+# pale text: ember is the next action and the next jumps, NEM red is the Nemesis. Everything else the old screen said is one
 # hover or one click away: the map's hover tip, the Map key and the Dossier (the two slide-overs below).
 # Every fact comes through campaign_view.gd, which only reads; every size is on the mockup's ladder (13, 14, 15, 18, 20, 22,
 # 28 to 30, 40) and every gap on an 8 px grid, at the 1080 design height.
@@ -812,6 +847,9 @@ func _briefing_column() -> Control:
 	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
 	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
 	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
+	var trial_status := _sheet_words("Test map package " + ("on" if H["map_trial"] else "off"), 17, GS.TEXT2)
+	trial_status.name = "MapTrialStatus"
+	upper.add_child(trial_status)
 	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
 	upper.add_child(gap(28)); _rows.clear()
 	for r in _routes:
@@ -984,11 +1022,11 @@ func _fleet_line(s: Dictionary, rh: float) -> Control:
 	if s["flagship"]:
 		var diamond = Control.new(); diamond.custom_minimum_size = Vector2(px(10), px(rh)); diamond.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		diamond.draw.connect(func(): GS.diamond(diamond, Vector2(px(5), px(rh) * 0.5), px(5), GS.MAP_EMBER)); h.add_child(diamond)
-	var hp = C.numstr(s["hp"]) + " / " + C.numstr(s["max_hp"])
+	var hp = C.hull_text(s["hp"]) + " / " + C.hull_text(s["max_hp"])
 	var hw = ceil(font_num.get_string_size(hp, HORIZONTAL_ALIGNMENT_LEFT, -1, px(19)).x)
 	var available = COL_W - COL_PAD * 2 - 16 - hw / k - (26 if s["flagship"] else 0)
 	h.add_child(_sheet_name(s["name"], 28, available, 3))
-	var figures = _baseline_row([[C.numstr(s["hp"]), font_num, 19, (HULL_LOW if float(s["frac"]) < 0.35 else HULL) if float(s["frac"]) < 0.999 else GS.TEXT], [" / " + C.numstr(s["max_hp"]), font_num, 19, GS.TEXT]], rh)
+	var figures = _baseline_row([[C.hull_text(s["hp"]), font_num, 19, (HULL_LOW if float(s["frac"]) < 0.35 else HULL) if float(s["frac"]) < 0.999 else GS.TEXT], [" / " + C.hull_text(s["max_hp"]), font_num, 19, GS.TEXT]], rh)
 	figures.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(figures)
 	h.tooltip_text = _wrap_words(s["name"] + ", " + s["cls"] + " Mk " + s["mk"] + "\n" + s["captain"] + ("\nPromotion ready" if s["promotion"] else ""))
 	return h
@@ -1207,7 +1245,7 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 17, BONE2, font_caps, false)); v.add_child(r0)
 	v.add_child(lbl(t["n"], 18, BONE2))
 	if C.jt(s.get("ripped")): v.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-	var r1 = hbox(); r1.add_child(lbl("Hull " + C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
+	var r1 = hbox(); r1.add_child(lbl("Hull " + C.hull_text(s["hp"]) + "/" + C.hull_text(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
 	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
 	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 17))
 	if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]): v.add_child(rich(c(esc(C.ABILITIES[t["ab"]]["n"]) + ".", VERD) + " " + c(esc(C.ABILITIES[t["ab"]]["d"]), BONE3), 17))
@@ -1243,34 +1281,15 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 		for b in extra: add(ex, b)
 		v.add_child(HSeparator.new()); v.add_child(ex)
 	return cv[0]
+const FleetManifest = preload("res://ui/campaign/fleet_manifest.gd")
+var fleet_manifest: Control
+var fleet_state := {"uid": "", "mode": "", "held": {}}
+var _fleet_run = null
 func _fleet(d: Dictionary) -> Control:
-	var v = vbox(10)
-	var head = hbox(); head.add_child(gothic("Fleet")); head.add_child(spacer())
-	var st = _story()
-	if st != null and C.flagshipOf() != null:   # story layer: name your flagship
-		var rb = Button.new(); rb.text = "Rename flagship"; rb.focus_mode = Control.FOCUS_ALL; rb.pressed.connect(func(): st.open_rename()); head.add_child(rb)
-	v.add_child(head)   # Done is the finishing action, fixed at the bottom right of the screen (_page_finish)
-	v.add_child(lbl("Refits can be moved between ships freely. Mark upgrades and repairs happen at shipyards and drydocks.", 18, BONE2))
-	var R = C.RUN
-	var FA = View.faction_action(C)
-	if not FA.is_empty(): v.add_child(_action_line(FA))
-	if R["inventory"].size() > 0:
-		v.add_child(sec_head("In the hold"))
-		var inv = flow()
-		for i in range(R["inventory"].size()):
-			var m = R["inventory"][i]; var cv = card(false, 300)
-			cv[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
-			var fr = flow(6); var any = false
-			for s in R["fleet"]:
-				var b = abtn("Fit to " + str(s["name"]), "equip", str(i) + ":" + s["uid"], false, true)
-				if b != null: fr.add_child(b); any = true
-			if not any: fr.add_child(lbl("No free compatible slot. Remove a refit first.", 17, BONE3))
-			cv[1].add_child(fr); inv.add_child(cv[0])
-		v.add_child(inv)
-	var cards = flow()
-	for s in R["fleet"]: cards.add_child(_ship_card(s, true))
-	v.add_child(cards)
-	return v
+	if not is_same(_fleet_run, C.RUN):
+		_fleet_run = C.RUN; fleet_state = {"uid": "", "mode": "", "held": {}}
+	fleet_manifest = FleetManifest.new(); fleet_manifest.setup(self, d, fleet_state)
+	return fleet_manifest
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
@@ -1299,7 +1318,7 @@ func _shipyard() -> Control:
 		var cv = card(false, 320); var cvv = cv[1]
 		cvv.add_child(rich("[b]" + esc(t["n"]) + "[/b]" + (" " + c("Variant", VERD) if C.jt(t.get("variant")) else ""), 20))
 		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 17, VERD))
-		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
+		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
 		var ws = []
 		for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 		cvv.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
@@ -1318,7 +1337,7 @@ func _shipyard() -> Control:
 			var cv3 = card(false, 320); var cvv3 = cv3[1]
 			cvv3.add_child(rich("[b]" + esc(t2["n"]) + "[/b]", 20))
 			cvv3.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
-			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.numstr(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
+			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.hull_text(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
 			var ws2 = []
 			for e in t2["w"]: ws2.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 			cvv3.add_child(lbl(", ".join(PackedStringArray(ws2)) + ".", 17, BONE2))
@@ -1349,7 +1368,7 @@ func _shipyard() -> Control:
 func _battle_stub(d: Dictionary) -> Control:
 	var cfg = d["cfg"]; var E = C.ENCOUNTERS.get(cfg.get("obj"), C.ENCOUNTERS["rout"])
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var p = panel(GILT2, IRON, 24); p.custom_minimum_size.x = px(720); var v = vbox(10); p.add_child(v)
+	var p = panel(GS.SHEET_HAIR, IRON, 24); p.custom_minimum_size.x = px(720); var v = vbox(10); p.add_child(v)
 	var kind = "flagship battle" if cfg["kind"] == "boss" else (("elite " if cfg["kind"] == "elite" else "") + str(E["n"]).to_lower())
 	v.add_child(lbl("Sector " + C.roman(C.RUN["sector"]) + ": " + kind + " against " + str(C.FACTIONS[cfg["fac"]]["n"]), 22, BONE, font_goth))
 	v.add_child(lbl(("The sector flagship and its escort." if cfg["kind"] == "boss" else str(E["d"])), 17, BONE2))
@@ -1363,7 +1382,7 @@ func _battle_stub(d: Dictionary) -> Control:
 func _legacy() -> Control:
 	var v = vbox(10); var M = C.META; var st = M["stats"]
 	v.add_child(gothic("Progression"))
-	v.add_child(rich(c("Runs launched: " + C.numstr(st["runs"]) + ". Deepest sector reached: " + C.numstr(C.z0(st.get("best"))) + ". Runs won: " + C.numstr(st["wins"]) + ". Renown: ", BONE2) + c(C.numstr(C.z0(M.get("renown"))), GILT) + c(".", BONE2), 17))
+	v.add_child(rich(c("Runs launched: " + C.numstr(st["runs"]) + ". Deepest sector reached: " + C.numstr(C.z0(st.get("best"))) + ". Runs won: " + C.numstr(st["wins"]) + ". Renown: ", BONE2) + c(C.numstr(C.z0(M.get("renown"))), BONE) + c(".", BONE2), 17))
 	var tabs = hbox(6)
 	for t in [["variants", "Hull variants"], ["legacy", "Legacy"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]: add(tabs, abtn(t[1], "progTab", t[0], C.prog_tab == t[0]))
 	var stc = _story()
@@ -1372,7 +1391,7 @@ func _legacy() -> Control:
 	v.add_child(tabs)
 	match C.prog_tab:
 		"variants":
-			v.add_child(rich(c("Spend renown to add a variant hull to your faction's shipyards. It sits beside the standard hull whenever that hull is in stock. ", BONE2) + c("You have " + C.numstr(C.z0(M.get("renown"))) + " renown.", GILT) + c(" Renown comes from every run: battles, elites, flagships and sectors reached, plus 10% per Heat level.", BONE2), 17))
+			v.add_child(rich(c("Spend renown to add a variant hull to your faction's shipyards. It sits beside the standard hull whenever that hull is in stock. ", BONE2) + c("You have " + C.numstr(C.z0(M.get("renown"))) + " renown.", BONE) + c(" Renown comes from every run: battles, elites, flagships and sectors reached, plus 10% per Heat level.", BONE2), 17))
 			for f in C.favFirst():
 				var vs = []
 				for vid in C.HULL_VARIANTS.keys():
@@ -1385,14 +1404,14 @@ func _legacy() -> Control:
 					var cv = card(own, 320); cv[1].add_child(lbl(hv["n"], 20, BONE, font_semi)); cv[1].add_child(lbl("Variant of the " + str(C.HULLS[hv["base"]]["n"]), 17, BONE3)); cv[1].add_child(lbl(hv["d"], 18, BONE2))
 					var ws = []
 					for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
-					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
+					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.hull_text(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
 					if own: cv[1].add_child(lbl("In your shipyards", 18, VERD))
 					elif C.jt(hv.get("arc")): cv[1].add_child(lbl("Finish the " + str(C.FACTIONS[hv["arc"]]["n"]) + " story to unlock", 17, BONE3))
 					else: add(cv[1], abtn("Unlock for " + C.numstr(hv["cost"]) + " renown", "buyVariant", vid))
 					cards.add_child(cv[0])
 				v.add_child(cards)
 		"legacy":   # R1 (PROG-2): lasting unlocks bought with renown (campaign.gd legacyScreen lists the buyLegacy buttons)
-			v.add_child(rich(c("Spend renown on lasting advantages for every later run. ", BONE2) + c("You have " + C.numstr(C.z0(M.get("renown"))) + " renown.", GILT), 17))
+			v.add_child(rich(c("Spend renown on lasting advantages for every later run. ", BONE2) + c("You have " + C.numstr(C.z0(M.get("renown"))) + " renown.", BONE), 17))
 			var lc = flow()
 			for id in C.LEGACY.keys():
 				var u = C.LEGACY[id]; var own = C.jt(M["unlocked"].get(id)); var lock = C.jt(u.get("req")) and not C.jt(M["unlocked"].get(u["req"]))
@@ -1413,7 +1432,7 @@ func _legacy() -> Control:
 				v.add_child(lbl(C.FACTIONS[f]["n"], 20, BONE, font_semi)); var ac = flow()
 				for id in C.ADMIRALS.keys():
 					if C.or_(C.ADMIRALS[id].get("fac"), "voidsworn") != f: continue
-					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 17, GILT)); cv2[1].add_child(_mastery_bar(id))
+					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 17, BONE2)); cv2[1].add_child(_mastery_bar(id))
 					if C.LINEAGE_TREES.has(id): add(cv2[1], abtn("View lineage tree", "lineage", id))
 					ac.add_child(cv2[0])
 				v.add_child(ac)
@@ -1437,7 +1456,7 @@ func _legacy() -> Control:
 			var bc = flow()
 			for f in C.RUN_FACTIONS:
 				var hb = float(C.z0(M["heatBest"].get(f))); var won = C.or_(st.get("wonFacs"), []).has(f)
-				var cv = card(false, 220); cv[1].add_child(lbl(C.FACTIONS[f]["n"], 18, BONE, font_semi)); cv[1].add_child(lbl(("Heat " + C.numstr(hb)) if hb > 0 else ("Won at Heat 0" if won else "Not yet won"), 18, GILT if hb > 0 else BONE3)); bc.add_child(cv[0])
+				var cv = card(false, 220); cv[1].add_child(lbl(C.FACTIONS[f]["n"], 18, BONE, font_semi)); cv[1].add_child(lbl(("Heat " + C.numstr(hb)) if hb > 0 else ("Won at Heat 0" if won else "Not yet won"), 18, BONE if hb > 0 else BONE3)); bc.add_child(cv[0])
 			v.add_child(bc)
 		"fallen":
 			var fallen = M["fallen"].slice(max(0, M["fallen"].size() - 40)); fallen.reverse()
@@ -1467,7 +1486,7 @@ const HELP := [
 func _help() -> Control:
 	var v = vbox(10); v.add_child(gothic("How to play"))
 	for h in HELP:
-		if h[0] != "": v.add_child(lbl(h[0], 20, GILT, font_semi))
+		if h[0] != "": v.add_child(lbl(h[0], 20, BONE, font_semi))
 		v.add_child(lbl(h[1], 17, BONE2))
 	add(v, abtn("Back", "title", "", true))
 	return v
@@ -1544,7 +1563,7 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 	if lessons.is_empty() and int(nz.get("met", 0)) > 0:
 		v.add_child(lbl("No weakness was taught this run.", 18, GS.TEXT2)); shown = true
 	for l in lessons:
-		var nw = C.NEM_WEAK.get(l.get("w"))
+		var nw = C.BattleAPI.nem_entry(C.NEM_WEAK, l.get("w"), l.get("fac"))
 		var lead = " beat you and taught you a weakness: " if l.get("taught", true) else ". Weakness found: "
 		v.add_child(rich("Nemesis lesson: " + ("you broke " if not l.get("taught", true) else "") + c(esc(_end_nem_name(l)), GS.NEM) + lead + esc(nw["n"] if nw != null else "the hunter's tactics") + ".", 18)); shown = true
 		if str(l.get("text", "")) != "": v.add_child(lbl(str(l["text"]), 17, GS.TEXT2))
@@ -1555,7 +1574,8 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 		var who = c(esc(_end_nem_name(N)), GS.NEM)
 		for w in N.get("revealed", []):
 			if lessons.any(func(l): return l.get("fac") == N.get("fac") and l.get("w") == w): continue
-			if C.NEM_WEAK.has(w): v.add_child(rich("Nemesis lesson: you broke " + who + ". Weakness found: " + esc(C.NEM_WEAK[w]["n"]) + ".", 18)); shown = true
+			var entry = C.BattleAPI.nem_entry(C.NEM_WEAK, w, N.get("fac"))
+			if entry != null: v.add_child(rich("Nemesis lesson: you broke " + who + ". Weakness found: " + esc(entry["n"]) + ".", 18)); shown = true
 		for ad in N.get("adapt", []):
 			v.add_child(rich("Nemesis lesson: " + who + " adapted. " + esc(C.nemAdaptName(ad, N["fac"])) + ": " + esc(C.nemAdaptWhyLine(ad, N)) + ".", 18)); shown = true
 		if float(N.get("loot", 0)) > 0:
@@ -1748,7 +1768,7 @@ func _tree_name(key: String) -> String:
 	return str(pair[c2]["n"]) if c2 < pair.size() else key
 func _lineage_node(n) -> Control:
 	var chosen = n["state"] == "chosen"; var cv = card(chosen, 300); var col = cv[1]
-	col.add_child(lbl(n["n"], 19, GILT if chosen else BONE, font_semi)); col.add_child(lbl(n["d"], 18, BONE2))
+	col.add_child(lbl(n["n"], 19, BONE, font_semi)); col.add_child(lbl(n["d"], 18, BONE2))
 	var labels = {"chosen": "Recorded", "locked": "Locked until reset", "available": "Choose this skill", "future": "Not yet available"}
 	add(col, abtn(labels[n["state"]], "offerLineage", n["key"], n["state"] == "available"))
 	if n["state"] == "locked": cv[0].modulate.a = 0.55
@@ -1758,7 +1778,7 @@ func _lineage(id) -> Control:
 	v.add_child(lbl(C.ADMIRALS[id]["n"], 30, BONE, font_goth))
 	v.add_child(lbl("Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.", 17, BONE2))
 	v.add_child(_mastery_bar(id))
-	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, GILT))
+	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, BONE2))
 	v.add_child(lbl("Command skills and capstones use " + str(C.ADMIRALS[id]["cmd"]["n"]) + ", the primary Command. Fleet and flagship branches open their first tier.", 17, BONE3))
 	if not C.lineageBetweenRuns(): v.add_child(lbl("Finish or abandon your saved run before changing this line.", 17, BLOOD))
 	var columns = flow(16); var trunk = vbox(8); trunk.custom_minimum_size.x = px(300)
@@ -1769,15 +1789,15 @@ func _lineage(id) -> Control:
 	for b in tree["branches"].keys():
 		var col = vbox(8); col.custom_minimum_size.x = px(300)
 		var glyph = {"A": "[+] Command", "B": "[=] Fleet", "C": "[*] Flagship and line"}
-		col.add_child(lbl(glyph[b] + ": " + str(tree["branches"][b]["n"]), 20, GILT, font_semi))
+		col.add_child(lbl(glyph[b] + ": " + str(tree["branches"][b]["n"]), 20, BONE, font_semi))
 		for t in range(tree["branches"][b]["tiers"].size()):
 			col.add_child(lbl("Tier " + str(t + 1), 18, BONE3))
 			for n in nodes:
 				if n["branch"] == b and n["tier"] == t + 1: col.add_child(_lineage_node(n))
 		columns.add_child(col)
 	v.add_child(columns)
-	var cap = panel(GILT, Color(0.37, 0.7, 0.65, 0.08), 16); var capv = vbox(8); cap.add_child(capv)
-	capv.add_child(lbl("Level 8: Command evolution", 23, GILT, font_goth)); var capnodes = flow()
+	var cap = panel(BONE3, IRON, 16); var capv = vbox(8); cap.add_child(capv)
+	capv.add_child(lbl("Level 8: Command evolution", 23, BONE, font_goth)); var capnodes = flow()
 	for n in nodes:
 		if n["branch"] == "cap": capnodes.add_child(_lineage_node(n))
 	capv.add_child(capnodes); capv.add_child(_capstone_mastery(id)); v.add_child(cap)
@@ -1790,12 +1810,12 @@ func _capstone_mastery(id) -> Control:
 	if build["capstone"] == null:
 		v.add_child(lbl("Choose a Command evolution to open capstone mastery at 320, 440 and 600 XP.", 17, BONE3)); return v
 	var chosen = tree["capstones"][int(build["capstone"])]; var xp = C.masteryXP(id); var l = C.capstoneMasteryLevel(id); var nx = C.capstoneMasteryNext(id)
-	v.add_child(lbl("Capstone mastery: " + str(chosen["n"]), 20, GILT, font_semi))
+	v.add_child(lbl("Capstone mastery: " + str(chosen["n"]), 20, BONE, font_semi))
 	v.add_child(lbl((C.numstr(xp) + " XP. This evolution is at full mastery.") if nx == null else (C.numstr(xp) + " / " + C.numstr(nx) + " XP. " + C.numstr(float(nx) - xp) + " XP to capstone mastery " + C.roman(l + 1) + "."), 17, BONE3))
 	var row = flow(10)
 	for i in range(C.CAPSTONE_MASTERY_PERKS.size()):
 		var earned = l > i; var cv = card(earned, 300)
-		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, GILT if earned else BONE, font_semi))
+		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, BONE, font_semi))
 		cv[1].add_child(lbl(str(C.CAPSTONE_MASTERY_PERKS[i]["d"]), 17, BONE2))
 		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 17, BONE3))
 		if not earned: cv[0].modulate.a = 0.55
@@ -1834,7 +1854,7 @@ func _modal(md: Dictionary) -> void:
 				var na = d["adapt"]; var nf = d["adaptFac"]
 				# the Nemesis adaptation: its own well with the reserved red bar and the NEMESIS tag, as the battle's Nemesis block
 				var aw = blk(ALERT, 5, 14, 10); aw[0].set_meta("keep", true)
-				var ah = hbox(8); ah.add_child(tagl("Nemesis", ALERT, true)); ah.add_child(lbl("ADAPTED TO YOU", 17, GILT, font_caps, false)); aw[1].add_child(ah)
+				var ah = hbox(8); ah.add_child(tagl("Nemesis", ALERT, true)); ah.add_child(lbl("ADAPTED TO YOU", 17, BONE, font_caps, false)); aw[1].add_child(ah)
 				aw[1].add_child(rich(c(esc(str(d.get("adaptWho", ""))) + " has adapted: ", BONE2) + "[b]" + c(esc(C.nemAdaptName(na, nf)), BLOOD) + "[/b] " + c("(" + esc(str(d.get("adaptWhy", ""))) + ")", BONE3), 17))
 				aw[1].add_child(rich(c(esc(C.nemAdaptDesc(na, nf)), BONE2), 18))
 				if str(d.get("adaptLine", "")) != "": aw[1].add_child(rich("[i]" + c(esc(str(d["adaptLine"])), BLOOD) + "[/i]", 17))
@@ -1868,7 +1888,7 @@ func _modal(md: Dictionary) -> void:
 			v.add_child(foot([fin("Continue", "storyCore" if R.get("reward") != null and R["reward"].get("kind") == "story" else "closeModal", "", acts)]))
 		"victory":
 			var sm = d["summary"]; var cfg = sm["cfg"]
-			h2.call("Flagship destroyed" if cfg["kind"] == "boss" else "Victory"); v.get_child(v.get_child_count() - 1).add_theme_color_override("font_color", GILT)   # Victory in lime display caps (ui_style.md 8)
+			h2.call("Flagship destroyed" if cfg["kind"] == "boss" else "Victory")
 			if C.beat3Debrief() != "": p.call(C.beat3Debrief(), VERD)
 			v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+", VERD) + n_(C.numstr(d["credits"]), VERD) + c(" credits.", VERD), 17))
 			if sm["lost"].size() > 0:
@@ -1945,7 +1965,10 @@ func _modal(md: Dictionary) -> void:
 			for i in range(offer.size()):
 				var o = offer[i]; var b = C.BOONS[o["id"]]; var r = int(C.z0(o.get("r"))); var R0 = C.RARITY[r]; var duo = b.get("duo")
 				var tag = ("Duo: " + " + ".join(PackedStringArray(duo.map(func(q): return str(C.PATRONS[q]["short"]))))) if C.jt(duo) else str(R0["n"])
-				add(v, choice(b["n"], C.BOON_D[o["id"]][r], "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
+				var detail: String = C.BOON_D[o["id"]][r]
+				var fleet_line := _boon_fleet_line(o["id"], r)
+				if fleet_line != "": detail += "\n" + fleet_line
+				add(v, choice(b["n"], detail, "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
 			v.add_child(foot([abtn("Reroll the offer (" + C.numstr(d.get("rerollCost", 0)) + " credits, once)", "boonReroll", _arg_of(acts, "boonReroll"), false, false, acts),
 				abtn("Decline: take " + C.numstr(d.get("declineCred", 0)) + " credits", "boonDecline", "", false, false, acts)]))
 		"eatCore":
@@ -1986,6 +2009,8 @@ func _well_text(v: VBoxContainer) -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
+		if fleet_manifest.handle_key(e): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "map":   # the map: Esc shuts a slide-over, 1 to 9 pick a route, Enter flies it
 		if _overlay != "":
 			if e.keycode == KEY_ESCAPE: _close_overlay(); get_viewport().set_input_as_handled()

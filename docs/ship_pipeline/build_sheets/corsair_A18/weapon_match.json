@@ -18,5 +18,7 @@
     }
    ]
   }
- ]
+ ],
+ "game_ship": "c_raider",
+ "variant": ""
 }

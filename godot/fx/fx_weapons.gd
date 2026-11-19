@@ -22,6 +22,7 @@ extends RefCounted
 #   sq:      guns, bombs, sporeb: craft on a strafing run
 
 const POOLS := preload("res://fx/fx_pool.gd")
+const FRAGMENTS := preload("res://fx/fx_fragments.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
@@ -85,8 +86,8 @@ const TARGET_K := {"small": 0.8, "cruiser": 1.0, "capital": 1.2}
 # Issue 538 (R193, "Flame only"; R208, "push harder"): flame still snuffs out within 0.70 s; thrown matter has its own
 # longer life so it reads at camera 170. Seconds, low and high (each piece picks inside its range).
 const SPARK_LIFE := Vector2(0.6, 1.6)      # cooling points and trails, independent of flame
-const DEBRIS_LIFE := Vector2(5.0, 10.0)    # torn plates tumble and drift well past the flash
-const GAS_LIFE := Vector2(5.5, 9.0)        # directional gas thins slowly
+const DEBRIS_LIFE := Vector2(3.5, 6.0)     # torn plates tumble and drift well past the flash
+const GAS_LIFE := Vector2(2.0, 2.6)        # compact soot clears quickly
 const EMBER_LIFE := Vector2(3.5, 7.0)      # cooling coals, no flicker
 # How long the hot spot on the plate glows and cools before the mark (fx_breach) is all that is left, by family.
 const HEAT_LIFE := {"energy": 1.5, "shell": 2.5, "lance": 3.0, "torp": 4.0, "bio": 2.0}
@@ -94,12 +95,15 @@ const FLAME_CAP := 0.70                    # owner ruling: no flame lives longer
 # How far a torpedo hit's light carries (world units; hexes are 17.3 across): about two hexes, so the hulls near it are
 # lit for the length of the flash (audit item 11).
 const TORP_LIGHT_REACH := 36.0
-# The one scale table's big hit (issue 710, R247; docs/playbooks/scale.md): a torpedo's blast ring and dust, world units
-# per scale_k. With the hit's scale k (at least VIS_K_HIT) a frigate's blast is 10.2 and a super-dreadnought's 24.8.
-const BIG_HIT_RING := 12.0
+# R303: only a brief distortion travels beyond the fireball. No visible disc stands off the hull.
+const HIT_DISTORT_REACH := 7.0
+# The standing scale probe reads this public name. It now measures the brief distortion, not a visible ring.
+const BIG_HIT_RING := HIT_DISTORT_REACH
 # The baked flash a _burst draws blooms past its pixel floor by about half again at the battle camera (bench round 1:
 # a 40 px floor drew about 60 px of lit area), so ladder sizes are asked of it at this share.
 const BURST_PX_K := 0.65
+const SOFT_FLASH_POWER := 1.25
+const FLASH_LIFT_POWER := 0.6
 # Issue 281 run 6 (R150): the baked muzzle and impact gas read better about 1.5x bigger than run 5 shipped them.
 const WEAPON_GAS_SCALE := 1.5
 
@@ -598,25 +602,24 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 
 static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
 		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true) -> void:
-	var power: float = strength
-	var duration: float = life
-	if kind == "flash" and strength >= fx.FLASH_I:
-		# issue 461: booked at the size it is drawn, bloom included (the pixel floor over BURST_PX_K), never smaller
-		# gun flashes yield the budget to deaths and torpedoes (fx.flash_at yield_last); a torpedo's (gun false) books it
-		if fx.reduce_flashing or not fx.flash_at(p, T, size, px / BURST_PX_K, life, gun):
-			power = 1.25
-			duration = maxf(life, 0.4)
-			if fx.flash_lift:   # opus_check_524b: the field already holds three flashes this second: a slow, dim lift, no peak
-				power = 0.6
-				duration = maxf(life, 1.2)
 	var seed: float = fx.rng.randf()
 	fx.later(T, func l_burst() -> void:
+		var power := strength
+		var duration := life
+		var is_flash: bool = kind == "flash" and strength >= fx.FLASH_I
+		# Book the drawn envelope with bloom, at the camera the player has when the burst appears.
+		if is_flash and not fx.flash_at(p, T, size / BURST_PX_K, px / BURST_PX_K, life, gun):
+			power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
+			duration = maxf(life, 1.2 if fx.flash_lift else 0.4)
 		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small") as MeshInstance3D
 		node.name = "fx_weapon_" + kind
 		# The vent helper offsets its atlas to put the tip on the sampled surface.
 		var mat: ShaderMaterial = node.material_override
 		mat.shader = _weapon_shader(fx, mat.has_meta("route"))
 		mat.set_shader_parameter("born", T)
+		if is_flash:
+			mat.set_shader_parameter("calm_intensity", SOFT_FLASH_POWER)
+			mat.set_shader_parameter("soft_flash", 1.0 if fx.reduce_flashing else 0.0)
 		mat.set_shader_parameter("weapon_tint", Vector3(col.r, col.g, col.b))
 		mat.set_shader_parameter("opacity", opacity)
 		mat.set_shader_parameter("aspect", aspect)
@@ -1219,43 +1222,104 @@ static func _amount(fx, count: int) -> int:
 # Issue 538: larger cooling points and trails, with a longer ballistic tail. No added flash or light.
 static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, col: Color, count: int, speed: float,
 		spread: float, fam: String) -> void:
+	var shield := fam == "shield"
 	for j in _amount(fx, int(ceil(count * 1.5))):
-		var d := _outward(n, fx.rcone(axis, spread), 0.15)
-		var v: Vector3 = d * fx.rng.randf_range(speed * 0.35, speed) * k * fx.unit
-		var drag: float = fx.rng.randf_range(0.45, 1.4)
-		var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
+		# Shield crackle retains its recipe. Hull ejecta is faster, finer and fans across the struck face.
+		var d := _outward(n, fx.rcone(axis, spread if shield else maxf(spread, 0.95)), 0.15)
+		var v: Vector3 = d * fx.rng.randf_range(speed * (0.35 if shield else 0.55), speed) * k * fx.unit
+		var drag: float = fx.rng.randf_range(0.45, 1.4) if shield else fx.rng.randf_range(0.25, 0.75)
+		var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y if shield else 1.15)
 		var t: float = T + fx.rng.randf() * 0.04
-		# pixel floors so a spark still reads as a point with a short trail at the battle camera (170)
-		fx.spr(p, t, life, col, 2.0, 0.16 * k, 0.06 * k, 19, v, drag, 0.0, 0.0, 6.0)
-		fx.stk(p, t, life * 0.75, col, 1.6, 0.20 * k, 0.055 * k, 1, v, drag, 0.0, 2.2, 10.0)
+		if shield:
+			fx.spr(p, t, life, col, 2.0, 0.16 * k, 0.06 * k, 19, v, drag, 0.0, 0.0, 6.0)
+			fx.stk(p, t, life * 0.75, col, 1.6, 0.20 * k, 0.055 * k, 1, v, drag, 0.0, 2.2, 10.0)
+		else:
+			# The old sprite used one random draw. Use it for the streak length and width.
+			var form: float = fx.rng.randf()
+			fx.stk(p, t, life, col, lerpf(1.55, 2.75, form), lerpf(0.040, 0.125, form) * k,
+				lerpf(0.023, 0.041, form) * k, 8, v, drag)
 		_note(fx, "spark", fam, v, n, life)
 
 
-# Debris: torn plate and slag chips, hot for a moment (the chip shader cools them), then dark pieces drifting on.
+# Solid ejecta leaves the same contact as the sparks. The tips of the plume are small and fast;
+# the larger pieces peel off slowly along the surface, with a few loose pieces between them.
 static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, count: int, speed: float, size: float,
-		heat: float, fam: String, glass := false) -> void:
-	for j in (_amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)):
-		var d := _outward(n, fx.rcone(axis, 0.65), 0.25)
-		var v: Vector3 = d * fx.rng.randf_range(speed * 0.35, speed) * k
+		heat: float, fam: String, substance := "metal", macro := false, target = null) -> void:
+	if substance == "chorus":
+		var tissue: Color = fx.faction_info("chorus").damage_glow
+		for j in _amount(fx, count):
+			var d := _outward(n, fx.rcone(axis, 0.8), 0.2)
+			var v: Vector3 = d * fx.rng.randf_range(speed * 0.25, speed * 0.65) * k
+			var life: float = fx.rng.randf_range(1.0, 2.0)
+			fx.spr(p, T + j * 0.015, life, tissue, 0.8, size * k * 1.5, size * k, 15, v, 0.5)
+			_note(fx, "drop", fam, v, n, life)
+		return
+	var paint: Color = fx.faction_info(substance).fragment_paint
+	var original := _amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)
+	var extra := ceili(original * 0.3) if macro and fx.quality != "low" else 0
+	var pieces := original + extra
+	if pieces <= 0:
+		return
+	var finish := FRAGMENTS.source(target, p, n)
+	(fx.pools["plate"] as FRAGMENTS.Pool).bind_finish(finish, fx.now, T + DEBRIS_LIFE.y + 0.025)
+	var shared_state: int = 0
+	for j in pieces:
+		# Extra fragments use a separate sequence. Soot, embers and later hits keep the original draw order.
+		if j == original:
+			shared_state = fx.rng.state
+			fx.rng.state = shared_state ^ 0x459dbad1
+		var jitter: Vector3 = fx.rdir()
+		var motion: float = fx.rng.randf()
 		var life: float = fx.rng.randf_range(DEBRIS_LIFE.x, DEBRIS_LIFE.y)
-		fx.shd(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, life, v, fx.rng.randf_range(1.8, 3.4) * size * k, heat,
-			fx.rng.randf_range(1.2, 5.0), 0.055, 4.0 if glass else 3.0)
+		var born: float = T + fx.rng.randf() * 0.025
+		var shape: float = fx.rng.randf()
+		var variant := mini(FRAGMENTS.VARIANTS - 1, int(shape * FRAGMENTS.VARIANTS))
+		var turn: float = fx.rng.randf()
+		var lead := j == 0 or (j == 1 and pieces >= 6)
+		var quick := j >= 2 and j % 3 != 0
+		var rib := j == 1 or (j >= 2 and j % 2 == 0)
+		var profile := FRAGMENTS.RIB if rib else FRAGMENTS.PLATE
+		if substance == "ithar":
+			profile = FRAGMENTS.GLASS
+		var scale := lerpf(1.85, 2.8, shape) if quick else lerpf(2.85, 3.5, shape)
+		if lead:
+			scale = lerpf(4.4, 5.0, shape) if j == 0 else lerpf(3.7, 4.2, shape)
+		var tangent := jitter.slide(n)
+		var aim := axis + jitter * 0.60
+		var speed_share := lerpf(0.72, 1.0, motion)
+		var drag := 0.09
+		var spin := lerpf(4.8, 9.0, absf(turn * 2.0 - 1.0))
+		if not quick:
+			aim = axis * 0.42 + tangent * 0.67 + n * 0.40
+			speed_share = lerpf(0.14, 0.25, motion) if lead else lerpf(0.29, 0.51, motion)
+			drag = 0.58 if lead else 0.24
+			spin = lerpf(0.75, 2.35, absf(turn * 2.0 - 1.0))
+		var v: Vector3 = _outward(n, aim, 0.34) * speed * speed_share * k
+		var origin := p + (n * 0.18 + tangent * (0.26 if lead else 0.11)) * k
+		fx.hit_fragment(origin, born, life, v, scale * size * k, heat,
+			spin if turn >= 0.5 else -spin, drag, paint, profile + variant, lead, finish)
 		_note(fx, "debris", fam, v, n, life)
+	if extra > 0:
+		fx.rng.state = shared_state
 
 
-# Issue 538: a broken fan of gas along the ejection axis. Kind 27 is unlit, stretched, torn smoke, never flame.
+# R303: compact soot peels away from the blast. It never grows into a long-lived pale cloud.
+# Chorus fumes keep kind 20; physical smoke uses the unlit, torn kind 27.
 static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Color, count: int, size: float, fam: String,
 		alpha := 0.3, kind := 7, axis := Vector3.ZERO) -> void:
 	if fx.quality == "low":
 		return
 	var aim: Vector3 = n if axis.length_squared() < 0.01 else _outward(n, axis)
-	for j in _amount(fx, count * 2 + 1):
+	for j in _amount(fx, count + 1):
 		var d := _outward(n, fx.rcone(aim, 0.65), 0.2)
-		var v: Vector3 = d * fx.rng.randf_range(1.0, 3.8) * k * fx.unit
+		var v: Vector3 = d * fx.rng.randf_range(1.8, 4.2) * k * fx.unit
 		var life: float = fx.rng.randf_range(GAS_LIFE.x, GAS_LIFE.y)
 		var s0: float = size * k * fx.rng.randf_range(0.6, 1.0)
-		fx.spr(p + d * size * fx.rng.randf_range(0.05, 0.3) * k, T + 0.06 + j * 0.055, life,
-			col, alpha, s0, s0 * fx.rng.randf_range(2.6, 4.2), 27 if kind in [7, 20] else kind, v, 0.16)
+		var organic: bool = kind == 20
+		var soot: Color = col if organic else col * 0.20
+		fx.spr(p + d * size * fx.rng.randf_range(0.02, 0.10) * k, T + 0.035 + j * 0.025, life,
+			soot, alpha if organic else minf(alpha * 2.2, 0.85), s0 * 0.65, s0 * fx.rng.randf_range(1.15, 1.65),
+			20 if organic else (27 if kind == 7 else kind), v, 0.7)
 		_note(fx, "gas", fam, v, n, life)
 
 
@@ -1271,10 +1335,24 @@ static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, 
 
 # The hot spot on the plate: white-hot, then orange, red and out over the family's time (no flicker). The mark the hit
 # cut into the hull (fx_breach, R43) stays after it as the scar.
-static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: String, px := 6.0, i := 2.0) -> void:
+static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: String, px := 6.0, i := 2.0, src = null) -> void:
 	var life: float = float(HEAT_LIFE.get(fam, 2.0))
-	fx.spr(p, T + 0.04, life, Color(1, 0.5, 0.15), i, size * k, size * k * 0.8, 21, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	_note(fx, "heat", fam, Vector3.ZERO, Vector3.UP, life, px)
+	# The persistent torn mark already has the target material and its own heat. Never put molten metal over glass,
+	# tissue or the blue plasma scar. Metal afterglow is attached to the hull, including its recoil and turns.
+	if src != null and (src.faction in ["chorus", "ithar"] or fam == "energy"):
+		return
+	if src == null:
+		fx.spr(p, T + 0.04, life, Color(1, 0.5, 0.15), i, size * k, size * k * 0.8, 21, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+		return
+	var lp: Vector3 = src.xf().affine_inverse() * p
+	fx.later(T + 0.04, func l_hull_heat() -> void:
+		if src.dead or src.gone or not is_instance_valid(src._dmg_root): return
+		var b := POOLS.Batch.new()
+		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(lp.x, lp.y, lp.z, T + 0.04), Vector4(0, 0, 0, life),
+			Vector4(1, 0.5, 0.15, i), Vector4(size * k * fx.unit, size * k * fx.unit * 0.8, 21, px + 0.31), Vector4.ZERO))
+		var node: MeshInstance3D = b.build(fx.mat(SH.SPRITE, 1), src._dmg_root, "fx_hit_heat")
+		fx.later(T + life + 0.1, fx.free_effect.bind(weakref(node))))
 
 
 static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: Color, dir: Vector3, hd: Dictionary, k: float, sustain: float) -> void:
@@ -1335,44 +1413,34 @@ static func _shell_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col
 	var gk: float = float(tg.get("gk", 1.0))
 	var substance: String = Tg.faction if Tg != null else "metal"
 	var tint := Color(0.94, 0.67, 0.33)
-	if lk == "macro":
-		_staged_hit(fx, Tg, p, T, false, gk * (1.14 if w >= 3 else 1.0))
-		# a hot white bite at the plate under the baked picture, so a macro hit reads bigger than a las hit
-		_burst(fx, p + n * 0.3 * k, n, T, 1.6 * k, "flash", 0.12, Color(1.0, 0.86, 0.62), 4.2, px * BURST_PX_K)
-	else:
-		_burst(fx, p + n * 0.3 * k, n, T, 1.6 * k, "flash", 0.12, tint, 4.2, px * BURST_PX_K)
+	# Every physical gun gets the same finished sequence, at its own rung of the weapon ladder.
+	_staged_hit(fx, Tg, p, T, false, gk, n, px)
 	_note(fx, "flash", fam, Vector3.ZERO, n, 0.12, px)
 	var skip: Vector3 = _outward(n, (dir - n * 2.0 * dir.dot(n)) * 0.8 + n * 0.35, 0.25)
-	var ejecta := Color(0.95, 0.58, 0.24)
-	if substance == "ithar":
-		ejecta = Color(0.8, 0.9, 1.0)
-	elif substance == "chorus" and Tg != null:
-		ejecta = Tg.fac.damage_glow
+	var ejecta: Color = Tg.fac.damage_glow if Tg != null else Color(0.95, 0.58, 0.24)
 	var heavy: float = [0.0, 0.7, 1.0, 1.35][clampi(w, 1, 3)] * gk
 	if fam == "flak":
 		heavy *= 0.5
-	_throw_sparks(fx, p + n * 0.15 * k, n, skip, T, k, ejecta, int(round(14.0 * heavy)), 24.0, 0.45, fam)
+	_throw_sparks(fx, p + n * 0.15 * k, n, skip, T, k, ejecta, int(round(17.0 * heavy)), 32.0, 0.45, fam)
 	if substance != "chorus" and fam != "flak":
-		_throw_debris(fx, p, n, skip, T, k, int(round(4.0 * heavy)), 7.0, 0.16, 0.7, fam, substance == "ithar")
-	_gas_cloud(fx, p + n * 0.3 * k, n, T, k, Color(0.40, 0.38, 0.36) if substance != "chorus" else Color(0.30, 0.34, 0.16), 1 if heavy < 0.9 else 2, 1.6 * heavy + 0.6, fam, 0.34, 7, skip)
+		_throw_debris(fx, p, n, skip, T, k, int(round(4.0 * heavy)), 11.0, 0.16, 0.7, fam, substance, lk == "macro", Tg)
+	_gas_cloud(fx, p + n * 0.3 * k, n, T, k, Color(0.40, 0.38, 0.36) if substance != "chorus" else Color(0.30, 0.34, 0.16), 1 if heavy < 0.9 else 2, 1.6 * heavy + 0.6, fam, 0.34, 20 if substance == "chorus" else 7, skip)
 	if substance != "chorus":
 		_embers(fx, p + n * 0.1 * k, n, T + 0.05, k, int(round(6.0 * heavy)), fam)
-	_heat_spot(fx, p + n * 0.15 * k, T, k, 0.9 * (1.0 + 0.3 * float(w - 1)), fam, 5.0 + 2.0 * float(w))
-	fx.light(p + n * 2.0 * k, T, 0.22, HULL_LIGHT if w >= 2 else 5.5, tint, 0)
+	_heat_spot(fx, p + n * 0.15 * k, T, k, 0.9 * (1.0 + 0.3 * float(w - 1)), fam, 5.0 + 2.0 * float(w), 2.0, Tg)
+	fx.light(p + n * 0.8 * k, T, 0.30, HULL_LIGHT if w >= 2 else 5.5, tint, 0)
 	fx.shake(T, 0.04 if w <= 1 else 0.08, p)
 
 
 # Issue 461, the energy row (las, plasma, prism): a sharp white touch of one or two frames, then a splash that runs out
-# along the plate in its own colour (a flat ring lying on the plate and molten drops skating over it), a little vapour,
+# along the plate in its own colour (molten drops skating over it), a little vapour,
 # and a short scorch that glows about a second and a half. The prism adds a rainbow glint; plasma throws blue slag.
 static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: Color, dir: Vector3, k: float) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var px := ladder_px(lk, w, tg)
-	var hot: Color = col.lerp(Color.WHITE, 0.55)
-	_burst(fx, p + n * 0.3 * k, n, T, 1.4 * k, "flash", 0.08 if lk == "las" else 0.12, hot, 4.2, px * BURST_PX_K)
+	_staged_hit(fx, Tg, p, T, false, float(tg.get("gk", 1.0)), n, px, col, true)
 	_note(fx, "flash", "energy", Vector3.ZERO, n, 0.08, px)
-	# the splash: a ring flat on the plate racing outward, faint
-	fx.ring(p + n * 0.08 * k, n, T, 0.35, col, 1.2, 0.3 * k, 2.6 * k * (1.0 + 0.25 * float(w - 1)), 2, 0.0, 0.0, px * 1.2)
+	# R303: the hot contact and skating drops carry the splash, without a visible disc in space.
 	# drops that skate along the plate (tangent to it, a little off it), slowing as they cool
 	var t1: Vector3 = n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
 	var t2: Vector3 = n.cross(t1)
@@ -1394,12 +1462,12 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 		for j in 3:
 			fx.spr(p + n * 0.2 * k, T + j * 0.04, 0.35, col, 2.6, 0.5 * k, 0.9 * k, 16, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.6)
 	if lk == "plasma":
-		_throw_debris(fx, p, n, n, T, k, 2 + w, 5.0, 0.12, 1.0, "energy")
+		_throw_debris(fx, p, n, n, T, k, 2 + w, 5.0, 0.12, 1.0, "energy", Tg.faction if Tg != null else "metal", false, Tg)
 	if lk == "plasma":
 		# a little slag vapour; las and prism leave no smoke (playbook: "A tiny hot spark. No smoke.")
 		_gas_cloud(fx, p + n * 0.2 * k, n, T, k, Color(0.36, 0.40, 0.46), 1, 1.4, "energy", 0.2)
-	_heat_spot(fx, p + n * 0.12 * k, T, k, 0.7 * (1.0 + 0.3 * float(w - 1)), "energy", 5.0 + 1.5 * float(w))
-	fx.light(p + n * 2.0 * k, T, 0.18, 5.0 if w <= 1 else HULL_LIGHT, col, 0)
+	_heat_spot(fx, p + n * 0.12 * k, T, k, 0.7 * (1.0 + 0.3 * float(w - 1)), "energy", 5.0 + 1.5 * float(w), 2.0, Tg)
+	fx.light(p + n * 0.7 * k, T, 0.26, 6.5 if w <= 1 else HULL_LIGHT, col, 0)
 	fx.shake(T, 0.03 if w <= 1 else 0.06, p)
 
 
@@ -1462,10 +1530,10 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	if torp:
 		spx = float(LADDER_PX["torp_shield"]) * gt * (0.65 if lk == "rockets" else 1.0)
 		rpx = float(LADDER_PX["torp_ripple"]) * gt * (0.65 if lk == "rockets" else 1.0)
-	# asked at the row's size less the bloom, like every hull hit, so it draws (and books) at its row (Muse's check of 524)
+	# The crackle uses the ladder width as its pixel floor for both drawing and booking.
 	_shield_crackle(fx, p, n, T, k, sc, spx, 3 if light else (8 if torp else 5), torp)
 	_note(fx, "flash", "shield", Vector3.ZERO, n, 0.30, spx)
-	fx.ring(p,n,T,0.55 if not torp else 0.9,sc,1.4,0.5*k,(5.0 if not torp else 14.0)*k,2,0.0,0.0,rpx)
+	# R303: hits[] draws the travelling ripple on the shield, without a flat disc.
 	_note(fx, "ripple", "shield", Vector3.ZERO, n, 0.9, rpx)
 	_throw_sparks(fx,p,n,n,T,k,sc,6 if light else (16 if torp else 10),12.0,0.8,"shield")
 	if beam:
@@ -1482,10 +1550,12 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 static func _shield_crackle(fx, p: Vector3, n: Vector3, t: float, k: float, col: Color, px: float, count: int, torp: bool) -> void:
 	var power := 4.2 if torp else 3.2
 	var life := 0.30
-	if fx.reduce_flashing or not fx.flash_at(p, t, 0.0, px, life, not torp):
-		power = 0.6 if fx.flash_lift else 1.25
+	var centre := p + n * 0.15 * k
+	var size := 2.0 * k
+	if not fx.flash_at(centre, t, size, SH.flash_sprite_floor(13, px), life, not torp):
+		power = FLASH_LIFT_POWER if fx.flash_lift else SOFT_FLASH_POWER
 		life = 0.4
-	fx.spr(p + n * 0.15 * k, t, life, col, power, 2.0*k, 0.5*k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+	fx._emit_spr(centre, t, life, col, power, size, 0.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	for j in _amount(fx, count):
 		var tangent: Vector3 = fx.rdir()
 		tangent = (tangent - n * tangent.dot(n)).normalized()
@@ -1530,7 +1600,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 			_burst(fx, pj + nj * 0.3 * k, nj, at, 4.0 * k, "flash", 0.16, (col if lk == "doom" else col.lerp(Color(1.0, 0.72, 0.38), 0.55)), 4.2, px * BURST_PX_K)
 			_note(fx, "flash", "lance", Vector3.ZERO, nj, 0.16, px)
 		fx.spr(pj + nj * 0.2 * k, at, 0.18, col, 3.0, 1.2 * k, 1.6 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.45)
-		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5)
+		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5, Tg)
 		if not ion:
 			# molten metal sprays off the plate: drips with a short trail, and sparks
 			for s in _amount(fx, 5):
@@ -1543,7 +1613,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 			fx.rib(pj, _outward(nj, fx.rdir(), 0.3), 1.8 * k, at, 0.09, Color(0.7, 0.85, 1.0), 1.2, 0.12 * k, 0.04 * k, 6)
 	if not ion:
 		_embers(fx, p, n, T + dur * 0.3, k, 6, "lance")
-		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance")
+		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance", Tg.faction if Tg != null else "metal", false, Tg)
 	if ion:
 		_embers(fx, last, n, T + dur, k, 5, "lance", Color(0.06, 0.14, 0.3))
 	# the tail when the beam lifts: the contact glow fades over a third of a second
@@ -1571,7 +1641,7 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 		_note(fx, "drop", "bio", v, n, life)
 	_burst(fx,p+n*k,n,T+0.12,4.5*k,"cool",0.8,col,0.5,0.0,n*k,0.45)
 	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, col.lerp(Color(0.3, 0.32, 0.18), 0.5), 2, 2.4, "bio", 0.30, 20)
-	_heat_spot(fx, p + n * 0.1 * k, T, k, 0.7, "bio", 5.0, 0.6)
+	_heat_spot(fx, p + n * 0.1 * k, T, k, 0.7, "bio", 5.0, 0.6, Tg)
 	fx.light(p+n*2.0*k,T,0.55,3.0,col,1)
 	fx.shake(T,0.1 if lash else 0.05,p)
 
@@ -1593,35 +1663,66 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 			_vent(fx,xp+xn*0.3*k,xn,T+0.04,5.5*k,0.42,tint,1.2,dir*6.0*k,0.7,1.0,w,Tg)
 			# the exit spray leaves along the slug's own line, out of the far side
 			_throw_sparks(fx,xp,xn,(dir+xn).normalized(),T+0.04,k,Color(0.93,0.64,0.3),10,22.0,0.4,"shell")
-			_throw_debris(fx,xp,xn,dir,T+0.04,k,3,10.0,0.2,0.6,"shell")
+			_throw_debris(fx, xp, xn, dir, T + 0.04, k, 3, 10.0, 0.2, 0.6, "shell", Tg.faction, false, Tg)
 			_gas_cloud(fx, xp + xn * 0.3 * k, xn, T + 0.08, k, Color(0.40, 0.39, 0.38), 1, 2.0, "shell", 0.26)
 			_embers(fx, xp, xn, T + 0.05, k, 4, "shell")
-	_heat_spot(fx, p + n * 0.15 * k, T, k, 0.8, "shell", 6.0)
+	_heat_spot(fx, p + n * 0.15 * k, T, k, 0.8, "shell", 6.0, 2.0, Tg)
 	fx.light(p+n*2.0*k,T,0.22,HULL_LIGHT,tint,0)
 	fx.shake(T,0.2 if w>=3 else 0.12,p)
 	if w>=3: fx.hit_pause(T,3)
 
 
-# The production route uses native cells and the shared baked-colour shader, without the weapon shader's legacy 1.45x.
-# Flash and body are separate clocks: the body can drift as gas after its authored core has cooled.
-# Issue 461: `ks` scales both by the gun that fired (fx_weapons.GUN_K, and a heavy battery's step); the target's band
-# scales them as before. Both pictures use the lopsided baked seed (s0) turned at random: the round seeds (s1, s2) drew
+# The impact primitive samples the existing baked fire and flow. Its heat map rejects the cold outer lobes, so smoke
+# can be a short directional plume instead of three opaque balls. No extra screen pass or new texture is involved.
+static func hull_impact_material(fx, rel: String) -> ShaderMaterial:
+	var code: String = SH.DEATH_FLIPBOOK.replace("uniform float smoke_tone = 1.0;", """uniform float smoke_tone = 1.0;
+uniform float impact_body = 0.0;
+uniform float impact_tinted = 0.0;
+uniform vec3 impact_tint = vec3(1.0);""")
+	code = code.replace("float a = floor(frame);", """// The first hot cells unfold before the cool cells. Full white heat ends well before 0.25 s.
+	float body_frame = age < 0.68 ? age * (3.5 / 0.68) : 3.5 + (age - 0.68) * (11.5 / 0.32);
+	float flash_frame = mix(age, max(0.0, (age - 0.5) * 2.0), softened) * 3.5;
+	frame = mix(flash_frame, body_frame, impact_body);
+	float a = floor(frame);""")
+	code = code.replace("max(extent * 0.1, 0.05)", "max(extent * 0.015, 0.035)")
+	code = code.replace("float fade = 1.0 - smoothstep(0.70, 1.0, age);", """float luminance = dot(gas.rgb, vec3(0.2126, 0.7152, 0.0722));
+	vec3 coloured = mix(impact_tint, vec3(0.95, 0.97, 1.0), smoothstep(0.65, 1.0, luminance)) * luminance * power * fx_gain * 1.8;
+	coloured *= mix(1.0, sin(age * 3.14159265), softened);
+	ALBEDO = mix(ALBEDO, coloured, impact_tinted);
+	float fade = 1.0 - smoothstep(0.70, 1.0, age);""")
+	code = code.replace("ALPHA = gas.a * fade * soft", "ALPHA = gas.a * smoothstep(0.035, 0.18, thick.b) * fade * soft")
+	return DEATH.route_material(fx, code, rel, true, 0)
+
+
+# Flash and body have separate clocks. The weapon ladder sizes both, and a softened flash softens the body too.
+# The resolved weapon rung includes gun and target bands. The target band also places the fire just off its hull. Both pictures use the lopsided baked seed (s0) turned at random: the round seeds (s1, s2) drew
 # the "flower" of equal puffs Ryan called "too even and weird" on the deaths (issue 484), and they did the same here.
-static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0) -> void:
+static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0, n := Vector3.UP, rung := 0.0,
+		tint := Color(1, 0.55, 0.15), energy := false) -> void:
 	var band := DEATH.atlas_band(float(src.hull.L)) if src != null else "cruiser"
 	var target_scale: float = {"small": 0.8, "cruiser": 1.0, "capital": 1.2}[band]
 	var flash_px: float = (float(LADDER_PX["torp"]) if torpedo else float(LADDER_PX["shell"][2])) * target_scale * ks
-	var body_px: float = (140.0 if torpedo else 48.0) * target_scale * ks
-	var life := 0.16 if torpedo else 0.12
-	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, T, flash_px * DEATH.STAGING_UNITS_PER_PIXEL, flash_px, life, src != null and not torpedo)
-	var lift: bool = soft and fx.flash_lift   # opus_check_524b: a full field: the flash rises slowly and dimly, no peak
+	flash_px = rung if rung > 0.0 else flash_px
+	var body_px: float = flash_px * (0.72 if energy else (0.86 if torpedo else 0.94))
+	var life := 0.16 if torpedo else (0.08 if energy else 0.12)
+	var lift_from_plate: float = minf(float(src.hull.L) * 0.045, 1.1 * target_scale * ks) if src != null else 0.85
+	var centre := p + n * lift_from_plate
+	var extent: float = flash_px * DEATH.STAGING_UNITS_PER_PIXEL
+	# The flash callback goes first. Its one permit also sets the look of the later fire body.
+	var permit := {"soft": false, "lift": false}
 	var spin: float = fx.rng.randf() * TAU
 	var shape := Vector2(fx.rng.randf_range(0.9, 1.25), fx.rng.randf_range(0.85, 1.1))
 	for body in [false, true]:
 		var rel: String = ("weapons/impact/" if torpedo else "weapons/macro/") + ("impact_" if body else "flash_")
-		var at: float = T + (0.025 if body else 0.0)
-		var duration: float = (0.90 if torpedo else 0.50) if body else (1.2 if lift else ((0.50 if torpedo else 0.42) if soft else life))
+		var at: float = T + (0.012 if body else 0.0)
 		fx.later(at, func l_staged_hit() -> void:
+			if not body:
+				# The envelope includes the bloom beyond the quad. The body stays inside that footprint.
+				permit.soft = not fx.flash_at(centre, T, extent / fx.unit, flash_px, life, src != null and not torpedo)
+				permit.lift = permit.soft and fx.flash_lift
+			var soft: bool = permit.soft or fx.reduce_flashing
+			var lift: bool = permit.lift
+			var duration: float = (0.30 if energy else (0.65 if torpedo else 0.46)) if body else (1.2 if lift else ((0.50 if torpedo else 0.42) if soft else life))
 			var mi := MeshInstance3D.new()
 			mi.name = "fx_staged_body" if body else "fx_staged_flash"
 			mi.set_meta("fx_picture_kind", "impact" if body else "flash")
@@ -1631,27 +1732,37 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0)
 			mi.mesh = quad
 			mi.extra_cull_margin = 100.0
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			var mat := DEATH.route_material(fx, SH.DEATH_FLIPBOOK, rel, true, 0)
+			var mat := hull_impact_material(fx, rel)
 			mat.set_shader_parameter("pic_spin", spin + (0.7 if body else 0.0))
 			mat.set_shader_parameter("pic_shape", shape if body else Vector2.ONE)
 			mat.set_shader_parameter("born", at)
 			mat.set_shader_parameter("lifetime", duration)
 			mat.set_shader_parameter("extent", (body_px if body else flash_px) * DEATH.STAGING_UNITS_PER_PIXEL)
 			mat.set_shader_parameter("min_pixels", body_px if body else flash_px)
-			# The flash's lit extent includes bloom; the body retains the native gas framing.
-			mat.set_shader_parameter("size_divisor", 0.80 if body else ((0.97 if torpedo else 0.98) if soft else 3.0))
-			mat.set_shader_parameter("intensity", 2.0 if body else (0.6 if lift else (1.25 if soft else 5.2)))
-			mat.set_shader_parameter("soft_flash", 1.0 if soft and not body else 0.0)
+			mat.set_shader_parameter("impact_body", 1.0 if body else 0.0)
+			mat.set_shader_parameter("impact_tinted", 1.0 if energy else 0.0)
+			mat.set_shader_parameter("impact_tint", Vector3(tint.r, tint.g, tint.b))
+			# Include the bloom in the flash booking; the body stays inside that footprint.
+			mat.set_shader_parameter("size_divisor", 1.0 if body else (0.98 if soft else 1.35))
+			# Crop to the baked fireball, rather than stretching its three outer smoke lobes over the ship.
+			if body:
+				mat.set_shader_parameter("atlas_rect", Vector4(0.22, 0.24, 0.56, 0.52))
+				mat.set_shader_parameter("smoke_tone", 0.14)
+			var calm_power := 1.0 if body else SOFT_FLASH_POWER
+			mat.set_shader_parameter("calm_intensity", calm_power)
+			mat.set_shader_parameter("intensity", (FLASH_LIFT_POWER if lift and not body else calm_power) if soft else (3.8 if body else 5.2))
+			mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
 			mi.material_override = mat
 			fx.add_child(mi)
-			mi.global_position = p
+			# The fire expands out of the actual impact face. Keep its recorded root on that face.
+			mi.global_position = centre
 			fx.record_spawn(src, p)
 			fx.later(at + duration + 0.1, fx.free_effect.bind(weakref(mi)))
 		)
 
 
 # Issue 461, the torpedo row: the baked flash and the fire seen through gas (route B, flame inside its 0.70 s), then the
-# matter: torn plates and slag thrown off the plate in a cone, sparks, gas and dust that hang and thin over a few
+# matter: torn plates and slag thrown off the plate in a cone, sparks, compact soot that clears in a couple of
 # seconds, embers, a wound that glows and cools over about four seconds (the crater, fx_breach, stays), and a light that
 # reaches the hulls about two hexes round it for the length of the flash.
 static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, star: bool, lk := "torp") -> void:
@@ -1659,27 +1770,25 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 	var tint: Color = Color(0.88,0.90,0.94) if star else Color(0.94,0.62,0.25)
 	var gk: float = float(tg.get("gk", 1.0))
 	var rk: float = 0.65 if lk == "rockets" else 1.0
-	_staged_hit(fx, Tg, p, T, true, gk * rk)
+	_staged_hit(fx, Tg, p, T, true, gk * rk, n)
 	_note(fx, "flash", "torp", Vector3.ZERO, n, 0.16, ladder_px(lk, 3, tg))
 	var organic: bool = Tg != null and Tg.faction == "chorus"
-	var glass: bool = Tg != null and Tg.faction == "ithar"
-	var debris_col: Color = Tg.fac.damage_glow if organic else tint.lerp(Color(0.93,0.48,0.20),0.5)
+	var debris_col: Color = Tg.fac.damage_glow if Tg != null else tint.lerp(Color(0.93,0.48,0.20),0.5)
 	var m: float = gk * rk
-	_throw_sparks(fx, p + n * 0.2 * k, n, n, T, k, debris_col, int(round(20.0 * m)), 26.0, 0.75, "torp")
+	_throw_sparks(fx, p + n * 0.2 * k, n, n, T, k, debris_col, int(round(28.0 * m)), 38.0, 0.75, "torp")
 	if not organic:
-		_throw_debris(fx, p, n, n, T, k, int(round(9.0 * m)), 12.0, 0.28, 0.9, "torp", glass)
+		_throw_debris(fx, p, n, n, T, k, int(round(9.0 * m)), 18.0, 0.28, 0.9, "torp", Tg.faction if Tg != null else "metal", false, Tg)
 		_embers(fx, p + n * 0.2 * k, n, T + 0.1, k, int(round(10.0 * m)), "torp")
 	else:
 		for j in 8:
 			var d := _outward(n, fx.rcone(n, 0.8), 0.2)
 			var v: Vector3 = d * fx.rng.randf_range(3.0, 9.0) * k
 			fx.spr(p, T + j * 0.02, fx.rng.randf_range(0.8, 1.6), debris_col, 1.2, 0.3 * k, 0.16 * k, 15, v, 0.5)
-	# gas and dust after the fire: born as the baked body thins, drifting off the plate
-	_gas_cloud(fx, p + n * 0.8 * k, n, T + 0.45, k, Color(0.36, 0.34, 0.33) if not organic else Color(0.30, 0.34, 0.16), 3, 4.5 * m, "torp", 0.30, 20 if organic else 7)
-	fx.ring(p,n,T+0.03,0.45,tint,0.65,k,BIG_HIT_RING*k,2,0.0,0.0,70.0 * m)
-	fx.dst(p,T,0.4,k,BIG_HIT_RING*k,0,0.45)
-	_heat_spot(fx, p + n * 0.3 * k, T + 0.1, k, 1.6 * m, "torp", 12.0 * m, 1.5)
-	fx.light(p+n*2.5*k,T,0.35,HULL_LIGHT,tint,0, TORP_LIGHT_REACH * m)
+	# Dense soot starts behind the bright core, then thins without covering the whole ship.
+	_gas_cloud(fx, p + n * 0.3 * k, n, T + 0.08, k, Color(0.36, 0.34, 0.33) if not organic else Color(0.30, 0.34, 0.16), 3, 4.5 * m, "torp", 0.30, 20 if organic else 7)
+	fx.dst(p, T, 0.18, k, HIT_DISTORT_REACH * k, 0, 0.28)
+	_heat_spot(fx, p + n * 0.3 * k, T + 0.1, k, 1.6 * m, "torp", 12.0 * m, 1.8, Tg)
+	fx.light(p+n*0.9*k,T,0.42,HULL_LIGHT,tint,0, TORP_LIGHT_REACH * m)
 	fx.shake(T,0.4,p); fx.hit_pause(T,4); fx.punch(T,0.012,p)
 
 
@@ -1687,8 +1796,8 @@ static func _crit(fx, Tg, tg: Dictionary, T: float, k: float, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	_burst(fx,p+n*0.5*k,n,T,6.0*k,"flash",0.25,Color(0.94,0.71,0.4),4.5,40.0)
 	_vent(fx,p+n*k,n,T+0.05,6.0*k,0.45,Color(0.85,0.51,0.26),0.8,n*5.0*k,0.6,1.0,w,Tg)
-	_throw_sparks(fx,p,n,n,T,k,Color(0.92,0.6,0.3),10,18.0,0.8,"shell")
-	_throw_debris(fx,p,n,n,T,k,3,8.0,0.2,0.8,"shell")
+	_throw_sparks(fx,p,n,n,T,k,Tg.fac.damage_glow if Tg != null else Color(0.92,0.6,0.3),10,18.0,0.8,"shell")
+	_throw_debris(fx,p,n,n,T,k,3,8.0,0.2,0.8,"shell",Tg.faction if Tg != null else "metal",false,Tg)
 	fx.light(p+n*2.0*k,T,0.3,7.5,Color(0.94,0.68,0.36),0)
 	fx.shake(T,0.15,p); fx.hit_pause(T,2); fx.punch(T,0.006,p)
 

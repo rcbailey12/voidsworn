@@ -12,6 +12,37 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 - **In the cloud or on Linux:** `GODOT=/path/to/godot sh godot/rules/test/run_parity.sh [scenario ...]`.
 - **API smoke test:** `godot --headless --path godot --script res://rules/test/api_smoke.gd -- s1` plays a battle through `battle_api.gd` and prints the event counts.
 
+### Parallel battles (issue 978)
+
+Both launchers use `node/run_parity.js`. The five steps still run data export, all random-number and math inputs,
+every selected battle, the three threat maps, the thread/hard-stop test, and the enemy think-time report.
+With no battle arguments every name in `scenarios.json` runs on every push. There is no cache or coverage shortcut.
+
+`PARITY_WORKERS` is a positive integer, default 4. Names are assigned round-robin in their requested order.
+Each worker runs one Godot `batch` process with a separate `XDG_DATA_HOME` and, on Windows, `APPDATA`.
+The browser side uses the same partitions, but still starts Node once per battle so its timing files are kept.
+Windows workers use `start /b /wait`; both launchers wait for all browser and Godot workers before comparing.
+
+Each run keeps a fresh folder under the system temporary folder and prints its location. It contains `parity_log.txt`,
+`golden/`, `out/`, worker logs, partitions, `batches.json` (process results), and `summary.json` (whole rules-step seconds).
+Set `PARITY_RUN_ROOT` to an empty folder to choose that location. An existing nonempty folder is refused, so stale
+records cannot turn a missing battle into a pass. The PC launcher still accepts `nopause` and calls campaign parity afterward.
+Its exit code preserves a rules failure even if the campaign command succeeds.
+
+Missing or empty records always fail by battle name. Every Godot battle must also have its own successful completion
+label, and every worker must finish its batch with exit 0. A NOT PORTED battle therefore fails even if its records match.
+After a crash or timeout, missing Godot battles run alone, sequentially, into `retries/`. They stay FAIL, labelled
+`never ran in its batch; passes alone, exit 0` or `never ran in its batch; fails alone too, exit <code>`.
+The original batch records are kept. `PARITY_TIMEOUT_SECONDS` sets the batch watchdog (default 1200 seconds);
+`PARITY_RETRY_SECONDS` sets each diagnostic rerun's watchdog (default 300 seconds). Both must be positive integers.
+The Windows watchdog stops the owned worker's whole process tree. If Windows refuses termination, that error fails the
+run and the runner keeps waiting for the worker; killing just its command window would leave Godot writing records
+while comparisons are already running.
+
+The PC and Linux timing line covers the whole rules parity step, including export, comparison, threats, threads and
+the timing report. Campaign parity remains a separate measurement. Evidence and the serial comparison are in
+`docs/shots/parity_speed/`. CI uses the same shell command and the default four workers.
+
 ## Where the JS side comes from
 
 There is one copy of the rules files: the repo root (`battle.js`, `data.js`, `core.js`, `ui3d.js`, `campaign_run.js`). `node/golden.js` and `node/export_data.js` read them directly by default; set `VS_ORACLE` only when the game files sit in another tree. `FNAMES` is taken from the root `ui3d.js` and `nemAdaptName` from the root `campaign_run.js`; the small extracts `node/fnames.js` and `node/campaign_hooks.js` remain only as fallbacks.

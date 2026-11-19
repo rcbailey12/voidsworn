@@ -109,6 +109,23 @@ class and faction (issue 363), never from a constant.
   paler patches too. The white looks unfinished"):** dark grey salvaged metal, clearly lighter than the soot plate, never white or
   chalky; the violet Eclipse trophy plates stay. SUPERSEDED, kept so nobody follows it: "big and pale" (R252's tone, ended by R274). In the stack: `TROPHY` in `tools/blender/kits/hullbreakers/stack.py`
   (issue 726; RECIPE.md, the paint stack).
+- **Patchwork cause and repair (R289, issue 875):** A16 and A17 have real mixed-size slabs, varied thickness and stacked
+  patches in their design files, on the shared sheet kit's original plater. A18 to A20 selected the later `courses=True`
+  builder (issue 633): small rectangular plates in brick rows and stepped terraces. The same paint stack could not remove
+  that ordered geometry; R240 changed shader cells, not those slabs. KB1CC already split faces without courses, but its
+  shallow slabs, small turns and reduced craft paint wear still read as flat notes. Those four sheets now use `kits/hullbreakers/plating.py`:
+  mixed-size cuts across each face, skewed corners, turned and overlapping slabs, thickness steps and welded lap joints.
+  Material weights, the trophy share and the R274 dark grey palette stay unchanged. Grey trophies keep their low wear.
+  **KB1CC follow-up (R292, issue 875 run 2):** the craft-only palette from issue 853 mapped even `soot` and `soot2` to bright
+  red, and its reduced grime and occlusion left broad clean salmon faces. The first repair's thicker relief made the small
+  patches look loose. Craft zones now read their colours from the same `CONCEPT` palette as the capitals: dark iron under
+  varied rust red, blood red and salvaged plates. Stronger seam occlusion, grime, scuffs and broken edge wear weather the real
+  geometry without another tile grid. KB1CC keeps mixed sizes and welded overlaps, with lower relief bedded against the skin.
+  Trophy colour and share stay unchanged. A16, A17, capital paint settings and the shared kit stay unchanged,
+  including the A16 fixture record. Judge the painted result beside its concept and the accepted capital reference
+  (A18 for KB1CC, A16 for the capitals) at the saved
+  `paint_full` camera, not by plate counts. Proof and the repeatable bake script are linked in
+  `docs/shots/look_bench/hullbreaker_patchwork/README.md`.
 - **Colours:** soot black, rust, dried-blood red, patches of trophy colour (dark grey salvaged metal, R274; violet Eclipse plate), dim
   red running lights. No crystal shard: it came off A16 and A17 (R197; Ryan: "Not sure why there is a weird crystal in there
   but we can get rid of that").
@@ -140,10 +157,11 @@ ships catch, store and release light.
   you'd expect with their lore. It should feel almost seamless and less bolted on. Like a work of art or blown glass, though
   able to rotate, etc." One continuous skin of glass and metal; no pod, bracket, ring mount or visible seam between lens and
   ship. Forward lenses visibly point forward. G17 (clear bubbles) and G18 (cream tubes) failed this (R201, R206).
-- **Shape language:** a leaf of cut glass lit from inside on a silver spine and rim (the G13 base, carried by G15). Rigid,
+- **Shape language:** a long leaf of flowing, twisted blown glass lit from inside (CD5, R298; it grew from the G13 and G15 base). Rigid,
   symmetric about the long axis. Nothing that reads as a wing, a petal, a sail or a body. No crystal object on a hull and no
   hull shaped like a crystal (R180, R183 (5): every crystal and prism route was scrapped).
-- **Colours:** clear glass and polished silver, a rainbow fringe on cut edges, a stored light glowing deep inside.
+- **Colours:** clear and pearly glass with silver veins, a rainbow fringe on cut edges, a stored light glowing deep inside.
+  Since R298 (the CD5 flagship) the glass also holds amber, violet and green panes lit from inside, like stained blown glass.
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -181,6 +199,7 @@ violet-white): the green stays, as the light of an eclipse.
   dark decks, the core's light. Breach anchors sit on the shade's bands.
 - **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
   skulls, green pooled in hollows, flame.
+- **The E14 exception (R256, PR 804):** E14 is the accepted flare redesign, its ring standing upright around one fixed lance through the centre.
 
 ## The Chorus (`chorus`)
 
@@ -210,7 +229,7 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
 
 The order Ryan set: the build pipeline was proven first (ship rounds 7 and 8, PR 401); then every faction's concepts are redone
 from the current lore, direction first ("Direction first, then fleets"), and only then built. Eight rounds of pictures later
-(FINDINGS R172 to R206), this is the state. What makes a picture a build reference now:
+(the FINDINGS rows on the concept rounds), this is the state. What makes a picture a build reference now:
 
 - **It is in the one concept style (R197).** Ryan, Nov 11: "Generally that style and tone is exactly how we should look at the
   concepts for our ships across fsctions. Pretty realistic and detailed to help with the builds... this style is how it should
@@ -228,7 +247,7 @@ from the current lore, direction first ("Direction first, then fleets"), and onl
 | The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); build sheets next | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
 | Sunward Crusade | flagship, S8 shape; fighter SF3, bomber SB4 | FLAGSHIP SHEET ACCEPTED (R254); painted in the sandbox (PR 772), hull to come up a step lighter toward the concept's grey before the PC recipe run (R256); craft SF3 and SB4 confirmed (R256), sheets built (PR 776) | docs/ship_pipeline/build_sheets/voidsworn_S8/ (build sheet); craft: contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg, SB4.jpg | R254: "Everything for sunward flagship is good. The fighters and bombers need a ton of work, new concepts to come." R255: "Agree on sf3 and sb4". Round 1 craft read as jets (no canopies, aero wings or tail fins). |
 | Hegemony Navy | Dominion (h_dominion), H10 shape; Iron Mandate (h_boss), IM5 | BOTH SHEETS ACCEPTED (R256): Dominion (PR 767) and Iron Mandate (PR 775); the Hegemony paint stack is next | docs/ship_pipeline/build_sheets/hegemony_H10/ (build sheet); Iron Mandate: contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." R254: "Can we do a mix of im2 and im3"; R255: "Im5 is my preference". A well-kept navy, never rusty; guns low, sunk in and real (R185). |
-| The Glasswrights | flagship, G15 shape | SHAPE SETTLED, lenses not reached; Opus build-sheet route | shape: contrib/muse/design/concept_round7_2026_11/ithar_G15_sheet.jpg | R196: "I really like g15." Its lenses are grown into the hull (the faction sheet above). G17 and G18 failed on the lenses (R201, R206). Same route (R206 (2)). |
+| The Glasswrights | flagship CD5 (Flowing Integrated Optics) | ACCEPTED (R298); build sheet next (issue 912) | Downloads\voidsworn_test\concepts\glasswright_r9\Glasswright_CD5_flowing_integrated_optics.png on the PC; the build sheet (issue 912) copies it into its own folder as concept.jpg | R298: "I love the overall design and the forward lances. The three other optics look somewhat left-heavy and randomly spaced, so clean up their placement in Blender while keeping them integrated into the flowing glass and consistent with their all-direction firing arcs. Treat the picture as a reference, not a literal placement guide." Made in ChatGPT image generation from G15's base (R296). |
 | Station | Vesper Reach, damaged | ACCEPTED (R206: "T2 damaged"); build sheet, then issue 373 | contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg | Concept picture first, then the build (R201 (3)). |
 
 History, not targets: every earlier pick (S8's own render, S9, S10, E4, E8, E9, E10, H8, H9, H11, H12, A10 to A15, G9 to G14,

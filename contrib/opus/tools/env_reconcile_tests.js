@@ -12,6 +12,7 @@ function check(ok, what) { if (ok) pass++; else { fail++; console.log('FAIL ' + 
 const has = (t, s) => t.includes(s);
 
 const liv = read('godot/world/world_living.gd');
+const ion = read('godot/world/ion_storm.gd');
 const rocks = read('godot/world/world_rocks.gd');
 const world = read('godot/world/world.gd');
 const board = read('godot/render/board.gd');
@@ -26,16 +27,34 @@ const d = [0.012, 0.004, 0.007].map(v => v / 0.075);
 const base = Math.hypot(...d);
 check(Math.abs(base - 0.193) < 0.0005 && has(spec, '0.193 units a second'), `base drift rate is 0.193 u/s in code (${base.toFixed(4)}) and in the spec`);
 check(has(liv, 'float rate = band < 0.5 ? 0.6 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.6 : 0.4));'), 'layer multipliers 0.6, 1.0, 1.6, 0.4 (nebula_motion_spec.md section 2)');
-check(has(liv, 'rate *= band > 2.5 ? -1.7 : 1.7;'), 'storm layers 1.7 times faster, veil reversed (section 2)');
-check(has(liv, 'float fine = wfbm3(p * 3.6 + vec3(w * 0.4) + drift * 2.5);'), 'filaments at 3.6 times the frequency and 2.5 times the extra drift (section 2)');
 check(has(liv, 'sin(gas_time * 0.785398 + phase) * 0.025'), 'body breathing: period 8 s, amplitude 0.025 (section 3)');
-check(has(liv, '0.90 + 0.10 * sin(gas_time * 3.14159 + phase)'), 'storm glow pulse: 2 s, plus or minus 10 percent (section 3)');
 check(has(liv, 'uniform float flat_rates = 0.0;'), 'the flattened-rate capture variant defaults off (section 2)');
 // 2. NB11: the storm flash radius, in hexes (section 4)
-check(has(liv, '(1.0 - smoothstep(8.0, 12.0, length(dd))) * f.w') && has(liv, 'sheet * 0.10 + flash * 0.3'), 'flash response full within 8 u, gone at 12 u, weight 0.3; sheet glow weight 0.10 (section 4)');
-check(has(liv, 'exp(-dot(dd, dd) / 500.0)'), 'sheet glow spread 500 (1/e at 22.4 u, 1.3 hexes; section 4)');
-check(has(spec, '0.46 hex') && has(spec, '0.69 hex') && has(spec, '1.3 hexes'), 'nebula_motion_spec.md states the storm radii in hexes (NB11)');
-check(has(liv, 'rng.randf_range(2.2, 6.5)') && has(liv, 'dt / 0.45'), 'bolt cadence 2.2 to 6.5 s and tick flare 0.45 s (section 4)');
+check(has(liv, 'rng.randf_range(2.2, 6.5)') && /const STORM_TICK_LIFE := 0\.45\b/.test(liv) && has(liv, 'clock - float(flares.front().start) >= STORM_TICK_LIFE'), 'bolt cadence 2.2 to 6.5 s and tick flare 0.45 s (section 4)');
+// R289 / RULEBOOK 12.1: check active shaders and the new ruling, never dead storm code in calm gas.
+const calm = liv.split('const GAS_SHADER :=')[1].split('const BOLT_SHADER :=')[0];
+check(has(liv, 'ION.CARDS if storm else GAS_SHADER') && has(liv, 'ION.FOG if storm else FOG_SHADER'), 'both storm tiers use the separate ion module');
+check(!/float (?:fine|vein)\b/.test(calm) && !has(calm, 'flashes['), 'calm gas has no fine electrical contours or lightning response');
+function driftRate(source, position) {
+  const pattern = new RegExp(String.raw`vec3 p = ${position} \* (?:vec3\(([^)]+)\)|([\d.]+)) \+ vec3\(([^)]+)\) \* gas_time`);
+  const match = pattern.exec(source);
+  if (!match) return NaN;
+  const scale = match[1] ? match[1].split(',').map(Number) : Array(3).fill(Number(match[2]));
+  const drift = match[3].split(',').map(Number);
+  return Math.hypot(...drift.map((value, i) => value / scale[i]));
+}
+const stormCards = driftRate(ion, 'world'), stormFog = driftRate(ion, 'WORLD_POSITION');
+const calmFog = driftRate(liv.split('const FOG_SHADER :=')[1], 'WORLD_POSITION');
+check(stormCards > base && stormFog > calmFog, 'storm motion is faster than calm gas in cards and fog');
+check(has(spec, stormCards.toFixed(3) + ' u/s') && has(spec, stormFog.toFixed(3) + ' u/s'), 'motion spec states drift rates derived from the active storm shader');
+const veil = /float rate =[^;\n]*: ([-\d.]+)\)+;/.exec(ion);
+check(veil && Number(veil[1]) < 0 && has(spec, 'veil ' + Math.abs(Number(veil[1]) * stormCards).toFixed(3) + ' u/s backward'), 'storm veil retains its counter-drift at the documented live rate');
+const pulse = /sin\(gas_time \* ([\d.]+)/.exec(ion);
+check(pulse && has(spec, (Math.PI * 2 / Number(pulse[1])).toFixed(3) + ' s'), 'documented charge period comes from the active storm shader');
+const spreads = [...ion.matchAll(/exp\(-dot\(delta, delta\) \/ ([\d.]+)\)/g)].map(row => Number(row[1]));
+check(spreads.length === 2 && spreads[0] > 0 && spreads[0] === spreads[1], 'cards and volume use the same finite local lightning falloff');
+const spread = spreads[0];
+check(has(spec, 'exp(-d^2 / ' + spread + ')') && has(spec, Math.sqrt(spread).toFixed(1) + ' u') && has(spec, Math.sqrt(spread * Math.log(10)).toFixed(1) + ' u'), 'storm flash distances are derived from the live Gaussian, not a retired shader');
 // 3. AS14: one tumble figure of record (environment_reconciliation.md section 1)
 check(/const TUMBLE_K := 0\.10\b/.test(liv) && has(liv, 'return TUMBLE_K / maxf(1.0, scale_v)'), 'TUMBLE_K is 0.10 and tumble_rate uses it (reconciliation section 1)');
 check(has(liv, 'uniform float tumble_k = 0.10;') && has(liv, 'min(rate, tumble_k / max(1.0, scale_v))'), 'the wreck shader caps tumble with the same figure');
@@ -45,30 +64,21 @@ check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 2 && has
 check(has(rec, '0.10 / max(1, scale)'), 'environment_reconciliation.md states the figure of record');
 // 3b. The documents of record state the values the code side pins (contrib/muse/reviews/opus_check_286.md conditions 1 and 3)
 for (const row of [
-	'| Ground haze (0) | -4 to 2 | 0.6 | 0.116 u/s (0.0067 hex/s) | 0.196 u/s |',
-	'| Main body (1) | 1 to 8 | 1.0 | 0.193 u/s (0.011 hex/s) | 0.327 u/s |',
-	'| Wisps (2) | 6 to 14 | 1.6 | 0.308 u/s (0.018 hex/s) | 0.523 u/s |',
-	'| Tying veil (3) | 12 to 18 | 0.4 | 0.077 u/s (0.0045 hex/s) | 0.131 u/s |'])
+	'| Ground haze (0) | -4 to 2 | 0.6 | 0.116 u/s (0.0067 hex/s) |',
+	'| Main body (1) | 1 to 8 | 1.0 | 0.193 u/s (0.011 hex/s) |',
+	'| Wisps (2) | 6 to 14 | 1.6 | 0.308 u/s (0.018 hex/s) |',
+	'| Tying veil (3) | 12 to 18 | 0.4 | 0.077 u/s (0.0045 hex/s) |'])
 	check(has(spec, row), `nebula_motion_spec.md section 2 states the layer row: ${row}`);
 check(has(spec, 'sampled at 0.075 cycles per unit'), 'nebula_motion_spec.md section 0 states the 0.075 sample rate');
-check(has(spec, 'Storm body drift 0.328 u/s (0.019 hex/s); storm wisps 0.524 u/s; storm veil 0.131 u/s'), 'nebula_motion_spec.md section 2 states the storm rates');
-check(has(spec, 'every layer runs 1.7 times faster, and the veil runs backward (-1.7 x 0.4 = -0.68)'), 'nebula_motion_spec.md section 2 states the storm multiplier and veil reversal');
-check(has(spec, 'same field at 3.6 times the frequency with an extra 2.5 times the drift'), 'nebula_motion_spec.md section 2 states the filament frequency and extra drift');
 check(has(spec, 'plus or minus 0.025') && has(spec, '`sin(gas_time * 0.785398 + phase)`'), 'nebula_motion_spec.md section 3 states the body breathing');
-check(has(spec, '`0.90 + 0.10 * sin(gas_time * 3.14159 + phase)`'), 'nebula_motion_spec.md section 3 states the storm glow pulse');
 check(has(spec, 'Shipped play never sets it.'), 'nebula_motion_spec.md section 2 states the flat-rate variant is off in play');
-check(has(spec, '`exp(-d^2 / 500)` at weight 0.10'), 'nebula_motion_spec.md section 4 states the sheet glow spread and weight');
-check(has(spec, 'the emissive boost of 0.3 is full within') && has(spec, 'full within **0.46 hex** (8 u) and gone at **0.69 hex** (12 u)'), 'nebula_motion_spec.md section 4 states the flash weight and radius');
-check(has(spec, 'each bolt waits 2.2 to 6.5 s between flashes'), 'nebula_motion_spec.md section 4 states the bolt cadence');
+check(has(spec, 'a patch burst waits 2.2 to 6.5 s') && has(liv, 'burst.next = clock + rng.randf_range(2.2, 6.5)'), 'nebula_motion_spec.md section 4 states the patch burst cadence');
 check(has(spec, 'fades linearly over 0.45 s (`tick` decays by dt / 0.45)'), 'nebula_motion_spec.md section 4 states the shield-tick flare');
 check(has(rec, 'rocks 5.6, wrecks 7.6, plain path 3.9'), 'environment_reconciliation.md section 2 states the AS18 piece sizes');
 check(has(rec, 'VS_TUMBLE=periods'), 'environment_reconciliation.md states the periods capture variant');
 check(has(rec, '| Debris rocks, both paths | yes, in ROCK_SHADER |'), 'environment_reconciliation.md section 1 states rocks turn by default');
 check(has(rec, 'reports the largest measured backdrop rock angle'), 'environment_reconciliation.md section 7 states R191 reporting');
 check(has(rec, '`r94_shape` and `r94_heights` with `matches_r94`') && has(rec, 'the triangle ceiling is a printed value'), 'environment_reconciliation.md section 6 states the ST3 and ST5 outcomes');
-check(has(spec, 'the vein pattern moves 0.555 u/s in the storm body and 0.889 u/s in the storm wisps'), 'nebula_motion_spec.md section 4 states the storm filament rates');
-check(has(spec, '**2.0 hexes** (33.9 u)'), 'nebula_motion_spec.md section 4 states the sheet glow reaches 2.0 hexes');
-check(has(spec, 'at -1.7 x base (-0.328 u/s)'), 'nebula_motion_spec.md section 2 states the flat storm veil rate (-0.328 u/s)');
 check(has(rec, 'piece longer than 8.66 units'), 'environment_reconciliation.md section 3 states the AS18 cap 8.66');
 check(has(rec, 'at most 8.66'), 'environment_reconciliation.md section 2 states the hero cap 8.66');
 check(has(rec, '**Figures of record: nebula alpha 0.075, debris 0.065, ion storm 0.065**'), 'environment_reconciliation.md section 4 states the BD16 alphas 0.075, 0.065, 0.065');

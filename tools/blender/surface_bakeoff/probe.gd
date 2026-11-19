@@ -202,7 +202,7 @@ func snap(name: String) -> void:
 	await RenderingServer.frame_post_draw
 	var img := root.get_texture().get_image()
 	assert(img.get_width() == 1920 and img.get_height() == 1080, "Unexpected capture size")
-	assert(img.save_png(out.path_join(name + ".png")) == OK)
+	assert(preload("../../../godot/tools/picture_provenance.gd").save_png(img, out.path_join(name + ".png")) == OK)
 	print("[surface75] shot ", name)
 
 

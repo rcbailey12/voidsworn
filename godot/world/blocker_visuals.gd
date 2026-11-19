@@ -5,9 +5,42 @@ const WR := preload("res://world/world_rocks.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")
 const LIVING := preload("res://world/world_living.gd")
 const WS := preload("res://world/world_shaders.gd")
-static var _wreck_meshes: Array = []
 static var _wreck_mat: ShaderMaterial
 var visuals := {}   # hex key -> actual solid node, used by the coverage check
+
+# Review-only station footprint, read from the real view. No live asset swap here:
+# issue 373 requires the build sheet, scene gate and Ryan's look first. The main
+# seven-cell terrain station is separate from station-kind holes elsewhere.
+static func station_review_footprint(view: Dictionary, hw: Callable) -> Dictionary:
+	var terrain: Dictionary = view.get("terrain", {})
+	var cells: Array = []
+	var centre := Vector3.ZERO
+	var station = view.get("map", {}).get("station")
+	if not station is Dictionary:
+		return {}
+	var seed_key := "%d,%d" % [int(station.q), int(station.r)]
+	if terrain.get(seed_key) != "station":
+		return {}
+	var todo: Array = [seed_key]
+	var seen := {seed_key: true}
+	while not todo.is_empty():
+		var key: String = str(todo.pop_back())
+		var qr := key.split(",")
+		var q := int(qr[0]); var r := int(qr[1])
+		var p: Vector3 = hw.call(q, r)
+		cells.append({"q": q, "r": r, "x": p.x, "z": p.z})
+		centre += p
+		for d in [[1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1]]:
+			var next_key := "%d,%d" % [q + int(d[0]), r + int(d[1])]
+			if terrain.get(next_key) == "station" and not seen.has(next_key):
+				seen[next_key] = true
+				todo.append(next_key)
+	centre /= float(cells.size())
+	# Read the cell spacing through the board's callable, never the old 14-unit prop.
+	var origin: Vector3 = hw.call(int(station.q), int(station.r))
+	var neighbour: Vector3 = hw.call(int(station.q) + 1, int(station.r))
+	var radius := origin.distance_to(neighbour) / sqrt(3.0)
+	return {"cells": cells, "centre": [centre.x, centre.y, centre.z], "hex_radius": radius}
 
 func build(view: Dictionary, hw: Callable) -> void:
 	var rng := RandomNumberGenerator.new()
@@ -147,11 +180,8 @@ static func cluster_piece(parent: Node3D, mesh: Mesh, mat: Material, off: Vector
 static func hulk_fallback(parent: Node3D, p: Vector3, rng: RandomNumberGenerator) -> Node3D:
 	# Also called by the board when its painted derelict is missing. Use the
 	# surrounding debris field's torn plates, ribs, trusses and deck sections.
-	if _wreck_meshes.is_empty():
-		var kit := LIVING.new()
-		kit.rng.seed = 166
-		_wreck_meshes = kit._shard_meshes()
-		kit.free()
+	var wreck_meshes := LIVING._shard_meshes()
+	if _wreck_mat == null:
 		var sh := Shader.new()
 		# Solid blockers keep a fixed pose, including their shader geometry.
 		sh.code = LIVING.WRECK_SHADER.replace("%NOISE%", WS.NOISE).replace("TIME *", "0.0 *")
@@ -166,7 +196,7 @@ static func hulk_fallback(parent: Node3D, p: Vector3, rng: RandomNumberGenerator
 		var angle := phase + (i - 3) * TAU / 6.0
 		var off := Vector3(rng.randf_range(-1, 1), rng.randf_range(0.5, 3.0), rng.randf_range(-1, 1)) if i < 3 else Vector3(cos(angle) * 4.7, rng.randf_range(0.0, 2.5), sin(angle) * 4.7)
 		var radius := rng.randf_range(5.8, 6.6) if i < 3 else rng.randf_range(3.5, 3.8)
-		cluster_piece(n, _wreck_meshes[rng.randi() % _wreck_meshes.size()], _wreck_mat, off, radius, rng)
+		cluster_piece(n, wreck_meshes[rng.randi() % wreck_meshes.size()], _wreck_mat, off, radius, rng)
 	return n
 
 

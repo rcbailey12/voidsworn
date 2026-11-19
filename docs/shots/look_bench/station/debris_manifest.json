@@ -1,0 +1,361 @@
+{
+  "code": "station_T2_debris",
+  "pieces": [
+    {
+      "name": "T2_debris_01_plate",
+      "kind": "plate",
+      "triangles": 148,
+      "radius": 2.6747349719195754,
+      "position_blender": [
+        -5.400000095367432,
+        -48.400001525878906,
+        -33.75
+      ]
+    },
+    {
+      "name": "T2_debris_02_girder",
+      "kind": "girder",
+      "triangles": 192,
+      "radius": 3.3320976688969766,
+      "position_blender": [
+        0.8999999761581421,
+        -50.20000076293945,
+        -36.04999923706055
+      ]
+    },
+    {
+      "name": "T2_debris_03_plate",
+      "kind": "plate",
+      "triangles": 140,
+      "radius": 2.3119001963867416,
+      "position_blender": [
+        -9.199999809265137,
+        -52.20000076293945,
+        -36.25
+      ]
+    },
+    {
+      "name": "T2_debris_04_pod",
+      "kind": "pod",
+      "triangles": 296,
+      "radius": 1.2771173095643327,
+      "position_blender": [
+        -1.899999976158142,
+        -54.900001525878906,
+        -33.25
+      ]
+    },
+    {
+      "name": "T2_debris_05_girder",
+      "kind": "girder",
+      "triangles": 192,
+      "radius": 2.891920304694798,
+      "position_blender": [
+        -8.199999809265137,
+        -58.400001525878906,
+        -33.849998474121094
+      ]
+    },
+    {
+      "name": "T2_debris_06_plate",
+      "kind": "plate",
+      "triangles": 144,
+      "radius": 2.154986306661992,
+      "position_blender": [
+        4.699999809265137,
+        -56.10000228881836,
+        -37.25
+      ]
+    },
+    {
+      "name": "T2_debris_07_antenna",
+      "kind": "antenna",
+      "triangles": 122,
+      "radius": 1.5884944429309387,
+      "position_blender": [
+        -4.699999809265137,
+        -61.5,
+        -36.54999923706055
+      ]
+    },
+    {
+      "name": "T2_debris_08_girder",
+      "kind": "girder",
+      "triangles": 192,
+      "radius": 1.9489629726738678,
+      "position_blender": [
+        5.699999809265137,
+        -62.400001525878906,
+        -35.04999923706055
+      ]
+    },
+    {
+      "name": "T2_debris_09_plate",
+      "kind": "plate",
+      "triangles": 148,
+      "radius": 1.4886348165465413,
+      "position_blender": [
+        -11.300000190734863,
+        -63.900001525878906,
+        -39.25
+      ]
+    },
+    {
+      "name": "T2_debris_10_plate",
+      "kind": "plate",
+      "triangles": 140,
+      "radius": 1.1320360515326797,
+      "position_blender": [
+        2.5,
+        -68.0999984741211,
+        -36.25
+      ]
+    },
+    {
+      "name": "T2_debris_11_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.4717704278924247,
+      "position_blender": [
+        -2.5882792472839355,
+        -60.91194534301758,
+        -34.5947380065918
+      ]
+    },
+    {
+      "name": "T2_debris_12_chip",
+      "kind": "chip",
+      "triangles": 36,
+      "radius": 0.7341360619084402,
+      "position_blender": [
+        -11.92922306060791,
+        -71.2782211303711,
+        -34.79287338256836
+      ]
+    },
+    {
+      "name": "T2_debris_13_chip",
+      "kind": "chip",
+      "triangles": 12,
+      "radius": 0.4513192081286169,
+      "position_blender": [
+        7.417202472686768,
+        -52.01939392089844,
+        -38.415672302246094
+      ]
+    },
+    {
+      "name": "T2_debris_14_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.6685411269383725,
+      "position_blender": [
+        -1.4523905515670776,
+        -60.440040588378906,
+        -35.5462760925293
+      ]
+    },
+    {
+      "name": "T2_debris_15_chip",
+      "kind": "chip",
+      "triangles": 36,
+      "radius": 0.4584157101892172,
+      "position_blender": [
+        -4.796631813049316,
+        -65.39165496826172,
+        -37.92040252685547
+      ]
+    },
+    {
+      "name": "T2_debris_16_chip",
+      "kind": "chip",
+      "triangles": 12,
+      "radius": 0.5765161726776492,
+      "position_blender": [
+        5.883042812347412,
+        -51.643672943115234,
+        -34.57856750488281
+      ]
+    },
+    {
+      "name": "T2_debris_17_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.47169304418114005,
+      "position_blender": [
+        -11.995097160339355,
+        -53.70779037475586,
+        -34.60964584350586
+      ]
+    },
+    {
+      "name": "T2_debris_18_chip",
+      "kind": "chip",
+      "triangles": 36,
+      "radius": 0.6153306666209084,
+      "position_blender": [
+        -12.513565063476562,
+        -71.38282775878906,
+        -37.37590408325195
+      ]
+    },
+    {
+      "name": "T2_debris_19_chip",
+      "kind": "chip",
+      "triangles": 12,
+      "radius": 0.29436745862034636,
+      "position_blender": [
+        -11.136842727661133,
+        -51.12272262573242,
+        -34.233177185058594
+      ]
+    },
+    {
+      "name": "T2_debris_20_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.4587988955522721,
+      "position_blender": [
+        -13.143655776977539,
+        -59.95908737182617,
+        -38.158782958984375
+      ]
+    },
+    {
+      "name": "T2_debris_21_chip",
+      "kind": "chip",
+      "triangles": 36,
+      "radius": 0.22523111512302807,
+      "position_blender": [
+        -6.976416110992432,
+        -58.222137451171875,
+        -38.83164596557617
+      ]
+    },
+    {
+      "name": "T2_debris_22_chip",
+      "kind": "chip",
+      "triangles": 12,
+      "radius": 0.4540979016813978,
+      "position_blender": [
+        5.37824010848999,
+        -60.528804779052734,
+        -40.18592071533203
+      ]
+    },
+    {
+      "name": "T2_debris_23_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.43258093559326244,
+      "position_blender": [
+        -6.794496059417725,
+        -53.71670913696289,
+        -34.01487731933594
+      ]
+    },
+    {
+      "name": "T2_debris_24_chip",
+      "kind": "chip",
+      "triangles": 36,
+      "radius": 0.5819290116541506,
+      "position_blender": [
+        2.5965700149536133,
+        -68.24236297607422,
+        -39.49946594238281
+      ]
+    },
+    {
+      "name": "T2_debris_25_chip",
+      "kind": "chip",
+      "triangles": 12,
+      "radius": 0.2807427036705813,
+      "position_blender": [
+        -6.505063533782959,
+        -69.01487731933594,
+        -39.48097229003906
+      ]
+    },
+    {
+      "name": "T2_debris_26_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.31995515217997905,
+      "position_blender": [
+        -6.623713493347168,
+        -66.21330261230469,
+        -37.8217887878418
+      ]
+    },
+    {
+      "name": "T2_debris_27_chip",
+      "kind": "chip",
+      "triangles": 36,
+      "radius": 0.2211269464735644,
+      "position_blender": [
+        -4.937857151031494,
+        -63.22085189819336,
+        -38.75846481323242
+      ]
+    },
+    {
+      "name": "T2_debris_28_chip",
+      "kind": "chip",
+      "triangles": 12,
+      "radius": 0.37275785681171963,
+      "position_blender": [
+        -4.052067279815674,
+        -56.146514892578125,
+        -39.53567123413086
+      ]
+    },
+    {
+      "name": "T2_debris_29_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.3369758749664246,
+      "position_blender": [
+        -1.9835004806518555,
+        -71.6065444946289,
+        -39.64320373535156
+      ]
+    },
+    {
+      "name": "T2_debris_30_chip",
+      "kind": "chip",
+      "triangles": 36,
+      "radius": 0.7667706310721526,
+      "position_blender": [
+        -3.66784405708313,
+        -55.92955780029297,
+        -35.430992126464844
+      ]
+    },
+    {
+      "name": "T2_debris_31_chip",
+      "kind": "chip",
+      "triangles": 12,
+      "radius": 0.4910017265272852,
+      "position_blender": [
+        4.625202178955078,
+        -57.67618179321289,
+        -33.964073181152344
+      ]
+    },
+    {
+      "name": "T2_debris_32_chip",
+      "kind": "chip",
+      "triangles": 32,
+      "radius": 0.3629434140144625,
+      "position_blender": [
+        -8.261367797851562,
+        -56.222599029541016,
+        -39.88798522949219
+      ]
+    }
+  ],
+  "triangles": 2306,
+  "material_source_sha256": "d0af9c4bd3b87a42995ae6be737bd407c536014634579e123a4d0d20eada3d56",
+  "generator_sha256": "525673c7062e7edad0162b161ac7e39e13504fd8e3a3713f5131fa90d59fef13",
+  "method": "Detached T2 pressure skin, docking truss and fittings; run 3 PBR tiles with burnt backs and torn edges"
+}

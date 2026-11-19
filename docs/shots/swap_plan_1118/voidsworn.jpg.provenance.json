@@ -1,0 +1,440 @@
+{
+  "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "voidsworn.jpg",
+  "date": "2026-11-18T14:30:33Z",
+  "sources": [
+    {
+      "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "sunward_installed_cam170.png",
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T14:03:43Z",
+      "image_sha256": "1d488130cf270667e462749465d6adf67504075f22ba98e558debf7d24eba984",
+      "sources": [
+        {
+          "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "voidsworn_S8_paint_concept.jpg",
+      "source_commit": "39e57fd5c5b20ecbf6837cea55cc9121e0c31aaa",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-11-15T17:03:09Z",
+      "image_sha256": "abb03ff7a12d960c4b7c264cb62edb1fdb86381c622dfe430ee75d4025129521",
+      "sources": [
+        {
+          "source_commit": "39e57fd5c5b20ecbf6837cea55cc9121e0c31aaa",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "S1_51.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "7dc6636925cc5381505dbf3ac63e3e273161846129c3015c2f3c4db698309d80",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "threequarter.jpg",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+      "stage": "sheet built",
+      "date": "2026-11-17T07:34:53Z",
+      "image_sha256": "bac221922a9575fcb4bbefcf4a8e990c719969281dfdbbd4adb9c117330626b9",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "S2_23.jpg",
+      "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-10-27T16:30:10Z",
+      "image_sha256": "34999a9742a041f6b6007bd166533bb39f6c8b62d1711060230ed16244c5a6e3",
+      "sources": [
+        {
+          "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "threequarter.jpg",
+      "source_commit": "a283e6ddd1e310aca73819e88087877331320c4c",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-15T08:48:20Z",
+      "image_sha256": "1c469b3b8f7251a5b8f1e66fc3a02dc90563e6d5958a4e32e813a311b3c313f0",
+      "sources": [
+        {
+          "source_commit": "a283e6ddd1e310aca73819e88087877331320c4c",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    432,
+    720
+  ],
+  "strip_size": [
+    432,
+    98
+  ],
+  "strip_sha256": [
+    "f74c5b225ce045e4edb76aaf60c58c1e725b6dc783519178f6877aa37dbce155"
+  ],
+  "stamp_template_sha256": "24a4d0f47125bbf6a9ac98cccf332f4dd39087e9dd945389fdf70a30857f71f7",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABO0lEQVR4nO3UMQHAMAzAsKz/zgEYf5I9YhgSBB9+3u8fAGaOCADLEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLMugaQAQfvd13PAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "f746d431880e65279c5dbb387f04d5a1c660bef763b1e7a67beae67a5f8fc1e2",
+  "source_files": [
+    {
+      "code": "V14_23",
+      "source_path": "board/issue-1044/shots/sunward_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        173,
+        171,
+        283,
+        227
+      ],
+      "exact_source": {
+        "picture_name": "sunward_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:43Z",
+        "image_sha256": "1d488130cf270667e462749465d6adf67504075f22ba98e558debf7d24eba984",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "V15_37",
+      "source_path": "board/issue-1044/shots/sunward_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        566,
+        168,
+        718,
+        228
+      ],
+      "exact_source": {
+        "picture_name": "sunward_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:43Z",
+        "image_sha256": "1d488130cf270667e462749465d6adf67504075f22ba98e558debf7d24eba984",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "V16_37",
+      "source_path": "board/issue-1044/shots/sunward_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        944,
+        166,
+        1161,
+        235
+      ],
+      "exact_source": {
+        "picture_name": "sunward_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:43Z",
+        "image_sha256": "1d488130cf270667e462749465d6adf67504075f22ba98e558debf7d24eba984",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "V17_37",
+      "source_path": "board/issue-1044/shots/sunward_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        80,
+        422,
+        375,
+        521
+      ],
+      "exact_source": {
+        "picture_name": "sunward_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:43Z",
+        "image_sha256": "1d488130cf270667e462749465d6adf67504075f22ba98e558debf7d24eba984",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "V18_51",
+      "source_path": "board/issue-1044/shots/sunward_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        513,
+        411,
+        763,
+        532
+      ],
+      "exact_source": {
+        "picture_name": "sunward_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:43Z",
+        "image_sha256": "1d488130cf270667e462749465d6adf67504075f22ba98e558debf7d24eba984",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "V1b_r_23",
+      "source_path": "board/issue-1044/shots/sunward_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        871,
+        399,
+        1233,
+        543
+      ],
+      "exact_source": {
+        "picture_name": "sunward_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:43Z",
+        "image_sha256": "1d488130cf270667e462749465d6adf67504075f22ba98e558debf7d24eba984",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "S8",
+      "source_path": "docs/ship_pipeline/build_sheets/voidsworn_S8/paint/voidsworn_S8_paint_concept.jpg",
+      "source_revision_label": "39e57fd5",
+      "crop": [
+        641,
+        110,
+        1275,
+        475
+      ],
+      "exact_source": {
+        "picture_name": "voidsworn_S8_paint_concept.jpg",
+        "source_commit": "39e57fd5c5b20ecbf6837cea55cc9121e0c31aaa",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-11-15T17:03:09Z",
+        "image_sha256": "abb03ff7a12d960c4b7c264cb62edb1fdb86381c622dfe430ee75d4025129521",
+        "sources": [
+          {
+            "source_commit": "39e57fd5c5b20ecbf6837cea55cc9121e0c31aaa",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "S1_51",
+      "source_path": "godot/assets/ships/previews/S1_51.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "S1_51.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "7dc6636925cc5381505dbf3ac63e3e273161846129c3015c2f3c4db698309d80",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "SF3",
+      "source_path": "docs/ship_pipeline/build_sheets/voidsworn_SF3/threequarter.jpg",
+      "source_revision_label": "51ec81bb+7b701",
+      "crop": null,
+      "exact_source": {
+        "picture_name": "threequarter.jpg",
+        "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+        "source_dirty": true,
+        "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+        "stage": "sheet built",
+        "date": "2026-11-17T07:34:53Z",
+        "image_sha256": "bac221922a9575fcb4bbefcf4a8e990c719969281dfdbbd4adb9c117330626b9",
+        "sources": [
+          {
+            "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+            "source_dirty": true,
+            "source_diff_sha256": "7b701808695b269baee1d043e96b3dd9f3e083bb49efe8662b9f833c676bd3b6",
+            "stage": "sheet built"
+          }
+        ]
+      }
+    },
+    {
+      "code": "S2_23",
+      "source_path": "godot/assets/ships/previews/S2_23.jpg",
+      "source_revision_label": "cf00dbcc",
+      "crop": [
+        279,
+        209,
+        547,
+        362
+      ],
+      "exact_source": {
+        "picture_name": "S2_23.jpg",
+        "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-10-27T16:30:10Z",
+        "image_sha256": "34999a9742a041f6b6007bd166533bb39f6c8b62d1711060230ed16244c5a6e3",
+        "sources": [
+          {
+            "source_commit": "cf00dbcc6ae6289e48ca5560737170a1d556f4f9",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "SB4",
+      "source_path": "docs/ship_pipeline/build_sheets/voidsworn_SB4/threequarter.jpg",
+      "source_revision_label": "a283e6dd",
+      "crop": null,
+      "exact_source": {
+        "picture_name": "threequarter.jpg",
+        "source_commit": "a283e6ddd1e310aca73819e88087877331320c4c",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "sheet built",
+        "date": "2026-11-15T08:48:20Z",
+        "image_sha256": "1c469b3b8f7251a5b8f1e66fc3a02dc90563e6d5958a4e32e813a311b3c313f0",
+        "sources": [
+          {
+            "source_commit": "a283e6ddd1e310aca73819e88087877331320c4c",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "sheet built"
+          }
+        ]
+      }
+    }
+  ],
+  "comparison": "Existing pictures cropped and scaled. Each cell identifies the original stage."
+}

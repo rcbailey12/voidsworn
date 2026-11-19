@@ -3,6 +3,15 @@
 Run with the PC's installed ComfyUI Python (Pillow, NumPy), after the review
 captures. No beauty image is brightened, sharpened, or recoloured here.
 """
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review, open_picture
+PICTURES = Review('paint proof')
+
 import argparse
 import ast
 import hashlib
@@ -68,15 +77,15 @@ def frame(out, variant, suffix, length, shot, height=1080):
 
 
 def mask_bounds(path, padding):
-    mask = Image.open(path).convert('L').point(lambda v: 255 if v > 127 else 0)
+    mask = open_picture(path).convert('L').point(lambda v: 255 if v > 127 else 0)
     x0, y0, x1, y1 = mask.getbbox()
     return (max(0, x0 - padding), max(0, y0 - padding), min(mask.width, x1 + padding), min(mask.height, y1 + padding))
 
 
 def metrics(out, variant, suffix, length, height):
     path = frame(out, variant, suffix, length, 'battle', height)
-    rgb = np.asarray(Image.open(path.with_stem(path.stem + '_isolated')).convert('RGB')).astype(float)
-    mask = np.asarray(Image.open(path.with_stem(path.stem + '_mask')).convert('L')) > 127
+    rgb = np.asarray(open_picture(path.with_stem(path.stem + '_isolated'), required=True).convert('RGB')).astype(float)
+    mask = np.asarray(open_picture(path.with_stem(path.stem + '_mask')).convert('L')) > 127
     values = rgb[mask]
     luma = values @ LUMA
     r, g, b = values.T
@@ -124,19 +133,22 @@ def main():
                 label(sheet, (25, 95), 'BEFORE: approved detail shapes, rejected paint', 19)
                 right = sheet.width // 2 + 15
                 label(sheet, (right, 95), 'AFTER: metal repaint, Ryan review pending', 19)
+                sheet_sources = []
                 for col, suffix in enumerate(('before', 'detail')):
                     source = frame(out, variant, suffix, length, 'battle', height)
-                    color = Image.open(source.with_stem(source.stem + '_isolated')).convert('RGB')
+                    color = PICTURES.open(source.with_stem(source.stem + '_isolated')).convert('RGB')
                     mono = grey(color)
                     blur = mono.filter(ImageFilter.GaussianBlur(radius))
-                    blur.save(out / f'{variant}_{suffix}_{length}_blur_{height}p.png')
+                    color_sources = PICTURES.take_sources()
+                    sheet_sources.extend(color_sources)
+                    PICTURES.save(blur, out / f'{variant}_{suffix}_{length}_blur_{height}p.png', sources=color_sources)
                     for row, (image, text) in enumerate(((color, 'Colour'), (mono, 'Greyscale'), (blur, 'Blurred greyscale'))):
                         x, y = col * (sheet.width // 2) + 20, 145 + row * (cell + 50)
                         label(sheet, (x, y), text, 19)
                         sheet.paste(image.crop(bounds), (x + (sheet.width // 2 - 40 - width) // 2, y + 30))
                     report['measurements'].append(metrics(out, variant, suffix, length, height))
                 label(sheet, (25, sheet.height - 54), 'Structure review: large masses, calm open faces, accents kept small. S10 reference still pending.', 19)
-                sheet.save(out / f'{variant}_{length}_blur_{height}p.png')
+                PICTURES.save(sheet, out / f'{variant}_{length}_blur_{height}p.png', sources=sheet_sources)
             # Real ships remain in these shots. The battle row stays at native
             # 1080p pixels; larger close captures are fitted without upscaling.
             sheet = Image.new('RGB', (2000, 2010), BG)
@@ -145,25 +157,25 @@ def main():
             for row, shot in enumerate(('battle', 'close', 'service', 'below')):
                 for col, suffix in enumerate(('before', 'detail')):
                     path = frame(out, variant, suffix, length, shot, 1080 if shot == 'battle' else 2160)
-                    image = Image.open(path).convert('RGB')
+                    image = PICTURES.open(path).convert('RGB')
                     nonblack = image.convert('L').point(lambda v: 255 if v > 10 else 0).getbbox()
                     image = image.crop(nonblack)
                     image.thumbnail((960, 410), Image.Resampling.LANCZOS)
                     x, y = col * 1000 + 20, row * 465 + 110
                     label(sheet, (x, y), ('BEFORE' if col == 0 else 'AFTER') + f' / {shot} / r={170 if shot == "battle" else 90}', 23)
                     sheet.paste(image, (x + (960 - image.width) // 2, y + 35 + (410 - image.height) // 2))
-            sheet.save(out / f'{variant}_{length}_paint_review.jpg', quality=96)
+            PICTURES.save(sheet, out / f'{variant}_{length}_paint_review.jpg', quality=96)
     overview = Image.new('RGB', (1600, 1130), BG)
     label(overview, (25, 15), 'STATION REPAINT / SAME DETAIL SHAPES / CLOSE VIEW', 30, 'white')
     label(overview, (25, 58), 'Dark steel, three broad coats, sparse faction accents. No shipping swap. Ryan review pending.', 21)
     for row, variant in enumerate(('fleet', 'refinery')):
         for col, suffix in enumerate(('before', 'detail')):
-            image = Image.open(frame(out, variant, suffix, 46, 'macro46', 2160)).convert('RGB')
+            image = PICTURES.open(frame(out, variant, suffix, 46, 'macro46', 2160)).convert('RGB')
             image.thumbnail((800, 450), Image.Resampling.LANCZOS)
             x, y = col * 800, 105 + row * 495
             label(overview, (x + 20, y), variant.upper() + (' / BEFORE' if col == 0 else ' / AFTER'), 23, 'white')
             overview.paste(image, (x, y + 35))
-    overview.save(out / 'station_paint_overview.jpg', quality=96)
+    PICTURES.save(overview, out / 'station_paint_overview.jpg', quality=96)
     # The original builders and all their audit asserts must match HEAD.
     source = Path(__file__).with_name('station_kit.py')
     old = subprocess.check_output(['git', 'show', 'HEAD:tools/blender/hs/station_kit.py'], text=True)

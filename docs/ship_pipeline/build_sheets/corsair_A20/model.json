@@ -5,17 +5,19 @@
  "cls": "Carrier",
  "length": 16.5,
  "game": "data.js c_hulk (cls 'Carrier'); length from godot/render/hull_table.gd CLS_LEN['Carrier'] = 16.5",
+ "game_ship": "c_hulk",
+ "variant": "",
  "beauty": "contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg",
  "model_length": 16.505,
  "x_tip": 8.259,
  "lo": [
   -8.246,
-  -3.598,
+  -3.95,
   -1.797
  ],
  "hi": [
   8.259,
-  3.501,
+  3.967,
   2.76
  ],
  "views": {
@@ -38,7 +40,7 @@
    ],
    "centre": [
     0.006804943084716797,
-    -0.048804521560668945,
+    0.008124351501464844,
     0.48163914680480957
    ],
    "w_units": 18.50462818145752,
@@ -72,7 +74,7 @@
   "top": {
    "cam": "top",
    "res": [
-    728,
+    793,
     1480
    ],
    "px_per_unit": 80,
@@ -88,16 +90,16 @@
    ],
    "centre": [
     0.006804943084716797,
-    -0.048804521560668945,
+    0.008124351501464844,
     0.48163914680480957
    ],
-   "w_units": 9.099110126495361,
+   "w_units": 9.9169602394104,
    "h_units": 18.50462818145752
   },
   "underside": {
    "cam": "underside",
    "res": [
-    728,
+    793,
     1480
    ],
    "px_per_unit": 80,
@@ -113,16 +115,16 @@
    ],
    "centre": [
     0.006804943084716797,
-    -0.048804521560668945,
+    0.008124351501464844,
     0.48163914680480957
    ],
-   "w_units": 9.099110126495361,
+   "w_units": 9.9169602394104,
    "h_units": 18.50462818145752
   },
   "bow": {
    "cam": "bow",
    "res": [
-    728,
+    793,
     525
    ],
    "px_per_unit": 80,
@@ -138,16 +140,16 @@
    ],
    "centre": [
     0.006804943084716797,
-    -0.048804521560668945,
+    0.008124351501464844,
     0.48163914680480957
    ],
-   "w_units": 9.099110126495361,
+   "w_units": 9.9169602394104,
    "h_units": 6.5567216873168945
   },
   "stern": {
    "cam": "stern",
    "res": [
-    728,
+    793,
     525
    ],
    "px_per_unit": 80,
@@ -163,10 +165,10 @@
    ],
    "centre": [
     0.006804943084716797,
-    -0.048804521560668945,
+    0.008124351501464844,
     0.48163914680480957
    ],
-   "w_units": 9.099110126495361,
+   "w_units": 9.9169602394104,
    "h_units": 6.5567216873168945
   }
  },
@@ -974,7 +976,7 @@
    "count": 1,
    "pos": [
     5.2,
-    3.21,
+    3.824,
     -0.45
    ],
    "aim": null,
@@ -1028,7 +1030,7 @@
    "count": 1,
    "pos": [
     4.6,
-    -3.247,
+    -3.808,
     -0.4
    ],
    "aim": null,
@@ -1190,25 +1192,6 @@
    ]
   },
   {
-   "name": "Hangar cheek, port",
-   "obj": "A20_cheek_H1",
-   "role": "bare iron, patched",
-   "src": "picture",
-   "note": "the outer wall of the port mouth",
-   "st": [
-    15.5,
-    34.0
-   ],
-   "y": [
-    3.08,
-    3.2
-   ],
-   "z": [
-    -0.94,
-    0.82
-   ]
-  },
-  {
    "name": "Hangar sill, starboard",
    "obj": "A20_sill_H2",
    "role": "soot",
@@ -1244,25 +1227,6 @@
    "z": [
     0.8,
     1.0
-   ]
-  },
-  {
-   "name": "Hangar cheek, starboard",
-   "obj": "A20_cheek_H2",
-   "role": "bare iron, patched",
-   "src": "picture",
-   "note": "the outer wall of the starboard mouth",
-   "st": [
-    15.5,
-    34.0
-   ],
-   "y": [
-    -3.2,
-    -3.04
-   ],
-   "z": [
-    -0.94,
-    0.82
    ]
   },
   {
@@ -1434,6 +1398,44 @@
    "z": [
     -0.02,
     0.82
+   ]
+  },
+  {
+   "name": "Hangar cheek, port",
+   "obj": "A20_cheek_H1",
+   "role": "bare iron, patched",
+   "src": "picture",
+   "note": "R283: broad deck-to-flank bevel, stepped angled plates, inset fore rim and three chamfered lower lip facets outside the unchanged port bay",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    3.08,
+    3.84
+   ],
+   "z": [
+    -0.96,
+    1.0
+   ]
+  },
+  {
+   "name": "Hangar cheek, starboard",
+   "obj": "A20_cheek_H2",
+   "role": "bare iron, patched",
+   "src": "picture",
+   "note": "R283: broad deck-to-flank bevel, stepped angled plates, inset fore rim and three chamfered lower lip facets outside the unchanged starboard bay",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    -3.84,
+    -3.04
+   ],
+   "z": [
+    -0.96,
+    1.0
    ]
   }
  ],
@@ -2179,6 +2181,10 @@
  ],
  "changes": [
   [
+   "Issue 861 (R283): both outer hangar cheeks flare down and outward from the deck in a broad bevel, with an inset fore ring, irregular stepped plates, three wrapping armour courses and a faceted lower lip; the two nearby lamps follow the new skin",
+   "Ryan, Nov 16: there is still a flat side wall near the carrier entrance/exit; his marked concept shows a large shoulder bevel, layered angled plates and a stepped lower corner. The opening dimensions, dark liner, craft, insides, weapons, other hull masses and Carrier class length 16.5 stay as on the merged R244 sheet"
+  ],
+  [
    "Issue 688 (R244): the two bow intakes are blind wells through the bow housing, with the kit's rolled lips, lip bolts, three inset rings and dark rear baffles exposed; the redundant smooth liners are removed and the bow loot locker sits behind the wells",
    "Ryan, Nov 14: the front circles should be open holes with detail, never just circles. The solid bow block had capped both kit tubes immediately behind their lips. They remain fuel and dust intakes, not extra weapons (data.js c_hulk has only the two turrets)"
   ],
@@ -2261,11 +2267,11 @@
  "kit": "hullbreakers",
  "sheet": {
   "version": 3,
-  "round": "issue 688: open intakes and angular flanks (R244)",
-  "date": "2026-11-14",
-  "blend": "board\\issue-688\\shots",
-  "before": "Before R244",
-  "before_note": "The existing A20 on main, with capped intake housings and straight slab flanks; captured at the same cameras and light.",
+  "round": "issue 861: faceted hangar cheeks (R283)",
+  "date": "2026-11-16",
+  "blend": "board_b\\issue-861\\shots",
+  "before": "Before R283",
+  "before_note": "The merged R244 A20, with flat outer walls beside the hangar mouths; captured at the same cameras and light.",
   "during": "While designing, the check also caught (and the design fixed): see the fit report's fix column."
  },
  "concept_sheet": "contrib/muse/design/class_family_corsair_2026_11/corsair_A20_sheet.jpg",
@@ -2739,21 +2745,6 @@
    ]
   },
   {
-   "id": "A20_cheek_H1_plates",
-   "kind": "plate",
-   "inv": [
-    "hangar_plates"
-   ],
-   "shaped": true,
-   "detailed": true,
-   "subs": [
-    "slab",
-    "step",
-    "bevel",
-    "rivet"
-   ]
-  },
-  {
    "id": "A20_sill_H2_plates",
    "kind": "plate",
    "inv": [
@@ -2770,6 +2761,21 @@
   },
   {
    "id": "A20_lintel_H2_plates",
+   "kind": "plate",
+   "inv": [
+    "hangar_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_cheek_H1_plates",
    "kind": "plate",
    "inv": [
     "hangar_plates"
@@ -3582,6 +3588,8 @@
      }
     ]
    }
-  ]
+  ],
+  "game_ship": "c_hulk",
+  "variant": ""
  }
 }

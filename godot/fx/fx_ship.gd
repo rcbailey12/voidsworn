@@ -9,6 +9,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
+const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
 const TRAIL_LIFE := 2.6
@@ -42,11 +43,17 @@ var _eng_node: MeshInstance3D = null
 var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
 var _eng_sputter = false
-var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t], seed, r}
+var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
+static var _trail_indices: Dictionary = {}
 var _last_pos = Vector3.INF
 var _moving = 0.0
 var _shield_mi: MeshInstance3D = null
 var _shield_mat: ShaderMaterial = null
+var _shield_tm: TriangleMesh = null
+var _shield_pose := Transform3D.IDENTITY
+# Keep enough recent hulls for a fleet without retaining every asset or pose used in a run.
+const SHIELD_SKIN_CACHE_LIMIT := 48
+static var _shield_skin_arrays: Dictionary = {}
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
@@ -73,6 +80,7 @@ var _orig: Array = []      # the hull's original surfaces, gathered at the first
 var _dmg_task = -1
 var _dmg_dirty = false
 var _dmg_job: Dictionary = {}
+var _damage_surfaces := {}  # mutable breach coordinates are private to each surface
 var _hole_nodes: Array = []
 var _hole_lights: Array = []
 var _marks: Array = []     # weapon marks on the hull (fx_breach.Ent), oldest first, at most BREACH.MARK_CAP
@@ -115,6 +123,7 @@ func _attach(n: Node3D) -> void:
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	id = sid
 	root = r
+	_arr_cache = fx.hull_arrays
 	faction = String(info.get("faction", "voidsworn")).to_lower()
 	fac = fx.faction_info(faction)
 	squadron = bool(info.get("squadron", false)) or String(info.get("cls", "")) == "Squadron"
@@ -295,7 +304,8 @@ func _build_trails(fx) -> void:
 		mi.extra_cull_margin = 16384.0
 		fx.add_child(mi)
 		mi.global_transform = Transform3D.IDENTITY
-		_trails.append({"mi": mi, "hist": [], "seed": fx.rng.randf(), "r": nz["r"], "p": nz["p"], "d": nz.get("d", Vector3(-1, 0, 0))})
+		_trails.append({"mi": mi, "hist": [], "seed": fx.rng.randf(), "r": nz["r"], "p": nz["p"],
+			"d": nz.get("d", Vector3(-1, 0, 0)), "style": -1})
 
 
 func update(fx, dt: float) -> void:
@@ -306,9 +316,8 @@ func update(fx, dt: float) -> void:
 	_update_damage_emitters(fx)
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
-	var hm := hull_motion()
 	if _shield_mi != null and _shield_mi.visible:
-		_shield_mi.transform = hm * Transform3D(Basis.from_scale(hull.shield_radii()), hull.shield_centre())
+		_shield_mi.transform = hull_motion() * _shield_pose
 	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
@@ -338,55 +347,67 @@ func update(fx, dt: float) -> void:
 		_shield_mi.visible = fx.now < _shield_until
 
 
-func _update_trails(fx, moved: bool) -> void:
+func _update_trails(fx, _moved: bool) -> void:
+	if _trails.is_empty():
+		return
 	var xfm = xf()
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
+	var plume = clampf(1.5 * hull.W, 2.0, 32.0)
+	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or _eng_sputter) else int(fac["trail"])
 	for t in _trails:
 		var hist: Array = t["hist"]
-		var plume = clampf(1.5 * hull.W, 2.0, 32.0)
+		var changed := false
 		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
 		# Each sample belongs to world space for its entire life. Turning, stopping
 		# or throttling down never drags old exhaust along with the nozzle.
 		if not dead and lvl > 0.12:
 			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (fx.now - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
 				hist.push_front([start, fx.now, lvl])
+				changed = true
 		while not hist.is_empty() and (hist.size() > TRAIL_PTS or fx.now - float(hist.back()[1]) >= TRAIL_LIFE):
 			hist.pop_back()
-		_trail_mesh(fx, t, eng)
+			changed = true
+		var mi: MeshInstance3D = t["mi"]
+		mi.visible = hist.size() >= 2
+		if not mi.visible:
+			continue
+		var mat := mi.material_override as ShaderMaterial
+		if changed:
+			t["mesh_time"] = fx.now
+			_trail_mesh(fx, t, eng)
+		mat.set_shader_parameter("trail_elapsed", (fx.now - float(t["mesh_time"])) / TRAIL_LIFE)
+		if int(t["style"]) != style:
+			t["style"] = style
+			mat.set_shader_parameter("trail_style", float(style))
 
 
 func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 	var hist: Array = t["hist"]
 	var mi: MeshInstance3D = t["mi"]
-	mi.visible = hist.size() >= 2
-	if not mi.visible:
-		return
-	var pts := PackedVector3Array()
-	for h in hist:
-		pts.append(h[0])
-	var n = pts.size()
+	var n := hist.size()
 	var verts = PackedVector3Array()
 	var nrm = PackedVector3Array()
 	var uv = PackedVector2Array()
 	var c0 = PackedFloat32Array()
 	var c1 = PackedFloat32Array()
-	var idx = PackedInt32Array()
 	var r: float = t["r"]
-	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or _eng_sputter) else int(fac["trail"])
 	var w0 = r * 1.1
 	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
 	for i in n:
-		var d = (pts[mini(i + 1, n - 1)] - pts[maxi(i - 1, 0)]).normalized()
+		var d = (hist[mini(i + 1, n - 1)][0] - hist[maxi(i - 1, 0)][0]).normalized()
 		for sd in [-0.5, 0.5]:
-			verts.append(pts[i])
+			verts.append(hist[i][0])
 			nrm.append(d)
 			uv.append(Vector2(clampf((fx.now - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
 			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
-			c1.append_array([w0, w1, float(t["seed"]), float(style)])
-	for i in n - 1:
-		var q = i * 2
-		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+			c1.append_array([w0, w1, float(t["seed"]), 0.0])
+	if not _trail_indices.has(n):
+		var idx := PackedInt32Array()
+		for i in n - 1:
+			var q := i * 2
+			idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+		_trail_indices[n] = idx
 	var arr = []
 	arr.resize(Mesh.ARRAY_MAX)
 	arr[Mesh.ARRAY_VERTEX] = verts
@@ -394,12 +415,12 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 	arr[Mesh.ARRAY_TEX_UV] = uv
 	arr[Mesh.ARRAY_CUSTOM0] = c0
 	arr[Mesh.ARRAY_CUSTOM1] = c1
-	arr[Mesh.ARRAY_INDEX] = idx
+	arr[Mesh.ARRAY_INDEX] = _trail_indices[n]
 	var fl = (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) | (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT)
-	var am: ArrayMesh = (t["mi"] as MeshInstance3D).mesh
+	var am: ArrayMesh = mi.mesh
 	if am == null:
 		am = ArrayMesh.new()
-		(t["mi"] as MeshInstance3D).mesh = am
+		mi.mesh = am
 	am.clear_surfaces()
 	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, fl)
 	am.custom_aabb = POOLS.BIG
@@ -413,7 +434,16 @@ func _build_shield(fx) -> void:
 	sph.height = 2.0
 	sph.radial_segments = 64
 	sph.rings = 32
+	# Ryan, Nov 18 (issue 1045): the fitted skin replaces the R297 egg default.
+	# Select the egg with rendering/effects/shield_shape="egg" or VS_SHIELD_SHAPE=egg.
+	var shape := OS.get_environment("VS_SHIELD_SHAPE")
+	if shape.is_empty():
+		shape = str(ProjectSettings.get_setting("rendering/effects/shield_shape", "fitted"))
+	var skin: Mesh = _shield_skin() if shape == "fitted" else sph
+	if skin == null:
+		skin = sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
+	_shield_mat.set_shader_parameter("fitted_shape", _shield_tm != null)
 	var sc: Color = fac["shield"]
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
@@ -435,13 +465,216 @@ func _build_shield(fx) -> void:
 	_shield_mat.set_shader_parameter("hitw", hw)
 	_shield_mi = MeshInstance3D.new()
 	_shield_mi.name = "fx_shield"
-	_shield_mi.mesh = sph
+	_shield_mi.mesh = skin
 	_shield_mi.material_override = _shield_mat
 	_shield_mi.position = hull.shield_centre()
-	_shield_mi.scale = hull.shield_radii()
+	_shield_mi.scale = Vector3.ONE if _shield_tm != null else hull.shield_radii()
+	_shield_pose = _shield_mi.transform
 	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_shield_mi.visible = false
 	root.add_child(_shield_mi)
+
+
+func _shield_skin() -> ArrayMesh:
+	var frames := {}
+	var box := AABB()
+	var view := root as SHIP_VIEW
+	var visual: Node3D = view.hull if view != null else null
+	var bob := visual.position - view.hull_base if visual != null else Vector3.ZERO
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			continue
+		# Compose local transforms to avoid roundoff from world position and facing.
+		var frame := Transform3D.IDENTITY
+		var part: Node3D = mi
+		while part != root and part != null and not part.top_level:
+			var local := part.transform
+			if part == visual:
+				local.origin = view.hull_base
+			frame = local * frame
+			part = part.get_parent_node_3d()
+		if part != root:
+			frame = root.global_transform.affine_inverse() * mi.global_transform
+		var bounds: AABB = frame * mi.mesh.get_aabb()
+		box = bounds if frames.is_empty() else box.merge(bounds)
+		frames[mi] = frame
+	var faces := HULL.faces_of(root, meshes, null, frames)
+	if faces.is_empty():
+		return null
+	var digest := HashingContext.new()
+	digest.start(HashingContext.HASH_SHA256)
+	digest.update(var_to_bytes(box))
+	digest.update(faces.to_byte_array())
+	var key := digest.finish().hex_encode()
+	if not _shield_skin_arrays.has(key):
+		var arrays := _bake_shield_skin(box, faces)
+		if arrays.is_empty():
+			return null
+		if _shield_skin_arrays.size() >= SHIELD_SKIN_CACHE_LIMIT:
+			_shield_skin_arrays.erase(_shield_skin_arrays.keys()[0])
+		_shield_skin_arrays[key] = arrays
+	# The cache is in the unbobbed frame. Hits and the shader use coordinates
+	# relative to the active core, just as they do for the egg.
+	var posed: Array = _shield_skin_arrays[key].duplicate()
+	posed[Mesh.ARRAY_VERTEX] = Transform3D(Basis.IDENTITY, bob - hull.shield_centre()) * (posed[Mesh.ARRAY_VERTEX] as PackedVector3Array)
+	var skin := ArrayMesh.new()
+	skin.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, posed)
+	_shield_tm = TriangleMesh.new()
+	_shield_tm.create_from_faces(skin.get_faces())
+	return skin
+
+
+func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
+	# R303: offset sampled hull surfaces, rather than stretching a sphere from the
+	# core. Uniform cells along the whole hull preserve waists and open ring holes.
+	# Only the outside of the offset volume is meshed, never interior armour skins.
+	var surface := TriangleMesh.new()
+	if not surface.create_from_faces(faces):
+		return []
+	var length := maxf(box.size.x, 0.1)
+	var cross_span := maxf(minf(box.size.y, box.size.z), 0.05)
+	var step := maxf(length / 128.0, minf(length / 96.0, cross_span / 12.0))
+	var gap := maxf(cross_span * 0.08, step * 1.5)
+	var margin := gap + step * 3.0
+	var origin := box.position - Vector3.ONE * margin
+	var size := Vector3i((box.size + Vector3.ONE * margin * 2.0) / step) + Vector3i.ONE * 2
+	var stride := Vector3i(1, size.x, size.x * size.y)
+	var field := PackedFloat32Array()
+	field.resize(size.x * size.y * size.z)
+	field.fill(pow(gap / step + 2.0, 2.0))
+	var sampled := PackedByteArray()
+	sampled.resize(field.size())
+	# Each sweep visits every intersection, including the inside edge of a ring.
+	# The three axes also sample faces edge-on to either of the other two sweeps.
+	for axis in 3:
+		var u := (axis + 1) % 3
+		var v := (axis + 2) % 3
+		var direction := Vector3.ZERO
+		direction[axis] = 1.0
+		for a in size[u]:
+			for b in size[v]:
+				var start := origin
+				start[u] += a * step
+				start[v] += b * step
+				for crossing in 128:
+					var hit := surface.intersect_ray(start, direction)
+					if hit.is_empty(): break
+					var at: Vector3 = hit["position"]
+					var p := (at - origin) / step
+					var cell := Vector3i(p).clamp(Vector3i.ZERO, size - Vector3i.ONE)
+					var sample_i := cell.x + cell.y * stride.y + cell.z * stride.z
+					if sampled[sample_i] == 0:
+						sampled[sample_i] = 1
+						_shield_sample(field, size, stride, p, gap / step + 1.5)
+					start = at + direction * step * 0.04
+	# Signed distance to the sampled surface. Flood from empty space, filling only
+	# sealed cavities. A ring's through-hole remains connected to outside space.
+	var threshold := (gap / step) * (gap / step)
+	for i in field.size():
+		var value := field[i] - threshold
+		# Keep crossings away from exact grid corners, where float rounding can
+		# collapse distinct edge vertices into zero-area triangles.
+		field[i] = value if absf(value) > 0.001 else (0.001 if value >= 0.0 else -0.001)
+	var outside := PackedByteArray()
+	outside.resize(field.size())
+	var queue := PackedInt32Array([0])
+	outside[0] = 1
+	var head := 0
+	while head < queue.size():
+		var i := queue[head]
+		head += 1
+		var cell := Vector3i(i % size.x, (i / size.x) % size.y, i / stride.z)
+		for axis in 3:
+			for sign_i in [-1, 1]:
+				if cell[axis] + sign_i < 0 or cell[axis] + sign_i >= size[axis]: continue
+				var j: int = i + stride[axis] * sign_i
+				if outside[j] == 0 and field[j] > 0.0:
+					outside[j] = 1
+					queue.append(j)
+	for i in field.size():
+		if outside[i] == 0 and field[i] > 0.0: field[i] = -threshold
+	# Marching tetrahedra share every edge vertex, including cell diagonals. This
+	# removes the ambiguous saddle faces that can leave seams at thin hull details.
+	var corners := [Vector3i(0,0,0), Vector3i(1,0,0), Vector3i(0,1,0), Vector3i(1,1,0), Vector3i(0,0,1), Vector3i(1,0,1), Vector3i(0,1,1), Vector3i(1,1,1)]
+	var tetrahedra := [[0,1,3,7],[0,3,2,7],[0,2,6,7],[0,6,4,7],[0,4,5,7],[0,5,1,7]]
+	var vertices := PackedVector3Array()
+	var indices := PackedInt32Array()
+	var shared := {}
+	for z in range(size.z - 1):
+		for y in range(size.y - 1):
+			for x in range(size.x - 1):
+				var base := x + y * stride.y + z * stride.z
+				var nodes := PackedInt32Array()
+				var mask := 0
+				for k in 8:
+					var c: Vector3i = corners[k]
+					var node := base + c.x + c.y * stride.y + c.z * stride.z
+					nodes.append(node)
+					if field[node] <= 0.0: mask |= 1 << k
+				if mask == 0 or mask == 255: continue
+				for tet in tetrahedra:
+					var inside := []
+					var air := []
+					var outward := Vector3.ZERO
+					for k in tet:
+						if field[nodes[k]] <= 0.0: inside.append(k)
+						else: air.append(k)
+					if inside.is_empty() or air.is_empty(): continue
+					for k in air: outward += Vector3(corners[k]) / air.size()
+					for k in inside: outward -= Vector3(corners[k]) / inside.size()
+					var quad := PackedInt32Array()
+					if inside.size() == 2:
+						for pair in [[inside[0],air[0]],[inside[0],air[1]],[inside[1],air[1]],[inside[1],air[0]]]:
+							quad.append(_shield_vertex(nodes[pair[0]], nodes[pair[1]], field, size, stride, origin, step, shared, vertices))
+					else:
+						var one: int = inside[0] if inside.size() == 1 else air[0]
+						for other in (air if inside.size() == 1 else inside):
+							quad.append(_shield_vertex(nodes[one], nodes[other], field, size, stride, origin, step, shared, vertices))
+					_shield_face(quad[0], quad[1], quad[2], outward, vertices, indices)
+					if quad.size() == 4: _shield_face(quad[0], quad[2], quad[3], outward, vertices, indices)
+	if indices.is_empty():
+		return []
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var raw := ArrayMesh.new()
+	raw.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	var st := SurfaceTool.new()
+	st.create_from(raw, 0)
+	st.generate_normals()
+	return st.commit().surface_get_arrays(0)
+
+
+func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, stride: Vector3i, origin: Vector3, step: float, shared: Dictionary, vertices: PackedVector3Array) -> int:
+	var key := mini(a,b) * field.size() + maxi(a,b)
+	if shared.has(key): return shared[key]
+	var pa := Vector3(a % size.x, (a / size.x) % size.y, a / stride.z)
+	var pb := Vector3(b % size.x, (b / size.x) % size.y, b / stride.z)
+	var t := clampf(field[a] / (field[a] - field[b]), 0.0, 1.0)
+	var index := vertices.size()
+	shared[key] = index
+	vertices.append(origin + pa.lerp(pb,t) * step)
+	return index
+
+
+func _shield_face(a: int, b: int, c: int, outward: Vector3, vertices: PackedVector3Array, indices: PackedInt32Array) -> void:
+	# Godot front faces wind clockwise.
+	if (vertices[c] - vertices[a]).cross(vertices[b] - vertices[a]).dot(outward) < 0.0:
+		indices.append_array(PackedInt32Array([a,c,b]))
+	else:
+		indices.append_array(PackedInt32Array([a,b,c]))
+
+
+func _shield_sample(field: PackedFloat32Array, size: Vector3i, stride: Vector3i, p: Vector3, reach: float) -> void:
+	var lo := Vector3i(p - Vector3.ONE * reach).max(Vector3i.ZERO)
+	var hi := (Vector3i(p + Vector3.ONE * reach) + Vector3i.ONE).min(size - Vector3i.ONE)
+	for z in range(lo.z, hi.z + 1):
+		for y in range(lo.y, hi.y + 1):
+			for x in range(lo.x, hi.x + 1):
+				var i := x + y * stride.y + z * stride.z
+				field[i] = minf(field[i], Vector3(x,y,z).distance_squared_to(p))
 
 
 # Where a shot from `from_world` meets the bubble (world point and outward normal).
@@ -451,6 +684,36 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 	var o = (inv * from_world) - hull.shield_centre()
 	var tgt = (aim_local - hull.shield_centre()) if aim_local != Vector3.INF else Vector3.ZERO
 	var d = (tgt - o).normalized()
+	if _shield_tm != null:
+		var hit := _shield_tm.intersect_ray(o, d)
+		if hit.is_empty():
+			# A ray at the centre can pass through a ring hole. Aim at real hull
+			# instead; never return an invisible egg contact for a fitted skin.
+			var nearest := Vector3.ZERO
+			var best := INF
+			for p in hull.sp:
+				var q: Vector3 = p - hull.shield_centre()
+				if q.distance_squared_to(o) < best:
+					best = q.distance_squared_to(o)
+					nearest = q
+			d = (nearest - o).normalized()
+			hit = _shield_tm.intersect_ray(o, d)
+		if hit.is_empty():
+			# Degenerate aim or an origin inside the skin: a mesh corner is still
+			# on the visible surface. Keep its actual face normal.
+			var faces := _shield_tm.get_faces()
+			var best := INF
+			for i in range(0, faces.size(), 3):
+				for corner in 3:
+					var p := faces[i + corner]
+					if p.distance_squared_to(o) < best:
+						best = p.distance_squared_to(o)
+						hit = {"position": p, "normal": (faces[i+2] - faces[i]).cross(faces[i+1] - faces[i]).normalized()}
+		if not hit.is_empty():
+			var hp: Vector3 = hit["position"]
+			var hn: Vector3 = hit["normal"]
+			if hn.dot(d) > 0.0: hn = -hn
+			return {"p": xf() * (hp + hull.shield_centre()), "n": (xf().basis * hn).normalized(), "local": hp}
 	# ray against the unit sphere in scaled space
 	var os = o / rad
 	var ds = (d / rad)
@@ -488,13 +751,15 @@ func shield_break(fx, quad: int) -> void:
 	_shield_mat.set_shader_parameter("brk_dir", qd)
 	_shield_until = maxf(_shield_until, T + 1.45)
 	var rad = hull.shield_radii()
-	var lp = qd * rad
-	var wp = to_world(lp + hull.shield_centre())
-	var wn = dir_world(qd)
+	var contact := shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))
+	var lp: Vector3 = contact["local"]
+	var wp: Vector3 = contact["p"]
+	var wn: Vector3 = contact["n"]
+	shield_hit(fx, lp, T, 1.0, rad.length() * 0.8 / fx.unit, 0.9)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
 	var k = scale_k()
-	fx.pop(wp, T, sc.lerp(Color.WHITE, 0.4), 9.0 * k, 8.0, wn, 0.2)
+	_shield_flash(fx, wp, T, sc.lerp(Color.WHITE, 0.4), 9.0 * k, 8.0, 0.2)
 	fx.light(wp + wn * 2.0, T, 0.6, 7.0, sc, 0)
 	fx.shake(T, 0.18, wp)
 	match st:
@@ -506,31 +771,33 @@ func shield_break(fx, quad: int) -> void:
 					0.08, 0.14, 1, tang * (8 + fx.rng.randf() * 16) * k, 1.8)
 			for i in 24:
 				fx.spr(wp + fx.rdir() * 4.0 * k, T + fx.rng.randf() * 0.5, 0.9 + fx.rng.randf() * 0.6, sc, 2.0, 0.25 * k, 0.1 * k, 19, fx.rcone(wn, 1.0) * 3.0 * k, 0.5)
-			fx.ring(wp, wn, T, 0.9, sc, 1.0, 2.0 * k, 16.0 * k, 1)
 		1:
 			# Hegemony: the hex lattice shatters into cells that fly apart
-			fx.ring(wp, wn, T, 0.8, sc.lerp(Color.WHITE, 0.3), 1.4, 2.0 * k, 18.0 * k, 3)
 			for i in 36:
 				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.15, 0.6 + fx.rng.randf() * 0.5, sc, 3.0, 0.5 * k, 0.3 * k, 16,
 					fx.rcone(wn, 0.9) * (6 + fx.rng.randf() * 10) * k, 0.8)
-			fx.ring(wp, wn, T + 0.03, 0.7, sc, 0.8, 1.0 * k, 12.0 * k, 3)
 		2:
-			# Corsair: it sputters, flickers and dies in patches, with sparks and a dirty puff
+			# Corsair: it sputters, flickers and dies in patches, with sparks only (R297).
 			for j in 5:
 				var tj = T + j * 0.12 + fx.rng.randf() * 0.05
 				var pj = wp + fx.rdir() * 4.0 * k
-				fx.pop(pj, tj, sc.lerp(Color(1, 0.6, 0.3), 0.4), 3.0 * k, 4.0, wn, 0.1)
+				_shield_flash(fx, pj, tj, sc.lerp(Color(1, 0.6, 0.3), 0.4), 3.0 * k, 4.0, 0.1)
 				for i in 8:
 					fx.stk(pj, tj, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rcone(wn, 1.0) * (8 + fx.rng.randf() * 12) * k, 2.0)
-			for i in 4:
-				fx.spr(wp + fx.rdir() * 3.0 * k, T + 0.1 + i * 0.1, 2.0, Color(0.1, 0.08, 0.07), 0.5, 2.0 * k, 7.0 * k, 3, fx.rcone(wn, 0.6) * 2.0, 0.6)
 		_:
 			# Ithar: the mint veil folds and sheets away in prismatic glints
 			for i in 30:
 				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.5, 1.2 + fx.rng.randf() * 0.8, sc, 2.2, 0.7 * k, 0.2 * k, 16,
 					fx.rcone(wn, 1.2) * (2 + fx.rng.randf() * 4) * k, 0.4, 1.5)
-			fx.ring(wp, wn, T, 1.0, sc, 1.0, 2.0 * k, 20.0 * k, 3)
 			fx.spr(wp, T, 1.0, sc, 1.6, 6.0 * k, 14.0 * k, 18)
+
+
+# Match pop's comfort booking and soft fallback, without its free-standing disc.
+func _shield_flash(fx, p: Vector3, T: float, col: Color, size: float, intensity: float, life: float) -> void:
+	if fx.flash_at(p, T, size, SH.flash_sprite_floor(0, 0.0), life):
+		fx._emit_spr(p, T, life, col, intensity, size * 0.6, size, 0)
+	else:
+		fx.spr(p, T, maxf(life * 3.0, 0.4), col, minf(intensity, 3.0) * 0.4, size * 0.5, size * 1.2, 18)
 
 
 func _regen(fx) -> void:
@@ -1077,16 +1344,26 @@ func _repair_marks(fx, i: int) -> void:
 		_dmg_request(fx)
 
 
-# A hull surface's arrays, read back once per ship and shared by the damage rebuild and the death cut (reading an 8K
-# hull's arrays back costs a long frame, so it happens once, and after damage the cut uses the rebuilt arrays).
+# A hull resource is read back once per battle. Both the damage rebuild and the
+# death cut use these arrays until the ship has a rebuilt surface of its own.
 var _arr_cache := {}
 
 
 func arrays_of(am: ArrayMesh, si: int) -> Array:
-	var key := "%d:%d" % [am.get_instance_id(), si]
+	var key := [am.get_instance_id(), si]
 	if not _arr_cache.has(key):
 		_arr_cache[key] = am.surface_get_arrays(si)
 	return _arr_cache[key]
+
+
+func damage_surface(fx, mi: MeshInstance3D, si: int, src: Material) -> ShaderMaterial:
+	var template: ShaderMaterial = fx.hull_damage_template(src, hull.L, faction == "chorus")
+	var key := [mi.get_instance_id(), si]
+	var entry: Array = _damage_surfaces.get(key, [])
+	if entry.is_empty() or entry[0] != template:
+		entry = [template, template.duplicate()]
+		_damage_surfaces[key] = entry
+	return entry[1]
 
 
 # The arrays the hull is drawn with now, per mesh instance and surface (rebuilt by damage, or the original).

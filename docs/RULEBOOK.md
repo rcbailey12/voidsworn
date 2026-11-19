@@ -20,7 +20,10 @@ Ryan, Nov 11 (R189, R190). A rule nobody can give a reason for does not go in th
 
 0.2 **A ruling is landed only when the same pull request edits this book or the working document for its area** (the
 playbook, RECIPE.md, AGENTS.md). Why: rulings filed in FINDINGS never reached the documents builders read (R209, R211). Set:
-Ryan, Nov 11 (R214). FINDINGS stays as the dated history; this book is the live source.
+Ryan, Nov 11 (R214). FINDINGS stays as the dated history; this book is the live source. Each FINDINGS row from R281 on
+says where it landed ("landed in <repo path>") or says "one-off job decision"; the memory lint
+(contrib/opus/tools/memory_lint_tests.js) fails a row that says neither, so a ruling cannot sit in FINDINGS alone (R291,
+issue 890).
 
 0.3 **Which document wins.** This book; then the playbook for the area; then AGENTS.md; then briefs. HANDOFF.md and LOOP.md
 win for current status only. Between two of Ryan's rulings the later one wins, and the entry here is edited, never only a new
@@ -49,7 +52,7 @@ specs described braking jets and slow motion the game did not have (issue 492). 
 
 0.8 **After a day with many rulings, the Board has an outside model check that each one landed in the document a worker reads
 (a dropped-context sweep).** Batch rulings that only set a rule (no working method) may land in this book alone. Why: the
-insides rule was recorded but never reached the builder's playbook (R209, R211); Muse's method audit of R201 to R218 found
+insides rule was recorded but never reached the builder's playbook (R209, R211); Muse's method audit found
 the screens half of R218 written nowhere (issue 558). Set: Board, Nov 12 (R211, issue 558).
 
 0.9 **How a route is set up (any multi-step pipeline: ships, effects, captures, installs).** (a) A method change is done
@@ -68,8 +71,8 @@ the level of design and setup, not patches (R225).
 0.10 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
 that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
 wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
-marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
-lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, what is open and who has it on GitHub itself
+(checked live before any dispatch; contrib/opus/OPEN_WORK.md is only a timestamped nightly index of it, issue 890), what runs on the PC in LOOP.md's newest LATEST lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
 LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
 every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
@@ -120,11 +123,40 @@ both rule twins, every UI path, which tests really ran), then the pictures. Merg
 job has finished. Why: a merged change left existing profiles with Heat closed (R129); PR 542 merged before its parity jobs
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
+Pictures carry their revision and stage. Every picture shown to Ryan is labelled with the revision that produced it and its
+stage (sheet built, paint proof, installed in game, Ryan accepted); a stale picture is never shown as current, and if the
+picture is stale the review stops there rather than judging it. A visual pull request merges only after its picture has been
+compared with the concept and the ruling it answers, in a view that actually shows the feature being judged, and the Board
+says plainly in the pull request where it misses. What a ruling can measure is measured on the painted output and reported
+(the plate-character measure, issue 875); passing the countable checks is not visual acceptance. Why: the painted ships
+passed fit, weapon match, triangles and density while missing their rulings, and a pre-fix picture was shown as the fix
+(R289). Set: Board, Nov 16 2026 (issue 880).
+
 2.4 **The job board is GitHub issues with owner labels, each opening with the fixed block** (Owner, Brief, Deliver to, Branch,
-Effort or Models, Done when; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
+Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
 `codex/`, `muse/`, `work/` or `opus/issue-N` branches; nobody pushes to main except LOOP.md and FINDINGS. Why: any agent can
 pick up a job without asking, and main stays reviewed. Set: Ryan, Nov 2 and 4 (R75, R102). Ids: agents-04, agents-05,
-agents-09.
+agents-09. A run brief for a PC job goes into the issue body (under the fixed block, marked as the job now): the runner
+builds the task from the body only and never reads comments (R281).
+When the Board needs Ryan's answer on a job, it adds the `ryan` label and one issue-body line `Ask Ryan: <one question> | Picture: <link>`, then removes both when he answers; Mission Control reads only this marker so it cannot mistake a dispatch lock for a question (Ryan, Nov 17, issue 951).
+The PC runner merges `origin/<branch>` from the optional Base line and commits that merge before starting the agent;
+a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
+also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on
+retries and at the end), naming seat, machine, lane folder, branch, start time, ceiling, last commit and how to resume.
+Before checkout or model calls, every PC runner refuses closed or running jobs and a delivery branch or open PR for the job from another seat prefix (same-prefix reruns are allowed); a body with exactly one fixed block and no run history needs no marker and is passed whole, otherwise exactly one line outside code fences containing `THIS IS THE JOB NOW` in heading, bold or plain form selects the fixed block plus that run; Effort (Codex) is required only for Codex, and the label and status comment must be set and read back before work, while later reporting failures are logged without changing the result (R291, issue 888). It clears its own running claim at the end. Why: merge-left partials
+on 800, 815 and 44, and jobs with no visible running seat. Set: Ryan R270, issue 846 (788 step 3).
+
+One current instruction. A job's current run brief sits at the top of its issue body, under the fixed block, marked as the
+job now; older runs are marked done in the body. A brief in a comment is not an instruction: the PC runner builds the task
+from the body only, so a comment brief silently reruns the old job. Why: 373 run 3 was briefed in a comment and came back
+as a rerun of run 2. Set: Board (R281).
+
+An open issue is not proof the work is undone. Issues here stay open after their pull requests merge (2.5), so before
+queueing or relabelling an issue, search for a merged pull request that names it; on every merge, close the issue in the
+same step when its scope is done, and where a merge is partial, say what scope remains. Artoo's dispatch sweep (2.7)
+lists open issues with merged pull requests before each queueing round; the sweep is the audit, not the mechanism. Why:
+780, 781, 783 and 824 were queued again after pull requests 796, 787, 825 and 832 had merged (Ryan: "Why did you miss all
+those old jobs were already merged? That's a big miss."). Set: Board (R288).
 
 2.5 **Never write a GitHub closing word before an issue number in a commit; use `gh api` REST, never GraphQL.** Why: commit
 1429ca3 closed PR 320 by accident; GraphQL is blocked here (ends when it is unblocked). Set: Board. Ids: loop-15, loop-20.
@@ -149,12 +181,12 @@ credit is live, is status and lives in LOOP.md "The seats"):
 - Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
 - Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
   continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
-- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to three local
-  lanes (R268). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
+- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to four local
+  lanes (R268; the fourth, lane D, is code only: R301, Nov 16). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
   ended by R264 the same day).
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
-- The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
+- The Board thread may use the Fable advisor (R252: "this chat stands"; none is visible in the Project Board thread on Nov 16, so no document claims it is on); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
   (R250).
 Superseded, kept so nobody follows them: "Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI
 arm; it stays (R250 item 4)" (SUPERSEDED by R257); "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
@@ -167,10 +199,22 @@ because a cloud task runs the default model OpenAI picks and cannot be pinned (O
 jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
 If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
-use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
-Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
-read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
-pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
+use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R268). Ids: R75b, R268, agents-07.
+Exception (R270, R295): Artoo, Ryan's ChatGPT dot, is an independent technical reviewer. It runs in OpenAI's cloud and
+comments by itself, with no approval from Ryan per post, on pull requests and issues (one PR's findings on that PR; general
+sweeps on the standing issue 906). Its scope is merge issues, bugs and other technical problems, never design or taste. Every
+comment starts with "Artoo (technical review):", because it posts through Ryan's account and must never be read as his words,
+and names the commit it read. It never pushes, edits files, merges, closes, relabels or decides a rule; every finding is checked
+by the Board against live main before anything changes (0.10), and the Board replies with what it did. Before each merge the
+Board reads the PR's Artoo comments on its current head commit and settles each one first. A finding that does not block
+the merge, or arrives after it (Artoo's or Muse's), is settled the same day: the Board fixes it in that turn or adds one line
+for it on issue 906 (fixed, queued as issue N, or declined and why). Why: the Nov 17 audit found five such findings (PRs 910,
+919, 924, 937, 571) with no reply and no tracking item, one of them six hours old, while blocking findings were answered in
+minutes (Ryan approved the audit fixes, Nov 17). Artoo went live Nov 16 (it wakes on
+PR events and checks issues about hourly). Why: "i want artoo
+commenting independently by itself for those comments and reviews. it shouldn't impact design or taste designs but looking for
+merge issues, bugs or other technical issues, absolutely should be independent" (Ryan, Nov 16, R295; replaces R270's read-only
+librarian clause).
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -184,6 +228,12 @@ had read and the Board's later edit was lost (R200). Set: Board, Nov 11.
 2.10 **Every outside finding is checked against the repo before anything is built on it; name the root cause, and check the
 arithmetic yourself.** Why: the Board told Ryan the flash counter was "13 times" too strict; by viewing angle it was 5 to 7
 (R193). Set: Ryan (R45, Oct 26); Board (R193). Ids: R45a, X22.
+Fix the cause for every future thread, not the one case: an audit or a fix names the system cause and changes the tool,
+workflow or document that let it happen (a tool or workflow before a new rule); one-off patches are listed and removed once
+a global fix covers them. Why: "I don't want to overly respond to one time issues with patch, I want to address the core
+underlying issue so it doesn't happen for future threads or work streams. Global fixes" (Ryan, Nov 16). Example: stale
+status lines in HANDOFF and LOOP were hand-fixed again and again until contrib/opus/OPEN_WORK.md was regenerated nightly
+from GitHub (issue 890). Set: Ryan (R291).
 
 2.11 **Outside audits follow docs/REVIEW_PROTOCOL.md**: a fresh session, symptoms not theories, file, line and a short exact
 quote per finding, OBSERVED or INFERRED. Findings come ranked, most important first; the job may set the count (reworded from
@@ -216,19 +266,36 @@ noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a, agents-02.
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
 
-3.3 **Never delete anything on Ryan's PC; keep every job's PC folder lean, and the Board lists the PC folder sizes at each
-disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mostly old run copies), the queue
-watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
-(project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+3.3 **Nothing on Ryan's PC is deleted except a job's own leftovers.** A job may remove the temp copies and scratch folders it created, and old kept workspace copies that Git shows hold only rebuildable files, once its work is pushed. Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
+Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mostly old run copies), the queue
+watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
+Set: Ryan, Nov 18 (R326); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
-3.4 **Up to two GPU jobs at once across the main lane and lane B; frame-time measurements run solo. Lane C stays code only.**
-The launchers take and release claims themselves: two shared slots, or a solo claim that waits for both slots to empty and
-blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU work starts
-unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is unchanged. Why: Ryan
-asked "can we run multiple jobs to speed things up?" and approved the Board's two-job, solo-measurement pick:
-"merge and make those changes to gpu jobs"
-(R276). The RTX 5080 has 16 GB: two jobs fit, three heavy jobs risk running out of graphics memory. Solo measurements keep
-speed numbers honest. Replaces the one-job limit (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 15 (R276).
+Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
+(including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
+`__pycache__` and `.pyc` caches, and ignored files under `godot/assets/ships/` whose size and SHA-256 match the same path
+in the shared build (issue 1107). It fetches and switches to the new branch with those files in place. A collision or an
+uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
+copy and its size; older copies are removed only as the next paragraph allows. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
+unique ignored work (issue 860, run 2, Board Nov 16).
+A checkout that changes while the runner starts is never reset; the job stops instead.
+
+Parity removes its own default temp folder when it finishes, pass or fail. After a checked push the runner removes
+the scratch folder it recorded for that run. It keeps the newest `repo-kept-*` copy in the board folder and removes
+older ones only when the same rebuildable-file and Git history checks pass. It logs each decision. A pause removes nothing (3.11).
+
+3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
+solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
+side, heavy bakes and Blender renders take more of it, and nothing is started that would run the card out of its 16 GB of
+graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
+Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
+bakes 2, with PC_GPU_WEIGHT for the job's chosen weight), or a solo claim that waits for every slot
+to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
+work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
+unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
+graphicsa card can actually handle as a 5080. we don't want to overwhelm it but we don't want to artificially restrict small
+jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
+(R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
 arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
@@ -264,8 +331,16 @@ R216).
 (now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
 processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
 each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
-nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
-anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
+nothing is deleted. The pause waits for each lane's runner (main, B, C, D and DeepSeek work217) to leave running, then checks
+its status.json, run_commit.txt and confirmed_commit.txt against GitHub with git ls-remote. pc_pause.txt reports each job as
+done (finished and its delivery branch holds its confirmed commit), checkpoint verified (its -partial branch holds the
+runner's confirmed commit), or unresolved (anything else, including checks still running, a failed verification or a timeout).
+Leftover running records are listed with their last activity, not counted in the wait or unresolved jobs, and never changed.
+Only the final "safe to restart" line in pc_pause.txt means a restart is safe; any unresolved job instead gives
+"NOT safe to restart: <jobs>". On Ryan's go the Board restarts every paused job from its verified -partial branch and recovers
+unresolved work before restarting the PC. Why: "I don't want to cause anything to get lost or deleted with the pauses as well,
+so let's bake that in" (R272); quiet agent processes did not prove a runner in final checks had pushed (R309, issue 944).
+Set: Ryan, Nov 15; audit fixes approved Nov 17 (R309).
 
 ## 4. Ships and concepts
 
@@ -565,9 +640,10 @@ Set: Ryan. Ids: R177, screens-06, briefing-05, rail-05.
 fleet size.** One floor, 17 (the old 12 px floor is retired). Why: Ryan asked for a readability pass (R176); text overlapped
 the flagship name (R177). Set: Ryan (R176); one floor Board. Ids: rail-06, uispec-02, R136b.
 
-9.5 **Battle screen: E1 Ledger. Glacier #92b8e8 is for shield readouts only, on every screen; the shields drawn in space keep
-faction colours.** Set: Ryan, Nov 11 (R210: "E1 Ledger", "Glacier pale blue", "Yes, that's right"). Replaces R3's "interface
-shield bars stay cyan". Ids: R3b, plan-02.
+9.5 **Battle screen: KEEL, the bottom shelf and two corner blocks.** Ryan picked KEEL v5 on Nov 17 (issue 1021) to open up
+the board, replacing the E1 Ledger rail. **Glacier #92b8e8 is for shield readouts only, on every screen; the shields drawn in
+space keep faction colours.** Set: Ryan, Nov 11 (R210: "Glacier pale blue", "Yes, that's right"). Replaces R3's "interface
+shield bars stay cyan". Ids: R3b, plan-02. See docs/playbooks/screens.md for the layout.
 
 9.6 **In battle, faction colour never touches names, plates, bars or panels; the enemy faction is its crest and plain name.**
 Why: one UI with faction colour only as a small accent (R141). Set: Board (R125). Ids: R125b, uistyle-06.
@@ -594,9 +670,9 @@ Why: a run is meant to be lost; the debrief names what the death bought (contrib
 
 9.13 **After a battle: one prize screen, one confirm; a prize may open for detail before the confirm.** Set: Ryan (R23, R216).
 
-9.14 **A fleet too big for the battle sheet shows its first ships (at least two lines) and folds the rest into "and N more",
-with a hover that lists them.** Why: the narrower sheet (R218) cannot list twenty ships. Set: Ryan, Nov 11 (R220: "yes that's
-fine").
+9.14 **Keep every ship reachable from the battle HUD when the fleet outgrows its space.** KEEL pages the fleet strip when it
+fills; hover gives the full name and health. This replaces E1's "and N more" hover (R220, Ryan: "yes that's fine"). Why: a
+large fleet can outgrow the available space, but the strip is also how the player picks a ship. See issue 1021.
 
 ## 10. The campaign map, space and the board
 
@@ -660,7 +736,7 @@ had to move (contrib/codex/reviews/rules_sweep_checks.md). Set: Board, Nov 11 (0
 
 12.2 **A check's state comes from the real functions, never typed by hand; missing things fail loudly; one source per fact.**
 Why: a fixture typed by hand let 137 checks pass while real play was broken (R155). Set: Board, after the outside audit
-(R154 to R161). Ids: R155a, handoff-08.
+(R154, R155). Ids: R155a, handoff-08.
 
 12.3 **Every push to an agent branch runs the checks once; every test script under godot/**/test/ has its line in
 godot/tools/ci/godot_checks.txt.** Why: a missing test must fail loudly (PR 400). Set: Board. Ids: handoff-07, loop-10.

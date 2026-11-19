@@ -761,8 +761,11 @@ class Kit:
         rad = part.fit['radius']
         self.fitdata.append(dict(id=fid, kind='engine', cones=[dict(apex=tuple(p), dir=(-1, 0, 0), r0=rad, half=12.0,
                                                                     length=max(2.5 * 2 * rad, 0.22 * self.length))]))
-        self.features.append(dict(id=fid, kind='engine', what=(getattr(HP, 'ENGINE_WHAT', 'engine, bell %.1f across') % (2 * rad)), count=1,
-                                  pos=tuple(p), aim=(180.0, 0.0), src=src, note=note, exit=tuple(p), radius=rad, inv=[inv] if isinstance(inv, str) else list(inv)))
+        feature = dict(id=fid, kind='engine', what=(getattr(HP, 'ENGINE_WHAT', 'engine, bell %.1f across') % (2 * rad)), count=1,
+                       pos=tuple(p), aim=(180.0, 0.0), src=src, note=note, exit=tuple(p), radius=rad, inv=[inv] if isinstance(inv, str) else list(inv))
+        if (kw or {}).get('craft') and 'w' in part.fit and 'h' in part.fit:
+            feature['aperture'] = [part.fit['w'], part.fit['h']]
+        self.features.append(feature)
 
     def tube(self, fid, pos, r, depth, hood=0.0, grille=False, src='picture', note='', inv=(), what='front tube', bands=2, yaw=0.0, pitch=0.0):
         """a launch tube or scoop from the kit, mouth at pos, facing yaw/pitch"""
@@ -937,9 +940,9 @@ class Kit:
                                   weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
 
-    def core(self, fid, centre, r, src='picture', note='', inv=()):
+    def core(self, fid, centre, r, src='picture', note='', inv=(), part=None):
         p = Vector(centre)
-        part = self.emit(fid, HP.core_cage(r), HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
+        part = self.emit(fid, part if part is not None else HP.core_cage(r), HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
         self.features.append(dict(id=fid, kind='core', what='caged core of trapped light, %.1f across' % (2 * r), count=1, pos=tuple(p), aim=None,
                                   src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 

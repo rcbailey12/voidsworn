@@ -39,122 +39,122 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
 
-| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
-|---|---|---:|---:|---:|---:|---|---|---|---|
-| I1 | ion cannon, emitter trench in the bow face (fixed) | 1 barrel | 8.6 | 0.00 | -0.30 | forward | F ion | picture | the ion cannon (ion F, 1 shot): an emitter trench recessed in the blunt bow face at the canyon's mouth, coil-lined walls, a blue lens on the emitter block at its back |
-| E1 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 3.75 | -0.25 | exhaust aft | - | picture | nozzle 1 of the row (port to starboard): a rectangular nozzle pod, blue-white throat |
-| E2 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 2.25 | -0.25 | exhaust aft | - | picture | nozzle 2 of the row (port to starboard): a rectangular nozzle pod, blue-white throat |
-| E3 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 0.75 | -0.25 | exhaust aft | - | picture | nozzle 3 of the row (port to starboard): a rectangular nozzle pod, blue-white throat |
-| E4 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -0.75 | -0.25 | exhaust aft | - | picture | nozzle 4 of the row (port to starboard): a rectangular nozzle pod, blue-white throat |
-| E5 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -2.25 | -0.25 | exhaust aft | - | picture | nozzle 5 of the row (port to starboard): a rectangular nozzle pod, blue-white throat |
-| E6 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -3.75 | -0.25 | exhaust aft | - | picture | nozzle 6 of the row (port to starboard): a rectangular nozzle pod, blue-white throat |
-| HP | heavy plasma lance, twin turret | 2 barrels | 61.2 | 4.22 | 1.38 | 60 deg off the bow to port | P hturbo | picture | port shoulder lance turret: the heavy plasma lance (hturbo P, 3 shots), a low wide mount sunk in the shoulder pit, two short thick barrels |
-| HS | heavy plasma lance, twin turret | 2 barrels | 61.2 | -4.22 | 1.38 | 60 deg off the bow to starboard | S hturbo | picture | starboard shoulder lance turret: the heavy plasma lance (hturbo S, 3 shots), a low wide mount sunk in the shoulder pit, two short thick barrels |
-| T1 | plasma lance, twin turret | 2 barrels | 61.2 | 0.00 | 1.80 | forward | T turbo | picture | the plasma lance on the midships bridge (turbo T, 2 shots): the same low lance mount at a smaller size, turning all round over the ridge decks |
-| F1 | picket lasers, twin turret | 2 barrels | 79.1 | 0.00 | 1.80 | forward, +10 elev | T flak | picture | the picket lasers on the stern bridge (flak T, 3 shots over 2 emitters, both fire every volley): point defence over the stern quarter |
-| A1 | sensor fin, 0.5 tall, 2.4 long | 1 | 11.3 | 0.00 | 0.95 | - | - | picture | the one low sensor fin on the bow deck ahead of the canyon: sensor windows and a lens strip; low enough that the bridge lance fires over it (R240) |
-| CB1 | capacitor bank (4 cells) | 1 | 23.7 | 0.00 | 0.10 | - | - | picture | the ion cannon's charge banks: four identical cells, a bus bar to the trench |
-| CB2 | capacitor bank (3 cells) | 1 | 42.4 | 0.00 | 0.10 | - | - | picture | the ion cannon's second charge bank, on the main power trunks |
-| HX1 | heat exchanger | 1 | 55.9 | 0.00 | 0.10 | - | - | picture | the reactor's coolant exchanger: its heat leaves the hull in the open canyon |
-| HX2 | heat exchanger | 1 | 67.2 | 0.00 | 0.10 | - | - | picture | the reactor's second coolant exchanger |
-| HX3 | heat exchanger | 1 | 74.3 | 0.00 | 0.10 | - | - | picture | the drives' coolant exchanger, over the engine feeds |
-| HX4 | heat exchanger | 1 | 83.6 | 0.00 | 0.10 | - | - | picture | the drives' second coolant exchanger, under the stern bridge's aft edge |
-| PT0p | power trunk, 3.2 long | 1 | 18.5 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT0s | power trunk, 3.2 long | 1 | 18.5 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT1p | power trunk, 4.6 long | 1 | 30.7 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT1s | power trunk, 4.6 long | 1 | 30.7 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT2p | power trunk, 1.2 long | 1 | 47.4 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT2s | power trunk, 1.2 long | 1 | 47.4 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT3p | power trunk, 5.2 long | 1 | 53.1 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT3s | power trunk, 5.2 long | 1 | 53.1 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT4p | power trunk, 4.4 long | 1 | 71.7 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| PT4s | power trunk, 4.4 long | 1 | 71.7 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band |
-| CL0p | coolant line, 0.8 long | 1 | 83.3 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL0s | coolant line, 0.8 long | 1 | 83.3 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL1p | coolant line, 1.0 long | 1 | 71.7 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL1s | coolant line, 1.0 long | 1 | 71.7 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL2p | coolant line, 1.2 long | 1 | 66.0 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL2s | coolant line, 1.2 long | 1 | 66.0 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL3p | coolant line, 1.0 long | 1 | 53.1 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL3s | coolant line, 1.0 long | 1 | 53.1 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL4p | coolant line, 1.2 long | 1 | 47.4 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL4s | coolant line, 1.2 long | 1 | 47.4 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL5p | coolant line, 1.8 long | 1 | 39.7 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL5s | coolant line, 1.8 long | 1 | 39.7 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL6p | coolant line, 3.2 long | 1 | 18.5 | 1.64 | 0.94 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| CL6s | coolant line, 3.2 long | 1 | 18.5 | -1.64 | 0.94 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms |
-| WC1 | vision slit 0.5 x 0.20 | 1 | 90.0 | 1.05 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon |
-| WC2 | vision slit 0.5 x 0.20 | 1 | 90.0 | 0.35 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon |
-| WC3 | vision slit 0.5 x 0.20 | 1 | 90.0 | -0.35 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon |
-| WC4 | vision slit 0.5 x 0.20 | 1 | 90.0 | -1.05 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon |
-| Q1p | retro thruster, two rectangular nozzles | 1 | 0.6 | 2.05 | -0.35 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
-| Q2p | attitude thruster, two rectangular nozzles | 1 | 13.1 | 3.42 | 0.90 | - | - | designed | bow attitude thruster on the upper facet |
-| Q3p | attitude thruster, two rectangular nozzles | 1 | 91.6 | 5.12 | 1.08 | - | - | designed | stern attitude thruster on the upper facet |
-| W1p | vision slit 0.5 x 0.10 | 1 | 21.7 | 4.39 | 0.10 | - | - | picture | blue-white window of the ridge's crew decks |
-| W2p | vision slit 0.5 x 0.10 | 1 | 24.3 | 4.58 | 0.11 | - | - | picture | blue-white window of the ridge's crew decks |
-| W3p | vision slit 0.5 x 0.10 | 1 | 26.9 | 4.76 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W4p | vision slit 0.5 x 0.10 | 1 | 37.4 | 5.33 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W5p | vision slit 0.5 x 0.10 | 1 | 40.0 | 5.44 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W6p | vision slit 0.5 x 0.10 | 1 | 56.7 | 6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W7p | vision slit 0.5 x 0.10 | 1 | 59.2 | 6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W8p | vision slit 0.5 x 0.10 | 1 | 74.6 | 5.93 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W9p | vision slit 0.5 x 0.10 | 1 | 77.2 | 5.87 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W10p | vision slit 0.5 x 0.10 | 1 | 79.7 | 5.81 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| V1p | louvre panel 0.3 x 1.4 | 1 | 23.7 | 3.30 | 1.65 | - | - | picture | heat louvre on the ridge deck over the crew decks |
-| V2p | louvre panel 0.3 x 1.4 | 1 | 40.6 | 3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the crew decks |
-| V3p | louvre panel 0.3 x 1.4 | 1 | 78.8 | 3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the drive coolant plant |
-| V4p | louvre panel 0.3 x 1.1 | 1 | 92.9 | 2.60 | 1.80 | - | - | picture | heat louvre over the engine room |
-| H70p | square hatch 0.6 | 1 | 25.9 | 4.26 | -1.33 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| H71p | square hatch 0.6 | 1 | 75.9 | 5.47 | -1.42 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| L0pf | module latch row (4 clamps) | 1 | 16.5 | 2.58 | 1.57 | - | - | picture | locks two hull modules together across the band |
-| L0pa | module latch row (4 clamps) | 1 | 18.6 | 2.65 | 1.59 | - | - | picture | locks two hull modules together across the band |
-| L1pf | module latch row (4 clamps) | 1 | 28.7 | 3.02 | 1.71 | - | - | picture | locks two hull modules together across the band |
-| L1pa | module latch row (4 clamps) | 1 | 30.8 | 3.09 | 1.73 | - | - | picture | locks two hull modules together across the band |
-| L2pf | module latch row (4 clamps) | 1 | 45.4 | 3.40 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L2pa | module latch row (4 clamps) | 1 | 47.4 | 3.45 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L3pf | module latch row (4 clamps) | 1 | 51.2 | 3.59 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L3pa | module latch row (4 clamps) | 1 | 53.2 | 3.68 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L4pf | module latch row (4 clamps) | 1 | 69.7 | 3.67 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L4pa | module latch row (4 clamps) | 1 | 71.8 | 3.62 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L5pf | module latch row (4 clamps) | 1 | 85.8 | 3.41 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L5pa | module latch row (4 clamps) | 1 | 87.8 | 3.38 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| Q1s | retro thruster, two rectangular nozzles | 1 | 0.6 | -2.05 | -0.35 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
-| Q2s | attitude thruster, two rectangular nozzles | 1 | 13.1 | -3.42 | 0.90 | - | - | designed | bow attitude thruster on the upper facet |
-| Q3s | attitude thruster, two rectangular nozzles | 1 | 91.6 | -5.12 | 1.08 | - | - | designed | stern attitude thruster on the upper facet |
-| W1s | vision slit 0.5 x 0.10 | 1 | 21.7 | -4.39 | 0.10 | - | - | picture | blue-white window of the ridge's crew decks |
-| W2s | vision slit 0.5 x 0.10 | 1 | 24.3 | -4.58 | 0.11 | - | - | picture | blue-white window of the ridge's crew decks |
-| W3s | vision slit 0.5 x 0.10 | 1 | 26.9 | -4.76 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W4s | vision slit 0.5 x 0.10 | 1 | 37.4 | -5.33 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W5s | vision slit 0.5 x 0.10 | 1 | 40.0 | -5.44 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W6s | vision slit 0.5 x 0.10 | 1 | 56.7 | -6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W7s | vision slit 0.5 x 0.10 | 1 | 59.2 | -6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W8s | vision slit 0.5 x 0.10 | 1 | 74.6 | -5.93 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W9s | vision slit 0.5 x 0.10 | 1 | 77.2 | -5.87 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| W10s | vision slit 0.5 x 0.10 | 1 | 79.7 | -5.81 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks |
-| V1s | louvre panel 0.3 x 1.4 | 1 | 23.7 | -3.30 | 1.65 | - | - | picture | heat louvre on the ridge deck over the crew decks |
-| V2s | louvre panel 0.3 x 1.4 | 1 | 40.6 | -3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the crew decks |
-| V3s | louvre panel 0.3 x 1.4 | 1 | 78.8 | -3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the drive coolant plant |
-| V4s | louvre panel 0.3 x 1.1 | 1 | 92.9 | -2.60 | 1.80 | - | - | picture | heat louvre over the engine room |
-| H70s | square hatch 0.6 | 1 | 25.9 | -4.26 | -1.33 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| H71s | square hatch 0.6 | 1 | 75.9 | -5.47 | -1.42 | - | - | picture | flank hatch on the lower facet: stores to the lower deck |
-| L0sf | module latch row (4 clamps) | 1 | 16.5 | -2.58 | 1.57 | - | - | picture | locks two hull modules together across the band |
-| L0sa | module latch row (4 clamps) | 1 | 18.6 | -2.65 | 1.59 | - | - | picture | locks two hull modules together across the band |
-| L1sf | module latch row (4 clamps) | 1 | 28.7 | -3.02 | 1.71 | - | - | picture | locks two hull modules together across the band |
-| L1sa | module latch row (4 clamps) | 1 | 30.8 | -3.09 | 1.73 | - | - | picture | locks two hull modules together across the band |
-| L2sf | module latch row (4 clamps) | 1 | 45.4 | -3.40 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L2sa | module latch row (4 clamps) | 1 | 47.4 | -3.45 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L3sf | module latch row (4 clamps) | 1 | 51.2 | -3.59 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L3sa | module latch row (4 clamps) | 1 | 53.2 | -3.68 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L4sf | module latch row (4 clamps) | 1 | 69.7 | -3.67 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L4sa | module latch row (4 clamps) | 1 | 71.8 | -3.62 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L5sf | module latch row (4 clamps) | 1 | 85.8 | -3.41 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| L5sa | module latch row (4 clamps) | 1 | 87.8 | -3.38 | 1.80 | - | - | picture | locks two hull modules together across the band |
-| H1 | square hatch 0.6 | 1 | 32.5 | 2.60 | 1.75 | - | - | picture | deck hatch over the port ridge's forward crew deck |
-| H2 | square hatch 0.6 | 1 | 32.5 | -2.60 | 1.75 | - | - | picture | deck hatch over the starboard ridge's forward crew deck |
-| H3 | square hatch 0.8 | 1 | 37.4 | 0.00 | -2.12 | - | - | picture | belly hatch on the armour step: stores |
-| H4 | square hatch 0.8 | 1 | 61.2 | 0.00 | -2.12 | - | - | picture | belly hatch on the armour step: the reactor's service hatch |
-| H5 | square hatch 0.8 | 1 | 79.1 | 0.00 | -2.12 | - | - | picture | belly hatch on the armour step: the engine room's stores |
-| HB1 | framed deck box 1.0 x 0.9 | 1 | 92.9 | 0.00 | 1.50 | - | - | picture | the stern lift head: stores up to the engine room |
+| ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note  | Route |
+|---|---|---:|---:|---:|---:|---|---|---|---|---|
+| I1 | ion cannon, stepped accelerator and blue emitter (fixed) | 1 barrel | 8.6 | 0.00 | -0.30 | forward | F ion | designed | R287, R289 run 2: lit blue lens, fainter field contacts, metal coils and muzzle lip; beam origin on the lens | hand-built |
+| E1 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 3.75 | -0.25 | exhaust aft | - | picture | nozzle 1 of the row (port to starboard): a rectangular nozzle pod, blue-white throat | kit |
+| E2 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 2.25 | -0.25 | exhaust aft | - | picture | nozzle 2 of the row (port to starboard): a rectangular nozzle pod, blue-white throat | kit |
+| E3 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 0.75 | -0.25 | exhaust aft | - | picture | nozzle 3 of the row (port to starboard): a rectangular nozzle pod, blue-white throat | kit |
+| E4 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -0.75 | -0.25 | exhaust aft | - | picture | nozzle 4 of the row (port to starboard): a rectangular nozzle pod, blue-white throat | kit |
+| E5 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -2.25 | -0.25 | exhaust aft | - | picture | nozzle 5 of the row (port to starboard): a rectangular nozzle pod, blue-white throat | kit |
+| E6 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | -3.75 | -0.25 | exhaust aft | - | picture | nozzle 6 of the row (port to starboard): a rectangular nozzle pod, blue-white throat | kit |
+| HP | heavy plasma lance, twin turret | 2 barrels | 61.2 | 4.22 | 1.38 | 60 deg off the bow to port | P hturbo | picture | port shoulder lance turret: the heavy plasma lance (hturbo P, 3 shots), a low wide mount sunk in the shoulder pit, two short thick barrels | kit |
+| HS | heavy plasma lance, twin turret | 2 barrels | 61.2 | -4.22 | 1.38 | 60 deg off the bow to starboard | S hturbo | picture | starboard shoulder lance turret: the heavy plasma lance (hturbo S, 3 shots), a low wide mount sunk in the shoulder pit, two short thick barrels | kit |
+| T1 | plasma lance, twin turret | 2 barrels | 61.2 | 0.00 | 1.80 | forward | T turbo | picture | the plasma lance on the midships bridge (turbo T, 2 shots): the same low lance mount at a smaller size, turning all round over the ridge decks | kit |
+| F1 | picket lasers, twin turret | 2 barrels | 79.1 | 0.00 | 1.80 | forward, +10 elev | T flak | picture | the picket lasers on the stern bridge (flak T, 3 shots over 2 emitters, both fire every volley): point defence over the stern quarter | kit |
+| A1 | sensor fin, 0.5 tall, 2.4 long | 1 | 11.3 | 0.00 | 0.95 | - | - | picture | the one low sensor fin on the bow deck ahead of the canyon: sensor windows and a lens strip; low enough that the bridge lance fires over it (R240) | kit |
+| CB1 | capacitor bank (4 cells) | 1 | 23.7 | 0.00 | 0.10 | - | - | picture | the ion cannon's charge banks: four identical cells, a bus bar to the trench | kit |
+| CB2 | capacitor bank (3 cells) | 1 | 42.4 | 0.00 | 0.10 | - | - | picture | the ion cannon's second charge bank, on the main power trunks | kit |
+| HX1 | heat exchanger | 1 | 55.9 | 0.00 | 0.10 | - | - | picture | the reactor's coolant exchanger: its heat leaves the hull in the open canyon | kit |
+| HX2 | heat exchanger | 1 | 67.2 | 0.00 | 0.10 | - | - | picture | the reactor's second coolant exchanger | kit |
+| HX3 | heat exchanger | 1 | 74.3 | 0.00 | 0.10 | - | - | picture | the drives' coolant exchanger, over the engine feeds | kit |
+| HX4 | heat exchanger | 1 | 83.6 | 0.00 | 0.10 | - | - | picture | the drives' second coolant exchanger, under the stern bridge's aft edge | kit |
+| PT0p | power trunk, 3.2 long | 1 | 18.5 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT0s | power trunk, 3.2 long | 1 | 18.5 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT1p | power trunk, 4.6 long | 1 | 30.7 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT1s | power trunk, 4.6 long | 1 | 30.7 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT2p | power trunk, 1.2 long | 1 | 47.4 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT2s | power trunk, 1.2 long | 1 | 47.4 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT3p | power trunk, 5.2 long | 1 | 53.1 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT3s | power trunk, 5.2 long | 1 | 53.1 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT4p | power trunk, 4.4 long | 1 | 71.7 | 1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| PT4s | power trunk, 4.4 long | 1 | 71.7 | -1.05 | 0.38 | - | - | picture | armoured power trunk: the reactor's power forward to the ion cannon and aft to the drives, coupled at each module band | kit |
+| CL0p | coolant line, 0.8 long | 1 | 83.3 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL0s | coolant line, 0.8 long | 1 | 83.3 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL1p | coolant line, 1.0 long | 1 | 71.7 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL1s | coolant line, 1.0 long | 1 | 71.7 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL2p | coolant line, 1.2 long | 1 | 66.0 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL2s | coolant line, 1.2 long | 1 | 66.0 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL3p | coolant line, 1.0 long | 1 | 53.1 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL3s | coolant line, 1.0 long | 1 | 53.1 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL4p | coolant line, 1.2 long | 1 | 47.4 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL4s | coolant line, 1.2 long | 1 | 47.4 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL5p | coolant line, 1.8 long | 1 | 39.7 | 1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL5s | coolant line, 1.8 long | 1 | 39.7 | -1.64 | 1.03 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL6p | coolant line, 3.2 long | 1 | 18.5 | 1.64 | 0.94 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| CL6s | coolant line, 3.2 long | 1 | 18.5 | -1.64 | 0.94 | - | - | picture | coolant line on the canyon ledge: the exchangers' loop out to the ridges' plant rooms | kit |
+| WC1 | vision slit 0.5 x 0.20 | 1 | 90.0 | 1.05 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon | kit |
+| WC2 | vision slit 0.5 x 0.20 | 1 | 90.0 | 0.35 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon | kit |
+| WC3 | vision slit 0.5 x 0.20 | 1 | 90.0 | -0.35 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon | kit |
+| WC4 | vision slit 0.5 x 0.20 | 1 | 90.0 | -1.05 | 0.95 | - | - | picture | a control window of the engine room, overlooking the canyon | kit |
+| Q1p | retro thruster, two rectangular nozzles | 1 | 0.6 | 2.05 | -0.35 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) | kit |
+| Q2p | attitude thruster, two rectangular nozzles | 1 | 13.1 | 3.42 | 0.90 | - | - | designed | bow attitude thruster on the upper facet | kit |
+| Q3p | attitude thruster, two rectangular nozzles | 1 | 91.6 | 5.12 | 1.08 | - | - | designed | stern attitude thruster on the upper facet | kit |
+| W1p | vision slit 0.5 x 0.10 | 1 | 21.7 | 4.39 | 0.10 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W2p | vision slit 0.5 x 0.10 | 1 | 24.3 | 4.58 | 0.11 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W3p | vision slit 0.5 x 0.10 | 1 | 26.9 | 4.76 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W4p | vision slit 0.5 x 0.10 | 1 | 37.4 | 5.33 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W5p | vision slit 0.5 x 0.10 | 1 | 40.0 | 5.44 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W6p | vision slit 0.5 x 0.10 | 1 | 56.7 | 6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W7p | vision slit 0.5 x 0.10 | 1 | 59.2 | 6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W8p | vision slit 0.5 x 0.10 | 1 | 74.6 | 5.93 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W9p | vision slit 0.5 x 0.10 | 1 | 77.2 | 5.87 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W10p | vision slit 0.5 x 0.10 | 1 | 79.7 | 5.81 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| V1p | louvre panel 0.3 x 1.4 | 1 | 23.7 | 3.30 | 1.65 | - | - | picture | heat louvre on the ridge deck over the crew decks | kit |
+| V2p | louvre panel 0.3 x 1.4 | 1 | 40.6 | 3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the crew decks | kit |
+| V3p | louvre panel 0.3 x 1.4 | 1 | 78.8 | 3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the drive coolant plant | kit |
+| V4p | louvre panel 0.3 x 1.1 | 1 | 92.9 | 2.60 | 1.80 | - | - | picture | heat louvre over the engine room | kit |
+| H70p | square hatch 0.6 | 1 | 25.9 | 4.26 | -1.33 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| H71p | square hatch 0.6 | 1 | 75.9 | 5.47 | -1.42 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| L0pf | module latch row (4 clamps) | 1 | 16.5 | 2.58 | 1.57 | - | - | picture | locks two hull modules together across the band | kit |
+| L0pa | module latch row (4 clamps) | 1 | 18.6 | 2.65 | 1.59 | - | - | picture | locks two hull modules together across the band | kit |
+| L1pf | module latch row (4 clamps) | 1 | 28.7 | 3.02 | 1.71 | - | - | picture | locks two hull modules together across the band | kit |
+| L1pa | module latch row (4 clamps) | 1 | 30.8 | 3.09 | 1.73 | - | - | picture | locks two hull modules together across the band | kit |
+| L2pf | module latch row (4 clamps) | 1 | 45.4 | 3.40 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L2pa | module latch row (4 clamps) | 1 | 47.4 | 3.45 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L3pf | module latch row (4 clamps) | 1 | 51.2 | 3.59 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L3pa | module latch row (4 clamps) | 1 | 53.2 | 3.68 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L4pf | module latch row (4 clamps) | 1 | 69.7 | 3.67 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L4pa | module latch row (4 clamps) | 1 | 71.8 | 3.62 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L5pf | module latch row (4 clamps) | 1 | 85.8 | 3.41 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L5pa | module latch row (4 clamps) | 1 | 87.8 | 3.38 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| Q1s | retro thruster, two rectangular nozzles | 1 | 0.6 | -2.05 | -0.35 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) | kit |
+| Q2s | attitude thruster, two rectangular nozzles | 1 | 13.1 | -3.42 | 0.90 | - | - | designed | bow attitude thruster on the upper facet | kit |
+| Q3s | attitude thruster, two rectangular nozzles | 1 | 91.6 | -5.12 | 1.08 | - | - | designed | stern attitude thruster on the upper facet | kit |
+| W1s | vision slit 0.5 x 0.10 | 1 | 21.7 | -4.39 | 0.10 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W2s | vision slit 0.5 x 0.10 | 1 | 24.3 | -4.58 | 0.11 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W3s | vision slit 0.5 x 0.10 | 1 | 26.9 | -4.76 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W4s | vision slit 0.5 x 0.10 | 1 | 37.4 | -5.33 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W5s | vision slit 0.5 x 0.10 | 1 | 40.0 | -5.44 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W6s | vision slit 0.5 x 0.10 | 1 | 56.7 | -6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W7s | vision slit 0.5 x 0.10 | 1 | 59.2 | -6.31 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W8s | vision slit 0.5 x 0.10 | 1 | 74.6 | -5.93 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W9s | vision slit 0.5 x 0.10 | 1 | 77.2 | -5.87 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| W10s | vision slit 0.5 x 0.10 | 1 | 79.7 | -5.81 | 0.12 | - | - | picture | blue-white window of the ridge's crew decks | kit |
+| V1s | louvre panel 0.3 x 1.4 | 1 | 23.7 | -3.30 | 1.65 | - | - | picture | heat louvre on the ridge deck over the crew decks | kit |
+| V2s | louvre panel 0.3 x 1.4 | 1 | 40.6 | -3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the crew decks | kit |
+| V3s | louvre panel 0.3 x 1.4 | 1 | 78.8 | -3.30 | 1.80 | - | - | picture | heat louvre on the ridge deck over the drive coolant plant | kit |
+| V4s | louvre panel 0.3 x 1.1 | 1 | 92.9 | -2.60 | 1.80 | - | - | picture | heat louvre over the engine room | kit |
+| H70s | square hatch 0.6 | 1 | 25.9 | -4.26 | -1.33 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| H71s | square hatch 0.6 | 1 | 75.9 | -5.47 | -1.42 | - | - | picture | flank hatch on the lower facet: stores to the lower deck | kit |
+| L0sf | module latch row (4 clamps) | 1 | 16.5 | -2.58 | 1.57 | - | - | picture | locks two hull modules together across the band | kit |
+| L0sa | module latch row (4 clamps) | 1 | 18.6 | -2.65 | 1.59 | - | - | picture | locks two hull modules together across the band | kit |
+| L1sf | module latch row (4 clamps) | 1 | 28.7 | -3.02 | 1.71 | - | - | picture | locks two hull modules together across the band | kit |
+| L1sa | module latch row (4 clamps) | 1 | 30.8 | -3.09 | 1.73 | - | - | picture | locks two hull modules together across the band | kit |
+| L2sf | module latch row (4 clamps) | 1 | 45.4 | -3.40 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L2sa | module latch row (4 clamps) | 1 | 47.4 | -3.45 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L3sf | module latch row (4 clamps) | 1 | 51.2 | -3.59 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L3sa | module latch row (4 clamps) | 1 | 53.2 | -3.68 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L4sf | module latch row (4 clamps) | 1 | 69.7 | -3.67 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L4sa | module latch row (4 clamps) | 1 | 71.8 | -3.62 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L5sf | module latch row (4 clamps) | 1 | 85.8 | -3.41 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| L5sa | module latch row (4 clamps) | 1 | 87.8 | -3.38 | 1.80 | - | - | picture | locks two hull modules together across the band | kit |
+| H1 | square hatch 0.6 | 1 | 32.5 | 2.60 | 1.75 | - | - | picture | deck hatch over the port ridge's forward crew deck | kit |
+| H2 | square hatch 0.6 | 1 | 32.5 | -2.60 | 1.75 | - | - | picture | deck hatch over the starboard ridge's forward crew deck | kit |
+| H3 | square hatch 0.8 | 1 | 37.4 | 0.00 | -2.12 | - | - | picture | belly hatch on the armour step: stores | kit |
+| H4 | square hatch 0.8 | 1 | 61.2 | 0.00 | -2.12 | - | - | picture | belly hatch on the armour step: the reactor's service hatch | kit |
+| H5 | square hatch 0.8 | 1 | 79.1 | 0.00 | -2.12 | - | - | picture | belly hatch on the armour step: the engine room's stores | kit |
+| HB1 | framed deck box 1.0 x 0.9 | 1 | 92.9 | 0.00 | 1.50 | - | - | picture | the stern lift head: stores up to the engine room | kit |
 
 Totals: 5 gun mounts with 9 barrels; 0 launcher tubes; 6 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
@@ -300,3 +300,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - Q1s (retro thruster, two rectangular nozzles): retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap).
 - Q2s (attitude thruster, two rectangular nozzles): bow attitude thruster on the upper facet.
 - Q3s (attitude thruster, two rectangular nozzles): stern attitude thruster on the upper facet.
+
+## Issue 870, run 2
+
+- **The bow trench carries a large blue emitter lens, eight nested octagonal accelerator rings, lit emitter buses and an inset muzzle lip** Ryan R289: the wide plain opening read as a carrier bay. It uses the Dominion correction (R287) inside IM5's existing mouth, without changing the concept outline, insides or single ion F slot

@@ -1,0 +1,36 @@
+{
+  "source_commit": "9fefabe22a054a3ef9459abaf1372364f28ee022",
+  "source_dirty": true,
+  "source_diff_sha256": "8912a2c958d1af2c7002efbb2645d242894af255cbc4efdcdcfd6b3fa08b063d",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "PROVENANCE_889.png",
+  "date": "2026-11-16T17:14:06Z",
+  "sources": [
+    {
+      "source_commit": "9fefabe22a054a3ef9459abaf1372364f28ee022",
+      "source_dirty": true,
+      "source_diff_sha256": "8912a2c958d1af2c7002efbb2645d242894af255cbc4efdcdcfd6b3fa08b063d",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "820148cc5d0739c28e8e9f75a05ad2cbb2a400ae5152b95a74cd6f4a156db0c9"
+  ],
+  "stamp_template_sha256": "820148cc5d0739c28e8e9f75a05ad2cbb2a400ae5152b95a74cd6f4a156db0c9",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAB1UlEQVR4nO3WQRGAMADAsA0DGEAC/u0xEXvsyiUK+uy8n/cbAABh1+kAAIBdhgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoA4BdDM09HAACMDQu+qAIb+IMqLgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "b3f5a5edb4b37c297cd5980a87fe2fbc24b90dcc465eaed4cc559369831d30f1"
+}

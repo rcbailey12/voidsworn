@@ -18,8 +18,8 @@ global uniform float fx_calm;
 global uniform float fx_px;
 float spow(float b, float e) { return pow(max(b, 0.0), e); }
 vec3 snorm(vec3 v) { float l = length(v); return l > 1e-6 ? v / l : vec3(0.0, 1.0, 0.0); }
-// F3 (effects at distance): the world size of `px` screen pixels at view distance d, counted on a 1080-line screen so the
-// floor looks the same at any resolution (fx_px scales every floor; 0 turns them off). Works for both projections.
+// F3: the world size of `px` screen pixels at view depth d on a 1080-line screen. The flash counter in fx.gd uses
+// this same projection scale and depth. fx_px scales every floor; 0 turns them off.
 float px_world(float px, float d, mat4 P) {
 	float p11 = max(abs(P[1][1]), 1e-4);
 	float dd = P[3][3] > 0.5 ? 1.0 : max(d, 0.01);
@@ -100,6 +100,8 @@ uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
 uniform float size_divisor = 1.0;
 uniform float soft_flash = 0.0;
+// Opt-in for a weapon flash or its body. A setting change can dim an existing picture without restarting its clock.
+uniform float calm_intensity = 0.0;
 // Issue 484 (owner: the secondaries' smoke "looks a little too even and weird"): a picture can be turned, stretched and
 // toned so a cluster of them never repeats one round shape. Defaults leave every other caller as it was.
 uniform float pic_spin = 0.0;
@@ -129,10 +131,13 @@ void vertex() {
 }
 void fragment() {
 	float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);
+	float live_calm = step(0.001, calm_intensity) * fx_calm;
+	float softened = max(soft_flash, live_calm);
+	float power = mix(intensity, min(intensity, calm_intensity), live_calm);
 	float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);
 #ifdef ROUTE_BAKED
 	// A softened flash keeps the same first-cell diameter while it rises, then cools through the sequence.
-	frame = mix(age, max(0.0, (age - 0.5) * 2.0), soft_flash) * 15.0;
+	frame = mix(age, max(0.0, (age - 0.5) * 2.0), softened) * 15.0;
 #endif
 	float a = floor(frame); float b = min(a + 1.0, 15.0); float blend = fract(frame);
 	vec2 uv = atlas_rect.xy + vec2(UV.x, mix(UV.y, 1.0 - UV.y, directional)) * atlas_rect.zw;
@@ -151,17 +156,17 @@ void fragment() {
 	float lit = 0.25 + 0.55 * max(dot(normal, sun), 0.0) + thick.g * 0.2;
 	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
 	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
-	ALBEDO = smoke * (1.0 - plasma) * intensity * fx_gain;
+	ALBEDO = smoke * (1.0 - plasma) * power * fx_gain;
 	// One fast ignition, then only cool gas. The caller books both bright
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
-	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * intensity * fx_gain;
+	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * power * fx_gain;
 #ifdef ROUTE_BAKED
 	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
-	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * intensity, thick.b) * fx_gain;
+	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * power, thick.b) * fx_gain;
 	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
-	ALBEDO *= mix(1.0, sin(age * 3.14159265), soft_flash);
 #endif
+	ALBEDO *= mix(1.0, sin(age * 3.14159265), softened);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
 	float soft = 1.0;
 #ifndef COMPAT
@@ -207,6 +212,14 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
+# The flash budget and SPRITE share these defaults for the bright kinds.
+const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
+
+
+static func flash_sprite_floor(kind: int, px: float) -> float:
+	return maxf(FLASH_SPRITE_FLOORS[kind], floorf(clampf(px, 0.0, 4000.0)))
+
+
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -257,11 +270,13 @@ void vertex() {
 		// grown to the floor dims as it grows, but by less than its area (pops and bolts get f times their light, the rest
 		// f^0.8), so distant and small effects read brighter without blowing out. Smoke, soot and gas have no floor (no haze).
 		float flo = 0.0;
-		if (k == 24) { flo = 56.0; }
+		if (k == 24) { flo = %.1f; }
 		else if (k == 25 || k == 26) { flo = 24.0; }
-		else if (k == 0 || k == 17) { flo = 14.0; }
-		else if (k == 2 || k == 13 || k == 14) { flo = 12.0; }
-		else if (k == 12 || k == 15 || k == 18) { flo = 10.0; }
+		else if (k == 0 || k == 17) { flo = %.1f; }
+		else if (k == 2 || k == 14) { flo = %.1f; }
+		else if (k == 13) { flo = %.1f; }
+		else if (k == 12 || k == 15 || k == 18) { flo = %.1f; }
+""" % [FLASH_SPRITE_FLOORS[24], FLASH_SPRITE_FLOORS[0], FLASH_SPRITE_FLOORS[2], FLASH_SPRITE_FLOORS[13], FLASH_SPRITE_FLOORS[12]] + """
 		else if (k == 5 || k == 16 || k == 23) { flo = 9.0; }
 		else if (k == 1) { flo = 8.0; }
 		else if (k == 22) { flo = 6.0; }
@@ -305,7 +320,12 @@ void vertex() {
 		vp.xy += q * size;
 		POSITION = PROJECTION_MATRIX * vp;
 		vUv = VERTEX.xy * 2.0;
-		vCol = vec4(a2.rgb, a2.a * gate * boost);
+		float power = a2.a;
+		// Pooled flashes may have been submitted before the option changed. Keep the size and soften the remaining pulse.
+		if (fx_calm > 0.5 && (k == 0 || (k == 13 && power > 1.25) || (life <= 0.6 && power >= 4.0 && (k == 2 || k == 12 || k == 24)))) {
+			power = min(power, 1.25) * sin(t * 3.14159265);
+		}
+		vCol = vec4(a2.rgb, power * gate * boost);
 		vInfo = vec4(t, a3.z, sd, age);
 	}
 }
@@ -438,7 +458,7 @@ void fragment() {
 # Camera-facing textured heads and tails. a3 = (length or blur seconds, width, drag, kind).
 # kinds: 0 shell/tracer   1 spark   3 flame tongue   4 textured las dart
 # Kind 5 now routes to NULL_SLUG; its old vertex branch below is unused there.
-#        6 droplet (bio, falls off a glob)   7 molten drip (lance trench)
+#        6 droplet (bio, falls off a glob)   7 molten drip (lance trench)   8 hull-hit spark
 const STREAK_VERTEX := """
 uniform float gate = 1.0;
 uniform sampler2D kit_tail : filter_linear, repeat_disable;
@@ -464,7 +484,13 @@ void vertex() {
 		float dr = a3.z;
 		int k = int(a3.w + 0.5);
 		vec3 head; vec3 tail; float fade = 1.0; float u = age / life;
-		if (k == 1 || k == 6 || k == 7) {
+		if (k == 8) {
+			float last = max(0.0, age - a3.x * mix(1.0, 0.37, u));
+			head = a0.xyz + pDisp(v, dr, 0.0, age) - vec3(0.0, 1.2 * age * age, 0.0);
+			tail = a0.xyz + pDisp(v, dr, 0.0, last) - vec3(0.0, 1.2 * last * last, 0.0);
+			dir = snorm(v * exp(-dr * age) - vec3(0.0, 2.4 * age, 0.0));
+			fade = mix(1.0, 0.62, fx_calm) * spow(1.0 - u, 1.5);
+		} else if (k == 1 || k == 6 || k == 7) {
 			float e = exp(-dr * age);
 			head = a0.xyz + pDisp(v, dr, 0.0, age);
 			head.y -= 1.2 * age * age;
@@ -490,22 +516,57 @@ void vertex() {
 		head = (MODEL_MATRIX * vec4(head, 1.0)).xyz;
 		tail = (MODEL_MATRIX * vec4(tail, 1.0)).xyz;
 		vec3 wdir = snorm((MODEL_MATRIX * vec4(dir, 0.0)).xyz);
-		// Kit floors describe the whole mask quad, including its soft halo.
-		// The separate projected-length cap below uses actual framebuffer pixels.
 		float dv = max(-(VIEW_MATRIX * vec4(0.5 * (head + tail), 1.0)).z, 0.01);
-		float wf = k == 4 ? 7.0 : (k == 5 ? 22.0 : (k == 0 ? 8.0 : 6.0));
-		float lf = (k == 0 || k == 4 || k == 5) ? 14.0 : 5.0;
-		// round 2: a4.z and a4.w carry this streak's own width and length floors (pixels), for fatter tracer cores and
-		// bolder sparks; a line grown to its own floor dims only as f^-0.3
-		bool own = a4.z > wf;
-		wf = max(wf, a4.z);
-		lf = max(lf, a4.w);
-		float sw = a3.y;
-		float bw = 1.0;
-		float wmin = max(px_world(wf, dv, PROJECTION_MATRIX), frame_world(5.0, dv, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
-		if (sw < wmin) {
-			bw = clamp(spow(wmin / max(sw, 1e-5), -0.15), 0.05, 1.0);
-			sw = wmin;
+		if (k == 8) {
+			// Lay out hull sparks in view space so their width survives foreshortening.
+			vec3 h = (VIEW_MATRIX * vec4(head, 1.0)).xyz;
+			vec3 t = (VIEW_MATRIX * vec4(tail, 1.0)).xyz;
+			float frame_ratio = VIEWPORT_SIZE.y / 1080.0;
+			float pixel = frame_world(1.0, dv, PROJECTION_MATRIX, VIEWPORT_SIZE.y);
+			vec4 hc = PROJECTION_MATRIX * vec4(h, 1.0);
+			vec4 tc = PROJECTION_MATRIX * vec4(t, 1.0);
+			vec2 projected = (hc.xy / max(hc.w, 1e-4) - tc.xy / max(tc.w, 1e-4)) * VIEWPORT_SIZE * 0.5;
+			float len = length(projected);
+			vec2 screen_motion = (VIEW_MATRIX * vec4(wdir, 0.0)).xy;
+			float motion_length = length(screen_motion);
+			vec2 axis = vec2(1.0, 0.0);
+			if (len > 1e-3) {
+				axis = projected / len;
+			} else if (motion_length > 1e-5) {
+				axis = screen_motion / motion_length;
+			}
+			float cap_px = mix(20.0, 49.0, clamp(a3.x * 6.5, 0.0, 1.0)) * frame_ratio;
+			if (len > cap_px) {
+				float ratio = cap_px / len;
+				float f = ratio * hc.w / max(tc.w * (1.0 - ratio) + ratio * hc.w, 1e-4);
+				t = mix(h, t, clamp(f, 0.0, 1.0));
+			}
+			float min_len = max(2.5 * pixel, px_world(mix(5.0, 9.0, clamp(a3.x * 6.5, 0.0, 1.0)), dv, PROJECTION_MATRIX));
+			t.xy -= axis * max(min_len - min(len, cap_px) * pixel, 0.0);
+			float width = max(a3.y * 2.8, max(3.0 * pixel, px_world(3.8, dv, PROJECTION_MATRIX)));
+			vec3 p = mix(t, h, VERTEX.x);
+			p.xy += vec2(-axis.y, axis.x) * VERTEX.y * width;
+			vUv = VERTEX.xy;
+			vK = a3.w;
+			vU = u;
+			vCol = a2.rgb * a2.a * fade * clamp(gate, 0.0, 1.0);
+			POSITION = PROJECTION_MATRIX * vec4(p, 1.0);
+		} else {
+			// Kit floors describe the whole mask quad, including its soft halo.
+			// The separate projected-length cap below uses actual framebuffer pixels.
+			float wf = k == 4 ? 7.0 : (k == 5 ? 22.0 : (k == 0 ? 8.0 : 6.0));
+			float lf = (k == 0 || k == 4 || k == 5) ? 14.0 : 5.0;
+			// round 2: a4.z and a4.w carry this streak's own width and length floors (pixels), for fatter tracer cores and
+			// bolder sparks; a line grown to its own floor dims only as f^-0.3
+			bool own = a4.z > wf;
+			wf = max(wf, a4.z);
+			lf = max(lf, a4.w);
+			float sw = a3.y;
+			float bw = 1.0;
+			float wmin = max(px_world(wf, dv, PROJECTION_MATRIX), frame_world(5.0, dv, PROJECTION_MATRIX, VIEWPORT_SIZE.y));
+			if (sw < wmin) {
+				bw = clamp(spow(wmin / max(sw, 1e-5), -0.15), 0.05, 1.0);
+				sw = wmin;
 		}
 		float lmin = px_world(lf, dv, PROJECTION_MATRIX);
 		if (lf > 0.0 && length(head - tail) < lmin) {
@@ -531,6 +592,7 @@ void vertex() {
 		vU = u;
 		vCol = a2.rgb * a2.a * fade * bw * clamp(gate, 0.0, 1.0);
 		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(p, 1.0));
+		}
 	}
 }
 """
@@ -542,23 +604,41 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + STREAK_VERTEX + """
 void fragment() {
 	int k = int(vK + 0.5);
-	// The baked tail is displaced across its quad to curve the cooling
-	// history. The hot head stays on the true ballistic position.
-	float bend = (k == 1 || k == 6 || k == 7) ? sin(vUv.x * 3.14159265) * 0.18 : 0.0;
-	vec2 uv = vec2(vUv.x, vUv.y + 0.5 + bend);
-	vec3 mask = texture(kit_tail, uv).rgb;
-	float crawl = 0.85 + 0.15 * sin(vUv.x * 23.0 - scene_t * 19.0);
-	vec3 hot = mix(vCol, vec3(length(vCol)), 0.68);
-	vec3 c = hot * mask.r * 0.7 + vCol * (mask.g * 0.8 + mask.b * 0.65) * crawl;
-	if (k == 4) {
-		// Las keeps its hard dart identity, with an irregular scrolling core.
-		float x = abs(vUv.y * 2.0);
-		float ends = smoothstep(0.0, 0.13, vUv.x) * (1.0 - smoothstep(0.90, 1.0, vUv.x));
-		c += (hot * exp(-x*x*12.0) * 0.18 + vCol * exp(-x*x*2.8) * 0.22) * ends * crawl;
+	if (k == 8) {
+		// Analytic coverage of a tapered trail and rounded hot head. The small
+		// halo is confined to the head; the rest is a crisp cooling thread.
+		float x = vUv.x;
+		float bend = sin(x * 3.14159265) * 0.055 * vU;
+		float radius = mix(0.038, 0.19, sqrt(clamp(x, 0.0, 1.0)));
+		float y = abs(vUv.y - bend);
+		float edge_aa = clamp(fwidth(vUv.y) * 0.62, 0.012, 0.29);
+		float head = 1.0 - smoothstep(0.84, 0.995, x);
+		float thread = (1.0 - smoothstep(radius - edge_aa, radius + edge_aa, y)) * smoothstep(0.015, 0.68, x) * head;
+		float heat = 1.0 - smoothstep(0.06, 0.72, vU);
+		float white = heat * smoothstep(0.45, 0.90, x) * 0.93;
+		float energy = max(vCol.r, max(vCol.g, vCol.b));
+		float halo_x = (x - 0.86) * 2.1;
+		float halo = exp(-13.0 * halo_x * halo_x - 17.0 * y * y) * head * heat * 0.13;
+		ALBEDO = (mix(vCol, vec3(energy), white) * thread + vCol * halo) * fx_gain;
+	} else {
+		// The baked tail is displaced across its quad to curve the cooling
+		// history. The hot head stays on the true ballistic position.
+		float bend = (k == 1 || k == 6 || k == 7) ? sin(vUv.x * 3.14159265) * 0.18 : 0.0;
+		vec2 uv = vec2(vUv.x, vUv.y + 0.5 + bend);
+		vec3 mask = texture(kit_tail, uv).rgb;
+		float crawl = 0.85 + 0.15 * sin(vUv.x * 23.0 - scene_t * 19.0);
+		vec3 hot = mix(vCol, vec3(length(vCol)), 0.68);
+		vec3 c = hot * mask.r * 0.7 + vCol * (mask.g * 0.8 + mask.b * 0.65) * crawl;
+		if (k == 4) {
+			// Las keeps its hard dart identity, with an irregular scrolling core.
+			float x = abs(vUv.y * 2.0);
+			float ends = smoothstep(0.0, 0.13, vUv.x) * (1.0 - smoothstep(0.90, 1.0, vUv.x));
+			c += (hot * exp(-x*x*12.0) * 0.18 + vCol * exp(-x*x*2.8) * 0.22) * ends * crawl;
 	} else if (k == 3) {
 		c *= 0.65 + 0.35 * sin(vUv.x * 13.0 - scene_t * 8.0);
 	}
 	ALBEDO = clamp(c * fx_gain, 0.0, 512.0);
+	}
 }
 """
 
@@ -810,12 +890,14 @@ const TRAIL := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled, skip_vertex_transform;
 """ + COMMON + """
+uniform float trail_elapsed = 0.0;
+uniform float trail_style = 0.0;
 varying vec4 vCol;
 varying vec4 vInfo;
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 wd = snorm((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	float s = UV.x;
+	float s = clamp(UV.x + trail_elapsed, 0.0, 1.0);
 	float w = mix(CUSTOM1.x, CUSTOM1.y, s);
 	vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - wp));
 	float seed = CUSTOM1.z;
@@ -824,7 +906,7 @@ void vertex() {
 	wp += side * UV.y * w;
 	VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;
 	vCol = CUSTOM0;
-	vInfo = vec4(s, UV.y * 2.0, seed, CUSTOM1.w);
+	vInfo = vec4(s, UV.y * 2.0, seed, trail_style);
 }
 void fragment() {
 	float s = vInfo.x; float x = abs(vInfo.y); float seed = vInfo.z; int st = int(vInfo.w + 0.5);
@@ -948,6 +1030,184 @@ void fragment() {
 }
 """
 
+# Hull-hit fragments. The old SHARD material also serves other effects, so it has its own shader.
+# a0 = (origin, born); a1 = (velocity, life); a2 = (tumble axis, spin); a3 = (size, phase, profile key, drag).
+# a4 = (linear hull paint, fracture heat); the remaining texels carry the hit UV and finish.
+# Negative profile keys mark the lead pieces.
+const HIT_FRAGMENT := """
+shader_type spatial;
+render_mode cull_back;
+""" + COMMON + """
+uniform sampler2D fragment_meshes : filter_nearest, repeat_disable;
+uniform sampler2D fragment_instances : filter_nearest, repeat_disable;
+uniform int glass_profile;
+// FINISH_SAMPLERS
+varying vec4 part_pos; // template position and distance from cap centre toward the rim
+varying flat vec4 surface_data; // surface class, glass, heat, visibility
+varying flat vec3 paint;
+varying flat vec4 finish_tint; // ship albedo multiplier and roughness
+varying flat vec4 finish_orm; // metallic, specular, packed ORM present, source slot
+varying flat float normal_scale;
+varying vec2 paint_uv;
+varying vec2 tear_uv;
+vec3 turn_fragment(vec3 v, vec3 k, float c, float s) {
+	return v * c + cross(k, v) * s + k * dot(k, v) * (1.0 - c);
+}
+vec4 particle_data(int column, int slot_index) {
+	return texelFetch(fragment_instances, ivec2(column, slot_index), 0);
+}
+void vertex() {
+	int slot_index = INSTANCE_ID;
+	vec4 a0 = particle_data(1, slot_index);
+	vec4 a1 = particle_data(2, slot_index);
+	float age = scene_t - a0.w;
+	if (age < 0.0 || age >= a1.w) {
+		VERTEX = vec3(0.0, -50000.0, 0.0);
+	} else {
+		vec4 a2 = particle_data(3, slot_index);
+		vec4 a3 = particle_data(4, slot_index);
+		vec4 a4 = particle_data(0, slot_index);
+		bool lead = a3.z < 0.0;
+		int profile = int(lead ? -1.0 - a3.z : a3.z);
+		int row = profile * 3;
+		vec4 points = texelFetch(fragment_meshes, ivec2(VERTEX_ID, row), 0);
+		vec4 normals = texelFetch(fragment_meshes, ivec2(VERTEX_ID, row + 1), 0);
+		tear_uv = texelFetch(fragment_meshes, ivec2(VERTEX_ID, row + 2), 0).xy;
+		vec3 centre = a0.xyz + pDisp(a1.xyz, a3.w, 0.0, age);
+		float depth = -(VIEW_MATRIX * MODEL_MATRIX * vec4(centre, 1.0)).z;
+		float pixel = frame_world(1.0, depth, PROJECTION_MATRIX, 1080.0);
+		// Mid-sized pieces get a smaller boost. Flecks still follow their world size.
+		float floor_px = lead ? 10.0 : 6.5 * smoothstep(0.21, 0.45, a3.x);
+		float scale = max(a3.x, px_world(floor_px, depth, PROJECTION_MATRIX));
+		float distance_fade = lead ? 1.0 : smoothstep(0.55, 1.45, scale / pixel);
+		float t = age / a1.w;
+		vec3 axis = snorm(a2.xyz);
+		float angle = a3.y * 6.2831853 + age * a2.w;
+		float c = cos(angle);
+		float s = sin(angle);
+		VERTEX = centre + turn_fragment(points.xyz, axis, c, s) * scale;
+		NORMAL = turn_fragment(normals.xyz, axis, c, s);
+		part_pos = points;
+		paint = a4.rgb * mix(0.65, 1.05, a3.y);
+		vec4 patch_u = particle_data(5, slot_index);
+		vec4 patch_v = particle_data(6, slot_index);
+		// Use the real size in the source patch even when the battle camera lifts the image size.
+		vec2 offset = (points.xz + vec2(a3.y - 0.5, fract(a3.y * 7.0) - 0.5) * 0.55) * a3.x;
+		paint_uv = patch_u.xy + patch_u.zw * offset.x + patch_v.xy * offset.y;
+		finish_tint = particle_data(7, slot_index);
+		finish_orm = vec4(particle_data(8, slot_index).xyz, patch_v.z);
+		normal_scale = patch_v.w;
+		float heat = a4.w * (1.0 - smoothstep(0.08, 1.05, age));
+		surface_data = vec4(normals.w, float(profile >= glass_profile), heat, distance_fade * (1.0 - smoothstep(0.55, 1.0, t)));
+	}
+}
+
+// Build the normal-map basis from the same UV gradients as the material. This also
+// follows the smooth cap normals through folds and preserves the wall's hard normals.
+vec3 mapped_normal(vec3 n, vec3 dx, vec3 dy, vec2 ux, vec2 uy, vec2 tilt) {
+	vec3 t = cross(dy, n) * ux.x + cross(n, dx) * uy.x;
+	vec3 b = cross(dy, n) * ux.y + cross(n, dx) * uy.y;
+	float scale = max(dot(t, t), dot(b, b));
+	return normalize(n + (t * tilt.x + b * tilt.y) * inversesqrt(max(scale, 1e-12)));
+}
+
+void fragment() {
+	float fade = surface_data.w;
+	vec2 dx = dFdx(paint_uv);
+	vec2 dy = dFdy(paint_uv);
+	vec2 tx = dFdx(tear_uv);
+	vec2 ty = dFdy(tear_uv);
+	vec3 px = dFdx(VERTEX);
+	vec3 py = dFdy(VERTEX);
+	float lip_width = min(0.12, fwidth(part_pos.w) * 0.35);
+	if (fade < 1.0 && fade <= h21(floor(FRAGCOORD.xy))) {
+		discard;
+	}
+	float wall = step(1.5, surface_data.x);
+	float inside = step(0.5, surface_data.x) - wall;
+	int slot = int(finish_orm.w);
+	float heat = surface_data.z * mix(1.0, 0.45, fx_calm);
+	float wear = vnoise(part_pos.xz * vec2(16.0, 29.0) + part_pos.y * 11.0);
+	float scorch = smoothstep(0.78, 1.0, part_pos.w) * mix(0.25, 0.69, wear);
+	float lip = smoothstep(mix(0.87, 0.96, wear) - lip_width, 1.0, part_pos.w);
+	vec3 baked = paint * mix(0.64, 1.15, wear);
+	vec3 orm = vec3(1.0);
+	vec2 map_normal = vec2(0.0);
+	// FINISH_SAMPLES
+	if (slot >= 0) {
+		baked *= finish_tint.rgb;
+	}
+	vec3 charred = baked * 0.11 + vec3(0.023, 0.018, 0.014);
+	ALBEDO = mix(baked, charred, max(scorch, inside));
+	METALLIC = mix(0.23, 0.63, wall);
+	ROUGHNESS = mix(0.79 - 0.15 * wear, 0.38, wall);
+	if (slot >= 0) {
+		float packed = finish_orm.z;
+		AO = mix(1.0, orm.r, packed * (1.0 - wall));
+		METALLIC = mix(clamp(finish_orm.x * mix(1.0, orm.b, packed), 0.0, 1.0), 0.36, max(inside, wall));
+		ROUGHNESS = clamp(finish_tint.a * mix(1.0, orm.g, packed) + 0.13 * scorch, 0.18, 0.96);
+		SPECULAR = finish_orm.y;
+	}
+	if (wall > 0.5) {
+		// Thin paint and a darker liner frame the bright torn alloy. Filter the
+		// cross-section boundaries and directional scratch normals at pixel scale.
+		float band_aa = max(0.022, (abs(tx.y) + abs(ty.y)) * 0.55);
+		float skin = smoothstep(0.38 - band_aa, 0.38 + band_aa, tear_uv.y);
+		float liner = 1.0 - smoothstep(-0.44 - band_aa, -0.44 + band_aa, tear_uv.y);
+		vec2 grain = tear_uv * vec2(108.0, 4.0);
+		float scratch = vnoise(grain);
+		float grain_filter = 1.0 - smoothstep(0.28, 1.15, length(fwidth(grain)));
+		vec3 alloy = vec3(0.29, 0.25, 0.21) * mix(0.58, 1.35, mix(0.5, scratch, grain_filter));
+		ALBEDO = mix(mix(alloy, charred * 0.62, liner), baked * 0.59, skin);
+		METALLIC = mix(0.83, 0.27, max(skin, liner));
+		ROUGHNESS = mix(0.32 + 0.15 * scratch, 0.72, max(skin, liner));
+		vec2 grain_normal = vec2(scratch - vnoise(grain + vec2(0.37, 0.0)), (scratch - 0.5) * 0.18);
+		NORMAL = mapped_normal(NORMAL, px, py, tx, ty, grain_normal * (0.85 * grain_filter) + map_normal * 0.13);
+	} else {
+		float ribs = cos((part_pos.z * 22.0 + part_pos.x * 3.0) * 6.2831853);
+		float rib_mask = 1.0 - smoothstep(0.10, 0.42, fwidth(part_pos.z * 22.0 + part_pos.x * 3.0));
+		ALBEDO *= 1.0 + ribs * 0.27 * inside * rib_mask;
+		ROUGHNESS = mix(ROUGHNESS, 0.62 + 0.16 * wear, inside);
+		NORMAL = mapped_normal(NORMAL, px, py, dx, dy, map_normal * normal_scale * mix(1.0, 0.62, inside));
+		if (inside > 0.5) {
+			NORMAL = mapped_normal(NORMAL, px, py, tx, ty, vec2(0.0, ribs * 0.29 * rib_mask));
+		}
+	}
+	vec3 hot_edge = mix(vec3(0.78, 0.055, 0.009), vec3(1.0, 0.24, 0.045), clamp(heat * 1.7, 0.0, 1.0));
+	EMISSION = hot_edge * heat * mix(2.1 * lip, 3.7, wall) * mix(0.52, 1.0, wear) * fx_gain;
+	if (surface_data.y > 0.5) {
+		float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+		float prism = clamp(rim + part_pos.x * 0.55 + part_pos.z * 0.35, 0.0, 1.0);
+		vec3 spectral = mix(vec3(0.32, 0.78, 0.90), vec3(0.78, 0.57, 0.92), prism);
+		ALBEDO = mix(ALBEDO, spectral, 0.32 * rim + 0.28 * wall);
+		METALLIC = 0.10;
+		ROUGHNESS = mix(clamp(ROUGHNESS * 0.55, 0.10, 0.32), 0.23, wall);
+		float glint = smoothstep(0.32, 0.86, rim) * (0.28 + 0.39 * lip);
+		EMISSION = EMISSION * 0.47 + spectral * (0.045 + glint) * fx_gain;
+	}
+}
+"""
+
+
+# Bind the original textures for every live finish, using fixed sampler names.
+# Explicit gradients keep mip selection correct when neighbouring pieces use different maps.
+static func hit_fragment_code(slots: int) -> String:
+	var samplers := ""
+	var samples := ""
+	for i in slots:
+		samplers += "uniform sampler2D hull_color_%d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;\n" % i
+		samplers += "uniform sampler2D hull_orm_%d : hint_default_white, filter_linear_mipmap_anisotropic, repeat_enable;\n" % i
+		samplers += "uniform sampler2D hull_normal_%d : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;\n" % i
+		samples += """
+	if (slot == %d) {
+		baked = textureGrad(hull_color_%d, paint_uv, dx, dy).rgb;
+		orm = textureGrad(hull_orm_%d, paint_uv, dx, dy).rgb;
+		map_normal = textureGrad(hull_normal_%d, paint_uv, dx, dy).xy * 2.0 - 1.0;
+	}
+""" % [i, i, i, i]
+	return HIT_FRAGMENT.replace("// FINISH_SAMPLERS", samplers).replace("// FINISH_SAMPLES", samples)
+
+
 # Shield bubble (one per shielded ship, an ellipsoid round the hull). Up to 6 hits at once, each with a bright core and
 # ripple rings out from the impact; a fresnel rim lights near the hit. style: 0 Voidsworn (gold veil, crackling),
 # 1 Hegemony (clean hex lattice), 2 Corsair (patchy, flickering), 3 Ithar (smooth prismatic veil).
@@ -958,6 +1218,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_back, shadows_disabled, 
 """ + COMMON + """
 uniform vec3 col = vec3(1.0);
 uniform vec3 rad = vec3(1.0);
+uniform bool fitted_shape = false;
 uniform int style = 0;
 uniform vec4 hits[6];
 uniform vec4 hitw[6];
@@ -971,9 +1232,10 @@ varying vec3 vL;
 varying vec3 vW;
 varying vec3 vN;
 void vertex() {
-	vL = VERTEX;
+	// The fitted mesh is in hull units; the egg keeps its original unit-sphere coordinates.
+	vL = fitted_shape ? VERTEX / rad : VERTEX;
 	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	vN = snorm((MODEL_MATRIX * vec4(NORMAL / rad, 0.0)).xyz);
+	vN = fitted_shape ? snorm(MODEL_NORMAL_MATRIX * NORMAL) : snorm((MODEL_MATRIX * vec4(NORMAL / rad, 0.0)).xyz);
 }
 float hexcell(vec2 q) {
 	vec2 h = vec2(q.x * 1.1547, q.y + q.x * 0.57735);
@@ -1026,11 +1288,16 @@ void fragment() {
 		float rg = 0.0;
 		for (int j = 0; j < 3; j++) {
 			float aj = age - float(j) * 0.08;
-			if (aj > 0.0) { float rd = (d - aj * spread * 1.6) / max(0.5 + aj * 2.0, wpx * 3.0); rg += exp(-rd * rd) * (j == 0 ? 1.7 : 0.8); }
+			if (aj > 0.0) {
+				// R303: the moving band is evaluated only on this shield surface.
+				float rd = (d - aj / life * spread) / max(0.35 + aj * 0.6, wpx * 1.5);
+				rg += exp(-rd * rd) * (j == 0 ? 1.7 : 0.8);
+			}
 		}
 		float ga = clamp(age / min(life, 0.55), 0.0, 1.0);
 		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
-		I += ((core + rg * mask * (0.6 + 0.4 * S)) * fade + glow_all) * S;
+		float ripple_fade = pow(1.0 - f, 1.3) * smoothstep(0.0, 0.025, age);
+		I += (core * fade + rg * mask * (0.6 + 0.4 * S) * ripple_fade + glow_all) * S;
 	}
 	// regen shimmer: a band sweeping the bubble from stern to bow
 	float ra = scene_t - regen_t;

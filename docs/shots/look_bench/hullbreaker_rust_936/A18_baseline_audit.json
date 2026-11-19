@@ -1,0 +1,161 @@
+{
+  "pre_job_glb_matches_main_manifest": true,
+  "main_glb": {
+    "bytes": 17277280,
+    "sha256": "bb681ce0c77651cc1d67fb0ba468f34c6ca54dbf51c9e2f6cc5f60cda768436f"
+  },
+  "before_triangles": 186168,
+  "after_triangles": 186136,
+  "mesh_difference": {
+    "old_only": [],
+    "new_only": [
+      "RL17_body_light",
+      "RL17_mount_iron"
+    ],
+    "changed": [
+      {
+        "name": "D1_body_dish",
+        "max_position_delta": 0.05984589457511902,
+        "topology": false
+      },
+      {
+        "name": "D1_body_steel",
+        "max_position_delta": 0.057925909757614136,
+        "topology": false
+      },
+      {
+        "name": "D1_mount_iron",
+        "max_position_delta": 0.036968737840652466,
+        "topology": false
+      },
+      {
+        "name": "E1_body_ember",
+        "old_vertices": 168,
+        "new_vertices": 168,
+        "old_triangles": 280,
+        "new_triangles": 168,
+        "topology": true
+      },
+      {
+        "name": "E1_body_glow",
+        "old_vertices": 56,
+        "new_vertices": 140,
+        "old_triangles": 56,
+        "new_triangles": 168,
+        "topology": true
+      },
+      {
+        "name": "E1_body_steel",
+        "old_vertices": 476,
+        "new_vertices": 476,
+        "old_triangles": 952,
+        "new_triangles": 912,
+        "topology": true
+      },
+      {
+        "name": "E2_body_ember",
+        "old_vertices": 168,
+        "new_vertices": 168,
+        "old_triangles": 280,
+        "new_triangles": 168,
+        "topology": true
+      },
+      {
+        "name": "E2_body_glow",
+        "old_vertices": 56,
+        "new_vertices": 140,
+        "old_triangles": 56,
+        "new_triangles": 168,
+        "topology": true
+      },
+      {
+        "name": "E2_body_steel",
+        "old_vertices": 476,
+        "new_vertices": 476,
+        "old_triangles": 952,
+        "new_triangles": 912,
+        "topology": true
+      },
+      {
+        "name": "E3_body_ember",
+        "old_vertices": 168,
+        "new_vertices": 168,
+        "old_triangles": 280,
+        "new_triangles": 168,
+        "topology": true
+      },
+      {
+        "name": "E3_body_glow",
+        "old_vertices": 56,
+        "new_vertices": 140,
+        "old_triangles": 56,
+        "new_triangles": 168,
+        "topology": true
+      },
+      {
+        "name": "E3_body_steel",
+        "old_vertices": 476,
+        "new_vertices": 476,
+        "old_triangles": 952,
+        "new_triangles": 912,
+        "topology": true
+      },
+      {
+        "name": "RL16_body_light",
+        "max_position_delta": 0.44671598076820374,
+        "topology": false
+      },
+      {
+        "name": "RL16_mount_iron",
+        "max_position_delta": 0.44669918715953827,
+        "topology": false
+      }
+    ]
+  },
+  "current_sheet_check": {
+    "ok": true,
+    "problems": [],
+    "approved_meshes": 250,
+    "maximum_position_delta": 0.0,
+    "tolerance": "1e-7 normalized ship length, for float32 transform serialization only",
+    "paint_generated_meshes": [
+      "RL0_body_light",
+      "RL0_mount_iron",
+      "RL10_body_light",
+      "RL10_mount_iron",
+      "RL11_body_light",
+      "RL11_mount_iron",
+      "RL12_body_light",
+      "RL12_mount_iron",
+      "RL13_body_light",
+      "RL13_mount_iron",
+      "RL14_body_light",
+      "RL14_mount_iron",
+      "RL15_body_light",
+      "RL15_mount_iron",
+      "RL16_body_light",
+      "RL16_mount_iron",
+      "RL17_body_light",
+      "RL17_mount_iron",
+      "RL1_body_light",
+      "RL1_mount_iron",
+      "RL2_body_light",
+      "RL2_mount_iron",
+      "RL3_body_light",
+      "RL3_mount_iron",
+      "RL4_body_light",
+      "RL4_mount_iron",
+      "RL5_body_light",
+      "RL5_mount_iron",
+      "RL6_body_light",
+      "RL6_mount_iron",
+      "RL7_body_light",
+      "RL7_mount_iron",
+      "RL8_body_light",
+      "RL8_mount_iron",
+      "RL9_body_light",
+      "RL9_mount_iron"
+    ]
+  },
+  "note": "Pre-existing installed asset / sheet mismatch. The repaint builds the untouched current approved sheet; no geometry source edit was made."
+}

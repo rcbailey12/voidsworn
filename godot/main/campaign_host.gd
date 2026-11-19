@@ -7,7 +7,7 @@ extends Node
 signal run_over(summary: Dictionary)
 
 const API := preload("res://rules/battle_api.gd")
-const CAMPAIGN := "res://campaign/campaign.gd"
+const Campaign := preload("res://campaign/campaign.gd")
 const UI_G3 := "res://ui/campaign/campaign_ui.gd"
 const Fallback := preload("res://main/campaign_fallback_ui.gd")
 const Teaching := preload("res://ui/campaign/campaign_tips.gd")
@@ -45,7 +45,7 @@ func start(m: Node, o: Dictionary) -> void:
 	bot = bool(o.get("bot", false))
 	policy = str(o.get("policy", "smart"))
 	t0 = Time.get_ticks_msec() / 1000.0
-	C = load(CAMPAIGN).new()
+	C = Campaign.new()
 	var err: String = C.load_tables()
 	if err != "":
 		errors.append("campaign tables: " + err)
@@ -101,8 +101,8 @@ func _seed_campaign(s: int) -> void:
 		load("res://rules/jsm.gd").rnd_seed(s & 0xFFFFFFFF)  # fallback until campaign.seed_rng() lands (G3)
 
 
-static func has_save() -> bool:
-	return FileAccess.file_exists("user://voidsworn_campaign.json")
+static func has_save(path: String = Campaign.SAVE_PATH) -> bool:
+	return Campaign.has_saved_run(path)
 
 
 var _music_page := ""
@@ -194,8 +194,9 @@ func _battle_line(a, res: String, r: Dictionary) -> Dictionary:
 			continue
 		var dead: bool = _jt(u.get("dead")) or _jt(u.get("fled"))
 		if u.get("side") == "player":
-			ps += 1; pa += 0 if dead else 1
-			mh += float(u.get("maxHp", 0)); hp += 0.0 if dead else max(0.0, float(u.get("hp", 0)))
+			var alive := API.RulesScript.player_ship_survives(u)
+			ps += 1; pa += 1 if alive else 0
+			mh += float(u.get("maxHp", 0)); hp += max(0.0, float(u.get("hp", 0))) if alive else 0.0
 		elif u.get("side") == "enemy":
 			es += 1; ea += 0 if dead else 1
 	var o = B.get("obj")
