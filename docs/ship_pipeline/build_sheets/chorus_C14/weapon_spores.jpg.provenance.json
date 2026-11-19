@@ -1,33 +1,33 @@
 {
-  "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-  "source_dirty": true,
-  "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+  "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+  "source_dirty": false,
+  "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_spores.jpg",
-  "date": "2026-11-19T16:34:09Z",
+  "date": "2026-11-19T16:53:50Z",
   "sources": [
     {
-      "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-      "source_dirty": true,
-      "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "weapon_spores.png",
-      "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-      "source_dirty": true,
-      "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T16:33:49Z",
-      "image_sha256": "be7750d5ec1cfb7e7c5f053758f164b2560dcaa681ce19293739afb48ac22749",
+      "date": "2026-11-19T16:53:30Z",
+      "image_sha256": "21a15c45be73f35c5806a9d7068f16c85c2ff4204ab96f9bd6661081058cac99",
       "sources": [
         {
-          "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-          "source_dirty": true,
-          "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+          "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+          "source_dirty": false,
+          "source_diff_sha256": "",
           "stage": "sheet built"
         }
       ]
@@ -36,19 +36,19 @@
   "stamp_box": [
     0,
     511,
-    282,
+    216,
     560
   ],
   "strip_size": [
-    282,
+    216,
     49
   ],
   "strip_sha256": [
-    "5ae70b4ac74da622f791e98cfa93c9440f075b0680dee7065c0de0714c4ac931"
+    "7ad603714b4b3d788d47bd9120548bb3d1cb049e532bb949eeff389c5b89b28f"
   ],
-  "stamp_template_sha256": "580d6d010546c364ff6c8ee1f8dbfe9999cd5fb50b812f47bee911cf35bcfd14",
+  "stamp_template_sha256": "091fbf6c0504e5372bb90d6c0ed1806e5fac45cd4d76b25b846f82e83fcd8be2",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAAoElEQVR4nO3SMREAIBDAsAdZHP51IYMOiYIOXefcgd/27wCYMSIRRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIwgOvUwESapuuagAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "d60f14a0c0ae366220f697175f0887074f0e05489539dbb3427a83dda2729fb4"
+  "image_sha256": "5ce1626707d9ac6b6616aa305c4936c0ecfb166dfff7067dbdd23d3718852ede"
 }

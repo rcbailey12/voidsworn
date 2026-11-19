@@ -1,33 +1,33 @@
 {
-  "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-  "source_dirty": true,
-  "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+  "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+  "source_dirty": false,
+  "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "beauty_vs_blockout.jpg",
-  "date": "2026-11-19T16:34:09Z",
+  "date": "2026-11-19T16:53:49Z",
   "sources": [
     {
-      "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-      "source_dirty": true,
-      "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "beauty_cam.png",
-      "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-      "source_dirty": true,
-      "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+      "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T16:33:44Z",
-      "image_sha256": "b9c4a1cf3d90a7053660573cddc500b4d2201613022ade8a869866476a9c8cbc",
+      "date": "2026-11-19T16:53:25Z",
+      "image_sha256": "32d7a713b0c697455b1cbb8681fb7b0a380fa5468cc5131dd27567046e8e33e1",
       "sources": [
         {
-          "source_commit": "de7f8d40fa03f237729dc3292c6a535bda722de1",
-          "source_dirty": true,
-          "source_diff_sha256": "32b5ea5b97414d5a6a452f9e3635ec6ea78cdad2185e9f0c9f568e13c9294aae",
+          "source_commit": "7ee61afac2e2096688aceba37d1a172cdcf6ba44",
+          "source_dirty": false,
+          "source_diff_sha256": "",
           "stage": "sheet built"
         }
       ]
@@ -36,19 +36,19 @@
   "stamp_box": [
     0,
     671,
-    282,
+    216,
     720
   ],
   "strip_size": [
-    282,
+    216,
     49
   ],
   "strip_sha256": [
-    "76b39e930c6f70e656708696d5c650cf8dd275149e29cd5066baed9eace2c497"
+    "40af2f26ebd95af65273d92ce8b84adc158d9c0f570e151321a5597b51926ca5"
   ],
-  "stamp_template_sha256": "0ad028df2c46f6b6d69cb7cc68ce195fae4784970b9f0b136b175839d6a4b0cb",
+  "stamp_template_sha256": "1300da47456345823c1a9b0c186c721fe5d6df50bf5640444d100dfc55b62bb9",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAA4klEQVR4nO3VwU1CQQBFUebLRr4SMdIMof86WBjLcGziJpPIORW8zc0bt9v9ACvM+fvz/djfzpfP65xz9ZzAtnoAz2vbXk77++tpXz0kc1w9gOc15/y4fI0x/sc1HbwTa40xVk8oyQkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMn9ZzRCQaXMUUQAAAABJRU5ErkJggg=="
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAAoElEQVR4nO3SMREAIBDAsAdZHP51IYMOiYIOXefcgd/27wCYMSIRRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIwgOvUwESapuuagAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "02477ff20ad25c949761c0990f33b656988c4440e5c3d46fe142a2c270402509"
+  "image_sha256": "b232dfdf9c65e24a85c88c346edeadcf4c6fa7cca31c9ce6c33cd16f555f24f3"
 }
