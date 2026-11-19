@@ -27,6 +27,7 @@ const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
 const HT := preload("res://render/hull_table.gd")
 const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: faction colours come from fx/faction_looks.json only
+const WEAPON_FX := preload("res://fx/fx_weapons.gd")
 const HUD := preload("res://ui/battle/hud.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const Fx := preload("res://scenes/battle/fx_stub.gd")
@@ -815,7 +816,7 @@ func _make_view(u: Dictionary) -> void:
 	sv.setup(u, board.hex_world(u["q"], u["r"]), true)
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
-	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
+	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
 	_register_fx_ship(u, sv)
 
 
@@ -880,7 +881,7 @@ func _sync(v: Dictionary) -> void:
 		if not views.has(u["id"]):
 			_make_view(u)
 		var sv = views[u["id"]]
-		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
+		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate(), "regenLock": bool(u.get("regenLock", false))}
 		sv.set_marker(u["side"] == "player")
 		if gfx != null and gfx.has_method("sync_ship"):
 			var su: Dictionary = u.duplicate()
@@ -1260,6 +1261,8 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				adaptation_heard = true
 				sfx.play("adapt_shift")
 		"round":
+			for d in disp.values():
+				d["regenLock"] = false
 			_log("Round %d." % int(e["round"]), "x")
 			if finale_fight and world != null and world.has_method("finale_for_round"):
 				world.finale_for_round(int(e["round"]))   # R78 Q18: one more sector catches the new sun
@@ -1840,19 +1843,29 @@ func _fx_wait(done: float, impacts: Array, sp: float, kills := false, cap := INF
 
 func _wfam(u: Dictionary, w: Dictionary) -> String:
 	var k := str(w["kind"])
+	var wid := str(w.get("weapon_id", ""))
+	var faction := str(u.get("fac", ""))
 	if u.get("squadron", false):
 		return "sq"
+	match WEAPON_FX.look_of(k, wid, faction):
+		"macro":
+			if faction == "voidsworn":
+				return "shell"
+		"junk":
+			return "tracer"
+		"nlance":
+			return "lance"
 	if k == "flak":
 		return "flak"
 	if k == "torp":
 		return "torp"
 	if k == "lance":
-		return "ion" if str(w.get("weapon_id", "")) == "ion" else "lance"
+		return "ion" if wid == "ion" else "lance"
 	if k == "gauss":
 		return "rail"
 	if k == "bio":
-		return "spine" if str(w.get("weapon_id", "")) == "bioplasma" else "glob"
-	return {"voidsworn": "las", "hegemony": "plasma", "corsair": "tracer", "chorus": "spine", "ithar": "needle", "deathless": "rail"}.get(str(u.get("fac", "")), "shell")
+		return "spine" if wid == "bioplasma" else "glob"
+	return {"voidsworn": "las", "hegemony": "plasma", "corsair": "tracer", "chorus": "spine", "ithar": "needle", "deathless": "rail"}.get(faction, "shell")
 
 
 # fx3d.js cineWants and cineFrame: a side-on shot of the big moments (lances, torpedoes and novas on bosses or a nearly
@@ -1939,8 +1952,6 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		elif g["t"] == "system":
 			sys_txt = str(g["text"])
 	var col: Color = FLOOK.weapon(fac)
-	if fam == "ion":
-		col = Color(0.45, 0.75, 1.0)
 	var tsv = views.get(t_id)
 	var L: float = tsv.L if tsv != null else 10.0
 	var shield_col: Color = FLOOK.shield(str(VU.get(t_id, {}).get("fac", "hegemony")))
@@ -1975,20 +1986,27 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
 		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+		var fires: Array = r.get("fires", [])
 		if fam in ["lance", "ion"]:
-			sfx.lance(fam == "ion", fac, from)
+			if str(e.get("weapon_id", "")) != "nlance":
+				sfx.lance(fam == "ion", fac, from)
+			elif not fires.is_empty():
+				sfx.lance(false, fac, from, fires)
 		elif fam == "torp":
 			sfx.torp(fac, from)
 		else:
 			# issue 506: one gun cue per shot, on the fire times the fx layer used for its muzzle effects
 			var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
-			var fires: Array = r.get("fires", [])
 			for i in mini(fires.size(), n):
 				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]))
 		var imp: Array = r.get("impacts", [])
 		var tfac := str(VU.get(t_id, {}).get("fac", ""))
+		var landed: Array = []
+		for i in mini(n, imp.size()):
+			if bool(shots[i]):
+				landed.append(imp[i])
 		for k in hits.size():
-			var at: float = float(imp[k]) if k < imp.size() else 0.3
+			var at: float = float(landed[k]) if k < landed.size() else 0.3
 			var h: Dictionary = hits[k]
 			get_tree().create_timer(maxf(at, 0.001)).timeout.connect(func() -> void:
 				_apply_hit(h)
@@ -2146,6 +2164,8 @@ func _apply_hit(h: Dictionary) -> void:
 	if t_id == null or not disp.has(t_id):
 		return
 	var d: Dictionary = disp[t_id]
+	if bool(h.get("regenLock", false)):
+		d["regenLock"] = true
 	d["hp"] = maxf(0.0, float(d["hp"]) - float(h["hull"]))
 	var q := int(h.get("quad", 0))
 	if d["sh"] is Array and q < (d["sh"] as Array).size():
@@ -4829,7 +4849,8 @@ func _process(dt: float) -> void:
 		for x in d["sh"]:
 			shs += float(x)
 		var is_up: bool = str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player"
-		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target}
+		var px := {"nem": bool(u.get("nemesis", false)) and u["side"] == "enemy", "target": str(id) == target,
+			"regenLock": bool(d.get("regenLock", false))}
 		if _tgt_plate.has(str(id)):
 			px["odds"] = _tgt_plate[str(id)]["odds"]
 			px["ghost"] = _tgt_plate[str(id)]["ghost"]
