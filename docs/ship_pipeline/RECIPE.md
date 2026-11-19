@@ -560,6 +560,15 @@ The ship cache builder reads the image files beside the GLB directly, even when 
 same path. An editor import can pair an old atlas with the new hull's UVs and leave black patches across its plating (issue 1082).
 `render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
 damage and wreck, then a new one installed over it, plus a planted stale texture).
+Squadron exports keep the design sheet's exterior and hard points. The build sheet's test rooms and seams stay in the blend because
+wing deaths use the small-craft effect. Stage 7 requires an authored engine exit for the ribbon and writes `wing_role` on painted
+exports. `SquadronWing` uses that role and the faction id from the asset manifest to find its cached scene. Give each craft its
+own `game_code`, even when two craft use the same rules template. Installed readback exercises the faction wing through `ShipView`.
+An off-surface squadron bomb outlet passes when its exported radius matches a round rim around its exit point, with a bore behind
+it and a clear path ahead. The export self-test doubles the radius and moves the outlet to prove the check rejects both faults.
+The Navy craft kit records the mouth width and height of its rectangular exhaust. Stage 7 reads those dimensions to verify the
+four rim corners, recessed throat and clear exhaust at the authored exit plane. The export self-test moves the exit and doubles
+each dimension separately to prove the check rejects each fault.
 The target's install check also needs `tools/ci/check_guard.gd`, even when the playable build otherwise omits CI tools.
 The issue 726 paint helper supplies that file only when missing and verifies its copied hash before installation.
 It also backs up and refreshes the test-only `a4_shots.gd` and its scene in the playable build, so the requested camera 170
