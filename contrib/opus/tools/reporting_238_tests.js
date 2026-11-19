@@ -3,11 +3,11 @@
 // reports say. They do not run a bake, a battle, or a Monte Carlo on CI; those numbers are in the dated JSON files.
 // The scripts themselves are covered by their exported data functions here.
 
-const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '../../..');
+const inputs = require('./sparse_check_inputs')(ROOT);
 const DIR = path.join(ROOT, 'docs/shots/reporting_2026_11');
-function read(name) { return JSON.parse(fs.readFileSync(path.join(DIR, name), 'utf8')); }
+function read(name) { return JSON.parse(inputs.read(path.join(DIR, name))); }
 
 const env = require('./env_batch_audit.js');
 const star = require('./star_count_report.js');
@@ -85,7 +85,7 @@ t('HD6 battle log soak', () => {
   ok(j.rules_log_entries === j.hud_log_entries, 'the rules log and the HUD log disagree: ' + j.rules_log_entries + ' vs ' + j.hud_log_entries);
   ok(j.hud_log_entries > j.js_cap, 'the soak did not pass the JS 200-entry cap: ' + j.hud_log_entries);
   ok(j.hud_display_lines >= j.hud_log_entries, 'display lines are below entries');
-  ok(fs.existsSync(path.join(DIR, 'hd6_battle_log_soak.png')), 'the soak capture is missing');
+  ok(inputs.exists(path.join(DIR, 'hd6_battle_log_soak.png')), 'the soak capture is missing');
 });
 
 t('MP8 danger bands', () => {

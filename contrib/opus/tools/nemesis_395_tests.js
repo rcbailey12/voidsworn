@@ -14,6 +14,7 @@ global.document = { createElement: el, getElementById: id => IDS[id] || (id === 
 global.addEventListener = () => {}; global.requestAnimationFrame = () => 0; global.innerWidth = 1600; global.innerHeight = 900; global.setTimeout = () => 0;
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const ROOT = path.resolve(__dirname, '..', '..', '..');
+const inputs = require('./sparse_check_inputs')(ROOT);
 const src = ['data.js', 'core.js', 'battle.js', 'campaign_meta.js', 'campaign_run.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
 let pass = 0, fail = 0; const tests = [];
 function check(name, fn) { tests.push([name, fn]); }
@@ -60,7 +61,7 @@ const own = (arr, line) => Array.isArray(arr) && arr.includes(line);
 
 // 395-1: the block is the merged Muse text, word for word, and it fills the same shape as the other five
 check('395-1 NEM_VOICE.voidsworn equals the merged crusade_voice.md block word for word', () => {
-  const md = fs.readFileSync(path.join(ROOT, 'contrib/muse/design/nemesis_writing_2026_11/crusade_voice.md'), 'utf8');
+  const md = inputs.read(path.join(ROOT, 'contrib/muse/design/nemesis_writing_2026_11/crusade_voice.md'));
   const m = /```js\r?\n([\s\S]*?)```/.exec(md); if (!m) throw new Error('no js block in crusade_voice.md');
   const want = vm.runInThisContext('({' + m[1].trim() + '})', { filename: 'crusade_voice.md' });
   if (!want || !want.voidsworn) throw new Error('the merged block has no voidsworn key');

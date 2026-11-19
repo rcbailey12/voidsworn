@@ -23,6 +23,7 @@
 //        node contrib/opus/tools/build_manifest_tests.js <sheet dir> [<part library root>]   one sheet, its problems listed
 const fs = require('fs');
 const path = require('path');
+const checkInputs = require('./sparse_check_inputs');
 
 const ROOT = process.env.VS_ROOT || path.resolve(__dirname, '../../..');
 const SHEETS = path.join(ROOT, 'docs', 'ship_pipeline', 'build_sheets');
@@ -260,10 +261,11 @@ function checkShip(sheetMd, man, opts = {}) {
 }
 
 function checkDir(dir, opts = {}) {
-  if (!fs.existsSync(path.join(dir, 'feature_table.md'))) return { fails: [{ code: 'FORMAT', msg: 'no feature_table.md beside manifest.json' }], notes: [] };
-  const md = fs.readFileSync(path.join(dir, 'feature_table.md'), 'utf8');
+  const { exists = fs.existsSync, read = file => fs.readFileSync(file, 'utf8') } = opts;
+  if (!exists(path.join(dir, 'feature_table.md'))) return { fails: [{ code: 'FORMAT', msg: 'no feature_table.md beside manifest.json' }], notes: [] };
+  const md = read(path.join(dir, 'feature_table.md'));
   let man;
-  try { man = JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8')); } catch (e) {
+  try { man = JSON.parse(read(path.join(dir, 'manifest.json'))); } catch (e) {
     return { fails: [{ code: 'FORMAT', msg: 'manifest.json does not parse: ' + e.message }], notes: [] };
   }
   return checkShip(md, man, opts);
@@ -277,20 +279,22 @@ function standing() {
   const errors = [];
   const out = s => console.log(s);
   const rel = p => path.relative(ROOT, p).split(path.sep).join('/');
+  const inputs = checkInputs(ROOT);
 
   // 1. every real sheet with a manifest
-  const ships = fs.readdirSync(SHEETS, { withFileTypes: true })
-    .filter(d => d.isDirectory() && fs.existsSync(path.join(SHEETS, d.name, 'manifest.json'))).map(d => d.name).sort();
+  const dirs = fs.existsSync(SHEETS) ? fs.readdirSync(SHEETS, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name) : [];
+  const skipped = inputs.skipped(SHEETS).map(file => /^docs\/ship_pipeline\/build_sheets\/([^/]+)\/manifest\.json$/.exec(file))
+    .filter(Boolean).map(match => match[1]);
+  const ships = [...new Set([...dirs.filter(name => fs.existsSync(path.join(SHEETS, name, 'manifest.json'))), ...skipped])].sort();
   if (!ships.length) errors.push('no build sheet has a manifest.json');
   for (const s of ships) {
     const dir = path.join(SHEETS, s);
-    if (!fs.existsSync(path.join(dir, 'feature_table.md'))) { errors.push(s + ': manifest.json has no feature_table.md beside it'); out('FAIL ' + s + ': no feature_table.md'); continue; }
-    const r = checkDir(dir);
+    const r = checkDir(dir, inputs);
     if (r.fails.length) {
       for (const f of r.fails) out('FAIL ' + s + ' ' + f.code + ': ' + f.msg);
       errors.push(s + ': ' + r.fails.length + ' problem(s)');
     } else {
-      const man = JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8'));
+      const man = JSON.parse(inputs.read(path.join(dir, 'manifest.json')));
       const routes = {};
       for (const p of man.parts) routes[p.route] = (routes[p.route] || 0) + 1;
       out('PASS ' + s + ': ' + man.parts.length + ' parts (' + Object.entries(routes).map(([k, v]) => v + ' ' + k).join(', ') +
@@ -317,9 +321,9 @@ function standing() {
 
   // 3. single-fault copies of the real A16 manifest: each refused for its own reason
   const a16 = path.join(SHEETS, 'corsair_A16');
-  if (fs.existsSync(path.join(a16, 'manifest.json'))) {
-    const md = fs.readFileSync(path.join(a16, 'feature_table.md'), 'utf8');
-    const base = () => JSON.parse(fs.readFileSync(path.join(a16, 'manifest.json'), 'utf8'));
+  if (inputs.exists(path.join(a16, 'manifest.json'))) {
+    const md = inputs.read(path.join(a16, 'feature_table.md'));
+    const base = () => JSON.parse(inputs.read(path.join(a16, 'manifest.json')));
     const cases = [
       ['a kit part marked hand-built', 'ROUTE', m => { m.parts.find(p => p.id === 'T2').route = 'hand-built'; }],
       ['a mass marked kit', 'ROUTE', m => { m.masses[0].route = 'kit'; }],

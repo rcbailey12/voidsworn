@@ -13,6 +13,7 @@
 #   differs from the arm default, whatever the provider.
 # base <repo> <out> <issue body file>: parse the optional Base line, fetch and commit its merge before the agent.
 # announce <out> <issue> <seat> <repo> <ceiling seconds> <resume command> <push mode> [assignment branch]: validate and claim.
+# work-run <repo> <issue> <arm> [dryrun]: hold the arm's checkout lock until the batch exits.
 # board-dryrun <out>: list ACCEPT or REFUSE for every open codex, muse or opus issue, without claims or agent calls.
 # Test claims require PC_TEST_GH and PC_TEST_GH_DB; real dry runs validate read-only. Linux probes use pwsh and real git.
 # Public runner diagnostics are built from fixed text. Keep exceptions, reports from interrupted agents,
@@ -61,6 +62,7 @@ $mode = $args[0]
 $utf8 = New-Object Text.UTF8Encoding($false)
 $test = $env:PC_RUNNER_TEST -eq '1'
 $scratchOwnerFile = '.voidsworn-run-owner'
+$fixedBlockPattern = '(?im)^[ \t]*Owner:[^\r\n]*(?:\r?\n(?![ \t]*(?:\r?$|`{3,}|~{3,}))[^\r\n]+)*'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 function Put($path, $value) { [IO.File]::WriteAllText($path, [string]$value, $utf8) }
 function Read($path) { if (Test-Path -LiteralPath $path) { return [IO.File]::ReadAllText($path).Trim() }; return '' }
@@ -268,19 +270,50 @@ function Reuse-Caches($repo) {
     throw "working tree needs keeping: $line"
   }
 }
-function Get-RebuildableRepoFiles($repo, $mirror, $sparse) {
+function Code-CheckoutExclusions($body) {
+  $fields = [regex]::Matches($body, '(?im)^[ \t]*(?:Brief|Deliver to):([^\r\n]*)') |
+    ForEach-Object { $_.Groups[1].Value.Replace('\', '/') }
+  foreach ($dir in @('docs/shots','docs/ship_pipeline/build_sheets','contrib/muse/design','hulls_hi','rocks_hi')) {
+    $path = [regex]::Escape($dir)
+    if (-not ($fields -match "(?i)(?<![\w./-])(?:\./)?$path(?=/|[^\w.-]|$)")) { $dir }
+  }
+}
+function Assert-IdleRepo($gitDir) {
+  foreach ($state in @('index.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules','worktrees')) {
+    if (Test-Path -LiteralPath (Join-Path $gitDir $state)) { throw "Git holds local state: $state" }
+  }
+}
+function Get-RebuildableRepoFiles($repo, $mirror, $patterns, $excluded) {
   if ((Get-Item -LiteralPath $repo -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout is a linked path' }
-  if (-not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container)) { throw 'not a standalone checkout' }
+  $gitDir = Join-Path $repo '.git'
+  if (-not (Test-Path -LiteralPath $gitDir -PathType Container)) { throw 'not a standalone checkout' }
+  Assert-PlainDirectory (Get-Item -LiteralPath $gitDir -Force)
+  Assert-IdleRepo $gitDir
   $top = @(Git @('-C',$repo,'rev-parse','--show-toplevel'))
   if ($gitExit -ne 0 -or [IO.Path]::GetFullPath($top[0]) -ne [IO.Path]::GetFullPath($repo)) { throw 'checkout root not verified' }
   # Changing sparse patterns can discard ignored files. Preserve these checkouts instead.
   $oldSparse = @(Git @('-C',$repo,'config','--bool','core.sparseCheckout'))
   if ($gitExit -notin @(0,1)) { throw 'sparse checkout setting not verified' }
-  if ($sparse -or ($oldSparse.Count -and $oldSparse[0] -eq 'true')) { throw 'sparse checkout needs keeping' }
+  $wasSparse = $oldSparse -contains 'true'
+  if ($patterns.Count -or $wasSparse) {
+    if (-not $excluded.Count -or -not $wasSparse) { throw 'sparse checkout profile differs' }
+    $cone = @(Git @('-C',$repo,'config','--bool','core.sparseCheckoutCone'))
+    if ($gitExit -ne 0 -or $cone.Count -ne 1 -or $cone[0] -ne 'false') { throw 'sparse checkout profile differs' }
+    $patternFile = Get-Item -LiteralPath (Join-Path $gitDir 'info/sparse-checkout') -Force
+    if ($patternFile.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'sparse checkout patterns are linked' }
+    if (([IO.File]::ReadAllLines($patternFile.FullName) -join "`n") -cne ($patterns -join "`n")) { throw 'sparse checkout profile differs' }
+  }
   $shallow = @(Git @('-C',$repo,'rev-parse','--is-shallow-repository'))
   if ($gitExit -ne 0 -or $shallow[0] -ne 'false') { throw 'complete local history not verified' }
-  $flags = @(Git @('-C',$repo,'ls-files','-v'))
-  if ($gitExit -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
+  $flags = @(Git @('-C',$repo,'-c','core.quotePath=false','ls-files','-v'))
+  if ($gitExit -ne 0) { throw 'index flags not verified' }
+  $excludedPaths = ($excluded | ForEach-Object { [regex]::Escape($_) }) -join '|'
+  foreach ($line in $flags) {
+    if ($line -cmatch '^[a-z] ' -or
+        ($line -cmatch '^S ' -and (-not $excludedPaths -or $line -cnotmatch ('^S "?(?:' + $excludedPaths + ')/')))) {
+      throw 'index may hide tracked edits'
+    }
+  }
   $caches = @(Reuse-Caches $repo)
   $local = @(Git @('-C',$repo,'rev-list','--all','--reflog','HEAD'))
   if ($gitExit -ne 0 -or -not $local.Count) { throw 'local history not verified' }
@@ -291,10 +324,10 @@ function Get-RebuildableRepoFiles($repo, $mirror, $sparse) {
   foreach ($id in $local) { if (-not $pushed.Contains($id)) { throw "local history not in fetched mirror: $id" } }
   return $caches
 }
-function Can-ReuseRepo($repo, $mirror, $sparse) {
+function Can-ReuseRepo($repo, $mirror, $patterns, $excluded) {
   if (-not (Test-Path -LiteralPath $repo)) { return $false }
   try {
-    $caches = @(Get-RebuildableRepoFiles $repo $mirror $sparse)
+    $caches = @(Get-RebuildableRepoFiles $repo $mirror $patterns $excluded)
     # Keep the whole checkout when an ignored file obstructs the incoming tree.
     $paths = @(Git @('--git-dir',$mirror,'-c','core.quotePath=false','ls-tree','-r','--name-only','refs/heads/main'))
     if ($gitExit -ne 0) { throw 'incoming paths not verified' }
@@ -387,11 +420,7 @@ function Remove-OlderKeptRepos($repo) {
       if ((Split-Path -Parent $candidate) -ne $board) { throw 'outside the board directory' }
       Assert-PlainDirectory (Get-Item -LiteralPath $candidate -Force)
       Assert-NoLinkedChildren $candidate
-      $gitDir = Join-Path $candidate '.git'
-      foreach ($state in @('index.lock','MERGE_HEAD','CHERRY_PICK_HEAD','REVERT_HEAD','BISECT_START','rebase-apply','rebase-merge','sequencer','modules','worktrees')) {
-        if (Test-Path -LiteralPath (Join-Path $gitDir $state)) { throw "Git holds local state: $state" }
-      }
-      $null = Get-RebuildableRepoFiles $candidate $mirror ''
+      $null = Get-RebuildableRepoFiles $candidate $mirror
       if (Cleanup-Paused) { throw 'PC pause is active' }
       Remove-Item -LiteralPath $candidate -Recurse -Force -ErrorAction Stop
       Log "kept checkout removed (rebuildable): $candidate"
@@ -518,7 +547,7 @@ function Current-Body($body, $prefix, [ref]$assignment) {
   }
   if ($current.Count -gt 1) { throw "current instruction refused: expected one line containing THIS IS THE JOB NOW outside code fences, found $($current.Count); no agent started" }
   # Take only the opening fixed block, whether it is plain text or fenced for display.
-  $blocks = [regex]::Matches($body, '(?im)^[ \t]*Owner:[^\r\n]*(?:\r?\n(?![ \t]*(?:\r?$|`{3,}|~{3,}))[^\r\n]+)*')
+  $blocks = [regex]::Matches($body, $fixedBlockPattern)
   $fixed = ''; if ($blocks.Count) { $fixed = $blocks[0].Value }
   foreach ($field in @('Owner','Brief','Deliver to','Branch','Done when')) {
     $pattern = [regex]::Escape($field)
@@ -612,7 +641,12 @@ function Validate-Job($i, $issue, $seat, $pulls, $branches, $launchBranch = "$se
   }
   return $body
 }
-function Issue-Lock($issue) {
+function Issue-Lock($issue, $checkout) {
+  if ($checkout) {
+    # Like the claim lock, the OS releases this handle when the owning process exits.
+    try { return [IO.File]::Open("$checkout.checkout.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] { throw 'job refused: workhorse slot busy or checkout lock unavailable; no agent started' }
+  }
   # All PC lanes and seats use the same OS temp folder. Hold this only through validation and the claim, not agent work.
   $path = Join-Path ([IO.Path]::GetTempPath()) "voidsworn-runner-issue-$issue.lock"
   if ($test) { $path = Join-Path (Split-Path -Parent $env:PC_TEST_GH_DB) "issue-$issue.lock" }
@@ -645,7 +679,26 @@ function End-Announcement($s) {
   } catch { Log "WARNING: GitHub final status failed: $($_.Exception.Message)" }
 }
 try {
-  if ($mode -eq 'init') {
+  if ($mode -eq 'work-run') {
+    $repo = [IO.Path]::GetFullPath($args[1]); $issue = $args[2]; $arm = $args[3]
+    if ($issue -notmatch '^[1-9][0-9]*$' -or $arm -cnotmatch '^(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai)$') {
+      throw 'invalid workhorse issue number or arm; no agent started'
+    }
+    $runMode = if ($args[4] -eq 'dryrun') { 'dryrun' } else { '""' }
+    $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($repo))
+    $lock = Issue-Lock $issue $repo
+    try {
+      $start = New-Object Diagnostics.ProcessStartInfo
+      $start.FileName = $env:COMSPEC
+      $start.Arguments = '/d /s /c ""' + (Join-Path $PSScriptRoot 'work_issue.bat') + '" ' + "$issue $arm $runMode locked" + '"'
+      $start.UseShellExecute = $false
+      $start.EnvironmentVariables['WORK_LOCKED_REPO'] = $args[1]
+      $child = [Diagnostics.Process]::Start($start)
+      try { $child.WaitForExit(); exit $child.ExitCode }
+      finally { $child.Dispose() }
+    } finally { $lock.Dispose() }
+  }
+  elseif ($mode -eq 'init') {
     $script:out = $args[1]
     $s = @{ run = [guid]::NewGuid().ToString('N'); branch = $args[2]; status = 'running'; reason = ''; commit = ''; started = [DateTime]::UtcNow.ToString('o'); finished = '' }
     Put (Join-Path $out 'status.json') ($s | ConvertTo-Json)
@@ -694,8 +747,21 @@ try {
     }
   }
   elseif ($mode -eq 'checkout') {
-    $repo = $args[1]; $script:out = $args[2]; $br = $args[3]; $sparse = $args[4]
+    $repo = $args[1]; $script:out = $args[2]; $br = $args[3]
     if ([IO.Path]::GetFileName([IO.Path]::GetFullPath($repo).TrimEnd('\','/')) -ne 'repo') { throw "unexpected checkout path $repo" }
+    $patterns = @(); $excluded = @()
+    $slot = Split-Path -Leaf (Split-Path -Parent $repo)
+    if ($args[4]) { $patterns = @($args[4] -split '\s+') }
+    elseif ($slot -match '^(board_[cd]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))$') {
+      $snapshot = Read (Join-Path $out 'validated_issue.json')
+      # Only the opening fixed block can opt in. Later prose or old runs do not alter the profile.
+      $fixed = [regex]::Match(($snapshot | ConvertFrom-Json).body, $fixedBlockPattern).Value
+      $excluded = @(Code-CheckoutExclusions $fixed)
+      if ($excluded.Count) {
+        $patterns = @('/*') + @($excluded | ForEach-Object { "!/$_/" })
+        Log "code checkout excludes: $($excluded -join ', ')"
+      }
+    }
     $source = 'https://github.com/rcbailey12/voidsworn'
     $mirror = Repo-Mirror
     if ($test) {
@@ -723,7 +789,7 @@ try {
       Retry-Git 'mirror fetch' @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch','--prune','origin')
       # The remote default branch may not yet be set by init --bare.
       Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
-      $reuse = Can-ReuseRepo $repo $mirror $sparse
+      $reuse = Can-ReuseRepo $repo $mirror $patterns $excluded
       if ($reuse) {
         Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags',$mirror,'+refs/heads/*:refs/remotes/origin/*')
       }
@@ -752,7 +818,7 @@ try {
     }
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
-    if ($sparse) { Must-Git (@('-C',$repo,'sparse-checkout','set','--no-cone') + @($sparse -split '\s+')) }
+    if (-not $reuse -and $patterns.Count) { Must-Git (@('-C',$repo,'sparse-checkout','set','--no-cone','--') + $patterns) }
     $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,'refs/remotes/origin/main')
     $switchExit = $gitExit
     if ($reuse) {

@@ -296,6 +296,14 @@ copy and its size; older copies are removed only as the next paragraph allows. W
 unique ignored work (issue 860, run 2, Board Nov 16).
 A checkout that changes while the runner starts is never reset; the job stops instead.
 
+Workhorse runs share one checkout per arm in `work217/slot_<arm>/repo`, with an exclusive lock through the end of each run.
+Logs and results stay in each run's own `out/` folder. The old `remove_repo_copy_after_push` setting no longer applies.
+Code-only lanes C and D and the Workhorse slots omit `docs/shots/`, `docs/ship_pipeline/build_sheets/`,
+`contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the issue's Brief or Deliver to line names a path there.
+A matching runner-managed sparse profile can be reused under the same Git checks. A profile change keeps the previous
+checkout beside the slot. Why: a fresh Workhorse checkout per run and picture folders in code jobs drove up disk use
+(issue 1186).
+
 Parity removes its own default temp folder when it finishes, pass or fail. After a checked push the runner removes
 the scratch folder it recorded for that run. It keeps the newest `repo-kept-*` copy in the board folder and removes
 older ones only when the same rebuildable-file and Git history checks pass. It logs each decision. A pause removes nothing (3.11).
