@@ -74,8 +74,8 @@ GLANDS = (
     ('W3', 'T', (-0.1, -0.26, 1.72), (-0.12, -0.1, 0.99), GLAND_R, 0.68, 16),  # the great dorsal knoll amidships
 )
 # bile sacs on the lower flanks: (x, section angle, radius) per side; port and starboard differ (asymmetric)
-SACS = {1: ((2.5, -0.55, 0.4), (1.2, -0.32, 0.62), (-0.45, -0.52, 0.6), (-1.85, -0.3, 0.48)),
-        -1: ((2.3, -0.4, 0.44), (0.75, -0.58, 0.62), (-0.85, -0.32, 0.55), (-2.1, -0.6, 0.38))}
+SACS = {1: ((2.5, -0.55, 0.4), (1.2, -0.32, 0.7), (-0.45, -0.52, 0.68), (-1.85, -0.3, 0.48)),
+        -1: ((2.3, -0.4, 0.44), (0.75, -0.58, 0.7), (-0.85, -0.32, 0.62), (-2.1, -0.6, 0.38))}
 HANGING = ((1.85, 0.25, 0.38), (0.1, -0.22, 0.46), (-1.45, 0.25, 0.4))   # (x, y, radius): sacs hanging under the belly
 VENTS = ((0.0, 0.18, 0.16), (0.36, -0.16, 0.14), (-0.36, -0.16, 0.14))  # (y, z, radius) at the stern
 
@@ -113,7 +113,8 @@ def build(K):
     # the lumps of the back and shoulders: knolls of grown flesh between the glands (the picture's lumpy mass)
     items = []
     for k, (x, th, rr) in enumerate(((2.9, 1.1, 0.55), (0.9, 2.0, 0.7), (-0.9, 0.95, 0.75), (-0.75, 2.3, 0.62), (2.55, 2.15, 0.5), (-2.0, 1.5, 0.5),
-                                     (0.8, 0.55, 0.55), (-1.35, 2.75, 0.5), (3.4, 1.7, 0.38))):
+                                     (0.8, 0.55, 0.55), (-1.35, 2.75, 0.5), (3.4, 1.7, 0.38),
+                                     (0.1, 0.3, 0.62), (-0.4, 2.85, 0.6))):   # the mid-body's side blisters bulge out (the Board on v2)
         pos, nrm = K.hpt(x, th, out=-rr * 0.5)
         items.append((HP.knoll(rr, seed=70 + k), HP.frame(pos, (1, 0, 0), nrm)))
     K.grown_hull('knolls', items, inv='knolls', kind='knoll')
