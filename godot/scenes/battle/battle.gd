@@ -489,6 +489,8 @@ func _begin(a) -> void:
 	api = a
 	warming = true
 	hud.loading(true)
+	if gfx != null:
+		gfx.defer_initial_cuts = DisplayServer.get_name() != "headless"
 	if DisplayServer.get_name() != "headless":
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -755,6 +757,7 @@ func _warmup() -> void:
 	for i in 3:
 		await get_tree().process_frame
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+		await gfx.prepare_battle_hulls()
 		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
 		var done := [false]
 		var run := func() -> void:

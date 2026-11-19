@@ -151,6 +151,12 @@ var _dim_t0 := -1.0
 
 static var _globals_added := false
 static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
+var hull_arrays := {}
+var _damage_templates := {}
+var _power_templates := {}
+var _dark_interiors := {}
+var defer_initial_cuts := false
+var _piece_builds: Array = []
 
 
 static func register_globals() -> void:
@@ -189,6 +195,11 @@ func release() -> void:
 		for l in w.get("lights", []):
 			l["on"] = false
 	ships.clear()
+	hull_arrays.clear()
+	_damage_templates.clear()
+	_power_templates.clear()
+	_dark_interiors.clear()
+	_piece_builds.clear()
 	_later.clear()
 	_lev.clear()
 	_lsrc.clear()
@@ -347,6 +358,7 @@ func step(delta: float) -> void:
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
 	var t0 := Time.get_ticks_usec()
 	_run_later()
+	_build_death_pieces()
 	t0 = pend("later", t0)
 	_update_feel(delta)
 	_update_dim()
@@ -1110,6 +1122,86 @@ func _end_dim() -> void:
 
 # ---------------------------------------------------------------- ships (API.md 2)
 
+func hull_damage_template(source: Material, length: float, organic: bool, power := false) -> ShaderMaterial:
+	if source != null and source.has_meta("fx_hull_source"):
+		source = source.get_meta("fx_hull_source")
+	var key := [source, maxf(length * 0.05, 0.001), organic]
+	if not _damage_templates.has(key):
+		_damage_templates[key] = HULL.damage_material(source, Transform3D.IDENTITY, {}, length, organic)
+	if not power:
+		return _damage_templates[key]
+	if not _power_templates.has(key):
+		_power_templates[key] = DEATH.power_material(_damage_templates[key].duplicate())
+	return _power_templates[key]
+
+
+func dark_interior(source: Material) -> Material:
+	if not _dark_interiors.has(source):
+		var dark: Material = source.duplicate()
+		if dark is BaseMaterial3D:
+			dark.emission_enabled = false
+		_dark_interiors[source] = dark
+	return _dark_interiors[source]
+
+
+func queue_death_pieces(ship: SHIP, job: Dictionary) -> void:
+	_piece_builds.append([ship, job])
+
+
+func _build_death_pieces() -> void:
+	if _piece_builds.is_empty():
+		return
+	var deadline := Time.get_ticks_usec() + DEATH.PREBUILD_BUDGET
+	while not _piece_builds.is_empty():
+		var entry: Array = _piece_builds[0]
+		if not DEATH.build_pieces(self, entry[0], entry[1], deadline):
+			return
+		_piece_builds.pop_front()
+		if Time.get_ticks_usec() >= deadline:
+			return
+
+
+func prepare_battle_hulls() -> void:
+	HULL.pause_late_watch()
+	_warm_hull_adapters()
+	var pending: Array[SHIP] = []
+	for value in ships.values():
+		var ship: SHIP = value
+		if ship.weight <= 0:
+			continue
+		for mesh in ship.meshes:
+			var mi := mesh as MeshInstance3D
+			if not is_instance_valid(mi) or mi.mesh == null:
+				continue
+			for si in mi.mesh.get_surface_count():
+				var source := mi.get_active_material(si)
+				var original := mi.mesh.surface_get_material(si)
+				var inside := ship.hull.authored and HULL.interior_material(original)
+				if inside:
+					dark_interior(source)
+				if not inside:
+					hull_damage_template(source, ship.hull.L, ship.faction == "chorus", true)
+				if not inside or original.resource_name.ends_with("_inside_skin"):
+					ship.damage_surface(self, mi, si, source)
+		pending.append(ship)
+		await get_tree().process_frame
+	# Limit simultaneous cuts so the hull workers and renderer can make progress
+	# together while the loading cover is up.
+	var active: Array[SHIP] = []
+	while not pending.is_empty() or not active.is_empty():
+		while active.size() < 3 and not pending.is_empty():
+			var ship: SHIP = pending.pop_front()
+			DEATH.precompute(self, ship, "blast", true)
+			active.append(ship)
+		for i in range(active.size() - 1, -1, -1):
+			if DEATH.finish_precompute(self, active[i]):
+				active.remove_at(i)
+		await get_tree().process_frame
+	while not _piece_builds.is_empty():
+		await get_tree().process_frame
+	defer_initial_cuts = false
+
+
 func add_ship(id: String, root: Node3D, info := {}) -> void:
 	if ships.has(id):
 		remove_ship(id)
@@ -1119,6 +1211,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
 	DEATH.add_collider(self, s)
+	if defer_initial_cuts:
+		return
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
 	var n = ships.size()
 	later(now + 0.4 + 0.25 * n, func l_cut_first() -> void:
@@ -1375,19 +1469,21 @@ func particles_emitted() -> int:
 
 # ---------------------------------------------------------------- shader warm-up (API.md 1)
 
-# Draws every effect material once in front of the camera, in the battle's own environment and lights, so no shader
-# pipeline compiles for the first time in the middle of a fight (the first lance, shield ripple or death). Await it on
-# the loading screen after the ships, lights and world are built: `await fx.warmup(cam)`. Takes a few frames.
-func warmup(cam: Camera3D, frames := 4) -> void:
-	if cam == null:
-		return
-	# Issue 376: a warm-up builds shaders by design, and a bench may warm more than once, so the late log is off while
-	# this runs and on again when it ends. Anything built after this is a miss in the hand-kept list.
-	HULL.pause_late_watch()
+func _warm_hull_adapters() -> void:
 	# The temporary PBR adapter is queried for uniforms at death too. Keep its
 	# shader alive so that query never recompiles it for each new ship.
 	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
 	_shaders["hull_exterior_alpha"] = HULL.shared_shader(HULL.exterior_alpha_code(), "exterior_alpha")
+
+
+# Draw the effect materials under the loading cover so their pipelines are ready for battle.
+func warmup(cam: Camera3D, frames := 4) -> void:
+	if cam == null:
+		return
+	# Issue 376: rebuilds under the load cover are expected. Start the late watch
+	# once the warm objects have drawn.
+	HULL.pause_late_watch()
+	_warm_hull_adapters()
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -1532,15 +1628,20 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				hk += 1
 			# Warm the actual cuttable PBR surface in this hull's vertex format too.
 			var dm := MeshInstance3D.new()
+			var pm := MeshInstance3D.new()
 			dm.mesh = smi.mesh
+			pm.mesh = smi.mesh
 			for si in smi.mesh.get_surface_count():
-				dm.set_surface_override_material(si, HULL.damage_material(smi.get_active_material(si), Transform3D.IDENTITY, {}, 1.0))
-				var hs: Shader = (dm.get_surface_override_material(si) as ShaderMaterial).shader
-				_shaders["warm:" + str(hs.code.hash())] = hs
+				var source := smi.get_active_material(si)
+				dm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus"))
+				pm.set_surface_override_material(si, hull_damage_template(source, sh.hull.L, sh.faction == "chorus", true))
 			var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
 			dm.scale = Vector3.ONE * (0.6 * unit / dext)
 			dm.position = Vector3(0, -2, 1) * unit
+			pm.scale = dm.scale
+			pm.position = dm.position + Vector3.RIGHT * unit
 			tmp.add_child(dm)
+			tmp.add_child(pm)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]

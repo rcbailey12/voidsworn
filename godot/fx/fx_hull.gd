@@ -251,14 +251,18 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 		if value != null:
 			mat.set_shader_parameter(param, value)
 	mat.set_meta("fx_hull_source", src)
-	mat.set_shader_parameter("fx_hull_frame", frame)
 	mat.set_shader_parameter("fx_organic", organic)
 	mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(L * 0.05, 0.001))
+	set_damage_pose(mat, frame, mouths)
+	return mat
+
+
+static func set_damage_pose(mat: ShaderMaterial, frame: Transform3D, mouths: Dictionary) -> void:
+	mat.set_shader_parameter("fx_hull_frame", frame)
 	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
 	for key in ["mouths", "axes", "tangents", "shapes", "tears"]:
 		if mouths.has(key):
 			mat.set_shader_parameter("fx_" + key, mouths[key])
-	return mat
 
 
 # Issue 220: the damage shader's source is a pure function of the hull shader's source, so it is worked out once per
