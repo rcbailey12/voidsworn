@@ -4,7 +4,7 @@ rem (plus a Chorus frigate as the unchanged control), on main (before) and on op
 rem Strips: the look bench at cameras 170 and 60 (7 cells: the kill, mid-tell, just before the split, the split, then
 rem 0.3, 1.0 and 2.5 s after). Clip: the same deaths at camera 60 with the game's death sounds, 5.5 s each, via
 rem Godot's --write-movie (AVI with sound). The bench script and its rows always come from the branch.
-rem Its own clone in Downloads\voidsworn_test\opus1238; hulls copied in from the audit2 checkout (copy only).
+rem Its own clone in Downloads\voidsworn_test\opus1238; hulls copied in from build\godot (else audit2), copy only.
 rem Each run uses its own throwaway profile; your real settings are hashed before and after. Nothing on the PC is deleted.
 rem Each Godot run goes through tmo.bat, so the GPU slots are respected.
 rem Output: Downloads\voidsworn_test\opus1238\shots\<after|before>\  and status.txt beside them.
@@ -13,6 +13,8 @@ set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "H=%VT%\opus1238"
 set "R=%H%\repo"
 set "BR=opus/issue-1238"
+rem Built ships: the shared PC build (build\godot), else the old audit2 checkout. LB_SHIPS overrides both (issue 1223).
+if "%LB_SHIPS%"=="" if exist "%VT%\build\godot\gen" set "LB_SHIPS=%VT%\build\godot"
 if "%LB_SHIPS%"=="" set "LB_SHIPS=%VT%\audit2\repo\godot"
 set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
