@@ -150,6 +150,8 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	_collect(hull)
 	_look()
 	_fit()
+	if fac == "deathless":
+		_remember_live_hull()
 	_engines()
 	_ring()
 	position = world_pos
@@ -339,6 +341,23 @@ func set_marker(friend: bool) -> void:
 
 
 var wreck := false
+var _live_hull_poses := {}
+var _live_hull_meshes := {}
+
+
+# Take the fitted, painted pose before FX can replace meshes, surface paint or turret poses.
+func _remember_live_hull() -> void:
+	var nodes: Array[Node] = [hull]
+	while not nodes.is_empty():
+		var node: Node = nodes.pop_back()
+		if node is Node3D:
+			_live_hull_poses[node] = node.transform
+		nodes.append_array(node.get_children())
+	for m: MeshInstance3D in meshes:
+		var surfaces: Array[Material] = []
+		for i in m.get_surface_override_material_count():
+			surfaces.append(m.get_surface_override_material(i))
+		_live_hull_meshes[m] = [m.mesh, m.material_override, m.material_overlay, surfaces]
 
 
 # Death effects own the hull replacement. Keep its root on the board throughout.
@@ -373,13 +392,24 @@ func revive() -> void:
 	dead = false
 	wreck = false
 	visible = true
-	hull.rotation = Vector3.ZERO
+	hull.transform = Transform3D(hull_basis, hull_base)
 	position.y = 0.0
-	for m in meshes:
-		var gi := m as GeometryInstance3D
-		gi.material_override = null
-		gi.transparency = 0.0
-		gi.visible = true
+	for node in _live_hull_poses:
+		if is_instance_valid(node):
+			node.transform = _live_hull_poses[node]
+	for m: MeshInstance3D in meshes:
+		if _live_hull_meshes.has(m):
+			var saved: Array = _live_hull_meshes[m]
+			m.mesh = saved[0]
+			m.material_override = saved[1]
+			m.material_overlay = saved[2]
+			for i in saved[3].size():
+				m.set_surface_override_material(i, saved[3][i])
+		else:
+			m.material_override = null
+			m.material_overlay = null
+		m.transparency = 0.0
+		m.visible = true
 	for e in engines:
 		(e as Sprite3D).visible = true
 	if marker != null:

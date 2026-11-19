@@ -31,9 +31,9 @@ func fleet_power() -> float:   # battle.js fleetPower
 
 func danger(n: Dictionary) -> Dictionary:
 	var t = n["type"]
-	if not (t in ["battle", "elite", "boss"]): return {}
-	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var col = float(n["col"]); var kind = t
 	var nem = not C.jt(n.get("done")) and View.nem_node_is(C, n)   # B4: the Nemesis fight is an elite fight, stronger for each scar and adaptation
+	if not (t in ["battle", "elite", "boss"]) and not nem: return {}   # issue 1175: he can hold a rest or event stop in column 4
+	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var col = float(n["col"]); var kind = t
 	if nem: kind = "elite"
 	var budget = ([0.0, 4.2, 9.5, 14.0][s] + col * (0.9 if s == 1 else (1.0 if s == 2 else 1.1))) * float(R["grow"][s])
 	if kind == "elite": budget *= 1.05

@@ -432,7 +432,7 @@ function startSideTurn(side){
     if(side==='player'&&u.burnCarry){ u.mp+=u.burnCarry.mp||0; u.turnsLeft+=u.burnCarry.turns||0; } // Grax capstone 1: the last burn carries over
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
-    u.route=[0,0,0,0]; if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg0=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)), rg=u.chainCut>0?Math.round(rg0*(1-u.chainCut)):rg0; if(!u.regenLock){ u.shp=Math.min(u.shMax,(u.shp||0)+rg); syncShields(u); } }
+    u.route=[0,0,0,0]; if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg0=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)), rg=u.chainCut>0?Math.round(rg0*(1-u.chainCut)):rg0; if(!u.regenLock) u.shp=Math.min(u.shMax,(u.shp||0)+rg); syncShields(u); } // route just cleared: re-derive the catches even when an ion lock skips the regen
     ithChargeTurn(u); u.regenLock=null; u.chainCut=0; // B3 Ithar prism charge (after the normal regen); an ion lock and a Chain Lightning cut last one turn start
     if(u.hullRegen && u.hp<u.maxHp && !u.pyre){ const mm=treeRoleMul(u), hr=mm!==1?Math.round(u.hullRegen*mm):u.hullRegen; u.hp=Math.min(u.maxHp,u.hp+hr); treeMarkRepair(u); if(mm!==1) treeFx(u,'roles','mend: the regrowth is 10% stronger'); }
     if(u.st.acid>0&&!u.isSq){ u.st.acid--; u.hp-=4; if(typeof fxText==='function') fxText(u,'Acid \u22124','#c8e04a',-12); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} dissolves.`, u.side==='player'?'e':'p'); u.killCause='melt'; queueDeath(u,deaths); } }
@@ -606,7 +606,7 @@ function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=storyModi
   if(u.fac==='deathless'&&u.t&&u.t.reanimate){ if(u.ripped) out.push('Links ripped out: the Archive does not answer, no restore.'); else { const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Archive restore: the first to fall reassembles next round.':'Archive restore spent.'); } }
   for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
   if(u.ab==='launch'||(u.fx&&u.fx.hive)){ const st=WING_STANCES[u.stance||'strike']; out.push(`Wing stance: ${st.n}. ${st.d}${u.side==='player'?(canStance(u)?' One free change this round.':' Changed this round.'):''}`); const pk=wingPerks(u); if(pk.length) out.push('Wing veterans: '+pk.map(k=>WING_PERKS[k].n+' ('+WING_PERKS[k].d.replace(/\.$/,'')+')').join(', ')+'.'); }
-  if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>NEM_WEAK[w].n+' ('+NEM_WEAK[w].d.replace(/\.$/,'')+')').join('; ')+'.'); }
+  if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>{ const entry=nemEntry(NEM_WEAK,w,B.nem.fac)||{}; return (entry.n??w)+' ('+String(entry.d??'').replace(/\.$/,'')+')'; }).join('; ')+'.'); }
   return out; }
 // ---------- B3 travelling torpedoes ----------
 // A torpedo-kind weapon (not squadron bombs) launches now and strikes at the start of the firing side's next turn. Its lane runs from the launch hex
@@ -673,7 +673,7 @@ function nemSig(kind){ if(!B||!B.nem) return; (B.nemSigs=B.nemSigs||[]).push({ki
 // R42 weaknesses found by triggering them: logged once, known for the rest of the run (finishBattle merges B.nemFound). No random draws.
 const NEM_BEAT_COUNTER={lance:'shields',torp:'pd',sq:'pd',ram:'armor',board:'armor',battery:'evasion',evasive:'aim'};
 function nemTrip(k){ if(!B||!B.nem||!nemWeak(k)) return; B.nemFound=B.nemFound||[]; if(B.nemFound.includes(k)||(B.nem.revealed||[]).includes(k)) return; B.nemFound.push(k); (B.nem.revealed=B.nem.revealed||[]).push(k);
-  log(`Weakness found: ${NEM_WEAK[k].n}. ${NEM_WEAK[k].d}`,'s'); }
+  const entry=nemEntry(NEM_WEAK,k,B.nem.fac); log(entry?`Weakness found: ${entry.n}. ${entry.d}`:`Weakness found: ${k}.`,'s'); }
 // a proud flagship (weakness): once it falls below 60% hull, his escorts break and flee
 function nemBreak(){ if(!B||!B.nem||B.nemBroken||!nemWeak('anchor')) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f||f.hp>f.maxHp*.6) return;
   B.nemBroken=true; nemTrip('anchor'); const esc=alive('enemy').filter(u=>u!==f&&!u.isSq&&!u.transport); for(const e of esc){ e.dead=true; e.fled=true; try{ if(typeof fxWithdraw==='function') fxWithdraw(e); }catch(x){} }

@@ -1,14 +1,17 @@
 'use strict';
 // Focused onboarding checks plus the full standing rules and 30-run campaign parity suites.
-// All generated files and Godot user data stay inside this checkout.
-const fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict');
+// Logs and parity records go to temp. The profile test requires user:// inside this checkout.
+const fs = require('node:fs'), os = require('node:os'), path = require('node:path'), assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
-const root = path.resolve(__dirname, '..'), out = path.join(root, '.onboarding_checks');
-fs.mkdirSync(out, { recursive: true });
+const root = path.resolve(__dirname, '..');
 const godot = process.argv[2];
 if (!godot || !fs.existsSync(godot)) throw new Error('Pass the path to the Godot console executable.');
 if (Number(process.versions.node.split('.')[0]) !== 22) throw new Error('Use the project Node 22 oracle runtime (voidsworn_test/node/node.exe). The rules math port targets V8 in Node 22.');
-const env = { ...process.env, APPDATA: path.join(out, 'appdata') };
+const out = fs.mkdtempSync(path.join(os.tmpdir(), 'voidsworn-onboarding-'));
+const userBase = path.join(root, '.onboarding_checks');
+fs.mkdirSync(userBase, { recursive: true });
+const user = fs.mkdtempSync(path.join(userBase, 'run-'));
+const env = { ...process.env, APPDATA: user, XDG_DATA_HOME: user };
 env.NODE_OPTIONS = ((env.NODE_OPTIONS || '') + ' --preserve-symlinks --preserve-symlinks-main').trim();
 delete env.VS_ORACLE;
 let serial = 0;
@@ -36,7 +39,10 @@ for (const f of ['core.js', 'battle.js', 'campaign_meta.js', 'campaign3d.js', 'm
 const cards = JSON.parse(fs.readFileSync(path.join(__dirname, 'onboarding_cards.json')));
 const ui = fs.readFileSync(path.join(root, 'ui3d.js'), 'utf8');
 assert.deepEqual(JSON.parse(/const TIPS=(\[[\s\S]*?\n\]);/.exec(ui)[1]), cards);
-for (const [file, name, expected] of [['godot/scenes/battle/battle.gd', 'TIPS', cards.slice(0, 9)], ['godot/ui/campaign/campaign_tips.gd', 'CARDS', cards.slice(9)]]) {
+// KEEL teaches the Godot HUD's bars. The browser card describes its board display.
+const godotBattleCards = cards.slice(0, 9).map(card => card[0] === 'move' ? [card[0], card[1],
+  'The blue bar shows your shield pool. All four sides share it. Sides with more coverage block more damage while shields hold. Shields recharge each round. The pale bar shows hull. Hull damage needs repairs.'] : card);
+for (const [file, name, expected] of [['godot/scenes/battle/battle.gd', 'TIPS', godotBattleCards], ['godot/ui/campaign/campaign_tips.gd', 'CARDS', cards.slice(9)]]) {
   const source = fs.readFileSync(path.join(root, file), 'utf8');
   const block = new RegExp('const ' + name + ' := (\\[[\\s\\S]*?\\n\\])').exec(source)[1];
   assert.deepEqual(JSON.parse(block.replace(/,\s*\]/g, ']')), expected);

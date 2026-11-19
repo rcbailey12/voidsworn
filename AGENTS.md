@@ -1,7 +1,7 @@
 # Voidsworn: rules for any AI agent (Claude or another model)
 
 **The game.** Embers of the Hollow Sun (repo name voidsworn) is a hex fleet-tactics roguelite. The product is the Godot 4 game in
-`godot/`, played on Ryan's Windows PC only; the browser JS game is frozen as the rules oracle and changes only for rules fixes.
+`godot/`, played on Ryan's Windows PC only; the browser rules are a live reference copy: every rules change goes into both until Ryan approves their retirement (RULEBOOK 3.1, R312).
 The owner is Ryan. He is not a coder: he judges work by pictures. Faction ids never change; their display names do
 (contrib/opus/compute/rename_map_final.md): `voidsworn` = Sunward Crusade, `corsair` = Ashfall Hullbreakers, `ithar` = the
 Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemony Navy.
@@ -89,7 +89,8 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
 - Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue. GPU work is sized to the job and to
   what the RTX 5080 can hold, not a fixed job count (R293, RULEBOOK 3.4); frame-time measurements claim the GPU solo, lane C
   stays code only, and gpu_go.txt still wins.
-  Keep your PC folder lean; never delete anything on his PC (RULEBOOK section 3).
+  Keep your PC folder lean. Deleting on his PC follows RULEBOOK 3.3: jobs and the cleanup janitor may remove their own
+  rebuildable leftovers under its safe rules; nothing else is deleted without Ryan's yes.
 
 `CLAUDE.md` is a short pointer to this file plus Claude-only notes. Keep the two in step. The fuller AGENTS.md of Nov 8 to 11
 (seat table, ship sections, PC notes) is archived at docs/archive/AGENTS_2026-11-11.md; every rule it held is in the rulebook.

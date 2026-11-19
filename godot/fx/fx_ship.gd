@@ -61,6 +61,8 @@ var _shield_until = -1.0
 var _last_sh = -1.0
 var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
+var death_core_pending := false
+var slow_core := false
 var _sec_nodes = [[], [], []]
 var _sec_lights = [[], [], []]
 var _burn_nodes: Array = []
@@ -188,8 +190,51 @@ func _hide_placeholder_engines() -> void:
 				(e as Node3D).visible = false
 
 
-func teardown(fx) -> void:
-	wait_damage()
+func remove_collider() -> void:
+	if not has_meta("collider"):
+		return
+	var body = get_meta("collider")
+	remove_meta("collider")
+	if is_instance_valid(body):
+		body.collision_layer = 0
+		body.queue_free()
+
+
+func _hide_attachments() -> void:
+	remove_collider()
+	for node in [_dmg_root, _eng_node, _shield_mi]:
+		if is_instance_valid(node):
+			node.visible = false
+	for t in _trails:
+		if is_instance_valid(t["mi"]):
+			t["mi"].visible = false
+	for sec in 3:
+		_clear_lights(sec)
+	for l in _hole_lights:
+		l["on"] = false
+	_hole_lights.clear()
+	for n in _burn_nodes:
+		if n is Dictionary:
+			n["on"] = false
+
+
+func _hide_meshes() -> void:
+	for m in meshes:
+		if is_instance_valid(m):
+			(m as Node3D).visible = false
+
+
+func hide_live_hull() -> void:
+	_hide_meshes()
+	_hide_attachments()
+
+
+func teardown(fx, wait_for_damage := true) -> void:
+	gone = true
+	_hide_attachments()
+	fx.discard_ship_cut(self)
+	if wait_for_damage:
+		wait_damage()
 	BREACH.clear_nodes(self)
 	for t in _trails:
 		if is_instance_valid(t["mi"]):
@@ -200,11 +245,6 @@ func teardown(fx) -> void:
 		_eng_node.queue_free()
 	if is_instance_valid(_shield_mi):
 		_shield_mi.queue_free()
-	for sec in 3:
-		_clear_lights(sec)
-	for n in _burn_nodes:
-		if n is Dictionary:
-			n["on"] = false
 
 
 static func _find_meshes(n: Node) -> Array:
@@ -1601,6 +1641,8 @@ func tick_flare(fx, kind: String) -> void:
 
 
 func jump_out(fx) -> void:
+	if dead or gone:
+		return
 	var T: float = fx.now
 	var bow = dir_world(Vector3(1, 0, 0))
 	var c: Color = fac["engine"]
@@ -1612,14 +1654,9 @@ func jump_out(fx) -> void:
 	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
 	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
 	fx.later(T + 0.4, func l_jump() -> void:
-		gone = true
-		for m in meshes:
-			if is_instance_valid(m):
-				(m as Node3D).visible = false
-		if is_instance_valid(_eng_node):
-			_eng_node.visible = false
-		for tr in _trails:
-			(tr["mi"] as Node3D).visible = false)
+		if fx.ships.get(id) == self and not dead and not gone:
+			_hide_meshes()
+			teardown(fx, false))  # damage polling can finish its own job; do not block the jump frame
 
 
 # A mark's geometry follows the section's actual damage, including repairs.

@@ -10,14 +10,17 @@
 # setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
+headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep independent cues through battle playback in Standard and Reduced Flashing
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issue 1075: protocol offer cards explain current fleet fit, caps and refits; fixed seeds prove the pool, draws and saves are read-only
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
+headless|campaign/test/truth_pass_test.gd|-|-|issue 1144: emergency starters after reload and truthful capstone and Nemesis text on the campaign controls
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
 headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
+headless|campaign/test/event_distribution_test.gd|-|-|issue 1149: all faction event cards, choices, saved keys and the quiet fallback
 headless|campaign/test/free_exit_test.gd|fixture:free_exit_tests.js|{fixture}|free exits match the live browser at entry, result and map
 headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP payout; campaign data only
 headless|campaign/test/inheritance_test.gd|fixture:inheritance_tests.js|{fixture}|inheritance receipts match the browser payouts and profiles
@@ -28,6 +31,8 @@ headless|campaign/test/map_readonly_test.gd|step:Nemesis scenarios (JS game and 
 headless|campaign/test/map_travel_test.gd|-|-|map reachability, lanes, flight at 30, 60 and 144 fps; no models or bakes needed
 headless|campaign/test/nem_read_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 364: Nemesis readers ask the campaign)
 headless|campaign/test/nem_scenarios.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step
+headless|campaign/test/nem_unknown_key_test.gd|-|-|issue 1182: an older save naming a Nemesis trait or weakness the tables lack opens the Dossier, battle log, after-battle text and summary without an error; browser twin contrib/opus/tools/nem_unknown_key_tests.js
+headless|campaign/test/nem_dodge_test.gd|-|-|issue 1175: 3,000 seeded sectors, an unmet Nemesis is never dodged, every column 4 stop is tagged and every boss stop carries its objective and board
 headless|campaign/test/nemesis_clash_test.gd|fixture:nemesis_clash_tests.js|{fixture}|12482 Nemesis clash cases match the live browser
 headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fixture}|Nemesis teaching debrief and map line match the browser
 headless|campaign/test/onboarding_test.gd|userdir|-|onboarding tips, options and telemetry; refuses a user folder outside the checkout, so it gets one inside
@@ -35,6 +40,7 @@ headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, 
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
 headless|campaign/test/run_resume_test.gd|-|-|issue 1125: boosted fight replay, withdrawal, Continue, boss exit, prize salvage, yard doctrine and Career backup recovery
 headless|campaign/test/save_test.gd|-|-|the campaign save is atomic and keeps a backup
+headless|campaign/test/sector_routes_test.gd|-|-|issue 1176: 3,000 sectors, two-exit rate, distinct stop types, reachability, rest stops and boss
 headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|shadow XP, heirs and saves match the browser overflow
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices and records; its optional shots folder is not used here
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
@@ -64,7 +70,8 @@ headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat s
 headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
 headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
 headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interiors and seams reach damage and death; moving a seam changes piece ownership; old hulls keep fallback
-headless|fx/test/death_seam_check.gd|-|-|issue 600: kills A16 (C19_51, its unpainted export kept in fx/test/fixtures) and counts machines split across pieces and inside triangles outside their own piece's hull: both zero; prints the cut's worker time; issue 616: the power-down after the kill finishes within 30 frames with every hull surface powered down, and prints the kill frame's fx.death time
+headless|fx/test/death_seam_check.gd|step:A16 death seam (fixture or fresh bake)|-|its own job in checks.yml (issue 1174: a stale fixture record bakes A16 fresh there instead of failing); issue 600: kills A16 (C19_51, its unpainted export kept in fx/test/fixtures) and counts machines split across pieces and inside triangles outside their own piece's hull: both zero; prints the cut's worker time; issue 616: the power-down after the kill finishes within 30 frames with every hull surface powered down, and prints the kill frame's fx.death time
+headless|fx/test/death_story_check.gd|-|-|issue 1077: the flagship death prototype (off by default): every tier keeps its own lights-out bands with the switch off or on; off, the tear and power-down shaders are today's; on, they carry the strain on the fracture plan's break lines and A16's wreck stays grouped (main pieces within 0.35 of the length, fragments within 0.6 of the break's middle); prints both paths' travel
 headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface stays transparent after damage; the opaque hull stays on the opaque shader
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
 headless|fx/test/flash_projection.gd|-|-|issue 1116: projected flash width and the three-flash cap at the edge, with and without pixel floors
@@ -88,6 +95,7 @@ headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
 headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
+headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder
@@ -102,6 +110,7 @@ gpu|assets/ships/test/a4_shots.gd|scene:res://assets/ships/test/a4_shots.tscn|--
 gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs a window
 gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for issue 92 (still open): needs a window
 gpu|campaign/test/heat_ui_shots.gd|-|{out}|run setup Heat card screenshots: needs a window
+gpu|campaign/test/nem_col4_shots.gd|-|{out}|issue 1175: the orders rail with a column 4 shipyard holding the Nemesis meeting and the flagship stop with its objective and board; needs a window, draws no ship
 gpu|campaign/test/nem_panel_shots.gd|-|{out} --no-tips|Nemesis panel screenshots (issue 122): needs a window
 gpu|campaign/test/map_approach_shots.gd|-|{out} --no-tips|sector approach at a matched jump, region fleets, far stops, Map key, spacing and uncapped frame times (issues 420 and 438)
 gpu|campaign/test/map_region_shots.gd|-|{out} --no-tips|all five generated regions, three matched sectors, Map key, four-route fleet fit and uncapped frame times (issue 465)
