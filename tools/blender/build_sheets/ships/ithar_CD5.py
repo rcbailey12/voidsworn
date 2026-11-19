@@ -83,7 +83,17 @@ def run2_skin(x, a, inset=0.0):
 # R337 (issue 1183): the hull restarts from the approved concept. The core is run 2's frozen oval (it already carries the
 # three optic swells and the stern shoulders, so every optic, lance and drive keeps its exact attachment). Over it lie the
 # Glasswright kit's pearl ribbons; the core itself is the opaque glowing mosaic seen in the gaps. Nothing is see-through.
+NOSE_X, NOSE_END = 7.0, 12.4
+
+
 def skin(x, a, inset=0.0):
+    """Board round 4: forward of x=7 the run 2 nose is stretched into a long point that runs out between the lances
+    (the optics, all at x <= 6, keep their exact skin)"""
+    if x > NOSE_X:
+        c = (NOSE_END - 10.25) / (NOSE_END - NOSE_X) ** 2
+        q = x - c * (x - NOSE_X) ** 2
+        p = run2_skin(q, a, inset)
+        return (x, p[1], p[2])
     return run2_skin(x, a, inset)
 
 
@@ -124,8 +134,15 @@ def gap_of(x, a):
     """which long-ribbon gap a core point sits in, and its leaf coordinate along the gap: whole numbers fall where the two
     swaying neighbours pinch together, so each leaf window between two pinches is one panel"""
     step = 2 * math.pi / RIB_A
-    g = int(math.floor(((a - 0.2 - TWIST_A(x)) % (2 * math.pi)) / step))
-    return g, (LEAF_F * x + g * math.pi - math.pi / 2) / (2 * math.pi)
+    u = ((a - 0.2 - TWIST_A(x)) % (2 * math.pi)) / step
+    g = int(math.floor(u))
+    # Board round 4: each opening breaks into smaller leaves of mixed colour: two side by side across the opening, offset
+    # half a leaf along it, and three leaves where round 3 had one.
+    f = u - g
+    side = 1 if f > 0.5 + 0.18 * math.sin(2.3 * x + g) else 0
+    # slanted, not square, boundaries between neighbouring leaves
+    along = 2 * (LEAF_F * x + g * math.pi - math.pi / 2) / (2 * math.pi) + 0.5 * side + 0.9 * (f - 0.5) * (1 - 2 * side)
+    return 2 * g + side, along
 
 
 def optic_clamp(x, p, lift):
@@ -264,7 +281,7 @@ def build(K):
     gw, stack = gw_kit('parts'), gw_kit('stack')
     # The opaque core: the glowing mosaic seen between the ribbons. Each gap between two long ribbons is cut into
     # leaf-length panels of one colour each (amber most, then violet, then green: the concept's shares).
-    vf = grid_surface(skin, BODY_NU, BODY_NV, -12.75, 10.25)
+    vf = grid_surface(skin, BODY_NU, BODY_NV, -12.75, NOSE_END)
     hull = K._obj(CODE + '_mosaic_core', *vf, 'gw_mosaic', smooth=True)
     hull.data.color_attributes.new('gw_tint', 'FLOAT_COLOR', 'POINT')
     hull.data.attributes.new('gw_glow', 'FLOAT', 'POINT')
@@ -272,7 +289,7 @@ def build(K):
     tint, glow = hull.data.attributes['gw_tint'], hull.data.attributes['gw_glow']
     for i in range(len(tint.data)):
         ix, ia = divmod(i, BODY_NV)
-        x = -12.75 + 23.0 * ix / BODY_NU
+        x = -12.75 + (NOSE_END + 12.75) * ix / BODY_NU
         a = ia * 2 * math.pi / BODY_NV
         colour, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=5)
         tint.data[i].color = tuple(stack.PANEL[colour]) + (1,)
@@ -288,7 +305,8 @@ def build(K):
     for k in range(RIB_A):
         base = 0.2 + k * step
         ribbons.append(gw.Ribbon(
-            -12.45 + 0.18 * math.sin(2.3 * k), 9.95 - 0.55 * (k % 3),
+            # the long ribbons run on past the body's nose and close into one long point between the lances
+            -12.45 + 0.18 * math.sin(2.3 * k), 12.2 - 0.30 * (k % 3),
             # Neighbours sway in opposite senses, so they meet and part: the gaps between them become leaf-shaped windows.
             lambda x, base=base, k=k: bow_gather(x, base + TWIST_A(x) + SWAY * math.sin(LEAF_F * x + k * math.pi)),
             lambda t, k=k: (0.25 + 0.03 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
