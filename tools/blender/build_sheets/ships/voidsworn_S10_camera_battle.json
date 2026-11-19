@@ -1,0 +1,19 @@
+{
+ "az": 90.0,
+ "el": 34.0,
+ "roll": 0.0,
+ "dist": 170.0,
+ "mm": 207.80689655172412,
+ "target": [
+  0.0,
+  0.0,
+  1.0
+ ],
+ "sx": 0.0,
+ "sy": 0.0,
+ "res": [
+  1280,
+  720
+ ],
+ "note": "the game's default battle camera (godot/render/camera_rig.gd: 34 degrees above the board), on the port beam at range 170; the lens set so the 14.5 unit cruiser fills about the same share of the frame as S8 does in its battle camera picture"
+}
