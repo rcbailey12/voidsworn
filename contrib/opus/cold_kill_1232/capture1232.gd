@@ -68,7 +68,8 @@ func _run() -> void:
 	bench._cam(Vector3.ZERO, 170.0)
 	await bench._world({"rock": "stone", "planet": 4}, {}, [])
 	var info := {"mode": mode, "commit": _commit(), "adapter": RenderingServer.get_video_adapter_name(),
-		"renderer": RenderingServer.get_current_rendering_method(), "godot": Engine.get_version_info().string}
+		"renderer": RenderingServer.get_current_rendering_method(), "godot": Engine.get_version_info().string,
+		"shield_shape": OS.get_environment("VS_SHIELD_SHAPE") if OS.get_environment("VS_SHIELD_SHAPE") != "" else str(ProjectSettings.get_setting("rendering/effects/shield_shape", "fitted"))}
 	info["result"] = await _kill(mode)
 	_write(out.path_join(mode + ".json"), info)
 	bench._clear()
