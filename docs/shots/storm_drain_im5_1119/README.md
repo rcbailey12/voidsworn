@@ -26,7 +26,13 @@ The stage 6 LOD export and two-repeat solo studio bench passed. The second repea
 
 The isolated game read back all 38 hard-point and turret nodes, and its installed GLB also returned zero intact protrusions. Only then was the checked export installed into the shared playable build. The shared cache was rebuilt and read back the same 38 nodes. The shared GLB SHA256 matches the checked export. The install kept the previous files in the shared build's `.stage7-replaced-b59w46e7/previous` folder.
 
-## Verification
+## Run 2 · Multiple ships in one cloud
+
+Each drained ship has its own position and 0.45-second fade in the storm cards and Max fog. Cues can overlap, with the shared flash counter still deciding which use the softer curve. Where the glows overlap, the stronger one sets the local brightness. If all eight slots in a cloud are busy, later cues wait for a slot and then play in full.
+
+The headless test plays a turn with two ships four hexes apart in one cloud. It checks both materials through the full cue in Standard and Reduced Flashing, with same-frame and staggered playback. The pictures and clips above show run 1.
+
+## Run 1 verification
 
 Standing checks passed with 74 passes and two recorded baselines.
 

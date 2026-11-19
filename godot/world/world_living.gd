@@ -19,6 +19,7 @@ const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
+const STORM_TICK_LIFE := 0.45
 
 const HD := preload("res://world/hull_debris.gd")
 var _chunk_task := -1
@@ -31,7 +32,6 @@ var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
 var storm_mats: Array[ShaderMaterial] = []
 var _storm_patches: Array = []
-var _presented_ticks := {}
 var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var _storm_bursts: Array = []
@@ -340,11 +340,10 @@ void fragment() {
 
 func build(world) -> void:
 	W = world
-	# battle.gd _play_event("tick") calls _float("Ion storm") before gfx.tick.
-	# Consume those positioned presentation records, never the rules event queue.
 	var presenter: Node = W.get_parent()
-	if presenter != null and presenter.get("floats") is Array:
+	if presenter != null and presenter.has_signal("storm_drained"):
 		_tick_presenter = presenter
+		presenter.connect("storm_drained", _queue_storm_tick)
 	rng.seed = int(W.setting.get("seed", 7)) * 31 + 991
 	var pts: Dictionary = W._terr_pts
 	# Background specks originally drew after gas at priority 0. Put them behind it.
@@ -502,7 +501,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	if storm:
 		# R282: the cloud carries broad cool charge, not the old warm contour veins.
 		storm_mats.append(m)
-		_storm_patches.append({"mat": m, "points": ps, "tick": 0.0, "tick_pos": Vector3.ZERO, "tick_soft": false})
+		_storm_patches.append({"mat": m, "points": ps, "pending": [], "flares": []})
 		_set_flashes([])
 	else:
 		var b: Array = FLOOK.of(W._fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
@@ -815,43 +814,50 @@ static func _instance_shader_ready(mi: MeshInstance3D) -> bool:
 	return DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and is_instance_valid(mi) and mi.material_override != null
 
 
-# The positioned float is created on the actual storm tick, including shield-only
-# ticks. No inferred round timer, shield-hit guess, or duplicated damage rule.
-func _storm_tick_at(pos: Vector3) -> void:
+func _queue_storm_tick(pos: Vector3) -> void:
+	if not visible:
+		return
 	for patch in _storm_patches:
 		for p in patch.points:
 			if Vector2(pos.x - p.x, pos.z - p.z).length_squared() <= 100.0:
-				patch.tick = 1.0
-				patch.tick_pos = pos
-				var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
-				# Book the lit gas against nearby weapon and lightning flashes.
-				patch.tick_soft = is_instance_valid(effects) and not effects.flash_at(pos, effects.now, 36.0, 0.0, 0.45)
-				break
+				patch.pending.append(pos)
+				return
 
 
-func _present_storm_ticks(dt: float, reduced: bool) -> void:
-	if is_instance_valid(_tick_presenter):
-		var live := {}
-		for record in _tick_presenter.get("floats"):
-			var label = record.get("lbl")
-			if not is_instance_valid(label) or not label is Label:
-				continue
-			if not (label as Label).text.begins_with("Ion storm"):
-				continue
-			var id: int = label.get_instance_id()
-			live[id] = true
-			if not _presented_ticks.has(id):
-				_storm_tick_at(record["pos"])
-		_presented_ticks = live
+func _present_storm_ticks(reduced: bool) -> void:
 	for patch in _storm_patches:
-		var soft: bool = reduced or patch.tick_soft
-		var envelope := 0.9 if soft else 0.52
-		var pos: Vector3 = patch.tick_pos
-		var flare := Vector4(pos.x, pos.y, pos.z, _flash((1.0 - float(patch.tick)) * envelope, soft))
-		(patch.mat as ShaderMaterial).set_shader_parameter("tick_flare", flare)
+		var pending: Array = patch.pending
+		var flares: Array = patch.flares
+		if pending.is_empty() and flares.is_empty():
+			continue
+		while not flares.is_empty() and clock - float(flares.front().start) >= STORM_TICK_LIFE:
+			flares.pop_front()
+		var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+		# An unusually large batch waits for free shader slots. Book each cue
+		# when it starts so the counter sees weapon and lightning overlap.
+		while not pending.is_empty() and flares.size() < ION.TICK_FLARE_SLOTS:
+			var pos: Vector3 = pending.pop_front()
+			var soft: bool = is_instance_valid(effects) and not effects.flash_at(pos, effects.now, 36.0, 0.0, STORM_TICK_LIFE)
+			flares.append({"pos": pos, "start": clock, "soft": soft})
+		var values := PackedVector4Array()
+		if not flares.is_empty():
+			values.resize(ION.TICK_FLARE_SLOTS)
+			for i in flares.size():
+				var flare: Dictionary = flares[i]
+				var soft: bool = reduced or flare.soft
+				var envelope := 0.9 if soft else 0.52
+				var age := (clock - float(flare.start)) / STORM_TICK_LIFE
+				var pos: Vector3 = flare.pos
+				values[i] = Vector4(pos.x, pos.y, pos.z, _flash(age * envelope, soft))
+		_set_storm_tick_uniforms(patch.mat, values, flares.size())
 		if patch.has("fog_mat"):
-			(patch.fog_mat as ShaderMaterial).set_shader_parameter("tick_flare", flare)
-		patch.tick = maxf(0.0, float(patch.tick) - dt / 0.45)
+			_set_storm_tick_uniforms(patch.fog_mat, values, flares.size())
+
+
+func _set_storm_tick_uniforms(mat: ShaderMaterial, values: PackedVector4Array, count: int) -> void:
+	if count > 0:
+		mat.set_shader_parameter("tick_flares", values)
+	mat.set_shader_parameter("tick_flare_count", count)
 
 
 func _process(dt: float) -> void:
@@ -865,7 +871,7 @@ func _process(dt: float) -> void:
 	for m in fog_mats:
 		m.set_shader_parameter("gas_time", clock)
 	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
-	_present_storm_ticks(dt, reduced)
+	_present_storm_ticks(reduced)
 	for burst in _storm_bursts:
 		if clock >= float(burst.next): _start_storm_burst(burst)
 	var fs: Array = []
