@@ -36,6 +36,11 @@ for rad in radii:
     off_dir, on_dir = os.path.join(clip, f"max_{rad}_off"), os.path.join(clip, f"max_{rad}_on")
     meta = json.load(open(os.path.join(clip, f"max_{rad}_on_meta.json")))
     frames = sorted(f for f in os.listdir(off_dir) if f.endswith(".jpg"))
+    on_frames = sorted(f for f in os.listdir(on_dir) if f.endswith(".jpg"))
+    want = [f"f{k:04d}.jpg" for k in range(int(meta["frames"]))]
+    # Artoo on PR 1181: both sides must hold every frame the capture declared, in order, with nothing missing.
+    if frames != want or on_frames != want:
+        sys.exit(f"{rad}: frames do not match the capture's {meta['frames']} (off {len(frames)}, on {len(on_frames)})")
     stage = "DRAFT (placeholder hulls)" if meta.get("draft") else "prototype, off by default"
     with tempfile.TemporaryDirectory() as tmp:
         for i, f in enumerate(frames):
@@ -52,7 +57,10 @@ for rad in radii:
                         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", mp4], check=True)
     probe = subprocess.run(["ffprobe", "-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries",
                             "stream=nb_read_frames,width,height,duration", "-of", "json", mp4], capture_output=True, text=True, check=True)
-    print(mp4, json.loads(probe.stdout)["streams"][0], "frames in:", len(frames))
+    got = json.loads(probe.stdout)["streams"][0]
+    if int(got["nb_read_frames"]) != len(want):
+        sys.exit(f"{mp4}: encoded {got['nb_read_frames']} frames, the capture declared {len(want)}")
+    print(mp4, got, "frames in:", len(frames))
     # the still sheet: the frigate mid-line (f0090), the capital mid-line (f0165), 2 s after the capital stops (f0285)
     picks = [k for k in ("f0090.jpg", "f0165.jpg", "f0285.jpg") if k in frames]
     sheet = Image.new("RGB", (len(picks) * 426, 2 * 240 + 0))
