@@ -24,7 +24,8 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
   Ryan's PC), `muse` (Rey and its models), `opus` (Claude), `ryan` (waiting on Ryan), plus `blocked`. Who does which kind of
   work is RULEBOOK 2.6; which seats are live today is LOOP.md "The seats".
 - Agents deliver by pushing a branch named `codex/issue-<number>`, `muse/issue-<number>`, `work/issue-<number>` (or
-  `work/issue-<number>-<arm>`) or `opus/issue-<number>`. Never push to main (R75); the only exception is LOOP.md and
+  `work/issue-<number>-<arm>`) or `opus/issue-<number>`. Any other one-level `muse/<name>` branch also gets a pull request (Nov 17 audit);
+  Muse names a scratch branch `muse/wip-<name>` to keep it out. Never push to main (R75); the only exception is LOOP.md and
   FINDINGS.md, which the Board commits straight to main (R102).
 - The push makes GitHub open the pull request by itself (.github/workflows/auto_pr.yml, for those branch shapes) and run the
   checks once (.github/workflows/checks.yml: standing checks, no em dashes in changed files, Godot rules parity, Godot game

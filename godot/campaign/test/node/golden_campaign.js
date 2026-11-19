@@ -71,6 +71,21 @@ function choose(list){ const on=list.filter(a=>a[2]); const onTitle=on.some(a=>a
   const ws=on.map(a=>weight(a,onTitle)), tot=ws.reduce((x,y)=>x+y,0);
   if(!tot){ const pref=['closeModal','leaveYard','backMap','backShipyard','prizeConfirm','c3retreatNo','title']; for(const p of pref){ const f=on.find(a=>a[0]===p); if(f) return f; } return on[0]||null; }
   let r=botNext()%tot; for(let i=0;i<on.length;i++){ if(r<ws[i]) return on[i]; r-=ws[i]; } return on[on.length-1]; }
+// ---------------- Godot checkpoint differences (issue 1125) ----------------
+// Use the browser's battle and reward logic, with the two Godot save boundaries below. This keeps the
+// same choices available after a reload; the Godot-only regression uses the actual files and loader.
+const browserBattleScreen=battleScreen;
+battleScreen=function(cfg){
+  const checkpoint=SAVED_RUN, boosted=!!RUN.storyNext;
+  browserBattleScreen(cfg);
+  if(boosted) SAVED_RUN=checkpoint; // the live attempt still spends the boost
+};
+const browserPrizeConfirm=ACT.prizeConfirm;
+ACT.prizeConfirm=()=>{
+  browserPrizeConfirm();
+  const saved=SAVED_RUN?.reward, stage=RUN?.reward?.stage;
+  if(saved?.stage==='prize'&&saved.prizes.length===0&&(stage==='salvage'||stage==='pick')) saved.stage=stage;
+};
 // ---------------- page reload (the browser closing and reopening: only the save survives) ----------------
 function doReload(){ const data=JSON.stringify({meta:META,run:SAVED_RUN}); RUN=null; B=null; for(const k of Object.keys(window)) if(k[0]==='_') delete window[k]; curEvent=null; yardNode=null;
   const o=JSON.parse(data); META=migrateMeta(Object.assign(defaultMeta(),o.meta)); SAVED_RUN=migrateRun((o.run&&!o.run.none)?o.run:null);

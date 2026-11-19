@@ -2,7 +2,7 @@ extends RefCounted
 # Board presentation trial (Ryan, Nov 1 16:12: "it almost ends up just looking like a board game on top of a cool
 # background"). Four ways to draw the board, switchable while playing so Ryan can pick one; nothing here touches the
 # rules or which hexes a ship can reach.
-#   today     the board as it was (grey plate, every hex outlined, tinted terrain hexes)
+#   today     the grey plate and tinted terrain hexes, with a plain distance-faded grid
 #   holo      A "holo war-table": no plate and no fills; faint holographic grid lines that fade away from the ship that is
 #             up and from the cursor; terrain shown by its 3D objects and a thin holo edge; the move area a glowing footprint
 #   living    B "living terrain": grid all but gone (hover and planned moves only); nebula, ion storm, debris and the

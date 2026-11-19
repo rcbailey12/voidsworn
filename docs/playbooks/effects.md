@@ -26,9 +26,10 @@ effect: a weapon hit, a shield response, a trail, a death.
   gap where a side is open, nothing else at rest; shields keep faction colours (R163), with Glacier pale blue only for screen
   readouts (R210). The rules are one pool per ship with per-side coverage and lossy routing (issue 371); the look is issue
   372. A shield hit makes no smoke, only an energy crackle (R271, issue 815). Settled: do not reopen the options sheet.
-- R297 and R303: the egg remains the default shield. The optional fitted skin
-  (`VS_SHIELD_SHAPE=fitted` or `rendering/effects/shield_shape="fitted"`) offsets
-  sampled hull surfaces at a uniform gap, preserving waists and ring openings.
+- Ryan, Nov 18 (issue 1045): the R303 fitted skin replaces the R297 egg default.
+  The fitted skin offsets sampled hull surfaces at a uniform gap, preserving
+  waists and ring openings. Select the egg with `VS_SHIELD_SHAPE=egg` or
+  `rendering/effects/shield_shape="egg"`.
   Its hit collider uses that same mesh. Impact and collapse ripples use the shader's
   hits array, including the soft flash fallback; do not add a separate flat ring.
   Check C15s, H9 and E12 at cameras 170 and 60, plus the fitted skin from the side.

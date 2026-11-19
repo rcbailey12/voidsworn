@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet, opus or openai> [dryrun]
 rem WORK_MODEL overrides an OpenCode model within its provider. kimicode uses Kimi CLI and WORK_KIMI_MODEL.
 rem PC_WAIT_FOR names the predecessor's status.json; only a checked non-partial push with passing checks releases it.
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
@@ -30,7 +30,7 @@ rem      must be that commit with that diff (out\pushed_diffstat.txt). Any diffe
 rem      in result.txt, out\DIFF_MISMATCH.txt, exit code 10.
 rem  (disk) Every run ends with its folder size in result.txt. Only when work217\runner_settings.txt says
 rem      remove_repo_copy_after_push=yes (off by default; Ryan turns it on once with WORKHORSE_CLEANUP.bat) does a run whose
-rem      push was checked remove its own repo\ copy; out\ is always kept. A dry run never removes anything.
+rem      checked_push and no local-only work removes its own repo\ copy; out\ is always kept.
 rem Runner 3 (issue 722, Nov 15 2026; Muse audit 706 findings 6 and 7):
 rem  (model) Every run stamps the resolved model id into out\status.json and result.txt, and result.txt warns when it
 rem      differs from the arm's default, whatever the provider: a same-provider WORK_MODEL override (invisible to the
@@ -61,25 +61,29 @@ rem sonnet: Claude Sonnet 5.5 on the Max plan's monthly API credits (Ryan, Nov 1
 if /i "%ARM%"=="sonnet" set "MODEL=anthropic/claude-sonnet-5-5"
 rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use it as another opus worker")
 if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
-if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-or-opus [dryrun] & exit /b 2)
+if /i "%ARM%"=="openai" set "MODEL=openai/gpt-6.2-sol"
+if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-opus-or-openai [dryrun] & exit /b 2)
+for %%A in (deepseek deepseekpro kimi kimicode sonnet opus openai) do if /i "%ARM%"=="%%A" set "ARM=%%A"
 rem The arm default, captured before WORK_MODEL below: issue 722 stamps the resolved model and warns when it differs.
 set "DEFAULT_MODEL=%MODEL%"
 rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
 rem queue watcher's window, and three later opus-arm runs ran on Kimi and stopped on its quota); one from another provider is ignored
 if defined WORK_MODEL for /f "tokens=1 delims=/" %%P in ("%MODEL%") do for /f "tokens=1 delims=/" %%Q in ("%WORK_MODEL%") do if /i "%%P"=="%%Q" (set "MODEL=%WORK_MODEL%") else (echo WORK_MODEL %WORK_MODEL% ignored: arm %ARM% runs on %%P)
-rem WORK_EFFORT (issue 656, Opus, Nov 13 2026): optional reasoning effort for the run, low, high or max. It becomes OpenCode's
-rem "--variant <effort>", which picks the model's variant in work\opencode_lean.json (variant low sends reasoning_effort "low" to
-rem the API; proof: contrib/opus/reviews/kimi_effort_smoke_656.md). Unset, nothing is added and every arm runs exactly as before.
-rem Only the kimicode arm takes it (its models are the ones with variants written and measured); on any other arm it is ignored
-rem with a line, so a WORK_EFFORT left in the queue watcher's window cannot change an opus or deepseek run (the WORK_MODEL trap).
-set "VARIANT="
+rem OpenAI defaults to high. Legacy kimicode OpenCode dry runs keep the issue 656 variants.
+rem Other arms ignore WORK_EFFORT so a setting left in the queue watcher's window cannot change them.
+set "EFFORT="
+set "EFFORT_LEVELS="
+if /i "%ARM%"=="kimicode" set "EFFORT_LEVELS=low high max"
+if /i "%ARM%"=="openai" set "EFFORT_LEVELS=low medium high max"
 if not defined WORK_EFFORT goto :effortset
-echo %WORK_EFFORT%| findstr /i /x "low high max" > nul
-if errorlevel 1 (echo WORK_EFFORT %WORK_EFFORT% ignored: use low, high or max & goto :effortset)
-if /i not "%ARM%"=="kimicode" (echo WORK_EFFORT %WORK_EFFORT% ignored: only the kimicode arm takes an effort & goto :effortset)
-rem written in lower case: OpenCode's variant names are case sensitive
-for %%L in (low high max) do if /i "%WORK_EFFORT%"=="%%L" set "VARIANT=--variant %%L"
+if not defined EFFORT_LEVELS (echo WORK_EFFORT ignored: only openai and legacy kimicode take an effort & goto :effortset)
+rem OpenCode variant names are case sensitive. Stamp and pass the same lowercase value.
+for %%L in (%EFFORT_LEVELS%) do if /i "%WORK_EFFORT%"=="%%L" set "EFFORT=%%L"
+if not defined EFFORT echo WORK_EFFORT ignored: use one of %EFFORT_LEVELS%
 :effortset
+if /i "%ARM%"=="openai" if not defined EFFORT set "EFFORT=high"
+set "VARIANT="
+if defined EFFORT set "VARIANT=--variant %EFFORT%"
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
 rem The same bundled Node 22 for the runner's own check step (a quoted full path survives the time-limit wrapper)
@@ -114,7 +118,9 @@ if /i "%ARM%"=="kimicode" if "%PC_RUNNER_TEST%"=="1" set "KHARNESS=1"
 if defined KHARNESS set "RESOLVED=%KMODEL%"
 if defined KHARNESS set "DEFAULT_MODEL=kimi-code/kimi-for-coding"
 set "OC=%APPDATA%\npm\opencode.cmd"
-set "BR=work/issue-%N%-%ARM%"
+if "%PC_RUNNER_TEST%"=="1" if /i "%ARM%"=="openai" set "OC=%WORK_TEST_AGENT%"
+set "ASSIGNED_BRANCH=work/issue-%N%-%ARM%"
+set "BR=%ASSIGNED_BRANCH%"
 rem How the run ends: real pushes to GitHub; dry is "git push --dry-run"; test pushes for real to WORK_TEST_BRANCH.
 set "PUSHMODE=real"
 set "DRY=0"
@@ -139,7 +145,6 @@ set "A=%WORK_ROOT%\%K%\%STAMP%"
 set "R=%A%\repo"
 set "O=%A%\out"
 set "RC=0"
-set "OK=0"
 set "CHECKS_OK=0"
 rem R276: all nested GPU launchers inherit the issue and the code-only lane.
 set "PC_GPU_ISSUE=%N%"
@@ -164,12 +169,24 @@ rem (722) The Board's hashes guard the running copies; a mismatch warns and the 
 %COMMON% hashcheck "%O%" "%TC%" "%HASHF%"
 rem (722) Stamp the resolved model before the wait so every later state of the run names it.
 %COMMON% model "%O%" "%RESOLVED%" "%DEFAULT_MODEL%"
+if /i "%ARM%"=="openai" (
+  %COMMON% effort "%O%" "%EFFORT%"
+  if errorlevel 1 goto :setupfail
+  echo %MODEL% %VARIANT%> "%O%\model.txt"
+)
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
+rem Refuse unpriced models and spent budgets before checkout or any paid probe. Dry runs never touch the ledger.
+if /i "%ARM%"=="openai" (
+  %PS% openai-budget "%O%" "%WORK_ROOT%" "%SETF%" "%RESOLVED%" "%DRY%"
+  if errorlevel 1 goto :setupfail
+)
 rem Every work arm, including Kimi, validates and claims before tools, checkout or model calls (issue 888).
-%COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%"
+%COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%" "%ASSIGNED_BRANCH%"
 if errorlevel 1 exit /b 14
-if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
+if /i not "%ARM%"=="openai" (
+  if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
+)
 if "%PC_RUNNER_TEST%"=="1" goto :toolsready
 if /i "%ARM%"=="kimicode" goto :toolsready
 if not exist "%OC%" (echo OpenCode is not installed: run WORKHORSE_SETUP.bat first >> "%O%\result.txt" & goto :setupfail)
@@ -183,17 +200,22 @@ set "SHELL=C:\Program Files\Git\bin\bash.exe"
 set "OPENCODE_GIT_BASH_PATH=C:\Program Files\Git\bin\bash.exe"
 set "OPENCODE_DISABLE_AUTOUPDATE=1"
 set "OPENCODE_DISABLE_MODELS_FETCH=1"
+rem Keep OpenCode's bundled ChatGPT OAuth plugin from replacing this arm's explicit API key and endpoint.
+if /i "%ARM%"=="openai" set "OPENCODE_DISABLE_DEFAULT_PLUGINS=1"
 rem one shell command may run 30 minutes (parity takes several; the default is 2 minutes)
 set "OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS=1800000"
 set "OPENCODE_CONFIG=%T%work\opencode.json"
 rem kimicode: its own config with no helper agents (issue 597: five parallel helpers spent the plan's 5-hour window in 9 minutes); sonnet uses it too, to keep API credit spend linear
 if /i "%ARM%"=="kimicode" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="sonnet" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+if /i "%ARM%"=="openai" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="opus" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 rem deepseek arms too (Ryan, Nov 12: "$20 at DeepSeek API in like a week ... not super sustainable"): one agent, no helpers
 if /i "%ARM%"=="deepseek" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="deepseekpro" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
+rem OpenAI reads only this user setting, cleared first so an inherited value cannot override the saved key.
+if /i "%ARM%"=="openai" goto :openaikey
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
 call :getkey KIMI_CODE_API_KEY
@@ -206,12 +228,19 @@ if /i "%ARM%"=="kimicode" goto :clone
 if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & goto :setupfail)
 if /i "%ARM%"=="kimi" if not defined MOONSHOT_API_KEY (echo no Moonshot key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & goto :setupfail)
 goto :clone
+:openaikey
+set "VOIDSWORN_OPENAI_API_KEY="
+call :getkey VOIDSWORN_OPENAI_API_KEY
+%PS% openai-key "%O%"
+if errorlevel 1 goto :setupfail
+goto :clone
 :drysetup
 if "%PC_RUNNER_TEST%"=="1" goto :clone
 set "DEEPSEEK_API_KEY=dry"
 set "MOONSHOT_API_KEY=dry"
 set "KIMI_CODE_API_KEY=dry"
 set "VOIDSWORN_CLAUDE_API_KEY=dry"
+set "VOIDSWORN_OPENAI_API_KEY=dry"
 set "OPENCODE_CONFIG=%T%work\opencode_mock.json"
 powershell -NoProfile -Command "$dq=[char]34; Start-Process -WindowStyle Hidden -FilePath 'C:\Program Files\nodejs\node.exe' -ArgumentList ($dq+$env:T+'work\mock_llm.js'+$dq+' 8765 '+$dq+$env:O+'\mock_log.txt'+$dq+' '+$env:WORK_DRY_SCENARIO)"
 rem wait until the stand-in is listening (an earlier one may still hold the port for a few seconds)
@@ -225,6 +254,14 @@ if errorlevel 1 exit /b 14
 pushd "%R%"
 %PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :prepfail
+rem Give the probe, agent, and checks one private scratch directory, recorded before use.
+set "PC_RUN_TEMP=%TEMP%"
+%COMMON% scratch "%O%"
+if errorlevel 1 goto :probefail
+set /p PC_RUN_SCRATCH=<"%O%\scratch_path.txt" || goto :probefail
+set "TEMP=%PC_RUN_SCRATCH%"
+set "TMP=%PC_RUN_SCRATCH%"
+set "TMPDIR=%PC_RUN_SCRATCH%"
 rem Tiny model call before ship copying or the full agent. CLI login and billing failures stop here.
 if "%PC_RUNNER_TEST%"=="1" goto :testpreflight
 if /i "%MODE%"=="dryrun" goto :ocpreflight
@@ -257,6 +294,7 @@ set "TMO_REPO=%R%"
 set "TMO_OUT=%O%"
 set "TMO_LOG=%O%\log.txt"
 set "TMO_ERR_LOG=%O%\stderr.txt"
+if /i "%ARM%"=="openai" goto :agent_openai
 if "%PC_RUNNER_TEST%"=="1" goto :testagent
 if /i "%MODE%"=="dryrun" goto :agent_oc
 rem The kimicode arm uses Kimi Code CLI and the PC user's plan login, matching its preflight.
@@ -286,6 +324,10 @@ goto :agent_end
 call "%T%tmo.bat" %WORK_CAP% "%COMSPEC%" /d /s /c ""%WORK_TEST_AGENT%"" > "%O%\log.txt" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
 goto :agent_end
+:agent_openai
+%PS% openai-agent "%O%" "%R%" "%OC%" "%MODEL%" "%VARIANT%" %WORK_CAP%
+> "%O%\exit.txt" echo %ERRORLEVEL%
+goto :agent_end
 :agent_oc
 call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% %VARIANT% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\log.txt" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
@@ -312,6 +354,16 @@ if defined PARTIAL echo PARTIAL RUN, %PARTIAL%: the work goes to %PB%, which ope
 rem give the provider a minute to book the charge before reading the balance again
 if /i not "%MODE%"=="dryrun" timeout /t 60 /nobreak > nul
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_after.txt") else (%PS% balance %ARM% "%O%\balance_after.txt" > nul)
+if /i "%ARM%"=="openai" (
+  %PS% openai-spend "%N%" "%O%" "%WORK_ROOT%" "%SETF%" "%RESOLVED%" "%DRY%"
+  if errorlevel 1 (
+    set "PARTIAL=spend accounting unknown"
+    set "PB=%BR%-partial"
+    set "RC=14"
+    > "%O%\partial.txt" echo spend accounting unknown
+    echo PARTIAL RUN, spend accounting unknown: the work goes to %BR%-partial, which opens no pull request >> "%O%\result.txt"
+  )
+)
 %PS% stats %N% %ARM% "%O%" > nul
 move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul
 if "%PC_RUNNER_TEST%"=="1" if "%PC_TEST_STOP_BEFORE_PUBLISH%"=="1" goto :testfinish
@@ -366,7 +418,6 @@ if not "%SX%"=="0" goto :stopped
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_pushed.txt"
 %PS% stats %N% %ARM% "%O%" > nul
 if "%PUSHMODE%"=="dry" (echo dry run: push to %PB% would work, nothing pushed >> "%O%\result.txt") else (echo pushed %PB% >> "%O%\result.txt")
-set "OK=1"
 goto :finish
 
 :getkey
@@ -374,10 +425,12 @@ for /f "tokens=2,*" %%a in ('reg query HKCU\Environment /v %1 2^>nul ^| findstr 
 exit /b 0
 :settings
 > "%SETF%" echo # Workhorse runner settings (issue 377, issue 722). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
->> "%SETF%" echo # remove_repo_copy_after_push=yes: after a push the runner has checked, it removes that run's repo copy and keeps out.
+>> "%SETF%" echo # remove_repo_copy_after_push=yes: after checked_push, remove a run's repo copy if it holds no local-only work.
 >> "%SETF%" echo remove_repo_copy_after_push=no
 >> "%SETF%" echo # min_free_gb: the run refuses to start when the drive holding Downloads\voidsworn_test has less free space than this (issue 722).
 >> "%SETF%" echo min_free_gb=60
+>> "%SETF%" echo # OpenAI monthly estimate budget in USD. November 2026 starts with 94 left.
+>> "%SETF%" echo openai_budget_usd=94
 exit /b 0
 :testfinish
 rem Free integration proof: keep the agent's files but never create a commit or push.
@@ -412,9 +465,17 @@ goto :finish
 %COMMON% finish "%O%" 3 "" "%PUSHMODE%" 0
 exit /b 3
 :finish
+rem Include failed probes and partial runs too. The ledger uses the run folder as an id, so this cannot charge twice.
+if /i "%ARM%"=="openai" (
+  %PS% openai-spend "%N%" "%O%" "%WORK_ROOT%" "%SETF%" "%RESOLVED%" "%DRY%"
+  if errorlevel 1 set "RC=14"
+)
 popd
-%COMMON% finish "%O%" "%RC%" "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%"
+%COMMON% finish "%O%" "%RC%" "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%" "%R%"
 if errorlevel 1 set "RC=14"
+if defined PC_RUN_TEMP set "TEMP=%PC_RUN_TEMP%"
+if defined PC_RUN_TEMP set "TMP=%PC_RUN_TEMP%"
+if defined PC_RUN_TEMP set "TMPDIR=%PC_RUN_TEMP%"
 rem (disk) The run folder's size, and the repo copy removed only when Ryan's setting allows it and the push was checked.
-%PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" %OK% %DRY% >> "%O%\result.txt" 2>&1
+%PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" "%DRY%" >> "%O%\result.txt" 2>&1
 exit /b %RC%

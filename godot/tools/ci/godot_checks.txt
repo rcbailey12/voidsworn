@@ -10,16 +10,22 @@
 # setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
+headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep independent cues through battle playback in Standard and Reduced Flashing
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
+headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
+headless|campaign/test/boon_fleet_test.gd|-|-|issue 1075: protocol offer cards explain current fleet fit, caps and refits; fixed seeds prove the pool, draws and saves are read-only
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
 headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
+headless|campaign/test/event_distribution_test.gd|-|-|issue 1149: all faction event cards, choices, saved keys and the quiet fallback
 headless|campaign/test/free_exit_test.gd|fixture:free_exit_tests.js|{fixture}|free exits match the live browser at entry, result and map
 headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP payout; campaign data only
 headless|campaign/test/inheritance_test.gd|fixture:inheritance_tests.js|{fixture}|inheritance receipts match the browser payouts and profiles
 headless|campaign/test/lineage_test.gd|-|-|lineage XP, tiers, locks, capstones, saves and resets for every faction
+headless|campaign/test/map_load_cancel_test.gd|-|-|issue 1045: ending a run during map loading clears the cover and permits a retry
+headless|campaign/test/map_trial_save_test.gd|-|-|issue 1050: new run toggle, map status, battle hand-off, save reload and old saves
 headless|campaign/test/map_readonly_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 344: opening the map, the Dossier and the Map key changes nothing)
 headless|campaign/test/map_travel_test.gd|-|-|map reachability, lanes, flight at 30, 60 and 144 fps; no models or bakes needed
 headless|campaign/test/nem_read_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 364: Nemesis readers ask the campaign)
@@ -29,20 +35,24 @@ headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fix
 headless|campaign/test/onboarding_test.gd|userdir|-|onboarding tips, options and telemetry; refuses a user folder outside the checkout, so it gets one inside
 headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
+headless|campaign/test/run_resume_test.gd|-|-|issue 1125: boosted fight replay, withdrawal, Continue, boss exit, prize salvage, yard doctrine and Career backup recovery
 headless|campaign/test/save_test.gd|-|-|the campaign save is atomic and keeps a backup
 headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|shadow XP, heirs and saves match the browser overflow
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices and records; its optional shots folder is not used here
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
+headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
+headless|rules/test/map_trial_test.gd|-|-|issue 1050: compare the live port with the JS map trial for every encounter
 headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
-headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh in its own step
+headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|parity and saved Godot results share one batch; saved/check.js reports changed battles and whole-step time (issue 990)
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
+headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs agree with rules at hex centres for ranges 1 to 6 and report range 7
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
 headless|portraits/test/campaign_face_check.gd|-|-|issue 737: the campaign screen's face hook passes an Eclipse admiral's level 0, 3 and 8 to portraits.face and the picture changes with level; C.ADMIRALS factions match crests/index.json for every admiral, by name
-headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory
+headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory; result stings end on hand-off
 headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
@@ -59,7 +69,12 @@ headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interio
 headless|fx/test/death_seam_check.gd|-|-|issue 600: kills A16 (C19_51, its unpainted export kept in fx/test/fixtures) and counts machines split across pieces and inside triangles outside their own piece's hull: both zero; prints the cut's worker time; issue 616: the power-down after the kill finishes within 30 frames with every hull surface powered down, and prints the kill frame's fx.death time
 headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface stays transparent after damage; the opaque hull stays on the opaque shader
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
+headless|fx/test/flash_projection.gd|-|-|issue 1116: projected flash width and the three-flash cap at the edge, with and without pixel floors
+headless|fx/test/shield_flash_booking.gd|-|-|issue 1116: a torpedo shield crackle books one picture at its drawn centre and size, or none in calm mode
+headless|fx/test/shield_cache_check.gd|-|-|issue 1130: stable bounded fitted shield cache, geometry replacement, contact and puff cleanup
 headless|fx/test/hit_recipe_check.gd|-|-|issue 461: the hit ladder, a recipe per weapon family, thrown matter outliving flame, outward direction, torpedo light reach, zero flashes in calm mode, the lance kill's clean cut
+headless|fx/test/hit_fragments_check.gd|-|-|issue 1000: closed hull fragment meshes, faction paint and glass, larger macro bursts, outward motion, bounded pools and the shared hit random sequence; issue 1117: a real dent rebuild preserves chip paint and UVs on the struck surface
+headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
@@ -67,14 +82,21 @@ headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-
 headless|render/test/install_refresh_check.gd|-|-|issue 592: the stage 7 install route in user://: the real asset builder (--ships-only) rebuilds a replaced hull's cache entry, drops its old damage and wreck scenes, and ShipView draws the new hull
 headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test ship (render/test/fixtures/T560_fx) turrets turn smoothly to the target bearing inside their arc and clear of their own ship, fire from the turned muzzle, go back to rest; fixed guns never move; the same hits as fixed guns
 headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes of ships, fighters, station, terrain, planet, wrecks, explosions and the campaign map and fails when any object leaves its target range in docs/playbooks/scale.md
+headless|assets/ships/test/station_size_check.gd|-|-|issue 975: an installed T2 is used at unit scale for the large station; the teaching station uses O1_37 at its own scale
 headless|render/test/formation_check.gd|-|-|issue 843: no projected wingmate footprints overlap through flight for every factory craft kind, sheet-sized Sunward hulls and wide, long, tall, nested and breathing mesh regressions
 headless|render/test/hull_lift_check.gd|-|-|issue 811: only E14 lifts after fitting; movement and revival keep its height; markers, camera, hard points and shields follow
 headless|render/test/variant_ship_check.gd|-|-|issue 812: named variant hull selection, base fallback, inherited scale and board clearance; VARIANT_EXPORTS adds real GLB cache readback
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
+headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
+headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
+headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
+headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
+headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder
+headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged
 headless|ui/battle/test/battle_log_cap_test.gd|-|-|issue 588: the battle log view keeps the newest 200 entries like the browser, the oldest leave the view only, and the rules log array is untouched
-headless|ui/battle/test/ledger_readability_test.gd|-|-|issue 271: the battle screen orders sheet (E1) at 1080 and 1440: 17 px, Big Shoulders 28, three strengths, 4.5 to 1 over white and black boards, no overlaps, every function reachable, nothing lime
+headless|ui/battle/test/ledger_readability_test.gd|-|-|issue 1021: KEEL battle HUD at 1080, 1440 and narrow; text floor, contrast, input, ship clearance, real silhouettes and log settings
 headless|ui/career/test/career_readability_test.gd|-|-|issue 729: the Career screen's dim BONE3 labels are 4.5 to 1 or better on their card, the panels and the screen behind them at 1080 and 1440, measured like ledger_readability_test.gd
 headless|ui/career/test/career_honours_test.gd|-|-|issue 869: CR4 opens without writing saves, word tab keys, six labelled figures, Sunward crests, all factions, fourth hero row and long records at 1080 1440 and 2160
 headless|scenes/battle/test/nose_first_check.gd|-|-|issue 521: a run of two hexes or more is flown nose first on the main engine through battle.gd _glide_steps; ends on the rules hex and facing, passes inside every route hex, a one-hex slide is slower than a burn

@@ -182,7 +182,7 @@ func _run() -> void:
 		"renderer": RenderingServer.get_current_rendering_method(), "driver": OS.get_video_adapter_driver_info(),
 		"resolution_asked": [RES.x, RES.y], "vsync": "disabled", "warmup_frames": int(args.get("warmup", 120)),
 		"measured_frames": int(args.get("frames", 720)), "sessions": sessions, "volley_every_s": VOLLEY_EVERY,
-		"fleet": FLEET, "enemies": ENEMIES, "map": "storm", "shape": "open", "look": "cine",
+		"fleet": FLEET, "enemies": ENEMIES, "map": str(args.get("map", "storm")), "shape": "open", "look": "cine",
 		"camera": str(args.get("camera", "engagement")),
 		"probe_sha256": FileAccess.get_sha256("res://bench/scene_gate.gd"), "modes": {}, "order": []}
 	for s in sessions:
@@ -192,7 +192,7 @@ func _run() -> void:
 			order.reverse()
 		for m in order:
 			var row: Dictionary = await _mode(str(m), s)
-			if PG.stop_if_any():
+			if row.is_empty() or PG.stop_if_any():
 				return
 			row["session"] = s + 1
 			if not report["modes"].has(m):
@@ -218,8 +218,7 @@ func _settle(fx) -> void:
 
 func _still_run() -> void:
 	rng.seed = 2070
-	await _build("still", 4207)
-	if PG.stop_if_any():
+	if not await _build("still", 4207) or PG.stop_if_any():
 		return
 	_apply("base")
 	var fx = b.gfx
@@ -343,8 +342,7 @@ func _apply_damage_stress() -> void:
 # volley, a flak screen and mass squadron deaths, with damaged ships in frame (E24). One capital dies for DS9.
 func _flash_run() -> void:
 	rng.seed = 2320
-	await _build("flash", 4232)
-	if PG.stop_if_any():
+	if not await _build("flash", 4232) or PG.stop_if_any():
 		return
 	_apply("base")
 	var fx = b.gfx
@@ -584,7 +582,7 @@ func _save() -> void:
 	f.close()
 
 
-func _build(mode: String, seed: int) -> void:
+func _build(mode: String, seed: int) -> bool:
 	HULL.reset_late()   # issue 376: count only the shaders this battle first builds after its warm-up
 	b = BattleScene.instantiate()
 	b.external = true
@@ -592,10 +590,8 @@ func _build(mode: String, seed: int) -> void:
 	b.args["no-tips"] = true
 	if mode in ["fx_off", "floor"]:
 		b.args["nofx"] = true
-	add_child(b)
-	b.tips_off = true
 	var sc := {"seed": seed, "sector": 3, "admiral": "vex", "fleet": FLEET.duplicate(), "enemies": ENEMIES.duplicate(),
-		"fac": "corsair", "obj": "rout", "shape": "open", "map": "storm", "dep": "line", "kind": "battle"}
+		"fac": "corsair", "obj": "rout", "shape": "open", "map": str(args.get("map", "storm")), "dep": "line", "kind": "battle"}
 	var api = API.new()
 	var e: String = api.load_rules()
 	if e != "":
@@ -616,15 +612,31 @@ func _build(mode: String, seed: int) -> void:
 		if hulls.has(t) and hulls[t].get("fac") != null:
 			u["fac"] = str(hulls[t]["fac"])
 	b.battle_cfg = sc
+	_configure_battle(api)
 	var tb := Time.get_ticks_usec()
+	add_child(b)
+	b.tips_off = true
 	b.begin_with(api)
-	var w0 := Time.get_ticks_msec()
-	while (b.warming or b.busy) and Time.get_ticks_msec() - w0 < 30000:
+	# A cold build can wait separately for world bakes, FX and shader settling.
+	var deadline := Time.get_ticks_usec() + 60000000
+	while (b.warming or b.busy) and Time.get_ticks_usec() < deadline:
 		await get_tree().process_frame
+	if b.warming or b.busy:
+		push_error("[scene_gate] %s build timed out" % mode)
+		get_tree().quit(1)
+		return false
 	build_ms = (Time.get_ticks_usec() - tb) / 1000.0
-	print("[scene_gate] %s built in %.0f ms (ready after %.0f ms)" % [mode, build_ms, Time.get_ticks_msec() - w0])
+	print("[scene_gate] %s built and ready in %.0f ms" % [mode, build_ms])
 	for k in 30:
 		await get_tree().process_frame
+	if str(sc.map) == "station":
+		var installed := 0
+		var debris_pieces := 0
+		for child in b.board.find_children("*", "", true, false):
+			if child.has_meta("station_T2"): installed += 1
+			if child.has_meta("debris_kind"): debris_pieces += 1
+		report["station_T2_instances"] = installed
+		report["station_T2_debris_pieces"] = debris_pieces
 	# nobody drives this battle: no mouse or keys move the camera or pick a ship while it is measured
 	b.cam.input_enabled = false
 	b.cam.keyboard_enabled = false
@@ -653,6 +665,11 @@ func _build(mode: String, seed: int) -> void:
 		if b.views.has(u["id"]) or b.views.has(id):
 			side_ids[str(u["side"])].append(id)
 			fac_of[id] = str(u["fac"])
+	return true
+
+
+func _configure_battle(_api) -> void:
+	pass
 
 
 func _views() -> Array:
@@ -725,8 +742,7 @@ func _mode(mode: String, s: int) -> Dictionary:
 	rng.seed = 2070 + s
 	volleys_on = false
 	volley_t = 0.0
-	await _build(mode, 4207)
-	if PG.stop_if_any():
+	if not await _build(mode, 4207) or PG.stop_if_any():
 		return {}
 	_apply(mode)
 	if mode == "caps":

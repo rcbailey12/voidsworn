@@ -21,8 +21,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # that finds no plating skips and is counted; a point moved off the hull is caught by this check's own distance walk.
 #
 #   godot --headless --path godot --script res://fx/test/attach_check.gd [-- --only CODE,CODE] [-- --out FILE.json]
-# Distance: the shortest of 258 rays cast from the point (a Fibonacci sphere plus the point's own axes) onto the hull's
-# triangles, an upper bound on the true distance, so a pass is sound; a point between rays could read long (a loud fail).
+# Distance: the closest point on the hull's triangles, in the fitted ship frame used by the effects.
 
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
@@ -34,12 +33,99 @@ var failures := 0
 var fx
 var world: Node3D
 var report := {"tolerance_of_length": TOL_FRAC, "hulls": {}}
-var _sphere: Array = []
 
 
 class StandIn extends Node3D:
 	var code := ""
 	var attach = null
+
+
+class HullDistance:
+	# Leaves hold runs of triangles. Each parent box covers both children so it can prune an entire branch.
+	const LEAF_VERTICES := 48  # 16 triangles
+	var faces := PackedVector3Array()
+	var box_min := PackedVector3Array()
+	var box_max := PackedVector3Array()
+	var first_leaf := 0
+
+	func _init(mesh: TriangleMesh) -> void:
+		if mesh == null:
+			return
+		faces = mesh.get_faces()
+		if faces.is_empty():
+			return
+		var leaves := ceili(float(faces.size()) / LEAF_VERTICES)
+		first_leaf = nearest_po2(leaves)
+		box_min.resize(2 * first_leaf)
+		box_max.resize(2 * first_leaf)
+		for leaf in leaves:
+			var start := leaf * LEAF_VERTICES
+			var lo := faces[start]
+			var hi := lo
+			for i in range(start + 1, mini(start + LEAF_VERTICES, faces.size())):
+				lo = lo.min(faces[i])
+				hi = hi.max(faces[i])
+			box_min[first_leaf + leaf] = lo
+			box_max[first_leaf + leaf] = hi
+		# Pad the tree with the last bounds, so empty leaves cannot widen the parent boxes.
+		var last_leaf := first_leaf + leaves - 1
+		for node in range(last_leaf + 1, 2 * first_leaf):
+			box_min[node] = box_min[last_leaf]
+			box_max[node] = box_max[last_leaf]
+		for node in range(first_leaf - 1, 0, -1):
+			var left := node * 2
+			box_min[node] = box_min[left].min(box_min[left + 1])
+			box_max[node] = box_max[left].max(box_max[left + 1])
+
+	func distance_to(p: Vector3) -> float:
+		return INF if faces.is_empty() else sqrt(_nearest_squared(p, 1, INF))
+
+	func _nearest_squared(p: Vector3, node: int, best: float) -> float:
+		if node >= first_leaf:
+			var start := (node - first_leaf) * LEAF_VERTICES
+			for i in range(start, mini(start + LEAF_VERTICES, faces.size()), 3):
+				best = minf(best, _triangle_distance_squared(p, faces[i], faces[i + 1], faces[i + 2]))
+				if best == 0.0:
+					return 0.0
+			return best
+		# Search the nearer box first to get an upper bound for pruning the farther box.
+		var left := node * 2
+		var right := left + 1
+		var dl := p.distance_squared_to(p.clamp(box_min[left], box_max[left]))
+		var dr := p.distance_squared_to(p.clamp(box_min[right], box_max[right]))
+		if dr < dl:
+			if dr < best:
+				best = _nearest_squared(p, right, best)
+			if dl < best:
+				best = _nearest_squared(p, left, best)
+		else:
+			if dl < best:
+				best = _nearest_squared(p, left, best)
+			if dr < best:
+				best = _nearest_squared(p, right, best)
+		return best
+
+	static func _triangle_distance_squared(p: Vector3, a: Vector3, b: Vector3, c: Vector3) -> float:
+		var ab := b - a
+		var bc := c - b
+		var ca := a - c
+		var normal := ab.cross(c - a)
+		var area_squared := normal.length_squared()
+		# The three edge signs say whether the plane projection is inside the triangle.
+		if area_squared > 0.0 and ab.cross(p - a).dot(normal) >= 0.0 \
+				and bc.cross(p - b).dot(normal) >= 0.0 and ca.cross(p - c).dot(normal) >= 0.0:
+			var height := (p - a).dot(normal)
+			return height * height / area_squared
+		# Outside the face, or on a degenerate triangle, the closest point lies on an edge.
+		return minf(_edge_distance_squared(p - a, ab),
+			minf(_edge_distance_squared(p - b, bc), _edge_distance_squared(p - c, ca)))
+
+	static func _edge_distance_squared(offset: Vector3, edge: Vector3) -> float:
+		var length_squared := edge.length_squared()
+		if length_squared == 0.0:
+			return offset.length_squared()
+		var t := clampf(offset.dot(edge) / length_squared, 0.0, 1.0)
+		return (offset - edge * t).length_squared()
 
 
 func _init() -> void:
@@ -76,11 +162,6 @@ func _run() -> void:
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"quality": "low", "shake": 0.0})
-	for k in 256:
-		var y := 1.0 - (k + 0.5) / 128.0
-		var r := sqrt(maxf(0.0, 1.0 - y * y))
-		var t := k * 2.399963
-		_sphere.append(Vector3(r * cos(t), y, r * sin(t)))
 	_stand_ins()
 	var only: Array = str(args.get("only", "")).split(",", false) if args.has("only") else []
 	var n_real := _real_hulls(only)
@@ -102,31 +183,15 @@ func _run() -> void:
 
 # ---------------------------------------------------------------- the walk
 
-# The hull's triangles as rays see them: the shortest hit over the sphere of directions and the point's own axes.
-func _dist(h, p: Vector3, extra: Array = []) -> float:
-	if h.tm == null:
-		return INF
-	var best := INF
-	var dirs: Array = _sphere.duplicate()
-	for e in extra:
-		if (e as Vector3).length() > 1e-6:
-			dirs.append((e as Vector3).normalized())
-			dirs.append(-(e as Vector3).normalized())
-	var eps: float = maxf(h.L, 1.0) * 1e-4
-	for d in dirs:
-		var hit: Dictionary = h.tm.intersect_ray(p - d * eps, d)
-		if not hit.is_empty():
-			best = minf(best, (hit["position"] as Vector3).distance_to(p))
-	return best
-
-
 func _walk(id: String, s, real: bool) -> Dictionary:
 	var h = s.hull
 	var tol: float = TOL_FRAC * h.L
+	var surface := HullDistance.new(h.tm)
 	var rows: Array = []
 	var worst := [0.0]   # (an array: the lambda below writes it)
 	var bad: Array = []
 	var seen := {}
+	var distances := {}
 	var put := func(what: String, pt: Dictionary, allow := 0.0) -> void:
 		if pt.is_empty():
 			return
@@ -135,20 +200,27 @@ func _walk(id: String, s, real: bool) -> Dictionary:
 		if seen.has(key):
 			return
 		seen[key] = true
-		var d := _dist(h, p, [pt.get("n", Vector3.ZERO), pt.get("f", Vector3.ZERO)])
-		rows.append({"what": what, "src": str(pt.get("src", "")), "p": [snappedf(p.x, 0.001), snappedf(p.y, 0.001), snappedf(p.z, 0.001)], "d": snappedf(d, 0.0001)})
+		if not distances.has(p):
+			distances[p] = surface.distance_to(p)
+		var d: float = distances[p]
+		var limit := tol + allow
+		rows.append({"what": what, "src": str(pt.get("src", "")),
+			"p": [snappedf(p.x, 0.001), snappedf(p.y, 0.001), snappedf(p.z, 0.001)],
+			"d": snappedf(d, 0.000001), "limit": limit})
 		worst[0] = maxf(worst[0], d - allow)
-		if d > tol + allow:
-			bad.append("%s %s (%s) is %.3f from the hull (limit %.3f)" % [h.code, what, str(pt.get("src", "")), d, tol + allow])
+		if d > limit:
+			bad.append("%s %s (%s) is %.3f from the hull (limit %.3f)" % [h.code, what, str(pt.get("src", "")), d, limit])
 	# authored points (the core is inside: inside the box)
 	if h.get("points") != null:
 		for k in h.points:
 			for pt in h.points[k]:
-				var r: float = float((pt["ex"] as Dictionary).get("radius", 0.0)) if k in ["gun", "engine"] else 0.0
 				if k == "core":
 					var bx: AABB = h.box.grow(tol)
 					check(bx.has_point(pt["p"]), "%s hp_core %s is outside the hull's box" % [h.code, str(pt["p"])])
 					continue
+				var r: float = float((pt["ex"] as Dictionary).get("radius", 0.0)) if k in ["gun", "engine"] else 0.0
+				if k == "engine" and r > 0.0:
+					r = _fitted_nozzle_radius(h, pt)
 				put.call("hp " + str(pt["name"]), _with(pt, "hp"), r)
 	# the station rays (guns with no authored point fall back to these); on main a miss here was a box point
 	for side in h.mounts:
@@ -218,6 +290,16 @@ func _walk(id: String, s, real: bool) -> Dictionary:
 				var rp: Vector3 = h.c + Vector3(sx * h.L, sy * h.H, sz * h.W)
 				put.call("rcs corner", h.jet(rp, h.c, rp - h.c))
 	return _close(id, h, rows, bad, worst[0], tol)
+
+
+func _fitted_nozzle_radius(h, pt: Dictionary) -> float:
+	# Reuse the radius fx_hull fitted from this authored exit for the live plume.
+	if h.nozzles_from_kit:
+		for nozzle in h.nozzles:
+			if nozzle["p"] == pt["p"] and (nozzle["d"] as Vector3).is_equal_approx(pt["f"]):
+				return float(nozzle["r"])
+	check(false, "%s %s has no fitted nozzle" % [h.code, pt["name"]])
+	return 0.0
 
 
 func _radius_at(h, m: Dictionary) -> float:
@@ -292,7 +374,7 @@ func _add(id: String, node: StandIn, cls: String) -> Object:
 	for c in node.get_children():
 		if c is MeshInstance3D:
 			meshes.append(c)
-	fx.add_ship(id, node, {"faction": "deathless", "cls": cls, "size": 0.8, "meshes": meshes})
+	fx.add_ship(id, node, {"faction": "deathless", "cls": cls, "size": 0.8, "meshes": meshes, "shielded": false})
 	return fx.ship(id)
 
 
@@ -431,7 +513,8 @@ func _real_hulls(only: Array) -> int:
 			node.position = Vector3(x, 0, 200)
 			node.add_child(scene)
 			root3 = node
-		fx.add_ship("real_" + code, root3, {"faction": fac, "cls": cls, "size": 1.0, "code": code})
+		# The attach walk uses the hull analysis. Building each fitted shield does not affect its points or triangles.
+		fx.add_ship("real_" + code, root3, {"faction": fac, "cls": cls, "size": 1.0, "code": code, "shielded": false})
 		var s = fx.ship("real_" + code)
 		_walk("real_" + code, s, true)
 		fx.remove_ship("real_" + code)

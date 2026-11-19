@@ -78,14 +78,15 @@ def pair(k):
 # ------------------------------------------------------------------------------------------------------------ the layers
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
-    ao_short=.004, ao_long=.025, edge_radius=.0010, edge_gain=14.0,      # the masks (about 10 cm, 65 cm, 2.6 cm on the 26 unit barge)
-    patch_scale=4.0, plate_var=.40, side_dark=.25, grain_scale=260.0, mottle_scale=40.0, mottle=.04, grain=.004,    # base: broad two-tone patches, one tone per plate island
-    rough=.70, metal=.40, wear=1.0, grime=.90, ao_dark=.88, red_tone=.75,
-    rough_floor=.58,     # pass 5 (Board, PC run): no sharp white specular at the game's key light; the concept's metal is dull and grimy
+    ao_short=.004, ao_long=.025, edge_radius=.0018, edge_gain=22.0,      # the masks (about 10 cm, 65 cm, 4.7 cm on the 26 unit barge)
+    patch_scale=4.0, side_dark=.25, grain_scale=260.0, mottle_scale=40.0, grain=.12,
+    rough=.45, metal=.40, wear=1.25, grime=.90, ao_dark=.88,
+    rough_floor=.32, mottle_range=.10, rough_grain=.10, coat_roughness=.16,
     # the plate patchwork (issue 601 Board review: the concept's hull is a quilt of small plates, each its own tone): a grid of
     # panels at the concept's plate size, staggered, each panel and each modelled plate picks a family; black seams between them
     patch_big=(.052, .034, .028), patch_small=(.021, .015, .012), patch_over=(.044, .030, .024), patch_over_share=.10,
-    patch_region=7.0, patch_parts=((.020, .016, .014), (.011, .009, .008), (.024, .018, .016)), patch_seam=.0011, seam_dark=.85,
+    patch_region=7.0, patch_seam=.0011, seam_dark=.85,
+    bare_roughness=.24, cavity_roughness=.14, scuff_roughness=.22, recess_streaks=1.2,
     # R240 (Ryan, Nov 13 2026): the patchwork is never even or ordered. Cell sizes wander along every axis, roughly two thirds to
     # twice the mean (patch_warp), rows come in bands of about 2.3 whose edges step every few columns (patch_band), and 55 percent of the plates
     # are split once more at a random place (patch_split); shared/paint_stack._grid
@@ -101,28 +102,28 @@ LAYERS = dict(
 # zone: base pair, then what the layers do to it. rust 0 keeps a trophy plate's own paint clean of new rust (it came off a
 # ship that kept it painted); scuff and wear still mark it.
 ZONES = dict(
-    soot=dict(rust=.45, grime=.75, red_share=.20, patchwork=1.0, patchwork_parts=.8),
-    soot2=dict(rust=.40, grime=.85, plate_var=.35, red_share=.15, patchwork=1.0),
-    iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, red_share=.12, patchwork=1.0, patchwork_parts=.8),
-    rust=dict(rust=.90, rough=.88, metal=.20, patchwork=.6),
-    blood=dict(rust=.40, rough=.86, metal=.15, patchwork=.4),
+    soot=dict(rust=.45, grime=.75, patchwork=1.0),
+    soot2=dict(rust=.40, grime=.85, patchwork=1.0),
+    iron=dict(rust=.55, metal=.55, rough=.38, wear=1.25, patchwork=1.0),
+    rust=dict(rust=.90, rough=.72, metal=.20, patchwork=.6),
+    blood=dict(rust=.40, rough=.65, metal=.15, patchwork=.4),
     # R252 (issue 726): the sheet's pale zone (A20's big modelled trophy patches TP1, TP3, TP5 and a share of its plate courses)
     # takes no dark plate families; the trophy layer alone covers most of it (trophy_share) in the big pale and violet trophy
     # plates, so a pale course plate reads pale with its neighbours in a big patch and never as a lone small chalky plate
     # R274: the trophy plates are salvaged metal, so the pale zone (mostly trophy plates) takes a little metallic sheen (was metal
     # .25, rough .74)
-    pale=dict(rust=.20, rough=.64, metal=.45, plate_var=.22, grime=.70, patchwork=1.0, trophy_share=.65),
-    violet=dict(rust=.10, rough=.62, metal=.20, plate_var=.20),
-    lilac=dict(rust=.10, rough=.66, metal=.20, plate_var=.20),     # issue 651: kept clean of new rust, as violet
-    steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, patchwork_parts=.8),
-    dark=dict(rust=0, grime=.2, wear=.15, scuff=.1, rivets=0, metal=.1, rough=.9, plate_var=.1),
-    dish=dict(rust=.30, metal=.30, rough=.75, plate_var=.1, scuff=1.0),
-    bell=dict(base='steel', rust=.30, metal=.30, rough=.80, wear=.6, grime=1.0),   # engine bells and housings: matte, never mirror black
+    pale=dict(rust=.20, rough=.44, metal=.45, grime=.70, patchwork=1.0, trophy_share=.65),
+    violet=dict(rust=.10, rough=.62, metal=.20),
+    lilac=dict(rust=.10, rough=.66, metal=.20),     # issue 651: kept clean of new rust, as violet
+    steel=dict(rust=.25, metal=.70, rough=.28, wear=1.30, handling_wear=.45),
+    dark=dict(rust=0, grime=.2, wear=.15, scuff=.1, rivets=0, metal=.1, rough=.9),
+    dish=dict(rust=.30, metal=.30, rough=.75, scuff=1.0),
+    bell=dict(base='steel', rust=.30, metal=.35, rough=.57, wear=.85, grime=1.0),   # soot keeps the bells rough
     warhead=dict(rust=.35, metal=.30, rough=.65, rivets=0),
-    brass=dict(rust=.20, metal=.60, rough=.50, rivets=0),
-    iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.72, trim=('stripes',), trim_amount=.75),
+    brass=dict(rust=.20, metal=.64, rough=.34, rivets=0, handling_wear=.40),
+    iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.55, trim=('stripes',), trim_amount=.75),
     # R240: a hangar mouth's rim and torn teeth: worn iron edging, scuffed bright on the edges, no stripes and no plate patchwork
-    iron_edge=dict(base='iron', rust=.45, metal=.55, rough=.62, wear=1.0, scuff=1.0),
+    iron_edge=dict(base='iron', rust=.45, metal=.60, rough=.35, wear=1.3, scuff=1.0, handling_wear=.35),
 )
 _BASE = dict(soot='soot', soot2='soot2', iron='iron', rust='rust', blood='blood', pale='pale', violet='violet', lilac='lilac', steel='steel',
              dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', iron_edge='iron', bell='steel')
@@ -133,6 +134,13 @@ for _k, _z in ZONES.items():
     if _k == 'warhead': _lo, _hi = lin((60, 22, 16)), lin((104, 40, 26))
     _z['lo'], _z['hi'] = _lo, _hi
 FALLBACK = 'soot'
+MODULE_TONES = dict(body=1.0, repair=.92, machinery=.91)
+HULL_FAMILIES = ('body', 'repair')
+PART_FAMILIES = dict(engine='machinery', thruster='machinery', gun='machinery', bay='machinery', hangar='machinery')
+SURFACE_DUTIES = dict(soot='panel', soot2='recess', iron='panel', rust='panel', blood='band',
+                      pale='panel', violet='panel', lilac='panel', steel='machinery', dark='recess',
+                      dish='machinery', bell='machinery', warhead='machinery', brass='edge',
+                      iron_bay='band', iron_edge='edge')
 ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay', ('engine', 'steel'): 'bell', ('engine', 'iron'): 'bell', ('engine', 'soot'): 'bell',
                 ('hangar', 'iron'): 'iron_edge'}     # (part kind, sheet zone): a launch bay carries the warning stripes
 # R240 (Ryan, Nov 13 2026: "some sort of weird paint pattern in the opening of the carrier"; replaces issue 651's striped hangar
@@ -145,7 +153,6 @@ ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay', ('engine', 'steel'): 'bell', ('engi
 BARE = lin(CONCEPT['bare'][1])
 RUST = lin(CONCEPT['rust_streak'][1]); RUST_DARK = lin(CONCEPT['rust_streak'][0])
 GRIME = lin(CONCEPT['grime'][0])
-RED_PLATE = pair('red_plate')    # a zone's red_share of its plates carry this worn red over-paint (the concept's scattered red plates)
 # the patchwork families (a hull zone with patchwork > 0): (share of panels, colour pair). The rest keep the zone's own tones.
 # R306: rust and dried blood carry 85 percent of the armour family weight;
 # gunmetal and scrapes stay a minority. configure_register supplies the ship's tones.
@@ -156,8 +163,6 @@ def armour_families(rust, blood, scrape):
 
 
 PATCH_FAMILIES = armour_families(pair('rust'), pair('blood'), pair('scrape'))
-# Part armour follows the hull (R224); the bell and machinery zones keep their dark metal.
-PATCH_FAMILIES_PARTS = list(PATCH_FAMILIES)
 
 # The trophy patches (issue 726; R252, Ryan Nov 14 2026: "agree" that the patch plates read bigger like the A20 concept, not small
 # dark plates; R274, Nov 15: dark grey salvaged metal, not pale, "The white looks unfinished"; R240: still uneven, no repeated
@@ -165,12 +170,12 @@ PATCH_FAMILIES_PARTS = list(PATCH_FAMILIES)
 # hull's patchwork (hull atlas only) lies one more uneven grid at the concept's trophy plate size (cell in ship lengths, about
 # 2.1 by 1.4 units on the 16.5 unit A20, each cell two thirds to twice that by the shared warp, a share split once more); a
 # share of its cells, more in some broad regions than others (cluster), takes a trophy colour: dark grey salvaged metal or violet
-# Eclipse plate (families, as PATCH_FAMILIES). The pick is per trophy cell only, never per mesh island, so a trophy plate reads as
-# one plate across the sheet's small modelled plates. Each plate keeps its own tone and a little dirt (the rust, grime, scuffs and
+# Eclipse plate (families, as PATCH_FAMILIES). Seamed trophy cells in the same shell cluster share a family and tone, so the
+# patch reads across the sheet's small modelled plates. Each plate picks up a little dirt (the rust, grime, scuffs and
 # edge wear of the later layers still mark it), and its own dark seam. share scales with the zone's patchwork amount, so the
 # rust and blood zones carry fewer trophy plates and none goes half transparent. A zone with its own trophy_share (the sheet's
 # pale zone) takes only the trophy layer, at that share, over its own tones.
-TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(2.2, .45, 1.55), warp=.55, band=2.0, split=.22, seam=.0013,
+TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(.45, 1.55), warp=.55, band=2.0, split=.22, seam=.0013,
               dirt=.15, dirt_scale=34.0, gain=1.5,
               families=[(.65, pair('trophy_grey')), (.35, pair('trophy_violet'))])
 # gain: the later layers (grime, rust, ambient occlusion, side darkening) take a plate's value down after the patchwork; at gain 1
@@ -218,23 +223,21 @@ CONCEPT_REGISTERS = {
 
 def configure_register():
     """Rust underpaint and 85 percent red families, with concept colour targets."""
-    global BARE, RED_PLATE, PATCH_FAMILIES, PATCH_FAMILIES_PARTS
+    global BARE, PATCH_FAMILIES
     code = bpy.context.scene.get('r209_sheet', '').removeprefix('corsair_')
     target = CONCEPT_REGISTERS.get(code, CONCEPT_REGISTERS['A16'])
     rust, blood = (tuple(map(lin, target[k])) for k in ('rust', 'blood'))
     for name, tones in (('soot', rust), ('soot2', blood), ('iron', rust),
                         ('rust', rust), ('blood', blood)):
-        ZONES[name].update(lo=tones[0], hi=tones[1], red_share=0.0)
+        ZONES[name].update(lo=tones[0], hi=tones[1])
     for name in ('violet', 'lilac'):
         ZONES[name]['lo'], ZONES[name]['hi'] = map(lin, target['violet'])
     # R307 grades the capitals. Keep the craft's accepted, darker chip colour
     # (R292), which prevents bright edge wear washing its small plates grey.
     if not CRAFT_ACTIVE:
         BARE = lin(target['bare'][1])
-    RED_PLATE = blood
     families = armour_families(rust, blood, tuple(map(lin, target['bare'])))
     PATCH_FAMILIES = families
-    PATCH_FAMILIES_PARTS = list(families)
     TROPHY['families'] = [(.65, pair('trophy_grey')),
                           (.35, tuple(map(lin, target['violet'])))]
 
@@ -253,8 +256,6 @@ def configure_size(length=None):
     if craft:
         for key in ('patch_big', 'patch_small', 'patch_over'):
             LAYERS[key] = tuple(v * CRAFT_SIZE['patches'] for v in LAYERS[key])
-        LAYERS['patch_parts'] = tuple(tuple(v * CRAFT_SIZE['patches'] for v in cell)
-                                     for cell in LAYERS['patch_parts'])
         TROPHY['cell'] = tuple(v * CRAFT_SIZE['trophies'] for v in TROPHY['cell'])
         TROPHY['gain'] = CRAFT_SIZE['trophy_gain']
         for key in ('scuff_size', 'rivet_pitch'):
@@ -265,28 +266,28 @@ def configure_size(length=None):
         ZONES['pale']['wear'] = CRAFT_SIZE['grey_wear']
         # Real plate faces, with no extra shader tiles, scrapes or trophy grid.
         # Pale is the sheet's name for its few salvaged dark grey plates.
-        LAYERS.update(plate_var=.40, island_tone=.80, mottle=.18, scuff=.55,
+        LAYERS.update(scuff=.55,
                       ao_dark=.88, side_dark=.25, ao_short=.006, ao_long=.035,
                       edge_radius=.0020, wear_lo=.26, wear_hi=.50)
         for name, zone in ZONES.items():
             if name == 'dark':
                 continue
-            zone.update(patchwork=0.0, patchwork_parts=0.0, red_share=0.0,
+            zone.update(patchwork=0.0,
                         scuff=.28, wear=CRAFT_SIZE['wear'], grime=.48, rust=.32)
             zone.pop('trophy_share', None)
             if name in CRAFT_PLATES:
                 zone['lo'], zone['hi'] = map(lin, CRAFT_PLATES[name])
-                zone.update(plate_var=.16, metal=.25, rough=.78)
+                zone.update(metal=.25, rough=.78)
                 if name != 'pale':
                     # R292: dirt in physical seams, chipped rims and broad
                     # weathered tone changes, with the faction's own colours.
                     # R274 grey trophy tones, wear and share stay unchanged.
-                    zone.update(plate_var=.55, wear=.90, scuff=.65, grime=.85,
+                    zone.update(wear=.90, scuff=.65, grime=.85,
                                 rust=_SHIP_ZONES[name].get('rust', .4), patchwork=1.0)
             elif name in ('iron', 'iron_bay', 'iron_edge', 'steel', 'bell'):
                 zone['lo'], zone['hi'] = pair('iron')
-                zone.update(plate_var=.35, metal=.45, rough=.68,
-                            grime=.85, wear=.65, scuff=.50, patchwork=1.0, patchwork_parts=1.0)
+                zone.update(metal=.45, rough=.68, grime=.85, wear=.65, scuff=.50,
+                            patchwork=1.0)
         # Bright bare-metal wear was washing small armour plates grey.
         BARE = lin((100, 91, 82))
         # craft.py authors the bomb collar and bore in soot2, the same sheet
@@ -298,12 +299,12 @@ def configure_size(length=None):
 
 
 def panel_nodes(c, col, amount, families=None, cells=None):
-    """Physical craft wear, or the unchanged capital patchwork and trophy layers.
+    """Physical craft wear, or the capital patchwork and trophy clusters.
 
     Returns the colour and seam mask through the shared stack's panel hook.
     """
     from types import SimpleNamespace
-    from paint_stack import node, math_, mixc, mulc, ramp, patchwork, _grid, _seams
+    from paint_stack import node, math_, mixc, mulc, ramp, patchwork, repair_cluster, _grid, _seams
     if CRAFT_ACTIVE:
         # The craft already has real plate islands. Use the panel-layer entry
         # point for physical wear only, never the shader's tile/trophy grids.
@@ -329,12 +330,12 @@ def panel_nodes(c, col, amount, families=None, cells=None):
     LT = dict(LAYERS, patch_warp=T['warp'], patch_band=T['band'], patch_split=T['split'], patch_seam=T['seam'])
     tid, tco = _grid(c, T['cell'], 113.0, (.017, .009, .006), LT)
     wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(tid, wn.inputs['Vector'])
-    sp = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sp.inputs[0])
-    cs, clo, chi = T['cluster']
+    _, family, tone, cluster = repair_cluster(c, tid)
+    clo, chi = T['cluster']
     local = math_(nt, 'MULTIPLY', T['share'] * amount,
-                  math_(nt, 'ADD', clo, math_(nt, 'MULTIPLY', ramp(nt, c.noise(cs, 2), .30, .70), chi - clo)))
+                  math_(nt, 'ADD', clo, math_(nt, 'MULTIPLY', cluster, chi - clo)))
     on = math_(nt, 'LESS_THAN', wn.outputs['Value'], local)
-    r = sp.outputs[0]; tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', sp.outputs[1], .75), math_(nt, 'MULTIPLY', c.noise(LAYERS['patch_scale'] * 3, 2), .25))
+    r = family
     tcol = None; lo = 0.0
     for share, (flo, fhi) in T['families']:
         g = T.get('gain', 1.0); fam = mixc(nt, tuple(min(1.0, v * g) for v in flo), tuple(min(1.0, v * g) for v in fhi), tone)

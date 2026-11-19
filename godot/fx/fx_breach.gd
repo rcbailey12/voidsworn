@@ -1727,7 +1727,12 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 		for si in mi.mesh.get_surface_count():
 			var src: Material = override if override != null else mi.get_active_material(si)
 			if HULL.interior_material(mi.mesh.surface_get_material(si)) and not mi.mesh.surface_get_material(si).resource_name.ends_with("_inside_skin"): continue
-			mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L, s.get("faction") == "chorus"))
+			if fx == null:
+				mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L, s.get("faction") == "chorus"))
+				continue
+			var surface: ShaderMaterial = s.damage_surface(fx, mi, si, src)
+			HULL.set_damage_pose(surface, frame, mouths)
+			mi.set_surface_override_material(si, surface)
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null
 			mi.remove_meta("fx_inside")
@@ -1757,6 +1762,8 @@ static func _mouth_uniforms(ents: Array) -> Dictionary:
 			out["shapes"].append(Vector4(spec[2], E.p[0], E.p[1], E.p[2]))
 			out["tears"].append(Vector4(E.p[5], E.p[3], E.p[4], 0.0))
 			out["count"] = int(out["count"]) + 1
+	if int(out["count"]) == 0:
+		return {"count": 0}
 	for key in ["mouths", "axes", "tangents", "shapes", "tears"]:
 		while out[key].size() < HULL.MOUTHS:
 			out[key].append(Vector4.ZERO)

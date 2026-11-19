@@ -1,0 +1,1 @@
+{"seeds": [1000], "configs": [{"map": "belt", "shape": "open", "arena": "strip", "player": ["h_vanguard", "h_interdictor", "h_interdictor", "h_picket", "h_picket", "h_dominion"], "enemy": ["h_vanguard", "h_interdictor", "h_interdictor", "h_picket", "h_picket", "h_dominion"], "name": "h3r-base", "obj": "hold", "sites3": 1, "rent3": 1}]}

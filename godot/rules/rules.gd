@@ -112,7 +112,7 @@ var not_ported: String:
 func np(what: String) -> void:
 	if not_ported == "": not_ported = what
 	push_error("NOT PORTED: " + what)
-func jt(x) -> bool: # JS truthiness (named jt: Object.tr is taken)
+static func jt(x) -> bool: # JS truthiness (named jt: Object.tr is taken)
 	if x == null: return false
 	match typeof(x):
 		TYPE_BOOL: return x
@@ -201,15 +201,20 @@ var _tc := {}      # terrain by packed hex, inside a scoring window (terrain can
 var _ob := {}      # onBoard by packed hex, for the whole battle (the board and its cut-outs are fixed at setup)
 var _mr := {}      # moveRules by faction (read-only tables)
 var _hc := {}      # hitChance inside a scoring window, keyed by both ships' positions and hexes moved (and the shooter's facing under Silent Archive)
-var _lw := {}      # evalThreatVet: each foe's live guns inside a scoring window
 var _slot := {}    # unit id -> small number, for the packed cache keys
+var _tree_skills := {}
 var _runfx = null
 func eval_begin() -> void:
-	_evc = true; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear(); _ev.clear()
+	_evc = OS.get_environment("VS_NO_MEMO") != "1"; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _slot.clear(); _ev.clear()
+	_tree_skills.clear()
 	if B != null:
 		for i in range(B["units"].size()): _slot[B["units"][i]["id"]] = i
+		if _evc and B.get("tree") != null:
+			for skill in B["tree"]:
+				if not _tree_skills.has(skill.get("k")): _tree_skills[skill.get("k")] = skill
 func eval_end() -> void:
-	_evc = false; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear(); _ev.clear()
+	_evc = false; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _slot.clear(); _ev.clear()
+	_tree_skills.clear()
 func angTo(a, b) -> float:
 	var k = ((int(a["q"]) + 64) * 128 + int(a["r"]) + 64) * 16384 + (int(b["q"]) + 64) * 128 + int(b["r"]) + 64
 	var c = _ang.get(k)
@@ -219,12 +224,16 @@ func angTo(a, b) -> float:
 	_ang[k] = v
 	return v
 func relAng(u, t) -> float:
-	var d = angTo(u, t) - float(u["facing"]) * 60.0
-	d = fmod(fmod(d, 360.0) + 540.0, 360.0) - 180.0
-	return d
+	return _relative_bearing(angTo(u, t), float(u["facing"]))
+func _relative_bearing(bearing: float, facing: float) -> float:
+	var d := bearing - facing * 60.0
+	return fmod(fmod(d, 360.0) + 540.0, 360.0) - 180.0
 func inArc(u, t, arc) -> bool:
 	if arc == "T": return true
-	var a = relAng(u, t); var A = absf(a)
+	return _in_arc_angle(relAng(u, t), arc)
+func _in_arc_angle(a: float, arc) -> bool:
+	if arc == "T": return true
+	var A := absf(a)
 	if arc == "F": return A <= 60.5
 	if arc == "R": return A >= 119.5
 	if arc == "S": return a >= 29.5 and a <= 150.5
@@ -734,7 +743,7 @@ func genTerrain(map, shape, opt) -> Dictionary:
 		var feature = "station" if opt.get("enc") == "defend" else "rock"
 		for h in [c, {"q": c.q + 1, "r": c.r}, {"q": c.q, "r": c.r + 1}]:
 			if onBoard(h.q, h.r): T[hkey(h.q, h.r)] = feature
-		if feature == "station": TERRAIN_META["station"] = c
+		if feature == "station": TERRAIN_META["station"] = c; TERRAIN_META["stationR"] = 1
 		TERRAIN_META["shape"] = "open"
 		return T
 	var put = func(h, t): _put(T, h, t)
@@ -764,13 +773,14 @@ func genTerrain(map, shape, opt) -> Dictionary:
 		if jt(opt.get("stationAt")): want = opt["stationAt"]
 		else:
 			var a1 = ri(-1, 1); var q1: float = midh.q + a1; var a2 = ri(-1, 1); want = {"q": q1, "r": midh.r + a2}
+		# R314: the big station blocks every hex within 2 of its centre (19 hexes), so the site needs its whole footprint on the board and clear of any hole
 		var okSite = func(h):
-			if not onBoard(h.q, h.r): return false
-			for d in DIRS:
-				if not onBoard(h.q + d[0], h.r + d[1]): return false
+			for dq in range(-2, 3):
+				for dr in range(max(-2, -dq - 2), min(2, -dq + 2) + 1):
+					if not onBoard(h.q + dq, h.r + dr): return false
 			for o in (VOID.get("holes") if VOID.has("holes") else []):
 				for qr in o["cells"]:
-					if hdist(h, {"q": qr[0], "r": qr[1]}) <= 3: return false
+					if hdist(h, {"q": qr[0], "r": qr[1]}) <= 4: return false
 			return true
 		var c
 		if okSite.call(want): c = want
@@ -789,11 +799,11 @@ func genTerrain(map, shape, opt) -> Dictionary:
 					if okk: l2.append(h)
 				JSM.ssort(l2, func(a, b): return hdist(a, want) - hdist(b, want))
 				c = l2[0] if l2.size() > 0 else want
-		TERRAIN_META["station"] = c
+		TERRAIN_META["station"] = c; TERRAIN_META["stationR"] = 2
 		for h in all:
 			var d = hdist(h, c)
-			if d <= 1: T[hkey(h.q, h.r)] = "station"
-			elif d <= 3 and rnd() < 0.42: put.call(h, "debris")
+			if d <= 2: T[hkey(h.q, h.r)] = "station"
+			elif d <= 4 and rnd() < 0.42: put.call(h, "debris")
 		for i in range(3): blob.call("rock", ri(2, 4), 5, BW - 6, 1, BH - 2)
 		blob.call("neb", ri(5, 8), 5, BW - 6, 1, BH - 2)
 	if m == "planet":
@@ -956,6 +966,161 @@ func deploy(units: Array, side, zoneFn = null) -> void:
 			var x = SQRT3 * ((target.q - u.q) + (target.r - u.r) / 2.0); var y = 1.5 * (target.r - u.r)
 			u["facing"] = fmod(fmod(JSM.jsround(JSM.atan2(y, x) * 180.0 / PI / 60.0), 6.0) + 6.0, 6.0)
 
+# Issue 1050: the optional map package from contrib/codex/map_eval_1118/sim.js and trial_rules.js.
+const MAP_TRIAL_ENCOUNTERS := ["rout", "ambush", "defend", "hunt", "intercept", "break", "hold", "flagship"]
+const MAP_TRIAL_HUNT_GAP := 5
+
+func _map_trial_shape(enc: String, map, boss: bool, no_star: bool, seed: int) -> String:
+	var shapes: Array = ENCOUNTERS[enc]["shapes"]
+	var pool := (["ring", "open", "hourglass"].filter(func(s): return shapes.has(s)) if boss else shapes.duplicate())
+	if no_star or map not in ["storm", "graveyard"]:
+		pool = pool.filter(func(s): return s != "deadstar")
+	while pool.count("hourglass") < 2: pool.append("hourglass")
+	if enc == "rout":
+		while pool.count("corridor") < 2: pool.append("corridor")
+	if map in ["belt", "graveyard"]: pool.append_array(["archipelago", "archipelago"])
+
+	# The trial's separate shape draw leaves the battle PRNG at its original seed.
+	var index := MAP_TRIAL_ENCOUNTERS.find(enc)
+	if boss: index = 8 + (int(RUN["sector"]) - 1) * 2 + int(enc == "ambush")
+	var channel := 8 * index + 2
+	var x := (seed ^ (channel * 0x9e3779b9)) & 0xffffffff
+	x = ((x ^ (x >> 16)) * 0x21f0aaad) & 0xffffffff
+	x = ((x ^ (x >> 15)) * 0x735a2d97) & 0xffffffff
+	var draw := float(x ^ (x >> 15)) / 4294967296.0
+	return pool[floori(draw * pool.size())]
+
+func _map_trial_scale(value: float) -> float:
+	return JSM.jsround(value * 1.25)
+
+func _map_trial_scale_unit(u: Dictionary) -> void:
+	u["speed"] = _map_trial_scale(u["speed"])
+	for w in u["weapons"]: w["r"] = _map_trial_scale(w["r"])
+
+func _map_trial_col(h: Dictionary) -> float:
+	return h.q + floor(h.r / 2.0)
+
+func _map_trial_face(u: Dictionary, target: Dictionary) -> void:
+	var x = SQRT3 * ((target.q - u.q) + (target.r - u.r) / 2.0)
+	var y = 1.5 * (target.r - u.r)
+	u["facing"] = posmod(int(JSM.jsround(JSM.atan2(y, x) / (PI / 3.0))), 6)
+
+func _map_trial_center(units: Array) -> Dictionary:
+	var q := 0.0
+	var r := 0.0
+	for u in units:
+		q += u.q
+		r += u.r
+	return {"q": q / units.size(), "r": r / units.size()}
+
+func _map_trial_spot(u: Dictionary, score: Callable, facing: int) -> void:
+	var occupied := occMap()
+	var best := -INF
+	var spot = null
+	for h in boardHexes():
+		var occupant = occupied.get(hkey(h.q, h.r))
+		if blocks(terr(h.q, h.r)) or (occupant != null and not is_same(occupant, u)): continue
+		var value: float = score.call(h)
+		if value > best:
+			best = value
+			spot = h
+	if spot != null:
+		u.q = spot.q
+		u.r = spot.r
+		u.facing = facing
+
+func _map_trial_hunt(player: Array, enemy: Array) -> void:
+	if enemy.is_empty(): return
+	var bb := boardBounds()
+	JSM.ssort(enemy, _byCpHp)
+	var quarry: Dictionary = enemy[0]
+	var escorts := enemy.slice(1)
+	var row: float = bb.r0 + 1
+	for i in range(player.size()):
+		var start := offToAx(bb.c0 + i % 2, bb.r1 - floor(i / 2.0))
+		_map_trial_spot(player[i], func(h): return -hdist(h, start) - 4 * (_map_trial_col(h) - bb.c0), 0)
+	_map_trial_spot(quarry, func(h): return -4 * absf(_map_trial_col(h) - (bb.c1 - 1)) - 2 * absf(h.r - row), 3)
+	var quarry_col := _map_trial_col(quarry)
+	for i in range(mini(2, escorts.size())):
+		var target := offToAx(quarry_col + MAP_TRIAL_HUNT_GAP, quarry.r - 2 * i)
+		_map_trial_spot(escorts[i], func(h):
+			var d := hdist(h, quarry)
+			return -25 * maxf(0, absf(MAP_TRIAL_HUNT_GAP - d) - 1) - 20 * maxf(0, quarry_col - _map_trial_col(h)) - hdist(h, target), 3)
+	for i in range(maxi(0, escorts.size() - 2)):
+		var target := offToAx(bb.c1 - i % 2, row - 2 * floor(i / 2.0))
+		_map_trial_spot(escorts[i + 2], func(h): return -hdist(h, target) - 5 * maxf(0, quarry_col - _map_trial_col(h)), 3)
+	for i in range(player.size()):
+		var u: Dictionary = player[i]
+		var reach := 0.0
+		for w in u["weapons"]:
+			if w["k"] != "flak": reach = maxf(reach, _map_trial_scale(w["r"]))
+		var gap := reach + ceilf(_map_trial_scale(u["speed"]) * 6)
+		var start_row: float = JSM.jsround(bb.r1 - (bb.r1 - bb.r0) * 0.3) + (i % 3 - 1) * 2
+		_map_trial_spot(u, func(h):
+			return -8 * absf(hdist(h, quarry) - gap) - 4 * absf(h.r - start_row) - 40 * maxf(0, _map_trial_col(h) - (bb.c0 + 13)), 0)
+		_map_trial_face(u, quarry)
+
+	var aim := offToAx(bb.c0, JSM.jsround(bb.r0 + (bb.r1 - bb.r0) * 0.15))
+	var open := boardHexes().filter(func(h): return not blocks(terr(h.q, h.r)))
+	JSM.ssort(open, func(a, b):
+		var d := hdist(a, aim) - hdist(b, aim)
+		if d != 0: return d
+		var col := _map_trial_col(a) - _map_trial_col(b)
+		return col if col != 0 else hdist(a, quarry) - hdist(b, quarry))
+	B["mapTrialQuarry"] = quarry
+	B["mapTrialBearing"] = open[0]
+	for escort in escorts:
+		escort["mapTrialStart"] = {"q": escort.q, "r": escort.r}
+
+func _map_trial_ambush(player: Array, enemy: Array) -> void:
+	var bb := boardBounds()
+	var mid: float = (bb.r0 + bb.r1) / 2.0
+	var fleet := _map_trial_center(player)
+	JSM.ssort(enemy, func(a, b): return b.size - a.size)
+	for i in range(enemy.size()):
+		var south := i % 2 == 1
+		var row: float = bb.r1 - 1 if south else bb.r0 + 1
+		var col: float = 17 + 2 * floor(i / 2.0)
+		_map_trial_spot(enemy[i], func(h):
+			var wrong: bool = h.r < mid + 2 if south else h.r > mid - 2
+			var spacing := 2.0
+			for j in range(i % 2, i, 2): spacing = minf(spacing, hdist(enemy[j], h))
+			return -30 * int(wrong) + 3 * spacing - absf(_map_trial_col(h) - col) - 2 * absf(h.r - row), 3)
+		_map_trial_face(enemy[i], fleet)
+	for boss in enemy:
+		if not jt(boss["t"].get("boss")): continue
+		var escort = null
+		for u in enemy:
+			if not is_same(u, boss) and (u.r < mid) == (boss.r < mid):
+				if escort == null or hdist(u, fleet) < hdist(escort, fleet): escort = u
+		if escort != null:
+			var target := {"q": escort.q + 4, "r": escort.r}
+			_map_trial_spot(boss, func(h): return -hdist(h, target) - 30 * int((h.r < mid) != (escort.r < mid)), 3)
+			_map_trial_face(boss, fleet)
+		break
+
+func _map_trial_screen_boss(player: Array, enemy: Array) -> void:
+	if enemy.size() < 3 or player.is_empty(): return
+	var target = null
+	for u in enemy:
+		if jt(u["t"].get("boss")):
+			target = u
+			break
+	if target == null:
+		JSM.ssort(enemy, _byCpHp)
+		target = enemy[0]
+	var escorts := enemy.filter(func(u): return not is_same(u, target))
+	var front := _map_trial_center(escorts)
+	var hunters := _map_trial_center(player)
+	var dot := func(d): return (front.q - hunters.q) * (d[0] + d[1] / 2.0) + (front.r - hunters.r) * (d[0] / 2.0 + d[1])
+	var away: Array = DIRS[0]
+	for d in DIRS:
+		if dot.call(d) > dot.call(away): away = d
+	var goal := {"q": JSM.jsround(front.q) + 4 * away[0], "r": JSM.jsround(front.r) + 4 * away[1]}
+	var gap := hdist(front, hunters)
+	_map_trial_spot(target, func(h): return -3 * hdist(h, goal) - 8 * maxf(0, gap + 2 - hdist(h, hunters)), 3)
+	_map_trial_face(target, hunters)
+
 func approachDeploy() -> void:
 	var ap = B["approach"]; var hs = boardHexes()
 	if hs.size() == 0: return
@@ -1100,7 +1265,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 			"hullRegen": JSM.jsround(float(z0(t.get("regen"))) * sc), "weapons": nameWeapons(t.get("fac"), ws)}
 	var ship = opts.get("ship")
 	var ufac: String = t["fac"] if jt(t.get("fac")) else (opts["fac"] if jt(opts.get("fac")) else "voidsworn")
-	var u = {"id": new_id(), "side": side, "tpl": tpl, "t": t, "name": ship["name"] if jt(ship) else (opts["name"] if jt(opts.get("name")) else t["n"]), "cls": t.get("cls"),
+	var u = {"id": "" if jt(opts.get("preview")) else new_id(), "side": side, "tpl": tpl, "t": t, "name": ship["name"] if jt(ship) else (opts["name"] if jt(opts.get("name")) else t["n"]), "cls": t.get("cls"),
 		"fac": ufac, "size": t["size"], "q": 0, "r": 0, "facing": 0 if side == "player" else 3,
 		"hp": min(ship["hp"], s["maxHp"]) if jt(ship) else s["maxHp"], "maxHp": s["maxHp"], "shMax": s["shMax"], "regen": s["regen"],
 		"shp": s["shMax"], "cov": shieldCov(ufac, t["cls"]), "route": [0, 0, 0, 0], "sh": [0, 0, 0, 0],
@@ -1124,6 +1289,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 		u["sec"] = {"prow": {"max": JSM.jsround(u["maxHp"] * 0.3)}, "mid": {"max": JSM.jsround(u["maxHp"] * 0.45)}, "eng": {"max": JSM.jsround(u["maxHp"] * 0.25)}}
 		for k in u["sec"].keys(): u["sec"][k]["hp"] = JSM.jsround(u["sec"][k]["max"] * f)
 		u["crewMax"] = JSM.jsround((12.0 + u["size"] * 40.0) * (CREW_MULT[u["fac"]] if jt(CREW_MULT.get(u["fac"])) else 1.0) * (1.8 if u["boss"] else 1.0)); u["crew"] = u["crewMax"]; u["speed"] = u["speed"] + 1
+	if B != null and B.get("mapTrialReady") == true: _map_trial_scale_unit(u)
 	return u
 func fleetPower() -> float:
 	if RUN == null or RUN.get("fleet") == null: return 99.0
@@ -1144,8 +1310,11 @@ func startBattle(cfg: Dictionary) -> void:
 	JSM.rnd_seed(seed)
 	var enc = cfg["obj"] if ENCOUNTERS.has(cfg.get("obj")) else "rout"; var midR = floori(BH / 2.0)
 	var shape = cfg["shape"] if SHAPES.has(cfg.get("shape")) else "open"; var map = "station" if enc == "defend" else cfg.get("map")
-	if shape == "open" and not jt(cfg.get("edgeFeature")) and B0small(cfg) and ["rout", "hunt", "ambush"].has(enc): shape = "compact"
+	var map_trial: bool = RUN.get("mapTrial") == true
 	if not ["belt", "station", "planet", "storm", "graveyard"].has(map) and FAC_MAP.has(cfg.get("fac")) and rnd() < 0.55: map = pick(FAC_MAP[cfg["fac"]])
+	var trial_shape: bool = map_trial and not jt(cfg.get("edgeFeature"))
+	if trial_shape: shape = _map_trial_shape(enc, map, cfg.get("kind") == "boss", jt(cfg.get("noStar")) or RUN["sector"] == 1, seed)
+	if shape == "open" and not jt(cfg.get("edgeFeature")) and B0small(cfg) and ["rout", "hunt", "ambush"].has(enc): shape = "compact"
 	if (shape == "lanes" or shape == "ring") and map == "belt": map = pick(["station", "planet", "storm", "graveyard"])
 	var axisFree: bool = ["rout", "hold", "flagship"].has(enc) and cfg.get("kind") != "boss" and shape != "compact" and not (cfg.get("dep") == "ambush")
 	var wpick = func(l: Array):
@@ -1156,7 +1325,8 @@ func startBattle(cfg: Dictionary) -> void:
 			x -= e[1]
 			if x <= 0: return e[0]
 		return l[0][0]
-	var ak = cfg["arena"] if ARENAS.has(cfg.get("arena")) else (wpick.call(ENC_ARENA[enc]) if axisFree and ENC_ARENA.has(enc) else "strip")
+	var ak = "strip" if trial_shape and shape in ["hourglass", "corridor"] else cfg.get("arena")
+	if not ARENAS.has(ak): ak = wpick.call(ENC_ARENA[enc]) if axisFree and ENC_ARENA.has(enc) else "strip"
 	ARENA = {"kind": ak}
 	for k in ARENAS[ak].keys(): ARENA[k] = ARENAS[ak][k]
 	if shape == "deadstar" and (jt(cfg.get("noStar")) or ["belt", "station", "planet"].has(map)) and not jt(cfg.get("keepShape")):   # R1: cfg.noStar (campaign sector 1) never fields the dead star
@@ -1282,6 +1452,8 @@ func startBattle(cfg: Dictionary) -> void:
 			if not JSM.has_same(back, u): front.append(u)
 		deploy(front, "enemy", func(h): return h.c >= 16 + CX and h.c <= 20 + CX and absf(h.r - mr) <= 6)
 		if back.size() > 0: deploy(back, "enemy", func(h): return h.c >= bb0.c0 and h.c <= bb0.c0 + 3 and absf(h.r - mr) <= 5)
+	elif enc == "hunt" and map_trial:
+		_map_trial_hunt(caps("player"), caps("enemy"))
 	elif enc == "hunt":
 		var bb0 = boardBounds(); var mr = floori((bb0.r0 + bb0.r1) / 2.0); var es = []
 		for u in B["units"]:
@@ -1318,6 +1490,8 @@ func startBattle(cfg: Dictionary) -> void:
 		for u in B["units"]:
 			if jt(u.get("transport")): tr.append(u)
 		deploy(tr, "enemy", func(h): return h.r <= bb.r0 + 1 and h.c >= 13 + CX and h.c <= 18 + CX)
+	if map_trial and enc == "ambush": _map_trial_ambush(caps("player"), caps("enemy"))
+	if map_trial and enc == "rout" and cfg.get("kind") == "boss": _map_trial_screen_boss(caps("player"), caps("enemy"))
 	clearSpawns()
 	treeBattleStart()
 	deployWings()
@@ -1331,6 +1505,9 @@ func startBattle(cfg: Dictionary) -> void:
 		emit({"t": "adaptation", "source": "carrier_report"})
 		var ad = B.get("adapt"); var aw = B.get("adaptWings")
 		logm("Scouts report your carriers. The enemy " + (("bolted extra point defense onto " + (ns(ad) + " ships" if ad > 1 else "one ship")) if jt(ad) else "") + (" and " if (jt(ad) and jt(aw)) else "") + (("launched " + ("two fighter wings" if aw > 1 else "a fighter wing") + " to hunt your craft") if jt(aw) else "") + ".", "ember")
+	if map_trial:
+		for u in B["units"]: _map_trial_scale_unit(u)
+		B["mapTrialReady"] = true
 	startSideTurn("player")
 	for u in alive("enemy"): u["intercepts"] = max(0, 2 - z0(u.get("treeFlakDown"))) if _has_flak(u) else 0
 	var F = FACTIONS[cfg["fac"]]
@@ -1587,7 +1764,7 @@ func _reachAllowed(s, u, baseMP, mb, scar, loose, fwd) -> bool:
 	if loose and not _friendlyNear2(u, s.q, s.r): lim += 1.0
 	if fwd and treePathTowardFlag(u, s): lim += 1.0
 	return s.cost <= lim
-func computeReach(u) -> Dictionary:
+func computeReach(u, states_only: bool = false) -> Dictionary:
 	var map = {}; var states = []
 	var baseMP = postFireMp(u); var mb = treeMoveBonus(u)   # Razormaw T2a: +1 movement only for a move that ends closer to the named prey
 	var scar = treeSkill("allScars") != null and u["side"] == "player" and not jt(u.get("isSq")) and cmdActive(u["side"], "surge")   # Grax T3a
@@ -1596,25 +1773,41 @@ func computeReach(u) -> Dictionary:
 	var dive = treeSkill("mirrorAside") != null and u["side"] == "player" and not jt(u.get("isSq")) and cmdActive(u["side"], "surge") and not jt(u.get("treeDiveUsed"))   # Vell T2a
 	var occ = occMap(); var R = moveRules(u); var MP = baseMP + mb + (2.0 if scar else 0.0) + (1.0 if loose else 0.0) + (1.0 if fwd else 0.0); var noOver = jt(u.get("postFire"))
 	var start = {"q": u["q"], "r": u["r"], "f": u["facing"], "t": 0, "cost": 0, "path": [], "passed": ([] if scar else null)}
-	var seen = {_sk(start): 0}; var queue = [start]; var qi = 0
+	var start_key = _sk(start) if scar else Vector4i(int(start.q), int(start.r), int(start.f), 0)
+	var seen = {start_key: 0}
+	var queue: Array[Dictionary] = [start]
+	var keys: Array = [start_key]
+	var qi = 0
 	var pivotFree: bool = jt(R.get("pivot")) and not jt(u.get("pivotUsed"))
+	var sq := jt(u.get("isSq"))
+	var can_turn := not sq and not jt(u.get("noTurn"))
+	var turns = u.get("turnsLeft")
+	var side = u["side"]
+	var limited: bool = scar or loose or fwd
+	var move_options: Array[Array] = []
+	if not sq:
+		for f in range(6):
+			move_options.append([[f, 1, null], [(f + 1) % 6, R["slip"], "slip"], [(f + 5) % 6, R["slip"], "slip"], [(f + 3) % 6, R["rev"], "rev"]])
+	var state_keys: Array = []
 	while qi < queue.size():
-		var s = queue[qi]; qi += 1
-		if seen[_sk(s)] < s.cost: continue
-		if not _reachAllowed(s, u, baseMP, mb, scar, loose, fwd): continue
+		var s := queue[qi]; var key = keys[qi]; qi += 1
+		if seen[key] < s.cost: continue
+		if s.cost > MP or (limited and not _reachAllowed(s, u, baseMP, mb, scar, loose, fwd)): continue
 		states.append(s)
+		state_keys.append(key)
 		if s.cost >= MP: continue
-		var nexts = []
-		if jt(u.get("isSq")):
+		if sq:
 			for f in range(6):
 				var d = DIRS[f]; var nq = s.q + d[0]; var nr = s.r + d[1]
-				if passable(u, nq, nr, occ):
-					var pth: Array = s.path.duplicate(); pth.append({"q": nq, "r": nr, "f": f})
-					nexts.append({"q": nq, "r": nr, "f": f, "t": s.t, "cost": s.cost + 1, "path": pth})
+				var k := Vector4i(int(nq), int(nr), f, int(s.t))
+				var cost = s.cost + 1
+				if seen.get(k, INF) <= cost or not passable(u, nq, nr, occ): continue
+				var pth: Array = s.path.duplicate(); pth.append({"q": nq, "r": nr, "f": f})
+				seen[k] = cost; keys.append(k)
+				queue.append({"q": nq, "r": nr, "f": f, "t": s.t, "cost": cost, "path": pth})
 		else:
 			var sf = int(s.f)
-			var opts = [[sf, 1, null], [(sf + 1) % 6, R["slip"], "slip"], [(sf + 5) % 6, R["slip"], "slip"], [(sf + 3) % 6, R["rev"], "rev"]]
-			for o3 in opts:
+			for o3 in move_options[sf]:
 				var df: int = o3[0]; var c0 = o3[1]; var kind = o3[2]
 				var d = DIRS[df]; var nq = s.q + d[0]; var nr = s.r + d[1]
 				if not onBoard(nq, nr): continue
@@ -1624,35 +1817,43 @@ func computeReach(u) -> Dictionary:
 					if tt != "rock" and tt != "hulk": continue
 					over = 1
 				var o = occ.get(hkey(nq, nr))
-				if o != null and o["side"] != u["side"]: over = over if over != 0 else -1
+				if o != null and o["side"] != side: over = over if over != 0 else -1
 				var dived = false
 				if over != 0:
 					if noOver: continue
 					if over < 0 and dive and z0(s.get("dived")) == 0: dived = true
 					else: c += R["over"]
-				if s.cost + c > MP: continue
+				var cost = s.cost + c
+				if cost > MP: continue
+				var passed = _passAdd(s, nq, nr) if scar else null
+				var k = _sk({"q": nq, "r": nr, "f": s.f, "t": s.t, "passed": passed}) if scar else Vector4i(int(nq), int(nr), sf, int(s.t))
+				if seen.get(k, INF) <= cost: continue
 				var st = {"q": nq, "r": nr, "f": s.f}
 				if kind != null: st[kind] = 1
 				if kind == "slip": st["side"] = 1 if df == (sf + 1) % 6 else -1
 				if over != 0: st["over"] = over
 				if dived: st["dived"] = 1
 				var pth: Array = s.path.duplicate(); pth.append(st)
-				nexts.append({"q": nq, "r": nr, "f": s.f, "t": s.t, "cost": s.cost + c, "path": pth, "slips": z0(s.get("slips")) + (1 if kind == "slip" else 0), "revs": z0(s.get("revs")) + (1 if kind == "rev" else 0), "overs": z0(s.get("overs")) + (1 if over != 0 else 0), "dived": z0(s.get("dived")) + (1 if dived else 0), "passed": (_passAdd(s, nq, nr) if scar else null)})
-		if not jt(u.get("isSq")) and not jt(u.get("noTurn")) and s.t < u["turnsLeft"]:
+				seen[k] = cost; keys.append(k)
+				queue.append({"q": nq, "r": nr, "f": s.f, "t": s.t, "cost": cost, "path": pth, "slips": z0(s.get("slips")) + (1 if kind == "slip" else 0), "revs": z0(s.get("revs")) + (1 if kind == "rev" else 0), "overs": z0(s.get("overs")) + (1 if over != 0 else 0), "dived": z0(s.get("dived")) + (1 if dived else 0), "passed": passed})
+		if can_turn and s.t < turns:
 			var tc = 0 if (pivotFree and s.t == 0) else 1
 			if s.cost + tc <= MP or tc == 0:
 				for dd in [1, -1]:
 					var f = (int(s.f) + dd + 6) % 6
+					var t = s.t + 1
+					var cost = s.cost + tc
+					var k = _sk({"q": s.q, "r": s.r, "f": f, "t": t, "passed": s.passed}) if scar else Vector4i(int(s.q), int(s.r), f, int(t))
+					if seen.get(k, INF) <= cost: continue
 					var pth: Array = s.path.duplicate(); pth.append({"q": s.q, "r": s.r, "f": f, "rot": true})
-					nexts.append({"q": s.q, "r": s.r, "f": f, "t": s.t + 1, "cost": s.cost + tc, "path": pth, "slips": s.get("slips"), "revs": s.get("revs"), "overs": s.get("overs"), "passed": s.get("passed")})
-		for n in nexts:
-			var k = _sk(n)
-			if seen.has(k) and seen[k] <= n.cost: continue
-			seen[k] = n.cost; queue.append(n)
+					seen[k] = cost; keys.append(k)
+					queue.append({"q": s.q, "r": s.r, "f": f, "t": t, "cost": cost, "path": pth, "slips": s.get("slips"), "revs": s.get("revs"), "overs": s.get("overs"), "passed": s.get("passed")})
 	var ok = []
 	var prey = treePrey() if mb > 0.0 else null
-	for s in states:
-		if seen[_sk(s)] == s.cost and canEnd(u, s.q, s.r, occ) and (prey == null or s.cost <= baseMP or hdist({"q": s.q, "r": s.r}, prey) < hdist(u, prey)): ok.append(s)
+	for i in range(states.size()):
+		var s = states[i]
+		if seen[state_keys[i]] == s.cost and canEnd(u, s.q, s.r, occ) and (prey == null or s.cost <= baseMP or hdist(s, prey) < hdist(u, prey)): ok.append(s)
+	if states_only: return {"states": ok}
 	for s in ok:
 		if s.q == u["q"] and s.r == u["r"]: continue
 		var k = hkey(s.q, s.r); var c = map.get(k)
@@ -1899,6 +2100,10 @@ func torpThreat(u, v) -> float:
 			if d <= 2: tot += sv["w"]["dmg"] * sv["w"]["shots"] * [0.62, 0.52, 0.38][int(d)]
 		elif d == 0: tot += sv["w"]["dmg"] * sv["w"]["shots"] * 0.5
 	return tot
+static func nem_entry(table: Dictionary, key, fac) -> Variant:
+	var entry = table.get(key)
+	return entry.get("v", {}).get(fac, entry) if entry != null else null
+
 func nemWeak(k) -> bool: return B != null and B.get("nem") != null and B["nem"].get("weak") != null and B["nem"]["weak"].has(k)
 func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, faction behaviour, duel fleet, honed, riches, artillery line, memory lines)
 	B["nem"] = N; var es = []
@@ -2116,7 +2321,8 @@ func nemTrip(k: String) -> void:
 	B["nemFound"].append(k)
 	if B["nem"].get("revealed") == null: B["nem"]["revealed"] = []
 	B["nem"]["revealed"].append(k)
-	logm("Weakness found: " + String(TB.NEM_WEAK[k]["n"]) + ". " + String(TB.NEM_WEAK[k]["d"]), "s")
+	var entry = nem_entry(TB.NEM_WEAK, k, B["nem"].get("fac"))
+	logm("Weakness found: " + String(entry["n"]) + ". " + String(entry["d"]), "s")
 func nemBreak() -> void:
 	if B == null or B.get("nem") == null or jt(B.get("nemBroken")) or not nemWeak("anchor"): return
 	var f = null
@@ -2372,9 +2578,13 @@ func los(a, b) -> bool:
 		return c
 	return _los_raw(a, b)
 func _los_raw(a, b) -> bool:
-	var line = hexLine(a, b)
-	for i in range(1, line.size() - 1):
-		if sightBlocked(line[i].q, line[i].r): return false
+	var distance := hdist(a, b)
+	var aq := float(a["q"]); var ar := float(a["r"])
+	var dq := float(b["q"]) - aq; var dr := float(b["r"]) - ar
+	for i in range(1, int(distance)):
+		var t := float(i) / distance
+		var hex := cubeRound(aq + dq * t + 1e-6, ar + dr * t + 1e-6)
+		if sightBlocked(hex.q, hex.r): return false
 	return true
 func weaponReady(w) -> bool: return not jt(w.get("fired")) and w.get("cdLeft") != null and w["cdLeft"] == 0 and w.get("off") != null and w["off"] == 0
 # JS compares undefined as false both ways: the point-defence refit (battle.js:328) adds a weapon without fired, cdLeft or off (B-20)
@@ -2695,13 +2905,18 @@ func _expectedVs_raw(u, w, t) -> Dictionary:
 	var quad = shieldQuad(t, u); var rear = treeIsRear(u, t, quad)
 	var hit = hitChance(u, w, t) / 100.0; var per = dmgMult(u, w, t, rear)
 	var raw: float = per * w["shots"] * hit
-	var pierce = 1.0 if (w.get("k") == "lance" and jt(ownerFx(u).get("lanceSure"))) else z0(w.get("pierce")); var ion = ionVs(u, w, t)
-	var shieldable: float = raw * (1.0 - pierce)
-	var absorbed: float = min(shieldable, float(z0(t["sh"][quad])) / ion)
-	var hull: float = (raw - absorbed) * (1.0 - (t["armor"] * 0.5 if rear else t["armor"]))
-	hull *= braceMul(t)
-	hull *= cmdTaken(t) * guardMul(t)
+	var ion = ionVs(u, w, t)
+	var absorbed := _expected_absorbed(raw, _expected_pierce(u, w), t["sh"][quad], ion)
+	var hull := _expected_hull(raw, absorbed, t["armor"], rear, braceMul(t), cmdTaken(t) * guardMul(t))
 	return {"hit": hit, "raw": raw, "hull": hull, "shield": absorbed * ion, "quad": quad, "rear": rear}
+func _expected_pierce(u, w) -> float:
+	return 1.0 if (w.get("k") == "lance" and jt(ownerFx(u).get("lanceSure"))) else z0(w.get("pierce"))
+func _expected_absorbed(raw: float, pierce: float, shield, ion: float) -> float:
+	return min(raw * (1.0 - pierce), float(z0(shield)) / ion)
+func _expected_hull(raw: float, absorbed: float, armor: float, rear: bool, brace_factor: float, guard_factor: float) -> float:
+	var hull := (raw - absorbed) * (1.0 - (armor * 0.5 if rear else armor))
+	hull *= brace_factor
+	return hull * guard_factor
 func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	var of = ownerFx(att); var rear = treeIsRear(att, t, quad); var pierce = 1.0 if (w.get("k") == "lance" and jt(of.get("lanceSure"))) else z0(w.get("pierce")); var ion = ionVs(att, w, t)
 	if jt(t.get("_treePierce")): pierce = 1.0; t["_treePierce"] = 0
@@ -3688,23 +3903,33 @@ func setupObjective(type) -> void:
 			if hdist(h, o.hex) <= 1 and blocks(terr(h.q, h.r)): B["terrain"].erase(hkey(h.q, h.r))
 	B["obj"] = o
 func survivorsP() -> int:
+	return count_player_survivors(B["units"])
+static func count_player_survivors(units: Array) -> int:
 	var n = 0
-	for u in B["units"]:
-		if u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited"))): n += 1
+	for u in units:
+		if player_ship_survives(u): n += 1
 	return n
+static func player_ship_survives(u: Dictionary) -> bool:
+	return u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited")))
+# R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre.
+# The edge distances match the old 7-hex station: damage and the guard ring 1 hex out (the hexes touching the station body),
+# guns 4 hexes out, wing support 2 hexes out. The enemy pull aims one ring outside the damaging perimeter.
+func stationRad() -> int:
+	if B != null and jt(B.get("map")) and jt(B["map"].get("stationR")): return int(B["map"]["stationR"])
+	return 0
 func objZone(q, r):
 	var o = B.get("obj") if B != null else null
 	if o == null or not onBoard(q, r): return null
 	if o.type == "break" and q + floor(r / 2.0) >= o.exitC: return "exit"
 	if o.type == "intercept" and r >= o.exitR: return "texit"
-	if o.type == "defend" and hdist({"q": q, "r": r}, o.hex) == 2: return "guard"
+	if o.type == "defend" and hdist({"q": q, "r": r}, o.hex) == stationRad() + 1: return "guard"
 	return null
 func stationFire(dq) -> void:
 	var o = B.get("obj")
 	if o == null or o.type != "defend": return
 	var src = {"q": o.hex.q, "r": o.hex.r, "facing": 0}; var ts = []
 	for u in caps("enemy"):
-		if hdist(u, o.hex) <= 5: ts.append(u)
+		if hdist(u, o.hex) <= stationRad() + 4: ts.append(u)
 	JSM.ssort(ts, func(a, b): return hdist(a, o.hex) - hdist(b, o.hex))
 	ts = ts.slice(0, 2)
 	var att = {"side": "player", "dealt": 0, "kills": 0, "crit": 0, "lockOn": false, "fx": {}}
@@ -3727,10 +3952,17 @@ func aiObjScore(u, v) -> float:
 	var o = B.get("obj")
 	if o == null or jt(u.get("isSq")): return 0.0
 	if jt(u.get("transport")): return -(o.exitR - v.r) * 14.0
+	var quarry = B.get("mapTrialQuarry")
+	if quarry != null:
+		if is_same(u, quarry):
+			return minf(_mind(v, caps("player"), 30), 9) - 10 * hdist(v, B["mapTrialBearing"])
+		var station = u.get("mapTrialStart")
+		if station != null:
+			return -80 * hdist(v, station) if B["round"] < 3 and not jt(quarry.get("dead")) else 0.0
 	if o.type == "hunt" and jt(u.get("flagship")):
 		var d = _mind(v, caps("player"), 30); return min(d, 9) * 3.0
 	var vet = aiVet(); var urg = aiObjUrgency(o) if vet else 1.0
-	if o.type == "defend": return -max(0, hdist(v, o.hex) - 2) * 3.0 * urg
+	if o.type == "defend": return -max(0, hdist(v, o.hex) - (stationRad() + 2)) * 3.0 * urg
 	if o.type == "break":
 		var pl = caps("player")
 		if pl.size() == 0: return 0.0
@@ -3776,7 +4008,7 @@ func objectiveTick(_dq) -> void:
 	if o.type == "defend":
 		var near = []
 		for u in caps("enemy"):
-			if hdist(u, o.hex) <= 2: near.append(u)
+			if hdist(u, o.hex) <= stationRad() + 1: near.append(u)
 		if near.size() > 0:
 			o["hp"] = max(0, o["hp"] - near.size()); logm(ns(near.size()) + " enemy ship" + ("s" if near.size() > 1 else "") + " at the station. Integrity " + ns(o["hp"]) + "/" + ns(o["hpMax"]) + ".", "e")
 		if o["hp"] > 0 and B["round"] <= o["rounds"]: stationFire(_dq)
@@ -3950,6 +4182,7 @@ func treeBuild() -> Array:
 			var s2 = TREE_FX[key].duplicate(true); s2["key"] = key; out.append(s2)
 	return out
 func treeSkill(k) -> Variant:
+	if _evc: return _tree_skills.get(k)
 	if B == null or B.get("tree") == null: return null
 	for s in B["tree"]:
 		if s.get("k") == k: return s
@@ -5792,15 +6025,19 @@ func _mind(h, fs: Array, cap = null) -> float: # Math.min(...fs.map(f=>hdist(h,f
 	for f in fs: m = min(m, hdist(h, f))
 	return m
 func inThisBattle(u) -> bool: return B != null and u != null and JSM.has_same(B["units"], u)
-func makeWing(u, h, kind) -> Dictionary:
+func wingUnit(u, kind, preview := false) -> Dictionary:
 	var fx = sumFx(fleetFxList()) if u["side"] == "player" else {}
-	var sq = makeUnit(u["side"], kind, {"parent": u["id"], "fac": u["fac"], "sqPct": z0(u["fx"].get("sqPct")), "sqHp": z0(fx.get("sqHp")), "scale": (1.0 + 0.1 * (B["sector"] - 1)) if u["side"] == "enemy" else 1})
+	var sq = makeUnit(u["side"], kind, {"preview": preview, "parent": u["id"], "fac": u["fac"], "sqPct": z0(u["fx"].get("sqPct")), "sqHp": z0(fx.get("sqHp")), "scale": (1.0 + 0.1 * (B["sector"] - 1)) if u["side"] == "enemy" else 1})
 	var pk = wingPerks(u)
 	if pk.has("aces"): sq["aim"] = sq["aim"] + 10
 	if pk.has("jinkers"): sq["ev"] = sq["ev"] + 8
 	if pk.has("armored"):
 		sq["maxHp"] = JSM.jsround(sq["maxHp"] * 1.25); sq["hp"] = sq["maxHp"]
-	sq["fac"] = u["fac"]; sq["q"] = h.q; sq["r"] = h.r; sq["facing"] = u["facing"]
+	sq["fac"] = u["fac"]; sq["facing"] = u["facing"]
+	return sq
+func makeWing(u, h, kind) -> Dictionary:
+	var sq = wingUnit(u, kind)
+	sq["q"] = h.q; sq["r"] = h.r
 	var tn = String(u["t"]["n"]).split(" "); sq["name"] = String(HULLS[kind]["n"]) + " (" + (String(u["name"]) if u["side"] == "player" else tn[tn.size() - 1]) + ")"
 	B["units"].append(sq)
 	emit({"t": "wing", "unit": sq["id"], "parent": u["id"], "kind": kind, "q": int(h.q), "r": int(h.r)})
@@ -5861,7 +6098,7 @@ func sqValue(t, e, s) -> float:
 func sqObjNear(t) -> bool:
 	var o = B.get("obj") if B != null else null
 	if o == null: return false
-	if o.type == "defend" and o.get("hex") != null: return hdist(t, o.hex) <= 3
+	if o.type == "defend" and o.get("hex") != null: return hdist(t, o.hex) <= stationRad() + 2
 	if o.type == "intercept":
 		for x in B["units"]:
 			if jt(x.get("transport")) and not jt(x.get("dead")) and hdist(x, t) <= 3: return true
@@ -5885,7 +6122,7 @@ func sqPlan(s):
 	for x in B["units"]:
 		if x["id"] == s.get("parent") and not jt(x.get("dead")):
 			carrier = x; break
-	var ready = readyList(s); var states = computeReach(s).states; var here = {"q": s["q"], "r": s["r"], "f": s["facing"], "cost": 0, "stay": true}
+	var ready = readyList(s); var states = computeReach(s, true).states; var here = {"q": s["q"], "r": s["r"], "f": s["facing"], "cost": 0, "stay": true}
 	var stc = null if ord != null else wingStance(s)
 	var guard = ord.t if (ord != null and ord.kind == "guard") else (carrier if (stc == "screen" and carrier != null) else null)
 	var lim = int(TB.SQ_LEASH) + (2 if (ord != null and ord.kind == "strike") else 0) + (TB.WING_HUNT_LEASH if stc == "hunt" else 0)
@@ -5893,9 +6130,19 @@ func sqPlan(s):
 	var leashOK = func(v): return hdist(v, guard) <= gr if guard != null else (carrier == null or hdist(v, carrier) <= lim)
 	var best = null
 	eval_begin()
+	var v = dup(s)
+	var can_share_facings: bool = _evc and not (s["side"] == "enemy" and treeSkill("silentArchive") != null and cmdActive("player", "hunt"))
+	for w in ready:
+		if w["arc"] != "T": can_share_facings = false
+	var costs_by_hex := {}
 	for st in [here] + states:
-		var v = stateView(s, st)
-		if not leashOK.call(v): continue
+		if not leashOK.call(st): continue
+		if can_share_facings:
+			# Same shots at this hex, and increasing cost can only lower their scores.
+			var hex := Vector2i(int(st.q), int(st.r))
+			if costs_by_hex.get(hex, INF) <= st.cost: continue
+			costs_by_hex[hex] = st.cost
+		_update_state_view(v, st, null, true)
 		for t in foes:
 			for w in ready:
 				if not inReach(v, w, t): continue
@@ -5910,16 +6157,15 @@ func sqPlan(s):
 	if guard != null:
 		var hm = null; var hd = hdist(s, guard)
 		for st in states:
-			var d = hdist(stateView(s, st), guard)
+			var d = hdist(st, guard)
 			if d < hd or (d == hd and hm == null):
 				hd = d; hm = st
 		return {"st": hm, "t": null, "attack": false} if (hm != null and hd < hdist(s, guard)) else null
 	if ord != null and ord.kind == "strike":
 		var T = ord.t; var PFo = pathField([T]); var mv = null; var md = fieldDist(PFo, s, hdist(s, T))
 		for st in states:
-			var v = stateView(s, st)
-			if carrier != null and hdist(v, carrier) > lim: continue
-			var d = fieldDist(PFo, v, hdist(v, T))
+			if carrier != null and hdist(st, carrier) > lim: continue
+			var d = fieldDist(PFo, st, hdist(st, T))
 			if d < md:
 				md = d; mv = st
 		if mv != null: return {"st": mv, "t": T, "attack": false}
@@ -5928,16 +6174,15 @@ func sqPlan(s):
 		if hdist(s, t) < hdist(s, T): T = t
 	var PFs = pathField([T]); var mv = null; var md = fieldDist(PFs, s, hdist(s, T))
 	for st in states:
-		var v = stateView(s, st)
-		if not leashOK.call(v): continue
-		var d = fieldDist(PFs, v, hdist(v, T))
+		if not leashOK.call(st): continue
+		var d = fieldDist(PFs, st, hdist(st, T))
 		if d < md:
 			md = d; mv = st
 	if mv != null: return {"st": mv, "t": T, "attack": false}
 	if carrier != null:
 		var hm = null; var hd = hdist(s, carrier)
 		for st in states:
-			var d = hdist(stateView(s, st), carrier)
+			var d = hdist(st, carrier)
 			if d < hd:
 				hd = d; hm = st
 		if hm != null: return {"st": hm, "t": null, "attack": false}
@@ -6123,13 +6368,16 @@ func _useAbility_raw(u, arg = null) -> bool:
 
 # ======================= enemy AI =======================
 func stateView(u, s) -> Dictionary:
-	var v = dup(u); v["q"] = s.q; v["r"] = s.r; v["facing"] = s.f
-	if s.get("path") != null and not jt(u.get("isSq")):
+	var v = dup(u)
+	_update_state_view(v, s, u.get("hexMoved"), jt(u.get("isSq")))
+	return v
+func _update_state_view(v: Dictionary, s: Dictionary, moved: Variant, squadron: bool) -> void:
+	v["q"] = s.q; v["r"] = s.r; v["facing"] = s.f
+	if s.get("path") != null and not squadron:
 		var n = 0
 		for p in s.path:
 			if not jt(p.get("rot")): n += 1
-		v["hexMoved"] = z0(u.get("hexMoved")) + n
-	return v
+		v["hexMoved"] = z0(moved) + n
 func evalOffense(a, ready: Array, targets: Array) -> float:
 	var tot = 0.0
 	for w in ready:
@@ -6143,36 +6391,141 @@ func evalOffense(a, ready: Array, targets: Array) -> float:
 		tot += best
 	return tot
 func aiVet() -> bool: return AI_LEVEL == "veteran"
-func evalThreatVet(v, foes: Array) -> float:
-	var tot = 0.0
+class AiThreatGun:
+	var weapon: Dictionary
+	var ion: float
+	var pierce: float
+	var hits := {}
+	var damage := {}
+
+class AiThreatSource:
+	var attacker: Dictionary
+	var move_range: float
+	var can_turn: bool
+	var guns: Array[AiThreatGun] = []
+
+class AiThreatArc:
+	var attacker: Dictionary
+	var distance: int
+	var guns: Array[AiThreatGun] = []
+	var weights := PackedFloat64Array()
+	var estimates := {}
+
+class AiThreatCell:
+	var arcs: Array[AiThreatArc] = []
+	var terrain: int
+	var brace_factor: float
+	var guard_factor: float
+	var totals := {}
+
+func _ai_threat_guns(foes: Array, target: Dictionary) -> Array[AiThreatSource]:
+	var result: Array[AiThreatSource] = []
 	for p in foes:
-		var d = hdist(p, v)
+		var source := AiThreatSource.new()
+		source.attacker = p
+		source.move_range = max(1, (p["speed"] if jt(p.get("speed")) else 2) - 1)
+		source.can_turn = z0(p.get("turns")) > 0
+		for w in p["weapons"]:
+			if not gt(w.get("cdLeft"), 1) and not gt(w.get("off"), 1) and aiGunLive(p, w):
+				var gun := AiThreatGun.new()
+				gun.weapon = w
+				gun.pierce = _expected_pierce(p, w)
+				gun.ion = ionVs(p, w, target)
+				source.guns.append(gun)
+		if not source.guns.is_empty():
+			result.append(source)
+	return result
+
+# Whether a foe's gun can reach depends on the candidate hex, independent of its facing and path.
+func _ai_threat_cell(v: Dictionary, foes: Array[AiThreatSource]) -> AiThreatCell:
+	var cell := AiThreatCell.new()
+	for foe in foes:
+		var p := foe.attacker
+		var d := hdist(p, v)
 		if d > 13: continue
+		var bearing := angTo(p, v)
+		var facing := int(p["facing"])
+		var angle := _relative_bearing(bearing, float(facing))
+		var left := _relative_bearing(bearing, float((facing + 1) % 6)) if foe.can_turn else 0.0
+		var right := _relative_bearing(bearing, float((facing + 5) % 6)) if foe.can_turn else 0.0
 		var ls: Variant = null
-		var lw = _lw.get(p["id"]) if _evc else null
-		if lw == null:
-			lw = []
-			for w in p["weapons"]:
-				if gt(w.get("cdLeft"), 1) or gt(w.get("off"), 1) or not aiGunLive(p, w): continue
-				lw.append(w)
-			if _evc: _lw[p["id"]] = lw
-		for w in lw:
-			if d <= w["r"] and inArc(p, v, w["arc"]):
-				var e = expectedVs(p, w, v); tot += e.hull + e.shield * 0.2
-			elif d <= w["r"] + max(1, (p["speed"] if jt(p.get("speed")) else 2) - 1) and aiArcSoon(p, v, w["arc"]):
+		var arc: AiThreatArc = null
+		for gun in foe.guns:
+			var w := gun.weapon
+			var in_arc := _in_arc_angle(angle, w["arc"])
+			var weight: float
+			if d <= w["r"] and in_arc:
+				weight = 1.0
+			elif d <= w["r"] + foe.move_range and (in_arc or (foe.can_turn and (_in_arc_angle(left, w["arc"]) or _in_arc_angle(right, w["arc"])))):
 				if ls == null: ls = los(p, v)
-				if ls:
-					var e = expectedVs(p, w, v); tot += (e.hull + e.shield * 0.2) * 0.2
+				if not ls: continue
+				weight = 0.2
+			else:
+				continue
+			if arc == null:
+				arc = AiThreatArc.new()
+				arc.attacker = p
+				arc.distance = int(d)
+				cell.arcs.append(arc)
+			arc.guns.append(gun)
+			arc.weights.append(weight)
+	if not cell.arcs.is_empty():
+		var terrain = terr(v["q"], v["r"])
+		cell.terrain = 1 if terrain == "neb" else (2 if terrain == "debris" else 0)
+		cell.brace_factor = braceMul(v)
+		cell.guard_factor = cmdTaken(v) * guardMul(v)
+	return cell
+
+func evalThreatVet(v: Dictionary, foes: Array[AiThreatSource], cells: Dictionary, move_rules: Dictionary, burn_evade: bool, line_evade: bool) -> float:
+	var hex := Vector2i(int(v["q"]), int(v["r"]))
+	var cell: AiThreatCell = cells.get(hex) if _evc else null
+	if cell == null:
+		cell = _ai_threat_cell(v, foes)
+		if _evc: cells[hex] = cell
+	# Target movement only enters expected damage through motionHit and burnEv in hitChance.
+	var moved = v["hexMoved"]
+	var motion := (1 if moved == 0 else (2 if moved >= move_rules["evadeAt"] else 0))
+	if burn_evade and moved >= 3: motion |= 4
+	var pose := motion * 6 + int(v["facing"])
+	var cached: Variant = cell.totals.get(pose)
+	if cached != null: return cached
+	var tot := 0.0
+	for arc in cell.arcs:
+		# For a fixed attacker and hex, target facing affects the estimate through the shield quadrant.
+		var quad := shieldQuad(v, arc.attacker)
+		var key := motion * 4 + quad
+		var values = arc.estimates.get(key)
+		if values == null:
+			var rear := treeIsRear(arc.attacker, v, quad)
+			# For a fixed shooter and target, range and rear status drive damage changes.
+			# Aim also reads movement, terrain and the line-evasion adjacency check.
+			var damage_key := arc.distance * 2 + int(rear)
+			var aim_key := Vector4i(hex.x, hex.y, motion, 1) if line_evade else Vector4i(arc.distance, cell.terrain, motion, 0)
+			var estimates := PackedFloat64Array()
+			for i in range(arc.guns.size()):
+				var gun := arc.guns[i]
+				var hit = gun.hits.get(aim_key)
+				if hit == null:
+					hit = _hitChance_raw(arc.attacker, gun.weapon, v) / 100.0
+					if _evc: gun.hits[aim_key] = hit
+				var damage = gun.damage.get(damage_key)
+				if damage == null:
+					damage = dmgMult(arc.attacker, gun.weapon, v, rear)
+					if _evc: gun.damage[damage_key] = damage
+				var raw: float = damage * gun.weapon["shots"] * hit
+				var absorbed := _expected_absorbed(raw, gun.pierce, v["sh"][quad], gun.ion)
+				var hull := _expected_hull(raw, absorbed, v["armor"], rear, cell.brace_factor, cell.guard_factor)
+				estimates.append((hull + absorbed * gun.ion * 0.2) * arc.weights[i])
+			values = estimates
+			if _evc: arc.estimates[key] = values
+		# Keep the original gun order and addition order, including when estimates were reused.
+		for value in values: tot += value
+	if _evc: cell.totals[pose] = tot
 	return tot
 func aiGunLive(p, w) -> bool:
 	if w["k"] == "flak": return false
 	if B != null and jt(B.get("alt")) and (jt(w.get("fired")) or jt(p.get("braced"))): return false
 	return true
-func aiArcSoon(p, v, arc) -> bool:
-	if arc == "T" or inArc(p, v, arc): return true
-	if not (z0(p.get("turns")) > 0): return false
-	var f = int(p["facing"])
-	return inArc({"q": p["q"], "r": p["r"], "facing": (f + 1) % 6}, v, arc) or inArc({"q": p["q"], "r": p["r"], "facing": (f + 5) % 6}, v, arc)
 func ramSetup(v, u) -> float:
 	var d = DIRS[int(v["facing"])]; var q = v["q"]; var r = v["r"]
 	var i = 0
@@ -6233,6 +6586,59 @@ func evalOffenseVet(a, ready: Array, targets: Array, focus) -> float:
 			if v > best: best = v
 		tot += best
 	return tot
+
+class AiOffenseTarget:
+	var target: Dictionary
+	var bearing: float
+	var guns := PackedInt32Array()
+	var scores: Array[Dictionary] = []
+
+func _ai_offense_targets(v: Dictionary, ready: Array, foes: Array) -> Array[AiOffenseTarget]:
+	var targets: Array[AiOffenseTarget] = []
+	for t in foes:
+		var distance := hdist(v, t)
+		if distance < 1 or treeDeepBlocks(v, t): continue
+		var guns := PackedInt32Array()
+		for i in range(ready.size()):
+			if not (distance > ready[i]["r"]): guns.append(i)
+		if guns.is_empty() or not los(v, t): continue
+		var entry := AiOffenseTarget.new()
+		entry.target = t
+		entry.bearing = angTo(v, t)
+		entry.guns = guns
+		for i in guns: entry.scores.append({})
+		targets.append(entry)
+	return targets
+
+# Keep each weapon's best target and sum those values in weapon order, as in evalOffenseVet.
+func _ai_offense(v: Dictionary, ready: Array, foes: Array, cells: Dictionary, best: PackedFloat64Array, pose: Vector2i, vet: bool, focus) -> float:
+	var hex := Vector2i(int(v["q"]), int(v["r"]))
+	if not cells.has(hex): cells[hex] = _ai_offense_targets(v, ready, foes)
+	best.fill(0.0)
+	var targets: Array[AiOffenseTarget] = cells[hex]
+	for entry in targets:
+		var angle := _relative_bearing(entry.bearing, float(v["facing"]))
+		var t := entry.target
+		for i in range(entry.guns.size()):
+			var wi := entry.guns[i]
+			var w = ready[wi]
+			if not _in_arc_angle(angle, w["arc"]): continue
+			var scores := entry.scores[i]
+			var score = scores.get(pose)
+			if score == null:
+				var e := _expectedVs_raw(v, w, t)
+				score = e.hull + e.shield * 0.3
+				if e.hull >= t["hp"]: score += 15.0 + t["maxHp"] * 0.1
+				if jt(t.get("isSq")) and not jt(w.get("vsSq")): score *= 0.5
+				if vet:
+					if focus != null and is_same(t, focus): score *= 1.3
+					if e.rear: score *= 1.1
+				scores[pose] = score
+			if score > best[wi]: best[wi] = score
+	var tot := 0.0
+	for value in best: tot += value
+	return tot
+
 func aiPickActivation(list: Array) -> Variant:
 	if not aiVet() or list.size() < 2: return list[0]
 	aiRefreshFocus(); var foes = alive("player"); var best = list[0]; var bv = -1e9
@@ -6342,31 +6748,41 @@ func aiVolley(u, live: Callable) -> Variant:
 			if not live.call(): return null
 	return fired
 func pathField(targets: Array) -> Dictionary:
-	var D = {}; var q = []
+	var D := {}
+	var queue: Array[Vector2i] = []
 	for t in targets:
-		var k = hkey(t["q"], t["r"])
-		if not D.has(k):
-			D[k] = 0; q.append(t)
+		var hex := Vector2i(int(t["q"]), int(t["r"]))
+		if not D.has(hex):
+			D[hex] = 0; queue.append(hex)
 	var i = 0
-	while i < q.size():
-		var h = q[i]; var d = D[hkey(h["q"], h["r"])]
+	while i < queue.size():
+		var hex := queue[i]; var d: int = D[hex]
 		for dd in DIRS:
-			var n = {"q": h["q"] + dd[0], "r": h["r"] + dd[1]}; var k = hkey(n.q, n.r)
-			if D.has(k) or not onBoard(n.q, n.r) or blocks(terr(n.q, n.r)): continue
-			D[k] = d + 1; q.append(n)
+			var n := hex + Vector2i(int(dd[0]), int(dd[1]))
+			if D.has(n) or not onBoard(n.x, n.y) or blocks(terr(n.x, n.y)): continue
+			D[n] = d + 1; queue.append(n)
 		i += 1
 	return D
 func fieldDist(D: Dictionary, v, fallback) -> float:
-	var d = D.get(hkey(v["q"], v["r"]))
+	var d = D.get(Vector2i(int(v["q"]), int(v["r"])))
 	return fallback + 6.0 if d == null else float(d)
+func aiLaunchHex(u, kind, foes: Array) -> Variant:
+	var wing = wingUnit(u, kind, true)
+	var best = null; var threat = INF; var dist = INF
+	for h in launchHexes(u):
+		wing["q"] = h.q; wing["r"] = h.r
+		var th = evalThreat(wing, foes); var d = _mind(h, foes)
+		if th < threat or (th == threat and d < dist):
+			best = h; threat = th; dist = d
+	return best
 func aiAbilities(u, live: Callable, mode) -> bool:
 	var foes = alive("player")
 	if foes.size() == 0 or jt(u.get("dead")): return live.call()
 	var pre: bool = mode == "pre"; var aim: bool = mode == "aim"
-	if pre and u.get("ab") == "launch" and canAbility(u):
-		var hs = launchHexes(u)
-		JSM.ssort(hs, func(a, b): return _mind(a, foes) - _mind(b, foes))
-		useAbility(u, {"hex": hs[0]})
+	if aim and u.get("ab") == "launch" and canAbility(u):
+		var kind = wingKind(u)
+		useAbility(u, {"hex": aiLaunchHex(u, kind, foes), "kind": kind})
+		if not live.call(): return false
 	var nearF: Variant = null
 	for f in foes:
 		if jt(f.get("isSq")): continue
@@ -6439,11 +6855,14 @@ func aiAfterFire(u, live: Callable, runner) -> bool:
 		fadeMove(u)
 		if jt(B.get("over")) or jt(u.get("dead")) or not live.call(): return false
 	return aiAbilities(u, live, "escape") and not jt(B.get("over"))
-# veteran AI: brace instead of firing when the incoming fire is heavy, our own guns can do little and the hull is already down
-func aiVetBrace(u) -> bool:
-	if not (aiVet() and not jt(u.get("isSq")) and not jt(u["t"].get("boss")) and canOrder(u, "brace")): return false
-	var pf = alive("player"); var myOff = evalOffense(u, readyList(u), pf); var thr = evalThreat(u, pf)
-	return thr > u["hp"] * 0.45 and myOff < thr * 0.35 and u["hp"] < u["maxHp"] * 0.7
+# Check at the committed firing position, or after a volley with no shots.
+func aiShouldBrace(u, afterVolley := false) -> bool:
+	if not canOrder(u, "brace"): return false
+	var foes = alive("player")
+	if afterVolley: return u["hp"] < u["maxHp"] * 0.5 and evalThreat(u, foes) > 10
+	if not aiVet() or jt(u["t"].get("boss")) or u["hp"] >= u["maxHp"] * 0.7: return false
+	var threat = evalThreat(u, foes)
+	return threat > u["hp"] * 0.45 and evalOffense(u, readyList(u), foes) < threat * 0.35
 func aiUnit(u) -> void:
 	if jt(u.get("isSq")):
 		if not jt(B.get("over")) and not jt(u.get("dead")) and u["side"] == "enemy": sqAct(u)
@@ -6470,18 +6889,26 @@ func aiUnit(u) -> void:
 	if not jt(u.get("isSq")) and not jt(runner): tacticRam(u)
 	if jt(B.get("over")) or jt(u.get("dead")) or not live.call(): return
 	var ready = readyList(u)
-	var states: Array = computeReach(u).states
-	var opts = []
-	for w in u["weapons"]: opts.append(w["opt"])
-	var minR = JSM.amin(opts)
+	var states: Array = computeReach(u, true).states
+	var minR = INF
+	for w in ready:
+		if w["k"] != "flak": minR = min(minR, w["opt"])
+	var unloaded = false
+	if minR == INF:
+		for w in u["weapons"]:
+			if w["k"] != "flak":
+				unloaded = true; break
 	var best: Variant = null; var bestScore = -1e9
 	var pff = []
 	for f in foes:
 		if not jt(f.get("isSq")) or jt(u.get("isSq")): pff.append(f)
 	var PF = pathField(pff)
-	var vet0 = aiVet(); var focus0 = aiRefreshFocus() if vet0 else null
+	var startDist = fieldDist(PF, u, _mind(u, pff, 99)) if unloaded else 0.0
+	var vet = aiVet(); var focus = aiRefreshFocus() if vet else null
+	var cliff = 25.0 + 3.0 * (clampf(z0(u["t"].get("cp")), 1.0, 7.0) - 3.0)
 	var flE: Variant = null; var escO = []; var escIn = 0
-	if vet0 and jt(B.get("obj")) and B["obj"].type == "flagship" and not jt(u.get("flagship")) and not jt(u.get("isSq")):
+	var obj = B.get("obj")
+	if vet and jt(obj) and obj.type == "flagship" and not jt(u.get("flagship")):
 		for x in B["units"]:
 			if jt(x.get("flagship")) and not jt(x.get("dead")) and x["side"] == "enemy": flE = x; break
 	if flE != null:
@@ -6489,41 +6916,58 @@ func aiUnit(u) -> void:
 			if not is_same(x, u) and not is_same(x, flE) and not jt(x.get("transport")): escO.append(x)
 		for x in escO:
 			if hdist(x, flE) <= 3: escIn += 1
+	var prof = nemProf(u, FACTION_AI[u["fac"]] if jt(FACTION_AI.get(u["fac"])) else FACTION_AI["voidsworn"])
+	var tw: float = 0.0
+	if not states.is_empty():
+		tw = (0.3 if not vet else (0.65 if jt(u.get("flagship")) else aiHurtW(u, prof))) * prof["tw"]
+	var score_range := vet and jt(prof.get("range"))
+	var score_ram := vet and jt(RAM_FAC.get(u["fac"]))
+	var standard_hold: bool = not vet and jt(obj) and obj.type == "hold"
+	var formation_weight := 2.0 if vet else 1.2
+	var nem_formation_weight := 2.0 if jt(u.get("nem")) and jt(B.get("nemLine")) else 1.0
+	var threat_guns: Array[AiThreatSource] = []
+	if vet: threat_guns = _ai_threat_guns(foes, u)
+	var threat_cells := {}
+	var offense_cells := {}
+	var offense_best := PackedFloat64Array()
+	offense_best.resize(ready.size())
+	var move_rules := moveRules(u)
+	var burn_evade := jt(g(u.get("fx"), "burnEv"))
+	var line_evade := jt(g(u.get("fx"), "lineEv"))
+	var offense_uses_motion := jt(g(u.get("fx"), "stillPct")) or jt(g(u.get("fx"), "momPct")) or jt(move_rules["rake"])
+	var offense_uses_facing := treeSkill("silentArchive") != null and cmdActive("player", "hunt")
+	var candidate = dup(u)
+	var start_moved = u.get("hexMoved")
 	eval_begin()
 	for s in states:
-		var v = stateView(u, s)
-		var vet = vet0; var focus = focus0
-		var off = evalOffenseVet(v, ready, foes, focus) if vet else evalOffense(v, ready, foes)
-		var threat = evalThreatVet(v, foes) if vet else evalThreat(v, foes)
-		var prof = nemProf(u, FACTION_AI[u["fac"]] if (not jt(u.get("isSq")) and jt(FACTION_AI.get(u["fac"]))) else FACTION_AI["voidsworn"])
-		var tw: float = (0.15 if jt(u.get("isSq")) else (0.3 if not vet else (0.65 if jt(u.get("flagship")) else aiHurtW(u, prof)))) * prof["tw"]
+		_update_state_view(candidate, s, start_moved, false)
+		var off := 0.0
+		if _evc:
+			# These are the moving enemy shooter's motion and aim inputs in dmgMult and hitChance.
+			var pose := Vector2i(int(candidate["hexMoved"]) if offense_uses_motion else 0, int(candidate["facing"]) if offense_uses_facing else 0)
+			off = _ai_offense(candidate, ready, foes, offense_cells, offense_best, pose, vet, focus)
+		else:
+			off = evalOffenseVet(candidate, ready, foes, focus) if vet else evalOffense(candidate, ready, foes)
+		var threat = evalThreatVet(candidate, threat_guns, threat_cells, move_rules, burn_evade, line_evade) if vet else evalThreat(candidate, foes)
 		var score: float = off - threat * tw
-		if vet and not jt(u.get("isSq")) and threat >= u["hp"]: score -= 25.0
-		if vet and not jt(u.get("isSq")) and jt(prof.get("range")):
-			var ds = [99]
-			for f in foes:
-				if not jt(f.get("isSq")): ds.append(hdist(v, f))
-			var nd2 = JSM.amin(ds)
-			if prof["range"] > 0: score -= max(0, prof["range"] - nd2) * prof["rw"]
-			else: score -= max(0, nd2 + prof["range"]) * prof["rw"]
-		if vet and not jt(u.get("isSq")) and jt(RAM_FAC.get(u["fac"])): score += ramSetup(v, u) * 0.35
-		if vet and jt(B.get("obj")) and B["obj"].type == "flagship" and not jt(u.get("flagship")) and not jt(u.get("isSq")):
-			if flE != null:
-				var dv = hdist(v, flE); score -= max(0, dv - 3) * (0.6 if escIn >= 2 else 2.0)
-				if dv <= 3:
-					for x in escO:
-						if hdist(x, v) == 1: score -= 1
-		if off <= 0:
-			var hds = []
-			for f in foes:
-				if not jt(f.get("isSq")) or jt(u.get("isSq")): hds.append(hdist(v, f))
-			hds.append(99)
-			var hd = JSM.amin(hds); var nd: float = max(hd, fieldDist(PF, v, hd)); score -= max(0, nd - minR) * 4.0
+		if vet and threat >= u["hp"]: score -= cliff
+		var hd := _mind(candidate, pff, 99) if score_range or off <= 0 or unloaded else 99.0
+		if score_range:
+			if prof["range"] > 0: score -= max(0, prof["range"] - hd) * prof["rw"]
+			else: score -= max(0, hd + prof["range"]) * prof["rw"]
+		if score_ram: score += ramSetup(candidate, u) * 0.35
+		if flE != null:
+			var dv = hdist(candidate, flE); score -= max(0, dv - 3) * (0.6 if escIn >= 2 else 2.0)
+			if dv <= 3:
+				for x in escO:
+					if hdist(x, candidate) == 1: score -= 1
+		if not is_same(u, B.get("mapTrialQuarry")) and (off <= 0 or unloaded):
+			var nd = fieldDist(PF, candidate, hd)
+			score -= max(0, startDist - nd if unloaded else nd - minR) * 4.0
 		score -= s.cost * 0.05
-		if not jt(u.get("isSq")):
-			score -= torpThreat(u, v) * 0.9; score -= syncPull(u, v) * (2.0 if vet else 1.2) * (2.0 if (jt(u.get("nem")) and jt(B.get("nemLine"))) else 1.0)
-		if jt(B.get("obj")) and B["obj"].type == "hold" and not jt(u.get("isSq")) and not vet: score -= hdist(v, B["obj"].hex) * 1.6
-		score += aiObjScore(u, v); score += aiWellScore(u, v)
+		score -= torpThreat(u, candidate) * 0.9; score -= syncPull(u, candidate) * formation_weight * nem_formation_weight
+		if standard_hold: score -= hdist(candidate, obj.hex) * 1.6
+		score += aiObjScore(u, candidate); score += aiWellScore(u, candidate)
 		if score > bestScore:
 			bestScore = score; best = s
 	eval_end()
@@ -6534,7 +6978,7 @@ func aiUnit(u) -> void:
 		if midFire:
 			var on_late = func():
 				if boardTargets(u).size() > 0: return
-				if aiVetBrace(u):   # R1 (AI-1): the veteran brace decision on the mid-move path, after the boarding deferral, before the volley
+				if aiShouldBrace(u):
 					vctx.brace = true; return
 				vctx.started = true
 				if not aiAbilities(u, live, "aim") or jt(u.get("dead")):
@@ -6546,36 +6990,33 @@ func aiUnit(u) -> void:
 	if vctx.brace:
 		if not jt(u.get("dead")): giveOrder(u, "brace")
 		B["aiActive"] = null; u["activated"] = true; return
-	if vctx.started:
-		var fired = vctx.result
-		if not live.call() or jt(B.get("over")): return
-		if not aiAfterFire(u, live, runner): return
-		if not jt(fired) and not jt(u.get("dead")) and u["hp"] < u["maxHp"] * 0.5 and canOrder(u, "brace") and evalThreat(u, alive("player")) > 10: giveOrder(u, "brace")
-		B["aiActive"] = null; u["activated"] = true; return
-	if u.get("ab") == "nova" and canAbility(u):
-		var bh = null; var bv = 0.0
-		for h in novaTargets(u):
-			var v = 0.0
-			for x in alive():
-				var d = hdist(x, h)
-				if d > 1: continue
-				var dm = 40.0 if d == 0 else 20.0
-				v += dm if x["side"] == "player" else -dm * 1.5
-			if v > bv:
-				bv = v; bh = h
-		if bh != null and bv >= 40:
-			useAbility(u, {"hex": bh})
-			if not live.call(): return
-	if not jt(u.get("isSq")) and not jt(runner) and tacticBoard(u):
-		if live.call():
-			B["aiActive"] = null; u["activated"] = true
-		return
-	if not live.call(): return
-	if aiVetBrace(u):
-		giveOrder(u, "brace"); B["aiActive"] = null; u["activated"] = true; return
-	if not aiAbilities(u, live, "aim"): return
-	var fired2 = aiVolley(u, live)
-	if fired2 == null: return
+	var fired = vctx.result
+	if not vctx.started:
+		if u.get("ab") == "nova" and canAbility(u):
+			var bh = null; var bv = 0.0
+			for h in novaTargets(u):
+				var v = 0.0
+				for x in alive():
+					var d = hdist(x, h)
+					if d > 1: continue
+					var dm = 40.0 if d == 0 else 20.0
+					v += dm if x["side"] == "player" else -dm * 1.5
+				if v > bv:
+					bv = v; bh = h
+			if bh != null and bv >= 40:
+				useAbility(u, {"hex": bh})
+				if not live.call(): return
+		if not jt(u.get("isSq")) and not jt(runner) and tacticBoard(u):
+			if live.call():
+				if not jt(B.get("over")) and aiShouldBrace(u, true): giveOrder(u, "brace")
+				B["aiActive"] = null; u["activated"] = true
+			return
+		if not live.call(): return
+		if aiShouldBrace(u):
+			giveOrder(u, "brace"); B["aiActive"] = null; u["activated"] = true; return
+		if not aiAbilities(u, live, "aim"): return
+		fired = aiVolley(u, live)
+	if fired == null or not live.call() or jt(B.get("over")): return
 	if not aiAfterFire(u, live, runner): return
-	if not jt(fired2) and not jt(u.get("isSq")) and not jt(u.get("dead")) and u["hp"] < u["maxHp"] * 0.5 and canOrder(u, "brace") and evalThreat(u, alive("player")) > 10: giveOrder(u, "brace")
+	if not jt(fired) and aiShouldBrace(u, true): giveOrder(u, "brace")
 	B["aiActive"] = null; u["activated"] = true

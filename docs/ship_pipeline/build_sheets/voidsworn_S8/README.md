@@ -1,12 +1,12 @@
-# voidsworn_S8 build sheet: the Daybreak-class dreadnought, the Sunward Crusade flagship (first sheet)
+# voidsworn_S8 build sheet: the Daybreak-class dreadnought, the Sunward Crusade flagship
 
 Issue 738. Sunward flagship, class Dreadnought, **27.0 world units** (godot/render/hull_table.gd CLS_LEN['Dreadnought'];
 data.js `ascendant`: hbattery P, hbattery S, turret T, flak T; ability nova; no hangar, no lance). Shape of record: S8
 (contrib/codex/design/concept_round5_2026_11/voidsworn_S8_sheet.jpg and _beauty.jpg; settled in direction, R185), dressed in
 the realistic detailed style (R197, R206 (2)). Designer of record: the Opus builder; the Board is the final designer and S8 is
-a base, not a trace (R205, R207, R233, R236). Rendered in the issue 738 sandbox (Blender 5.3, Cycles CPU, 32 samples); the
-blockout .blend is not on the PC (`build.py voidsworn_S8 <out> render` rebuilds it from the design file). No paint stack and
-no PC recipe run in this job: the Board reviews the pictures, then Ryan, before either.
+a base, not a trace (R205, R207, R233, R236). The original sheet pictures show the R254-approved build from the issue 738
+sandbox (Blender 5.3, Cycles CPU, 32 samples). `build.py voidsworn_S8 <out> render` rebuilds the sheet from its design file.
+Issue 1059 moves the shell rooms and hoists into the gun galleries and sets the decks, frames and liner clear of the wreck tears.
 
 ![voidsworn_S8 overview](voidsworn_S8_sheet_overview.jpg)
 
@@ -36,9 +36,9 @@ Files: design `tools/blender/build_sheets/ships/voidsworn_S8.py`, inventory `voi
    above and below the gun deck peel), the gun galleries, the shell rooms, the Sear cells, the flak magazine, the plotting room,
    crew decks, the command deck, the Roll, the reactor under the spires with its coolant rooms and heat plenum, the engine room.
    Breaks by the Sunward rule (factions.md "How it breaks"): B-1 tears the spearhead off at its root, B-2 the gun deck from the
-   reactor section, **B-3 splits the gun deck lengthwise between the gun deck and the shell rooms** (the galleries and turrets
-   lift away), **B-4 snaps the spire line off as one piece** at its root; eight breach anchors on the broadside deck line,
-   evenly spaced (Dreadnought base 8, Sunward +0).
+   reactor section, **B-3 peels the lower hull away under the galleries, shell rooms and turrets**, and **B-4 snaps the spire
+   line off as one piece** at its root. Eight breach anchors are spread across the flanks (Dreadnought base 8, Sunward +0).
+   The three midship markers sit on the lower flank, where the stage 7 surface check found clearance from the casemates.
 
 ## Weapons (R221, R241)
 
@@ -65,7 +65,7 @@ the repo's own tools.
 | Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 322 parts, no machine across a seam, no structure across one, 14 guns, none into the ship; self-test PASS |
 | `build_manifest_tests.js` | PASS, 10 sheets including voidsworn_S8 |
 | Inventory (R218, R221) | 0 failing; every built part has a job ([inventory.md](inventory.md)) |
-| * Insides inside the skin (every inside vertex against the hull's inner skin at its own station and height) and the clear band at each peel | 10,252 vertices, 47 objects, 0 outside, none straddling a peel plane; clear band B-3 0.38 above and 0.34 below, B-4 0.52 below (see Open risk) |
+| * Insides inside the skin (every inside vertex against the hull's inner skin at its own station and height) and the clear band at each peel | Original sheet had 10,252 vertices, 47 objects, 0 outside and none straddling a peel plane. See B-3 below for the room move. |
 | * Detail density, mesh (R224; tools/recipe/density.py's mesh half) | no flags; lowest: radiator 0.93 triangles and 0.83 edges, engine 0.95 edges of the hull's per square unit ([density_mesh.json](density_mesh.json)) |
 | Outline overlap at the camera fitted to the S8 beauty | 86.2 percent, mass outline 87.7 (reported, not a bar; [outline_check.jpg](outline_check.jpg)) |
 
@@ -86,21 +86,20 @@ The build is deeper and wider than S8 by design (listed below): the gun deck and
 puts the widest point at the stern third, and the spires stand taller than S8's bank. Structure per cell (S8 by eye / build):
 bow top 4/6, bow side 2/5, mid top 8/14, mid side 5/10, stern top 7/9, stern side 6/9.
 
-## Open risk: the gun deck peel's clear band (for the PC's death_seam_check)
+## B-3 clearance (issue 1059)
 
-B-3, the lengthwise split along the gun deck, is one level plane at z -0.72 over the gun deck compartment (2.5 aft to 4.7
-forward). The nearest insides sit 0.38 above it (the gun deck slab) and 0.34 below it (the shell rooms; the frames stop at the
-same heights). The game tears a peel with a V kink (0.08 per unit along the span) and three waves of 0.008 of the length each
-(godot/fx/fx_death.gd), and E11 needed about 0.5 (its B-3 at 1.45 left 15 deck triangles past the torn plating; at 1.7, 0.5 clear,
-it passed). So this band may leave a few inside triangles outside their piece. The hull's depth (2.75) leaves no more room
-without losing the shell rooms. If death_seam_check counts any, the fix is the designer's: deepen the hull about 0.25 (the shell
-rooms then clear by 0.5), or move the shell rooms into the galleries. Not run here: the death check needs the stage 7 export on
-the PC.
+B-3 runs at z -0.72 from 2.5 units aft to 4.7 units forward. The original shell rooms and their central hoist drive
+sat 0.35 units below that plane. The game adds a V kink and three waves when it tears the plating, so that gap could
+leave room triangles protruding past the wreck. The Board chose the gallery move in the Nov 15 outside check for PR 748.
+Each gallery now houses its shell room and hoist drive along its inboard edge. That puts the shell rooms 0.76 units above
+the seam and the hoist drives 0.57 units above it. The fit check measures all of the interior against the skin. The Godot
+death-seam check measures the room triangles against the actual broken plating.
 
-Board note (Nov 15 2026, outside check opus_check_748): on these numbers the Board expects death_seam_check to fail at B-3,
-not just possibly. The fix path is chosen now, before the paint stack and recipe build on this hull: move the shell rooms into
-the galleries (insides only), so the outside Ryan accepted (R254) keeps its proportions. Deepening the hull is the fallback only
-if the move cannot clear 0.5.
+Run 1 found 46 protruding triangles from the gun deck and inner liner. In run 2 the bow deck and frame stop short of B-1,
+the gun deck is raised and narrowed above B-3, and the aft gun deck, adjacent frame and Roll hall are set back from B-2.
+The liner has relief along both lower flanks and across the two transverse joints where they meet B-3. The exterior plating
+continues across those joints. ShipView's wreck test on the installed satin export found zero protruding triangles and zero
+split machines in both the standard and scene 207 Daybreak seeds. [PC review](../../../shots/swap_sunward_s8_1118/README.md)
 
 ## Changed from S8 (every change, with its reason)
 

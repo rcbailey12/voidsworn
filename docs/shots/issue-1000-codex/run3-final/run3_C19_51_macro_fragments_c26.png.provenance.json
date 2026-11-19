@@ -1,0 +1,77 @@
+{
+  "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "run3_C19_51_macro_fragments_c26.png",
+  "date": "2026-11-18T03:14:50Z",
+  "sources": [
+    {
+      "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "7e070846244910ed69ce460252f31d2ea77f7dda",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "C19_51_macro_fragments__c26.png",
+      "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T01:10:20Z",
+      "image_sha256": "89762da77332e05bfd0386dfaea35547032ae52939c07b860b15f58300af8e8e",
+      "sources": [
+        {
+          "source_commit": "12c4ce674daffd919ff1768bcbb576ad4f3d843c",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "C19_51_macro_fragments__c26.png",
+      "source_commit": "7e070846244910ed69ce460252f31d2ea77f7dda",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T03:08:06Z",
+      "image_sha256": "477a7d3fd7bb15108538ad50108c33be2582c4363775ff0b4fa62edc70bd3ca9",
+      "sources": [
+        {
+          "source_commit": "7e070846244910ed69ce460252f31d2ea77f7dda",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    580,
+    504,
+    704
+  ],
+  "strip_size": [
+    504,
+    124
+  ],
+  "strip_sha256": [
+    "ff9b18a05c5e68df4f0606f988a8347c42b6cdd0aeb9bb190fbf650b06cd04d4"
+  ],
+  "stamp_template_sha256": "ff9b18a05c5e68df4f0606f988a8347c42b6cdd0aeb9bb190fbf650b06cd04d4",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAfgAAAB8CAIAAAAKHDVSAAAB1UlEQVR4nO3UMQ0AIQDAQHgFLKz4l/kqCElzp6BT59pnAND1vQ4A4C6jB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoA4oweIM3qAOKMHiDN6gDijB4gzeoDR9gPElwE7/frMvQAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "4b9679426a9800e0363931a5bf6b3014737c98a8b67ebfc2b38fa0ebd315d708"
+}

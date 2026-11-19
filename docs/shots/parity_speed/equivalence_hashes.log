@@ -1,0 +1,6 @@
+normal: PASS, 281/281 browser files and 281/281 Godot files byte-identical (Buffer.equals, no JSON conversion)
+reversed: PASS, 281/281 browser files and 281/281 Godot files byte-identical (Buffer.equals, no JSON conversion)
+serial-order: PASS, 281/281 browser files and 281/281 Godot files byte-identical (Buffer.equals, no JSON conversion)
+parallel-order: PASS, 281/281 browser files and 281/281 Godot files byte-identical (Buffer.equals, no JSON conversion)
+final-native: PASS, 281/281 browser files and 281/281 Godot files byte-identical (Buffer.equals, no JSON conversion)
+VS_NO_MEMO row: SKIP, this head has no VS_NO_MEMO hook.

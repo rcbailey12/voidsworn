@@ -1,4 +1,31 @@
-# station_T2: run 5 purposeful station systems
+# station_T2: run 3 production finish and retained feature inventory
+
+Refs #975. The current [method, material fixes, loose-piece inventory, measurements and pictures](README.md) describe
+run 3. The station recipe entry is `tools/recipe/stations/station_T2.json`; the launcher is `tools/recipe/station_paint.bat`.
+
+| Production measurement | Run 3 |
+|---|---|
+| Exported triangles | 702,516, including 110,428 inside |
+| Surfaces / materials / mesh nodes | 12 / 9 / 2 |
+| Draw-call delta, station visible versus hidden | 12 in all seven views |
+| Scale and dimensions | 1.919133 uniform; 99.200 x 70.211 x 69.281 game units, unchanged |
+| Tone hierarchy | Complete module family, structural zone, then +/-1.5 percent plate value |
+| Full PBR coverage | All nine materials; decoded maps and 267 module/material albedo samples pass |
+| Texture density | 862.88 minimum material mean texels/unit; cruiser 42.30 mean and 191.86 finest triangle |
+| Inside, layout and joints | Retained; 357 source meshes unchanged; only 32 scoped exterior meshes differ |
+| Loose-sheet repair | 19 old sheets become 18 attached torn assemblies; 66 roof beams and 10 spoke treads gain feet/braces |
+| Exported geometry comparison | 696,746 old triangles identical; 342 replaced, 5,770 added |
+| Glazing | Framed real-size room grid, reflection and dark interiors; all original lights and window bands retained |
+| 1080p frame medians | 7.917 / 6.907 / 5.652 ms |
+| 4K GPU medians | 6.938 / 6.913 / 6.915 ms |
+| 12.5 ms gate | All six pass on the installed station map, solo GPU |
+
+## PR 700 shape inventory, before production paint
+
+The run 5 inventory below remains the record of the approved geometry. Its pending-paint and review-only wording
+describes that earlier stage; issue 975 authorizes production paint and local installation.
+
+## station_T2: run 5 purposeful station systems
 
 Refs #373. Fleet station first. Review only; production paint and live swap remain pending.
 

@@ -1,0 +1,54 @@
+{
+  "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+  "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "station_T2_debris_native170.png",
+  "date": "2026-11-18T00:03:11Z",
+  "sources": [
+    {
+      "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+      "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "station_T2_debris170.png",
+      "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+      "source_dirty": true,
+      "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+      "stage": "installed in game",
+      "date": "2026-11-17T23:58:21Z",
+      "image_sha256": "2566d9ed6795aa5806e6129b7e02d00e80ac39ab113a9566340f0cf1fe88f22c",
+      "sources": [
+        {
+          "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+          "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "75ade404a48fd4aa8ce01982a74780484689e10eea462d5af802dcaf1d468894"
+  ],
+  "stamp_template_sha256": "75ade404a48fd4aa8ce01982a74780484689e10eea462d5af802dcaf1d468894",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnElEQVR4nO3XuQ0AIAADMR6Jgv0HZgqushdIecrc5w4A4L8VbAAAogsAHU8XACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQAYjQfsnwDXsm2H6wAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "339b77bb6f953fc32a0d88d727ae510b48e854f8e0d4362c93b12fbb91515a01"
+}

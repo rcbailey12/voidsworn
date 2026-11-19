@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAYAAADKrg6UAAAAAXNSR0IArs4c6QAAAelJREFUeJzt1rENwCAAwLDSDxiY+P9OekWFFNkXZMyYa58HAICs93YAAAD/MnwAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCIM3wAAHGGDwAgzvABAMQZPgCAOMMHABBn+AAA4gwfAECc4QMAiDN8AABxhg8AIM7wAQDEGT4AgDjDBwAQZ/gAAOIMHwBAnOEDAIgzfAAAcYYPACDO8AEAxBk+AIA4wwcAEGf4AADiDB8AQJzhAwCI+wDu5AIE1/qJ4gAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-18T03:14:14Z",
+	"image_sha256": "5e12ec9434236d843146e00e5484846ea70f6efd0506bf22996dee16fa20b188",
+	"inputs": [],
+	"picture_name": "keel_enemy_turn.png",
+	"schema": 1,
+	"source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+	"source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "7c426f028ddf9941690ac60d535f7254bc89a524",
+			"source_diff_sha256": "558ec1f31343fef02d9fea091934990f6423c7218461fce9ac960ef605723e0c",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		622,
+		636,
+		720
+	],
+	"stamp_template_sha256": "582288c33ae3d5a5435e4721492cb7a247d77c1177d3cda2c38bf2663cba9bb9",
+	"strip_sha256": [
+		"582288c33ae3d5a5435e4721492cb7a247d77c1177d3cda2c38bf2663cba9bb9"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

@@ -1,0 +1,15 @@
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle t_recordedangle
+  turn 47, round 3, after death x08; unit x04 (player i_song)
+  state.units[0].dealt: 80 -> 86
+  later changed records: 7; total records: 55 -> 55
+FAIL battle t_burnflaw
+  turn 31, round 2, after death x07; unit x06 (player i_blade)
+  state.units[2].dealt: 30 -> 33
+  later changed records: 2; total records: 34 -> 34
+FAIL battle t_flawforever
+  turn 45, round 3, after fire x05; unit x05 (player i_song)
+  state.units[1].dealt: 81 -> 87
+  later changed records: 3; total records: 49 -> 49
+FAIL: saved Godot results; 281 battles checked, 3 changed, 0 other files changed, 3 failures; 25.813 s

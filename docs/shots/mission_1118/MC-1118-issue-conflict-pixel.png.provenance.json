@@ -1,0 +1,36 @@
+{
+  "source_commit": "834bf63d2eb326ae2ee878dae92012583a4fced1",
+  "source_dirty": true,
+  "source_diff_sha256": "fcdf3d75b4513f2e9c6963fcd791f05e06cd24a3f6bc9defc2dce9dd0b033a22",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-1118-issue-conflict-pixel.png",
+  "date": "2026-11-18T04:29:18Z",
+  "sources": [
+    {
+      "source_commit": "834bf63d2eb326ae2ee878dae92012583a4fced1",
+      "source_dirty": true,
+      "source_diff_sha256": "fcdf3d75b4513f2e9c6963fcd791f05e06cd24a3f6bc9defc2dce9dd0b033a22",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "bb31e757a86e667d54c9477bd874a89f458c7f0ded1680690241708fd078418c"
+  ],
+  "stamp_template_sha256": "bb31e757a86e667d54c9477bd874a89f458c7f0ded1680690241708fd078418c",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "42307dca296efb235ec42de04dca61c3e1c4f7fa7f359d224382ce2adc6aeb0c"
+}

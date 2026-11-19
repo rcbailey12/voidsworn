@@ -15,6 +15,8 @@
 #   no_engine       every hp_eng renamed away                                      must FAIL (a required hard point missing)
 #   no_rcs          every hp_rcs renamed away                                      must FAIL (a required hard point missing)
 #   no_board        every hp_board renamed away                                    must FAIL (a required hard point missing)
+#   same_side_rcs   starboard braking points replaced with a port point           must FAIL (a side is missing)
+#   same_side_board starboard boarding points replaced with a port point          must FAIL (a side is missing)
 #   breach_count    the last breach anchor renamed away                            must FAIL (the class and faction count is not met)
 #   breach_near     the first breach anchor moved onto the first weapon's muzzle   must FAIL (closer than 0.03 to a part)
 #   breach_inward   the first breach anchor turned so +Y points into the ship      must FAIL (+Y is not the outward normal)
@@ -28,11 +30,12 @@
 #                   extras.radius doubled
 #   bell_plane      the same engine point moved half its radius down its exhaust       must FAIL (not the centre of an open bell)
 # usage: python check_export_selftest.py SHIP_JSON EXPORT_DIR [unbaked=1]      (exit code 1 when any case does not behave)
-import os, sys, json, struct, shutil, subprocess, re
+import copy, os, sys, json, struct, shutil, subprocess, re
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import check_export as CE, gamedata
 shipj, src = sys.argv[1], sys.argv[2]; ship = json.load(open(shipj)); code = ship.get('game_code') or ship['ship']
 last = len(gamedata.weapons(ship['game_ship'])) - 1
+wing = gamedata.ship_attr(ship['game_ship'], 'cls') == 'Squadron'
 
 def write_glb(path, g, blob):
     js = json.dumps(g, separators=(',', ':')).encode(); js += b' ' * (-len(js) % 4)
@@ -178,27 +181,45 @@ def turret_no_mesh(g):
     for n in g['nodes']:
         if re.fullmatch(r'turret_\d+_turn', str(n.get('name', ''))): n['name'] += 'x'
 _g0, _blob0 = CE.read_glb(os.path.join(src, code + '.glb'))
-WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
 CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
-         ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, WRONG_SIDE), ('no_core', no_core, 1, 'hp_core'),
-         ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'),
-         ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
-         ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
-         ('breach_inward', breach_inward, 1, 'is not the outward normal'),
-         ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
-         ('liner_only', liner_only, 1, 'no authored interior rooms'),
-         ('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
-if any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
+         ('backward', backward, 1, 'aimed backward'), ('no_core', no_core, 1, 'hp_core'),
+         ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'))
+if not wing:
+    WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
+    CASES += (('wrong_side', wrong_side, 1, WRONG_SIDE), ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
+              ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
+              ('breach_inward', breach_inward, 1, 'is not the outward normal'),
+              ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
+              ('liner_only', liner_only, 1, 'no authored interior rooms'),
+              ('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
+
+def sided_points(g, kind, side):
+    return [n for n in g['nodes'] if n.get('name', '').startswith(f'hp_{kind}_') and n.get('extras', {}).get('side') == side]
+
+def same_side(g, kind):
+    port = sided_points(g, kind, 'P')[0]
+    for starboard in sided_points(g, kind, 'S'):
+        name = starboard['name']
+        starboard.clear()
+        starboard.update(copy.deepcopy(port), name=name)
+
+for kind in ('rcs', 'board'):
+    if sided_points(_g0, kind, 'P') and sided_points(_g0, kind, 'S'):
+        CASES += ((f'same_side_{kind}', lambda g, kind=kind: same_side(g, kind), 1, f'hp_{kind} on each side'),)
+if not wing and any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
     CASES += (('no_trim_marker', no_trim_marker, 1, 'from a part (at least'),)
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
     CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
-def open_bells():       # the engines the check passed as open bells (its own record of the export as written)
+def checked_points():
     cj = os.path.join(src, code + '_check.json')
     # Read this check's result, never an older check's cached list of bells.
     subprocess.run([sys.executable, os.path.join(HERE, 'check_export.py'), shipj, src] + sys.argv[3:], capture_output=True)
     if not os.path.exists(cj): return []
-    return [r['name'] for r in json.load(open(cj)).get('rows', []) if (r.get('bell') or {}).get('ok')]
-BELLS = open_bells()
+    return json.load(open(cj)).get('rows', [])
+POINTS = checked_points()
+BELLS = [r['name'] for r in POINTS if (r.get('bell') or {}).get('ok')]
+RECTANGULAR_EXHAUSTS = [r['name'] for r in POINTS if (r.get('exhaust') or {}).get('ok')]
+BOMB_TUBES = [r['name'] for r in POINTS if (r.get('bomb_tube') or {}).get('ok')]
 def bell_node(g, name): return next(n for n in g['nodes'] if n.get('name') == name)
 def bell_radius(g, name): n = bell_node(g, name); n['extras']['radius'] = 2 * float(n['extras']['radius'])
 def bell_plane(g, name):
@@ -215,6 +236,20 @@ for k, name in enumerate(BELLS):
     suffix = '' if k == 0 else '_' + name
     CASES += (('bell_radius' + suffix, lambda g, name=name: bell_radius(g, name), 1, 'not the centre of an open engine bell'),
               ('bell_plane' + suffix, lambda g, name=name: bell_plane(g, name), 1, 'not the centre of an open engine bell'))
+
+for name in BOMB_TUBES:
+    error = 'not the centre of an open bomb tube'
+    CASES += ((f'bomb_radius_{name}', lambda g, name=name: bell_radius(g, name), 1, error),
+              (f'bomb_exit_{name}', lambda g, name=name: bell_plane(g, name), 1, error))
+
+def double_exhaust_size(g, name, axis):
+    bell_node(g, name)['extras']['aperture'][axis] *= 2
+
+for name in RECTANGULAR_EXHAUSTS:
+    error = 'not the centre of an open rectangular exhaust'
+    CASES += ((f'exhaust_width_{name}', lambda g, name=name: double_exhaust_size(g, name, 0), 1, error),
+              (f'exhaust_height_{name}', lambda g, name=name: double_exhaust_size(g, name, 1), 1, error),
+              (f'exhaust_plane_{name}', lambda g, name=name: bell_plane(g, name), 1, error))
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
     d = os.path.join(base, name); os.makedirs(d, exist_ok=True)

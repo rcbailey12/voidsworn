@@ -155,10 +155,11 @@ def required_points(weapons, cls, faction, hangar=0):
     hangar value (0 when the ship has none). Counts are minimums except breach, which is exact."""
     slots = len(weapons or [])
     d = dict(weapon_slots=slots, core=1, engine=0, bay=0, breach=expected_breach(cls, faction), rcs=0, board=0)
-    if cls in ('Squadron', 'beacon'):
-        return d                                     # craft and beacons cannot brake or board, and carry no breach anchors
-    if cls == 'station':
-        return d                                     # a station is placed, not flown: no engine, braking or boarding origin
+    if cls == 'Squadron':
+        d['engine'] = 1                               # the craft's ribbon starts at its exhaust
+        return d
+    if cls in ('beacon', 'station'):
+        return d                                     # placed objects have no engine, braking or boarding origin
     d['engine'] = 1
     d['rcs'] = 2
     d['board'] = 2
@@ -181,6 +182,12 @@ def missing_required(counts, weapons, cls, faction, hangar=0):
     if counts.get('breach', 0) != req['breach']:
         probs.append(f'need exactly {req["breach"]} hp_breach for a {cls} of {faction_key(faction)} ({counts.get("breach", 0)} written)')
     return probs
+
+
+def missing_sides(required, sides):
+    """A required braking or boarding pair must include a valid point on each side."""
+    return [f'need one valid hp_{kind} on each side (P and S)'
+            for kind in ('rcs', 'board') if required[kind] and sides[kind] != {'P', 'S'}]
 
 
 def name_problem(name):

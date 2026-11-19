@@ -1,0 +1,36 @@
+{
+  "source_commit": "618422b28bb4b81179a27b033400455c90ac49af",
+  "source_dirty": true,
+  "source_diff_sha256": "0ada9e330eaa9f08b826268d802503f9099679f30cd7a08cd28645d84a0aca61",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-1118B-chain-history-pixel.png",
+  "date": "2026-11-18T05:30:24Z",
+  "sources": [
+    {
+      "source_commit": "618422b28bb4b81179a27b033400455c90ac49af",
+      "source_dirty": true,
+      "source_diff_sha256": "0ada9e330eaa9f08b826268d802503f9099679f30cd7a08cd28645d84a0aca61",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "5046edd1f120c33c127b0c20255f01e5615c9f61b9a277454629ffbb76d0497f"
+  ],
+  "stamp_template_sha256": "5046edd1f120c33c127b0c20255f01e5615c9f61b9a277454629ffbb76d0497f",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "ea35ba55b6619b667a6ddc22293165bee86a79ccf3d79d56f8116ddde2bccb12"
+}

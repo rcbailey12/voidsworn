@@ -1,0 +1,16 @@
+ship,view,mean_rgb_change,light_a_p99,light_b_p99,highlight_shift_px
+H4_11,battle,0.741,,,
+H4_11,deck,2.217,,,
+H4_11,turret,2.144,,,
+H4_11,rake_before,,136.971,96.375,359.77
+H4_11,rake_after,,143.83,97.022,344.7
+H10_23,battle,0.359,,,
+H10_23,deck,1.724,,,
+H10_23,turret,2.436,,,
+H10_23,rake_before,,130.749,93.166,311.26
+H10_23,rake_after,,143.948,93.954,271.34
+C19_51,battle,0.821,,,
+C19_51,deck,2.74,,,
+C19_51,turret,2.895,,,
+C19_51,rake_before,,99.397,54.857,142.41
+C19_51,rake_after,,100.693,54.871,130.49

@@ -1,0 +1,36 @@
+{
+  "source_commit": "ec120d1a4c0ec0740af095d4812f81c7cf308ed0",
+  "source_dirty": true,
+  "source_diff_sha256": "63b2623ce7524c6ef9025749d5abfd2662fb3f286ff484cac90ce3e08911d906",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-r3-claim.png",
+  "date": "2026-11-17T20:21:30Z",
+  "sources": [
+    {
+      "source_commit": "ec120d1a4c0ec0740af095d4812f81c7cf308ed0",
+      "source_dirty": true,
+      "source_diff_sha256": "63b2623ce7524c6ef9025749d5abfd2662fb3f286ff484cac90ce3e08911d906",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "525de28ba2d4f5a6d8d4da280a9d9625a6d41d359ad1ba1ad8c44265f23a4ecc"
+  ],
+  "stamp_template_sha256": "525de28ba2d4f5a6d8d4da280a9d9625a6d41d359ad1ba1ad8c44265f23a4ecc",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "ed512b202a22ace4dc1d818428e48a60224c6daaf7127d94c21c976c76ade540"
+}
