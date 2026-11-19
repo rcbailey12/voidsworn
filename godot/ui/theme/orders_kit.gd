@@ -169,7 +169,7 @@ static func button_boxes(k: float, role := "quiet") -> Dictionary:
 
 static func button(text: String, k: float, role := "quiet", cb := Callable(), size := 18.0) -> Button:
 	var b := Button.new()
-	b.text = text.to_upper() if role == "primary" else text
+	b.text = text
 	style_button(b, k, role, size)
 	if cb.is_valid():
 		b.pressed.connect(cb)
