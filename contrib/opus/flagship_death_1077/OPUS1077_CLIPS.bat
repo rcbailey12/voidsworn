@@ -28,20 +28,30 @@ git -C "%C%" fetch -q --depth 1 origin opus/issue-1077 >> "%RES%" 2>&1
 git -C "%C%" checkout -q FETCH_HEAD >> "%RES%" 2>&1
 for /f %%H in ('git -C "%C%" rev-parse HEAD') do set COMMIT=%%H
 echo commit=%COMMIT% >> "%RES%"
+rem Artoo on PR 1171: film only a revision that holds the lights-out fix
+rem (the clone is shallow, so the check reads the fix itself: 9be55f23's line in _power_surface)
+findstr /c:"never between them and their else (Fable on PR 1171)" "%C%\godot\fx\fx_death.gd" >nul 2>&1 || (echo STOPPED: %COMMIT% does not contain the 9be55f23 fix >> "%RES%" & echo all done >> "%RES%" & exit /b 1)
 echo {"commit": "%COMMIT%"} > "%C%\godot\build_info.json"
 copy /y "%C%\contrib\opus\flagship_death_1077\*.gd" "%C%\godot\bench\opus1077\" > nul
 set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
 set TM=%C%\tools\pc\tmo.bat
 cd /d "%C%"
 call "%TM%" 1800 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_story_check.gd -- "%C%\godot\assets\ships\C19_51\C19_51.glb" > "%O%\log_death_story.txt" 2>&1
-echo death story exit %ERRORLEVEL% >> "%RES%"
+set E=%ERRORLEVEL%
+echo death story exit %E% >> "%RES%"
+if not "%E%"=="0" (echo STOPPED after death story >> "%RES%" & echo all done >> "%RES%" & exit /b 1)
 call "%TM%" 1800 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\C19_51\C19_51.glb" > "%O%\log_death_seam.txt" 2>&1
-echo death seam exit %ERRORLEVEL% >> "%RES%"
+set E=%ERRORLEVEL%
+echo death seam exit %E% >> "%RES%"
+if not "%E%"=="0" (echo STOPPED after death seam >> "%RES%" & echo all done >> "%RES%" & exit /b 1)
 call "%TM%" 5400 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1077/capture.gd -- clips "%S%" 170,26 > "%O%\log_clips.txt" 2>&1
-echo clips exit %ERRORLEVEL% >> "%RES%"
+set E=%ERRORLEVEL%
+echo clips exit %E% >> "%RES%"
+if not "%E%"=="0" (echo STOPPED after clips >> "%RES%" & echo all done >> "%RES%" & exit /b 1)
 for %%R in (170 26) do (
   call "%TM%" 1800 "%GD%" --path "%C%\godot" --windowed --resolution 1920x600 --fixed-fps 30 --write-movie "%O%\FLAGSHIP1077_A16_c%%R_side_by_side.avi" --script res://bench/opus1077/compose.gd -- "%S%" %%R %COMMIT% > "%O%\log_compose_c%%R.txt" 2>&1
   echo compose c%%R exit !ERRORLEVEL! >> "%RES%"
+  if not "!ERRORLEVEL!"=="0" set BAD=1
 )
 for %%V in (off strain) do for %%R in (170 26) do (
   if not exist "%O%\stills\%%V_c%%R" mkdir "%O%\stills\%%V_c%%R"
@@ -50,5 +60,6 @@ for %%V in (off strain) do for %%R in (170 26) do (
 )
 for %%F in ("%O%\*.avi") do echo %%~nxF bytes %%~zF >> "%RES%"
 for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo drive bytes free %%F >> "%RES%"
+if defined BAD (echo STOPPED: a composition failed >> "%RES%" & echo all done >> "%RES%" & exit /b 1)
 echo all done %DATE% %TIME% >> "%RES%"
 exit /b 0
