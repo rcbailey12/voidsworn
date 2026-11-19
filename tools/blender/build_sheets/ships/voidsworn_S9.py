@@ -272,17 +272,16 @@ def build(K):
                         (0, 0, 1), 'bridge_slits', 'vision slit 0.05 x 0.02', 'slit', 'picture', 'command deck window, ember-lit, in the spine block\'s face', aperture=0.5)
     K.mark('spine', 'spine', ['block', 'step', 'slit'])
     # three radiator spires (designs.md: stations 68, 76, 84 percent; R331: about 70 percent of the table's 0.9, so the tallest 0.65),
-    # the middle one tallest, each its own profile, the ember in the slats between iron fins (glow='slats', fin pitch 0.26 as S8's
-    # R331 rebuild, issue 1158, so the glow shows between the fins from the battle camera)
+    # the middle one tallest, each its own profile, the ember in lit fin slats with iron between them (glow='slats', as S8's R331
+    # rebuild, issue 1158: the fins stand at least 0.26 apart at flagship size, so the iron core shows between every pair)
     SC = 0.42
     SPIRES = [(-1.17, 0.47, 0.22, 3), (-1.69, 0.65, 0.24, 1), (-2.21, 0.52, 0.22, 0)]
     for i, (x, h, L, prof) in enumerate(SPIRES):
-        part = HP.radiator(h, L, profile=prof, spread=SC * 0.3 * (0.2 + 0.42 * (h / SC) / 2.6), seed=i, scale=SC, glow='slats', pitch=0.26)
+        part = HP.radiator(h, L, profile=prof, spread=SC * 0.3 * (0.2 + 0.42 * (h / SC) / 2.6), seed=i, scale=SC, glow='slats')
         K.organ('R%d' % (i + 1), part, (x, 0.0, SPZ), (0, 0, 1), fwd=(1, 0, 0), inv='spires', what='radiator spire, %.2f tall, profile %s' % (h, ('blade', 'stepped', 'twin', 'raked')[prof]),
-                kind='radiator', note='sheds the reactor\'s heat: a stack of iron radiator fins with the ember glowing in the slats between them')
-        K.mass('Radiator spire R%d (%s, %.2f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember slats in iron fins',
+                kind='radiator', note='sheds the reactor\'s heat: a stack of glowing radiator fins, spaced so the dark iron core shows between every pair')
+        K.mass('Radiator spire R%d (%s, %.2f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fin slats on iron',
                note='one of the three spires of the spire line')
-        bpy.data.objects['R%d_body_embar' % (i + 1)]['spire_glow'] = 'slats'   # the paint stack lights the core whole (stack.glow_vertex, issue 1158)
 
     # ---------------- the stern: two ember bells on riveted drums ----------------
     # the kit's engine has flagship rivet and band sizes (they read as gear teeth on a 0.55 bell), so each engine is built at
@@ -393,6 +392,8 @@ def build(K):
             o = len(V)
             V += [(x + 0.018, y_, z_) for (y_, z_) in q] + [(x - 0.018, y_, z_) for (y_, z_) in q]
             F += [(o, o + 1, o + 2, o + 3), (o + 7, o + 6, o + 5, o + 4), (o, o + 4, o + 5, o + 1), (o + 1, o + 5, o + 6, o + 2), (o + 2, o + 6, o + 7, o + 3), (o + 3, o + 7, o + 4, o)]
+        if not V:
+            return   # nothing of this frame lies in the kept bands (the bow below the peel)
         K._obj('in_bh_' + name, V, F, 'frame', inside=True)
         if record:
             K.inside.append(dict(kind='bulkhead', name=name.split('_')[0], x=x))
@@ -416,16 +417,16 @@ def build(K):
             frame_at('F%d_upper' % i, x, zr=[(-0.065, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -0.175)], record=False)
         else:
             frame_at('F%d' % i, x)
-    room('repeater_magazine', 'magazine', 2.6, 2.05, 0.025, 0.1, note='the Sear repeater\'s magazine and feed, under the casemate')
-    room('bow_stores', 'hold', 2.35, 1.75, -0.3, -0.18, note='bow stores and the bow thrusters\' feeds')
-    room('crew_deck', 'crew', 1.9, 0.55, 0.025, 0.2, note='the crew deck: berths and the mess, the chalk wall where the names go up before launch')
+    room('repeater_magazine', 'magazine', 2.4, 2.0, 0.025, 0.075, note='the Sear repeater\'s magazine and feed, under the casemate')
+    room('bow_stores', 'hold', 2.0, 1.6, -0.25, -0.18, note='bow stores and the bow thrusters\' feeds')
+    room('crew_deck', 'crew', 1.7, 0.55, 0.025, 0.16, note='the crew deck: berths and the mess, the chalk wall where the names go up before launch')
     room('fire_plot', 'bridge', 0.45, -0.25, 0.025, 0.2, ymax=0.26, note='the plotting room (no AI: plotted by hand)')
     side_room('flak_magazine', 'magazine', 0.1, -0.3, 0.025, 0.2, 0.3, note='the spark flak magazines, under the tubs')
-    room('ballast_fwd', 'machinery', 1.6, -0.3, -0.33, -0.19, note='trim tanks and pumps under the crew deck')
+    room('ballast_fwd', 'machinery', 1.4, -0.3, -0.29, -0.19, note='trim tanks and pumps under the crew deck')
     room('command', 'bridge', -0.95, -1.05, 0.025, 0.2, ymax=0.3, note='the command deck under the spine block\'s slits')
     room('reactor', 'core', -1.1, -2.2, -0.33, 0.2, ymax=0.32, note='the reactor: its heat goes up through the spine block into the spires (hp_core)')
     side_room('coolant', 'machinery', -1.1, -2.2, -0.2, 0.2, 0.36, note='coolant pumps and heat exchangers either side of the reactor')
-    room('engine_room', 'engroom', -2.3, -2.8, -0.3, 0.2, note='the engine room and the two drives\' feeds')
+    room('engine_room', 'engroom', -2.3, -2.75, -0.27, 0.19, note='the engine room and the two drives\' feeds')
     K.armour('upper facets and deck', 0.06, 'forged plate over the crew deck and the magazines')
     K.armour('band and lips', 0.07, 'the plated band, the hull\'s belt')
     K.armour('spearhead', 0.08, 'solid forged layers toward the point')
@@ -473,7 +474,7 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
     K.change('Three radiator spires, not the beauty\'s four, at 0.47, 0.65 and 0.52 over the spine block (tallest in the middle)',
              'designs.md\'s table (3 spires, tallest 0.9) outranks the picture; Ryan, Nov 19 2026 (R331): "can we scale down the giant radiator/orange towers on each ship a bit too?", so about 70 percent of the table\'s heights')
-    K.change('The spires\' fins are iron and the ember glows in the slats between them, not the whole tower lit', 'R331: the ember shows in the slats, not as a whole lit tower (factions.md Sunward silhouette line)')
+    K.change('The spires\' fins stand further apart, so the ember shows as lit slats with dark iron between them, not as a whole lit tower', 'R331: the ember shows in the slats, not as a whole lit tower (factions.md Sunward silhouette line)')
     K.change('One flak pair (two twin tubs at the deck edges, station 60 percent), not the beauty\'s four tubs', 'designs.md\'s table and data.js warden carry one flak slot (3 shots); four tubs would be silent or extra mounts (R241)')
     K.change('The bow gun is a fixed casemate (the Sear repeater: three barrels round a spindle in a forged housing with a sloped glacis), not a turning turret with a cupola',
              'data.js autocannon is arc F; a fixed forward mount matches the game, and the frigate turns to bring it to bear (R241); the concept\'s cupola read as a second gun, so the sight is a slit in the glacis')
