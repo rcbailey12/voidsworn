@@ -14,8 +14,9 @@ headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep 
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
-headless|campaign/test/boon_fleet_test.gd|-|-|issue 1075: protocol offer cards explain current fleet fit, caps and refits; fixed seeds prove the pool, draws and saves are read-only
+headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol cards explain fleet fit, caps, refits and Brace eligibility without changing offers, RNG or saves
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
+headless|campaign/test/truth_pass_test.gd|-|-|issues 1144 and 1147: starters, capstones, Nemesis, selection, repair prices, join messages and battle tooltips
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
 headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
@@ -34,14 +35,14 @@ headless|campaign/test/nem_unknown_key_test.gd|-|-|issue 1182: an older save nam
 headless|campaign/test/nem_dodge_test.gd|-|-|issue 1175: 3,000 seeded sectors, an unmet Nemesis is never dodged, every column 4 stop is tagged and every boss stop carries its objective and board
 headless|campaign/test/nemesis_clash_test.gd|fixture:nemesis_clash_tests.js|{fixture}|12482 Nemesis clash cases match the live browser
 headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fixture}|Nemesis teaching debrief and map line match the browser
-headless|campaign/test/onboarding_test.gd|userdir|-|onboarding tips, options and telemetry; refuses a user folder outside the checkout, so it gets one inside
+headless|campaign/test/onboarding_test.gd|userdir|-|onboarding cards, Battle 2 timing, shipyard gating, options and telemetry; requires a user folder inside the checkout
 headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
 headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
 headless|campaign/test/run_resume_test.gd|-|-|issue 1125: boosted fight replay, withdrawal, Continue, boss exit, prize salvage, yard doctrine and Career backup recovery
 headless|campaign/test/save_test.gd|-|-|the campaign save is atomic and keeps a backup
 headless|campaign/test/sector_routes_test.gd|-|-|issue 1176: 3,000 sectors, two-exit rate, distinct stop types, reachability, rest stops and boss
 headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|shadow XP, heirs and saves match the browser overflow
-headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices and records; its optional shots folder is not used here
+headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices, gated run payoff and one-time victory debrief across reloads
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
 headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
@@ -94,6 +95,7 @@ headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
 headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
+headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder

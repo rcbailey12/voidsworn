@@ -203,7 +203,7 @@ static func nem_dossier(C) -> Array:
 			var entry = C.BattleAPI.nem_entry(C.NEM_WEAK, w, N["fac"])
 			ws.append(("[b]" + str(entry["n"]) + "[/b] (" + str(entry["d"]).trim_suffix(".") + ")") if entry is Dictionary else ("[b]" + str(w) + "[/b]"))
 		else: unknown += 1
-	if unknown > 0: ws.append(("%d unknown" % unknown if ws.size() > 0 or unknown > 1 else "unknown") + " (win against him to learn " + ("one" if unknown > 1 else "it") + ")")
+	if unknown > 0: ws.append(("%d unknown" % unknown if ws.size() > 0 or unknown > 1 else "unknown") + " (win against %s to learn %s)" % [C.nemPr(N)["him"], "one" if unknown > 1 else "it"])
 	out.append(["text", "Weaknesses: " + "; ".join(PackedStringArray(ws))])
 	if N["adapt"].size() > 0:
 		var ad: Array = []
@@ -237,7 +237,7 @@ static func nem_panel(C, N) -> Dictionary:
 # ---------------------------------------------------------------- the map's words
 
 const KIND_WORD := {"battle": "Fight", "elite": "Elite fight", "boss": "Flagship fight", "event": "Event", "shipyard": "Shipyard", "drydock": "Drydock", "field": "Field repairs"}
-const KIND_NOTE := {"shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen"}
+const KIND_NOTE := {"shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "a free hull patch", "event": "anything can happen"}
 
 
 # a faction's name inside a sentence ("the Glasswrights", "Ashfall Hullbreakers")

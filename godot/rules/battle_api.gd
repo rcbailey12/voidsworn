@@ -458,6 +458,19 @@ func can_command() -> bool:
 	_enter()
 	var r = _i_can_command(); _leave(false); return r
 func _i_can_command() -> bool: return phase == "player" and R.canCommand("player")
+func command_info() -> Dictionary:
+	_enter()
+	var info := {}
+	if R != null and R.B != null:
+		var cmd = R.commandFor("player")
+		if cmd != null:
+			var fac = R.RUN.get("fac", "voidsworn") if R.RUN != null else "voidsworn"
+			var tier: int = int(R.cmdTier())
+			var next: int = int(R.cmdTier(1))
+			info = {"label": str(cmd["n"]), "power": tier + 1, "effect": R.cmdDesc(cmd, tier, fac),
+				"next": R.cmdDesc(cmd, next, fac) if next > tier else "", "used": R.jt(R.B.get("cmdUsed"))}
+	_leave(false)
+	return info
 func command() -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h
