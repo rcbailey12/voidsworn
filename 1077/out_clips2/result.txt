@@ -1,0 +1,5 @@
+waiting for out and out_cold "all done" 
+start Thu 11/19/2026 10:38:57.20 
+commit=65b32f503574191cef9307245ad29fd6c549e81e 
+death story exit 0 
+death seam exit 0 

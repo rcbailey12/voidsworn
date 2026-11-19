@@ -1,0 +1,4 @@
+waiting for C:\Users\rcbai\Downloads\voidsworn_test\opus1077\out\result.txt "all done" 
+start Thu 11/19/2026 10:39:43.27 
+commit=65b32f503574191cef9307245ad29fd6c549e81e 
+timing s1 off exit 126 

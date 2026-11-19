@@ -1,0 +1,5 @@
+GPU: waiting for solo claim, weight 1 (issue 1077)
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim

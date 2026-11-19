@@ -1,0 +1,9 @@
+GPU: waiting for solo claim, weight 1 (issue )
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim

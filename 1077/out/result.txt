@@ -1,0 +1,24 @@
+start Thu 11/19/2026  9:36:09.15 
+drive bytes free 65571946496 
+commit=5087d79045711b9f8bc3485591be511551c72e61 
+copy ships exit 3 
+copy gen exit 1 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1077\repo\godot\assets\ships\manifest.json:
+f446283f6282be297ad563ecaf8857ef844c7d76f772c7c10206643d96b55b54
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1077\repo\godot\assets\ships\C19_51\C19_51.glb:
+6611595baa1542adbd2c445f33d0fcd33355add59c7c7590c680899af3a9c8e0
+CertUtil: -hashfile command completed successfully.
+import exit 0 
+death seam exit 0 
+death story exit 0 
+clips exit 126 
+compose c170 exit 0 
+compose c26 exit 126 
+timing s1 off exit 126 
+timing s1 strain exit 126 
+timing s2 off exit 126 
+timing s2 strain exit 126 
+timing s3 off exit 126 
+timing s3 strain exit 126 
+all done Thu 11/19/2026 10:38:49.62 
