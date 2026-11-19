@@ -15,7 +15,7 @@
   1920,
   1280
  ],
- "iou": 0.7684,
- "body_iou": 0.7846,
- "note": "C12 sheet: view angles from a coarse grid over azimuth, elevation, roll and lens on the thinned mesh, then fit.py refined all seven camera numbers (never the ship); concept mask: luminance over 13, closed, holes filled, largest shape (membranes included)"
+ "iou": 0.7547,
+ "body_iou": 0.7691,
+ "note": "C12 sheet: view angles from a coarse grid over azimuth, elevation, roll and lens on the thinned mesh, then fit.py refined all seven camera numbers (never the ship); concept mask: luminance over 13, closed, holes filled, largest shape (membranes included); rescored on the stage 5 bow fixes (Board on v3), camera kept"
 }
