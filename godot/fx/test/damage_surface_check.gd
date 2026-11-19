@@ -66,7 +66,7 @@ func _run() -> void:
 				check(BREACH._mouth_uniforms(s._dmg_job.ents).count == 0, "no hidden shader perforations")
 		for e in s._ents[1]:
 			if e.has_cut():
-				check(is_equal_approx(e.R, s.hull.L * 0.032), "tight throat radius")
+				check(is_equal_approx(e.R, s.hull.L * BREACH.STAGE4_HOLE_L), "stage 4 throat radius (issue 1235: 0.048 of the length, was 0.032)")
 				check(e.D >= s.hull.L * 0.15 and e.D <= s.hull.L * 0.2, "recessed throat depth")
 		for e in s._damage_emitters:
 			if e.kind == "fire":

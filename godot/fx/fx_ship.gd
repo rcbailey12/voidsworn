@@ -1206,7 +1206,7 @@ func _plan(fx, i: int, st: int) -> Array:
 		patch.heat = 0.0
 		out.append(patch)
 	if st < 4 or fx.compat: return out
-	var e = BREACH.hole(hull, a.p, a.n, L * 0.032, 1.0, 0.14, sd)
+	var e = BREACH.hole(hull, a.p, a.n, L * BREACH.STAGE4_HOLE_L, 1.0, 0.14, sd)
 	e.t0 = _t0(a, st, fx)
 	e.sec = i
 	if faction == "chorus":
@@ -1215,11 +1215,44 @@ func _plan(fx, i: int, st: int) -> Array:
 	if weight >= 2:
 		var bt = _anchor(i, "b")
 		if bt.is_empty(): return out
-		var eb = BREACH.hole(hull, bt.p, bt.n, L * 0.032, 1.0, 0.12, sd + 2.1)
+		var eb = BREACH.hole(hull, bt.p, bt.n, L * BREACH.STAGE4_HOLE_L, 1.0, 0.12, sd + 2.1)
 		eb.t0 = _t0(bt, st, fx)
 		eb.sec = i
 		out.append(eb)
 	return out
+
+
+# The weapon marks drawn now: per section at most [2, 2, 3, 4, 4][stage] (all of them on a repaired, scarred section).
+# Issue 1235 (Neon audit F1.3): the cap kept the OLDEST marks, so after two early grazes a later torpedo was stored,
+# rebuilt for, and never drawn. Heavy marks (blast, ion, ram, a weight 3+ weapon) come first, then the newest; the
+# kept marks are returned in their stored order, so the rebuilt geometry does not reshuffle.
+func visible_marks(fx) -> Array:
+	var pick := {}
+	for sec in 3:
+		var cap: int = int(round(float([2, 2, 3, 4, 4][stage[sec]]) * fx.cap_k))
+		if _scar_stage[sec] > stage[sec]:
+			cap = 1 << 20
+		var idx: Array = []
+		for j in _marks.size():
+			if _marks[j].sec == sec:
+				idx.append(j)
+		idx.sort_custom(func(a: int, b: int) -> bool:
+			var ha := _heavy_mark(_marks[a])
+			var hb := _heavy_mark(_marks[b])
+			if ha != hb:
+				return ha
+			return a > b)
+		for k in mini(cap, idx.size()):
+			pick[idx[k]] = true
+	var out: Array = []
+	for j in _marks.size():
+		if pick.has(j):
+			out.append(_marks[j])
+	return out
+
+
+static func _heavy_mark(e) -> bool:
+	return e.style in [BREACH.S_BLAST, BREACH.S_ION, BREACH.S_RAM] or int(e.wt) >= 3
 
 
 # Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
@@ -1230,12 +1263,7 @@ func _dmg_request(fx) -> void:
 	var ents: Array = []
 	for i in 3:
 		ents.append_array(_ents[i])
-	for e in _marks:
-		var cap: int = int(round(float([2, 2, 3, 4, 4][stage[e.sec]]) * fx.cap_k))
-		var used := 0
-		for x in ents:
-			if x.look != "" and x.sec == e.sec: used += 1
-		if used < cap or _scar_stage[e.sec] > stage[e.sec]: ents.append(e)
+	ents.append_array(visible_marks(fx))
 	if fx.compat:
 		var flat: Array = []
 		for e in ents:
@@ -1666,7 +1694,9 @@ func _regrade_marks(fx) -> void:
 	var updated: Array = []
 	for e in _marks:
 		var damage: float = 1.0 - section_fraction[e.sec]
-		if absf(e.section_damage - damage) > 0.025:
+		# issue 1235 (F1.1): regrade only when the size really changes (a repair, or a section badly hurt since), so
+		# the sync right after a volley does not rebuild the hull a second time for a few percent
+		if absf(BREACH.mark_scale(e.section_damage) - BREACH.mark_scale(damage)) > 0.05:
 			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage)
 			if e.part_i < entries.size():
 				var replacement = entries[e.part_i]
