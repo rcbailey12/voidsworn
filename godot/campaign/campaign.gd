@@ -59,7 +59,8 @@ var pending_battle = null   # external mode: the battle config waiting for the b
 var fixed_clock := false    # the parity harness pins the clock to 0, like the JS harness pins Date.now()
 var persist_on := false     # write the save file on every save (the game); the harness keeps saves in memory
 var teaching_tips := false  # supplied by the host; bots and parity leave it off
-var save_path := "user://voidsworn_campaign.json"
+const SAVE_PATH := "user://voidsworn_campaign.json"
+var save_path := SAVE_PATH
 var tel_log: Array = []     # a slim run log (events only), kept with the save; not part of parity
 
 # ======================= setup =======================
@@ -96,7 +97,7 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	CINDER_PRIZES = TB.CINDER_PRIZES; CINDER_FIRST_RUN = TB.CINDER_FIRST_RUN   # R78 Q9: captured Hegemony and Eclipse hulls at the Crusade yards from run 3
 	META = defaultMeta(); META["backfilled"] = 1; META["wonFix41"] = 1   # a fresh Godot profile has no browser history to back-fill
 	return ""
-func _dec(v):
+static func _dec(v):
 	if v is Dictionary:
 		var o = {}
 		for k in v.keys(): o[k] = _dec(v[k])
@@ -109,7 +110,7 @@ func _dec(v):
 	return v
 
 # ======================= JS helpers =======================
-func jt(x) -> bool: # JS truthiness
+static func jt(x) -> bool: # JS truthiness
 	if x == null: return false
 	match typeof(x):
 		TYPE_BOOL: return x
@@ -388,17 +389,28 @@ func repairRunIds(r) -> Variant:
 		var all = (r["_repairs"] if r.get("_repairs") is Array else []) + rep
 		r["_repairs"] = all.slice(max(0, all.size() - 20))
 	return r
-func saneMeta(m) -> bool:
+static func saneMeta(m) -> bool:
 	if not (m is Dictionary): return false
 	for k in ["unlocked", "admirals", "stats", "opts", "mastery", "lineage", "heirs", "shadowPool", "favour", "variants", "heatBest"]:
 		if m.get(k) != null and not (m[k] is Dictionary): return false
 	for k in ["tel", "fallen"]:
 		if m.get(k) != null and not (m[k] is Array): return false
 	return m.get("renown") == null or m["renown"] is int or m["renown"] is float
-func saneRun(r) -> bool:
-	return r == null or (r is Dictionary and (jt(r.get("none")) or (r.get("fleet") is Array and r.get("map") is Dictionary and r["map"].get("cols") is Array)))
-func saneSave(o) -> bool:
-	return o is Dictionary and (o.get("meta") == null or saneMeta(o["meta"])) and saneRun(o.get("run"))
+static func saneRun(r) -> bool:
+	if r == null: return true
+	if not (r is Dictionary): return false
+	if jt(r.get("none")): return true
+	var m = r.get("map")
+	if not (r.get("fleet") is Array and m is Dictionary and m.get("cols") is Array and m.get("edges") is Array): return false
+	if m["cols"].is_empty() or not (m["cols"][0] is Array) or m["cols"][0].is_empty(): return false
+	for col in m["cols"]:
+		if not (col is Array) or not col.all(func(n): return n is Dictionary and n.get("id") is String and n.get("type") is String): return false
+	return m["edges"].all(func(e): return e is Array and e.size() >= 2)
+static func saneSave(o) -> bool:
+	return o is Dictionary and (o.has("run") or o.get("meta") != null) and (o.get("meta") == null or saneMeta(o["meta"])) and saneRun(o.get("run"))
+
+static func _has_run(r) -> bool:
+	return r is Dictionary and not jt(r.get("none")) and not jt(r.get("over"))
 
 # The Godot save (a fresh format; browser saves are not carried over, R33): one JSON file in user://, plus a backup one save behind.
 # Godot's JSON number parser can land one unit in the last place off, so every non-integer number is written as "#d:" + its exact
@@ -427,7 +439,7 @@ func persist_save(meta_only: bool = false) -> void:
 	# power cut mid-write leaves either the old save or the new one, never half a file. The save before it becomes the .bak.
 	if FileAccess.file_exists(save_path):
 		var prev = FileAccess.get_file_as_string(save_path)
-		if prev != "" and prev != data and _json_quiet(prev) != null:
+		if prev != data and saneSave(_dec(_json_quiet(prev))):
 			if not _write_atomic(save_path + ".bak", prev): push_warning("campaign: could not refresh the backup save")
 	if not _write_atomic(save_path, data): toast("This computer could not save the game (is the disk full?).")
 func _write_atomic(path: String, text: String) -> bool:
@@ -440,31 +452,40 @@ func _write_atomic(path: String, text: String) -> bool:
 	if not ok:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(tmp)); return false
 	return DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), ProjectSettings.globalize_path(path)) == OK
-func _json_quiet(t: String) -> Variant:   # a damaged save is expected now and then: parse without an engine error
+static func _json_quiet(t: String) -> Variant:   # a damaged save is expected now and then: parse without an engine error
 	var j = JSON.new()
 	return j.data if j.parse(t) == OK else null
-# Load a save text the way the browser loads its storage: a damaged save falls back to the backup; the half that is sound is kept.
+# A valid primary wins even if it is profile-only. If neither copy is sound, keep the sound half of the primary.
+static func _resolve_save(primary, backup) -> Dictionary:
+	if saneSave(primary): return primary
+	if saneSave(backup): return backup
+	if not (primary is Dictionary): return {}
+	if not saneRun(primary.get("run")): primary.erase("run")
+	if not saneMeta(primary.get("meta")): primary.erase("meta")
+	return primary
+
+static func _read_save(path: String) -> Dictionary:
+	var primary = _dec(_json_quiet(FileAccess.get_file_as_string(path)))
+	if saneSave(primary): return primary
+	return _resolve_save(primary, _dec(_json_quiet(FileAccess.get_file_as_string(path + ".bak"))))
+
+static func has_saved_run(path: String = SAVE_PATH) -> bool:
+	return _has_run(_read_save(path).get("run"))
+
+func _apply_save(o: Dictionary) -> void:
+	tel_log = o["tel"] if o.get("tel") is Array else []
+	if o.get("meta") is Dictionary:
+		var m = defaultMeta()
+		for k in o["meta"].keys(): m[k] = o["meta"][k]
+		META = migrateMeta(m, tel_log)
+	var r = o.get("run")
+	SAVED_RUN = migrateRun(r) if _has_run(r) else null
+	if o.get("uid") is float or o.get("uid") is int: UID = max(UID, int(o["uid"]))
+
 func load_save_text(s: String, bak: String = "") -> void:
-	var o = _dec(_json_quiet(s)) if s != "" else null
-	if s != "" and not saneSave(o):
-		var ob = _dec(_json_quiet(bak)) if bak != "" else null
-		if saneSave(ob): o = ob
-	if o is Dictionary and not saneSave(o):
-		if not saneRun(o.get("run")): o["run"] = null
-		if o.get("meta") != null and not saneMeta(o["meta"]): o["meta"] = null
-	if o is Dictionary:
-		tel_log = o["tel"] if o.get("tel") is Array else []
-		if o.get("meta") is Dictionary:
-			var m = defaultMeta()
-			for k in o["meta"].keys(): m[k] = o["meta"][k]
-			META = migrateMeta(m, tel_log)
-		var r = o.get("run")
-		SAVED_RUN = migrateRun(r if (r is Dictionary and not jt(r.get("none"))) else null)
-		if o.has("uid"): UID = max(UID, int(o["uid"]))
+	_apply_save(_resolve_save(_dec(_json_quiet(s)), _dec(_json_quiet(bak))))
 func persist_load() -> void:
-	var s = FileAccess.get_file_as_string(save_path) if FileAccess.file_exists(save_path) else ""
-	var b = FileAccess.get_file_as_string(save_path + ".bak") if FileAccess.file_exists(save_path + ".bak") else ""
-	load_save_text(s, b)
+	_apply_save(_read_save(save_path))
 
 # ======================= core.js: run state =======================
 func capName(fac) -> String:
@@ -1364,7 +1385,8 @@ func act(name: String, arg = "") -> void:
 		"nextFac":
 			picked_faction = a; META["opts"]["lastFac"] = a; admiralScreen()
 		"saveQuit":
-			saveRun(); titleScreen()
+			if page.get("kind") != "battle": saveRun()
+			titleScreen()
 		"enterNode": ACT_enterNode(a)
 		"fleetScreen": fleetScreen("map")
 		"backMap":
@@ -1418,14 +1440,20 @@ func titleScreen() -> void:
 	A(acts, "newRunScreen"); A(acts, "legacy"); A(acts, "help")
 	show_page("title", {"saved": SAVED_RUN != null, "renown_dot": float(z0(META.get("renown"))) >= 15, "best": META["stats"].get("best"), "wins": META["stats"].get("wins")}, acts)
 func ACT_continueRun() -> void:
+	if SAVED_RUN == null: return
 	RUN = clone(SAVED_RUN)
-	ensureFlagship(); mapScreen()
-	if RUN.get("reward") != null: resumeReward()
+	ensureFlagship()
+	if RUN.get("reward") != null:
+		mapScreen(); resumeReward()
+	elif not _resume_node():
+		mapScreen()
+	if RUN == null: return
 	var rep = (RUN["_repairs"] as Array).size() if RUN.get("_repairs") is Array else 0
 	var lost = int(z0(RUN.get("_shipsDropped")))
 	if rep > 0:
 		toast("Your save came from an older version: " + ((str(lost) + " ship" + ("s" if lost > 1 else "") + " and ") if lost > 0 else "") + ((str(rep - lost) + " item" + ("s" if rep - lost > 1 else "") + " ") if rep - lost > 0 else "") + "no longer in the game " + ("were" if (lost > 0 or rep > 1) else "was") + " removed.")
-		RUN.erase("_repairs"); RUN.erase("_shipsDropped"); saveRun()
+		RUN.erase("_repairs"); RUN.erase("_shipsDropped")
+		if page.get("kind") != "battle": saveRun()
 func ACT_newRunScreen() -> void:
 	if SAVED_RUN != null:
 		var acts = []; A(acts, "abandonRun"); A(acts, "closeModal")
@@ -1689,10 +1717,11 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	ended = true
 
 # ======================= campaign_run.js: map, fleet, shipyard, drydock, events, rewards =======================
-func completeNode() -> void:
+func completeNode(checkpoint := true) -> void:
 	var n = findNode(RUN.get("curNode")) if RUN.get("curNode") != null else null
 	if n != null: n["done"] = true
-	RUN["curNode"] = null; saveRun()
+	RUN["curNode"] = null
+	if checkpoint: saveRun()
 func _nodes() -> Array:
 	var out = []
 	for c in RUN["map"]["cols"]:
@@ -1727,19 +1756,54 @@ func ACT_enterNode(id: String) -> void:
 	var n = findNode(id); RUN["pos"] = id; RUN["curNode"] = id
 	tel("node", {"type": n["type"], "col": n["col"]})
 	if _is(n, ["battle", "elite", "boss"]):
-		var kind = n["type"]; var fac = nodeFaction(n)
-		if nemNodeIs(n):   # B4: the Nemesis fight (marked on the map beforehand)
-			var nem0 = nemActive(); var fa = nemBeh().get("fleet"); var nc = {"kind": "elite", "fac": nem0["fac"], "col": n["col"], "node": id, "nemesis": nemBattleCfg()}
-			if fa != null and ARCHETYPES.has(fa): nc["arch"] = fa   # his fleet is built his faction's way (swarm, heavy, duel, line)
-			battleScreen(nc); return
-		if jt(RUN.get("ambush")) and kind == "battle":
-			kind = "elite"; fac = RUN["map"]["fac"] if RUN["fac"] == "hegemony" else "hegemony"; RUN["ambush"] = false
-			toast("The Hegemony escort you robbed has found you.")
-		battleScreen({"kind": kind, "fac": fac, "col": n["col"], "node": id})
+		_enter_battle_node(n)
 	elif n["type"] == "event": eventScreen(n)
 	elif n["type"] == "shipyard": shipyardScreen(n)
 	elif n["type"] == "drydock": drydockScreen(n)
 	elif n["type"] == "field": fieldRepairs(n)
+
+func _enter_battle_node(n: Dictionary) -> void:
+	var kind = n["type"]; var fac = nodeFaction(n)
+	if nemNodeIs(n):   # B4: the Nemesis fight (marked on the map beforehand)
+		var nem0 = nemActive(); var fa = nemBeh().get("fleet")
+		var nc = {"kind": "elite", "fac": nem0["fac"], "col": n["col"], "node": n["id"], "nemesis": nemBattleCfg()}
+		if fa != null and ARCHETYPES.has(fa): nc["arch"] = fa
+		battleScreen(nc); return
+	if jt(RUN.get("ambush")) and kind == "battle":
+		kind = "elite"; fac = RUN["map"]["fac"] if RUN["fac"] == "hegemony" else "hegemony"; RUN["ambush"] = false
+		toast("The Hegemony escort you robbed has found you.")
+	battleScreen({"kind": kind, "fac": fac, "col": n["col"], "node": n["id"]})
+
+func _resume_node() -> bool:
+	var n = findNode(RUN.get("pos"))
+	if n == null: return false
+	if jt(n.get("done")):
+		# Old saves could land here after the boss prize was paid but before sector exit.
+		if n["type"] != "boss": return false
+		_advance_sector()
+		return true
+	if RUN.get("curNode") != n["id"]: return false
+	if n["type"] == "shipyard":
+		shipyardScreen(n)
+		return true
+	if _is(n, ["battle", "elite", "boss"]):
+		_restore_legacy_story_modifier()
+		_enter_battle_node(n)
+		return true
+	if n["type"] == "event" and not RUN["seenEvents"].is_empty():
+		var id = RUN["seenEvents"].back()
+		for e in EVENTS:
+			if e["id"] != id: continue
+			var ev = _event_for_faction(e)
+			for i in range(ev["o"].size()):
+				var o = ev["o"][i]; var r = o.get("r")
+				if RUN["flags"].get(id) == or_(o.get("k"), str(i)) and r is Dictionary and jt(r.get("fight")):
+					_restore_legacy_story_modifier()
+					battleScreen(_event_battle_cfg(n, r))
+					return true
+			show_event(ev)
+			return true
+	return false
 func _ship(uid) -> Variant:
 	for s in RUN["fleet"]:
 		if s["uid"] == uid: return s
@@ -1979,10 +2043,14 @@ func nextEvent() -> Dictionary:
 func eventOptOk(o) -> bool:
 	var cost = o["r"].get("cost") if o.get("r") is Dictionary else null
 	return (not jt(cost) or float(RUN["credits"]) >= float(cost)) and needMet(o.get("need"))
+func _event_for_faction(ev: Dictionary) -> Dictionary:
+	var out = ev.duplicate(false)
+	if jt(ev.get("v")) and jt(ev["v"].get(RUN["fac"])): out.merge(ev["v"][RUN["fac"]], true)
+	return out
 func eventScreen(_n) -> void:
-	var ev = nextEvent()
-	cur_event = ev.duplicate(false)
-	if jt(ev.get("v")) and jt(ev["v"].get(RUN["fac"])): cur_event.merge(ev["v"][RUN["fac"]], true)
+	show_event(_event_for_faction(nextEvent()))
+func show_event(ev: Dictionary) -> void:
+	cur_event = ev
 	mapScreen()
 	var acts = []
 	for i in range(cur_event["o"].size()):
@@ -2630,7 +2698,12 @@ func useVerb() -> Variant:
 func ACT_factionVerb() -> void:
 	var lines = useVerb()
 	if lines == null: return
-	saveRun(); mapScreen(); toast(" ".join(PackedStringArray(lines)))
+	saveRun()
+	if page.get("kind") == "fleet" and page["data"].get("back") == "shipyard":
+		fleetScreen("shipyard")
+	else:
+		mapScreen()
+	toast(" ".join(PackedStringArray(lines)))
 # ---------- B4 wing veterancy (kept on the carrier ship between battles) ----------
 func wingPerkGrant(ship, id = null) -> Variant:
 	if not (ship.get("wingVet") is Dictionary): ship["wingVet"] = {"kills": 0, "perks": []}
@@ -2766,14 +2839,12 @@ func applyOutcome(r) -> Array:
 		var m2 = nemClockAdd(r["nemClock"])
 		if m2 != "": out.append(m2)
 	if jt(r.get("power")) or jt(r.get("syncDown")) or jt(r.get("dmgPctUp")) or jt(r.get("dmgPctDown")):
-		var m = or_(RUN.get("storyNext"), {})
-		RUN["storyNext"] = m
+		RUN["storyNext"] = _story_modifiers(r, or_(RUN.get("storyNext"), {}))
 		if jt(r.get("power")):
-			m["power"] = true; out.append("Flagship weapon damage +25% for the next battle only.")
+			out.append("Flagship weapon damage +25% for the next battle only.")
 		if jt(r.get("syncDown")):
-			m["syncDown"] = true; out.append("Next battle: Synchronized fire is off in round 1 and returns in round 2.")
+			out.append("Next battle: Synchronized fire is off in round 1 and returns in round 2.")
 		if jt(r.get("dmgPctUp")) or jt(r.get("dmgPctDown")):
-			m["dmgPct"] = float(z0(m.get("dmgPct"))) + float(TB.BEAT3_REWARDS.dmgPct) * ((1 if jt(r.get("dmgPctUp")) else 0) - (1 if jt(r.get("dmgPctDown")) else 0))
 			out.append("Fleet damage " + ("+10%" if jt(r.get("dmgPctUp")) else "-10%") + " for the next battle only.")
 	if jt(r.get("core")):
 		var p = TB.BEAT3_REWARDS.core.get(RUN["fac"])
@@ -2782,6 +2853,22 @@ func applyOutcome(r) -> Array:
 			out.append("1 free protocol offer from " + str(PATRONS[p]["short"]) + ". Choose 1 protocol or decline for " + numstr(boonDeclineCred()) + " credits.")
 	if out.size() == 0 and not jt(r.get("fight")): out.append("You move on.")
 	return out
+
+func _story_modifiers(outcome: Dictionary, mods: Dictionary) -> Dictionary:
+	for k in ["power", "syncDown"]:
+		if jt(outcome.get(k)): mods[k] = true
+	if jt(outcome.get("dmgPctUp")) or jt(outcome.get("dmgPctDown")):
+		mods["dmgPct"] = float(z0(mods.get("dmgPct"))) + float(TB.BEAT3_REWARDS.dmgPct) * ((1 if jt(outcome.get("dmgPctUp")) else 0) - (1 if jt(outcome.get("dmgPctDown")) else 0))
+	return mods
+
+func _restore_legacy_story_modifier() -> void:
+	if jt(RUN.get("storyNext")) or int(RUN["sector"]) != 3: return
+	# The old mid-battle checkpoint erased the modifier but retained the story choice.
+	var beat = TB.STORY_BEAT3[RUN["fac"]]
+	var choice = str(RUN["flags"].get(beat["id"], ""))
+	if not choice.is_valid_int() or int(choice) < 0 or int(choice) >= beat["o"].size(): return
+	var mods = _story_modifiers(beat["o"][int(choice)]["r"], {})
+	if not mods.is_empty(): RUN["storyNext"] = mods
 # Story arcs: after the sector intro (beat 1) and each sector change (beats 2 and 3), the arc card opens as an event.
 func _arc_after(md) -> bool:
 	if not arcs_on or not (arc_source is Callable) or not (arc_source as Callable).is_valid() or RUN == null: return false
@@ -2821,11 +2908,14 @@ func ACT_eventChoice(a: String) -> void:
 		_arc_choice(o, i); return
 	var r = o["r"]
 	if r is Dictionary and jt(r.get("fight")):
-		close_modal(); battleScreen({"kind": "elite", "fac": r["fight"], "col": float(findNode(RUN["curNode"])["col"]) + 1, "node": RUN["curNode"], "eventRelic": true}); return
+		close_modal(); battleScreen(_event_battle_cfg(findNode(RUN["curNode"]), r)); return
 	var lines = applyOutcome(r)
 	completeNode(); mapScreen()
 	var acts = []; A(acts, "closeModal")
 	show_modal("event_result", {"ev": cur_event, "lines": lines}, acts)
+
+func _event_battle_cfg(n: Dictionary, outcome: Dictionary) -> Dictionary:
+	return {"kind": "elite", "fac": outcome["fight"], "col": float(n["col"]) + 1, "node": n["id"], "eventRelic": true}
 
 # Approved beat 3 content shares the browser table and existing event screens.
 func beat3Text(t: String) -> String:
@@ -2984,7 +3074,7 @@ func ACT_prizeStep() -> void:
 	close_modal()
 	var R = RUN.get("reward")
 	if R == null or or_(R.get("prizes"), []).size() == 0:
-		var ws = or_(W.get("wrecks"), [])
+		var ws = or_(R.get("wrecks") if R != null else W.get("wrecks"), [])
 		if R != null: R["stage"] = "salvage" if ws.size() > 0 else "pick"
 		if ws.size() > 0: ACT_salvageStep()
 		else: ACT_rewardNext()
@@ -3020,7 +3110,9 @@ func ACT_prizeConfirm() -> void:
 		else:
 			RUN["credits"] = float(RUN["credits"]) + float(o["ransom"]); RUN["ransoms"] = float(z0(RUN.get("ransoms"))) + 1; got.append("the " + str(p["name"]) + " is ransomed (+" + numstr(o["ransom"]) + ")")
 		tel("prize_pick", {"k": r["k"], "tpl": p["tpl"], "def": not r["mine"]})
-	R["prizes"] = []; R["prizeSel"] = null; saveRun()
+	R["prizes"] = []; R["prizeSel"] = null
+	R["stage"] = "salvage" if not R["wrecks"].is_empty() else "pick"
+	saveRun()
 	var t = ", ".join(PackedStringArray(got))
 	if t != "": toast(t.substr(0, 1).to_upper() + t.substr(1) + ".")
 	ACT_prizeStep()
@@ -3175,7 +3267,8 @@ func resumeReward() -> bool:
 	W["rewardCfg"] = rc; W["rw"] = or_(R.get("rw"), {}); W["relicChoice"] = or_(R.get("relics"), []); W["wrecks"] = or_(R.get("wrecks"), [])
 	W["boonOffer"] = R.get("boonOffer"); W["modOffer"] = R.get("modOffer")
 	toast("Picking up your rewards where you left off.")
-	if R["stage"] == "prize" and or_(R.get("prizes"), []).size() > 0:
+	if R["stage"] == "prize":
+		# Old saves kept the prize stage after paying and clearing the prize list.
 		ACT_prizeStep(); return true
 	if R["stage"] == "salvage" and W["wrecks"].size() > 0:
 		ACT_salvageStep(); return true
@@ -3187,22 +3280,26 @@ func resumeReward() -> bool:
 func afterBattle() -> void:
 	var cfg = W.get("rewardCfg") if W.get("rewardCfg") != null else {"kind": RUN["reward"].get("kind") if RUN.get("reward") != null else null}
 	RUN["reward"] = null
-	completeNode()
 	if cfg.get("kind") == "boss":
-		if float(RUN["sector"]) >= 3:
-			endRun(true); return
-		var prev = nemActive()
-		RUN["sector"] = float(RUN["sector"]) + 1; RUN["cpCap"] = float(RUN["cpCap"]) + 3; RUN["map"] = genSector(int(RUN["sector"])); RUN["pos"] = null
-		var na = nemAdapt(false, prev) if jt(prev) else null   # B4, #121 (A4): the commander who fought the sector just ended adapts once, from his own seen
-		nemActive()   # then the incoming one resolves
-		for s in RUN["fleet"]:
-			var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * 0.4 * repairMult()))
-		saveRun(); mapScreen()
-		var acts = []; A(acts, "beat3" if float(RUN["sector"]) == 3 else "closeModal")
-		show_modal("sector", {"fac": RUN["map"]["fac"], "cond": sectorCond(), "region": RUN["map"].get("region"), "adapt": na if jt(prev) else null,
-			"adaptFac": prev.get("fac") if jt(prev) else null, "adaptWho": nemFull(prev) if jt(prev) else "", "adaptLine": nemAdaptLine(prev, na) if (jt(prev) and na != null) else "", "adaptWhy": nemAdaptWhyLine(na, prev) if (jt(prev) and na != null) else ""}, acts)
+		completeNode(false)
+		_advance_sector()
 		return
+	completeNode()
 	mapScreen()
+
+func _advance_sector() -> void:
+	if float(RUN["sector"]) >= 3:
+		endRun(true); return
+	var prev = nemActive()
+	RUN["sector"] = float(RUN["sector"]) + 1; RUN["cpCap"] = float(RUN["cpCap"]) + 3; RUN["map"] = genSector(int(RUN["sector"])); RUN["pos"] = null
+	var na = nemAdapt(false, prev) if jt(prev) else null   # B4, #121 (A4): the outgoing commander adapts once, from his own seen
+	nemActive()   # then the incoming one resolves
+	for s in RUN["fleet"]:
+		var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * 0.4 * repairMult()))
+	saveRun(); mapScreen()
+	var acts = []; A(acts, "beat3" if float(RUN["sector"]) == 3 else "closeModal")
+	show_modal("sector", {"fac": RUN["map"]["fac"], "cond": sectorCond(), "region": RUN["map"].get("region"), "adapt": na if jt(prev) else null,
+		"adaptFac": prev.get("fac") if jt(prev) else null, "adaptWho": nemFull(prev) if jt(prev) else "", "adaptLine": nemAdaptLine(prev, na) if (jt(prev) and na != null) else "", "adaptWhy": nemAdaptWhyLine(na, prev) if (jt(prev) and na != null) else ""}, acts)
 
 # ======================= campaign3d.js: battles =======================
 func nodeSeeds(nodes: Array) -> int:
@@ -3285,8 +3382,8 @@ func battleScreen(cfg: Dictionary) -> void:
 	if jt(RUN.get("storyNext")): c["storyMods"] = RUN["storyNext"].duplicate()
 	var ext = battle_mode == "external" and battle_setup.is_valid()
 	start_battle(c)
-	if jt(RUN.get("storyNext")):
-		RUN["storyNext"] = null; saveRun()
+	# Spend the modifier for this attempt, but leave the playable pre-fight save alone until the result is paid.
+	if jt(RUN.get("storyNext")): RUN["storyNext"] = null
 	B["campaign"] = true
 	if not ext:   # external battles: the rules roll the mid-battle event themselves (rules/API.md, cfg.campaign), in the game's order
 		var sc = sectorCond()
@@ -3322,7 +3419,8 @@ func finish_battle(result: String, battle = null) -> void:
 	pending_battle = null
 	if B == null: return
 	if result == "retreat":
-		if jt(B.get("campaign")) and not jt(B.get("finished")) and B["cfg"].get("kind") != "boss": finishBattle("retreat")
+		if jt(B.get("campaign")) and not jt(B.get("finished")) and (B["cfg"].get("kind") != "boss" or BattleAPI.settled_result(str(B.get("over")), B) == "retreat"):
+			finishBattle("retreat")
 		return
 	B["over"] = result; ACT_c3continue()
 func can_retreat() -> bool: return B != null and jt(B.get("campaign")) and not jt(B.get("over")) and B["cfg"].get("kind") != "boss"
@@ -3344,7 +3442,8 @@ func _kinds(ws: Array) -> Array:
 func finishBattle(result: String) -> void:
 	if B == null or jt(B.get("finished")): return
 	B["finished"] = true
-	if result == "loss" and jt(B.get("withdraw")) and B["units"].any(func(u): return u["side"] == "player" and not jt(u.get("dead")) and not jt(u.get("isSq"))): result = "retreat"
+	result = BattleAPI.settled_result(result, B)
+	B["campaignResult"] = result
 	if RUN.get("teachingGate") == true and B["units"].any(func(u): return jt(u.get("reinf"))): RUN["teachingReinforced"] = true
 	var cfg = B["cfg"]
 	var summary = {"cfg": cfg, "xp": [], "lost": [], "kills": 0, "rounds": B["round"], "prizes": [], "partial": jt(B.get("partial")), "boonStats": or_(B.get("boonStats"), {}).duplicate(), "treeStats": or_(B.get("treeStats"), {}).duplicate()}

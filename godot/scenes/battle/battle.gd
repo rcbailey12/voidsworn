@@ -2286,16 +2286,19 @@ func _play_death(e: Dictionary) -> void:
 
 func _end_flow() -> void:
 	ended = true
-	var over = V.get("over")
-	var win := str(over) == "win"
+	var outcome: String = api.battle_result()
+	var win := outcome == "win"
+	var withdrawal := outcome == "retreat"
+	var heading := "Withdrawal" if withdrawal else ("Victory" if win else "Defeat")
 	await wait(500.0)
-	sfx.sting(win)
-	if music != null:
-		if win:
-			music.victory(boss_fight)
-		else:
-			music.defeat()
-	hud.banner("Victory" if win else "Defeat", Color("#ff8a3a") if win else Color("#ff8a72"), 1.6)
+	if not withdrawal:
+		sfx.sting(win)
+		if music != null:
+			if win:
+				music.victory(boss_fight)
+			else:
+				music.defeat()
+	hud.banner(heading, Color("#ff8a3a") if win else Color("#ff8a72"), 1.6)
 	await get_tree().create_timer(1.2).timeout
 	var lost := 0
 	var killed := 0
@@ -2305,10 +2308,10 @@ func _end_flow() -> void:
 				lost += 1
 			else:
 				killed += 1
-	result = {"result": "win" if win else "loss", "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
+	result = {"result": outcome, "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
 		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1, "pace": pace_stats()}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
-	_play_log_out("win" if win else "loss")
+	_play_log_out(outcome)
 	if args.has("pace-report"):
 		# --pace-report (with --bot): the battle's report with the enemy's time per round by event kind, then quit
 		_quit_report()
@@ -2316,11 +2319,11 @@ func _end_flow() -> void:
 	if bot or args.has("bot-runs"):
 		finished.emit(result)
 		return
-	if voice != null:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
+	if voice != null and not withdrawal:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
 		var vl: String = voice.closing(win)
 		if vl != "":
 			body += "\n\n" + vl
-	hud.show_end("Victory" if win else "Defeat", body, win, external)
+	hud.show_end(heading, body, win, external)
 
 
 # ---------------------------------------------------------------- selection, overlays, tips
