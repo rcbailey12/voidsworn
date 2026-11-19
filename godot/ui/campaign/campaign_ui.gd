@@ -14,6 +14,7 @@ const Crest = preload("res://ui/campaign/crest.gd")
 const UiScale = preload("res://ui/ui_scale.gd")
 
 const GS = preload("res://ui/theme/glass_shell.gd")
+const Kit = preload("res://ui/theme/orders_kit.gd")   # issue 1217: the shared front-end kit (wrap-safe labels, sound)
 const View = preload("res://campaign/campaign_view.gd")   # read-only views of the run for the screens (audit pass 1, finding 12)
 # The colours come from glass_shell.gd. Keep the existing campaign text roles and use the orders-sheet strengths.
 const INK := GS.INK
@@ -166,10 +167,13 @@ func esc(s) -> String: return str(s).replace("[", "[lb]")
 func lbl(text: String, size: float = 17, col: Color = BONE, f: Font = null, wrap: bool = true) -> Label:
 	var l = Label.new(); l.text = text; l.add_theme_font_size_override("font_size", px(size)); l.add_theme_color_override("font_color", col)
 	if f != null: l.add_theme_font_override("font", f)
-	if wrap and text.length() > 30:   # short labels keep their natural width (a wrapping label in a row would shrink to nothing)
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# issue 1217: every label wraps inside its container (the kit's wrap_safe). A short label keeps its natural width; a
+	# longer one starts at LBL_CAP and wraps to whatever room it is given, so a long admiral name no longer widens its card
+	# (the old rule wrapped only past 30 characters).
+	if wrap: Kit.wrap_safe(l, f if f != null else font, px(size), px(LBL_CAP))
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return l
+const LBL_CAP := 200.0
 func num(text: String, size: float = 17, col: Color = BONE, bold: bool = true) -> Label:   # a number that decides something: Azeret Mono
 	return lbl(text, size, col, font_num_b if bold else font_num, false)
 func rich(bb: String, size: float = 17) -> RichTextLabel:
@@ -267,6 +271,7 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]: b.add_theme_color_override(fc, accent)
 	var aa = found[1]
 	b.pressed.connect(func(): _campaign_action(act, aa))
+	Kit.wire_sound(b, "back" if act in BACK_ACTS else ("primary" if primary and not act in ["pickFaction", "pickAdmiral", "progTab"] else "quiet"))
 	return b
 # The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the filled ember button, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
@@ -288,6 +293,7 @@ func fin(text: String, act: String, arg = "", list = null) -> Button:
 	GS.finish_sheen(b, k)
 	var aa = found[1]
 	b.pressed.connect(func(): _campaign_action(act, aa))
+	Kit.wire_sound(b, "primary")
 	return b
 # A footer row: the other buttons on the left of the finishing action, the finishing action last, at the right edge.
 func foot(buttons: Array) -> HBoxContainer:
@@ -2017,8 +2023,23 @@ func _well_text(v: VBoxContainer) -> void:
 			var w = blk(Color(0, 0, 0, 0), 6, 14, 10); v.add_child(w[0]); v.move_child(w[0], ch.get_index()); cur = w[1]
 		v.remove_child(ch); cur.add_child(ch)
 
+# Esc goes Back on the start pages (issue 1217): the first enabled action of the page's list below, the same action its
+# Back button runs. The flagship aspect page has no back action yet (phase 4 adds one to both twins), so Esc does nothing
+# there until then.
+const BACK_ACTS := ["title", "backToSetup"]
+const ESC_BACK := {"admiral": [["title", ""]], "aspect": [["backToSetup", ""]], "legacy": [["title", ""]], "help": [["title", ""]], "lineage": [["progTab", "mastery"]]}
+func esc_back() -> bool:
+	if C == null or C.modal_d != null: return false
+	var kind := str(C.page.get("kind", ""))
+	if not ESC_BACK.has(kind): return false
+	for pair in ESC_BACK[kind]:
+		var found = _find(C.page.get("acts", []), pair[0], pair[1])
+		if not found.is_empty() and found[2] == 1:
+			Kit.play("ui_cancel"); _campaign_action(pair[0], pair[1]); return true
+	return false
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if e.keycode == KEY_ESCAPE and esc_back(): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
 		if fleet_manifest.handle_key(e): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "map":   # the map: Esc shuts a slide-over, 1 to 9 pick a route, Enter flies it

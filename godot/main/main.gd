@@ -11,6 +11,7 @@ extends Node
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Title := preload("res://main/title.gd")
 const Host := preload("res://main/campaign_host.gd")
+const OrdersKit := preload("res://ui/theme/orders_kit.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 
@@ -74,6 +75,7 @@ class ErrCount extends Logger:
 
 var errlog: ErrCount
 var music: Node              # godot/music/music_player.gd (the music helper's player), one for the whole game
+var ui_sound: Node           # issue 1217: the front-end sound (godot/audio/sfx.gd with the ui_* cues only), OrdersKit.sound
 
 
 func _ready() -> void:
@@ -104,6 +106,13 @@ func _ready() -> void:
 		add_child(music)
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	if not args.has("bot-runs") and ResourceLoader.exists("res://audio/sfx.gd"):
+		ui_sound = load("res://audio/sfx.gd").new()
+		ui_sound.only = "ui_"
+		ui_sound.name = "UiSound"
+		add_child(ui_sound)
+		OrdersKit.sound = ui_sound
+		_settings_to_ui_sound()
 	if args.has("quit-after"):
 		# a hard stop for test jobs, on every screen (real time, whatever the clock speed)
 		var lim := float(args["quit-after"])
@@ -215,6 +224,13 @@ func _apply_settings() -> void:
 	if music != null:
 		music.set_volume(float(settings.get("music_volume", 0.7)))
 		music.set_on(bool(settings.get("music", true)))
+	_settings_to_ui_sound()
+
+
+func _settings_to_ui_sound() -> void:
+	if ui_sound != null and is_instance_valid(ui_sound):
+		ui_sound.set_on(bool(settings.get("sound", true)))
+		ui_sound.set_volume(float(settings.get("volume", 0.8)))
 
 
 func _settings_to_battle(b: Node) -> void:

@@ -257,6 +257,14 @@ LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan 
 2.16 **Argon stays off.** Why: "My subscription ran out and it just wasn't that useful to justify the cost" (R216). Ends when
 Ryan pays for it again. Set: Ryan, Nov 5 and 11 (R216).
 
+2.17 **A fix lands in the shared kit, so it reaches everything of its kind at once.** Every fix or look change goes where all
+ships, screens or systems of that kind read it: a faction's skin in its kit stack (every ship of that faction rebakes from it),
+a parts option every hull of the family uses, pipeline fixes in shared helpers, AI rules in battle.js and rules.gd together,
+and every start screen's fonts, buttons, labels, rows, cards and sounds in godot/ui/theme/orders_kit.gd (9.15). Each pull
+request names who else picks the change up; the Board returns a one-off fix unless the pull request says why it is specific.
+Why: "let's make sure all the changes we're doing are cohesive and tied together. so like the fixes to the chorus skin should
+apply everywhere once we land it, etc." Set: Ryan, Nov 19 (R333).
+
 ## 3. PC and tools
 
 3.1 **The product is the Godot 4 game on Ryan's Windows PC only; the browser rules (data.js, core.js, battle.js and the
@@ -681,6 +689,16 @@ Why: a run is meant to be lost; the debrief names what the death bought (contrib
 9.14 **Keep every ship reachable from the battle HUD when the fleet outgrows its space.** KEEL pages the fleet strip when it
 fills; hover gives the full name and health. This replaces E1's "and N more" hover (R220, Ryan: "yes that's fine"). Why: a
 large fleet can outgrow the available space, but the strip is also how the player picks a ship. See issue 1021.
+
+9.15 **The start screens (title, Settings, Credits, faction and admiral, flagship aspect, Progression, Lineage, Help) build
+from one kit, godot/ui/theme/orders_kit.gd, on glass_shell's orders sheet.** One font set (Big Shoulders Display heads,
+Barlow words, Azeret Mono figures), one ember primary per screen with quiet secondaries, labels that wrap inside their
+container, rows with one control column, cards whose actions line up, the Back left and the primary right, and the ui_*
+sounds on hover, press, back and confirm. Esc goes Back on every start page. The player's UI scale is never capped: a layout
+fits 831 design pixels tall (Larger at any 16:9 window) instead. Why: the start flow mixed three font sets and every screen
+built its own widgets (Neon front-end audit, Nov 19; R333 cohesion), and Ryan: "the title screen is SUPER basic,
+faction/admiral selection is also very basic and also formatting looks odd and not lined up". Set: Board under R333 (issue
+1217). Detail: docs/playbooks/screens.md section 2.
 
 ## 10. The campaign map, space and the board
 
