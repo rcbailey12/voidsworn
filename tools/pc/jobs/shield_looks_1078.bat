@@ -219,10 +219,16 @@ if %SC_LIST% GTR 0 if %SC_PATCH% LEQ 0 (
   set "JOBFAIL=1"
   exit /b 1
 )
-rem expected: the copied hulls, and the .import files the headless import rewrites (the ship_job.bat fix, opus/issue-1174)
-findstr /v /r /c:"^.. godot/assets/ships/" /c:"^.. godot/.*\.import$" "%SC_DIR%\clone_changes_before_checkout.txt" > "%SC_DIR%\clone_changes_unexpected.txt"
+rem expected: the copied hulls, and the .import files the headless import rewrites (the ship_job.bat fix, opus/issue-1174).
+rem git filters the list itself: findstr $ needs a CR and git writes LF only, so a findstr \.import$ matched nothing (Board, run 3)
+git -C "%R%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" > "%SC_DIR%\clone_changes_unexpected.txt" 2>> "%SC_DIR%\backup_errors.txt"
+if errorlevel 1 (
+  echo FAILED: checkout %SC_REF%: git status of the clone failed, nothing was reset >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
 for %%Z in ("%SC_DIR%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 (
-  echo FAILED: checkout %SC_REF%: the clone has local changes outside godot\assets\ships, listed in %SC_DIR%\clone_changes_unexpected.txt and saved as a patch; nothing was reset >> "%ST%"
+  echo FAILED: checkout %SC_REF%: the clone has local changes outside godot\assets\ships and the godot .import files, listed in %SC_DIR%\clone_changes_unexpected.txt and saved as a patch; nothing was reset >> "%ST%"
   set "JOBFAIL=1"
   exit /b 1
 )
@@ -232,11 +238,9 @@ if errorlevel 1 (
   set "JOBFAIL=1"
   exit /b 1
 )
-rem only when the list holds a .import change (the pathspec errors when nothing matches)
-set "SC_IMP=0"
-findstr /r /c:"^.. godot/.*\.import$" "%SC_DIR%\clone_changes_before_checkout.txt" > nul && set "SC_IMP=1"
-if "%SC_IMP%"=="1" git -C "%R%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%HOME1078%\git.txt" 2>&1
-if "%SC_IMP%"=="1" if errorlevel 1 (
+rem restore the rewritten .import files from the clone's own commit (saved in the patch above), as ship_job.bat does
+git -C "%R%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%HOME1078%\git.txt" 2>&1
+if errorlevel 1 (
   echo FAILED: checkout %SC_REF%: could not restore the .import files, see git.txt >> "%ST%"
   set "JOBFAIL=1"
   exit /b 1
