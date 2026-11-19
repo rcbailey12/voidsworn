@@ -1,0 +1,38 @@
+GPU: waiting for solo claim, weight 1 (issue 1077)
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: acquired solo claim a7a4bbcf-755a-4bfa-88ec-4940caae9f2c
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] loaded 69ee4b983be0f01b14433de2c0c393f1b792f884f8943e2711a8c141a8deb904 4096x2048 in 1352 ms (worker)
+[world] loaded 70109434bfd118386075b337ff9d5c1c6e42b16fd817a47109617898802c30a5 4096x2048 in 1449 ms (worker)
+[world] loaded e2556941805416214675d8bb8a3f7faa34d42058db39dfca9093adc39cdcdd53 1024x512 in 1455 ms (worker)
+[world] loaded 382e9c0dcff37bc4518705b06da7f0a5b5b83763102bb259408ba02f80aa12cc 1024x512 in 1451 ms (worker)
+[world] loaded ff9df15403f97e5449087ca885bcde8c7234a11113f1d7df6555a4c83b007831 4096x2048 in 151 ms (worker)
+[world] loaded 33129645353ad3a1f56407f0f34d8a4b582a6a6efd7819bb503aecabc2109896 1024x512 in 141 ms (worker)
+[world] loaded 4dda0ad2f637f118ac7d20c5e6e6e80d789663fe1ee5e5adfd2f83d357065b84 1024x512 in 139 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+CAPTURE1077 {"adapter":"NVIDIA GeForce RTX 5080","commit":"1236bbc30a736b0caddea507edca9e835dae001e","godot":"4.7.2-stable (official)","mode":"cold","renderer":"forward_plus","scene_sha256":"6f7fac5384a35ab49b60658f97ac471b3fc4b5f5fed30619aa41784de73086c0","ship_manifest_sha256":"f446283f6282be297ad563ecaf8857ef844c7d76f772c7c10206643d96b55b54"}
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+CAPTURE1077 cold off prepared_before_kill=false outcome=fractured hidden_frame=120 hidden_after=2.02s pieces=4 frags=11 wall_p50=3.77 p95=7.49 worst=4309.20 gpu_worst=1.94
+[attach] battle C0 C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+CAPTURE1077 DONE

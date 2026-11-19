@@ -1,0 +1,31 @@
+start Thu 11/19/2026 13:33:36.29 
+drive bytes free 165645627392 
+commit=1236bbc30a736b0caddea507edca9e835dae001e 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 0 (0 to 7 is success) 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1077\repo\godot\assets\ships\C19_51\C19_51.glb:
+6611595baa1542adbd2c445f33d0fcd33355add59c7c7590c680899af3a9c8e0
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+import exit 0 
+death story exit 0 
+death seam exit 0 
+clips exit 0 
+compose c170 exit 0 
+compose c26 exit 0 
+FLAGSHIP1077_A16_c170_side_by_side.avi bytes 40522292 
+FLAGSHIP1077_A16_c26_side_by_side.avi bytes 47811240 
+timing s1 off exit 0 
+cold s1 off exit 0 
+timing s1 strain exit 0 
+cold s1 strain exit 0 
+timing s2 off exit 0 
+cold s2 off exit 0 
+timing s2 strain exit 0 
+cold s2 strain exit 0 
+timing s3 off exit 0 
+cold s3 off exit 0 
+timing s3 strain exit 0 
+cold s3 strain exit 0 
+drive bytes free 249383768064 
+all done Thu 11/19/2026 14:47:14.77 
