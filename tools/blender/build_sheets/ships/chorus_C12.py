@@ -178,7 +178,7 @@ def build(K):
     # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
     # the draped tendrils lie over the shell (skipped as keep-outs); the knot they grow from stays open
     plates.dome_caps(K, _k, caps, seed=1342)
-    plates.armour(K, _k, 2.15, -1.75, seed=1341, skip=('T1_body_',), rows=6, scute=0.4, thick=0.05,
+    plates.armour(K, _k, 2.15, -1.85, seed=1342, skip=('T1_body_',), rows=5, scute=0.5, thick=0.06,
                   note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the knoll, the tendril knot, '
                        'sacs, siphons and vents stand clear, the domes capped in smaller scutes, the tendrils lie over it')
 

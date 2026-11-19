@@ -210,7 +210,7 @@ def body_keepouts(K, sec_at, skip=(), keep=(), reach=0.18, bury=0.06, cell=(0.1,
                 for b in range(-mg, mg + 1):
                     occ[side].add((ix + a, it + b))
                     # a fitting on the belly or the back sits on both flanks' bands
-                    if abs(th) > 1.35:
+                    if abs(th) > 1.5:
                         occ[-side].add((ix + a, it + b))
 
     def blocked(x, th, side):
@@ -245,17 +245,18 @@ def draped(K, names):
     return at
 
 
-def _armour_scute(section, root, length, angles, t, side, point=0.5, sharp=1.0, keels=1, bulge=0.25, wave=0.0, phase=0.0,
+def _armour_scute(section, root, length, angles, t, side, point=0.5, sharp=1.0, keels=1, bulge=0.08, wave=0.0, phase=0.0,
                   nu=8, nv=16):
     """One armour scute (R341): a thick keratin plate lying aft, its root low on the skin and its free lip standing proud with a
     deep shadow gap under it, so the scute behind slides under it as a pangolin's do. The trailing edge comes to a point
-    (`point` of the length; `sharp` 1 is a V, 2.5 a squared chisel with a short point), the lip is the thickest part, and one or
-    two raised keels run root to lip, as an armadillo's bands and a pangolin's ridged scales. Returns (vertices, faces, growth)."""
+    (`point` of the length; `sharp` 1 is a straight-sided V, 2.5 a squared chisel with a short point), the lip is the thickest
+    part, and a keel runs root to lip: one roof-like ridge splitting the face into a lit and a shaded plane, or two raised keels
+    (Neon's review, Nov 19: crisp planes, not a pillow). Returns (vertices, faces, growth, ridge): growth 0 at the root to 1 at
+    the lip, ridge 1 on a keel's crest to 0 in the grooves (the paint's pale worn horn)."""
     lo, hi = angles
     mid, half = 0.5 * (lo + hi), 0.5 * (hi - lo)
     row = nv + 1
-    ks = (0.0,) if keels == 1 else (-0.38, 0.38)
-    vertices, growth = [], []
+    vertices, growth, ridge = [], [], []
     for under in (False, True):
         for i in range(nu + 1):
             a = i / nu
@@ -265,12 +266,17 @@ def _armour_scute(section, root, length, angles, t, side, point=0.5, sharp=1.0, 
                 x = root - a * reach
                 angle = mid + e * half * (1.0 - 0.12 * a) + 0.03 * wave * math.sin(phase + math.pi * a)
                 gap = 0.004 + 0.62 * t * a ** 1.5
-                thick = t * (0.38 + 0.42 * a ** 2.5) * (1.0 - 0.5 * e ** 4)
-                keel = sum(math.exp(-((e - c) / 0.17) ** 2) for c in ks) * t * 0.5 * (0.25 + 0.75 * a)
+                thick = t * (0.38 + 0.7 * a ** 2.5) * (1.0 - 0.5 * e ** 4)
+                if keels == 1:
+                    rk = (1.0 - abs(e)) ** 1.5
+                else:
+                    rk = max(math.exp(-((e - c) / 0.17) ** 2) for c in (-0.38, 0.38))
+                keel = rk * t * 0.6 * (0.25 + 0.75 * a)
                 h = gap if under else gap + thick * (1.0 + bulge * (1.0 - e * e)) + keel
                 point_, _ = section(x, angle if side > 0 else math.pi - angle, out=h)
                 vertices.append(point_)
                 growth.append(a)
+                ridge.append(rk)
     faces = []
     sheet = row * (nu + 1)
     for i in range(nu):
@@ -285,52 +291,57 @@ def _armour_scute(section, root, length, angles, t, side, point=0.5, sharp=1.0, 
         faces.append((b_, a_, a_ + sheet, b_ + sheet))
     if side > 0:
         faces = [f[::-1] for f in faces]
-    return vertices, faces, growth
+    return vertices, faces, growth, ridge
 
 
-def armour_shell(section, blocked, x_bow, x_aft, seed, rows=6, scute=0.8, belly=-1.56, back=1.57, thick=0.1, lap=0.3, over=1.35):
-    """Yield (side name, mesh, tones, growth) for the two flanks' shells: `rows` bands between the belly angle and the back
-    angle (K.hpt's port convention), scutes about `scute` long, each band lapping `lap` of the band below it and offset half a
-    scute from it. A scute any part of which would cover a blocked cell is left out, so a fitting stands in an open socket."""
+def armour_shell(section, blocked, x_bow, x_aft, seed, rows=5, scute=0.8, belly=-1.56, back=1.57, thick=0.1, lap=0.3, over=1.35):
+    """Yield (side name, mesh, attributes) for the two flanks' shells: `rows` bands between the belly angle and the back angle
+    (K.hpt's port convention), scutes about `scute` long, each band lapping `lap` of the band below it and offset half a scute
+    from it. Where a scute would cover a fitting it is trimmed, never replaced by a patch of small scutes (Neon, Nov 19): first
+    shortened, then cut back from the side that meets the fitting, so the shell's edge pulls back round the socket."""
     rng = random.Random(seed)
     span = (back - belly) / rows
+
+    def free(x0, lo0, hi0, length, side):
+        return not any(blocked(x0 - fa * length, lo0 + fb * (hi0 - lo0), side)
+                       for fa in (0.05, 0.35, 0.7) for fb in (0.15, 0.5, 0.85))   # the lip may tuck against a foot
     for side, name in ((1, 'port'), (-1, 'starboard')):
-        mesh, tones, growth = ([], []), [], []
-        placed = left = 0
+        mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
+        placed = trimmed = left = 0
         for r in range(rows):
             lo = belly + r * span - (lap * span if r else 0.0)
             hi = belly + (r + 1) * span
             x = x_bow - (0.5 * scute if r % 2 else 0.0) - rng.uniform(0.0, 0.15) * scute
             while x > x_aft:
-                step = scute * rng.uniform(0.82, 1.18)
-                todo = [(x, lo, hi, step, 0)]
-                while todo:
-                    x0, lo0, hi0, st, depth = todo.pop()
-                    length = over * st
-                    free = not any(blocked(x0 - fa * length, lo0 + fb * (hi0 - lo0), side)
-                                   for fa in (0.05, 0.35, 0.7) for fb in (0.15, 0.5, 0.85))   # the lip may tuck against a foot
-                    if not free:
-                        if depth < 2:
-                            # crowded here: try two smaller scutes a band-half each, then smaller again, so the
-                            # shell closes round a fitting instead of leaving bare skin (Ryan, Nov 19: no large gaps)
-                            mid = 0.5 * (lo0 + hi0) + 0.1 * (hi0 - lo0) * rng.uniform(-1, 1)
-                            for a_lo, a_hi in ((lo0, mid + 0.12 * (hi0 - lo0)), (mid, hi0)):
-                                todo.append((x0, a_lo, a_hi, st * 0.6, depth + 1))
-                                todo.append((x0 - 0.5 * st, a_lo, a_hi, st * 0.6, depth + 1))
-                        else:
-                            left += 1
-                        continue
+                step = scute * rng.uniform(0.85, 1.15)
+                w = hi - lo
+                fits = []
+                for k in (1.0, 0.72, 0.5):                                  # shortened
+                    if free(x, lo, hi, over * step * k, side):
+                        fits = [(lo, hi, k)]
+                        break
+                if not fits:                                                # cut back from the fitting's side
+                    for k, f_ in ((0.85, 0.6), (0.6, 0.6), (0.5, 0.45)):
+                        fits = [(a_, b_, k) for a_, b_ in ((lo, lo + f_ * w), (hi - f_ * w, hi))
+                                if free(x, a_, b_, over * step * k, side)]
+                        if fits:
+                            break
+                if not fits:
+                    left += 1
+                for lo0, hi0, k in fits:
                     placed += 1
-                    vertices, faces, progress = _armour_scute(
-                        section, x0, length, (lo0, hi0), thick * rng.uniform(0.85, 1.15) * (1.0 if depth == 0 else 0.8), side,
-                        point=rng.uniform(0.38, 0.55), sharp=rng.choice((1.0, 1.0, 2.5)), keels=rng.choice((1, 1, 2)),
+                    trimmed += k < 1.0 or hi0 - lo0 < w
+                    vertices, faces, progress, ridge = _armour_scute(
+                        section, x, over * step * k, (lo0, hi0), thick * rng.uniform(0.9, 1.1), side,
+                        point=rng.uniform(0.4, 0.55), sharp=rng.choice((1.0, 1.0, 1.0, 2.5)), keels=rng.choice((1, 1, 1, 2)),
                         wave=rng.uniform(-1, 1), phase=rng.uniform(0, math.tau))
                     _append(mesh, vertices, faces)
-                    tones.extend([rng.uniform(0.1, 0.9)] * len(vertices))
-                    growth.extend(progress)
+                    attrs['scute_tone'].extend([rng.uniform(0.1, 0.9)] * len(vertices))
+                    attrs['scute_progress'].extend(progress)
+                    attrs['scute_ridge'].extend(ridge)
                 x -= step
-        print('[armour] %s: %d scutes, %d left open round fittings' % (name, placed, left), flush=True)
-        yield name, mesh, tones, growth
+        print('[armour] %s: %d scutes (%d trimmed), %d left open round fittings' % (name, placed, trimmed, left), flush=True)
+        yield name, mesh, attrs
 
 
 def armour(K, kit_module, x_bow, x_aft, seed, drape=(), skip=(), keep=(), note='', inv='hide', **kw):
@@ -340,15 +351,13 @@ def armour(K, kit_module, x_bow, x_aft, seed, drape=(), skip=(), keep=(), note='
     # a fitting counts as far out as the scutes stand (gap, lip and keel: about twice their thickness)
     blocked = body_keepouts(K, kit_module.sec_at, skip=skip, keep=keep, reach=max(0.18, 2.2 * kw.get('thick', 0.1)))
     made = []
-    for side, mesh, tones, growth in armour_shell(draped(K, drape) if drape else K.hpt, blocked, x_bow, x_aft, seed, **kw):
+    for side, mesh, attrs in armour_shell(draped(K, drape) if drape else K.hpt, blocked, x_bow, x_aft, seed, **kw):
         shell = K.hull_detail('armour_' + side, mesh, 'carapace', inv=inv, kind='chitin', subs=['plate', 'rim', 'growth'])
         if shell is None:
             continue
         K.mass('Armour shell (' + side + ')', shell, 'brown keratin scutes',
                note=note or 'Banded overlapping scutes over the whole body, lips aft; fittings stand in open sockets (R341).')
-        for nm, values in (('scute_tone', tones), ('scute_progress', growth)):
-            attr = shell.data.attributes.new(nm, 'FLOAT', 'POINT')
-            attr.data.foreach_set('value', values)
+        _attributes(shell, attrs)
         made.append(shell)
     return made
 
@@ -383,7 +392,7 @@ def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide
     from mathutils.bvhtree import BVHTree
     register(kit_module)
     rng = random.Random(seed)
-    mesh, tones, growth = ([], []), [], []
+    mesh, attrs = ([], []), dict(scute_tone=[], scute_progress=[], scute_ridge=[])
     for dome in domes:
         prefixes, centre, axis, radius, reach = dome[:5]
         start = dome[5] if len(dome) > 5 else 0.0
@@ -407,19 +416,25 @@ def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide
             for i in range(n_):
                 lo = off + i * w - 0.24 * w
                 hi = off + (i + 1) * w + 0.24 * w
-                vertices, faces, progress = _armour_scute(
+                vertices, faces, progress, ridge = _armour_scute(
                     sec, -ph, step * 1.45, (lo, hi), t * rng.uniform(0.9, 1.1), 1, point=rng.uniform(0.12, 0.22),
                     sharp=2.5, keels=1, bulge=0.12)
                 _append(mesh, vertices, faces)
-                tones.extend([rng.uniform(0.1, 0.9)] * len(vertices))
-                growth.extend(progress)
+                attrs['scute_tone'].extend([rng.uniform(0.1, 0.9)] * len(vertices))
+                attrs['scute_progress'].extend(progress)
+                attrs['scute_ridge'].extend(ridge)
                 k += 1
             ph += step
     if not mesh[1]:
         return None
     caps = K.hull_detail(name, mesh, 'carapace', inv=inv, kind='chitin', subs=['plate', 'rim', 'growth'])
     K.mass('Armour caps', caps, 'brown keratin scutes', note=note or 'small scutes capping the sacs and knolls, lips down (R341)')
-    for nm, values in (('scute_tone', tones), ('scute_progress', growth)):
-        attr = caps.data.attributes.new(nm, 'FLOAT', 'POINT')
-        attr.data.foreach_set('value', values)
+    _attributes(caps, attrs)
     return caps
+
+
+def _attributes(ob, attrs):
+    """the per-point values the Chorus paint stack reads on a shell (tone, growth root to lip, keel crest)"""
+    for nm, values in attrs.items():
+        attr = ob.data.attributes.new(nm, 'FLOAT', 'POINT')
+        attr.data.foreach_set('value', values)

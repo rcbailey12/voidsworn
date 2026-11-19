@@ -193,7 +193,7 @@ def build(K):
 
     # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
     plates.dome_caps(K, _k, caps, seed=1342)
-    plates.armour(K, _k, 5.65, -4.9, seed=1341, keep=('face', 'wound', 'blade_row'), rows=8, scute=0.95, thick=0.18,
+    plates.armour(K, _k, 5.65, -4.9, seed=1341, keep=('face', 'wound', 'blade_row'), rows=6, scute=1.25, thick=0.24,
                   note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the face, throats, blade row, '
                        'mane, siphons and vents stand clear, the sacs capped in smaller scutes')
 

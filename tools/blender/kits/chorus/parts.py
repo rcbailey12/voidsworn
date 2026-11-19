@@ -805,6 +805,17 @@ def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, vari
 
 
 # ------------------------------------------------------------------------------------------------ the pulse vent (engine)
+VEIL_ROOT = 0.22   # share of a veil's length from the vent that glows (R341 round 3, Neon: the Chorus read at camera 170)
+VEIL_RIB = 0.45    # share of each rib's length that glows
+
+
+def _used(V, F):
+    """(V, F) keeping only the vertices the faces use, re-indexed"""
+    keep = sorted({v for f in F for v in f})
+    idx = {v: n for n, v in enumerate(keep)}
+    return [V[v] for v in keep], [tuple(idx[v] for v in f) for f in F]
+
+
 def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, nose='flat', seg=24, trail='membrane',
                 trails=3, trail_len=None, out_dir=None, seed=0, veil=1.0, fan=0.75, splay=22.0):
     """the pulse vent (no nozzle): exhaust leaves along -X; origin at the centre of the vent's mouth.
@@ -867,22 +878,29 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
                 for pt in row:
                     V.append(tuple(pt - nv * th))
             nb = (m + 1) * q
+            jr = max(1, int(round(m * VEIL_ROOT)))   # R341 round 3 (Neon): the root rows glow, the torn tips stay dark
+            FR = []
             for j in range(m):
+                Fj = FR if j < jr else F
                 for k in range(q - 1):
                     a, b, c_, d_ = j * q + k, j * q + k + 1, (j + 1) * q + k + 1, (j + 1) * q + k
-                    F.append((a, b, c_, d_)); F.append((nb + d_, nb + c_, nb + b, nb + a))
+                    Fj.append((a, b, c_, d_)); Fj.append((nb + d_, nb + c_, nb + b, nb + a))
                 for k in (0, q - 1):
                     a, d_ = j * q + k, (j + 1) * q + k
-                    F.append((a, d_, nb + d_, nb + a) if k == 0 else (d_, a, nb + a, nb + d_))
+                    Fj.append((a, d_, nb + d_, nb + a) if k == 0 else (d_, a, nb + a, nb + d_))
             for j in (0, m):
                 for k in range(q - 1):
                     a, b = j * q + k, j * q + k + 1
-                    F.append((b, a, nb + a, nb + b) if j == 0 else (a, b, nb + b, nb + a))
-            p.add('membrane%d' % i, 'body', 'membrane', (V, F))
-            # veins of light along the veil
+                    (FR if j == 0 else F).append((b, a, nb + a, nb + b) if j == 0 else (a, b, nb + b, nb + a))
+            p.add('membrane%d' % i, 'body', 'membrane', _used(V, F))
+            p.add('membraner%d' % i, 'body', 'veilroot', _used(V, FR))
+            # veins of light along the veil: lit from the root, fading into the dark membrane toward the torn end
             for q_, kk in enumerate((1, 3, 5)):
                 pts = [Vector(V[j * q + kk]) for j in range(m + 1)]
-                p.add('membranev%d_%d' % (i, q_), 'body', 'bilewet' if q_ == 1 else 'membrane', tube(pts, [r_exit * (0.06 if q_ == 1 else 0.035) * (1 - 0.6 * j / m) for j in range(m + 1)], n=4))
+                rad = [r_exit * (0.06 if q_ == 1 else 0.035) * (1 - 0.6 * j / m) for j in range(m + 1)]
+                jv = max(2, int(round(m * VEIL_RIB)))
+                p.add('membranev%d_%d' % (i, q_), 'body', 'veilroot', tube(pts[:jv + 1], rad[:jv + 1], n=4))
+                p.add('membranew%d_%d' % (i, q_), 'body', 'membrane', tube(pts[jv:], rad[jv:], n=4))
             continue
         if trail == 'membrane':
             # a veil: a thin, wavy, tapering strip from the rim, splaying out at 22 to 28 degrees from the axis
@@ -904,7 +922,10 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
             # a vein of light along the veil's middle
             for q_, f_ in enumerate((0.2, 0.5, 0.8)):
                 pts = [Vector(V[j * 4]).lerp(Vector(V[j * 4 + 1]), f_) + rv * 0.02 for j in range(m + 1)]
-                p.add('membranev%d_%d' % (i, q_), 'body', 'bilewet' if q_ == 1 else 'membrane', tube(pts, [r_exit * (0.05 if q_ == 1 else 0.03) * (1 - 0.6 * j / m) for j in range(m + 1)], n=4))
+                rad = [r_exit * (0.05 if q_ == 1 else 0.03) * (1 - 0.6 * j / m) for j in range(m + 1)]
+                jv = max(2, int(round(m * VEIL_RIB)))   # R341 round 3: the ribs glow from the root, dark toward the tip
+                p.add('membranev%d_%d' % (i, q_), 'body', 'veilroot', tube(pts[:jv + 1], rad[:jv + 1], n=4))
+                p.add('membranew%d_%d' % (i, q_), 'body', 'membrane', tube(pts[jv:], rad[jv:], n=4))
         else:
             for f in range(3):
                 b0 = rv * r_exit * 0.95 + rv.cross(Vector((1, 0, 0))).normalized() * (f - 1) * r_exit * 0.28
@@ -990,7 +1011,8 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
             th = rnd.uniform(1.28, 1.42)   # inside the caps' open crown
         u = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
         c = Vector((r * u.x, r * 0.96 * u.y, cz + r * u.z))
-        p.add('glow%d' % i, 'body', 'bile', moved(blob(r * 0.13, r * 0.09, r * 0.035, nu=10, nv=5, seed=i), frame(c, u.orthogonal(), u)))
+        gs = (r * 0.24, r * 0.035, r * 0.03) if armour else (r * 0.13, r * 0.09, r * 0.035)   # armoured: a narrow bile slit (round 3)
+        p.add('glow%d' % i, 'body', 'bile', moved(blob(*gs, nu=10, nv=5, seed=i), frame(c, u.orthogonal(), u)))
     # pores over the sac's skin (it breathes the swarm's air), at the hull's grain
     npo = pores if pores is not None else int(18 * r * r * (1 if armour else 4))
     V, F = [], []

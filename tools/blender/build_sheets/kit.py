@@ -89,6 +89,7 @@ MATS = {
     'maw': ((0.022, 0.014, 0.008), 0),       # wet dark throats and slits
     'pore': ((0.012, 0.010, 0.005), 0),      # pore pits
     'membrane': ((0.22, 0.19, 0.06), 0.25),  # vent membranes and filaments, lit faintly by the vent
+    'veilroot': ((0.45, 0.68, 0.06), 1.0),  # the Chorus veils' glowing roots and ribs (R341 round 3)
     'bile': ((0.55, 0.85, 0.08), 3.0),       # bile yellow-green light (glands, vents, glow windows)
     'bilewet': ((0.10, 0.14, 0.025), 0.35),  # dim bile in veins and pores
     # Chorus insides (cutaway only): flesh, bone and organs (R98, R209)

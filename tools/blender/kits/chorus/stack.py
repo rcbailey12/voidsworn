@@ -9,14 +9,15 @@ from paint3 import math_, mixc, node, ramp
 SCALE = 1.0
 AUTHORED_LOOK = True
 LAYERS = dict(ao_short=0.013, ao_long=0.045, edge_radius=0.0008, edge_gain=16,
-              bump_distance=0.002, bump_strength=0.48)
+              bump_distance=0.002, bump_strength=0.78)   # R341 round 3 (Neon): the horn grain holds at 1024 and 4096
 
 # Linear RGB light and dark endpoints, with the zone's base roughness.
 ZONES = {
-    # R341 (Ryan, Nov 19): warm brown hide between the plates, not dark olive
-    'flesh': ((.098, .060, .030), (.036, .019, .009), .26),
-    'flesh2': ((.104, .056, .028), (.030, .014, .007), .28),
-    'hide': ((.112, .070, .034), (.044, .024, .011), .28),
+    # R341 (Ryan, Nov 19): warm brown hide between the plates, not dark olive; round 3 (Neon): deep wet maroon-umber, well under
+    # the horn so the plates separate at camera 170
+    'flesh': ((.050, .025, .015), (.016, .008, .004), .20),
+    'flesh2': ((.056, .026, .015), (.014, .006, .003), .22),
+    'hide': ((.058, .030, .017), (.018, .009, .005), .22),
     'scar': ((.125, .081, .037), (.063, .038, .017), .37),
     'chitin': ((.128, .093, .031), (.060, .040, .013), .63),
     'bone': ((.52, .43, .27), (.26, .19, .10), .61),
@@ -25,22 +26,24 @@ ZONES = {
     'pore': ((.018, .013, .005), (.006, .004, .002), .31),
     'vein': ((.060, .040, .016), (.024, .016, .007), .23),
     'amber': ((.29, .15, .025), (.15, .066, .011), .55),
-    # the armour shell: dark horn-brown keratin, worn paler at the free lips
-    'carapace': ((.100, .068, .038), (.026, .017, .009), .55),
+    # the armour shell: pale weathered horn on the keels and lips down to charred horn at the tucked roots (round 3)
+    'carapace': ((.17, .122, .074), (.022, .014, .007), .55),
     'carapace_joint': ((.043, .030, .015), (.018, .010, .005), .22),
 }
 FALLBACK = 'flesh'
 DECALS = ()
 GLOW = {
     # R341: the bile light kept to the sac windows and deep in the vents, yellower and lower so no flat lime disc reads
-    'bile': ((.55, .62, .05), 1.6),
+    'bile': ((.52, .78, .06), 2.2),   # round 3 (Neon): the bile slits under the sac caps read as the Chorus at 170
     'bilewet': ((.22, .24, .03), .30),
     # R341: the trailing veils are dark torn membrane with a faint warm glow through them, not flat lime
     'membrane': ((.16, .06, .02), .12),
+    # round 3 (Neon): a restrained yellow-green glow at the veils' roots and main ribs, the torn tips stay dark
+    'veilroot': ((.45, .68, .06), 1.0),
     'maw_amber': ((.99, .53, .11), 2.7),
     'maw_amber_wet': ((.64, .25, .038), .51),
 }
-GLOW_HULL = ('bile', 'bilewet', 'membrane')
+GLOW_HULL = ('bile', 'bilewet', 'membrane', 'veilroot')
 
 
 def hard_layers(c, zone, base, shade, roughness):
@@ -62,21 +65,27 @@ def hard_layers(c, zone, base, shade, roughness):
         fine_marks = math_(nt, 'MULTIPLY', fine_marks, margin)
         # R341, the keratin texture: grooves running the length of each scute (a pangolin's striations), growth lines parallel
         # to the free lip, the root dark where it slides under the scute ahead, the lip worn paler
-        # (round 2, the Board: coarse and strong enough to read at camera 26, not only in the close-up)
-        ridges = ramp(nt, c.noise(42, 2, .4, stretch=(.12, 1.0, 1.0)), .46, .6)
+        # (round 2, the Board: coarse and strong enough to read at camera 26; round 3, Neon: the keel crests and lips worn pale,
+        # the grooves and roots dark and chalky, the crests waxy)
+        crest = node(nt, 'ShaderNodeAttribute', attribute_name='scute_ridge').outputs['Fac']
+        grain = ramp(nt, c.noise(50, 2, .4, stretch=(.12, 1.0, 1.0)), .46, .6)
         lines = ramp(nt, math_(nt, 'SINE', math_(nt, 'MULTIPLY', progress, 19.0)), .7, .97)
         lines = math_(nt, 'MULTIPLY', lines, ramp(nt, progress, .2, .55))
         pitted = ramp(nt, c.noise(64, 2, .55), .63, .72)
         root = math_(nt, 'SUBTRACT', 1.0, ramp(nt, progress, .04, .4))
         lip = ramp(nt, progress, .86, .99)
-        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', ridges, .55))
-        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', lines, .3))
-        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', pitted, .45))
-        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', root, .5))
-        tone = math_(nt, 'SUBTRACT', tone, math_(nt, 'MULTIPLY', lip, .45))
-        height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', ridges, -.32))
+        worn = math_(nt, 'MAXIMUM', ramp(nt, crest, .55, .95), lip)
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', grain, .4))
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', lines, .25))
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', pitted, .4))
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', root, .7))
+        tone = math_(nt, 'SUBTRACT', tone, math_(nt, 'MULTIPLY', worn, .75))
+        height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', grain, -.32))
         height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', lines, -.14))
         height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', pitted, -.25))
+        # waxy 0.32 on the worn crests and lips, chalky 0.75 in the grooves and at the roots
+        chalk = math_(nt, 'MAXIMUM', math_(nt, 'MAXIMUM', grain, root), pitted)
+        roughness = math_(nt, 'ADD', .32, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1.0, worn), math_(nt, 'ADD', .18, math_(nt, 'MULTIPLY', chalk, .25))))
     tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', fine_marks, .07), clamp=True)
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', fine_marks, .10))
     rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', variation, .075))

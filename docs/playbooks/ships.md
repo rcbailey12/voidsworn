@@ -118,13 +118,19 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    pebble plates; "close the gap around open skin"): each scute comes to a point or a squared chisel aft, is thickest at the lip
    with a dark shadow gap under it and carries one or two raised keels; the bands run from belly to spine, smaller scutes
    fill round each fitting, sacs and knolls get caps of smaller scutes (`plates.dome_caps`, the sac's bile window open at its
-   crown) and a gland's knoll a ring round its slopes, its vent and spines open. The keep-outs are read from the sheet's own
+   crown) and a gland's knoll a ring round its slopes, its vent and spines open. Round 3 (Neon's review, Nov 19): fewer, bolder bands
+   (5 or 6), a roof keel splitting each face into a lit and a shaded plane, the lip thickest; a scute that meets a fitting is
+   shortened or cut back from that side, never replaced by a patch of small scutes; a seed per ship. The keep-outs are read from the sheet's own
    fittings (guns, maws, glands, sacs, siphons, vents, the spine row; `keep` names grown-in features such as a face or C13's
    knolls), so they stand in sockets of wet hide, siphons and vents in wider ones clear of their jets; what lies on the hull
    (C12's tendrils, `skip`) lies over it. No skin folds, pore fields or flank veins under the shell. The paint
    (tools/blender/kits/chorus/stack.py): warm brown hide between the plates, not dark olive; horn-brown scutes with coarse
    grooves along their length, pits, growth lines parallel to the lip, a dark root and a paler worn lip, all reading at camera 26; the trailing veils dark torn membrane with
-   a faint warm glow, not flat lime; the bile light only in sac windows and deep in the vents.
+   a faint warm glow, not flat lime; the bile light only in sac windows and deep in the vents. Round 3 (Neon): the hide deep wet
+   maroon-umber well under the horn; pale weathered horn on the keel crests and lips (the shell's scute_ridge and
+   scute_progress), charred at the roots, waxy crests and chalky grooves; a restrained yellow-green glow at each veil's root and
+   along its ribs (kit material veilroot), the torn tips dark; the sac windows narrow bile slits under the caps. Ryan picks
+   the glow colour from the sheet.
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
