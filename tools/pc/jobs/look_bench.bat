@@ -20,6 +20,8 @@ set "LB_EXIT=1"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if "%LB_HOME%"=="" set "LB_HOME=%VT%\look_bench"
 if "%LB_TOOL_REF%"=="" set "LB_TOOL_REF=origin/main"
+rem Built ships: the shared PC build (build\godot), else the old audit2 checkout. LB_SHIPS overrides both (issue 1223).
+if "%LB_SHIPS%"=="" if exist "%VT%\build\godot\gen" set "LB_SHIPS=%VT%\build\godot"
 if "%LB_SHIPS%"=="" set "LB_SHIPS=%VT%\audit2\repo\godot"
 set "AFTER=%~1"
 set "BEFORE=%~2"
