@@ -18,6 +18,7 @@ signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance
 signal wings_together(n: int)   # F1: your strike craft just started their moves together (the trace films it)
 
 const API := preload("res://rules/battle_api.gd")
+const JSM := preload("res://rules/jsm.gd")
 const Campaign := preload("res://campaign/campaign.gd")
 const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
@@ -1478,8 +1479,9 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 	var sv: ShipView = views.get(id)
 	if sv == null:
 		return
-	# VU still shows the previous batch, in which this ship was dead. Use the batch that raised it.
-	var ru: Dictionary = VU.get(id, {})
+	# Use the batch view for ship identity, not for damage that has yet to play.
+	var prior: Dictionary = VU.get(id, {})
+	var ru := prior
 	for unit in batch_view.get("units", []):
 		if unit["id"] == id:
 			ru = unit
@@ -1493,10 +1495,19 @@ func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
 	sv.snap_to(board.hex_world(int(e["q"]), int(e["r"])), yaw)
 	if not ru.is_empty():
 		_register_fx_ship(ru, sv)
-		if not bool(ru.get("dead", false)):
-			disp[id] = {"hp": float(ru["hp"]), "sh": (ru["sh"] as Array).duplicate()}
-			if gfx != null and gfx.has_method("sync_ship"):
-				gfx.sync_ship(id, ru)
+		# The rise restores hull and sections and clears fire. It leaves shields as they were;
+		# the rest of the turn (including any tidal tick) has not happened in playback yet.
+		var frac := float(TBL["LEGION_HP"])
+		var hp := maxf(1.0, JSM.jsround(float(ru["maxHp"]) * frac))
+		var sh: Array = disp.get(id, {}).get("sh", prior.get("sh", ru["sh"]))
+		disp[id] = {"hp": hp, "sh": sh.duplicate()}
+		if gfx != null and gfx.has_method("sync_ship"):
+			var sec := {}
+			if ru.get("sec") is Dictionary:
+				for key in ru["sec"]:
+					var cap := float(ru["sec"][key]["max"])
+					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
+			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
 	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
 
 

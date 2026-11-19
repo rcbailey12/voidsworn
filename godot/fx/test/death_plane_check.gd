@@ -4,14 +4,32 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
 const DEATH := preload("res://fx/fx_death.gd")
+const API := preload("res://rules/battle_api.gd")
+var rules_api := API.new()
 var failures := 0
 
+class LogFixture extends CanvasLayer:
+	func add_log(_text: String, _kind: String) -> void:
+		pass
+
 class BattleFixture extends "res://scenes/battle/battle.gd":
+	var trace_id := ""
+	var hull_trace: Array[float] = []
+	var rise_sections: Array = []
+
 	func _ready() -> void:
 		set_process(false)
 
 	func _float(_id, _text: String, _col: Color, _dy := 0.0) -> void:
 		pass
+
+	func _tip_completed(e: Dictionary) -> void:
+		super._tip_completed(e)
+		if trace_id.is_empty() or e.get("unit") != trace_id or e["t"] not in ["risen", "tick"]:
+			return
+		hull_trace.append(float(disp[trace_id]["hp"]))
+		if e["t"] == "risen":
+			rise_sections = gfx.ship(trace_id).section_fraction.duplicate()
 
 func _init() -> void:
 	GUARD.arm(self, "death_plane_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
@@ -28,6 +46,7 @@ func _verdict(before: int, name: String) -> void:
 func _lifetime_battle() -> BattleFixture:
 	var battle := BattleFixture.new()
 	root.add_child(battle)
+	battle.TBL = rules_api.R.TB
 	battle.board = battle.Board.new()
 	battle.add_child(battle.board)
 	battle.gfx = FX.new()
@@ -144,6 +163,52 @@ func _risen_takes_wreck() -> void:
 	battle.free()
 	_verdict(before, "Eclipse takes back its wreck and live paint")
 
+func _rise_then_tidal_tick() -> void:
+	var before := failures
+	rules_api.new_battle_scenario({"seed": 7, "admiral": "vex", "fleet": ["warden"], "fac": "deathless", "enemies": ["d_jackal"],
+		"obj": "rout", "shape": "open", "map": "open", "dep": "line", "kind": "battle", "sector": 1})
+	var rules = rules_api.R
+	var ship: Dictionary = rules.alive("enemy")[0]
+	var id := str(ship["id"])
+	# Place a ship due to rise in the tidal ring. Disable passive repair to isolate the one hull change.
+	rules.B["terrain"] = {}
+	var hex: Dictionary = rules.boardHexes().filter(func(h): return rules.unitAt(h.q, h.r) == null)[0]
+	rules.B["well"] = {"q": hex.q + 1, "r": hex.r}
+	ship.merge({"q": hex.q, "r": hex.r, "dead": true, "hp": 0, "riseAt": rules.B["round"], "hullRegen": 0}, true)
+	rules_api.take_events()
+	var view_before := rules_api.view()
+	view_before["units"] = view_before["units"].filter(func(u): return u["id"] == id)
+	rules.startSideTurn("enemy")
+	var events := rules_api.take_events()
+	var view_after := rules_api.view()
+	view_after["units"] = view_after["units"].filter(func(u): return u["id"] == id)
+	var final_ship: Dictionary = view_after["units"][0]
+	var ticks := events.filter(func(e): return e["t"] == "tick" and e.get("unit") == id and e["kind"] == "tidal")
+	var final_hp := float(final_ship["hp"])
+	_check(ticks.size() == 1 and final_hp > 0.0 and not final_ship["dead"],
+		"setup: expected one tidal tick and surviving hull, got %d ticks and %s hull, events %s, over %s, round %s, rising %s"
+		% [ticks.size(), final_hp, events, view_after["over"], view_after["round"], final_ship["rising"]])
+	if before != failures:
+		_verdict(before, "rise and tidal damage play in order")
+		return
+	var rise_hp := final_hp + float(ticks[0]["hull"])
+	var battle := _lifetime_battle()
+	_lifetime_ship(battle, id)
+	battle.hud = LogFixture.new()
+	battle.add_child(battle.hud)
+	battle._sync(view_before)
+	battle.trace_id = id
+	await battle._play_batch({"events": events, "view": view_after})
+	_check(battle.hull_trace == [rise_hp, final_hp],
+		"expected hull %s at rise and %s after tidal damage, got %s" % [rise_hp, final_hp, battle.hull_trace])
+	var mid: Dictionary = final_ship["sec"]["mid"]
+	_check(battle.rise_sections.size() == 3 and is_equal_approx(battle.rise_sections[1], float(mid["hp"]) / float(mid["max"])),
+		"rise uses the restored section damage effects")
+	battle._sync(view_after)
+	_check(battle.disp[id]["hp"] == final_hp and not battle.views[id].dead, "final sync agrees with the surviving hull")
+	battle.free()
+	_verdict(before, "rise and tidal damage play in order")
+
 func _jump_drops_collider() -> void:
 	var before := failures
 	var battle := _lifetime_battle()
@@ -164,8 +229,14 @@ func _jump_drops_collider() -> void:
 	_verdict(before, "jump removes the collider as the hull leaves")
 
 func _run() -> void:
+	var error := rules_api.load_rules()
+	if not error.is_empty():
+		push_error(error)
+		quit(1)
+		return
 	_exit_with_cut()
 	await _risen_takes_wreck()
+	await _rise_then_tidal_tick()
 	await _jump_drops_collider()
 	for quality in ["high", "low"]:
 		for spec in [["voidsworn", "Cruiser", 0.8, "blast"], ["voidsworn", "Frigate", 0.55, "big"],

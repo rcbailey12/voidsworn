@@ -44,3 +44,30 @@ KILL_SLOWMO cruiser core 1.66 beat 1.67-1.84 | capital core 2.28 beat 2.30-2.47 
 - Twins: presentation only. The root JS rules and both Godot tables match the base; rules parity, campaign parity and the oracle copy check passed.
 - UI: the battle plate and the new FX ship use the same risen health and shields. Battle panels refresh from the same batch view; campaign map and intel still read the original rules and save values.
 - CI: both extended checks are already in [the Godot game list](../../../godot/tools/ci/godot_checks.txt). No new test file or standing check row was needed. GitHub runs standing checks, rules and campaign parity, the Godot-only rules safety net and Godot game checks.
+
+## Follow-up: rise before tidal damage
+
+[Battle playback](../../../godot/scenes/battle/battle.gd) still takes the ship's identity from the batch view. It uses the existing rise fraction and rounding for the hull and section damage effects, keeps the shields as drawn, and clears fire at the rise. The tidal event then takes its damage once. The final batch sync still reconciles the display with the rules view.
+
+[Death plane](../../../godot/fx/test/death_plane_check.gd) now plays real `startSideTurn` events for an Eclipse ship that rises in the tidal ring and survives. The first run showed 28 hull at rise and 21 after the tick, then snapped back to 28. The fixed playback shows 35 at rise, 28 after the tick and 28 after sync.
+
+```text
+First-run base: FAIL rise and tidal damage play in order
+With the fix:   PASS rise and tidal damage play in order
+DEATH_PLANE failures=0
+PASS late core flash, slow motion and camera hold
+PASS deadline fallback cue
+```
+
+- Standing checks: 74 PASS, 2 KNOWN, 0 FAIL. The first attempt reached the shell timeout; the full retry exited 0.
+- Godot game: `load all: 239 scripts, 16 scenes, 0 failed`; `PASS: every listed headless Godot check passed.` (84 checks); `bot battle: PASS` (seed 361); `PASS fixture record matches the A16 inputs and compressed GLB`. Headless import exited 0.
+- PC parity: `PASS: the Godot port matches the game's rules exactly.` (284 battles); `PASS: the Godot campaign matches the game on all 30 seeded runs, and the cross-twin save hand-off check passes.`
+- No capture: the look bench has no rise followed by a tidal tick. The headless check reads the displayed hull between those two events, before the final sync can hide the bug.
+
+### Follow-up impact sweep
+
+- Callers: `_play_batch` passes the view through the sole `risen` branch to `_reassemble`; `tick` still subtracts the event's hull loss and plays its FX. The existing wreck check still calls the same rise path.
+- Saves: no schema or load changes. `onboarding_test`, `title_continue_test`, `run_resume_test` and `save_test` passed with isolated save data, including old profile migration and old run Continue.
+- Twins: the browser rules, Godot rules and both tables match the first-run base. No table export was needed; rules parity, campaign parity and the oracle copy check all passed.
+- UI: the battle nameplate reads `disp` during playback. The fleet strip, ship panel and target panel refresh after batch sync. Campaign map and intel still use their existing rules and save values.
+- CI: the new case is in the existing `death_plane_check` entry. GitHub runs it in Godot game checks alongside standing checks, rules and campaign parity, and the Godot-only rules safety net.
