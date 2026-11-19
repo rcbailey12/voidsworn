@@ -8,6 +8,7 @@ rem Writes only under S1078_HOME. Nothing is deleted.
 rem Optional settings: S1078_SHIPS (a godot folder with the installed hulls, default build\godot), S1078_SKIP_LOOK=1,
 rem S1078_SKIP_COST=1, S1078_SUBJECTS (rules ids).
 setlocal enabledelayedexpansion
+set "JOBFAIL=0"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if "%S1078_HOME%"=="" set "S1078_HOME=%VT%\opus1078"
 set "HOME1078=%S1078_HOME%"
@@ -24,6 +25,7 @@ set "TMO=%VT%\build_b\tools\pc\tmo.bat"
 set "PC_GPU_ISSUE=1078"
 if not exist "%TMO%" (
   echo FAILED: no %TMO% >> "%ST%"
+  set "JOBFAIL=1"
   goto finish
 )
 
@@ -62,6 +64,7 @@ call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --fix
 findstr /c:"SHIELD1078_DONE" "%OUT%\look_log.txt" > nul
 if errorlevel 1 (
   echo FAILED: the look pass did not finish, see %OUT%\look_log.txt >> "%ST%"
+  set "JOBFAIL=1"
   goto finish
 )
 echo look pass done %date% %time% >> "%ST%"
@@ -83,6 +86,7 @@ for /d %%D in ("%OUT%\look\clip_*") do (
   "%FF%" -y -loglevel error -framerate 30 -i "%%D\f_%%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 20 "%OUT%\look\%%~nxD.mp4"
   if errorlevel 1 (
     echo FAILED: clip %%~nxD did not encode >> "%ST%"
+    set "JOBFAIL=1"
   ) else (
     echo clip %%~nxD encoded >> "%ST%"
   )
@@ -103,6 +107,7 @@ set "PC_GPU_MODE="
 findstr /c:"SHIELD1078_DONE" "%OUT%\cost_log.txt" > nul
 if errorlevel 1 (
   echo FAILED: the cost pass did not finish, see %OUT%\cost_log.txt >> "%ST%"
+  set "JOBFAIL=1"
   goto finish
 )
 echo cost pass done %date% %time% >> "%ST%"
@@ -114,6 +119,7 @@ copy /y "%R%\godot\fx\test\shield_fail_probe.gd" "%HOME1078%\probe_copy.gd" > nu
 call :safe_checkout origin/main main
 if errorlevel 1 (
   echo FAILED: cannot check out origin/main, no main cost numbers >> "%ST%"
+  set "JOBFAIL=1"
   goto done
 )
 set "MSHA="
@@ -122,6 +128,7 @@ for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "MSHA=%%H"
 for /f %%H in ('git -C "%R%" rev-parse --short^=8 origin/main') do set "WANT=%%H"
 if not "%MSHA%"=="%WANT%" (
   echo FAILED: checkout is %MSHA%, origin/main is %WANT%, no main cost numbers >> "%ST%"
+  set "JOBFAIL=1"
   goto done
 )
 rem the probe goes in under a name main does not track, so checking the branch out again never collides with it
@@ -137,17 +144,24 @@ set "PROBE_LOOKS="
 findstr /c:"SHIELD1078_DONE" "%OUT%\cost_main_log.txt" > nul
 if errorlevel 1 (
   echo FAILED: the main cost pass on %MSHA% did not finish, see cost_main_log.txt; no main cost numbers >> "%ST%"
+  set "JOBFAIL=1"
   goto done
 )
 if not exist "%OUT%\%MRUN%\shield1078.json" (
   echo FAILED: the main cost pass on %MSHA% wrote no json; no main cost numbers >> "%ST%"
+  set "JOBFAIL=1"
   goto done
 )
 echo main cost pass %MSHA% done in %MRUN% %date% %time% >> "%ST%"
 
 :done
 call :safe_checkout %SHA% back
-echo DONE %SHA% %date% %time% >> "%ST%"
+if errorlevel 1 set "JOBFAIL=1"
+if "%JOBFAIL%"=="0" (
+  echo DONE %SHA% %date% %time% >> "%ST%"
+) else (
+  echo RESULT: FAILED, see the FAILED lines above %date% %time% >> "%ST%"
+)
 
 :finish
 rem what the Board brings back: sheets, clips, json and logs (no clip frames)
@@ -157,9 +171,9 @@ if exist "%OUT%\look" copy /y "%OUT%\look\*.json" "%RES%\" > nul 2>&1
 if exist "%OUT%\look" copy /y "%OUT%\look\*.mp4" "%RES%\" > nul 2>&1
 for /d %%D in ("%OUT%\cost*") do copy /y "%%D\shield1078.json" "%RES%\%%~nxD.json" > nul 2>&1
 echo shield1078 end %date% %time% >> "%ST%"
+if not "%JOBFAIL%"=="0" echo RESULT: FAILED >> "%ST%"
 echo all done >> "%ST%"
-endlocal
-exit /b 0
+endlocal & exit /b %JOBFAIL%
 
 rem ---------------------------------------------------------------- :safe_checkout REF TAG
 rem Never a forced checkout (file loss, issue 1179; the ship_job.bat pattern). Save the clone's tracked changes first
@@ -170,20 +184,67 @@ rem also refuses to overwrite ignored files, then copy the installed hulls in ag
 set "SC_REF=%~1"
 set "SC_TAG=%~2"
 set "SC_DIR=%HOME1078%\out\checkout_%SC_TAG%_%RANDOM%"
+set "SC_LIST="
+set "SC_PATCH="
 mkdir "%SC_DIR%"
-git -C "%R%" status --porcelain --untracked-files=no > "%SC_DIR%\clone_changes_before_checkout.txt" 2>&1
-git -C "%R%" diff --binary HEAD > "%SC_DIR%\clone_changes_before_checkout.patch" 2>> "%SC_DIR%\clone_changes_before_checkout.txt"
+if not exist "%SC_DIR%" (
+  echo FAILED: checkout %SC_REF%: could not make %SC_DIR%, nothing was touched >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
+rem fail closed: both backup writes must succeed, and a nonempty change list must have a nonempty patch (Artoo, PR 1190)
+git -C "%R%" status --porcelain --untracked-files=no > "%SC_DIR%\clone_changes_before_checkout.txt" 2> "%SC_DIR%\backup_errors.txt"
+if errorlevel 1 (
+  echo FAILED: checkout %SC_REF%: could not list the clone's changes, nothing was touched >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
+git -C "%R%" diff --binary HEAD > "%SC_DIR%\clone_changes_before_checkout.patch" 2>> "%SC_DIR%\backup_errors.txt"
+if errorlevel 1 (
+  echo FAILED: checkout %SC_REF%: could not save the patch, nothing was touched >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
+for %%Z in ("%SC_DIR%\clone_changes_before_checkout.txt") do set "SC_LIST=%%~zZ"
+for %%Z in ("%SC_DIR%\clone_changes_before_checkout.patch") do set "SC_PATCH=%%~zZ"
+if not defined SC_LIST set "SC_LIST=-1"
+if not defined SC_PATCH set "SC_PATCH=-1"
+if %SC_LIST% LSS 0 (
+  echo FAILED: checkout %SC_REF%: the change list was not written, nothing was touched >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
+if %SC_LIST% GTR 0 if %SC_PATCH% LEQ 0 (
+  echo FAILED: checkout %SC_REF%: changes are listed but the patch is empty, nothing was touched >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
 rem expected: the copied hulls, and the .import files the headless import rewrites (the ship_job.bat fix, opus/issue-1174)
 findstr /v /r /c:"^.. godot/assets/ships/" /c:"^.. godot/.*\.import$" "%SC_DIR%\clone_changes_before_checkout.txt" > "%SC_DIR%\clone_changes_unexpected.txt"
 for %%Z in ("%SC_DIR%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 (
   echo FAILED: checkout %SC_REF%: the clone has local changes outside godot\assets\ships, listed in %SC_DIR%\clone_changes_unexpected.txt and saved as a patch; nothing was reset >> "%ST%"
+  set "JOBFAIL=1"
   exit /b 1
 )
 git -C "%R%" checkout -q HEAD -- godot/assets/ships >> "%HOME1078%\git.txt" 2>&1
-git -C "%R%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%HOME1078%\git.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: checkout %SC_REF%: could not restore godot\assets\ships, see git.txt >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
+rem only when the list holds a .import change (the pathspec errors when nothing matches)
+set "SC_IMP=0"
+findstr /r /c:"^.. godot/.*\.import$" "%SC_DIR%\clone_changes_before_checkout.txt" > nul && set "SC_IMP=1"
+if "%SC_IMP%"=="1" git -C "%R%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%HOME1078%\git.txt" 2>&1
+if "%SC_IMP%"=="1" if errorlevel 1 (
+  echo FAILED: checkout %SC_REF%: could not restore the .import files, see git.txt >> "%ST%"
+  set "JOBFAIL=1"
+  exit /b 1
+)
 git -C "%R%" checkout -q --no-overwrite-ignore --detach %SC_REF% >> "%HOME1078%\git.txt" 2>&1
 if errorlevel 1 (
   echo FAILED: checkout %SC_REF% refused, see git.txt; nothing was forced >> "%ST%"
+  set "JOBFAIL=1"
   exit /b 1
 )
 echo checked out %SC_REF% safely, saved changes in %SC_DIR% >> "%ST%"
