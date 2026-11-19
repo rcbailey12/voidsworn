@@ -1,0 +1,1622 @@
+[
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 7.608,
+      "median": 2.929,
+      "p95": 4.705,
+      "p99": 5.875
+    },
+    "frames": 2518,
+    "gpu_ms": {
+      "max": 3.10999989509583,
+      "median": 2.34899997711182,
+      "p95": 2.71399998664856,
+      "p99": 2.89199995994568
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.06200003623962,
+      "median": 0.658999979496002,
+      "p95": 1.29900002479553,
+      "p99": 1.68400001525879
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "max",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 15.413,
+      "median": 7.815,
+      "p95": 8.332,
+      "p99": 9.684
+    },
+    "frames": 1016,
+    "gpu_ms": {
+      "max": 11.7589998245239,
+      "median": 7.11399984359741,
+      "p95": 7.67999982833862,
+      "p99": 8.82100009918213
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.18700003623962,
+      "median": 1.0110000371933,
+      "p95": 1.47000002861023,
+      "p99": 1.74100005626678
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "max",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 7.789,
+      "median": 3.148,
+      "p95": 5.12,
+      "p99": 6.086
+    },
+    "frames": 2335,
+    "gpu_ms": {
+      "max": 3.05999994277954,
+      "median": 2.41300010681152,
+      "p95": 2.77099990844727,
+      "p99": 2.89000010490417
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.42400002479553,
+      "median": 0.829999983310699,
+      "p95": 1.442999958992,
+      "p99": 1.75600004196167
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 8.191,
+      "median": 3.161,
+      "p95": 5.359,
+      "p99": 6.538
+    },
+    "frames": 2290,
+    "gpu_ms": {
+      "max": 3.03399991989136,
+      "median": 2.41199994087219,
+      "p95": 2.76500010490417,
+      "p99": 2.8510000705719
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.31900000572205,
+      "median": 0.827000021934509,
+      "p95": 1.51800000667572,
+      "p99": 1.87399995326996
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 15.776,
+      "median": 7.854,
+      "p95": 8.325,
+      "p99": 8.586
+    },
+    "frames": 1013,
+    "gpu_ms": {
+      "max": 8.0629997253418,
+      "median": 7.13800001144409,
+      "p95": 7.64300012588501,
+      "p99": 7.8289999961853
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.89600002765656,
+      "median": 1.0349999666214,
+      "p95": 1.49100005626678,
+      "p99": 1.70899999141693
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 15.609,
+      "median": 7.939,
+      "p95": 9.128,
+      "p99": 9.99
+    },
+    "frames": 1002,
+    "gpu_ms": {
+      "max": 8.0600004196167,
+      "median": 7.13800001144409,
+      "p95": 7.68599987030029,
+      "p99": 7.93200016021729
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 4.13899993896484,
+      "median": 1.44900000095367,
+      "p95": 3.40300011634827,
+      "p99": 3.67600011825562
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 10.803,
+      "median": 5.108,
+      "p95": 7.833,
+      "p99": 9.006
+    },
+    "frames": 1527,
+    "gpu_ms": {
+      "max": 2.80299997329712,
+      "median": 1.91100001335144,
+      "p95": 2.15499997138977,
+      "p99": 2.53999996185303
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.99300003051758,
+      "median": 1.13499999046326,
+      "p95": 3.15799999237061,
+      "p99": 3.52300000190735
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "high",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.992,
+      "median": 7.803,
+      "p95": 9.392,
+      "p99": 9.953
+    },
+    "frames": 1025,
+    "gpu_ms": {
+      "max": 8.08899974822998,
+      "median": 7.11800003051758,
+      "p95": 7.7189998626709,
+      "p99": 7.80399990081787
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.91599988937378,
+      "median": 1.20899999141693,
+      "p95": 3.26799988746643,
+      "p99": 3.53099989891052
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "high",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 19.279,
+      "median": 5.861,
+      "p95": 8.194,
+      "p99": 9.29
+    },
+    "frames": 1385,
+    "gpu_ms": {
+      "max": 2.83100008964539,
+      "median": 1.98500001430511,
+      "p95": 2.2279999256134,
+      "p99": 2.62700009346008
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 4.10699987411499,
+      "median": 1.15699994564056,
+      "p95": 3.2260000705719,
+      "p99": 3.49499988555908
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 13.487,
+      "median": 5.827,
+      "p95": 8.232,
+      "p99": 9.222
+    },
+    "frames": 1378,
+    "gpu_ms": {
+      "max": 2.7720000743866,
+      "median": 1.98199999332428,
+      "p95": 2.24000000953674,
+      "p99": 2.63000011444092
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.83500003814697,
+      "median": 1.14100003242493,
+      "p95": 3.21600008010864,
+      "p99": 3.53500008583069
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 18.35,
+      "median": 8.135,
+      "p95": 9.755,
+      "p99": 10.056
+    },
+    "frames": 980,
+    "gpu_ms": {
+      "max": 8.56599998474121,
+      "median": 7.44399976730347,
+      "p95": 8.10999965667725,
+      "p99": 8.2480001449585
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.80699992179871,
+      "median": 1.17900002002716,
+      "p95": 3.22000002861023,
+      "p99": 3.53299999237061
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 17.402,
+      "median": 8.195,
+      "p95": 9.696,
+      "p99": 10.069
+    },
+    "frames": 979,
+    "gpu_ms": {
+      "max": 8.39000034332275,
+      "median": 7.46999979019165,
+      "p95": 8.15499973297119,
+      "p99": 8.30399990081787
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.81699991226196,
+      "median": 1.18900001049042,
+      "p95": 3.25799989700317,
+      "p99": 3.58400011062622
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 10.03,
+      "median": 4.701,
+      "p95": 7.283,
+      "p99": 7.994
+    },
+    "frames": 1642,
+    "gpu_ms": {
+      "max": 2.63199996948242,
+      "median": 1.75100004673004,
+      "p95": 1.99899995326996,
+      "p99": 2.3840000629425
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.84299993515015,
+      "median": 1.06400001049042,
+      "p95": 2.99900007247925,
+      "p99": 3.30299997329712
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "low",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.243,
+      "median": 7.205,
+      "p95": 8.739,
+      "p99": 9.311
+    },
+    "frames": 1105,
+    "gpu_ms": {
+      "max": 7.53399991989136,
+      "median": 6.55399990081787,
+      "p95": 7.21999979019165,
+      "p99": 7.40700006484985
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.66499996185303,
+      "median": 1.14100003242493,
+      "p95": 3.13800001144409,
+      "p99": 3.42000007629395
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "low",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 13.171,
+      "median": 2.85,
+      "p95": 5.399,
+      "p99": 6.675
+    },
+    "frames": 2484,
+    "gpu_ms": {
+      "max": 2.68700003623962,
+      "median": 1.78699994087219,
+      "p95": 2.03500008583069,
+      "p99": 2.3840000629425
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.30599999427795,
+      "median": 0.728999972343445,
+      "p95": 1.28799998760223,
+      "p99": 2.81299996376038
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 8.784,
+      "median": 2.614,
+      "p95": 5.69,
+      "p99": 7.268
+    },
+    "frames": 2613,
+    "gpu_ms": {
+      "max": 2.50300002098084,
+      "median": 1.78799998760223,
+      "p95": 2.28800010681152,
+      "p99": 2.38899993896484
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.77999997138977,
+      "median": 0.666000008583069,
+      "p95": 1.18400001525879,
+      "p99": 2.84899997711182
+    },
+    "resolution": "1080p",
+    "session": 1,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.764,
+      "median": 7.269,
+      "p95": 8.32,
+      "p99": 9.395
+    },
+    "frames": 1093,
+    "gpu_ms": {
+      "max": 7.65899991989136,
+      "median": 6.60599994659424,
+      "p95": 7.3289999961853,
+      "p99": 7.49200010299683
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.76399993896484,
+      "median": 1.07599997520447,
+      "p95": 2.3510000705719,
+      "p99": 3.18099999427795
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 13.846,
+      "median": 7.343,
+      "p95": 7.908,
+      "p99": 8.091
+    },
+    "frames": 1089,
+    "gpu_ms": {
+      "max": 7.67399978637695,
+      "median": 6.65799999237061,
+      "p95": 7.29699993133545,
+      "p99": 7.52899980545044
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.20099997520447,
+      "median": 0.935000002384186,
+      "p95": 1.32500004768372,
+      "p99": 1.66799998283386
+    },
+    "resolution": "4K",
+    "session": 1,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 6.129,
+      "median": 2.463,
+      "p95": 3.767,
+      "p99": 4.575
+    },
+    "frames": 3074,
+    "gpu_ms": {
+      "max": 2.62100005149841,
+      "median": 1.79999995231628,
+      "p95": 2.3050000667572,
+      "p99": 2.41199994087219
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.89599990844727,
+      "median": 0.490000009536743,
+      "p95": 0.897000014781952,
+      "p99": 1.11899995803833
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 7.822,
+      "median": 2.432,
+      "p95": 3.449,
+      "p99": 4.79
+    },
+    "frames": 3153,
+    "gpu_ms": {
+      "max": 2.60500001907349,
+      "median": 1.80099999904633,
+      "p95": 2.31500005722046,
+      "p99": 2.38800001144409
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.34699988365173,
+      "median": 0.437000006437302,
+      "p95": 0.842000007629395,
+      "p99": 1.1599999666214
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.743,
+      "median": 7.332,
+      "p95": 7.876,
+      "p99": 8.048
+    },
+    "frames": 1090,
+    "gpu_ms": {
+      "max": 7.69999980926514,
+      "median": 6.70100021362305,
+      "p95": 7.32499980926514,
+      "p99": 7.48000001907349
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.97099995613098,
+      "median": 0.671999990940094,
+      "p95": 1.09800004959106,
+      "p99": 1.31200003623962
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 14.614,
+      "median": 7.312,
+      "p95": 7.908,
+      "p99": 8.12
+    },
+    "frames": 1087,
+    "gpu_ms": {
+      "max": 7.7020001411438,
+      "median": 6.65799999237061,
+      "p95": 7.3439998626709,
+      "p99": 7.50899982452393
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.12199997901917,
+      "median": 0.647000014781952,
+      "p95": 1.08899998664856,
+      "p99": 1.38999998569489
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 5.33,
+      "median": 2.369,
+      "p95": 3.092,
+      "p99": 3.902
+    },
+    "frames": 3286,
+    "gpu_ms": {
+      "max": 2.54800009727478,
+      "median": 1.77600002288818,
+      "p95": 2.29399991035461,
+      "p99": 2.34699988365173
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.35099995136261,
+      "median": 0.42399999499321,
+      "p95": 0.734000027179718,
+      "p99": 0.945999979972839
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "low",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.385,
+      "median": 7.252,
+      "p95": 7.832,
+      "p99": 8.045
+    },
+    "frames": 1100,
+    "gpu_ms": {
+      "max": 7.625,
+      "median": 6.61100006103516,
+      "p95": 7.2350001335144,
+      "p99": 7.46199989318848
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.85300004482269,
+      "median": 0.708000004291534,
+      "p95": 1.13199996948242,
+      "p99": 1.37999999523163
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "low",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 5.364,
+      "median": 2.62,
+      "p95": 3.077,
+      "p99": 3.401
+    },
+    "frames": 3007,
+    "gpu_ms": {
+      "max": 2.74300003051758,
+      "median": 2.03699994087219,
+      "p95": 2.53800010681152,
+      "p99": 2.58699989318848
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.5900000333786,
+      "median": 0.388000011444092,
+      "p95": 0.554000020027161,
+      "p99": 0.707000017166138
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 6.429,
+      "median": 2.678,
+      "p95": 3.363,
+      "p99": 4.27
+    },
+    "frames": 2926,
+    "gpu_ms": {
+      "max": 2.91000008583069,
+      "median": 2.02699995040894,
+      "p95": 2.53500008583069,
+      "p99": 2.59899997711182
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.54499995708466,
+      "median": 0.451999992132187,
+      "p95": 0.820999979972839,
+      "p99": 1.09800004959106
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 16.035,
+      "median": 8.174,
+      "p95": 8.719,
+      "p99": 8.947
+    },
+    "frames": 978,
+    "gpu_ms": {
+      "max": 8.51299953460693,
+      "median": 7.56699991226196,
+      "p95": 8.14500045776367,
+      "p99": 8.33699989318848
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.7039999961853,
+      "median": 0.691999971866608,
+      "p95": 1.14499998092651,
+      "p99": 1.35800004005432
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 16.601,
+      "median": 8.17,
+      "p95": 8.729,
+      "p99": 8.954
+    },
+    "frames": 978,
+    "gpu_ms": {
+      "max": 8.60000038146973,
+      "median": 7.55700016021729,
+      "p95": 8.18000030517578,
+      "p99": 8.3769998550415
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.48399996757507,
+      "median": 0.623000025749207,
+      "p95": 1.0110000371933,
+      "p99": 1.26499998569489
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 18.917,
+      "median": 3.471,
+      "p95": 7.635,
+      "p99": 8.754
+    },
+    "frames": 1952,
+    "gpu_ms": {
+      "max": 2.76099991798401,
+      "median": 1.92799997329712,
+      "p95": 2.17199993133545,
+      "p99": 2.53600001335144
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 3.89499998092651,
+      "median": 0.90200001001358,
+      "p95": 2.24600005149841,
+      "p99": 3.46399998664856
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "high",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.709,
+      "median": 7.754,
+      "p95": 8.742,
+      "p99": 9.597
+    },
+    "frames": 1030,
+    "gpu_ms": {
+      "max": 8.0290002822876,
+      "median": 7.10699987411499,
+      "p95": 7.72399997711182,
+      "p99": 7.84299993515015
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 4.09499979019165,
+      "median": 1.14300000667572,
+      "p95": 2.98000001907349,
+      "p99": 3.41400003433228
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "high",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 11.138,
+      "median": 5.496,
+      "p95": 8.056,
+      "p99": 9.093
+    },
+    "frames": 1416,
+    "gpu_ms": {
+      "max": 3.08800005912781,
+      "median": 2.39400005340576,
+      "p95": 2.80999994277954,
+      "p99": 2.92000007629395
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 4.26599979400635,
+      "median": 1.42299997806549,
+      "p95": 2.55299997329712,
+      "p99": 3.69600009918213
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 10.15,
+      "median": 5.593,
+      "p95": 8.176,
+      "p99": 9.306
+    },
+    "frames": 1399,
+    "gpu_ms": {
+      "max": 3.18199992179871,
+      "median": 2.39199995994568,
+      "p95": 2.83999991416931,
+      "p99": 2.96000003814697
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 4.51800012588501,
+      "median": 1.44200003147125,
+      "p95": 2.76300001144409,
+      "p99": 3.71600008010864
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 16.244,
+      "median": 7.888,
+      "p95": 8.392,
+      "p99": 8.65
+    },
+    "frames": 1010,
+    "gpu_ms": {
+      "max": 8.12399959564209,
+      "median": 7.14900016784668,
+      "p95": 7.65500020980835,
+      "p99": 7.9210000038147
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.11100006103516,
+      "median": 1.06500005722046,
+      "p95": 1.56400001049042,
+      "p99": 1.79100000858307
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 15.96,
+      "median": 7.788,
+      "p95": 8.233,
+      "p99": 8.354
+    },
+    "frames": 1019,
+    "gpu_ms": {
+      "max": 7.81099987030029,
+      "median": 7.13700008392334,
+      "p95": 7.56400012969971,
+      "p99": 7.65999984741211
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.77199995517731,
+      "median": 0.73199999332428,
+      "p95": 1.21599996089935,
+      "p99": 1.4539999961853
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 7.312,
+      "median": 2.871,
+      "p95": 3.41,
+      "p99": 4.291
+    },
+    "frames": 2751,
+    "gpu_ms": {
+      "max": 3.07599997520447,
+      "median": 2.35599994659424,
+      "p95": 2.70300006866455,
+      "p99": 2.87599992752075
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.23900008201599,
+      "median": 0.512000024318695,
+      "p95": 0.814999997615814,
+      "p99": 1.14100003242493
+    },
+    "resolution": "1080p",
+    "session": 2,
+    "tier": "max",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 16.22,
+      "median": 7.686,
+      "p95": 8.13,
+      "p99": 8.346
+    },
+    "frames": 1036,
+    "gpu_ms": {
+      "max": 7.89599990844727,
+      "median": 6.9980001449585,
+      "p95": 7.46299982070923,
+      "p99": 7.74599981307983
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.8639999628067,
+      "median": 0.731000006198883,
+      "p95": 1.15299999713898,
+      "p99": 1.46099996566772
+    },
+    "resolution": "4K",
+    "session": 2,
+    "tier": "max",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 8.147,
+      "median": 2.867,
+      "p95": 3.376,
+      "p99": 4.11
+    },
+    "frames": 2758,
+    "gpu_ms": {
+      "max": 2.97399997711182,
+      "median": 2.35400009155273,
+      "p95": 2.70099997520447,
+      "p99": 2.87899994850159
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.9559999704361,
+      "median": 0.504000008106232,
+      "p95": 0.791000008583069,
+      "p99": 1.10800004005432
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "max",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.905,
+      "median": 7.656,
+      "p95": 8.074,
+      "p99": 8.211
+    },
+    "frames": 1038,
+    "gpu_ms": {
+      "max": 7.70900011062622,
+      "median": 6.99599981307983,
+      "p95": 7.42500019073486,
+      "p99": 7.55200004577637
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.56099998950958,
+      "median": 0.723999977111816,
+      "p95": 1.13999998569489,
+      "p99": 1.41100001335144
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "max",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 7.168,
+      "median": 2.942,
+      "p95": 3.503,
+      "p99": 4.348
+    },
+    "frames": 2681,
+    "gpu_ms": {
+      "max": 3.08400011062622,
+      "median": 2.42799997329712,
+      "p95": 2.76300001144409,
+      "p99": 2.93600010871887
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.64600002765656,
+      "median": 0.537999987602234,
+      "p95": 0.870000004768372,
+      "p99": 1.12100005149841
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 6.996,
+      "median": 2.951,
+      "p95": 3.628,
+      "p99": 4.883
+    },
+    "frames": 2643,
+    "gpu_ms": {
+      "max": 3.18700003623962,
+      "median": 2.43199992179871,
+      "p95": 2.7739999294281,
+      "p99": 2.94400000572205
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.07100009918213,
+      "median": 0.556999981403351,
+      "p95": 0.962000012397766,
+      "p99": 1.25899994373322
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 16.676,
+      "median": 7.864,
+      "p95": 8.336,
+      "p99": 8.539
+    },
+    "frames": 1011,
+    "gpu_ms": {
+      "max": 7.99399995803833,
+      "median": 7.15700006484985,
+      "p95": 7.61600017547607,
+      "p99": 7.78399991989136
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.05800008773804,
+      "median": 0.898999989032745,
+      "p95": 1.47599995136261,
+      "p99": 1.76600003242493
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "max",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 15.96,
+      "median": 7.806,
+      "p95": 8.243,
+      "p99": 8.427
+    },
+    "frames": 1017,
+    "gpu_ms": {
+      "max": 7.78700017929077,
+      "median": 7.15100002288818,
+      "p95": 7.56099987030029,
+      "p99": 7.68400001525879
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.85300004482269,
+      "median": 0.72299998998642,
+      "p95": 1.16299998760223,
+      "p99": 1.40100002288818
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "max",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 5.426,
+      "median": 2.518,
+      "p95": 2.973,
+      "p99": 3.613
+    },
+    "frames": 3128,
+    "gpu_ms": {
+      "max": 2.57999992370605,
+      "median": 1.93099999427795,
+      "p95": 2.1800000667572,
+      "p99": 2.4760000705719
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.31500005722046,
+      "median": 0.409999996423721,
+      "p95": 0.671000003814697,
+      "p99": 0.833000004291534
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "high",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 15.259,
+      "median": 7.736,
+      "p95": 8.253,
+      "p99": 8.408
+    },
+    "frames": 1031,
+    "gpu_ms": {
+      "max": 7.92000007629395,
+      "median": 7.14599990844727,
+      "p95": 7.67899990081787,
+      "p99": 7.80399990081787
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.20300006866455,
+      "median": 0.600000023841858,
+      "p95": 0.987999975681305,
+      "p99": 1.24000000953674
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "high",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 5.485,
+      "median": 2.611,
+      "p95": 3.08,
+      "p99": 3.397
+    },
+    "frames": 3018,
+    "gpu_ms": {
+      "max": 2.74900007247925,
+      "median": 2.0239999294281,
+      "p95": 2.53099989891052,
+      "p99": 2.57999992370605
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.42499995231628,
+      "median": 0.40599998831749,
+      "p95": 0.625,
+      "p99": 0.810999989509583
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 7.036,
+      "median": 2.639,
+      "p95": 3.127,
+      "p99": 4.078
+    },
+    "frames": 2990,
+    "gpu_ms": {
+      "max": 2.77600002288818,
+      "median": 2.02300000190735,
+      "p95": 2.26999998092651,
+      "p99": 2.57100009918213
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.73099994659424,
+      "median": 0.405000001192093,
+      "p95": 0.671999990940094,
+      "p99": 1.00600004196167
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 16.227,
+      "median": 8.185,
+      "p95": 8.806,
+      "p99": 8.963
+    },
+    "frames": 976,
+    "gpu_ms": {
+      "max": 8.70100021362305,
+      "median": 7.54899978637695,
+      "p95": 8.19499969482422,
+      "p99": 8.36499977111816
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.97800004482269,
+      "median": 0.658999979496002,
+      "p95": 1.07799994945526,
+      "p99": 1.39499998092651
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "high",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 16.554,
+      "median": 8.159,
+      "p95": 8.776,
+      "p99": 8.95
+    },
+    "frames": 978,
+    "gpu_ms": {
+      "max": 8.48700046539307,
+      "median": 7.52600002288818,
+      "p95": 8.19900035858154,
+      "p99": 8.35499954223633
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.54100000858307,
+      "median": 0.596000015735626,
+      "p95": 0.982999980449677,
+      "p99": 1.19400000572205
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "high",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 6.645,
+      "median": 2.457,
+      "p95": 4.043,
+      "p99": 4.919
+    },
+    "frames": 3017,
+    "gpu_ms": {
+      "max": 2.63899993896484,
+      "median": 1.77600002288818,
+      "p95": 2.05699992179871,
+      "p99": 2.39100003242493
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.2260000705719,
+      "median": 0.513000011444092,
+      "p95": 1.05999994277954,
+      "p99": 1.36699998378754
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "low",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 15.891,
+      "median": 7.105,
+      "p95": 7.751,
+      "p99": 7.991
+    },
+    "frames": 1118,
+    "gpu_ms": {
+      "max": 7.53599977493286,
+      "median": 6.58699989318848,
+      "p95": 7.18800020217896,
+      "p99": 7.38000011444092
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.89800000190735,
+      "median": 0.625999987125397,
+      "p95": 1.02699995040894,
+      "p99": 1.25600004196167
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "low",
+    "wake": false,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 6.343,
+      "median": 2.4,
+      "p95": 3.285,
+      "p99": 4.238
+    },
+    "frames": 3209,
+    "gpu_ms": {
+      "max": 2.54500007629395,
+      "median": 1.80200004577637,
+      "p95": 2.14000010490417,
+      "p99": 2.38599991798401
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.69000005722046,
+      "median": 0.435000002384186,
+      "p95": 0.810999989509583,
+      "p99": 1.15799999237061
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 4.968,
+      "median": 2.329,
+      "p95": 2.886,
+      "p99": 3.538
+    },
+    "frames": 3327,
+    "gpu_ms": {
+      "max": 2.58800005912781,
+      "median": 1.79999995231628,
+      "p95": 2.03800010681152,
+      "p99": 2.3510000705719
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.33700001239777,
+      "median": 0.400000005960464,
+      "p95": 0.681999981403351,
+      "p99": 0.888000011444092
+    },
+    "resolution": "1080p",
+    "session": 3,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "flying",
+    "frame_ms": {
+      "max": 14.679,
+      "median": 7.258,
+      "p95": 7.9,
+      "p99": 8.153
+    },
+    "frames": 1097,
+    "gpu_ms": {
+      "max": 7.67799997329712,
+      "median": 6.71500015258789,
+      "p95": 7.30999994277954,
+      "p99": 7.53200006484985
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 2.1010000705719,
+      "median": 0.643999993801117,
+      "p95": 1.10300004482269,
+      "p99": 1.32799994945526
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  },
+  {
+    "actual_quality": "low",
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "case": "held",
+    "frame_ms": {
+      "max": 14.572,
+      "median": 7.25,
+      "p95": 7.865,
+      "p99": 8.097
+    },
+    "frames": 1097,
+    "gpu_ms": {
+      "max": 7.61700010299683,
+      "median": 6.62799978256226,
+      "p95": 7.26200008392334,
+      "p99": 7.50500011444092
+    },
+    "living_sha256": "8452675c5ef352a429541ebb3840a3ccb3b9381c1d018db6b041c4f38430d0db",
+    "render_cpu_ms": {
+      "max": 1.96599996089935,
+      "median": 0.582000017166138,
+      "p95": 1.0,
+      "p99": 1.25
+    },
+    "resolution": "4K",
+    "session": 3,
+    "tier": "low",
+    "wake": true,
+    "wake_sha256": "b9d170842fe06c1ba3738985a5633961454b245914e28bd2bb68c7605e831943"
+  }
+]
