@@ -55,7 +55,10 @@ if "%MODE%"=="front" (
 )
 call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
-for %%S in (1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export) do call :stage %%S
+rem Stages 1 and 2 ran in the front run (the concept and the AI shape reference do not change with the sheet); set FULL=1 to rerun them.
+set STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export
+if "%FULL%"=="1" set STAGES=1_concept_in 2_shape_ref %STAGES%
+for %%S in (%STAGES%) do call :stage %%S
 if defined FAILED (
   echo checks SKIPPED: stage %FAILED% failed, so the installed glb is not this run's >> "%RES%"
   goto end
