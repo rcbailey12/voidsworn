@@ -305,6 +305,8 @@ def cells():
             if nm not in M['concept_views']:
                 continue   # issue 768: a concept with no true side view (IM5) shows the build's side alone
             v = M['concept_views'][nm]; c = sheet.crop(tuple(v['box']))
+            if v.get('turn'):   # issue 1155: a view drawn bow up or down, turned to bow left (degrees, + counterclockwise)
+                c = c.rotate(int(v['turn']), expand=True)
             cview[nm] = c.transpose(Image.FLIP_LEFT_RIGHT) if v.get('flip') else c
     else:
         a = np.asarray(sheet).astype(int); bgc = np.median(a[5:40, 5:40].reshape(-1, 3), axis=0)
