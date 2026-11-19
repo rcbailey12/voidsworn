@@ -6,6 +6,8 @@ const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
 
+const T_GILT := Color("#d0a64b")  # The title wordmark keeps its original gold.
+
 var main: Node
 var k := 1.0
 var root: Control
@@ -88,7 +90,7 @@ func _build() -> void:
 	# the game's name (brand.gd TITLE, the one place to rename it): one line at the largest size that fits 88% of the
 	# window width; if that would be small (a narrow window), two centred lines at a larger size instead
 	var vw := vs.x
-	var h := _label(Brand.TITLE, 84, GS.TEXT, font_goth)
+	var h := _label(Brand.TITLE, 84, T_GILT, font_goth)
 	h.text = _title_text(vw * 0.88)
 	h.add_theme_font_size_override("font_size", _title_size)
 	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
