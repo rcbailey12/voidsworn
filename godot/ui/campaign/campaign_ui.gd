@@ -1563,7 +1563,7 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 	if lessons.is_empty() and int(nz.get("met", 0)) > 0:
 		v.add_child(lbl("No weakness was taught this run.", 18, GS.TEXT2)); shown = true
 	for l in lessons:
-		var nw = C.NEM_WEAK.get(l.get("w"))
+		var nw = C.BattleAPI.nem_entry(C.NEM_WEAK, l.get("w"), l.get("fac"))
 		var lead = " beat you and taught you a weakness: " if l.get("taught", true) else ". Weakness found: "
 		v.add_child(rich("Nemesis lesson: " + ("you broke " if not l.get("taught", true) else "") + c(esc(_end_nem_name(l)), GS.NEM) + lead + esc(nw["n"] if nw != null else "the hunter's tactics") + ".", 18)); shown = true
 		if str(l.get("text", "")) != "": v.add_child(lbl(str(l["text"]), 17, GS.TEXT2))
@@ -1574,7 +1574,8 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 		var who = c(esc(_end_nem_name(N)), GS.NEM)
 		for w in N.get("revealed", []):
 			if lessons.any(func(l): return l.get("fac") == N.get("fac") and l.get("w") == w): continue
-			if C.NEM_WEAK.has(w): v.add_child(rich("Nemesis lesson: you broke " + who + ". Weakness found: " + esc(C.NEM_WEAK[w]["n"]) + ".", 18)); shown = true
+			var entry = C.BattleAPI.nem_entry(C.NEM_WEAK, w, N.get("fac"))
+			if entry != null: v.add_child(rich("Nemesis lesson: you broke " + who + ". Weakness found: " + esc(entry["n"]) + ".", 18)); shown = true
 		for ad in N.get("adapt", []):
 			v.add_child(rich("Nemesis lesson: " + who + " adapted. " + esc(C.nemAdaptName(ad, N["fac"])) + ": " + esc(C.nemAdaptWhyLine(ad, N)) + ".", 18)); shown = true
 		if float(N.get("loot", 0)) > 0:

@@ -156,7 +156,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks
    carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow
    and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
-13. **One fix reaches every ship of its kind (R333, Ryan, Nov 19 2026).** A fix or look change lands in the faction kit, the
+13. **One shared ship job (issue 1174, Board, Nov 19 2026).** Every ship build run on the PC is a three-line wrapper around
+   `tools/pc/jobs/ship_job.bat` (docs/ship_pipeline/ship_job/README.md): it stops after a failed stage, takes shots only of
+   this run's own checked install, waits up to 3600 s for the GPU and ends "done PASS" or "done FAILED: <step>", then
+   "all done". Why: on Nov 19 the C12 and C13 runners and S9's first run took pictures after a failed build, and 1155, 1157
+   and 1158 failed a stage on the old 300 s GPU wait.
+14. **One fix reaches every ship of its kind (R333, Ryan, Nov 19 2026).** A fix or look change lands in the faction kit, the
    paint stack, the shared parts or a shared helper, never in one ship's file alone, and its pull request names which other
    ships pick it up and how (rebuilt from the kit, rebaked from the stack, or already calling the shared option). A change
    that is truly one ship's says why in its pull request. Why: "let's make sure all the changes we're doing are cohesive and
