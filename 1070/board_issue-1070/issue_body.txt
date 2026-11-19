@@ -1,0 +1,15 @@
+Owner: codex
+Brief: below; tools/pc/jobs/bench207_scene_gate.bat, bench207_scene_gate_repeat.bat, bench207_scene_gate_res.bat (scene 207, the 20-ship gate), docs/shots/storm_cost/ (README and frame_times.md: the storm optimisation of PR 994, the dense-storm fixture and its method), PR 1060's shield numbers (fitted 11.92 ms, egg 10.06 ms at 1080p, one session of each over 12.5), godot/project.godot (anti_aliasing/quality/msaa_3d and the other rendering settings), godot/fx/fx_ship.gd (_build_shield, _shield_skin), godot/fx/, godot/world/world_living.gd (fog, dust, storm), godot/render/, RULEBOOK 3.4 (GPU slots; frame-time work claims the GPU solo; gpu_go.txt wins)
+Deliver to: the code fixes in godot/ (fx, battle and render scripts), contrib/codex/perf_1118/run2/ (README with the before and after numbers, the raw runs), docs/shots/perf_1118/run2/ (the identical-look proof sheets)
+Branch: codex/issue-1070
+Base: main
+Effort (Codex): xhigh
+Done when (run 2): on run 1's baseline method, the first shield hit and first death on a cold start each peak under 50 ms at 1080p Max (run 1: 168 and 205 ms), the scene 207 worst frame over three sessions stays under 50 ms, frame medians are no worse than run 1, and the look is identical at radius 170 and 26. What Ryan will see: one short before-and-after list of the stutters, and one proof sheet showing the look did not change.
+
+## THIS IS THE JOB NOW (Board, Nov 19 2026, 15:10 UTC): run 3, re-time on main and set the cost baseline
+
+Base main. Run 2 met its targets (first shield hit 167.8 to 8.0 ms, first death 205.5 to 12.9 ms, scene 207 worst frame 206 to 40 ms at 1080p), but the Board took 1130's content-keyed shield skin cache over run 2's per-battle cache when merging, so the first shield hit was never re-timed on main.
+
+1. On main, cold start, same set-ups as run 2: time the first shield hit, the first death and scene 207's steady and worst frame. If the first shield hit is above 20 ms, find why and fix it without a look change.
+2. Answer run 2's open storm item if it is still open: High must never cost more than Max for the same look as today's High.
+3. Write the numbers into docs/shots/ (the run 2 folder's README, a run 3 section) as the cost baseline that the three Opus prototypes (1077 flagship death, 1078 shield failure, 1079 nebula wake) measure against. GPU timing solo (R293).

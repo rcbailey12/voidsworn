@@ -1,0 +1,27 @@
+GPU: waiting for shared claim, weight 2 (issue opus1155)
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: acquired shared claim 97ab9ed2-f6e4-4bef-8c13-fde9c9a188c7
+12:59:29 | INFO: Data are loaded, start creating Blender stuff
+12:59:29 | INFO: Blender create Mesh node geometry_0
+12:59:30 | INFO: glTF import finished in 0.69s
+[ai_align] measured shape_ref_yaw -76.3 (long axis; bow or stern not known)
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\b0.npz (580112, 3, 3) objects 1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit

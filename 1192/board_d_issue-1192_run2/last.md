@@ -1,0 +1,5 @@
+Implemented #1192 in the working tree and preserved PR #1173’s recipe speed fixes. Jolt is the only default fatal pattern. Solo claims follow their step cap, agent GPU admission defaults to 1,500 seconds, and the ship import cap is 2,400 seconds against a recorded 1,147-second cold import. Failed kills log surviving PIDs every minute and hold the GPU claim until the tree is gone.
+
+The standing suite finished with **76 passes, two known baseline results, and zero failures**. The Windows fake Godot step stopped after one idle second, 1.37 seconds from launch. The watchdog verified the tree was gone before releasing the claim. Lane D skipped the real GPU ship build.
+
+Set and verified the PR body as `Refs #1192`. This checkout lacks the PR branch’s prior commit, `9557ecc1`, so the runner’s normal push would be non-fast-forward. I left the changes uncommitted and did not push. [PR #1200](https://github.com/rcbailey12/voidsworn/pull/1200)

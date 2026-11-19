@@ -1,0 +1,20 @@
+Owner: codex
+Brief: below; Neon's PC pipeline audit (Nov 19, summary below, checked by the Board at main 7bc332b4); tools/pc/run_timeout.ps1, tools/pc/tmo.bat, tools/pc/jobs/ship_job.bat, tools/recipe/4_parts_kit.bat to 7_export.bat, tools/pc/codex_issue.bat, tools/pc/work_issue.bat, RULEBOOK 3.4
+Deliver to: tools/pc/run_timeout.ps1, tools/pc/tmo.bat, tools/pc/jobs/ship_job.bat, tools/recipe/*.bat, tools/pc/codex_issue.bat, tools/pc/work_issue.bat, contrib/opus/tools/runner_stall_tests.js (new, in the standing checks), docs/RULEBOOK.md 3.4
+Branch: codex/issue-1192
+Base: main
+Effort (Codex): xhigh
+Done when: a child that stops writing output for its idle limit, or prints a known fatal line, is killed with its whole tree and the step fails with a clear reason in timeouts.log; every ship and recipe step has a cap sized to the step instead of 21600 s; the tests below pass in the standing checks; a PC proof with a fake hanging Godot step shows the kill within the idle limit and the GPU claim released only after the tree is gone.
+
+## THIS IS THE JOB NOW: run 2 brief (Board, Nov 19 2026, 19:00 UTC)
+
+Run 1 is PR 1200 at 9557ecc1. The outside review found no early claim release, but several ways it can kill healthy jobs. Fix on the same branch; Base main (main now has PR 1173, which edits tmo.bat and four recipe stage files: merge it and keep both). PR 1198 (issue 1193) also edits run_timeout.ps1; if it has merged by the time you run, merge it too.
+
+1. **Fatal lines: Jolt only by default.** "Out of memory" and "Assertion failed" are fatal in every wrapped step, including run_all_checks, where tests print them on purpose. Keep only the Jolt job-system line as a default fatal pattern. Any other pattern is opt-in per step (an env var or an argument), and none is set for check runs.
+2. **No stop on repeated error lines.** Drop the 50-identical-lines rule (runs that used to pass noisily would now die), or make it opt-in and unset everywhere.
+3. **Solo cap.** Solo claims die at 1200 s and no bench file sets PC_GPU_SOLO_MAX_S, while the scene gate has 2400 and 1800 ceilings. Default the solo cap to the step's own cap (no separate 1200 s), and keep PC_GPU_SOLO_MAX_S as an override.
+4. **Admission under the stall limit.** The 1800 s admission default for Codex and work runners equals the agents' 30 minute stall limit. Make it 1500 s.
+5. **Unkillable child.** If the tree cannot be killed, log the surviving PIDs every minute and keep the claim (do not loop silently), and end the step with a clear line in the log.
+6. **Import cap.** Check the 900 s import cap against a first Godot import on the PC (the board
+epo log of the last fresh import says how long it took); set the cap to at least twice that.
+7. Keep the PR body to "Refs #1192".

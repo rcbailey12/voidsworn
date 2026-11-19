@@ -1,0 +1,5 @@
+**Keep copying the ship files.** A Windows scratch test confirmed that Stage 7’s cache refresh changed the source-side `gen/manifest.json` through a hardlink. Copy jobs and Godot reimport with safe save disabled also wrote through links.
+
+The [audit](contrib/codex/hardlink_audit_1187/README.md) lists the writers, their code lines, and what each needs before hardlinks are safe. It is the only change and remains uncommitted. The live-build hash proof was skipped because the safety check failed.
+
+The Stage 7 self-test and audit link checks passed. Standing checks matched the baseline after two sandbox-blocked checks passed on rerun with a temporary copy of Node.

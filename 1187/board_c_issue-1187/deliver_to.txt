@@ -1,0 +1,1 @@
+contrib/codex/hardlink_audit_1187/README.md first; tools/pc/get_ship_files.bat only if the audit clears it

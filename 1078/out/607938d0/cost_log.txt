@@ -1,0 +1,161 @@
+GPU: waiting for solo claim, weight 1 (issue )
+GPU: acquired solo claim 93973c05-af3e-4bbd-ae50-f34b22fffda4
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost {"fail_max_ms":2.18199992179871,"fail_median_ms":1.49699997901917,"fail_p95_ms":1.95899999141693,"look":"today","quiet_median_ms":1.38499999046326,"repeat":0,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost {"fail_max_ms":1.82400000095367,"fail_median_ms":1.4210000038147,"fail_p95_ms":1.69200003147125,"look":"shear","quiet_median_ms":1.3860000371933,"repeat":0,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost {"fail_max_ms":1.76600003242493,"fail_median_ms":1.39100003242493,"fail_p95_ms":1.67200005054474,"look":"shear_low","quiet_median_ms":1.38100004196167,"repeat":0,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost {"fail_max_ms":1.76300001144409,"fail_median_ms":1.38100004196167,"fail_p95_ms":1.63300001621246,"look":"collapse","quiet_median_ms":1.38300001621246,"repeat":0,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost {"fail_max_ms":1.79100000858307,"fail_median_ms":1.49800002574921,"fail_p95_ms":1.75199997425079,"look":"today","quiet_median_ms":1.38699996471405,"repeat":1,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost {"fail_max_ms":1.7960000038147,"fail_median_ms":1.49699997901917,"fail_p95_ms":1.69200003147125,"look":"shear","quiet_median_ms":1.38900005817413,"repeat":1,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost {"fail_max_ms":1.76199996471405,"fail_median_ms":1.48500001430511,"fail_p95_ms":1.73800003528595,"look":"shear_low","quiet_median_ms":1.38399994373322,"repeat":1,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+WARNING: Jolt Physics job system exceeded the maximum number of jobs. This should not happen. Please report this. Waiting for jobs to become available...
+   at: CreateJob (modules/jolt_physics/spaces/jolt_job_system.cpp:123)
+run_timeout: taskkill PID 35924 exit 0: SUCCESS: The process with PID 43692 (child process of PID 35924) has been terminated. SUCCESS: The process with PID 35924 (child process of PID 53020) has been terminated.
+run_timeout: kill verified: all 2 processes gone (PIDs 35924, 43692)
+run_timeout: TIMEOUT CEILING after 3600 s, killed C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe (PID 35924) and its children

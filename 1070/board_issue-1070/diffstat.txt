@@ -1,0 +1,52 @@
+ contrib/codex/perf_1118/perf_1118.gd               |    23 +-
+ contrib/codex/perf_1118/run2/README.md             |     2 +
+ contrib/codex/perf_1118/run2/proof.ps1             |     8 +-
+ .../run2/raw/run3/clipped_cards_fitted_s1.jsonl.gz |   Bin 0 -> 270463 bytes
+ .../run2/raw/run3/clipped_cards_fitted_s2.jsonl.gz |   Bin 0 -> 248144 bytes
+ .../run2/raw/run3/clipped_cards_fitted_s3.jsonl.gz |   Bin 0 -> 266937 bytes
+ .../run2/raw/run3/clipped_cards_probe.gd.gz        |   Bin 0 -> 7370 bytes
+ .../raw/run3/hash_lookup_final_fitted_s1.jsonl.gz  |   Bin 0 -> 189450 bytes
+ .../raw/run3/hash_lookup_final_fitted_s2.jsonl.gz  |   Bin 0 -> 173234 bytes
+ .../raw/run3/hash_lookup_final_fitted_s3.jsonl.gz  |   Bin 0 -> 173848 bytes
+ .../run2/raw/run3/hash_lookup_final_probe.gd.gz    |   Bin 0 -> 7370 bytes
+ .../perf_1118/run2/raw/run3/look_differences.json  |    78 +
+ .../run3/main_baseline_final_fitted_s1.jsonl.gz    |   Bin 0 -> 217262 bytes
+ .../run3/main_baseline_final_fitted_s2.jsonl.gz    |   Bin 0 -> 215187 bytes
+ .../run3/main_baseline_final_fitted_s3.jsonl.gz    |   Bin 0 -> 245857 bytes
+ .../run2/raw/run3/main_baseline_final_probe.gd.gz  |   Bin 0 -> 7370 bytes
+ .../run3/main_clean_baseline_fitted_s1.jsonl.gz    |   Bin 0 -> 230365 bytes
+ .../run3/main_clean_baseline_fitted_s2.jsonl.gz    |   Bin 0 -> 258950 bytes
+ .../run3/main_clean_baseline_fitted_s3.jsonl.gz    |   Bin 0 -> 260331 bytes
+ .../run2/raw/run3/main_clean_baseline_probe.gd.gz  |   Bin 0 -> 7370 bytes
+ .../run2/raw/run3/main_clean_cold_egg_s1.jsonl.gz  |   Bin 0 -> 118532 bytes
+ .../run2/raw/run3/main_clean_cold_egg_s2.jsonl.gz  |   Bin 0 -> 119417 bytes
+ .../run2/raw/run3/main_clean_cold_egg_s3.jsonl.gz  |   Bin 0 -> 92392 bytes
+ .../raw/run3/main_clean_cold_fitted_s1.jsonl.gz    |   Bin 0 -> 119295 bytes
+ .../raw/run3/main_clean_cold_fitted_s2.jsonl.gz    |   Bin 0 -> 118324 bytes
+ .../raw/run3/main_clean_cold_fitted_s3.jsonl.gz    |   Bin 0 -> 99346 bytes
+ .../run2/raw/run3/main_clean_cold_probe.gd.gz      |   Bin 0 -> 7370 bytes
+ .../run2/raw/run3/main_cold_final_egg_s1.jsonl.gz  |   Bin 0 -> 117927 bytes
+ .../run2/raw/run3/main_cold_final_egg_s2.jsonl.gz  |   Bin 0 -> 104203 bytes
+ .../run2/raw/run3/main_cold_final_egg_s3.jsonl.gz  |   Bin 0 -> 80866 bytes
+ .../raw/run3/main_cold_final_fitted_s1.jsonl.gz    |   Bin 0 -> 70764 bytes
+ .../raw/run3/main_cold_final_fitted_s2.jsonl.gz    |   Bin 0 -> 104804 bytes
+ .../raw/run3/main_cold_final_fitted_s3.jsonl.gz    |   Bin 0 -> 93458 bytes
+ .../run2/raw/run3/main_cold_final_probe.gd.gz      |   Bin 0 -> 7370 bytes
+ .../perf_1118/run2/raw/run3/main_summary.json      | 97340 +++++++++++++++++++
+ .../run3/shield_control_fixed_fitted_s1.jsonl.gz   |   Bin 0 -> 86558 bytes
+ .../run3/shield_control_fixed_fitted_s2.jsonl.gz   |   Bin 0 -> 142720 bytes
+ .../run3/shield_control_fixed_fitted_s3.jsonl.gz   |   Bin 0 -> 144163 bytes
+ .../run2/raw/run3/shield_control_fixed_probe.gd.gz |   Bin 0 -> 7566 bytes
+ .../perf_1118/run2/raw/run3/storm_summary.json     | 11643 +++
+ contrib/codex/perf_1118/run2/sheets.py             |    27 +-
+ .../shots/issue-1070-codex/PERF1070_RUN3_STORM.jpg |   Bin 0 -> 159413 bytes
+ .../PERF1070_RUN3_STORM.jpg.provenance.json        |   111 +
+ docs/shots/perf_1118/run2/README.md                |    59 +
+ godot/bench/scene_gate.gd                          |     3 +-
+ godot/world/gas_hash_lattice.res                   |   Bin 0 -> 2233800 bytes
+ godot/world/ion_storm.gd                           |    28 +-
+ godot/world/nebula_noise_bake.gd                   |    38 +
+ godot/world/nebula_noise_data.gd                   |     5 +-
+ godot/world/world_living.gd                        |   115 +-
+ godot/world/world_shaders.gd                       |    29 +-
+ 51 files changed, 109439 insertions(+), 70 deletions(-)

@@ -1,0 +1,1 @@
+the code fixes in godot/ (fx, battle and render scripts), contrib/codex/perf_1118/run2/ (README with the before and after numbers, the raw runs), docs/shots/perf_1118/run2/ (the identical-look proof sheets)

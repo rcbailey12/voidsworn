@@ -1,0 +1,10 @@
+{
+ "result": "FAIL",
+ "failures": [
+  "the build's longitudinal seam is not one [z, x0, x1] with x0 below x1: [0.0, 0.2, -0.2]"
+ ],
+ "problems": [],
+ "crossing_break_lines": [],
+ "guns": 2,
+ "guns_with_normals": 2
+}
