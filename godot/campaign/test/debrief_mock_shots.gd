@@ -14,6 +14,7 @@ const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
+const GS = preload("res://ui/theme/glass_shell.gd")
 var C
 var ui
 var dir := ""
@@ -120,22 +121,22 @@ func _rule() -> Control:
 	var r = ColorRect.new(); r.color = UIScript.IRON3; r.custom_minimum_size = Vector2(0, max(1, ui.px(1))); return r
 
 func _row_head(v: VBoxContainer, t: String) -> void:
-	v.add_child(ui.caps(t, 13, UIScript.GILT))
+	v.add_child(ui.caps(t, 13, GS.TEXT))
 
 func _btn(t: String, primary := false) -> Button:
 	var b = Button.new(); b.text = t; b.focus_mode = Control.FOCUS_ALL
 	if primary:
-		b.add_theme_stylebox_override("normal", ui._sb(UIScript.GILT, UIScript.GILT)); b.add_theme_color_override("font_color", Color("#1c1405")); b.add_theme_font_override("font", ui.font_semi)
+		b.add_theme_stylebox_override("normal", ui._sb(GS.MAP_EMBER, GS.MAP_EMBER)); b.add_theme_color_override("font_color", GS.ON_EMBER); b.add_theme_font_override("font", ui.font_semi)
 	return b
 
 func _bar(f: float) -> Control:
 	var bg = ColorRect.new(); bg.color = UIScript.IRON3; bg.custom_minimum_size = Vector2(0, ui.px(6)); bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var fg = ColorRect.new(); fg.color = UIScript.GILT; fg.anchor_bottom = 1.0; fg.anchor_right = clamp(f, 0.0, 1.0); bg.add_child(fg)
+	var fg = ColorRect.new(); fg.color = GS.TEXT; fg.anchor_bottom = 1.0; fg.anchor_right = clamp(f, 0.0, 1.0); bg.add_child(fg)
 	return bg
 
 func _mock(d: Dictionary, nem: Dictionary, first: bool) -> Control:
 	var R = d["run"]; var s = R["stats"]; var cy = R["carry"]; var rc = cy["inheritance"]; var flown = rc["flown"]
-	var GILT = UIScript.GILT; var BONE = UIScript.BONE; var BONE2 = UIScript.BONE2; var BONE3 = UIScript.BONE3; var BLOOD = UIScript.BLOOD
+	var GILT = GS.TEXT; var BONE = UIScript.BONE; var BONE2 = UIScript.BONE2; var BONE3 = UIScript.BONE3; var BLOOD = UIScript.BLOOD
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var sc = ScrollContainer.new(); sc.custom_minimum_size = Vector2(ui.px(1000), min(ui.px(1000), get_root().get_visible_rect().size.y - ui.px(40))); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var v = ui.vbox(10); v.custom_minimum_size.x = ui.px(960); sc.add_child(v); cc.add_child(sc)
