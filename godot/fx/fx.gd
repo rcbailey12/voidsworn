@@ -183,14 +183,14 @@ func _exit_tree() -> void:
 func release() -> void:
 	attach_report(true)
 	_end_dim()
+	for tid in _death_cut_tasks.keys():
+		join_death_cut(tid)
 	for id in ships:
 		var s = ships[id]
 		s.wait_damage()
-		if s.has_meta("cut_task"):
-			WorkerThreadPool.wait_for_task_completion(int(s.get_meta("cut_task")))
-			s.remove_meta("cut_task")
-		if s.has_meta("cut_job"):
-			s.remove_meta("cut_job")
+		s.remove_meta("cut_task")
+		s.remove_meta("cut_job")
+		s.remove_meta("cut_prev")
 	for w in dstate.get("wrecks", []):
 		for l in w.get("lights", []):
 			l["on"] = false
@@ -201,6 +201,7 @@ func release() -> void:
 	_dark_interiors.clear()
 	_piece_builds.clear()
 	_later.clear()
+	_core_at.clear()
 	_lev.clear()
 	_lsrc.clear()
 	_shaders.clear()
@@ -959,27 +960,40 @@ func death_slowmo() -> void:
 # timing) and leaves it off under reduce motion. A key or a click during it calls skip_death_slowmo.
 var kill_slowmo := false
 const DEATH_SLOW_S := 0.48    # real seconds at about a third of speed (R73), then the clock eases back
-var _core_at := {}            # ship id -> the effect clock time of its core flash (big hulls broken by the timeline)
+var _core_at := {}            # ship id -> planned core time, replaced by its actual birth time
 
 
-# The effect clock time of a dying ship's core flash, read from its death timeline; -1 when it has none (small hulls,
-# the Chorus rupture, a burnt-out hulk).
+# For probes and captures: the estimate before the flash, then its actual FX time. No staged core returns -1.
 func death_core_at(id: String) -> float:
 	return float(_core_at.get(id, -1.0))
+
+
+func resolve_death_core(s: SHIP, flashed: bool) -> void:
+	if not s.death_core_pending:
+		return
+	s.death_core_pending = false
+	if ships.get(s.id) != s:
+		return
+	if flashed:
+		_core_at[s.id] = now
+		if kill_slowmo and s.slow_core:
+			death_slowmo()
+	else:
+		_core_at.erase(s.id)
+	s.slow_core = false
 
 
 # A key or a click during the beat: back to full speed now, and no new beat from a death already under way.
 func skip_death_slowmo() -> void:
 	_death_slow_left = 0.0
 	_death_hurry_until = maxf(_death_hurry_until, now + 0.1)
-	for id in _core_at.keys():
-		if float(_core_at[id]) > now - 0.5:
-			_core_at[id] = -1.0
+	for s in ships.values():
+		s.slow_core = false
 
 
 # Same presentation hurry as the battle. Also suppress a beat scheduled later in this death.
 func hurry_death() -> void:
-	_death_slow_left = 0.0
+	skip_death_slowmo()
 	_death_hurry_until = now + 3.0
 	_pause_until = -1.0
 	_pauses.clear()
@@ -1202,6 +1216,39 @@ func prepare_battle_hulls() -> void:
 	defer_initial_cuts = false
 
 
+# A cut belongs to this session until joined, even after it loses its ship or its result is discarded.
+var _death_cut_tasks := {}
+
+
+func submit_death_cut(work: Callable) -> int:
+	var tid := WorkerThreadPool.add_task(work)
+	_death_cut_tasks[tid] = true
+	return tid
+
+
+func join_death_cut(tid: int) -> void:
+	if _death_cut_tasks.has(tid) and WorkerThreadPool.wait_for_task_completion(tid) == OK:
+		_death_cut_tasks.erase(tid)
+
+
+func collect_death_cut(tid: int) -> void:
+	if not _death_cut_tasks.has(tid):
+		return
+	if WorkerThreadPool.is_task_completed(tid):
+		join_death_cut(tid)
+	else:
+		later(now + 0.25, collect_death_cut.bind(tid))
+
+
+func discard_ship_cut(s: SHIP) -> void:
+	if s.has_meta("cut_task"):
+		var tid := int(s.get_meta("cut_task"))
+		s.remove_meta("cut_task")
+		collect_death_cut(tid)
+	s.remove_meta("cut_job")
+	s.remove_meta("cut_prev")
+
+
 func add_ship(id: String, root: Node3D, info := {}) -> void:
 	if ships.has(id):
 		remove_ship(id)
@@ -1216,7 +1263,7 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
 	var n = ships.size()
 	later(now + 0.4 + 0.25 * n, func l_cut_first() -> void:
-		if ships.get(id) == s and not s.dead:
+		if ships.get(id) == s and not s.dead and not s.gone:
 			var t_c := Time.get_ticks_usec()
 			DEATH.precompute(self, s)
 			pend("cut_first", t_c))
@@ -1328,30 +1375,26 @@ func shield_break(id: String, quad: int) -> void:
 
 
 func death(id: String, cause := "blast") -> float:
-	if not ships.has(id):
+	var s: SHIP = ships.get(id)
+	if s == null or s.dead or s.gone:
 		return 0.0
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
-	# has_meta first: get_meta with a null default logs an error on a ship's first death (issue 600)
-	var tl_before = (ships[id] as SHIP).get_meta("death_timeline") if (ships[id] as SHIP).has_meta("death_timeline") else null
-	var r: float = DEATH.death(self, ships[id], cause)
+	var r: float = DEATH.death(self, s, cause)
 	pend("death", t0)
-	var s: SHIP = ships[id]
 	_core_at.erase(id)
-	# only a timeline this death made (a burnt-out hulk or the Chorus rupture makes none and has no core flash)
-	if s.death_big and s.has_meta("death_timeline") and s.get_meta("death_timeline") != tl_before and s.has_meta("death_start"):
+	# A burnt-out hulk or Chorus rupture has no staged core.
+	if s.death_big and s.has_meta("death_timeline"):
 		var tl = s.get_meta("death_timeline")
-		var core := float(s.get_meta("death_start")) + float(tl.cut) + float(tl.core_delay)
-		_core_at[id] = core
-		if kill_slowmo:
-			later(core, func l_kill_slowmo() -> void:
-				if float(_core_at.get(id, -1.0)) >= 0.0:
-					death_slowmo())
+		_core_at[id] = float(s.get_meta("death_start")) + float(tl.cut) + float(tl.core_delay)
+		s.death_core_pending = true
+		s.slow_core = kill_slowmo
 	return r
 
 
 func clear_wreck(id: String) -> void:
 	DEATH.clear_wreck(self, id)
+	_core_at.erase(id)
 
 
 func jump_out(id: String) -> void:
