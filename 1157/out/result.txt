@@ -1,0 +1,18 @@
+start Thu 11/19/2026 10:08:05.10 
+commit=f7af143f04062d33220883e23e4bff91df8e2400
+import exit 0 
+voidsworn_S10 1_concept_in start 10:08:18.29 
+voidsworn_S10 1_concept_in exit 0 at 10:08:21.52 
+voidsworn_S10 2_shape_ref start 10:08:21.53 
+voidsworn_S10 2_shape_ref exit 1 at 11:08:24.33 
+voidsworn_S10 3_trace_hull SKIPPED: stage 2_shape_ref failed 
+voidsworn_S10 4_parts_kit SKIPPED: stage 2_shape_ref failed 
+voidsworn_S10 5_paint_bake SKIPPED: stage 2_shape_ref failed 
+voidsworn_S10 6_lod SKIPPED: stage 2_shape_ref failed 
+voidsworn_S10 7_export SKIPPED: stage 2_shape_ref failed 
+voidsworn_S10 checks SKIPPED: stage 2_shape_ref failed, so the installed glb is not this run's 
+voidsworn_S10 ship exit 1 
+shots SKIPPED: the ship's stages or checks failed, so the installed V16_37 is not this run's 
+collect exit 0 
+done FAILED Thu 11/19/2026 11:08:24.41 
+all done 

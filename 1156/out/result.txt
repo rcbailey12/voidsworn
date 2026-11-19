@@ -1,0 +1,6 @@
+start voidsworn_S9 V14_23 opus/issue-1156 Thu 11/19/2026 11:08:25.70 
+inputs STAGES=4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_110824 
+collect exit 0 
+done FAILED: checkout: the clone has local changes outside godot\assets\ships, listed in clone_changes_unexpected.txt and saved in clone_changes_before_checkout.patch; nothing was reset Thu 11/19/2026 11:09:05.72 
+all done 
