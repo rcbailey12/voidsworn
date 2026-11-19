@@ -6,6 +6,7 @@ extends Node3D
 # MAP_EMBER; issue 271 step 2, lime retired by R191)
 const EMBER := Color(1.0, 0.541, 0.227)
 const HT := preload("res://render/hull_table.gd")
+const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: the one source for faction colours
 const ATTACH := preload("res://fx/fx_hull.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
@@ -71,7 +72,7 @@ static func yaw_of(f) -> float:
 func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	u = unit
 	fac = str(u.get("fac", "hegemony"))
-	if not HT.FAC3D.has(fac):
+	if not FLOOK.has(fac):
 		fac = "hegemony"
 	var cls := str(u.get("cls", "Frigate")) if u.get("cls") != null else "Frigate"
 	L = HT.CLS_LEN.get(cls, 10.0) * HT.SHIP_K
@@ -237,7 +238,7 @@ func _rel(n: Node3D) -> Transform3D:
 
 
 func _engines() -> void:
-	var col: Color = HT.FAC3D[fac]["eng"]
+	var col: Color = FLOOK.engine(fac)
 	var n := 2 if L < 20.0 else 3
 	for i in n:
 		var s := Sprite3D.new()
