@@ -371,6 +371,7 @@ function genSector(s){
   let cond=null; try{ const used=(RUN&&RUN.condsUsed)||[], pool=Object.keys(SECTOR_CONDS).filter(k=>!used.includes(k)); cond=pick(pool.length?pool:Object.keys(SECTOR_CONDS)); if(RUN){ RUN.condsUsed=used.concat(cond); } }catch(e){ cond=null; }
   let region=null; try{ region=pickRegion(fac); for(const col of cols) for(const n of col){ n.map=regionMap(region,n.col,COLS); fitEncounter(n,s); } }catch(e){ region=null; }
   let biome=null; try{ biome=rollBiome(region); }catch(e){}
+  for(const n of cols[COLS-1]) if(n.type==='boss') Object.assign(n,bossEncounter()); // issue 1175: the flagship's objective and board, rolled with the map (after the regions) and shown on it; the fight reads them
   if(RUN&&RUN.teachingGate===true&&s===1){ cols[0][0].teachingShape=cols[0][0].shape; cols[0][0].shape='open'; } // Keep the generated shape for tips-off.
   return {fac, cols, edges, cond, region, biome};
 }
