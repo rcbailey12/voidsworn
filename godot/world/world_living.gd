@@ -502,7 +502,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	if storm:
 		# R282: the cloud carries broad cool charge, not the old warm contour veins.
 		storm_mats.append(m)
-		_storm_patches.append({"mat": m, "points": ps, "tick": 0.0})
+		_storm_patches.append({"mat": m, "points": ps, "tick": 0.0, "tick_pos": Vector3.ZERO, "tick_soft": false})
 		_set_flashes([])
 	else:
 		var b: Array = FLOOK.of(W._fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
@@ -822,10 +822,14 @@ func _storm_tick_at(pos: Vector3) -> void:
 		for p in patch.points:
 			if Vector2(pos.x - p.x, pos.z - p.z).length_squared() <= 100.0:
 				patch.tick = 1.0
+				patch.tick_pos = pos
+				var effects = _tick_presenter.get("gfx") if is_instance_valid(_tick_presenter) else null
+				# Book the lit gas against nearby weapon and lightning flashes.
+				patch.tick_soft = is_instance_valid(effects) and not effects.flash_at(pos, effects.now, 36.0, 0.0, 0.45)
 				break
 
 
-func _present_storm_ticks(dt: float) -> void:
+func _present_storm_ticks(dt: float, reduced: bool) -> void:
 	if is_instance_valid(_tick_presenter):
 		var live := {}
 		for record in _tick_presenter.get("floats"):
@@ -840,10 +844,14 @@ func _present_storm_ticks(dt: float) -> void:
 				_storm_tick_at(record["pos"])
 		_presented_ticks = live
 	for patch in _storm_patches:
-		patch.tick = maxf(0.0, float(patch.tick) - dt / 0.45)
-		(patch.mat as ShaderMaterial).set_shader_parameter("tick_flare", Vector4(0, 0, 0, float(patch.tick)))
+		var soft: bool = reduced or patch.tick_soft
+		var envelope := 0.9 if soft else 0.52
+		var pos: Vector3 = patch.tick_pos
+		var flare := Vector4(pos.x, pos.y, pos.z, _flash((1.0 - float(patch.tick)) * envelope, soft))
+		(patch.mat as ShaderMaterial).set_shader_parameter("tick_flare", flare)
 		if patch.has("fog_mat"):
-			(patch.fog_mat as ShaderMaterial).set_shader_parameter("tick_flare", Vector4(0, 0, 0, float(patch.tick)))
+			(patch.fog_mat as ShaderMaterial).set_shader_parameter("tick_flare", flare)
+		patch.tick = maxf(0.0, float(patch.tick) - dt / 0.45)
 
 
 func _process(dt: float) -> void:
@@ -856,11 +864,11 @@ func _process(dt: float) -> void:
 		(g[0] as ShaderMaterial).set_shader_parameter("gas_time", clock)
 	for m in fog_mats:
 		m.set_shader_parameter("gas_time", clock)
-	_present_storm_ticks(dt)
+	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
+	_present_storm_ticks(dt, reduced)
 	for burst in _storm_bursts:
 		if clock >= float(burst.next): _start_storm_burst(burst)
 	var fs: Array = []
-	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	for b in bolts:
 		var v := _flash(clock - float(b["start"]), bool(b.get("soft", false)) or reduced)
 		var mi := b["mi"] as MeshInstance3D

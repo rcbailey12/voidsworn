@@ -59,7 +59,8 @@ void fragment() {
 	vec3 col = mix(vec3(0.006, 0.014, 0.022), vec3(0.032, 0.065, 0.11), field);
 	col += vec3(0.04, 0.13, 0.18) * rim * field;
 	col += vec3(0.10, 0.42, 0.52) * charge * (0.35 + 0.04 * sin(gas_time * 2.8 + cloud.y * 6.28));
-	float flash = tick_flare.w * 0.12;
+	vec2 tick_delta = world.xz - tick_flare.xz;
+	float flash = 1.8 * tick_flare.w * exp(-dot(tick_delta, tick_delta) / 144.0);
 	for (int i = 0; i < 8; i++) {
 		vec3 delta = world - flashes[i].xyz;
 		flash += exp(-dot(delta, delta) / 240.0) * flashes[i].w;
@@ -93,7 +94,8 @@ void fog() {
 	float field = smoothstep(0.44, 0.62, n);
 	float shape = foot.g * smoothstep(0.08, 0.65, foot.r) * height;
 	float charge = smoothstep(0.48, 0.66, detail) * field;
-	float flash = tick_flare.w * 0.10;
+	vec2 tick_delta = WORLD_POSITION.xz - tick_flare.xz;
+	float flash = 1.8 * tick_flare.w * exp(-dot(tick_delta, tick_delta) / 144.0);
 	for (int i = 0; i < 8; i++) {
 		vec3 delta = WORLD_POSITION - flashes[i].xyz;
 		flash += exp(-dot(delta, delta) / 240.0) * flashes[i].w;
