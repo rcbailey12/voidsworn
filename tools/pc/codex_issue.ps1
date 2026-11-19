@@ -1,11 +1,38 @@
 # Prepare one job-board issue for Codex (called by codex_issue.bat). PowerShell 5.1.
+# Usage: codex_issue.ps1 run  <n> <repo folder>                holds the checkout lock around the batch run
 # Usage: codex_issue.ps1 prep <n> <repo folder> <out folder>   writes CODEX_TASK.md, effort.txt, title.txt
 #        codex_issue.ps1 msg  <n> <repo folder> <out folder>   writes commit.txt from title.txt and Codex's last message
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $mode = $args[0]; $n = $args[1]; $repo = $args[2]; $out = $args[3]
+if ($mode -eq 'run') {
+  if ($n -notmatch '^[1-9][0-9]*$') { Write-Host 'invalid job issue number; no agent started'; exit 14 }
+  $lock = $null
+  try {
+    $repo = [IO.Path]::GetFullPath($repo)
+    $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($repo))
+    # Keep this file beside the checkout so moving or cloning repo cannot change the lock.
+    # lane_tools_refresh.ps1 opens the same file, also without sharing.
+    $lock = [IO.File]::Open("$repo.checkout.lock", 'OpenOrCreate', 'ReadWrite', 'None')
+    $runner = Join-Path $PSScriptRoot 'codex_issue.bat'
+    $start = New-Object Diagnostics.ProcessStartInfo
+    $start.FileName = $env:COMSPEC
+    $start.Arguments = '/d /s /c ""' + $runner + '" ' + $n + ' locked"'
+    $start.UseShellExecute = $false
+    $start.EnvironmentVariables['CODEX_LOCKED_REPO'] = $args[2]
+    $child = [Diagnostics.Process]::Start($start)
+    try { $child.WaitForExit(); exit $child.ExitCode }
+    finally { $child.Dispose() }
+  } catch {
+    if (-not $lock) { Write-Host "job refused: cannot take the Codex checkout lock (lane busy or lock unavailable); no agent started" }
+    else { Write-Host "job stopped: could not run codex_issue.bat ($($_.Exception.Message))" }
+    exit 14
+  } finally {
+    if ($lock) { $lock.Dispose() }
+  }
+}
 $utf8 = New-Object System.Text.UTF8Encoding($false)
-# Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
+# Issue 953: the intentional agent report can carry PC paths. A path to a file inside this job's checkout becomes a
 # GitHub link on the delivery branch, so it opens on a phone; every other path under the user's home folder becomes
 # %USERPROFILE%\..., so no PC folder name reaches a public pull request. Everything else is left exactly as written.
 function Path-Pattern([string]$p) {
@@ -120,20 +147,16 @@ $body
   $lp = Join-Path $out 'last.md'
   if (Test-Path $lp) { $last = [IO.File]::ReadAllText($lp) }
   if ($last.Length -gt 6000) { $last = $last.Substring(0, 6000) + "`n(report cut at 6000 characters; full text on Ryan's PC in board\issue-$n\last.md)" }
-  $checks = ''
-  foreach ($file in @('checks_node.txt','checks_parity.txt')) {
-    $cp = Join-Path $out $file
-    if (Test-Path -LiteralPath $cp) { $checks += "`n$file`n" + [IO.File]::ReadAllText($cp) }
-  }
-  $msg = "Codex (issue #$n): $title`n`n$last`n`nRunner checks:`n$checks`n`nRefs #$n`n"
-  if (Test-Path -LiteralPath (Join-Path $out 'stop_reason.txt')) {
-    $reason = [IO.File]::ReadAllText((Join-Path $out 'stop_reason.txt')).Trim()
-    if ($reason) { $msg += "`n" + [IO.File]::ReadAllText((Join-Path $out 'resume.txt')) }
-  }
-  # Issue 953: the delivery branch is the one the .bat pushes this run to (a partial run takes -partial).
+  . (Join-Path $PSScriptRoot 'runner_common.ps1') publication-library
   $branch = "codex/issue-$n"
-  $pp = Join-Path $out 'partial.txt'
-  if ((Test-Path -LiteralPath $pp) -and ([IO.File]::ReadAllText($pp)).Trim()) { $branch += '-partial' }
+  $partial = ''
+  foreach ($file in @('partial.txt','stop_reason.txt')) {
+    $p = Join-Path $out $file
+    if (Test-Path -LiteralPath $p) { $partial = [IO.File]::ReadAllText($p).Trim(); if ($partial) { break } }
+  }
+  $checks = if ($partial) { 'SKIP: runner checks (partial run)' } else { Public-RunnerText 'checks' '' '' $out }
+  if ($partial) { $branch += '-partial'; $last = 'Stop reason: ' + (Public-RunnerText 'partial' $partial) }
+  $msg = "Codex (issue #$n): $title`n`n$last`n`nRunner checks:`n$checks`n`nRefs #$n`n"
   $msg = Rewrite-ReportPaths $msg $repo $branch (Profile-Root)
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 } else { Write-Host 'usage: codex_issue.ps1 prep|msg <n> <repo> <out>'; exit 2 }

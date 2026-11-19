@@ -327,6 +327,28 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	return b
 func add(parent: Node, child) -> void:
 	if child != null: parent.add_child(child)
+func _boon_fleet_line(id: String, rarity: int) -> String:
+	var relevance: Dictionary = C.boonFleetRelevance(id, rarity)
+	var kit: String = {
+		"lance": "with lances", "torp": "with torpedoes", "broad": "with broadside guns",
+		"still": "with broadside guns or batteries", "shields": "with shields",
+		"carrier": "with hangars", "sq": "with squadrons",
+	}.get(relevance.get("need"), "")
+	if kit == "": return ""
+	var ships: PackedStringArray = relevance["ships"]
+	var count := ships.size()
+	if count > 0:
+		var condition := " that have not moved" if relevance["need"] == "still" else ""
+		if count == 1 and condition != "": condition = " that has not moved"
+		var names := ", ".join(ships.slice(0, 3))
+		if count > 3: names += " and %d more" % (count - 3)
+		return "Affects %d %s %s%s: %s" % [count, "ship" if count == 1 else "ships", kit, condition, names]
+	if relevance["capped"]: return "No added benefit: ships %s are already at the limit." % kit
+	if relevance.has("refit"):
+		return "No ship %s now; could use later with the %s refit in your hold." % [kit, C.modName(relevance["refit"])]
+	if relevance.has("hull"): return "No ship %s now; could use later on a fitting hull." % kit
+	return "No current ship %s." % kit
+
 func _toast(msg: String) -> void:   # a strip with a calm VERD bar (ui_style.md 3): toasts here are news, not warnings
 	var p = PanelContainer.new(); var sb = GS.strip(k, VERD); sb.content_margin_left = px(14); sb.content_margin_right = px(18); sb.content_margin_top = px(8); sb.content_margin_bottom = px(8)
 	p.add_theme_stylebox_override("panel", sb); p.add_child(lbl(msg, 18, BONE)); p.custom_minimum_size.x = px(min(900, 260 + msg.length() * 7))
@@ -577,6 +599,15 @@ func _mastery_bar(id) -> Control:
 func _run_options() -> Control:
 	var v = vbox(10)
 	v.add_child(gothic("Run options", 52))
+	var trial = CheckBox.new()
+	trial.name = "MapTrialToggle"
+	trial.text = "Test new battle maps, faster ships and longer gun ranges"
+	trial.tooltip_text = "Also changes where ships start in Hunt, Ambush and boss fights. Applies to this whole run."
+	trial.add_theme_font_size_override("font_size", px(18))
+	trial.button_pressed = C.map_trial_choice
+	trial.toggled.connect(func(on): C.act("optMapTrial", "1" if on else "0"))
+	trial.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	v.add_child(trial)
 	var cards = flow(); var o = C.page["data"]["opts"]; var id = C.picked_admiral; var a = C.ADMIRALS[id]
 	if int(o["ml"]) >= 1:
 		var cv = card(false, 380); cv[1].add_child(lbl("Starting fleet", 20, BONE, font_semi))
@@ -816,6 +847,9 @@ func _briefing_column() -> Control:
 	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
 	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
 	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
+	var trial_status := _sheet_words("Test map package " + ("on" if H["map_trial"] else "off"), 17, GS.TEXT2)
+	trial_status.name = "MapTrialStatus"
+	upper.add_child(trial_status)
 	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
 	upper.add_child(gap(28)); _rows.clear()
 	for r in _routes:
@@ -1930,7 +1964,10 @@ func _modal(md: Dictionary) -> void:
 			for i in range(offer.size()):
 				var o = offer[i]; var b = C.BOONS[o["id"]]; var r = int(C.z0(o.get("r"))); var R0 = C.RARITY[r]; var duo = b.get("duo")
 				var tag = ("Duo: " + " + ".join(PackedStringArray(duo.map(func(q): return str(C.PATRONS[q]["short"]))))) if C.jt(duo) else str(R0["n"])
-				add(v, choice(b["n"], C.BOON_D[o["id"]][r], "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
+				var detail: String = C.BOON_D[o["id"]][r]
+				var fleet_line := _boon_fleet_line(o["id"], r)
+				if fleet_line != "": detail += "\n" + fleet_line
+				add(v, choice(b["n"], detail, "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
 			v.add_child(foot([abtn("Reroll the offer (" + C.numstr(d.get("rerollCost", 0)) + " credits, once)", "boonReroll", _arg_of(acts, "boonReroll"), false, false, acts),
 				abtn("Decline: take " + C.numstr(d.get("declineCred", 0)) + " credits", "boonDecline", "", false, false, acts)]))
 		"eatCore":

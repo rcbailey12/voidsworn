@@ -1,38 +1,48 @@
-# The staleness guard for the unpainted A16 fixture of godot/fx/test/death_seam_check.gd (opus_check_608 note 3, issue 532).
-# Writes godot/fx/test/fixtures/C19_51_unbaked.sheet.txt: the sha256 of the files that make A16's sheet geometry (its design
-# file, the sheet kit, the Hullbreaker kit parts, the build contract, the exporter, the hull builder and A16's ship json),
-# concatenated in the listed order, plus a canonical extract of A16's own data.js entry (c_boss: the fields the build reads,
-# through gamedata.py, as sorted-key JSON), and the list and the extract themselves. death_seam_check.gd reads the list and
-# the extract from that file, hashes the same bytes and fails when the fixture is stale (one home for both: this script
-# writes them, the check reads them). CI runs --check on every pull request (checks.yml, Godot game checks), so a stale
-# fixture fails there by name.
-# Regenerate the fixture and this record together, whenever any listed file changes or A16's data.js entry (c_boss) changes:
-#   python3 tools/blender/r209/sheet_hull.py -- OUT A16              (R209_SHIP=tools/recipe/ships/corsair_A16.json; bpy)
-#   python3 run_blend.py OUT/A16.blend tools/recipe/export7.py -- tools/recipe/ships/corsair_A16.json EX maps=2048 unbaked=1
-#   gzip -9 -n -c EX/C19_51.glb > godot/fx/test/fixtures/C19_51_unbaked.glb.gz
-#   python3 tools/recipe/sheet_fixture_hash.py
-import hashlib, json, os, sys
-HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
-sys.path.insert(0, HERE)
-FILES = ['tools/blender/build_sheets/ships/corsair_A16.py', 'tools/blender/build_sheets/kit.py', 'tools/blender/kits/hullbreakers/parts.py',
-         'tools/blender/build_sheets/contract.py', 'tools/recipe/export7.py',
-         # the hull builder and the recipe input of step 1 below (Muse's check of PR 611, BLOCKING 1; issue 618)
-         'tools/blender/r209/sheet_hull.py', 'tools/recipe/ships/corsair_A16.json',
-         # what export7.py imports and writes into the fixture: hard points and breach layout, turret pivots, the game's weapon
-         # list (Muse's check of PR 620, BLOCKING 4.1). data.js is not listed: listing it would mark the fixture stale on every
-         # rules edit. Instead the digest below also reads A16's own entry (c_boss) through gamedata.py and hashes only the
-         # fields the build reads, as sorted-key JSON, so a c_boss edit marks the fixture stale and any other ship's edit does not.
-         'tools/blender/kits/shared/hardpoints.py', 'tools/blender/kits/shared/turrets.py', 'tools/recipe/gamedata.py']
+"""Check the A16 seam fixture, or rebuild the fixture and its record together.
+
+   python tools/recipe/sheet_fixture_hash.py --check
+   python tools/recipe/sheet_fixture_hash.py --bake BLENDER_EXE
+
+The first record line, file list and data.js extract also feed death_seam_check.gd.
+The last line pins the exact gzip bytes used by the CI fixture check.
+"""
+import argparse
+import gzip
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent.parent
+sys.path.insert(0, str(HERE))
+HULL_BUILDER = 'tools/blender/r209/sheet_hull.py'
+EXPORTER = 'tools/recipe/export7.py'
 SHIP_JSON = 'tools/recipe/ships/corsair_A16.json'
-OUT = os.path.join(REPO, 'godot', 'fx', 'test', 'fixtures', 'C19_51_unbaked.sheet.txt')
+FILES = (
+    'tools/blender/build_sheets/ships/corsair_A16.py',
+    'tools/blender/build_sheets/kit.py',
+    'tools/blender/kits/hullbreakers/parts.py',
+    'tools/blender/build_sheets/contract.py',
+    'tools/blender/build_sheets/variants.py',
+    EXPORTER, HULL_BUILDER, SHIP_JSON,
+    'tools/blender/kits/shared/hardpoints.py',
+    'tools/blender/kits/shared/turrets.py',
+    'tools/recipe/gamedata.py',
+)
+OUT = REPO / 'godot/fx/test/fixtures/C19_51_unbaked.sheet.txt'
+FIXTURE = OUT.with_name('C19_51_unbaked.glb.gz')
 EXTRACT_MARK = '# data.js entry %s: the fields the build reads (tools/recipe/gamedata.py), sorted keys, JSON'
 
 
 def extract():
-    """the canonical extract of A16's data.js entry: the fields export7.py reads through gamedata.py, as sorted-key JSON"""
+    """Hash the A16 fields used by the build, so unrelated rules edits do not mark it stale."""
     import gamedata
-    ship = json.load(open(os.path.join(REPO, SHIP_JSON), encoding='utf-8'))
+    with (REPO / SHIP_JSON).open(encoding='utf-8') as source:
+        ship = json.load(source)
     game = ship['game_ship']
     fields = dict(cls=gamedata.ship_attr(game, 'cls', default='Cruiser'),
                   fac=gamedata.ship_attr(game, 'fac', default=ship.get('faction')),
@@ -43,24 +53,80 @@ def extract():
 
 def digest(text):
     h = hashlib.sha256()
-    for f in FILES:
-        h.update(open(os.path.join(REPO, f), 'rb').read().replace(b'\r\n', b'\n'))
+    for name in FILES:
+        h.update((REPO / name).read_bytes().replace(b'\r\n', b'\n'))
     h.update((text + '\n').encode('utf-8'))
     return h.hexdigest()
 
 
-if __name__ == '__main__':
+def record(text, game, input_digest, fixture_bytes):
+    fixture_digest = hashlib.sha256(fixture_bytes).hexdigest()
+    return '\n'.join((f'sha256 {input_digest}', *FILES, EXTRACT_MARK % game, text,
+                      f'# fixture sha256 {fixture_digest}', ''))
+
+
+def check():
+    text, game = extract()
+    expected = record(text, game, digest(text), FIXTURE.read_bytes())
+    if OUT.read_text(encoding='utf-8') != expected:
+        raise ValueError('fixture record is stale or the compressed GLB changed. Rebuild with --bake.')
+    print('PASS fixture record matches the A16 inputs and compressed GLB')
+
+
+def bake(blender):
+    text, game = extract()
+    input_digest = digest(text)
+    ship_path = REPO / SHIP_JSON
+    ship = json.loads(ship_path.read_bytes())
+    work = Path(tempfile.mkdtemp(prefix='a16-fixture-'))
+    export = work / 'export'
+    env = dict(os.environ, R209_SHIP=str(ship_path))
+
+    def run_blender(*args):
+        command = [blender, *map(str, args)]
+        if os.name == 'nt':
+            watchdog = REPO / 'tools/pc/tmo.bat'
+            command = [str(watchdog), '21600', *command]
+        subprocess.run(command, cwd=REPO, env=env, check=True)
+
+    run_blender('-b', '--python-exit-code', '1', '-P', REPO / HULL_BUILDER, '--', work, ship['cell'])
+    run_blender('-b', work / (ship['cell'] + '.blend'), '--python-exit-code', '1', '-P', REPO / EXPORTER,
+                '--', ship_path, export, 'maps=2048', 'unbaked=1')
+    if not (export / 'export_status.txt').read_text(encoding='utf-8').startswith('WRITTEN '):
+        raise ValueError(f'A16 export was not written. See {work}')
+    glb = (export / (ship['game_code'] + '.glb')).read_bytes()
+    if not glb.startswith(b'glTF'):
+        raise ValueError(f'A16 export is not a GLB. See {work}')
+    if extract() != (text, game) or digest(text) != input_digest:
+        raise ValueError('A16 inputs changed during the bake. Run it again.')
+    compressed = gzip.compress(glb, compresslevel=9, mtime=0)
+    # Stage both files on the destination volume. An interrupted publish is
+    # caught by --check, since the record describes one exact compressed file.
+    with tempfile.NamedTemporaryFile(dir=OUT.parent, delete=False) as output:
+        output.write(compressed)
+    with tempfile.NamedTemporaryFile(dir=OUT.parent, delete=False) as metadata:
+        metadata.write(record(text, game, input_digest, compressed).encode('utf-8'))
+    os.replace(output.name, FIXTURE)
+    os.replace(metadata.name, OUT)
+    check()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--check', action='store_true')
+    mode.add_argument('--bake', metavar='BLENDER_EXE')
+    args = parser.parse_args()
     try:
-        text, game = extract()
-    except ValueError as e:
-        print('FAIL', e); sys.exit(1)
-    d = digest(text)
-    if '--check' in sys.argv:
-        try:
-            old = open(OUT, encoding='utf-8').read().split('\n')[0].split()[-1]
-        except (OSError, IndexError):
-            print('FAIL fixture record is missing or unreadable'); sys.exit(1)
-        print('PASS fixture record matches' if old == d else 'FAIL fixture record is stale'); sys.exit(0 if old == d else 1)
-    open(OUT, 'w', newline='\n').write('sha256 %s\n' % d + ''.join(f + '\n' for f in FILES)
-                                      + (EXTRACT_MARK % game) + '\n' + text + '\n')
-    print('wrote', OUT, d)
+        if args.check:
+            check()
+        else:
+            bake(args.bake)
+    except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+        print('FAIL', exc)
+        return 1
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

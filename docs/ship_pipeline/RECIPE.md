@@ -513,7 +513,7 @@ What it writes (`tools/recipe/export7.py`), in the game's frame (+X bow, +Y up, 
 
 The check (`tools/recipe/check_export.py`, plain Python) reads the written glb the way the game will. It fails the export when: a
 weapon slot has no hard point, or a weapon hard point names a slot, weapon or arc `data.js` does not have; a required point is
-missing (a weapon point for every slot, `hp_core`, `hp_eng`, two `hp_rcs`, two `hp_board`, and `hp_bay` when `data.js` gives the
+missing (a weapon point for every slot, `hp_core`, `hp_eng`, one `hp_rcs` and one `hp_board` on each side, and `hp_bay` when `data.js` gives the
 ship a hangar); the breach count is not the class and faction count, the anchors do not cover the sections the count needs, or the
 sides are more than one apart; a hard point is more than 0.012 of the ship's length off the mesh (the length is the x extent of the
 glb's mesh box, so the limit scales with the ship; `hp_core` must be inside the hull's box). An engine point is the centre of
@@ -550,15 +550,16 @@ test hull with the recipe kit's own turret parts, exported by this script with `
 (`godot/render/test/fixtures/T560_fx/`, `godot/render/test/turret_check.gd`).
 
 Stage 7 never copies into the game on its own (the build's ship folder is shared). Set `INSTALL_TO` to a Godot project folder to
-install a checked export there: what it replaces is copied to `export\replaced_<date>\` first, the old ship's wreck and damage
-files are moved there too (they belong to the old hull), and `manifest_entry.json` is merged into
-`assets/ships/manifest.json`. Nothing is deleted. Copying is not the install (issue 587 finding 8): the game draws ships from its
-asset cache (`gen/manifest.json`, `gen/ships/`), so stage 7 then refreshes the ship cache (`render/build_assets.gd
---ships-only`: a ship whose files changed is rebuilt, and its entry names no damage or wreck scene the folder no longer has) and
-reads the ship back the way the game draws it (`render/test/installed_ship_check.gd CODE`: the cache was built from the
-installed files, no old damage or wreck entry, and ShipView loads the ship with every hard point and turret node of the glb).
-Either failing fails the stage. `render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
-damage and wreck, then a new one installed over it).
+install a checked export there. Stage 7 checks and hashes a snapshot of the GLB, its named maps and the manifest entry. It locks
+the target project, stages and verifies the new files, and saves the old ship folder and cache files under `.stage7-replaced-*`
+in that project. It rebuilds the cache for that ship, replaces `assets/ships/manifest.json` atomically, and checks the installed
+hashes. `render/test/installed_ship_check.gd CODE` verifies the cache and the hard points and turrets that ShipView loads.
+An install or readback failure restores the old ship, manifest and cache. `tools/recipe/manifest_merge_selftest.py` exercises
+the install and rollback in a temporary project.
+The ship cache builder reads the image files beside the GLB directly, even when the editor has an imported image with the
+same path. An editor import can pair an old atlas with the new hull's UVs and leave black patches across its plating (issue 1082).
+`render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
+damage and wreck, then a new one installed over it, plus a planted stale texture).
 The target's install check also needs `tools/ci/check_guard.gd`, even when the playable build otherwise omits CI tools.
 The issue 726 paint helper supplies that file only when missing and verifies its copied hash before installation.
 It also backs up and refreshes the test-only `a4_shots.gd` and its scene in the playable build, so the requested camera 170

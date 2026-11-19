@@ -23,15 +23,17 @@ const alive = pid => {
 // An OS-owned localhost bind serializes short file transactions across ALL tools
 // copies. The OS drops it after a crash. No lock or job files are ever deleted.
 // No client connects and no data is sent. An occupied port fails closed (waits).
-async function transaction(fn) {
+async function transaction(fn, check = () => {}, deadline = performance.now() + 5000) {
   for (;;) {
+    check();
+    if (performance.now() >= deadline) throw new Error('GPU slot lock timed out');
     const server = net.createServer(socket => socket.destroy());
     const bound = await new Promise((resolve, reject) => {
       server.once('error', e => e.code === 'EADDRINUSE' ? resolve(false) : reject(e));
       server.listen({ host: '127.0.0.1', port: 47847, exclusive: true }, () => resolve(true));
     });
     if (!bound) { await sleep(25); continue; }
-    try { return fn(); } finally { await new Promise(resolve => server.close(resolve)); }
+    try { check(); return fn(); } finally { await new Promise(resolve => server.close(resolve)); }
   }
 }
 
@@ -65,15 +67,20 @@ class Slots {
     try { return /^GPU cleared(?:\s*:.*)?$/i.test(fs.readFileSync(path.join(this.root, 'gpu_go.txt'), 'utf8').split(/\r?\n/)[0].trim()); }
     catch (e) { if (e.code === 'ENOENT') return false; throw e; }
   }
-  step(holder) {
+  checkWeight(holder) {
     const capacity = this.capacity();
     const weight = positiveInteger(holder.weight ?? 1, 'GPU weight');
+    if (holder.mode === 'shared' && weight > capacity) throw new Error(`GPU weight ${weight} exceeds shared capacity ${capacity}`);
+    return { capacity, weight };
+  }
+  step(holder, waiterPid = holder.pid) {
+    const { capacity, weight } = this.checkWeight(holder);
     const state = this.names().map(name => {
       const item = this.read(name);
       if (item && !this.isAlive(item.pid)) { this.write(name, null); return null; }
       return item;
     });
-    if (!this.isAlive(holder.pid)) throw new Error('GPU claim owner has exited');
+    if (!this.isAlive(holder.pid)) throw new Error('GPU admission cancelled: owner exited');
     if (!this.cleared()) return null;
     // Include claims above a lowered capacity until they exit or are reclaimed.
     const occupied = state.slice(0, -1).filter(Boolean);
@@ -81,9 +88,12 @@ class Slots {
     if (holder.mode === 'solo') {
       if (pending && pending.token !== holder.token) return null;
       // Reserve priority before draining existing shared workers. New workers wait.
-      if (!pending) this.write('gpu_solo', holder);
+      // While draining, the waiting helper owns the reservation. If it is killed
+      // outright, the next caller can reclaim it even if the watchdog is alive.
+      if (!pending) this.write('gpu_solo', { ...holder, pid: waiterPid });
       if (occupied.length) return null;
       this.write('gpu_slot_1', holder);
+      this.write('gpu_solo', holder);
       return holder;
     }
     if (pending || occupied.some(item => item && item.mode === 'solo')) return null;
@@ -171,17 +181,33 @@ async function main() {
   if (lane) throw new Error(`Lane ${lane} is code only; GPU work refused`);
   const holder = { token: crypto.randomUUID(), issue, pid: Number(pid), mode,
     weight: positiveInteger(weight, 'GPU weight'), started: new Date().toISOString() };
-  let claimed = false;
-  let heartbeat = Date.now();
+  const waitSeconds = positiveInteger(process.env.PC_GPU_WAIT_SECONDS ?? '300', 'PC_GPU_WAIT_SECONDS');
+  if (waitSeconds > 3600) throw new Error('PC_GPU_WAIT_SECONDS must be at most 3600');
+  const deadline = performance.now() + waitSeconds * 1000;
+  slots.checkWeight(holder); // Fail even if the go gate is closed or the slot lock is busy.
+  let handedOff = false, touched = false, cancelled = false;
+  const cancel = () => { cancelled = true; };
+  const check = () => {
+    if (cancelled || !alive(holder.pid)) throw new Error('GPU admission cancelled');
+    if (performance.now() >= deadline) throw new Error(`GPU admission timed out after ${waitSeconds} seconds`);
+  };
+  process.on('SIGINT', cancel);
+  process.on('SIGTERM', cancel);
+  let heartbeat = performance.now();
   try {
     for (;;) {
-      claimed = !!await transaction(() => slots.step(holder));
-      if (claimed) { console.log(holder.token); return; }
-      if (Date.now() - heartbeat >= 60000) { console.log('WAIT'); heartbeat = Date.now(); }
-      await sleep(250);
+      const claim = await transaction(() => { touched = true; return slots.step(holder, process.pid); }, check, deadline);
+      check();
+      if (claim) { console.log(holder.token); handedOff = true; return; }
+      if (performance.now() - heartbeat >= 60000) { console.log('WAIT'); heartbeat = performance.now(); }
+      await sleep(Math.min(250, Math.max(0, deadline - performance.now())));
     }
   } finally {
-    if (!claimed) await transaction(() => slots.release(holder.token));
+    try {
+      if (!handedOff && touched) await transaction(() => slots.release(holder.token));
+    } catch (e) { console.error('GPU claim cleanup: ' + e.message); }
+    process.off('SIGINT', cancel);
+    process.off('SIGTERM', cancel);
   }
 }
 if (require.main === module) main().catch(e => { console.error('GPU claim: ' + e.message); process.exitCode = 1; });

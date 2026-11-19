@@ -35,7 +35,7 @@ if (require.main === module) {
 
 module.exports = async function startShell(root, size, scriptDirs) {
   const pipe = '\\\\.\\pipe\\voidsworn-runner-selftest-' + randomUUID();
-  const allowedFiles = new Set(scriptDirs.flatMap(dir => ['runner_common.ps1', 'codex_issue.ps1', 'work_issue.ps1']
+  const allowedFiles = new Set(scriptDirs.flatMap(dir => ['runner_common.ps1', 'codex_issue.ps1', 'work_issue.ps1', 'review_evidence.ps1']
     .map(name => path.join(dir, name).toLowerCase())));
   const allowedCommands = new Set(["(Get-Date).ToString('s')", 'Get-Date -Format yyyyMMdd_HHmmss']);
   const queue = [];

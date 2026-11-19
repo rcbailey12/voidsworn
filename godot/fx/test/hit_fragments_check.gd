@@ -1,6 +1,7 @@
 extends SceneTree
 # godot --headless --path godot --script res://fx/test/hit_fragments_check.gd
 
+const BREACH := preload("res://fx/fx_breach.gd")
 const FX := preload("res://fx/fx.gd")
 const FRAGMENTS := preload("res://fx/fx_fragments.gd")
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -138,6 +139,8 @@ func _check_finish(fx) -> void:
 	hull_mat.orm_texture = maps[1]
 	hull_mat.normal_enabled = true
 	hull_mat.normal_texture = maps[2]
+	var other_paint := StandardMaterial3D.new()
+	other_paint.albedo_texture = _swatch(Color.BLUE)
 	var mesh := ArrayMesh.new()
 	var surface := []
 	surface.resize(Mesh.ARRAY_MAX)
@@ -145,13 +148,31 @@ func _check_finish(fx) -> void:
 	surface[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2(0.25, 0.25), Vector2(0.75, 0.25), Vector2(0.25, 0.75)])
 	surface[Mesh.ARRAY_INDEX] = PackedInt32Array([0, 1, 2])
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	mesh.surface_set_material(0, other_paint)
 	surface[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.UP, Vector3.UP + Vector3.RIGHT * 2, Vector3.UP + Vector3.BACK * 2])
+	surface[Mesh.ARRAY_INDEX] = null
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
-	mesh.surface_set_material(1, hull_mat)
+	mesh.surface_set_material(1, other_paint)
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
+	mi.set_surface_override_material(1, hull_mat)
 	target.add_child(mi)
-	fx.add_ship("textured", target, {"meshes": [mi], "shielded": false})
+	# A separate fitting adds strip faces before the two hull surfaces in the hit BVH.
+	var strip_mesh := ArrayMesh.new()
+	surface[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3.ZERO, Vector3.RIGHT, Vector3.BACK, Vector3.RIGHT + Vector3.BACK])
+	surface[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2.ZERO, Vector2.RIGHT, Vector2.DOWN, Vector2.ONE])
+	strip_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLE_STRIP, surface)
+	strip_mesh.surface_set_material(0, other_paint)
+	var fitting := MeshInstance3D.new()
+	fitting.mesh = strip_mesh
+	fitting.position.x = -3.0
+	target.add_child(fitting)
+	fx.add_ship("textured", target, {"meshes": [fitting, mi], "shielded": false})
+	var strip_hit := FRAGMENTS.source(fx.ships["textured"], fitting.global_position + Vector3(0.75, 0, 0.75), Vector3.UP)
+	var strip_maps: Array = strip_hit.get("maps", [])
+	_check(not strip_maps.is_empty() and strip_maps[0] == other_paint.albedo_texture
+		and (strip_hit.get("uv", Vector2.ZERO) as Vector2).is_equal_approx(Vector2(0.75, 0.75)),
+		"The second face of a triangle strip supplies its own paint and UVs")
 	var p := target.global_position + Vector3(0.5, 1, 0.5)
 	var finish := FRAGMENTS.source(fx.ships["textured"], p, Vector3.UP)
 	_check(finish.get("maps") == maps, "The struck surface supplies its exact color, ORM and normal textures")
@@ -169,8 +190,25 @@ func _check_finish(fx) -> void:
 	_check(pool.mi.multimesh.visible_instance_count == pool.particles.size(), "Only living slots enter the draw")
 	pool.flush(10.0)
 	_check(pool.particles.is_empty() and pool.mi.multimesh.visible_instance_count == 0, "Expired pieces leave the draw")
+	_check_dent(fx, fx.ships["textured"], mi, p, finish)
 	fx.remove_ship("textured")
 	target.free()
+
+
+func _check_dent(fx, ship, mi: MeshInstance3D, p: Vector3, before: Dictionary) -> void:
+	var intact := mi.mesh as ArrayMesh
+	var dent := BREACH.dent(Vector3(0.5, 0, 0.15), Vector3.UP, 0.6, 0.12, 0.3)
+	ship._marks.append(dent)
+	ship._dmg_request(fx)
+	ship.flush_damage(fx)
+	var dented := mi.mesh as ArrayMesh
+	_check(dented != intact and dented.surface_get_array_index_len(0) > intact.surface_get_array_index_len(0),
+		"The real dent rebuild adds triangles before the second surface")
+	_check(mi.get_active_material(1) is ShaderMaterial, "The damage shader took over the second surface's paint")
+	var after := FRAGMENTS.source(ship, p, Vector3.UP)
+	_check(after.get("maps") == before.get("maps"), "A hit after the dent still takes the second surface's paint override")
+	_check((after.get("uv", Vector2.ZERO) as Vector2).is_equal_approx(Vector2(0.375, 0.375)),
+		"A hit after the dent still uses the second surface's UVs")
 
 
 func _run() -> void:
@@ -193,5 +231,5 @@ func _run() -> void:
 			_check_sparks(fx)
 			_check_finish(fx)
 		fx.free()
-	print("PASS hit fragment topology, layered walls, target textures and burst pool" if failures == 0 else "FAIL hit fragments: %d" % failures)
+	print("PASS hit fragment topology, target textures before and after a dent, and burst pool" if failures == 0 else "FAIL hit fragments: %d" % failures)
 	quit(0 if failures == 0 else 1)

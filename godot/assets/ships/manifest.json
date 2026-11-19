@@ -1715,52 +1715,57 @@
    "damage_preview": "previews/V18_51_damage.jpg"
   },
   "V1b_r_23": {
-   "name": "Daybreak-class dreadnought",
+   "name": "Daybreak-class dreadnought, the Sunward flagship (Sunward Crusade)",
    "faction": "voidsworn",
    "cls": "Dreadnought",
    "band": "XL",
-   "length_world": 27,
+   "game_ship": "ascendant",
+   "length_world": 27.0,
    "hardpoints": {
-    "gun": 8,
-    "engine": 3,
-    "breach": 10,
-    "core": 1
+    "gun": 16,
+    "engine": 2,
+    "breach": 8,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 10,
-   "skins": 21,
+   "breaches": 8,
+   "turrets": 4,
    "files": {
     "V1b_r_23.glb": {
-     "bytes": 7881460,
-     "sha256": "b5c6c2265e754081eade670513ab43da73927698d44827e6cd67454b00ec334c"
+     "bytes": 13271080,
+     "sha256": "e5686f47f2e6c45235f2eb4ca5c7fc3c7d7a17855304a92ecfb708ae6587615a"
     },
     "V1b_r_23_base.jpg": {
-     "bytes": 3816436,
-     "sha256": "af896af500c4c848ce692c819ed4a1d39686738b8c1538d88c74d43bbd25026e"
+     "bytes": 1653241,
+     "sha256": "243df4319f41a5d277e07ba80e1edb840f567b21397f2ccaf305cfc8dd0e6519"
     },
-    "V1b_r_23_damage.glb": {
-     "bytes": 17780164,
-     "sha256": "01e099456aa985de6d66b08bc1b93c75747112f8f8707897b06aab820e65e64f"
-    },
-    "V1b_r_23_emissive.jpg": {
-     "bytes": 202500,
-     "sha256": "8e74deb3dc169adcdfb861bc71c082250baa1908ec7a6216a9147bbbf219623e"
+    "V1b_r_23_glow_emission.jpg": {
+     "bytes": 938731,
+     "sha256": "be0907037ed4baa9635f833ff60408b0f3e723fb372d61c8931205b8be3a9354"
     },
     "V1b_r_23_normal.jpg": {
-     "bytes": 10353757,
-     "sha256": "1ea7669603f33cbc0a3042355920086b84b413fcd2d9ab65f82ce1fe9f757d39"
+     "bytes": 527520,
+     "sha256": "c7e868ae1687f9eea466984abbf1a8f6cbd88f645733ab3765de8b61b7aff420"
     },
     "V1b_r_23_orm.jpg": {
-     "bytes": 2012097,
-     "sha256": "72543da24c426ce16275ef4d0fd1ff36b10c1bf441b143358652f119ba424d46"
+     "bytes": 2008858,
+     "sha256": "f3596754c4dcf51be0fa2111f5bb53fe03d2d14c775b4f622952361cfe1a241c"
     },
-    "V1b_r_23_wreck.glb": {
-     "bytes": 4723284,
-     "sha256": "39cc350cd1d6fb836936d5868b0624d8d3311474fa13f80dbaa63002f53a644a"
+    "V1b_r_23_parts_base.jpg": {
+     "bytes": 1145097,
+     "sha256": "a0b1ed987072c5b7f0790028e25604bc5c86cc6a16629bac6997aac96d160bfa"
+    },
+    "V1b_r_23_parts_normal.jpg": {
+     "bytes": 292006,
+     "sha256": "75b6607f79bede829adbf09e9e48b280dc23884ea103a56b619cb85a0981188f"
+    },
+    "V1b_r_23_parts_orm.jpg": {
+     "bytes": 1705233,
+     "sha256": "939d8b070a8a96c5050b82716290d94b9045f47b777871756189503306a80e5f"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V1b_r_23\\",
-   "preview": "previews/V1b_r_23.jpg",
-   "damage_preview": "previews/V1b_r_23_damage.jpg"
+   "pc_path": "godot/assets/ships/V1b_r_23/"
   }
  }
 }

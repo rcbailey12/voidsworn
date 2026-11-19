@@ -13,6 +13,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # Prints INSTALL REFRESH PASS or FAIL; exit 0 only on PASS.
 
 const SV := preload("res://render/ship_view.gd")
+const BUILD := preload("res://render/build_assets.gd")
 const OLD := "res://render/test/fixtures/T560_fx/T560_fx.glb"
 const CODE := "ZZ592"
 
@@ -75,11 +76,40 @@ func new_hull(path: String) -> void:
 	r.free()
 
 
+func check_external_atlas() -> void:
+	var path := run.path_join("paint.png")
+	var atlas := Image.create_empty(4, 4, false, Image.FORMAT_RGBA8)
+	atlas.fill(Color.REBECCA_PURPLE)
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	check(file != null, "the new atlas can be written")
+	if file == null:
+		return
+	file.store_buffer(atlas.save_png_to_buffer())
+	file.close()
+	atlas.fill(Color.BLACK)
+	var stale := ImageTexture.create_from_image(atlas)
+	stale.take_over_path(path)
+	var gltf := run.path_join("paint.gltf")
+	file = FileAccess.open(gltf, FileAccess.WRITE)
+	file.store_string(JSON.stringify({"asset": {"version": "2.0"}, "scene": 0, "scenes": [{"nodes": [0]}],
+		"nodes": [{"name": "paint"}], "images": [{"uri": "paint.png"}]}))
+	file.close()
+	var control := GLTFState.new()
+	check(GLTFDocument.new().append_from_file(gltf, control) == OK and control.get_images().size() == 1
+		and control.get_images()[0] == stale, "plain glTF loading uses the planted old atlas")
+	var fresh := GLTFState.new()
+	fresh.handle_binary_image_mode = GLTFState.HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED
+	check(BUILD.append_ship_glb(GLTFDocument.new(), gltf, fresh) == OK and fresh.get_images().size() == 1
+		and fresh.get_images()[0].get_image().get_pixel(0, 0).is_equal_approx(Color.REBECCA_PURPLE),
+		"the ship cache builder reads the new atlas from disk")
+
+
 func _run() -> void:
 	run = "user://install_refresh_check/%d" % int(Time.get_unix_time_from_system())
 	var sh := run.path_join("ships").path_join(CODE)
 	for d in [sh, run.path_join("gen"), run.path_join("replaced")]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
+	check_external_atlas()
 	# 1. the old hull, with its breach parts and wreck chunks
 	for suf in ["", "_damage", "_wreck"]:
 		copy(OLD, sh.path_join(CODE + suf + ".glb"))

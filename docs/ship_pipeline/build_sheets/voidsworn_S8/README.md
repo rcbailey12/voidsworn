@@ -6,7 +6,7 @@ data.js `ascendant`: hbattery P, hbattery S, turret T, flak T; ability nova; no 
 the realistic detailed style (R197, R206 (2)). Designer of record: the Opus builder; the Board is the final designer and S8 is
 a base, not a trace (R205, R207, R233, R236). The original sheet pictures show the R254-approved build from the issue 738
 sandbox (Blender 5.3, Cycles CPU, 32 samples). `build.py voidsworn_S8 <out> render` rebuilds the sheet from its design file.
-Issue 1059 moves the shell rooms and hoists up into the gun galleries for B-3 clearance.
+Issue 1059 moves the shell rooms and hoists into the gun galleries and sets the decks, frames and liner clear of the wreck tears.
 
 ![voidsworn_S8 overview](voidsworn_S8_sheet_overview.jpg)
 
@@ -95,9 +95,11 @@ Each gallery now houses its shell room and hoist drive along its inboard edge. T
 the seam and the hoist drives 0.57 units above it. The fit check measures all of the interior against the skin. The Godot
 death-seam check measures the room triangles against the actual broken plating.
 
-The PC fit check found zero outside vertices and no objects straddling either peel. The stage 7 hard-point and installed
-readback checks passed. In the Godot death test, 46 triangles from the gun deck and inner liner protruded past the broken
-plating. The A4 Daybreak stays in the shared build. [PC review](../../../shots/swap_sunward_s8_1118/README.md)
+Run 1 found 46 protruding triangles from the gun deck and inner liner. In run 2 the bow deck and frame stop short of B-1,
+the gun deck is raised and narrowed above B-3, and the aft gun deck, adjacent frame and Roll hall are set back from B-2.
+The liner has relief along both lower flanks and across the two transverse joints where they meet B-3. The exterior plating
+continues across those joints. ShipView's wreck test on the installed satin export found zero protruding triangles and zero
+split machines in both the standard and scene 207 Daybreak seeds. [PC review](../../../shots/swap_sunward_s8_1118/README.md)
 
 ## Changed from S8 (every change, with its reason)
 

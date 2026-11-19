@@ -10,13 +10,15 @@ on:
   push:
     branches:
       - 'codex/issue-*'
-      - 'muse/issue-*'
+      - 'muse/*'         # every one-level Muse branch (muse/<name>; a nested muse/a/b gets none) (Nov 17 audit fix D: muse/look-pass-726 and
+                         # muse/glasswright-family sat with no PR); a scratch branch named muse/wip-<anything> opts out
       - 'work/issue-*'
       - 'opus/issue-*'   # Claude worker branches (issue 359); '*' also matches the arm shape opus/issue-<n>-<arm>
       # A run the PC runner marks partial (the agent stopped at the time cap or exited with an error, issue 377) pushes to
       # <branch>-partial and must open no pull request. A '!' pattern after the patterns above takes those branches back out.
       - '!codex/issue-*-partial'
       - '!work/issue-*-partial'
+      - '!muse/wip-*'
 # One run at a time per branch, in order (never cancelled): Muse pushes a new branch and its first commit a second apart,
 # and two runs racing each other both saw no pull request, so the slower one failed on 'already exists' (Nov 10, PR 409).
 concurrency:
@@ -34,7 +36,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
-          TITLE: ${{ github.event.head_commit.message }}
           # Standing issues never close on a merge (256 is the outside-check issue). One list for both paths below (opus_check_594).
           STANDING: '256'
         run: |
@@ -47,11 +48,97 @@ jobs:
               sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$s\b/Refs #$s/Ig" body.md
             done
           }
-          n=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-([0-9]+).*/\1/')
-          arm=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-[0-9]+-?//')
+          shorten_checks() {
+            LC_ALL=C awk -v issue="$n" -v keep="$1" '
+              { lines[NR] = $0 }
+              END {
+                for (i = 1; i <= NR; i++) {
+                  if (lines[i] == "## Checks run by the runner" && lines[i+1] == "" && lines[i+2] == "```") {
+                    first = i + 3
+                    fenced = 1
+                    break
+                  }
+                  if (lines[i] == "Runner checks:" && lines[i+1] == "" && lines[i+2] ~ /^checks_(node|parity)\.txt$/) {
+                    first = i + 2
+                    break
+                  }
+                }
+                for (i = first; first && i <= NR; i++) {
+                  if (fenced && lines[i] == "```" && lines[i+1] == "" && lines[i+2] == "## Run stats (runner)") {
+                    last = i - 1
+                    break
+                  }
+                  if (!fenced && lines[i] == "## Runner (issue 377)") break
+                  if (!fenced && tolower(lines[i]) ~ ("^refs #" issue "[[:space:]]*$")) last = i - 1
+                }
+                while (last >= first && first && lines[last] ~ /^[[:space:]]*$/) last--
+                cut = last - first + 1 - 2 * keep
+                for (i = 1; i <= NR; i++) {
+                  if (first && cut > 0 && i == first + keep) {
+                    print "(" cut " check lines cut. Full log is in the head commit message.)"
+                    i += cut
+                  }
+                  if (i <= NR) print lines[i]
+                }
+              }' body.md > body-short.md
+          }
+          limit_body() {
+            local limit=64999
+            if [ "$(wc -c < body.md)" -le "$limit" ]; then return; fi
+            shorten_checks 40
+            if [ "$(wc -c < body-short.md)" -gt "$limit" ]; then
+              # A few very wide log lines can make even the excerpt too long.
+              shorten_checks 0
+            fi
+            mv body-short.md body.md
+            if [ "$(wc -c < body.md)" -le "$limit" ]; then return; fi
+
+            # If the report itself is too long, reserve room for its issue links.
+            {
+              printf '\n\n(Report cut to fit. Full text is in the head commit message.)\n\n'
+              LC_ALL=C awk -v issue="$n" '
+                {
+                  line = $0
+                  gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+                  if (split(line, words, /[[:space:]]+/) != 2) next
+                  directive = tolower(words[1])
+                  # A branch with no issue number (issue-less Muse branch): keep every valid issue link the report names.
+                  if (issue == "") {
+                    if (words[2] ~ /^#[0-9]+$/ && directive ~ /^(refs|close[sd]?|fix(e[sd])?|resolve[sd]?):?$/ && !(line in seen)) {
+                      seen[line] = 1
+                      kept[++k] = words[1] " " words[2]
+                    }
+                    next
+                  }
+                  if (words[2] != "#" issue) next
+                  if (directive ~ /^refs:?$/) refs = words[1] " " words[2]
+                  if (directive ~ /^(close[sd]?|fix(e[sd])?|resolve[sd]?):?$/) closes = words[1] " " words[2]
+                }
+                END {
+                  if (issue == "") { for (i = 1; i <= k; i++) print kept[i]; exit }
+                  if (refs != "") print refs
+                  if (closes != "") print closes
+                  if (refs == "" && closes == "") print "Refs #" issue
+                }' body.md
+            } > body-end.md
+            # Remove any incomplete UTF-8 character at the byte cut.
+            head -c "$((limit - $(wc -c < body-end.md)))" body.md |
+              LC_ALL=C sed -E '$s/[\xc2-\xdf]$|[\xe0-\xef][\x80-\xbf]{0,1}$|[\xf0-\xf4][\x80-\xbf]{0,2}$//' > body-short.md
+            cat body-end.md >> body-short.md
+            mv body-short.md body.md
+          }
+          # Read large messages from the payload rather than passing them in the process environment.
+          TITLE=$(jq -r '.head_commit.message' "$GITHUB_EVENT_PATH")
+          # A Muse branch without issue-<n> in its name (Nov 17 audit fix D) gets a PR titled from its commit and no closing word.
+          n=""; arm=""
+          if printf '%s' "$BRANCH" | grep -qE 'issue-[0-9]+'; then
+            n=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-([0-9]+).*/\1/')
+            arm=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-[0-9]+-?//')
+          fi
           open=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')
           if [ "$open" = "0" ]; then
-            ititle=$(gh api "repos/$REPO/issues/$n" --jq .title 2>/dev/null || true)
+            ititle=""
+            [ -n "$n" ] && ititle=$(gh api "repos/$REPO/issues/$n" --jq .title 2>/dev/null || true)
             if [ -n "$ititle" ]; then title="Issue $n: $ititle"; else title=$(printf '%s\n' "$TITLE" | head -1); fi
             if [ -n "$arm" ]; then title="$title [$arm arm]"; fi
             body=$(printf '%s\n' "$TITLE" | tail -n +2)
@@ -61,8 +148,11 @@ jobs:
             # "Refs #N", never a closing word. Add a standing issue to STANDING (the step env above), space separated.
             word="Closes"
             case "$BRANCH" in opus/*) word="Refs" ;; esac
+            [ -z "$n" ] && word="none"
             case " $STANDING " in *" $n "*) word="Refs" ;; esac
-            if [ "$word" = "Refs" ]; then
+            if [ "$word" = "none" ]; then
+              : # no issue number in the branch name: the commit text says what it refers to
+            elif [ "$word" = "Refs" ]; then
               # any case, with or without a colon: GitHub reads "CLOSES #N" and "Closes: #N" as closing words too
               sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$n\b/Refs #$n/Ig" body.md
               grep -q "Refs #$n" body.md || printf '\nRefs #%s\n' "$n" >> body.md
@@ -70,6 +160,7 @@ jobs:
               grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
             fi
             guard_standing
+            limit_body
             # If another run opened it in the meantime, that is a pass, not a failure.
             gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md || {
               sleep 3
@@ -97,9 +188,10 @@ jobs:
                 case " $STANDING " in *" $n "*)
                   sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$n\b/Refs #$n/Ig" body.md
                   grep -q "Refs #$n" body.md || printf '\nRefs #%s\n' "$n" >> body.md ;;
-                *) grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?|refs):?[[:space:]]+#$n\b" body.md || printf '\nCloses #%s\n' "$n" >> body.md ;;
+                *) [ -z "$n" ] || grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?|refs):?[[:space:]]+#$n\b" body.md || printf '\nCloses #%s\n' "$n" >> body.md ;;
                 esac
                 guard_standing
+                limit_body
                 gh pr edit "$pr" -R "$REPO" --body-file body.md && echo "PR $pr text refreshed"
                 ;;
             esac

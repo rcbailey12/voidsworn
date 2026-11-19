@@ -195,7 +195,9 @@ def main():
     notes.append(f'ship length {LEN:.4f}: off-mesh limit {TOL_FRAC} of it, {TOL:.4f}; breach clearance at least {BREACH_CLEAR}')
     kids = set(nodes[root].get('children', [])); hps = [(i, n) for i, n in enumerate(nodes) if str(n.get('name', '')).startswith('hp_')]
     by_slot = {}; count = {}; rows = []
+    origin_sides = {'rcs': set(), 'board': set()}
     for i, n in hps:
+        before = len(probs)
         nm = n['name']; M = WM[i]; p = M[:3, 3].copy()
         par = parent.get(i); under = par if par in turret_ids and parent.get(par) == root else None
         if i not in kids and under is None: probs.append(f'{nm} is not a child of the ship node')
@@ -254,16 +256,18 @@ def main():
             count['rcs'] = count.get('rcs', 0) + 1; ex = n.get('extras', {})
             side = ex.get('side')
             if side not in ('P', 'S'): probs.append(f'{nm}: extras.side is {side!r}, not P or S')
-            elif (p[2] < 0) != (side == 'P'): probs.append(f'{nm}: a {"port" if side == "P" else "starboard"} braking origin sits on the other side (z {p[2]:+.3f})')
-            if fwd[0] < .5: probs.append(f'{nm}: a braking origin must point forward (+X, thrust against the motion)')
+            elif not p[2] * (-1 if side == 'P' else 1) > 0: probs.append(f'{nm}: a {"port" if side == "P" else "starboard"} braking origin sits on the other side (z {p[2]:+.3f})')
+            if not fwd[0] >= .5: probs.append(f'{nm}: a braking origin must point forward (+X, thrust against the motion)')
+            if len(probs) == before: origin_sides['rcs'].add(side)
         elif nm.startswith('hp_board_'):
             count['board'] = count.get('board', 0) + 1; ex = n.get('extras', {})
             side = ex.get('side')
             if side not in ('P', 'S'): probs.append(f'{nm}: extras.side is {side!r}, not P or S')
             else:
                 sg = -1 if side == 'P' else 1
-                if p[2] * sg <= 0: probs.append(f'{nm}: a {"port" if side == "P" else "starboard"} boarding origin sits on the other side (z {p[2]:+.3f})')
-                if fwd[2] * sg < .5: probs.append(f'{nm}: a boarding origin must point out of its own side')
+                if not p[2] * sg > 0: probs.append(f'{nm}: a {"port" if side == "P" else "starboard"} boarding origin sits on the other side (z {p[2]:+.3f})')
+                if not fwd[2] * sg >= .5: probs.append(f'{nm}: a boarding origin must point out of its own side')
+            if len(probs) == before: origin_sides['board'].add(side)
         else: probs.append(f'{nm}: not a hard point name the contract defines')
         rows.append(row)
     # turrets (issue 560): every turret the kit marks reaches the glb as its own node with its turning mesh and its muzzles
@@ -303,6 +307,7 @@ def main():
         if slot not in by_slot: probs.append(f'weapon slot {slot} ({wk} {arc}) has no hard point')
     if count.get('core', 0) > 1: probs.append('more than one hp_core')
     for prob in HP_CONTRACT.missing_required(count, weapons, cls, fac, hangar): probs.append(prob)
+    probs.extend(HP_CONTRACT.missing_sides(req, origin_sides))
     breach_ex = [n.get('extras', {}) for i, n in hps if str(n.get('name', '')).startswith('hp_breach_')]
     for prob in HP_CONTRACT.check_breach_layout([(ex.get('section'), ex.get('side')) for ex in breach_ex]):
         probs.append(prob)

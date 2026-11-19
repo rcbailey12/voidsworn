@@ -219,11 +219,23 @@ $gpuClass = $gpuClass | ConvertFrom-Json
 $gpuMode = $gpuClass.mode
 if ($gpuMode) {
   Write-Output "GPU: waiting for $gpuMode claim, weight $($gpuClass.weight) (issue $env:PC_GPU_ISSUE)"
-  & $gpuNode $gpuHelper acquire $gpuRoot ([string]$env:PC_GPU_ISSUE + ':gpu') $PID $gpuMode $gpuClass.weight | ForEach-Object {
-    if ($_ -eq 'WAIT') { Write-Host "GPU: still waiting for $gpuMode claim" }
-    else { $gpuToken = [string]$_ }
+  # Admission has its own clock in gpu_slots.js (PC_GPU_WAIT_SECONDS, default 300).
+  # Read the helper's diagnostic even under Windows PowerShell's native stderr handling.
+  $ea = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    & $gpuNode $gpuHelper acquire $gpuRoot ([string]$env:PC_GPU_ISSUE + ':gpu') $PID $gpuMode $gpuClass.weight 2>&1 | ForEach-Object {
+      $line = [string]$_
+      if ($line -eq 'WAIT') { Write-Host "GPU: still waiting for $gpuMode claim" }
+      elseif ($line -cmatch '\A[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z') { $gpuToken = $line }
+      else { Write-Output $line }
+    }
+    $admissionExit = $LASTEXITCODE
+  } finally { $ErrorActionPreference = $ea }
+  if ($admissionExit -ne 0 -or -not $gpuToken) {
+    Write-Output 'GPU: admission failed; command was not started'
+    exit 126
   }
-  if ($LASTEXITCODE -ne 0 -or -not $gpuToken) { throw 'GPU claim failed; command was not started' }
   Write-Output "GPU: acquired $gpuMode claim $gpuToken"
 }
 # A forced claim applies to this command only, never a nested watchdog.

@@ -26,6 +26,14 @@ The arm uses `opencode_lean.json` with helper tasks disabled and the same prefli
 and standing checks as Sonnet. It disables bundled plugins for the run so an OpenCode ChatGPT OAuth login cannot replace
 the API endpoint. Deploy `openai_api_key.bat`, `work/mock_llm.js` and both changed OpenCode configs with the runner files.
 
+When the OpenAI agent exits and its last error is a retryable HTTP 429, the runner resumes that OpenCode session with
+`--session`. It waits for the provider's stated delay, or 5 seconds if there is no first delay. Subsequent waits are at least
+30, 60, 120, 240 and 240 seconds, and each respects a longer delay named by the provider. The waits use the same
+`WORK_CAP` as the agent. The stall watchdog starts fresh with each attempt, after the wait. `result.txt` records
+`rate limited, resumed N of 6`. If time runs out or the resumes are used up, the usual partial-run path saves the work.
+Other failures follow that path immediately. All attempts append events to `log.txt`, which is copied once to
+`events.jsonl` for the spend estimate. The runner logs only the HTTP status, retry flag and wait hint from provider errors.
+
 The spend limit is `openai_budget_usd=94` in `work217\runner_settings.txt` (also the default when absent), starting with
 the $94 remaining for November 2026. `WORK_ROOT` moves both settings and ledger together. Before a paid probe the runner
 refuses a run at or above that month's budget. After the agent, including partial runs and failed probes, it appends one
@@ -59,6 +67,8 @@ model and effort in the preflight and agent commands and run records, ignored se
 refusal, provider overrides, spend arithmetic, repeat recording, month rollover and budget refusal. Missing token
 fields, an invalid ledger and a busy ledger lock each prove that agent changes reach the
 partial branch and the next paid start is refused. Those fault cases commit and push only to tiny local TEMP remotes.
+Run `node tools/pc/runner_openai_resume_selftest.js` on Windows with OpenCode installed to check the 429 recovery
+against a local mock API. It checks session reuse, spend across attempts, the six-resume limit, the time cap and other HTTP failures.
 Ordinary `work_issue.bat <issue> openai dryrun` uses the local stand-in provider in `opencode_mock.json`, which logs
 the request's `reasoning.effort` in `out\mock_log.txt`. It never loads the saved OpenAI key or adds spend to the
 real ledger. Like the older arms' dry runs it still uses GitHub
@@ -117,7 +127,9 @@ work_issue.ps1):
   old runner's commit aborted on an empty commit.txt (the disk was full) and its push carried only the agent's own merge.
 - **Disk.** Every run ends with "run folder size" in result.txt. work217\runner_settings.txt holds Ryan's switch
   (`remove_repo_copy_after_push=no` by default; WORKHORSE_CLEANUP.bat, from tools/pc/work_cleanup_setting.bat, turns it on).
-  With it on, a run whose push was checked removes its own repo\ copy and keeps out\. A dry run never removes anything.
+  With it on, cleanup requires a confirmed non-partial push and passing runner checks (`checked_push`). The runner keeps
+  its repo copy if it cannot verify the delivery branch, or if the checkout holds local history, edits, untracked files or
+  ignored files. The reason goes in result.txt. The out\ folder always stays.
 
 result.txt is for people. Chains use status.json as described below; matching words in result.txt cannot prove success.
 Exit codes: 0 pushed, 7 no changes, 8 push refused (change.patch kept), 10 diff mismatch, 11 commit failed, 12 the branch's
@@ -163,6 +175,15 @@ hashwrite <tools folder> <hash file>` so the issue 722 checks below can guard th
 refused-file guards still apply. status.json records a run
 id, branch, state, reason and commit; updates are atomic, with previous versions kept. Unexpected stops stay running and a
 chain times out instead of guessing success. Helper failures use exit 14; other runner exit codes keep their earlier meaning.
+
+Each Codex lane uses one exclusive lock beside its checkout (`repo.checkout.lock`). The launcher takes it before writing
+the issue folder and keeps it through final reporting. A second launch on that lane stops before touching any run files,
+even for another issue. Lane tools refresh takes the same lock. Update the Board's separate refresh script when deploying
+the launchers. The lock file stays on disk and Windows releases its handle when the owning process exits.
+
+Before claiming, the runner checks the fixed block's Owner and Branch against the launch. A workhorse branch must include
+the exact arm. Board-assigned workhorse jobs can use `Owner: codex` or name the arm. Dry-run push overrides still validate
+the assigned branch. GitHub's runner comment says `finished` only after `checked_push`.
 
 Lane tools refresh (issue 1018). Before each job, after any predecessor has finished, run
 `powershell -NoProfile -File "%V%\lane_tools_refresh.ps1" -Build build_c` followed by `if errorlevel 1 exit /b 1`.
