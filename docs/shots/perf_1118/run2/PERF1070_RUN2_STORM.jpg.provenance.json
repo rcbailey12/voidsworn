@@ -1,0 +1,115 @@
+{
+  "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+  "source_commit_date": "2026-11-19T00:41:30Z",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "PERF1070_RUN2_STORM.jpg",
+  "date": "2026-11-19T01:35:31Z",
+  "sources": [
+    {
+      "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+      "source_commit_date": "2026-11-19T00:41:30Z",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "storm_high_170_source.png",
+      "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T01:35:27Z",
+      "image_sha256": "4b61a5d1fce65fce4b8aaa209a8a635be271e4f0e5397f95e7bd566fabc9440a",
+      "sources": [
+        {
+          "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+          "source_commit_date": "2026-11-19T00:41:30Z",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ],
+      "source_commit_date": "2026-11-19T00:41:30Z"
+    },
+    {
+      "picture_name": "storm_max_170_source.png",
+      "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T01:35:27Z",
+      "image_sha256": "84dc036fedf128d209131b67a938c79d911b0d28a89d15ea68c454de1cc8a232",
+      "sources": [
+        {
+          "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+          "source_commit_date": "2026-11-19T00:41:30Z",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ],
+      "source_commit_date": "2026-11-19T00:41:30Z"
+    },
+    {
+      "picture_name": "storm_high_26_source.png",
+      "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T01:35:28Z",
+      "image_sha256": "f0d6c21382f0c4b82860e8fca52dddc6a5210a3329cb2dec17072199f60f0dc9",
+      "sources": [
+        {
+          "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+          "source_commit_date": "2026-11-19T00:41:30Z",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ],
+      "source_commit_date": "2026-11-19T00:41:30Z"
+    },
+    {
+      "picture_name": "storm_max_26_source.png",
+      "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T01:35:28Z",
+      "image_sha256": "f653ec386cd0922104e7a6645c67bec78063057495deab5f0f3007cd3ffba763",
+      "sources": [
+        {
+          "source_commit": "b7e82cdd25744d9315daabc02fb1c84a81c5a433",
+          "source_commit_date": "2026-11-19T00:41:30Z",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ],
+      "source_commit_date": "2026-11-19T00:41:30Z"
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    540,
+    720
+  ],
+  "strip_size": [
+    540,
+    98
+  ],
+  "strip_sha256": [
+    "0083523bf3e69a8c9e86953b48b10c51ead0d672b45fa4da7d1822902815ab5b"
+  ],
+  "stamp_template_sha256": "50e0829940b602f34894d63d3e373749b090af330990f457744e146fde5131f0",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAhwAAABiCAIAAACUK52zAAABhElEQVR4nO3XMREAIBADwQcFNLT4l4mJK3cFpL3JOvcNABR2sgIAogJAyVMBICMqAGREBYCMqACQERUAMqICQEZUAMiICgAZUQEgIyoAZEQFgIyoAJARFQAyogJARlQAyIgKABlRASAjKgBkRAWAjKgAkBEVADKiAkBGVADIiAoAGVEBICMqAGREBYCMqACQERUAMqICQEZUAMiICgAZUQEgIyoAZEQFgIyoAJARFQAyogJARlQAyIgKABlRASAjKgBkRAWAjKgAkBEVADKiAkBGVADIiAoAGVEBICMqAGREBYCMqACQERUAMqICQEZUAMiICgAZUQEgIyoAZEQFgIyoAJARFQAyogJARlQAyIgKABlRASAjKgBkRAWAjKgAkBEVADKiAkBGVADIiAoAGVEBICMqAGREBYCMqACQERUAMqICQEZUAMiICgAZUQEgIyoAZEQFgIyoAJARFQAyogJARlQAyIgKABlRASAjKgBkRAWAjKgAkBEVADKiAkBGVACYygd4dgEH/QglyAAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "5eaf8e76a67462a1a8304902596fe75f29af6be7a1c7f95e25baa970c43655d8"
+}
