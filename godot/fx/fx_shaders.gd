@@ -2131,6 +2131,59 @@ void fragment() {
 }
 """
 
+# Issue 1077 (prototype, off by default: rendering/effects/death_story): structural strain before a big hull splits. The
+# plating along each break line bulges a little and ripples (outward only, so it never sinks into the authored decks),
+# and the dying hull's power-down material and the tear overlay move it the same way. Ship-space points and normals.
+const STRAIN_FN := """
+uniform vec4 fx_strain_at[3];
+uniform vec4 fx_strain_n[3];
+uniform vec3 fx_strain_k = vec3(0.0, 1.0, 0.0);
+uniform vec2 fx_strain_t = vec2(1e9, 1e9);
+float fx_strain_amount(float t) { return smoothstep(fx_strain_t.x, fx_strain_t.y, t); }
+float fx_strain_band(int i, vec3 p) {
+	if (fx_strain_at[i].w <= 0.0) { return 0.0; }
+	float d = dot(p - fx_strain_at[i].xyz, fx_strain_n[i].xyz);
+	float e = 1.0 - smoothstep(0.0, max(fx_strain_n[i].w, 0.0001), abs(d));
+	return e * e;
+}
+vec3 fx_strain_offset(vec3 p, vec3 n, float t) {
+	float a = fx_strain_amount(t) * fx_strain_k.x;
+	if (a <= 0.0) { return vec3(0.0); }
+	float f = max(fx_strain_band(0, p), max(fx_strain_band(1, p), fx_strain_band(2, p)));
+	if (f <= 0.0) { return vec3(0.0); }
+	float w = fx_strain_k.y;
+	float rip = sin(dot(p, vec3(1.0, 0.37, 0.71)) * w) * sin(dot(p, vec3(-0.43, 1.0, 0.29)) * w * 1.37);
+	return n * a * f * (0.35 + 0.65 * rip * rip);
+}
+"""
+
+
+# Issue 1077: the tear overlay for the strain prototype. The same tear, on plating moved exactly as the power-down
+# material moves it (plus a hair outward, so the additive overlay never loses its depth test), and hairline stress
+# cracks along every break line, broken into dashes and flickering, that appear while the hull strains.
+static func tear_strain_code() -> String:
+	var c: String = TEAR.replace("uniform mat4 frame;", "uniform mat4 frame;\n" + STRAIN_FN + "uniform vec3 fx_hair = vec3(0.02, 1.0, 0.0);\n")
+	c = c.replace("\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n",
+		"\tcut_p = (frame * vec4(VERTEX, 1.0)).xyz;\n\tvec3 sn = normalize(mat3(frame) * NORMAL);\n\tvec3 so = fx_strain_offset(cut_p, sn, scene_t);\n\tVERTEX += inverse(mat3(frame)) * (so * 1.08 + sn * fx_strain_k.x * 0.04 * fx_strain_amount(scene_t));\n")
+	c = c.replace("\tif (dot(col, col) < 1e-6) { discard; }",
+		"""\tfloat amt = fx_strain_amount(scene_t);
+	if (amt > 0.0) {
+		float hw = max(fx_hair.x, pxw * 1.3);
+		for (int i = 0; i < 3; i++) {
+			if (fx_strain_at[i].w <= 0.0) { continue; }
+			float wig = sin(dot(cut_p, vec3(2.3, 9.1, 4.7))) * 0.6 + sin(dot(cut_p, vec3(6.1, 3.7, 12.9))) * 0.4;
+			float d = abs(dot(cut_p - fx_strain_at[i].xyz, fx_strain_n[i].xyz) + wig * hw * 1.2);
+			float line = 1.0 - smoothstep(hw * 0.3, hw, d);
+			float dash = smoothstep(0.15, 0.75, sin(dot(cut_p, vec3(3.1, 7.7, 5.3)) * fx_hair.y + float(i) * 1.7) * 0.5 + 0.5);
+			float flick = 0.65 + 0.35 * sin(scene_t * 23.0 + float(i) * 2.1 + dot(cut_p, vec3(0.9, 1.3, 0.7)));
+			col += ember * fx_hair.z * line * dash * flick * amt;
+			col += ember * vec3(0.6, 0.45, 0.35) * 0.05 * fx_strain_band(i, cut_p) * amt;
+		}
+	}
+	if (dot(col, col) < 1e-6) { discard; }""")
+	return c
+
+
 const NOISE3 := """
 // r5: a better hash (Hoskins' hash13), quintic fades and rotated octaves; the old product hash and cubic fade drew a
 // diagonal lattice through the fireballs once their emission amplified the noise (r4 g21: a grid of hard diamonds)

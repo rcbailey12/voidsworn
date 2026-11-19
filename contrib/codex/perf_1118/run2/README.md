@@ -75,6 +75,8 @@ Scene 207 uses the same camera, installed V1b_r_23 hull, scripted travel and shi
 
 ## Reproduction
 
+The [Run 3 report](../../../../docs/shots/perf_1118/run2/README.md) uses the current main scene-gate interface. Use the Run 2 delivery checkout or the archived Run 2 probes in `raw/` when replaying an earlier source.
+
 The timing runs use the [Run 1 probe and method](../README.md). The original installed fleet and generated assets are required. The manifests are `bb6258bc3f2a8c9e530776c4fd9a228957462beee10a37db73a37da0dc6ff2d1` and `34244bddf5ae0b792bfd99d2313afba5a8beb319661346cfcdf81651652708c5`. Use [stage.ps1](../stage.ps1) from the matching `b7e82cdd` checkout with the preserved assets, then overlay tracked Godot source from the revision under test and write that revision in `godot/build_info.json`. Keep the preserved asset manifest in both staged projects. Use the merged base for the matched isolation and picture controls and the patched source for the final timing and picture runs. Run the following from the repo root against a staged directory.
 
 ```powershell

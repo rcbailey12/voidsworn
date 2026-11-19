@@ -6,6 +6,7 @@
 # usage: blender -b -P bakeAb5.py -- OUT_DIR B0_GLB GEN3D_DIR Ab5 [RES] [SAMPLES]      (GEN3D_DIR is unused: no generated parts)
 import os, sys, math, json, time
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+from cycles_devices import configure_cycles_device
 import bpy, bmesh
 import numpy as np
 from mathutils import Vector
@@ -27,15 +28,7 @@ MAX_TILT = 40.0       # degrees: detail normals tilted further than this are bak
 
 def gpu():
     sc = bpy.context.scene; sc.render.engine = 'CYCLES'
-    prefs = bpy.context.preferences.addons['cycles'].preferences
-    for t in ('OPTIX', 'CUDA'):
-        try:
-            prefs.compute_device_type = t; prefs.get_devices()
-            if not [d for d in prefs.devices if d.type == t]: continue
-            for d in prefs.devices: d.use = True
-            sc.cycles.device = 'GPU'; return t
-        except Exception: pass
-    return 'CPU'
+    return configure_cycles_device(sc)
 
 def join(objs, name):
     bpy.ops.object.select_all(action='DESELECT')

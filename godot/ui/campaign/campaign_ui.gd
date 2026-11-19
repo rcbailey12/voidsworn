@@ -847,9 +847,10 @@ func _briefing_column() -> Control:
 	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
 	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
 	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
-	var trial_status := _sheet_words("Test map package " + ("on" if H["map_trial"] else "off"), 17, GS.TEXT2)
-	trial_status.name = "MapTrialStatus"
-	upper.add_child(trial_status)
+	if H["map_trial"]:   # issue 1175: the issue 1050 trial label shows only while the trial is on
+		var trial_status := _sheet_words("Test map package on", 17, GS.TEXT2)
+		trial_status.name = "MapTrialStatus"
+		upper.add_child(trial_status)
 	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
 	upper.add_child(gap(28)); _rows.clear()
 	for r in _routes:
@@ -887,6 +888,10 @@ func _briefing_column() -> Control:
 
 func _objective_line(r: Dictionary) -> String:
 	var short = {"Engagement": "Break their fleet to make it flee.", "Ambush": "Break the fleets closing in from both sides.", "Hold the station": "Keep enemies off the station through round 6.", "Hunt": "Destroy their flagship before round 6 ends.", "Intercept": "Destroy the transports before they escape.", "Breakthrough": "Get your ships onto the far jump hexes.", "Relay": "Hold the relay, unopposed, for 3 rounds.", "Decapitation": "Destroy their flagship to scatter the fleet.", "Sector flagship": "Beat the command ship to end the sector."}
+	var be := str(r.get("boss_enc", ""))
+	if be != "" and short.has(be):   # issue 1175: the flagship stop names the fight it rolled with the map
+		var o := str(short[be]).trim_suffix(".")
+		return be + ": " + o.substr(0, 1).to_lower() + o.substr(1) + ", or sink the command ship."
 	return str(short.get(r["name"], str(r["objective"]).split(". ")[0].trim_suffix(".") + ".")) if r["objective"] != "" else ""
 
 func _route_row(r: Dictionary) -> Control:
@@ -909,7 +914,7 @@ func _route_row(r: Dictionary) -> Control:
 		elif not r["fight"]: danger.add_child(_sheet_words("No fight", 19, GS.TEXT2))
 		tv.add_child(danger)
 	else:
-		var note = (str(dg.get("band", "")) + " fight." if r["fight"] else "No fight")
+		var note = ("Nemesis meeting. " if r.get("nemesis", false) else "") + (str(dg.get("band", "")) + " fight." if r["fight"] else "No fight")   # issue 1175
 		if r["fight"] and r["reward"] != "": note += " Pays " + str(r["reward"])
 		tv.add_child(_sheet_words(note, 18, GS.TEXT2))
 	var row_height = 132 if on else (54 if _routes.size() >= 4 else 62)
@@ -1692,7 +1697,9 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 		var linebtn = _end_btn("Choose " + str(C.ADMIRALS[flown["id"]]["n"]) + "'s level " + str(5 + C.lineageBuild(flown["id"])["picks"].size()) + " skill" if int(flown["pending"]) > 0 else ("Choose Command evolution" if flown["capstoneReady"] else "View admiral line"), "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")
 		if linebtn != null:
 			linebtn.tooltip_text = "Recorded skills: " + (", ".join(PackedStringArray(flown["chosen"])) if not flown["chosen"].is_empty() else "None yet") + "."
-			if flown.get("hasCap", false) and int(flown.get("capLevel", 0)) > 0: linebtn.tooltip_text += "\nCapstone mastery: " + str(C.CAPSTONE_MASTERY_PERKS[int(flown["capLevel"]) - 1]["d"])
+			if flown.get("hasCap", false) and int(flown.get("capLevel", 0)) > 0:
+				var effect := _capstone_effect(int(flown["capLevel"]) - 1)
+				if not effect.is_empty(): linebtn.tooltip_text += "\nCapstone mastery: " + effect
 			for perk in flown["earned"]: linebtn.tooltip_text += "\n" + str(perk["n"]) + " earned: " + str(perk["d"])
 			r2.add_child(linebtn)
 		for row in receipt["shadow"]:
@@ -1804,6 +1811,11 @@ func _lineage(id) -> Control:
 	v.add_child(lbl("Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset " + C.numstr(build["respecs"]) + " times. You have " + C.numstr(C.z0(C.META.get("renown"))) + " renown.", 18, BONE3))
 	var row = hbox(); add(row, abtn("Reset line: " + C.numstr(C.lineageRespecCost(id)) + " renown", "offerRespec", id)); add(row, abtn("Back to Admiral mastery", "progTab", "mastery")); v.add_child(row)
 	return v
+func _capstone_effect(i: int) -> String:
+	var value = C.CAPSTONE_MASTERY_PERKS[i].get("d")
+	var effect := value.strip_edges() as String if value is String else ""
+	return "" if effect.begins_with("Placeholder:") else effect
+
 # Job 7 step 14: the mastery levels on the chosen capstone evolution, in the same block as the evolution choice.
 func _capstone_mastery(id) -> Control:
 	var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var v = vbox(6)
@@ -1816,7 +1828,8 @@ func _capstone_mastery(id) -> Control:
 	for i in range(C.CAPSTONE_MASTERY_PERKS.size()):
 		var earned = l > i; var cv = card(earned, 300)
 		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, BONE, font_semi))
-		cv[1].add_child(lbl(str(C.CAPSTONE_MASTERY_PERKS[i]["d"]), 17, BONE2))
+		var effect := _capstone_effect(i)
+		if not effect.is_empty(): cv[1].add_child(lbl(effect, 17, BONE2))
 		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 17, BONE3))
 		if not earned: cv[0].modulate.a = 0.55
 		row.add_child(cv[0])
@@ -1850,13 +1863,13 @@ func _modal(md: Dictionary) -> void:
 				v.add_child(rich("With the flagship broken, the fleet jumps deeper. Fleet command expands: [b]" + c("+3 command points", VERD) + "[/b], and crews patch 40% of every hull during the transit.", 17))
 				v.add_child(rich("Scanners confirm [b]" + esc(F["n"]) + "[/b] ahead.", 17))
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
-			if md["kind"] == "sector" and d.get("adapt") != null and d.get("adaptFac") != null:   # #121 (A4): the commander who fought the sector just ended
+			if md["kind"] == "sector" and d.get("adapt") != null and d.get("adaptFac") != null and C.nemCanReturn(d["adaptFac"]):
 				var na = d["adapt"]; var nf = d["adaptFac"]
 				# the Nemesis adaptation: its own well with the reserved red bar and the NEMESIS tag, as the battle's Nemesis block
 				var aw = blk(ALERT, 5, 14, 10); aw[0].set_meta("keep", true)
 				var ah = hbox(8); ah.add_child(tagl("Nemesis", ALERT, true)); ah.add_child(lbl("ADAPTED TO YOU", 17, BONE, font_caps, false)); aw[1].add_child(ah)
 				aw[1].add_child(rich(c(esc(str(d.get("adaptWho", ""))) + " has adapted: ", BONE2) + "[b]" + c(esc(C.nemAdaptName(na, nf)), BLOOD) + "[/b] " + c("(" + esc(str(d.get("adaptWhy", ""))) + ")", BONE3), 17))
-				aw[1].add_child(rich(c(esc(C.nemAdaptDesc(na, nf)), BONE2), 18))
+				aw[1].add_child(rich(c("If you meet this hunter again: " + esc(C.nemAdaptDesc(na, nf)), BONE2), 18))
 				if str(d.get("adaptLine", "")) != "": aw[1].add_child(rich("[i]" + c(esc(str(d["adaptLine"])), BLOOD) + "[/i]", 17))
 				v.add_child(aw[0])
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", EMBER) + " " + c(esc(d["cond"]["d"]), BONE2), 17))

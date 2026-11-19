@@ -8,6 +8,11 @@ const net = require('net');
 const crypto = require('crypto');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const slotName = index => 'gpu_slot_' + index;
+const realClock = { now: () => performance.now(), sleep };
+// The longest admission wait. ship_job.bat defaults to it (issue 1174): on Nov 19 three helpers queued at once and the
+// 300 s default failed them. Ship jobs run the helper from their own branch checkout, so raising this only helps once every
+// ship branch carries the change.
+const MAX_WAIT_SECONDS = 3600;
 function positiveInteger(value, label) {
   const number = Number(value);
   if (!/^[0-9]+$/.test(String(value)) || !Number.isSafeInteger(number) || number < 1) {
@@ -23,16 +28,20 @@ const alive = pid => {
 // An OS-owned localhost bind serializes short file transactions across ALL tools
 // copies. The OS drops it after a crash. No lock or job files are ever deleted.
 // No client connects and no data is sent. An occupied port fails closed (waits).
-async function transaction(fn, check = () => {}, deadline = performance.now() + 5000) {
+// clock: { now, sleep } (tests pass a fake one, so no test races the wall clock; issue 1174). When the deadline has passed,
+// check() runs once more before the lock's own message: an admission that runs out while the lock is busy reports
+// "admission timed out", whichever of the two clocks reads first (the Nov 19 CI flake at gpu_slots_tests.js:159).
+async function transaction(fn, check = () => {}, deadline, clock = realClock) {
+  if (deadline === undefined) deadline = clock.now() + 5000;
   for (;;) {
     check();
-    if (performance.now() >= deadline) throw new Error('GPU slot lock timed out');
+    if (clock.now() >= deadline) { check(); throw new Error('GPU slot lock timed out'); }
     const server = net.createServer(socket => socket.destroy());
     const bound = await new Promise((resolve, reject) => {
       server.once('error', e => e.code === 'EADDRINUSE' ? resolve(false) : reject(e));
       server.listen({ host: '127.0.0.1', port: 47847, exclusive: true }, () => resolve(true));
     });
-    if (!bound) { await sleep(25); continue; }
+    if (!bound) { await clock.sleep(25); continue; }
     try { check(); return fn(); } finally { await new Promise(resolve => server.close(resolve)); }
   }
 }
@@ -113,7 +122,8 @@ class Slots {
   }
 }
 
-function weightFor(exe, requested = '') {
+function weightFor(exe, requested = '', mode = 'shared') {
+  if (!mode || mode === 'none') return 0;
   if (requested !== '') return positiveInteger(requested, 'PC_GPU_WEIGHT');
   return /^blender(?:\.exe)?$/i.test(path.win32.basename(exe)) ? 2 : 1;
 }
@@ -126,7 +136,9 @@ function modeFor(exe, args, cwd = process.cwd(), requested = '') {
   if (!godot && !blender) return requested === 'solo' || requested === 'shared' ? requested : '';
   if (godot && /(?:^|\s)--headless(?:\s|$)/i.test(args)) return '';
   if (requested === 'solo') return 'solo';
-  if (blender) return 'shared';
+  // Only explicitly marked CPU-only Blender steps can skip a Blender claim.
+  // Godot still detects GPU work and takes solo for timing scripts.
+  if (blender) return requested === 'none' ? '' : 'shared';
   // Known benches remain solo even if their checkout has not been prepared yet.
   if (/--(?:bench|benchmark|measure)\b|bench209|scene_gate|bench\d|frame[_-]?time|performance|perf_probe/i.test(args) && !/--still\b/.test(args)) return 'solo';
   const project = /--path\s+(?:"([^"]+)"|(\S+))/.exec(args);
@@ -170,7 +182,7 @@ async function main() {
   if (action === 'classify') {
     const input = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''));
     const mode = modeFor(input.exe, input.args, input.cwd, input.requested);
-    console.log(JSON.stringify({ mode, weight: mode ? weightFor(input.exe, input.weight) : 1 }));
+    console.log(JSON.stringify({ mode, weight: weightFor(input.exe, input.weight, mode) }));
     return;
   }
   if (!root) throw new Error('GPU root is required');
@@ -182,33 +194,46 @@ async function main() {
   const holder = { token: crypto.randomUUID(), issue, pid: Number(pid), mode,
     weight: positiveInteger(weight, 'GPU weight'), started: new Date().toISOString() };
   const waitSeconds = positiveInteger(process.env.PC_GPU_WAIT_SECONDS ?? '300', 'PC_GPU_WAIT_SECONDS');
-  if (waitSeconds > 3600) throw new Error('PC_GPU_WAIT_SECONDS must be at most 3600');
-  const deadline = performance.now() + waitSeconds * 1000;
+  if (waitSeconds > MAX_WAIT_SECONDS) throw new Error(`PC_GPU_WAIT_SECONDS must be at most ${MAX_WAIT_SECONDS}`);
   slots.checkWeight(holder); // Fail even if the go gate is closed or the slot lock is busy.
-  let handedOff = false, touched = false, cancelled = false;
+  let cancelled = false;
   const cancel = () => { cancelled = true; };
-  const check = () => {
-    if (cancelled || !alive(holder.pid)) throw new Error('GPU admission cancelled');
-    if (performance.now() >= deadline) throw new Error(`GPU admission timed out after ${waitSeconds} seconds`);
-  };
   process.on('SIGINT', cancel);
   process.on('SIGTERM', cancel);
-  let heartbeat = performance.now();
   try {
-    for (;;) {
-      const claim = await transaction(() => { touched = true; return slots.step(holder, process.pid); }, check, deadline);
-      check();
-      if (claim) { console.log(holder.token); handedOff = true; return; }
-      if (performance.now() - heartbeat >= 60000) { console.log('WAIT'); heartbeat = performance.now(); }
-      await sleep(Math.min(250, Math.max(0, deadline - performance.now())));
-    }
+    await admit(slots, holder, { waitSeconds, cancelled: () => cancelled, onWait: () => console.log('WAIT') });
+    console.log(holder.token);
   } finally {
-    try {
-      if (!handedOff && touched) await transaction(() => slots.release(holder.token));
-    } catch (e) { console.error('GPU claim cleanup: ' + e.message); }
     process.off('SIGINT', cancel);
     process.off('SIGTERM', cancel);
   }
 }
+
+// Wait for a claim until waitSeconds pass. Resolves with the holder once it is written; throws "admission timed out" or
+// "admission cancelled" (owner exited, or cancelled() turned true) and then releases anything it reserved. tx and clock are
+// for tests: tx defaults to the localhost lock, clock to the real one.
+async function admit(slots, holder, { waitSeconds, cancelled = () => false, onWait = () => {}, waiterPid = process.pid,
+  clock = realClock, tx = transaction } = {}) {
+  const deadline = clock.now() + waitSeconds * 1000;
+  let handedOff = false, touched = false;
+  const check = () => {
+    if (cancelled() || !slots.isAlive(holder.pid)) throw new Error('GPU admission cancelled');
+    if (clock.now() >= deadline) throw new Error(`GPU admission timed out after ${waitSeconds} seconds`);
+  };
+  let heartbeat = clock.now();
+  try {
+    for (;;) {
+      const claim = await tx(() => { touched = true; return slots.step(holder, waiterPid); }, check, deadline, clock);
+      check();
+      if (claim) { handedOff = true; return claim; }
+      if (clock.now() - heartbeat >= 60000) { onWait(); heartbeat = clock.now(); }
+      await clock.sleep(Math.min(250, Math.max(0, deadline - clock.now())));
+    }
+  } finally {
+    try {
+      if (!handedOff && touched) await tx(() => slots.release(holder.token), undefined, undefined, clock);
+    } catch (e) { console.error('GPU claim cleanup: ' + e.message); }
+  }
+}
 if (require.main === module) main().catch(e => { console.error('GPU claim: ' + e.message); process.exitCode = 1; });
-module.exports = { Slots, modeFor, weightFor, transaction, codeOnlyLane };
+module.exports = { Slots, modeFor, weightFor, transaction, codeOnlyLane, admit, MAX_WAIT_SECONDS };

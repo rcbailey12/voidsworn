@@ -61,11 +61,16 @@ func _run() -> void:
 		for code in a["calm"] + a["storm"] + b["storm"]:
 			check(not (code as String).contains("wake_at"), "%s: no wake code with the setting off, nor ever in the storm" % quality)
 		check(a["storm"] == b["storm"], "%s: storm shaders identical with the wake on" % quality)
+		for code in a["calm"]:
+			check((code as String).count("// WAKE_SHIFT") == 1 and (code as String).count("// WAKE_THIN") == 1, "%s: calm gas keeps its two wake markers" % quality)
+			if quality == "high" and not (code as String).contains("shader_type fog;"):
+				check((code as String).contains("#define HIGH_GAS_CARDS"), "high: the optimised High cards are the ones checked")
 		for code in b["calm"]:
 			var c := code as String
 			var fog := c.contains("shader_type fog;")
 			# The function is declared, called, and both its uses (the shifted noise and the thinning) are in place.
 			check(c.contains("vec4 wake_at(vec3 w)"), "%s: calm gas declares the wake" % quality)
+			check(not c.contains("// WAKE_SHIFT") and not c.contains("// WAKE_THIN"), "%s: both markers are replaced" % quality)
 			check(c.contains("wake_at(WORLD_POSITION)" if fog else "wake_at(vW)"), "%s: calm gas calls the wake" % quality)
 			check(c.contains("p -= wk.xyz"), "%s: the wake moves the gas" % quality)
 			check(c.contains("DENSITY *= 1.0 - " if fog else "d *= 1.0 - "), "%s: the wake thins the gas" % quality)

@@ -56,28 +56,33 @@ vec4 wake_at(vec3 w) {
 """ % [n * 8, n]
 
 
-# Adds the wake to today's calm gas card shader. Two anchors; a missing anchor leaves the shader as it was.
+const SHIFT := "// WAKE_SHIFT"
+const THIN := "// WAKE_THIN"
+
+
+# Adds the wake at the marker comments world_living.gd keeps in its calm gas shaders (Board, PR 1181: markers, not
+# copied code lines, so a shader rewrite cannot silently drop it). A missing marker is an error and the shader stays
+# as it was; world/test/nebula_wake_check.gd fails on it.
+static func _inject(code: String, n: int, entry: String, at: String, thin: String) -> String:
+	if code.count(SHIFT) != 1 or code.count(THIN) != 1 or code.count(entry) != 1:
+		push_error("Issue 1079: the nebula wake markers are missing from a calm gas shader; wake not applied")
+		return code
+	code = code.replace(entry, glsl(n) + entry)
+	var lines := code.split("\n")
+	for i in lines.size():
+		if lines[i].strip_edges().begins_with(SHIFT):
+			lines[i] = "\tvec4 wk = wake_at(%s);\n\tp -= wk.xyz * %s;" % Array(at.split("|"))
+		elif lines[i].strip_edges().begins_with(THIN):
+			lines[i] = thin
+	return "\n".join(lines)
+
+
 static func into_cards(code: String, n: int) -> String:
-	const P := "\tvec3 p = vW * 0.075 + drift;"
-	const D := "\tif (d <= 0.002) { discard; }"
-	if not code.contains(P) or not code.contains(D):
-		push_warning("Issue 1079: gas card anchors moved; nebula wake not applied")
-		return code
-	code = code.replace("void fragment() {", glsl(n) + "void fragment() {")
-	code = code.replace(P, P + "\n\tvec4 wk = wake_at(vW);\n\tp -= wk.xyz * 0.075;")
-	return code.replace(D, "\td *= 1.0 - 0.7 * wk.w;\n" + D)
+	return _inject(code, n, "void fragment() {", "vW|0.075", "\td *= 1.0 - 0.7 * wk.w;")
 
 
-# Adds the wake to the calm nebula's fog volume (Max quality).
 static func into_fog(code: String, n: int) -> String:
-	const P := "gas_time;\n"
-	const D := "\tALBEDO = "
-	if not code.contains(P) or not code.contains(D):
-		push_warning("Issue 1079: fog anchors moved; nebula wake not applied")
-		return code
-	code = code.replace("void fog() {", glsl(n) + "void fog() {")
-	code = code.replace(P, P + "\tvec4 wk = wake_at(WORLD_POSITION);\n\tp -= wk.xyz * 0.012;\n")
-	return code.replace(D, "\tDENSITY *= 1.0 - 0.7 * wk.w;\n" + D)
+	return _inject(code, n, "void fog() {", "WORLD_POSITION|0.012", "\tDENSITY *= 1.0 - 0.7 * wk.w;")
 
 
 # Called every frame with the battle's ship views; drops points behind any ship that is moving.

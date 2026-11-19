@@ -66,6 +66,9 @@ static func apply_fog(parent: Node, env: Environment, camera_radius: float, qual
 
 var fog_mats: Array[ShaderMaterial] = []
 var _fog_noise: ImageTexture3D = null
+const GAS_LATTICE_PATH := "res://world/gas_hash_lattice.res"
+var _gas_lattice: ImageTexture3D
+var _gas_lattice_origin: Vector3
 const GAS_HEIGHT := 1.75
 const GAS_CLOUD_SCALE := 3.0
 const GAS_CLOUD_MARGIN := 48.0
@@ -83,6 +86,7 @@ uniform float gain_a = 1.0;
 uniform float storm = 0.0;
 void fog() {
 	vec3 p = WORLD_POSITION * 0.012 + vec3(0.0006, 0.0002, 0.00035) * gas_time;
+	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
 	float warp = texture(noise_tex, p * 0.55 + 0.31).r;
 	float n = texture(noise_tex, p + vec3(warp * 0.12)).r;
 	n = mix(n, texture(noise_tex, p * 3.1 - vec3(warp * 0.18)).r, 0.18);
@@ -92,6 +96,7 @@ void fog() {
 	float height = smoothstep(-7.0, -2.0, WORLD_POSITION.y) * (1.0 - smoothstep(23.0, 31.5, WORLD_POSITION.y));
 	float shape = foot.g * smoothstep(0.08, 0.65, foot.r) * height;
 	DENSITY = smoothstep(0.32, 0.68, n) * shape * 0.045 * gain_a;
+	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	ALBEDO = mix(c_lit, c_glow, smoothstep(0.58, 0.85, n));
 	EMISSION = mix(c_dark, c_shadow, n) * 0.65;
 	EMISSION += c_glow * smoothstep(0.7, 0.9, n) * (0.2 + storm * 0.25);
@@ -112,10 +117,49 @@ const DEBRIS_ROCK_MAX := 2.8
 # Issue 232 E17/NB5 sheet: the live weight, overridable for the three-weight capture (default is the shipped 0.25).
 var faction_end_weight := clampf(float(OS.get_environment("VS_NEB_W")), 0.0, NEBULA_FACTION_END_WEIGHT) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
 
+const GAS_CARD_SUPPORT := """
+const float MIN_GAS_DENSITY = 0.002;
+// Leave room for rounding when an upper bound drops an empty fragment early.
+const float GAS_DENSITY_BOUND = MIN_GAS_DENSITY * 0.95;
+vec2 gas_band(float band) {
+	return band < 0.5 ? vec2(-4.0, 2.0) : (band < 1.5 ? vec2(1.0, 8.0) : (band < 2.5 ? vec2(6.0, 14.0) : vec2(12.0, 18.0)));
+}
+float gas_layer(float band, float y) {
+	vec2 limits = gas_band(band);
+	return smoothstep(limits.x, limits.x + 1.5, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
+}
+vec2 gas_card_offset(inout vec2 vertex, vec4 card, vec4 centre, mat4 inv_view, float height_scale) {
+	float angle = card.y * 6.2831;
+	mat2 spin = mat2(vec2(cos(angle), sin(angle)), vec2(-sin(angle), cos(angle)));
+#ifdef HIGH_GAS_CARDS
+	// The radial falloff fits inside a disc. Bound that disc by its nonzero
+	// height band in the billboard plane before rasterizing the quad.
+	vec2 up = vec2(inv_view[0].y, inv_view[1].y);
+	float height_per_unit = length(up);
+	if (height_per_unit > 0.0001) {
+		up /= height_per_unit;
+		vec2 across = vec2(up.y, -up.x);
+		float centre_y = (inv_view * centre).y;
+		vec2 limits = (gas_band(floor(card.w)) * height_scale - centre_y) / (height_per_unit * card.x);
+		// Add a small margin for rounding at the height edges. The fragment
+		// shader still applies the original radial and height fades.
+		limits = clamp(limits + vec2(-0.0001, 0.0001), -0.5, 0.5);
+		vec2 offset = across * vertex.x + up * mix(limits.x, limits.y, vertex.y + 0.5);
+		// The soft intersection uses Godot's interpolated VERTEX.z. Keep its
+		// original quad coordinate even though POSITION draws a clipped quad.
+		vertex = transpose(spin) * offset;
+		return offset;
+	}
+#endif
+	return spin * vertex;
+}
+"""
+
 const GAS_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + "%NOISE%" + """
+%NOISE%
+%CARD_SUPPORT%
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
 // r: the round field, g: inward feather of the union boundary, zero outside.
 uniform sampler2D mask_tex : filter_linear, repeat_disable;
@@ -137,8 +181,7 @@ varying vec3 vW;
 void vertex() {
 	vI = INSTANCE_CUSTOM; // x size, y spin, z density, floor(w) layer, fract(w) phase
 	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
-	float a = vI.y * 6.2831;
-	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
+	vec2 q = gas_card_offset(VERTEX.xy, vI, c, INV_VIEW_MATRIX, height_scale);
 	vQ = VERTEX.xy * 2.0;
 	c.xy += q * vI.x;
 	vW = (INV_VIEW_MATRIX * c).xyz;
@@ -150,34 +193,43 @@ void fragment() {
 	if (r > 1.0) { discard; }
 	vec2 mask = foot_at(vW.xz);
 	if (mask.g <= 0.001) { discard; }
+	float band = floor(vI.w);
+	float layer = gas_layer(band, vW.y / height_scale);
+	float shape = 1.0 - smoothstep(0.4, 1.0, r);
+#ifdef HIGH_GAS_CARDS
+	if (shape * mask.g * layer * vI.z < GAS_DENSITY_BOUND) { discard; }
+#else
+	if (shape * mask.g * layer * vI.z <= 0.0) { discard; }
+#endif
 	float dz = texture(depth_tex, SCREEN_UV).r;
 	vec4 vv = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, dz, 1.0);
 	vec3 opaque_world = (INV_VIEW_MATRIX * vec4(vv.xyz / vv.w, 1.0)).xyz;
 	// All gas layers leave opaque hulls intact, even a veil in front of a ship.
 	if (dz > 0.000001 && opaque_world.y > -20.0) { discard; }
-	float band = floor(vI.w);
 	float phase = fract(vI.w);
 	// Layer rates and the base drift: contrib/opus/briefs/nebula_motion_spec.md (issue #230, NB8).
 	float rate = band < 0.5 ? 0.6 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.6 : 0.4));
 	if (flat_rates > 0.5) { rate = 1.0; }
 	vec3 drift = vec3(0.012, 0.004, 0.007) * gas_time * rate;
 	vec3 p = vW * 0.075 + drift;
+	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
 	float w = wfbm3(p * 0.55 + 4.0);
 	float n = wfbm3(p + vec3(w) * 0.9);
+	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
+	float field = smoothstep(0.27 + breath, 0.70 + breath, n);
+#ifdef HIGH_GAS_CARDS
+	// The warped footprint can only lower mask.g, and contact can only soften it.
+	if (shape * mask.g * layer * field * vI.z < GAS_DENSITY_BOUND) { discard; }
+#endif
 	vec2 wv = vec2(w - 0.5, wfbm3(p * 0.4 - 7.0) - 0.5) * 9.0;
 	float fw = foot_at(vW.xz + wv).r;
-	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
 	float bar = 0.62 - 0.55 * smoothstep(0.3, 0.75, n);
 	float foot = smoothstep(bar, bar + 0.3, fw) * mask.g;
-	float lo = band < 0.5 ? -4.0 : (band < 1.5 ? 1.0 : (band < 2.5 ? 6.0 : 12.0));
-	float hi = band < 0.5 ? 2.0 : (band < 1.5 ? 8.0 : (band < 2.5 ? 14.0 : 18.0));
-	float layer = smoothstep(lo, lo + 1.5, vW.y / height_scale) * (1.0 - smoothstep(hi - 1.5, hi, vW.y / height_scale));
-	float shape = 1.0 - smoothstep(0.4, 1.0, r);
-	float field = smoothstep(0.27 + breath, 0.70 + breath, n);
 	float d = shape * foot * layer * field * vI.z;
 	// Soften contact with distant geometry below the playing surface.
 	d *= clamp((-vv.z / vv.w + VERTEX.z) / 5.0, 0.0, 1.0);
-	if (d <= 0.002) { discard; }
+	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
+	if (d <= MIN_GAS_DENSITY) { discard; }
 	float n2 = wfbm3(p + normalize(sun_v) * 0.22 + vec3(w) * 0.9);
 	float lit = clamp(0.5 + (n - n2) * 5.0, 0.0, 1.0);
 	float density = clamp((n - 0.18) / 0.72, 0.0, 1.0);
@@ -410,36 +462,12 @@ func _patches(ps: Array) -> Array:
 	return patches
 
 
-static func _gas_card_shader(storm: bool) -> String:
-	# Expanded cards cover much more than their thin height bands. Reject empty
-	# support before the expensive noise, using the accepted shader's own math.
-	# Hoist its declarations rather than keeping another table of layer sizes.
+static func _gas_card_shader(storm: bool, high: bool, cached_noise: bool) -> String:
 	var code: String = ION.CARDS if storm else GAS_SHADER
-	var declarations := ["float lo =", "float hi =", "float y =", "float layer =", "float shape ="]
-	if storm:
-		declarations.append("float foot =")
-	var support := PackedStringArray()
-	var body := PackedStringArray()
-	var in_fragment := false
-	for line in code.split("\n"):
-		if line == "void fragment() {":
-			in_fragment = true
-		var move := false
-		if in_fragment:
-			for declaration in declarations:
-				if line.strip_edges().begins_with(declaration):
-					move = true
-					break
-		if move:
-			support.append(line)
-		else:
-			body.append(line)
-	var anchor := "\tfloat band = floor(%s.w);" % ("cloud" if storm else "vI")
-	# Remaining field and contact factors are in [0, 1]. Zero support already
-	# produced zero density and was discarded; no visible samples are removed.
-	var bound := "shape * cloud.z" if storm else "shape * mask.g * layer * vI.z"
-	var early := "\n".join(support) + "\n\tif (" + bound + " <= 0.0) { discard; }"
-	return "\n".join(body).replace(anchor, anchor + "\n" + early).replace("%NOISE%", WS.NOISE)
+	var noise: String = WS.NOISE_LATTICE if cached_noise else WS.NOISE
+	if high:
+		noise = "#define HIGH_GAS_CARDS\n" + noise
+	return code.replace("%CARD_SUPPORT%", GAS_CARD_SUPPORT).replace("%NOISE%", noise)
 
 
 func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
@@ -493,11 +521,20 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = _gas_card_shader(storm)
+	var high: bool = expanded and W.quality == "high"
+	if high and _gas_lattice == null and ResourceLoader.exists(GAS_LATTICE_PATH):
+		var source = load(GAS_LATTICE_PATH)
+		_gas_lattice = source.texture()
+		_gas_lattice_origin = source.origin
+	var cached_noise := high and _gas_lattice != null
+	sh.code = _gas_card_shader(storm, high, cached_noise)
 	if _wake != null and not storm:
 		sh.code = WAKE.into_cards(sh.code, _wake.points)
 		_wake_mats.append(m)
 	m.shader = sh
+	if cached_noise:
+		m.set_shader_parameter("gas_hash_lattice", _gas_lattice)
+		m.set_shader_parameter("gas_hash_origin", _gas_lattice_origin)
 	if expanded:
 		m.set_shader_parameter("height_scale", GAS_HEIGHT)
 	m.set_shader_parameter("sun_v", Vector3(0.45, 0.70, 0.55))   # world.gd SUN

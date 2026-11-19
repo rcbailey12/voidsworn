@@ -10,7 +10,7 @@ extends SceneTree
 # and the same frame with no wake points (the only difference between the two pictures).
 # Camera radius defaults to 170, the battle camera (Artoo on PR 1181); 120 is the closer extra view.
 # shots: OUT/<tier>_c<radius>_<off|on>/f0000.jpg ... one per frame at a fixed 30 frames a second, plus OUT/<tier>_meta.json.
-# timing: OUT/results.json; three sessions, wake off and on alternated, max and low, 1080p and 4K (scaling 2.0),
+# timing: OUT/results.json; three sessions, wake off and on alternated, max, high and low, 1080p and 4K (scaling 2.0),
 # ships flying the line on a loop the whole time, plus a held worst case (every wake point live at full strength).
 const SCENE = preload("res://scenes/battle/battle.tscn")
 const API = preload("res://rules/battle_api.gd")
@@ -65,7 +65,7 @@ func _run() -> void:
 			await _close()
 	else:
 		for session in 3:
-			for tier in (["max", "low"] if session % 2 == 0 else ["low", "max"]):
+			for tier in (["max", "high", "low"] if session % 2 == 0 else ["low", "high", "max"]):
 				for wake in ([false, true] if session % 2 == 0 else [true, false]):
 					if not await _battle(tier, wake): return
 					await _timing(tier, wake, session + 1)

@@ -17,8 +17,10 @@ signal finished(result: Dictionary)
 signal storm_drained(pos: Vector3)
 signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance trace films it)
 signal wings_together(n: int)   # F1: your strike craft just started their moves together (the trace films it)
+signal recording_cue(kind: String, text: String)
 
 const API := preload("res://rules/battle_api.gd")
+const JSM := preload("res://rules/jsm.gd")
 const Campaign := preload("res://campaign/campaign.gd")
 const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
@@ -622,6 +624,7 @@ func _begin(a) -> void:
 			voice.setup_from_rules(api.R, V)  # until the story layer reads battle_api.gd (setup_from_api)
 		for l in voice.opening():
 			hud.add_log(l["text"], l["kind"])
+			recording_cue.emit("voice", l["text"])
 	var adm := _api_admiral()
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
@@ -813,6 +816,10 @@ func _make_view(u: Dictionary) -> void:
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
+	_register_fx_ship(u, sv)
+
+
+func _register_fx_ship(u: Dictionary, sv: ShipView) -> void:
 	if gfx != null and gfx.has_method("add_ship"):
 		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
 		if not sv.a4:
@@ -1186,7 +1193,7 @@ func _play_batch(bt: Dictionary) -> void:
 			i = j
 			continue
 		var te := game_t
-		await _play_event(e)
+		await _play_event(e, bt["view"])
 		_tip_completed(e)
 		if e["t"] == "round" and not arrivals.is_empty():
 			await _arrive(arrivals)
@@ -1242,10 +1249,11 @@ func _who(id) -> String:
 var voice = null   # story hook: godot/story/battle_voice.gd (null when the story folder is missing)
 
 
-func _play_event(e: Dictionary) -> void:
+func _play_event(e: Dictionary, batch_view := {}) -> void:
 	if voice != null:   # story hook
 		for l in voice.on_event(e):
 			hud.add_log(l["text"], l["kind"])
+			recording_cue.emit("voice", l["text"])
 	match e["t"]:
 		"adaptation":
 			if not adaptation_heard:
@@ -1303,18 +1311,7 @@ func _play_event(e: Dictionary) -> void:
 			await get_tree().create_timer(1.0).timeout
 			_float_at(aim, "TORPEDO MISS", Color("#ffc781"))
 		"risen":
-			# a Deathless wreck reassembles: the ship stands up again where it lay
-			var sv = views.get(e["unit"])
-			if sv != null:
-				sv.revive()
-				sv.position = board.hex_world(int(e["q"]), int(e["r"]))
-				if gfx != null and gfx.has_method("remove_ship"):
-					gfx.remove_ship(str(e["unit"]))
-					var ru: Dictionary = VU.get(e["unit"], {})
-					gfx.add_ship(str(e["unit"]), sv, {"faction": str(ru.get("fac", "deathless")), "meshes": sv.meshes, "cls": str(ru.get("cls", "")), "size": float(ru.get("size", 0.5)), "squadron": false, "flagship": bool(ru.get("flagship", false))})
-					sv.fx_engines = true
-				wrecked.erase(e["unit"])
-				_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+			_reassemble(e, batch_view)
 			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
 			await wait(600.0)
 		"stance":
@@ -1463,6 +1460,9 @@ func _play_event(e: Dictionary) -> void:
 				gfx.jump_out(str(e["unit"]))
 				if sv != null:
 					sv.dead = true
+					if sv.marker != null:
+						sv.marker.visible = false
+					sv.ring.visible = false
 			elif sv != null:
 				sv.flee()
 			_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
@@ -1479,6 +1479,43 @@ func _play_event(e: Dictionary) -> void:
 				seen[kind] = true
 				set_meta("unknown_events", seen)
 				push_warning("battle: unknown event kind \"%s\" (no branch in battle.gd _play_event)" % kind)
+
+
+func _reassemble(e: Dictionary, batch_view: Dictionary) -> void:
+	var id: String = str(e["unit"])
+	var sv: ShipView = views.get(id)
+	if sv == null:
+		return
+	# Use the batch view for ship identity, not for damage that has yet to play.
+	var prior: Dictionary = VU.get(id, {})
+	var ru := prior
+	for unit in batch_view.get("units", []):
+		if unit["id"] == id:
+			ru = unit
+			break
+	if gfx != null and gfx.has_method("remove_ship"):
+		gfx.clear_wreck(id)
+		gfx.remove_ship(id)
+	wrecked.erase(id)
+	sv.revive()
+	var yaw := ShipView.yaw_of(ru["facing"]) if ru.has("facing") else sv.cur_yaw
+	sv.snap_to(board.hex_world(int(e["q"]), int(e["r"])), yaw)
+	if not ru.is_empty():
+		_register_fx_ship(ru, sv)
+		# The rise restores hull and sections and clears fire. It leaves shields as they were;
+		# the rest of the turn (including any tidal tick) has not happened in playback yet.
+		var frac := float(TBL["LEGION_HP"])
+		var hp := maxf(1.0, JSM.jsround(float(ru["maxHp"]) * frac))
+		var sh: Array = disp.get(id, {}).get("sh", prior.get("sh", ru["sh"]))
+		disp[id] = {"hp": hp, "sh": sh.duplicate()}
+		if gfx != null and gfx.has_method("sync_ship"):
+			var sec := {}
+			if ru.get("sec") is Dictionary:
+				for key in ru["sec"]:
+					var cap := float(ru["sec"][key]["max"])
+					sec[key] = {"hp": maxf(1.0, JSM.jsround(cap * frac)), "max": cap, "broken": false}
+			gfx.sync_ship(id, {"hp": hp, "maxHp": ru["maxHp"], "sec": sec, "sh": sh, "burning": false})
+	_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
@@ -1869,6 +1906,7 @@ func _cine_release() -> void:
 	cam.t = cine_saved["t"]
 	cine_saved = {}
 	hud.letterbox(false)
+	recording_cue.emit("cut_end", "")
 
 
 func _play_fire(e: Dictionary, grp: Array) -> void:
@@ -1878,6 +1916,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var cined := _cine_wants(ckind, a_id, t_id)
 	if cined:
 		_cine_frame(a_id, t_id)
+		recording_cue.emit("cut_start", "%s: %s to %s" % [ckind, _name(a_id), _name(t_id)])
 		await wait(320.0)
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
@@ -2123,7 +2162,7 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 
 
 # Issue 521 (audit item 7; R193, Ryan's pick "Hold and slow", which replaces the Board's R123): the cut-in for a kill
-# holds until just after the core flash (a cruiser's at 1.66 s, a capital's at 2.28 s) and the slow-motion beat plays
+# holds until just after the actual core flash and the slow-motion beat plays
 # at the flash (fx.gd kill_slowmo, R73). A key or a click lets both go; under reduce motion the beat is off and the hold
 # ends just after the flash. Hurried (Enter or Space) or with no core flash, the old 1.6 s at the battle's pace stays.
 const KILL_AFTER := 0.35      # seconds the cut-in stays on the wreck after the flash (and after the beat, when it plays)
@@ -2182,12 +2221,23 @@ func _kill_frame(id) -> void:
 	hud.letterbox(true)
 
 
-func _kill_hold(core_in: float) -> void:
+func _kill_hold(core_id := "") -> void:
 	var hold := 1.6 * speed
-	if core_in >= 0.0 and not skip:
-		hold = core_in + KILL_AFTER + (0.0 if reduce_motion else 0.48)   # fx.gd DEATH_SLOW_S, played at about a third
 	_kill_hold_n += 1
 	var n := _kill_hold_n
+	if core_id != "" and not skip:
+		var dying_ship = gfx.ship(core_id)
+		if dying_ship != null and dying_ship.death_core_pending:
+			# Wait on the FX clock, including any cut delay, then keep the same real-time tail.
+			kill_hold_until = INF
+			while is_inside_tree() and n == _kill_hold_n and gfx.ship(core_id) == dying_ship and dying_ship.death_core_pending:
+				await get_tree().process_frame
+			if not is_inside_tree() or n != _kill_hold_n:
+				return
+			if gfx.ship(core_id) != dying_ship or gfx.death_core_at(core_id) < 0.0:
+				_kill_let_go()
+				return
+			hold = KILL_AFTER + (0.0 if reduce_motion else float(gfx.DEATH_SLOW_S))
 	kill_hold_until = game_t + hold
 	get_tree().create_timer(hold).timeout.connect(func() -> void:
 		if n == _kill_hold_n:
@@ -2217,6 +2267,7 @@ func _play_death(e: Dictionary) -> void:
 	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
 		_kill_frame(id)
+		recording_cue.emit("cut_start", "kill: %s" % _name(id))
 		cined = true
 	var cause := str(e.get("cause", "blast"))
 	var friend := _side(id) == "player"
@@ -2233,11 +2284,8 @@ func _play_death(e: Dictionary) -> void:
 		var t: float = float(gfx.death(str(id), cause))
 		if skip and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
-		var core_in := -1.0
-		if gfx.has_method("death_core_at") and float(gfx.death_core_at(str(id))) >= 0.0:
-			core_in = float(gfx.death_core_at(str(id))) - float(gfx.now)
 		if cined:
-			_kill_hold(core_in)
+			_kill_hold(str(id))
 		death_audio.fx = gfx
 		death_audio.watch(str(id), p)
 		sv.dead = true
@@ -2255,7 +2303,7 @@ func _play_death(e: Dictionary) -> void:
 			await get_tree().process_frame
 		return
 	if cined:
-		_kill_hold(-1.0)
+		_kill_hold()
 	_flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
 	_flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
@@ -2311,6 +2359,7 @@ func _end_flow() -> void:
 		var vl: String = voice.closing(win)
 		if vl != "":
 			body += "\n\n" + vl
+			recording_cue.emit("voice", vl)
 	hud.show_end(heading, body, win, external)
 
 
@@ -3732,6 +3781,7 @@ func _attack_tip(t_id: String) -> String:
 	var n := 0
 	# Same current-position weapon set as the activation card, including while a move is planned.
 	var firing := _firing_set(t_id)
+	var volley := _volley_preview(sel, firing, t_id)
 	var idx: Array = [armed] if armed >= 0 else range(su["weapons"].size())
 	for i in idx:
 		var vw: Dictionary = su["weapons"][i]
@@ -3742,7 +3792,7 @@ func _attack_tip(t_id: String) -> String:
 		var right := ""
 		if i in firing:
 			tg = tg.duplicate()
-			tg.merge(_fire_preview(sel, i, t_id), true)
+			tg.merge(volley[i], true)
 			hull += float(tg.get("hull", 0))
 			sh += float(tg.get("shield", 0))
 			n += 1
@@ -4274,12 +4324,13 @@ func _card_info() -> Dictionary:
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "":
 		var set := _firing_set(target)
+		var volley := _volley_preview(id, set, target)
 		var sh := 0.0
 		var hl := 0.0
 		var torp_rows := PackedStringArray()
 		var torp_why := ""
 		for i in set:
-			var tg := _fire_preview(id, int(i), target)
+			var tg: Dictionary = volley[i]
 			sh += float(tg.get("shield", 0))
 			hl += float(tg.get("hull", 0))
 			if u["weapons"][i]["kind"] == "torp":
@@ -4432,7 +4483,7 @@ func _panel_info() -> Dictionary:
 			right = "%d%%" % int(pv["hit"])
 			hit = int(pv["hit"])
 			dmg = int(round(float(pv.get("shield", 0)) + float(pv.get("hull", 0))))
-		elif tgt != "" and pst != null and api.has_method("preview_fire_at"):
+		elif tgt != "" and pst != null:
 			var pa := _fire_preview_at(id, wi, tgt, pst)
 			if bool(pa.get("bears", false)):
 				right = "%d%%" % int(pa["hit"])
@@ -4838,34 +4889,27 @@ func _torpedo_result(hits: Array, at: Vector3) -> void:
 	_float_at(at, "TORPEDO MISS" if hits.is_empty() else "TORPEDO HIT: %d shield / %d hull" % [int(shield), int(hull)], Color("#ffc781"), -24)
 
 
-# Presentation query only: use the rules' own estimator with the travelling warhead multiplier.
-# No live weapon, target, RNG or battle state is changed.
+# Presentation queries after _api_join. Each gun tooltip estimates that gun alone.
+func _volley_preview(id: String, guns: Array, tid: String, st = null) -> Dictionary:
+	if guns.is_empty(): return {}
+	var u = api.unit(id)
+	var source = u if st == null else api.R.stateView(u, st)
+	return api.R.previewVolley(source, guns, api.unit(tid))
+
+
 func _fire_preview(id: String, wi: int, tid: String) -> Dictionary:
-	var preview: Dictionary = api.preview_fire(id, wi, tid)
-	var u = api.unit(id)
-	var w = u["weapons"][wi]
-	if w["k"] == "torp" and not _jt(u.get("isSq")):
-		var warhead: Dictionary = w.duplicate(true)
-		warhead["dmg"] = float(w["dmg"]) * api.R.TB.TORP_WARHEAD
-		var estimate: Dictionary = api.R.expectedVs(u, warhead, api.unit(tid))
-		preview["shield"] = estimate["shield"]
-		preview["hull"] = estimate["hull"]
-	return preview
+	return _volley_preview(id, [wi], tid)[wi]
 
 
-# the same preview as the ship would stand at a reach state (the planned hex): the rules' preview_fire_at
+# The same single-gun preview from a planned hex, if the gun can fire there.
 func _fire_preview_at(id: String, wi: int, tid: String, st: Dictionary) -> Dictionary:
-	var preview: Dictionary = api.preview_fire_at(id, wi, tid, st)
-	if preview.is_empty():
-		return {}
 	var u = api.unit(id)
-	var w = u["weapons"][wi]
-	if w["k"] == "torp" and not _jt(u.get("isSq")):
-		var warhead: Dictionary = w.duplicate(true)
-		warhead["dmg"] = float(w["dmg"]) * api.R.TB.TORP_WARHEAD
-		var estimate: Dictionary = api.R.expectedVs(api.R.stateView(u, st), warhead, api.unit(tid))
-		preview["shield"] = estimate["shield"]
-		preview["hull"] = estimate["hull"]
+	var t = api.unit(tid)
+	if u == null or t == null or wi < 0 or wi >= u["weapons"].size(): return {}
+	var source = api.R.stateView(u, st)
+	if not api.R.canFire(source, u["weapons"][wi], t): return {}
+	var preview: Dictionary = api.R.previewVolley(source, [wi], t)[wi]
+	preview["bears"] = true
 	return preview
 
 
@@ -4977,44 +5021,42 @@ func _target_info() -> Dictionary:
 	if tid == "" or not VU.has(tid) or VU[tid]["dead"] or not _api_join():
 		return {}
 	var tu: Dictionary = VU[tid]
+	var ru = api.unit(sel)
+	var foe = api.unit(tid)
+	if ru == null or foe == null: return {}
 	var d: Dictionary = disp.get(tid, {"hp": tu["hp"], "sh": tu["sh"]})
 	# with a move planned, the odds are read as the ship would stand at the planned hex (the Fire block does the same)
 	var set: Array = []
-	var pv: Array = []
-	if plan != null and api.has_method("preview_fire_at"):
-		var ru = api.unit(sel)
-		var idx: Array = [armed] if armed >= 0 else range((ru["weapons"] as Array).size() if ru != null else 0)
+	if plan != null:
+		var planned = api.R.stateView(ru, plan)
+		var idx: Array = [armed] if armed >= 0 else range(ru["weapons"].size())
 		for i in idx:
-			if not _vweapon_ready(sel, int(i)):
-				continue
-			var pa := _fire_preview_at(sel, int(i), tid, plan)
-			if bool(pa.get("bears", false)):
+			if _vweapon_ready(sel, int(i)) and api.R.canFire(planned, ru["weapons"][i], foe):
 				set.append(i)
-				pv.append(pa)
 	else:
 		set = _firing_set(tid)
-		for i in set:
-			pv.append(_fire_preview(sel, int(i), tid))
+	var volley := _volley_preview(sel, set, tid, plan)
 	var es := 0.0
 	var eh := 0.0
 	var best := -1
 	var best_index := -1
 	var gun := ""
 	var kind := ""
-	for i in pv.size():
-		var p: Dictionary = pv[i]
+	var delayed := false
+	for i in set:
+		var p: Dictionary = volley[i]
 		es += float(p.get("shield", 0))
 		eh += float(p.get("hull", 0))
+		var weapon: Dictionary = VU[sel]["weapons"][i]
+		delayed = delayed or (weapon["kind"] == "torp" and not bool(VU[sel]["squadron"]))
 		if int(p.get("hit", 0)) > best:
 			best = int(p.get("hit", 0))
-			best_index = int(set[i])
-			var weapon: Dictionary = VU[sel]["weapons"][best_index]
+			best_index = int(i)
 			gun = str(weapon["name"])
 			kind = str(weapon["kind"])
-	# Round the total once, then split it so the two displayed amounts add up.
-	var total := int(round(es + eh))
 	var shields := int(round(es))
-	var hull := total - shields
+	var hull := int(round(eh))
+	var total := shields + hull
 	var line := ""
 	if set.is_empty():
 		line = "[color=#a7b09d]%s[/color]" % ("No ready gun bears on it from the planned hex." if plan != null else _cant_fire_reason(tid))
@@ -5022,11 +5064,12 @@ func _target_info() -> Dictionary:
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
 		line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
 		line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
+		if delayed: line += " Includes torpedo impacts estimated at current defenses."
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
-		"defenses": _target_defenses(api.unit(tid)), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
+		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
 
 
 func _torpedo_why() -> String:

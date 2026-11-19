@@ -41,6 +41,7 @@ robocopy "%V%\build\godot\assets\ships" "%G%\assets\ships" /E /XF manifest.json 
 if not exist "%G%\assets\ships\%CODE%" mkdir "%G%\assets\ships\%CODE%"
 copy /y "%EX%\%CODE%.glb" "%G%\assets\ships\%CODE%\" > nul
 copy /y "%EX%\%CODE%*.jpg" "%G%\assets\ships\%CODE%\" > nul
+if exist "%EX%\%CODE%*.png" copy /y "%EX%\%CODE%*.png" "%G%\assets\ships\%CODE%\" > nul
 call "%TMO%" 2400 "%GD%" --headless --path "%G%" --import > "%OUT%\log_import.txt" 2>&1
 call "%TMO%" 2400 "%GD%" --headless --path "%G%" --script res://render/build_assets.gd -- --repo "%O%\repo" --hi "%V%\enginetest\assets\hi" --env "%V%\enginetest\assets\env" > "%OUT%\log_build_assets.txt" 2>&1
 findstr /c:"check %CODE%" "%OUT%\log_build_assets.txt" >> "%OUT%\time.txt"
