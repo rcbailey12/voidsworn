@@ -1412,12 +1412,14 @@ void fragment() {
 			// (r1: a strong flash and a wide band at the far side read as a solid white slab at +0.1 s)
 			// the Glasswrights' pale prismatic field barely read against their pale hulls (Board, R340 sheets): their band
 			// and knot are brighter and a little wider, and keep the prismatic colour instead of burning toward white
+			// Under reduce flashing the band softens for every faction and the Glasswrights' extra brightness is dropped
+			// (their wider band stays); Artoo on PR 1170: the band is not a sprite flash, so the flash budget never saw it
 			float gw = style == 3 ? 1.0 : 0.0;
 			float flash = exp(-ba * 12.0) * 0.3 * calm;
 			float bp = 1.0 - clamp((ba - 0.08) / 0.62, 0.0, 1.0);
 			float bw = 0.03 + 0.025 * bp + 0.02 * gw;
 			float bd = (dist - bp) / bw;
-			float band = exp(-bd * bd) * 2.4 * (1.0 + gw) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
+			float band = exp(-bd * bd) * 2.4 * (1.0 + gw * (1.0 - fx_calm)) * mix(1.0, 0.6, fx_calm) * smoothstep(0.06, 0.2, ba) * step(0.001, bp);
 			alive = smoothstep(bp + bw, bp - bw, dist);
 			float kt = ba - 0.7;
 			float knot = kt > 0.0 ? exp(-dist * dist * mix(600.0, 300.0, gw)) * exp(-kt * 5.0) * 3.0 * (1.0 + gw) * calm : 0.0;

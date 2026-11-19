@@ -15,6 +15,9 @@ extends SceneTree
 ##   PROBE_CLIP       1: clip frames (every second frame, 1280x720, 30 a second) at camera 170: one folder per subject and
 ##                    shield shape, the three looks back to back, each after a one second title card
 ##   PROBE_COST       1: the cost pass instead (PROBE_COST_SHIPS shielded ships, every one failing at once, GPU time)
+##   PROBE_FLASH      1: the flash pass instead: PROBE_FLASH_SHIPS Glasswright ships (default 4) all fail at once at camera
+##                    170, normal and reduce flashing, each shape, for PROBE_LOOKS (default today,collapse); per-frame
+##                    screen luminance counted the scene gate's way (WCAG 2.3.1: at most 3 flashes in any second)
 ##   PROBE_BLOCKS     1: allow placeholder blocks (a cloud preview of the script only, never a picture for Ryan)
 ## After --: --quick for the short check run (h_boss, fitted, camera 170).
 ## Prints SHIELD1078_DONE (or SHIELD1078_FAILED) last.
@@ -61,7 +64,7 @@ var stills := {}          # moment -> Image (the current story)
 var clip_dir := ""
 var clip_n := 0
 var clip_started := {}
-var report := {"rev": REV, "stories": [], "cost": [], "scenes": {}}
+var report := {"rev": REV, "stories": [], "cost": [], "flash": [], "scenes": {}}
 
 
 func _initialize() -> void:
@@ -112,6 +115,8 @@ func _run() -> void:
 	bench._cam(Vector3.ZERO, 170.0)
 	if _env("PROBE_COST", "") == "1":
 		await _cost()
+	elif _env("PROBE_FLASH", "") == "1":
+		await _flash()
 	else:
 		await _stories()
 	var f := FileAccess.open(out.path_join("shield1078.json"), FileAccess.WRITE)
@@ -422,6 +427,78 @@ func _cost() -> void:
 						"fail_max_ms": _pct(fail_ms, 1.0)}
 					report["cost"].append(row)
 					print("SHIELD1078 cost ", JSON.stringify(row))
+
+
+# ---------------------------------------------------------------- the flash pass (Artoo on PR 1170, R340)
+# The collapse band is drawn by the shield shader, not by a sprite flash, so the effect system's flash budget never sees
+# it. This pass measures the screen itself: several Glasswright ships (the brightest band since R340) fail in the same
+# frame at the battle camera, with reduce flashing off and on, and every frame's luminance is counted the scene gate's
+# way. Stills of the brightest frame are kept for the eye.
+const GATE := preload("res://bench/scene_gate.gd")
+
+
+func _flash() -> void:
+	var looks := _env("PROBE_LOOKS", "today,collapse").split(",")
+	var shapes := _env("PROBE_SHAPES", "fitted,egg").split(",")
+	var n := int(_env("PROBE_FLASH_SHIPS", "4"))
+	var subjects := ["i_boss", "i_carrier"]
+	for shape in shapes:
+		bench._clear()
+		OS.set_environment("VS_SHIELD_SHAPE", shape)
+		_set_look("collapse")
+		bench._make_fx()
+		bench.fx.defer_initial_cuts = true
+		bench._cam(Vector3.ZERO, 170.0)
+		var ids: Array = []
+		for i in n:
+			var sid: String = subjects[i % subjects.size()]
+			var p := Vector3((i % 2 - 0.5) * 34.0, 0, (int(i / 2) - 0.5) * 30.0)
+			var v = bench.story_ship("G%d" % i, rules_hulls[sid], p)
+			if v == null:
+				_fail("placeholder or missing ship " + sid)
+				return
+			_note_scene(v)
+			ids.append("G%d" % i)
+		await bench.fx.warmup(bench.cam)
+		for i in 90:
+			await bench._step()
+		for calm in [false, true]:
+			bench.fx.reduce_flashing = calm
+			for look in looks:
+				for id in ids:
+					if not _apply_look(bench.fx.ship(id), look):
+						_fail("could not switch %s to %s" % [id, look])
+						return
+				var rows: Array = []
+				var peak := -1.0
+				var peak_img: Image = null
+				for i in 30 + FAIL_WINDOW:
+					if i == 30:
+						for id in ids:
+							bench.fx.shield_break(id, 3)
+					await bench._step()
+					var img := bench._grab()
+					var lum: Dictionary = GATE._luma(img)
+					rows.append({"i": i, "mean": float(lum["mean"]), "block": float(lum["block"])})
+					if float(lum["block"]) > peak and img != null:
+						peak = float(lum["block"])
+						peak_img = img
+				var st: Dictionary = GATE._flash_stats(rows)
+				var max_delta := 0.0
+				for j in range(1, rows.size()):
+					max_delta = maxf(max_delta, maxf(absf(rows[j]["mean"] - rows[j - 1]["mean"]), absf(rows[j]["block"] - rows[j - 1]["block"])))
+				var row := {"shape": shape, "look": look, "reduce_flashing": calm, "ships": n, "mean_max_per_second": st["mean_max"],
+					"block_max_per_second": st["block_max"], "max_block_luminance": snappedf(peak, 0.00001),
+					"max_frame_delta": snappedf(max_delta, 0.00001), "pass": bool(st["mean_max"] <= 3 and st["block_max"] <= 3)}
+				report["flash"].append(row)
+				print("SHIELD1078 flash ", JSON.stringify(row))
+				if peak_img != null:
+					preload("res://tools/picture_provenance.gd").save_png(peak_img, out.path_join("SHIELD1078_%s_flash_%s_%s_%s.png" % [REV, shape, look, "calm" if calm else "normal"]))
+				for id in ids:
+					bench.fx.sync_ship(id, bench._unit(1.0, 5))
+				for i in SETTLE:
+					await bench._step()
+		bench.fx.reduce_flashing = false
 
 
 # the installed ship each picture or number was drawn from: its packed scene path and sha256 (Artoo on PR 1170: prove

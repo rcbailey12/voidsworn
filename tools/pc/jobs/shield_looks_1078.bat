@@ -54,7 +54,7 @@ set "PICTURE_SOURCE_REPO=%R%"
 call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%OUT%\import.txt" 2>&1
 echo imported %date% %time% >> "%ST%"
 
-if "%S1078_SKIP_LOOK%"=="1" goto cost
+if "%S1078_SKIP_LOOK%"=="1" goto flash
 set "PROBE_OUT=%OUT%\look"
 set "PROBE_CLIP=1"
 set "PROBE_COST="
@@ -80,7 +80,7 @@ if "%FF%"=="" if exist "%CPY%" for /f "delims=" %%F in ('"%CPY%" -c "import imag
 if "%FF%"=="" (
   echo no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ >> "%ST%"
   for /d %%D in ("%OUT%\look\clip_h_boss_*") do robocopy "%%D" "%RES%\%%~nxD" f_*.jpg /NFL /NDL /NJH /NJS /R:1 /W:1 > nul
-  goto cost
+  goto flash
 )
 for /d %%D in ("%OUT%\look\clip_*") do (
   "%FF%" -y -loglevel error -framerate 30 -i "%%D\f_%%04d.jpg" -c:v libx264 -pix_fmt yuv420p -crf 20 "%OUT%\look\%%~nxD.mp4"
@@ -94,11 +94,34 @@ for /d %%D in ("%OUT%\look\clip_*") do (
 echo clips done %date% %time% >> "%ST%"
 copy /y "%OUT%\look\*.mp4" "%RES%\" > nul 2>&1
 
+:flash
+rem the flash pass (Artoo on PR 1170, R340): four Glasswright ships fail at once at camera 170, reduce flashing off and on,
+rem fitted and egg; screen luminance counted per frame the scene gate way. Shares the GPU (not a timing).
+if "%S1078_SKIP_FLASH%"=="1" goto cost
+set "PROBE_OUT=%OUT%\flash"
+set "PROBE_CLIP="
+set "PROBE_COST="
+set "PROBE_FLASH=1"
+set "PC_GPU_MODE=shared"
+call "%TMO%" 900 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\flash_log.txt" 2>&1
+set "PROBE_FLASH="
+findstr /c:"SHIELD1078_DONE" "%OUT%\flash_log.txt" > nul
+if errorlevel 1 (
+  echo FAILED: the flash pass did not finish, see %OUT%\flash_log.txt >> "%ST%"
+  set "JOBFAIL=1"
+) else (
+  echo flash pass done %date% %time% >> "%ST%"
+)
+copy /y "%OUT%\flash\*.png" "%RES%\" > nul 2>&1
+copy /y "%OUT%\flash\shield1078.json" "%RES%\flash.json" > nul 2>&1
+copy /y "%OUT%\flash_log.txt" "%RES%\" > nul 2>&1
+
 :cost
 if "%S1078_SKIP_COST%"=="1" goto done
 set "PROBE_OUT=%OUT%\cost"
 set "PROBE_CLIP="
 set "PROBE_COST=1"
+set "PROBE_FLASH="
 set "PROBE_SHAPES=fitted,egg"
 set "PC_GPU_MODE=solo"
 rem a 20 minute ceiling: a hang can never hold the GPU solo for long (the pass takes about 8 minutes)

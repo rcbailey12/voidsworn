@@ -39,7 +39,9 @@ effect: a weapon hit, a shield response, a trail, a death.
   (fx_ship.gd `_break_collapse`, the SHIELD shader), so Sunward, Hegemony, Ashfall and the Glasswrights all pick up any
   change to it; never add a per-ship failure. The old per-faction break (`today`) and the energy shear (`shear`) stay
   only for dev comparisons through `rendering/effects/shield_failure` (or `VS_SHIELD_FAILURE`); they are not game looks.
-  Sheets, clips and cost: `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`.
+  The band is drawn by the shader, not a sprite flash, so the flash budget never sees it: under reduce flashing it is
+  softer, and the probe's flash pass (`PROBE_FLASH=1`) counts screen flashes with several Glasswright ships failing at once.
+  Sheets, clips, cost and flash: `fx/test/shield_fail_probe.gd`, on the PC `tools/pc/jobs/shield_looks_1078.bat`.
 - Directions researched for the remaining options sheets (contrib/muse/design/look_references_2026_11/synthesis.md): sky
   Regional Colour Calmed, True Dark One Band, Planet Limb. Trails and beams are being built (issues 367, 800, 815).
 
