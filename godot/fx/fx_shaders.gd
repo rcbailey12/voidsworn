@@ -18,8 +18,8 @@ global uniform float fx_calm;
 global uniform float fx_px;
 float spow(float b, float e) { return pow(max(b, 0.0), e); }
 vec3 snorm(vec3 v) { float l = length(v); return l > 1e-6 ? v / l : vec3(0.0, 1.0, 0.0); }
-// F3 (effects at distance): the world size of `px` screen pixels at view distance d, counted on a 1080-line screen so the
-// floor looks the same at any resolution (fx_px scales every floor; 0 turns them off). Works for both projections.
+// F3: the world size of `px` screen pixels at view depth d on a 1080-line screen. The flash counter in fx.gd uses
+// this same projection scale and depth. fx_px scales every floor; 0 turns them off.
 float px_world(float px, float d, mat4 P) {
 	float p11 = max(abs(P[1][1]), 1e-4);
 	float dd = P[3][3] > 0.5 ? 1.0 : max(d, 0.01);
@@ -100,6 +100,8 @@ uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
 uniform float size_divisor = 1.0;
 uniform float soft_flash = 0.0;
+// Opt-in for a weapon flash or its body. A setting change can dim an existing picture without restarting its clock.
+uniform float calm_intensity = 0.0;
 // Issue 484 (owner: the secondaries' smoke "looks a little too even and weird"): a picture can be turned, stretched and
 // toned so a cluster of them never repeats one round shape. Defaults leave every other caller as it was.
 uniform float pic_spin = 0.0;
@@ -129,10 +131,13 @@ void vertex() {
 }
 void fragment() {
 	float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);
+	float live_calm = step(0.001, calm_intensity) * fx_calm;
+	float softened = max(soft_flash, live_calm);
+	float power = mix(intensity, min(intensity, calm_intensity), live_calm);
 	float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);
 #ifdef ROUTE_BAKED
 	// A softened flash keeps the same first-cell diameter while it rises, then cools through the sequence.
-	frame = mix(age, max(0.0, (age - 0.5) * 2.0), soft_flash) * 15.0;
+	frame = mix(age, max(0.0, (age - 0.5) * 2.0), softened) * 15.0;
 #endif
 	float a = floor(frame); float b = min(a + 1.0, 15.0); float blend = fract(frame);
 	vec2 uv = atlas_rect.xy + vec2(UV.x, mix(UV.y, 1.0 - UV.y, directional)) * atlas_rect.zw;
@@ -151,17 +156,17 @@ void fragment() {
 	float lit = 0.25 + 0.55 * max(dot(normal, sun), 0.0) + thick.g * 0.2;
 	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
 	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
-	ALBEDO = smoke * (1.0 - plasma) * intensity * fx_gain;
+	ALBEDO = smoke * (1.0 - plasma) * power * fx_gain;
 	// One fast ignition, then only cool gas. The caller books both bright
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
-	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * intensity * fx_gain;
+	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * power * fx_gain;
 #ifdef ROUTE_BAKED
 	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
-	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * intensity, thick.b) * fx_gain;
+	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * power, thick.b) * fx_gain;
 	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
-	ALBEDO *= mix(1.0, sin(age * 3.14159265), soft_flash);
 #endif
+	ALBEDO *= mix(1.0, sin(age * 3.14159265), softened);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
 	float soft = 1.0;
 #ifndef COMPAT
@@ -207,6 +212,14 @@ void process() {
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 #  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
+# The flash budget and SPRITE share these defaults for the bright kinds.
+const FLASH_SPRITE_FLOORS := {0: 14.0, 2: 12.0, 12: 10.0, 13: 12.0, 24: 56.0}
+
+
+static func flash_sprite_floor(kind: int, px: float) -> float:
+	return maxf(FLASH_SPRITE_FLOORS[kind], floorf(clampf(px, 0.0, 4000.0)))
+
+
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -257,11 +270,13 @@ void vertex() {
 		// grown to the floor dims as it grows, but by less than its area (pops and bolts get f times their light, the rest
 		// f^0.8), so distant and small effects read brighter without blowing out. Smoke, soot and gas have no floor (no haze).
 		float flo = 0.0;
-		if (k == 24) { flo = 56.0; }
+		if (k == 24) { flo = %.1f; }
 		else if (k == 25 || k == 26) { flo = 24.0; }
-		else if (k == 0 || k == 17) { flo = 14.0; }
-		else if (k == 2 || k == 13 || k == 14) { flo = 12.0; }
-		else if (k == 12 || k == 15 || k == 18) { flo = 10.0; }
+		else if (k == 0 || k == 17) { flo = %.1f; }
+		else if (k == 2 || k == 14) { flo = %.1f; }
+		else if (k == 13) { flo = %.1f; }
+		else if (k == 12 || k == 15 || k == 18) { flo = %.1f; }
+""" % [FLASH_SPRITE_FLOORS[24], FLASH_SPRITE_FLOORS[0], FLASH_SPRITE_FLOORS[2], FLASH_SPRITE_FLOORS[13], FLASH_SPRITE_FLOORS[12]] + """
 		else if (k == 5 || k == 16 || k == 23) { flo = 9.0; }
 		else if (k == 1) { flo = 8.0; }
 		else if (k == 22) { flo = 6.0; }
@@ -305,7 +320,12 @@ void vertex() {
 		vp.xy += q * size;
 		POSITION = PROJECTION_MATRIX * vp;
 		vUv = VERTEX.xy * 2.0;
-		vCol = vec4(a2.rgb, a2.a * gate * boost);
+		float power = a2.a;
+		// Pooled flashes may have been submitted before the option changed. Keep the size and soften the remaining pulse.
+		if (fx_calm > 0.5 && (k == 0 || (k == 13 && power > 1.25) || (life <= 0.6 && power >= 4.0 && (k == 2 || k == 12 || k == 24)))) {
+			power = min(power, 1.25) * sin(t * 3.14159265);
+		}
+		vCol = vec4(a2.rgb, power * gate * boost);
 		vInfo = vec4(t, a3.z, sd, age);
 	}
 }

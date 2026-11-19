@@ -60,6 +60,47 @@ func _advance(fx, seconds: float) -> void:
 		await process_frame
 
 
+func _midflight_calm_check() -> void:
+	for calm in [false, true]:
+		var wf := _world(false)
+		var world: Node3D = wf[0]
+		var fx = wf[1]
+		var p := Vector3.ZERO
+		# Schedule at the same future times used by the volley helpers, then change the setting before either appears.
+		WEAP._staged_hit(fx, null, p, 0.30, true)
+		WEAP._burst(fx, p + Vector3.LEFT * 75.0, Vector3.UP, 0.25, 2.6, "flash", 0.18, Color.WHITE, 4.5, 28.0)
+		fx.light(p, 0.30, 0.42, 7.9, Color.WHITE)
+		await _advance(fx, 0.12)
+		fx.reduce_flashing = calm
+		await _advance(fx, 0.22)
+		var flash := fx.get_node_or_null("fx_staged_flash") as MeshInstance3D
+		var body := fx.get_node_or_null("fx_staged_body") as MeshInstance3D
+		var burst := fx.get_node_or_null("fx_weapon_flash") as MeshInstance3D
+		var mode := "reduced" if calm else "normal"
+		_check_picture(flash, 1.25 if calm else 5.2, 0.50 if calm else 0.16, mode + " torpedo flash")
+		_check_picture(body, 1.0 if calm else 3.8, 0.65, mode + " torpedo body")
+		_check_picture(burst, 1.25 if calm else 4.5, 0.40 if calm else 0.18, mode + " muzzle flash")
+		var lamp: OmniLight3D = fx._lpool[0]
+		_check(lamp.visible and (lamp.light_energy < 3.2 if calm else lamp.light_energy > 5.0),
+			"in-flight %s event light at arrival: %.2f power" % [mode, lamp.light_energy])
+		if calm:
+			_check(fx.flash_area_log.is_empty() and fx.flash_log.is_empty(), "Reduce Flashing switched on in flight: no baked flash booked")
+		fx.release()
+		world.queue_free()
+		await process_frame
+
+
+func _check_picture(picture: MeshInstance3D, power: float, duration: float, label: String) -> void:
+	if picture == null:
+		_check(false, "in-flight %s missing at arrival" % label)
+		return
+	var mat := picture.material_override as ShaderMaterial
+	var actual_power := float(mat.get_shader_parameter("intensity"))
+	var actual_duration := float(mat.get_shader_parameter("lifetime"))
+	_check(is_equal_approx(actual_power, power) and is_equal_approx(actual_duration, duration),
+		"in-flight %s at arrival: %.2f power, %.2f s" % [label, actual_power, actual_duration])
+
+
 func _world(calm: bool) -> Array:
 	var world := Node3D.new()
 	root.add_child(world)
@@ -125,6 +166,7 @@ func _run() -> void:
 		world.queue_free()
 		await process_frame
 	_recipes(seen)
+	await _midflight_calm_check()
 	await _yield_check()
 	await _shield_torp_check()
 	await _lance_kill()
