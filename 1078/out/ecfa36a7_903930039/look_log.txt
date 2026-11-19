@@ -1,0 +1,361 @@
+GPU: waiting for solo claim, weight 1 (issue 1078)
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: acquired solo claim 3bdf3b37-c135-4ee0-8799-4d2f3cf4b8bd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss fitted today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss fitted shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss fitted collapse c170
+SHIELD1078 sheet SHIELD1078_r2_h_boss_fitted_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss fitted today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss fitted shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss fitted collapse c60
+SHIELD1078 sheet SHIELD1078_r2_h_boss_fitted_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss egg today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss egg shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss egg collapse c170
+SHIELD1078 sheet SHIELD1078_r2_h_boss_egg_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss egg today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss egg shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+SHIELD1078 story h_boss egg collapse c60
+SHIELD1078 sheet SHIELD1078_r2_h_boss_egg_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss fitted today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss fitted shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss fitted collapse c170
+SHIELD1078 sheet SHIELD1078_r2_c_boss_fitted_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss fitted today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss fitted shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss fitted collapse c60
+SHIELD1078 sheet SHIELD1078_r2_c_boss_fitted_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss egg today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss egg shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss egg collapse c170
+SHIELD1078 sheet SHIELD1078_r2_c_boss_egg_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss egg today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss egg shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+SHIELD1078 story c_boss egg collapse c60
+SHIELD1078 sheet SHIELD1078_r2_c_boss_egg_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0
+SHIELD1078 story i_boss fitted today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss fitted shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss fitted collapse c170
+SHIELD1078 sheet SHIELD1078_r2_i_boss_fitted_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss fitted today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss fitted shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss fitted collapse c60
+SHIELD1078 sheet SHIELD1078_r2_i_boss_fitted_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss egg today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss egg shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss egg collapse c170
+SHIELD1078 sheet SHIELD1078_r2_i_boss_egg_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss egg today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss egg shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+SHIELD1078 story i_boss egg collapse c60
+SHIELD1078 sheet SHIELD1078_r2_i_boss_egg_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral fitted today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral fitted shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral fitted collapse c170
+SHIELD1078 sheet SHIELD1078_r2_cathedral_fitted_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral fitted today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral fitted shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral fitted collapse c60
+SHIELD1078 sheet SHIELD1078_r2_cathedral_fitted_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral egg today c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral egg shear c170
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral egg collapse c170
+SHIELD1078 sheet SHIELD1078_r2_cathedral_egg_c170.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral egg today c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral egg shear c60
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+[attach] hp_rcs missing on V17_37; using the surface ray
+SHIELD1078 story cathedral egg collapse c60
+SHIELD1078 sheet SHIELD1078_r2_cathedral_egg_c60.png
+[attach] battle A V16_37: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle B V16_37: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T V17_37: skipped 0; rcs hp 0 ray 30 centre 0 skip 0
+SHIELD1078_DONE

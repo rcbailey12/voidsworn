@@ -1,0 +1,96 @@
+GPU: waiting for solo claim, weight 1 (issue 1078)
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: still waiting for solo claim
+GPU: acquired solo claim daa2d514-ce8f-47fe-82df-0e7d016226f0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost fleet ready fitted 8 ships
+SHIELD1078 cost {"fail_max_ms":1.66100001335144,"fail_median_ms":1.31900000572205,"fail_p95_ms":1.61300003528595,"look":"today","quiet_median_ms":1.20299994945526,"radius":170,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.71099996566772,"fail_median_ms":1.35300004482269,"fail_p95_ms":1.64800000190735,"look":"shear","quiet_median_ms":1.20500004291534,"radius":170,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.64999997615814,"fail_median_ms":1.30999994277954,"fail_p95_ms":1.63199996948242,"look":"shear_low","quiet_median_ms":1.20299994945526,"radius":170,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.63100004196167,"fail_median_ms":1.28100001811981,"fail_p95_ms":1.60099995136261,"look":"collapse","quiet_median_ms":1.2039999961853,"radius":170,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.66600000858307,"fail_median_ms":1.317999958992,"fail_p95_ms":1.64900004863739,"look":"today","quiet_median_ms":1.20500004291534,"radius":170,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.69900000095367,"fail_median_ms":1.35699999332428,"fail_p95_ms":1.68400001525879,"look":"shear","quiet_median_ms":1.20700001716614,"radius":170,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.65400004386902,"fail_median_ms":1.31400001049042,"fail_p95_ms":1.64100003242493,"look":"shear_low","quiet_median_ms":1.20500004291534,"radius":170,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.63300001621246,"fail_median_ms":1.28600001335144,"fail_p95_ms":1.60300004482269,"look":"collapse","quiet_median_ms":1.20799994468689,"radius":170,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.66799998283386,"fail_median_ms":1.32400000095367,"fail_p95_ms":1.65499997138977,"look":"today","quiet_median_ms":1.20799994468689,"radius":170,"repeat":2,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.70000004768372,"fail_median_ms":1.36099994182587,"fail_p95_ms":1.68599998950958,"look":"shear","quiet_median_ms":1.2059999704361,"radius":170,"repeat":2,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.65799999237061,"fail_median_ms":1.31299996376038,"fail_p95_ms":1.64199995994568,"look":"shear_low","quiet_median_ms":1.2059999704361,"radius":170,"repeat":2,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.63300001621246,"fail_median_ms":1.2960000038147,"fail_p95_ms":1.59500002861023,"look":"collapse","quiet_median_ms":1.20700001716614,"radius":170,"repeat":2,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.26699995994568,"fail_median_ms":1.77799999713898,"fail_p95_ms":2.12899994850159,"look":"today","quiet_median_ms":1.58899998664856,"radius":60,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.31599998474121,"fail_median_ms":1.84399998188019,"fail_p95_ms":2.28500008583069,"look":"shear","quiet_median_ms":1.59099996089935,"radius":60,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.22900009155273,"fail_median_ms":1.75800001621246,"fail_p95_ms":2.21099996566772,"look":"shear_low","quiet_median_ms":1.59099996089935,"radius":60,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.21000003814697,"fail_median_ms":1.72899997234344,"fail_p95_ms":2.13899993896484,"look":"collapse","quiet_median_ms":1.59300005435944,"radius":60,"repeat":0,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.33899998664856,"fail_median_ms":1.82599997520447,"fail_p95_ms":2.24799990653992,"look":"today","quiet_median_ms":1.61500000953674,"radius":60,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.33800005912781,"fail_median_ms":1.87800002098084,"fail_p95_ms":2.31299996376038,"look":"shear","quiet_median_ms":1.59399998188019,"radius":60,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.28399991989136,"fail_median_ms":1.7960000038147,"fail_p95_ms":2.2260000705719,"look":"shear_low","quiet_median_ms":1.61000001430511,"radius":60,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.22000002861023,"fail_median_ms":1.7389999628067,"fail_p95_ms":2.1710000038147,"look":"collapse","quiet_median_ms":1.59899997711182,"radius":60,"repeat":1,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.29699993133545,"fail_median_ms":1.82299995422363,"fail_p95_ms":2.26399993896484,"look":"today","quiet_median_ms":1.61099994182587,"radius":60,"repeat":2,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.33500003814697,"fail_median_ms":1.88399994373322,"fail_p95_ms":2.3050000667572,"look":"shear","quiet_median_ms":1.59200000762939,"radius":60,"repeat":2,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.23600006103516,"fail_median_ms":1.7960000038147,"fail_p95_ms":2.22000002861023,"look":"shear_low","quiet_median_ms":1.61600005626678,"radius":60,"repeat":2,"shape":"fitted","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.21199989318848,"fail_median_ms":1.73800003528595,"fail_p95_ms":2.0699999332428,"look":"collapse","quiet_median_ms":1.61899995803833,"radius":60,"repeat":2,"shape":"fitted","ships":8}
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[turret] turret_0 (T1) on C16s_23: arc -180 to 180, trains all round
+[turret] turret_1 (T2) on C16s_23: arc -180 to 180, trains all round
+SHIELD1078 cost fleet ready egg 8 ships
+SHIELD1078 cost {"fail_max_ms":1.57599997520447,"fail_median_ms":1.24399995803833,"fail_p95_ms":1.56500005722046,"look":"today","quiet_median_ms":1.20799994468689,"radius":170,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.59099996089935,"fail_median_ms":1.25499999523163,"fail_p95_ms":1.57599997520447,"look":"shear","quiet_median_ms":1.20899999141693,"radius":170,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.58000004291534,"fail_median_ms":1.2389999628067,"fail_p95_ms":1.56200003623962,"look":"shear_low","quiet_median_ms":1.20899999141693,"radius":170,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.56500005722046,"fail_median_ms":1.23000001907349,"fail_p95_ms":1.54900002479553,"look":"collapse","quiet_median_ms":1.21000003814697,"radius":170,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.63499999046326,"fail_median_ms":1.24300003051758,"fail_p95_ms":1.56599998474121,"look":"today","quiet_median_ms":1.20899999141693,"radius":170,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.58899998664856,"fail_median_ms":1.25499999523163,"fail_p95_ms":1.57500004768372,"look":"shear","quiet_median_ms":1.21000003814697,"radius":170,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.57200002670288,"fail_median_ms":1.24000000953674,"fail_p95_ms":1.55999994277954,"look":"shear_low","quiet_median_ms":1.20799994468689,"radius":170,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.57299995422363,"fail_median_ms":1.23300004005432,"fail_p95_ms":1.54999995231628,"look":"collapse","quiet_median_ms":1.21000003814697,"radius":170,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.5789999961853,"fail_median_ms":1.24500000476837,"fail_p95_ms":1.56500005722046,"look":"today","quiet_median_ms":1.20899999141693,"radius":170,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.59099996089935,"fail_median_ms":1.25600004196167,"fail_p95_ms":1.57299995422363,"look":"shear","quiet_median_ms":1.21000003814697,"radius":170,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.57700002193451,"fail_median_ms":1.24100005626678,"fail_p95_ms":1.56099998950958,"look":"shear_low","quiet_median_ms":1.21000003814697,"radius":170,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":1.56200003623962,"fail_median_ms":1.23000001907349,"fail_p95_ms":1.54900002479553,"look":"collapse","quiet_median_ms":1.20899999141693,"radius":170,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.17000007629395,"fail_median_ms":1.71700000762939,"fail_p95_ms":2.15199995040894,"look":"today","quiet_median_ms":1.59200000762939,"radius":60,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.20900011062622,"fail_median_ms":1.875,"fail_p95_ms":2.19099998474121,"look":"shear","quiet_median_ms":1.59399998188019,"radius":60,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.15300011634827,"fail_median_ms":1.72099995613098,"fail_p95_ms":2.13199996948242,"look":"shear_low","quiet_median_ms":1.60300004482269,"radius":60,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.14499998092651,"fail_median_ms":1.68099999427795,"fail_p95_ms":2.02099990844727,"look":"collapse","quiet_median_ms":1.61699998378754,"radius":60,"repeat":0,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.19799995422363,"fail_median_ms":1.74000000953674,"fail_p95_ms":2.17400002479553,"look":"today","quiet_median_ms":1.61800003051758,"radius":60,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.22699999809265,"fail_median_ms":1.7849999666214,"fail_p95_ms":2.20600008964539,"look":"shear","quiet_median_ms":1.62199997901917,"radius":60,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.17600011825562,"fail_median_ms":1.85699999332428,"fail_p95_ms":2.14400005340576,"look":"shear_low","quiet_median_ms":1.60800004005432,"radius":60,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.14599990844727,"fail_median_ms":1.68599998950958,"fail_p95_ms":2.10199999809265,"look":"collapse","quiet_median_ms":1.61099994182587,"radius":60,"repeat":1,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.17400002479553,"fail_median_ms":1.72599995136261,"fail_p95_ms":2.16000008583069,"look":"today","quiet_median_ms":1.6139999628067,"radius":60,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.20199990272522,"fail_median_ms":1.74600005149841,"fail_p95_ms":2.09400010108948,"look":"shear","quiet_median_ms":1.59599995613098,"radius":60,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.15000009536743,"fail_median_ms":1.69200003147125,"fail_p95_ms":2.12899994850159,"look":"shear_low","quiet_median_ms":1.59599995613098,"radius":60,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078 cost {"fail_max_ms":2.11400008201599,"fail_median_ms":1.65299999713898,"fail_p95_ms":1.99899995326996,"look":"collapse","quiet_median_ms":1.59300005435944,"radius":60,"repeat":2,"shape":"egg","ships":8}
+SHIELD1078_DONE

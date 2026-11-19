@@ -1,0 +1,572 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "commit": "",
+ "cost": [
+  {
+   "fail_max_ms": 1.66100001335144,
+   "fail_median_ms": 1.31900000572205,
+   "fail_p95_ms": 1.61300003528595,
+   "look": "today",
+   "quiet_median_ms": 1.20299994945526,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.71099996566772,
+   "fail_median_ms": 1.35300004482269,
+   "fail_p95_ms": 1.64800000190735,
+   "look": "shear",
+   "quiet_median_ms": 1.20500004291534,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.64999997615814,
+   "fail_median_ms": 1.30999994277954,
+   "fail_p95_ms": 1.63199996948242,
+   "look": "shear_low",
+   "quiet_median_ms": 1.20299994945526,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.63100004196167,
+   "fail_median_ms": 1.28100001811981,
+   "fail_p95_ms": 1.60099995136261,
+   "look": "collapse",
+   "quiet_median_ms": 1.2039999961853,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.66600000858307,
+   "fail_median_ms": 1.317999958992,
+   "fail_p95_ms": 1.64900004863739,
+   "look": "today",
+   "quiet_median_ms": 1.20500004291534,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.69900000095367,
+   "fail_median_ms": 1.35699999332428,
+   "fail_p95_ms": 1.68400001525879,
+   "look": "shear",
+   "quiet_median_ms": 1.20700001716614,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.65400004386902,
+   "fail_median_ms": 1.31400001049042,
+   "fail_p95_ms": 1.64100003242493,
+   "look": "shear_low",
+   "quiet_median_ms": 1.20500004291534,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.63300001621246,
+   "fail_median_ms": 1.28600001335144,
+   "fail_p95_ms": 1.60300004482269,
+   "look": "collapse",
+   "quiet_median_ms": 1.20799994468689,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.66799998283386,
+   "fail_median_ms": 1.32400000095367,
+   "fail_p95_ms": 1.65499997138977,
+   "look": "today",
+   "quiet_median_ms": 1.20799994468689,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.70000004768372,
+   "fail_median_ms": 1.36099994182587,
+   "fail_p95_ms": 1.68599998950958,
+   "look": "shear",
+   "quiet_median_ms": 1.2059999704361,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.65799999237061,
+   "fail_median_ms": 1.31299996376038,
+   "fail_p95_ms": 1.64199995994568,
+   "look": "shear_low",
+   "quiet_median_ms": 1.2059999704361,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.63300001621246,
+   "fail_median_ms": 1.2960000038147,
+   "fail_p95_ms": 1.59500002861023,
+   "look": "collapse",
+   "quiet_median_ms": 1.20700001716614,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.26699995994568,
+   "fail_median_ms": 1.77799999713898,
+   "fail_p95_ms": 2.12899994850159,
+   "look": "today",
+   "quiet_median_ms": 1.58899998664856,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.31599998474121,
+   "fail_median_ms": 1.84399998188019,
+   "fail_p95_ms": 2.28500008583069,
+   "look": "shear",
+   "quiet_median_ms": 1.59099996089935,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.22900009155273,
+   "fail_median_ms": 1.75800001621246,
+   "fail_p95_ms": 2.21099996566772,
+   "look": "shear_low",
+   "quiet_median_ms": 1.59099996089935,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.21000003814697,
+   "fail_median_ms": 1.72899997234344,
+   "fail_p95_ms": 2.13899993896484,
+   "look": "collapse",
+   "quiet_median_ms": 1.59300005435944,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.33899998664856,
+   "fail_median_ms": 1.82599997520447,
+   "fail_p95_ms": 2.24799990653992,
+   "look": "today",
+   "quiet_median_ms": 1.61500000953674,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.33800005912781,
+   "fail_median_ms": 1.87800002098084,
+   "fail_p95_ms": 2.31299996376038,
+   "look": "shear",
+   "quiet_median_ms": 1.59399998188019,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.28399991989136,
+   "fail_median_ms": 1.7960000038147,
+   "fail_p95_ms": 2.2260000705719,
+   "look": "shear_low",
+   "quiet_median_ms": 1.61000001430511,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.22000002861023,
+   "fail_median_ms": 1.7389999628067,
+   "fail_p95_ms": 2.1710000038147,
+   "look": "collapse",
+   "quiet_median_ms": 1.59899997711182,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.29699993133545,
+   "fail_median_ms": 1.82299995422363,
+   "fail_p95_ms": 2.26399993896484,
+   "look": "today",
+   "quiet_median_ms": 1.61099994182587,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.33500003814697,
+   "fail_median_ms": 1.88399994373322,
+   "fail_p95_ms": 2.3050000667572,
+   "look": "shear",
+   "quiet_median_ms": 1.59200000762939,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.23600006103516,
+   "fail_median_ms": 1.7960000038147,
+   "fail_p95_ms": 2.22000002861023,
+   "look": "shear_low",
+   "quiet_median_ms": 1.61600005626678,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.21199989318848,
+   "fail_median_ms": 1.73800003528595,
+   "fail_p95_ms": 2.0699999332428,
+   "look": "collapse",
+   "quiet_median_ms": 1.61899995803833,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.57599997520447,
+   "fail_median_ms": 1.24399995803833,
+   "fail_p95_ms": 1.56500005722046,
+   "look": "today",
+   "quiet_median_ms": 1.20799994468689,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.59099996089935,
+   "fail_median_ms": 1.25499999523163,
+   "fail_p95_ms": 1.57599997520447,
+   "look": "shear",
+   "quiet_median_ms": 1.20899999141693,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.58000004291534,
+   "fail_median_ms": 1.2389999628067,
+   "fail_p95_ms": 1.56200003623962,
+   "look": "shear_low",
+   "quiet_median_ms": 1.20899999141693,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.56500005722046,
+   "fail_median_ms": 1.23000001907349,
+   "fail_p95_ms": 1.54900002479553,
+   "look": "collapse",
+   "quiet_median_ms": 1.21000003814697,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.63499999046326,
+   "fail_median_ms": 1.24300003051758,
+   "fail_p95_ms": 1.56599998474121,
+   "look": "today",
+   "quiet_median_ms": 1.20899999141693,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.58899998664856,
+   "fail_median_ms": 1.25499999523163,
+   "fail_p95_ms": 1.57500004768372,
+   "look": "shear",
+   "quiet_median_ms": 1.21000003814697,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.57200002670288,
+   "fail_median_ms": 1.24000000953674,
+   "fail_p95_ms": 1.55999994277954,
+   "look": "shear_low",
+   "quiet_median_ms": 1.20799994468689,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.57299995422363,
+   "fail_median_ms": 1.23300004005432,
+   "fail_p95_ms": 1.54999995231628,
+   "look": "collapse",
+   "quiet_median_ms": 1.21000003814697,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.5789999961853,
+   "fail_median_ms": 1.24500000476837,
+   "fail_p95_ms": 1.56500005722046,
+   "look": "today",
+   "quiet_median_ms": 1.20899999141693,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.59099996089935,
+   "fail_median_ms": 1.25600004196167,
+   "fail_p95_ms": 1.57299995422363,
+   "look": "shear",
+   "quiet_median_ms": 1.21000003814697,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.57700002193451,
+   "fail_median_ms": 1.24100005626678,
+   "fail_p95_ms": 1.56099998950958,
+   "look": "shear_low",
+   "quiet_median_ms": 1.21000003814697,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.56200003623962,
+   "fail_median_ms": 1.23000001907349,
+   "fail_p95_ms": 1.54900002479553,
+   "look": "collapse",
+   "quiet_median_ms": 1.20899999141693,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.17000007629395,
+   "fail_median_ms": 1.71700000762939,
+   "fail_p95_ms": 2.15199995040894,
+   "look": "today",
+   "quiet_median_ms": 1.59200000762939,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.20900011062622,
+   "fail_median_ms": 1.875,
+   "fail_p95_ms": 2.19099998474121,
+   "look": "shear",
+   "quiet_median_ms": 1.59399998188019,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.15300011634827,
+   "fail_median_ms": 1.72099995613098,
+   "fail_p95_ms": 2.13199996948242,
+   "look": "shear_low",
+   "quiet_median_ms": 1.60300004482269,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.14499998092651,
+   "fail_median_ms": 1.68099999427795,
+   "fail_p95_ms": 2.02099990844727,
+   "look": "collapse",
+   "quiet_median_ms": 1.61699998378754,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.19799995422363,
+   "fail_median_ms": 1.74000000953674,
+   "fail_p95_ms": 2.17400002479553,
+   "look": "today",
+   "quiet_median_ms": 1.61800003051758,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.22699999809265,
+   "fail_median_ms": 1.7849999666214,
+   "fail_p95_ms": 2.20600008964539,
+   "look": "shear",
+   "quiet_median_ms": 1.62199997901917,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.17600011825562,
+   "fail_median_ms": 1.85699999332428,
+   "fail_p95_ms": 2.14400005340576,
+   "look": "shear_low",
+   "quiet_median_ms": 1.60800004005432,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.14599990844727,
+   "fail_median_ms": 1.68599998950958,
+   "fail_p95_ms": 2.10199999809265,
+   "look": "collapse",
+   "quiet_median_ms": 1.61099994182587,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.17400002479553,
+   "fail_median_ms": 1.72599995136261,
+   "fail_p95_ms": 2.16000008583069,
+   "look": "today",
+   "quiet_median_ms": 1.6139999628067,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.20199990272522,
+   "fail_median_ms": 1.74600005149841,
+   "fail_p95_ms": 2.09400010108948,
+   "look": "shear",
+   "quiet_median_ms": 1.59599995613098,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.15000009536743,
+   "fail_median_ms": 1.69200003147125,
+   "fail_p95_ms": 2.12899994850159,
+   "look": "shear_low",
+   "quiet_median_ms": 1.59599995613098,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.11400008201599,
+   "fail_median_ms": 1.65299999713898,
+   "fail_p95_ms": 1.99899995326996,
+   "look": "collapse",
+   "quiet_median_ms": 1.59300005435944,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  }
+ ],
+ "godot": "4.7.2-stable (official)",
+ "method": "forward_plus",
+ "rev": "r2",
+ "scenes": {
+  "C16s_23": {
+   "res": "res://gen/ships/C16s_23.scn",
+   "sha256": "2f249a55a119405a2143686f501abc8b7c3e565592cfa10b5be5e09a47abb2d8"
+  },
+  "C19_51": {
+   "res": "res://gen/ships/C19_51.scn",
+   "sha256": "6f7fac5384a35ab49b60658f97ac471b3fc4b5f5fed30619aa41784de73086c0"
+  },
+  "H10_23": {
+   "res": "res://gen/ships/H10_23.scn",
+   "sha256": "5b3b215d0c7ac22f29fbf39722b034992e3637322cb54f061c8248133e998463"
+  },
+  "H4_11": {
+   "res": "res://gen/ships/H4_11.scn",
+   "sha256": "40ab32fb91aa26d7f60909b6785d25980d9a67471637c301036425e283f34f7b"
+  },
+  "I16_11": {
+   "res": "res://gen/ships/I16_11.scn",
+   "sha256": "66d01c9b1e5b611e2c4cbedce17d6e22602104c70e8329fbf86096881f4c9a86"
+  },
+  "I8_37": {
+   "res": "res://gen/ships/I8_37.scn",
+   "sha256": "bd85faa6e4f928548948a2efe52d9a15e1e7592d3dbfbd7621ebc82ca4f75227"
+  },
+  "V17_37": {
+   "res": "res://gen/ships/V17_37.scn",
+   "sha256": "b0a5e183e2d5524585b94c64af1b552db556054634c0996352b605f6990c035b"
+  },
+  "V18_51": {
+   "res": "res://gen/ships/V18_51.scn",
+   "sha256": "403603869a2d830b5ba8c2281f786fbc9bc157a53bc971a56c0f88370a40d2b4"
+  }
+ },
+ "stories": []
+}

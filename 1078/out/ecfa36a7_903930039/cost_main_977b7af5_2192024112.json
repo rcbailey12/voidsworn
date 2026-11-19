@@ -1,0 +1,176 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "commit": "",
+ "cost": [
+  {
+   "fail_max_ms": 1.67499995231628,
+   "fail_median_ms": 1.32099997997284,
+   "fail_p95_ms": 1.60699999332428,
+   "look": "today",
+   "quiet_median_ms": 1.20299994945526,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.65900003910065,
+   "fail_median_ms": 1.31900000572205,
+   "fail_p95_ms": 1.60899996757507,
+   "look": "today",
+   "quiet_median_ms": 1.20200002193451,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.6599999666214,
+   "fail_median_ms": 1.31700003147125,
+   "fail_p95_ms": 1.64400005340576,
+   "look": "today",
+   "quiet_median_ms": 1.20299994945526,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.2590000629425,
+   "fail_median_ms": 1.78400003910065,
+   "fail_p95_ms": 2.11899995803833,
+   "look": "today",
+   "quiet_median_ms": 1.58200001716614,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.25300002098084,
+   "fail_median_ms": 1.77400004863739,
+   "fail_p95_ms": 2.11999988555908,
+   "look": "today",
+   "quiet_median_ms": 1.58200001716614,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.25500011444092,
+   "fail_median_ms": 1.78299999237061,
+   "fail_p95_ms": 2.07999992370605,
+   "look": "today",
+   "quiet_median_ms": 1.58399999141693,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "fitted",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.57700002193451,
+   "fail_median_ms": 1.23800003528595,
+   "fail_p95_ms": 1.52999997138977,
+   "look": "today",
+   "quiet_median_ms": 1.2039999961853,
+   "radius": 170,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.63300001621246,
+   "fail_median_ms": 1.2389999628067,
+   "fail_p95_ms": 1.52699995040894,
+   "look": "today",
+   "quiet_median_ms": 1.2059999704361,
+   "radius": 170,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 1.57400000095367,
+   "fail_median_ms": 1.24000000953674,
+   "fail_p95_ms": 1.56500005722046,
+   "look": "today",
+   "quiet_median_ms": 1.20500004291534,
+   "radius": 170,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.16799998283386,
+   "fail_median_ms": 1.71599996089935,
+   "fail_p95_ms": 2.04699993133545,
+   "look": "today",
+   "quiet_median_ms": 1.58700001239777,
+   "radius": 60,
+   "repeat": 0,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.16400003433228,
+   "fail_median_ms": 1.71000003814697,
+   "fail_p95_ms": 2.0220000743866,
+   "look": "today",
+   "quiet_median_ms": 1.59099996089935,
+   "radius": 60,
+   "repeat": 1,
+   "shape": "egg",
+   "ships": 8
+  },
+  {
+   "fail_max_ms": 2.16499996185303,
+   "fail_median_ms": 1.71000003814697,
+   "fail_p95_ms": 2.03800010681152,
+   "look": "today",
+   "quiet_median_ms": 1.58899998664856,
+   "radius": 60,
+   "repeat": 2,
+   "shape": "egg",
+   "ships": 8
+  }
+ ],
+ "godot": "4.7.2-stable (official)",
+ "method": "forward_plus",
+ "rev": "r2",
+ "scenes": {
+  "C16s_23": {
+   "res": "res://gen/ships/C16s_23.scn",
+   "sha256": "2f249a55a119405a2143686f501abc8b7c3e565592cfa10b5be5e09a47abb2d8"
+  },
+  "C19_51": {
+   "res": "res://gen/ships/C19_51.scn",
+   "sha256": "6f7fac5384a35ab49b60658f97ac471b3fc4b5f5fed30619aa41784de73086c0"
+  },
+  "H10_23": {
+   "res": "res://gen/ships/H10_23.scn",
+   "sha256": "5b3b215d0c7ac22f29fbf39722b034992e3637322cb54f061c8248133e998463"
+  },
+  "H4_11": {
+   "res": "res://gen/ships/H4_11.scn",
+   "sha256": "40ab32fb91aa26d7f60909b6785d25980d9a67471637c301036425e283f34f7b"
+  },
+  "I16_11": {
+   "res": "res://gen/ships/I16_11.scn",
+   "sha256": "66d01c9b1e5b611e2c4cbedce17d6e22602104c70e8329fbf86096881f4c9a86"
+  },
+  "I8_37": {
+   "res": "res://gen/ships/I8_37.scn",
+   "sha256": "bd85faa6e4f928548948a2efe52d9a15e1e7592d3dbfbd7621ebc82ca4f75227"
+  },
+  "V17_37": {
+   "res": "res://gen/ships/V17_37.scn",
+   "sha256": "b0a5e183e2d5524585b94c64af1b552db556054634c0996352b605f6990c035b"
+  },
+  "V18_51": {
+   "res": "res://gen/ships/V18_51.scn",
+   "sha256": "403603869a2d830b5ba8c2281f786fbc9bc157a53bc971a56c0f88370a40d2b4"
+  }
+ },
+ "stories": []
+}
