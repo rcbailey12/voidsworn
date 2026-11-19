@@ -32,6 +32,7 @@ func _wait(sec: float) -> void:
 
 
 func _shot(name: String, caption: String) -> void:
+	if _only != "" and not name.begins_with(_only): return   # --only=F5 keeps just one phase's pictures
 	var cap := CanvasLayer.new()
 	cap.layer = 120
 	var l := Label.new()
@@ -60,7 +61,10 @@ func _scale(v: float) -> void:
 	await _wait(0.4)
 
 
+var _only := ""
 func _run() -> void:
+	for a in OS.get_cmdline_user_args():
+		if str(a).begins_with("--only="): _only = str(a).substr(7)
 	await _wait(1.5)
 	# with the showcase battle (the PC, built ships): wait for it to load and fade in behind the title
 	if not main.args.has("no-showcase"):
@@ -126,6 +130,30 @@ func _run() -> void:
 				await _shot("F4_flagship_picked", "%s, UI scale Normal, an aspect picked, Launch ready" % res)
 			host.C.act("backToSetup"); await _wait(0.5)
 		host.C.act("pickFaction", "voidsworn"); await _wait(0.3)
+	# phase 5: Progression (each tab), Lineage and Help (never the title act: it hands back to main and ends the campaign)
+	if host != null and "ui" in host and host.ui != null:
+		host.C.act("legacy"); await _wait(0.8)
+		for t in ["variants", "legacy", "mastery", "favour", "heat", "fallen"]:
+			host.C.act("progTab", t); await _wait(0.6)
+			await _shot("F5_progression_" + t, "%s, UI scale Normal, Progression: %s" % [res, t])
+		var tree_id := ""
+		for id in host.C.ADMIRALS:
+			if host.C.LINEAGE_TREES.has(id): tree_id = str(id); break
+		if tree_id != "":
+			host.C.act("lineage", tree_id); await _wait(0.8)
+			await _shot("F5_lineage", "%s, UI scale Normal, Lineage of %s" % [res, tree_id])
+		host.C.act("help"); await _wait(0.8)
+		await _shot("F5_help", "%s, UI scale Normal, How to play" % res)
+		main.settings["ui_scale"] = 1.3
+		UiScale.set_player(1.3)
+		root.get_viewport().size_changed.emit()
+		await _wait(1.0)
+		await _shot("F5_help_larger", "%s, UI scale Larger, How to play" % res)
+		host.C.act("legacy"); host.C.act("progTab", "mastery"); await _wait(0.8)
+		await _shot("F5_progression_larger", "%s, UI scale Larger, Progression: mastery" % res)
+		if tree_id != "":
+			host.C.act("lineage", tree_id); await _wait(0.8)
+			await _shot("F5_lineage_larger", "%s, UI scale Larger, Lineage of %s" % [res, tree_id])
 	main.settings["ui_scale"] = 1.0
 	UiScale.set_player(1.0)
 	if _saved_settings != null:

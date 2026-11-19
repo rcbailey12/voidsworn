@@ -226,6 +226,31 @@ func campaign_checks(snd: FakeSound) -> void:
 	var was_l := str(C.page["kind"])
 	ui._unhandled_input(esc()); await frames()
 	check(was_l == "lineage" and str(C.page["kind"]) == "legacy" and str(C.prog_tab) == "mastery", "Esc on Lineage goes back to Progression's mastery tab")
+	# phase 5: Progression, Lineage and How to play on the kit frame
+	var bad_pages := []
+	for pg in [["legacy", "", "variants"], ["legacy", "", "legacy"], ["legacy", "", "mastery"], ["legacy", "", "favour"], ["legacy", "", "heat"], ["lineage", tree_id, ""], ["help", "", ""]]:
+		C.act(pg[0], pg[1])
+		if pg[2] != "": C.act("progTab", pg[2])
+		await frames(3)
+		var tag := str(pg[0]) + ":" + str(pg[2])
+		var backs := 0
+		for b in ui.page_box.find_children("*", "Button", true, false):
+			if (b as Button).text == "Back": backs += 1
+		var grids: Array = ui.page_box.find_children("*", "GridContainer", true, false)
+		for g in grids:
+			if not g.has_meta("card_w"): continue
+			var ws := {}
+			for cd in g.get_children(): ws[int(round((cd as Control).size.x))] = true
+			if ws.size() > 1: bad_pages.append(tag + " card widths " + str(ws.keys()))
+		if ui.page_box.find_children("*", "HFlowContainer", true, false).size() > 0: bad_pages.append(tag + " still has a loose card flow")
+		if backs != 1: bad_pages.append(tag + " has %d Back buttons" % backs)
+	check(bad_pages.is_empty(), "Progression (each tab), Lineage and How to play: one Back in the fixed bar, card rows on the kit grid, one card width per grid (%s)" % str(bad_pages))
+	C.act("help"); await frames(3)
+	var names := UI.HELP.filter(func(h): return str(h[0]) != "").map(func(h): return str(h[0]))
+	var named := names.size(); var links := 0
+	for b in ui.page_box.find_children("*", "Button", true, false):
+		if names.has((b as Button).text): links += 1
+	check(links >= named, "How to play has an index link for each of its %d sections (%d links)" % [named, links])
 	var runs0 := float(C.META["stats"]["runs"]); var adm0 := str(C.picked_admiral); var fac0 := str(C.picked_faction)
 	C.act("newRunScreen"); C.act("startRun"); await frames()
 	var was_a := str(C.page["kind"])
