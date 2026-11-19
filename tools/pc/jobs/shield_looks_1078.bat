@@ -18,6 +18,18 @@ if "%S1078_SHIPS%"=="" set "S1078_SHIPS=%VT%\build\godot"
 if not exist "%HOME1078%\out" mkdir "%HOME1078%\out"
 set "ST=%HOME1078%\out\result.txt"
 echo shield1078 start %date% %time% ref=%REF% >> "%ST%"
+rem Ryan's real game options are never touched (Board, Nov 19; the 1079 RUN5 pattern): every Godot start below runs in a
+rem throwaway profile, and his battle_opts.json and board_look.cfg are hashed now and at the end; a change fails the job.
+set "REALU=%APPDATA%\Godot\app_userdata\Voidsworn"
+set "PCHK="
+set "PBEFORE=%HOME1078%\out\real_profile_before_%RANDOM%%RANDOM%.txt"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "foreach ($f in 'battle_opts.json','board_look.cfg') { $p = Join-Path $env:REALU $f; if (Test-Path -LiteralPath $p) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash + ' ' + $f } else { 'absent ' + $f } }" > "%PBEFORE%" 2>&1
+if errorlevel 1 (
+  echo FAILED: could not hash Ryan's real options before the run, nothing was started >> "%ST%"
+  set "JOBFAIL=1"
+  set "PCHK=1"
+  goto finish
+)
 set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 rem the installed runner tools (build_b, the main chain's copy; build\tools is an old copy) and this job's GPU claim name
@@ -44,6 +56,17 @@ set "RES=%HOME1078%\out\%ATT%"
 if not exist "%RES%" mkdir "%RES%"
 if not exist "%OUT%" mkdir "%OUT%"
 echo commit %SHA% attempt %ATT%: results in out\%ATT% >> "%ST%"
+set "PROF=%HOME1078%\profile_%ATT%"
+if not exist "%PROF%\appdata" mkdir "%PROF%\appdata"
+if not exist "%PROF%\appdata" (
+  echo FAILED: could not make the throwaway profile %PROF%\appdata, no Godot was started >> "%ST%"
+  set "JOBFAIL=1"
+  goto finish
+)
+set "APPDATA=%PROF%\appdata"
+set "LOCALAPPDATA=%PROF%\appdata"
+echo throwaway profile %PROF%\appdata >> "%ST%"
+copy /y "%PBEFORE%" "%RES%\real_profile_before.txt" > nul 2>&1
 rem the installed hulls, copied fresh every attempt into this job's own clone (robocopy replaces every file whose size or time differs, so a reused
 rem clone never keeps an old hull; the probe records each drawn ship's scene sha256 in its json), and the import cache
 if exist "%S1078_SHIPS%\gen" robocopy "%S1078_SHIPS%\gen" "%R%\godot\gen" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_gen.txt" 2>&1
@@ -210,6 +233,7 @@ echo main cost pass %MSHA% done in %MRUN% %date% %time% >> "%ST%"
 :done
 call :safe_checkout %SHA% back
 if errorlevel 1 set "JOBFAIL=1"
+call :profile_check
 if "%JOBFAIL%"=="0" (
   echo DONE %SHA% %date% %time% >> "%ST%"
 ) else (
@@ -217,6 +241,7 @@ if "%JOBFAIL%"=="0" (
 )
 
 :finish
+if not defined PCHK call :profile_check
 rem what the Board brings back: sheets, clips, json and logs (no clip frames)
 copy /y "%OUT%\*_log.txt" "%RES%\" > nul 2>&1
 if exist "%OUT%\look" copy /y "%OUT%\look\*.png" "%RES%\" > nul 2>&1
@@ -227,6 +252,23 @@ echo shield1078 end %date% %time% >> "%ST%"
 if not "%JOBFAIL%"=="0" echo RESULT: FAILED >> "%ST%"
 echo all done >> "%ST%"
 endlocal & exit /b %JOBFAIL%
+
+rem ---------------------------------------------------------------- :profile_check
+rem hash Ryan's real options again and compare with the start (REALU was read before APPDATA was redirected)
+:profile_check
+set "PCHK=1"
+set "PAFTER=%PBEFORE:before=after%"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "foreach ($f in 'battle_opts.json','board_look.cfg') { $p = Join-Path $env:REALU $f; if (Test-Path -LiteralPath $p) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash + ' ' + $f } else { 'absent ' + $f } }" > "%PAFTER%" 2>&1
+if defined RES copy /y "%PAFTER%" "%RES%\real_profile_after.txt" > nul 2>&1
+fc /b "%PBEFORE%" "%PAFTER%" > nul
+if errorlevel 1 (
+  echo FAILED: Ryan's real options changed during the run ^(or could not be hashed^), see %PBEFORE% and %PAFTER% >> "%ST%"
+  set "JOBFAIL=1"
+) else (
+  echo Ryan's real options unchanged ^(battle_opts.json, board_look.cfg^) >> "%ST%"
+)
+exit /b 0
+
 
 rem ---------------------------------------------------------------- :safe_checkout REF TAG
 rem Never a forced checkout (file loss, issue 1179; the ship_job.bat pattern). Save the clone's tracked changes first
