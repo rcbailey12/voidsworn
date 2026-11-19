@@ -117,6 +117,36 @@ def open_bell(p, fwd, R, V, tol):
     if plug: why.append(f'{plug} mesh points in the exhaust path')
     out.update(ok=not why, why='; '.join(why)); return out
 
+def open_rectangular_exhaust(p, fwd, up, aperture, vertices, tol):
+    """Check the open rim, recessed throat and downstream clearance of a kit's drive slit."""
+    try:
+        half = np.asarray(aperture, dtype=float) * .5
+    except (TypeError, ValueError):
+        half = np.empty(0)
+    if half.shape != (2,) or not np.isfinite(half).all() or not (half > 0).all():
+        return dict(ok=False, why='invalid rectangular exhaust width or height')
+
+    offset = vertices - p
+    side = np.cross(fwd, up)
+    span = np.column_stack((offset @ side, offset @ up)) / half
+    axis = offset @ fwd
+    extent = np.max(np.abs(span), axis=1)
+    height = min(half)
+    plane = min(tol, .25 * height)
+    corners = (np.abs(axis) <= plane) & (extent <= 1.15) & (np.min(np.abs(span), axis=1) >= .85)
+    quadrants = len(set(map(tuple, span[corners] > 0)))
+    throat = int(((axis < -plane) & (axis > -2 * height) & (extent < .9)).sum())
+    plug = int(((axis > plane) & (axis < 2 * height) & (extent < .8)).sum())
+    why = []
+    if quadrants != 4:
+        why.append(f'its rectangular rim covers {quadrants} of 4 corners on the exit plane')
+    if not throat:
+        why.append('no throat upstream of the exit')
+    if plug:
+        why.append(f'{plug} mesh points in the exhaust path')
+    return dict(ok=not why, why='; '.join(why), aperture=list(aperture), rim_corners=quadrants,
+                plane_tolerance=round(plane, 6), throat_vertices=throat, exhaust_vertices=plug)
+
 def main():
     a = sys.argv[1:]; shipj, out = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
     TOL_FRAC = float(kw.get('tol', .012)); UNBAKED = kw.get('unbaked') == '1'
@@ -218,11 +248,18 @@ def main():
             if not (np.all(p >= lo) and np.all(p <= hi)): probs.append('hp_core is outside the hull')
             rows.append(row); continue
         d = float(tri_dist(p, A, B, C).min()); row['off_mesh'] = round(d, 4)
-        if d > TOL and nm.startswith('hp_eng_'):
+        engine_extras = n.get('extras') or {}
+        aperture = engine_extras.get('aperture') if nm.startswith('hp_eng_') else None
+        if aperture is not None:
+            exhaust = open_rectangular_exhaust(p, fwd, up, aperture, VERTS, TOL)
+            row['exhaust'] = exhaust
+            if not exhaust['ok']:
+                probs.append(f'{nm} is not the centre of an open rectangular exhaust: {exhaust["why"]}')
+        elif d > TOL and nm.startswith('hp_eng_'):
             # issue 592: an engine point is the centre of its bell's exit, and an open bell has no mesh at its centre. It passes
             # when the authored bell is there: its rim on the exit plane at the recorded radius, all round, its throat upstream
             # and its exhaust path clear (open_bell); the 0.012 limit is not loosened for any point
-            bell = open_bell(p, fwd, float((n.get('extras') or {}).get('radius') or 0), VERTS, TOL)
+            bell = open_bell(p, fwd, float(engine_extras.get('radius') or 0), VERTS, TOL)
             row['bell'] = bell
             if not bell.get('ok'): probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f}) and is not the centre of an open engine bell: {bell["why"]}')
         elif d > TOL: probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f})')

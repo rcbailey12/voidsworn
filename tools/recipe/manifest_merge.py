@@ -65,7 +65,7 @@ def read_json(path):
 def merge_entry(entry, previous, code, dest):
     manifest = read_json(previous) if previous else dict(note='', ships={})
     manifest.setdefault('ships', {})[code] = entry
-    dest.write_text(json.dumps(manifest, indent=1), encoding='utf-8')
+    dest.write_text(json.dumps(manifest, indent=1), encoding='utf-8', newline='\n')
 
 
 def main(entry_path, godot, code):

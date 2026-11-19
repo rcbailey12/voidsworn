@@ -404,7 +404,10 @@ for m in HP['muzzles']:
     if tk is not None: ex['turret'] = tk
     HPS.append(dict(name=f'{key}_{k}', p=m['tip'], fwd=m['aim'], up=m['normal'], extras=ex, turret=tk)); by_slot.setdefault(slot, []).append(f'{key}_{k}')
 for k, e in enumerate(sorted(HP['engines'], key=lambda e: (-e['radius'], -e['pos'][1]))):
-    HPS.append(dict(name=f'hp_eng_{k}', p=e['pos'], fwd=e['dir'], up=(0, 0, 1), extras=dict(kind='engine', radius=float(e['radius']), engine=e['name'])))
+    ex = dict(kind='engine', radius=float(e['radius']), engine=e['name'])
+    if 'aperture' in e:
+        ex['aperture'] = e['aperture']
+    HPS.append(dict(name=f'hp_eng_{k}', p=e['pos'], fwd=e['dir'], up=(0, 0, 1), extras=ex))
 for k, b in enumerate(HP.get('bays', [])):
     HPS.append(dict(name=f'hp_bay_{k}', p=b['pos'], fwd=b['dir'], up=(0, 0, 1), extras=dict(kind='bay', hangar=int(b.get('hangar') or 0))))
 for k, b in enumerate(BREACH):

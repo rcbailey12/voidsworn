@@ -31,7 +31,7 @@ not a cosmetic one: a gun fires backward or a plume leaves sideways.
 | Type | Name | What it is | Axes | `extras` |
 |---|---|---|---|---|
 | weapon | `hp_w<slot>_<weapon>_<arc>_<n>` | one weapon muzzle (barrel tip) for slot `<slot>` of the ship's `data.js` weapon list (0-based). The slot, weapon and arc are read from `data.js`, never typed | -Z along the barrel at rest; +Y away from the hull | `kind=gun`, `size`, `arc`, `arc_deg`, `slot`, `weapon`, `radius`, `socket` |
-| engine | `hp_eng_<n>` | one engine exit | -Z out of the bell along the plume (aft); +Y ship up | `kind=engine`, `radius`, `engine` |
+| engine | `hp_eng_<n>` | one engine exit | -Z out of the bell along the plume (aft); +Y ship up | `kind=engine`, `radius`, `engine`. The kit supplies optional `aperture` as the width and height of a rectangular craft exhaust in ship-length units. |
 | bay | `hp_bay_<n>` | a hangar mouth and launch point | -Z out of the mouth along the launch direction; +Y ship up | `kind=bay`, `hangar` |
 | breach | `hp_breach_<n>` | a breach anchor: where the hull opens when it dies | +Y the outward surface normal; -Z a tangent along the hull | `kind=breach`, `section` (`prow`, `mid`, `eng`), `side` (`P` or `S`), `clear` |
 | core | `hp_core` | the hull's centre of mass: the death explosion origin | identity, the ship frame itself | `kind=core` |

@@ -564,6 +564,9 @@ Squadron exports keep the design sheet's exterior and hard points. The build she
 wing deaths use the small-craft effect. Stage 7 requires an authored engine exit for the ribbon and writes `wing_role` on painted
 exports. `SquadronWing` uses that role and the faction id from the asset manifest to find its cached scene. Give each craft its
 own `game_code`, even when two craft use the same rules template. Installed readback exercises the faction wing through `ShipView`.
+The Navy craft kit records the mouth width and height of its rectangular exhaust. Stage 7 reads those dimensions to verify the
+four rim corners, recessed throat and clear exhaust at the authored exit plane. The export self-test moves the exit and doubles
+each dimension separately to prove the check rejects each fault.
 The target's install check also needs `tools/ci/check_guard.gd`, even when the playable build otherwise omits CI tools.
 The issue 726 paint helper supplies that file only when missing and verifies its copied hash before installation.
 It also backs up and refreshes the test-only `a4_shots.gd` and its scene in the playable build, so the requested camera 170
