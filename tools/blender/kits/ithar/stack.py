@@ -42,8 +42,8 @@ CONCEPT = dict(
 PALETTE = ('amber', 'violet', 'green')
 WEIGHTS = (55, 27, 18)
 
-# The glowing panel colour: the concept's bright tone pushed to full saturation (the panel glows, so it carries its own light).
-GLOW = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.22, 0.75, 0.0))
+# The glowing panel colour (PANEL; GLOW below is the bake's list of glowing stone zones): the concept's bright tone pushed to full saturation (the panel glows, so it carries its own light).
+PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.22, 0.75, 0.0))
 # The bake marks its materials authored_look (shared paint_stack.py), so godot/render/look.gd keeps these values instead of
 # applying the faction's older read caps (R329). No soft-rim mark: the pearl's own shine is the look.
 AUTHORED_LOOK = True
@@ -271,12 +271,12 @@ def lance_pearl(name='gw_lance'):
     mr = N.new('ShaderNodeMapRange'); mr.inputs['From Min'].default_value = 2.0; mr.inputs['From Max'].default_value = 9.5
     Ln.new(sep.outputs['X'], mr.inputs['Value'])
     mix = N.new('ShaderNodeMix'); mix.data_type = 'RGBA'
-    mix.inputs['B'].default_value = tuple(GLOW['violet']) + (1,)
+    mix.inputs['B'].default_value = tuple(PANEL['violet']) + (1,)
     Ln.new(mr.outputs['Result'], mix.inputs['Factor']); Ln.new(ramp_in.outputs['Color'], mix.inputs['A'])
     Ln.new(mix.outputs['Result'], b.inputs['Base Color'])
     em = N.new('ShaderNodeMath'); em.operation = 'MULTIPLY'; em.inputs[1].default_value = 1.2
     Ln.new(mr.outputs['Result'], em.inputs[0]); Ln.new(em.outputs[0], b.inputs['Emission Strength'])
-    b.inputs['Emission Color'].default_value = tuple(GLOW['violet']) + (1,)
+    b.inputs['Emission Color'].default_value = tuple(PANEL['violet']) + (1,)
     return m
 
 
@@ -284,11 +284,11 @@ def setup(kit):
     """register every Glasswright material with the sheet kit (kit.MATS / kit.mat) and build their node trees"""
     made = {
         'gw_pearl': pearl(), 'gw_silver': silver(), 'gw_mosaic': mosaic(), 'gw_tip': tip(), 'gw_lance': lance_pearl(),
-        'gw_gem_amber': gem('gw_gem_amber', GLOW['amber']), 'gw_gem_violet': gem('gw_gem_violet', GLOW['violet']),
-        'gw_gem_green': gem('gw_gem_green', GLOW['green']),
+        'gw_gem_amber': gem('gw_gem_amber', PANEL['amber']), 'gw_gem_violet': gem('gw_gem_violet', PANEL['violet']),
+        'gw_gem_green': gem('gw_gem_green', PANEL['green']),
         # the grown optic's root: the same stone, dimmer, so the lens reads as the bright point on it
-        'gw_root_amber': gem('gw_root_amber', GLOW['amber'], 0.7), 'gw_root_violet': gem('gw_root_violet', GLOW['violet'], 0.7),
-        'gw_root_green': gem('gw_root_green', GLOW['green'], 0.7),
+        'gw_root_amber': gem('gw_root_amber', PANEL['amber'], 0.7), 'gw_root_violet': gem('gw_root_violet', PANEL['violet'], 0.7),
+        'gw_root_green': gem('gw_root_green', PANEL['green'], 0.7),
         'gw_drive': gem('gw_drive', (0.62, 0.42, 1.0), 0.45),
         'gw_drive_cut': gem('gw_drive_cut', (0.78, 0.62, 1.0), 0.25, metallic=0.4, cut=True),
         'gw_drive_core': gem('gw_drive_core', (0.88, 0.80, 1.0), 1.6),
@@ -296,3 +296,119 @@ def setup(kit):
     for name, m in made.items():
         kit.MATS[name] = (tuple(m.diffuse_color[:3]), 0)
     return made
+
+
+# ------------------------------------------------------------------------------------------- the bake (recipe stage 5, stack)
+# The shared machinery (tools/blender/kits/shared/paint_stack.py) bakes albedo, ORM and a detail normal for the hull and parts
+# atlases from surface_layers(), and with EMISSIVE_ATLAS the hull's emission atlas too (issue 1183: the mosaic glows in the
+# game). The glowing stones are their own emissive surfaces (GLOW, glow_material). No wear, no grime, no trim sheet, no decals.
+# The bake runs on the contract's scene, scaled to length one, so pattern sizes are per ship length here.
+SCALE = 1.0
+EMISSIVE_ATLAS = True
+EMISSIVE_STRENGTH = 1.6          # the atlas holds emission / this (8-bit maps clip at 1); the material multiplies it back
+CELLS_PER_LENGTH = 180.0         # about 7 mosaic cells per world unit on a 26-unit Ark, as in the review materials
+LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14, bump_distance=.0004, bump_strength=.30)
+ZONES = {z: {} for z in ('gw_pearl', 'gw_silver', 'gw_mosaic', 'gw_lance')}
+ZONES.update({z: {} for z in ('cd5_frame', 'cd5_amber', 'cd5_violet', 'cd5_green', 'cd5_clear', 'cd5_silver')})
+FALLBACK = 'gw_pearl'
+DECALS = ()
+GLOW = {
+    'gw_gem_amber': (PANEL['amber'], LOOK['gem']['emission']), 'gw_gem_violet': (PANEL['violet'], LOOK['gem']['emission']),
+    'gw_gem_green': (PANEL['green'], LOOK['gem']['emission']),
+    'gw_drive': ((0.62, 0.42, 1.0), 0.45), 'gw_drive_cut': ((0.78, 0.62, 1.0), 1.2), 'gw_drive_core': ((0.88, 0.80, 1.0), 1.6),
+    'gw_tip': (LOOK['tip']['base'], 4.0),
+}
+
+
+def _attr(nt, name):
+    from paint3 import node
+    return node(nt, 'ShaderNodeAttribute', attribute_name=name)
+
+
+def surface_layers(c, zone, tiles):
+    """(colour, height, roughness, metal[, emission]) node sockets for one zone, read by paint_stack.zone_material"""
+    from paint3 import math_, mixc, mulc, node
+    nt = c.nt
+    zero = math_(nt, 'ADD', 0.0, 0.0)
+    if zone in ('gw_pearl', 'gw_lance'):
+        L = LOOK['pearl']
+        across, along = _attr(nt, 'gw_across').outputs['Fac'], _attr(nt, 'gw_along').outputs['Fac']
+        wave = math_(nt, 'SINE', math_(nt, 'ADD', math_(nt, 'MULTIPLY', across, 9.0), math_(nt, 'MULTIPLY', along, 7.0)))
+        f = math_(nt, 'ADD', math_(nt, 'MULTIPLY', wave, 0.5), 0.5)
+        base = tuple(L['base'])
+        col = mixc(nt, tuple(v * 0.80 for v in base), tuple(min(1.0, v * 1.06) for v in base), f)
+        if zone == 'gw_lance':      # pearl at the root shading to violet toward the tip (x, length one: 0.19 to 0.48)
+            t = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(c.x, t.inputs[0])
+            t.inputs[1].default_value = 0.19; t.inputs[2].default_value = 0.48
+            col = mixc(nt, col, PANEL['violet'], t.outputs[0])
+        return col, math_(nt, 'MULTIPLY', f, 0.3), math_(nt, 'ADD', L['roughness'], 0.0), L['metallic']
+    if zone in ('gw_silver', 'cd5_silver'):
+        L = LOOK['silver']
+        return mixc(nt, L['base'], L['base'], 0.0), zero, math_(nt, 'ADD', L['roughness'], 0.0), L['metallic']
+    if zone == 'gw_mosaic':
+        L = LOOK['mosaic']
+        tint = node(nt, 'ShaderNodeAttribute', attribute_name='gw_tint', attribute_type='GEOMETRY').outputs['Color']
+        glow = _attr(nt, 'gw_glow').outputs['Fac']
+        cells = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D'); cells.inputs['Scale'].default_value = CELLS_PER_LENGTH
+        edges = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D', feature='DISTANCE_TO_EDGE')
+        edges.inputs['Scale'].default_value = CELLS_PER_LENGTH
+        nt.links.new(c.pos, cells.inputs['Vector']); nt.links.new(c.pos, edges.inputs['Vector'])
+        sep = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(cells.outputs['Color'], sep.inputs[0])
+        bright = node(nt, 'ShaderNodeMapRange'); nt.links.new(sep.outputs[0], bright.inputs[0])
+        bright.inputs[3].default_value = 0.25; bright.inputs[4].default_value = 1.45
+        lead = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(edges.outputs['Distance'], lead.inputs[0])
+        lead.inputs[1].default_value = L['lead'] * 0.5; lead.inputs[2].default_value = L['lead']
+        inner = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', bright.outputs[0], lead.outputs[0]), glow)
+        sp = node(nt, 'ShaderNodeTexVoronoi', voronoi_dimensions='3D'); sp.inputs['Scale'].default_value = CELLS_PER_LENGTH * 3.1
+        nt.links.new(c.pos, sp.inputs['Vector'])
+        sps = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(sp.outputs['Color'], sps.inputs[0])
+        spark = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(sps.outputs[1], spark.inputs[0])
+        spark.inputs[1].default_value = 1 - L['sparkle']; spark.inputs[4].default_value = 6.0
+        energy = math_(nt, 'MULTIPLY', math_(nt, 'ADD', inner, spark.outputs[0]), L['emission'] / EMISSIVE_STRENGTH)
+        emission = mulc(nt, tint, energy)
+        body = mulc(nt, tint, 0.18)
+        col = mixc(nt, (0.22, 0.15, 0.08), body, lead.outputs[0])      # dark bronze leading between the cells
+        metal = math_(nt, 'SUBTRACT', 1.0, lead.outputs[0])
+        return col, math_(nt, 'MULTIPLY', sep.outputs[1], 0.6), math_(nt, 'ADD', L['roughness'], 0.0), metal, emission
+    # inside zones (break-up only) and anything unlisted: a dim pearl-grey glass
+    return mixc(nt, (0.35, 0.36, 0.40), (0.35, 0.36, 0.40), 0.0), zero, math_(nt, 'ADD', 0.3, 0.0), 0.2
+
+
+def trim_sheet():
+    return {}
+
+
+def decal_atlas():
+    import numpy as np
+    return np.zeros((2, 2, 4), dtype=np.float32)
+
+
+def write_textures(folder, rows, decals):
+    return []
+
+
+def glow_material(zone, hull=False):
+    import bpy
+    rgb, power = GLOW[zone]
+    m = bpy.data.materials.new(f'ithar_glow_{zone}'); m.use_nodes = True
+    b = m.node_tree.nodes.get('Principled BSDF')
+    b.inputs['Base Color'].default_value = (*(v * 0.3 for v in rgb), 1)
+    b.inputs['Roughness'].default_value = 0.08
+    b.inputs['Emission Color'].default_value = (*rgb, 1); b.inputs['Emission Strength'].default_value = power
+    m['ps_glow'] = 1; m['authored_look'] = 1
+    if hull:
+        m['hull_surface'] = 1
+    return m
+
+
+def inside_material(zone):
+    """the interior, seen only in the break-up: layered glass and light, opaque"""
+    import bpy
+    src = bpy.data.materials.get(zone)
+    m = src.copy() if src else bpy.data.materials.new(zone)
+    m.name = f'ithar_inside_{zone}'; m.use_nodes = True
+    b = m.node_tree.nodes.get('Principled BSDF')
+    if b is not None:
+        b.inputs['Transmission Weight'].default_value = 0.0
+    m['ps_inside'] = 1; m['authored_look'] = 1
+    return m

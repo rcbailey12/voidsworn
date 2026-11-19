@@ -470,6 +470,10 @@ def use(mat, slot, tex):
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if role.get(i, nm) != nm: die(f'one image does two jobs ({role[i]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = nm
+def stack_hull_emission(mat):
+    """issue 1183: a stack that bakes the hull's own glow (EMISSIVE_ATLAS, the Glasswright mosaic) writes <CODE>_emission"""
+    if mat.get('name') == CODE + '_hull' and mat.get('emissiveTexture'):
+        use(mat, 'emission', mat.get('emissiveTexture'))
 for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruction['interior_materials']):
     if mat.get('name') not in [CODE + '_hull', CODE + '_parts', CODE + '_glow'] + destruction['interior_materials']: continue
     if mat.get('name') == CODE + '_glow':      # issue 601: the engine glow's own emission map (graded throat, hot spots, soot)
@@ -487,6 +491,7 @@ for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruc
             die(f'{mat["name"]} must use the same ORM image for occlusion, roughness and metal')
     use(mat, 'base', pbr.get('baseColorTexture')); use(mat, 'orm', pbr.get('metallicRoughnessTexture')); use(mat, 'orm', mat.get('occlusionTexture'))
     use(mat, 'normal', mat.get('normalTexture'))
+    stack_hull_emission(mat)
     if mat.get('name') in destruction['interior_materials']: use(mat, 'emission', mat.get('emissiveTexture'))
 for i, im in enumerate(g.get('images', [])):
     if i not in role: die(f'the exporter wrote an image no ship material uses: {im.get("uri")}')

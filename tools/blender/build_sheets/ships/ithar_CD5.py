@@ -275,7 +275,7 @@ def build(K):
         x = -12.75 + 23.0 * ix / BODY_NU
         a = ia * 2 * math.pi / BODY_NV
         colour, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=5)
-        tint.data[i].color = tuple(stack.GLOW[colour]) + (1,)
+        tint.data[i].color = tuple(stack.PANEL[colour]) + (1,)
         glow.data[i].value = g
     md = hull.modifiers.new('shell', 'SOLIDIFY')
     md.thickness = 0.065
