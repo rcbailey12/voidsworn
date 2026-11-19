@@ -42,3 +42,9 @@ per ship in designs.md so nobody has to guess.
   the cloud browser. Both seats are recorded as blocked, not empty;
   the delivery does not wait on them.
 - Chair rulings where the legs disagreed are marked in designs.md.
+- Round 2 (Nov 19, 2026): Ryan approved Warden and Vigil with
+  smaller spires (spire heights trimmed in designs.md) and sent
+  Harrow back; its round 1 pictures read as a riveted twin hull
+  with hazard chevrons, a different faction. Round 2 Harrow beauty,
+  sheet and line-up pictures replace the round 1 files here; the
+  Harrow feature table is unchanged. See designs.md and prompts.md.

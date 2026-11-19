@@ -91,6 +91,49 @@ the front view the two torpedo tube bores sit side by side INSIDE
 the one hull's bow, flanking its central spearhead point." (The
 top view still splits; see the slip note in designs.md.)
 
+## Round 2 Harrow (Nov 19, 2026; these produced the delivered files)
+
+Beauty, generated fresh from the S8 three-quarter anchor (not from
+the round 1 Harrow): "Using the attached picture as the reference
+for material, colour and rendering style (forged black iron plate
+with fine rivet lines along the seams, frost-white markings,
+glowing ember-orange heat light, massive gothic space warship):
+draw a destroyer of the same fleet, a single spaceship in deep
+space, three-quarter view from the front and above, bow pointing
+left. CRITICAL: the ship has ONE single solid hull, one narrow
+black-iron blade with ONE spearhead point at the bow, exactly like
+the reference ship's hull. Set into the two angled cheek plates of
+that single spearhead, one on each side of the central point, are
+two deep torpedo tubes: dark round bores with thick forged lips,
+recessed INTO the solid bow like gun ports, NOT separate cylinders
+and NOT splitting the hull. Behind the bow the hull widens
+slightly into an armoured magazine section with thin ember
+heat-vent slits, then runs back as one smooth blade with plain
+riveted flanks and NO gun ports. One pair of low turret tubs at
+the deck edges amidships, each with a single short barrel. Four
+slim radiator spires with ember-glowing fins along the spine
+toward the stern. Two deep-set engine bells glowing ember orange
+at the stern. Frost-white markings are limited to one thin stripe
+and a small sigil: NO chevron patterns, NO hazard stripes, NO
+industrial markings. Painterly realistic rendering, deep space
+background. No text, no other ships."
+
+Sheet: the standard sheet prompt above, from the round 2 beauty,
+with the feature list restated and "exactly four slim radiator
+spires" and "one thin frost-white stripe, no chevrons" spelled
+out.
+
+Line-up: regenerated with the round 2 Harrow beauty in the same
+four-reference pattern as above, then one corrective take after
+the smallest ship drifted into a sea-going naval vessel: "redraw
+the SAME four-ship profile line-up with ONE correction. The bottom
+ship is wrong: it is drawn as a sea-going naval vessel with a mast
+and a red hull bottom. Replace it with the frigate from the second
+picture: a black-iron SPACE frigate... NO mast, NO red paint, no
+waterline, floating in space like the other three. Keep the other
+three ships and the stacked layout, relative sizes and deep space
+background unchanged."
+
 ## family_lineup.webp
 
 "Using the four attached pictures as the exact design references,
