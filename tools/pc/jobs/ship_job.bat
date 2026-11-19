@@ -17,7 +17,7 @@ rem
 rem What it does, in order. Any failure skips every later step, the checks and the shots (the recipe folder is still copied
 rem back, step 7, for the logs), and the last two lines of out\result.txt are always "done PASS" or "done FAILED: <step>" and then "all done".
 rem   1. runs from its own copy in JOB_DIR (cmd reads a .bat as it goes, so a checkout must never rewrite the running file)
-rem   2. its own clone JOB_DIR\repo (depth 50), the branch checked out, PAINT_BASE merged if set, a commit= line
+rem   2. its own clone JOB_DIR\repo (depth 50), the branch checked out (forced, local changes logged first), PAINT_BASE merged if set, a commit= line
 rem   3. the headless import, then each stage logged with its exit code (stage 7 installs into the clone's own godot folder,
 rem      never into Ryan's game)
 rem   4. the installed glb must be this run's (written after the run started), else the install counts as failed
@@ -69,7 +69,11 @@ if not exist "%C%\.git" git clone -q --depth 50 https://github.com/rcbailey12/vo
 git -C "%C%" fetch -q --depth 50 origin %BRANCH% >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=fetch %BRANCH%"
 if defined FAILED goto collect
-git -C "%C%" checkout -q -B shipjob FETCH_HEAD >> "%RES%" 2>&1
+rem a forced checkout, in this job's own clone only: stage 7 rewrites the tracked godot\assets\ships\manifest.json here, and a
+rem plain checkout then refuses every rerun after the branch moved. What it throws away is listed in result.txt first.
+git -C "%C%" status --porcelain --untracked-files=no > "%O%\clone_changes_before_checkout.txt" 2>&1
+for %%Z in ("%O%\clone_changes_before_checkout.txt") do if %%~zZ GTR 0 echo forced checkout: discarding the clone's own local changes listed in clone_changes_before_checkout.txt >> "%RES%"
+git -C "%C%" checkout -q -f -B shipjob FETCH_HEAD >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout %BRANCH%"
 if defined FAILED goto collect
 if not defined PAINT_BASE goto based

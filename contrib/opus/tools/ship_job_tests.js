@@ -56,6 +56,8 @@ assert(fresh > 0 && fresh < main.findIndex(l => l.s.includes('installed_ship_che
 assert(/for %%S in \(%STAGES%\) do call :stage %%S/.test(text), 'the stages loop runs STAGES in order');
 const stage = text.slice(text.indexOf(':stage'));
 assert(/if defined FAILED \(\s*\r?\n\s*echo %1 SKIPPED/.test(stage), 'a failed stage skips the later stages');
+const co = main.findIndex(l => /checkout -q -f -B shipjob FETCH_HEAD/.test(l.s));
+assert(co > 0 && main.slice(0, co).some(l => /status --porcelain/.test(l.s)), 'a forced checkout of the own clone, its local changes logged first');
 pass('the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count');
 
 // the wait default

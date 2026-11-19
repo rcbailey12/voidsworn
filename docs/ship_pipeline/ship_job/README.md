@@ -137,3 +137,16 @@ lock's own reading landed on it (a timer can wake a fraction of a millisecond ea
 timeout. The admission wait moved into `admit()` with an injectable clock, and the three one-second timeout tests (go gate
 closed, busy slot lock, pending solo) now run on a fake clock that moves only when the code sleeps: no wall-clock race. One
 more test pins the exact race (the check reads 999, the lock reads 1000). `gpu_slots_runs.txt` holds the 20 runs in a row.
+
+## 4. Runner hashes (gpu_slots.js changed)
+
+`tools/pc/gpu_slots.js` is one of the nine runner files that `runner_common.ps1 hashcheck` compares with the Board's
+`work217\runner_hashes.txt`. That list lives only on the PC (written by `hashwrite` after a copy; nothing in the repo holds
+it), so this PR cannot ship it. After merge, when the Board copies main's runner files to each lane's tools folder, run
+`hashwrite` as usual; the new line for this file (LF endings, as `.gitattributes` checks it out) is:
+
+```
+3764e59dcf73b83f56103db89b4d8dad9ab94c4fc87651a778912d5b83277d73  gpu_slots.js
+```
+
+The other eight runner files are unchanged by this PR.

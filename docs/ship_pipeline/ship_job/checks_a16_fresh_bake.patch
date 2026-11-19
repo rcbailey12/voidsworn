@@ -1,5 +1,5 @@
 diff --git a/.github/workflows/checks.yml b/.github/workflows/checks.yml
-index 8b51a708..50d6dd9b 100644
+index 8b51a708..b97116dd 100644
 --- a/.github/workflows/checks.yml
 +++ b/.github/workflows/checks.yml
 @@ -139,7 +139,7 @@ jobs:
@@ -20,7 +20,7 @@ index 8b51a708..50d6dd9b 100644
              exit 1
            fi
        # The game's fonts, crests, world and effect textures, imported as the editor would, so the checks below draw with
-@@ -224,11 +224,81 @@ jobs:
+@@ -224,11 +224,83 @@ jobs:
            { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
            if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
            exit $code
@@ -97,8 +97,10 @@ index 8b51a708..50d6dd9b 100644
 +        if: steps.record.outputs.state == 'stale'
 +        timeout-minutes: 8
 +        run: |
-+          python3 tools/recipe/sheet_fixture_hash.py --bake ~/blender-$BLENDER_VERSION/blender --out "$RUNNER_TEMP/a16" > "$RUNNER_TEMP/a16_bake.log" 2>&1; code=$?
-+          tail -5 "$RUNNER_TEMP/a16_bake.log"
++          set +e   # the step shell is bash -e: keep going after a failed bake so its log tail is printed
++          python3 tools/recipe/sheet_fixture_hash.py --bake ~/blender-$BLENDER_VERSION/blender --out "$RUNNER_TEMP/a16" > "$RUNNER_TEMP/a16_bake.log" 2>&1
++          code=$?
++          tail -40 "$RUNNER_TEMP/a16_bake.log"
 +          exit $code
 +      - name: Death seam check (fx/test/death_seam_check.gd)
 +        timeout-minutes: 5
