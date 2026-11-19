@@ -114,6 +114,23 @@ static func label(text: String, size: float, k: float, col := GS.TEXT, f: Font =
 	return l
 
 
+# Shrinks a wrapped label's font, never below UiScale.MIN_TEXT, until its longest word fits width_px, then wraps only
+# between words. For names in narrow tiles: "Commodore" must never break as "Commodor / e" (issue 1217).
+static func fit_words(l: Label, width_px: float, k: float) -> void:
+	var ff: Font = l.get_theme_font("font")
+	var s := l.get_theme_font_size("font_size")
+	var floor_px := px(UiScale.MIN_TEXT, k)
+	while s > floor_px:
+		var longest := 0.0
+		for w in l.text.split(" ", false):
+			longest = maxf(longest, ff.get_string_size(w, HORIZONTAL_ALIGNMENT_LEFT, -1, s).x)
+		if longest <= width_px: break
+		s -= 1
+	l.add_theme_font_size_override("font_size", s)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD
+	l.custom_minimum_size.x = minf(l.custom_minimum_size.x, width_px)
+
+
 # A heading: Big Shoulders Display, heavy, in capitals.
 static func heading(text: String, size: float, k: float, col := GS.TEXT) -> Label:
 	var l := label(text.to_upper(), size, k, col, head_font(), true, 1200.0)
@@ -273,10 +290,10 @@ static func fit_width(texts: Array, k: float, size := 18.0, f: Font = null) -> f
 # A card: an orders-sheet well (no chamfers, no brackets) at a fixed width. Returns [panel, body, foot]: words go in body,
 # actions in foot. A spacer between them keeps the foot at the card's bottom, so in a row of cards (equal_heights) every
 # card's actions sit on one line.
-static func card(k: float, width: float, picked := false) -> Array:
+static func card(k: float, width: float, picked := false, bar := Color(0, 0, 0, 0)) -> Array:
 	var p := PanelContainer.new()
 	p.custom_minimum_size.x = px(width, k)
-	var sb := GS.well(k, GS.TEXT3 if picked else Color.TRANSPARENT, 14, 12)
+	var sb := GS.well(k, GS.TEXT3 if picked else Color.TRANSPARENT, 14, 12, bar)
 	p.add_theme_stylebox_override("panel", sb)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", px(6, k))
@@ -333,3 +350,58 @@ static func sheet_box(k: float, pad_x := 32.0, pad_y := 24.0) -> StyleBoxFlat:
 	box.border_color = GS.SHEET_HAIR
 	box.set_border_width_all(maxi(1, px(1, k)))
 	return box
+
+
+# A drawer: an opaque orders-sheet panel on the right edge of parent, full height, w pixels wide, with a hairline on its
+# open side. It slides in unless slide is false or the player asked for reduced motion; it plays the open cue. The title's
+# Settings and Credits and the desk's Run options use it.
+static func drawer(parent: Control, k: float, w: float, slide := true, reduce_motion := false) -> PanelContainer:
+	var p := PanelContainer.new()
+	var box := sheet_box(k, 40, 36)
+	box.set_border_width_all(0)
+	box.border_width_left = maxi(1, px(1, k))
+	p.add_theme_stylebox_override("panel", box)
+	p.anchor_left = 1.0
+	p.anchor_right = 1.0
+	p.anchor_bottom = 1.0
+	p.offset_left = -w
+	p.offset_right = 0
+	parent.add_child(p)
+	if slide:
+		play(OPEN_CUE)
+	if slide and not reduce_motion:
+		p.offset_left = 0
+		p.offset_right = w
+		var tw := p.create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(p, "offset_left", -w, 0.22)
+		tw.tween_property(p, "offset_right", 0.0, 0.22)
+	return p
+
+
+# A ship's silhouette (godot/ui/battle/icons/ships, the KEEL strip's art) by its hull code; the raw PNG when the project
+# has not been imported (cloud checks). null when the hull has none.
+static var _sil := {}
+static func silhouette(code: String) -> Texture2D:
+	if code == "":
+		return null
+	if not _sil.has(code):
+		var path := "res://ui/battle/icons/ships/" + code + ".png"
+		var t: Texture2D = null
+		if ResourceLoader.exists(path, "Texture2D"):
+			t = load(path)
+		elif FileAccess.file_exists(path):
+			var img := Image.load_from_file(ProjectSettings.globalize_path(path))
+			if img != null:
+				t = ImageTexture.create_from_image(img)
+		_sil[code] = t
+	return _sil[code]
+
+
+# The faction's accent for the front end: its engine colour from fx/faction_looks.json (issue 1205's one source), in
+# screen space. Used small (an underline, a card's edge bar, a rule), never for words (RULEBOOK 9.6).
+static func faction_accent(fac: String) -> Color:
+	var FL = load("res://fx/faction_look.gd")
+	if FL == null or not FL.has(fac):
+		return GS.MAP_EMBER
+	var c: Color = FL.engine(fac)
+	return Color(c.linear_to_srgb(), 1.0)

@@ -91,6 +91,19 @@ func _run() -> void:
 	main.new_run({})
 	await _wait(2.0)
 	await _shot("F3_setup_normal", "%s, UI scale Normal, faction and admiral" % res)
+	var host = main.campaign
+	if host != null and "ui" in host and host.ui != null and "C" in host:
+		for f in host.C.RUN_FACTIONS:
+			host.C.act("pickFaction", f)
+			await _wait(0.8)
+			await _shot("F3_desk_" + str(f), "%s, UI scale Normal, %s" % [res, str(host.C.FACTIONS[f]["n"])])
+		host.C.act("pickFaction", "voidsworn")
+		if "desk_opts_open" in host.ui:
+			host.ui.desk_opts_open = true; host.ui._dirty = true
+			await _wait(0.8)
+			await _shot("F3_run_options", "%s, UI scale Normal, Run options drawer" % res)
+			host.ui.close_run_options()
+			await _wait(0.4)
 	main.settings["ui_scale"] = 1.3
 	UiScale.set_player(1.3)
 	root.get_viewport().size_changed.emit()

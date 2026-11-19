@@ -21,6 +21,12 @@ class FakeSound extends Node:
 		heard.append(n)
 
 
+class FakeMusic extends Node:
+	var music = self
+	var previews := []
+	func play_faction_preview(fac: String) -> void: previews.append(fac)
+
+
 class FakeMain extends Node:
 	var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
 	var args := {}
@@ -173,10 +179,33 @@ func campaign_checks(snd: FakeSound) -> void:
 	await frames()
 	C.act("newRunScreen"); await frames(4)
 	check(str(C.page["kind"]) == "admiral", "the setup page opens")
-	var widths := {}
-	for p in ui.page_box.find_children("*", "PanelContainer", true, false):
-		if int(p.custom_minimum_size.x) == ui.px(330): widths[int(round(p.size.x))] = true
-	check(widths.size() == 1, "at Larger every admiral card keeps its width; no long name widens one (%s)" % str(widths.keys()))
+	var mus := FakeMusic.new(); mus.name = "Main"; root.add_child(mus); await frames()
+	var bad := []
+	for fac in C.RUN_FACTIONS:
+		C.act("pickFaction", str(fac)); await frames(3)
+		var tops := {}; var bots := {}; var ws := {}
+		for cd in ui._desk_cards:
+			var r: Rect2 = (cd as Control).get_global_rect()
+			tops[int(round(r.position.y))] = true; bots[int(round(r.end.y))] = true; ws[int(round(r.size.x))] = true
+		var sc: ScrollContainer = null
+		for n in ui.page_box.find_children("*", "ScrollContainer", true, false): sc = n; break
+		var fits: bool = sc != null and sc.get_v_scroll_bar().max_value <= sc.size.y + 1.0
+		if ui._desk_cards.is_empty() or bots.size() > tops.size() or ws.size() != 1 or not fits:
+			bad.append("%s(cards %d, rows %d, bottoms %d, widths %s, fits %s)" % [fac, ui._desk_cards.size(), tops.size(), bots.size(), str(ws.keys()), str(fits)])
+	check(bad.is_empty(), "at Larger every faction's desk fits with no scroll and its admiral cards line up: one width, one bottom per row (%s)" % str(bad))
+	check(mus.previews.size() >= C.RUN_FACTIONS.size() - 1 and mus.previews.has(str(C.picked_faction)), "picking a faction plays its music preview (%s)" % str(mus.previews))
+	root.size = Vector2i(1280, 1024); ui._dirty = true; await frames(4)   # a 5:4 window at Larger is the tightest 831-tall case
+	var sc5: ScrollContainer = null
+	for n in ui.page_box.find_children("*", "ScrollContainer", true, false): sc5 = n; break
+	var over := -1.0
+	if sc5 != null: over = sc5.get_v_scroll_bar().max_value - sc5.size.y
+	check(sc5 != null and over <= 1.0, "at Larger the desk also fits a 1280x1024 window with no scroll (over by %d px)" % int(over))
+	root.size = Vector2i(1920, 1080); ui._dirty = true; await frames(4)
+	ui.desk_opts_open = true; ui._dirty = true; await frames(3)
+	var ro_open: bool = ui.desk_opts_open
+	ui._unhandled_input(esc()); await frames(3)
+	check(ro_open and not ui.desk_opts_open and str(C.page["kind"]) == "admiral", "Esc closes the Run options drawer first and stays on the desk")
+	mus.queue_free()
 	var back: Button = null
 	for b in ui.page_box.find_children("*", "Button", true, false):
 		if (b as Button).text == "Back": back = b
