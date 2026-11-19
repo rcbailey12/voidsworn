@@ -1,0 +1,150 @@
+﻿  // The glob below runs each one once; a second add() line would run it twice.
+  fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f, [], 'normal', 300, false, FAST_AUTO.has(path.basename(f, '.js'))));
+  add(OPUS + 'progression_telemetry_test.js', [], 'normal', 300, false, true); // #27 step 11: per run XP by line and the F1 play log report
+  add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick
+  add(OPUS + 'tree_handoff_test.js', [], 'normal', 300, false, true); // #335: a tree pick made through the real campaign reaches the battle in both twins
+  add(OPUS + 'tree_table_walk_test.js', [], 'normal', 300, false, true); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
+  add(OPUS + 'tree_last_rows_test.js', [], 'normal', 300, false, true); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
+  add(OPUS + 'oracle_copy_test.js', [], 'normal', 300, false, true); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
+  add('contrib/deepseek/map_pace_1117/smoke_safety_test.js', [], 'normal', 300, false, true); // #1019: the documented smoke run leaves the saved 200-sim raw files byte for byte unchanged
+  add('contrib/deepseek/chorus_biomass_1118/spiral_test.js', [], 'normal', 300, false, true); // #1085: the loss spiral prices a 25 percent repair of the worst ship, capped at what it is missing
+  add('contrib/deepseek/ge_economy_1118/commission_test.js', [], 'normal', 300, false, true); // #1086: one shipyard visit queues at most one Glasswright commission, even with two affordable offers
+  add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
+  add('tools/pc/g2_export_selftest.js'); // #1100: a stand-in exporter proves only checked builds become live on Windows
+  add('tools/pc/pause_all_selftest.js'); // #944: pause waits for runners and verifies each saved commit on GitHub
+  add('tools/pc/lane_tools_refresh_selftest.js'); // #1018: lane tools refresh safety checks
+  add('tools/recipe/stage5_fail_selftest.js', [], 'normal', 600); // #873: stage 5 and bench 207 stop on a failed step; fake executables, static contract on other hosts
+  add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
+  add(OPUS + 'nem_direct_reads_report.js', [], 'normal', 300, false, true); // #364: report only, the count of direct save reads outside godot/campaign/
+  add(OPUS + 'naming_lint_game.test.js', [], 'normal', 300, false, true);
+  add(OPUS + 'naming_lint_game.js', [], 'naming');
+  add(OPUS + 'checkpack/checks.js', [], 'pack', 300, false, true);
+  add(OPUS + 'fast_selection_test.js', [], 'normal', 300, false, true); // #946: --fast selects exactly the marked rows plus the gate; a plain run still runs every row
+  for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT], 'normal', 300, false, file !== 'softlock_sweep.js');
+  add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings', 300, false, true);
+  add(MUSE + 'oracle_drift/oracle_drift_guard.js', [ROOT], 'drift', 300, false, true);
+  add(MUSE + 'cutover_gate/fixture_check.js', [ROOT, path.join(ROOT, MUSE, 'importer_fixtures'), path.join(ROOT, MUSE, 'harness/game_loader.js')], 'optional', 300, false, true);
+  return checks;
+}
+
+// Issue 946: under --fast a row runs when it is marked fast or it is the gate.
+function fastSelected(checks) {
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "rg -n -i 'build.?\\\\tools|tmo\\.bat' tools/pc/jobs -g '*.bat' | Select-Object -First 90; Get-ChildItem ..\\..\\lane_tools_source -Name | Select-Object -First 20; git log -1 --oneline; Get-Command cmd.exe,robocopy.exe,py.exe -ErrorAction SilentlyContinue | Select-Object Name,Source" in C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo
+ succeeded in 132ms:
+tools/pc/jobs\a4_regen.bat:11:call tools\pc\tmo.bat 1100 "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" --max-seconds 900 >> "%LOG%" 2>&1
+tools/pc/jobs\a2_detail.bat:24:  call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\a2_ship.py -- %%C "%A2%" %RES% --samples 24 --checks "%CHK%" > "%A2%\%%C_log.txt" 2>&1
+tools/pc/jobs\a2_detail.bat:28:  call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\reimport.py -- "%A2%\%%C.glb" 2>nul | findstr /l /c:"[reimport]" >> %L%
+tools/pc/jobs\a2_detail.bat:36:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_shell.glb" "%A2%\barge\shell_albproj.png" %RES% > "%A2%\barge\shellproj_log.txt" 2>&1
+tools/pc/jobs\a2_detail.bat:41:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_kit.glb" "%A2%\barge\kit_albproj.png" %RES% > "%A2%\barge\kitproj_log.txt" 2>&1
+tools/pc/jobs\a2_detail.bat:48:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\a2_barge.py -- "%A2%\barge" "%A2%" %RES% --checks "%CHK%" > "%A2%\barge_log.txt" 2>&1
+tools/pc/jobs\a2_detail.bat:52:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\reimport.py -- "%A2%\C19_51_shell.glb" "%A2%\C19_51_kit.glb" 2>nul | findstr /l /c:"[reimport]" >> %L%
+tools/pc/jobs\a4_damage.bat:16:call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\pack.py "%OUT%\%1_meta.json" "%A4%\godot" --res auto --hi "%A4%\godot_hi" --hires 4096
+tools/pc/jobs\a4_damage.bat:17:call tools\pc\tmo.bat 600 %BL% -b --factory-startup -P a4tools\a4\dmgview.py -- "%OUT%\%1_ship.npz" "%OUT%\%1_meta.json" "%OUT%\dmg\%1_damage.png" > "%OUT%\dmg_log.txt" 2>&1
+tools/pc/jobs\a4_damage.bat:19:call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\dmgview.py --compose "%OUT%\dmg\%1_damage.png_layout.json"
+tools/pc/jobs\a4_damage.bat:24:call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\manifest.py "%A4%\godot" "%A4%\out" "%A4%\manifest"
+tools/pc/jobs\a4_barge.bat:11:call tools\pc\tmo.bat 900 %BL% -b --factory-startup -P a4tools\a4\barge4.py -- "%A2%\C19_51_shell.glb" "%A2%\C19_51_kit.glb" "%OUT%" --res 4096 --checks "%OUT%\checks" > "%OUT%\build_log.txt" 2>&1
+tools/pc/jobs\a4_barge.bat:13:call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\pack.py "%OUT%\C19_51_meta.json" "%A4%\godot" --res auto --hi "%A4%\godot_hi" --hires 4096
+tools/pc/jobs\a4_barge.bat:14:call tools\pc\tmo.bat 120 %PY% -s a4tools\a4\sheet.py "%OUT%\checks" C19_51
+tools/pc/jobs\a4_barge.bat:15:call tools\pc\tmo.bat 300 %BL% -b --factory-startup -P a4tools\a2detail\reimport.py -- "%A4%\godot\C19_51\C19_51.glb" "%A4%\godot\C19_51\C19_51_wreck.glb" > "%OUT%\reimport_log.txt" 2>&1
+tools/pc/jobs\A16_RUN_601.bat:31:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+tools/pc/jobs\A16_RUN_601.bat:34:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs corsair --sets battle,close,cams --codes C19_51 > "%O%\log_shots.txt" 2>&1
+tools/pc/jobs\A16_RUN_601.bat:36:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- C19_51 > "%O%\log_readback_gpu.txt" 2>&1
+tools/pc/jobs\A16_RUN_601.bat:38:call "%~dp0..\tmo.bat" 21600 "%B%" -b "%JOB%\A16.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%O%\paint" corsair_A16 "%C%\contrib\muse\design\concept_round8_2026_11\corsair_A16_beauty.jpg" lift=1.25 samples=64 scale=1.0 gpu=1 > "%O%\log_paint_sheet.txt" 2>&1
+tools/pc/jobs\A18_A20_RUN_633.bat:31:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+tools/pc/jobs\A18_A20_RUN_633.bat:37:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs corsair --sets battle,close --codes C13s_23,C14s_23,C16s_23 > "%O%\log_shots.txt" 2>&1
+tools/pc/jobs\A18_A20_RUN_633.bat:54:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
+tools/pc/jobs\A18_A20_RUN_633.bat:57:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
+tools/pc/jobs\A18_A20_RUN_633.bat:60:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
+tools/pc/jobs\a4_looks.bat:9:call tools\pc\tmo.bat 900 %BL% -b --factory-startup -P a4tools\a4\look.py -- "%LK%" %A4LOOK% > "%LK%\looks_log.txt" 2>&1
+tools/pc/jobs\a4_looks.bat:11:for %%F in ("%LK%\*_layout.json") do call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\look.py --compose "%%F"
+tools/pc/jobs\a4_lineup.bat:8:call tools\pc\tmo.bat 600 %BL% -b --factory-startup -P a4tools\a4\lineup.py -- "%A4%\godot" "%A4%\lineups\%A4TAG%.webp" "%A4TITLE%" %A4SHIPS% --samples 48 > "%A4%\lineups\%A4TAG%_log.txt" 2>&1
+tools/pc/jobs\a4_lineup.bat:10:call tools\pc\tmo.bat 120 %PY% -s a4tools\a4\lineup.py --compose "%A4%\lineups\%A4TAG%.webp_layout.json"
+tools/pc/jobs\a4_ship.bat:5:rem hulls_hi\ and tools\pc\tmo.bat (the watchdog: every program runs under a time limit) are already in build\.
+tools/pc/jobs\a4_ship.bat:19:call tools\pc\tmo.bat 900 %BL% -b --factory-startup -P a4tools\a4\a4_ship.py -- %A4CODE% "%OUT%" --res 4096 --samples 16 --look --checks "%OUT%\checks" > "%OUT%\build_log.txt" 2>&1
+tools/pc/jobs\a4_ship.bat:22:call tools\pc\tmo.bat 900 %PY% -s a4tools\a4\concept.py "%OUT%\%A4CODE%_meta.json" --sheet --apply > "%OUT%\concept_log.txt" 2>&1
+tools/pc/jobs\a4_ship.bat:25:call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\pack.py "%OUT%\%A4CODE%_meta.json" "%A4%\godot" --res auto --hi "%A4%\godot_hi" --hires 4096
+tools/pc/jobs\a4_ship.bat:26:call tools\pc\tmo.bat 120 %PY% -s a4tools\a4\sheet.py "%OUT%\checks" %A4CODE%
+tools/pc/jobs\a4_ship.bat:27:for %%F in ("%OUT%\*_layout.json") do call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\look.py --compose "%%F"
+tools/pc/jobs\a4_ship.bat:29:call tools\pc\tmo.bat 600 %BL% -b --factory-startup -P a4tools\a4\dmgview.py -- "%OUT%\%A4CODE%_ship.npz" "%OUT%\%A4CODE%_meta.json" "%OUT%\dmg\%A4CODE%_damage.png" > "%OUT%\dmg_log.txt" 2>&1
+tools/pc/jobs\a4_ship.bat:30:call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\dmgview.py --compose "%OUT%\dmg\%A4CODE%_damage.png_layout.json"
+tools/pc/jobs\a4_ship.bat:31:call tools\pc\tmo.bat 300 %BL% -b --factory-startup -P a4tools\a2detail\reimport.py -- "%A4%\godot\%A4CODE%\%A4CODE%.glb" "%A4%\godot\%A4CODE%\%A4CODE%_wreck.glb" "%A4%\godot\%A4CODE%\%A4CODE%_damage.glb" > "%OUT%\reimport_log.txt" 2>&1
+tools/pc/jobs\a4_ship.bat:36:call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\manifest.py "%A4%\godot" "%A4%\out" "%A4%\manifest"
+tools/pc/jobs\a4_repaint.bat:17:    call tools\pc\tmo.bat 900 %PY% -s a4tools\a4\concept.py "!OUT!\%%C_meta.json" --sheet %A4CONCEPT% --apply --base "%A4%\godot\%%C" --base "%A4%\godot_hi\%%C" > "!OUT!\concept_log.txt" 2>&1
+tools/pc/jobs\bench207_scene_gate_repeat.bat:19:set "TMO=%~dp0..\tmo.bat"
+tools/pc/jobs\bench207_scene_gate.bat:53:set "TMO=%~dp0..\tmo.bat"
+tools/pc/jobs\bench207_scene_gate_res.bat:21:set "TMO=%~dp0..\tmo.bat"
+tools/pc/jobs\C10_C11_RUN_623.bat:30:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+tools/pc/jobs\C10_C11_RUN_623.bat:35:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs chorus --sets battle,close --codes B16_23,B21_11 > "%O%\log_shots.txt" 2>&1
+tools/pc/jobs\C10_C11_RUN_623.bat:52:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
+tools/pc/jobs\C10_C11_RUN_623.bat:55:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
+tools/pc/jobs\C10_C11_RUN_623.bat:58:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
+tools/pc/jobs\c19_4_kit_to_game.bat:10:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P c19_kit.py -- "%IO%\mesh\C19_51E2_pixal_tex_00001_.glb" "%IO%\kit\E2" > "%IO%\kit\kit_log.txt" 2>&1
+tools/pc/jobs\c19_4_kit_to_game.bat:11:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P lod_make.py -- "%IO%\kit\E2_cut.glb" "%IO%\kit\E2cut" 250000 > "%IO%\kit\lod_log.txt" 2>&1
+tools/pc/jobs\c19_4_kit_to_game.bat:15:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\kit\E2_kit.glb" "%IO%\kit\kit_albproj.png" 4096 "%V%_left.png|%V%_left_mask.png|0|0|1" "%V%_right.png|%V%_right_mask.png|180|0|1" "%IO%\proj\E2_concept.png|%IO%\proj\E2_concept_mask.png|@%IO%\proj\E2_concept.json|0|1.2" "%V%_front.png|%V%_front_mask.png|-90|0|0.8" > "%IO%\kit\kitproj_log.txt" 2>&1
+tools/pc/jobs\c19_4_kit_to_game.bat:21:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P render_multi.py -- "%IO%\kit\E2_cut.glb" "%IO%\kit\K11_" "146 14;90 4;90 85;180 8;240 25;150 30;120 12;160 22;20 20;90 -40;0 10" > "%IO%\kit\render_log.txt" 2>&1
+tools/pc/jobs\c19_v15c.bat:12:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_shell.glb" "%IO%\shell_albproj.png" 4096 > "%IO%\shellproj_log.txt" 2>&1
+tools/pc/jobs\c19_v15c.bat:17:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_kit.glb" "%IO%\kit_albproj.png" 4096 > "%IO%\kitproj_log.txt" 2>&1
+tools/pc/jobs\c19_v15d.bat:12:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_shell.glb" "%IO%\shell_albproj.png" 4096 > "%IO%\shellproj_log.txt" 2>&1
+tools/pc/jobs\c19_v15d.bat:17:call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_kit.glb" "%IO%\kit_albproj.png" 4096 > "%IO%\kitproj_log.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642.bat:32:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642.bat:66:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODEX% > "%OS_%\log_readback_gpu.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642.bat:69:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_interiors.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642.bat:72:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_death_seam.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642.bat:75:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%OS_%\shots" --facs deathless --sets battle,close,cams --codes %CODEX% > "%OS_%\log_shots.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642.bat:78:call "%~dp0..\tmo.bat" 21600 "%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%OS_%\paint" %SHIP% "%C%\contrib\muse\design\concept_round8c_2026_11\%SHIP%_beauty.jpg" lift=2.2 samples=64 scale=1.0 gpu=1 sky_spec=0 cam170=1 > "%OS_%\log_paint_sheet.txt" 2>&1
+tools/pc/jobs\explosion_routes.bat:35:set "TMO=%~dp0..\tmo.bat"
+tools/pc/jobs\E11_E12_PAINT_642d.bat:36:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642d.bat:80:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODEX% > "%OS_%\log_readback_gpu.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642d.bat:86:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_interiors.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642d.bat:92:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_death_seam.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642d.bat:98:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%OS_%\shots" --facs deathless --sets battle,close,cams --codes %CODEX% > "%OS_%\log_shots.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642d.bat:104:call "%~dp0..\tmo.bat" 21600 "%B%" -b "%JOBX%\%CELLX%.blend" --python-exit-code 1 -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%OS_%\paint" %SHIP% "%C%\contrib\muse\design\concept_round8c_2026_11\%SHIP%_beauty.jpg" lift=2.2 samples=64 scale=1.0 gpu=1 sky_spec=0 cam170=1 > "%OS_%\log_paint_sheet.txt" 2>&1
+tools/pc/jobs\E11_E12_PAINT_642d.bat:132:call "%C%\tools\pc\tmo.bat" 2400 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://bench/scene_gate.tscn -- --out "%O%\scene_gate_%1" --modes base,res_1440,res_2160 > "%O%\log_scene_gate_%1.txt" 2>&1
+tools/pc/jobs\fx_inside_capture.bat:20:if not exist "tools\pc\tmo.bat" goto missing
+tools/pc/jobs\fx_inside_capture.bat:28:call tools\pc\tmo.bat 600 "%FX_GODOT%" --path godot --fixed-fps 60 --script res://fx/test/fx_inside_probe.gd --log-file "%PROBE_OUT%\probe.log"
+tools/pc/jobs\g2_battle_shots.bat:10:set "TMO=%ROOT%tools\pc\tmo.bat"
+tools/pc/jobs\g2_checks.bat:7:set "TMO=%ROOT%tools\pc\tmo.bat"
+tools/pc/jobs\g2_export.bat:10:set "TMO=%ROOT%tools\pc\tmo.bat"
+tools/pc/jobs\g2_playtest_capture.bat:30:set "TMO=%CD%\tools\pc\tmo.bat"
+tools/pc/jobs\godot_gpu_checks.bat:4:rem (GitHub runs the "headless" lines), one after another, each under tools\pc\tmo.bat with a 15 minute limit.
+tools/pc/jobs\godot_gpu_checks.bat:72:  call "%ROOT%tools\pc\tmo.bat" 900 "%G%" --path "%ROOT%godot" --resolution 1920x1080 !REN! !LAUNCH! -- !A! > "!O!\log.txt" 2>&1
+tools/pc/jobs\godot_gpu_checks.bat:74:  call "%ROOT%tools\pc\tmo.bat" 900 "%G%" --path "%ROOT%godot" --resolution 1920x1080 !REN! !LAUNCH! > "!O!\log.txt" 2>&1
+tools/pc/jobs\lb_overlay_ship.bat:26:if "%TMO%"=="" set "TMO=%~dp0..\tmo.bat"
+tools/pc/jobs\look_bench.bat:82:set "TMO=%~dp0..\tmo.bat"
+tools/pc/jobs\PAINT_RUN_601.bat:30:call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+tools/pc/jobs\PAINT_RUN_601.bat:46:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%OS_%\shots" --facs corsair --sets battle,close,cams --codes %CODEX% > "%OS_%\log_shots.txt" 2>&1
+tools/pc/jobs\PAINT_RUN_601.bat:48:call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODEX% > "%OS_%\log_readback_gpu.txt" 2>&1
+tools/pc/jobs\PAINT_RUN_601.bat:50:call "%~dp0..\tmo.bat" 21600 "%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%OS_%\paint" %SHIP% "%C%\contrib\muse\design\concept_round8_2026_11\%SHIP%_beauty.jpg" lift=1.25 samples=64 scale=1.0 gpu=1 > "%OS_%\log_paint_sheet.txt" 2>&1
+tools/pc/jobs\planet369_download.bat:7:call "%~dp0..\tmo.bat" 1200 "%PY369%" "%~dp0planet369_download.py"
+tools/pc/jobs\planet369_pack.bat:7:call "%~dp0..\tmo.bat" 600 "%PY369%" "%~dp0planet369_pack.py"
+tools/pc/jobs\planet369_pack.bat:9:call "%~dp0..\tmo.bat" 120 "%VT%\godot\Godot_v4.7.2-stable_win64_console.exe" --headless --log-file "%TEMP%\planet369_pack_engine.log" --path "%~dp0..\..\..\godot" --script "%~dp0planet369_pack.gd"
+tools/pc/jobs\planet369_remix.bat:7:call "%~dp0..\tmo.bat" 1200 "%PY369%" "%~dp0planet369_remix.py" %*
+tools/pc/jobs\q_paint_642d.bat:5:call "%V%\work217\tools\tmo.bat" 10800 cmd.exe /d /c ""%V%\E11_E12_PAINT_642d.bat""
+tools/pc/jobs\ship_job.bat:147:call "%C%\tools\pc\tmo.bat" %SHIP_IMPORT_CAP% "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+2c8915d8a70a043a2c263fddc871cdd5ea161070
+33c955e99609bc980e744a5282f8923130e48896
+73a7a3f7ea9dc26abae84ee511310685ae283929
+7ccd807339933d3b22c5c2bf1246272301d4520e
+ab772de393ac7427f3370f892d62033b9620009a
+cc575c214870db25d9bc79707cb2b2faf031ea11
+main.git
+export-09efba7c65c2445691452be7555ff711.zip
+export-27378d20aaf741d09380aaa2763f6fe8.zip
+export-46d063d8782c4cde9bd837ffc2e63b41.zip
+export-4cb611d4a21740e2b7ee490845c155a2.zip
+export-6d98e3ac71f54c51bedaeb536b8814cc.zip
+export-da7e357c430b4685903d55209e61dcbe.zip
+815d05c6 PC jobs: every wrapped Godot launch gets a throwaway profile, Ryan's settings untouched (Refs #1228) (#1249)
+
+Name         Source                                                      
+----         ------                                                      
+cmd.exe      C:\WINDOWS\system32\cmd.exe                                 
+Robocopy.exe C:\WINDOWS\system32\Robocopy.exe                            
+py.exe       C:\Users\rcbai\AppData\Local\Programs\Python\Launcher\py.exe
+
+
+
+codex
+The old refresh updates each lane separately, and both watchers currently send every finished job to `done`. Iâ€™ll make the launchers share one tools revision per run and carry failures through to the queue. Iâ€™ll test those paths with Windows fixtures so lane C stays code-only.

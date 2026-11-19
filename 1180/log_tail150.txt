@@ -1,0 +1,150 @@
+﻿would keep C:\Users\rcbai\Downloads\voidsworn_test\opus1157 (5897736485 bytes; touched in the last 72 hours)
+would keep C:\Users\rcbai\Downloads\voidsworn_test\opus1158 (6261539465 bytes; touched in the last 72 hours)
+would keep C:\Users\rcbai\Downloads\voidsworn_test\opus1183 (786 bytes; touched in the last 72 hours)
+would keep C:\Users\rcbai\Downloads\voidsworn_test\opus1204 (11357652242 bytes; touched in the last 72 hours)
+would keep C:\Users\rcbai\Downloads\voidsworn_test\opus1211 (13100439857 bytes; touched in the last 72 hours)
+would keep C:\Users\rcbai\Downloads\voidsworn_test\opus1217 (13655238539 bytes; touched in the last 72 hours)
+would keep C:\Users\rcbai\Downloads\voidsworn_test\opus1232 (51213 bytes; touched in the last 72 hours)
+free space after: 139221516288 bytes
+all done
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$standing=Join-Path $env:TEMP '"'issue-1180-standing.txt'; Select-String -LiteralPath "'$standing -Pattern '"'"'^FAIL|''^KNOWN|''^SKIP|runner_cleanup_tests|ship_job_tests|runner_selftest'"' | ForEach-Object { "'$_.Line }; Get-Content -LiteralPath $standing -Tail 6' in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+ succeeded in 84ms:
+PASS: paint_sheet_camera_tests (0.81 s) | PASS paint sheet camera: 19 saved cameras and clip edge cases
+Running parity_cleanup_tests (limit 300 s)...
+PASS: parity_cleanup_tests (0.21 s) | PASS parity cleanup: pass, failure, exception, other runs, explicit records, CI and PC pause
+Running picture_provenance_tests (limit 300 s)...
+PASS: picture_provenance_tests (31.13 s) | PASS picture provenance self-test; artifacts kept in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f09f6fe17ecc435199493a46dcb5ce45\picture889-7j1pp132
+Running r1_tests (limit 300 s)...
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$report=Join-Path $env:TEMP '"'issue-1180-owner-dry-run.txt'; "'$lines=Get-Content -LiteralPath $report; $removals=$lines -match '"'would remove'; "'$m=[regex]::Matches(($removals -join "`n"),'"'\\(([0-9]+) bytes'); "'$bytes=($m | ForEach-Object { [long]$_.Groups[1].Value } | Measure-Object -Sum).Sum; $lines -match '"'"'^(janitor|free space|all done)'"'; 'Decisions: ' + ("'$lines.Count - 4); '"'Would remove: ' + "'$removals.Count + '"' (' + [math]::Round("'$bytes / 1GB,2) + '"' GiB)'; 'After checked salvage: ' + ("'$removals -match '"'checked salvage').Count; 'Rebuildable: ' + ("'$removals -match '"'rebuildable').Count; 'Temp scratch: ' + ("'$removals -match '"'owned TEMP scratch').Count; 'Name-only keeps: ' + ("'$lines -match '"'name match without owner record').Count; 'Size-unavailable keeps: ' + ("'$lines -match '"'size unavailable').Count; 'Actual removes: ' + ("'$lines -match '"'"'^removed|''^kept checkout removed'"').Count; "'$removals' in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+ succeeded in 210ms:
+janitor dry run at 2026-11-19T23:54:47.8415679Z
+free space before: 139530223616 bytes
+free space after: 139221516288 bytes
+all done
+Decisions: 167
+Would remove: 16 (60.2 GiB)
+After checked salvage: 4
+Rebuildable: 7
+Temp scratch: 5
+Name-only keeps: 18
+Size-unavailable keeps: 94
+Actual removes: 0
+kept checkout would remove (after checked salvage of local work): C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-90abf105d7264e4199201f89edfc9646 (4715202836 bytes)
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-c24ce97e0c6044d3af55441060ddafb0 (5917582465 bytes)
+kept checkout would remove (after checked salvage of local work): C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-d5932feeb459446997aea75a80d20fb9 (5139053305 bytes)
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-23d20056060541b8afc09c0373a3e146 (5919916005 bytes)
+kept checkout would remove (after checked salvage of local work): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-c7c6705abe3a484e9c6740d259d70ae2 (4900345723 bytes)
+kept checkout would remove (after checked salvage of local work): C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo-kept-37959aaa46ad4ea281acdb2fe481d061 (4654598004 bytes)
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1118-openai\20261119_040625\repo (5981090674 bytes)
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1118-openai\20261119_050205\repo (5981265387 bytes)
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1144-deepseek\20261119_091640\repo (6057697254 bytes)
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1144-openai\20261119_065048\repo (6040951572 bytes)
+kept checkout would remove (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1147-openai\20261119_084751\repo (6028072829 bytes)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5978443f0d3e494bb975baeb40e3df37 (483069840 bytes; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2 (885628040 bytes; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7fa3833db1e64a418cfd69073e14fdfe (724604760 bytes; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-967ee3dc4bf84b738fd3095196756c85 (483069840 bytes; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b7e7f00353a7439690fddc03ceab4959 (724604760 bytes; owned TEMP scratch, untouched for at least 3 hours)
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$reportSource = '"'C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-f09f6fe17ecc435199493a46dcb5ce45\\issue-1180-owner-dry-run.txt'; "'$reportCopy = '"'C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-issue-1180-run5-dry-run-20261119.txt'; [IO.File]::Copy("'$reportSource, $reportCopy, $false); if ((Get-FileHash -LiteralPath $reportSource).Hash -ne (Get-FileHash -LiteralPath $reportCopy).Hash) { throw '"'Dry-run report copy hash differs' }; Get-Item -LiteralPath "'$reportCopy | Select-Object FullName,Length' in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+ succeeded in 475ms:
+
+FullName                                                                         Length
+--------                                                                         ------
+C:\Users\rcbai\AppData\Local\Temp\voidsworn-issue-1180-run5-dry-run-20261119.txt  76534
+
+
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$env:NODE_OPTIONS = '"'--preserve-symlinks --preserve-symlinks-main'; node contrib/opus/tools/runner_cleanup_tests.js *> (Join-Path "'$env:TEMP '"'issue-1180-cleanup-tests.txt'); "'$testExit=$LASTEXITCODE; Get-Content (Join-Path $env:TEMP '"'issue-1180-cleanup-tests.txt') -Tail 30; exit "'$testExit' in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+codex
+The PC dry run finished without deleting anything. It listed 16 removal candidates totaling 60.2 GiB, including four checkouts that require a verified backup first. I saved the full list in the PCâ€™s TEMP folder for the Board. The standing suite is still running.
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$standing=Join-Path $env:TEMP '"'issue-1180-standing.txt'; Select-String -LiteralPath "'$standing -Pattern '"'"'^FAIL|''^KNOWN|''^SKIP|runner_cleanup_tests|ship_job_tests|runner_selftest'"' | ForEach-Object { "'$_.Line }; Get-Content -LiteralPath $standing -Tail 12; Get-Content -LiteralPath (Join-Path $env:TEMP '"'issue-1180-cleanup-tests.txt') -Tail 6" in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'git diff --stat; git diff --check; git check-ignore -v -- godot/campaign/test/golden/c1.jsonl godot/campaign/test/parity_campaign_log.txt godot/scenes/campaign/test.gd.uid .onboarding_checks/build.txt; Get-FileHash -LiteralPath (Join-Path $env:PC_RUN_TEMP '"'voidsworn-issue-1180-run5-dry-run-20261119.txt') | Select-Object Hash" in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+ succeeded in 73ms:
+PASS: nemesis_clash_tests (0.39 s) | PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).
+Running nemesis_teach_tests (limit 300 s)...
+PASS: nemesis_teach_tests (0.19 s) | PASS: exit 0
+Running paint_lint_tests (limit 300 s)...
+PASS: paint_lint_tests (0.30 s) | PASS paint_lint: colour, welded islands, adjacency and a planted loose box
+Running paint_sheet_camera_tests (limit 300 s)...
+PASS: paint_sheet_camera_tests (0.81 s) | PASS paint sheet camera: 19 saved cameras and clip edge cases
+Running parity_cleanup_tests (limit 300 s)...
+PASS: parity_cleanup_tests (0.21 s) | PASS parity cleanup: pass, failure, exception, other runs, explicit records, CI and PC pause
+Running picture_provenance_tests (limit 300 s)...
+PASS: picture_provenance_tests (31.13 s) | PASS picture provenance self-test; artifacts kept in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f09f6fe17ecc435199493a46dcb5ce45\picture889-7j1pp132
+Running r1_tests (limit 300 s)...
+
+ succeeded in 273ms:
+ contrib/opus/tools/runner_cleanup_tests.js | 84 ++++++++++++++++++++++--------
+ docs/RULEBOOK.md                           | 14 ++---
+ tools/pc/janitor.ps1                       | 57 +++++++++++++-------
+ tools/pc/runner_common.ps1                 |  3 +-
+ 4 files changed, 110 insertions(+), 48 deletions(-)
+godot/campaign/test/.gitignore:1:golden/	godot/campaign/test/golden/c1.jsonl
+godot/campaign/test/.gitignore:3:parity_campaign_log.txt	godot/campaign/test/parity_campaign_log.txt
+godot/scenes/campaign/.gitignore:1:*.uid	godot/scenes/campaign/test.gd.uid
+.gitignore:2:.onboarding_checks/	.onboarding_checks/build.txt
+
+Hash                                                            
+----                                                            
+70E3CFBA5FA65E075A6E74C019375AE9890C6235087B15D0641D512761F16280
+
+
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -LiteralPath (Join-Path $env:TEMP '"'issue-1180-standing.txt') -Tail 9; Get-Content -LiteralPath (Join-Path "'$env:TEMP '"'issue-1180-cleanup-tests.txt') -Tail 8; (Get-Date).ToString('HH:mm:ss'); Get-Item (Join-Path "'$env:TEMP '"'issue-1180-standing.txt'),(Join-Path "'$env:TEMP '"'issue-1180-cleanup-tests.txt') | Select-Object Name,CreationTime,LastWriteTime,Length" in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+ succeeded in 106ms:
+Running r1_tests (limit 300 s)...
+PASS: r1_tests (83.95 s) | PASS: exit 0
+Running report_paths_tests (limit 300 s)...
+PASS: report_paths_tests (1.41 s) | PASS report_paths_tests: both public messages keep report links and safe check rows; raw checks and partial resume stay local
+Running reporting_238_tests (limit 300 s)...
+PASS: reporting_238_tests (0.28 s) | PASS MP8 danger bands
+Running run_all_checks_live_tests (limit 300 s)...
+PASS: run_all_checks_live_tests (3.09 s) | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+Running runner_cleanup_tests (limit 300 s)...
+PASS runner cleanup: scratch ownership, failed-run retention, pause, and rebuildable kept checkouts
+17:57:19
+
+Name                         CreationTime          LastWriteTime         Length
+----                         ------------          -------------         ------
+issue-1180-standing.txt      11/19/2026 5:53:47 PM 11/19/2026 5:57:01 PM  13890
+issue-1180-cleanup-tests.txt 11/19/2026 5:56:33 PM 11/19/2026 5:56:58 PM    204
+
+
+
+ succeeded in 51041ms:
+PASS runner cleanup: scratch ownership, failed-run retention, pause, and rebuildable kept checkouts
+PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$standing=Join-Path $env:TEMP '"'issue-1180-standing.txt'; Select-String -LiteralPath "'$standing -Pattern '"'"'^FAIL|''^KNOWN|''^SKIP|runner_cleanup_tests|ship_job_tests|runner_selftest'"' | ForEach-Object { "'$_.Line }; Get-Content -LiteralPath $standing -Tail 14' in C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+ succeeded in 503ms:
+Running runner_cleanup_tests (limit 300 s)...
+PASS: runner_cleanup_tests (48.67 s) | PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit
+PASS: parity_cleanup_tests (0.21 s) | PASS parity cleanup: pass, failure, exception, other runs, explicit records, CI and PC pause
+Running picture_provenance_tests (limit 300 s)...
+PASS: picture_provenance_tests (31.13 s) | PASS picture provenance self-test; artifacts kept in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f09f6fe17ecc435199493a46dcb5ce45\picture889-7j1pp132
+Running r1_tests (limit 300 s)...
+PASS: r1_tests (83.95 s) | PASS: exit 0
+Running report_paths_tests (limit 300 s)...
+PASS: report_paths_tests (1.41 s) | PASS report_paths_tests: both public messages keep report links and safe check rows; raw checks and partial resume stay local
+Running reporting_238_tests (limit 300 s)...
+PASS: reporting_238_tests (0.28 s) | PASS MP8 danger bands
+Running run_all_checks_live_tests (limit 300 s)...
+PASS: run_all_checks_live_tests (3.09 s) | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+Running runner_cleanup_tests (limit 300 s)...
+PASS: runner_cleanup_tests (48.67 s) | PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit
+Running runner_job_tests (limit 300 s)...
+
+ exited -1 in 284437ms:
+runner error: runner pipe closed before exit
+
