@@ -22,7 +22,7 @@ CLASS = 'Ark'
 LENGTH = 26.0
 GAME = "data.js i_boss (Ark); CLS_LEN Ark = 26, SHIP_K 1.6 = 41.6 on the board"
 BEAUTY = 'docs/ship_pipeline/build_sheets/ithar_CD5/concept.jpg'
-SHEET = dict(version=3, round='R298 / CD5 r3', date='2026-11-17', stage='sheet built')
+SHEET = dict(version=4, round='R337 / CD5 r4', date='2026-11-19', stage='blockout + paint preview')
 # One camera for the reference comparison, with the stern near and the bow receding right.
 CAMERA = dict(az=240.0, el=29.0, roll=-10.0, scale=30.6)
 OPTICS = [(-6.0, 'O1', 'pulsar', 'amber'), (0.0, 'O2', 'turret', 'violet'),
@@ -80,60 +80,54 @@ def run2_skin(x, a, inset=0.0):
     return (x, y, z)
 
 
-STRANDS = 6
-BODY_NU, BODY_NV = 240, 144
-
-
-def strand_phase(x):
-    """A broad twist, tightening at midship; each strand runs along the whole leaf."""
-    return 0.16 * x + 0.50 * math.sin(0.23 * x)
-
-
-def strand_angle(x, t):
-    """Unequal poured widths and gentle meanders keep the braid from a screw thread."""
-    return t + strand_phase(x) + 0.16 * math.sin(2 * t + 0.25 * x) + 0.07 * math.sin(3 * t - 0.18 * x)
-
-
-def strand_coordinate(x, a):
-    t = a - strand_phase(x)
-    for _ in range(12):
-        t = a - strand_phase(x) - 0.16 * math.sin(2 * t + 0.25 * x) - 0.07 * math.sin(3 * t - 0.18 * x)
-    return t
-
-
+# R337 (issue 1183): the hull restarts from the approved concept. The core is run 2's frozen oval (it already carries the
+# three optic swells and the stern shoulders, so every optic, lance and drive keeps its exact attachment). Over it lie the
+# Glasswright kit's pearl ribbons; the core itself is the opaque glowing mosaic seen in the gaps. Nothing is see-through.
 def skin(x, a, inset=0.0):
-    """Six joined strands, with deep rounded valleys and a fine poured edge."""
-    env = max(0.0, math.sin(math.pi * (x + 12.75) / 23.0)) ** 0.45
-    w = width(x)
-    h = 0.30 + 2.15 * env + 0.85 * math.exp(-((x + 12.4) / 2.2) ** 2)
-    q = STRANDS * strand_coordinate(x, a)
-    # The full section is lobed geometry, not thin lines over a smooth bulb.
-    # Shoulder ridges at either edge of a strand catch the long studio reflections.
-    crest = (0.5 + 0.5 * math.cos(q)) ** 0.70
-    edge = math.exp(-((math.cos(q) - 0.12) / 0.28) ** 2)
-    poured = 0.018 * math.cos(3 * q + 0.65 * x) * crest
-    radius = 0.61 + 0.48 * crest + 0.045 * edge + poured
-    y = w * radius * math.cos(a)
-    z = h * radius * math.sin(a)
-    if z < 0:
-        z *= 1.24  # retain run 2's middle depth even where an upper groove narrows
-    # Preserve the run 2 skin under each unchanged round optic. The blend is broad
-    # enough to be a grown swell, while the grooves remain continuous around it.
-    if math.sin(a) > 0:
-        saddle = min(1.0, sum(math.exp(-((x - ox) / 1.24) ** 4 - (y / 1.12) ** 4)
-                              for ox, _, _, _ in OPTICS))
-        old = run2_skin(x, a)
-        y += (old[1] - y) * saddle
-        z += (old[2] - z) * saddle
-    # The stern glass still grows into the three untouched drive shoulders.
-    tail = math.exp(-((x + 12.20) / 0.85) ** 4)
-    old = run2_skin(x, a)
-    y += (old[1] - y) * tail
-    z += (old[2] - z) * tail
-    if inset:
-        y -= inset * math.cos(a)
-        z -= inset * math.sin(a)
-    return (x, y, z)
+    return run2_skin(x, a, inset)
+
+
+def gw_kit(name):
+    """load a Glasswright kit module under its own name (another kit's parts.py may already be imported as `parts`)"""
+    import importlib.util
+    key = 'ithar_' + name
+    if key not in sys.modules:
+        spec = importlib.util.spec_from_file_location(key, ROOT / 'tools/blender/kits/ithar' / (name + '.py'))
+        mod = importlib.util.module_from_spec(spec); sys.modules[key] = mod; spec.loader.exec_module(mod)
+    return sys.modules[key]
+
+
+RIB_A = 9            # full-length ribbons, stern lenses to bow, twisting together
+TWIST_A = lambda x: 0.16 * x + 0.42 * math.sin(0.21 * x)
+# Upper leaves: shorter, wider ribbons that cross the long ones with a counter twist and curl up along the spine.
+# (x0, x1, base angle, width): laid by hand so they overlap like the concept's leaves, not as a regular pattern.
+LEAVES = [(-11.6, 1.8, 1.30, 0.26), (-8.4, 6.4, 2.25, 0.24), (-5.2, 9.2, 0.70, 0.23), (-10.2, 3.6, -0.55, 0.22),
+          (-2.6, 9.6, 1.75, 0.22), (-9.0, 5.0, 3.40, 0.24), (-4.0, 8.6, -1.70, 0.20), (-11.0, -1.0, 2.80, 0.22),
+          (-7.0, 2.5, 1.05, 0.20), (0.5, 9.4, 2.60, 0.20)]
+TWIST_B = lambda x: -0.11 * x + 0.30 * math.sin(0.30 * x + 1.1)
+
+
+SWAY, LEAF_F = 0.16, 0.95
+
+
+def gap_of(x, a):
+    """which long-ribbon gap a core point sits in, and its leaf coordinate along the gap: whole numbers fall where the two
+    swaying neighbours pinch together, so each leaf window between two pinches is one panel"""
+    step = 2 * math.pi / RIB_A
+    g = int(math.floor(((a - 0.2 - TWIST_A(x)) % (2 * math.pi)) / step))
+    return g, (LEAF_F * x + g * math.pi - math.pi / 2) / (2 * math.pi)
+
+
+def optic_clamp(x, p, lift):
+    """ribbons lie flat under each grown optic so its turning lens stays clear"""
+    for ox, _, _, _ in OPTICS:
+        d = ((x - ox) / 1.55) ** 2 + (p[1] / 1.45) ** 2
+        if d < 1 and p[2] > 0:
+            lift = min(lift, 0.02 + 0.30 * d)
+    return lift
+
+
+BODY_NU, BODY_NV = 240, 144
 
 
 def grid_surface(fn, nu, nv, u0, u1, v0=0.0, v1=2 * math.pi, wrap=True):
@@ -175,77 +169,18 @@ def tube_mesh(points, radii, n=10):
 
 
 def material_setup():
+    """Inside zones (seen only in the break-up) plus the shared Glasswright paint stack for every outside surface."""
     import kit
-    # The approval contains small refracted lights inside each coloured pane.
-    # These are geometry/material zones, with no painted or projected concept art.
-    for colour in ('amber', 'violet', 'green'):
-        rgb, em, rough, trans, metal = ZONES['cd5_' + colour]
-        ZONES['cd5_' + colour + '_deep'] = (tuple(c * 0.25 for c in rgb), em * 0.25, rough, trans, metal)
-        ZONES['cd5_' + colour + '_hot'] = (tuple(min(1, c * 1.2 + 0.09) for c in rgb), em * 1.9, rough, trans, metal)
+    stack = gw_kit('stack')
     for name, (rgb, em, rough, trans, metal) in ZONES.items():
         kit.MATS[name] = (rgb, em)
         m = kit.mat(name)
         bs = m.node_tree.nodes.get('Principled BSDF')
         bs.inputs['Roughness'].default_value = rough
         bs.inputs['Metallic'].default_value = metal
-        bs.inputs['Transmission Weight'].default_value = trans
-        bs.inputs['IOR'].default_value = 1.47
-        bs.inputs['Coat Weight'].default_value = 0.45
-        bs.inputs['Coat Roughness'].default_value = 0.12
-        if name.startswith(('cd5_pane_', 'cd5_sliver_')):
-            # Continuous light pools, made from the pane's own parametric coordinates.
-            att = m.node_tree.nodes.new('ShaderNodeAttribute'); att.attribute_name = 'pane_light'
-            ramp = m.node_tree.nodes.new('ShaderNodeValToRGB')
-            ramp.color_ramp.elements[0].color = tuple(c * 0.12 for c in rgb) + (1,)
-            ramp.color_ramp.elements[1].color = rgb + (1,)
-            ramp.color_ramp.interpolation = 'EASE'
-            m.node_tree.links.new(att.outputs['Fac'], ramp.inputs['Fac'])
-            m.node_tree.links.new(ramp.outputs['Color'], bs.inputs['Base Color'])
-            m.node_tree.links.new(ramp.outputs['Color'], bs.inputs['Emission Color'])
-        if name == 'cd5_drive':
-            # White stored light catches the curved optic at grazing angles too,
-            # so the aft cluster keeps its soft bloom at the overhead battle camera.
-            facing = m.node_tree.nodes.new('ShaderNodeLayerWeight')
-            ramp = m.node_tree.nodes.new('ShaderNodeValToRGB')
-            ramp.color_ramp.elements[0].color = rgb + (1,)
-            ramp.color_ramp.elements[1].color = (0.88, 0.84, 1.0, 1)
-            m.node_tree.links.new(facing.outputs['Fresnel'], ramp.inputs['Fac'])
-            m.node_tree.links.new(ramp.outputs['Color'], bs.inputs['Base Color'])
-            m.node_tree.links.new(ramp.outputs['Color'], bs.inputs['Emission Color'])
-    # Pearly streams fade continuously into clear glass. Face-by-face zoning made
-    # jagged stair steps in run 1 and is unsuitable for seamless blown glass.
-    m = kit.mat('cd5_body_clear'); nodes = m.node_tree.nodes; links = m.node_tree.links
-    clear = nodes.get('Principled BSDF')
-    pearl = nodes.new('ShaderNodeBsdfPrincipled')
-    for inp in clear.inputs:
-        if hasattr(inp, 'default_value') and inp.name in pearl.inputs:
-            pearl.inputs[inp.name].default_value = inp.default_value
-    pearl.inputs['Base Color'].default_value = (0.72, 0.77, 0.83, 1)
-    pearl.inputs['Transmission Weight'].default_value = 0.56
-    pearl.inputs['Metallic'].default_value = 0.28
-    pearl.inputs['Roughness'].default_value = 0.14
-    att = nodes.new('ShaderNodeAttribute'); att.attribute_name = 'pearl_flow'
-    mix = nodes.new('ShaderNodeMixShader')
-    links.new(att.outputs['Fac'], mix.inputs[0])
-    links.new(clear.outputs[0], mix.inputs[1]); links.new(pearl.outputs[0], mix.inputs[2])
-    links.new(mix.outputs[0], nodes.get('Material Output').inputs['Surface'])
-    # Milky strand centres, transparent rolled edges. This uses the strand's
-    # authored cross-section coordinate, with no texture or concept projection.
-    m = kit.mat('cd5_strand_glass'); nodes = m.node_tree.nodes; links = m.node_tree.links
-    clear = nodes.get('Principled BSDF')
-    clear.inputs['IOR'].default_value = 1.30
-    pearl = nodes.new('ShaderNodeBsdfPrincipled')
-    pearl.inputs['Base Color'].default_value = (0.76, 0.79, 0.83, 1)
-    pearl.inputs['Transmission Weight'].default_value = 0.42
-    pearl.inputs['Roughness'].default_value = 0.19
-    pearl.inputs['IOR'].default_value = 1.47
-    pearl.inputs['Coat Weight'].default_value = 0.5
-    att = nodes.new('ShaderNodeAttribute'); att.attribute_name = 'pearl_flow'
-    mix = nodes.new('ShaderNodeMixShader')
-    links.new(att.outputs['Fac'], mix.inputs[0])
-    links.new(clear.outputs[0], mix.inputs[1]); links.new(pearl.outputs[0], mix.inputs[2])
-    links.new(mix.outputs[0], nodes.get('Material Output').inputs['Surface'])
-    kit.KIT_NAME = 'ithar_CD5 hand-built (no faction kit yet)'
+        bs.inputs['Transmission Weight'].default_value = 0.0  # R337: nothing see-through, inside or out
+    stack.setup(kit)
+    kit.KIT_NAME = 'ithar_CD5 on the shared Glasswright kit (tools/blender/kits/ithar)'
 
 
 def own_part():
@@ -259,9 +194,9 @@ def own_part():
 def optical_gun(K, x, fid, weapon, colour):
     """The hidden rotating element fits within a continuous grown glass saddle."""
     p = own_part()
-    p.add('integral_root', 'mount', 'cd5_body_clear', ellipsoid((0, 0, -0.30), (1.08, 1.08, 0.48), 64, 28))
+    p.add('integral_root', 'mount', 'gw_root_' + colour, ellipsoid((0, 0, -0.30), (1.08, 1.08, 0.48), 64, 28))
     # A round internal lens turns inside the continuous clear glass envelope.
-    p.add('lens', 'turn', 'cd5_body_clear', ellipsoid((0, 0, 0), (0.60, 0.60, 0.16), 64, 28))
+    p.add('lens', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, 0), (0.60, 0.60, 0.16), 64, 28))
     p.add('stored_light', 'turn', 'cd5_' + colour, ellipsoid((0, 0, 0), (0.52, 0.52, 0.14), 64, 28))
     # The exit is on the forward face, not a disconnected hard point or a flat disc.
     p.fit = dict(pivot=('p', (0, 0, 0)), reach=0.60, radius=0.60,
@@ -288,17 +223,17 @@ def lance(K, side, fid):
         pts.append((10 * t, side * (0.30 * math.sin(math.pi * t) + 0.80 * t),
                     0.20 * math.sin(math.pi * t) - 0.22 * t))
         radii.append(0.62 * (1 - t) ** 1.55 + 0.018)
-    p.add('drawn_waveguide', 'mount', 'cd5_clear', tube_mesh(pts, radii, 32))
+    p.add('drawn_waveguide', 'mount', 'gw_lance', tube_mesh(pts, radii, 32))
     for k in range(5):
         a = k * 2 * math.pi / 5
         line = [(q[0], q[1] + r * math.cos(a + 1.7 * i / 100),
                  q[2] + r * math.sin(a + 1.7 * i / 100)) for i, (q, r) in enumerate(zip(pts, radii))]
-        p.add('flowing_vein%d' % k, 'mount', 'cd5_silver', tube_mesh(line, [0.016] * len(line), 6))
+        p.add('flowing_vein%d' % k, 'mount', 'gw_silver', tube_mesh(line, [0.016] * len(line), 6))
     for k, col in enumerate(('amber', 'violet', 'green')):
         line = [(q[0], q[1] + radii[i] * 0.32 * math.cos(k * 2.1), q[2]) for i, q in enumerate(pts)]
         p.add('inner_pane%d' % k, 'mount', 'cd5_' + col,
               tube_mesh(line, [max(0.008, r * 0.26) for r in radii], 10))
-    p.add('aperture', 'mount', 'cd5_white', ellipsoid((9.975, side * 0.8, -0.22), (0.025, 0.027, 0.027), 24, 10))
+    p.add('aperture', 'mount', 'gw_tip', ellipsoid((9.975, side * 0.8, -0.22), (0.025, 0.027, 0.027), 24, 10))
     p.fit = dict(pivot=('p', (10, side * 0.8, -0.22)), reach=0.06, radius=0.64,
                  muzzles=[('p', (10, side * 0.8, -0.22))], aim=('d', (1, 0, 0)))
     K.gun(fid, (3, side * 2.05, 0.92), 0, cal=0.06, blen=10, fixed=True,
@@ -315,58 +250,60 @@ def lance(K, side, fid):
 def build(K):
     import kit
     material_setup()
+    gw, stack = gw_kit('parts'), gw_kit('stack')
+    # The opaque core: the glowing mosaic seen between the ribbons. Each gap between two long ribbons is cut into
+    # leaf-length panels of one colour each (amber most, then violet, then green: the concept's shares).
     vf = grid_surface(skin, BODY_NU, BODY_NV, -12.75, 10.25)
-    hull = K._obj(CODE + '_flowing_skin', *vf, 'cd5_strand_glass', smooth=True)
-    pearl = hull.data.attributes.new('pearl_flow', 'FLOAT', 'POINT')
-    for i, value in enumerate(pearl.data):
+    hull = K._obj(CODE + '_mosaic_core', *vf, 'gw_mosaic', smooth=True)
+    hull.data.color_attributes.new('gw_tint', 'FLOAT_COLOR', 'POINT')
+    hull.data.attributes.new('gw_glow', 'FLOAT', 'POINT')
+    # Fetch both after creating both: adding an attribute moves the others' storage.
+    tint, glow = hull.data.attributes['gw_tint'], hull.data.attributes['gw_glow']
+    for i in range(len(tint.data)):
         ix, ia = divmod(i, BODY_NV)
         x = -12.75 + 23.0 * ix / BODY_NU
         a = ia * 2 * math.pi / BODY_NV
-        value.value = 0.82 * max(0, math.cos(STRANDS * strand_coordinate(x, a))) ** 0.65
+        colour, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=5)
+        tint.data[i].color = tuple(stack.GLOW[colour]) + (1,)
+        glow.data[i].value = g
     md = hull.modifiers.new('shell', 'SOLIDIFY')
     md.thickness = 0.065
     md.offset = -1
-    K.mass('Single flowing leaf', hull, 'clear and milky blown glass',
-           note='Six twisted glass strands joined in one thick skin, deep grooves and rolled edges; unchanged lens roots, no panels.')
+    K.mass('Mosaic core', hull, 'opaque glowing stained-glass mosaic',
+           note='Run 2 oval core, unchanged optic roots; leaf panels of amber, violet and green cells; never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
-    # Many narrow, tapered light slivers live beneath the six groove floors.
-    # Neighbouring lanes are staggered, with space between their ends. They never
-    # become the broad flat colour patches of run 2 or full-length striped bars.
-    for groove in range(STRANDS):
-        for lane in range(3):
-            for bay in range(12):
-                xc = -11.55 + 1.76 * bay + 0.24 * lane + 0.12 * math.sin(groove * 2.1 + bay)
-                span = 0.64 + 0.14 * math.sin(bay * 1.7 + groove + lane)
-                offset = (lane - 1) * 0.115
-                def sliver(t, v, xc=xc, span=span, offset=offset, groove=groove, lane=lane):
-                    x = xc + span * (2 * t - 1)
-                    angle = (groove + 0.5) * 2 * math.pi / STRANDS
-                    angle += offset + 0.018 * math.sin(1.2 * x + groove + lane)
-                    angle += v * 0.032 * math.sin(math.pi * t) ** 0.70
-                    angle = strand_angle(x, angle)
-                    return skin(x, angle, inset=0.085 + 0.014 * lane)
-                vv, ff = grid_surface(sliver, 24, 6, 0.003, 0.997, -1, 1, False)
-                colour = ('amber', 'green', 'amber', 'violet', 'amber', 'green')[(groove + bay + lane) % 6]
-                ob = K._obj('groove_light_%d_%d_%d' % (groove, lane, bay), vv, ff,
-                            'cd5_sliver_' + colour, smooth=True)
-                light = ob.data.attributes.new('pane_light', 'FLOAT', 'POINT')
-                for i, value in enumerate(light.data):
-                    t = 0.003 + 0.994 * (i // 7) / 24
-                    v = -1 + 2 * (i % 7) / 6
-                    value.value = (0.30 + 0.70 * math.sin(math.pi * t) ** 0.5) * (0.55 + 0.45 * math.cos(v * math.pi / 2))
-                ob['zone'] = 'narrow stored-light sliver beneath clear groove glass'
-    # Silver traces each strand's poured edges and a finer inner flow line. The
-    # rolled glass itself is the much broader ridge, part of the solidified skin.
-    for strand in range(STRANDS):
-        for line, offset in enumerate((-0.31, -0.23, 0.0, 0.23, 0.31)):
-            pts, radii = [], []
-            for i in range(241):
-                x = -12.62 + 22.70 * i / 240
-                a = strand_angle(x, strand * 2 * math.pi / STRANDS + offset)
-                pts.append(skin(x, a, inset=-0.010))
-                radii.append((0.019 if line == 2 else 0.026) * (0.35 + 0.65 * math.sin(math.pi * i / 240) ** 0.4))
-            K._obj('strand_silver_%d_%d' % (strand, line),
-                   *tube_mesh(pts, radii, 7), 'cd5_silver', smooth=True)
+    ribbons = []
+    step = 2 * math.pi / RIB_A
+    for k in range(RIB_A):
+        base = 0.2 + k * step
+        ribbons.append(gw.Ribbon(
+            -12.45 + 0.18 * math.sin(2.3 * k), 9.95 - 0.55 * (k % 3),
+            # Neighbours sway in opposite senses, so they meet and part: the gaps between them become leaf-shaped windows.
+            lambda x, base=base, k=k: base + TWIST_A(x) + SWAY * math.sin(LEAF_F * x + k * math.pi),
+            lambda t, k=k: (0.23 + 0.03 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
+            lambda t, v: 0.05 + 0.025 * (1 - v * v),
+            name='long_ribbon_%d' % k, clamp=optic_clamp))
+    for k, (x0, x1, base, wd) in enumerate(LEAVES):
+        top = max(0.0, math.sin(base)) ** 2
+        ribbons.append(gw.Ribbon(
+            x0, x1, lambda x, base=base: base + TWIST_B(x),
+            lambda t, wd=wd: wd * gw.leaf(0.7, 0.0, 0.38)(t),
+            # Upper leaves curl their trailing edge up off the hull, like the concept's crests along the spine.
+            lambda t, v, top=top: 0.15 + 0.035 * (1 - v * v) + 0.85 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5,
+            name='leaf_ribbon_%d' % k, clamp=optic_clamp))
+    for r in ribbons:
+        vv, ff, attrs = r.mesh(skin, 180, 12)
+        ob = K._obj(r.name, vv, ff, 'gw_pearl', smooth=True)
+        for an in attrs:
+            ob.data.attributes.new(an, 'FLOAT', 'POINT')
+        for an, vals in attrs.items():
+            ob.data.attributes[an].data.foreach_set('value', vals)
+        sd = ob.modifiers.new('ribbon', 'SOLIDIFY'); sd.thickness = 0.045; sd.offset = 0
+        ob['zone'] = 'pearl ribbon'
+        for side in (-1, 1):
+            pts = r.edge(skin, side, 180)
+            radii = [0.020 * (0.35 + 0.65 * math.sin(math.pi * i / 180) ** 0.4) for i in range(181)]
+            K._obj(r.name + ('_silver_p' if side > 0 else '_silver_s'), *tube_mesh(pts, radii, 6), 'gw_silver', smooth=True)
     lance(K, 1, 'L1')
     lance(K, -1, 'L2')
     for x, fid, wk, col in OPTICS:
@@ -375,25 +312,25 @@ def build(K):
     for k, y in enumerate((-1.90, 0.0, 1.90)):
         fid = 'E%d' % (k + 1)
         ob = K._obj(fid + '_grown_stern', *ellipsoid((-12.05, y, -0.02), (0.85, 0.93, 0.98), 64, 32),
-                    'cd5_body_clear', smooth=True, grp=fid, role='mount')
+                    'gw_pearl', smooth=True, grp=fid, role='mount')
         ob['part_kind'] = 'engine'; ob['machine'] = 1
         K._obj(fid + '_deep_lens', *ellipsoid((-12.67, y, -0.02), (0.32, 0.86, 0.88), 64, 32),
-               'cd5_drive', smooth=True, grp=fid, role='mount')
+               'gw_drive', smooth=True, grp=fid, role='mount')
         K._obj(fid + '_white_bloom', *ellipsoid((-12.81, y, -0.02), (0.18, 0.44, 0.46), 64, 32),
-               'cd5_drive_core', smooth=True, grp=fid, role='mount')
+               'gw_drive_core', smooth=True, grp=fid, role='mount')
         for j in range(11):
             a = j * 2 * math.pi / 11
             pts = [(-12.05 + 0.855 * math.cos(u), y + 0.935 * math.sin(u) * math.cos(a),
                     -0.02 + 0.985 * math.sin(u) * math.sin(a))
                    for u in [0.07 + i * 3.0 / 32 for i in range(33)]]
             K._obj(fid + '_silver_flow_%02d' % j, *tube_mesh(pts, [0.014] * len(pts), 7),
-                   'cd5_silver', smooth=True, grp=fid, role='mount')
+                   'gw_silver', smooth=True, grp=fid, role='mount')
         if k == 1:
             # The middle drive is enclosed by the broad stern. Its internal feed
             # joins the skin, rather than relying on a floating enclosed sphere.
             K._obj(fid + '_internal_feed',
                    *tube_mesh([(-12.05, 0, 0), run2_skin(-12.05, math.pi / 2)], [0.07, 0.07], 12),
-                   'cd5_clear', smooth=True, grp=fid, role='mount')
+                   'gw_pearl', smooth=True, grp=fid, role='mount')
         for o in K.coll.objects:
             if o.get('grp') == fid:
                 o['part_kind'] = 'engine'; o['machine'] = 1
@@ -541,6 +478,12 @@ def review(out):
     world = bpy.data.worlds.new('CD5 dark studio'); sc.world = world; world.use_nodes = True
     world.node_tree.nodes['Background'].inputs[0].default_value = (0.007, 0.010, 0.016, 1)
     world.node_tree.nodes['Background'].inputs[1].default_value = 0.24
+    # r4: the pearl mirrors a soft warm room; the camera still sees the dark studio behind the ship.
+    wn, wl = world.node_tree.nodes, world.node_tree.links
+    room = wn.new('ShaderNodeBackground'); room.inputs[0].default_value = (0.32, 0.28, 0.27, 1); room.inputs[1].default_value = 1.0
+    path = wn.new('ShaderNodeLightPath'); mixw = wn.new('ShaderNodeMixShader')
+    wl.new(path.outputs['Is Camera Ray'], mixw.inputs[0]); wl.new(room.outputs[0], mixw.inputs[1])
+    wl.new(wn['Background'].outputs[0], mixw.inputs[2]); wl.new(mixw.outputs[0], wn['World Output'].inputs['Surface'])
     def area(name, pos, energy, size, colour):
         ld = bpy.data.lights.new(name, 'AREA'); ld.energy = energy; ld.shape = 'RECTANGLE'
         ld.size = size; ld.size_y = size * 0.14; ld.color = colour
