@@ -453,6 +453,9 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
     c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
     L = S.LAYERS
+    if base_image is None and hasattr(S, 'surface_layers'):
+        col, height, rough, metal = S.surface_layers(c, zone, tiles)
+        return _zone_outputs(m, bs, c, S, zone, group, col, height, rough, metal)
     bare_roughness = L.get('bare_roughness')
     if base_image is None:
         col = module_finish(c, S, zone, group, joints)
@@ -568,11 +571,18 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     nt.links.new(col, bs.inputs['Base Color']); nt.links.new(rough, bs.inputs['Roughness'])
     if isinstance(metal, float): bs.inputs['Metallic'].default_value = metal
     else: nt.links.new(metal, bs.inputs['Metallic'])
+    return _zone_outputs(m, bs, c, S, zone, group, col, height, rough, metal, normal_image)
+
+
+def _zone_outputs(m, bs, c, S, zone, group, col, height, rough, metal, normal_image=None):
+    nt = c.nt
+    L = S.LAYERS
     # the detail normal: the layers' height through a bump at the trim's own scale
     bp = node(nt, 'ShaderNodeBump'); bp.inputs['Distance'].default_value = L['bump_distance']; bp.inputs['Strength'].default_value = L['bump_strength']
     if normal_image is not None:
         original_normal = node(nt, 'ShaderNodeNormalMap')
-        original_normal.inputs['Strength'].default_value = z.get('normal_strength', 1.0)
+        original_normal.inputs['Strength'].default_value = getattr(S, 'LEGACY_COAT', {}).get(
+            'normal_strength', S.ZONES[zone].get('normal_strength', 1.0))
         nt.links.new(atlas_colour(nt, normal_image), original_normal.inputs['Color'])
         nt.links.new(original_normal.outputs['Normal'], bp.inputs['Normal'])
     nt.links.new(height, bp.inputs['Height']); nt.links.new(bp.outputs['Normal'], bs.inputs['Normal'])
@@ -1099,7 +1109,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         joints = list(zip(cuts, paths))
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
-        tones = part_module_tones(S, objs) if group == 'P' else None
+        tones = part_module_tones(S, objs) if group == 'P' and not hasattr(S, 'surface_layers') else None
         plate_mesh = getattr(S, 'authored_panel_mesh', None) if group == 'H' else None
         J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None), tones, plate_mesh)
         hid = {o.name: o.hide_render for o in objs}
@@ -1133,10 +1143,26 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     PM = textured(f'{cell}_parts_mat', maps['P']['albedo'], maps['P']['orm'], maps['P']['normal'])
     # issue 601: these surfaces carry the stack's own roughness; the game gives them the soft rim light (godot/render/look.gd RIM
     # soft), not the full specular that flared white on them at the close cameras. glTF writes it as the material's extras.
-    for M_ in (HM, PM): M_['rim_soft'] = 1
-    for objs, M in ((H, HM), (P, PM)):
+    if getattr(S, 'SOFT_RIM', True):
+        for M_ in (HM, PM): M_['rim_soft'] = 1
+    opacity = getattr(S, 'ZONE_OPACITY', {})
+    for group, objs, M in (('H', H, HM), ('P', P, PM)):
+        primary_alpha = getattr(S, 'ATLAS_OPACITY', {}).get(group, 1.0)
+        variants = {primary_alpha: M}
         for o in objs:
-            o.data.materials.clear(); o.data.materials.append(M); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
+            alpha = opacity.get(o.data.materials[0].name, 1.0) if o.data.materials else 1.0
+            if alpha not in variants:
+                variant = M.copy()
+                variant.name = f'{cell}_{group}_opacity_{round(alpha * 100)}'
+                variant['ps_atlas_variant'] = group
+                if group == 'H':
+                    variant['hull_surface'] = 1
+                variants[alpha] = variant
+            o.data.materials.clear(); o.data.materials.append(variants[alpha]); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
+        for alpha, material in variants.items():
+            if alpha < 1.0:
+                material.surface_render_method = 'BLENDED'
+                material.node_tree.nodes.get('Principled BSDF').inputs['Alpha'].default_value = alpha
     glow = {}
     # the engine glow's surfaces: the zones the stack names (default the throat and lining, glow and ember), only on the part kind
     # it names when it names one (issue 642: the Eclipse engine ring is the corona zone, which is also every shade rim's line)

@@ -230,8 +230,15 @@ def authored(kind):
         x, y, z = p['pos']
         if kind == 'core': out.append(dict(p=Vector((x, y, z)))); continue
         s = 1 if p.get('side') == 'P' else -1 if p.get('side') == 'S' else (1 if y > 0 else -1)
-        got = hull_side_point(x - AUTHORED_REACH, x + AUTHORED_REACH, s, z, avoid, clear=BREACH_CLEAR if kind == 'breach' else 0.0,
-                              zs=np.linspace(z - AUTHORED_REACH, z + AUTHORED_REACH, 17))
+        heights = np.linspace(z - AUTHORED_REACH, z + AUTHORED_REACH, 17)
+        clearance = BREACH_CLEAR if kind == 'breach' else 0.0
+        got = hull_side_point(x - AUTHORED_REACH, x + AUTHORED_REACH, s, z, avoid, clear=clearance, zs=heights)
+        if got is None and kind == 'breach':
+            # Opposite sides can overlap in the side projection even when the
+            # anchors are far apart across the hull. Keep the original placement
+            # when it fits and keep the spacing rule on the same side.
+            same_side = [anchor['p'] for anchor in out if anchor['side'] == s]
+            got = hull_side_point(x - AUTHORED_REACH, x + AUTHORED_REACH, s, z, same_side, clear=clearance, zs=heights)
         if got is None or abs(got[0].z - z) > AUTHORED_REACH:
             die(f'the build\'s {p["name"]} at x {x:.3f}, z {z:.3f} ({"port" if s > 0 else "starboard"}) has no open hull side within {AUTHORED_REACH}'
                 + (f' and {BREACH_CLEAR} clear of every part' if kind == 'breach' else '') + ': move it on the build sheet')
@@ -331,18 +338,25 @@ def occlusion_group():
     return ng
 
 maps = {}
+atlas_variants = {}
 if UNBAKED:      # test only: the plain role materials set before the join (<CODE>_hull, <CODE>_parts) so the glb still loads; no maps
     for s in J.material_slots: s.material.use_nodes = True
 else:
     for objs, pre in ((hull_src, CODE), (part_src, CODE + '_parts')):
         atlas = {m for o in objs for m in o.data.materials if m and m.get('p3_textured')}
-        if len(atlas) != 1:
-            die(f'{pre} needs one baked atlas material, found {len(atlas)}: run stage 5 first')
-        m = atlas.pop()
-        m.name = pre if pre != CODE else CODE + '_hull'; nt = m.node_tree
+        primary = [m for m in atlas if not m.get('ps_atlas_variant')]
+        if len(primary) != 1:
+            die(f'{pre} needs one primary baked atlas material, found {len(primary)}: run stage 5 first')
+        m = primary[0]; m.name = pre if pre != CODE else CODE + '_hull'
+        for material in atlas:
+            if material != m:
+                atlas_variants[material.name] = pre
+            nt = material.node_tree
+            sep = next(n for n in nt.nodes if n.type == 'SEPARATE_COLOR')
+            if not any(n.type == 'GROUP' for n in nt.nodes):
+                g = nt.nodes.new('ShaderNodeGroup'); g.node_tree = occlusion_group(); nt.links.new(sep.outputs[0], g.inputs['Occlusion'])
+        nt = m.node_tree
         sep = next(n for n in nt.nodes if n.type == 'SEPARATE_COLOR')
-        if not any(n.type == 'GROUP' for n in nt.nodes):
-            g = nt.nodes.new('ShaderNodeGroup'); g.node_tree = occlusion_group(); nt.links.new(sep.outputs[0], g.inputs['Occlusion'])
         bs = next(n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED')
         role = {'base': bs.inputs['Base Color'].links[0].from_node.image, 'orm': sep.inputs[0].links[0].from_node.image}
         nm = next((n for n in nt.nodes if n.type == 'NORMAL_MAP'), None)
@@ -455,12 +469,14 @@ files = {}
 role = {}
 def use(mat, slot, tex):
     if tex is None: return
-    i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']; nm = f'{pre}_{slot}'
+    i = g['textures'][tex['index']]['source']
+    pre = CODE if mat['name'] == CODE + '_hull' else atlas_variants.get(mat['name'], mat['name'])
+    nm = f'{pre}_{slot}'
     if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if role.get(i, nm) != nm: die(f'one image does two jobs ({role[i]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = nm
 for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruction['interior_materials']):
-    if mat.get('name') not in [CODE + '_hull', CODE + '_parts', CODE + '_glow'] + destruction['interior_materials']: continue
+    if mat.get('name') not in [CODE + '_hull', CODE + '_parts', CODE + '_glow'] + list(atlas_variants) + destruction['interior_materials']: continue
     if mat.get('name') == CODE + '_glow':      # issue 601: the engine glow's own emission map (graded throat, hot spots, soot)
         use(mat, 'emission', mat.get('emissiveTexture')); continue
     pbr = mat.get('pbrMetallicRoughness', {})
