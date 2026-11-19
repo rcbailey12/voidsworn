@@ -14,6 +14,7 @@ extends Node3D
 # left-drag or WASD pan, wheel zoom.
 
 signal finished(result: Dictionary)
+signal storm_drained(pos: Vector3)
 signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance trace films it)
 signal wings_together(n: int)   # F1: your strike craft just started their moves together (the trace films it)
 
@@ -1377,6 +1378,8 @@ func _play_event(e: Dictionary) -> void:
 				d["hp"] = float(d["hp"]) - float(e["hull"])
 			var lbl := {"fire": ["Fire", "#f08a4b"], "acid": ["Acid", "#c8e04a"], "tidal": ["Tidal stress", "#c79bff"], "storm": ["Ion storm", "#9fd4ff"]}.get(str(e["kind"]), ["", "#ffffff"])
 			_float(e["unit"], "%s −%d" % [lbl[0], int(e["hull"])] if float(e["hull"]) > 0 else str(lbl[0]), Color(lbl[1]))
+			if e["kind"] == "storm" and views.has(e["unit"]):
+				storm_drained.emit(_pos(e["unit"]))
 			if gfx != null and gfx.has_method("tick"):
 				gfx.tick(str(e["unit"]), str(e["kind"]))
 			await wait(120.0)

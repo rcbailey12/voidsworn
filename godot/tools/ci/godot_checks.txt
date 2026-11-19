@@ -10,6 +10,7 @@
 # setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
+headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep independent cues through battle playback in Standard and Reduced Flashing
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
