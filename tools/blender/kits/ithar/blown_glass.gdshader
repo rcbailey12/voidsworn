@@ -14,6 +14,17 @@ uniform float smoke = 0.0;
 uniform float dispersion = 0.0;
 uniform bool reference_glass = false;
 uniform bool neutral_glass = false;
+uniform bool clear_glass = false;
+uniform float inner_glow = 0.0;
+uniform vec3 core_light = vec3(1.0);
+
+instance uniform vec3 core_origin = vec3(0.0);
+instance uniform float core_falloff = 0.0;
+varying vec3 core_offset;
+
+void vertex() {
+	core_offset = mat3(MODEL_MATRIX) * (VERTEX - core_origin) * core_falloff;
+}
 
 vec2 sky_uv(vec3 d) {
 	return vec2(atan(d.x, -d.z) / TAU + 0.5, acos(clamp(d.y, -1.0, 1.0)) / PI);
@@ -38,6 +49,10 @@ void fragment() {
 	if (neutral_glass) {
 		absorption = vec3(dot(absorption, vec3(0.2126, 0.7152, 0.0722)));
 	}
+	if (clear_glass) {
+		thickness = mix(0.07, 0.52, optical_depth) / max(facing, 0.33);
+		absorption = vec3(mix(0.04, 1.35, smoke));
+	}
 	vec3 transmission = exp(-absorption * thickness);
 
 	vec3 ray = normalize(mat3(INV_VIEW_MATRIX) * reflect(-v, n));
@@ -57,7 +72,8 @@ void fragment() {
 	vec3 through = textureLod(opaque_scene, uv, blur).rgb;
 
 	// Chromatic separation is visible at grazing edges and around a sharp glint.
-	float fringe = dispersion * max(smoothstep(0.12, 0.62, rim), glint);
+	float edge_fringe = clear_glass ? smoothstep(0.50, 0.89, rim) : smoothstep(0.12, 0.62, rim);
+	float fringe = dispersion * max(edge_fringe, glint);
 	if (fringe > 0.015) {
 		vec2 split = bend * fringe * 0.54;
 		through.r = textureLod(opaque_scene, uv - split, blur).r;
@@ -71,6 +87,13 @@ void fragment() {
 		vec3 bands = 0.5 + 0.5 * cos(facing * 36.0 + vec3(0.0, 2.094, 4.189));
 		reflected_glass += bands * edge * dispersion * 0.27;
 	}
-	ALBEDO = through * transmission * (1.0 - fresnel) + reflected_glass;
+	vec3 scatter = vec3(0.0);
+	if (inner_glow > 0.0 && core_falloff > 0.0 && !reference_glass) {
+		// More of the core's light scatters through the thick glass near its edges.
+		float reach = exp(-dot(core_offset, core_offset));
+		float glass_depth = 0.25 + 0.75 * max(optical_depth, rim);
+		scatter = core_light * inner_glow * reach * glass_depth;
+	}
+	ALBEDO = through * transmission * (1.0 - fresnel) + reflected_glass + scatter;
 	ALPHA = 1.0;
 }

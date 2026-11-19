@@ -4,11 +4,14 @@ extends RefCounted
 
 const GLASS := preload("blown_glass.gdshader")
 const ShipView := preload("res://render/ship_view.gd")
+const FACTION_LOOK := preload("res://fx/faction_look.gd")
 const VARIANTS := {
-	"A": Vector2(0.0, 0.0),
-	"B": Vector2(0.78, 0.0),
-	"C": Vector2(0.04, 1.0),
-	"R4": Vector2(0.78, 0.23),
+	"A": Vector3(0.0, 0.0, 0.0),
+	"B": Vector3(0.78, 0.0, 0.0),
+	"C": Vector3(0.04, 1.0, 0.0),
+	"R4": Vector3(0.78, 0.23, 0.0),
+	"D": Vector3(0.34, 0.23, 0.13),
+	"E": Vector3(0.14, 0.23, 0.36),
 }
 
 
@@ -18,6 +21,8 @@ static func apply(ship: ShipView, environment: Environment, variant := "A") -> i
 	var sky := environment.sky.sky_material as ShaderMaterial
 	if sky == null:
 		return 0
+	var finish: Vector3 = VARIANTS[variant]
+	var core := ship.hull.find_child("hp_core", true, false) as Node3D if finish.z > 0.0 else null
 	var count := 0
 	var materials := {}
 	for mesh in ship.meshes:
@@ -31,6 +36,9 @@ static func apply(ship: ShipView, environment: Environment, variant := "A") -> i
 				material.set_shader_parameter("glass_tint", source.albedo_texture)
 				materials[source] = material
 			instance.set_surface_override_material(surface, materials[source])
+			if core != null:
+				instance.set_instance_shader_parameter("core_origin", instance.to_local(core.global_position))
+				instance.set_instance_shader_parameter("core_falloff", 9.0 / ship.L)
 			count += 1
 	return count
 
@@ -44,10 +52,18 @@ static func reference_material(environment: Environment, variant: String) -> Sha
 static func _material(sky: ShaderMaterial, variant: String) -> ShaderMaterial:
 	var material := ShaderMaterial.new()
 	material.shader = GLASS
-	var finish: Vector2 = VARIANTS[variant]
+	var finish: Vector3 = VARIANTS[variant]
+	var clear := finish.z > 0.0
 	material.set_shader_parameter("smoke", finish.x)
-	material.set_shader_parameter("neutral_glass", variant == "R4")
+	material.set_shader_parameter("neutral_glass", variant == "R4" or clear)
 	material.set_shader_parameter("dispersion", finish.y)
+	material.set_shader_parameter("clear_glass", clear)
+	material.set_shader_parameter("inner_glow", finish.z)
+	var palette := FACTION_LOOK.of("ithar")
+	var engine: Color = palette["engine"]
+	var shield: Color = palette["shield"]
+	var tint := engine.lerp(shield, 0.5)
+	material.set_shader_parameter("core_light", Vector3(tint.r, tint.g, tint.b))
 	var nebula = sky.get_shader_parameter("neb_tex")
 	if nebula is Texture2D:
 		material.set_shader_parameter("nebula", nebula)

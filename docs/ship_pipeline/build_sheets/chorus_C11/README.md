@@ -1,5 +1,16 @@
 # chorus_C11 build sheet: the bladeback, the Chorus cruiser (version 4: the recipe)
 
+## Issue 1058 run 5 finish review
+
+The shoulder bands carry a paint coordinate from their root to their trailing
+lip. The Chorus stack uses it for curved growth lines and a darker grade toward
+each lip. Fine striations and small pits vary the normal and roughness maps.
+The shell faces have a matte finish and deeper plate-to-plate colour steps.
+Soft joints and throats keep their wet sheen. The finish uses the same plates,
+parts, inside rooms and tear paths as run 4.
+
+[Finish review and export checks](../../../shots/finish_chorus_glass_1118/README.md)
+
 ## Issue 1058 run 4 finish review
 
 The two shoulders each carry eight broad, low chitin bands. Each band roots

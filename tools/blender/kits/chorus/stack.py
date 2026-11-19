@@ -35,7 +35,7 @@ HARD_SHELL = {
     'hide': ((.132, .090, .041), (.061, .040, .016), .38),
     'chitin': ((.147, .096, .042), (.067, .041, .016), .35),
     'bone': ((.162, .110, .052), (.080, .049, .020), .41),
-    'carapace': ((.147, .096, .042), (.103, .064, .026), .37),
+    'carapace': ((.147, .096, .042), (.074, .043, .016), .59),
     'carapace_joint': ((.041, .026, .012), (.016, .010, .005), .28),
 }
 if FINISH == 'chitin':
@@ -99,12 +99,29 @@ def hard_layers(c, base, shade, roughness):
 def carapace_layers(c, base, shade, roughness):
     nt = c.nt
     tone = node(nt, 'ShaderNodeAttribute', attribute_name='scute_tone').outputs['Fac']
-    col = mixc(nt, base, shade, tone)
+    progress = node(nt, 'ShaderNodeAttribute', attribute_name='scute_progress').outputs['Fac']
+    trailing = ramp(nt, progress, .53, .96)
+    dark = math_(nt, 'ADD', math_(nt, 'MULTIPLY', tone, .69),
+                 math_(nt, 'MULTIPLY', trailing, .36), clamp=True)
+    col = mixc(nt, base, shade, dark)
     shadow = ramp(nt, c.ao, .92, .42)
     col = mixc(nt, col, (.034, .021, .009), math_(nt, 'MULTIPLY', shadow, .46))
-    grain = c.noise(136, 2, .55, stretch=(.50, 1.22, 1.22))
-    height = math_(nt, 'MULTIPLY', grain, .065)
-    rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', grain, .07))
+
+    # Growth follows the swept lip of each scute. Vary spacing and break up
+    # the fine lines across the face, with sparse pits in the harder shell.
+    warp = c.noise(28, 2, .54, stretch=(.60, 1.10, 1.35))
+    front = math_(nt, 'ADD', progress, math_(nt, 'MULTIPLY', warp, .15))
+    growth = math_(nt, 'SINE', math_(nt, 'MULTIPLY', front, 58.0))
+    growth = ramp(nt, growth, .20, .93)
+    fine = c.noise(180, 2, .57, stretch=(1.85, .54, .67))
+    striations = ramp(nt, fine, .39, .68)
+    pits = ramp(nt, c.noise(255, 2, .56), .33, .19)
+    height = math_(nt, 'ADD', math_(nt, 'MULTIPLY', growth, .16),
+                   math_(nt, 'MULTIPLY', striations, .11))
+    height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', pits, .16))
+    rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', striations, .12))
+    rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', pits, .08))
+    rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', growth, .06), clamp=True)
     return col, height, rough, 0.0
 
 

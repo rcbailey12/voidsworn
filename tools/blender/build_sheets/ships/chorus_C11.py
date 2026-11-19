@@ -75,7 +75,7 @@ def carapace(K):
     steps = 20
     row = steps + 1
     for side, name in ((1, 'port'), (-1, 'starboard')):
-        verts, shell_faces, joint_faces, tones = [], [], [], []
+        verts, shell_faces, joint_faces, tones, progress = [], [], [], [], []
         front = 5.65
         for band in range(8):
             pitch = rng.uniform(1.10, 1.21)
@@ -96,6 +96,7 @@ def carapace(K):
                     relief = rise - sink + crest
                     verts.append(tuple(K.hpt(x, th if side > 0 else math.pi - th, out=relief)[0]))
                     tones.append(tone)
+                    progress.append(along)
             for i in range(len(sections) - 1):
                 faces = joint_faces if i == len(sections) - 2 else shell_faces
                 for j in range(steps):
@@ -109,6 +110,8 @@ def carapace(K):
                note='Eight broad grown bands, each with a raised rear lip over a recessed joint.')
         attr = shell.data.attributes.new('scute_tone', 'FLOAT', 'POINT')
         attr.data.foreach_set('value', tones)
+        attr = shell.data.attributes.new('scute_progress', 'FLOAT', 'POINT')
+        attr.data.foreach_set('value', progress)
         # Keep the underside of the lips in the wet seam zone.
         used = sorted({i for face in joint_faces for i in face})
         remap = {i: j for j, i in enumerate(used)}

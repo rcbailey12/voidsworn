@@ -1,5 +1,16 @@
 # Glasswright flagship CD5: The Unfinished
 
+## Issue 1058 run 5 finish review on r3
+
+Both glass options use nearly clear thin faces and a little extra smoke in thick
+areas and at grazing angles. D carries light smoke. E is clearer and spreads
+more light from the ice-blue core over the glass close to it. The baked fallback
+has a light grey tint. The fittings, decks and frames use a single mid smoke grey
+so they show through. The recipe uses run 4's glass strands, caps, chamfers,
+core, four recessed guides, fittings and six authored fractures.
+
+[Finish review and export checks](../../../shots/finish_chorus_glass_1118/README.md)
+
 ## Issue 1058 run 4 finish review on r3
 
 | Part | Run 4 change | Reason |

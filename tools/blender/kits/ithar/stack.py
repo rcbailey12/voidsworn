@@ -16,10 +16,10 @@ GLASS = {
     'cd5_clear': (0.52, 0.27, 0.052),
     'cd5_body_clear': (0.51, 0.19, 0.057),
 }
-FRAME_TONE = (0.032, 0.032, 0.032)
-ZONES = {**GLASS, 'cd5_frame': (0.032, 0.032, 0.46)}
+SMOKE_GREY = 0.16
+ZONES = {**GLASS, 'cd5_frame': (SMOKE_GREY, SMOKE_GREY, 0.46)}
 FALLBACK = 'cd5_frame'
-ZONE_OPACITY = dict.fromkeys(GLASS, 0.34)
+ZONE_OPACITY = dict.fromkeys(GLASS, 0.21)
 ATLAS_OPACITY = {'H': ZONE_OPACITY['cd5_strand_glass']}
 DECALS = ()
 
@@ -70,7 +70,7 @@ def inside_material(zone):
     material = bpy.data.materials[zone].copy()
     material.name = f'ithar_inside_{zone}'
     bsdf = material.node_tree.nodes.get('Principled BSDF')
-    bsdf.inputs['Base Color'].default_value = (*FRAME_TONE, 1)
+    bsdf.inputs['Base Color'].default_value = (SMOKE_GREY, SMOKE_GREY, SMOKE_GREY, 1)
     bsdf.inputs['Coat Weight'].default_value = 0.0
     material['ps_inside'] = 1
     return material

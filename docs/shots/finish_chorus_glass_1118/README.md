@@ -2,6 +2,97 @@
 
 Refs #1058. The finish review uses an isolated Godot project. The two hulls still need Ryan's approval for the shared build.
 
+## Run 5 finishes
+
+- **C11 Bladeback / B21_11.** Fine growth lines, striations and pits give the
+  broad shingled plates a grain. The plates are more matte, vary from ochre to
+  dark brown and darken toward their trailing ridges. Wet joints and throats
+  keep a little shine.
+  [Build sheet](../../ship_pipeline/build_sheets/chorus_C11/README.md) |
+  [Source manifest](../../ship_pipeline/build_sheets/chorus_C11/manifest.json) |
+  [Chorus stack](../../../tools/blender/kits/chorus/stack.py)
+- **CD5 The Unfinished / I8_37.** D uses light smoke that deepens in thick glass
+  and at grazing angles. E clears more of the glass and scatters more ice-blue
+  light near the core. Both use the mid smoke grey frames and thin guides.
+  Small sharp highlights and a thin rainbow fringe follow the rims. Both use
+  the same checked export, whose baked material gives the tinted fallback.
+  [Build sheet](../../ship_pipeline/build_sheets/ithar_CD5/README.md) |
+  [Source manifest](../../ship_pipeline/build_sheets/ithar_CD5/manifest.json) |
+  [Glasswright stack](../../../tools/blender/kits/ithar/stack.py) |
+  [Recipe](../../../tools/recipe/ships/ithar_CD5.json)
+
+Both use two 4096-pixel atlases baked at 64 OptiX samples and exported as
+2048-pixel game maps. C11's sheet supplies one new paint coordinate per shell
+plate. CD5's sheet supplies the run 4 geometry and authored interior.
+
+Each sheet uses matching cameras and sky. It shows both sides at radius 170
+and radius 26 under today's battle light and the cool edge light from 1137.
+The cool edge light is a preview. The CD5 sheet also shows the plain glass
+rod and sphere for each glass finish and a preview of the tinted fallback.
+
+- [C11 run 5 beside A4 and run 4](C11_finish_run5.jpg)
+- [CD5 D and E beside A4, run 3 B and run 4](CD5_finish_run5.jpg)
+
+D is my pick for CD5. The inner frame reads at battle distance and the light
+smoke still makes the hull outline easy to follow. In both variants the core
+reads pale blue-white.
+
+### Run 5 export and damage checks
+
+Both passed the six-view surface check, the Stage 6 LOD bench, the Stage 7
+hard-point and planted-fault checks, and the isolated install and readback.
+The readback found all 22 C11 and 26 CD5 hard-point and turret nodes. The mean
+cached albedo error was below 0.43 levels per channel on all four maps.
+
+| Export | GLB triangles | GLB surfaces | Stage 6 draws, 20 full-detail copies at 1080p |
+| --- | ---: | ---: | ---: |
+| C11 / B21_11 | 184,980 | 14 | 130 |
+| CD5 / I8_37 | 222,082 | 14 | 90 |
+
+The exports match run 4 in vertex positions, triangle indices, node
+transforms and authored damage data. The wound and wreck checks passed on
+both. C11 has two tears and 13 machines. CD5 has six fractures and eight
+machines. Both wrecks had zero split machines and zero interior triangles
+outside their matching wreck piece. The separate intact-hull ray count for
+CD5 still flagged 199 triangles. The run 4 cross-section check placed all 45
+flagged corners inside the same geometry.
+
+CD5 r3 started at 461,770 triangles and 334 unjoined pieces. Run 5 groups the
+same 114 input meshes as run 4, including the shortened guides.
+
+The C19_51 fixture was rebuilt from the A16 sheet with the current Stage 7
+exporter. The compressed fixture and the GLB inside it are byte-identical to
+the previous copy. Only the source hash changed. The Godot fixture check found
+zero split machines and zero protruding interior triangles.
+[Fixture record](../../../godot/fx/test/fixtures/C19_51_unbaked.sheet.txt)
+
+Standing checks returned 74 passes and two known baselines.
+
+### Run 5 Scene 207 cost at 1080p
+
+The isolated 24-ship storm battle puts C11 in the Chorus Spitter's slot and CD5
+in the Glasswright Lancet's slot. It uses battle source `559a5ff6` and installed
+ship manifest SHA-256
+`0d36262838aade769d7ef6304fb1ecae54947c4891e3901629a03daf8658a7cf`.
+Godot 4.7.2 uses Forward+, fitted shields, 4x MSAA, full mesh detail and vsync off
+on the RTX 5080. Each case warms up for 180 frames and measures at least 720
+frames and eight seconds. [Scene 207 sampling method](../../../contrib/codex/perf_1118/README.md)
+
+The installed hull snapshot counts 185,208 triangles for C11 and 222,178
+for CD5, with 16 surfaces each, including damage geometry.
+
+| CD5 finish in the same scene | Frame median | Frame p95 | Frame p99 | Worst frame | GPU median | Visible + shadow draws |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| D, clear with light smoke | 3.48 ms | 9.34 ms | 11.80 ms | 64.37 ms | 2.63 ms | 473 + 313 |
+| E, clearer with more core glow | 3.72 ms | 5.59 ms | 7.54 ms | 65.77 ms | 2.64 ms | 473 + 313 |
+| Baked tinted fallback | 4.12 ms | 6.17 ms | 8.35 ms | 72.15 ms | 2.71 ms | 476 + 313 |
+
+Three solo GPU sessions ran all three cases in different orders. The table
+uses the middle session statistic for each column except the worst frame,
+which is the largest individual sample. All nine frame medians passed the
+12.5 ms gate. The highest was 7.16 ms. Both D and E kept all five glass
+surfaces active after the volleys. CD5 fits the measured flagship budget.
+
 ## Run 4 finishes
 
 - **C11 Bladeback / B21_11.** Eight broad, low shoulder bands per side shingle
