@@ -266,8 +266,9 @@ def build(K):
                note='one of the five spires of the spire line')
 
     # ---------------- the stern: two ember bells, 1.2 across, offsets 0.8 ----------------
+    # the drum's buried front stops 0.04 aft of B-2 (-6.05): stage 4's audit fails any part crossing a break line (Nov 19 PC run)
     for side in (1, -1):
-        K.engine('E%d' % (1 if side > 0 else 2), (-7.2, side * 0.8, -0.12), 0.6, 0.95, bell=1.0, body_r=0.52, rings=3,
+        K.engine('E%d' % (1 if side > 0 else 2), (-7.2, side * 0.8, -0.12), 0.6, 0.42, bell=1.0, body_r=0.52, rings=3,
                  inv='engines', note='%s main engine: a riveted drum deep-set in the stern, a deep bell, ember lining and plug' % ('port' if side > 0 else 'starboard'))
 
     # ---------------- the belly: an armour step ----------------
