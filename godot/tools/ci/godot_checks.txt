@@ -12,7 +12,7 @@
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
 headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep independent cues through battle playback in Standard and Reduced Flashing
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
-headless|world/test/nebula_wake_check.gd|-|-|issue 1079: the nebula wake reaches every calm gas shader at max and low when on; off and storm shaders unchanged
+headless|world/test/nebula_wake_check.gd|-|-|issue 1079: the nebula wake reaches every calm gas shader at max, high and low when on (high is where 1210 picks its optimised cards); off and storm shaders unchanged
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issue 1075: protocol offer cards explain current fleet fit, caps and refits; fixed seeds prove the pool, draws and saves are read-only

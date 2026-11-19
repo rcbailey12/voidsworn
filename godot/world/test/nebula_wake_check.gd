@@ -48,7 +48,7 @@ func _codes(living) -> Dictionary:
 
 
 func _run() -> void:
-	for quality in ["max", "low"]:
+	for quality in ["max", "high", "low"]:
 		var off = _living(quality, false)
 		var on = _living(quality, true)
 		check(off._living != null and on._living != null, "%s: the living terrain is built" % quality)
@@ -75,5 +75,5 @@ func _run() -> void:
 		off.queue_free()
 		on.queue_free()
 	if failed == 0:
-		print("nebula wake check: PASS (on reaches every calm gas shader at max and low; off and storm unchanged)")
+		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged)")
 	quit(1 if failed > 0 else 0)
