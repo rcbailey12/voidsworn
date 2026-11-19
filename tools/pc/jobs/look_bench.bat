@@ -28,6 +28,19 @@ if "%AFTER%"=="" set "AFTER=origin/main"
 if not exist "%LB_HOME%" mkdir "%LB_HOME%"
 set "ST=%LB_HOME%\status.txt"
 echo look bench start %date% %time% after=%AFTER% before=%BEFORE% > "%ST%"
+powershell -NoProfile -Command "$ErrorActionPreference='Stop'; $id=[guid]::NewGuid().ToString('N'); $dir=Join-Path $env:TEMP ('voidsworn-run-' + $id); $null=[IO.Directory]::CreateDirectory($dir); [IO.File]::WriteAllText((Join-Path $dir '.voidsworn-run-owner'),$id); $dir" > "%LB_HOME%\scratch_path.txt" 2>> "%ST%"
+if errorlevel 1 (
+  echo FAILED: private TEMP setup >> "%ST%"
+  goto finish
+)
+set /p TEMP=<"%LB_HOME%\scratch_path.txt"
+set "TMP=%TEMP%"
+set "TMPDIR=%TEMP%"
+rem The redirection holds the marker open until the tools finish.
+call :run_tools 9>"%TEMP%\.voidsworn-run-active"
+exit /b %ERRORLEVEL%
+
+:run_tools
 set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 
@@ -105,7 +118,7 @@ if not "%LB_QUIET%"=="1" start "" explorer "%S%"
 :finish
 echo look bench done %date% %time% >> "%ST%"
 echo done > "%LB_HOME%\done.txt"
-endlocal & exit /b %LB_EXIT%
+exit /b %LB_EXIT%
 
 rem ---------------------------------------------------------------- one bench run: :bench REF [RUNNAME] [PRE_RUN]
 :bench

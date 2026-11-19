@@ -10,9 +10,16 @@ if not exist queue mkdir queue
 if not exist queue\done mkdir queue\done
 if not exist queue\logs mkdir queue\logs
 if not exist queue\running mkdir queue\running
+set "JANITOR=%~dp0janitor.bat"
+if not exist "%JANITOR%" set "JANITOR=%~dp0build_b\tools\pc\janitor.bat"
+set "JANITOR_MINUTE="
 echo Watching %cd% for run.request and queue\*.bat ... (close this window to stop)
 :loop
 cd /d "%~dp0"
+if not "%JANITOR_MINUTE%"=="%time:~0,5%" (
+  set "JANITOR_MINUTE=%time:~0,5%"
+  if exist "%JANITOR%" call "%JANITOR%" --nightly
+)
 if exist run.request (
   del run.request
   echo [%time%] Smoke run started

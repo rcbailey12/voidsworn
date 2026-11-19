@@ -274,23 +274,45 @@ wrong: every new rule since went into both copies (round 2 review, Nov 17). Set:
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
 
-3.3 **Nothing on Ryan's PC is deleted except a job's own leftovers.** A job may remove the temp copies and scratch folders it created, and old kept workspace copies that Git shows hold only rebuildable files, once its work is pushed. Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
+3.3 **Jobs and the janitor may remove only the leftovers covered here.** Everything else stays until Ryan says yes. Keep every job's PC folder lean, and the Board lists the PC folder sizes at each disk check.
 Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mostly old run copies), the queue
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). On Nov 18 the drive fell under the 60 GB job floor from about 45 kept workspace copies and 390 GB of job scratch in the temp folder; Ryan chose (Nov 18 20:46 UTC) to let jobs clean up after themselves (R326).
-Set: Ryan, Nov 18 (R326); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
+On Nov 19, about 350 GB disappeared overnight (392 GB free after the Nov 18 cleanup, 41 GB the next morning). The hand cleanup removed 173 folders and raised free space to 199 GB. It kept 42 checkout copies, 26 because generated campaign outputs, audio UIDs or onboarding output were outside the safe list.
+Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
-`__pycache__` and `.pyc` caches, and ignored files under `godot/assets/ships/` whose size and SHA-256 match the same path
-in the shared build (issue 1107). It fetches and switches to the new branch with those files in place. A collision or an
+`__pycache__` and `.pyc` caches, regenerated `golden/`, `out/` and the parity log in
+`godot/campaign/test/` and `godot/rules/test/`, ignored Godot `.uid` files including those under `godot/audio/build/`, and
+ignored `.onboarding_checks/` output. All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
+the shared build by size and SHA-256 (issue 1107). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
+and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
-copy and its size; older copies are removed only as the next paragraph allows. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
+copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
 unique ignored work (issue 860, run 2, Board Nov 16).
 A checkout that changes while the runner starts is never reset; the job stops instead.
 
-Parity removes its own default temp folder when it finishes, pass or fail. After a checked push the runner removes
-the scratch folder it recorded for that run. It keeps the newest `repo-kept-*` copy in the board folder and removes
-older ones only when the same rebuildable-file and Git history checks pass. It logs each decision. A pause removes nothing (3.11).
+Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
+its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
+a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`
+(default 150 GB), at most once an hour across all lanes for low space. The runner then checks its 60 GB floor.
+The janitor keeps the newest `repo-kept-*` copy in each of `board`, `board_b`, `board_c` and `board_d`. Older copies and
+finished `work217/issue-<N>-<arm>/<stamp>/repo` folders must be untouched for at least three hours and pass the same
+rebuildable-file, Git history and lock checks. Workhorse `out/` folders and runner settings and hashes stay in place.
+If an otherwise eligible copy holds tracked edits, untracked files or local-only commits and has been untouched for at least
+one day, the janitor saves a binary patch against HEAD, a separate staged patch, a zip of untracked work and, when needed,
+a bundle of local-only commits under `voidsworn_test/salvage/<lane>_<name>/`. It checks that the patches apply, the bundle
+verifies and the zip entries match before it removes the copy. An unreadable checkout, unknown ignored file or failed check
+keeps the copy. Salvage folders are kept. Why: old job copies can be large and still hold work worth saving. Set: Ryan,
+Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
+
+Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
+successful install. The janitor checks TEMP job, parity and `stage7-checked-*` scratch after three hours without a new write,
+and `opus<N>` and `opus<N>out*` helper folders after three days so the Board has time to relay their results. A held issue lock
+or a held helper lock protects scratch. Active board `repo` folders, `build*`, repo mirrors, `recipe`, `runner_backups` and
+other locations stay out of the scan.
+The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
+run before the first live run. A pause removes nothing (3.11).
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by

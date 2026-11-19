@@ -238,6 +238,10 @@ def install_export(export, project, code, godot, job, ship, *options):
                 print(line)
 
     install(project, code, snapshot, expected, refresh, readback)
+    try:
+        shutil.rmtree(snapshot)
+    except OSError as exc:
+        print(f'Could not remove checked export scratch {snapshot}: {exc}', file=sys.stderr)
     return 0
 
 
