@@ -2182,6 +2182,26 @@
      }
     ],
     "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "whoosh",
+      "g": 0.45,
+      "r": 1.7,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "starShimmer",
+      "g": 0.25,
+      "r": 0.8,
+      "d": 0.1,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
    }
   }
  },
@@ -2328,6 +2348,26 @@
      }
     ],
     "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "shieldShimmer",
+      "g": 0.35,
+      "r": 0.8,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitGlass",
+      "g": 0.25,
+      "r": 0.7,
+      "d": 0.1,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
    }
   }
  },
@@ -2433,7 +2473,49 @@
    }
   ],
   "synth": [],
-  "duration": 1.15
+  "duration": 1.15,
+  "variants": {
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "whoosh",
+      "g": 0.5,
+      "r": 1.4,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "crackGlass",
+      "g": 0.3,
+      "r": 0.6,
+      "d": 0.45,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   },
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "puff",
+      "g": 0.5,
+      "r": 0.9,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitWet",
+      "g": 0.3,
+      "r": 0.5,
+      "d": 0.45,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "arrive_jump": {
   "bus": "impacts",

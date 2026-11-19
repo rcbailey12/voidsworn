@@ -1390,7 +1390,8 @@ func death(id: String, cause := "blast") -> float:
 	var r: float = DEATH.death(self, s, cause)
 	pend("death", t0)
 	_core_at.erase(id)
-	# A burnt-out hulk or Chorus rupture has no staged core.
+	# A burnt-out hulk or a small hull has no staged core; a big Chorus rupture has one (issue 1238: its kill beat comes
+	# just after the skin bursts, with no fireball).
 	if s.death_big and s.has_meta("death_timeline"):
 		var tl = s.get_meta("death_timeline")
 		_core_at[id] = float(s.get_meta("death_start")) + float(tl.cut) + float(tl.core_delay)

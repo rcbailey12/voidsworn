@@ -145,7 +145,7 @@ func _run() -> void:
 	# issue 1238 (F5.4): Chorus and Glasswright deaths have their own sound at every step, with no steel layer
 	var steel := ["scrape", "hullHitBig", "crackSettle", "wreckSettle", "heavyPlate", "debris", "boomBig", "ionCharge"]
 	for fac in ["chorus", "ithar"]:
-		for cue in ["death_powerdown", "death_crack", "boom_l", "boom_s", "chunk_cool", "death_tail", "wreck", "hit_heavy"]:
+		for cue in ["death_powerdown", "death_vent", "death_run", "death_crack", "hulk_vent", "boom_l", "boom_s", "chunk_cool", "death_tail", "wreck", "hit_heavy"]:
 			var v: Dictionary = s.cues[cue].get("variants", {}).get(fac, {})
 			_ok(bool(v.get("replace", false)), cue + " has a " + fac + " sound of its own")
 			for l in v.get("layers", []):

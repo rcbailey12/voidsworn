@@ -1138,18 +1138,21 @@ func _player_pending() -> int:
 
 
 var dying := {}               # units that die in the batch being played (their killing volley waits for its impacts)
+var _deaths_left := 0         # issue 1238: death events still to play in this batch, so several kills overlap
 
 
 func _play_batch(bt: Dictionary) -> void:
 	var evs: Array = bt["events"]
 	var enemy := false
 	dying.clear()
+	_deaths_left = 0
 	var wings := {}
 	for e in evs:
 		if e["t"] == "activation" and e["side"] == "enemy":
 			enemy = true
 		if e["t"] == "death" and e.get("unit") != null:
 			dying[str(e["unit"])] = true
+			_deaths_left += 1
 		if e["t"] == "wing":
 			wings[str(e["unit"])] = true
 	# F1: reinforcements are ships that appear in the next view without a launch (the rules' mid-battle event, R42's
@@ -2283,6 +2286,7 @@ func _kill_skip() -> void:
 func _play_death(e: Dictionary) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
+	_deaths_left = maxi(_deaths_left - 1, 0)
 	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
 		_kill_frame(id)
@@ -2316,7 +2320,13 @@ func _play_death(e: Dictionary) -> void:
 		# hurry) and a big hull always gets 0.8 s; G4's effect plays on either way
 		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
 		var floor_k := clampf(speed / 0.35, 0.35, 1.0)   # under the round budget a big hull's hold shrinks too
-		await get_tree().create_timer(maxf((0.8 if big else 0.3) * floor_k, t * 0.6 * minf(pk, floor_k))).timeout
+		# Issue 1238 (Board): when more kills follow in the same batch, this one waits only its floor and the next death
+		# starts while it plays, so three capitals dying in one volley overlap instead of stacking their full holds;
+		# the last death of the batch keeps its whole hold.
+		var hold := (0.8 if big else 0.3) * floor_k
+		if _deaths_left == 0:
+			hold = maxf(hold, t * 0.6 * minf(pk, floor_k))
+		await get_tree().create_timer(hold).timeout
 		# issue 521: the next event waits while a kill cut-in still holds (a key or a click lets it go)
 		while kill_hold_until > 0.0 and game_t < kill_hold_until and not ended:
 			await get_tree().process_frame
