@@ -6,6 +6,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const windows = process.platform === 'win32';
 const common = path.resolve(__dirname, '../../../tools/pc/runner_common.ps1');
+const ownerFile = '.voidsworn-run-owner';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-cleanup-proof-'));
 const temp = path.join(root, 'temp'), board = path.join(root, 'board');
 const mirror = path.join(root, 'mirror.git'), repo = path.join(board, 'repo');
@@ -35,7 +36,10 @@ function start(name) {
   shared(['scratch', out]);
   const scratch = read(path.join(out, 'scratch_path.txt')).trim();
   assert.equal(path.dirname(scratch), temp);
-  assert.equal(JSON.parse(read(path.join(out, 'status.json'))).scratch.path, scratch);
+  const record = JSON.parse(read(path.join(out, 'status.json'))).scratch;
+  assert.equal(record.path, scratch);
+  assert.match(record.token, /^[0-9a-f]{32}$/);
+  assert.equal(read(path.join(scratch, ownerFile)), record.token);
   write(path.join(scratch, 'nested', 'proof.txt'), name);
   return { out, scratch };
 }
@@ -68,6 +72,17 @@ try {
     finish(run, options);
     keep(run);
   }
+  const swapped = start('swapped');
+  const original = path.join(temp, 'original-scratch');
+  fs.renameSync(swapped.scratch, original);
+  write(path.join(swapped.scratch, 'nested', 'proof.txt'), 'replacement folder');
+  assert.match(finish(swapped), /run scratch kept: .*ownership token file is missing/);
+  assert.equal(read(path.join(swapped.scratch, 'nested', 'proof.txt')), 'replacement folder');
+  assert.equal(read(path.join(original, 'nested', 'proof.txt')), 'swapped');
+  const changed = start('changed-token');
+  fs.copyFileSync(path.join(original, ownerFile), path.join(changed.scratch, ownerFile));
+  assert.match(finish(changed), /run scratch kept: .*ownership token file changed/);
+  keep(changed);
   fs.mkdirSync(board);
   git(['init', '--bare', '-q', mirror]);
   const tree = git(['--git-dir', mirror, 'mktree'], '');
@@ -123,7 +138,7 @@ try {
   assert.equal(read(path.join(invalid, 'proof.txt')), 'same name, no Git checkout');
   assert.equal(read(path.join(other, 'proof.txt')), 'unrelated scratch');
   for (const dir of [repo, newest, noncandidate, linked]) assert(fs.existsSync(dir), dir);
-  console.log('PASS runner cleanup: checked push only, private scratch, pause, and kept checkouts with rebuildable files only');
+  console.log('PASS runner cleanup: checked push only, scratch ownership and replacement, pause, and rebuildable kept checkouts');
 } finally {
   fs.rmSync(root, { recursive: true, force: true, maxRetries: 3 });
 }

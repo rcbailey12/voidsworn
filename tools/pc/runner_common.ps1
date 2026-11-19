@@ -60,6 +60,7 @@ $ErrorActionPreference = 'Stop'
 $mode = $args[0]
 $utf8 = New-Object Text.UTF8Encoding($false)
 $test = $env:PC_RUNNER_TEST -eq '1'
+$scratchOwnerFile = '.voidsworn-run-owner'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 function Put($path, $value) { [IO.File]::WriteAllText($path, [string]$value, $utf8) }
 function Read($path) { if (Test-Path -LiteralPath $path) { return [IO.File]::ReadAllText($path).Trim() }; return '' }
@@ -352,7 +353,17 @@ function Remove-OwnedScratch($record) {
     if (-not (Test-Path -LiteralPath $full)) { return }
     $dir = Get-Item -LiteralPath $full -Force
     Assert-PlainDirectory $dir
-    if ([string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
+    $ownerPath = Join-Path $full $scratchOwnerFile
+    if ($record.token -cnotmatch '\A[0-9a-f]{32}\z') { throw 'ownership token was not recorded' }
+    $owner = Get-Item -LiteralPath $ownerPath -Force -ErrorAction SilentlyContinue
+    if (-not $owner) { throw 'ownership token file is missing' }
+    if ($owner -isnot [IO.FileInfo] -or ($owner.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+        $owner.Length -ne 32 -or [IO.File]::ReadAllText($ownerPath) -cne $record.token) {
+      throw 'ownership token file changed'
+    }
+    # Linux filesystems do not always expose a stable directory birth time.
+    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and
+        [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
     Assert-NoLinkedChildren $full
     if (Cleanup-Paused) { throw 'PC pause is active' }
     Remove-Item -LiteralPath $full -Recurse -Force -ErrorAction Stop
@@ -632,7 +643,11 @@ try {
     $temp = Get-Item -LiteralPath $env:PC_RUN_TEMP -Force
     Assert-PlainDirectory $temp
     $dir = New-Item -ItemType Directory -Path (Join-Path $temp.FullName "voidsworn-run-$([guid]::NewGuid().ToString('N'))")
-    $s | Add-Member -NotePropertyName scratch -NotePropertyValue @{ path = $dir.FullName; created = [string]$dir.CreationTimeUtc.Ticks }
+    $token = [guid]::NewGuid().ToString('N')
+    Put (Join-Path $dir.FullName $scratchOwnerFile) $token
+    $s | Add-Member -NotePropertyName scratch -NotePropertyValue @{
+      path = $dir.FullName; token = $token; created = [string]$dir.CreationTimeUtc.Ticks
+    }
     Save-State $s
     Put (Join-Path $out 'scratch_path.txt') ($dir.FullName + [Environment]::NewLine)
     Log "run scratch created: $($dir.FullName)"
