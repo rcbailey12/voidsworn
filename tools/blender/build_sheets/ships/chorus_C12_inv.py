@@ -19,7 +19,7 @@ INVENTORY = [
          count=1, cells=['mid/top', 'mid/side', 'stern/top', 'stern/side', 'mid/below'],
          reads='a muscle mound, knotted cords over it, heavy tendrils with grip rings, blunt rounded tips with an acid pore', src='picture'),
     dict(id='back_folds', job='the back\'s muscle: long folds that flex the body and carry the knot\'s pull to the prow', type='welt',
-         what='long fleshy folds and ridges running bow to stern over the back, under the tendrils', count=7, cells=['bow/top', 'mid/top', 'stern/top', 'mid/side'],
+         what='long fleshy folds and ridges running bow to stern over the back, under the tendrils (seven runs, one built item)', count=1, cells=['bow/top', 'mid/top', 'stern/top', 'mid/side'],
          reads='raised welts of uneven width', src='picture'),
     dict(id='pore_fields', job='sense: it tastes the dark through pore fields (no eyes; lore 5.8)', type='pore',
          what='pitted pore patches over the back and the upper flanks', count=2, cells=['bow/top', 'mid/top', 'mid/side'],
@@ -48,7 +48,7 @@ INVENTORY = [
          reads='callus pads, sense pores on them', src='picture'),
     # ---------------- stern ----------------
     dict(id='vents', job='drive (sp 5, the fastest in the faction): four pulse vents push the body; no nozzles (factions.md)', type='engine',
-         what='the stern\'s layered trailing membranes, soft veils lit faintly from within', count=5, cells=['stern/top', 'stern/side', 'stern/below'],
+         what='the stern\'s layered trailing membranes, soft veils lit faintly from within', count=4, cells=['stern/top', 'stern/side', 'stern/below'],
          reads='a muscle cone, radial folds, a sphincter mouth, a dark throat, bile glow, wide cupped veils with veins of light', src='picture',
          note='the picture shows the veils; the vents they stream from are designed (no fins, no bulb, no nozzle: designs.md)'),
 ]
