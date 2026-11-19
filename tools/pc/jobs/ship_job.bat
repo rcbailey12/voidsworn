@@ -17,8 +17,8 @@ rem
 rem What it does, in order. Any failure skips every later step, the checks and the shots (the recipe folder is still copied
 rem back, step 7, for the logs), and the last two lines of out\result.txt are always "done PASS" or "done FAILED: <step>" and then "all done".
 rem   1. runs from its own copy in JOB_DIR (cmd reads a .bat as it goes, so a checkout must never rewrite the running file)
-rem   2. its own clone JOB_DIR\repo (depth 50), the branch checked out (install files reset after a
-rem      saved diff; any other local change stops the job), PAINT_BASE merged if set, a commit= line
+rem   2. its own clone JOB_DIR\repo (depth 50), the branch checked out (install files restored after a
+rem      saved diff, never a forced checkout; any other local change or file collision stops the job), PAINT_BASE merged if set, a commit= line
 rem   3. the headless import, then each stage logged with its exit code (stage 7 installs into the clone's own godot folder,
 rem      never into Ryan's game)
 rem   4. the installed glb must be this run's (written after the run started), else the install counts as failed
@@ -70,17 +70,21 @@ if not exist "%C%\.git" git clone -q --depth 50 https://github.com/rcbailey12/vo
 git -C "%C%" fetch -q --depth 50 origin %BRANCH% >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=fetch %BRANCH%"
 if defined FAILED goto collect
-rem a forced checkout, in this job's own clone only, and only over what the install writes: stage 7 rewrites the tracked
-rem godot\assets\ships files here (manifest.json, the CODE folder), and a plain checkout then refuses every rerun after the
-rem branch moved. Every local change is saved first (clone_changes_before_checkout.patch, binary diff). A change anywhere
-rem else (a hand fix in the clone) stops the job instead: nothing outside the install is ever thrown away (Artoo, PR 1179).
+rem the checkout, in this job's own clone: stage 7 rewrites the tracked godot\assets\ships files here (manifest.json, the CODE
+rem folder), and a plain checkout then refuses every rerun after the branch moved. So: list and save every tracked change
+rem (clone_changes_before_checkout.txt and .patch); stop on a tracked change anywhere else (a hand fix in the clone); restore
+rem only godot\assets\ships from the clone's own commit; then a plain checkout, never forced, that also refuses to overwrite
+rem untracked or ignored files, so a local file the branch now tracks stops the job instead of being replaced (Artoo, PR 1179).
 git -C "%C%" status --porcelain --untracked-files=no > "%O%\clone_changes_before_checkout.txt" 2> "%O%\log_clone_status.txt"
 git -C "%C%" diff --binary HEAD > "%O%\clone_changes_before_checkout.patch" 2>> "%O%\log_clone_status.txt"
 findstr /v /r /c:"^.. godot/assets/ships/" "%O%\clone_changes_before_checkout.txt" > "%O%\clone_changes_unexpected.txt"
 for %%Z in ("%O%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 set "FAILED=checkout: the clone has local changes outside godot\assets\ships, listed in clone_changes_unexpected.txt and saved in clone_changes_before_checkout.patch; nothing was reset"
 if defined FAILED goto collect
-for %%Z in ("%O%\clone_changes_before_checkout.txt") do if %%~zZ GTR 0 echo forced checkout: resetting the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch >> "%RES%"
-git -C "%C%" checkout -q -f -B shipjob FETCH_HEAD >> "%RES%" 2>&1
+for %%Z in ("%O%\clone_changes_before_checkout.txt") do if %%~zZ GTR 0 echo restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch >> "%RES%"
+git -C "%C%" checkout -q HEAD -- godot/assets/ships >> "%RES%" 2>&1
+if errorlevel 1 set "FAILED=checkout: could not restore godot\assets\ships in the clone"
+if defined FAILED goto collect
+git -C "%C%" checkout -q --no-overwrite-ignore -B shipjob FETCH_HEAD >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=checkout %BRANCH%"
 if defined FAILED goto collect
 if not defined PAINT_BASE goto based

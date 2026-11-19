@@ -56,7 +56,9 @@ assert(fresh > 0 && fresh < main.findIndex(l => l.s.includes('installed_ship_che
 assert(/for %%S in \(%STAGES%\) do call :stage %%S/.test(text), 'the stages loop runs STAGES in order');
 const stage = text.slice(text.indexOf(':stage'));
 assert(/if defined FAILED \(\s*\r?\n\s*echo %1 SKIPPED/.test(stage), 'a failed stage skips the later stages');
-const co = main.findIndex(l => /checkout -q -f -B shipjob FETCH_HEAD/.test(l.s));
+const co = main.findIndex(l => /checkout -q --no-overwrite-ignore -B shipjob FETCH_HEAD/.test(l.s));
+assert(!/checkout[^\r\n]* -f\b|checkout[^\r\n]*--force/.test(text), 'never a forced checkout: it would replace untracked or ignored local files');
+assert(main.slice(0, co).some(l => /^git -C "%C%" checkout -q HEAD -- godot\/assets\/ships /.test(l.s)), 'only the install folder is restored');
 const pre = main.slice(0, co).map(l => l.s);
 assert(co > 0 && pre.some(s => /status --porcelain/.test(s)) && pre.some(s => /diff --binary HEAD > "%O%\\clone_changes_before_checkout\.patch"/.test(s)),
   'every local change in the clone is listed and saved before the forced checkout');
