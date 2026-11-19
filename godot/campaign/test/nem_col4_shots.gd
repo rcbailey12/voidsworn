@@ -29,13 +29,13 @@ func _run() -> void:
 	C.RUN["pos"] = from["id"]; from["done"] = true
 	C.ensureNemesis()["met"] = 0; C.RUN["nemStrike"] = false
 	C.mapScreen(); ui.picked = str(yard["id"])
-	await _shot(ui, "N1175_nemesis_col4", "rev 1, in-game rail (cloud, no ships drawn)")
+	await _shot(ui, "N1175_nemesis_col4", "rev 2, in-game rail (cloud, no ships drawn)")
 	# shot 2: the rest stop before the flagship
 	var rest = cols[cols.size() - 2][0]
 	C.RUN["pos"] = rest["id"]; rest["done"] = true
 	C.nemActive()["met"] = C.RUN["sector"]
 	C.mapScreen(); ui.picked = str(cols[cols.size() - 1][0]["id"])
-	await _shot(ui, "N1175_boss_stop", "rev 1, in-game rail (cloud, no ships drawn)")
+	await _shot(ui, "N1175_boss_stop", "rev 2, in-game rail (cloud, no ships drawn)")
 	quit(0)
 
 func _shot(ui, code: String, stage: String) -> void:
