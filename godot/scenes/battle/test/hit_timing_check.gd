@@ -8,6 +8,11 @@ extends SceneTree
 #  D. a lance volley under the same quarter-speed clock: the charge and the shot cue run on the effect clock, so the
 #     shot cue trails the charge by its lead in effect seconds and plays at or after its own planned fire time
 #     (Artoo's review of PR 1220: they ran on the wall clock and could fire before the shot during slow motion).
+#  E. the combined case after PR 1230 (Artoo's review of PR 1220): an Eclipse null lance [miss, hit, hit] on a Glasswright
+#     ship under the quarter-speed clock, the last hit a critical. Every null lance shot cue plays on the effect clock
+#     before the hits it carries; each hit still lands on its own shot; the critical keeps the glass contact cue with
+#     the heavy tail under it. Then an ion lance shield hit carrying the ion lock: the lock reaches the nameplate state
+#     when the hit lands, not before.
 #  C. the pure helpers: hit_arrivals maps hit k to the k-th true shot; shield_break_hit picks the last absorbed hit.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -26,7 +31,7 @@ class Probe extends "res://scenes/battle/battle.gd":
 		var sv = views.get(t_id)
 		var row := {"k": k, "now": float(gfx.now), "ring": sv != null and sv.ring.visible,
 			"col": (sv.ring.material_override as StandardMaterial3D).albedo_color if sv != null else Color.BLACK,
-			"aim": {"a": aim.get("a", ""), "t": aim.get("t", "")}}
+			"aim": {"a": aim.get("a", ""), "t": aim.get("t", "")}, "lock0": bool(disp.get(t_id, {}).get("regenLock", false))}
 		super._land_hit(t_id, h, k, land)
 		row["hp"] = float(disp[t_id]["hp"])
 		lands.append(row)
@@ -97,14 +102,18 @@ func _setup() -> Array:
 	return [b, str(foe["id"]), str(me["id"])]
 
 
-func _fire(b: Probe, a: String, t: String, shots: Array, hits: Array, grp_extra: Array, kind := "") -> Dictionary:
+func _fire(b: Probe, a: String, t: String, shots: Array, hits: Array, grp_extra: Array, kind := "", wid := "") -> Dictionary:
 	var u: Dictionary = b.VU[a]
 	var w: Dictionary = (b.api.unit(a)["weapons"] as Array)[0]
 	var e := {"t": "fire", "unit": a, "target": t, "kind": kind if kind != "" else str(w.get("k", "battery")), "name": "Test gun",
-		"weapon": 0, "weapon_id": "" if kind != "" else str(w.get("id", "")), "shots": shots, "quad": 0, "pd": 0}
+		"weapon": 0, "weapon_id": wid if kind != "" else str(w.get("id", "")), "shots": shots, "quad": 0, "pd": 0}
 	var grp: Array = []
 	for h in hits:
-		grp.append({"t": "hit", "unit": a, "target": t, "quad": 0, "section": "mid", "shield": h[0], "hull": h[1], "crit": false})
+		var g := {"t": "hit", "unit": a, "target": t, "quad": 0, "section": "mid", "shield": h[0], "hull": h[1],
+			"crit": h.size() > 2 and bool(h[2])}
+		if h.size() > 3 and bool(h[3]):
+			g["regenLock"] = true
+		grp.append(g)
 	grp.append_array(grp_extra)
 	var Tg = b.gfx.ship(t)
 	if Tg != null:
@@ -220,7 +229,52 @@ func _run() -> void:
 	if b.lands.size() == 1 and shot >= 0.0:
 		_check(shot <= float(b.lands[0]["now"]) + 0.001, "D: the shot cue plays before its hit lands (%.3f vs %.3f)" % [shot, float(b.lands[0]["now"])])
 		_check(shot >= float(r["t0"]) + 0.26 * 0.75, "D: the shot cue waits for the effect's fire time on the slowed clock (%.3f after start)" % (shot - float(r["t0"])))
+	# E: the combined case (null lance cues, hit pause, a miss before the hits, a glass critical, then an ion lock)
+	b.VU[a]["fac"] = "deathless"
+	b.VU[t]["fac"] = "ithar"
+	rec.heard.clear()
+	b.gfx._pause_depth = 0.25
+	b.gfx._pause_until = float(b.gfx.now) + 1000.0
+	r = await _fire(b, a, t, [false, true, true], [[0, 5], [0, 8, true]], [], "lance", "nlance")
+	for i in 120:
+		await process_frame
+	b.gfx._pause_until = -1.0
+	b.gfx._pause_depth = 1.0
+	var dark: Array = []
+	var glass: Array = []
+	var heavy := 0
+	for x in rec.heard:
+		match str(x[0]):
+			"lance_dark":
+				dark.append(float(x[1]))
+			"hit_glass":
+				glass.append(float(x[1]))
+			"hit_heavy":
+				heavy += 1
+	_check(b.lands.size() == 2, "E: both null lance hits land (got %d)" % b.lands.size())
+	_check(dark.size() >= 2, "E: the null lance plays one shot cue per beam (heard %s)" % str(rec.heard))
+	if b.lands.size() == 2 and dark.size() >= 2:
+		_check(float(b.lands[0]["now"]) < float(b.lands[1]["now"]), "E: the hits land in shot order")
+		_check(dark.min() >= float(r["t0"]) + 0.1 * 0.75,
+			"E: the first null lance cue waits for its fire time on the slowed clock (%.3f after start)" % (dark.min() - float(r["t0"])))
+		_check(dark.min() <= float(b.lands[0]["now"]) + 0.001, "E: a null lance cue plays before the first hit lands")
+	_check(glass.size() == 2, "E: each hit on glass plays the glass contact cue, the critical too (heard %d)" % glass.size())
+	if b.lands.size() == 2 and glass.size() == 2:
+		_check(absf(glass[1] - float(b.lands[1]["now"])) < 0.001, "E: the critical's glass cue lands with its hit")
+	_check(heavy == 1, "E: the critical adds one heavy tail under the glass cue (got %d)" % heavy)
+	# the ion lock: an ion lance shield hit locks the target's regen when it lands
+	b.VU[a]["fac"] = "hegemony"
+	b.disp[t]["regenLock"] = false
+	b.gfx._pause_depth = 0.25
+	b.gfx._pause_until = float(b.gfx.now) + 1000.0
+	r = await _fire(b, a, t, [true], [[4, 0, false, true]], [], "lance", "ion")
+	b.gfx._pause_until = -1.0
+	b.gfx._pause_depth = 1.0
+	_check(b.lands.size() == 1, "E: the ion hit lands (got %d)" % b.lands.size())
+	if b.lands.size() == 1:
+		_check(not bool(b.lands[0]["lock0"]), "E: the ion lock is not shown before its hit lands")
+	_check(bool(b.disp[t].get("regenLock", false)), "E: the ion lock reaches the nameplate state when its hit lands")
 	b.free()
 	if failures == 0:
-		print("hit timing: PASS ([miss, miss, hit] on the effect clock under hit pause; shield break on the second of three hits; target ringed and named; lance cues on the effect clock)")
+		print("hit timing: PASS ([miss, miss, hit] on the effect clock under hit pause; shield break on the second of three hits; target ringed and named; lance cues on the effect clock; null lance, glass critical and ion lock combined)")
 	quit(0 if failures == 0 else 1)
