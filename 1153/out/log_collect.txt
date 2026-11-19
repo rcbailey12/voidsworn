@@ -1,0 +1,200 @@
+﻿	    New File  		  224172	C12_hand_d7.75.png
+ 58%  
+100%  
+	    New File  		  221665	C12_hand_d8.25.png
+ 59%  
+100%  
+	    New File  		  626972	C12_off_20.png
+ 41%  
+ 83%  
+100%  
+	    New File  		  777128	C12_off_d1.2.png
+ 33%  
+ 67%  
+100%  
+	    New File  		  206495	C12_off_d16.0.png
+ 63%  
+100%  
+	    New File  		  322162	C12_off_d3.0.png
+ 40%  
+ 81%  
+100%  
+	    New File  		  222189	C12_off_d8.0.png
+ 58%  
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    6.87 m    6.87 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           400737444 Bytes/sec.
+   Speed :           22930.380 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 5:37:02 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Thursday, November 19, 2026 5:37:02 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\export\B19_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1153b\out\recipe\export\B19_11\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\export\B19_11\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\export\B19_11\
+	    New File  		   4.1 m	B19_11.glb
+ 12%  
+ 24%  
+ 36%  
+ 48%  
+ 60%  
+ 72%  
+ 84%  
+ 96%  
+100%  
+	    New File  		  585384	B19_11_base.jpg
+ 44%  
+ 89%  
+100%  
+	    New File  		    4076	B19_11_check.json
+100%  
+	    New File  		   11719	B19_11_export.json
+100%  
+	    New File  		   1.8 m	B19_11_normal.png
+ 13%  
+ 27%  
+ 41%  
+ 54%  
+ 68%  
+ 82%  
+ 96%  
+100%  
+	    New File  		   3.6 m	B19_11_orm.png
+ 13%  
+ 27%  
+ 41%  
+ 55%  
+ 69%  
+ 82%  
+ 96%  
+100%  
+	    New File  		   1.0 m	B19_11_parts_base.jpg
+ 24%  
+ 49%  
+ 74%  
+ 99%  
+100%  
+	    New File  		   2.2 m	B19_11_parts_normal.png
+ 21%  
+ 43%  
+ 65%  
+ 87%  
+100%  
+	    New File  		   4.7 m	B19_11_parts_orm.png
+ 10%  
+ 21%  
+ 31%  
+ 42%  
+ 52%  
+ 63%  
+ 73%  
+ 84%  
+ 94%  
+100%  
+	    New File  		      25	export_status.txt
+100%  
+	    New File  		    1319	manifest_entry.json
+100%  
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\export\B19_11\_gltf_source\
+	    New File  		   4.1 m	B19_11.bin
+ 12%  
+ 24%  
+ 36%  
+ 48%  
+ 60%  
+ 73%  
+ 85%  
+ 97%  
+100%  
+	    New File  		   32679	B19_11.gltf
+100%  
+	    New File  		   2.4 m	C12_hull_albedo.png
+ 20%  
+ 40%  
+ 60%  
+ 80%  
+100%  
+	    New File  		   1.8 m	C12_hull_normal.png
+ 13%  
+ 27%  
+ 41%  
+ 54%  
+ 68%  
+ 82%  
+ 96%  
+100%  
+	    New File  		   3.6 m	C12_hull_orm.png
+ 13%  
+ 27%  
+ 41%  
+ 55%  
+ 69%  
+ 82%  
+ 96%  
+100%  
+	    New File  		   3.5 m	C12_parts_albedo.png
+ 14%  
+ 28%  
+ 42%  
+ 56%  
+ 70%  
+ 84%  
+ 98%  
+100%  
+	    New File  		   2.2 m	C12_parts_normal.png
+ 21%  
+ 43%  
+ 65%  
+ 87%  
+100%  
+	    New File  		   4.7 m	C12_parts_orm.png
+ 10%  
+ 21%  
+ 31%  
+ 42%  
+ 52%  
+ 63%  
+ 73%  
+ 84%  
+ 94%  
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        19        19         0         0         0         0
+   Bytes :   40.84 m   40.84 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1529467750 Bytes/sec.
+   Speed :            87516.846 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 5:37:02 PM
+

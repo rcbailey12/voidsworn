@@ -1,0 +1,43 @@
+start chorus_C12 B19_11 opus/issue-1153 Thu 11/19/2026 16:20:47.22 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE=codex/issue-1058 PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   3d80448f..4beebc68  board/pc-in-1119     -> board/pc-in-1119
+   81af0097..93050fcd  opus/issue-1079      -> opus/issue-1079
+   51948402..ab239915  opus/issue-1211      -> opus/issue-1211
+   8f633d7d..0dc597ec  opus/issue-1217-p4   -> opus/issue-1217-p4
+   ef3cfb54..2d1d7f61  opus/issue-1217-p5   -> opus/issue-1217-p5
+   81af0097..93050fcd  refs/pull/1181/head  -> refs/pull/1181/head
+   51948402..ab239915  refs/pull/1220/head  -> refs/pull/1220/head
+ + 182af000...757a6751 refs/pull/1220/merge -> refs/pull/1220/merge  (forced update)
+   8f633d7d..0dc597ec  refs/pull/1229/head  -> refs/pull/1229/head
+ + 6455da89...72f0df86 refs/pull/1229/merge -> refs/pull/1229/merge  (forced update)
+   ef3cfb54..2d1d7f61  refs/pull/1233/head  -> refs/pull/1233/head
+ + 4e8ae2ee...a4099984 refs/pull/1233/merge -> refs/pull/1233/merge  (forced update)
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1153b\repo
+merged codex/issue-1058: the pictures of this run are a PREVIEW of that paint stack 
+commit=ee7aee00701762be02b9fb608539df9441f7e093
+import exit 0 
+1_concept_in start 16:28:02.21 
+1_concept_in exit 0 at 16:28:05.53 
+2_shape_ref start 16:28:05.53 
+2_shape_ref exit 0 at 16:28:06.47 
+3_trace_hull start 16:28:06.47 
+3_trace_hull exit 0 at 17:29:10.67 
+4_parts_kit start 17:29:10.68 
+4_parts_kit exit 0 at 17:29:33.54 
+5_paint_bake start 17:29:33.54 
+5_paint_bake exit 0 at 17:34:12.68 
+6_lod start 17:34:12.68 
+6_lod exit 0 at 17:35:20.40 
+7_export start 17:35:20.41 
+7_export exit 0 at 17:36:28.27 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1153b\repo\godot\assets\ships\B19_11\B19_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Thu 11/19/2026 17:37:02.52 
+all done 
