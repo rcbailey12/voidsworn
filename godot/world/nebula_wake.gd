@@ -8,14 +8,16 @@ extends RefCounted
 const HIGH_POINTS := 8      # Max and High quality
 const LOW_POINTS := 4       # Low quality: fewer points, cards only (Low has no fog volume)
 const DROP_EVERY := 0.8     # travel between dropped points, in disturbance radii (a hex is 17.3 units across)
+const DROP_MAX := 8.0       # but never further apart than this, so a capital leaves a smooth trail, not a few big bursts
 const FADE_S := 3.0         # a point is gone this long after the ship left it
 const RISE_S := 0.25        # and comes in over this long, so a new point never pops
 const R_PER_L := 0.9        # disturbance radius per unit of hull length
 const R_MIN := 9.0          # a frigate (hull 10.4 long) is about 9.4
 const R_MAX := 26.0         # a capital (hull 30 to 43 long)
+const PUSH := 0.9           # push per point, per unit of spacing over DROP_EVERY: the same gas moved per unit of travel
 
 var points := 8
-var _ring: Array = []       # {p: Vector3, r: float, dir: Vector2, born: float, spin: float}
+var _ring: Array = []       # {p: Vector3, r: float, dir: Vector2, born: float, spin: float (side times push)}
 var _next := 0
 var _last := {}             # ShipView instance id -> last dropped position
 var clock := 0.0
@@ -32,7 +34,7 @@ func _init(quality: String) -> void:
 # w: how much it is thinned (0 to 1).
 static func glsl(n: int) -> String:
 	return """
-// 8 floats a point: centre xyz, radius, travel direction (board xz), strength 0..1, swirl side.
+// 8 floats a point: centre xyz, radius, travel direction (board xz), strength 0..1, push (its sign is the swirl side).
 // Plain floats: a Color array would be read as sRGB and converted.
 uniform float wake_d[%d];
 vec4 wake_at(vec3 w) {
@@ -46,9 +48,10 @@ vec4 wake_at(vec3 w) {
 		// Round in plan, taller than the hull: the gas layers sit from below the board to well above it.
 		float f = exp(-dot(d.xz, d.xz) / (r * r) - d.y * d.y / (r * r * 2.25)) * s;
 		vec2 out_dir = d.xz / (length(d.xz) + 0.75);
-		vec2 side = vec2(-out_dir.y, out_dir.x) * wake_d[k + 7];
+		float m = wake_d[k + 7];
+		vec2 side = vec2(-out_dir.y, out_dir.x) * sign(m);
 		// Pushed aside and curled, and dragged a little along the ship's path.
-		o.xz += (out_dir * 0.55 + side * 0.45 + vec2(wake_d[k + 4], wake_d[k + 5]) * 0.35) * f * r * 0.9;
+		o.xz += (out_dir * 0.55 + side * 0.45 + vec2(wake_d[k + 4], wake_d[k + 5]) * 0.35) * f * abs(m);
 		o.w = max(o.w, f);
 	}
 	return o;
@@ -105,15 +108,25 @@ func update(dt: float, ships: Array) -> void:
 			continue
 		var length := float(sv.get("L")) if sv.get("L") != null else 10.0
 		var r := clampf(length * R_PER_L, R_MIN, R_MAX)
-		if step.length() < DROP_EVERY * r:
+		if step.length() < spacing(r):
 			continue
-		_drop(at, r, step.normalized())
+		# One swirl side per ship (Ryan, Nov 19: alternating sides made the capital burst and swirl at random).
+		_drop(at, r, step.normalized(), 1.0 if key % 2 == 0 else -1.0)
 		_last[key] = at
 
 
-func _drop(at: Vector3, r: float, dir: Vector2) -> void:
-	var spin := 1.0 if (_next % 2) == 0 else -1.0
-	_ring[_next] = {"p": at, "r": r, "dir": dir, "born": clock, "spin": spin}
+# Travel between a ship's points: frigates as before, capitals capped so their points overlap smoothly.
+static func spacing(r: float) -> float:
+	return minf(DROP_EVERY * r, DROP_MAX)
+
+
+# Push per point (world units at full strength), scaled by the spacing so closer points do not add up to more push.
+static func push(r: float) -> float:
+	return PUSH * spacing(r) / DROP_EVERY
+
+
+func _drop(at: Vector3, r: float, dir: Vector2, side := 1.0) -> void:
+	_ring[_next] = {"p": at, "r": r, "dir": dir, "born": clock, "spin": side * push(r)}
 	_next = (_next + 1) % points
 
 
@@ -129,7 +142,7 @@ func hold_full(at: Array, r := R_MAX, dir := Vector2(1.0, 0.0)) -> void:
 	held = true
 	for i in points:
 		var p: Vector3 = at[i % at.size()]
-		_ring[i] = {"p": p, "r": r, "dir": dir, "born": clock, "spin": 1.0 if i % 2 == 0 else -1.0}
+		_ring[i] = {"p": p, "r": r, "dir": dir, "born": clock, "spin": push(r)}
 
 
 func strength(age: float) -> float:

@@ -237,10 +237,10 @@ func _still(tier: String, size: Vector2i) -> void:
 		var z: Vector3 = focus + leg[1]
 		var dir := Vector2(z.x - a.x, z.z - a.z).normalized()
 		for k in half:
-			var back: float = float(k) * r * wake.DROP_EVERY
+			var back: float = float(k) * wake.spacing(r)
 			var p: Vector3 = sv.visual_position() - Vector3(dir.x, 0.0, dir.y) * back
 			var age: float = float(k) / float(half) * wake.FADE_S * 0.8
-			wake._ring[j] = {"p": p, "r": r, "dir": dir, "born": wake.clock - age, "spin": 1.0 if k % 2 == 0 else -1.0}
+			wake._ring[j] = {"p": p, "r": r, "dir": dir, "born": wake.clock - age, "spin": wake.push(r)}
 			j += 1
 	wake.held = false
 	var trail: Array = wake._ring.duplicate(true)
