@@ -359,8 +359,6 @@ def glow_vertex(o):
         col[:, 0] = (W[:, 2] - W[:, 2].min()) / max(float(W[:, 2].max() - W[:, 2].min()), 1e-6)
         cy = (W[:, 1].max() + W[:, 1].min()) / 2; ry = max(float(np.abs(W[:, 1] - cy).max()), 1e-6)
         col[:, 2] = np.abs(W[:, 1] - cy) / ry          # B: out along the fin from the spire's column (0) to the fin's edge (1)
-        if o.get('spire_glow') == 'slats':
-            col[:, 2] = 0.0     # R331: only the core glows (parts.radiator glow='slats'), all of it at the fins' root, so hottest
         if o.get('ps_close') is None: o['ps_close'] = 'spire'
     else:
         col[:, 0] = .5
