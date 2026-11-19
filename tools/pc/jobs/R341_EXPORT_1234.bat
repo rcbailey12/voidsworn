@@ -14,6 +14,10 @@ rem      interiors, death seam and in-game shots (camera 170 and close) for ever
 rem   2. Publish: only when every ship and every check passed, each checked export goes into build\godot through the shared
 rem      stage 7 installer (snapshot, lock, backups, hash check, readback, old files restored on its own failure). Publish
 rem      stops at the first failure and result.txt names the ships already live.
+rem   Right after each ship's stage 7, its export is copied into this run's own folder opus1234\checked\<run>\<code>, and
+rem   every file there must match, byte for byte, the copy stage 7 installed into the staging project (the bytes the checks
+rem   then read). Publish installs from that private copy and checks the bytes again first, so a later build of the same
+rem   ship in recipe\<ship>\ cannot slip in between the checks and the publish.
 rem Writes only opus1234\, the recipe job folders recipe\<ship>\ and, in phase 2, build\godot\assets\ships\<code>\ and the
 rem game's ship cache. Nothing is deleted.
 rem Throwaway profile guard (issue 1228): every program this job starts sees APPDATA and LOCALAPPDATA in opus1234\profile, so
@@ -79,6 +83,11 @@ if not "%1"=="" set SHIPS=%1
 set STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export
 if "%FULL%"=="1" set STAGES=1_concept_in 2_shape_ref %STAGES%
 set DONE=
+set RUN=%DATE:~-4%%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%_%RANDOM%
+set RUN=%RUN: =0%
+set "CHECKED=%W%\checked\%RUN%"
+mkdir "%CHECKED%"
+echo checked copies in %CHECKED% >> "%RES%"
 cd /d "%C%"
 
 rem ---- phase 1: stage into the clone's own game project ----
@@ -138,6 +147,31 @@ if defined FAILED (
   set BAD=1
   exit /b 0
 )
+rem keep the exact staged bytes: copy the export, then every file must match what stage 7 installed for the checks
+set "SNAP=%CHECKED%\%CODE%"
+set "LIVEDIR=%STAGE_GAME%\assets\ships\%CODE%"
+xcopy /e /i /q /y "%V%\recipe\%SHIP%\export\%CODE%" "%SNAP%" > "%O%\log_snapshot.txt" 2>&1
+if errorlevel 1 (
+  echo %SHIP% FAILED: could not copy the export aside >> "%RES%"
+  set BAD=1
+  exit /b 0
+)
+if not exist "%SNAP%\%CODE%.glb" set FAILED=snapshot
+if not exist "%LIVEDIR%\%CODE%.glb" set FAILED=snapshot
+for %%F in ("%SNAP%\*") do (
+  if exist "%LIVEDIR%\%%~nxF" (
+    fc /b "%%~fF" "%LIVEDIR%\%%~nxF" > nul 2>&1
+    if errorlevel 1 set FAILED=snapshot
+  )
+)
+if defined FAILED (
+  echo %SHIP% FAILED: the export copied aside is not the bytes installed for the checks >> "%RES%"
+  set BAD=1
+  exit /b 0
+)
+certutil -hashfile "%SNAP%\%CODE%.glb" SHA256 | findstr /v ":" > "%SNAP%.sha256"
+set /p GLBSHA=< "%SNAP%.sha256"
+echo %SHIP% checked copy %CODE%.glb sha256 %GLBSHA% >> "%RES%"
 set DONE=%DONE% %SHIP%
 echo %SHIP% staged as %CODE% >> "%RES%"
 exit /b 0
@@ -186,8 +220,20 @@ exit /b 0
 set SHIP=%1
 call :code %SHIP%
 set "JOB=%V%\recipe\%SHIP%"
+set "SNAP=%CHECKED%\%CODE%"
+set "LIVEDIR=%STAGE_GAME%\assets\ships\%CODE%"
+for %%F in ("%SNAP%\*") do (
+  if exist "%LIVEDIR%\%%~nxF" (
+    fc /b "%%~fF" "%LIVEDIR%\%%~nxF" > nul 2>&1
+    if errorlevel 1 set BAD=1
+  )
+)
+if defined BAD (
+  echo %SHIP% publish REFUSED: the checked copy of %CODE% changed since the checks >> "%RES%"
+  exit /b 0
+)
 echo %SHIP% publish %CODE% start %TIME% >> "%RES%"
-"%BPY%" -B "%C%\tools\recipe\manifest_merge.py" --install "%JOB%\export\%CODE%" "%GAME%" "%CODE%" "%GD%" "%JOB%" "%C%\tools\recipe\ships\%SHIP%.json" > "%OUT%\log_publish_%CODE%.txt" 2>&1
+"%BPY%" -B "%C%\tools\recipe\manifest_merge.py" --install "%SNAP%" "%GAME%" "%CODE%" "%GD%" "%JOB%" "%C%\tools\recipe\ships\%SHIP%.json" > "%OUT%\log_publish_%CODE%.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% publish %CODE% exit %EL% >> "%RES%"
 if not "%EL%"=="0" (
