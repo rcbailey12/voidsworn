@@ -19,8 +19,13 @@ set "ST=%HOME1078%\out\result.txt"
 echo shield1078 start %date% %time% ref=%REF% >> "%ST%"
 set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
-set "TMO=%VT%\build\tools\pc\tmo.bat"
-if not exist "%TMO%" set "TMO=%VT%\build_b\tools\pc\tmo.bat"
+rem the installed runner tools (build_b, the main chain's copy; build\tools is an old copy) and this job's GPU claim name
+set "TMO=%VT%\build_b\tools\pc\tmo.bat"
+set "PC_GPU_ISSUE=1078"
+if not exist "%TMO%" (
+  echo FAILED: no %TMO% >> "%ST%"
+  goto finish
+)
 
 set "R=%HOME1078%\repo"
 if not exist "%R%\.git" git -c core.autocrlf=false clone https://github.com/rcbailey12/voidsworn "%R%" > "%HOME1078%\git.txt" 2>&1
@@ -54,20 +59,25 @@ set "PROBE_CLIP=1"
 set "PROBE_COST="
 if not "%S1078_SUBJECTS%"=="" set "PROBE_SUBJECTS=%S1078_SUBJECTS%"
 set "PC_GPU_MODE=shared"
-call "%TMO%" 5400 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\look_log.txt" 2>&1
+call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\look_log.txt" 2>&1
 findstr /c:"SHIELD1078_DONE" "%OUT%\look_log.txt" > nul
 if errorlevel 1 (
   echo FAILED: the look pass did not finish, see %OUT%\look_log.txt >> "%ST%"
   goto finish
 )
 echo look pass done %date% %time% >> "%ST%"
+rem bring the sheets out now, so a later step can never hold them back
+copy /y "%OUT%\look\*.png" "%RES%\" > nul 2>&1
+copy /y "%OUT%\look\*.json" "%RES%\" > nul 2>&1
+copy /y "%OUT%\look_log.txt" "%RES%\" > nul 2>&1
 rem clips: ffmpeg from PATH, else the one inside ComfyUI's portable Python (imageio_ffmpeg)
 set "FF="
 where ffmpeg > nul 2>&1 && set "FF=ffmpeg"
 set "CPY=%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.exe"
 if "%FF%"=="" if exist "%CPY%" for /f "delims=" %%F in ('"%CPY%" -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())" 2^>nul') do set "FF=%%F"
 if "%FF%"=="" (
-  echo no ffmpeg: clip frames kept, no mp4 >> "%ST%"
+  echo no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ >> "%ST%"
+  for /d %%D in ("%OUT%\look\clip_h_boss_*") do robocopy "%%D" "%RES%\%%~nxD" f_*.jpg /NFL /NDL /NJH /NJS /R:1 /W:1 > nul
   goto cost
 )
 for /d %%D in ("%OUT%\look\clip_*") do (
@@ -79,6 +89,7 @@ for /d %%D in ("%OUT%\look\clip_*") do (
   )
 )
 echo clips done %date% %time% >> "%ST%"
+copy /y "%OUT%\look\*.mp4" "%RES%\" > nul 2>&1
 
 :cost
 if "%S1078_SKIP_COST%"=="1" goto done
@@ -87,7 +98,8 @@ set "PROBE_CLIP="
 set "PROBE_COST=1"
 set "PROBE_SHAPES=fitted,egg"
 set "PC_GPU_MODE=solo"
-call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\cost_log.txt" 2>&1
+rem a 20 minute ceiling: a hang can never hold the GPU solo for long (the pass takes about 8 minutes)
+call "%TMO%" 1200 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\cost_log.txt" 2>&1
 set "PC_GPU_MODE="
 findstr /c:"SHIELD1078_DONE" "%OUT%\cost_log.txt" > nul
 if errorlevel 1 (
@@ -95,6 +107,8 @@ if errorlevel 1 (
   goto finish
 )
 echo cost pass done %date% %time% >> "%ST%"
+copy /y "%OUT%\cost\shield1078.json" "%RES%\cost_branch.json" > nul 2>&1
+copy /y "%OUT%\cost_log.txt" "%RES%\" > nul 2>&1
 
 rem the same cost pass on main (today's look only, the probe copied in), so the numbers compare against main itself
 copy /y "%R%\godot\fx\test\shield_fail_probe.gd" "%HOME1078%\probe_copy.gd" > nul
@@ -117,7 +131,7 @@ set "MRUN=cost_main_%MSHA%_%RANDOM%%RANDOM%"
 set "PROBE_OUT=%OUT%\%MRUN%"
 set "PROBE_LOOKS=today"
 set "PC_GPU_MODE=solo"
-call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\cost_main_log.txt" 2>&1
+call "%TMO%" 900 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\cost_main_log.txt" 2>&1
 set "PC_GPU_MODE="
 set "PROBE_LOOKS="
 findstr /c:"SHIELD1078_DONE" "%OUT%\cost_main_log.txt" > nul

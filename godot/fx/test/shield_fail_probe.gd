@@ -162,6 +162,7 @@ func _scene(sid: String, shape: String, look: String, radius: float) -> bool:
 	OS.set_environment("VS_SHIELD_SHAPE", shape)
 	_set_look(look)
 	bench._make_fx()
+	bench.fx.defer_initial_cuts = true   # no death in these stories; keeps worker and physics jobs down
 	bench._cam(Vector3.ZERO, radius)
 	bench.fx.rng.seed = 11
 	seed(2070)
@@ -354,51 +355,78 @@ func _fac_name(f: String) -> String:
 
 # ---------------------------------------------------------------- the cost pass
 
-# PROBE_COST_SHIPS shielded ships (every shielded faction in turn) at the battle camera, all failing in the same frame
-# every 1.7 s. GPU time of the bench viewport per frame, during the failures and in a quiet window; three repeats per
-# look so the noise shows. Run it with the GPU to itself (R293).
+# PROBE_COST_SHIPS shielded ships (every shielded faction in turn), all failing in the same frame. GPU time of the bench
+# viewport per frame, during the failures and in a quiet window, at the battle camera (170) and close (60, the shields
+# fill far more pixels); three repeats per look so the noise shows. Run it with the GPU to itself (R293).
+# The fleet is built ONCE per shield shape and the look is switched in place on every ship (the first PC run rebuilt
+# eight installed ships for every row and hung in Jolt's job system on the eighth rebuild), and the death cuts are never
+# precomputed (no death here).
 func _cost() -> void:
 	var looks := _env("PROBE_LOOKS", "today,shear,shear_low,collapse").split(",")
 	var shapes := _env("PROBE_SHAPES", "fitted").split(",")
+	var radii := _env("PROBE_COST_RADII", "170,60").split(",")
 	var n := int(_env("PROBE_COST_SHIPS", "8"))
 	var subjects := ["h_boss", "c_boss", "i_boss", "cathedral", "h_dominion", "c_hulk", "i_carrier", "reliquary"]
 	var vrid: RID = bench.vp.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(vrid, true)
 	for shape in shapes:
-		for rep in 3:
-			for look in looks:
-				bench._clear()
-				OS.set_environment("VS_SHIELD_SHAPE", shape)
-				_set_look(look)
-				bench._make_fx()
-				bench._cam(Vector3.ZERO, 170.0)
-				var ids: Array = []
-				for i in n:
-					var sid: String = subjects[i % subjects.size()]
-					var p := Vector3((i % 4 - 1.5) * 30.0, 0, (int(i / 4) - 0.5) * 34.0)
-					if bench.story_ship("T%d" % i, rules_hulls[sid], p) == null:
-						_fail("placeholder or missing ship " + sid)
-						return
-					ids.append("T%d" % i)
-				await bench.fx.warmup(bench.cam)
-				for i in 90:
-					await bench._step()
-				var quiet := await _gpu_window(vrid, 60)
-				var fail_ms: Array = []
-				for cycle in 3:
+		bench._clear()
+		OS.set_environment("VS_SHIELD_SHAPE", shape)
+		_set_look("today")
+		bench._make_fx()
+		bench.fx.defer_initial_cuts = true
+		bench._cam(Vector3.ZERO, 170.0)
+		var ids: Array = []
+		for i in n:
+			var sid: String = subjects[i % subjects.size()]
+			var p := Vector3((i % 4 - 1.5) * 30.0, 0, (int(i / 4) - 0.5) * 34.0)
+			if bench.story_ship("T%d" % i, rules_hulls[sid], p) == null:
+				_fail("placeholder or missing ship " + sid)
+				return
+			ids.append("T%d" % i)
+		await bench.fx.warmup(bench.cam)
+		for i in 90:
+			await bench._step()
+		print("SHIELD1078 cost fleet ready ", shape, " ", n, " ships")
+		for r in radii:
+			bench._cam(Vector3.ZERO, float(r))
+			for i in 30:
+				await bench._step()
+			for rep in 3:
+				for look in looks:
 					for id in ids:
-						bench.fx.shield_break(id, 3)
-					var w := await _gpu_window(vrid, 96)    # 1.6 s, the whole failure
-					fail_ms.append_array(w)
-					for id in ids:
-						bench.fx.sync_ship(id, bench._unit(1.0, 5))
-					for i in 12:
-						await bench._step()
-				var row := {"shape": shape, "look": look, "repeat": rep, "ships": n,
-					"quiet_median_ms": _median(quiet), "fail_median_ms": _median(fail_ms), "fail_p95_ms": _pct(fail_ms, 0.95),
-					"fail_max_ms": _pct(fail_ms, 1.0)}
-				report["cost"].append(row)
-				print("SHIELD1078 cost ", JSON.stringify(row))
+						if not _apply_look(bench.fx.ship(id), look):
+							_fail("could not switch %s to %s" % [id, look])
+							return
+					var quiet := await _gpu_window(vrid, 60)
+					var fail_ms: Array = []
+					for cycle in 2:
+						for id in ids:
+							bench.fx.shield_break(id, 3)
+						fail_ms.append_array(await _gpu_window(vrid, 96))    # 1.6 s, the whole failure
+						for id in ids:
+							bench.fx.sync_ship(id, bench._unit(1.0, 5))
+						for i in 12:
+							await bench._step()
+					var row := {"shape": shape, "radius": int(r), "look": look, "repeat": rep, "ships": n,
+						"quiet_median_ms": _median(quiet), "fail_median_ms": _median(fail_ms), "fail_p95_ms": _pct(fail_ms, 0.95),
+						"fail_max_ms": _pct(fail_ms, 1.0)}
+					report["cost"].append(row)
+					print("SHIELD1078 cost ", JSON.stringify(row))
+
+
+# switch one ship's failure look in place (on main, which has no such setting, only today's look exists)
+func _apply_look(sh, look: String) -> bool:
+	if not ("_fail_look" in sh):
+		return look == "today"
+	var idx := ["today", "shear", "collapse"].find("shear" if look == "shear_low" else look)
+	if idx < 0 or sh._shield_mat == null:
+		return false
+	sh._fail_look = idx
+	sh._fail_low = look == "shear_low"
+	sh._shield_mat.set_shader_parameter("brk_look", idx)
+	sh._shield_mat.set_shader_parameter("brk_low", look == "shear_low")
+	return true
 
 
 func _gpu_window(vrid: RID, frames: int) -> Array:
