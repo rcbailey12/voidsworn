@@ -5,7 +5,6 @@ const WR := preload("res://world/world_rocks.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")
 const LIVING := preload("res://world/world_living.gd")
 const WS := preload("res://world/world_shaders.gd")
-static var _wreck_meshes: Array = []
 static var _wreck_mat: ShaderMaterial
 var visuals := {}   # hex key -> actual solid node, used by the coverage check
 
@@ -181,11 +180,8 @@ static func cluster_piece(parent: Node3D, mesh: Mesh, mat: Material, off: Vector
 static func hulk_fallback(parent: Node3D, p: Vector3, rng: RandomNumberGenerator) -> Node3D:
 	# Also called by the board when its painted derelict is missing. Use the
 	# surrounding debris field's torn plates, ribs, trusses and deck sections.
-	if _wreck_meshes.is_empty():
-		var kit := LIVING.new()
-		kit.rng.seed = 166
-		_wreck_meshes = kit._shard_meshes()
-		kit.free()
+	var wreck_meshes := LIVING._shard_meshes()
+	if _wreck_mat == null:
 		var sh := Shader.new()
 		# Solid blockers keep a fixed pose, including their shader geometry.
 		sh.code = LIVING.WRECK_SHADER.replace("%NOISE%", WS.NOISE).replace("TIME *", "0.0 *")
@@ -200,7 +196,7 @@ static func hulk_fallback(parent: Node3D, p: Vector3, rng: RandomNumberGenerator
 		var angle := phase + (i - 3) * TAU / 6.0
 		var off := Vector3(rng.randf_range(-1, 1), rng.randf_range(0.5, 3.0), rng.randf_range(-1, 1)) if i < 3 else Vector3(cos(angle) * 4.7, rng.randf_range(0.0, 2.5), sin(angle) * 4.7)
 		var radius := rng.randf_range(5.8, 6.6) if i < 3 else rng.randf_range(3.5, 3.8)
-		cluster_piece(n, _wreck_meshes[rng.randi() % _wreck_meshes.size()], _wreck_mat, off, radius, rng)
+		cluster_piece(n, wreck_meshes[rng.randi() % wreck_meshes.size()], _wreck_mat, off, radius, rng)
 	return n
 
 

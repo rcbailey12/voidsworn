@@ -9,6 +9,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
+const SHIP_VIEW := preload("res://render/ship_view.gd")
 
 const TRAIL_PTS := 96
 const TRAIL_LIFE := 2.6
@@ -48,7 +49,8 @@ var _moving = 0.0
 var _shield_mi: MeshInstance3D = null
 var _shield_mat: ShaderMaterial = null
 var _shield_tm: TriangleMesh = null
-# Cache plain vertex arrays, not GPU resources that outlive the render server.
+# Keep enough recent hulls for a fleet without retaining every asset or pose used in a run.
+const SHIELD_SKIN_CACHE_LIMIT := 48
 static var _shield_skin_arrays: Dictionary = {}
 var _hit_i = 0
 var _hits = PackedVector4Array()
@@ -422,6 +424,8 @@ func _build_shield(fx) -> void:
 	if shape.is_empty():
 		shape = str(ProjectSettings.get_setting("rendering/effects/shield_shape", "fitted"))
 	var skin: Mesh = _shield_skin() if shape == "fitted" else sph
+	if skin == null:
+		skin = sph
 	_shield_mat = fx.mat(SH.SHIELD, 2)
 	_shield_mat.set_shader_parameter("fitted_shape", _shield_tm != null)
 	var sc: Color = fac["shield"]
@@ -455,21 +459,69 @@ func _build_shield(fx) -> void:
 
 
 func _shield_skin() -> ArrayMesh:
+	var frames := {}
+	var box := AABB()
+	var view := root as SHIP_VIEW
+	var visual: Node3D = view.hull if view != null else null
+	var bob := visual.position - view.hull_base if visual != null else Vector3.ZERO
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi == null or mi.mesh == null:
+			continue
+		# Compose local transforms to avoid roundoff from world position and facing.
+		var frame := Transform3D.IDENTITY
+		var part: Node3D = mi
+		while part != root and part != null and not part.top_level:
+			var local := part.transform
+			if part == visual:
+				local.origin = view.hull_base
+			frame = local * frame
+			part = part.get_parent_node_3d()
+		if part != root:
+			frame = root.global_transform.affine_inverse() * mi.global_transform
+		var bounds: AABB = frame * mi.mesh.get_aabb()
+		box = bounds if frames.is_empty() else box.merge(bounds)
+		frames[mi] = frame
+	var faces := HULL.faces_of(root, meshes, null, frames)
+	if faces.is_empty():
+		return null
+	var digest := HashingContext.new()
+	digest.start(HashingContext.HASH_SHA256)
+	digest.update(var_to_bytes(box))
+	digest.update(faces.to_byte_array())
+	var key := digest.finish().hex_encode()
+	if not _shield_skin_arrays.has(key):
+		var arrays := _bake_shield_skin(box, faces)
+		if arrays.is_empty():
+			return null
+		if _shield_skin_arrays.size() >= SHIELD_SKIN_CACHE_LIMIT:
+			_shield_skin_arrays.erase(_shield_skin_arrays.keys()[0])
+		_shield_skin_arrays[key] = arrays
+	# The cache is in the unbobbed frame. Hits and the shader use coordinates
+	# relative to the active core, just as they do for the egg.
+	var posed: Array = _shield_skin_arrays[key].duplicate()
+	posed[Mesh.ARRAY_VERTEX] = Transform3D(Basis.IDENTITY, bob - hull.shield_centre()) * (posed[Mesh.ARRAY_VERTEX] as PackedVector3Array)
+	var skin := ArrayMesh.new()
+	skin.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, posed)
+	_shield_tm = TriangleMesh.new()
+	_shield_tm.create_from_faces(skin.get_faces())
+	return skin
+
+
+func _bake_shield_skin(box: AABB, faces: PackedVector3Array) -> Array:
 	# R303: offset sampled hull surfaces, rather than stretching a sphere from the
 	# core. Uniform cells along the whole hull preserve waists and open ring holes.
 	# Only the outside of the offset volume is meshed, never interior armour skins.
-	var key := str([hull.code, hull.box, hull.core, hull.tri_count])
-	if _shield_skin_arrays.has(key):
-		var cached := ArrayMesh.new()
-		cached.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, _shield_skin_arrays[key])
-		_shield_tm = TriangleMesh.new()
-		_shield_tm.create_from_faces(cached.get_faces())
-		return cached
-	var step := maxf(hull.L / 128.0, minf(hull.L / 96.0, minf(hull.W, hull.H) / 12.0))
-	var gap := maxf(minf(hull.W, hull.H) * 0.08, step * 1.5)
+	var surface := TriangleMesh.new()
+	if not surface.create_from_faces(faces):
+		return []
+	var length := maxf(box.size.x, 0.1)
+	var cross_span := maxf(minf(box.size.y, box.size.z), 0.05)
+	var step := maxf(length / 128.0, minf(length / 96.0, cross_span / 12.0))
+	var gap := maxf(cross_span * 0.08, step * 1.5)
 	var margin := gap + step * 3.0
-	var origin: Vector3 = hull.box.position - Vector3.ONE * margin
-	var size := Vector3i((hull.box.size + Vector3.ONE * margin * 2.0) / step) + Vector3i.ONE * 2
+	var origin := box.position - Vector3.ONE * margin
+	var size := Vector3i((box.size + Vector3.ONE * margin * 2.0) / step) + Vector3i.ONE * 2
 	var stride := Vector3i(1, size.x, size.x * size.y)
 	var field := PackedFloat32Array()
 	field.resize(size.x * size.y * size.z)
@@ -489,15 +541,16 @@ func _shield_skin() -> ArrayMesh:
 				start[u] += a * step
 				start[v] += b * step
 				for crossing in 128:
-					var hit: Dictionary = hull.ray(start, direction)
+					var hit := surface.intersect_ray(start, direction)
 					if hit.is_empty(): break
-					var p: Vector3 = (hit["p"] - origin) / step
+					var at: Vector3 = hit["position"]
+					var p := (at - origin) / step
 					var cell := Vector3i(p).clamp(Vector3i.ZERO, size - Vector3i.ONE)
 					var sample_i := cell.x + cell.y * stride.y + cell.z * stride.z
 					if sampled[sample_i] == 0:
 						sampled[sample_i] = 1
 						_shield_sample(field, size, stride, p, gap / step + 1.5)
-					start = hit["p"] + direction * step * 0.04
+					start = at + direction * step * 0.04
 	# Signed distance to the sampled surface. Flood from empty space, filling only
 	# sealed cavities. A ring's through-hole remains connected to outside space.
 	var threshold := (gap / step) * (gap / step)
@@ -563,6 +616,8 @@ func _shield_skin() -> ArrayMesh:
 							quad.append(_shield_vertex(nodes[one], nodes[other], field, size, stride, origin, step, shared, vertices))
 					_shield_face(quad[0], quad[1], quad[2], outward, vertices, indices)
 					if quad.size() == 4: _shield_face(quad[0], quad[2], quad[3], outward, vertices, indices)
+	if indices.is_empty():
+		return []
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
@@ -572,11 +627,7 @@ func _shield_skin() -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.create_from(raw, 0)
 	st.generate_normals()
-	var skin := st.commit()
-	_shield_skin_arrays[key] = skin.surface_get_arrays(0)
-	_shield_tm = TriangleMesh.new()
-	_shield_tm.create_from_faces(skin.get_faces())
-	return skin
+	return st.commit().surface_get_arrays(0)
 
 
 func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, stride: Vector3i, origin: Vector3, step: float, shared: Dictionary, vertices: PackedVector3Array) -> int:
@@ -587,7 +638,7 @@ func _shield_vertex(a: int, b: int, field: PackedFloat32Array, size: Vector3i, s
 	var t := clampf(field[a] / (field[a] - field[b]), 0.0, 1.0)
 	var index := vertices.size()
 	shared[key] = index
-	vertices.append(origin + pa.lerp(pb,t) * step - hull.shield_centre())
+	vertices.append(origin + pa.lerp(pb,t) * step)
 	return index
 
 
