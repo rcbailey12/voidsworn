@@ -1590,6 +1590,7 @@ var _launch_rng = -1   # the random state the newest Launch started from (Back p
 func ACT_backToSetup() -> void:
 	if RUN == null or jt(RUN.get("aspect")): return
 	if _launch_rng >= 0: META["parkedRng"] = _launch_rng
+	map_trial_choice = RUN.get("mapTrial") == true   # Test maps stays on for the next Launch (Godot only; the browser has none)
 	META["stats"]["runs"] = max(0.0, float(z0(META["stats"].get("runs"))) - 1.0)
 	RUN = null; SAVED_RUN = null; persist_save()
 	admiralScreen()

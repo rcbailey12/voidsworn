@@ -10,10 +10,25 @@ var tag := ""
 var main: Node
 
 
-var _saved_settings = null   # the player's settings file, put back byte for byte at the end (the game shares user://)
+var _saved_settings = null   # the settings file's bytes at the start; the capture never writes it, and checks that at the end
+var _failed := 0             # pictures that did not save
+
+
+# On Windows the capture runs only inside the throwaway profile frontend_ui_check.bat makes (the player-path pattern,
+# PR 1188): the real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
+func _profile_error() -> String:
+	if OS.get_name() != "Windows": return ""   # the cloud and CI have no player profile
+	var profile := OS.get_environment("VS_SHOTS_PROFILE").replace("\\", "/").simplify_path().trim_suffix("/")
+	var actual := ProjectSettings.globalize_path("user://").replace("\\", "/").simplify_path().trim_suffix("/")
+	if profile == "" or not actual.to_lower().begins_with(profile.to_lower() + "/"):
+		return "user:// (%s) is not inside a throwaway profile; run tools/pc/jobs/frontend_ui_check.bat" % actual
+	return ""
 
 
 func _initialize() -> void:
+	var perr := _profile_error()
+	if perr != "":
+		printerr("[front-end-shots] FAIL ", perr); quit(2); return
 	if FileAccess.file_exists("user://settings.json"):
 		_saved_settings = FileAccess.get_file_as_string("user://settings.json")
 	var a := OS.get_cmdline_user_args()
@@ -49,8 +64,9 @@ func _shot(name: String, caption: String) -> void:
 	if img.get_height() > 720:
 		img.resize(int(round(img.get_width() * 720.0 / img.get_height())), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join(name + ".png")
-	preload("res://tools/picture_provenance.gd").save_png(img, p)
-	print("[front-end-shots] saved ", p)
+	var err: Error = preload("res://tools/picture_provenance.gd").save_png(img, p)
+	if err != OK: _failed += 1; printerr("[front-end-shots] FAIL could not save ", p, " (", error_string(err), ")")
+	else: print("[front-end-shots] saved ", p)
 	cap.queue_free()
 
 
@@ -156,8 +172,8 @@ func _run() -> void:
 			await _shot("F5_lineage_larger", "%s, UI scale Larger, Lineage of %s" % [res, tree_id])
 	main.settings["ui_scale"] = 1.0
 	UiScale.set_player(1.0)
-	if _saved_settings != null:
-		var f := FileAccess.open("user://settings.json", FileAccess.WRITE)
-		f.store_string(_saved_settings)
-		f.close()
-	quit(0)
+	var now = FileAccess.get_file_as_string("user://settings.json") if FileAccess.file_exists("user://settings.json") else null
+	if now != _saved_settings:
+		_failed += 1; printerr("[front-end-shots] FAIL the settings file changed during the capture")
+	print("[front-end-shots] ", "PASS" if _failed == 0 else "FAIL %d problem(s)" % _failed)
+	quit(0 if _failed == 0 else 1)
