@@ -42,18 +42,31 @@ CONCEPT = dict(
 PALETTE = ('amber', 'violet', 'green')
 WEIGHTS = (55, 27, 18)
 
-# The glowing panel colour (PANEL; GLOW below is the bake's list of glowing stone zones): the concept's bright tone pushed to full saturation (the panel glows, so it carries its own light).
-PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.22, 0.75, 0.0))
+# The glowing panel colour (PANEL; GLOW below is the bake's list of glowing stone zones): the concept's bright tone pushed to
+# full saturation (the panel glows, so it carries its own light). Round 5: emerald, not lime.
+PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.03, 0.55, 0.10))
+# Round 5 (outside read, Nov 19: "flat orange, purple and lime gravel"): each panel is lit from behind, so its colour runs
+# from a DEEP tone at the lead border to a HOT tone in the middle (parts.mosaic_tint writes the graded colour per vertex).
+TONES = dict(amber=((0.40, 0.035, 0.0), (1.0, 0.40, 0.015)),
+             violet=((0.13, 0.0, 0.36), (0.62, 0.10, 1.0)),
+             green=((0.0, 0.18, 0.03), (0.20, 0.78, 0.04)))
 # The bake marks its materials authored_look (shared paint_stack.py), so godot/render/look.gd keeps these values instead of
 # applying the faction's older read caps (R329). No soft-rim mark: the pearl's own shine is the look.
 AUTHORED_LOOK = True
 SOFT_RIM = False
 # The game and the bake read these (one home for the numbers, RULEBOOK 0.9).
 LOOK = dict(
-    pearl=dict(base=lin((240, 230, 226)), metallic=0.45, roughness=0.09, coat=1.0, coat_roughness=0.05,
-               thin_film_nm=420.0, transmission=0.0, wear=0.0),
+    # Round 5: each ribbon is a bundle of fine strands (STRANDS across it), each strand its own pearl tone with a bright
+    # silver line between strands, and a facing colour shift (the iridescence) that the review shows and the game's rim
+    # approximates. Tones sampled from the concept's pearl clusters.
+    pearl=dict(base=lin((246, 236, 228)), tones=(lin((252, 238, 226)), lin((240, 212, 214)), lin((240, 222, 190)),
+                                                 lin((228, 214, 232))),
+               iris=(lin((255, 214, 150)), lin((240, 170, 205)), lin((175, 170, 245)), lin((160, 225, 225))),
+               iris_weight=0.60, strands=7.0, line=0.07, metallic=0.55, roughness=0.08, coat=1.0, coat_roughness=0.04,
+               thin_film_nm=520.0, transmission=0.0, wear=0.0),
     silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, transmission=0.0),
-    mosaic=dict(emission=1.1, roughness=0.06, coat=1.0, cell_scale=7.0, lead=0.05, sparkle=0.06, facet_tilt=0.8, transmission=0.0),
+    mosaic=dict(emission=2.6, roughness=0.10, coat=0.35, cell_scale=4.2, lead=0.045, sparkle=0.006, facet_tilt=0.45,
+                body=0.08, cell_lo=0.55, cell_hi=1.2, lead_rgb=(0.035, 0.026, 0.018), transmission=0.0),
     gem=dict(emission=3.0, roughness=0.06, transmission=0.0),
     tip=dict(base=(1.0, 0.33, 0.05), emission=9.0),
 )
@@ -115,39 +128,84 @@ def _new(name):
     return m
 
 
+def _m(nt, op, a, b=0.0):
+    """one math node; a and b are sockets or numbers"""
+    n = nt.nodes.new('ShaderNodeMath'); n.operation = op
+    for k, v in enumerate((a, b)):
+        if isinstance(v, (int, float)):
+            n.inputs[k].default_value = v
+        else:
+            nt.links.new(v, n.inputs[k])
+    return n.outputs[0]
+
+
+def _mix(nt, a, b, f):
+    """colour mix; a, b sockets or rgb tuples, f socket or number"""
+    n = nt.nodes.new('ShaderNodeMix'); n.data_type = 'RGBA'
+    for sock, v in ((n.inputs['A'], a), (n.inputs['B'], b), (n.inputs['Factor'], f)):
+        if isinstance(v, (int, float)):
+            sock.default_value = v
+        elif isinstance(v, tuple):
+            sock.default_value = tuple(v[:3]) + (1,)
+        else:
+            nt.links.new(v, sock)
+    return n.outputs['Result']
+
+
+def strands(nt, across, along):
+    """the fine strands of a pearl ribbon: (strand colour, height 0..1, silver line mask 0..1). A strand wanders a little
+    along the ribbon; neighbours take different pearl tones; a bright silver line runs between every two strands."""
+    L = LOOK['pearl']
+    n = L['strands']
+    wander = _m(nt, 'MULTIPLY', _m(nt, 'SINE', _m(nt, 'ADD', _m(nt, 'MULTIPLY', along, 19.0), _m(nt, 'MULTIPLY', across, 2.3))), 0.28)
+    s = _m(nt, 'ADD', _m(nt, 'MULTIPLY', _m(nt, 'ADD', across, 1.0), n * 0.5), wander)
+    fr = _m(nt, 'FRACT', s)
+    idx = _m(nt, 'FLOOR', s)
+    h = _m(nt, 'FRACT', _m(nt, 'MULTIPLY', _m(nt, 'SINE', _m(nt, 'MULTIPLY', idx, 12.9898)), 43758.5453))
+    t = L['tones']
+    col = _mix(nt, _mix(nt, t[0], t[1], _m(nt, 'GREATER_THAN', h, 0.55)), _mix(nt, t[2], t[3], _m(nt, 'GREATER_THAN', h, 0.30)),
+               _m(nt, 'LESS_THAN', h, 0.45))
+    height = _m(nt, 'POWER', _m(nt, 'MAXIMUM', _m(nt, 'SINE', _m(nt, 'MULTIPLY', fr, math.pi)), 0.0), 0.5)
+    edge = _m(nt, 'MINIMUM', fr, _m(nt, 'SUBTRACT', 1.0, fr))
+    line = _m(nt, 'SUBTRACT', 1.0, _m(nt, 'MINIMUM', _m(nt, 'DIVIDE', edge, L['line']), 1.0))
+    return col, height, line
+
+
 def pearl(name='gw_pearl', tint=None):
-    """opaque reflective pearl ribbon with silk lines along it (attributes gw_along, gw_across from parts.Ribbon)"""
+    """opaque reflective pearl ribbon made of fine strands with silver lines (attributes gw_along, gw_across from
+    parts.Ribbon) and a facing colour shift (iridescence)"""
     L = LOOK['pearl']
     m = _new(name); nt = m.node_tree; N, Ln = nt.nodes, nt.links
     b = _principled(m)
     base = tint or L['base']
-    b.inputs['Metallic'].default_value = L['metallic']
-    b.inputs['Roughness'].default_value = L['roughness']
     b.inputs['Coat Weight'].default_value = L['coat']
     b.inputs['Coat Roughness'].default_value = L['coat_roughness']
     if 'Thin Film Thickness' in b.inputs:
         b.inputs['Thin Film Thickness'].default_value = L['thin_film_nm']
-        b.inputs['Thin Film IOR'].default_value = 1.45
-    b.inputs['Sheen Weight'].default_value = 0.35
-    b.inputs['Sheen Tint'].default_value = (1.0, 0.86, 0.80, 1)
-    # Silk lines: a soft wave across the ribbon, drifting along it, as a value and a faint bump (no noise grain).
+        b.inputs['Thin Film IOR'].default_value = 1.8
     across = N.new('ShaderNodeAttribute'); across.attribute_name = 'gw_across'
     along = N.new('ShaderNodeAttribute'); along.attribute_name = 'gw_along'
-    m1 = N.new('ShaderNodeMath'); m1.operation = 'MULTIPLY'; m1.inputs[1].default_value = 9.0
-    m2 = N.new('ShaderNodeMath'); m2.operation = 'MULTIPLY'; m2.inputs[1].default_value = 7.0
-    add = N.new('ShaderNodeMath'); add.operation = 'ADD'
-    sin = N.new('ShaderNodeMath'); sin.operation = 'SINE'
-    Ln.new(across.outputs['Fac'], m1.inputs[0]); Ln.new(along.outputs['Fac'], m2.inputs[0])
-    Ln.new(m1.outputs[0], add.inputs[0]); Ln.new(m2.outputs[0], add.inputs[1]); Ln.new(add.outputs[0], sin.inputs[0])
-    ramp = N.new('ShaderNodeValToRGB')
-    ramp.color_ramp.elements[0].position = 0.0
-    ramp.color_ramp.elements[0].color = tuple(c * 0.80 for c in base) + (1,)
-    ramp.color_ramp.elements[1].color = tuple(min(1, c * 1.06) for c in base) + (1,)
-    rescale = N.new('ShaderNodeMapRange'); rescale.inputs['From Min'].default_value = -1.0
-    Ln.new(sin.outputs[0], rescale.inputs['Value']); Ln.new(rescale.outputs['Result'], ramp.inputs['Fac'])
-    Ln.new(ramp.outputs['Color'], b.inputs['Base Color'])
-    bump = N.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = 0.12; bump.inputs['Distance'].default_value = 0.02
-    Ln.new(rescale.outputs['Result'], bump.inputs['Height']); Ln.new(bump.outputs['Normal'], b.inputs['Normal'])
+    col, height, line = strands(nt, across.outputs['Fac'], along.outputs['Fac'])
+    # iridescence: the colour shifts gold -> rose -> lilac -> aqua as the surface turns from the eye
+    lw = N.new('ShaderNodeLayerWeight'); lw.inputs['Blend'].default_value = 0.45
+    ramp = N.new('ShaderNodeValToRGB'); cr = ramp.color_ramp
+    iris = L['iris']
+    cr.elements[0].position = 0.15; cr.elements[0].color = tuple(iris[0]) + (1,)
+    cr.elements[1].position = 0.85; cr.elements[1].color = tuple(iris[3]) + (1,)
+    for pos, c in ((0.38, iris[1]), (0.62, iris[2])):
+        e = cr.elements.new(pos); e.color = tuple(c) + (1,)
+    # the strand phase shifts the colour band too, so neighbouring strands shimmer differently
+    ph = _m(nt, 'FRACT', _m(nt, 'ADD', lw.outputs['Facing'], _m(nt, 'MULTIPLY', height, 0.18)))
+    Ln.new(ph, ramp.inputs['Fac'])
+    irisw = _m(nt, 'MULTIPLY', _m(nt, 'POWER', lw.outputs['Facing'], 0.8), L['iris_weight'])
+    col = _mix(nt, col, ramp.outputs['Color'], irisw)
+    col = _mix(nt, col, (0.97, 0.96, 0.95), line)
+    Ln.new(col, b.inputs['Base Color'])
+    Ln.new(_m(nt, 'ADD', L['metallic'], _m(nt, 'MULTIPLY', line, 1 - L['metallic'])), b.inputs['Metallic'])
+    Ln.new(_m(nt, 'SUBTRACT', L['roughness'], _m(nt, 'MULTIPLY', line, 0.04)), b.inputs['Roughness'])
+    bump = N.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = 0.35; bump.inputs['Distance'].default_value = 0.02
+    Ln.new(_m(nt, 'SUBTRACT', height, _m(nt, 'MULTIPLY', line, 0.4)), bump.inputs['Height'])
+    Ln.new(bump.outputs['Normal'], b.inputs['Normal'])
     m.diffuse_color = tuple(base) + (1,)
     return m
 
@@ -179,8 +237,8 @@ def mosaic(name='gw_mosaic'):
     edges = N.new('ShaderNodeTexVoronoi'); edges.voronoi_dimensions = '3D'; edges.feature = 'DISTANCE_TO_EDGE'
     edges.inputs['Scale'].default_value = L['cell_scale']
     Ln.new(tc.outputs['Object'], cells.inputs['Vector']); Ln.new(tc.outputs['Object'], edges.inputs['Vector'])
-    # per-cell brightness 0.55..1.35
-    cr = N.new('ShaderNodeMapRange'); cr.inputs['To Min'].default_value = 0.25; cr.inputs['To Max'].default_value = 1.45
+    # per-cell brightness (round 5: a narrower spread, so the panel reads as one lit leaf, not gravel)
+    cr = N.new('ShaderNodeMapRange'); cr.inputs['To Min'].default_value = L['cell_lo']; cr.inputs['To Max'].default_value = L['cell_hi']
     sep = N.new('ShaderNodeSeparateColor')
     Ln.new(cells.outputs['Color'], sep.inputs['Color']); Ln.new(sep.outputs['Red'], cr.inputs['Value'])
     lead = N.new('ShaderNodeMapRange'); lead.inputs['From Min'].default_value = L['lead'] * 0.5
@@ -194,13 +252,13 @@ def mosaic(name='gw_mosaic'):
     Ln.new(tint.outputs['Color'], col.inputs['A'])
     # base colour: the tint, darkened on the leading
     dark = N.new('ShaderNodeMix'); dark.data_type = 'RGBA'
-    dark.inputs['B'].default_value = (0.22, 0.15, 0.08, 1)  # dark bronze leading between the cells (metal, so it glints)
+    dark.inputs['B'].default_value = tuple(L['lead_rgb']) + (1,)  # dark leading between the cells (metal, so it glints)
     inv = N.new('ShaderNodeMath'); inv.operation = 'SUBTRACT'; inv.inputs[0].default_value = 1.0
     Ln.new(lead.outputs['Result'], inv.inputs[1])
     Ln.new(inv.outputs[0], dark.inputs['Factor'])
     Ln.new(inv.outputs[0], b.inputs['Metallic'])  # the leading is metal
     deep = N.new('ShaderNodeMix'); deep.data_type = 'RGBA'; deep.blend_type = 'MULTIPLY'; deep.inputs['Factor'].default_value = 1.0
-    deep.inputs['B'].default_value = (0.18, 0.18, 0.18, 1)  # a deep body colour: the glow, not the lit surface, carries the hue
+    deep.inputs['B'].default_value = (L['body'],) * 3 + (1,)  # a deep body colour: the glow, not the lit surface, carries the hue
     Ln.new(tint.outputs['Color'], deep.inputs['A']); Ln.new(deep.outputs['Result'], dark.inputs['A'])
     Ln.new(dark.outputs['Result'], b.inputs['Base Color'])
     Ln.new(tint.outputs['Color'], b.inputs['Emission Color'])
@@ -208,7 +266,7 @@ def mosaic(name='gw_mosaic'):
     sp = N.new('ShaderNodeTexVoronoi'); sp.voronoi_dimensions = '3D'; sp.inputs['Scale'].default_value = L['cell_scale'] * 3.1
     Ln.new(tc.outputs['Object'], sp.inputs['Vector'])
     sps = N.new('ShaderNodeSeparateColor'); Ln.new(sp.outputs['Color'], sps.inputs['Color'])
-    spr = N.new('ShaderNodeMapRange'); spr.inputs['From Min'].default_value = 1 - L['sparkle']; spr.inputs['To Max'].default_value = 6.0
+    spr = N.new('ShaderNodeMapRange'); spr.inputs['From Min'].default_value = 1 - L['sparkle']; spr.inputs['To Max'].default_value = 2.5
     spr.clamp = True
     Ln.new(sps.outputs['Green'], spr.inputs['Value'])
     tot = N.new('ShaderNodeMath'); tot.operation = 'ADD'
@@ -265,14 +323,14 @@ def lance_pearl(name='gw_lance'):
     m = pearl(name)
     nt = m.node_tree; N, Ln = nt.nodes, nt.links
     b = nt.nodes.get('Principled BSDF')
-    ramp_in = [l for l in nt.links if l.to_socket == b.inputs['Base Color']][0].from_node
+    ramp_in = [l for l in nt.links if l.to_socket == b.inputs['Base Color']][0].from_socket
     tc = N.new('ShaderNodeTexCoord'); sep = N.new('ShaderNodeSeparateXYZ')
     Ln.new(tc.outputs['Object'], sep.inputs['Vector'])
     mr = N.new('ShaderNodeMapRange'); mr.inputs['From Min'].default_value = 2.0; mr.inputs['From Max'].default_value = 9.5
     Ln.new(sep.outputs['X'], mr.inputs['Value'])
     mix = N.new('ShaderNodeMix'); mix.data_type = 'RGBA'
     mix.inputs['B'].default_value = tuple(PANEL['violet']) + (1,)
-    Ln.new(mr.outputs['Result'], mix.inputs['Factor']); Ln.new(ramp_in.outputs['Color'], mix.inputs['A'])
+    Ln.new(mr.outputs['Result'], mix.inputs['Factor']); Ln.new(ramp_in, mix.inputs['A'])
     Ln.new(mix.outputs['Result'], b.inputs['Base Color'])
     em = N.new('ShaderNodeMath'); em.operation = 'MULTIPLY'; em.inputs[1].default_value = 1.2
     Ln.new(mr.outputs['Result'], em.inputs[0]); Ln.new(em.outputs[0], b.inputs['Emission Strength'])
@@ -306,7 +364,7 @@ def setup(kit):
 SCALE = 1.0
 EMISSIVE_ATLAS = True
 EMISSIVE_STRENGTH = 1.6          # the atlas holds emission / this (8-bit maps clip at 1); the material multiplies it back
-CELLS_PER_LENGTH = 180.0         # about 7 mosaic cells per world unit on a 26-unit Ark, as in the review materials
+CELLS_PER_LENGTH = 109.0         # LOOK mosaic cell_scale (4.2 per world unit) on a 26-unit Ark, as in the review
 LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14, bump_distance=.0004, bump_strength=.30)
 ZONES = {z: {} for z in ('gw_pearl', 'gw_silver', 'gw_mosaic', 'gw_lance')}
 ZONES.update({z: {} for z in ('cd5_frame', 'cd5_amber', 'cd5_violet', 'cd5_green', 'cd5_clear', 'cd5_silver')})
@@ -333,15 +391,15 @@ def surface_layers(c, zone, tiles):
     if zone in ('gw_pearl', 'gw_lance'):
         L = LOOK['pearl']
         across, along = _attr(nt, 'gw_across').outputs['Fac'], _attr(nt, 'gw_along').outputs['Fac']
-        wave = math_(nt, 'SINE', math_(nt, 'ADD', math_(nt, 'MULTIPLY', across, 9.0), math_(nt, 'MULTIPLY', along, 7.0)))
-        f = math_(nt, 'ADD', math_(nt, 'MULTIPLY', wave, 0.5), 0.5)
-        base = tuple(L['base'])
-        col = mixc(nt, tuple(v * 0.80 for v in base), tuple(min(1.0, v * 1.06) for v in base), f)
+        col, height, line = strands(nt, across, along)    # the same strands and silver lines as the review material
+        col = _mix(nt, col, (0.97, 0.96, 0.95), line)
         if zone == 'gw_lance':      # pearl at the root shading to violet toward the tip (x, length one: 0.19 to 0.48)
             t = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(c.x, t.inputs[0])
             t.inputs[1].default_value = 0.19; t.inputs[2].default_value = 0.48
             col = mixc(nt, col, PANEL['violet'], t.outputs[0])
-        return col, math_(nt, 'MULTIPLY', f, 0.3), math_(nt, 'ADD', L['roughness'], 0.0), L['metallic']
+        metal = _m(nt, 'ADD', L['metallic'], _m(nt, 'MULTIPLY', line, 1 - L['metallic']))
+        rough = _m(nt, 'SUBTRACT', L['roughness'], _m(nt, 'MULTIPLY', line, 0.04))
+        return col, _m(nt, 'MULTIPLY', _m(nt, 'SUBTRACT', height, _m(nt, 'MULTIPLY', line, 0.4)), 0.3), rough, metal
     if zone in ('gw_silver', 'cd5_silver'):
         L = LOOK['silver']
         return mixc(nt, L['base'], L['base'], 0.0), zero, math_(nt, 'ADD', L['roughness'], 0.0), L['metallic']
@@ -355,7 +413,7 @@ def surface_layers(c, zone, tiles):
         nt.links.new(c.pos, cells.inputs['Vector']); nt.links.new(c.pos, edges.inputs['Vector'])
         sep = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(cells.outputs['Color'], sep.inputs[0])
         bright = node(nt, 'ShaderNodeMapRange'); nt.links.new(sep.outputs[0], bright.inputs[0])
-        bright.inputs[3].default_value = 0.25; bright.inputs[4].default_value = 1.45
+        bright.inputs[3].default_value = L['cell_lo']; bright.inputs[4].default_value = L['cell_hi']
         lead = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(edges.outputs['Distance'], lead.inputs[0])
         lead.inputs[1].default_value = L['lead'] * 0.5; lead.inputs[2].default_value = L['lead']
         inner = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', bright.outputs[0], lead.outputs[0]), glow)
@@ -363,11 +421,11 @@ def surface_layers(c, zone, tiles):
         nt.links.new(c.pos, sp.inputs['Vector'])
         sps = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(sp.outputs['Color'], sps.inputs[0])
         spark = node(nt, 'ShaderNodeMapRange', clamp=True); nt.links.new(sps.outputs[1], spark.inputs[0])
-        spark.inputs[1].default_value = 1 - L['sparkle']; spark.inputs[4].default_value = 6.0
+        spark.inputs[1].default_value = 1 - L['sparkle']; spark.inputs[4].default_value = 2.5
         energy = math_(nt, 'MULTIPLY', math_(nt, 'ADD', inner, spark.outputs[0]), L['emission'] / EMISSIVE_STRENGTH)
         emission = mulc(nt, tint, energy)
-        body = mulc(nt, tint, 0.18)
-        col = mixc(nt, (0.22, 0.15, 0.08), body, lead.outputs[0])      # dark bronze leading between the cells
+        body = mulc(nt, tint, L['body'])
+        col = mixc(nt, L['lead_rgb'], body, lead.outputs[0])      # dark leading between the cells
         metal = math_(nt, 'SUBTRACT', 1.0, lead.outputs[0])
         return col, math_(nt, 'MULTIPLY', sep.outputs[1], 0.6), math_(nt, 'ADD', L['roughness'], 0.0), metal, emission
     # inside zones (break-up only) and anything unlisted: a dim pearl-grey glass

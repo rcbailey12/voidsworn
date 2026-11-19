@@ -104,24 +104,48 @@ def leaf(p=0.7, floor=0.0, peak=0.5, tip=None):
     return f
 
 
-def mosaic_tint(x, a, gaps, palette, weights, seed=0):
-    """which panel colour a core point carries. `gaps` gives (gap index, along-coordinate) for the point; each gap is cut into
-    leaf-length bays and every bay picks one colour from the palette by weight, so panels read as leaves of one colour each,
-    never salt and pepper. Returns (rgb, glow) where glow falls to the panel's lead border."""
-    g, along = gaps(x, a)
-    bay = math.floor(along)
-    frac = along - bay
+def _pick(g, bay, palette, weights, seed):
     h = math.sin(g * 12.9898 + bay * 78.233 + seed * 3.7) * 43758.5453
     h = h - math.floor(h)
-    total = sum(weights)
-    acc = 0.0
+    total, acc = sum(weights), 0.0
     for colour, w in zip(palette, weights):
         acc += w / total
         if h <= acc:
             break
-    # Brighter in the middle of each leaf, dimmer at the ends where two leaves meet (stained-glass leading).
-    glow = 0.35 + 0.65 * math.sin(math.pi * frac) ** 0.6
-    return colour, glow
+    return colour
+
+
+def mosaic_tint(x, a, gaps, palette, weights, seed=0, tones=None):
+    """the colour and glow a core point carries. `gaps` gives (gap index, along-coordinate[, across 0..1]) for the point;
+    each gap is cut into leaf-length bays and every bay picks one colour from the palette by weight, so panels read as
+    leaves of one colour each, never salt and pepper.
+
+    R337 round 5 (outside read: "flat blocks, not lit from behind"): a panel is lit from behind, so its glow is hottest in
+    the middle and falls to dark at its lead border, along AND across; with `tones` (name -> (deep rgb, hot rgb)) the colour
+    itself runs from the deep tone at the border to the hot tone in the middle, and near a bay end it runs into the next
+    leaf's colour along the flow. Returns (rgb or palette name, glow)."""
+    r = gaps(x, a)
+    g, along = r[0], r[1]
+    across = r[2] if len(r) > 2 else 0.5
+    bay = math.floor(along)
+    frac = along - bay
+    colour = _pick(g, bay, palette, weights, seed)
+    # the ribbons hide the outer quarter of a gap each side, so the fall-off is steep across: dark at the visible border
+    glow = (max(0.0, math.sin(math.pi * frac)) ** 1.2) * (max(0.0, math.sin(math.pi * min(1.0, max(0.0, across)))) ** 3.0)
+    glow = 0.06 + 0.94 * glow
+    if not tones:
+        return colour, glow
+    def tone(name, k):
+        deep, hot = tones[name]
+        return [d + (h - d) * k for d, h in zip(deep, hot)]
+    rgb = tone(colour, glow ** 1.5)
+    # run into the neighbouring leaf along the flow over the last fifth of the bay
+    edge = min(frac, 1 - frac)
+    if edge < 0.2:
+        other = _pick(g, bay + (1 if frac > 0.5 else -1), palette, weights, seed)
+        w = 0.5 * (1 - edge / 0.2) ** 2
+        rgb = [c + (o - c) * w for c, o in zip(rgb, tone(other, glow ** 1.5))]
+    return tuple(rgb), glow
 
 
 def cut_lens(centre, axis, radius, depth, sides=12, ry=None, rz=None):
