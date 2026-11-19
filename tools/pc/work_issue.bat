@@ -148,6 +148,7 @@ set "RC=0"
 set "CHECKS_OK=0"
 rem R276: all nested GPU launchers inherit the issue and the code-only lane.
 set "PC_GPU_ISSUE=%N%"
+if not defined PC_GPU_WAIT_SECONDS set "PC_GPU_WAIT_SECONDS=1800"
 set "PC_GPU_LANE="
 echo %R%| findstr /i /c:"board_c" >nul
 if not errorlevel 1 set "PC_GPU_LANE=C"

@@ -305,6 +305,16 @@ graphicsa card can actually handle as a 5080. we don't want to overwhelm it but 
 jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
 (R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
 
+The PC watchdog caps each solo claim at 1200 seconds by default. A longer bench sets `PC_GPU_SOLO_MAX_S` for that
+step, and a job with several timed sessions claims the card once per session. Each wrapped step has a ceiling sized to
+its own work and an idle check for console output, new files in its output folder, and CPU time across its tree. The
+idle limit is 300 seconds for Godot and 600 seconds for Blender and other tools. A step can raise it with `TMO_IDLE_S`.
+Known fatal lines and 50 consecutive copies of one error line stop the step immediately. A stop returns 124, keeps the
+child logs, and records the step and reason in `timeouts.log`. The watchdog verifies the tree is gone before releasing
+the GPU claim. GPU admission has its own clock, with an 1800-second default in the agent runners and 3600 in the shared
+ship runner. A Jolt stall in the issue 1078 probe held the GPU solo for almost an hour and queued work timed out behind
+it (Board, Nov 19, issue 1192).
+
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
 arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
 hours; CODEX_CAP and WORK_CAP override the ceiling in seconds). Progress is a changed file write time in the run repo,
