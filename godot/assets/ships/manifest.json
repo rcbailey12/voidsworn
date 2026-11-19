@@ -1766,6 +1766,210 @@
     }
    },
    "pc_path": "godot/assets/ships/V1b_r_23/"
+  },
+  "voidsworn_SF3": {
+   "name": "Spire Dart fighter, the Sunward fighter wing craft (Sunward Crusade)",
+   "faction": "voidsworn",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "fighter",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 3,
+    "engine": 2,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 1,
+   "files": {
+    "voidsworn_SF3.glb": {
+     "bytes": 1977512,
+     "sha256": "1983326cbfae38996c172a5101bf421e1d31dc29b4664bd19a3b5451956957ac"
+    },
+    "voidsworn_SF3_base.jpg": {
+     "bytes": 1167218,
+     "sha256": "4ebe918c6cff4c51c464f3a9abf8e3b5c542ced5e203a932ffcf21ebf1c8f8e0"
+    },
+    "voidsworn_SF3_glow_emission.jpg": {
+     "bytes": 434604,
+     "sha256": "3437c675836a9efe18345d8346bb4644e2a86f3006f47bd12665f38ac7768ca1"
+    },
+    "voidsworn_SF3_normal.jpg": {
+     "bytes": 570725,
+     "sha256": "2b1bd61c20736d4bfb92d19a6432ea7fb52a02faf377cda113ea10ef5749cee8"
+    },
+    "voidsworn_SF3_orm.jpg": {
+     "bytes": 1558000,
+     "sha256": "ce233192c8eeddb6e6a046a896ebe7a8085f57983f8412e28b9faf8277ac104c"
+    },
+    "voidsworn_SF3_parts_base.jpg": {
+     "bytes": 639993,
+     "sha256": "a13b8fd096fdc2073ebc70fb4d3130a3750db417b8631014d7525e6065175139"
+    },
+    "voidsworn_SF3_parts_normal.jpg": {
+     "bytes": 349491,
+     "sha256": "15d1565aa4f86bfbd25cbd05f727137d36e21dc6b497af64e0e0f341c8164e89"
+    },
+    "voidsworn_SF3_parts_orm.jpg": {
+     "bytes": 894042,
+     "sha256": "77195aa43744eba6af7e83d42716416629b094193e349973a66aa32e01992470"
+    }
+   },
+   "pc_path": "godot/assets/ships/voidsworn_SF3/",
+   "wing_role": "fighter"
+  },
+  "hegemony_HF1D": {
+   "name": "Spined Shield fighter, the Hegemony fighter wing craft (Hegemony Navy)",
+   "faction": "hegemony",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "fighter",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 3,
+    "engine": 1,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 1,
+   "files": {
+    "hegemony_HF1D.glb": {
+     "bytes": 1759176,
+     "sha256": "f0875b8901384cc3d3522b8ce8f7d5ad2f7494bcb67c0eb75a6bdd252d561076"
+    },
+    "hegemony_HF1D_base.jpg": {
+     "bytes": 1201684,
+     "sha256": "adbffb3e7164f48853de3af554c6c30303b28bae4466eaad75d61c646d16fe37"
+    },
+    "hegemony_HF1D_glow_emission.jpg": {
+     "bytes": 133985,
+     "sha256": "ceb73dc97069df5249df97a0c1516e486c9706f01ecdcb67bd0262bb67b7c023"
+    },
+    "hegemony_HF1D_normal.jpg": {
+     "bytes": 486141,
+     "sha256": "a49711d5a709e455cbee8e10dae84f1886ae165e6078356671eb3c1aab3270ba"
+    },
+    "hegemony_HF1D_orm.jpg": {
+     "bytes": 1487670,
+     "sha256": "d1735347c2837c06be9a15ed904051cb4b0d2d1f542db35a4a2a08cb8c0c28a8"
+    },
+    "hegemony_HF1D_parts_base.jpg": {
+     "bytes": 372229,
+     "sha256": "c2eb962e8fccbb0a4fa1986831bb69a0fe4611453c33205f3aeb9a49275400d5"
+    },
+    "hegemony_HF1D_parts_normal.jpg": {
+     "bytes": 432820,
+     "sha256": "a87997fe5f8af26fae5d93919bc5c50f7b6633be770cdf7ad989cf8dc778e656"
+    },
+    "hegemony_HF1D_parts_orm.jpg": {
+     "bytes": 556875,
+     "sha256": "2119c52202da9bd9790e3abcb8786b4658bffe714d57d22e6166f075adfc6bc2"
+    }
+   },
+   "pc_path": "godot/assets/ships/hegemony_HF1D/",
+   "wing_role": "fighter"
+  },
+  "voidsworn_SB4": {
+   "name": "Magazine Block bomber, the Sunward bomber wing craft (Sunward Crusade)",
+   "faction": "voidsworn",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "bomber",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 2,
+    "engine": 4,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 0,
+   "files": {
+    "voidsworn_SB4.glb": {
+     "bytes": 2387292,
+     "sha256": "4398c50b3976d6bfa8502a326751e161dd54533f82cebaa9afef1b9233c81623"
+    },
+    "voidsworn_SB4_base.jpg": {
+     "bytes": 1028040,
+     "sha256": "88f6f7bef2f8883b603d1bf107d96f39e21fbeb75c555ad8da89e421d5397ca4"
+    },
+    "voidsworn_SB4_glow_emission.jpg": {
+     "bytes": 517753,
+     "sha256": "e0dec957e4b74301be38d7a3a9a64c5324a8fe6d7502ceac3c3bf41def0d16f3"
+    },
+    "voidsworn_SB4_normal.jpg": {
+     "bytes": 459947,
+     "sha256": "4211ab34a1c2eedfa32a94d3c38794f7532cd2eee08bce0af6e06e02b0d8a6c4"
+    },
+    "voidsworn_SB4_orm.jpg": {
+     "bytes": 1420189,
+     "sha256": "1cfba94954a9ad816890ff09a0d6096b7550107edbfc94d9d8994bf3ad7d1e24"
+    },
+    "voidsworn_SB4_parts_base.jpg": {
+     "bytes": 707826,
+     "sha256": "92eb60ae0d663d4e6f23612de02073a6a9b5e1715baeb902b6563a72a7a3f4f6"
+    },
+    "voidsworn_SB4_parts_normal.jpg": {
+     "bytes": 251438,
+     "sha256": "2328c3d3fbe43ce7f9c4450b0aefa1e789d504daf1d45707d4f3ef88d44d1b60"
+    },
+    "voidsworn_SB4_parts_orm.jpg": {
+     "bytes": 1030829,
+     "sha256": "5ceeeccfb3f8bc27f6aae7d5c9e5968348311573310eb1ea449ddbbb79417546"
+    }
+   },
+   "pc_path": "godot/assets/ships/voidsworn_SB4/",
+   "wing_role": "bomber"
+  },
+  "corsair_KB1CC": {
+   "name": "Wide Glacis bomber, the Hullbreaker bomber wing craft (Ashfall Hullbreakers)",
+   "faction": "corsair",
+   "cls": "Squadron",
+   "band": "S",
+   "game_ship": "bomber",
+   "length_world": 1.6,
+   "hardpoints": {
+    "gun": 2,
+    "engine": 7,
+    "core": 1
+   },
+   "breaches": 0,
+   "turrets": 0,
+   "files": {
+    "corsair_KB1CC.glb": {
+     "bytes": 5662976,
+     "sha256": "e7f37c07fbbf6fd1785f8fa7bb4afb50aaa3c7f602862bc2f21742ccb26526a1"
+    },
+    "corsair_KB1CC_base.jpg": {
+     "bytes": 966878,
+     "sha256": "394f1a2f7669b33274a4b677f6f877d9ab918d8d3aea7782c9d993a2927ad89e"
+    },
+    "corsair_KB1CC_glow_emission.jpg": {
+     "bytes": 264837,
+     "sha256": "d1c0a442e8d6c2c715012382b2baeacbb0307ea4a8d6fec660af3a1ecd98b951"
+    },
+    "corsair_KB1CC_normal.jpg": {
+     "bytes": 409385,
+     "sha256": "a5ffe4c70f17383e479b27a2ad82ab438d8c787e2003a50f172779a6fbc39e4c"
+    },
+    "corsair_KB1CC_orm.jpg": {
+     "bytes": 1382155,
+     "sha256": "88a8c549f1a1c432a3eae73af1e0e3b7f8883b0ac7872532838263e35c27133c"
+    },
+    "corsair_KB1CC_parts_base.jpg": {
+     "bytes": 835409,
+     "sha256": "fa4bf7eeb2a1c18520903427f2301521e8628bc0b45830a6acfbb1e3113f7077"
+    },
+    "corsair_KB1CC_parts_normal.jpg": {
+     "bytes": 388189,
+     "sha256": "8da7fb9e59e54c1c17c2945b332197256c581d260567af81bcbc5299a045046a"
+    },
+    "corsair_KB1CC_parts_orm.jpg": {
+     "bytes": 1310520,
+     "sha256": "5e7d3d3f19a30995a96042f3e5f6d69efc6e871b9c1141e6e262bc2a6e7c31f5"
+    }
+   },
+   "pc_path": "godot/assets/ships/corsair_KB1CC/",
+   "wing_role": "bomber"
   }
  }
 }
