@@ -18,6 +18,7 @@ const WR := preload("res://world/world_rocks.gd")
 const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
+const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
 
 const HD := preload("res://world/hull_debris.gd")
 var _chunk_task := -1
@@ -43,6 +44,21 @@ var gas_route := selected_route()
 static func selected_route() -> String:
 	var route := OS.get_environment("VS_NEBULA_ROUTE")
 	return "today" if route == "today" else "fog"
+
+
+static func apply_fog(parent: Node, env: Environment, camera_radius: float, quality: String) -> void:
+	env.volumetric_fog_enabled = quality == "max" and selected_route() == "fog"
+	if not env.volumetric_fog_enabled:
+		return
+	RenderingServer.environment_set_volumetric_fog_volume_size(128, 128)
+	env.volumetric_fog_density = 0.0001
+	env.volumetric_fog_length = maxf(250.0, camera_radius + 200.0)
+	# Short electrical flashes must not leave temporal ghosts.
+	env.volumetric_fog_temporal_reprojection_enabled = false
+	if not parent.has_node("NebulaHulls"):
+		var policy := NEBULA_HULLS.new()
+		policy.name = "NebulaHulls"
+		parent.add_child(policy)
 
 var fog_mats: Array[ShaderMaterial] = []
 var _fog_noise: ImageTexture3D = null
@@ -1143,6 +1159,7 @@ void fragment() {
 """
 
 const WRECK_NAMES := ["hull_fragment", "broken_frame", "truss", "hull_section", "engine_bell", "weapon_sponson"]
+const WRECK_DIR := "res://world/wreckage/"
 static var _wreck_mesh_cache: Array = []
 
 
@@ -1205,25 +1222,37 @@ static func add_debris_rocks(batch, pieces: Array, mat: Material) -> void:
 
 
 static func _shard_meshes() -> Array:
-	if not _wreck_mesh_cache.is_empty():
-		return _wreck_mesh_cache
+	if _wreck_mesh_cache.is_empty():
+		_wreck_mesh_cache = _load_wreck_kit(WRECK_DIR)
+	return _wreck_mesh_cache
+
+
+static func _load_wreck_kit(directory: String) -> Array:
+	var meshes: Array = []
 	for piece in WRECK_NAMES:
-		var path: String = "res://world/wreckage/" + piece + ".glb"
+		var path := directory.path_join(piece + ".glb")
 		var node: Node = null
-		if ResourceLoader.exists(path):
-			node = (load(path) as PackedScene).instantiate()
-		elif FileAccess.file_exists(path):
+		if ResourceLoader.exists(path, "PackedScene"):
+			var scene := ResourceLoader.load(path, "PackedScene") as PackedScene
+			if scene != null:
+				node = scene.instantiate()
+		if node == null and FileAccess.file_exists(path):
 			# Also work in the runner's fresh checkout before editor import.
 			var doc := GLTFDocument.new()
 			var state := GLTFState.new()
 			if doc.append_from_buffer(FileAccess.get_file_as_bytes(path), "", state) == OK:
 				node = doc.generate_scene(state)
-		assert(node != null, "Missing wreck kit: " + path)
-		var mi := WR._find_mesh(node)
-		assert(mi != null and mi.mesh != null, "Empty wreck kit: " + path)
-		_wreck_mesh_cache.append(mi.mesh)
-		node.free()
-	return _wreck_mesh_cache
+		var mi := WR._find_mesh(node) if node != null else null
+		var mesh: Mesh = mi.mesh if mi != null else null
+		if node != null:
+			node.free()
+		if mesh == null or mesh.get_faces().size() < 3 or not mesh.get_aabb().has_surface():
+			push_warning("Wreck kit is missing or empty at %s. Using a solid fragment." % path)
+			var fragment := BoxMesh.new()
+			fragment.size = Vector3(1.8, 0.65, 1.1)
+			return [fragment]
+		meshes.append(mesh)
+	return meshes
 
 # ---------------------------------------------------------------- the gravity well
 

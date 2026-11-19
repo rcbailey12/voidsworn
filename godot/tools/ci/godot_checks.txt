@@ -11,6 +11,7 @@
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
+headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issue 1075: protocol offer cards explain current fleet fit, caps and refits; fixed seeds prove the pool, draws and saves are read-only
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
@@ -48,7 +49,7 @@ headless|story/test/story_test.gd|-|-|story data, career records, battle voice o
 headless|scenes/battle/test/fan_range_test.gd|-|-|issue 1045: drawn firing arcs agree with rules at hex centres for ranges 1 to 6 and report range 7
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
 headless|portraits/test/campaign_face_check.gd|-|-|issue 737: the campaign screen's face hook passes an Eclipse admiral's level 0, 3 and 8 to portraits.face and the picture changes with level; C.ADMIRALS factions match crests/index.json for every admiral, by name
-headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory
+headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory; result stings end on hand-off
 headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
@@ -67,6 +68,7 @@ headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
 headless|fx/test/flash_projection.gd|-|-|issue 1116: projected flash width and the three-flash cap at the edge, with and without pixel floors
 headless|fx/test/shield_flash_booking.gd|-|-|issue 1116: a torpedo shield crackle books one picture at its drawn centre and size, or none in calm mode
+headless|fx/test/shield_cache_check.gd|-|-|issue 1130: stable bounded fitted shield cache, geometry replacement, contact and puff cleanup
 headless|fx/test/hit_recipe_check.gd|-|-|issue 461: the hit ladder, a recipe per weapon family, thrown matter outliving flame, outward direction, torpedo light reach, zero flashes in calm mode, the lance kill's clean cut
 headless|fx/test/hit_fragments_check.gd|-|-|issue 1000: closed hull fragment meshes, faction paint and glass, larger macro bursts, outward motion, bounded pools and the shared hit random sequence; issue 1117: a real dent rebuild preserves chip paint and UVs on the struck surface
 headless|fx/test/broadside_mount_check.gd|-|-|issue 1117: every muzzle tier checks fixed gun bearing and turret reach, a broadside leaves from the facing flank, and missing muzzles use plating or skip the effect

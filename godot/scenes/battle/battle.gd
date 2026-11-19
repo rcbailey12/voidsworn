@@ -30,6 +30,8 @@ const Sfx := preload("res://audio/sfx.gd")
 const DeathAudio := preload("res://audio/death_audio.gd")
 const Backdrop := preload("res://render/backdrop.gd")
 const PG := preload("res://render/placeholder_guard.gd")
+const LOOK := preload("res://render/look.gd")
+const LIVING := preload("res://world/world_living.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -314,10 +316,8 @@ func _build_world() -> void:
 	fill.light_energy = 0.5
 	add_child(fill)
 	_apply_quality(str(args.get("quality", "max")))
-	# G4's look (tonemap, exposure, glow, ambient, key and fill) when it is in the build
-	if ResourceLoader.exists("res://render/look.gd"):
-		load("res://render/look.gd").apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
-		key.directional_shadow_max_distance = 600.0
+	LOOK.apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
+	key.directional_shadow_max_distance = 600.0
 	board = Board.new()
 	board.name = "Board"
 	add_child(board)
@@ -347,43 +347,22 @@ func _build_world() -> void:
 # the Graphics setting: max (everything), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
-	# Issue 368, R270: the selected volume at max, cards at high and low.
-	if load("res://world/world_living.gd").selected_route() == "fog" and q == "max":
-		RenderingServer.environment_set_volumetric_fog_volume_size(128, 128)
-	match q:
-		"low":
-			vp.msaa_3d = Viewport.MSAA_DISABLED
-			vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
-			RenderingServer.directional_shadow_atlas_set_size(2048, true)
-		"high":
-			vp.msaa_3d = Viewport.MSAA_2X
-			RenderingServer.directional_shadow_atlas_set_size(4096, true)
-		_:
-			vp.msaa_3d = Viewport.MSAA_4X
-			RenderingServer.directional_shadow_atlas_set_size(4096, true)
+	vp.msaa_3d = LOOK.msaa_for_quality(q)
+	if q == "low":
+		vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
+	RenderingServer.directional_shadow_atlas_set_size(2048 if q == "low" else 4096, true)
 	# Temporal AA (settings, off by default as in the browser): Max and High only
 	vp.use_taa = _jt(args.get("taa", false)) and q != "low"
 
 
 func _post_quality(q: String) -> void:
-	if load("res://world/world_living.gd").selected_route() == "fog" and q == "max":
-		env.volumetric_fog_enabled = true
-		env.volumetric_fog_density = 0.0001
-		env.volumetric_fog_length = maxf(250.0, cam.r + 200.0)
-		env.volumetric_fog_temporal_reprojection_enabled = false
-		# Short electrical flashes must not leave temporal ghosts.
-		if not has_node("NebulaHulls"):
-			var policy: Node = load("res://world/nebula_hulls.gd").new()
-			policy.name = "NebulaHulls"
-			add_child(policy)
+	LIVING.apply_fog(self, env, cam.r, q)
 	if q == "low":
 		env.ssao_enabled = false
 		env.ssil_enabled = false
-		env.volumetric_fog_enabled = false
 		env.glow_enabled = true
 	elif q == "high":
 		env.ssil_enabled = false
-		env.volumetric_fog_enabled = false
 
 
 func _build_arrow() -> void:
