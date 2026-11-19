@@ -17,6 +17,7 @@ extends DirectionalLight3D
 # shaders the scene already has.
 
 const LOOK := preload("res://render/look.gd")
+const MESH_WATCH := preload("res://render/mesh_watch.gd")
 
 var _cfg := {}
 # issue 601: the soft rim light (LookRimSoft) lights only the stack-painted surfaces, with RIM soft of the specular
@@ -26,7 +27,7 @@ var _soft_seen := false
 
 func _ready() -> void:
 	configure()
-	get_tree().node_added.connect(_on_added)
+	MESH_WATCH.listen(get_tree(), _mark)   # issue 1204: the one shared new-mesh watcher, looked at once per frame
 	_mark_tree(get_parent())
 	_follow()
 
@@ -57,12 +58,6 @@ func _follow() -> void:
 	global_transform = Transform3D(Basis.looking_at(-to_light, up), global_transform.origin)
 
 
-func _on_added(n: Node) -> void:
-	if n is GeometryInstance3D:
-		# Guard: a hull whose material is set a frame or more after it enters the scene is missed here and loses its rim.
-		_mark.call_deferred(n)
-
-
 func _mark_tree(n: Node) -> void:
 	if n == null:
 		return
@@ -70,7 +65,8 @@ func _mark_tree(n: Node) -> void:
 		_mark(g)
 
 
-# A ship's materials are set right after its mesh enters the scene, so this runs deferred, at the end of the frame.
+# A ship's materials are set right after its mesh enters the scene, so the shared watcher (render/mesh_watch.gd) calls
+# this at the end of the frame. A hull material set on a later frame reaches it through MeshWatch.touch (issue 1204).
 func _mark(n) -> void:
 	if not is_instance_valid(n) or not (n is GeometryInstance3D):
 		return

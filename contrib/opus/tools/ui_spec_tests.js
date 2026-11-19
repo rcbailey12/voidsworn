@@ -45,11 +45,12 @@ check(/set_player\(settings\.get\("ui_scale", 1\.0\)\)/.test(read('godot/main/ma
   check(/for k in o:\n\s*settings\[k\] = o\[k\]/.test(mg), 'main.gd loads an existing settings file key by key over the defaults, so an old file without ui_scale or reduce_motion still reads 1.0 and off');
   check(/b\.reduce_motion = bool\(settings\.get\("reduce_motion", false\)\)/.test(mg), 'main.gd gives the battle the reduce_motion setting (a missing key reads off)');
   const ti = read('godot/main/title.gd');
-  check(/_choice\("UI scale", "ui_scale", \[\[0\.9, "Small"\], \[1\.0, "Normal"\], \[1\.15, "Large"\], \[1\.3, "Larger"\]\]\)/.test(ti), 'title Settings offers UI scale as Small 0.9, Normal 1.0, Large 1.15, Larger 1.3 (ui_spec.md 4.4)');
-  check(/_toggle\("Reduce motion", "reduce_motion"\)/.test(ti), 'title Settings offers Reduce motion as a switch (ui_spec.md 7.6)');
-  check(/_toggle\("Reduce flashing", "reduce_flashing"\)/.test(ti), 'the two new entries sit in the same Settings list as Reduce flashing (issue 546)');
-  check(/if key == "ui_scale":\n\s*_rebuild\(\)/.test(ti), 'changing UI scale rebuilds the title screen at once (ui_spec.md 4.4)');
-  check(/ScrollContainer\.new\(\)/.test(ti) && /rows\.get_combined_minimum_size\(\)\.y, vs\.y - s\(150\)/.test(ti), 'the Settings list scrolls when the larger UI scales would push the panel past the window, so Done stays reachable');
+  // Issue 1217: Settings is built from SETTINGS_LAYOUT (sections and rows) and SETTINGS_CHOICES (the choice lists).
+  check(/"ui_scale": \[\[0\.9, "Small"\], \[1\.0, "Normal"\], \[1\.15, "Large"\], \[1\.3, "Larger"\]\]/.test(ti) && /\["choice", "UI scale", "ui_scale"\]/.test(ti), 'title Settings offers UI scale as Small 0.9, Normal 1.0, Large 1.15, Larger 1.3 (ui_spec.md 4.4)');
+  check(/\["toggle", "Reduce motion", "reduce_motion"\]/.test(ti), 'title Settings offers Reduce motion as a switch (ui_spec.md 7.6)');
+  check(/\["Comfort", \d, \[\["toggle", "Reduce motion", "reduce_motion"\], \["toggle", "Reduce flashing", "reduce_flashing"\]/.test(ti), 'the two new entries sit in the same Settings list as Reduce flashing (issue 546)');
+  check(/if key == "ui_scale":\n(\s*[^\n]*\n)?\s*_rebuild\(\)/.test(ti), 'changing UI scale rebuilds the title screen at once (ui_spec.md 4.4)');
+  check(/func _settings\(\)[\s\S]*?ScrollContainer\.new\(\)[\s\S]*?Kit\.action_bar\(/.test(ti), 'the Settings list scrolls inside its panel and Done sits in the action bar below it, so Done stays reachable at the larger UI scales');
   const bt = read('godot/scenes/battle/battle.gd');
   check(/items\.append\(\["Reduce motion: %s"/.test(bt) && /"opt", "motion"/.test(bt), 'the battle menu offers Reduce motion in the comfort subset (ui_spec.md 7.6)');
   check(/items\.append\(\["UI scale: %s"/.test(bt) && /"opt", "uiscale"/.test(bt), 'the battle menu offers UI scale in the comfort subset (ui_spec.md 4.4)');
@@ -72,7 +73,8 @@ check(/func _button\([^)]*keys := false\)/.test(hud) && /Control\.FOCUS_ALL if k
 check(/_button\(str\(it\[0\]\), str\(it\[1\]\), it\[2\] if it\.size\(\) > 2 else null, it == items\[0\], true\)/.test(hud), 'battle menu buttons take keyboard focus');
 check(/_button\("Continue", "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
 const t = read('godot/main/title.gd');
-check(/GS\.focus_ring\(k\)/.test(t) && /add_theme_stylebox_override\("focus", sf\)/.test(t), 'title buttons use the shared focus ring');
+const okit = read('godot/ui/theme/orders_kit.gd');
+check(/Kit\.button\(/.test(t) && /add_theme_stylebox_override\("focus", GS\.focus_ring\(k\)\)/.test(okit), 'title buttons use the shared focus ring (through the orders kit, issue 1217)');
 
 // 4. TY6: no port text under the floor (a one-glyph ornament, like the side panel's gilt diamond, is not text)
 const gs = diff.godotSizes(files);

@@ -1185,6 +1185,11 @@ func wisps() -> void:
 static var _wnoise: Texture2D = null
 
 
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_wnoise = null
+
+
 static func _wisp_noise() -> Texture2D:
 	if _wnoise != null:
 		return _wnoise
