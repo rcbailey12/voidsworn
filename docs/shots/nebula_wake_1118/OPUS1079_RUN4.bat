@@ -1,5 +1,5 @@
 @echo off
-rem Issue 1079 run 4 (the scene 207 gate only, 300 s per cold build; every message names out4): the nebula wake prototype's clip and cost (Opus worker; R334, the Board queues it).
+rem Issue 1079 run 4 (stills again, settled, and the scene 207 gate with 300 s per cold build; messages name out4): the nebula wake prototype's clip and cost (Opus worker; R334, the Board queues it).
 rem Writes only under Downloads\voidsworn_test\opus1079\. Never deletes anything. Every step logs to out4\result.txt (earlier runs keep out\ and out3\).
 rem 1. Clone branch opus/issue-1079 fresh into opus1079\run<N>\repo (first free N).
 rem 2. Copy in the installed ship files, the built hull cache (gen) and the import cache from build\godot (copy only).
@@ -46,8 +46,11 @@ echo copied ships, gen and import cache from build\godot %time% >> "%RES%"
 call "%TMO%" 2400 "%G%" --headless --path "%R%\godot" --import > "%O%\import_log.txt" 2>&1
 if errorlevel 1 (set "FAILMSG=Godot import failed; see out4\import_log.txt" & goto fail)
 echo import ok %time% >> "%RES%"
-rem Run 3 (out3) already holds the clip, stills and storm-fixture timing for this wake code; run 4 only redoes the gate.
-goto gate
+rem Run 3 (out3) already holds the clip and storm-fixture timing for this wake code. Run 4 redoes the stills (run 3's
+rem Low pair caught the board grid fading in; stills now settle first and take off, on, off again) and the gate.
+set "PC_GPU_ISSUE=1079"
+set "PC_GPU_MODE=shared"
+goto stills
 set "PC_GPU_ISSUE=1079"
 set "PC_GPU_MODE=shared"
 call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --fixed-fps 30 --script res://world/nebula_wake_capture.gd -- "%O%\clip" shots max 1280 720 170 > "%O%\clip_log.txt" 2>&1
@@ -56,11 +59,14 @@ if not exist "%O%\clip\max_c170_on\f0329.jpg" (set "FAILMSG=clip c170 is missing
 call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --fixed-fps 30 --script res://world/nebula_wake_capture.gd -- "%O%\clip" shots max 1280 720 120 > "%O%\clip120_log.txt" 2>&1
 if errorlevel 1 (set "FAILMSG=clip capture c120 failed; see out4\clip120_log.txt" & goto fail)
 echo clip frames ok (c170 and c120) %time% >> "%RES%"
+echo stills start %time% >> "%RES%"
+:stills
 for %%T in (max high low) do (
   call "%TMO%" 1800 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --script res://world/nebula_wake_capture.gd -- "%O%\still" still %%T 1280 720 > "%O%\still_%%T_log.txt" 2>&1
   if errorlevel 1 (set "FAILMSG=still %%T failed; see out4\still_%%T_log.txt" & goto fail)
 )
 echo stills ok %time% >> "%RES%"
+goto gate
 set "PC_GPU_MODE=solo"
 nvidia-smi --query-gpu=name,driver_version,utilization.gpu,clocks.gr,clocks.mem,temperature.gpu,power.draw,pstate,memory.used --format=csv > "%O%\gpu.csv" 2>&1
 call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --script res://world/nebula_wake_capture.gd -- "%O%\timing" timing > "%O%\timing_log.txt" 2>&1

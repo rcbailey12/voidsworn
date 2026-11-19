@@ -6,8 +6,8 @@ extends SceneTree
 #   godot --path godot --fixed-fps 30 --script res://world/nebula_wake_capture.gd -- OUT shots [max|high|low] [W H [camera radius]]
 #   godot --path godot --script res://world/nebula_wake_capture.gd -- OUT timing        (run through tmo.bat, GPU solo)
 #   godot --path godot --script res://world/nebula_wake_capture.gd -- OUT still [max|high|low] [W H]
-# still: OUT/still_<tier>_<on|off>.jpg, one frozen moment, the frigate and capital mid-line with their trails, wake on
-# and the same frame with no wake points (the only difference between the two pictures).
+# still: OUT/still_<tier>_c<radius>_<off|on|off_again>.jpg, one frozen moment, the frigate and capital mid-line with
+# their trails: no wake points, the wake on, then no points again (the two offs must match: the wake is the only change).
 # Camera radius defaults to 170, the battle camera (Artoo on PR 1181); 120 is the closer extra view.
 # shots: OUT/<tier>_c<radius>_<off|on>/f0000.jpg ... one per frame at a fixed 30 frames a second, plus OUT/<tier>_meta.json.
 # timing: OUT/results.json; three sessions, wake off and on alternated, max, high and low, 1080p and 4K (scaling 2.0),
@@ -243,13 +243,19 @@ func _still(tier: String, size: Vector2i) -> void:
 			wake._ring[j] = {"p": p, "r": r, "dir": dir, "born": wake.clock - age, "spin": 1.0 if k % 2 == 0 else -1.0}
 			j += 1
 	wake.held = false
-	for pass_i in 2:
+	var trail: Array = wake._ring.duplicate(true)
+	# Let the board and its look finish settling (its grid fades in after a build; run 3's Low pair caught that fade).
+	for i in 180: await process_frame
+	# off, on, then off again: the two offs must match, so the only change in the pair is the wake.
+	for pass_i in 3:
+		wake.forget()
 		if pass_i == 1:
-			wake.forget()
+			wake._ring = trail.duplicate(true)
 		wake.apply(living._wake_mats)
 		for i in 12: await process_frame
 		await RenderingServer.frame_post_draw
-		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), out.path_join("still_%s_c%d_%s.jpg" % [tier, int(cam_r), "on" if pass_i == 0 else "off"]), 0.95)
+		var tag: String = ["off", "on", "off_again"][pass_i]
+		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), out.path_join("still_%s_c%d_%s.jpg" % [tier, int(cam_r), tag]), 0.95)
 	print("WAKE1079 still ", tier, " ", size)
 
 
