@@ -14,6 +14,7 @@ extends Node3D
 # left-drag or WASD pan, wheel zoom.
 
 signal finished(result: Dictionary)
+signal storm_drained(pos: Vector3)
 signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance trace films it)
 signal wings_together(n: int)   # F1: your strike craft just started their moves together (the trace films it)
 
@@ -1377,6 +1378,8 @@ func _play_event(e: Dictionary) -> void:
 				d["hp"] = float(d["hp"]) - float(e["hull"])
 			var lbl := {"fire": ["Fire", "#f08a4b"], "acid": ["Acid", "#c8e04a"], "tidal": ["Tidal stress", "#c79bff"], "storm": ["Ion storm", "#9fd4ff"]}.get(str(e["kind"]), ["", "#ffffff"])
 			_float(e["unit"], "%s −%d" % [lbl[0], int(e["hull"])] if float(e["hull"]) > 0 else str(lbl[0]), Color(lbl[1]))
+			if e["kind"] == "storm" and views.has(e["unit"]):
+				storm_drained.emit(_pos(e["unit"]))
 			if gfx != null and gfx.has_method("tick"):
 				gfx.tick(str(e["unit"]), str(e["kind"]))
 			await wait(120.0)
@@ -4654,7 +4657,8 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 				var weak: Array = nem_now["weak"] if nem_now.get("weak") is Array else []
 				for w in (nem_now.get("revealed") if nem_now.get("revealed") is Array else []):
 					if w in weak:
-						var NW = TBL.get("NEM_WEAK", {}).get(str(w), {})
+						var NW = API.nem_entry(TBL.get("NEM_WEAK", {}), str(w), nem_now.get("fac"))
+						if NW == null: NW = {}
 						kn.append("%s (%s)" % [str(NW.get("n", w)), str(NW.get("d", "")).trim_suffix(".")])
 				if not kn.is_empty():
 					tr.append("Known weaknesses: " + "; ".join(kn) + ".")
@@ -4951,7 +4955,7 @@ func _nem_info() -> Dictionary:
 	var weak: Array = N["weak"] if N.get("weak") is Array else []
 	for w in (N.get("revealed") if N.get("revealed") is Array else []):
 		if w in weak:
-			var W = TBL.get("NEM_WEAK", {}).get(str(w))
+			var W = API.nem_entry(TBL.get("NEM_WEAK", {}), str(w), N.get("fac"))
 			if W is Dictionary:
 				wk.append([str(W.get("n", w)), str(W.get("d", ""))])
 	_nem_last = {"name": ("%s %s" % [str(N.get("title", "")), str(N.get("name", ""))]).strip_edges(), "ship": ship, "flee": flee,

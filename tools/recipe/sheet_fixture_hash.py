@@ -2,6 +2,11 @@
 
    python tools/recipe/sheet_fixture_hash.py --check
    python tools/recipe/sheet_fixture_hash.py --bake BLENDER_EXE
+   python tools/recipe/sheet_fixture_hash.py --bake BLENDER_EXE --out DIR
+
+--out DIR bakes a fresh pair into DIR and leaves the committed fixture alone (issue 1174: CI bakes into its temp folder when
+the record is stale, then runs death_seam_check.gd on DIR/C19_51_unbaked.glb.gz). --check --quiet-stale exits 3, not 1,
+when the record is only stale, so CI can tell "rebake" from a broken record.
 
 The first record line, file list and data.js extract also feed death_seam_check.gd.
 The last line pins the exact gzip bytes used by the CI fixture check.
@@ -65,15 +70,20 @@ def record(text, game, input_digest, fixture_bytes):
                       f'# fixture sha256 {fixture_digest}', ''))
 
 
-def check():
+class Stale(ValueError):
+    """The record no longer matches the A16 inputs or the compressed GLB: a rebake fixes it."""
+
+
+def check(out=None, fixture=None):
+    out, fixture = out or OUT, fixture or FIXTURE
     text, game = extract()
-    expected = record(text, game, digest(text), FIXTURE.read_bytes())
-    if OUT.read_text(encoding='utf-8') != expected:
-        raise ValueError('fixture record is stale or the compressed GLB changed. Rebuild with --bake.')
+    expected = record(text, game, digest(text), fixture.read_bytes())
+    if out.read_text(encoding='utf-8') != expected:
+        raise Stale('fixture record is stale or the compressed GLB changed. Rebuild with --bake.')
     print('PASS fixture record matches the A16 inputs and compressed GLB')
 
 
-def bake(blender):
+def bake(blender, dest=None):
     text, game = extract()
     input_digest = digest(text)
     ship_path = REPO / SHIP_JSON
@@ -102,13 +112,16 @@ def bake(blender):
     compressed = gzip.compress(glb, compresslevel=9, mtime=0)
     # Stage both files on the destination volume. An interrupted publish is
     # caught by --check, since the record describes one exact compressed file.
-    with tempfile.NamedTemporaryFile(dir=OUT.parent, delete=False) as output:
+    out, fixture = (OUT, FIXTURE) if dest is None else (Path(dest) / OUT.name, Path(dest) / FIXTURE.name)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=out.parent, delete=False) as output:
         output.write(compressed)
-    with tempfile.NamedTemporaryFile(dir=OUT.parent, delete=False) as metadata:
+    with tempfile.NamedTemporaryFile(dir=out.parent, delete=False) as metadata:
         metadata.write(record(text, game, input_digest, compressed).encode('utf-8'))
-    os.replace(output.name, FIXTURE)
-    os.replace(metadata.name, OUT)
-    check()
+    os.replace(output.name, fixture)
+    os.replace(metadata.name, out)
+    check(out, fixture)
+    print(f'BAKED {fixture}')
 
 
 def main():
@@ -116,12 +129,19 @@ def main():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--check', action='store_true')
     mode.add_argument('--bake', metavar='BLENDER_EXE')
+    parser.add_argument('--out', metavar='DIR', help='with --bake: write the fresh pair here, not over the committed one')
+    parser.add_argument('--quiet-stale', action='store_true', help='with --check: exit 3 when the record is only stale')
     args = parser.parse_args()
+    if args.out and not args.bake:
+        parser.error('--out goes with --bake')
     try:
         if args.check:
             check()
         else:
-            bake(args.bake)
+            bake(args.bake, args.out)
+    except Stale as exc:
+        print('STALE' if args.quiet_stale else 'FAIL', exc)
+        return 3 if args.quiet_stale else 1
     except (OSError, ValueError, subprocess.CalledProcessError) as exc:
         print('FAIL', exc)
         return 1
