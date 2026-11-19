@@ -104,6 +104,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
    half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
    Each engine ring shares the ship's normalized pattern (R308).
+   **New finishes keep their own look in the game** (R329, the Board, Nov 19 2026, on an outside review of the Glasswright and
+   Chorus builds): a new no-wear paint stack sets AUTHORED_LOOK, the export writes the glTF extra authored_look, and look.gd
+   keeps that material's albedo, emission, metallic and specular as painted (factor 1.0) instead of the old A4 calibration; the
+   old A4 and the approved satin finishes stay byte-identical. Every finish sheet carries an accepted ship (C19_51) in the same
+   light as a value reference.
    **The Chorus armour and paint** (R341, Ryan, Nov 19 2026 22:04 UTC: "the armor should be comprehensive and across the entire
    body, minus things like the spine, maw, 'engines', weapons, etc. it should be almost like an armadillo, pangolin, etc. not
    exactly the same, still alien, but think about it as a warship. we should have that textured feel and armored shell defense";
