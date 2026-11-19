@@ -83,9 +83,15 @@ def main(entry_path, godot, code):
     return 0
 
 
+def is_export_map(code, name):
+    return re.fullmatch(
+        re.escape(code) + r'(?:_[\w-]+\.jpg|(?:_[\w-]+)?_(?:normal|orm)\.png)', name
+    ) is not None
+
+
 def export_snapshot(export, snapshot, code):
-    # The GLB names the texture set. A previous export can leave other JPGs
-    # in the same directory, so the install must never use a wildcard copy.
+    # Read the exact texture set from the GLB. Earlier exports can leave maps
+    # of either format in the same directory.
     from check_export import read_glb
 
     glb = code + '.glb'
@@ -93,7 +99,7 @@ def export_snapshot(export, snapshot, code):
     doc, _ = read_glb(snapshot / glb)
     maps = {image.get('uri') for image in doc.get('images', [])}
     for name in maps:
-        if not isinstance(name, str) or not re.fullmatch(re.escape(code) + r'_[\w-]+\.jpg', name):
+        if not isinstance(name, str) or not is_export_map(code, name):
             raise ValueError(f'unsupported export texture path {name!r}')
     for name in [ENTRY, *sorted(maps)]:
         copy_verified(export / name, snapshot / name)
@@ -132,6 +138,7 @@ def install(project, code, snapshot, expected, refresh, readback):
 
         def managed(name):
             return (name in files or name in {code + '_damage.glb', code + '_wreck.glb'}
+                    or is_export_map(code, name)
                     or (name.startswith(code + '_') and name.lower().endswith('.jpg')))
 
         # Keep other files in the ship directory, and stage every copy and

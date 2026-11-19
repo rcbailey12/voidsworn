@@ -5,17 +5,13 @@
 import os, sys, math
 import bpy
 from mathutils import Vector
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cycles_devices import configure_cycles_device
 a = sys.argv[sys.argv.index('--') + 1:]
 OUT, CELL, CAS, RACK = a[:4]; os.makedirs(OUT, exist_ok=True)
 sc = bpy.context.scene
 sc.render.engine = 'CYCLES'; cy = sc.cycles
-prefs = bpy.context.preferences.addons['cycles'].preferences
-for t in ('OPTIX', 'CUDA'):
-    try:
-        prefs.compute_device_type = t; prefs.get_devices()
-        for d in prefs.devices: d.use = True
-        cy.device = 'GPU'; break
-    except Exception: pass
+configure_cycles_device(sc)
 cy.samples = 128; cy.use_denoising = True
 sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'None'; sc.view_settings.exposure = 1.6
 w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True; bg = w.node_tree.nodes['Background']

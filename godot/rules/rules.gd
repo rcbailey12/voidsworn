@@ -1673,7 +1673,8 @@ func startSideTurn(side) -> int:
 			var rg = u["regen"] * (B["condRegen"] if B != null and jt(B.get("condRegen")) else 1)
 			if float(z0(u.get("chainCut"))) > 0: rg = JSM.jsround(rg * (1.0 - float(u["chainCut"])))   # Chain Lightning (R246 pool): the broken shield's next recharge is cut
 			if not jt(u.get("regenLock")):
-				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg); syncShields(u)
+				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg)
+			syncShields(u)   # route just cleared: re-derive the catches even when an ion lock skips the regen
 		ithChargeTurn(u); u["regenLock"] = null; u["chainCut"] = 0
 		if jt(u.get("hullRegen")) and u["hp"] < u["maxHp"] and not jt(u.get("pyre")):
 			var mmH = treeRoleMul(u); var hrH = JSM.jsround(u["hullRegen"] * mmH) if mmH != 1.0 else u["hullRegen"]
@@ -2100,6 +2101,14 @@ func torpThreat(u, v) -> float:
 			if d <= 2: tot += sv["w"]["dmg"] * sv["w"]["shots"] * [0.62, 0.52, 0.38][int(d)]
 		elif d == 0: tot += sv["w"]["dmg"] * sv["w"]["shots"] * 0.5
 	return tot
+static func nem_entry(table: Dictionary, key, fac) -> Variant:
+	var entry = table.get(key)
+	return entry.get("v", {}).get(fac, entry) if entry != null else null
+# Issue 1182: a save from an older build can hold a trait or weakness key the table no longer has; show the raw key, never crash.
+static func nem_entry_name(table: Dictionary, key, fac) -> String:
+	var entry = nem_entry(table, key, fac)
+	return str(entry.get("n", key)) if entry is Dictionary else str(key)
+
 func nemWeak(k) -> bool: return B != null and B.get("nem") != null and B["nem"].get("weak") != null and B["nem"]["weak"].has(k)
 func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, faction behaviour, duel fleet, honed, riches, artillery line, memory lines)
 	B["nem"] = N; var es = []
@@ -2317,7 +2326,8 @@ func nemTrip(k: String) -> void:
 	B["nemFound"].append(k)
 	if B["nem"].get("revealed") == null: B["nem"]["revealed"] = []
 	B["nem"]["revealed"].append(k)
-	logm("Weakness found: " + String(TB.NEM_WEAK[k]["n"]) + ". " + String(TB.NEM_WEAK[k]["d"]), "s")
+	var entry = nem_entry(TB.NEM_WEAK, k, B["nem"].get("fac"))
+	logm(("Weakness found: " + str(entry["n"]) + ". " + str(entry["d"])) if entry is Dictionary else ("Weakness found: " + str(k) + "."), "s")
 func nemBreak() -> void:
 	if B == null or B.get("nem") == null or jt(B.get("nemBroken")) or not nemWeak("anchor"): return
 	var f = null
@@ -2914,6 +2924,8 @@ func _expected_hull(raw: float, absorbed: float, armor: float, rear: bool, brace
 	return hull * guard_factor
 # HUD only. Carry the expected pool down shot by shot in firing order, using the
 # average damage roll and hit chance. This is an estimate, not a simulated attack.
+# Shield routing only follows a landed hit, as it does in combat, so every shot
+# branches into a hit and a miss and both branches carry their own pool.
 func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
 	var out := {}
 	if guns.is_empty(): return out
@@ -2926,6 +2938,7 @@ func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
 	# Travelling torpedoes do not spend shields before the direct guns land.
 	var delayed := []
 	var torp_first: bool = u["side"] == "player" and cmdActive("player", "hunt") and treeSkill("torpFirst") != null
+	var states := {float(z0(target.get("shp"))): 1.0}
 	for i in guns:
 		var w: Dictionary = u["weapons"][i]
 		var hit := hitChance(source, w, t)
@@ -2935,22 +2948,47 @@ func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
 		out[i] = shot
 		var torp := torpTravels(w, u)
 		if torp and not torp_first: delayed.append([w, shot])
-		else: _estimate_gun(u, w, target, shot, brace, guard, float(TB.TORP_WARHEAD) if torp else 1.0)
+		else: states = _estimate_gun(u, w, target, shot, brace, guard, float(TB.TORP_WARHEAD) if torp else 1.0, states)
 	for entry in delayed:
-		_estimate_gun(u, entry[0], target, entry[1], brace, guard, float(TB.TORP_WARHEAD))
+		states = _estimate_gun(u, entry[0], target, entry[1], brace, guard, float(TB.TORP_WARHEAD), states)
 	return out
-func _estimate_gun(u, w, t, shot: Dictionary, brace: float, guard: float, damage_scale: float) -> void:
+# A state key is the shield pool left after some landed hits; its value is the chance of reaching it.
+# The pool and whether this facing is already routed decide every later catch, so a hit removes a real
+# pool amount while a miss leaves the pool alone. Keys are rounded to whole points so the state count
+# stays at most the pool plus one, however many guns and shots the volley has (HUD runs this on hover).
+func _estimate_gun(u, w, t, shot: Dictionary, brace: float, guard: float, damage_scale: float, states: Dictionary) -> Dictionary:
 	var per := dmgMult(u, w, t, shot.rear) * damage_scale
 	var odds := float(shot.hit) / 100.0
 	var quad := int(shot.quad)
 	var pierce := _expected_pierce(u, w); var ion := ionVs(u, w, t)
 	var armor: float = maxf(0.0, float(t["armor"]) - z0(t.get("shredded"))) * (1.0 - z0(w.get("armorPierce")))
+	var cov: Array = t["cov"] if jt(t.get("cov")) else shieldCov(t["fac"], t["cls"])
+	var base_c: float = min(float(TB.SHIELD_COV_MAX), float(cov[quad]))
+	var route_c: float = min(float(TB.SHIELD_COV_MAX), float(cov[quad]) + float(TB.SHIELD_ROUTE_BOOST))
+	var start_pool := float(z0(t.get("shp")))
+	var routed0: bool = jt(t.get("route")) and jt(t["route"][quad])
+	var lossy: float = 1.0 + float(TB.SHIELD_ROUTE_LOSS)
 	for i in int(w["shots"]):
-		var absorbed := _expected_absorbed(per, pierce, t["sh"][quad], ion)
-		var drain := absorbed * ion * odds
-		shot.shield += drain
-		shot.hull += _expected_hull(per, absorbed, armor, shot.rear, brace, guard) * odds
-		if drain > 0.0: _spend_shield(t, quad, drain)
+		var next := {}
+		for pool in states:
+			var p: float = states[pool]
+			var was_routed: bool = routed0 or float(pool) < start_pool
+			var c: float = route_c if was_routed else base_c
+			var absorbed: float = _expected_absorbed(per, pierce, JSM.jsround(float(pool) * c), ion)
+			if odds > 0.0:
+				shot.shield += p * odds * absorbed * ion
+				shot.hull += p * odds * _expected_hull(per, absorbed, armor, shot.rear, brace, guard)
+				var hit_pool := float(pool)
+				if absorbed > 0.0:
+					hit_pool = maxf(0.0, float(pool) - absorbed * ion * (lossy if was_routed else 1.0))
+					if hit_pool < 1.0: hit_pool = 0.0
+				hit_pool = float(JSM.jsround(hit_pool))
+				next[hit_pool] = float(next.get(hit_pool, 0.0)) + p * odds
+			if odds < 1.0:
+				var miss_pool := float(JSM.jsround(float(pool)))
+				next[miss_pool] = float(next.get(miss_pool, 0.0)) + p * (1.0 - odds)
+		states = next
+	return states
 func _spend_shield(t, quad: int, damage: float) -> void:
 	var lossy: float = 1.0 + float(TB.SHIELD_ROUTE_LOSS) if (jt(t.get("route")) and jt(t["route"][quad])) else 1.0
 	t["shp"] = max(0, z0(t.get("shp")) - damage * lossy)

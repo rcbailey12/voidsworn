@@ -246,7 +246,7 @@ def loft_closed(K, name, rings, m):
     """a solid through section rings with each end capped by real triangles: the section is concave (the canyon), and an n-gon
     cap would be fanned across the canyon by the fit check's triangle tree"""
     from mathutils import Vector
-    from mathutils.geometry import tessellate_polygon
+    from mathutils.geometry import delaunay_2d_cdt, tessellate_polygon
     n = len(rings[0])
     V = [tuple(v) for r in rings for v in r]
     F = []
@@ -255,7 +255,15 @@ def loft_closed(K, name, rings, m):
             a, b = i * n + j, i * n + (j + 1) % n
             F.append((a, b, b + n, a + n))
     for k, r in ((0, rings[0]), (len(rings) - 1, rings[-1])):
-        tris = tessellate_polygon([[Vector((0.0, v[1], v[2])) for v in r]])
+        if k == 0:
+            tris = tessellate_polygon([[Vector((0.0, v[1], v[2])) for v in r]])
+        else:
+            # The stern rim has collinear deck edges. Keep each edge in the cap
+            # without zero-area faces that turn the inner shell out past the stern.
+            profile = [Vector((v[1], v[2])) for v in r]
+            _, _, cap, original, _, _ = delaunay_2d_cdt(profile, [], [list(range(n))], 1, 1e-6)
+            assert sorted(original) == [[i] for i in range(n)], 'stern cap must use the existing rim'
+            tris = [tuple(original[q][0] for q in triangle) for triangle in cap]
         o = k * n
         for t in tris:
             t = tuple(o + q for q in t)

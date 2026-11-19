@@ -97,5 +97,6 @@ func _run() -> void:
 func check_map_status(ui: CampaignUI, state: String) -> void:
 	var rail := ui._briefing_column()
 	var status := rail.find_child("MapTrialStatus", true, false) as Label
-	check(status != null and status.text == "Test map package " + state, "the map displays the " + state + " state")
+	if state == "on": check(status != null and status.text == "Test map package on", "the map displays the on state")
+	else: check(status == null, "the map shows no trial label while the trial is off (issue 1175)")
 	rail.queue_free()

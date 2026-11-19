@@ -44,6 +44,12 @@ static func settled_result(raw: String, battle: Dictionary) -> String:
 		return "retreat"
 	return raw
 
+static func nem_entry(table: Dictionary, key, fac) -> Variant:
+	return RulesScript.nem_entry(table, key, fac)
+
+static func nem_entry_name(table: Dictionary, key, fac) -> String:
+	return RulesScript.nem_entry_name(table, key, fac)
+
 func battle_result() -> String:
 	_mutex.lock()
 	var raw := str(R.B.get("over"))

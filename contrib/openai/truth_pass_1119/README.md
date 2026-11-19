@@ -27,3 +27,17 @@ Apply this one-line addition after the import in the Godot game job. `--quick` c
 - `godot/scenes/battle/test/volley_preview_test.gd` fires 128 seeded volleys per setup through the battle API and compares hit events with the numbers on the target card. It covers 1, 2 and 3 guns into bare hull and a low shield pool, plus a planned move with multiple shots, ion and piercing damage. The HUD estimate leaves the live ships and RNG alone. On main, the 3-gun low-pool preview said 15 shield and 21 hull; the rolls averaged 6.98 shield and 27.44 hull.
 - `godot/campaign/test/truth_pass_test.gd` starts fights from reloaded one-ship saves for all six factions, checks that old Warden grants are kept without duplication, and builds the real mastery and Nemesis controls.
 - `godot/tools/ci/godot_checks.txt` registers both checks with the Godot game job. The Node standing job has no Godot executable; the patch above adds the Node onboarding driver to the Godot game job, where one is already installed.
+
+## Run 2: shield routing only on landed hits
+
+Run 1 averaged the shield drain over the hit odds, so the preview spent the pool on shots that never landed. Combat only routes on a real hit. The preview now carries the pool as a small branch tree: each shot has a hit branch that removes a real pool amount and a miss branch that leaves the pool alone, and both branches keep their own chance. The result is the exact expectation over the hit and miss branches, using the same coverage, routing boost and routing loss as combat. The branch keys merge when two paths leave the same pool, so a normal volley stays small. Combat is unchanged.
+
+- `godot/rules/rules.gd`: `previewVolley` and `_estimate_gun` now carry the pool branches in firing order, including the delayed torpedo pass. `_spend_shield` and `applyHit` are untouched.
+- `godot/scenes/battle/test/volley_preview_test.gd`: adds Artoo's worked case beside the 85 percent cases. Four 30 percent shots, each strong enough to fill the facing, into a 60 point pool at 25 percent coverage. It fires 1024 seeded volleys through the battle API.
+
+Before and after on that case:
+
+- Run 1 code: preview said **23 shield**, seeded volleys averaged **19.25** (tolerance 1.87). The test failed.
+- Fixed code: preview says **19 shield**, the same seeded floor averages **19.25**. The test passes, and the 1-, 2- and 3-gun bare, shielded and planned cases still pass.
+
+Artoo's long-run numbers are 23.4 from the old preview and 19.14 from combat; the card rounds those to 23 and 19.
