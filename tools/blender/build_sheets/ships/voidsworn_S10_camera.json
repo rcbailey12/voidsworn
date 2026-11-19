@@ -15,7 +15,7 @@
   1920,
   1200
  ],
- "iou": 0.8912,
- "body_iou": 0.8933,
+ "iou": 0.8819,
+ "body_iou": 0.8815,
  "note": "Vigil beauty (issue 1157): view angles from contrib/opus/tools/issue738/grid.py over the blockout outline, then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (edges over 28 or luminance over the blurred picture, closed, filled, largest shape)"
 }

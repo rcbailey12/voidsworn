@@ -163,7 +163,7 @@ def build(K):
     # the dorsal ridge (the Board, rev 2: the concept's strongest line): a raised, plated armoured spine from the lance housing to
     # the spire block, so the top view reads as a blade with a keel. Its forward run to station 30 percent is the lance's power
     # trunk (designs.md); aft of it the ridge carries the reactor's feeds on to the spine block.
-    RX = (6.2, 6.0, 5.4, 4.5, 3.6, 2.6, 1.4, 0.2, -0.6, -1.05, -1.2)
+    RX = (6.2, 6.0, 5.4, 4.5, 3.6, 2.6, 1.4, 0.4, -0.3, -0.5)
 
     def ridge_hw(x):
         return 0.12 + 0.16 * min(1.0, (6.2 - x) / 3.0)
@@ -172,7 +172,7 @@ def build(K):
     for x in RX:
         z0 = deck_z(x, 0.0) - 0.03
         k = 0.0 if x in (RX[0], RX[-1]) else 1.0
-        hgt = 0.08 + 0.12 * min(1.0, (6.2 - x) / 2.5)
+        hgt = (0.08 + 0.12 * min(1.0, (6.2 - x) / 2.5)) * min(1.0, (x + 0.5) / 1.2 + 0.4)   # it steps down before the command slits
         w = ridge_hw(x)
         tr.append([(x, w + 0.06, z0), (x, w + 0.06, z0 + (0.4 + 0.2 * k) * hgt), (x, w * 0.6, z0 + hgt * (0.3 + 0.7 * k) + 0.02),
                    (x, -w * 0.6, z0 + hgt * (0.3 + 0.7 * k) + 0.02), (x, -w - 0.06, z0 + (0.4 + 0.2 * k) * hgt), (x, -w - 0.06, z0)])
@@ -180,10 +180,10 @@ def build(K):
            note='a raised armoured spine from the lance to the spire block; forward of station 30 percent it is the lance\'s power trunk (designs.md)')
     plate_jobs.append(('ridge', tr, dict(PL, faces=[1, 2, 3], mats={'siron': 2, 'siron2': 2}, seed=27, inv='trunk_plates', size=(0.18, 0.4), closed=False)))
     for i, x in enumerate([5.7 - j * 0.62 for j in range(11)]):
-        if x < -0.9:
+        if x < -0.3:
             break
         hz = deck_z(x, 0.0) - 0.03
-        hgt = 0.08 + 0.12 * min(1.0, (6.2 - x) / 2.5)
+        hgt = (0.08 + 0.12 * min(1.0, (6.2 - x) / 2.5)) * min(1.0, (x + 0.5) / 1.2 + 0.4)
         w = ridge_hw(x) + 0.07
         K.rib('S10_trunkband_%d' % i, [(x, w, hz + 0.01), (x, w * 0.62, hz + hgt + 0.035), (x, -w * 0.62, hz + hgt + 0.035), (x, -w, hz + 0.01)], w=0.05, t=0.03, m='sworn')
     K.mark('trunk', 'spine', ['block', 'step', 'slit'])
@@ -239,7 +239,7 @@ def build(K):
     sp = []
     for x in (SPX[0], SPX[0] - 0.03, -2.2, -3.6, -5.0, SPX[1] + 0.25, SPX[1]):
         z0 = deck_z(x, 0.0) - 0.05
-        k = 0.0 if x == SPX[1] else 0.85 if x == SPX[0] else 1.0   # a near-vertical forward face for the command slits
+        k = 0.0 if x == SPX[1] else 1.0   # a vertical forward face for the command slits
         hwb = 0.4 * (0.85 + 0.15 * k)
         sp.append([(x, hwb, z0), (x, hwb, z0 + 0.13 + 0.12 * k), (x, hwb - 0.06, z0 + 0.21 + 0.13 * k), (x, -hwb + 0.06, z0 + 0.21 + 0.13 * k),
                    (x, -hwb, z0 + 0.13 + 0.12 * k), (x, -hwb, z0)])
@@ -250,7 +250,7 @@ def build(K):
     plate_jobs.append(('spine', sp, dict(PL, faces=[0, 2, 4], mats={'siron': 2, 'siron2': 2}, seed=31, inv='spine_plates', size=(0.2, 0.42))))
     # the command deck: ember slits in the spine block's stepped forward face (station 60 percent in the table; the face is at 59)
     for i, y in enumerate((-0.22, 0.0, 0.22)):
-        K.slit('W%d' % (i + 1), (SPX[0] + 0.004, y, deck_z(SPX[0], 0.0) - 0.05 + 0.16), (1, 0, 0), 0.1, 0.04, inv='bridge_slits',
+        K.slit('W%d' % (i + 1), (SPX[0] + 0.004, y, deck_z(SPX[0], 0.0) - 0.05 + 0.19), (1, 0, 0), 0.1, 0.04, inv='bridge_slits',
                note='command deck window, ember-lit, in the spine block\'s face')
     K.mark('spine', 'spine', ['block', 'step', 'slit'])
     # five radiator spires at stations 66 / 71 / 76 / 81 / 86 percent (rev 2: one tight row), tallest (1.2) in the middle, each its own profile;
@@ -261,14 +261,12 @@ def build(K):
     for i, (x, h, prof) in enumerate(SPIRES):
         L = 0.62
         hs = h / k
-        part = HP.radiator(hs, L / k, profile=prof, spread=(0.2 + 0.42 * hs / 2.6) * 0.6, seed=i, glow='slats')   # S8's R331 spires (issue 1158)
+        part = HP.radiator(hs, L / k, profile=prof, spread=0.2 + 0.42 * hs / 2.6, seed=i, glow='slats')   # S8's R331 spires (issue 1158)
         part.transform(Matrix.Scale(k, 4))
         K.organ('R%d' % (i + 1), part, (x, 0.0, SPZ), (0, 0, 1), fwd=(1, 0, 0), inv='spires', what='radiator spire, %.2f tall, profile %s' % (h, PROF[prof]),
                 kind='radiator', note='sheds the reactor\'s heat: spaced ember fin slats between iron posts (R331)')
         K.mass('Radiator spire R%d (%s, %.2f tall)' % (i + 1, PROF[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fin slats on iron',
                note='one of the five spires of the spire line')
-    for x in (-1.75, -5.75):
-        K.keepouts.append((Vector((x, 0, SPZ)), 0.3))
 
     # ---------------- the stern: two ember bells, 1.2 across, offsets 0.8 ----------------
     for side in (1, -1):
@@ -301,7 +299,7 @@ def build(K):
         for i, x in enumerate((5.0, 4.1, 3.3, -1.9, -3.4, -4.2, -5.7)):
             p, n = lower_pt(x, side, 0.1) if x > 3 else facet_pt(x, side, 0.06)
             K.lamp('L%d%s' % (i + 1, sn), tuple(p + n * 0.006), tuple(n), inv='lamps', note='frost-white running point on the blade\'s edge')
-    for i, (x, y) in enumerate(((2.55, 0.45), (2.55, -0.45), (-0.9, 0.62), (-0.9, -0.62))):
+    for i, (x, y) in enumerate(((2.55, 0.62), (2.55, -0.62), (-0.9, 0.66), (-0.9, -0.66))):
         K.hatch('H%d' % (i + 1), (x, y, deck_z(x, y) + 0.04), (0, -0.05 * (1 if y > 0 else -1), 1), 0.26, round_=True, inv='hatches', note='deck hatch')
     for i, (x, y) in enumerate(((1.5, 0.36), (1.5, -0.36), (-3.4, 0.36), (-3.4, -0.36))):
         K.hatch('H%d' % (i + 5), (x, y, st_at(x)[3] - 0.08 - 0.02), (0, 0, -1), 0.28, round_=True, inv='hatches', note='belly hatch on the armour step')
@@ -437,11 +435,11 @@ def build(K):
                             subs=['slab', 'step', 'bevel', 'rivet']))
 
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
-    K.change('The bow is one spearhead point that runs into the Oath lance\'s muzzle collar: one emitter in the point, a small ember lens deep in a dark bore',
+    K.change('The bow is one spearhead point carrying the Oath lance in a heavy forged round collar (about a third of the concept\'s opening): one emitter in the point, a dark bore, a small ember lens deep inside',
              'designs.md: "the beauty\'s spearhead reads as a shallow fork around the emitter (build one point, emitter in its face)"; the Board\'s brief: one emitter set into the bow point, never a big glowing disc')
     K.change('Four battery ports a side in one row at 38 / 47 / 56 / 65 percent, not the pictures\' two rows of three',
-             'data.js battery fires 4 shots a volley, one port per shot (designs.md table, the family battery pattern on S8; R241 SPLIT rule)')
-    K.change('Five spires, not seven, about 70 percent of the table\'s heights (tallest 1.2 over the spine block, against 1.7), spaced ember fin slats reaching less far, so the spire is not a whole lit tower',
+             'data.js battery fires 4 shots a volley, one port per shot (designs.md table, the family battery pattern on S8; R241 SPLIT rule); the ports are big with heavy proud collars and ember gallery slits between them (Board rev 1 note)')
+    K.change('Five spires, not seven, about 70 percent of the table\'s heights (tallest 1.2 over the spine block, against 1.7), set close in one tight row at 66 to 86 percent, ember in the slats (the shared radiator from issue 1158), so the spire is not a whole lit tower',
              'designs.md table (5 spires); Ryan, Nov 19 2026 (R331): "can we scale down the giant radiator/orange towers on each ship a bit too?"; the ember shows in the slats, not as a whole lit tower')
     K.change('The paired cheek housings on the upper facets either side of the lance trunk are the lance\'s capacitor banks',
              'designs.md chair ruling: the faction\'s "one heavy pair at the bow" is met in form by the emitter and its paired cheek housings')
@@ -449,8 +447,10 @@ def build(K):
              'designs.md table; in game the bells glow ember and the game draws the plume (ships.md 0.2 (5))')
     K.change('No deck turrets: the crowned deck stays clean except the power trunk, one hoist head and four hatches',
              'data.js penitent has no turret slot (designs.md: "the crowned deck stays clean"; R241: no decorative weapons)')
-    K.change('The hull is widest at the stern third (2.9, 3.0 over the gun deck lips, at 68 percent); with the battery ports and their short barrels the outline reaches about 3.9 at the guns (the barrels kept short so the ports read as deep round openings, as the concept draws them)',
+    K.change('The hull is widest at the stern third (2.9, 3.0 over the gun deck lips, at 68 percent); with the battery ports, their proud collars and short barrels the outline reaches 4.15 at the guns (the barrels kept short so the ports read as deep round openings, as the concept draws them)',
              'designs.md: beam 3.0 at about 68 percent; factions.md: widest at the stern third')
+    K.change('A raised plated dorsal ridge runs from the lance back to the spine block, tapering low before the command slits',
+             'the concept\'s strongest line (the Board\'s rev 1 note); it is the lance\'s power trunk, and it ends low so the bridge slits keep their view')
     K.change('Attitude thrusters, deck and belly hatches, a hoist head, heat louvres, ember slits, frost running points and a belly armour step added',
              'a ship in space needs thrusters and access; the reactor needs louvres; the pictures show no underside; every part has a job (R221)')
     K.change('Transverse breaks at the spearhead root (30 percent) and behind the spire line (B-2); the gun deck peel and the spire line peel sit in the one compartment between',

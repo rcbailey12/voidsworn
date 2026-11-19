@@ -55,7 +55,7 @@ METALLIC = ('sworn',)
 SUBPARTS = {
     'engine': ['housing', 'band', 'collar', 'bell', 'lining', 'throat', 'plug', 'bellring'],
     'gun': ['ring|port', 'mantlet', 'barrel', 'jacket', 'muzzle', 'bore'],
-    'lance': ['breech', 'housing', 'band', 'collar', 'lip', 'bore', 'focus', 'lens'],
+    'lance': ['breech', 'housing', 'band', 'collar', 'lip', 'bore', 'focus', 'lens'],   # the Oath lance (issue 1157)
     'radiator': ['root', 'column', 'cap', 'fin', 'bar', 'brace'],
     'hatch': ['rim', 'door', 'seam', 'hinge'],
     'hatchbox': ['frame', 'lid', 'rib'],
@@ -596,10 +596,16 @@ def spinal(length, r=0.2, seg=8, depth=None, point=None, **kw):
         # the blade's facets run into the emitter: one point, the bore opening in its face (designs.md: emitter in its face)
         x0, w0, hz = point
         xc = x0
-        p.add('collar', 'mount', 'siron2', _xsec([(x0, _diamond(w0, 16, hz)), (length, _diamond(r * 1.15, 16, hz)),
-                                                 (length, _circle(r * 0.5)), (length - dp + 0.02, _circle(r * 0.5))]))
-        p.add('lip', 'body', 'sworn', revolve([(length - 0.004, r * 0.5), (length + 0.02 * r, r * 0.53), (length + 0.02 * r, r * 0.62), (length - 0.004, r * 0.64)],
-                                              16, closed=True))
+        # (rev 2, the Board: "a readable housing at the spearhead point: a forged collar and a dark bore with an ember lens, about
+        # a third of the concept's opening, clearly visible at the battle camera"): the diamond runs into a heavy round forged
+        # muzzle ring that stands proud of the point, studded, with a rolled lip
+        xr = length - 0.6 * r
+        p.add('collar', 'mount', 'siron2', _xsec([(x0, _diamond(w0, 16, hz)), (xr + 0.02, _diamond(r * 1.3, 16, hz)),
+                                                 (xr + 0.02, _circle(r * 0.74)), (length - dp + 0.02, _circle(r * 0.74))]))
+        p.add('lip', 'body', 'sworn', revolve([(xr, r * 0.74), (xr, r * 1.16), (length - 0.12 * r, r * 1.16), (length - 0.04 * r, r * 1.26), (length, r * 1.26),
+                                              (length, r * 0.74)], 24, closed=True))
+        p.add('lipband', 'body', 'siron2', ring_band(xr + 0.22 * r, r * 1.16, 0.12 * r, 0.05 * r, 24))
+        p.add('lipstud', 'body', 'sworn', _x_studs(xr + 0.38 * r, r * 1.17, 12, 0.045 * r))
     else:
         p.add('collar', 'body', 'siron2', revolve([(xc, r * 1.55), (length - 0.25 * r, r * 1.02), (length, r * 1.1), (length + 0.03 * r, r * 1.0), (length + 0.03 * r, r * 0.62),
                                                    (xc + 0.04, r * 0.62)], seg, closed=True, phase=ph))
@@ -607,7 +613,7 @@ def spinal(length, r=0.2, seg=8, depth=None, point=None, **kw):
                                               seg, closed=True, phase=ph))
     # the bore: a dark liner stepping in, two focusing rings, the small ember lens at the back
     xb = length - dp
-    q = 0.8 if point else 1.0   # a pointed muzzle has the narrower bore
+    q = 1.2 if point else 1.0   # the pointed muzzle's bore fills its forged ring
     p.add('bore', 'body', 'dark', revolve([(length + 0.01 * r, r * 0.6 * q), (xb, r * 0.6 * q), (xb, 0.001)], 16, phase=ph))
     for i, f in enumerate((0.35, 0.7)):
         x = length - dp * f
