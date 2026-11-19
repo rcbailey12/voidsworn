@@ -15,8 +15,9 @@ extends SceneTree
 ##   PROBE_CLIP       1: clip frames (every second frame, 1280x720, 30 a second) at camera 170: one folder per subject and
 ##                    shield shape, the three looks back to back, each after a one second title card
 ##   PROBE_COST       1: the cost pass instead (PROBE_COST_SHIPS shielded ships, every one failing at once, GPU time)
-##   PROBE_FLASH      1: the flash pass instead: PROBE_FLASH_SHIPS Glasswright ships (default 4) all fail at once at camera
-##                    170, normal and reduce flashing, each shape, for PROBE_LOOKS (default today,collapse); per-frame
+##   PROBE_FLASH      1: the flash pass instead: PROBE_FLASH_SHIPS ships of one faction (default 4) all fail at once at
+##                    camera 170, for the Glasswrights (the brightest band) and the Hullbreakers (the stutter), normal and
+##                    reduce flashing, each shape, for PROBE_LOOKS (default today,collapse); per-frame
 ##                    screen luminance counted the scene gate's way (WCAG 2.3.1: at most 3 flashes in any second)
 ##   PROBE_BLOCKS     1: allow placeholder blocks (a cloud preview of the script only, never a picture for Ryan)
 ## After --: --quick for the short check run (h_boss, fitted, camera 170).
@@ -443,70 +444,79 @@ func _flash() -> void:
 	var looks := _env("PROBE_LOOKS", "today,collapse").split(",")
 	var shapes := _env("PROBE_SHAPES", "fitted,egg").split(",")
 	var n := int(_env("PROBE_FLASH_SHIPS", "4"))
-	var subjects := ["i_boss", "i_carrier"]
-	for shape in shapes:
-		bench._clear()
-		OS.set_environment("VS_SHIELD_SHAPE", shape)
-		_set_look("collapse")
-		bench._make_fx()
-		bench.fx.defer_initial_cuts = true
-		bench._cam(Vector3.ZERO, 170.0)
-		var ids: Array = []
-		for i in n:
-			var sid: String = subjects[i % subjects.size()]
-			var p := Vector3((i % 2 - 0.5) * 34.0, 0, (int(i / 2) - 0.5) * 30.0)
-			var v = bench.story_ship("G%d" % i, rules_hulls[sid], p)
-			if v == null:
-				_fail("placeholder or missing ship " + sid)
+	# the Glasswrights carry the brightest band since R340; the Hullbreakers' field stutters (Board on PR 1170)
+	var groups := {"glasswrights": ["i_boss", "i_carrier"], "hullbreakers": ["c_boss", "c_hulk"]}
+	for group in groups:
+		var subjects: Array = groups[group]
+		for shape in shapes:
+			if not await _flash_group(group, subjects, shape, looks, n):
 				return
-			_note_scene(v)
-			ids.append("G%d" % i)
-		await bench.fx.warmup(bench.cam)
-		for i in 90:
-			await bench._step()
-		for calm in [false, true]:
-			bench.fx.reduce_flashing = calm
-			for look in looks:
-				for id in ids:
-					if not _apply_look(bench.fx.ship(id), look):
-						_fail("could not switch %s to %s" % [id, look])
-						return
-				var rows: Array = []
-				var peak := -1.0
-				var peak_img: Image = null
-				for i in 30 + FAIL_WINDOW:
-					if i == 30:
-						for id in ids:
-							bench.fx.shield_break(id, 3)
-					await bench._step()
-					var img := bench._grab()
-					# an empty capture would score as zero luminance and a false pass (Artoo on PR 1170): stop instead
-					if img == null or img.is_empty():
-						_fail("flash pass: empty frame %d (%s, %s, %s)" % [i, shape, look, "calm" if calm else "normal"])
-						return
-					var lum: Dictionary = GATE._luma(img)
-					rows.append({"i": i, "mean": float(lum["mean"]), "block": float(lum["block"])})
-					if float(lum["block"]) > peak and img != null:
-						peak = float(lum["block"])
-						peak_img = img
-				var st: Dictionary = GATE._flash_stats(rows)
-				var max_delta := 0.0
-				for j in range(1, rows.size()):
-					max_delta = maxf(max_delta, maxf(absf(rows[j]["mean"] - rows[j - 1]["mean"]), absf(rows[j]["block"] - rows[j - 1]["block"])))
-				var row := {"shape": shape, "look": look, "reduce_flashing": calm, "ships": n, "frames": rows.size(), "mean_max_per_second": st["mean_max"],
-					"block_max_per_second": st["block_max"], "max_block_luminance": snappedf(peak, 0.00001),
-					"max_frame_delta": snappedf(max_delta, 0.00001), "pass": bool(st["mean_max"] <= 3 and st["block_max"] <= 3)}
-				report["flash"].append(row)
-				print("SHIELD1078 flash ", JSON.stringify(row))
-				var still := out.path_join("SHIELD1078_%s_flash_%s_%s_%s.png" % [REV, shape, look, "calm" if calm else "normal"])
-				if peak_img == null or preload("res://tools/picture_provenance.gd").save_png(peak_img, still) != OK:
-					_fail("flash pass: could not save " + still)
-					return
-				for id in ids:
-					bench.fx.sync_ship(id, bench._unit(1.0, 5))
-				for i in SETTLE:
-					await bench._step()
-		bench.fx.reduce_flashing = false
+
+
+func _flash_group(group: String, subjects: Array, shape: String, looks: PackedStringArray, n: int) -> bool:
+	bench._clear()
+	OS.set_environment("VS_SHIELD_SHAPE", shape)
+	_set_look("collapse")
+	bench._make_fx()
+	bench.fx.defer_initial_cuts = true
+	bench._cam(Vector3.ZERO, 170.0)
+	var ids: Array = []
+	for i in n:
+		var sid: String = subjects[i % subjects.size()]
+		var p := Vector3((i % 2 - 0.5) * 34.0, 0, (int(i / 2) - 0.5) * 30.0)
+		var v = bench.story_ship("G%d" % i, rules_hulls[sid], p)
+		if v == null:
+			_fail("placeholder or missing ship " + sid)
+			return false
+		_note_scene(v)
+		ids.append("G%d" % i)
+	await bench.fx.warmup(bench.cam)
+	for i in 90:
+		await bench._step()
+	for calm in [false, true]:
+		bench.fx.reduce_flashing = calm
+		for look in looks:
+			for id in ids:
+				if not _apply_look(bench.fx.ship(id), look):
+					_fail("could not switch %s to %s" % [id, look])
+					return false
+			var rows: Array = []
+			var peak := -1.0
+			var peak_img: Image = null
+			for i in 30 + FAIL_WINDOW:
+				if i == 30:
+					for id in ids:
+						bench.fx.shield_break(id, 3)
+				await bench._step()
+				var img := bench._grab()
+				# an empty capture would score as zero luminance and a false pass (Artoo on PR 1170): stop instead
+				if img == null or img.is_empty():
+					_fail("flash pass: empty frame %d (%s, %s, %s, %s)" % [i, group, shape, look, "calm" if calm else "normal"])
+					return false
+				var lum: Dictionary = GATE._luma(img)
+				rows.append({"i": i, "mean": float(lum["mean"]), "block": float(lum["block"])})
+				if float(lum["block"]) > peak and img != null:
+					peak = float(lum["block"])
+					peak_img = img
+			var st: Dictionary = GATE._flash_stats(rows)
+			var max_delta := 0.0
+			for j in range(1, rows.size()):
+				max_delta = maxf(max_delta, maxf(absf(rows[j]["mean"] - rows[j - 1]["mean"]), absf(rows[j]["block"] - rows[j - 1]["block"])))
+			var row := {"group": group, "shape": shape, "look": look, "reduce_flashing": calm, "ships": n, "frames": rows.size(), "mean_max_per_second": st["mean_max"],
+				"block_max_per_second": st["block_max"], "max_block_luminance": snappedf(peak, 0.00001),
+				"max_frame_delta": snappedf(max_delta, 0.00001), "pass": bool(st["mean_max"] <= 3 and st["block_max"] <= 3)}
+			report["flash"].append(row)
+			print("SHIELD1078 flash ", JSON.stringify(row))
+			var still := out.path_join("SHIELD1078_%s_flash_%s_%s_%s_%s.png" % [REV, group, shape, look, "calm" if calm else "normal"])
+			if peak_img == null or preload("res://tools/picture_provenance.gd").save_png(peak_img, still) != OK:
+				_fail("flash pass: could not save " + still)
+				return false
+			for id in ids:
+				bench.fx.sync_ship(id, bench._unit(1.0, 5))
+			for i in SETTLE:
+				await bench._step()
+	bench.fx.reduce_flashing = false
+	return true
 
 
 # the installed ship each picture or number was drawn from: its packed scene path and sha256 (Artoo on PR 1170: prove

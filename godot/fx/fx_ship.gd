@@ -946,7 +946,7 @@ func _break_collapse(fx, quad: int) -> void:
 	# the knot where the field closes, and its ring of sparks flat along the hull
 	var Tk: float = T + COLLAPSE_CLOSE
 	# the Glasswrights' pale field needs a bigger knot to read against their pale hulls (matches the shader's band)
-	var gk: float = 1.5 if int(fac["shield_style"]) == 3 else 1.0
+	var gk: float = 1.5 if int(fac["shield_style"]) == 3 and not fx.reduce_flashing else 1.0
 	_shield_flash(fx, wp, Tk, sc.lerp(Color.WHITE, 0.5), 5.0 * k * gk, 7.0, 0.14)
 	fx.light(wp + wn * 1.5, Tk, 0.35, 5.0 * gk, sc, 0)
 	var t1: Vector3 = wn.cross(Vector3.UP if absf(wn.y) < 0.9 else Vector3.RIGHT).normalized()

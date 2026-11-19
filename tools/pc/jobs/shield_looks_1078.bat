@@ -95,8 +95,8 @@ echo clips done %date% %time% >> "%ST%"
 copy /y "%OUT%\look\*.mp4" "%RES%\" > nul 2>&1
 
 :flash
-rem the flash pass (Artoo on PR 1170, R340): four Glasswright ships fail at once at camera 170, reduce flashing off and on,
-rem fitted and egg; screen luminance counted per frame the scene gate way. Shares the GPU (not a timing).
+rem the flash pass (Artoo on PR 1170, R340): four Glasswright ships, then four Hullbreaker ships, fail at once at camera 170,
+rem reduce flashing off and on, fitted and egg; screen luminance counted per frame the scene gate way. Shares the GPU.
 if "%S1078_SKIP_FLASH%"=="1" goto cost
 set "PROBE_OUT=%OUT%\flash"
 set "PROBE_CLIP="
@@ -113,7 +113,7 @@ if errorlevel 1 (
   goto cost
 )
 echo flash pass ran %date% %time% >> "%ST%"
-rem the evidence must reach out\: the json and one still per row (2 shapes x 2 settings x 2 looks = 8), every copy checked
+rem the evidence must reach out\: the json and one still per row (2 factions x 2 shapes x 2 settings x 2 looks = 16), every copy checked
 copy /y "%OUT%\flash\shield1078.json" "%RES%\flash.json" > nul 2>&1
 if errorlevel 1 (
   echo FAILED: the flash json did not copy to %RES% >> "%ST%"
@@ -129,12 +129,12 @@ set "S1078_FROWS=0"
 for /f %%C in ('findstr /c:"SHIELD1078 flash {" "%OUT%\flash_log.txt" ^| find /c /v ""') do set "S1078_FROWS=%%C"
 set "S1078_FPNG=0"
 for /f %%C in ('dir /b "%RES%\SHIELD1078_*_flash_*.png" 2^>nul ^| find /c /v ""') do set "S1078_FPNG=%%C"
-if not "%S1078_FROWS%"=="8" (
-  echo FAILED: the flash pass logged %S1078_FROWS% result rows, expected 8 >> "%ST%"
+if not "%S1078_FROWS%"=="16" (
+  echo FAILED: the flash pass logged %S1078_FROWS% result rows, expected 16 >> "%ST%"
   set "JOBFAIL=1"
 )
-if not "%S1078_FPNG%"=="8" (
-  echo FAILED: %S1078_FPNG% flash stills reached out\, expected 8 >> "%ST%"
+if not "%S1078_FPNG%"=="16" (
+  echo FAILED: %S1078_FPNG% flash stills reached out\, expected 16 >> "%ST%"
   set "JOBFAIL=1"
 )
 rem the measured result, kept apart from "it ran": every row as the probe printed it, then the threshold verdict
