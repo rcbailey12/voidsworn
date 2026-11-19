@@ -72,6 +72,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    live in `CONCEPT_REGISTERS` in the stack: saturated brick rust, brighter worn metal and the concept's violet strength.
    Near-white is exposed metal and small scrapes; R274's larger grey trophy plates remain dark salvaged metal, at R252 size.
    Plate geometry and tiling scale are unchanged in this run; report the painted-output plate measure for review.
+   **The Glasswright finish** (R337, Ryan Nov 18 and 19 2026: "glass like, so almost reflective", restart CD5 from the
+   concept; issue 1183), set in `tools/blender/kits/ithar/` for every Glasswright sheet ship, never on one ship (R333): opaque,
+   reflective pearl ribbons with fine silver edge lines over a core of emissive amber, violet and green stained-glass mosaic
+   panels; the mosaic is the larger area; stones (optics, stern lenses) are cut and glowing. Never see-through: every intact-hull
+   surface has transmission 0 and the interior shows only in the break-up. No wear. The bake marks it authored_look so the game
+   keeps its values (R329).
    **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
    ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
    violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the

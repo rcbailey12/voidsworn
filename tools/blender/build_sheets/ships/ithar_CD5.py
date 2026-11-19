@@ -101,13 +101,24 @@ RIB_A = 9            # full-length ribbons, stern lenses to bow, twisting togeth
 TWIST_A = lambda x: 0.16 * x + 0.42 * math.sin(0.21 * x)
 # Upper leaves: shorter, wider ribbons that cross the long ones with a counter twist and curl up along the spine.
 # (x0, x1, base angle, width): laid by hand so they overlap like the concept's leaves, not as a regular pattern.
-LEAVES = [(-11.6, 1.8, 1.30, 0.26), (-8.4, 6.4, 2.25, 0.24), (-5.2, 9.2, 0.70, 0.23), (-10.2, 3.6, -0.55, 0.22),
-          (-2.6, 9.6, 1.75, 0.22), (-9.0, 5.0, 3.40, 0.24), (-4.0, 8.6, -1.70, 0.20), (-11.0, -1.0, 2.80, 0.22),
-          (-7.0, 2.5, 1.05, 0.20), (0.5, 9.4, 2.60, 0.20)]
+LEAVES = [(-11.6, 1.8, 1.30, 0.26), (-8.4, 9.4, 2.25, 0.24), (-5.2, 9.6, 0.70, 0.23), (-10.2, 3.6, -0.55, 0.22),
+          (-9.0, 5.0, 3.40, 0.24), (-7.0, 2.5, 1.05, 0.20)]
 TWIST_B = lambda x: -0.11 * x + 0.30 * math.sin(0.30 * x + 1.1)
 
 
-SWAY, LEAF_F = 0.16, 0.95
+SWAY, LEAF_F = 0.14, 1.40
+
+
+# Toward the bow every ribbon gathers into one of the two lance roots, like flames drawing to a point (Board, round 2).
+BOW_ANGLE = 0.62
+
+
+def bow_gather(x, a):
+    s = min(1.0, max(0.0, (x - 0.5) / 9.0)) ** 1.6
+    s = s * s * (3 - 2 * s)
+    target = BOW_ANGLE if math.cos(a) >= 0 else math.pi - BOW_ANGLE
+    d = math.atan2(math.sin(target - a), math.cos(target - a))
+    return a + d * s * 0.85
 
 
 def gap_of(x, a):
@@ -194,7 +205,8 @@ def own_part():
 def optical_gun(K, x, fid, weapon, colour):
     """The hidden rotating element fits within a continuous grown glass saddle."""
     p = own_part()
-    p.add('integral_root', 'mount', 'gw_root_' + colour, ellipsoid((0, 0, -0.30), (1.08, 1.08, 0.48), 64, 28))
+    p.add('integral_root', 'mount', 'gw_pearl',  # sunk into the ribbons: pearl like them, only the stone glows
+          ellipsoid((0, 0, -0.30), (0.95, 0.95, 0.34), 64, 28))  # r4: a low root, so the stone sits proud
     # A round internal lens turns inside the continuous clear glass envelope.
     p.add('lens', 'turn', 'gw_gem_' + colour, ellipsoid((0, 0, 0), (0.60, 0.60, 0.16), 64, 28))
     p.add('stored_light', 'turn', 'cd5_' + colour, ellipsoid((0, 0, 0), (0.52, 0.52, 0.14), 64, 28))
@@ -279,17 +291,17 @@ def build(K):
         ribbons.append(gw.Ribbon(
             -12.45 + 0.18 * math.sin(2.3 * k), 9.95 - 0.55 * (k % 3),
             # Neighbours sway in opposite senses, so they meet and part: the gaps between them become leaf-shaped windows.
-            lambda x, base=base, k=k: base + TWIST_A(x) + SWAY * math.sin(LEAF_F * x + k * math.pi),
-            lambda t, k=k: (0.23 + 0.03 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
-            lambda t, v: 0.05 + 0.025 * (1 - v * v),
+            lambda x, base=base, k=k: bow_gather(x, base + TWIST_A(x) + SWAY * math.sin(LEAF_F * x + k * math.pi)),
+            lambda t, k=k: (0.14 + 0.025 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
+            lambda t, v: 0.05 + 0.13 * (1 - v * v) ** 0.5,  # a rounded, pillowed fold, not a flat strap
             name='long_ribbon_%d' % k, clamp=optic_clamp))
     for k, (x0, x1, base, wd) in enumerate(LEAVES):
         top = max(0.0, math.sin(base)) ** 2
         ribbons.append(gw.Ribbon(
-            x0, x1, lambda x, base=base: base + TWIST_B(x),
-            lambda t, wd=wd: wd * gw.leaf(0.7, 0.0, 0.38)(t),
+            x0, x1, lambda x, base=base: bow_gather(x, base + TWIST_B(x)),
+            lambda t, wd=wd: 0.72 * wd * gw.leaf(0.7, 0.0, 0.38)(t),
             # Upper leaves curl their trailing edge up off the hull, like the concept's crests along the spine.
-            lambda t, v, top=top: 0.15 + 0.035 * (1 - v * v) + 0.85 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5,
+            lambda t, v, top=top: 0.24 + 0.17 * (1 - v * v) ** 0.5 + 0.85 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5,
             name='leaf_ribbon_%d' % k, clamp=optic_clamp))
     for r in ribbons:
         vv, ff, attrs = r.mesh(skin, 180, 12)
@@ -314,10 +326,13 @@ def build(K):
         ob = K._obj(fid + '_grown_stern', *ellipsoid((-12.05, y, -0.02), (0.85, 0.93, 0.98), 64, 32),
                     'gw_pearl', smooth=True, grp=fid, role='mount')
         ob['part_kind'] = 'engine'; ob['machine'] = 1
-        K._obj(fid + '_deep_lens', *ellipsoid((-12.67, y, -0.02), (0.32, 0.86, 0.88), 64, 32),
+        K._obj(fid + '_deep_lens', *ellipsoid((-12.67, y, -0.02), (0.13, 0.86, 0.88), 64, 32),
                'gw_drive', smooth=True, grp=fid, role='mount')
-        K._obj(fid + '_white_bloom', *ellipsoid((-12.81, y, -0.02), (0.18, 0.44, 0.46), 64, 32),
+        K._obj(fid + '_white_bloom', *ellipsoid((-12.68, y, -0.02), (0.18, 0.44, 0.46), 64, 32),
                'gw_drive_core', smooth=True, grp=fid, role='mount')
+        # R337: the concept's stern lenses are cut stones. A rose-cut face, flat facets, sits over the deep lens.
+        K._obj(fid + '_cut_face', *gw.cut_lens((-12.60, y, -0.02), (-1, 0, 0), 0.80, 0.38, 10, 0.80, 0.82),
+               'gw_drive_cut', grp=fid, role='mount')
         for j in range(11):
             a = j * 2 * math.pi / 11
             pts = [(-12.05 + 0.855 * math.cos(u), y + 0.935 * math.sin(u) * math.cos(a),
@@ -512,6 +527,7 @@ def review(out):
             bpy.ops.wm.save_as_mainfile(filepath=str(out / (CODE + '_review.blend')))
     c = CAMERA
     render('concept_camera', c['az'], c['el'], c['scale'], c['roll'])
+    render('close', c['az'] + 15, c['el'] + 6, 10.5, c['roll'], target=(-6.5, 0, 0.8))  # r4: close look at ribbons and mosaic
     render('top', 270, 90, 29)
     render('side', 270, 0, 29)
     render('underside', 270, -90, 29)

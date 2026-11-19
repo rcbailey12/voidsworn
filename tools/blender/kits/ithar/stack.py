@@ -43,13 +43,17 @@ PALETTE = ('amber', 'violet', 'green')
 WEIGHTS = (55, 27, 18)
 
 # The glowing panel colour: the concept's bright tone pushed to full saturation (the panel glows, so it carries its own light).
-GLOW = dict(amber=(1.0, 0.36, 0.035), violet=(0.52, 0.06, 0.95), green=(0.34, 0.80, 0.03))
+GLOW = dict(amber=(1.0, 0.20, 0.0), violet=(0.42, 0.02, 0.95), green=(0.22, 0.75, 0.0))
+# The bake marks its materials authored_look (shared paint_stack.py), so godot/render/look.gd keeps these values instead of
+# applying the faction's older read caps (R329). No soft-rim mark: the pearl's own shine is the look.
+AUTHORED_LOOK = True
+SOFT_RIM = False
 # The game and the bake read these (one home for the numbers, RULEBOOK 0.9).
 LOOK = dict(
-    pearl=dict(base=lin((242, 226, 212)), metallic=0.10, roughness=0.17, coat=1.0, coat_roughness=0.05,
+    pearl=dict(base=lin((240, 230, 226)), metallic=0.45, roughness=0.09, coat=1.0, coat_roughness=0.05,
                thin_film_nm=420.0, transmission=0.0, wear=0.0),
     silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, transmission=0.0),
-    mosaic=dict(emission=0.95, roughness=0.10, coat=1.0, cell_scale=5.0, lead=0.06, sparkle=0.06, transmission=0.0),
+    mosaic=dict(emission=1.3, roughness=0.10, coat=1.0, cell_scale=4.0, lead=0.06, sparkle=0.06, facet_tilt=0.8, transmission=0.0),
     gem=dict(emission=3.0, roughness=0.06, transmission=0.0),
     tip=dict(base=(1.0, 0.33, 0.05), emission=9.0),
 )
@@ -77,6 +81,22 @@ def sample_concept(path):
 
 
 # ------------------------------------------------------------------------------------------------ Cycles review materials
+def _facets(nt, cells_colour, tilt):
+    """each cell tilts its own way: the geometry normal plus the cell's random colour, so cells catch the light one by one
+    like cut stones (flat facets, never noise grain)"""
+    N, Ln = nt.nodes, nt.links
+    geo = N.new('ShaderNodeNewGeometry')
+    off = N.new('ShaderNodeVectorMath'); off.operation = 'SUBTRACT'; off.inputs[1].default_value = (0.5, 0.5, 0.5)
+    Ln.new(cells_colour, off.inputs[0])
+    sc = N.new('ShaderNodeVectorMath'); sc.operation = 'SCALE'; sc.inputs['Scale'].default_value = tilt
+    Ln.new(off.outputs[0], sc.inputs[0])
+    add = N.new('ShaderNodeVectorMath'); add.operation = 'ADD'
+    Ln.new(geo.outputs['Normal'], add.inputs[0]); Ln.new(sc.outputs[0], add.inputs[1])
+    nm = N.new('ShaderNodeVectorMath'); nm.operation = 'NORMALIZE'
+    Ln.new(add.outputs[0], nm.inputs[0])
+    return nm.outputs[0]
+
+
 def _principled(m):
     nt = m.node_tree
     b = nt.nodes.get('Principled BSDF')
@@ -196,13 +216,12 @@ def mosaic(name='gw_mosaic'):
     st = N.new('ShaderNodeMath'); st.operation = 'MULTIPLY'; st.inputs[1].default_value = L['emission']
     Ln.new(tot.outputs[0], st.inputs[0]); Ln.new(st.outputs[0], b.inputs['Emission Strength'])
     # facets: each cell tilts a little, so the cells catch the light separately
-    bump = N.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = 0.35; bump.inputs['Distance'].default_value = 0.03
-    Ln.new(sep.outputs['Green'], bump.inputs['Height']); Ln.new(bump.outputs['Normal'], b.inputs['Normal'])
+    Ln.new(_facets(nt, cells.outputs['Color'], L['facet_tilt']), b.inputs['Normal'])
     m.diffuse_color = (0.9, 0.45, 0.1, 1)
     return m
 
 
-def gem(name, colour, strength=None):
+def gem(name, colour, strength=None, metallic=0.0, cut=False):
     """a faceted glowing stone: the optics and the stern lenses. Opaque; facets from coarse cells."""
     L = LOOK['gem']
     m = _new(name); nt = m.node_tree; N, Ln = nt.nodes, nt.links
@@ -211,12 +230,22 @@ def gem(name, colour, strength=None):
     b.inputs['Emission Color'].default_value = tuple(colour) + (1,)
     b.inputs['Emission Strength'].default_value = strength or L['emission']
     b.inputs['Roughness'].default_value = L['roughness']
+    b.inputs['Metallic'].default_value = metallic
     b.inputs['Coat Weight'].default_value = 1.0
     tc = N.new('ShaderNodeTexCoord')
     v = N.new('ShaderNodeTexVoronoi'); v.voronoi_dimensions = '3D'; v.inputs['Scale'].default_value = 7.0
     Ln.new(tc.outputs['Object'], v.inputs['Vector'])
-    bump = N.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = 1.0; bump.inputs['Distance'].default_value = 0.08
-    Ln.new(v.outputs['Distance'], bump.inputs['Height']); Ln.new(bump.outputs['Normal'], b.inputs['Normal'])
+    if cut:
+        # a cut stone: each flat facet faces its own way, so each glows its own strength (light from inside the stone)
+        lw = N.new('ShaderNodeLayerWeight'); lw.inputs['Blend'].default_value = 0.5
+        # (Facing is 0 face-on, 1 at grazing: tilted facets glow brightest, the table facet stays a deep window)
+        pw = N.new('ShaderNodeMath'); pw.operation = 'POWER'; pw.inputs[1].default_value = 0.7
+        Ln.new(lw.outputs['Facing'], pw.inputs[0])
+        ms = N.new('ShaderNodeMapRange'); ms.inputs['To Min'].default_value = strength or L['emission']
+        ms.inputs['To Max'].default_value = 2.6
+        Ln.new(pw.outputs[0], ms.inputs['Value']); Ln.new(ms.outputs['Result'], b.inputs['Emission Strength'])
+    else:
+        Ln.new(_facets(nt, v.outputs['Color'], 0.9), b.inputs['Normal'])
     m.diffuse_color = tuple(colour) + (1,)
     return m
 
@@ -261,6 +290,7 @@ def setup(kit):
         'gw_root_amber': gem('gw_root_amber', GLOW['amber'], 0.7), 'gw_root_violet': gem('gw_root_violet', GLOW['violet'], 0.7),
         'gw_root_green': gem('gw_root_green', GLOW['green'], 0.7),
         'gw_drive': gem('gw_drive', (0.62, 0.42, 1.0), 0.45),
+        'gw_drive_cut': gem('gw_drive_cut', (0.78, 0.62, 1.0), 0.25, metallic=0.4, cut=True),
         'gw_drive_core': gem('gw_drive_core', (0.88, 0.80, 1.0), 1.6),
     }
     for name, m in made.items():

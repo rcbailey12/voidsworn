@@ -122,3 +122,27 @@ def mosaic_tint(x, a, gaps, palette, weights, seed=0):
     # Brighter in the middle of each leaf, dimmer at the ends where two leaves meet (stained-glass leading).
     glow = 0.35 + 0.65 * math.sin(math.pi * frac) ** 0.6
     return colour, glow
+
+
+def cut_lens(centre, axis, radius, depth, sides=12, ry=None, rz=None):
+    """a rose-cut faceted lens: a girdle ring, a staggered crown ring and an apex, flat triangular facets (shade it flat).
+    `axis` is the outward direction (unit vector along x, y or z of the world, sign included); ry, rz stretch an oval lens."""
+    c = Vector(centre); ax = Vector(axis).normalized()
+    u = ax.orthogonal().normalized(); w = ax.cross(u).normalized()
+    ry = ry or radius; rz = rz or radius
+    def ring(scale, d, phase):
+        return [c + ax * d + u * (ry * scale * math.cos(phase + TAU * i / sides)) + w * (rz * scale * math.sin(phase + TAU * i / sides))
+                for i in range(sides)]
+    girdle = ring(1.0, 0.0, 0.0)
+    crown = ring(0.62, depth * 0.62, math.pi / sides)
+    apex = c + ax * depth
+    verts = girdle + crown + [apex]
+    n = sides
+    faces = []
+    for i in range(n):
+        j = (i + 1) % n
+        faces.append((i, j, n + i))            # girdle facet
+        faces.append((j, n + j, n + i))        # star facet between crown points
+        faces.append((n + i, n + j, 2 * n))    # top facet to the apex
+    faces.append(tuple(range(n))[::-1])        # the back, closed
+    return verts, faces
