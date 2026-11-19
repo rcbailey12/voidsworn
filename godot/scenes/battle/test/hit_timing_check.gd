@@ -5,6 +5,9 @@ extends SceneTree
 #     on the wall clock; the enemy's target is ringed and named while the volley plays, and the ring clears after.
 #  B. [hit, hit, hit] where the second hit empties the shield: the shield break and "Shields down" fire once, on that
 #     hit, before the third hit lands (they used to wait for the whole volley).
+#  D. a lance volley under the same quarter-speed clock: the charge and the shot cue run on the effect clock, so the
+#     shot cue trails the charge by its lead in effect seconds and plays at or after its own planned fire time
+#     (Artoo's review of PR 1220: they ran on the wall clock and could fire before the shot during slow motion).
 #  C. the pure helpers: hit_arrivals maps hit k to the k-th true shot; shield_break_hit picks the last absorbed hit.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -36,6 +39,14 @@ class Probe extends "res://scenes/battle/battle.gd":
 	func _float(id, text: String, col: Color, dy := 0.0) -> void:
 		said.append([text, float(gfx.now)])
 		super._float(id, text, col, dy)
+
+class RecSfx extends "res://audio/sfx.gd":
+	var fx_clock = null
+	var heard: Array = []   # [cue name, effect time]
+
+	func play(name: String, o := {}) -> void:
+		heard.append([name, float(fx_clock.now) if fx_clock != null else -1.0])
+		super.play(name, o)
 
 var failures := 0
 
@@ -86,11 +97,11 @@ func _setup() -> Array:
 	return [b, str(foe["id"]), str(me["id"])]
 
 
-func _fire(b: Probe, a: String, t: String, shots: Array, hits: Array, grp_extra: Array) -> Dictionary:
+func _fire(b: Probe, a: String, t: String, shots: Array, hits: Array, grp_extra: Array, kind := "") -> Dictionary:
 	var u: Dictionary = b.VU[a]
 	var w: Dictionary = (b.api.unit(a)["weapons"] as Array)[0]
-	var e := {"t": "fire", "unit": a, "target": t, "kind": str(w.get("k", "battery")), "name": "Test battery",
-		"weapon": 0, "weapon_id": str(w.get("id", "")), "shots": shots, "quad": 0, "pd": 0}
+	var e := {"t": "fire", "unit": a, "target": t, "kind": kind if kind != "" else str(w.get("k", "battery")), "name": "Test gun",
+		"weapon": 0, "weapon_id": "" if kind != "" else str(w.get("id", "")), "shots": shots, "quad": 0, "pd": 0}
 	var grp: Array = []
 	for h in hits:
 		grp.append({"t": "hit", "unit": a, "target": t, "quad": 0, "section": "mid", "shield": h[0], "hull": h[1], "crit": false})
@@ -181,7 +192,35 @@ func _run() -> void:
 		_check(absf(sd - at2) < 0.001, "B: \"Shields down\" shows on the breaking hit (at %.3f)" % sd)
 		_check(int(b.lands[0]["k"]) == 0 and int(b.lands[1]["k"]) == 1 and int(b.lands[2]["k"]) == 2, "B: hits land in order")
 		_check(float(b.disp[t]["sh"][0]) == 0.0, "B: the shield reads empty after the break")
+	# D: a lance at quarter speed; the cue recorder replaces the battle's sound player
+	var rec := RecSfx.new()
+	rec.cam = b.cam
+	rec.fx_clock = b.gfx
+	b.add_child(rec)
+	b.sfx = rec
+	b.gfx._pause_depth = 0.25
+	b.gfx._pause_until = float(b.gfx.now) + 1000.0
+	r = await _fire(b, a, t, [true], [[0, 9]], [], "lance")
+	for i in 120:
+		await process_frame
+	b.gfx._pause_until = -1.0
+	b.gfx._pause_depth = 1.0
+	var charge := -1.0
+	var shot := -1.0
+	for x in rec.heard:
+		var nm := str(x[0])
+		if nm == "lance_charge" and charge < 0.0:
+			charge = float(x[1])
+		elif nm.begins_with("lance") and nm != "lance_charge" and shot < 0.0:
+			shot = float(x[1])
+	_check(shot >= 0.0, "D: the lance shot cue plays (heard %s)" % str(rec.heard))
+	if rec.cues.has("lance_charge"):
+		_check(charge >= 0.0 and shot - charge > 0.26 * 0.75,
+			"D: the shot trails its charge by the lead in effect time, not wall time (charge %.3f, shot %.3f)" % [charge, shot])
+	if b.lands.size() == 1 and shot >= 0.0:
+		_check(shot <= float(b.lands[0]["now"]) + 0.001, "D: the shot cue plays before its hit lands (%.3f vs %.3f)" % [shot, float(b.lands[0]["now"])])
+		_check(shot >= float(r["t0"]) + 0.26 * 0.75, "D: the shot cue waits for the effect's fire time on the slowed clock (%.3f after start)" % (shot - float(r["t0"])))
 	b.free()
 	if failures == 0:
-		print("hit timing: PASS ([miss, miss, hit] on the effect clock under hit pause; shield break on the second of three hits; target ringed and named)")
+		print("hit timing: PASS ([miss, miss, hit] on the effect clock under hit pause; shield break on the second of three hits; target ringed and named; lance cues on the effect clock)")
 	quit(0 if failures == 0 else 1)

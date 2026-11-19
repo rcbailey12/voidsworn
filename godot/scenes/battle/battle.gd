@@ -1986,13 +1986,13 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
 		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
-		# issue 1211: lance and torpedo cues on the effect's own first fire time (they played at 0 before)
+		# issue 1211: lance and torpedo cues on the effect's own first fire time, on the effect clock (they played at 0 before)
 		var f0: Array = r.get("fires", [])
 		var fire0 := float(f0.min()) if not f0.is_empty() else -1.0
 		if fam in ["lance", "ion"]:
-			sfx.lance(fam == "ion", fac, from, fire0)
+			sfx.lance(fam == "ion", fac, from, fire0, _at_fx)
 		elif fam == "torp":
-			sfx.torp(fac, from, fire0)
+			sfx.torp(fac, from, fire0, _at_fx)
 		else:
 			# issue 506: one gun cue per shot, on the fire times the fx layer used for its muzzle effects
 			var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
