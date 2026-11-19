@@ -391,11 +391,16 @@ func _run() -> void:
 func _ship_art() -> void:
 	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ships/manifest.json")).ships
 	var hashes := {}
+	var hull_count := 0
 	for code: String in manifest:
+		# The ledger gets ShipView's faction-and-role key for a wing. The manifest code only selects its 3D craft.
+		if manifest[code].get("cls") == "Squadron":
+			continue
+		hull_count += 1
 		var tex := Icons.silhouette(code)
 		if tex != null:
 			hashes[FileAccess.get_sha256(Icons.DIR + "ships/" + code + ".png")] = true
-	check(hashes.size() == manifest.size() and not hashes.has(""), "every installed hull has a distinct silhouette (%d of %d)" % [hashes.size(), manifest.size()])
+	check(hashes.size() == hull_count and not hashes.has(""), "every installed hull has a distinct silhouette (%d of %d)" % [hashes.size(), hull_count])
 
 
 func _log_states(h, tag: String) -> void:

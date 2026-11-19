@@ -16,7 +16,6 @@ const SCENE = preload("res://scenes/battle/battle.tscn")
 const API = preload("res://rules/battle_api.gd")
 const BL = preload("res://world/board_look.gd")
 const PG = preload("res://render/placeholder_guard.gd")
-const PROV = preload("res://tools/picture_provenance.gd")
 const CLIP_FRAMES := 330      # 11 s at 30 frames a second
 const FRIGATE_GO := 30        # the frigate's flight starts at 1 s and takes 3.5 s
 const CAPITAL_GO := 105       # the capital's at 3.5 s and takes 4 s
@@ -198,7 +197,7 @@ func _clip(tier: String, wake: bool, size: Vector2i) -> void:
 		_fly(pair, k)
 		await process_frame
 		await RenderingServer.frame_post_draw
-		PROV.save_jpg(root.get_texture().get_image(), dir.path_join("f%04d.jpg" % k), 0.92)
+		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), dir.path_join("f%04d.jpg" % k), 0.92)
 	var meta := {"draft": draft, "camera_r": cam_r, "tier": tier, "actual_quality": b.world.quality, "wake": wake, "frames": CLIP_FRAMES, "fps": 30, "size": [size.x, size.y],
 		"focus": [focus.x, focus.z], "frigate": [str(pair[0].u.get("cls")), str(pair[0].code), pair[0].L], "capital": [str(pair[1].u.get("cls")), str(pair[1].code), pair[1].L],
 		"adapter": RenderingServer.get_video_adapter_name(), "renderer": RenderingServer.get_current_rendering_method(),
@@ -250,7 +249,7 @@ func _still(tier: String, size: Vector2i) -> void:
 		wake.apply(living._wake_mats)
 		for i in 12: await process_frame
 		await RenderingServer.frame_post_draw
-		PROV.save_jpg(root.get_texture().get_image(), out.path_join("still_%s_c%d_%s.jpg" % [tier, int(cam_r), "on" if pass_i == 0 else "off"]), 0.95)
+		preload("res://tools/picture_provenance.gd").save_jpg(root.get_texture().get_image(), out.path_join("still_%s_c%d_%s.jpg" % [tier, int(cam_r), "on" if pass_i == 0 else "off"]), 0.95)
 	print("WAKE1079 still ", tier, " ", size)
 
 

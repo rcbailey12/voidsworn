@@ -171,7 +171,10 @@ def to_recipe(K, ship):
             guns.append([fid, aim, [0.0, 0.0, 1.0]])
     for f in K.features:
         if f['kind'] == 'engine':
-            hp['engines'].append(dict(name=f['id'], pos=P(f['exit']), dir=[-1.0, 0.0, 0.0], radius=float(f['radius']) * s))
+            engine = dict(name=f['id'], pos=P(f['exit']), dir=[-1.0, 0.0, 0.0], radius=float(f['radius']) * s)
+            if 'aperture' in f:
+                engine['aperture'] = [float(size) * s for size in f['aperture']]
+            hp['engines'].append(engine)
     # the sheet's own hard points: core, breach anchors, braking and boarding origins, bays
     pts = []
     for p in K.points:
