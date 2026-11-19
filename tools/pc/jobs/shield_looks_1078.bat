@@ -105,16 +105,46 @@ set "PROBE_FLASH=1"
 set "PC_GPU_MODE=shared"
 call "%TMO%" 900 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 --script res://fx/test/shield_fail_probe.gd > "%OUT%\flash_log.txt" 2>&1
 set "PROBE_FLASH="
+copy /y "%OUT%\flash_log.txt" "%RES%\" > nul 2>&1
 findstr /c:"SHIELD1078_DONE" "%OUT%\flash_log.txt" > nul
 if errorlevel 1 (
-  echo FAILED: the flash pass did not finish, see %OUT%\flash_log.txt >> "%ST%"
+  echo FAILED: the flash pass did not finish ^(or a frame or still was empty^), see %OUT%\flash_log.txt >> "%ST%"
   set "JOBFAIL=1"
-) else (
-  echo flash pass done %date% %time% >> "%ST%"
+  goto cost
 )
-copy /y "%OUT%\flash\*.png" "%RES%\" > nul 2>&1
+echo flash pass ran %date% %time% >> "%ST%"
+rem the evidence must reach out\: the json and one still per row (2 shapes x 2 settings x 2 looks = 8), every copy checked
 copy /y "%OUT%\flash\shield1078.json" "%RES%\flash.json" > nul 2>&1
-copy /y "%OUT%\flash_log.txt" "%RES%\" > nul 2>&1
+if errorlevel 1 (
+  echo FAILED: the flash json did not copy to %RES% >> "%ST%"
+  set "JOBFAIL=1"
+)
+copy /y "%OUT%\flash\SHIELD1078_*_flash_*.png" "%RES%\" > nul 2>&1
+if errorlevel 1 (
+  echo FAILED: the flash stills did not copy to %RES% >> "%ST%"
+  set "JOBFAIL=1"
+)
+copy /y "%OUT%\flash\SHIELD1078_*_flash_*.provenance.json" "%RES%\" > nul 2>&1
+set "S1078_FROWS=0"
+for /f %%C in ('findstr /c:"SHIELD1078 flash {" "%OUT%\flash_log.txt" ^| find /c /v ""') do set "S1078_FROWS=%%C"
+set "S1078_FPNG=0"
+for /f %%C in ('dir /b "%RES%\SHIELD1078_*_flash_*.png" 2^>nul ^| find /c /v ""') do set "S1078_FPNG=%%C"
+if not "%S1078_FROWS%"=="8" (
+  echo FAILED: the flash pass logged %S1078_FROWS% result rows, expected 8 >> "%ST%"
+  set "JOBFAIL=1"
+)
+if not "%S1078_FPNG%"=="8" (
+  echo FAILED: %S1078_FPNG% flash stills reached out\, expected 8 >> "%ST%"
+  set "JOBFAIL=1"
+)
+rem the measured result, kept apart from "it ran": every row as the probe printed it, then the threshold verdict
+findstr /c:"SHIELD1078 flash {" "%OUT%\flash_log.txt" >> "%ST%"
+findstr /c:"\"pass\":false" "%OUT%\flash_log.txt" > nul
+if errorlevel 1 (
+  echo flash threshold: every row at or under 3 flashes a second >> "%ST%"
+) else (
+  echo flash threshold: OVER, a row above 3 flashes a second ^(see the rows above^) >> "%ST%"
+)
 
 :cost
 if "%S1078_SKIP_COST%"=="1" goto done

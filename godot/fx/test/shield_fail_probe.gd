@@ -120,7 +120,9 @@ func _run() -> void:
 	else:
 		await _stories()
 	var f := FileAccess.open(out.path_join("shield1078.json"), FileAccess.WRITE)
-	if f != null:
+	if f == null:
+		_fail("could not write shield1078.json")
+	else:
 		f.store_string(JSON.stringify(report, " "))
 		f.close()
 	bench._clear()
@@ -478,6 +480,10 @@ func _flash() -> void:
 							bench.fx.shield_break(id, 3)
 					await bench._step()
 					var img := bench._grab()
+					# an empty capture would score as zero luminance and a false pass (Artoo on PR 1170): stop instead
+					if img == null or img.is_empty():
+						_fail("flash pass: empty frame %d (%s, %s, %s)" % [i, shape, look, "calm" if calm else "normal"])
+						return
 					var lum: Dictionary = GATE._luma(img)
 					rows.append({"i": i, "mean": float(lum["mean"]), "block": float(lum["block"])})
 					if float(lum["block"]) > peak and img != null:
@@ -487,13 +493,15 @@ func _flash() -> void:
 				var max_delta := 0.0
 				for j in range(1, rows.size()):
 					max_delta = maxf(max_delta, maxf(absf(rows[j]["mean"] - rows[j - 1]["mean"]), absf(rows[j]["block"] - rows[j - 1]["block"])))
-				var row := {"shape": shape, "look": look, "reduce_flashing": calm, "ships": n, "mean_max_per_second": st["mean_max"],
+				var row := {"shape": shape, "look": look, "reduce_flashing": calm, "ships": n, "frames": rows.size(), "mean_max_per_second": st["mean_max"],
 					"block_max_per_second": st["block_max"], "max_block_luminance": snappedf(peak, 0.00001),
 					"max_frame_delta": snappedf(max_delta, 0.00001), "pass": bool(st["mean_max"] <= 3 and st["block_max"] <= 3)}
 				report["flash"].append(row)
 				print("SHIELD1078 flash ", JSON.stringify(row))
-				if peak_img != null:
-					preload("res://tools/picture_provenance.gd").save_png(peak_img, out.path_join("SHIELD1078_%s_flash_%s_%s_%s.png" % [REV, shape, look, "calm" if calm else "normal"]))
+				var still := out.path_join("SHIELD1078_%s_flash_%s_%s_%s.png" % [REV, shape, look, "calm" if calm else "normal"])
+				if peak_img == null or preload("res://tools/picture_provenance.gd").save_png(peak_img, still) != OK:
+					_fail("flash pass: could not save " + still)
+					return
 				for id in ids:
 					bench.fx.sync_ship(id, bench._unit(1.0, 5))
 				for i in SETTLE:
