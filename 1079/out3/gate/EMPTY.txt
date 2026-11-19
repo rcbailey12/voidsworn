@@ -1,0 +1,1 @@
+opus1079\out3\gate existed but held no files when relayed (Nov 19 15:47 CST): no scene_gate.json was written.
