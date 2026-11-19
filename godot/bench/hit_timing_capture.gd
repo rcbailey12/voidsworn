@@ -82,24 +82,34 @@ func _run() -> void:
 	var h := get_root().size.y
 	var n := 0
 	var frame := 0
-	var saved := 0
-	while n < AT.size() and frame < 600:
+	var stills := 0
+	var frames_ok := 0
+	var failed := 0
+	while n < AT.size() and frame < 900:
 		await process_frame
 		frame += 1
 		var now := (float(b.gfx.now) if b.gfx != null else float(frame) / 60.0) - t0
-		var img: Image = null
-		if args.has("frames") or now >= float(AT[n]):
-			img = get_root().get_texture().get_image()
-		if img == null or img.is_empty():
-			if now >= float(AT[n]):
-				n += 1
+		var due := now >= float(AT[n])
+		if not args.has("frames") and not due:
 			continue
+		var img: Image = get_root().get_texture().get_image()
+		if img == null or img.is_empty():
+			continue   # (no picture this frame: a due still waits for the next drawn frame, it is never skipped)
 		if args.has("frames"):
-			PROV.save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [kase, h, frame]))
-			saved += 1
-		if now >= float(AT[n]):
-			PROV.save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [kase, h, n, int(round(float(AT[n]) * 100.0))]))
-			saved += 1
+			if PROV.save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [kase, h, frame])) == OK:
+				frames_ok += 1
+			else:
+				failed += 1
+		if due:
+			if PROV.save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [kase, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
+				stills += 1
+			else:
+				failed += 1
 			n += 1
-	print("HIT_CAPTURE_DONE case %s height %d stills %d saved %d" % [kase, h, AT.size(), saved])
-	quit(0)
+	# Artoo (PR 1220): only real, written stills count; a missing or failed still fails the run
+	if stills == AT.size() and failed == 0:
+		print("HIT_CAPTURE_DONE case %s height %d stills %d of %d frames %d" % [kase, h, stills, AT.size(), frames_ok])
+		quit(0)
+	else:
+		printerr("HIT_CAPTURE_FAILED case %s height %d stills %d of %d, failed writes %d (headless draws no pictures)" % [kase, h, stills, AT.size(), failed])
+		quit(1)
