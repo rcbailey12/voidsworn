@@ -2100,6 +2100,10 @@ func torpThreat(u, v) -> float:
 			if d <= 2: tot += sv["w"]["dmg"] * sv["w"]["shots"] * [0.62, 0.52, 0.38][int(d)]
 		elif d == 0: tot += sv["w"]["dmg"] * sv["w"]["shots"] * 0.5
 	return tot
+static func nem_entry(table: Dictionary, key, fac) -> Variant:
+	var entry = table.get(key)
+	return entry.get("v", {}).get(fac, entry) if entry != null else null
+
 func nemWeak(k) -> bool: return B != null and B.get("nem") != null and B["nem"].get("weak") != null and B["nem"]["weak"].has(k)
 func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, faction behaviour, duel fleet, honed, riches, artillery line, memory lines)
 	B["nem"] = N; var es = []
@@ -2317,7 +2321,8 @@ func nemTrip(k: String) -> void:
 	B["nemFound"].append(k)
 	if B["nem"].get("revealed") == null: B["nem"]["revealed"] = []
 	B["nem"]["revealed"].append(k)
-	logm("Weakness found: " + String(TB.NEM_WEAK[k]["n"]) + ". " + String(TB.NEM_WEAK[k]["d"]), "s")
+	var entry = nem_entry(TB.NEM_WEAK, k, B["nem"].get("fac"))
+	logm("Weakness found: " + String(entry["n"]) + ". " + String(entry["d"]), "s")
 func nemBreak() -> void:
 	if B == null or B.get("nem") == null or jt(B.get("nemBroken")) or not nemWeak("anchor"): return
 	var f = null
