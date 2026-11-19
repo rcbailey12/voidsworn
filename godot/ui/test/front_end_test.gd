@@ -21,6 +21,12 @@ class FakeSound extends Node:
 		heard.append(n)
 
 
+class FakeMusic extends Node:
+	var music = self
+	var previews := []
+	func play_faction_preview(fac: String) -> void: previews.append(fac)
+
+
 class FakeMain extends Node:
 	var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
 	var args := {}
@@ -60,6 +66,7 @@ func run() -> void:
 	await title_checks(snd)
 	await campaign_checks(snd)
 	music_checks()
+	showcase_checks()
 	Kit.sound = null; UiScale.set_player(1.0)
 	print("Front end: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(0 if fails == 0 else 1)
@@ -95,8 +102,12 @@ func title_checks(snd: FakeSound) -> void:
 	await frames()
 	var vs := Vector2(root.size)
 	t._settings(); await frames(5)
-	var screen := Rect2(Vector2.ZERO, vs)
-	check(screen.encloses(t.settings_panel.get_global_rect()), "Settings fits the 1920x1080 window at Larger (bottom %d)" % int(t.settings_panel.get_global_rect().end.y))
+	await create_timer(0.35).timeout   # the drawer's slide
+	var pr: Rect2 = t.settings_panel.get_global_rect()
+	check(absf(pr.end.x - vs.x) <= 1.0 and pr.position.y <= 1.0 and absf(pr.end.y - vs.y) <= 1.0, "Settings is a full-height drawer on the right edge (%s)" % str(pr))
+	var screen := Rect2(Vector2.ZERO, vs).grow(0.5)
+	check(screen.encloses(pr), "Settings fits the 1920x1080 window at Larger (bottom %d)" % int(pr.end.y))
+	check(t.settings_dim.color.a <= 0.5, "the dim behind a drawer is light (%.2f), so the battle stays in view" % t.settings_dim.color.a)
 	var sc: ScrollContainer = t.settings_panel.find_children("*", "ScrollContainer", true, false)[0]
 	check(sc.get_v_scroll_bar().max_value <= sc.size.y + 1.0, "Settings needs no scrolling at Larger")
 	var unwrapped := 0; var rows := 0
@@ -123,6 +134,18 @@ func title_checks(snd: FakeSound) -> void:
 	t._unhandled_input(esc()); await frames()
 	check(t.settings_panel == null and t.settings_dim == null and m.saves == saves + 1, "Esc closes Settings and saves")
 	check(snd.heard.has("ui_cancel"), "Esc on Settings plays the back cue")
+	# phase 2 title: one ember action first, every other entry a quiet link, all in the left column
+	var kids: Array = t.menu.get_children().filter(func(c): return c is Button)
+	var primaries := 0
+	for b in kids:
+		if b.get_meta("kit_sound", "") == "primary": primaries += 1
+	check(kids.size() >= 6 and kids[0].get_meta("kit_sound", "") == "primary" and primaries == 1, "the title has exactly one ember action, first (%d entries)" % kids.size())
+	check(t.menu.get_global_rect().end.x < vs.x * 0.45, "the title menu stays in the left column")
+	# a click on the dim closes a drawer like Esc
+	t._settings(); await frames()
+	var click := InputEventMouseButton.new(); click.button_index = MOUSE_BUTTON_LEFT; click.pressed = true
+	t.settings_dim.gui_input.emit(click); await frames()
+	check(t.settings_panel == null, "a click beside the Settings drawer closes it")
 	# Credits: Esc closes it, and it names every font the game ships
 	t._credits(); await frames()
 	var text := t.credits_bbcode()
@@ -156,10 +179,33 @@ func campaign_checks(snd: FakeSound) -> void:
 	await frames()
 	C.act("newRunScreen"); await frames(4)
 	check(str(C.page["kind"]) == "admiral", "the setup page opens")
-	var widths := {}
-	for p in ui.page_box.find_children("*", "PanelContainer", true, false):
-		if int(p.custom_minimum_size.x) == ui.px(330): widths[int(round(p.size.x))] = true
-	check(widths.size() == 1, "at Larger every admiral card keeps its width; no long name widens one (%s)" % str(widths.keys()))
+	var mus := FakeMusic.new(); mus.name = "Main"; root.add_child(mus); await frames()
+	var bad := []
+	for fac in C.RUN_FACTIONS:
+		C.act("pickFaction", str(fac)); await frames(3)
+		var tops := {}; var bots := {}; var ws := {}
+		for cd in ui._desk_cards:
+			var r: Rect2 = (cd as Control).get_global_rect()
+			tops[int(round(r.position.y))] = true; bots[int(round(r.end.y))] = true; ws[int(round(r.size.x))] = true
+		var sc: ScrollContainer = null
+		for n in ui.page_box.find_children("*", "ScrollContainer", true, false): sc = n; break
+		var fits: bool = sc != null and sc.get_v_scroll_bar().max_value <= sc.size.y + 1.0
+		if ui._desk_cards.is_empty() or bots.size() > tops.size() or ws.size() != 1 or not fits:
+			bad.append("%s(cards %d, rows %d, bottoms %d, widths %s, fits %s)" % [fac, ui._desk_cards.size(), tops.size(), bots.size(), str(ws.keys()), str(fits)])
+	check(bad.is_empty(), "at Larger every faction's desk fits with no scroll and its admiral cards line up: one width, one bottom per row (%s)" % str(bad))
+	check(mus.previews.size() >= C.RUN_FACTIONS.size() - 1 and mus.previews.has(str(C.picked_faction)), "picking a faction plays its music preview (%s)" % str(mus.previews))
+	root.size = Vector2i(1280, 1024); ui._dirty = true; await frames(4)   # a 5:4 window at Larger is the tightest 831-tall case
+	var sc5: ScrollContainer = null
+	for n in ui.page_box.find_children("*", "ScrollContainer", true, false): sc5 = n; break
+	var over := -1.0
+	if sc5 != null: over = sc5.get_v_scroll_bar().max_value - sc5.size.y
+	check(sc5 != null and over <= 1.0, "at Larger the desk also fits a 1280x1024 window with no scroll (over by %d px)" % int(over))
+	root.size = Vector2i(1920, 1080); ui._dirty = true; await frames(4)
+	ui.desk_opts_open = true; ui._dirty = true; await frames(3)
+	var ro_open: bool = ui.desk_opts_open
+	ui._unhandled_input(esc()); await frames(3)
+	check(ro_open and not ui.desk_opts_open and str(C.page["kind"]) == "admiral", "Esc closes the Run options drawer first and stays on the desk")
+	mus.queue_free()
 	var back: Button = null
 	for b in ui.page_box.find_children("*", "Button", true, false):
 		if (b as Button).text == "Back": back = b
@@ -186,6 +232,14 @@ func campaign_checks(snd: FakeSound) -> void:
 	check(was_a == "aspect" and str(C.page["kind"]) == "aspect" and C.RUN != null, "Esc on the aspect page changes nothing until it has a Back (phase 4)")
 	ui.queue_free(); UiScale.set_player(1.0)
 	await frames()
+
+
+func showcase_checks() -> void:
+	var M = load("res://main/main.gd")
+	var facs: Array = M.showcase_factions()
+	var seen := {}
+	for i in facs.size(): seen[M.next_showcase_fac()] = true
+	check(facs.size() == 5 and not facs.has("voidsworn") and seen.size() == 5, "the title battle cycles the enemy through the five other factions with built ships (%s)" % str(facs))
 
 
 func music_checks() -> void:
