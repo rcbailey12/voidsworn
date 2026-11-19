@@ -2,18 +2,18 @@
 	"covered_pixels": [
 		"iVBORw0KGgoAAAANSUhEUgAAAT4AAAAxCAYAAABDGcVRAAAAAXNSR0IArs4c6QAAAMJJREFUeJzt1DERwCAAwMBSA9yx4V8odVGG/CvIlDHXPg9AyHs7AOBvxgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfECO8QE5xgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfECO8QE5xgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfECO8QE5xgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfEDOB5BgAZvSbNY5AAAAAElFTkSuQmCC"
 	],
-	"date": "2026-11-19T18:10:20Z",
-	"image_sha256": "a9a5ca40f7effa4eaaa43048a1b128e53cbd5cd47a8cd972d27a14bc73c2ac26",
+	"date": "2026-11-19T18:10:37Z",
+	"image_sha256": "d2a1f7ec8dbff47e158fca39bb6bc0e252695819cf2ce6115b87f5d946e2f538",
 	"inputs": [],
 	"picture_name": "N1175_nemesis_col4.png",
 	"schema": 1,
-	"source_commit": "f2456376734823a76002b43a96fecadb951ff412",
-	"source_diff_sha256": "04de003952443d8f144150bdb78986792c825c10ee12ae708e94256560e2986d",
+	"source_commit": "8a786829bfb52525ea95c8df03055cb8577b386d",
+	"source_diff_sha256": "c7fea8b45057010b824bcd418cd2a44f9083638261f27d7f2c916a827f19f6b0",
 	"source_dirty": true,
 	"sources": [
 		{
-			"source_commit": "f2456376734823a76002b43a96fecadb951ff412",
-			"source_diff_sha256": "04de003952443d8f144150bdb78986792c825c10ee12ae708e94256560e2986d",
+			"source_commit": "8a786829bfb52525ea95c8df03055cb8577b386d",
+			"source_diff_sha256": "c7fea8b45057010b824bcd418cd2a44f9083638261f27d7f2c916a827f19f6b0",
 			"source_dirty": true,
 			"stage": "installed in game"
 		}
@@ -25,9 +25,9 @@
 		318,
 		720
 	],
-	"stamp_template_sha256": "24a46f2e79ff15aa80930fd910cf8e7164eba1be9c0c15936ec4c87678fee519",
+	"stamp_template_sha256": "25020c7fd84b34760f51699072af12ae4efe52006b0750e0d6302eaab002bd45",
 	"strip_sha256": [
-		"24a46f2e79ff15aa80930fd910cf8e7164eba1be9c0c15936ec4c87678fee519"
+		"25020c7fd84b34760f51699072af12ae4efe52006b0750e0d6302eaab002bd45"
 	],
 	"strip_size": [
 		318,
