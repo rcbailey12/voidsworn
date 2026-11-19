@@ -85,7 +85,10 @@ function admiralScreen(){
 ACT.pickAdmiral=a=>{ if(!admiralOwned(a)) return; if(pickedAdmiral!==a){ runOpt.alt=false; runOpt.cmdAlt=false; } pickedAdmiral=a; admiralScreen(); };
 let pickedFaction=(META.opts&&META.opts.lastFac)||'voidsworn';
 ACT.pickFaction=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };
-ACT.startRun=()=>{ if(!admiralOwned(pickedAdmiral)) return; const ml=masteryLevel(pickedAdmiral); newRun(pickedAdmiral,pickedFaction,{alt:runOpt.alt&&ml>=1,cmdAlt:runOpt.cmdAlt&&ml>=3,heat:heatUnlocked()?runOpt.heat.slice():[]});
+// Issue 1217 phase 4: a Launch after Back reuses the random state the dropped run started from, so Back then Launch cannot
+// reroll patrons, founder relic, map or the aspect offer. Twin: ACT_startRun in godot/campaign/campaign.gd.
+let launchRng=-1;
+ACT.startRun=()=>{ if(!admiralOwned(pickedAdmiral)) return; const ml=masteryLevel(pickedAdmiral); if(META.parkedRng!=null){ rndSeed(META.parkedRng); delete META.parkedRng; } launchRng=RNG_S>>>0; newRun(pickedAdmiral,pickedFaction,{alt:runOpt.alt&&ml>=1,cmdAlt:runOpt.cmdAlt&&ml>=3,heat:heatUnlocked()?runOpt.heat.slice():[]});
   try{ tel('run_start',{fac:RUN.fac,foes:RUN.foes,admiral:pickedAdmiral,patrons:RUN.patrons,mastery:RUN.mastery,alt:!!RUN.altFleet,cmd:RUN.cmdOverride?RUN.cmdOverride.id:null,heat:RUN.heat,gift:RUN.giftBoon||null}); }catch(e){} aspectScreen(); };
 // ---------- run options: mastery unlocks and Heat ----------
 const runOpt={alt:false,cmdAlt:false,heat:[]};
@@ -130,9 +133,9 @@ function aspectScreen(){ const f=ensureFlagship(), opts=shuffle(Object.keys(ASPE
     ${RUN.giftBoon?`<p class="gilt" style="margin-top:14px">A gift from ${esc(PATRONS[BOONS[RUN.giftBoon].p].n)}, now Synced with you: <b>${esc(BOONS[RUN.giftBoon].n)}</b>.</p>`:''}${RUN.heat&&RUN.heat.length?`<p class="blood" style="margin-top:8px">Heat ${heatLevel(RUN.heat)}: ${RUN.heat.map(k=>esc(HEAT[k].n)).join(', ')}.</p>`:''}
     <p class="dim" style="margin-top:16px">Cores in range of this ${runWord()}: ${RUN.patrons.map(p=>`<b style="color:${PATRONS[p].col}">${esc(PATRONS[p].n)}</b> (${esc(PATRONS[p].theme.toLowerCase())})`).join('; ')}. Win battles carrying their signal to earn their protocols.</p>
   </div></div>`); }
-// Issue 1217 phase 4: Back from the flagship page drops the unplayed new run, its save and its count, and returns to the
+// Issue 1217 phase 4: Back from the flagship page drops the unplayed new run, its save and its count (its starting random state stays parked for the next Launch), and returns to the
 // faction and admiral page with every pick kept. Twin: ACT_backToSetup in godot/campaign/campaign.gd.
-ACT.backToSetup=()=>{ if(!RUN||RUN.aspect) return; META.stats.runs=Math.max(0,(META.stats.runs||0)-1); RUN=null; SAVED_RUN=null; Persist.save(); admiralScreen(); };
+ACT.backToSetup=()=>{ if(!RUN||RUN.aspect) return; if(launchRng>=0) META.parkedRng=launchRng; META.stats.runs=Math.max(0,(META.stats.runs||0)-1); RUN=null; SAVED_RUN=null; Persist.save(); admiralScreen(); };
 ACT.pickAspect=k=>{ if(!ASPECTS[k]||!RUN) return; changeFleet(()=>{ RUN.aspect=k; ensureFlagship(); }); try{ tel('aspect_pick',{id:k,offered:window._aspOffer,fac:RUN.fac}); }catch(e){} saveRun(); introModal(); };
 function introModal(){
   mapScreen();
