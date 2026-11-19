@@ -1,6 +1,6 @@
 @echo off
 title Opus 1232 run 2: first capital kill, before and after - GPU job
-rem Issue 1232 run 2 (replaces OPUS1232_RUN.bat: pinned to the fix after the Board read, 5 s cap, two cores free).
+rem Issue 1232 run 2 (replaces OPUS1232_RUN.bat: pinned to the fix after the Board read, 5 s cap, two cores free, standing-check fix).
 rem Issue 1232: a capital's first death froze the game for 3 to 7 s and could lose its pieces (1077 PC rerun, Nov 19).
 rem This times A16's first death in fresh processes, on main before the fix and on the fix branch, three sessions each:
 rem   arrival  the battle-like case: warm-up at load with only the shooter, then A16 arrives (as a reinforcement does)
@@ -17,7 +17,7 @@ rem PASSED needs all 12 rows collected AND all three after\arrival kills fractur
 rem costs are in each CAPTURE1232 line copied into result.txt (a hitch moved to the arrival still shows there).
 rem Logs to out_<A>\result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
-set AFTER=d867b0d3552ef73bf5008e35d036a05aa74916b6
+set AFTER=c3ca1fd868c44da9a0c502fffa126905437b25ce
 set BEFORE=280bb3a9849b91190debbe80afbc3f9510d65911
 set CAPREF=b0c9c14520914e02a75fd3b05a3b5c69fd07f388
 set V=%USERPROFILE%\Downloads\voidsworn_test
