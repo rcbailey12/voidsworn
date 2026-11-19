@@ -17,7 +17,7 @@ rem PASSED needs all 12 rows collected AND all three after\arrival kills fractur
 rem costs are in each CAPTURE1232 line copied into result.txt (a hitch moved to the arrival still shows there).
 rem Logs to out_<A>\result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
-set AFTER=c3ca1fd868c44da9a0c502fffa126905437b25ce
+set AFTER=c5158187d7c02af017b6487e1f718a887fe5f16b
 set BEFORE=280bb3a9849b91190debbe80afbc3f9510d65911
 set CAPREF=b0c9c14520914e02a75fd3b05a3b5c69fd07f388
 set V=%USERPROFILE%\Downloads\voidsworn_test
