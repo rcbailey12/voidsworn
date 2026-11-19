@@ -43,7 +43,7 @@ PALETTE = ('amber', 'violet', 'green')
 WEIGHTS = (55, 27, 18)
 
 # The glowing panel colour: the concept's bright tone pushed to full saturation (the panel glows, so it carries its own light).
-GLOW = dict(amber=(1.0, 0.20, 0.0), violet=(0.42, 0.02, 0.95), green=(0.22, 0.75, 0.0))
+GLOW = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.22, 0.75, 0.0))
 # The bake marks its materials authored_look (shared paint_stack.py), so godot/render/look.gd keeps these values instead of
 # applying the faction's older read caps (R329). No soft-rim mark: the pearl's own shine is the look.
 AUTHORED_LOOK = True
@@ -53,7 +53,7 @@ LOOK = dict(
     pearl=dict(base=lin((240, 230, 226)), metallic=0.45, roughness=0.09, coat=1.0, coat_roughness=0.05,
                thin_film_nm=420.0, transmission=0.0, wear=0.0),
     silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, transmission=0.0),
-    mosaic=dict(emission=1.3, roughness=0.10, coat=1.0, cell_scale=4.0, lead=0.06, sparkle=0.06, facet_tilt=0.8, transmission=0.0),
+    mosaic=dict(emission=1.1, roughness=0.06, coat=1.0, cell_scale=7.0, lead=0.05, sparkle=0.06, facet_tilt=0.8, transmission=0.0),
     gem=dict(emission=3.0, roughness=0.06, transmission=0.0),
     tip=dict(base=(1.0, 0.33, 0.05), emission=9.0),
 )
@@ -200,7 +200,7 @@ def mosaic(name='gw_mosaic'):
     Ln.new(inv.outputs[0], dark.inputs['Factor'])
     Ln.new(inv.outputs[0], b.inputs['Metallic'])  # the leading is metal
     deep = N.new('ShaderNodeMix'); deep.data_type = 'RGBA'; deep.blend_type = 'MULTIPLY'; deep.inputs['Factor'].default_value = 1.0
-    deep.inputs['B'].default_value = (0.35, 0.35, 0.35, 1)  # a deep body colour: the glow, not the lit surface, carries the hue
+    deep.inputs['B'].default_value = (0.18, 0.18, 0.18, 1)  # a deep body colour: the glow, not the lit surface, carries the hue
     Ln.new(tint.outputs['Color'], deep.inputs['A']); Ln.new(deep.outputs['Result'], dark.inputs['A'])
     Ln.new(dark.outputs['Result'], b.inputs['Base Color'])
     Ln.new(tint.outputs['Color'], b.inputs['Emission Color'])

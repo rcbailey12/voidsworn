@@ -97,16 +97,15 @@ def gw_kit(name):
     return sys.modules[key]
 
 
-RIB_A = 9            # full-length ribbons, stern lenses to bow, twisting together
-TWIST_A = lambda x: 0.16 * x + 0.42 * math.sin(0.21 * x)
+RIB_A = 7            # full-length ribbons, stern lenses to bow, twisting together
+TWIST_A = lambda x: 0.07 * x + 0.30 * math.sin(0.21 * x)
 # Upper leaves: shorter, wider ribbons that cross the long ones with a counter twist and curl up along the spine.
 # (x0, x1, base angle, width): laid by hand so they overlap like the concept's leaves, not as a regular pattern.
-LEAVES = [(-11.6, 1.8, 1.30, 0.26), (-8.4, 9.4, 2.25, 0.24), (-5.2, 9.6, 0.70, 0.23), (-10.2, 3.6, -0.55, 0.22),
-          (-9.0, 5.0, 3.40, 0.24), (-7.0, 2.5, 1.05, 0.20)]
-TWIST_B = lambda x: -0.11 * x + 0.30 * math.sin(0.30 * x + 1.1)
+LEAVES = [(-11.6, 1.8, 1.30, 0.30), (-8.4, 9.4, 2.25, 0.28), (-5.2, 9.6, 0.70, 0.27), (-9.0, 5.0, 3.40, 0.26)]
+TWIST_B = lambda x: 0.05 * x + 0.22 * math.sin(0.24 * x + 1.1)  # same sweep as the long ribbons: openings run with the flow
 
 
-SWAY, LEAF_F = 0.14, 1.40
+SWAY, LEAF_F = 0.22, 0.80
 
 
 # Toward the bow every ribbon gathers into one of the two lance roots, like flames drawing to a point (Board, round 2).
@@ -134,7 +133,7 @@ def optic_clamp(x, p, lift):
     for ox, _, _, _ in OPTICS:
         d = ((x - ox) / 1.55) ** 2 + (p[1] / 1.45) ** 2
         if d < 1 and p[2] > 0:
-            lift = min(lift, 0.02 + 0.30 * d)
+            lift = min(lift, 0.02 + 1.7 * d * d)  # smooth: reaches the tallest crest curl at the edge of the clamp
     return lift
 
 
@@ -292,16 +291,16 @@ def build(K):
             -12.45 + 0.18 * math.sin(2.3 * k), 9.95 - 0.55 * (k % 3),
             # Neighbours sway in opposite senses, so they meet and part: the gaps between them become leaf-shaped windows.
             lambda x, base=base, k=k: bow_gather(x, base + TWIST_A(x) + SWAY * math.sin(LEAF_F * x + k * math.pi)),
-            lambda t, k=k: (0.14 + 0.025 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
-            lambda t, v: 0.05 + 0.13 * (1 - v * v) ** 0.5,  # a rounded, pillowed fold, not a flat strap
+            lambda t, k=k: (0.25 + 0.03 * math.sin(1.7 * k)) * gw.leaf(0.55, 0.40, 0.40 + 0.05 * math.sin(k), tip=0.0)(t),
+            lambda t, v: 0.06 + 0.22 * (1 - v * v) ** 0.5 * (0.5 + 0.5 * math.sin(math.pi * t) ** 0.5),  # a rounded, pillowed fold, not a flat strap
             name='long_ribbon_%d' % k, clamp=optic_clamp))
     for k, (x0, x1, base, wd) in enumerate(LEAVES):
         top = max(0.0, math.sin(base)) ** 2
         ribbons.append(gw.Ribbon(
             x0, x1, lambda x, base=base: bow_gather(x, base + TWIST_B(x)),
-            lambda t, wd=wd: 0.72 * wd * gw.leaf(0.7, 0.0, 0.38)(t),
+            lambda t, wd=wd: wd * gw.leaf(0.7, 0.0, 0.38)(t),
             # Upper leaves curl their trailing edge up off the hull, like the concept's crests along the spine.
-            lambda t, v, top=top: 0.24 + 0.17 * (1 - v * v) ** 0.5 + 0.85 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5,
+            lambda t, v, top=top: 0.30 + 0.22 * (1 - v * v) ** 0.5 + 1.10 * top * ((v + 1) / 2) ** 2 * math.sin(math.pi * t) ** 1.5,
             name='leaf_ribbon_%d' % k, clamp=optic_clamp))
     for r in ribbons:
         vv, ff, attrs = r.mesh(skin, 180, 12)
