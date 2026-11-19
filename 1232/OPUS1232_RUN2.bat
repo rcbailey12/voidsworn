@@ -13,10 +13,13 @@ rem Every Godot start runs in its own throwaway profile (opus1232\profile_<N>\s<
 rem shader cache, as a first session does; Ryan's real battle_opts.json and board_look.cfg are hashed before and after,
 rem and a difference is FAILED. Start it after any frame-time job holding the GPU; it waits up to an hour per GPU claim.
 rem Writes only under opus1232\ (out_<A>, A the first unused attempt number). Never deletes anything.
+rem PASSED needs all 12 rows collected AND all three after\arrival kills fractured with pieces; the arrival and kill frame
+rem costs are in each CAPTURE1232 line copied into result.txt (a hitch moved to the arrival still shows there).
 rem Logs to out_<A>\result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
 set AFTER=d867b0d3552ef73bf5008e35d036a05aa74916b6
 set BEFORE=280bb3a9849b91190debbe80afbc3f9510d65911
+set CAPREF=b0c9c14520914e02a75fd3b05a3b5c69fd07f388
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1232
 set C=%W%\repo
@@ -61,9 +64,17 @@ for %%K in (after before) do (
   if errorlevel 1 goto fail
 )
 set PC_GPU_MODE=
-echo timing results valid !GOOD! of 12 >> "%RES%"
+echo timing results collected !GOOD! of 12 (every row is kept as evidence, the before and cold rows are expected to show the problem) >> "%RES%"
+rem acceptance (Artoo on PR 1240): every afterrrival row fractured with at least one hull piece, watched past the cap
+set ACCEPT=0
+for %%N in (1 2 3) do (
+  set "J=%O%\after\s%%N\arrival.json"
+  findstr /c:"\"outcome\": \"fractured\"" "!J!" >nul 2>&1 && (findstr /c:"\"hull_pieces\": 0," "!J!" >nul 2>&1 || set /a ACCEPT+=1)
+)
+echo after arrival rows fractured with pieces !ACCEPT! of 3 >> "%RES%"
 for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo drive bytes free %%F >> "%RES%"
-if not "!GOOD!"=="12" (set "FAILMSG=only !GOOD! of 12 timing results are valid" & goto fail)
+if not "!GOOD!"=="12" (set "FAILMSG=only !GOOD! of 12 timing results were collected" & goto fail)
+if not "!ACCEPT!"=="3" (set "FAILMSG=only !ACCEPT! of 3 after arrival kills broke into pieces" & goto fail)
 call :realcheck
 if errorlevel 1 (set "FAILMSG=Ryan's real options changed during the run; see real_profile_*.txt" & goto fail)
 echo real options unchanged >> "%RES%"
@@ -97,11 +108,11 @@ set E=%ERRORLEVEL%
 echo copy gen robocopy %E% (0 to 7 is success) >> "%RES%"
 if %E% GEQ 8 (set "FAILMSG=copy gen failed" & exit /b 1)
 if not exist "%C%\godot\bench\opus1232" mkdir "%C%\godot\bench\opus1232"
-rem the capture comes from the fix commit both times (the before commit does not have it)
-git -C "%C%" show %AFTER%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
+rem the capture comes from CAPREF both times (same game code as AFTER; the before commit does not have it)
+git -C "%C%" show %CAPREF%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
 if errorlevel 1 (
-  git -C "%C%" fetch -q --depth 1 origin %AFTER% >> "%RES%" 2>&1
-  git -C "%C%" show %AFTER%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
+  git -C "%C%" fetch -q --depth 1 origin %CAPREF% >> "%RES%" 2>&1
+  git -C "%C%" show %CAPREF%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
   if errorlevel 1 (set "FAILMSG=could not write the capture script" & exit /b 1)
 )
 set TM=%C%\tools\pc\tmo.bat
