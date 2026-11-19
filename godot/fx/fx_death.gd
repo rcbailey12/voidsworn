@@ -2120,13 +2120,14 @@ static func _power_surface(fx, s, mi: MeshInstance3D, i: int, pose: Transform3D)
 		mat.set_shader_parameter("death_axis", Vector3.LEFT)
 		mat.set_shader_parameter("death_span", Vector2(-(box.position.x + box.size.x), maxf(box.size.x, 0.01)))
 		mat.set_shader_parameter("death_steps", Vector3(4.0, 0.06, 0.12))
-	if s.death_big and s.has_meta("death_strain"):
-		_strain_uniforms(mat, s.get_meta("death_strain"), 0.0)
 	else:
 		mat.set_shader_parameter("death_span", Vector2(box.position.x, s.hull.L))
 		mat.set_shader_parameter("death_steps", Vector3(1.0, 0.0, 0.001))
 		mat.set_shader_parameter("death_age", 1.0)
 		mat.set_shader_parameter("fx_power", 0.0)
+	# issue 1077 (prototype): after the tier's own lights-out bands, never between them and their else (Fable on PR 1171)
+	if s.death_big and s.has_meta("death_strain"):
+		_strain_uniforms(mat, s.get_meta("death_strain"), 0.0)
 	return mat
 
 

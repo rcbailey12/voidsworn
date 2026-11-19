@@ -1,6 +1,7 @@
 extends SceneTree
 const GUARD = preload("res://tools/ci/check_guard.gd")
-# Issue 1077 (prototype, off by default): kill A16 (C19_51) twice, once on today's path and once with the strain story
+# Issue 1077 (prototype, off by default): first, a box hull of each tier (capital, cruiser, frigate) is killed with the
+# switch off and on, and every power-down material must carry that tier's own lights-out bands (death_steps). Then kill A16 (C19_51) twice, once on today's path and once with the strain story
 # (fx setup "death_story": "strain", the same switch as rendering/effects/death_story or VS_DEATH_STORY). Checks:
 #   off: the tear overlay and the power-down materials are today's shaders, with no strain code in them;
 #   on: the tear overlay and every hull power-down material carry the strain, on the hull's own break lines, the strain
@@ -42,6 +43,11 @@ func _load_ship() -> Node3D:
 
 
 func _run() -> void:
+	# the lights-out bands are today's on every tier, switch off or on (Fable on PR 1171: a misplaced branch once gave the
+	# capital and cruiser the small hull's single band, with the switch off)
+	for story in [false, true]:
+		for row in [["Battle-barge", Vector3(5.0, 0.12, 0.15)], ["Cruiser", Vector3(4.0, 0.06, 0.12)], ["Frigate", Vector3(1.0, 0.0, 0.001)]]:
+			await _bands(row[0], row[1], story)
 	var off := await _kill(false)
 	var on := await _kill(true)
 	if not off.is_empty() and not on.is_empty():
@@ -52,6 +58,39 @@ func _run() -> void:
 		check(float(on["main"]) < float(off["main"]), "the strained wreck stays more grouped than today's")
 	print("DEATH_STORY failures=%d" % failures)
 	quit(1 if failures else 0)
+
+
+# One box hull of a class killed; every hull power-down material must carry that tier's death_steps (main's values).
+func _bands(cls: String, want: Vector3, story: bool) -> void:
+	var world := Node3D.new()
+	root.add_child(world)
+	var holder := Node3D.new()
+	world.add_child(holder)
+	var mi := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(20, 4, 6)
+	mi.mesh = box
+	holder.add_child(mi)
+	var fx = FX.new()
+	world.add_child(fx)
+	fx.manual = true
+	fx.setup({"quality": "low", "camera": null, "shake": 0.0, "death_story": "strain" if story else "off"})
+	fx.add_ship("b", holder, {"faction": "voidsworn", "cls": cls, "size": 1.0})
+	var s = fx.ship("b")
+	fx.death("b", "big")
+	for i in 4:
+		fx.step(1.0 / 60.0)
+		await process_frame
+	var mats: Array = s.get_meta("death_power", [])
+	var good := 0
+	for m in mats:
+		var got = (m as ShaderMaterial).get_shader_parameter("death_steps")
+		if got is Vector3 and (got as Vector3).is_equal_approx(want): good += 1
+	print("DEATH_STORY bands %s %s tier=%s ok=%d of %d" % ["on" if story else "off", cls, s.death_tier, good, mats.size()])
+	check(not mats.is_empty() and good == mats.size(), "%s %s: lights-out bands are the tier's own %s (%d of %d)" % [
+		"on" if story else "off", cls, str(want), good, mats.size()])
+	world.queue_free()
+	await process_frame
 
 
 func _kill(story: bool) -> Dictionary:
