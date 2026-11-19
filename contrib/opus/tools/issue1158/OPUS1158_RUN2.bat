@@ -7,7 +7,7 @@ rem the shared build), the Blender preview of the painted ship, the Godot import
 rem readback. A failed stage skips everything after it. Every step logs to opus1158\out\result.txt; the last line is
 rem "all done". Writes only under opus1158\ and recipe\voidsworn_S8\. Never deletes anything.
 setlocal
-set PC_GPU_WAIT_SECONDS=21600
+set PC_GPU_WAIT_SECONDS=3600
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1158
 set C=%W%\repo
