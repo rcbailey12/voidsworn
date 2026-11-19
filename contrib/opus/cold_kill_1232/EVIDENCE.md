@@ -1,6 +1,6 @@
 # Issue 1232: the first capital kill of a session (evidence)
 
-Fix commit, second pass after the Board read (cap and free cores) (branch opus/issue-1232, base main 280bb3a9). Stage: code, headless checks only; the PC timing run
+Fix branch merged with main at d2717a32 (includes the fitted shield pass, PR 1241). PC run 2 pins the exact revisions in OPUS1232_RUN2.bat.
 (OPUS1232_RUN.bat in this folder) is queued through the Board.
 
 ## What the first death built
