@@ -89,7 +89,8 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
 - Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue. GPU work is sized to the job and to
   what the RTX 5080 can hold, not a fixed job count (R293, RULEBOOK 3.4); frame-time measurements claim the GPU solo, lane C
   stays code only, and gpu_go.txt still wins.
-  Keep your PC folder lean; never delete anything on his PC (RULEBOOK section 3).
+  Keep your PC folder lean. Deleting on his PC follows RULEBOOK 3.3: jobs and the cleanup janitor may remove their own
+  rebuildable leftovers under its safe rules; nothing else is deleted without Ryan's yes.
 
 `CLAUDE.md` is a short pointer to this file plus Claude-only notes. Keep the two in step. The fuller AGENTS.md of Nov 8 to 11
 (seat table, ship sections, PC notes) is archived at docs/archive/AGENTS_2026-11-11.md; every rule it held is in the rulebook.
