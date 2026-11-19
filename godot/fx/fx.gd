@@ -1723,8 +1723,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	WEAP.warm_craft_trail(self, tmp)
 	for i in frames:
 		await RenderingServer.frame_post_draw
-	tmp.queue_free()
 	warmed = true
+	tmp.queue_free()
 	HULL.start_late_watch()
 
 
