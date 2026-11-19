@@ -19,8 +19,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | length side | 6.525 |
 | length top | 6.525 |
 | length disagreement percent | 0.0 |
-| beam top | 1.512 |
-| beam bow | 1.512 |
+| beam top | 1.5 |
+| beam bow | 1.5 |
 | beam disagreement percent | 0.0 |
 | height side | 1.625 |
 | height bow | 1.625 |
@@ -40,12 +40,12 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
 |---|---|---:|---:|---:|---:|---|---|---|---|
 | A1 | sear repeater, three-barrel rotary casemate (fixed forward) | 3 barrels | 14.0 | 0.00 | 0.17 | forward | F autocannon | picture | the frigate's bow gun (autocannon F, 3 shots: all three barrels fire every volley); the frigate turns to bring it to bear |
-| U1p | band louvre 0.15 x 0.06 | 1 | 33.8 | 0.59 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U2p | band louvre 0.15 x 0.06 | 1 | 44.6 | 0.64 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U1p | band louvre 0.15 x 0.06 | 1 | 33.8 | 0.58 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U2p | band louvre 0.15 x 0.06 | 1 | 44.6 | 0.63 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | U3p | band louvre 0.15 x 0.06 | 1 | 55.4 | 0.67 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | U4p | band louvre 0.15 x 0.06 | 1 | 78.5 | 0.72 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U1s | band louvre 0.15 x 0.06 | 1 | 33.8 | -0.59 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U2s | band louvre 0.15 x 0.06 | 1 | 44.6 | -0.64 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U1s | band louvre 0.15 x 0.06 | 1 | 33.8 | -0.58 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U2s | band louvre 0.15 x 0.06 | 1 | 44.6 | -0.63 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | U3s | band louvre 0.15 x 0.06 | 1 | 55.4 | -0.67 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | U4s | band louvre 0.15 x 0.06 | 1 | 78.5 | -0.72 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | F1 | spark flak, twin turret | 2 barrels | 60.0 | 0.44 | 0.34 | 30 deg off the bow to port, +12 elev | T flak | picture | port spark flak twin; the pair is the one flak slot (3 shots over 4 barrels: both fire every volley) |
@@ -157,8 +157,8 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 | Point | Station % | Offset | Height | Side | Section | Note |
 |---|---:|---:|---:|---|---|---|
 | hp_core | 75.4 | 0.00 | -0.08 |  |  |  |
-| hp_breach_0 | 39.2 | 0.57 | 0.01 | port | mid | on the broadside band, between the louvres |
-| hp_breach_1 | 70.0 | -0.68 | 0.01 | stbd | eng | on the broadside band, between the louvres |
+| hp_breach_0 | 26.6 | 0.49 | 0.01 | port | prow | on the hull side by the broadside band, clear of the louvres, lamps and thrusters |
+| hp_breach_1 | 73.8 | -0.68 | -0.06 | stbd | eng | on the hull side by the broadside band, clear of the louvres, lamps and thrusters |
 | hp_rcs_0 | 23.1 | 0.36 | 0.14 | port |  |  |
 | hp_rcs_2 | 83.8 | 0.57 | 0.17 | port |  |  |
 | hp_board_0 | 64.6 | 0.66 | 0.01 | port |  |  |
@@ -168,7 +168,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 209 objects, 41 parts, 395 close pairs, 358 rays, 3 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 29 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 209 objects, 41 parts, 397 close pairs, 358 rays, 3 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 29 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
