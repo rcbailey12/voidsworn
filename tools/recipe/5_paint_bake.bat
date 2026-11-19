@@ -10,7 +10,7 @@ rem Issue 601: "bake": "stack" paints a ship built from a build sheet with its f
 rem bake_sheet.py: masks baked from the ship's own geometry, procedural layers, the faction's trim sheet and decals, colours
 rem sampled from the concept, never the concept projected). A faction with no stack yet goes the "none" way, said so below.
 call "%~dp0env.bat"
-if not exist "%B0%" (echo Stage 5 FAILED: no shape reference at %B0%. Run stage 2 first. & goto bad)
+if not defined SHEET if not exist "%B0%" (echo Stage 5 FAILED: no shape reference at %B0%. Run stage 2 first. & goto bad)
 if /i not "%BAKE%"=="none" goto bake
 if not exist "%JOB%\build\%CELL%.blend" (echo Stage 5 FAILED: no stage 4 build at %JOB%\build\%CELL%.blend. Run stage 4 first. & goto bad)
 copy /y "%JOB%\build\%CELL%.blend" "%JOB%\%CELL%.blend" > nul
@@ -53,8 +53,14 @@ rem default view; the starboard side (the side the concept camera does not see) 
 call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\render.py" -- "%JOB%\r" %CELL% --views=side_s,hero_s > "%JOB%\log_render_far.txt" 2>&1
 if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: render pass 3 ^(far side^) exited code %ERRORLEVEL%. See %JOB%\log_render_far.txt & goto bad)
 findstr /L /c:"RENDER DONE" "%JOB%\log_render_far.txt" > nul || (echo Stage 5 FAILED: render pass 3 ^(far side^) wrote no RENDER DONE. See %JOB%\log_render_far.txt & goto bad)
+if defined SHEET goto skip_close
 call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b --python-exit-code 1 "%JOB%\%CELL%.blend" -P "%R%\close6.py" -- "%JOB%\close" %CELL% > "%JOB%\log_close.txt" 2>&1
 if not "%ERRORLEVEL%"=="0" (echo Stage 5 FAILED: the close-ups exited code %ERRORLEVEL%. See %JOB%\log_close.txt & goto bad)
+goto close_done
+:skip_close
+echo Stage 5: skipped C15s close-ups for sheet ship %SHIP%. > "%JOB%\log_close.txt"
+type "%JOB%\log_close.txt"
+:close_done
 rem Issue 363: the blink sheet, and the standing checks for paint sides, texture licences and light sizes.
 "%BPY%" "%RC%\blink.py" "%JOB%\concept.png" "%JOB%\r\%CELL%_concept_cl.png" "%JOB%\bow_blink.gif" > "%JOB%\log_blink.txt" 2>&1
 if errorlevel 1 (type "%JOB%\log_blink.txt" & echo Stage 5 FAILED: the blink sheet was not written. See %JOB%\log_blink.txt & goto bad)
@@ -64,7 +70,7 @@ for %%C in (paint licences lights) do (
   if errorlevel 1 (type "%JOB%\log_standing_%%C.txt" & echo Stage 5 FAILED: the standing %%C check did not pass. See %JOB%\log_standing_%%C.txt & goto bad)
   type "%JOB%\log_standing_%%C.txt"
 )
-echo Stage 5 done: renders in %JOB%\r and %JOB%\close
+if defined SHEET (echo Stage 5 done: renders in %JOB%\r) else (echo Stage 5 done: renders in %JOB%\r and %JOB%\close)
 if "%RECIPE_NOPAUSE%"=="" pause
 exit /b 0
 :bad

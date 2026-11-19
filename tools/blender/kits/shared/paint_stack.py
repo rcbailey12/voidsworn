@@ -27,6 +27,7 @@ import numpy as np
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 from paint3 import node, math_, mixc, mulc, ramp
+from cycles_devices import configure_cycles_device
 
 INFO = {}
 
@@ -118,17 +119,7 @@ def bake_copy(objs, name, zone_by_kind=None, module_tones=None, plate_mesh=None)
 
 def gpu(samples):
     sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.samples = samples
-    try:
-        prefs = bpy.context.preferences.addons['cycles'].preferences
-        for t in ('OPTIX', 'CUDA'):
-            try:
-                prefs.compute_device_type = t; prefs.get_devices()
-                if not [d for d in prefs.devices if d.type == t]: continue
-                for d in prefs.devices: d.use = True
-                sc.cycles.device = 'GPU'; return t
-            except Exception: pass
-    except Exception: pass
-    sc.cycles.device = 'CPU'; return 'CPU'
+    return configure_cycles_device(sc)
 
 
 def new_image(name, res, colour=True, fill=(0, 0, 0, 1), float_buffer=False):
@@ -453,6 +444,9 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
     c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
     L = S.LAYERS
+    if base_image is None and hasattr(S, 'surface_layers'):
+        col, height, rough, metal = S.surface_layers(c, zone, tiles)
+        return _zone_outputs(m, bs, c, S, zone, group, col, height, rough, metal)
     bare_roughness = L.get('bare_roughness')
     if base_image is None:
         col = module_finish(c, S, zone, group, joints)
@@ -565,6 +559,12 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     metal_gain = math_(nt, 'SUBTRACT', 1, metal) if bare_roughness is not None else .6
     metal = math_(nt, 'ADD', metal, math_(nt, 'MULTIPLY', wear, metal_gain), clamp=True)
     height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', wear, .1))
+    return _zone_outputs(m, bs, c, S, zone, group, col, height, rough, metal, normal_image)
+
+
+def _zone_outputs(m, bs, c, S, zone, group, col, height, rough, metal, normal_image=None):
+    nt = c.nt
+    L = S.LAYERS
     nt.links.new(col, bs.inputs['Base Color']); nt.links.new(rough, bs.inputs['Roughness'])
     if isinstance(metal, float): bs.inputs['Metallic'].default_value = metal
     else: nt.links.new(metal, bs.inputs['Metallic'])
@@ -572,7 +572,8 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas, joints, *, 
     bp = node(nt, 'ShaderNodeBump'); bp.inputs['Distance'].default_value = L['bump_distance']; bp.inputs['Strength'].default_value = L['bump_strength']
     if normal_image is not None:
         original_normal = node(nt, 'ShaderNodeNormalMap')
-        original_normal.inputs['Strength'].default_value = z.get('normal_strength', 1.0)
+        original_normal.inputs['Strength'].default_value = getattr(S, 'LEGACY_COAT', {}).get(
+            'normal_strength', S.ZONES[zone].get('normal_strength', 1.0))
         nt.links.new(atlas_colour(nt, normal_image), original_normal.inputs['Color'])
         nt.links.new(original_normal.outputs['Normal'], bp.inputs['Normal'])
     nt.links.new(height, bp.inputs['Height']); nt.links.new(bp.outputs['Normal'], bs.inputs['Normal'])
@@ -1099,7 +1100,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         joints = list(zip(cuts, paths))
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
-        tones = part_module_tones(S, objs) if group == 'P' else None
+        tones = part_module_tones(S, objs) if group == 'P' and not hasattr(S, 'surface_layers') else None
         plate_mesh = getattr(S, 'authored_panel_mesh', None) if group == 'H' else None
         J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None), tones, plate_mesh)
         hid = {o.name: o.hide_render for o in objs}
@@ -1134,6 +1135,9 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     # issue 601: these surfaces carry the stack's own roughness; the game gives them the soft rim light (godot/render/look.gd RIM
     # soft), not the full specular that flared white on them at the close cameras. glTF writes it as the material's extras.
     for M_ in (HM, PM): M_['rim_soft'] = 1
+    if getattr(S, 'AUTHORED_LOOK', False):
+        for atlas in (HM, PM):
+            atlas['authored_look'] = 1
     for objs, M in ((H, HM), (P, PM)):
         for o in objs:
             o.data.materials.clear(); o.data.materials.append(M); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))

@@ -54,7 +54,10 @@ func start(m: Node, o: Dictionary) -> void:
 	C.battle_requested.connect(_on_battle)
 	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
 	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
-	_seed_campaign(int(o.get("seed", 1)) if bot else randi())
+	if o.has("player_path_seed"):
+		_seed_campaign(int(o["player_path_seed"]))
+	else:
+		_seed_campaign(int(o.get("seed", 1)) if bot else randi())
 	if bot:
 		rng.seed = int(o.get("seed", 1))
 		C.persist_on = false
