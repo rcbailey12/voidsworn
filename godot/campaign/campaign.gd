@@ -2025,7 +2025,10 @@ func needText(nd) -> String:
 	if jt(nd.get("relic")): p.append("a piece of salvage" if ((nd["relic"] is float or nd["relic"] is int) and float(nd["relic"]) == 1.0) else relicName(nd["relic"]))
 	if jt(nd.get("mod")): p.append("a refit in the hold")
 	if jt(nd.get("cred")): p.append(numstr(nd["cred"]) + " credits")
-	if jt(nd.get("vet")): p.append("a " + str(RANKS[int(nd["vet"])]) + " or better")
+	if jt(nd.get("vet")):
+		var fac = RUN["fac"]
+		var ranks = CAPTAINS[fac]["ranks"] if fac in ["chorus", "deathless"] else RANKS
+		p.append("a " + str(ranks[int(nd["vet"])]) + " or better")
 	if jt(nd.get("flag")): p.append("an earlier choice")
 	if jt(nd.get("intel")): p.append(numstr(nd["intel"]) + " Nemesis weakness" + ("es" if float(nd["intel"]) > 1 else "") + " known")
 	return "Needs " + ", ".join(PackedStringArray(p))
@@ -2408,7 +2411,8 @@ func nemAdaptLine(N, a) -> String:
 func nemLessonText(N, w) -> String:
 	var V = NEM_VOICE.get(N.get("fac")) if jt(N) else null
 	if V is Dictionary and V.get("lessons") is Dictionary and jt(V["lessons"].get(w)): return nemSay(V["lessons"][w], N)
-	return (str(NEM_WEAK[w]["n"]) + ": " + str(NEM_WEAK[w]["d"])) if (w != "strike" and NEM_WEAK.has(w)) else ""
+	var entry = BattleAPI.nem_entry(NEM_WEAK, w, N.get("fac") if N != null else null)
+	return (str(entry["n"]) + ": " + str(entry["d"])) if entry != null else ""
 func nemLessonAdd(N, w, taught: bool = false) -> String:
 	if not (N.get("lessons") is Array): N["lessons"] = []
 	for l in N["lessons"]:
@@ -2437,7 +2441,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		if jt(o.get("beat")):
 			N["last_beat"] = o["beat"]; nemBeatTeach(o["beat"])
 		var w = nemReveal()
-		if w != null: out.append(nemSay("His captured logs reveal a weakness: " + str(NEM_WEAK[w]["n"]) + ".", N))
+		if w != null: out.append(nemSay("His captured logs reveal a weakness: " + str(BattleAPI.nem_entry(NEM_WEAK, w, N["fac"])["n"]) + ".", N))
 		if jt(o.get("fled")):
 			if beh.get("strike") == "raid": N["riches"] = float(z0(N.get("riches"))) + 1
 			if beh.get("strike") == "duel": N["honed"] = float(z0(N.get("honed"))) + 1
@@ -2475,7 +2479,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		var w = learned[0] if not learned.is_empty() else nemReveal()
 		if w != null:
 			var ws = learned if not learned.is_empty() else [w]
-			var names = ws.map(func(k): return str(NEM_WEAK[k]["n"]))
+			var names = ws.map(func(k): return str(BattleAPI.nem_entry(NEM_WEAK, k, N["fac"])["n"]))
 			out.append("Your analysts piece together the engagement. " + ("Weaknesses" if ws.size() > 1 else "Weakness") + " found: " + ", ".join(PackedStringArray(names)) + ".")
 			for k in ws:
 				var lt = nemLessonAdd(N, k, true)
@@ -2486,7 +2490,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 			if ls != "": out.append("Lesson: " + ls)
 	if result == "win":
 		var fw = nemFoundMerge(o.get("found"))
-		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(NEM_WEAK[k]["n"])))) + ".")
+		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(BattleAPI.nem_entry(NEM_WEAK, k, N["fac"])["n"])))) + ".")
 	if jt(beh.get("adaptFast")):
 		N["adaptSector"] = 0
 		var a = nemAdapt(false, N)
@@ -2740,7 +2744,10 @@ func applyOutcome(r) -> Array:
 		RUN["credits"] = float(RUN["credits"]) + float(r["cred"]); out.append("+" + numstr(r["cred"]) + " credits.")
 	if jt(r.get("xp")):
 		for s in RUN["fleet"]: addXp(s, r["xp"])
-		out.append("Every captain gains " + numstr(r["xp"]) + " experience.")
+		if RUN["fac"] in ["chorus", "deathless"]:
+			out.append("+" + numstr(r["xp"]) + " experience per ship.")
+		else:
+			out.append("Every captain gains " + numstr(r["xp"]) + " experience.")
 	if jt(r.get("xpLow")):
 		var s = ssort(RUN["fleet"].duplicate(), func(a, b): return float(a["cap"]["xp"]) - float(b["cap"]["xp"]))[0]
 		addXp(s, r["xpLow"]); out.append(str(s["cap"]["name"]) + " of the " + str(s["name"]) + " gains " + numstr(r["xpLow"]) + " experience.")
@@ -2771,7 +2778,7 @@ func applyOutcome(r) -> Array:
 			var s = newShip(tp, r.get("vet")); RUN["fleet"].append(s)
 			out.append("The " + str(s["name"]) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
 		else:
-			RUN["credits"] = float(RUN["credits"]) + float(z0(r.get("cost"))); out.append("You don’t have the command points to take her on. Your credits are returned.")
+			RUN["credits"] = float(RUN["credits"]) + float(z0(r.get("cost"))); out.append("You don’t have the command points to add this ship. Your credits are returned.")
 	var upgraded_uid = null   # R1 (TXT-2, Codex PR #1): the shipwright's repair goes to the next most damaged ship, not back to the one he upgraded
 	if jt(r.get("upgradeOne")):
 		var s = ssort(RUN["fleet"].duplicate(), func(a, b): return float(a["hp"]) / float(derive(a)["maxHp"]) - float(b["hp"]) / float(derive(b)["maxHp"]))[0]
@@ -2826,7 +2833,7 @@ func applyOutcome(r) -> Array:
 			var s = newShip(r["shipRaw"], r.get("vet")); RUN["fleet"].append(s)
 			out.append("The " + str(s["name"]) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
 		else:
-			RUN["credits"] = float(RUN["credits"]) + 40; out.append("No command points to crew her. You sell the berth for 40 credits.")
+			RUN["credits"] = float(RUN["credits"]) + 40; out.append("No command points to add this ship. You sell the berth for 40 credits.")
 	if jt(r.get("wingPerk")):
 		var cs = ssort(RUN["fleet"].filter(func(s): return jt(HULLS[s["tpl"]].get("hangar"))), func(a, b): return float(or_(HULLS[b["tpl"]].get("cp"), 1)) - float(or_(HULLS[a["tpl"]].get("cp"), 1)))
 		if cs.size() > 0:
@@ -2834,7 +2841,8 @@ func applyOutcome(r) -> Array:
 			out.append(("The " + str(c["name"]) + "’s wings gain a veteran perk: " + str(WING_PERKS[got]["n"]) + ".") if got != null else ("The " + str(c["name"]) + "’s wings already hold every perk they can."))
 	if jt(r.get("nemIntel")):
 		var w = nemReveal()
-		out.append(("Nemesis weakness revealed: " + str(NEM_WEAK[w]["n"]) + ". " + str(NEM_WEAK[w]["d"])) if w != null else "You learn nothing new about the enemy commander.")
+		var entry = BattleAPI.nem_entry(NEM_WEAK, w, nemRead()["fac"]) if w != null else null
+		out.append(("Nemesis weakness revealed: " + str(entry["n"]) + ". " + str(entry["d"])) if entry != null else "You learn nothing new about the enemy commander.")
 	if jt(r.get("nemClock")):
 		var m2 = nemClockAdd(r["nemClock"])
 		if m2 != "": out.append(m2)
@@ -3483,7 +3491,9 @@ func finishBattle(result: String) -> void:
 		var fm = nemFeedLosses(lostN)
 		if fm != "": summary["nemFeed"] = fm
 	var fw = nemFoundMerge(B.get("nemFound"))   # R42: weaknesses you triggered in battle stay known
-	if fw.size() > 0: summary["nemFound"] = "Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(NEM_WEAK[k]["n"])))) + "."
+	if fw.size() > 0:
+		var fac = nemRead()["fac"]
+		summary["nemFound"] = "Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(BattleAPI.nem_entry(NEM_WEAK, k, fac)["n"])))) + "."
 	for sh in RUN["fleet"]:
 		var wk = wingK.get(sh["uid"])
 		if jt(wk):
