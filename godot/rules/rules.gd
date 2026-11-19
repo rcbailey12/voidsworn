@@ -2944,7 +2944,8 @@ func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
 	return out
 # A state key is the shield pool left after some landed hits; its value is the chance of reaching it.
 # The pool and whether this facing is already routed decide every later catch, so a hit removes a real
-# pool amount while a miss leaves the pool alone.
+# pool amount while a miss leaves the pool alone. Keys are rounded to whole points so the state count
+# stays at most the pool plus one, however many guns and shots the volley has (HUD runs this on hover).
 func _estimate_gun(u, w, t, shot: Dictionary, brace: float, guard: float, damage_scale: float, states: Dictionary) -> Dictionary:
 	var per := dmgMult(u, w, t, shot.rear) * damage_scale
 	var odds := float(shot.hit) / 100.0
@@ -2971,9 +2972,11 @@ func _estimate_gun(u, w, t, shot: Dictionary, brace: float, guard: float, damage
 				if absorbed > 0.0:
 					hit_pool = maxf(0.0, float(pool) - absorbed * ion * (lossy if was_routed else 1.0))
 					if hit_pool < 1.0: hit_pool = 0.0
+				hit_pool = float(JSM.jsround(hit_pool))
 				next[hit_pool] = float(next.get(hit_pool, 0.0)) + p * odds
 			if odds < 1.0:
-				next[float(pool)] = float(next.get(float(pool), 0.0)) + p * (1.0 - odds)
+				var miss_pool := float(JSM.jsround(float(pool)))
+				next[miss_pool] = float(next.get(miss_pool, 0.0)) + p * (1.0 - odds)
 		states = next
 	return states
 func _spend_shield(t, quad: int, damage: float) -> void:
