@@ -890,9 +890,8 @@ class Kit:
         self.features.append(dict(id=fid, kind='pipe', what='pipe run, %.2f bore' % (2 * r), count=1, pos=tuple(Vector(pts[0])),
                                   end=tuple(Vector(pts[-1])), aim=None, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 
-    def rib(self, fid, pts, w=0.14, t=0.1, inv=(), m='iron', keep_r=0.45):
-        """a raised frame rib along the hull (a run of flat bars through pts, standing t proud). keep_r (issue 1156): how far
-        round the rib no plate is laid; the default suits a capital hull, a frigate's thin bands pass about their own width"""
+    def rib(self, fid, pts, w=0.14, t=0.1, inv=(), m='iron'):
+        """a raised frame rib along the hull (a run of flat bars through pts, standing t proud)"""
         V, F = [], []
         for a, b in zip(pts, pts[1:]):
             vv, ff = HP.rod(Vector(a), Vector(b), w * 0.5, 4)
@@ -900,7 +899,7 @@ class Kit:
         self._obj(fid, V, F, m, grp='hull')
         for a, b in zip(pts, pts[1:]):
             for k in range(4):
-                self.keepouts.append((Vector(a).lerp(Vector(b), (k + 0.5) / 4), keep_r))
+                self.keepouts.append((Vector(a).lerp(Vector(b), (k + 0.5) / 4), 0.45))
         if inv:
             self.mark(inv, 'rib', ['rib'], fid=fid)
 
