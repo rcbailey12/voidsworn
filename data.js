@@ -34,7 +34,7 @@ const KIND_NAME = {battery:'Battery',lance:'Lance',torp:'Torpedo',flak:'Point de
 // v46: each faction names (and draws) its guns its own way; the numbers underneath are unchanged until the v47 mechanics pass
 const FAC_WNAMES={
   voidsworn:{autocannon:'Sear repeater',battery:'Sear battery',hbattery:'Heavy sear broadside',turret:'Sear turret',lance:'Oath lance',torp:'Cinder torpedo',flak:'Spark flak'},
-  hegemony:{laser:'Plasma cannon',turbo:'Plasma lance',hturbo:'Heavy plasma lance',ion:'Ion cannon',flak:'Picket lasers'},
+  hegemony:{laser:'Plasma cannon',turbo:'Plasma battery',hturbo:'Heavy plasma battery',ion:'Ion cannon',flak:'Picket lasers'},
   corsair:{autocannon:'Autocannon',scatter:'Scrap scatter gun',turret:'Junk turret',torp:'Rattle-rocket pod',htorp:'Heavy rocket pod',flak:'Chaff guns'},
   chorus:{bioplasma:'Spine volley',tendril:'Boarding tendrils',spores:'Spore cloud',sporeb:'Acid sacs'},
   ithar:{shard:'Prism shards',pulsar:'Prism lance',startorp:'Star torpedo',turret:'Needle beam',flak:'Mirror veil'},
@@ -1060,7 +1060,7 @@ const HULL_VARIANTS={
   vs_harrow_t:{base:'harrow',n:'Harrow torpedo-destroyer',d:'Twin prow torpedo tubes and no turret: a one-shot assassin.',w:[['torp','F'],['torp','F']],cost:20},
   vs_penitent_g:{base:'penitent',n:'Vigil gun-cruiser',d:'Swaps the prow lance for a dorsal sear battery: guns in every arc.',w:[['battery','P'],['battery','S'],['battery','T']],cost:25},
   h_picket_i:{base:'h_picket',n:'Picket interceptor',d:'Turret laser and +6 evasion: screens wherever it points.',w:[['laser','T'],['flak','T']],mod:{ev:24},cost:15},
-  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar or automatic wings; a third plasma lance turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
+  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar or automatic wings; a third plasma battery turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
   c_reaver_t:{base:'c_reaver',n:'Turret gutship',d:'Scatter cannons on a turret instead of one broadside.',w:[['torp','F'],['scatter','T']],cost:15},
   c_hulk_g:{base:'c_hulk',n:'Gun-hulk',d:'No hangar or automatic wings; scatter broadsides, a turret and 20 more hull.',w:[['scatter','P'],['scatter','S'],['turret','T']],mod:{ab:null,hangar:0,hp:190},cost:25},
   b_spitter_s:{base:'b_spitter',n:'Spitter stinger',d:'Trades a prow gun for boarding tendrils: brutal up close.',w:[['bioplasma','T'],['tendril','T']],cost:15},

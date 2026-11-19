@@ -1,6 +1,6 @@
 extends RefCounted
 # What the renderer needs to know about the game's hulls, taken from ships3d.js: which mesh each faction and class uses
-# (AI_HULLS), how long each class is on the board (CLS_LEN), the faction colours (FAC3D) and the hull finish the A2 test
+# (AI_HULLS), how long each class is on the board (CLS_LEN), and the hull finish the A2 test
 # used (base colour, metal, roughness per faction). The hex is HEX_S = 10 (corner radius), as in the game.
 
 const HEX_S := 10.0
@@ -44,15 +44,8 @@ const FINISH := {
 	"chorus": ["#57364c", 0.05, 0.38], "ithar": ["#e4ebe7", 0.25, 0.42], "deathless": ["#2c3431", 0.55, 0.5],
 }
 
-# FAC3D: windows, engines, weapon bolts and beams, shields (linear RGB)
-const FAC3D := {
-	"voidsworn": {"win": Color(1, .42, .12), "eng": Color(1, .5, .16), "bolt": Color(1, .52, .18), "beam": Color(1, .45, .15), "shield": Color(1, .46, .16)},
-	"hegemony": {"win": Color(.78, .9, 1), "eng": Color(.45, .72, 1), "bolt": Color(.5, .78, 1), "beam": Color(.55, .82, 1), "shield": Color(.38, .68, 1)},
-	"corsair": {"win": Color(1, .4, .2), "eng": Color(1, .38, .16), "bolt": Color(.95, .2, .1), "beam": Color(.95, .22, .1), "shield": Color(.85, .16, .1)},
-	"chorus": {"win": Color(.85, .92, .25), "eng": Color(.8, .9, .28), "bolt": Color(.82, .92, .22), "beam": Color(.85, .9, .3), "shield": Color(.9, .82, .22)},
-	"ithar": {"win": Color(.6, 1, .82), "eng": Color(.62, 1, .84), "bolt": Color(.7, 1, .86), "beam": Color(.75, 1, .88), "shield": Color(.72, 1, .86)},
-	"deathless": {"win": Color(.15, 1, .35), "eng": Color(.15, 1, .35), "bolt": Color(.2, 1, .38), "beam": Color(.2, 1, .38), "shield": Color(.18, 1, .36)},
-}
+# Faction effect colours (engines, weapons, shields) live in fx/faction_looks.json, read through fx/faction_look.gd
+# (issue 1205, R333). The old FAC3D table here overrode it (Eclipse all green) and is gone; a check fails if it returns.
 
 # rock libraries (scene3d.js ROCK_SET, ROCK_TINT): biome rock kind -> mesh set, dark albedo per set
 const ROCK_SET := {"stone": "RST", "carbon": "RCA", "iron": "RCA", "crystal": "RCR", "ice": "RIC"}
