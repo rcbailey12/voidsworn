@@ -343,17 +343,18 @@ def build(K):
     # The three stern lenses are propulsion, never extra weapons. Optical depth, no flame.
     # Round 5: the slimmer stern carries three slightly smaller cut lenses, closer together (SLIM).
     SR = 0.74
+    EX = -12.60 - 0.38 * SR   # the cut face's apex: the drive's exit point (Artoo, r5 readback)
     for k, y in enumerate((-1.42, 0.0, 1.42)):
         fid = 'E%d' % (k + 1)
         ob = K._obj(fid + '_grown_stern', *ellipsoid((-12.05, y, -0.02), (0.85 * SR, 0.93 * SR, 0.98 * SR), 64, 32),
                     'gw_pearl', smooth=True, grp=fid, role='mount')
         ob['part_kind'] = 'engine'; ob['machine'] = 1
-        K._obj(fid + '_deep_lens', *ellipsoid((-12.67 + 0.85 * (1 - SR), y, -0.02), (0.13, 0.86 * SR, 0.88 * SR), 64, 32),
+        K._obj(fid + '_deep_lens', *ellipsoid((-12.67, y, -0.02), (0.13, 0.86 * SR, 0.88 * SR), 64, 32),
                'gw_drive', smooth=True, grp=fid, role='mount')
-        K._obj(fid + '_white_bloom', *ellipsoid((-12.68 + 0.85 * (1 - SR), y, -0.02), (0.18, 0.44 * SR, 0.46 * SR), 64, 32),
+        K._obj(fid + '_white_bloom', *ellipsoid((-12.68, y, -0.02), (0.18, 0.44 * SR, 0.46 * SR), 64, 32),
                'gw_drive_core', smooth=True, grp=fid, role='mount')
         # R337: the concept's stern lenses are cut stones. A rose-cut face, flat facets, sits over the deep lens.
-        K._obj(fid + '_cut_face', *gw.cut_lens((-12.60 + 0.85 * (1 - SR), y, -0.02), (-1, 0, 0), 0.80 * SR, 0.38 * SR, 10, 0.80 * SR, 0.82 * SR),
+        K._obj(fid + '_cut_face', *gw.cut_lens((-12.60, y, -0.02), (-1, 0, 0), 0.80 * SR, 0.38 * SR, 10, 0.80 * SR, 0.82 * SR),
                'gw_drive_cut', grp=fid, role='mount')
         for j in range(11):
             a = j * 2 * math.pi / 11
@@ -372,9 +373,9 @@ def build(K):
             if o.get('grp') == fid:
                 o['part_kind'] = 'engine'; o['machine'] = 1
         K.features.append(dict(id=fid, kind='engine', what='grown stern drive optic, white bloom', count=1,
-                               pos=(-13, y, -0.02), exit=(-13, y, -0.02), radius=0.86 * SR,
+                               pos=(EX, y, -0.02), exit=(EX, y, -0.02), radius=0.86 * SR,
                                aim=(180, 0), src='picture', note='Drive lens only; no flame, exhaust mesh or weapon.', inv=['stern_cluster']))
-        K.fitdata.append(dict(id=fid, kind='engine', cones=[dict(apex=(-13, y, -0.02), dir=(-1, 0, 0), r0=0.86 * SR, half=10, length=5)]))
+        K.fitdata.append(dict(id=fid, kind='engine', cones=[dict(apex=(EX, y, -0.02), dir=(-1, 0, 0), r0=0.86 * SR, half=10, length=5)]))
         K.built.append(dict(id=fid, kind='engine', inv=['stern_cluster'], shaped=True, detailed=True,
                             subs=['grown root', 'recessed lens', 'stored light', 'bloom']))
     # Full internal construction follows the leaf, not rectangular room boxes.
