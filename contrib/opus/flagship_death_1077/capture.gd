@@ -340,15 +340,35 @@ func _cold() -> Dictionary:
 	bench.fx.sync_ship("C0", bench._unit(0.199, 0))
 	bench.fx.death("C0", "big")
 	var kill_ms := (Time.get_ticks_usec() - t0) / 1000.0
-	var w := await _window(int(6.5 * 60))
+	# Artoo on PR 1171: death_split is the planned cut time, and since #1138 a worker that misses its deadline ends in the
+	# no-pieces pop, which also hides the hull. So the hide is observed here (frame and time after the kill), the real
+	# pieces are counted, and the row is labelled fractured, fallback (no pieces) or unresolved.
+	var seen := {"frame": -1, "t": -1.0}
+	var t_kill: float = bench.fx.now
+	var w := await _window(int(6.5 * 60), func(i: int) -> void:
+		if int(seen["frame"]) < 0 and s.has_meta("death_hidden"):
+			seen["frame"] = i
+			seen["t"] = bench.fx.now - t_kill)
+	var pieces := 0
+	var frags := 0
+	for wr in bench.fx.dstate.get("wrecks", []):
+		if wr.get("id", "") != "C0": continue
+		for nd in wr.get("nodes", []): if is_instance_valid(nd): pieces += 1
+		for nd in wr.get("frags", []): if is_instance_valid(nd): frags += 1
+	var outcome := "unresolved" if int(seen["frame"]) < 0 else ("fractured" if pieces > 0 else "fallback (no pieces)")
 	w["kill_call_ms"] = kill_ms
 	w["ships"] = 1
 	w["first_use"] = true
 	w["cut_job_before_kill"] = had_job
-	w["split_waited_s"] = float(s.get_meta("death_split", 0.0)) - float(s.get_meta("death_start", 0.0)) if s.has_meta("death_start") else -1.0
-	w["broke_up"] = s.has_meta("death_hidden")
-	print("CAPTURE1077 cold ", variant, " prepared_before_kill=", had_job, " wall_p50=%.2f p95=%.2f worst=%.2f gpu_worst=%.2f" % [
-		w.wall.p50, w.wall.p95, w.wall.worst, w.gpu.worst])
+	w["planned_split_s"] = float(s.get_meta("death_split", 0.0)) - float(s.get_meta("death_start", 0.0)) if s.has_meta("death_start") else -1.0
+	w["hidden_frame"] = int(seen["frame"])
+	w["hidden_after_s"] = float(seen["t"])
+	w["hull_pieces"] = pieces
+	w["fragments"] = frags
+	w["outcome"] = outcome
+	print("CAPTURE1077 cold ", variant, " prepared_before_kill=", had_job, " outcome=", outcome, " hidden_frame=", seen["frame"],
+		" hidden_after=%.2fs pieces=%d frags=%d" % [float(seen["t"]), pieces, frags],
+		" wall_p50=%.2f p95=%.2f worst=%.2f gpu_worst=%.2f" % [w.wall.p50, w.wall.p95, w.wall.worst, w.gpu.worst])
 	return {"variant": variant, "path": "cold: fresh process, no warm-up, killed with no prepared cut", "idle": idle, "deaths": [w],
 		"late_shaders": Bench.HULL.late_shader_names()}
 
@@ -365,13 +385,14 @@ func _settle_frames(n: int) -> void:
 	for i in n: await _frame()
 
 
-func _window(frames: int) -> Dictionary:
+func _window(frames: int, on_frame := Callable()) -> Dictionary:
 	var wall: Array = []
 	var gpu: Array = []
 	var cpu: Array = []
 	var vrid: RID = bench.vp.get_viewport_rid()
 	for i in frames:
 		wall.append(await _frame())
+		if on_frame.is_valid(): on_frame.call(i)
 		gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(vrid))
 		cpu.append(RenderingServer.viewport_get_measured_render_time_cpu(vrid))
 	return {"frames": frames, "wall": _stats(wall), "gpu": _stats(gpu), "render_cpu": _stats(cpu),
