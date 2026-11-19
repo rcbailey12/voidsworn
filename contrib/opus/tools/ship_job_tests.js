@@ -90,8 +90,13 @@ assert.deepEqual(tailLines.slice(1, 8), ['if defined FAILED goto finish_failed',
   'echo all done >> "%RES%"']);
 const start = code.findIndex(l => /^echo start /.test(l.s));
 const subs = code.findIndex(l => l.s === ':ship');
-assert(/call "%J%\\ship_job_running\.bat"\s+if errorlevel 1 exit \/b 1\s+exit \/b 0/.test(text),
+assert(/call "%J%\\ship_job_running\.bat"(\s+rem [^\n]*)*\s+if errorlevel 1 [^\n]*exit \/b 1\s+[^\n]*exit \/b 0/.test(text),
   'the launcher returns a failed result from its private script');
+// Nov 19 chain 1119B: the launcher clears the wrapper's inputs in the caller, so a chain's next ship never inherits STAGES
+for (const v of ['SHIP', 'CODE', 'BRANCH', 'JOB_DIR', 'STAGES', 'SETS', 'FACS', 'PAINT_BASE', 'PC_GPU_ISSUE']) {
+  assert(new RegExp(`if errorlevel 1 endlocal & .*set "${v}=" .*& exit \\/b 1`).test(text), `the failed exit keeps ${v} set in the caller`);
+  assert(new RegExp(`\\n\\s*endlocal & .*set "${v}=" .*& exit \\/b 0`).test(text), `the passed exit keeps ${v} set in the caller`);
+}
 for (let i = start; i < subs; i++) {
   if (/exit \/b/i.test(code[i].s)) assert(i > finish, `line ${code[i].n} leaves the job before the done and all done lines`);
 }

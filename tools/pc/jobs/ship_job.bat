@@ -44,8 +44,10 @@ rem 1. run from this job's own copy
 if /i not "%~f0"=="%J%\ship_job_running.bat" (
   copy /y "%~f0" "%J%\ship_job_running.bat" > nul || exit /b 1
   call "%J%\ship_job_running.bat"
-  if errorlevel 1 exit /b 1
-  exit /b 0
+  rem Nov 19 chain 1119B: a wrapper's inputs (STAGES above all) stayed set in the calling chain and the next ship ran
+  rem with them; 1157 and 1183 started at stage 4 with no stage 1 to 3 outputs. Clear them in the caller on the way out.
+  if errorlevel 1 endlocal & set "SHIP=" & set "CODE=" & set "BRANCH=" & set "JOB_DIR=" & set "STAGES=" & set "SETS=" & set "FACS=" & set "PAINT_BASE=" & set "PC_GPU_ISSUE=" & exit /b 1
+  endlocal & set "SHIP=" & set "CODE=" & set "BRANCH=" & set "JOB_DIR=" & set "STAGES=" & set "SETS=" & set "FACS=" & set "PAINT_BASE=" & set "PC_GPU_ISSUE=" & exit /b 0
 )
 if not defined STAGES set "STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export"
 if not defined SETS set "SETS=battle,close"
