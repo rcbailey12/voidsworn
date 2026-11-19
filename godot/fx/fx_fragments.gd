@@ -190,56 +190,20 @@ static func _source_at(target, p: Vector3, out: Vector3) -> Dictionary:
 	if hit.is_empty():
 		return {}
 	var face := int(hit["face_index"])
-	# Issue 1117 finding 9: resolve the face against the ranges the BVH was built from, so a damage rebuild that adds
-	# triangles to an earlier surface cannot shift the second surface's faces. The original mesh still holds the UVs.
-	var row: Dictionary = _range_for(target.hull, face)
-	if not row.is_empty():
-		var mi = row["mi"]
-		if not is_instance_valid(mi) or row["mesh"] == null:
-			return {}
-		return _finish(mi, row["mesh"], int(row["surface"]), face - int(row["start"]),
-			_part_xf(target, mi) * (hit["position"] as Vector3))
-	var triangle := face
-	for node in target.meshes:
-		var mi := node as MeshInstance3D
-		if not is_instance_valid(mi) or not mi.mesh is ArrayMesh:
-			continue
-		var mesh := mi.mesh as ArrayMesh
-		for s in mesh.get_surface_count():
-			if HULL.interior_material(mesh.surface_get_material(s)) or mesh.surface_get_primitive_type(s) != Mesh.PRIMITIVE_TRIANGLES:
-				continue
-			var corners := mesh.surface_get_array_index_len(s)
-			if corners <= 0:
-				corners = mesh.surface_get_array_len(s)
-			if triangle < corners / 3:
-				return _finish(mi, mesh, s, triangle, _part_xf(target, mi) * (hit["position"] as Vector3))
-			triangle -= corners / 3
-	return {}
-
-
-static func _range_for(hull, face: int) -> Dictionary:
-	for row in hull.bvh_ranges:
+	# Face numbers belong to the BVH. A damage rebuild can replace or split the live mesh's triangles.
+	for row in target.hull.bvh_ranges:
 		var start := int(row["start"])
 		if face >= start and face < start + int(row["count"]):
-			return row
+			var mi = row["mi"]
+			if not is_instance_valid(mi):
+				return {}
+			var at: Vector3 = (row["to_part"] as Transform3D) * (hit["position"] as Vector3)
+			var corners := HULL.face_corners(face - start, row["strip"])
+			return _finish(mi.global_transform.basis, row["mesh"], row["paint"], int(row["surface"]), corners, at)
 	return {}
 
 
-static func _part_xf(target, mi: MeshInstance3D) -> Transform3D:
-	var to_part: Transform3D = mi.global_transform.affine_inverse() * target.xf()
-	var turret: int = target.hull._turret_above(mi, target.root)
-	if turret >= 0:
-		var rig: Dictionary = target.hull.turrets[turret]
-		var turret_node: Node3D = rig["node"]
-		var rest: Transform3D = rig["xf"]
-		to_part = mi.global_transform.affine_inverse() * turret_node.global_transform * rest.affine_inverse()
-	return to_part
-
-
-static func _finish(mi: MeshInstance3D, mesh: ArrayMesh, surface: int, triangle: int, at: Vector3) -> Dictionary:
-	var material := mi.get_active_material(surface) as BaseMaterial3D
-	if material == null:
-		material = mesh.surface_get_material(surface) as BaseMaterial3D
+static func _finish(world: Basis, mesh: ArrayMesh, material: BaseMaterial3D, surface: int, corners: Vector3i, at: Vector3) -> Dictionary:
 	if material == null or material.albedo_texture == null:
 		return {}
 	var arrays := mesh.surface_get_arrays(surface)
@@ -248,9 +212,9 @@ static func _finish(mi: MeshInstance3D, mesh: ArrayMesh, surface: int, triangle:
 		return {}
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
-	var a := triangle * 3
-	var b := a + 1
-	var c := a + 2
+	var a := corners.x
+	var b := corners.y
+	var c := corners.z
 	if not indices.is_empty():
 		a = indices[a]
 		b = indices[b]
@@ -259,7 +223,6 @@ static func _finish(mi: MeshInstance3D, mesh: ArrayMesh, surface: int, triangle:
 	var centre := uv[a] * weights.x + uv[b] * weights.y + uv[c] * weights.z
 	var scale := Vector2(material.uv1_scale.x, material.uv1_scale.y)
 	var offset := Vector2(material.uv1_offset.x, material.uv1_offset.y)
-	var world := mi.global_transform.basis
 	var edge := world * (vertices[b] - vertices[a])
 	var across := world * (vertices[c] - vertices[a])
 	var tangent := edge.normalized()

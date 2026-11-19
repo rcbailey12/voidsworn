@@ -30,7 +30,7 @@ var nozzles_from_kit = false        # true when the nozzles came from A4's hp_en
 var bow = Vector3.ZERO
 var mounts = {}                    # "port", "stb", "top" -> Array of {p, n}
 var tri_count = 0
-var bvh_ranges: Array = []         # issue 1117: face ranges of the BVH, {mi, surface, mesh, start, count}, in build order
+var bvh_ranges: Array = []         # The BVH's face ranges, with original geometry and paint for hit fragments.
 var authored := false
 var seams: Array = []             # version 1, transformed into this hull analysis frame
 var machines: Array = []          # issue 600: {name, kind, box (AABB)} from the export, in this hull analysis frame
@@ -439,74 +439,78 @@ func _authored(root: Node3D) -> void:
 		return
 
 
-static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
+static func faces_of(root: Node3D, meshes: Array, ranges: Variant = null) -> PackedVector3Array:
 	var faces = PackedVector3Array()
 	var inv = root.global_transform.affine_inverse()
 	for m in meshes:
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
 			continue
-		var xf = inv * mi.global_transform
+		var mesh: Mesh = mi.mesh
+		var array_mesh := mesh as ArrayMesh
+		var record_ranges := ranges != null and array_mesh != null
+		var xf: Transform3D = inv * mi.global_transform
+		var identity := xf.is_equal_approx(Transform3D.IDENTITY)
 		var f := PackedVector3Array()
 		var has_inside := false
-		for si in mi.mesh.get_surface_count():
-			if interior_material(mi.mesh.surface_get_material(si)): has_inside = true
+		for si in mesh.get_surface_count():
+			if interior_material(mesh.surface_get_material(si)):
+				has_inside = true
+				break
 		if not has_inside:
-			f = mi.mesh.get_faces() # Keep #167's native extraction unchanged for every older asset.
-		else:
-			for si in mi.mesh.get_surface_count():
-				# The outside BVH must never land an impact on a deck inside the hull.
-				if interior_material(mi.mesh.surface_get_material(si)): continue
-				var arr: Array = mi.mesh.surface_get_arrays(si)
-				var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
-				var idx = arr[Mesh.ARRAY_INDEX]
-				if idx == null or idx.is_empty(): f.append_array(v)
+			f = mesh.get_faces() # Keep #167's native extraction for older assets.
+		if has_inside or record_ranges:
+			var start: int = faces.size() / 3
+			var to_part := xf.affine_inverse() if record_ranges and not identity else Transform3D.IDENTITY
+			for si in mesh.get_surface_count():
+				var mat := mesh.surface_get_material(si)
+				var primitive := array_mesh.surface_get_primitive_type(si) if array_mesh != null else Mesh.PRIMITIVE_TRIANGLES
+				var strip := primitive == Mesh.PRIMITIVE_TRIANGLE_STRIP
+				if interior_material(mat) or (primitive != Mesh.PRIMITIVE_TRIANGLES and not strip):
+					continue
+				var corners: int
+				if has_inside:
+					# The outside BVH never lands an impact on a deck inside the hull.
+					var arr := mesh.surface_get_arrays(si)
+					var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+					var idx = arr[Mesh.ARRAY_INDEX]
+					var indexed: bool = idx != null and not idx.is_empty()
+					corners = idx.size() if indexed else v.size()
+					if strip:
+						for tri in maxi(corners - 2, 0):
+							var ids := face_corners(tri, true)
+							for i in [ids.x, ids.y, ids.z]:
+								f.append(v[idx[i] if indexed else i])
+					elif indexed:
+						for i in idx:
+							f.append(v[i])
+					else:
+						f.append_array(v)
 				else:
-					for i in idx: f.append(v[i])
-		if xf.is_equal_approx(Transform3D.IDENTITY):
+					# Native extraction visits triangles and strips in surface order.
+					var indices := array_mesh.surface_get_array_index_len(si)
+					corners = indices if indices > 0 else array_mesh.surface_get_array_len(si)
+				var count: int = maxi(corners - 2, 0) if strip else corners / 3
+				if record_ranges and count > 0:
+					var paint := mi.get_active_material(si) as BaseMaterial3D
+					if paint == null:
+						paint = mat as BaseMaterial3D
+					ranges.append({"mi": mi, "surface": si, "mesh": array_mesh, "start": start, "count": count,
+						"to_part": to_part, "paint": paint, "strip": strip})
+				start += count
+		if identity:
 			faces.append_array(f)
 		else:
 			faces.append_array(xf * f)
 	return faces
 
 
-# Issue 1117 finding 9: the surface ranges of the triangles faces_of feeds the BVH, in the same order. A hit's face
-# number is later resolved with this record, against the mesh the ray was cast at, even after a damage rebuild swaps the
-# live mesh. It stores the original mesh resource, not a copy of its arrays.
-static func face_ranges(meshes: Array) -> Array:
-	var out: Array = []
-	var start := 0
-	for m in meshes:
-		var mi = m as MeshInstance3D
-		if mi == null or mi.mesh == null:
-			continue
-		if not mi.mesh is ArrayMesh:
-			# a stand-in block still contributes faces to the BVH, so its range keeps every later surface aligned;
-			# it has no external paint, so a hit on it decodes to nothing (the old live-mesh scan did the same)
-			var n: int = mi.mesh.get_faces().size() / 3
-			if n > 0:
-				out.append({"mi": mi, "surface": -1, "mesh": null, "start": start, "count": n})
-				start += n
-			continue
-		var has_inside := false
-		for si in mi.mesh.get_surface_count():
-			if interior_material(mi.mesh.surface_get_material(si)): has_inside = true
-		for si in mi.mesh.get_surface_count():
-			if has_inside and interior_material(mi.mesh.surface_get_material(si)): continue
-			var n := _surface_tris(mi.mesh, si)
-			if n <= 0:
-				continue
-			out.append({"mi": mi, "surface": si, "mesh": mi.mesh, "start": start, "count": n})
-			start += n
-	return out
-
-
-static func _surface_tris(mesh: Mesh, si: int) -> int:
-	if mesh.surface_get_primitive_type(si) != Mesh.PRIMITIVE_TRIANGLES:
-		return 0
-	var idx: int = mesh.surface_get_array_index_len(si)
-	var corners: int = idx if idx > 0 else mesh.surface_get_array_len(si)
-	return corners / 3
+# The positions in the source vertex or index array, in the order used by Mesh.get_faces().
+static func face_corners(triangle: int, strip: bool) -> Vector3i:
+	var first := triangle if strip else triangle * 3
+	if strip and (triangle & 1) != 0:
+		return Vector3i(first, first + 2, first + 1)
+	return Vector3i(first, first + 1, first + 2)
 
 
 func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
@@ -527,14 +531,14 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	W = maxf(box.size.z, 0.05)
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
-	var faces = faces_of(root, meshes)
+	bvh_ranges.clear()
+	var faces = faces_of(root, meshes, bvh_ranges)
 	tri_count = faces.size() / 3
 	tm = TriangleMesh.new()
 	if faces.size() >= 3:
 		tm.create_from_faces(faces)
 	else:
 		tm = null
-	bvh_ranges = face_ranges(meshes) if tm != null else []
 	_samples(900)
 	_find_bow()
 	_find_nozzles()
@@ -979,7 +983,7 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	n = maxi(n, 1)
 	var d := target_local - core
 	d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
-	var pts := _gun_points(slot, weapon, d)
+	var pts := _gun_points(slot, weapon, target_local, d)
 	var out: Array = []
 	if not pts.is_empty():
 		var key := "%d|%s" % [slot, weapon]
@@ -997,7 +1001,7 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 			_took("gun", "hp")
 		_gun_turn[key] = off + 1
 		return out
-	# no authored point for this weapon: the plating found by the station rays (cast once at analyse, the same each shot)
+	# no usable authored point: the plating found by the station rays (cast once at analyse, the same each shot)
 	# (the bow is a ray hit too: _find_bow's ray from ahead, or the foremost surface sample when that ray finds a hole)
 	var from_bow := bow_first and d.x > 0.5
 	var row: Array = [{"p": bow, "n": Vector3(1, 0, 0)}] if from_bow else mounts_for(target_local, n)
@@ -1012,27 +1016,22 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	return out
 
 
-# The authored muzzles for a weapon: that slot's points for that weapon that bear; else that weapon's points on any slot
-# that bear; else that slot's points that bear (the hull was built for a sister ship whose slot holds another weapon).
-# Issue 1117 finding 5: every tier checks bearing and reach, so an exact slot can no longer fire from the far flank. The
-# right slot keeps its preference among the usable muzzles. When no authored muzzle bears, guns() falls to the surface
-# ray mounts on the target's side; when even those find no plating, the shots are skipped ({} entries).
-func _gun_points(slot: int, weapon: String, d: Vector3) -> Array:
-	var all: Array = points.get("gun", [])
-	if all.is_empty():
-		return []
+# Every tier checks bearing and reach. The exact slot and weapon win among usable muzzles, followed by the weapon on
+# another slot, then another weapon on the requested slot. An empty list sends guns() to the plating fallback.
+func _gun_points(slot: int, weapon: String, target_local: Vector3, d: Vector3) -> Array:
 	var same: Array = []
 	var by_weapon: Array = []
 	var by_slot: Array = []
-	for pt in all:
+	for pt in points.get("gun", []):
 		var ws: bool = weapon != "" and str(pt["weapon"]) == weapon
-		var bears := _bears(pt, d)
-		if slot >= 0 and int(pt["slot"]) == slot:
-			if bears:
-				by_slot.append(pt)
-				if ws:
-					same.append(pt)
-		if ws and bears:
+		var matches_slot: bool = slot >= 0 and int(pt["slot"]) == slot
+		if not (ws or matches_slot) or not _bears(pt, target_local, d):
+			continue
+		if matches_slot:
+			by_slot.append(pt)
+			if ws:
+				same.append(pt)
+		if ws:
 			by_weapon.append(pt)
 	if not same.is_empty():
 		return same
@@ -1041,9 +1040,9 @@ func _gun_points(slot: int, weapon: String, d: Vector3) -> Array:
 	return by_slot
 
 
-func _bears(pt: Dictionary, d: Vector3) -> bool:
+func _bears(pt: Dictionary, target_local: Vector3, d: Vector3) -> bool:
 	if pt.has("tur"):
-		return turret_reaches(int(pt["tur"]), core + d * 100.0)
+		return turret_reaches(int(pt["tur"]), target_local)
 	return str(pt.get("arc", "")) == "T" or maxf((pt["f"] as Vector3).dot(d), (pt["n"] as Vector3).dot(d)) > 0.2
 
 

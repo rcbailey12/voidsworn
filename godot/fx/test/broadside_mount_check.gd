@@ -5,7 +5,6 @@ extends SceneTree
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 var failures := 0
-var checks := 0
 
 
 func _init() -> void:
@@ -14,7 +13,6 @@ func _init() -> void:
 
 
 func _check(ok: bool, message: String) -> void:
-	checks += 1
 	if not ok:
 		failures += 1
 		push_error(message)
@@ -23,7 +21,8 @@ func _check(ok: bool, message: String) -> void:
 func _facing(muzzles: Array, toward: Vector3) -> int:
 	var wrong := 0
 	for muzzle: Dictionary in muzzles:
-		if muzzle.get("src") != "hp" or (muzzle["f"] as Vector3).dot(toward.normalized()) <= 0.0:
+		if muzzle.get("src") != "hp" or (muzzle["f"] as Vector3).dot(toward) <= 0.0 \
+				or (muzzle["p"] as Vector3).dot(toward) <= 0.0:
 			wrong += 1
 	return wrong
 
@@ -31,12 +30,19 @@ func _facing(muzzles: Array, toward: Vector3) -> int:
 func _run() -> void:
 	var ship := Node3D.new()
 	root.add_child(ship)
+	var core := Node3D.new()
+	core.name = "hp_core"
+	ship.add_child(core)
 	for flank in [-1, 1]:
 		var socket := Node3D.new()
 		socket.name = "hp_w0_battery_P_0" if flank < 0 else "hp_w0_battery_S_1"
 		ship.add_child(socket)
 		socket.position = Vector3(0, 0, flank * 2)
 		socket.rotation.y = 0.0 if flank < 0 else PI
+	var other := Node3D.new()
+	other.name = "hp_w1_battery_P_0"
+	other.position = Vector3(-1, 0, -2)
+	ship.add_child(other)
 	var hull := HULL.new()
 	var body := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
@@ -51,22 +57,51 @@ func _run() -> void:
 		var muzzles: Array = hull.guns(0, "battery", target, 4)
 		shots += muzzles.size()
 		wrong += _facing(muzzles, target)
+		for muzzle: Dictionary in muzzles:
+			_check(is_zero_approx((muzzle.get("p", Vector3.INF) as Vector3).x), "the usable exact slot wins over another slot")
 	_check(shots == 8, "two broadsides ask for eight shots")
 	_check(wrong == 0, "%d of 8 shots did not use an authored muzzle facing the target (expected 0)" % wrong)
+	print("Broadside repro: %d of %d shots from the wrong flank or without a facing authored muzzle" % [wrong, shots])
 	# the right slot no longer holds the weapon: the by-weapon tier must also bear
 	var other_slot: Array = hull.guns(9, "battery", Vector3(0, 0, -40), 4)
-	_check(_facing(other_slot, Vector3(0, 0, -40)) == 0, "the by-weapon tier picks only muzzles that bear")
+	_check(other_slot.size() == 4 and _facing(other_slot, Vector3(0, 0, -40)) == 0, "the by-weapon tier picks only muzzles that bear")
 	# the right slot holds another weapon: the slot-only tier must also bear
 	var other_weapon: Array = hull.guns(0, "lance", Vector3(0, 0, 40), 4)
-	_check(_facing(other_weapon, Vector3(0, 0, 40)) == 0, "the slot-only tier picks only muzzles that bear")
+	_check(other_weapon.size() == 4 and _facing(other_weapon, Vector3(0, 0, 40)) == 0, "the slot-only tier picks only muzzles that bear")
 	# no authored muzzle bears: the fallback shoots from the side the target is on, never backward
 	var ahead := Vector3(40, 0, 0)
 	var fallback: Array = hull.guns(0, "battery", ahead, 4)
-	var backward := 0
+	_check(fallback.size() == 4, "the no-socket fallback keeps four muzzles")
 	for muzzle: Dictionary in fallback:
-		if (muzzle["f"] as Vector3).dot(ahead.normalized()) <= 0.0:
-			backward += 1
-	_check(fallback.size() == 4 and backward == 0, "a shot with no usable socket keeps a muzzle facing the target")
+		_check(muzzle.get("src") == "ray" and (muzzle["p"] as Vector3).x > 0.0,
+			"a shot with no usable socket starts on plating toward the target")
+	var bare := HULL.new()
+	bare.analyse(ship, [], 0)
+	_check(bare.guns(0, "battery", ahead, 2) == [{}, {}] and bare.skipped() == 2,
+		"without a usable socket or plating, both effects are skipped and counted")
+	_check_turret(ship, body)
 	ship.free()
 	print("PASS broadside muzzles face the target" if failures == 0 else "FAIL broadside mounts: %d" % failures)
 	quit(0 if failures == 0 else 1)
+
+
+func _check_turret(ship: Node3D, body: MeshInstance3D) -> void:
+	var turret := Node3D.new()
+	turret.name = "turret_0"
+	turret.position = Vector3(1.5, 1, 0)
+	turret.set_meta("extras", {"arc_lo": 80.0, "arc_hi": 100.0})
+	ship.add_child(turret)
+	var socket := Node3D.new()
+	socket.name = "hp_w2_lance_T_0"
+	socket.position = Vector3(0, 0, -1)
+	turret.add_child(socket)
+	var hull := HULL.new()
+	hull.analyse(ship, [body], 0)
+	var in_arc := Vector3(1.5, 1, -4)
+	var out_of_arc := Vector3(0, 1, -4)
+	for request in [[2, "lance"], [-1, "lance"], [2, "other"]]:
+		var inside: Dictionary = hull.guns(request[0], request[1], in_arc, 1)[0]
+		var outside: Dictionary = hull.guns(request[0], request[1], out_of_arc, 1)[0]
+		_check(inside.get("tur") == 0 and not inside.get("clamped", true),
+			"tier %s uses the turret when the target is in reach from its pivot" % str(request))
+		_check(outside.get("src") == "ray", "tier %s falls back when the target is outside the turret's reach" % str(request))
