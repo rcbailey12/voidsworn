@@ -9,8 +9,8 @@ extends SceneTree
 #     shot cue trails the charge by its lead in effect seconds and plays at or after its own planned fire time
 #     (Artoo's review of PR 1220: they ran on the wall clock and could fire before the shot during slow motion).
 #  E. the combined case after PR 1230 (Artoo's review of PR 1220): an Eclipse null lance [miss, hit, hit] on a Glasswright
-#     ship under the quarter-speed clock, the last hit a critical. Every null lance shot cue plays on the effect clock
-#     before the hits it carries; each hit still lands on its own shot; the critical keeps the glass contact cue with
+#     ship under the quarter-speed clock, the last hit a critical. Exactly one shot cue per beam (the miss too), each on
+#     its own effect fire time on the effect clock and before the hit it carries; each hit still lands on its own shot; the critical keeps the glass contact cue with
 #     the heavy tail under it. Then an ion lance shield hit carrying the ion lock: the lock reaches the nameplate state
 #     when the hit lands, not before.
 #  C. the pure helpers: hit_arrivals maps hit k to the k-th true shot; shield_break_hit picks the last absorbed hit.
@@ -25,6 +25,11 @@ class Probe extends "res://scenes/battle/battle.gd":
 	var lands: Array = []    # [{k, now, hp, ring, aim}]
 	var breaks: Array = []   # effect times of shield breaks
 	var said: Array = []     # [text, effect time]
+	var vols: Array = []     # [effect time the volley starts, its land record]
+
+	func _aim_on(a_id, t_id, land: Dictionary) -> void:
+		vols.append([float(gfx.now), land])
+		super._aim_on(a_id, t_id, land)
 
 	func _land_hit(t_id, h: Dictionary, k: int, land: Dictionary) -> void:
 		# the marker as the hit arrives (the last hit lets it go inside the call)
@@ -48,6 +53,11 @@ class Probe extends "res://scenes/battle/battle.gd":
 class RecSfx extends "res://audio/sfx.gd":
 	var fx_clock = null
 	var heard: Array = []   # [cue name, effect time]
+	var lances: Array = []  # [effect time of the call, the fire times the battle passed]
+
+	func lance(ion: bool, fac: String, pos = null, fire_at := -1.0, sched := Callable(), fires := []) -> void:
+		lances.append([float(fx_clock.now) if fx_clock != null else -1.0, (fires as Array).duplicate()])
+		super.lance(ion, fac, pos, fire_at, sched, fires)
 
 	func play(name: String, o := {}) -> void:
 		heard.append([name, float(fx_clock.now) if fx_clock != null else -1.0])
@@ -233,6 +243,7 @@ func _run() -> void:
 	b.VU[a]["fac"] = "deathless"
 	b.VU[t]["fac"] = "ithar"
 	rec.heard.clear()
+	rec.lances.clear()
 	b.gfx._pause_depth = 0.25
 	b.gfx._pause_until = float(b.gfx.now) + 1000.0
 	r = await _fire(b, a, t, [false, true, true], [[0, 5], [0, 8, true]], [], "lance", "nlance")
@@ -252,12 +263,27 @@ func _run() -> void:
 			"hit_heavy":
 				heavy += 1
 	_check(b.lands.size() == 2, "E: both null lance hits land (got %d)" % b.lands.size())
-	_check(dark.size() >= 2, "E: the null lance plays one shot cue per beam (heard %s)" % str(rec.heard))
-	if b.lands.size() == 2 and dark.size() >= 2:
+	# Artoo (PR 1220): every beam has a cue, the missing one too, each on its own fire time on the effect clock
+	# the fire times come from the effect itself (the volley's record), not from what the battle passed to the cues
+	var vol: Array = b.vols[-1] if not b.vols.is_empty() else [0.0, {}]
+	var fires: Array = (vol[1] as Dictionary).get("fires", [])
+	_check(fires.size() == 3, "E: the effect gives a fire time for all three beams, the miss too (got %s)" % str(fires))
+	_check(rec.lances.size() == 1 and (rec.lances[0][1] as Array).size() == 3,
+		"E: the battle asks for the null lance cues once, for all three beams (got %s)" % str(rec.lances))
+	_check(dark.size() == 3, "E: the null lance plays exactly one shot cue per beam (heard %s)" % str(rec.heard))
+	if fires.size() == 3 and dark.size() == 3:
+		var v0 := float(vol[0])
+		var want: Array = fires.map(func(x): return v0 + float(x))
+		want.sort()
+		dark.sort()
+		for i in 3:
+			_check(float(dark[i]) >= float(want[i]) - 0.001 and float(dark[i]) <= float(want[i]) + TOL,
+				"E: beam %d's cue plays on its own fire time on the effect clock (heard %.3f, fire %.3f)" % [i, float(dark[i]), float(want[i])])
+		_check(float(want[0]) - v0 > 0.1 * 0.75, "E: the first beam fires after a slowed lead, so a wall-clock cue would show")
+	if b.lands.size() == 2 and dark.size() == 3:
 		_check(float(b.lands[0]["now"]) < float(b.lands[1]["now"]), "E: the hits land in shot order")
-		_check(dark.min() >= float(r["t0"]) + 0.1 * 0.75,
-			"E: the first null lance cue waits for its fire time on the slowed clock (%.3f after start)" % (dark.min() - float(r["t0"])))
-		_check(dark.min() <= float(b.lands[0]["now"]) + 0.001, "E: a null lance cue plays before the first hit lands")
+		_check(float(dark[1]) <= float(b.lands[0]["now"]) + 0.001 and float(dark[2]) <= float(b.lands[1]["now"]) + 0.001,
+			"E: each hitting beam's cue plays before its hit lands")
 	_check(glass.size() == 2, "E: each hit on glass plays the glass contact cue, the critical too (heard %d)" % glass.size())
 	if b.lands.size() == 2 and glass.size() == 2:
 		_check(absf(glass[1] - float(b.lands[1]["now"])) < 0.001, "E: the critical's glass cue lands with its hit")

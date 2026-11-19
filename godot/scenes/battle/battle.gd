@@ -1999,6 +1999,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
 		# issue 1211: lance and torpedo cues on the effect's own fire times, on the effect clock (they played at 0 before)
 		var fires: Array = r.get("fires", [])
+		land["fires"] = fires   # (the effect's own fire times, one per shot; the timing check reads them)
 		var fire0 := float(fires.min()) if not fires.is_empty() else -1.0
 		if fam in ["lance", "ion"]:
 			if str(e.get("weapon_id", "")) == "nlance" and not fires.is_empty():
