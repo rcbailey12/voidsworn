@@ -77,9 +77,11 @@ const HIDE := "POSITION = vec4(2.0, 2.0, 2.0, 1.0);"
 
 # Offline Mantaflow, 16 frames, bidirectional motion vectors and optical thickness.
 # COMPAT omits depth sampling; all tiers keep the same baked visual language.
+# Issue 1211: fog_disabled here and on the hull marks (SHARD, HIT_FRAGMENT, HOLE, MARK), like the streaks and the hulls
+# (nebula_hulls.gd, R82), so a nebula never dulls a fireball or a scar.
 const DEATH_FLIPBOOK := """
 shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
+render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled, fog_disabled;
 """ + COMMON + """
 uniform sampler2D atlas : source_color, filter_linear, repeat_disable;
 uniform sampler2D motion : filter_linear, repeat_disable;
@@ -572,9 +574,10 @@ void vertex() {
 		if (lf > 0.0 && length(head - tail) < lmin) {
 			tail = head - wdir * lmin;
 		}
-		// Cap projected head-to-tail distance, including perspective. These
-		// are actual render-target pixels, also at 4K and with fx_px disabled.
-		float cap_px = k == 4 ? 32.0 : (k == 5 ? 26.0 : (k == 0 ? 22.0 : 16.0));
+		// Cap projected head-to-tail distance, including perspective. The cap is in 1080-line pixels like the width
+		// and length floors (issue 1211: it was raw pixels, so 4K streaks were half length), it never clips the streak's
+		// own length floor (the macro shell asks 26), and it holds with fx_px disabled.
+		float cap_px = max(k == 4 ? 32.0 : (k == 5 ? 26.0 : (k == 0 ? 22.0 : 16.0)), lf) * (VIEWPORT_SIZE.y / 1080.0);
 		vec4 hc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(head, 1.0);
 		vec4 tc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(tail, 1.0);
 		float projected = length((hc.xy / max(hc.w, 0.0001) - tc.xy / max(tc.w, 0.0001)) * VIEWPORT_SIZE * 0.5);
@@ -820,8 +823,10 @@ void fragment() {
 	float life = max(vAge.y, 0.001); float age = vAge.x;
 	float x = abs(vSide);
 	float px = x * vPixels * 0.5;
-	float hot_width = k == 6 ? 3.0 : max(k == 8 ? 2.0 : 3.0, vPixels * 0.17);
-	float glow_width = k == 6 ? 11.0 : max(7.0, vPixels * 0.48);
+	// issue 1211: the crackle's fixed core and sheath are 1080-line pixels, so the arc keeps its shape at 4K
+	float fr = max(VIEWPORT_SIZE.y / 1080.0, 0.0001);
+	float hot_width = k == 6 ? 3.0 * fr : max(k == 8 ? 2.0 : 3.0, vPixels * 0.17);
+	float glow_width = k == 6 ? 11.0 * fr : max(7.0, vPixels * 0.48);
 	float core = exp(-2.772589 * px * px / (hot_width * hot_width));
 	float sheath = exp(-2.772589 * px * px / (glow_width * glow_width));
 	float fast = texture(kit_flow, vec2(fract(s * 3.0 - age * 2.4 + seed), vSide * 0.5 + 0.5)).g;
@@ -855,7 +860,7 @@ void fragment() {
 		float q = fract(s * 4.0 + seed);
 		float sign_side = mod(floor(s * 4.0 + seed), 2.0) * 2.0 - 1.0;
 		float target = sign_side * q * 1.7;
-		float d = (vSide - target) * vPixels * 0.5;
+		float d = (vSide - target) * vPixels * 0.5 / fr;
 		float window = smoothstep(0.0, 0.04, q) * (1.0 - smoothstep(0.32, 0.55, q));
 		fork_hot = exp(-2.772589 * d*d / 4.0) * window;
 		fork_glow = exp(-2.772589 * d*d / 25.0) * window;
@@ -972,7 +977,8 @@ void vertex() {
 	float width = max(trail_len * width_k * (1.0 + age), max(px_world(10.0, depth, PROJECTION_MATRIX), frame_world(8.0, depth, PROJECTION_MATRIX, VIEWPORT_SIZE.y)));
 	vec4 pc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(p, 1.0);
 	vec4 hc = PROJECTION_MATRIX * VIEW_MATRIX * vec4(head_world, 1.0);
-	vFromHead = (pc.xy / max(pc.w, 0.0001) - hc.xy / max(hc.w, 0.0001)) * VIEWPORT_SIZE * 0.5;
+	// issue 1211: in 1080-line pixels, so the 24 px tail and its flow keep their shape at 4K
+	vFromHead = (pc.xy / max(pc.w, 0.0001) - hc.xy / max(hc.w, 0.0001)) * VIEWPORT_SIZE * 0.5 * (1080.0 / max(VIEWPORT_SIZE.y, 1.0));
 	vSide = UV.y * 2.0 - 1.0;
 	vAge = age;
 	vTint = COLOR.rgb;
@@ -994,7 +1000,7 @@ void fragment() {
 # a1 = (vel, life); a2 = (spin axis, spin rate); a3 = (size, period, tint, drag); a4 = (heat, seed, 0, 0)
 const SHARD := """
 shader_type spatial;
-render_mode cull_back;
+render_mode cull_back, fog_disabled;
 """ + COMMON + """
 varying float vHeat;
 varying float vSeed;
@@ -1048,7 +1054,7 @@ void fragment() {
 # Negative profile keys mark the lead pieces.
 const HIT_FRAGMENT := """
 shader_type spatial;
-render_mode cull_back;
+render_mode cull_back, fog_disabled;
 """ + COMMON + """
 uniform sampler2D fragment_meshes : filter_nearest, repeat_disable;
 uniform sampler2D fragment_instances : filter_nearest, repeat_disable;
@@ -1425,7 +1431,7 @@ void fragment() {
 # white, then red, then goes black; acid keeps a faint green working glow.
 const HOLE := """
 shader_type spatial;
-render_mode cull_disabled;
+render_mode cull_disabled, fog_disabled;
 """ + COMMON + """
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
@@ -1528,7 +1534,7 @@ void fragment() {
 # metal (ram). Same vertex data as HOLE plus CUSTOM3 (slot direction, half length).
 const MARK := """
 shader_type spatial;
-render_mode blend_mix, depth_draw_never, cull_back, shadows_disabled;
+render_mode blend_mix, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
 """ + COMMON + """
 float segd(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a; vec2 ba = b - a; float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0); return length(pa - ba * h); }
 // An electrical burn (Lichtenberg figure): trunks forking out from the strike point, two levels of branches, jagged.

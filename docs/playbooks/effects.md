@@ -33,6 +33,10 @@ effect: a weapon hit, a shield response, a trail, a death.
   Its hit collider uses that same mesh. Impact and collapse ripples use the shader's
   hits array, including the soft flash fallback; do not add a separate flat ring.
   Check C15s, H9 and E12 at cameras 170 and 60, plus the fitted skin from the side.
+- Issue 1211 (Board brief from the Nov 19 weapon effects audit): every effect shader and every mark on a hull carries
+  `fog_disabled`, like the hulls (nebula_hulls.gd, R82), so a nebula never dulls a blast; pixel floors and caps are in
+  1080-line pixels (px_world, or the raw size times VIEWPORT_SIZE.y / 1080), so a streak keeps its shape at 4K. A hit's
+  sound, HP drop, number and shield break land on that hit's own shot arrival, on the effect clock (battle.gd _land_hit).
 - Directions researched for the remaining options sheets (contrib/muse/design/look_references_2026_11/synthesis.md): sky
   Regional Colour Calmed, True Dark One Band, Planet Limb. Trails and beams are being built (issues 367, 800, 815).
 
