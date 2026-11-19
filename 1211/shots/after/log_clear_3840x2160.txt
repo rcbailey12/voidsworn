@@ -1,0 +1,41 @@
+GPU: waiting for shared claim, weight 1 (issue 1211)
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: acquired shared claim 9ec29fbb-7a5e-402e-b99f-e7f5fdd0fe4b
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 431 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.769, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.769, target 4.4; visual tuning (R191)
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[world] loaded 9f3263fb521501e1495c6ae1809fcaaba3b99ceea42849f44ca7c29f0e0b4323 4096x2048 in 8296 ms (worker)
+[world] loaded 9332493afd184e8a358a9729fef41cea7927eb1ca45c9b36a77262095ce6608b 4096x2048 in 8368 ms (worker)
+[world] loaded 781e65e94ea39afa05f517ff26bcf1f8f2f9f8ddff4b04da50d30f4b45de28de 1024x512 in 8371 ms (worker)
+[world] loaded bb5ee289f27dc7cfaaca11de2d92211af393baf05aab92f9e52ee778b481c744 1024x512 in 8368 ms (worker)
+[world] loaded a27d8381c16273500786217e3cd8c84e3e8135032529140ebaea4b690ba38ef5 4096x2048 in 94 ms (worker)
+[world] loaded 3662e4517d9c2bfb9154d418dc741ecca59daa893fa1cb100608adc88d27f5d8 1024x512 in 90 ms (worker)
+[world] loaded 00102a14e6b21238b3c9d6dda816d83fca2028226dfd787af3f64eb998505183 1024x512 in 90 ms (worker)
+HIT_CAPTURE_DONE case clear height 2066 stills 7 saved 7
+[attach] battle x04 V15_37: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[attach] battle x05 V14_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 16 centre 0 skip 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle x08 H7_23: skipped 0; rcs hp 0 ray 16 centre 0 skip 0
+[attach] battle x09 H7_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0

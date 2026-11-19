@@ -1,0 +1,12 @@
+shots1211 start Thu 11/19/2026 14:20:21.32 
+HIT_CAPTURE_DONE case nebula height 2066 stills 7 saved 7
+HIT_CAPTURE_DONE case nebula height 2066 stills 7 saved 7
+HIT_CAPTURE_DONE case clear height 2066 stills 7 saved 7
+HIT_CAPTURE_DONE case clear height 2066 stills 7 saved 7
+clip after ok 
+HIT_CAPTURE_DONE case nebula height 2066 stills 7 saved 7
+HIT_CAPTURE_DONE case nebula height 2066 stills 7 saved 7
+HIT_CAPTURE_DONE case clear height 2066 stills 7 saved 7
+HIT_CAPTURE_DONE case clear height 2066 stills 7 saved 7
+clip before ok 
+shots1211 done Thu 11/19/2026 15:39:28.95 
