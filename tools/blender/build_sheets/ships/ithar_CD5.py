@@ -267,7 +267,7 @@ def lance(K, side, fid):
     p.add('aperture', 'mount', 'gw_tip', ellipsoid((9.975, side * 0.8, -0.22), (0.025, 0.027, 0.027), 24, 10))
     p.fit = dict(pivot=('p', (10, side * 0.8, -0.22)), reach=0.06, radius=0.64,
                  muzzles=[('p', (10, side * 0.8, -0.22))], aim=('d', (1, 0, 0)))
-    K.gun(fid, (3, side * 1.50, 0.80), 0, cal=0.06, blen=10, fixed=True,  # round 5: on the slimmer hull (SLIM)
+    K.gun(fid, (3, side * 1.50, 0.66), 0, cal=0.06, blen=10, fixed=True,  # round 5: on the slimmer hull (SLIM)
           slot='F', weapon='pulsar', part=p, inv=['forward_lances'], band=(0, 5, 10),
           note='One of Ryan\'s two long forward lances. Pulled-glass waveguide, not a metal barrel; F arc +/-60.')
     K.features[-1]['what'] = 'long pulled-glass forward Prism lance'
@@ -330,7 +330,7 @@ def build(K):
             ob.data.attributes.new(an, 'FLOAT', 'POINT')
         for an, vals in attrs.items():
             ob.data.attributes[an].data.foreach_set('value', vals)
-        sd = ob.modifiers.new('ribbon', 'SOLIDIFY'); sd.thickness = 0.035; sd.offset = 0
+        sd = ob.modifiers.new('shell', 'SOLIDIFY'); sd.thickness = 0.035; sd.offset = 0  # 'shell': the contract renames it 'skin' and scales it
         ob['zone'] = 'pearl ribbon'
         for side in (-1, 1):
             pts = r.edge(skin, side, 180)
@@ -410,7 +410,7 @@ def build(K):
         K.break_line('B%d' % (i + 1), x, 'ragged shatter path at the lens bay; whole optics, never a straight saw cut', path=path)
     # Fore optic peels away above the forward waveguides, without cutting either lance.
     K.break_line('O3-peel', 6.0, 'whole fore optic above the flowing skin; one compartment',
-                 path=[(4.6, 1.66), (7.4, 1.66)], kind='long')
+                 path=[(4.6, 1.28), (7.4, 1.28)], kind='long')  # r5: between the lance tops and the O3 seat (root bottom 1.32)
     K.point('core', 'hp_core', (-0.4, 0, 0.10))
     for i, (x, side, sec) in enumerate(((-8.8, 1, 'eng'), (-8.8, -1, 'eng'),
                                        (-3.1, 1, 'mid'), (-3.1, -1, 'mid'), (4, 1, 'prow'),
