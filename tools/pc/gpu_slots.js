@@ -122,7 +122,8 @@ class Slots {
   }
 }
 
-function weightFor(exe, requested = '') {
+function weightFor(exe, requested = '', mode = 'shared') {
+  if (!mode || mode === 'none') return 0;
   if (requested !== '') return positiveInteger(requested, 'PC_GPU_WEIGHT');
   return /^blender(?:\.exe)?$/i.test(path.win32.basename(exe)) ? 2 : 1;
 }
@@ -135,7 +136,9 @@ function modeFor(exe, args, cwd = process.cwd(), requested = '') {
   if (!godot && !blender) return requested === 'solo' || requested === 'shared' ? requested : '';
   if (godot && /(?:^|\s)--headless(?:\s|$)/i.test(args)) return '';
   if (requested === 'solo') return 'solo';
-  if (blender) return 'shared';
+  // Only explicitly marked CPU-only Blender steps can skip a Blender claim.
+  // Godot still detects GPU work and takes solo for timing scripts.
+  if (blender) return requested === 'none' ? '' : 'shared';
   // Known benches remain solo even if their checkout has not been prepared yet.
   if (/--(?:bench|benchmark|measure)\b|bench209|scene_gate|bench\d|frame[_-]?time|performance|perf_probe/i.test(args) && !/--still\b/.test(args)) return 'solo';
   const project = /--path\s+(?:"([^"]+)"|(\S+))/.exec(args);
@@ -179,7 +182,7 @@ async function main() {
   if (action === 'classify') {
     const input = JSON.parse(fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, ''));
     const mode = modeFor(input.exe, input.args, input.cwd, input.requested);
-    console.log(JSON.stringify({ mode, weight: mode ? weightFor(input.exe, input.weight) : 1 }));
+    console.log(JSON.stringify({ mode, weight: weightFor(input.exe, input.weight, mode) }));
     return;
   }
   if (!root) throw new Error('GPU root is required');

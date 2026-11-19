@@ -29,8 +29,10 @@ if not exist "%P%\assets\ships\C15s_23" mkdir "%P%\assets\ships\C15s_23"
 if not exist "%P%\p559" mkdir "%P%\p559"
 copy /y "%R%\build\godot\assets\ships\C19_51\C19_51.glb" "%P%\assets\ships\C19_51\" > nul
 copy /y "%R%\build\godot\assets\ships\C19_51\C19_51_*.jpg" "%P%\assets\ships\C19_51\" > nul
+if exist "%R%\build\godot\assets\ships\C19_51\C19_51_*.png" copy /y "%R%\build\godot\assets\ships\C19_51\C19_51_*.png" "%P%\assets\ships\C19_51\" > nul
 copy /y "%R%\opus209\out7\export\C15s_23\C15s_23.glb" "%P%\assets\ships\C15s_23\" > nul
 copy /y "%R%\opus209\out7\export\C15s_23\C15s_23_*.jpg" "%P%\assets\ships\C15s_23\" > nul
+if exist "%R%\opus209\out7\export\C15s_23\C15s_23_*.png" copy /y "%R%\opus209\out7\export\C15s_23\C15s_23_*.png" "%P%\assets\ships\C15s_23\" > nul
 copy /y "%D%\probe559.gd" "%P%\p559\probe559.gd" > nul
 echo copied %time% >> "%D%\status.txt"
 call "%D%\tmo.bat" 2400 "%G%" --headless --path "%P%" --import > "%D%\log_import.txt" 2>&1
