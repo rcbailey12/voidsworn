@@ -39,3 +39,22 @@ Cold case (fresh process, no warm-up, no prepared cut), both paths alike, so the
 prototype's: the worst frame is 3.1 to 6.9 s (a freeze at the kill), and 2 of 3 sessions per path ended in the
 no-pieces fallback (hull hidden at 2.68 s with 0 pieces); session 1 fractured (4 pieces, 11 fragments, hidden at 2.02 s).
 The game warms and cuts every ship under the loading cover, so a real battle should not hit this; it is the worst case.
+
+## Finding for its own issue: the cold kill freezes and loses its pieces (today's code, not the prototype)
+
+Rerun at 1236bbc3, RTX 5080, solo GPU, three sessions per path. A16 killed 6 frames after it appears, in a fresh process
+with no warm-up and no prepared cut (capture.gd `cold`):
+
+| session | path | outcome | hull hidden after | pieces | fragments | worst frame | frame p50 |
+|---|---|---|---|---|---|---|---|
+| s1 | off | fractured | 2.02 s | 4 | 11 | 4309 ms | 3.77 ms |
+| s1 | strain | fractured | 2.02 s | 4 | 11 | 6879 ms | 3.73 ms |
+| s2 | off | fallback (no pieces) | 2.68 s | 0 | 0 | 3164 ms | 1.54 ms |
+| s2 | strain | fallback (no pieces) | 2.68 s | 0 | 0 | 3237 ms | 1.65 ms |
+| s3 | off | fallback (no pieces) | 2.68 s | 0 | 0 | 3147 ms | 1.58 ms |
+| s3 | strain | fallback (no pieces) | 2.68 s | 0 | 0 | 3680 ms | 1.71 ms |
+
+GPU worst stays under 2.0 ms in every row, so the freeze is CPU side (likely the first use of the death shaders and the
+cut, unproven). The fallback is the #1138 deadline path: the worker missed it and the hull popped with no pieces. Off and
+strain match, so this is today's code. A real battle warms and cuts under the loading cover, so players should not see it
+unless a ship dies before its cut is ready (a ship added mid-battle, or a kill in the first second).
