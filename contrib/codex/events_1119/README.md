@@ -15,11 +15,15 @@ The Chorus and Eclipse each have their own copy for mercenaries, mutiny, the str
 
 The Chorus Nemesis uses **Breach broods** and **Thin aft hide** for the existing `boarders` and `flank` keys. The Dossier, battle notices and debrief resolve those names from the rival's faction. Event variants use the existing Astropath format. The export builds each option array from the original options and substitutes only labels and summaries.
 
-## Seeded comparison
+## Standing check
+
+Godot CI runs the test without arguments. It draws every eligible event and the quiet fallback for all six factions and checks that each card shows its choices and writes the expected save keys. It scans Chorus and Eclipse titles, bodies, choices, requirement text and event receipts for human fleet wording. It also checks the existing Nemesis lookups. The standing check reads current requirements and rewards from the event table, so balance changes do not require updating the historical report.
+
+## Historical seeded comparison
 
 Godot 4.7.2 ran **seeds 1 to 64 for each faction, 384 campaigns** on main `a3b9f555` and again with the changes. The driver starts a fresh profile with Vex and no Heat. It uses the real campaign map and click actions with the existing stub battle. It prefers reachable event nodes, chooses among enabled options with a separate seeded random stream, and takes victory through the standard battle reward menus. Each event row records its draw count, saved option keys, event battle count, and the net change from before the choice to completion of the node. Event battle rows include the ordinary gains and losses of the fight as well as its event reward.
 
-The acceptance band is **exact equality** for each faction's per-event counts, option counts, fight routing and every measured reward total. The test compares fingerprints of those rows with main. It also checks every Chorus and Eclipse card, including the quiet fallback, and scans receipts reached by the seeded routes for human fleet wording. Hegemony keeps its own bans, the Chorus still skips the infested moon, and Eclipse still gets the dormant hull yard in place of the siphon array.
+The acceptance band is **exact equality** for each faction's per-event counts, option counts, fight routing and every measured reward total. The fixture `godot/campaign/test/fixtures/event_distribution_a3b9f555.json` records the rows that matched main in the original comparison. The opt-in check compares these rows with a fresh run and prints the expected and actual values for each changed faction/event row or total. It also scans receipts reached by the seeded routes for human fleet wording. Hegemony keeps its own bans, the Chorus still skips the infested moon, and Eclipse still gets the dormant hull yard in place of the siphon array.
 
 Both runs produced the following totals. Negative figures are net costs or losses. Hull and Marks include ships added or lost on the event branch. Intel counts Nemesis weaknesses revealed and clock is the net change in Nemesis clock points.
 
@@ -75,8 +79,10 @@ Each cell gives draws/event fights, followed by the nonzero net changes. A dash 
 
 </details>
 
-The check can write its full report, including option counts and zero totals, to an absolute JSON path passed after `--`.
+From the checkout root, run the standing check and, when reviewing the historical comparison, pass `--compare`. The optional absolute path writes the current full report, including option counts and zero totals. A changed row gives the comparison a nonzero exit status.
 
 ```powershell
-& $godot --headless --path godot --script res://campaign/test/event_distribution_test.gd -- "$env:TEMP/events-after.json"
+$godot = "$env:USERPROFILE\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe"
+& $godot --headless --path godot --script res://campaign/test/event_distribution_test.gd
+& $godot --headless --path godot --script res://campaign/test/event_distribution_test.gd -- --compare "$env:TEMP/events-after.json"
 ```

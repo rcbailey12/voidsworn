@@ -1,4 +1,4 @@
-# Pass an absolute JSON path after -- to save per-event counts and net rewards.
+# With -- --compare [output.json], also compare the seeded routes to the issue 1149 baseline.
 extends SceneTree
 
 const CampaignScript = preload("res://campaign/campaign.gd")
@@ -6,14 +6,43 @@ const Seed = preload("res://rules/battle_api.gd").JSM
 const RUNS := 64
 const METRICS := ["credits", "xp", "relics", "refits", "ships", "hull", "marks", "wing_perks", "intel", "clock"]
 
-# One canonical row set per faction from main a3b9f555. The band is exact equality.
-const MAIN := {
-	"chorus": "cdb2b040fed65c1b9a5b831c9a033d96694976bfde26fca3174cf6f475106b7d",
-	"corsair": "1953add5bc1aad50839426d9bbfa576dc44c7b093c3810d2b4e1c2d5a49fc938",
-	"deathless": "9e11f0657802b3bb11b6645165b9cb7fa95af649ddc3e618464e24ecb6caef65",
-	"hegemony": "9200c28f72550d4741aa9364162f363e7ec51119c0286f87cfd12de38aadc798",
-	"ithar": "b3ff3d24a8f3f42dd978ddf7d15653d4af1786ff65b2adce27d5861f31358efd",
-	"voidsworn": "707fb16a1f5fdcc0343e57f26f29db9b4509b0db47e715a631b84891c80d0e93",
+const BASELINE := "res://campaign/test/fixtures/event_distribution_a3b9f555.json"
+
+# These ids and choice keys are read from existing saves and flags.
+const SAVED_KEYS := {
+	"derelict": ["0", "1", "cut", "3"],
+	"beacon": ["0", "tow", "2", "3"],
+	"astropath": ["0", "shield", "2"],
+	"merc": ["0", "oath", "2"],
+	"storm": ["0", "shields", "2"],
+	"seer": ["0", "song", "2"],
+	"wright": ["0", "pay", "2"],
+	"moon": ["0", "flak", "2"],
+	"shrine": ["offer", "chalk", "relic", "leave"],
+	"deserters": ["0", "question", "2"],
+	"cache": ["0", "both", "2"],
+	"tithe": ["crack", "lance", "leave"],
+	"pilot": ["take", "wing", "leave"],
+	"reactor": ["vent", "refit", "metal", "pay"],
+	"squall": ["ride", "shield", "round"],
+	"broker": ["buy", "debt", "leave"],
+	"bait": ["loud", "sweep", "ignore"],
+	"spawn": ["burn", "harvest", "feed"],
+	"lament": ["listen", "join", "archive"],
+	"tomb": ["wake", "map"],
+	"tombhome": ["wake", "tithe"],
+	"mutiny": ["pay", "discipline", "talk"],
+	"convoy": ["escort", "trade", "shake"],
+	"battlefield": ["salvage", "wings", "leave"],
+	"scout": ["hunt", "torp", "ignore"],
+	"defector": ["question", "ransom", "enlist"],
+	"dock": ["use", "frame", "leave"],
+	"well": ["sling", "sails", "round"],
+	"auction": ["bid", "swap", "leave"],
+	"saboteur": ["search", "face", "ignore"],
+	"veterans": ["pay", "oath", "leave"],
+	"haven": ["raid", "tribute", "recruit", "leave"],
+	"quiet": ["rest", "drill"],
 }
 const FACTION_CARDS := ["merc", "mutiny", "pilot", "deserters", "veterans", "reactor", "convoy", "auction"]
 const HUMAN_COPY := [
@@ -28,49 +57,116 @@ func check(ok: bool, why: String) -> void:
 		printerr("FAIL: " + why)
 
 func check_copy(line: String, context: String) -> void:
+	var lower := line.to_lower()
 	for fragment in HUMAN_COPY:
-		check(not line.to_lower().contains(fragment), "%s uses human fleet wording: %s" % [context, line])
+		check(not lower.contains(fragment), "%s uses human fleet wording: %s" % [context, line])
 
-func check_cards(c: CampaignScript) -> void:
-	for faction in ["chorus", "deathless"]:
+func option_key(option: Dictionary, index: int) -> String:
+	return str(option.get("k", str(index)))
+
+func check_lookup_keys(c: CampaignScript) -> Dictionary:
+	var cards := {}
+	check(c.EVENT_FALLBACK == "quiet", "the quiet fallback lookup key changed")
+	for card in c.EVENTS:
+		var id: String = card["id"]
+		check(not cards.has(id), "duplicate event lookup key: " + id)
+		cards[id] = card
+		var keys := []
+		for i in range(card["o"].size()):
+			keys.append(option_key(card["o"][i], i))
+		check(keys == SAVED_KEYS.get(id), "%s choice keys: expected %s, got %s" % [id, SAVED_KEYS.get(id), keys])
+	for id in SAVED_KEYS:
+		check(cards.has(id), "missing event lookup key: " + id)
+	return cards
+
+func check_card(c: CampaignScript, base: Dictionary, card: Dictionary) -> void:
+	var id: String = base["id"]
+	var faction: String = c.RUN["fac"]
+	var context := "%s/%s" % [faction, id]
+	var scan_copy := faction in ["chorus", "deathless"]
+	var variant: Dictionary = base.get("v", {}).get(faction, {})
+	check(card["t"] == variant.get("t", base["t"]) and card["b"] == variant.get("b", base["b"])
+		and card["o"] == variant.get("o", base["o"]), context + " showed the wrong faction copy")
+	check(card["id"] == id, context + " changed the event lookup key")
+	check(card["o"].size() == base["o"].size(), context + " changed the choice count")
+	check(not card["t"].strip_edges().is_empty() and not card["b"].strip_edges().is_empty(), context + " has no title or body")
+	if scan_copy:
+		check_copy(card["t"], context)
+		check_copy(card["b"], context)
+		if id in FACTION_CARDS:
+			check(card["t"] != base["t"] and card["b"] != base["b"], context + " is missing its faction voice")
+	if card["o"].size() != base["o"].size():
+		return
+	var actions := c.screen_acts()
+	check(actions.size() == card["o"].size(), context + " did not show every choice")
+	check(actions.any(func(a): return a[0] == "eventChoice" and a[2] == 1), context + " has no available choice")
+	for i in range(card["o"].size()):
+		var option: Dictionary = card["o"][i]
+		var original: Dictionary = base["o"][i]
+		var key := option_key(original, i)
+		var choice_context := context + "/" + key
+		check(not option["l"].strip_edges().is_empty() and option["s"] is String, choice_context + " has invalid choice text")
+		if i < actions.size():
+			check(actions[i][0] == "eventChoice" and str(actions[i][1]) == str(i)
+				and (actions[i][2] == 1) == c.eventOptOk(option), choice_context + " has the wrong action or availability")
+		var mechanics := option.duplicate()
+		mechanics.erase("l")
+		mechanics.erase("s")
+		var expected := original.duplicate()
+		expected.erase("l")
+		expected.erase("s")
+		check(mechanics == expected, choice_context + " changed its choice key, requirements, flags or reward")
+		var flags: Dictionary = c.RUN["flags"].duplicate()
+		c.eventFlags(card, option, i)
+		check(c.RUN["flags"].get(id) == key, choice_context + " did not write its saved choice key")
+		c.RUN["flags"] = flags
+		if scan_copy:
+			check_copy(option["l"], choice_context)
+			check_copy(option["s"], choice_context)
+			check_copy(c.needText(option.get("need")), choice_context)
+			check_receipt(c, option, choice_context)
+
+func check_receipt(c: CampaignScript, option: Dictionary, context: String) -> void:
+	var need_faction = option.get("need", {}).get("fac")
+	if need_faction != null and c.RUN["fac"] not in (need_faction if need_faction is Array else [need_faction]):
+		return
+	var outcome = option["r"]
+	if outcome is Dictionary and outcome.has("fight"):
+		return
+	# Use the real outcome text for resource-gated choices too. Restore the fleet after each probe.
+	var run: Dictionary = c.RUN
+	var uid: int = c.UID
+	c.RUN = run.duplicate(true)
+	for line in c.applyOutcome(outcome):
+		check_copy(line, context + " result")
+	c.RUN = run
+	c.UID = uid
+
+func check_cards(c: CampaignScript, cards: Dictionary) -> void:
+	if failures != 0:
+		return
+	for faction in c.RUN_FACTIONS:
 		c.META = c.defaultMeta()
 		c.UID = 1
 		c.fixed_clock = true
 		Seed.rnd_seed(1)
 		c.newRun("vex", faction)
-		var available := 0
-		for base in c.EVENTS:
-			if faction in base.get("not", []):
-				continue
-			if base["id"] != c.EVENT_FALLBACK:
-				available += 1
-			var card := c._event_for_faction(base)
-			var context := "%s/%s" % [faction, base["id"]]
-			check_copy(card["t"], context)
-			check_copy(card["b"], context)
-			check(card["id"] == base["id"] and card["o"].size() == base["o"].size(), context + " changed keys or option count")
-			if base["id"] in FACTION_CARDS:
-				check(card["t"] != base["t"] and card["b"] != base["b"], context + " is missing its faction voice")
-			for i in range(base["o"].size()):
-				var option: Dictionary = card["o"][i]
-				var original: Dictionary = base["o"][i]
-				var key: String = str(original.get("k", i))
-				check_copy(option["l"], context + "/" + key)
-				check_copy(option["s"], context + "/" + key)
-				check_copy(c.needText(option.get("need")), context + "/" + key)
-				var mechanical := option.duplicate()
-				mechanical.erase("l")
-				mechanical.erase("s")
-				var expected := original.duplicate()
-				expected.erase("l")
-				expected.erase("s")
-				check(mechanical == expected, context + "/" + key + " changed its choice, requirements, flags or reward")
-
-		for i in range(available):
-			var draw := c.nextEvent()
-			check(draw["id"] != c.EVENT_FALLBACK and faction not in draw.get("not", []),
-				"%s drew the fallback too early or drew a barred event" % faction)
-		check(c.nextEvent()["id"] == c.EVENT_FALLBACK, "%s never reached the quiet fallback" % faction)
+		var eligible := {}
+		for id in cards:
+			if id != c.EVENT_FALLBACK and faction not in cards[id].get("not", []):
+				eligible[id] = true
+		var draws := eligible.size()
+		for i in range(draws + 1):
+			c.eventScreen(null)
+			var id: String = c.RUN["seenEvents"].back()
+			var card: Dictionary = c.modal_d["data"]["ev"]
+			if i == draws:
+				check(id == c.EVENT_FALLBACK, "%s never reached the quiet fallback" % faction)
+			else:
+				check(eligible.erase(id), "%s drew an ineligible or repeated event: %s" % [faction, id])
+			if cards.has(id):
+				check_card(c, cards[id], card)
+		check(eligible.is_empty(), "%s did not draw these eligible events: %s" % [faction, eligible.keys()])
 
 	check(CampaignScript.BattleAPI.nem_entry(c.NEM_TRAITS, "boarders", "chorus")["n"] == "Breach broods",
 		"Chorus boarders retain their key and use the biological name")
@@ -132,7 +228,7 @@ func play(faction: String, seed: int, rows: Dictionary, total: Dictionary) -> vo
 			row["draws"] += 1
 			var choice: Array = acts[route_rng.randi_range(0, acts.size() - 1)]
 			var option: Dictionary = c.cur_event["o"][int(choice[1])]
-			var key: String = str(option.get("k", choice[1]))
+			var key: String = option_key(option, int(choice[1]))
 			row["choices"][key] = row["choices"].get(key, 0) + 1
 			c.act(choice[0], choice[1])
 			check(c.RUN["flags"].get(event_id) == key, "%s changed its saved option key" % event_id)
@@ -170,14 +266,7 @@ func choose(c: CampaignScript, acts: Array, rng: RandomNumberGenerator) -> Array
 				return a
 	return []
 
-func _init() -> void:
-	var c := CampaignScript.new()
-	var err := c.load_tables()
-	if err != "":
-		printerr(err)
-		quit(1)
-		return
-	check_cards(c)
+func seeded_report(c: CampaignScript) -> Dictionary:
 	var report := {}
 	for faction in c.RUN_FACTIONS:
 		var rows := {}
@@ -192,17 +281,58 @@ func _init() -> void:
 			for key in METRICS:
 				total[key] = total.get(key, 0) + row.get(key, 0)
 		check(total["wins"] == RUNS, "%s did not complete all seeded campaigns" % faction)
-		var digest := Seed.sha256(Seed.canon(rows))
-		check(digest == MAIN.get(faction), "%s event rows differ from main (%s)" % [faction, digest])
 		report[faction] = {"total": total, "events": rows}
 		print("%s %s" % [faction, JSON.stringify(total)])
-	var args := OS.get_cmdline_user_args()
-	if not args.is_empty():
-		var out := FileAccess.open(args[0], FileAccess.WRITE)
-		if out == null:
-			check(false, "Cannot write report: " + args[0])
-		else:
-			out.store_string(JSON.stringify(report, "\t") + "\n")
-	print("event distribution: " + ("PASS" if failures == 0 else "FAIL (%d)" % failures))
-	quit(0 if failures == 0 else 1)
+	return report
 
+func compare_rows(context: String, expected: Dictionary, actual: Dictionary) -> void:
+	var keys := expected.merged(actual).keys()
+	keys.sort()
+	for key in keys:
+		var before = expected.get(key)
+		var after = actual.get(key)
+		if Seed.canon(before) != Seed.canon(after):
+			check(false, "%s/%s\n  expected: %s\n  actual:   %s"
+				% [context, key, JSON.stringify(before, "", true, true), JSON.stringify(after, "", true, true)])
+
+func compare_report(report: Dictionary) -> void:
+	var expected = JSON.parse_string(FileAccess.get_file_as_string(BASELINE))
+	if not (expected is Dictionary):
+		check(false, "Cannot read baseline: " + BASELINE)
+		return
+	var factions: Array = expected.merged(report).keys()
+	factions.sort()
+	for faction in factions:
+		if not expected.has(faction) or not report.has(faction):
+			check(false, "%s is missing from the %s report" % [faction, "baseline" if report.has(faction) else "current"])
+			continue
+		compare_rows(faction + "/total", expected[faction]["total"], report[faction]["total"])
+		compare_rows(faction, expected[faction]["events"], report[faction]["events"])
+
+func _init() -> void:
+	var args := OS.get_cmdline_user_args()
+	var compare := not args.is_empty()
+	if compare and (args[0] != "--compare" or args.size() > 2):
+		printerr("Usage: event_distribution_test.gd [-- --compare [output.json]]")
+		quit(1)
+		return
+	var c := CampaignScript.new()
+	var err := c.load_tables()
+	if err != "":
+		printerr(err)
+		quit(1)
+		return
+	check_cards(c, check_lookup_keys(c))
+	var label := "event invariants"
+	if compare and failures == 0:
+		label = "event invariants and seeded comparison"
+		var report := seeded_report(c)
+		compare_report(report)
+		if args.size() == 2:
+			var out := FileAccess.open(args[1], FileAccess.WRITE)
+			if out == null:
+				check(false, "Cannot write report: " + args[1])
+			else:
+				out.store_string(JSON.stringify(report, "\t", true, true) + "\n")
+	print(label + ": " + ("PASS" if failures == 0 else "FAIL (%d)" % failures))
+	quit(0 if failures == 0 else 1)
