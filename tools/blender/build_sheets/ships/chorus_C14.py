@@ -71,14 +71,14 @@ FACE_D = 0.32         # the front: a low dome of flesh over the hull's front sec
 R_THROAT = 0.46       # the spine pore: deliberately modest (designs.md: "C14 is all chamber, its front deliberately modest")
 # the five launch openings (hangar 3): (id, station x, section angle, lean along x); the front view's five round the axis
 MOUTHS = (('L1', -3.5, math.pi / 2, -0.75),         # on the back at the stern, leaning aft
-          ('L2', -1.45, 0.42, -0.2), ('L3', -1.45, math.pi - 0.42, -0.2),    # high on the aft shoulders
-          ('L4', 2.55, -0.66, 0.16), ('L5', 2.55, math.pi + 0.66, 0.16))     # low on the forward flanks
+          ('L2', -1.6, 0.34, -0.25), ('L3', -1.6, math.pi - 0.34, -0.25),    # high on the aft shoulders
+          ('L4', 2.6, 0.06, 0.3), ('L5', 2.6, math.pi - 0.06, 0.3))          # on the rim at the forward corners (all five read from above)
 R_MOUTH = 0.84
 PATCH = (-0.15, 1.15, 1.15)    # the spore patch: station x, port offset y, radius
 # the teardrop sacs under the belly (spore feed and regrowth flesh): (station, section angle on the port side, radius)
 SACS = ((3.1, -1.3, 0.42), (2.0, -1.33, 0.5), (0.85, -1.27, 0.56), (-0.4, -1.32, 0.5), (-1.7, -1.26, 0.55), (-3.0, -1.32, 0.44),
         (0.25, -0.97, 0.4), (-1.1, -0.93, 0.46), (-2.45, -0.96, 0.38))
-SIPHONS = ((3.1, 0.3, 0.3), (-3.0, -0.2, 0.27))
+SIPHONS = ((0.9, -0.62, 0.3), (-3.0, -0.2, 0.27))
 VENTS = ((0.0, 0.62, 0.2, 2, (0, 0, 1)), (0.55, 0.05, 0.19, 3, (0, 1, 0.1)), (-0.55, 0.05, 0.19, 3, (0, -1, 0.1)), (0.0, -0.5, 0.17, 2, (0, 0, -1)))
 
 
@@ -165,7 +165,7 @@ def build(K):
     for fid, x, th, lean in MOUTHS:
         pos, nrm = K.hpt(x, th, out=-0.05)
         ax = (Vector(nrm) + Vector((lean, 0, 0))).normalized()
-        part = HP.launch_mouth(R_MOUTH, 1.9, neck=0.75, seed=hash(fid) % 97)
+        part = HP.launch_mouth(R_MOUTH, 1.9, neck=1.0, seed=hash(fid) % 97)
         K.organ(fid, part, pos, ax, fwd=(1, 0, 0), inv='launch_mouths', kind='hangar',
                 what='launch opening, %.1f across, on a neck of flesh; empty, a dim glow deep inside' % (2 * R_MOUTH),
                 note='a spore squadron is born deep in the chamber below and leaves through the mouth', aperture=(2.5, 0.0))
@@ -197,8 +197,8 @@ def build(K):
     # ---------------- the stern: four pulse vents and their membranes ----------------
     for k, (y, z, r, nt, od) in enumerate(VENTS):
         K.engine('E%d' % (k + 1), (-5.5, y, z), r, 0.9, bell=1.0, body_r=r * 1.35, inv='vents', src='picture',
-                 kw=dict(trail='membrane', trails=nt, trail_len=4.78, out_dir=od, seed=k + 3),
-                 note='pulse vent with %d trailing membrane veils lit from within, splayed away from the stern\'s centre' % nt)
+                 kw=dict(trail='veil', trails=2, trail_len=4.78, veil=3.6, fan=0.785, splay=30.0, out_dir=od, seed=k + 3),   # the family's veils (C12, R333)
+                 note='pulse vent with two wide trailing veils lit from within (the family\'s veil, as C12), splayed away from the stern\'s centre')
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents at the stern, the membranes streaming aft')
 
     # ---------------- grown detail on the hull ----------------
@@ -321,7 +321,7 @@ def build(K):
                                                           'The Chorus bursts and tears: sacs rupture first, then the body tears open along ragged lines (R186).'))
     K.point('core', 'hp_core', (0.1, 0.0, 0.0))
     # seven breach anchors (Carrier base 6, the Chorus +1 on the big ones): front 2, middle 3, stern 2, beside the sacs and folds
-    for i, (x, th, sec, side) in enumerate(((3.6, -0.15, 'prow', 1), (3.9, 1.1, 'prow', -1), (1.0, 0.05, 'mid', 1), (0.2, -0.9, 'mid', -1),
+    for i, (x, th, sec, side) in enumerate(((3.6, -0.15, 'prow', 1), (3.9, 1.1, 'prow', -1), (0.6, 0.35, 'mid', 1), (0.2, -0.9, 'mid', -1),
                                             (-0.9, -0.5, 'mid', 1), (-2.8, 0.55, 'eng', -1), (-3.9, -0.6, 'eng', 1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('breach', 'hp_breach_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd', section=sec, note='open hide between the folds')
@@ -345,7 +345,7 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette. R325: hard chitin with a little wet-flesh variety')
-    K.change('Five launch openings on necks of flesh, one on the back aft, a pair high on the aft shoulders, a pair low on the forward flanks',
+    K.change('Five launch openings on necks of flesh, one on the back at the stern, a pair high on the aft shoulders, a pair on the rim at the forward corners',
              'designs.md: five openings round the rim, evenly dispersed with wide stretches of plain flesh; the front view draws them round the axis, '
              'the plan round the disc; placed so each launches clear of every other part (fit check EXIT) and none sits in the vents\' jets. '
              'The job text said two openings; designs.md, the beauty and the sheet all draw five, so five are built (flagged to the Board)')
@@ -360,7 +360,7 @@ def build(K):
     K.change('Four pulse vents at the stern, the membranes cut to about 0.4 of the body\'s length',
              'factions.md: no nozzles, pulsing vents or trailing membranes; the picture\'s membranes are nearly as long again as the body, which would make '
              'the sac a small part of a 16.5 ship; cut so the whole ship is 16.5 front to membrane tip')
-    K.change('Siphons added, a pair forward on the upper flanks and a pair aft on the lower flanks', 'a ship in space must turn; the picture shows none; siphons, not nozzles')
+    K.change('Siphons added, a pair low on the flanks amidships and a pair low aft', 'a ship in space must turn; the picture shows none; siphons, not nozzles')
     K.change('Insides: a brood chamber under each opening, the spore store under the patch, the heart vat, two guts, spore feed stores over the sacs, regrowth tissue and the pulse bladder',
              'R209, R215: flesh, bone and organs through the whole body; the hangar is the body\'s own chambers')
     K.open_item('The belly between the sacs is designed here; the sheet has no underside view')
