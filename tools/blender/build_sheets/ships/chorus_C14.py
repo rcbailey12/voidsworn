@@ -25,7 +25,7 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C14_broo
 CONCEPT_VIEWS = dict(top=dict(box=(20, 40, 590, 680), largest=True, flip=False, rot=-90), side=dict(box=(605, 120, 1180, 700), largest=True, flip=False))
 CROPS = [('bow (the front folds and the spine pore)', (605, 200, 900, 560)), ('midships (the openings and the pore patch)', (760, 120, 1060, 640)),
          ('stern (membranes)', (950, 20, 1600, 560))]
-SHEET = dict(version=2, round='blockout v2, the Board\'s notes (issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
+SHEET = dict(version=3, round='blockout v3, the Board\'s notes on v2 (issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
              before='First full layout', before_note='The first complete C14 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.1, 2.0)    # a domed back, a round belly: a sac, no flat face anywhere
@@ -68,13 +68,13 @@ HULL = dense(KEY)
 PL = dict(size=(0.5, 1.05), thick=(0.02, 0.05), skip=0.15, stack=0.0, mats={'flesh': 5, 'hide': 3, 'flesh2': 2, 'scar': 0.3},
           rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.035)
 FACE_D = 0.32         # the front: a low dome of flesh over the hull's front section, the throat flush at its centre
-R_THROAT = 0.92       # the spine pore: a puckered dark sphincter, twice v1's (Board v1 note 2); still one modest weapon (designs.md)
+R_THROAT = 0.42       # the spine pore: a small dark pinch where the folds meet, no ring lip (Board v2 note 1); one modest weapon (designs.md)
 # the five launch openings (hangar 3): (id, station x, section angle, lean along x); the front view's five round the axis
-MOUTHS = (('L1', -3.6, math.pi / 2, -0.75),         # on the back at the stern, leaning aft
+MOUTHS = (('L1', -3.6, math.pi / 2, -0.45),         # on the back at the stern, leaning aft
           ('L2', -1.8, 0.34, -0.3), ('L3', -1.8, math.pi - 0.34, -0.3),    # high on the aft shoulders
           ('L4', 2.85, 0.06, 0.3), ('L5', 2.85, math.pi - 0.06, 0.3))          # on the rim at the forward corners (all five read from above)
 R_MOUTH = 1.05        # as big as the beauty's (Board v1 note 3), on taller necks with fat round lips
-NECK = 1.2
+NECK = 0.8           # short necks: fat round rings close to the rim (Board v2 note 5)
 # the honeycomb field round the spore patch (Board v1 note 4): on the upper front, about a fifth of the top, sunk in a raised rim
 # (centre station x, centre section angle, half length along x, half width across in world units); the patch turns at its front
 FIELD = (2.55, math.pi / 2 + 0.12, 1.75, 2.35)
@@ -95,7 +95,7 @@ def build(K):
     import random
     HP = _k.HP
 
-    hull = K.hull(HULL, 'flesh', shell=0.3, plates=dict(PL, seed=55, inv='hide'), rounded=True, pexp=PEXP, n=56, smooth=True, wobble=WOBBLE)
+    hull = K.hull(HULL, 'flesh', shell=0.3, rounded=True, pexp=PEXP, n=56, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the giant sac', hull, 'dark olive flesh', note='as long as it is wide, two thirds as tall: one central chamber of folded flesh')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
 
@@ -136,21 +136,21 @@ def build(K):
     face = K.hull_detail('face', (V, F), 'flesh')
     K.mass('Front: the puckered face', face, 'flesh', note='a low dome of flesh closing the front, the spine pore flush in it')
     L_ = 1.0
-    K.spinal('M1', (hx - (L_ - 0.12 * R_THROAT), THR[0], THR[1]), L_, r=R_THROAT, slot='F', weapon='bioplasma', inv='spine_pore', style='flush',
-             lip_r=R_THROAT * 1.15, teeth=9, seed=14, side=1, gland_at=0.4,
+    K.spinal('M1', (hx - (L_ - 0.12 * R_THROAT), THR[0], THR[1]), L_, r=R_THROAT, slot='F', weapon='bioplasma', inv='spine_pore', style='pinch',
+             lip_r=R_THROAT * 1.2, pinch=R_THROAT * 2.6, teeth=9, seed=14, side=1, gland_at=0.4,
              note='the spine pore: one small fleshy rimmed hole set in the front folds, a dark wet throat, the bile gland glowing deep inside')
     # the front skin (Board v1 note 1): one skin of the hull's own flesh over the face and the front quarter, folded by deep
     # creases that start at the rim and sink in toward the mouth (the beauty's puckered front); grooves cut in, nothing added
     rnd = random.Random(1155)
-    NCR = 13
+    NCR = 11
     creases = []
     for k in range(NCR):
-        creases.append((2 * math.pi * (k + 0.5) / NCR + rnd.uniform(-0.16, 0.16), rnd.uniform(-0.35, 0.35), rnd.uniform(1.45, 1.95), rnd.uniform(0.85, 1.15)))
+        creases.append((2 * math.pi * (k + 0.5) / NCR + rnd.uniform(-0.16, 0.16), rnd.uniform(-0.3, 0.3), rnd.uniform(1.75, 1.98), rnd.uniform(0.9, 1.1)))
 
     def x_back(t):   # where the skin ends behind the front: further forward on top, where the honeycomb field begins
         return 3.65 + 0.75 * max(0.0, math.sin(t)) ** 3
-    rho0 = R_THROAT * 1.32 / min(hw0, hz0)
-    EYE = (5.38, math.pi / 2 + 0.2, 0.2)   # the small eye-hole above the mouth (x, section angle, radius): a sense pit
+    rho0 = R_THROAT * 1.05 / min(hw0, hz0)
+    EYE = (5.38, math.pi / 2 + 0.2, 0.15)   # the small eye-hole above the mouth (x, section angle, radius): a sense pit
     fwd_mouths = [(x, th) for _, x, th, _ in MOUTHS if x > 1.0]
 
     def skin(s_, t):
@@ -164,10 +164,12 @@ def build(K):
         else:
             x = HULL[0][0] - 0.01 - (HULL[0][0] - 0.01 - x_back(t)) * (s_ - 1)
             q, n_ = K.hpt(x, t, out=0.0); q = Vector(q); n_ = Vector(n_); rad = _k.sec_at(HULL, x)[1]
-        # the swell of the folds: low at the lip (the lip stands proud), full over the face, sinking into the hull at the back edge
-        a = 0.1 + 0.15 * min(1.0, s_ / 0.35)
-        if s_ > 1.55:
-            a = 0.25 - 0.32 * min(1.0, (s_ - 1.55) / 0.45)
+        # the swell of the cushions (Board v2 note 2): pinched down into the mouth, fat over the face and the front, sinking into
+        # the hull at the back edge
+        u_ = min(1.0, s_ / 0.7)
+        a = 0.02 + 0.5 * u_ * u_ * (3 - 2 * u_)
+        if s_ > 1.5:
+            a = 0.52 - 0.6 * min(1.0, (s_ - 1.5) / 0.5)
         for cx, ct in fwd_mouths:   # the skin gives way round the forward openings' necks
             if s_ > 1.0:
                 d = math.hypot(q.x - cx, rad * math.atan2(math.sin(t - ct), math.cos(t - ct)))
@@ -179,9 +181,9 @@ def build(K):
             fade = min(1.0, (reach - s_) / 0.25)
             ang = a0 + tw * s_ + 0.05 * math.sin(4 * s_ + a0 * 3)
             dw = rad * abs(math.atan2(math.sin(t - ang), math.cos(t - ang)))
-            w = 0.075 + 0.07 * min(1.0, s_ / 1.5)
+            w = rad * 2 * math.pi / NCR * 0.2   # each lobe a rounded cushion between two deep folds
             g = max(g, dep * fade * math.exp(-(dw / w) ** 2))
-        off = a - (a + 0.06) * min(1.0, g)
+        off = a - (a + 0.1) * min(1.0, g)
         return q + n_ * off, n_, off
     NS, NT2 = 46, 300
     V, F, grid = [], [], {}
@@ -199,23 +201,30 @@ def build(K):
                 continue   # the eye-hole goes through the skin
             F.append(f)
     front = K.hull_detail('front_lobes', (V, F), 'flesh2', inv='front_lobes', kind='welt', subs=['welt'])
+    # the folds run dark: a thin wet line down the bottom of every crease
+    V, F = [], []
+    for a0, tw, reach, dep in creases:
+        pts = []; rads = []
+        for j in range(30):
+            s_ = 0.04 + (reach - 0.2) * j / 29
+            ang = a0 + tw * s_ + 0.05 * math.sin(4 * s_ + a0 * 3)
+            q, n_, off = skin(s_, ang); pts.append(q + n_ * 0.01); rads.append(0.035 + 0.035 * math.sin(math.pi * j / 29))
+        vv, ff = HP.tube(pts, rads, n=6, flat=0.5)
+        o = len(V); V += vv; F += [tuple(x + o for x in f_) for f_ in ff]
+    K.hull_detail('front_crease_lines', (V, F), 'maw')
     K.mass('Front folds', front, 'skin folds parted by deep creases', note='creases from the rim sinking in to the spine pore')
     # the eye-hole: a small dark sense pit above the mouth (the beauty's small upper hole); it tastes, it does not see (lore 5.8)
     q, n_, off = skin(1.0 + (HULL[0][0] - EYE[0]) / max(0.01, HULL[0][0] - x_back(EYE[1])), EYE[1])
     ev, ef = HP.pore(q, n_, EYE[2] * 0.8, depth=0.5, n=14)
-    rim = [q + (n_.orthogonal().normalized() * math.cos(2 * math.pi * k / 24) + n_.cross(n_.orthogonal().normalized()) * math.sin(2 * math.pi * k / 24)) * EYE[2] * 1.05
-           for k in range(25)]
-    rv, rf = HP.tube(rim, [EYE[2] * 0.32] * 25, n=8, cap0=False, cap1=False)
-    o = len(ev); ev += rv; ef += [tuple(x + o for x in f_) for f_ in rf]
     K.hull_detail('eye_hole', (ev, ef), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
     # pores over the folds (the front's pore field rides on the skin, not under it)
     V, F = [], []
-    for _ in range(240):
-        s_ = rnd.uniform(0.15, 1.85); t = rnd.uniform(0, 2 * math.pi)
+    for _ in range(90):
+        s_ = rnd.uniform(0.5, 1.85); t = rnd.uniform(0, 2 * math.pi)
         q, n_, off = skin(s_, t)
-        if off < 0.08:
-            continue   # never in a crease
-        vv, ff = HP.pore(q, n_, rnd.uniform(0.03, 0.06), n=9)
+        if off < 0.25:
+            continue   # on the cushions, never in a fold
+        vv, ff = HP.pore(q, n_, rnd.uniform(0.05, 0.09), n=10)
         o = len(V); V += vv; F += [tuple(x + o for x in f_) for f_ in ff]
     K.hull_detail('pores_front', (V, F), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
 
@@ -281,14 +290,14 @@ def build(K):
             pos, nrm = K.hpt(x, side_th(th, side), out=-0.05)
             hang = (Vector(nrm) * 0.5 + Vector((0, 0, -1))).normalized()
             fid = 'S%d%s' % (i + 1, sn)
-            sac = HP.sac(r, h=r * SAC_LEN, seed=70 + 2 * i + (side > 0), kind='sac', glow=1, hang=3.0)
+            sac = HP.sac(r, h=r * SAC_LEN, seed=70 + 2 * i + (side > 0), kind='sac', glow=1, hang=3.0, creases=1, veins=2)
+            for c_ in sac.comps:   # pale smooth teardrops (Board v2 note 4): the bulb in pale hide, nothing standing off it
+                if c_['name'] == 'sac':
+                    c_['mat'] = 'hide'
             cz_ = r * SAC_LEN - r
-            # the drip: each teardrop draws out to a point at its free end (the picture's hanging drops)
-            # the neck: the sac hangs from the belly on a soft stalk that swells into the bulb (a teardrop, never a ball floating free)
+            # the neck: the sac hangs from the belly on a thin soft stalk that swells into the bulb (a teardrop, never a ball floating free)
             sac.add('root_neck', 'mount', 'flesh', HP.tube([Vector((0, 0, -0.05)), Vector((0, 0, cz_ * 0.35)), Vector((0, 0, cz_ * 0.7)), Vector((0, 0, cz_ - r * 0.3))],
-                                                          [r * 0.66, r * 0.48, r * 0.55, r * 0.85], n=14))
-            sac.add('crease_drip', 'body', 'flesh2', HP.tube([Vector((0, 0, cz_ + r * 0.82)), Vector((0, 0, cz_ + r * 1.2)), Vector((0, 0, cz_ + r * 1.6))],
-                                                            [r * 0.42, r * 0.16, r * 0.02], n=10))
+                                                          [r * 0.55, r * 0.3, r * 0.34, r * 0.8], n=14))
             K.organ(fid, sac, pos, hang, fwd=(1, 0, 0), inv='teardrop_sacs',
                     what='teardrop sac, %.1f across' % (2 * r), note='spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly')
     K.mass('Teardrop sacs', _bpy.data.objects['S3p_mount_flesh'], 'flesh sacs', note='a fringe of teardrops under the belly')
@@ -303,7 +312,7 @@ def build(K):
     # ---------------- the stern: four pulse vents and their membranes ----------------
     for k, (y, z, r, nt, od) in enumerate(VENTS):
         K.engine('E%d' % (k + 1), (-5.5, y, z), r, 0.9, bell=1.0, body_r=r * 1.35, inv='vents', src='picture',
-                 kw=dict(trail='veil', trails=2, trail_len=4.59, veil=3.6, fan=0.785, splay=30.0, out_dir=od, seed=k + 3),   # the family's veils (C12, R333)
+                 kw=dict(trail='veil', trails=2, trail_len=4.55, veil=3.6, fan=0.785, splay=30.0, out_dir=od, seed=k + 3),   # the family's veils (C12, R333)
                  note='pulse vent with two wide trailing veils lit from within (the family\'s veil, as C12), splayed away from the stern\'s centre')
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents at the stern, the membranes streaming aft')
 
@@ -351,30 +360,34 @@ def build(K):
         vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
         o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
     K.hull_detail('body_folds', (V, F), 'flesh2', inv='body_folds', kind='welt', subs=['welt'])
+    # fine wrinkles over the sac between the folds (Board v2 note 3: wrinkles and pores, never dots in rows or seams)
+    V, F = [], []
+    for k in range(150):
+        th0 = rnd.uniform(-1.2, math.pi + 1.2); xa = rnd.uniform(-4.2, 3.4); ln = rnd.uniform(0.5, 1.1); ang = rnd.uniform(-0.6, 0.6)
+        pts = []; nrms = []; ws = []; hs = []
+        for j in range(6):
+            t = j / 5
+            x = xa - ln * t * math.cos(ang); th = th0 + ln * t * math.sin(ang) / 4.0 + 0.04 * math.sin(3 * t + k)
+            if x < -4.6 or x > x_back(th) - 0.3 or in_field(x, th, 0.4) < 1.0 or any(abs(x - cx) < 2.1 and abs(math.atan2(math.sin(th - ct), math.cos(th - ct))) < 0.55 for cx, ct in keep_clear):
+                break
+            p_, n_ = K.hpt(x, th, out=-0.01); pts.append(p_); nrms.append(n_)
+            env = math.sin(math.pi * (0.1 + 0.8 * t)); ws.append(0.07 * env + 0.01); hs.append(0.03 * env + 0.005)
+        if len(pts) < 4:
+            continue
+        vv, ff = HP.welt(pts, nrms, ws, hs, n=4)
+        o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
+    K.hull_detail('body_wrinkles', (V, F), 'flesh2', inv='body_folds', kind='welt', subs=['welt'])
     # pore fields round the front and over the shoulders (the Chorus has no eyes: it tastes)
-    for name, x0, x1, t0, t1, nper in (('shoulder', -3.0, 3.0, 1.0, 2.1, 160),):
+    for name, x0, x1, t0, t1, nper in (('shoulder', -3.0, 3.0, 1.0, 2.1, 70),):
         V, F = [], []
         for _ in range(nper):
             x = rnd.uniform(x0, x1); th = rnd.uniform(t0, t1)
             if in_field(x, th, 0.5) < 1.0 or any(abs(x - cx) < 2.3 and abs(math.atan2(math.sin(th - ct), math.cos(th - ct))) < 0.55 for cx, ct in keep_clear):
                 continue
             pos, nrm = K.hpt(x, th, out=0.0)
-            vv, ff = HP.pore(pos, nrm, rnd.uniform(0.03, 0.06), n=9)
+            vv, ff = HP.pore(pos, nrm, rnd.uniform(0.06, 0.1), n=10)
             o = len(V); V += vv; F += [tuple(q + o for q in f) for f in ff]
         K.hull_detail('pores_' + name, (V, F), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
-    # veins: from the belly sacs up the flanks to the openings' chambers
-    for side in (1, -1):
-        V, F = [], []
-        for x0, x1 in ((1.0, 2.55), (-1.7, -1.45), (-0.35, -2.25)):
-            pts = []; nrms = []
-            for j in range(14):
-                t = j / 13
-                x = x0 + (x1 - x0) * t
-                th = side_th(-1.3 + (0.85 if x1 != -2.25 else 1.2) * t, side) + 0.05 * math.sin(j)
-                p_, n_ = K.hpt(x, th, out=0.0); pts.append(p_); nrms.append(n_)
-            vv, ff = HP.welt(pts[:-3], nrms[:-3], 0.08, 0.04, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-        K.hull_detail('veins_%s' % ('p' if side > 0 else 's'), (V, F), 'vein', inv='veins', kind='vein', subs=['vein', 'branch'])
     # scars: regrowth patches with knit ridges (the picture's scarred flesh)
     for k, (x, th, r) in enumerate(((0.2, 0.8, 0.45), (0.9, 2.65, 0.5), (-0.6, -0.4, 0.42), (-3.4, 1.9, 0.4), (2.0, -0.35, 0.38), (-2.6, 2.9, 0.36))):
         pos, nrm = K.hpt(x, th, out=0.0)
@@ -388,7 +401,7 @@ def build(K):
     K.colour('wet dark maw, dim bile at the floor', 3.0, -2.5, 'inside the five openings')
     K.colour('bile yellow-green light', 6.2, 5.4, 'the spine pore\'s gland')
     K.colour('bile yellow-green light', -5.15, -10.3, 'the vents and the light in the membranes')
-    K.colour('dim bile', 4.0, -3.0, 'the veins, the sac windows, the pores')
+    K.colour('dim bile', 4.0, -3.0, 'the sac windows, the pores')
 
     # ---------- INSIDE: flesh, bone and organs; the hangar is the sac's own chambers ----------
     K.septum('lower', -1.3, 4.8, -4.0)
@@ -449,16 +462,16 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
-    K.change('Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor',
+    K.change('No modelled hide pads (their pores read as rivets and their edges as panel seams, the Board on v2); the hide\'s grown plates are paint (stage 5). Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette. R325: hard chitin with a little wet-flesh variety')
     K.change('Five launch openings on necks of flesh, one on the back at the stern, a pair high on the aft shoulders, a pair on the rim at the forward corners',
              'designs.md: five openings round the rim, evenly dispersed with wide stretches of plain flesh; the front view draws them round the axis, '
              'the plan round the disc; placed so each launches clear of every other part (fit check EXIT) and none sits in the vents\' jets. '
              'The job text said two openings; designs.md, the beauty and the sheet all draw five, so five are built (flagged to the Board)')
-    K.change('The openings are drawn empty: a deep dark chamber 2.2 deep, a dim glow at its floor, nothing in it; 2.1 across with fat round lips on necks 1.2 tall (blockout v2, the Board\'s note 3)',
+    K.change('The openings are drawn empty: a deep dark chamber 2.2 deep, a dim glow at its floor, nothing in it; 2.1 across, fat round lips on short necks 0.6 tall close to the rim (the Board on v1 note 3 and v2 note 5)',
              'Ryan, Nov 13: no pods shown; squadron capacity (hangar 3) is an internal fact, a brood chamber under each opening')
-    K.change('One spine pore (bioplasma F): a puckered dark sphincter 1.8 across at the centre of the front, the skin folds creased in to it; the small hole above it is a sense pit (an eye-hole that tastes)',
-             'data.js b_brood has one bioplasma slot: one throat; blockout v2 (the Board\'s notes 1 and 2): creases cut in, not lobes added, the mouth twice v1\'s, the eye-hole added')
+    K.change('One spine pore (bioplasma F): a small dark pinch where the front\'s cushioned folds meet, no ring lip; the small hole above it is a sense pit (an eye-hole that tastes)',
+             'data.js b_brood has one bioplasma slot: one throat; blockout v3 (the Board on v2, notes 1 and 2): the v2 ring lip read as a porthole, so the mouth is a pinch; the front is rounded cushions between deep dark folds')
     K.change('The honeycomb is a sunk field of pores over the upper front (about a fifth of the top) in a raised rim; the spore cloud (spores T) is the ragged cluster at its front that leans toward the craft (a turret)',
              'the weapon-match table puts spores on a turning spore organ, and a turret the size of the field could not turn on a curved body; the three biggest pores fire the three shots of each volley. Blockout v2, the Board\'s note 4')
     K.change('Eighteen big teardrop sacs on soft necks in a fringe low on the belly\'s edge (nine a side), hanging below the outline (blockout v2, the Board\'s note 5)',

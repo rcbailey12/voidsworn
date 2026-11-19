@@ -305,6 +305,7 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
     run back from there into the hull: mount); the mouth's front at x = length. r: the opening's radius.
     folded (C10): heavy rolled fold lips stacked round the mouth and fold wrinkles running back over the root;
     flared (C11): one wide flared rim rolled outward, the throat wall wrinkled behind it.
+    pinch (C14): no lip; pucker folds gather into a small dark point (kw pinch: how far the folds reach).
     Inside: a sphincter ring, a ring of chitin spines leaning in and forward (the spines it spits), a dark bore, and at the
     back of the bore the bile gland glowing yellow-green."""
     p = Part('spinal')
@@ -386,6 +387,25 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             p.add('fold%d' % k, 'mount', 'flesh2', tube(q, [r * 0.05, r * 0.06, r * 0.03], n=5, flat=0.6))
         p.add('lipt', 'mount', 'tissue', tube([Vector((L * 1.0 - r * 0.12, r * 0.86 * math.cos(2 * math.pi * k / 40), r * 0.86 * math.sin(2 * math.pi * k / 40)))
                                                 for k in range(41)], [r * 0.07] * 41, n=6, cap0=False, cap1=False))
+    elif style == 'pinch':
+        # a pinch (C14 v3, the Board on the beauty): no ring lip at all; the hull's own folds gather into a small dark
+        # puckered point. Pucker folds run in from pinch=R (default 2.4 r) round the mouth, sinking as they reach the hole,
+        # darkening to raw tissue and wet maw at the very edge; the sphincter, spines and bore sit inside as for every throat.
+        import random
+        rp = random.Random(seed + 47)
+        RP = kw.get('pinch') or r * 2.4
+        for k in range(20):
+            a = 2 * math.pi * (k + rp.uniform(-0.3, 0.3)) / 20
+            tw = rp.uniform(-0.25, 0.25); ln = rp.uniform(0.7, 1.0)
+            pts = []; rad = []
+            for j in range(7):
+                t = j / 6; rr_ = r * 0.92 + (RP * ln - r * 0.92) * (1 - t)
+                aa = a + tw * (1 - t)
+                pts.append(Vector((L * 1.0 - r * 0.28 * t * t + r * 0.06 * (1 - t), rr_ * math.cos(aa), rr_ * math.sin(aa))))
+                rad.append(r * (0.06 + 0.12 * math.sin(math.pi * (0.15 + 0.7 * (1 - t)))))
+            p.add('fold%d' % k, 'mount', 'tissue' if k % 2 else 'flesh2', tube(pts, rad, n=6, flat=0.65))
+        # the wet dark edge of the hole: a thin sunk band, never a raised ring
+        p.add('lipt', 'mount', 'maw', revolve([(L * 1.0 - r * 0.1, r * 1.12), (L * 1.0 - r * 0.24, r * 0.97), (L * 1.0 - r * 0.42, r * 0.92)], 40))
     elif style == 'gland':
         # a spine gland (C13, the spitter, issue 1154): a knoll of the hull's own flesh with a puckered vent at its crown and
         # short bone spines growing out of the knoll round it (the spines it spits). No mouth, no collar, no rim standing
