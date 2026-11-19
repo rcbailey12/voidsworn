@@ -971,6 +971,9 @@ test('BF-1 clearSpawns preserves shape-defining center terrain', () => {
 
 test('AI-1 veteran brace decision survives the mid-move volley path', async () => {
   setAiLevel(G, 'veteran');
+  // issue 1160: Veteran stops short of guns that can move into range (AI_REACH_W .8); pin the old .2 so this probes the brace path alone
+  runIn('AI_REACH_W=.2');
+  try {
   const B = probeBattle(G, { player: ['penitent', 'penitent', 'penitent'], enemies: ['d_jackal'], fac: 'deathless', seed: 11, arena: 'strip' });
   clearTerrain(G);
   const pens = B.units.filter(u => u.side === 'player');
@@ -990,10 +993,14 @@ test('AI-1 veteran brace decision survives the mid-move volley path', async () =
   G._sandbox.__u = m;
   const threat = runIn('evalThreat(__u, alive("player"))');
   return 'a veteran ship at ' + Math.round(m.hp / m.maxHp * 100) + '% hull moved ' + d0 + ' to ' + d1 + ' hexes from the enemy line, fired nothing, and ended unbraced under ' + Math.round(threat) + ' expected threat: the mid-move volley path returns before the veteran brace decision, whose conditions its numbers meet (threat over 45% of its ' + m.hp + ' hp, own offense nil), and the volley path\'s own fallback brace demands hp under 50%';
+  } finally { runIn('AI_REACH_W=.8'); }
 });
 
 test('AI-3 death-cliff weight scales with ship value', async () => {
   setAiLevel(G, 'veteran');
+  // issue 1160: pin the old .2 move-into-range weight so the start hex stays safe and this probes the death cliff alone
+  runIn('AI_REACH_W=.2');
+  try {
   const trap = offH(12, 7);
   const sweep = async (cp) => {
     for (const maxHp of [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 240, 280, 320, 360, 400, 480, 560]) {
@@ -1024,6 +1031,7 @@ test('AI-3 death-cliff weight scales with ship value', async () => {
   if (cheap == null) return 'scenario did not construct: even the cp1 frigate never took the death-cliff hex in the sweep, so there is no switch point to compare';
   if (expensive == null || expensive > cheap) return '';
   return 'the cp1 hull accepted the lethal hex at target max hull ' + cheap + ', and the cp5 hull accepted it at ' + expensive;
+  } finally { runIn('AI_REACH_W=.8'); }
 });
 
 test('AI-4 a ship with no bearing guns kites instead of closing', async () => {

@@ -665,9 +665,9 @@ function nemFleeCheck(){ if(!B||!B.nem||!B.nemFlee||B.nemFled||B.over) return; c
   B.nemFled=true; nemSig('flee_battle'); for(const e of alive('enemy').filter(u=>!u.isSq&&!u.transport)){ e.dead=true; e.fled=true; try{ if(typeof fxWithdraw==='function') fxWithdraw(e); }catch(x){} }
   log(`${f.name} breaks off and jumps out with what is left of his fleet. He will be back.`,'s'); checkEnd(); }
 // R42 personality weights for his ships in the AI's move scoring and target choice
-function nemProf(u,prof){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||((!P||!P.ai)&&!F)) return prof; const a=(P&&P.ai)||{}, o=Object.assign({},prof); if(a.tw) o.tw=prof.tw*a.tw; if(a.range!=null) o.range=a.range; if(a.flagFront&&u.nemFlag) o.tw=prof.tw*.6;
+function nemProf(u,prof){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||((!P||!P.ai)&&!F)) return prof; const a=(P&&P.ai)||{}, o=Object.assign({},prof); if(a.tw) o.tw=prof.tw*a.tw; if(a.range!=null) o.range=a.range; if(a.flagFront&&u.nemFlag) o.tw=prof.tw*.6; if(a.rear) o.rear=a.rear;
   if(F){ if(F.range!=null) o.range=Math.max(o.range||0,F.range); if(F.charge&&u.nemFlag) o.tw=o.tw*.7; } return o; } // R42 faction weights on top of his personality: Ithar keep range, a Voidsworn flagship charges
-function nemTargetBonus(u,t){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||!t) return 0; const a=(P&&P.ai)||{}; let v=0; if(a.focusWeak||(F&&F.focusWeak)) v+=20*(1-t.hp/t.maxHp); if(a.focusFlag&&t.pflag) v+=25; if(F&&F.hunt&&u.nemFlag&&t===nemDuelTarget()) v+=30; return v; } // Ithar pick off the weakest; a Voidsworn flagship hunts yours
+function nemTargetBonus(u,t){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||!t) return 0; const a=(P&&P.ai)||{}; let v=0; if(a.focusWeak||(F&&F.focusWeak)) v+=20*(1-t.hp/t.maxHp); if(a.focusFlag&&t.pflag) v+=25; if(a.rear&&!t.isSq){ const qd=shieldQuad(t,u); v+=(qd===2?10:qd===1||qd===3?4:0)*a.rear; } if(F&&F.hunt&&u.nemFlag&&t===nemDuelTarget()) v+=30; return v; } // Ithar pick off the weakest; a Voidsworn flagship hunts yours
 // R42 signatures: his faction behaviour firing, for the battle voice (G1: emit {t:'nem_signature', kind}) and the campaign record
 function nemSig(kind){ if(!B||!B.nem) return; (B.nemSigs=B.nemSigs||[]).push({kind,r:B.round}); if(typeof nemSignature==='function') nemSignature(kind); }
 // R42 weaknesses found by triggering them: logged once, known for the rest of the run (finishBattle merges B.nemFound). No random draws.
@@ -1295,8 +1295,9 @@ function aiObjScore(u,v){ const o=B.obj; if(!o||u.isSq) return 0;
     // veterans block the exit lane in front of the leading ship, harder the further it has got
     const L=pl.find(p=>p.q+Math.floor(p.r/2)===lead), c0=o.c0!=null?o.c0:(o.c0=boardBounds().c0), prog=clamp((lead-c0)/Math.max(1,o.exitC-c0),0,1);
     return -(Math.max(0,lead+1-c)*1.2+Math.max(0,Math.abs(v.r-L.r)-2)*.5)*(1+1.5*prog); }
-  if(vet&&o.type==='intercept'){ let d=99; for(const x of B.units) if(x.transport&&!x.dead) d=Math.min(d,hdist(v,x)); return d<99?-Math.max(0,d-3)*1.5:0; } // escorts screen their convoy
-  if(vet&&o.type==='hold'){ // the relay pulls only the two enemy ships nearest it; the rest fight nearby. A ship already holding it uncontested is paid to stay
+  if(o.type==='intercept'){ const tr=B.units.filter(x=>x.transport&&!x.dead); if(!tr.length) return 0; const dd=x=>Math.min(99,...tr.map(t=>hdist(x,t))); // issue 1160: the two escorts nearest the convoy screen it at both levels; the rest fight
+    const esc=caps('enemy').filter(x=>!x.transport).sort((a,b)=>dd(a)-dd(b)||(a.id<b.id?-1:1)), k=esc.indexOf(u); if(k<0||k>1) return 0; return -Math.max(0,dd(v)-3)*1.5; }
+  if(o.type==='hold'){ // issue 1160: both levels. The relay pulls only the two enemy ships nearest it; the rest fight nearby. A ship already holding it uncontested is paid to stay
     const mine=caps('enemy').filter(x=>!x.transport).sort((a,b)=>hdist(a,o.hex)-hdist(b,o.hex)||(a.id<b.id?-1:1)), k=mine.indexOf(u), d=hdist(v,o.hex);
     if(k<0||k>1) return -Math.max(0,d-5)*.4;
     const held=hdist(u,o.hex)<=1&&!caps('player').some(p=>hdist(p,o.hex)<=1); return -d*1.6*urg+(held&&d<=1?4:0); }
@@ -2119,13 +2120,23 @@ function aiVet(){ return (typeof AI_LEVEL==='undefined'?'veteran':AI_LEVEL)==='v
 // v53-D: guns that already fired this round (alternating) are spent; the after-move term needs the gun to bear after a one-step turn and a clear line
 function evalThreatVet(v,foes){ let tot=0; for(const p of foes){ const d=hdist(p,v); if(d>13) continue; let ls=null;
     for(const w of p.weapons){ if(w.cdLeft>1||w.off>1||!aiGunLive(p,w)) continue; if(d<=w.r&&inArc(p,v,w.arc)){ const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; }
-      else if(d<=w.r+Math.max(1,(p.speed||2)-1)&&aiArcSoon(p,v,w.arc)&&(ls==null?(ls=los(p,v)):ls)){ const e=expectedVs(p,w,v); tot+=(e.hull+e.shield*.2)*.2; } } } return tot; }
+      else if(d<=w.r+Math.max(1,(p.speed||2)-1)&&aiArcSoon(p,v,w.arc)&&(ls==null?(ls=los(p,v)):ls)){ const e=expectedVs(p,w,v); tot+=(e.hull+e.shield*.2)*AI_REACH_W; } } } return tot+aiStormCost(v); }
+// issue 1160 (Veteran tuning): a gun that can move into range and fire before this ship acts again counts 0.8 of a gun already bearing (was 0.2),
+// so a Veteran does not step just inside the reach of guns that will strike first
+var AI_REACH_W=.8; // a var so the AI tests can pin the old weight to probe the brace and death-cliff paths alone
 // can this gun still fire before the round ends? In alternating play a gun that fired (or a braced hull) is done until the next round; flak never fires at ships
 function aiGunLive(p,w){ if(w.k==='flak') return false; if(B&&B.alt&&(w.fired||p.braced)) return false; return true; }
 // would the target sit in this arc now, or after a one-step turn (if the ship has a turn)?
 function aiArcSoon(p,v,arc){ if(arc==='T'||inArc(p,v,arc)) return true; if(!((p.turns||0)>0)) return false; const f=p.facing; return inArc({q:p.q,r:p.r,facing:(f+1)%6},v,arc)||inArc({q:p.q,r:p.r,facing:(f+5)%6},v,arc); }
 // a position that lines up a ram for next activation
-function ramSetup(v,u){ const d=DIRS[v.facing]; let q=v.q,r=v.r; for(let i=0;i<=(u.speed||2);i++){ q+=d[0]; r+=d[1]; if(!onBoard(q,r)||blocks(terr(q,r))) return 0; const o=unitAt(q,r); if(o&&o!==u){ return (o.side!==u.side&&!o.isSq&&i>=1)?ramEstimate(Object.assign(Object.create(u),{q:v.q,r:v.r,facing:v.facing}),o).dmg:0; } } return 0; }
+// issue 1160: only the movement left after this move counts (the ram after the volley, as tacticRam makes it); a ram lined up for next round
+// meets a target that has moved, so it scores nothing
+function ramSetup(v,u,left){ if(left==null) left=u.speed||2; if(left<1) return 0; const d=DIRS[v.facing]; let q=v.q,r=v.r; for(let i=0;i<=left;i++){ q+=d[0]; r+=d[1]; if(!onBoard(q,r)||blocks(terr(q,r))) return 0; const o=unitAt(q,r); if(o&&o!==u){ return (o.side!==u.side&&!o.isSq&&i>=1)?ramEstimate(Object.assign(Object.create(u),{q:v.q,r:v.r,facing:v.facing}),o).dmg:0; } } return 0; }
+// issue 1160: an ion storm drains 10 shield from a shielded hull at the start of its turn, so both threat models (and every side and level
+// that reads them) count that cover as lost when a ship would end its move in one
+function aiStormCost(v){ return !v.isSq&&v.shMax>0&&terr(v.q,v.r)==='storm'?Math.min(10,v.shMax):0; }
+// issue 1160 (Cunning Nemesis, rear flag): a hex behind a ship (or on its flank) that a ready gun reaches from there; the best one counts
+function aiRearScore(v,ready,foes){ let best=0; for(const f of foes){ if(f.isSq) continue; const qd=shieldQuad(f,v), k=qd===2?8:qd===1||qd===3?3:0; if(k<=best) continue; if(ready.some(w=>inReach(v,w,f))) best=k; } return best; }
 // the fleet-wide focus target: the most valuable ship that is closest to dying
 function aiFocusTarget(){ const sh=aiShooters(); let best=null,bv=0; for(const t of alive('player')){ if(t.isSq) continue; const v=aiFocusVal(t,sh); if(v>bv){bv=v;best=t;} } return best; }
 // v53-D: value over effective hull, priced the way expectedVs will price it (brace, guard aura, Iron Command), and worth less when few of our guns can reach it this turn
@@ -2152,7 +2163,7 @@ function evalThreat(v, foes){
   let tot=0;
   for(const p of foes){ if(hdist(p,v)>9) continue;
     for(const w of p.weapons){ if(w.cdLeft>1||w.off>1||!aiGunLive(p,w)) continue; if(hdist(p,v)>w.r) continue; if(!inArc(p,v,w.arc)) continue; const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; } }
-  return tot;
+  return tot+aiStormCost(v); // issue 1160: ion storm drain
 }
 // v53-D: the volley primary is re-picked before every gun from current hull and shields, with damage counted only up to the hull a target has left
 // (a 2-hull wreck is not worth a full broadside); a heavy gun leaves a kill that a lighter ready gun can make to that gun and fires elsewhere
@@ -2272,11 +2283,12 @@ async function aiUnit(u){
       const vet=vet0, focus=focus0;
       const off=vet?evalOffenseVet(v,ready,foes,focus):evalOffense(v,ready,foes);
       const threat=vet?evalThreatVet(v,foes):evalThreat(v,foes);
-      const prof=nemProf(u,(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn), tw=(u.isSq?.15:!vet?.3:u.flagship?.65:aiHurtW(u,prof))*prof.tw; // AI polish: smooth caution curve with hysteresis
+      const prof=nemProf(u,(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn), tw=(u.isSq?.15:vet&&u.flagship?.65:aiHurtW(u,prof))*prof.tw; // AI polish: smooth caution curve with hysteresis (issue 1160: both levels)
       // A 3 CP hull keeps the old price. Limit the spread to keep fleets engaged.
       let score=off-threat*tw; if(vet&&threat>=u.hp) score-=25+3*(clamp(u.t.cp||1,1,7)-3);
-      if(vet&&!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
-      if(vet&&!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u)*.35;
+      if(!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
+      if(!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u,Math.min(u.mp-s.cost,(u.speed||2)-(u.st&&u.st.engine||0)))*.35;
+      if(!u.isSq&&prof.rear) score+=aiRearScore(v,ready,foes)*prof.rear; // issue 1160: a persona with the rear flag (Cunning) works round to your flanks
       if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=flE; if(fl){ const dv=hdist(v,fl); score-=Math.max(0,dv-3)*(escIn>=2?.6:2); if(dv<=3) for(const x of escO) if(hdist(x,v)===1) score-=1; } } // two escorts in the ring cap the pull, and escorts spread out instead of stacking
       if(off<=0||unloaded){
         const hd=Math.min(99,...approachTargets.map(f=>hdist(v,f))), nd=fieldDist(PF,v,hd);
@@ -2284,7 +2296,6 @@ async function aiUnit(u){
       } // travel distance, so a hole or a rock wall between us is not a shortcut
       score-=s.cost*.05;
       if(!u.isSq){ score-=torpThreat(u,v)*.9; score-=syncPull(u,v)*(vet?2:1.2)*(u.nem&&B.nemLine?2:1); } // B3: step out of incoming torpedo lanes; Hegemony keeps formation on its anchor
-      if(B.obj&&B.obj.type==='hold'&&!u.isSq&&!vet) score-=hdist(v,B.obj.hex)*1.6; // veterans: aiObjScore (two nearest, urgency)
       score+=aiObjScore(u,v); score+=aiWellScore(u,v);
       if(score>bestScore){ bestScore=score; best=s; }
     }
