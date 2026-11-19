@@ -223,7 +223,7 @@ def build(K):
             K.mass('Band %s lip, %s' % (lip, nm), ob, 'darker iron', note='the armoured shelf over (under) the plated band; its ends are angled')
         for i, x in enumerate((1.05, 0.35, -0.35, -1.85)):
             p, n = band_pt(x, side)
-            K._surface_part('U%d%s' % (i + 1, nm[0]), HP.vent(0.15, 0.06, 3, depth=0.025, fr=0.012), tuple(p + n * 0.045), tuple(n), (0, 0, 1), 'band_louvres',
+            K._surface_part('U%d%s' % (i + 1, nm[0]), HP.vent(0.15, 0.06, 3, depth=0.025, fr=0.012), tuple(p + n * 0.042), tuple(n), (0, 0, 1), 'band_louvres',
                             'band louvre 0.15 x 0.06', 'vent', 'picture', 'a heat louvre in the plated band (the gallery spaces behind it breathe out here)', aperture=0.4)
     K.mark('gun_deck', 'belt', ['band', 'plate'])
 
@@ -318,7 +318,11 @@ def build(K):
     K.mass('Dorsal power trunk', K.loft_rings('S9_trunk', tr, 'siron2'), 'darker iron', note='armoured conduits from the reactor to the repeater (the concept\'s long centre rail)')
     for i in range(8):
         x = 1.75 - i * 0.28
-        K.rib('S9_trunkband_%d' % i, [(x, 0.053, deck_z(x, 0) - 0.004), (x, 0.0, deck_z(x, 0) + 0.046), (x, -0.053, deck_z(x, 0) - 0.004)], w=0.018, t=0.012, m='sworn', keep_r=0.03)
+        n0 = len(K.keepouts)
+        K.rib('S9_trunkband_%d' % i, [(x, 0.053, deck_z(x, 0) - 0.004), (x, 0.0, deck_z(x, 0) + 0.046), (x, -0.053, deck_z(x, 0) - 0.004)], w=0.018, t=0.012, m='sworn')
+        # the kit's rib keeps plates 0.45 clear, a capital hull's size: on this frigate that cleared the whole deck round the
+        # trunk, so the band's own keep-outs shrink to about its width (kept in the sheet so the shared kit.py is unchanged)
+        K.keepouts[n0:] = [(c, 0.03) for c, _ in K.keepouts[n0:]]
     K.mark('trunk', 'spine', ['block', 'step', 'slit'])
 
     # ---------------- fittings ----------------
