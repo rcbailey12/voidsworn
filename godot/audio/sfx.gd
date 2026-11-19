@@ -34,6 +34,9 @@ var _ambient_duck := 0.0
 # Issue 771: the mix ducks under a core flash and can hold a beat of near-silence after a capital death.
 # legacy = the old dry/unducked behavior, used only by the listening-page bake to render the before pass.
 var legacy := false
+# Issue 1217: main.gd's front-end sound node loads only the cues whose names start with this ("ui_"), and only their
+# clips, so the title and setup screens get their sounds without loading the battle's.
+var only := ""
 var _base_sfx_db := 0.0
 var _duck_db := 0.0
 var _duck_until := 0.0
@@ -50,8 +53,19 @@ func _ready() -> void:
 	var t0 := Time.get_ticks_msec()
 	if FileAccess.file_exists("res://audio/cues.json"):
 		cues = JSON.parse_string(FileAccess.get_file_as_string("res://audio/cues.json"))
+	var want := {}
+	if only != "":
+		for k in cues.keys():
+			if not str(k).begins_with(only):
+				cues.erase(k)
+				continue
+			for L in cues[k]["layers"]:
+				if L.has("s"):
+					want[L["s"]] = true
 	var idx = JSON.parse_string(FileAccess.get_file_as_string("res://audio/clips/index.json")) if FileAccess.file_exists("res://audio/clips/index.json") else {}
 	for k in idx:
+		if only != "" and not want.has(k):
+			continue
 		var a: Array = []
 		for f in idx[k]:
 			var s := _load("res://audio/clips/" + f)
