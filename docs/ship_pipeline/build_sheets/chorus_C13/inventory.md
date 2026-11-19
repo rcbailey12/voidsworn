@@ -163,10 +163,10 @@ Concept counts read off the concept sheet by eye (C13 sheet: bow = the nose bulb
 | bow/below | 2 | 4 | Hull: the broad lumpy body; Bile sac 1 (port); Bile sac 2 (port); Hanging sac 1 |
 | mid/top | 6 | 13 | Hull: the broad lumpy body; Spine gland W2; Spine gland W3; Spine bed; Back and shoulder knolls; Bile sac 2 (port); Bile sac 3 (port); Bile sac 4 (port); Bile sac 2 (starboard); Bile sac 3 (starboard); Hanging sac 1; Hanging sac 2; Hanging  |
 | mid/side | 6 | 11 | Hull: the broad lumpy body; Spine gland W2; Spine gland W3; Spine bed; Back and shoulder knolls; Bile sac 2 (port); Bile sac 3 (port); Bile sac 4 (port); Hanging sac 1; Hanging sac 2; Hanging sac 3 |
-| mid/below | 4 | 7 | Hull: the broad lumpy body; Bile sac 2 (port); Bile sac 3 (port); Bile sac 2 (starboard); Hanging sac 1; Hanging sac 2; Hanging sac 3 |
-| stern/top | 3 | 7 | Hull: the broad lumpy body; Spine bed; Back and shoulder knolls; Bile sac 4 (port); Bile sac 4 (starboard); Hanging sac 3; Vents |
+| mid/below | 4 | 8 | Hull: the broad lumpy body; Bile sac 2 (port); Bile sac 3 (port); Bile sac 2 (starboard); Bile sac 3 (starboard); Hanging sac 1; Hanging sac 2; Hanging sac 3 |
+| stern/top | 3 | 8 | Hull: the broad lumpy body; Spine bed; Back and shoulder knolls; Bile sac 4 (port); Bile sac 3 (starboard); Bile sac 4 (starboard); Hanging sac 3; Vents |
 | stern/side | 3 | 6 | Hull: the broad lumpy body; Spine bed; Back and shoulder knolls; Bile sac 4 (port); Hanging sac 3; Vents |
-| stern/below | 2 | 3 | Hull: the broad lumpy body; Bile sac 4 (starboard); Hanging sac 3 |
+| stern/below | 2 | 4 | Hull: the broad lumpy body; Bile sac 3 (starboard); Bile sac 4 (starboard); Hanging sac 3 |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -175,6 +175,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.02 | 2.57 | 2.95 | 3.84 |
-| build | 2.49 | 2.64 | 3.13 | 3.33 |
+| build | 2.40 | 2.64 | 3.02 | 3.30 |
 
 Lines not present, shaped and detailed without a reason: 0.

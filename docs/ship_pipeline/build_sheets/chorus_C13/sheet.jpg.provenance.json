@@ -1,33 +1,33 @@
 {
-  "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-  "source_dirty": true,
-  "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+  "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+  "source_dirty": false,
+  "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "sheet.jpg",
-  "date": "2026-11-19T15:13:10Z",
+  "date": "2026-11-19T15:24:47Z",
   "sources": [
     {
-      "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-      "source_dirty": true,
-      "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+      "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "sheet.jpg",
-      "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-      "source_dirty": true,
-      "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+      "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T15:13:05Z",
-      "image_sha256": "4c877473db4bdf7f2b6fa9bb913e14603528d4a292cbc889671544169c03c299",
+      "date": "2026-11-19T15:24:42Z",
+      "image_sha256": "86c4079559d68b51bc6e8ea7f52f9b04c9d17a2e6b27ca8eef8bafb1b5fd9d21",
       "sources": [
         {
-          "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-          "source_dirty": true,
-          "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+          "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+          "source_dirty": false,
+          "source_diff_sha256": "",
           "stage": "sheet built"
         }
       ]
@@ -36,19 +36,19 @@
   "stamp_box": [
     0,
     12254,
-    564,
+    432,
     12352
   ],
   "strip_size": [
-    564,
+    432,
     98
   ],
   "strip_sha256": [
-    "6ff8979adce743a00bd496f6ea2e53890d10ff79bdb0d281abe826123d0264d8"
+    "8f205bc44a61f96f6829596e6464c1569ffc1ec4b5e95d4d960822e1b992f973"
   ],
-  "stamp_template_sha256": "108d0b3d2541b104f9e0065ed78007156beb329cadc520a703bbc21ab87f37a0",
+  "stamp_template_sha256": "4f3e63d8ce4931ad4a1a16e1a079231629bda7e6ee2a5f094d66ca0a5de9e062",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMEAPwb88fgywo1Wwb3PvMwCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBEDOBQEuAUp54xaKAAAAAElFTkSuQmCC"
+    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABPElEQVR4nO3UMRHAMAzAQLd4fOUPr4s4JMM/Ak16dr8BYOY9HQBwC0MEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIkB//sQFK1WmRmwAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "059e05ffc223c6416e9eba7a94f35c8c4bc086daae13fe009550ed6a6dd26963"
+  "image_sha256": "24da704c3033d6ee0992dab34b1413008516eeb70885e2ab74bdb85b342ea415"
 }

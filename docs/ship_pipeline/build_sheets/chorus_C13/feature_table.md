@@ -19,13 +19,13 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | length side | 9.562 |
 | length top | 9.562 |
 | length disagreement percent | 0.0 |
-| beam top | 3.7 |
-| beam bow | 3.837 |
-| beam disagreement percent | 1.45 |
+| beam top | 3.875 |
+| beam bow | 3.987 |
+| beam disagreement percent | 1.18 |
 | height side | 3.638 |
-| height bow | 3.638 |
-| height disagreement percent | 0.0 |
-| widest at station percent | 56.9 |
+| height bow | 3.625 |
+| height disagreement percent | 0.13 |
+| widest at station percent | 57.3 |
 | hull beam | 2.95 |
 | hull depth | 2.57 |
 | L to B hull | 3.22 |
@@ -44,12 +44,12 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | W3 | spine volley, throat (fixed) | 1 barrel | 50.5 | -0.17 | 0.78 | 140 deg off the bow to starboard, +81 elev | T bioplasma | picture | a dorsal spine gland: a puckered vent at the crown of a knoll on the back, short spines out of the knoll round it; it faces up and spits every way |
 | SB1 | spine bed, 1.2 across | 1 | 66.6 | -0.19 | 0.94 | - | - | picture | a knoll aft of the glands studded with growing spines: the spent spines regrow here (regrow, regen 4) |
 | S1p | bile sac, 0.8 across | 1 | 24.5 | 0.90 | -0.56 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
-| S2p | bile sac, 1.2 across | 1 | 38.1 | 1.34 | -0.40 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
-| S3p | bile sac, 1.2 across | 1 | 55.4 | 1.30 | -0.65 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
+| S2p | bile sac, 1.4 across | 1 | 38.1 | 1.34 | -0.40 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
+| S3p | bile sac, 1.4 across | 1 | 55.4 | 1.30 | -0.65 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
 | S4p | bile sac, 1.0 across | 1 | 70.1 | 1.06 | -0.30 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
 | S1s | bile sac, 0.9 across | 1 | 26.6 | -0.92 | -0.42 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
-| S2s | bile sac, 1.2 across | 1 | 42.8 | -1.05 | -0.64 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
-| S3s | bile sac, 1.1 across | 1 | 59.6 | -1.24 | -0.37 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
+| S2s | bile sac, 1.4 across | 1 | 42.8 | -1.05 | -0.64 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
+| S3s | bile sac, 1.2 across | 1 | 59.6 | -1.24 | -0.37 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
 | S4s | bile sac, 0.8 across | 1 | 72.7 | -0.89 | -0.59 | - | - | picture | a round bile sac bulging from the lower flank; it swells before a volley |
 | H1 | hanging sac, 0.8 across | 1 | 31.4 | 0.20 | -1.01 | - | - | picture | a bile sac hanging under the belly: the spitter's deep reserve |
 | H2 | hanging sac, 0.9 across | 1 | 49.7 | -0.21 | -1.10 | - | - | picture | a bile sac hanging under the belly: the spitter's deep reserve |
@@ -85,14 +85,14 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Spine gland W2 | 27.2 to 41.3 | -0.55 to 0.85 | 0.20 to 1.58 | flesh knoll | a dorsal spine gland |
 | Spine gland W3 | 43.2 to 58.6 | -0.93 to 0.55 | 0.44 to 1.77 | flesh knoll | a dorsal spine gland |
 | Spine bed | 60.5 to 72.6 | -0.77 to 0.37 | 0.43 to 1.48 | flesh knoll | the knoll aft of the dorsal glands |
-| Back and shoulder knolls | 10.6 to 76.8 | -1.34 to 1.39 | -0.14 to 1.27 | flesh | lumps of grown flesh over the back and shoulders |
+| Back and shoulder knolls | 10.6 to 76.8 | -1.45 to 1.49 | -0.36 to 1.27 | flesh | lumps of grown flesh over the back and shoulders |
 | Bile sac 1 (port) | 19.9 to 28.9 | 0.52 to 1.32 | -0.95 to -0.18 | flesh dome |  |
-| Bile sac 2 (port) | 31.0 to 45.1 | 0.74 to 1.98 | -1.01 to 0.21 | flesh dome |  |
-| Bile sac 3 (port) | 48.5 to 62.4 | 0.74 to 1.94 | -1.24 to -0.08 | flesh dome |  |
+| Bile sac 2 (port) | 30.1 to 46.0 | 0.66 to 2.06 | -1.09 to 0.29 | flesh dome |  |
+| Bile sac 3 (port) | 47.6 to 63.3 | 0.67 to 2.03 | -1.32 to -0.01 | flesh dome |  |
 | Bile sac 4 (port) | 64.9 to 75.5 | 0.61 to 1.58 | -0.78 to 0.20 | flesh dome |  |
 | Bile sac 1 (starboard) | 21.7 to 31.6 | -1.36 to -0.51 | -0.87 to 0.02 | flesh dome |  |
-| Bile sac 2 (starboard) | 35.7 to 50.1 | -1.69 to -0.44 | -1.26 to -0.05 | flesh dome |  |
-| Bile sac 3 (starboard) | 53.5 to 66.2 | -1.82 to -0.72 | -0.90 to 0.18 | flesh dome |  |
+| Bile sac 2 (starboard) | 34.7 to 51.1 | -1.77 to -0.37 | -1.34 to 0.02 | flesh dome |  |
+| Bile sac 3 (starboard) | 52.7 to 67.1 | -1.89 to -0.65 | -0.97 to 0.25 | flesh dome |  |
 | Bile sac 4 (starboard) | 68.7 to 76.9 | -1.28 to -0.55 | -0.96 to -0.22 | flesh dome |  |
 | Hanging sac 1 | 27.5 to 35.4 | -0.15 to 0.58 | -1.53 to -0.77 | flesh sac |  |
 | Hanging sac 2 | 44.7 to 54.4 | -0.65 to 0.23 | -1.73 to -0.80 | flesh sac |  |
@@ -153,7 +153,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 681 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 757 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

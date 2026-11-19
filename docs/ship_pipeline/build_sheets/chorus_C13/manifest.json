@@ -65,7 +65,7 @@
   {
    "id": "S2p",
    "kind": "sac",
-   "what": "bile sac, 1.2 across",
+   "what": "bile sac, 1.4 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -76,7 +76,7 @@
   {
    "id": "S3p",
    "kind": "sac",
-   "what": "bile sac, 1.2 across",
+   "what": "bile sac, 1.4 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -109,7 +109,7 @@
   {
    "id": "S2s",
    "kind": "sac",
-   "what": "bile sac, 1.2 across",
+   "what": "bile sac, 1.4 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -120,7 +120,7 @@
   {
    "id": "S3s",
    "kind": "sac",
-   "what": "bile sac, 1.1 across",
+   "what": "bile sac, 1.2 across",
    "count": 1,
    "route": "kit",
    "source": "picture",

@@ -1,33 +1,33 @@
 {
-  "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-  "source_dirty": true,
-  "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+  "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+  "source_dirty": false,
+  "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_bioplasma.jpg",
-  "date": "2026-11-19T15:13:12Z",
+  "date": "2026-11-19T15:24:49Z",
   "sources": [
     {
-      "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-      "source_dirty": true,
-      "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+      "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built"
     }
   ],
   "inputs": [
     {
       "picture_name": "weapon_bioplasma.png",
-      "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-      "source_dirty": true,
-      "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+      "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+      "source_dirty": false,
+      "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-19T15:13:01Z",
-      "image_sha256": "53836752f7c75a509c779bd64e932da6b103de6dc213778f55e6a0b38b62e095",
+      "date": "2026-11-19T15:24:37Z",
+      "image_sha256": "e60f54f51f3dc330d831941adbd395e710f0855b50cda1c1fdd8dd789599dc6f",
       "sources": [
         {
-          "source_commit": "ed780d11e86eaf172c800cb6e9a86d936ba4c3ab",
-          "source_dirty": true,
-          "source_diff_sha256": "b7dceaa00ac55ada2356fa423ba53d357097e3dd481f5a68c578595fc4a990c0",
+          "source_commit": "915247dab260ca819b37f22d165e216e894c8980",
+          "source_dirty": false,
+          "source_diff_sha256": "",
           "stage": "sheet built"
         }
       ]
@@ -36,19 +36,19 @@
   "stamp_box": [
     0,
     511,
-    282,
+    216,
     560
   ],
   "strip_size": [
-    282,
+    216,
     49
   ],
   "strip_sha256": [
-    "34b2753d393d3117264601f7d7afae9dbd7e2a0d389beb403eaa85b40f0f21ed"
+    "e0a9360c299c5c4b1afa04aab61b782f86bb4850cf05519ff9d71fc9c05901d7"
   ],
-  "stamp_template_sha256": "9c4127d4d95c9988f5ad38fc36f905b9d80c32ae96a2854f2819a6457213a4b4",
+  "stamp_template_sha256": "a7ae83818ecf613355e470705a3162487a8d5c99b2106232a0fd3b30fa8dd1d7",
   "covered_pixels": [
-    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAp0lEQVR4nO3TQQkAIADAQDWW2D+XJQaC3CXYZ3PvM4DCeh0A/7ATZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QcZOkLETZOwEGTtBxk6QsRNk7AQZO0HGTpCxE2TsBBk7QeYCJl0BEnO1+r0AAAAASUVORK5CYII="
+    "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAAoElEQVR4nO3SMREAIBDAsAdZHP51IYMOiYIOXefcgd/27wCYMSIRRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIwgOvUwESapuuagAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "24b0c2da7e19e240dbf572a1f3a69cf72b82088614dff6a68d66b31f0efed9cc"
+  "image_sha256": "e5d65862d17e22d9c6620dbea4feb317ec1524228cc4681adac3bca91eec99d1"
 }

@@ -41,7 +41,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 681 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 174 objects, 22 parts, 757 close pairs, 262 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 7 cones, 0 apertures, 3 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
