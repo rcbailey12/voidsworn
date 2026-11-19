@@ -1,0 +1,200 @@
+﻿[attach] hp_w on I15_11: no authored point fits this request; using the surface ray
+[look_bench] p_prism_muzzle at 170: 12 cells
+[attach] battle A I15_11: skipped 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] hp_w on I15_11: no authored point fits this request; using the surface ray
+[look_bench] p_prism_muzzle at 60: 12 cells
+[attach] battle A I15_11: skipped 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] hp_w on I15_11: no authored point fits this request; using the surface ray
+[look_bench] p_prism_muzzle at 26: 12 cells
+[attach] battle A I15_11: skipped 0; gun hp 0 ray 3 centre 0 skip 0
+[look_bench] p_missile_launch at 170: 12 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] p_missile_launch at 60: 12 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] p_missile_launch at 26: 12 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[look_bench] p_torp_shield at 170: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T H9_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[look_bench] p_torp_shield at 60: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T H9_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[look_bench] p_torp_shield at 26: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T H9_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[look_bench] p_lance_burn at 170: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] p_lance_burn at 60: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] p_lance_burn at 26: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] p_bile_hit at 170: 12 cells
+[attach] battle A B21_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] p_bile_hit at 60: 12 cells
+[attach] battle A B21_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] p_bile_hit at 26: 12 cells
+[attach] battle A B21_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] hp_rcs missing on B21_11; using the surface ray
+[look_bench] p_gauss_exit at 170: 12 cells
+[attach] battle A D21_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle T B21_11: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_rcs missing on B21_11; using the surface ray
+[look_bench] p_gauss_exit at 60: 12 cells
+[attach] battle A D21_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle T B21_11: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_rcs missing on B21_11; using the surface ray
+[look_bench] p_gauss_exit at 26: 12 cells
+[attach] battle A D21_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle T B21_11: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] p_crit at 170: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] p_crit at 60: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] p_crit at 26: 12 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] g_battery_frigate at 170: 12 cells
+[attach] battle A V14_23: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] g_battery_frigate at 60: 12 cells
+[attach] battle A V14_23: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] g_battery_frigate at 26: 12 cells
+[attach] battle A V14_23: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V17_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] g_battery_battleship at 170: 12 cells
+[attach] battle A V17_37: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V17_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] g_battery_battleship at 60: 12 cells
+[attach] battle A V17_37: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V17_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] g_battery_battleship at 26: 12 cells
+[attach] battle A V17_37: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_macro_linger at 170: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 78 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_macro_linger at 60: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 78 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_macro_linger at 26: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 78 centre 0 skip 0
+[look_bench] x_lance_linger at 170: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] x_lance_linger at 60: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] x_lance_linger at 26: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_torp_linger at 170: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 74 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_torp_linger at 60: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 74 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_torp_linger at 26: 9 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 74 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_torp_neighbour at 170: 8 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_torp_neighbour at 60: 8 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] x_torp_neighbour at 26: 8 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[look_bench] H9_23_macro_fragments at 170: 3 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T H9_23: skipped 0; rcs hp 0 ray 34 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[look_bench] H9_23_macro_fragments at 60: 3 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T H9_23: skipped 0; rcs hp 0 ray 34 centre 0 skip 0
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[look_bench] H9_23_macro_fragments at 26: 3 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T H9_23: skipped 0; rcs hp 0 ray 34 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+[look_bench] C19_51_macro_fragments at 170: 3 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 17 ray 17 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+[look_bench] C19_51_macro_fragments at 60: 3 cells
+[attach] battle A V16_37: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T C19_51: skipped 0; rcs hp 17 ray 17 centre 0 skip 0
+run_timeout: taskkill PID 43552 exit 0: SUCCESS: The process with PID 49488 (child process of PID 43552) has been terminated. SUCCESS: The process with PID 43552 (child process of PID 14452) has been terminated.
+run_timeout: kill verified: all 4 processes gone (PIDs 31584, 39420, 43552, 49488)
+run_timeout: TIMEOUT CEILING after 3600 s, killed C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe (PID 43552) and its children

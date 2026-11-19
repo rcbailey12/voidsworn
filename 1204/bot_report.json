@@ -1,0 +1,2255 @@
+{
+  "errors": 5,
+  "runs": [
+    {
+      "battles": 11,
+      "clicks": 116,
+      "errors": [
+        "423 engine or script errors, first: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point"
+      ],
+      "game_s": 418.576,
+      "log": [
+        {
+          "enemy": "1/5",
+          "fac": "corsair",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 120",
+          "hull": 0.99,
+          "kind": "battle",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              32.9,
+              10.7,
+              17.6
+            ],
+            "enemy_s_max": 32.89,
+            "enemy_s_mean": 20.39,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.86,
+              "activation": 1.6,
+              "aiEnd": 1.36,
+              "fire": 2.26,
+              "move": 13.18,
+              "order": 0.09,
+              "round": 0.19,
+              "tick": 0.11,
+              "torpedo_miss": 0.74
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1
+        },
+        {
+          "enemy": "0/1",
+          "fac": "chorus",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 202.0",
+          "hull": 0.82,
+          "kind": "battle",
+          "obj": "hunt",
+          "pace": {
+            "by_round": [
+              44.1,
+              34.2,
+              14.6,
+              6.4
+            ],
+            "enemy_s_max": 44.11,
+            "enemy_s_mean": 24.82,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 2.56,
+              "aiEnd": 1.53,
+              "death": 0.46,
+              "fire": 6.35,
+              "move": 10.5,
+              "order": 0.15,
+              "round": 1.1,
+              "tick": 2.05,
+              "torpedo": 0.13
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1
+        },
+        {
+          "enemy": "1/4",
+          "fac": "ithar",
+          "fleet_in": "4 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\"], hull 100%, credits 24.0",
+          "hull": 0.81,
+          "kind": "elite",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              15.1,
+              10.1,
+              7.6
+            ],
+            "enemy_s_max": 15.12,
+            "enemy_s_mean": 10.95,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.09,
+              "activation": 0.88,
+              "aiEnd": 1.55,
+              "blink": 0.19,
+              "fire": 1.76,
+              "move": 6.02,
+              "torpedo": 0.46
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "4/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1
+        },
+        {
+          "enemy": "0/3",
+          "fac": "chorus",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\"], hull 100%, credits 4.0",
+          "hull": 0.93,
+          "kind": "boss",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              30.2,
+              20.6,
+              1.4,
+              9.4,
+              5.8
+            ],
+            "enemy_s_max": 30.19,
+            "enemy_s_mean": 13.48,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.07,
+              "activation": 0.97,
+              "aiEnd": 0.76,
+              "board": 0.1,
+              "command": 0.07,
+              "command_warning": 0.16,
+              "fire": 2.98,
+              "move": 8.01,
+              "order": 0.06,
+              "round": 0.33
+            },
+            "rounds": 5
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1
+        },
+        {
+          "enemy": "0/4",
+          "fac": "hegemony",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\", \"penitent\"], hull 100%, credits 82.0",
+          "hull": 0.84,
+          "kind": "battle",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              34.0,
+              64.0,
+              19.0,
+              9.6
+            ],
+            "enemy_s_max": 64.0,
+            "enemy_s_mean": 31.63,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.29,
+              "activation": 3.55,
+              "aiEnd": 3.25,
+              "death": 0.41,
+              "fire": 5.35,
+              "move": 15.27,
+              "order": 0.06,
+              "ram": 0.36,
+              "round": 0.2,
+              "torpedo_miss": 0.26,
+              "wing": 2.64
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 5,
+          "sector": 2
+        },
+        {
+          "enemy": "1/3",
+          "fac": "hegemony",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\", \"penitent\"], hull 100%, credits 230.0",
+          "hull": 0.6,
+          "kind": "battle",
+          "obj": "defend",
+          "pace": {
+            "by_round": [
+              32.5,
+              49.7,
+              49.9,
+              36.6,
+              15.1,
+              16.0
+            ],
+            "enemy_s_max": 49.95,
+            "enemy_s_mean": 33.31,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.13,
+              "activation": 2.42,
+              "aiEnd": 2.43,
+              "death": 0.66,
+              "fire": 10.58,
+              "hit": 0.31,
+              "move": 12.93,
+              "round": 0.43,
+              "tick": 0.32,
+              "torpedo_miss": 0.38,
+              "wing": 2.72
+            },
+            "rounds": 6
+          },
+          "pfac": "voidsworn",
+          "player": "4/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 7,
+          "sector": 2
+        },
+        {
+          "enemy": "4/5",
+          "fac": "hegemony",
+          "fleet_in": "5 ships [\"penitent\", \"warden\", \"penitent\", \"penitent\", \"penitent\"], hull 100%, credits 12.0",
+          "hull": 0.98,
+          "kind": "elite",
+          "obj": "hunt",
+          "pace": {
+            "by_round": [
+              36.3
+            ],
+            "enemy_s_max": 36.26,
+            "enemy_s_mean": 36.26,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 6.41,
+              "aiEnd": 4.12,
+              "fire": 8.92,
+              "move": 16.82
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 1,
+          "sector": 2
+        },
+        {
+          "enemy": "0/7",
+          "fac": "hegemony",
+          "fleet_in": "5 ships [\"penitent\", \"warden\", \"penitent\", \"penitent\", \"penitent\"], hull 100%, credits 134.0",
+          "hull": 0.75,
+          "kind": "boss",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              25.1,
+              26.5,
+              34.3,
+              9.7
+            ],
+            "enemy_s_max": 34.32,
+            "enemy_s_mean": 23.91,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.55,
+              "activation": 2.71,
+              "aiEnd": 1.51,
+              "command": 0.17,
+              "command_warning": 0.07,
+              "death": 0.24,
+              "fire": 6.85,
+              "hit": 0.35,
+              "move": 11.38,
+              "round": 0.07
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "4/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 2
+        },
+        {
+          "enemy": "4/11",
+          "fac": "deathless",
+          "fleet_in": "6 ships [\"warden\", \"penitent\", \"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 0.0",
+          "hull": 0.84,
+          "kind": "battle",
+          "obj": "break",
+          "pace": {
+            "by_round": [
+              47.0,
+              25.8,
+              2.4
+            ],
+            "enemy_s_max": 47.03,
+            "enemy_s_mean": 25.07,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.55,
+              "activation": 2.44,
+              "aiEnd": 1.9,
+              "death": 0.21,
+              "fire": 3.9,
+              "move": 12.42,
+              "order": 0.26,
+              "risen": 2.43,
+              "round": 0.2,
+              "tick": 0.36,
+              "torpedo_miss": 0.41
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 3
+        },
+        {
+          "enemy": "2/17",
+          "fac": "corsair",
+          "fleet_in": "6 ships [\"warden\", \"penitent\", \"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 141.0",
+          "hull": 0.71,
+          "kind": "elite",
+          "obj": "intercept",
+          "pace": {
+            "by_round": [
+              88.9,
+              142.4,
+              95.2,
+              49.2,
+              42.3
+            ],
+            "enemy_s_max": 142.44,
+            "enemy_s_mean": 83.61,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 1.13,
+              "activation": 12.51,
+              "aiEnd": 9.1,
+              "death": 0.39,
+              "fire": 15.32,
+              "hit": 0.13,
+              "move": 37.95,
+              "order": 0.31,
+              "ram": 0.65,
+              "round": 0.86,
+              "tick": 0.05,
+              "torpedo": 2.12,
+              "torpedo_miss": 3.09
+            },
+            "rounds": 5
+          },
+          "pfac": "voidsworn",
+          "player": "4/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 6,
+          "sector": 3
+        },
+        {
+          "enemy": "0/10",
+          "fac": "deathless",
+          "fleet_in": "4 ships [\"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 275.0",
+          "hull": 0.69,
+          "kind": "boss",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              42.4,
+              61.2,
+              15.2,
+              12.1
+            ],
+            "enemy_s_max": 61.16,
+            "enemy_s_mean": 32.71,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 1.13,
+              "activation": 4.79,
+              "aiEnd": 2.63,
+              "command": 0.34,
+              "command_warning": 0.1,
+              "death": 3.3,
+              "fire": 5.46,
+              "hit": 0.41,
+              "move": 12.06,
+              "risen": 2.33,
+              "round": 0.16
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "4/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 3
+        }
+      ],
+      "mode": "campaign",
+      "offered": {
+        "backMap": 3,
+        "beat3": 1,
+        "boonDecline": 8,
+        "boonReroll": 8,
+        "buyHull": 22,
+        "buyMod": 26,
+        "buyTrack": 26,
+        "closeModal": 7,
+        "enterNode": 41,
+        "equip": 40,
+        "eventChoice": 6,
+        "factionVerb": 17,
+        "fleetFromModal": 2,
+        "fleetScreen": 21,
+        "leaveYard": 16,
+        "lineage": 4,
+        "pickAdmiral": 1,
+        "pickAspect": 3,
+        "pickFaction": 6,
+        "repair": 4,
+        "repairAll": 3,
+        "salvageStep": 11,
+        "saveQuit": 21,
+        "sellShip": 74,
+        "startRun": 1,
+        "takeBoon": 24,
+        "takeMod": 6,
+        "takePerk": 50,
+        "takeRelic": 15,
+        "takeSalvage": 52,
+        "title": 1,
+        "unequip": 3,
+        "upgradeMk": 30,
+        "yardFleet": 16
+      },
+      "pressed": {
+        "backMap": 1,
+        "beat3": 1,
+        "buyHull": 6,
+        "buyMod": 1,
+        "closeModal": 6,
+        "enterNode": 21,
+        "equip": 2,
+        "eventChoice": 3,
+        "fleetFromModal": 1,
+        "leaveYard": 6,
+        "pickAspect": 1,
+        "repairAll": 3,
+        "salvageStep": 11,
+        "startRun": 1,
+        "takeBoon": 8,
+        "takeMod": 2,
+        "takePerk": 25,
+        "takeRelic": 6,
+        "takeSalvage": 11
+      },
+      "real_s": 418.595,
+      "result": "win",
+      "run": 1,
+      "sector": 3,
+      "seed": 359
+    },
+    {
+      "battles": 12,
+      "clicks": 123,
+      "errors": [
+        "265 engine or script errors, first: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point"
+      ],
+      "game_s": 381.0,
+      "log": [
+        {
+          "enemy": "1/4",
+          "fac": "chorus",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 120",
+          "hull": 0.95,
+          "kind": "battle",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              24.2,
+              7.7,
+              10.3,
+              5.0
+            ],
+            "enemy_s_max": 24.21,
+            "enemy_s_mean": 11.8,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.08,
+              "activation": 1.48,
+              "aiEnd": 0.92,
+              "death": 0.18,
+              "fire": 2.75,
+              "move": 6.22,
+              "order": 0.07,
+              "round": 0.09
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1
+        },
+        {
+          "enemy": "4/5",
+          "fac": "ithar",
+          "fleet_in": "4 ships [\"penitent\", \"harrow\", \"warden\", \"harrow\"], hull 100%, credits 25.0",
+          "hull": 0.95,
+          "kind": "battle",
+          "obj": "hunt",
+          "pace": {
+            "by_round": [
+              45.8
+            ],
+            "enemy_s_max": 45.77,
+            "enemy_s_mean": 45.77,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 2.06,
+              "aiEnd": 7.35,
+              "death": 1.4,
+              "fire": 10.62,
+              "move": 23.42,
+              "round": 0.92
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "4/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 2,
+          "sector": 1
+        },
+        {
+          "enemy": "0/9",
+          "fac": "corsair",
+          "fleet_in": "4 ships [\"penitent\", \"harrow\", \"warden\", \"harrow\"], hull 100%, credits 143.0",
+          "hull": 0.72,
+          "kind": "elite",
+          "obj": "intercept",
+          "pace": {
+            "by_round": [
+              59.8,
+              91.9,
+              50.6,
+              20.3,
+              21.0,
+              6.5,
+              5.9,
+              3.2
+            ],
+            "enemy_s_max": 91.85,
+            "enemy_s_mean": 32.38,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.13,
+              "activation": 4.16,
+              "aiEnd": 4.22,
+              "death": 0.11,
+              "fire": 5.7,
+              "fled": 0.07,
+              "hit": 0.17,
+              "move": 14.58,
+              "order": 0.06,
+              "round": 0.43,
+              "tick": 0.34,
+              "torpedo": 0.91,
+              "torpedo_miss": 1.52
+            },
+            "rounds": 8
+          },
+          "pfac": "voidsworn",
+          "player": "3/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 8,
+          "sector": 1
+        },
+        {
+          "enemy": "0/3",
+          "fac": "ithar",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"harrow\"], hull 100%, credits 221.0",
+          "hull": 0.85,
+          "kind": "boss",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              32.7,
+              11.3
+            ],
+            "enemy_s_max": 32.75,
+            "enemy_s_mean": 22.0,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.23,
+              "activation": 1.18,
+              "aiEnd": 0.95,
+              "command_warning": 0.44,
+              "fire": 8.86,
+              "move": 9.05,
+              "round": 0.48,
+              "torpedo": 0.22,
+              "torpedo_miss": 0.57
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1
+        },
+        {
+          "enemy": "1/6",
+          "fac": "deathless",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\"], hull 100%, credits 18.0",
+          "hull": 0.74,
+          "kind": "battle",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              50.9,
+              31.3,
+              7.4
+            ],
+            "enemy_s_max": 50.88,
+            "enemy_s_mean": 29.88,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.61,
+              "activation": 3.01,
+              "aiEnd": 3.43,
+              "fire": 9.12,
+              "move": 9.76,
+              "risen": 1.8,
+              "round": 0.84,
+              "torpedo_miss": 1.3
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 2
+        },
+        {
+          "enemy": "1/9",
+          "fac": "chorus",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\"], hull 100%, credits 56.0",
+          "hull": 1.0,
+          "kind": "elite",
+          "obj": "flagship",
+          "pace": {
+            "by_round": [
+              50.5
+            ],
+            "enemy_s_max": 50.47,
+            "enemy_s_mean": 50.47,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 3.01,
+              "aiEnd": 3.57,
+              "fled": 2.52,
+              "move": 37.62,
+              "round": 0.29,
+              "tick": 1.04,
+              "torpedo_miss": 2.42
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 2,
+          "sector": 2
+        },
+        {
+          "enemy": "0/9",
+          "fac": "deathless",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\"], hull 100%, credits 38.0",
+          "hull": 0.9,
+          "kind": "boss",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              52.1,
+              9.9
+            ],
+            "enemy_s_max": 52.15,
+            "enemy_s_mean": 31.03,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.66,
+              "activation": 2.75,
+              "aiEnd": 2.24,
+              "command_warning": 0.36,
+              "death": 1.02,
+              "fire": 7.43,
+              "hit": 0.64,
+              "move": 10.23,
+              "risen": 4.63,
+              "round": 0.33,
+              "tick": 0.73
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 2
+        },
+        {
+          "enemy": "3/11",
+          "fac": "hegemony",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\", \"penitent\"], hull 100%, credits 27.0",
+          "hull": 0.96,
+          "kind": "battle",
+          "obj": "break",
+          "pace": {
+            "by_round": [
+              65.9
+            ],
+            "enemy_s_max": 65.86,
+            "enemy_s_mean": 65.86,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.7,
+              "activation": 4.53,
+              "aiEnd": 5.79,
+              "death": 0.83,
+              "fire": 12.74,
+              "move": 30.28,
+              "order": 0.28,
+              "round": 1.0,
+              "tick": 2.46,
+              "torpedo_miss": 2.12,
+              "wing": 5.14
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 2,
+          "sector": 3
+        },
+        {
+          "enemy": "0/12",
+          "fac": "chorus",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\", \"penitent\"], hull 100%, credits 106.0",
+          "hull": 0.99,
+          "kind": "battle",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              8.1
+            ],
+            "enemy_s_max": 8.12,
+            "enemy_s_mean": 8.12,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 2.88,
+              "aiEnd": 1.1,
+              "move": 4.14
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 1,
+          "sector": 3
+        },
+        {
+          "enemy": "5/7",
+          "fac": "hegemony",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\", \"penitent\"], hull 100%, credits 253.0",
+          "hull": 0.85,
+          "kind": "elite",
+          "obj": "hunt",
+          "pace": {
+            "by_round": [
+              82.9,
+              61.0
+            ],
+            "enemy_s_max": 82.94,
+            "enemy_s_mean": 71.97,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.85,
+              "activation": 7.67,
+              "aiEnd": 5.86,
+              "fire": 16.28,
+              "move": 29.01,
+              "round": 0.3,
+              "tick": 0.28,
+              "torpedo_miss": 0.55,
+              "wing": 11.19
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 2,
+          "sector": 3
+        },
+        {
+          "enemy": "0/10",
+          "fac": "deathless",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\", \"penitent\"], hull 100%, credits 380.0",
+          "hull": 0.8,
+          "kind": "elite",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              36.4,
+              72.4,
+              29.6,
+              10.8
+            ],
+            "enemy_s_max": 72.38,
+            "enemy_s_mean": 37.29,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 1.41,
+              "activation": 5.78,
+              "aiEnd": 4.07,
+              "fire": 12.81,
+              "move": 13.06,
+              "order": 0.11,
+              "round": 0.06
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 3
+        },
+        {
+          "enemy": "0/13",
+          "fac": "hegemony",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"harrow\", \"penitent\", \"penitent\", \"penitent\"], hull 100%, credits 512.0",
+          "hull": 0.88,
+          "kind": "boss",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              72.2,
+              31.5,
+              15.2
+            ],
+            "enemy_s_max": 72.19,
+            "enemy_s_mean": 39.64,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.91,
+              "activation": 3.92,
+              "aiEnd": 4.47,
+              "command": 0.15,
+              "command_warning": 0.58,
+              "death": 0.22,
+              "fire": 12.22,
+              "hit": 0.12,
+              "move": 13.62,
+              "round": 0.18,
+              "tick": 0.72,
+              "torpedo_miss": 0.64,
+              "wing": 1.89
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 3
+        }
+      ],
+      "mode": "campaign",
+      "offered": {
+        "backMap": 10,
+        "beat3": 1,
+        "boonDecline": 10,
+        "boonReroll": 10,
+        "buyHull": 13,
+        "buyMod": 30,
+        "buyTrack": 22,
+        "closeModal": 6,
+        "enterNode": 36,
+        "equip": 239,
+        "eventChoice": 5,
+        "factionVerb": 15,
+        "fleetFromModal": 2,
+        "fleetScreen": 21,
+        "leaveYard": 16,
+        "lineage": 8,
+        "pickAdmiral": 2,
+        "pickAspect": 3,
+        "pickFaction": 12,
+        "repair": 3,
+        "repairAll": 2,
+        "salvageStep": 12,
+        "saveQuit": 21,
+        "sellShip": 74,
+        "startRun": 2,
+        "takeBoon": 30,
+        "takeMod": 3,
+        "takePerk": 44,
+        "takeRelic": 17,
+        "takeSalvage": 57,
+        "title": 2,
+        "unequip": 30,
+        "upgradeMk": 29,
+        "yardFleet": 16
+      },
+      "pressed": {
+        "backMap": 2,
+        "beat3": 1,
+        "buyHull": 4,
+        "buyMod": 1,
+        "closeModal": 4,
+        "enterNode": 21,
+        "equip": 7,
+        "eventChoice": 2,
+        "fleetFromModal": 2,
+        "leaveYard": 6,
+        "pickAdmiral": 1,
+        "pickAspect": 1,
+        "repairAll": 2,
+        "salvageStep": 12,
+        "startRun": 1,
+        "takeBoon": 10,
+        "takeMod": 1,
+        "takePerk": 22,
+        "takeRelic": 7,
+        "takeSalvage": 12,
+        "unequip": 1,
+        "upgradeMk": 3
+      },
+      "real_s": 381.071,
+      "result": "win",
+      "run": 2,
+      "sector": 3,
+      "seed": 360
+    },
+    {
+      "battles": 14,
+      "clicks": 112,
+      "errors": [
+        "500 engine or script errors, first: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point"
+      ],
+      "game_s": 387.511,
+      "log": [
+        {
+          "enemy": "1/2",
+          "fac": "corsair",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 120",
+          "hull": 0.62,
+          "kind": "battle",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              34.3,
+              17.1,
+              41.7,
+              31.8,
+              21.9
+            ],
+            "enemy_s_max": 41.68,
+            "enemy_s_mean": 29.37,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.19,
+              "activation": 3.12,
+              "aiEnd": 2.44,
+              "death": 0.65,
+              "fire": 10.1,
+              "move": 9.48,
+              "round": 1.12,
+              "wing": 2.27
+            },
+            "rounds": 5
+          },
+          "pfac": "voidsworn",
+          "player": "2/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1
+        },
+        {
+          "enemy": "1/4",
+          "fac": "hegemony",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"penitent\"], hull 100%, credits 7.0",
+          "hull": 0.83,
+          "kind": "battle",
+          "obj": "break",
+          "pace": {
+            "by_round": [
+              17.1,
+              31.5,
+              29.0,
+              24.2
+            ],
+            "enemy_s_max": 31.46,
+            "enemy_s_mean": 25.44,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.04,
+              "activation": 2.26,
+              "aiEnd": 2.16,
+              "fire": 8.05,
+              "move": 9.73,
+              "round": 0.37,
+              "tick": 1.39,
+              "torpedo": 0.17,
+              "wing": 1.29
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1
+        },
+        {
+          "enemy": "4/5",
+          "fac": "corsair",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"penitent\"], hull 100%, credits 142.0",
+          "hull": 0.91,
+          "kind": "battle",
+          "obj": "hunt",
+          "pace": {
+            "by_round": [
+              4.6
+            ],
+            "enemy_s_max": 4.57,
+            "enemy_s_mean": 4.57,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 2.54,
+              "aiEnd": 0.23,
+              "move": 1.8
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 1,
+          "sector": 1
+        },
+        {
+          "enemy": "1/4",
+          "fac": "hegemony",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"penitent\"], hull 100%, credits 197.0",
+          "hull": 0.73,
+          "kind": "elite",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              20.7,
+              39.7,
+              34.7,
+              14.2
+            ],
+            "enemy_s_max": 39.68,
+            "enemy_s_mean": 27.3,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.07,
+              "activation": 3.15,
+              "aiEnd": 3.49,
+              "fire": 6.09,
+              "move": 10.11,
+              "round": 0.31,
+              "torpedo_miss": 2.67,
+              "wing": 1.42
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1
+        },
+        {
+          "enemy": "0/5",
+          "fac": "hegemony",
+          "fleet_in": "4 ships [\"penitent\", \"harrow\", \"penitent\", \"harrow\"], hull 100%, credits 55.0",
+          "hull": 0.75,
+          "kind": "boss",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              32.9,
+              19.0,
+              30.3,
+              12.0
+            ],
+            "enemy_s_max": 32.95,
+            "enemy_s_mean": 23.57,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 1.09,
+              "activation": 4.49,
+              "aiEnd": 1.71,
+              "command": 0.2,
+              "command_warning": 1.47,
+              "fire": 4.53,
+              "hit": 0.29,
+              "move": 9.5,
+              "round": 0.3
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "4/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1
+        },
+        {
+          "enemy": "8/9",
+          "fac": "deathless",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"penitent\", \"harrow\", \"penitent\"], hull 100%, credits 23.0",
+          "hull": 0.98,
+          "kind": "battle",
+          "obj": "hunt",
+          "pace": {
+            "by_round": [
+              15.9
+            ],
+            "enemy_s_max": 15.94,
+            "enemy_s_mean": 15.94,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.22,
+              "activation": 2.16,
+              "aiEnd": 1.31,
+              "fire": 1.19,
+              "move": 11.05
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 1,
+          "sector": 2
+        },
+        {
+          "enemy": "7/9",
+          "fac": "corsair",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"penitent\", \"harrow\", \"penitent\"], hull 100%, credits 5.0",
+          "hull": 1.0,
+          "kind": "battle",
+          "obj": "flagship",
+          "pace": {
+            "by_round": [
+              21.5
+            ],
+            "enemy_s_max": 21.46,
+            "enemy_s_mean": 21.46,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 1.66,
+              "aiEnd": 4.09,
+              "move": 10.38,
+              "torpedo": 5.33
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 1,
+          "sector": 2
+        },
+        {
+          "enemy": "0/4",
+          "fac": "ithar",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"penitent\", \"harrow\", \"penitent\"], hull 100%, credits 92.0",
+          "hull": 0.79,
+          "kind": "elite",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              65.9,
+              33.5
+            ],
+            "enemy_s_max": 65.93,
+            "enemy_s_mean": 49.7,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.61,
+              "activation": 3.22,
+              "aiEnd": 6.38,
+              "blink": 0.6,
+              "death": 1.7,
+              "fire": 13.1,
+              "hit": 0.33,
+              "move": 16.8,
+              "ram": 1.42,
+              "round": 0.87,
+              "torpedo": 3.67,
+              "wing": 1.01
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "4/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 2
+        },
+        {
+          "enemy": "0/7",
+          "fac": "deathless",
+          "fleet_in": "5 ships [\"harrow\", \"penitent\", \"harrow\", \"penitent\", \"penitent\"], hull 100%, credits 71.0",
+          "hull": 0.67,
+          "kind": "boss",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              41.2,
+              37.2,
+              23.5,
+              21.2,
+              8.3,
+              5.6,
+              5.6,
+              3.7
+            ],
+            "enemy_s_max": 41.19,
+            "enemy_s_mean": 18.28,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.37,
+              "activation": 1.99,
+              "aiEnd": 1.37,
+              "board": 0.21,
+              "command": 0.1,
+              "command_warning": 0.04,
+              "death": 0.31,
+              "fire": 3.07,
+              "hit": 0.25,
+              "move": 9.3,
+              "risen": 0.73,
+              "round": 0.14,
+              "tick": 0.03,
+              "torpedo_miss": 0.36
+            },
+            "rounds": 8
+          },
+          "pfac": "voidsworn",
+          "player": "4/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 8,
+          "sector": 2
+        },
+        {
+          "enemy": "2/10",
+          "fac": "ithar",
+          "fleet_in": "6 ships [\"harrow\", \"penitent\", \"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 34.0",
+          "hull": 0.87,
+          "kind": "battle",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              78.3,
+              18.5
+            ],
+            "enemy_s_max": 78.31,
+            "enemy_s_mean": 48.39,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.57,
+              "activation": 3.89,
+              "aiEnd": 4.47,
+              "blink": 0.74,
+              "death": 0.15,
+              "fire": 13.85,
+              "move": 19.79,
+              "round": 0.23,
+              "torpedo": 2.35,
+              "torpedo_miss": 1.92,
+              "wing": 0.41
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "5/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 3
+        },
+        {
+          "enemy": "2/9",
+          "fac": "ithar",
+          "fleet_in": "5 ships [\"penitent\", \"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 186.0",
+          "hull": 0.95,
+          "kind": "battle",
+          "obj": "break",
+          "pace": {
+            "by_round": [
+              49.6,
+              46.5,
+              9.2
+            ],
+            "enemy_s_max": 49.61,
+            "enemy_s_mean": 35.1,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.18,
+              "activation": 2.0,
+              "aiEnd": 2.16,
+              "fire": 9.06,
+              "move": 19.51,
+              "round": 0.26,
+              "tick": 0.09,
+              "torpedo": 0.72,
+              "torpedo_miss": 0.74,
+              "wing": 0.39
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 3
+        },
+        {
+          "enemy": "11/15",
+          "fac": "ithar",
+          "fleet_in": "5 ships [\"penitent\", \"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 270.0",
+          "hull": 0.93,
+          "kind": "battle",
+          "obj": "defend",
+          "pace": {
+            "by_round": [
+              80.5,
+              51.9
+            ],
+            "enemy_s_max": 80.54,
+            "enemy_s_mean": 66.22,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 2.08,
+              "activation": 3.61,
+              "aiEnd": 4.5,
+              "blink": 4.17,
+              "fire": 4.69,
+              "hit": 0.28,
+              "move": 45.54,
+              "round": 0.38,
+              "torpedo": 0.97
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "retreat",
+          "result": "retreat",
+          "rounds": 3,
+          "sector": 3
+        },
+        {
+          "enemy": "0/7",
+          "fac": "deathless",
+          "fleet_in": "5 ships [\"penitent\", \"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 270.0",
+          "hull": 0.49,
+          "kind": "elite",
+          "obj": "break",
+          "pace": {
+            "by_round": [
+              41.2,
+              34.0,
+              30.7,
+              17.4,
+              17.4,
+              7.6,
+              5.9
+            ],
+            "enemy_s_max": 41.15,
+            "enemy_s_mean": 22.01,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.44,
+              "activation": 2.45,
+              "aiEnd": 1.58,
+              "death": 0.29,
+              "fire": 5.69,
+              "move": 10.56,
+              "order": 0.21,
+              "risen": 0.72,
+              "round": 0.08
+            },
+            "rounds": 7
+          },
+          "pfac": "voidsworn",
+          "player": "4/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 7,
+          "sector": 3
+        },
+        {
+          "enemy": "0/8",
+          "fac": "ithar",
+          "fleet_in": "4 ships [\"penitent\", \"penitent\", \"penitent\", \"harrow\"], hull 100%, credits 416.0",
+          "hull": 0.24,
+          "kind": "boss",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              33.8,
+              40.6,
+              20.9,
+              15.6,
+              20.5,
+              17.7,
+              12.7,
+              9.8,
+              6.1,
+              7.5,
+              8.1,
+              5.7
+            ],
+            "enemy_s_max": 40.58,
+            "enemy_s_mean": 16.58,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.09,
+              "activation": 0.71,
+              "aiEnd": 1.07,
+              "blink": 0.09,
+              "command": 0.03,
+              "command_warning": 0.02,
+              "death": 0.33,
+              "fire": 3.57,
+              "hit": 0.09,
+              "move": 9.64,
+              "ram": 0.14,
+              "round": 0.33,
+              "tick": 0.16,
+              "torpedo": 0.12,
+              "torpedo_miss": 0.21
+            },
+            "rounds": 12
+          },
+          "pfac": "voidsworn",
+          "player": "1/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 13,
+          "sector": 3
+        }
+      ],
+      "mode": "campaign",
+      "offered": {
+        "beat3": 1,
+        "boonDecline": 9,
+        "boonReroll": 9,
+        "buyHull": 27,
+        "buyMod": 35,
+        "buyTrack": 24,
+        "closeModal": 4,
+        "enterNode": 39,
+        "eventChoice": 2,
+        "factionVerb": 17,
+        "fleetFromModal": 1,
+        "fleetScreen": 21,
+        "leaveYard": 18,
+        "lineage": 4,
+        "pickAdmiral": 1,
+        "pickAspect": 3,
+        "pickFaction": 6,
+        "repair": 5,
+        "repairAll": 4,
+        "salvageStep": 13,
+        "saveQuit": 21,
+        "sellShip": 72,
+        "startRun": 1,
+        "takeBoon": 27,
+        "takeMod": 6,
+        "takePerk": 44,
+        "takeRelic": 15,
+        "takeSalvage": 55,
+        "title": 1,
+        "upgradeMk": 39,
+        "yardFleet": 18
+      },
+      "pressed": {
+        "beat3": 1,
+        "buyHull": 6,
+        "buyMod": 1,
+        "closeModal": 4,
+        "enterNode": 21,
+        "eventChoice": 1,
+        "leaveYard": 6,
+        "pickAspect": 1,
+        "repairAll": 4,
+        "salvageStep": 13,
+        "startRun": 1,
+        "takeBoon": 9,
+        "takeMod": 2,
+        "takePerk": 22,
+        "takeRelic": 6,
+        "takeSalvage": 13,
+        "upgradeMk": 1
+      },
+      "real_s": 387.541,
+      "result": "win",
+      "run": 3,
+      "sector": 3,
+      "seed": 361
+    },
+    {
+      "battles": 8,
+      "clicks": 82,
+      "errors": [
+        "301 engine or script errors, first: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point"
+      ],
+      "game_s": 241.561,
+      "log": [
+        {
+          "enemy": "1/3",
+          "fac": "deathless",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 120",
+          "hull": 0.9,
+          "kind": "battle",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              10.1,
+              18.6,
+              20.0,
+              7.2,
+              4.2
+            ],
+            "enemy_s_max": 19.95,
+            "enemy_s_mean": 12.01,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.28,
+              "activation": 1.67,
+              "aiEnd": 1.19,
+              "death": 0.11,
+              "fire": 1.96,
+              "move": 4.9,
+              "order": 0.06,
+              "risen": 1.19,
+              "round": 0.33,
+              "torpedo_miss": 0.33
+            },
+            "rounds": 5
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1
+        },
+        {
+          "enemy": "2/5",
+          "fac": "chorus",
+          "fleet_in": "4 ships [\"penitent\", \"harrow\", \"warden\", \"harrow\"], hull 100%, credits 34.0",
+          "hull": 0.87,
+          "kind": "elite",
+          "obj": "break",
+          "pace": {
+            "by_round": [
+              28.1,
+              37.8
+            ],
+            "enemy_s_max": 37.82,
+            "enemy_s_mean": 32.96,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.15,
+              "activation": 2.21,
+              "aiEnd": 2.19,
+              "death": 1.43,
+              "fire": 7.68,
+              "move": 14.85,
+              "round": 0.28,
+              "tick": 3.07,
+              "torpedo_miss": 1.12
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "4/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1
+        },
+        {
+          "enemy": "0/3",
+          "fac": "ithar",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"warden\", \"harrow\", \"harrow\"], hull 100%, credits 27.0",
+          "hull": 0.8,
+          "kind": "boss",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              26.9,
+              26.3,
+              16.5
+            ],
+            "enemy_s_max": 26.88,
+            "enemy_s_mean": 23.21,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.15,
+              "activation": 1.62,
+              "aiEnd": 2.76,
+              "blink": 0.24,
+              "command": 0.18,
+              "fire": 6.69,
+              "move": 11.1,
+              "torpedo": 0.48
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1
+        },
+        {
+          "enemy": "4/8",
+          "fac": "hegemony",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"warden\", \"harrow\", \"harrow\", \"penitent\"], hull 100%, credits 30.0",
+          "hull": 0.97,
+          "kind": "elite",
+          "obj": "hunt",
+          "pace": {
+            "by_round": [
+              63.7
+            ],
+            "enemy_s_max": 63.71,
+            "enemy_s_mean": 63.71,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "activation": 10.78,
+              "aiEnd": 8.6,
+              "fire": 15.3,
+              "move": 25.63,
+              "round": 0.37,
+              "torpedo_miss": 3.02
+            },
+            "rounds": 1
+          },
+          "pfac": "voidsworn",
+          "player": "6/6",
+          "raw": "win",
+          "result": "win",
+          "rounds": 2,
+          "sector": 2
+        },
+        {
+          "enemy": "3/6",
+          "fac": "deathless",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"warden\", \"harrow\", \"harrow\", \"penitent\"], hull 100%, credits 36.0",
+          "hull": 0.41,
+          "kind": "elite",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              22.2,
+              29.0,
+              45.3,
+              38.2,
+              68.6,
+              53.0,
+              31.5
+            ],
+            "enemy_s_max": 68.58,
+            "enemy_s_mean": 41.11,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.55,
+              "activation": 5.05,
+              "aiEnd": 3.43,
+              "death": 0.39,
+              "fire": 12.48,
+              "move": 13.72,
+              "order": 0.08,
+              "pulled": 2.93,
+              "round": 0.42,
+              "tick": 1.24,
+              "torpedo_miss": 0.83
+            },
+            "rounds": 7
+          },
+          "pfac": "voidsworn",
+          "player": "4/6",
+          "raw": "retreat",
+          "result": "retreat",
+          "rounds": 8,
+          "sector": 2
+        },
+        {
+          "enemy": "0/7",
+          "fac": "hegemony",
+          "fleet_in": "4 ships [\"harrow\", \"warden\", \"harrow\", \"penitent\"], hull 100%, credits 36.0",
+          "hull": 0.18,
+          "kind": "boss",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              42.6,
+              12.7,
+              26.0,
+              11.0,
+              11.4,
+              12.3,
+              9.9
+            ],
+            "enemy_s_max": 42.63,
+            "enemy_s_mean": 18.0,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.47,
+              "activation": 1.0,
+              "aiEnd": 1.31,
+              "board": 0.08,
+              "command": 0.2,
+              "command_warning": 0.2,
+              "death": 0.38,
+              "fire": 5.25,
+              "hit": 0.47,
+              "move": 7.47,
+              "round": 0.62,
+              "tick": 0.18,
+              "torpedo_miss": 0.35
+            },
+            "rounds": 7
+          },
+          "pfac": "voidsworn",
+          "player": "1/4",
+          "raw": "win",
+          "result": "win",
+          "rounds": 8,
+          "sector": 2
+        },
+        {
+          "enemy": "1/8",
+          "fac": "deathless",
+          "fleet_in": "2 ships [\"penitent\", \"penitent\"], hull 100%, credits 11.0",
+          "hull": 0.71,
+          "kind": "battle",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              26.8,
+              26.6
+            ],
+            "enemy_s_max": 26.82,
+            "enemy_s_mean": 26.7,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.17,
+              "activation": 2.56,
+              "aiEnd": 2.3,
+              "fire": 4.78,
+              "move": 11.0,
+              "risen": 5.01,
+              "round": 0.89
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "2/2",
+          "raw": "win",
+          "result": "win",
+          "rounds": 3,
+          "sector": 3
+        },
+        {
+          "enemy": "3/7",
+          "fac": "corsair",
+          "fleet_in": "2 ships [\"penitent\", \"penitent\"], hull 100%, credits 110.0",
+          "hull": 0.0,
+          "kind": "battle",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              61.4,
+              59.0,
+              36.8,
+              27.1
+            ],
+            "enemy_s_max": 61.42,
+            "enemy_s_mean": 46.09,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.57,
+              "activation": 3.22,
+              "aiEnd": 4.68,
+              "death": 0.5,
+              "fire": 13.7,
+              "hit": 0.49,
+              "move": 18.23,
+              "ram": 0.86,
+              "round": 1.23,
+              "tick": 0.24,
+              "torpedo": 1.06,
+              "torpedo_miss": 1.3
+            },
+            "rounds": 4
+          },
+          "pfac": "voidsworn",
+          "player": "0/2",
+          "raw": "loss",
+          "result": "loss",
+          "rounds": 5,
+          "sector": 3
+        }
+      ],
+      "mode": "campaign",
+      "offered": {
+        "beat3": 1,
+        "boonDecline": 5,
+        "boonReroll": 5,
+        "buyHull": 18,
+        "buyMod": 27,
+        "buyTrack": 24,
+        "closeModal": 6,
+        "enterNode": 35,
+        "eventChoice": 11,
+        "factionVerb": 9,
+        "fleetScreen": 18,
+        "leaveYard": 15,
+        "lineage": 8,
+        "pickAdmiral": 2,
+        "pickAspect": 3,
+        "pickFaction": 12,
+        "repair": 8,
+        "repairAll": 3,
+        "salvageStep": 6,
+        "saveQuit": 18,
+        "sellShip": 60,
+        "startRun": 2,
+        "takeBoon": 15,
+        "takeMod": 3,
+        "takePerk": 26,
+        "takeRelic": 10,
+        "takeSalvage": 29,
+        "title": 2,
+        "upgradeMk": 32,
+        "yardFleet": 15
+      },
+      "pressed": {
+        "beat3": 1,
+        "buyHull": 4,
+        "closeModal": 6,
+        "enterNode": 18,
+        "eventChoice": 4,
+        "leaveYard": 6,
+        "pickAdmiral": 1,
+        "pickAspect": 1,
+        "repairAll": 3,
+        "salvageStep": 6,
+        "startRun": 1,
+        "takeBoon": 5,
+        "takeMod": 1,
+        "takePerk": 13,
+        "takeRelic": 4,
+        "takeSalvage": 6,
+        "upgradeMk": 2
+      },
+      "real_s": 241.59,
+      "result": "loss",
+      "run": 4,
+      "sector": 3,
+      "seed": 362
+    },
+    {
+      "battles": 6,
+      "clicks": 57,
+      "errors": [
+        "231 engine or script errors, first: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point"
+      ],
+      "game_s": 161.881,
+      "log": [
+        {
+          "enemy": "1/3",
+          "fac": "corsair",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 120",
+          "hull": 0.99,
+          "kind": "battle",
+          "obj": "rout",
+          "pace": {
+            "by_round": [
+              37.6,
+              6.0
+            ],
+            "enemy_s_max": 37.63,
+            "enemy_s_mean": 21.79,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.65,
+              "activation": 2.36,
+              "aiEnd": 1.39,
+              "death": 0.3,
+              "fire": 5.68,
+              "move": 10.08,
+              "round": 0.61,
+              "torpedo": 0.73
+            },
+            "rounds": 2
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 2,
+          "sector": 1
+        },
+        {
+          "enemy": "1/4",
+          "fac": "chorus",
+          "fleet_in": "3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 184.0",
+          "hull": 0.75,
+          "kind": "battle",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              29.0,
+              14.2,
+              19.7,
+              11.5,
+              11.5
+            ],
+            "enemy_s_max": 28.99,
+            "enemy_s_mean": 17.16,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.22,
+              "activation": 1.13,
+              "aiEnd": 1.47,
+              "fire": 4.89,
+              "move": 8.82,
+              "round": 0.1,
+              "torpedo_miss": 0.53
+            },
+            "rounds": 5
+          },
+          "pfac": "voidsworn",
+          "player": "3/3",
+          "raw": "win",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1
+        },
+        {
+          "enemy": "4/8",
+          "fac": "chorus",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\"], hull 100%, credits 11.0",
+          "hull": 0.86,
+          "kind": "elite",
+          "obj": "intercept",
+          "pace": {
+            "by_round": [
+              32.2,
+              33.9,
+              30.4
+            ],
+            "enemy_s_max": 33.93,
+            "enemy_s_mean": 32.16,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.75,
+              "activation": 3.28,
+              "aiEnd": 2.88,
+              "fire": 4.04,
+              "move": 19.24,
+              "order": 0.44,
+              "ram": 0.72,
+              "round": 0.41,
+              "torpedo_miss": 0.4
+            },
+            "rounds": 3
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1
+        },
+        {
+          "enemy": "0/4",
+          "fac": "chorus",
+          "fleet_in": "5 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\"], hull 100%, credits 146.0",
+          "hull": 0.84,
+          "kind": "boss",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              38.7,
+              10.2,
+              7.1,
+              7.5,
+              7.5,
+              9.7
+            ],
+            "enemy_s_max": 38.67,
+            "enemy_s_mean": 13.44,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.07,
+              "activation": 1.05,
+              "aiEnd": 1.23,
+              "board": 0.05,
+              "command": 0.06,
+              "command_warning": 0.19,
+              "death": 0.32,
+              "fire": 1.29,
+              "hit": 0.05,
+              "move": 8.06,
+              "order": 0.23,
+              "ram": 0.29,
+              "round": 0.11,
+              "torpedo_miss": 0.43
+            },
+            "rounds": 6
+          },
+          "pfac": "voidsworn",
+          "player": "5/5",
+          "raw": "win",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1
+        },
+        {
+          "enemy": "7/9",
+          "fac": "hegemony",
+          "fleet_in": "6 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\", \"penitent\"], hull 100%, credits 3.0",
+          "hull": 0.52,
+          "kind": "battle",
+          "obj": "hold",
+          "pace": {
+            "by_round": [
+              41.4,
+              48.4,
+              36.3,
+              37.6,
+              21.6,
+              21.4
+            ],
+            "enemy_s_max": 48.36,
+            "enemy_s_mean": 34.47,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.34,
+              "activation": 2.45,
+              "aiEnd": 3.84,
+              "death": 0.25,
+              "fire": 6.47,
+              "hit": 0.05,
+              "move": 20.48,
+              "order": 0.05,
+              "round": 0.29,
+              "tick": 0.05,
+              "torpedo_miss": 0.21
+            },
+            "rounds": 6
+          },
+          "pfac": "voidsworn",
+          "player": "2/6",
+          "raw": "retreat",
+          "result": "retreat",
+          "rounds": 7,
+          "sector": 2
+        },
+        {
+          "enemy": "1/5",
+          "fac": "deathless",
+          "fleet_in": "2 ships [\"penitent\", \"penitent\"], hull 100%, credits 3.0",
+          "hull": 0.0,
+          "kind": "elite",
+          "obj": "ambush",
+          "pace": {
+            "by_round": [
+              22.9,
+              27.5,
+              26.6,
+              22.0,
+              16.1,
+              7.8,
+              17.2,
+              2.4,
+              3.1,
+              4.5,
+              5.1,
+              3.4,
+              3.6,
+              4.6
+            ],
+            "enemy_s_max": 27.47,
+            "enemy_s_mean": 11.92,
+            "movement": "cinematic",
+            "per_round_by_kind": {
+              "ability": 0.21,
+              "activation": 0.99,
+              "aiEnd": 1.27,
+              "death": 0.16,
+              "fire": 2.89,
+              "move": 4.59,
+              "risen": 0.74,
+              "round": 0.6,
+              "tick": 0.48
+            },
+            "rounds": 14
+          },
+          "pfac": "voidsworn",
+          "player": "0/2",
+          "raw": "loss",
+          "result": "loss",
+          "rounds": 14,
+          "sector": 2
+        }
+      ],
+      "mode": "campaign",
+      "offered": {
+        "backMap": 6,
+        "boonDecline": 1,
+        "boonReroll": 1,
+        "buyHull": 10,
+        "buyMod": 12,
+        "buyTrack": 15,
+        "closeModal": 5,
+        "enterNode": 24,
+        "equip": 22,
+        "eventChoice": 5,
+        "factionVerb": 7,
+        "fleetFromModal": 1,
+        "fleetScreen": 12,
+        "leaveYard": 8,
+        "lineage": 8,
+        "pickAdmiral": 2,
+        "pickAspect": 3,
+        "pickFaction": 12,
+        "repair": 1,
+        "repairAll": 1,
+        "salvageStep": 4,
+        "saveQuit": 12,
+        "sellShip": 36,
+        "startRun": 2,
+        "takeBoon": 3,
+        "takePerk": 20,
+        "takeRelic": 5,
+        "takeSalvage": 20,
+        "title": 2,
+        "unequip": 7,
+        "upgradeMk": 16,
+        "yardFleet": 8
+      },
+      "pressed": {
+        "backMap": 1,
+        "buyHull": 3,
+        "closeModal": 4,
+        "enterNode": 12,
+        "equip": 3,
+        "eventChoice": 2,
+        "fleetFromModal": 1,
+        "leaveYard": 3,
+        "pickAdmiral": 1,
+        "pickAspect": 1,
+        "repairAll": 1,
+        "salvageStep": 4,
+        "startRun": 1,
+        "takeBoon": 1,
+        "takePerk": 10,
+        "takeRelic": 2,
+        "takeSalvage": 4,
+        "unequip": 2,
+        "upgradeMk": 1
+      },
+      "real_s": 161.903,
+      "result": "loss",
+      "run": 5,
+      "sector": 2,
+      "seed": 363
+    }
+  ],
+  "softlocks": 0,
+  "started": "2026-11-19T15:53:16",
+  "summary": "5 runs, 3 wins, 5 errors, 0 softlocks, 1590.7 s real time (average 318.1 s)"
+}

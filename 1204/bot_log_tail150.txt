@@ -1,0 +1,150 @@
+﻿   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
+   at: has_point (./core/math/rect2.h:185)
+   GDScript backtrace (most recent call first):
+       [0] hit_at (res://ui/battle/ledger.gd:922)
+       [1] layout (res://ui/battle/ledger.gd:270)
+       [2] ensure_layout (res://ui/battle/ledger.gd:224)
+       [3] _draw (res://ui/battle/ledger.gd:831)
+[attach] battle x01 V16_37: skipped 0; core hp 4 ray 0 centre 0 skip 0; gun hp 31 ray 0 centre 0 skip 0; rcs hp 0 ray 1402 centre 0 skip 0; breach hp 2 ray 2 centre 0 skip 0; scorch hp 0 ray 7 centre 0 skip 0
+[attach] battle x02 V16_37: skipped 0; gun hp 34 ray 0 centre 0 skip 0; core hp 4 ray 0 centre 0 skip 0; rcs hp 0 ray 430 centre 0 skip 0; breach hp 2 ray 3 centre 0 skip 0; scorch hp 0 ray 7 centre 0 skip 0; flare hp 0 ray 3 centre 0 skip 0
+[attach] battle x03 D21_23: skipped 0; rcs hp 203 ray 301 centre 0 skip 0; breach hp 3 ray 2 centre 0 skip 0; scorch hp 0 ray 7 centre 0 skip 0; gun hp 43 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 D9_23: skipped 0; gun hp 15 ray 0 centre 0 skip 0; breach hp 1 ray 1 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; rcs hp 11 ray 31 centre 0 skip 0
+[attach] battle x07 D20_23: skipped 0; core hp 5 ray 0 centre 0 skip 0; gun hp 39 ray 0 centre 0 skip 0; rcs hp 59 ray 61 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0
+[attach] battle x04 D20_23: skipped 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 20 ray 18 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; core hp 4 ray 0 centre 0 skip 0; gun hp 15 ray 0 centre 0 skip 0; rcs hp 0 ray 390 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x06 D21_23: skipped 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; rcs hp 89 ray 15 centre 0 skip 0
+[botrun] {"battles":6,"clicks":57,"errors":["231 engine or script errors, first: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point | Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size. (rect2.h:185) has_point"],"game_s":161.881,"log":[{"enemy":"1/3","fac":"corsair","fleet_in":"3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 120","hull":0.99,"kind":"battle","obj":"rout","pace":{"by_round":[37.6,6.0],"enemy_s_max":37.63,"enemy_s_mean":21.79,"movement":"cinematic","per_round_by_kind":{"ability":0.65,"activation":2.36,"aiEnd":1.39,"death":0.3,"fire":5.68,"move":10.08,"round":0.61,"torpedo":0.73},"rounds":2},"pfac":"voidsworn","player":"3/3","raw":"win","result":"win","rounds":2,"sector":1},{"enemy":"1/4","fac":"chorus","fleet_in":"3 ships [\"penitent\", \"harrow\", \"warden\"], hull 100%, credits 184.0","hull":0.75,"kind":"battle","obj":"ambush","pace":{"by_round":[29.0,14.2,19.7,11.5,11.5],"enemy_s_max":28.99,"enemy_s_mean":17.16,"movement":"cinematic","per_round_by_kind":{"ability":0.22,"activation":1.13,"aiEnd":1.47,"fire":4.89,"move":8.82,"round":0.1,"torpedo_miss":0.53},"rounds":5},"pfac":"voidsworn","player":"3/3","raw":"win","result":"win","rounds":6,"sector":1},{"enemy":"4/8","fac":"chorus","fleet_in":"5 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\"], hull 100%, credits 11.0","hull":0.86,"kind":"elite","obj":"intercept","pace":{"by_round":[32.2,33.9,30.4],"enemy_s_max":33.93,"enemy_s_mean":32.16,"movement":"cinematic","per_round_by_kind":{"ability":0.75,"activation":3.28,"aiEnd":2.88,"fire":4.04,"move":19.24,"order":0.44,"ram":0.72,"round":0.41,"torpedo_miss":0.4},"rounds":3},"pfac":"voidsworn","player":"5/5","raw":"win","result":"win","rounds":4,"sector":1},{"enemy":"0/4","fac":"chorus","fleet_in":"5 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\"], hull 100%, credits 146.0","hull":0.84,"kind":"boss","obj":"ambush","pace":{"by_round":[38.7,10.2,7.1,7.5,7.5,9.7],"enemy_s_max":38.67,"enemy_s_mean":13.44,"movement":"cinematic","per_round_by_kind":{"ability":0.07,"activation":1.05,"aiEnd":1.23,"board":0.05,"command":0.06,"command_warning":0.19,"death":0.32,"fire":1.29,"hit":0.05,"move":8.06,"order":0.23,"ram":0.29,"round":0.11,"torpedo_miss":0.43},"rounds":6},"pfac":"voidsworn","player":"5/5","raw":"win","result":"win","rounds":6,"sector":1},{"enemy":"7/9","fac":"hegemony","fleet_in":"6 ships [\"penitent\", \"harrow\", \"warden\", \"penitent\", \"warden\", \"penitent\"], hull 100%, credits 3.0","hull":0.52,"kind":"battle","obj":"hold","pace":{"by_round":[41.4,48.4,36.3,37.6,21.6,21.4],"enemy_s_max":48.36,"enemy_s_mean":34.47,"movement":"cinematic","per_round_by_kind":{"ability":0.34,"activation":2.45,"aiEnd":3.84,"death":0.25,"fire":6.47,"hit":0.05,"move":20.48,"order":0.05,"round":0.29,"tick":0.05,"torpedo_miss":0.21},"rounds":6},"pfac":"voidsworn","player":"2/6","raw":"retreat","result":"retreat","rounds":7,"sector":2},{"enemy":"1/5","fac":"deathless","fleet_in":"2 ships [\"penitent\", \"penitent\"], hull 100%, credits 3.0","hull":0.0,"kind":"elite","obj":"ambush","pace":{"by_round":[22.9,27.5,26.6,22.0,16.1,7.8,17.2,2.4,3.1,4.5,5.1,3.4,3.6,4.6],"enemy_s_max":27.47,"enemy_s_mean":11.92,"movement":"cinematic","per_round_by_kind":{"ability":0.21,"activation":0.99,"aiEnd":1.27,"death":0.16,"fire":2.89,"move":4.59,"risen":0.74,"round":0.6,"tick":0.48},"rounds":14},"pfac":"voidsworn","player":"0/2","raw":"loss","result":"loss","rounds":14,"sector":2}],"mode":"campaign","offered":{"backMap":6,"boonDecline":1,"boonReroll":1,"buyHull":10,"buyMod":12,"buyTrack":15,"closeModal":5,"enterNode":24,"equip":22,"eventChoice":5,"factionVerb":7,"fleetFromModal":1,"fleetScreen":12,"leaveYard":8,"lineage":8,"pickAdmiral":2,"pickAspect":3,"pickFaction":12,"repair":1,"repairAll":1,"salvageStep":4,"saveQuit":12,"sellShip":36,"startRun":2,"takeBoon":3,"takePerk":20,"takeRelic":5,"takeSalvage":20,"title":2,"unequip":7,"upgradeMk":16,"yardFleet":8},"pressed":{"backMap":1,"buyHull":3,"closeModal":4,"enterNode":12,"equip":3,"eventChoice":2,"fleetFromModal":1,"leaveYard":3,"pickAdmiral":1,"pickAspect":1,"repairAll":1,"salvageStep":4,"startRun":1,"takeBoon":1,"takePerk":10,"takeRelic":2,"takeSalvage":4,"unequip":2,"upgradeMk":1},"real_s":161.903,"result":"loss","run":5,"sector":2,"seed":363}
+[botrun] SUMMARY 5 runs, 3 wins, 5 errors, 0 softlocks, 1590.7 s real time (average 318.1 s)
