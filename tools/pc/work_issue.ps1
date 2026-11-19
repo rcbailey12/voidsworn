@@ -15,7 +15,7 @@
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
-#   work_issue.ps1 tidy    <run folder> <root> <settings> <ok> <dry>  run folder size; removes repo\ only if Ryan's setting allows
+#   work_issue.ps1 tidy    <run folder> <root> <settings> <dry>       run folder size; checks status.json and the repo before cleanup
 # Keys come from the environment (DEEPSEEK_API_KEY, MOONSHOT_API_KEY, KIMI_CODE_API_KEY) and are never written to any file.
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -759,9 +759,8 @@ elseif ($mode -eq 'confirm') {
 }
 elseif ($mode -eq 'tidy') {
   # Every run: report the run folder's size. Only when Ryan's setting says yes (off by default) and the run ended in a
-  # checked push, remove the run's own repo\ copy; out\ (reports, logs, shots, refused files) is always kept.
-  $ErrorActionPreference = 'Continue'
-  $run = $args[1]; $root = $args[2]; $setf = $args[3]; $ok = $args[4]; $dry = $args[5]
+  # checked push with no local-only work, remove the run's own repo\ copy and keep out\.
+  $run = $args[1]; $root = $args[2]; $setf = $args[3]; $dry = $args[4]
   function SizeOf($p) { if (-not (Test-Path -LiteralPath $p)) { return [double]0 }; $s = (Get-ChildItem -LiteralPath $p -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum; if ($s) { return [double]$s } else { return [double]0 } }
   $repo = Join-Path $run 'repo'; $outd = Join-Path $run 'out'
   $rs = SizeOf $repo; $os = SizeOf $outd
@@ -770,12 +769,46 @@ elseif ($mode -eq 'tidy') {
   if (Test-Path -LiteralPath $setf) { foreach ($l in [IO.File]::ReadAllLines($setf)) { if ($l.Trim() -ieq 'remove_repo_copy_after_push=yes') { $on = $true } } }
   if (-not (Test-Path -LiteralPath $repo)) { exit 0 }
   if (-not $on) { Write-Host "repo copy kept: remove_repo_copy_after_push is not yes in $setf"; exit 0 }
-  if ($ok -ne '1') { Write-Host 'repo copy kept: the setting is on, but this run did not end in a checked push'; exit 0 }
-  $runFull = [IO.Path]::GetFullPath($run).TrimEnd('\'); $rootFull = [IO.Path]::GetFullPath($root).TrimEnd('\') + '\'
-  if (-not $runFull.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath (Join-Path $repo '.git')) -or -not (Test-Path -LiteralPath (Join-Path $outd 'result.txt'))) {
-    Write-Host "repo copy kept: safety check failed (the run folder must sit under $root and hold repo\.git and out\result.txt)"; exit 0
+  try {
+    $state = Get-Content -LiteralPath (Join-Path $outd 'status.json') -Raw | ConvertFrom-Json
+    if ($dry -eq '1' -or $state.status -ne 'checked_push' -or $state.commit -notmatch '^[0-9a-f]{40,64}$') {
+      throw 'this run did not end in a checked push'
+    }
+    $repo = [IO.Path]::GetFullPath($repo)
+    $rootFull = [IO.Path]::GetFullPath($root).TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
+    if (-not $repo.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase) -or
+        -not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container) -or
+        -not (Test-Path -LiteralPath (Join-Path $outd 'result.txt') -PathType Leaf)) {
+      throw 'the repo and result could not be verified under the workhorse root'
+    }
+    for ($dir = Get-Item -LiteralPath $repo -Force; $dir; $dir = $dir.Parent) {
+      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout path contains a link' }
+    }
+    if (@(Get-ChildItem -LiteralPath $repo -Recurse -Force -Attributes ReparsePoint | Select-Object -First 1).Count) {
+      throw 'checkout contains a link'
+    }
+    $top = Git-One -C $repo rev-parse --show-toplevel
+    if ($gx -ne 0 -or [IO.Path]::GetFullPath($top) -ne $repo) { throw 'checkout root could not be verified' }
+    $worktrees = @(Git-Lines -C $repo worktree list --porcelain | Where-Object { $_ -like 'worktree *' })
+    if ($gx -ne 0 -or $worktrees.Count -ne 1) { throw 'checkout may be shared with another worktree' }
+    # Check refs on the remote itself. Local tracking refs can be stale, and reflogs can hold work without a branch.
+    $refs = @(Git-Lines -C $repo ls-remote --refs origin)
+    if ($gx -ne 0 -or $refs -cnotcontains "$($state.commit)`trefs/heads/$($state.branch)") {
+      throw 'delivery branch could not be verified at the pushed commit'
+    }
+    $exclude = @($refs | ForEach-Object { if ($_ -match '^([0-9a-f]{40,64})\trefs/') { '^' + $Matches[1] } })
+    $local = @($exclude | & git -C $repo rev-list --all --reflog HEAD --max-count=1 --ignore-missing --stdin 2>$null)
+    if ($LASTEXITCODE -ne 0 -or $local.Count) { throw 'checkout may contain local-only history' }
+    $head = Git-One -C $repo rev-parse HEAD
+    if ($gx -ne 0 -or $head -cne $state.commit) { throw 'checkout HEAD differs from the checked push' }
+    $flags = @(Git-Lines -C $repo ls-files -v)
+    if ($gx -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
+    $status = @(Git-Lines -C $repo status --porcelain=v1 --untracked-files=all --ignored --ignore-submodules=none)
+    if ($gx -ne 0 -or $status.Count) { throw 'checkout may contain tracked edits, untracked files or ignored files' }
+  } catch {
+    Write-Host "repo copy kept: $($_.Exception.Message)"
+    exit 0
   }
-  if ($dry -eq '1') { Write-Host ('dry run: the setting is on and the push was checked, so a real run would now remove {0} ({1:N2} GB) and keep out\; nothing removed' -f $repo, ($rs / 1GB)); exit 0 }
   $pauseFlag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
   if (Test-Path -LiteralPath $pauseFlag) {
     try { $paused = (Get-Content -LiteralPath $pauseFlag -TotalCount 1 -ErrorAction Stop) -match '^GPU not cleared: paused by the Board\b' }
@@ -783,7 +816,6 @@ elseif ($mode -eq 'tidy') {
     if ($paused) { Write-Host 'repo copy kept during the PC pause'; exit 0 }
   }
   Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
-  if (Test-Path -LiteralPath $repo) { & cmd.exe /c rd /s /q "\\?\$repo" 2>$null }
   if (Test-Path -LiteralPath $repo) { Write-Host ('repo copy only partly removed: {0:N2} GB left in {1}' -f ((SizeOf $repo) / 1GB), $repo) }
   else { Write-Host ('repo copy removed after the checked push (Ryan''s setting): {0}, {1:N2} GB freed; out\ kept' -f $repo, ($rs / 1GB)) }
   exit 0

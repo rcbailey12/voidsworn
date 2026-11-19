@@ -726,7 +726,7 @@ func shield_break(fx, quad: int) -> void:
 
 # Match pop's comfort booking and soft fallback, without its free-standing disc.
 func _shield_flash(fx, p: Vector3, T: float, col: Color, size: float, intensity: float, life: float) -> void:
-	if not fx.reduce_flashing and fx.flash_at(p, T, size, 0.0, life):
+	if fx.flash_at(p, T, size, SH.flash_sprite_floor(0, 0.0), life):
 		fx._emit_spr(p, T, life, col, intensity, size * 0.6, size, 0)
 	else:
 		fx.spr(p, T, maxf(life * 3.0, 0.4), col, minf(intensity, 3.0) * 0.4, size * 0.5, size * 1.2, 18)

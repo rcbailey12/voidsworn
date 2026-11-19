@@ -29,9 +29,7 @@ const REACH_ATTEN := 0.6
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
 const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1 general flash threshold)
 const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
-const FLASH_SCREEN := 0.06   # ... and only when it covers at least this share of the screen height (small sparks are free)
 const FLASH_LIGHT := 8.0     # light peak from which a decaying event light counts (it lights a big patch of hull)
-const FLASH_KINDS := [0, 2, 12, 13, 24]   # includes the distance-readable death core
 
 # --- the flash counter's assumptions, all in one place (issue 504; W3C Understanding SC 2.3.1)
 # W3C counts a general flash only when "the combined area of flashes occurring concurrently" passes ".006 steradians
@@ -121,7 +119,7 @@ var rng = RandomNumberGenerator.new()
 
 # --- lights
 var _lpool: Array = []
-var _lev: Array = []        # [pos, t0, life, peak, col, shape, reach]
+var _lev: Array = []        # [pos, t0, life, peak, col, shape, reach, started]
 var _lsrc: Array = []       # persistent: {node, off, col, base, flick, seed}
 
 # --- feel
@@ -450,14 +448,16 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 	# every bright, short, flash-like sprite goes through the flash budget here, whoever calls it (muzzle cores, beam
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
 	# Issue 504: the counter adds this sprite's lit area to the bright ones around it (flash_at).
-	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or not flash_at(p, t, maxf(s0, s1), px, life)):
-		kind = 18
-		i = minf(i, 3.0) * 0.4
-		life = maxf(life * 3.0, 0.4)
+	if i >= FLASH_I and life <= 0.6 and SH.FLASH_SPRITE_FLOORS.has(kind):
+		var size := s0 if kind == 13 else maxf(s0, s1) # The crackle does not grow.
+		if not flash_at(p, t, size, SH.flash_sprite_floor(kind, px), life):
+			kind = 18
+			i = minf(i, 3.0) * 0.4
+			life = maxf(life * 3.0, 0.4)
 	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px)
 
 
-# The sprite itself, after the flash decision (pop books its own, so it must not be booked twice).
+# The sprite itself, after the flash decision. Pop and shield crackle book their own pictures.
 func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
 		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
@@ -711,15 +711,24 @@ func _flash_vh() -> float:
 	return 1080.0
 
 
-# Where a flash sits on screen and how wide it is drawn: [x, y, d] in viewport pixels, or empty when behind the camera.
+# [Screen x, y, diameter]. Like the billboard shaders, project a camera-facing extent at its view-space Z.
+# Match px_world in fx_shaders.gd for the floor, including orthographic cameras and the near-depth clamp.
 func _flash_disc(p: Vector3, size: float, px: float) -> PackedFloat64Array:
 	if camera == null or not is_instance_valid(camera) or not camera.is_inside_tree() or camera.is_position_behind(p):
 		return PackedFloat64Array()
-	var d := maxf(camera.global_position.distance_to(p), 0.01)
-	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
-	var shown := maxf(size * unit / h, maxf(px, 14.0) * min_px / 1080.0)   # the same drawn size _flash_sized uses
+	var projection := camera.get_camera_projection()
+	var depth := -(camera.get_camera_transform().affine_inverse() * p).z
+	var ortho := projection.w.w > 0.5
+	var p11 := absf(projection.y.y)
+	var clip_w := 1.0 if ortho else depth
+	if clip_w <= 0.0:
+		return PackedFloat64Array()
+	var floor_depth := 1.0 if ortho else maxf(depth, 0.01)
+	var vh := _flash_vh()
+	var world_px := size * float(unit) * p11 * vh / (2.0 * clip_w)
+	var floor_px := px * float(min_px) * (vh / 1080.0) * (floor_depth / clip_w) * (p11 / maxf(p11, 0.0001))
 	var sp := camera.unproject_position(p)
-	return PackedFloat64Array([sp.x, sp.y, ceilf(shown * _flash_vh())])
+	return PackedFloat64Array([sp.x, sp.y, ceilf(maxf(world_px, floor_px))])
 
 
 func _flash_remember(T: float, life: float, c: PackedFloat64Array) -> void:
@@ -793,14 +802,11 @@ func _flash_lit_max(T: float, life: float, c: PackedFloat64Array) -> float:
 
 
 # A bright pop (impact flash, explosion core) through the budget: the full flash, or a ring and a gentle lift.
-# F3 round 2: a pop smaller on screen than the WCAG area threshold (6% of the screen height, `_flash_sized`, the same
-# rule spr uses) is not a counted flash and never waits on the budget; before, every pop booked a flash, so in a busy
-# fight most hits (and a dying ship's cook-off) used up the 3 a second and drew as faint lifts, and the kill's own blast
-# was refused. `px` is the pop's own pixel floor (see spr).
+# `px` is the pop's own pixel floor (see spr); a pop only spends a slot if the combined area calls for it.
 func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.UP, life := 0.14, px := 0.0) -> void:
 	# Issue 504: one booking by area (flash_at), whatever its brightness (as on main: every pop is a candidate); the
 	# bright sprite is then drawn without a second booking.
-	if not reduce_flashing and flash_at(p, T, size, px, life):
+	if flash_at(p, T, size, SH.flash_sprite_floor(0, px), life):
 		_emit_spr(p, T, life, col, i, size * 0.6, size, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	else:
 		spr(p, T, maxf(life * 3.0, 0.4), col, minf(i, 3.0) * 0.4, size * 0.5, size * 1.2, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
@@ -816,7 +822,7 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 #
 # Issue 504: a light that goes with a refused flash is no longer dropped. It keeps its colour and place and rises softly
 # (shape 3: a 0.1 s or longer rise, then the same fall) at most just under the peak that counts, so the hulls around a
-# refused flash are still lit without a sharp step. Reduce flashing is untouched (its own path below).
+# refused flash are still lit without a sharp step. Reduce Flashing also softens queued or already visible lights.
 # Issue 461 (audit item 11): `reach` is how far the light carries, in world units (0: the pool's standing 30, about 1.7
 # hexes). A torpedo hit and a death's core flash pass two to three hexes, so the hulls round them are lit for the length
 # of the flash. Reach changes only how far the light falls off, never its peak, so the flash counter's rules are the same.
@@ -836,19 +842,8 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
-	_lev.append([p, t, life, peak, col, shape, reach])
-
-
-# Whether a sprite of this size at p is big enough on screen to count as a flash (WCAG counts flashes by area; small
-# muzzle flashes and sparks at battle zoom are below it). With no camera every bright sprite counts.
-func _flash_sized(p: Vector3, size: float, px := 0.0) -> bool:
-	if camera == null or not is_instance_valid(camera):
-		return true
-	var d := maxf(camera.global_position.distance_to(p), 0.01)
-	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
-	# the shaders' pixel floors grow a sprite on screen: count the size it is drawn at (round 2)
-	var shown := maxf(size * unit / h, maxf(px, 14.0) * min_px / 1080.0)
-	return shown >= FLASH_SCREEN
+		shape = 3
+	_lev.append([p, t, life, peak, col, shape, reach, false])
 
 
 func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3) -> Dictionary:
@@ -863,13 +858,29 @@ func _update_lights() -> void:
 	var cp = camera.global_position if camera != null else Vector3.ZERO
 	for e in _lev:
 		var a: float = now - float(e[1])
+		if a < 0.0:
+			keep.append(e)
+			continue
 		var life: float = e[2]
 		if a > life:
 			continue
+		if int(e[5]) == 0:
+			if reduce_flashing:
+				# A light scheduled while normal gets the same soft rise as a light scheduled in calm mode.
+				e[3] *= 0.45
+				e[2] *= 1.8
+				e[5] = 3
+			elif not bool(e[7]):
+				# Baked pictures book when they appear, after some of their lights were queued.
+				for f in _refused:
+					if absf(f - float(e[1])) < FLASH_WINDOW:
+						e[3] = minf(float(e[3]), FLASH_LIGHT * 0.9)
+						e[2] = maxf(life * 1.8, 0.4)
+						e[5] = 3
+						break
+		e[7] = true
 		keep.append(e)
-		if a < 0.0:
-			continue
-		var u = a / life
+		var u = a / float(e[2])
 		var I = 0.0
 		match int(e[5]):
 			0: I = pow(1.0 - u, 2.0)

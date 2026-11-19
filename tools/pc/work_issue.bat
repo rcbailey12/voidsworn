@@ -30,7 +30,7 @@ rem      must be that commit with that diff (out\pushed_diffstat.txt). Any diffe
 rem      in result.txt, out\DIFF_MISMATCH.txt, exit code 10.
 rem  (disk) Every run ends with its folder size in result.txt. Only when work217\runner_settings.txt says
 rem      remove_repo_copy_after_push=yes (off by default; Ryan turns it on once with WORKHORSE_CLEANUP.bat) does a run whose
-rem      push was checked remove its own repo\ copy; out\ is always kept. A dry run never removes anything.
+rem      checked_push and no local-only work removes its own repo\ copy; out\ is always kept.
 rem Runner 3 (issue 722, Nov 15 2026; Muse audit 706 findings 6 and 7):
 rem  (model) Every run stamps the resolved model id into out\status.json and result.txt, and result.txt warns when it
 rem      differs from the arm's default, whatever the provider: a same-provider WORK_MODEL override (invisible to the
@@ -63,6 +63,7 @@ rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use 
 if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
 if /i "%ARM%"=="openai" set "MODEL=openai/gpt-6.2-sol"
 if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-opus-or-openai [dryrun] & exit /b 2)
+for %%A in (deepseek deepseekpro kimi kimicode sonnet opus openai) do if /i "%ARM%"=="%%A" set "ARM=%%A"
 rem The arm default, captured before WORK_MODEL below: issue 722 stamps the resolved model and warns when it differs.
 set "DEFAULT_MODEL=%MODEL%"
 rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
@@ -118,7 +119,8 @@ if defined KHARNESS set "RESOLVED=%KMODEL%"
 if defined KHARNESS set "DEFAULT_MODEL=kimi-code/kimi-for-coding"
 set "OC=%APPDATA%\npm\opencode.cmd"
 if "%PC_RUNNER_TEST%"=="1" if /i "%ARM%"=="openai" set "OC=%WORK_TEST_AGENT%"
-set "BR=work/issue-%N%-%ARM%"
+set "ASSIGNED_BRANCH=work/issue-%N%-%ARM%"
+set "BR=%ASSIGNED_BRANCH%"
 rem How the run ends: real pushes to GitHub; dry is "git push --dry-run"; test pushes for real to WORK_TEST_BRANCH.
 set "PUSHMODE=real"
 set "DRY=0"
@@ -143,7 +145,6 @@ set "A=%WORK_ROOT%\%K%\%STAMP%"
 set "R=%A%\repo"
 set "O=%A%\out"
 set "RC=0"
-set "OK=0"
 set "CHECKS_OK=0"
 rem R276: all nested GPU launchers inherit the issue and the code-only lane.
 set "PC_GPU_ISSUE=%N%"
@@ -181,7 +182,7 @@ if /i "%ARM%"=="openai" (
   if errorlevel 1 goto :setupfail
 )
 rem Every work arm, including Kimi, validates and claims before tools, checkout or model calls (issue 888).
-%COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%"
+%COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%" "%ASSIGNED_BRANCH%"
 if errorlevel 1 exit /b 14
 if /i not "%ARM%"=="openai" (
   if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
@@ -417,7 +418,6 @@ if not "%SX%"=="0" goto :stopped
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_pushed.txt"
 %PS% stats %N% %ARM% "%O%" > nul
 if "%PUSHMODE%"=="dry" (echo dry run: push to %PB% would work, nothing pushed >> "%O%\result.txt") else (echo pushed %PB% >> "%O%\result.txt")
-if not defined PARTIAL set "OK=1"
 goto :finish
 
 :getkey
@@ -425,7 +425,7 @@ for /f "tokens=2,*" %%a in ('reg query HKCU\Environment /v %1 2^>nul ^| findstr 
 exit /b 0
 :settings
 > "%SETF%" echo # Workhorse runner settings (issue 377, issue 722). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
->> "%SETF%" echo # remove_repo_copy_after_push=yes: after a push the runner has checked, it removes that run's repo copy and keeps out.
+>> "%SETF%" echo # remove_repo_copy_after_push=yes: after checked_push, remove a run's repo copy if it holds no local-only work.
 >> "%SETF%" echo remove_repo_copy_after_push=no
 >> "%SETF%" echo # min_free_gb: the run refuses to start when the drive holding Downloads\voidsworn_test has less free space than this (issue 722).
 >> "%SETF%" echo min_free_gb=60
@@ -477,5 +477,5 @@ if defined PC_RUN_TEMP set "TEMP=%PC_RUN_TEMP%"
 if defined PC_RUN_TEMP set "TMP=%PC_RUN_TEMP%"
 if defined PC_RUN_TEMP set "TMPDIR=%PC_RUN_TEMP%"
 rem (disk) The run folder's size, and the repo copy removed only when Ryan's setting allows it and the push was checked.
-%PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" %OK% %DRY% >> "%O%\result.txt" 2>&1
+%PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" "%DRY%" >> "%O%\result.txt" 2>&1
 exit /b %RC%
