@@ -26,6 +26,7 @@ const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
 const HT := preload("res://render/hull_table.gd")
+const FLOOK := preload("res://fx/faction_look.gd")   # issue 1205: faction colours come from fx/faction_looks.json only
 const HUD := preload("res://ui/battle/hud.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const Fx := preload("res://scenes/battle/fx_stub.gd")
@@ -1318,7 +1319,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 		"blink":
 			var sv = views.get(e["unit"])
 			if sv != null:
-				var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "ithar")), HT.FAC3D["ithar"])["eng"]
+				var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "ithar")))
 				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 				sfx.play("phase", {"pos": sv.visual_position()})
 				await wait(250.0)
@@ -1385,7 +1386,7 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 			var A = TBL.get("ABILITIES", {}).get(ab, {})
 			if ab != "launch":
 				_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
-			var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "hegemony")), HT.FAC3D["hegemony"])["eng"]
+			var c: Color = FLOOK.engine(str(VU.get(e["unit"], {}).get("fac", "hegemony")))
 			if gfx != null and gfx.has_method("ability"):
 				gfx.ability(str(e["unit"]), ab)
 			else:
@@ -1919,7 +1920,6 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		await wait(320.0)
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
-	var P: Dictionary = HT.FAC3D.get(fac, HT.FAC3D["hegemony"])
 	var fam := _wfam(u, e)
 	var shots: Array = e["shots"]
 	var n := shots.size()
@@ -1938,12 +1938,12 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			hits.append(g)
 		elif g["t"] == "system":
 			sys_txt = str(g["text"])
-	var col: Color = P["beam"] if fam in ["lance", "ion"] else P["bolt"]
+	var col: Color = FLOOK.weapon(fac)
 	if fam == "ion":
 		col = Color(0.45, 0.75, 1.0)
 	var tsv = views.get(t_id)
 	var L: float = tsv.L if tsv != null else 10.0
-	var shield_col: Color = HT.FAC3D.get(str(VU.get(t_id, {}).get("fac", "hegemony")), P)["shield"]
+	var shield_col: Color = FLOOK.shield(str(VU.get(t_id, {}).get("fac", "hegemony")))
 	var total := 0.0
 	var torp_result_scheduled := false
 	var hi := 0
@@ -2088,7 +2088,7 @@ var torp_marks := {}      # salvo id -> placeholder marker (when G4's lanes are 
 
 
 func _torp_marker(id: String, a: Vector3, aim: Vector3, fac: String) -> void:
-	var col: Color = HT.FAC3D.get(fac, HT.FAC3D["hegemony"])["bolt"]
+	var col: Color = FLOOK.weapon(fac)
 	var root := Node3D.new()
 	add_child(root)
 	var dir := (aim - a)
