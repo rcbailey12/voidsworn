@@ -26,7 +26,9 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 
 1. Runs from its own copy, `JOB_DIR\ship_job_running.bat`: cmd reads a .bat as it goes, so a checkout must never rewrite the
    file that is running.
-2. Its own clone `JOB_DIR\repo` (depth 50), then the branch. Every tracked change in the clone is listed and saved first
+2. Refreshes `Downloads\voidsworn_test\repo-mirror.git` under the same lock as the PC runner. A fresh
+   `JOB_DIR\repo` uses `git clone --local`, which hardlinks Git objects on the same drive. The job fetches `BRANCH`
+   and optional `PAINT_BASE` from the refreshed mirror. Every tracked change in the clone is listed and saved first
    (`out\clone_changes_before_checkout.txt` and `.patch`). A tracked change outside `godot/assets/ships/` (a hand fix left
    in the clone) stops the job with nothing reset. Only `godot/assets/ships/` (what stage 7's install writes, manifest.json
    among it) is restored from the clone's own commit. Tracked `godot/**/*.import` files, which the headless import rewrites (Nov 19: the S9 rerun stopped on 18 of them), are restored the same way after the patch is saved. The checkout itself is never forced and refuses to overwrite untracked
@@ -39,12 +41,18 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 5. The GPU readback, the authored interiors check and the death seam check on the installed glb. All three must pass (the old
    S10_RUN_1157.bat let a failed death seam through to the shots).
 6. The in-game shots at camera 170 and 60, only when everything above passed.
-7. The recipe folder copied (never moved) into `out\recipe`, on a pass or a fail, so the logs come back too.
+7. Collects deliverables into `out\recipe` on a pass or a fail. It copies `*.txt`, `*.json`, `*.md` and `*.jpg`,
+   the review images from `clay`, `r`, `close`, `surface`, `godot`, and `shots` or `shots_*`, and the requested
+   `export\<CODE>\` folder. In-game shots still go straight to `out\shots`.
+
+Blender files, loose PNG bake maps, other export codes, the `godot\proj` cache, `sil\`, and `b0.npz` stay under
+`Downloads\voidsworn_test\recipe\<SHIP>` for reruns and diagnosis.
 
 The last two lines of `result.txt` are always `done PASS` or `done FAILED: <step>`, then `all done`.
 
-It writes only under `voidsworn_test\JOB_DIR` and `voidsworn_test\recipe\SHIP` (the stages' own folder) and deletes nothing:
-an earlier run's `out` folder is renamed `out_before_<time>`. Every GPU step waits up to 3600 seconds for its claim, the
+An earlier run's `out` folder is renamed `out_before_<time>`. The newest two backups are kept off the janitor list.
+Older backups are recorded by full path in `out\out_before_for_janitor.txt`. All backup files stay on disk until the
+janitor can establish that the older files also exist in newer output. Every GPU step waits up to 3600 seconds for its claim, the
 most gpu_slots.js accepts (waiting never spends a command's time limit). The stages and tmo.bat run from the ship branch's own
 checkout, so a longer cap would only work once every ship branch carries it (Artoo on PR 1179: the S10 head rejects 21600).
 
@@ -53,8 +61,12 @@ per ship.
 
 Static test: `contrib/opus/tools/ship_job_tests.js` (in the standing checks, fast): the FAILED guard after every step that
 can fail and right before the shots, all three checks counted, the installed glb's age checked before the checks, the 3600
-default before the first GPU step, `done` then `all done` on every way out, no delete or move, logs only under `out`, and
-every wrapper in `wrappers/` three lines long. Removing a guard line or the death seam's CHECKFAIL line makes it fail.
+default before the first GPU step, `done` then `all done` on every way out, no delete or move, logs only under `out`,
+the mirror refresh and local clones, the deliverable filters, the two backups protected from the janitor list, and every
+wrapper in `wrappers/` three lines long. Removing a guard line or the death seam's CHECKFAIL line makes it fail.
+
+`tools\pc\jobs\look_bench.bat` uses the same mirror for its separate tool and game checkouts. It refreshes the mirror
+once per launch, then fetches from it into both checkouts, including when reusing existing clones.
 
 ### The proof port: S10 (issue 1157)
 
@@ -62,13 +74,13 @@ every wrapper in `wrappers/` three lines long. Removing a guard line or the deat
 
 | S10_RUN_1157.bat | ship_job.bat |
 |---|---|
-| clone `opus1157\repo` depth 1, check out opus/issue-1157 | own clone, depth 50 (so PAINT_BASE can merge), same branch |
+| clone `opus1157\repo` depth 1, check out opus/issue-1157 | own clone from the shared mirror, full history for PAINT_BASE, same branch |
 | import, exit logged, not checked | import, a failure stops the job |
 | stages 1 to 7 in a fresh cmd, a failed stage skips the rest | the same |
 | (no check that the install is this run's) | the installed glb must be newer than the run's start |
 | readback and interiors gate the shots; death seam logged only | all three gate the shots |
 | shots at 170 and 60, `--facs voidsworn --sets battle,close` | the same (FACS from SHIP, SETS default) |
-| recipe copied to `out\recipe`, export glb present | the same |
+| recipe copied to `out\recipe`, export glb present | deliverables copied to `out\recipe`, export glb present |
 | last lines `done` or `done FAILED`, `all done` | `done PASS` or `done FAILED: <step>`, `all done` |
 | GPU wait: whatever the launcher set (300 s unless set) | 3600 s by default |
 
