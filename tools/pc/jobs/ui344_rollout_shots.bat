@@ -3,7 +3,7 @@ rem Issue 344, UI rollout 1 (Lime Tactical on the campaign map and the between-b
 rem captures of every page at 1920x1080 and 2560x1440 (docs/shots/ui_redesign/rollout1/).
 rem Started (not called) by a tiny queue job, in its own window, so the queue stays free.
 rem Everything it writes is under Downloads\voidsworn_test\ui_rollout\ : its own clone (repo) and its output (out, or the folder
-rem named by the first argument). It reads audit2\repo\godot (gen, ships, the import cache) and copies from it; it deletes nothing.
+rem named by the first argument). It reads build\godot (gen, ships, the import cache) and copies from it; it deletes nothing.
 rem GPU: one GPU job at a time. It waits until ship round 7 has finished (opus209\out7\done7.txt) and the graphics card is idle,
 rem for up to 120 minutes, before Godot starts. It always ends by writing done.txt in its output folder.
 setlocal enabledelayedexpansion
@@ -13,7 +13,7 @@ set "R=%U%\repo"
 set "O=%U%\out"
 if not "%~1"=="" set "O=%U%\%~1"
 set "GD=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
-set "SRC=%VT%\audit2\repo\godot"
+set "SRC=%VT%\build\godot"
 if not exist "%O%" mkdir "%O%"
 echo start %date% %time% > "%O%\status.txt"
 rem ---- the clone: fresh, or fetch and check out the branch

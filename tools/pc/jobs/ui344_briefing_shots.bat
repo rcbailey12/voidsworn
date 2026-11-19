@@ -4,7 +4,7 @@ rem brief asks for, at 1920x1080 and 2560x1440 (docs/shots/ui_redesign/briefing/
 rem the between-battle pages are seen to still build over the calmer map.
 rem Started (not called) by a tiny queue job, in its own window, so the queue stays free.
 rem Everything it writes is under Downloads\voidsworn_test\ui_rollout\ : its own clone (repo) and its output (the folder named
-rem by the first argument, b1 when none). It reads audit2\repo\godot (gen, ships, the import cache) and copies from it.
+rem by the first argument, b1 when none). It reads build\godot (gen, ships, the import cache) and copies from it.
 rem It deletes nothing.
 rem GPU: one GPU job at a time. It waits, for up to 180 minutes, until no fx353 job is in queue\running and the graphics card is
 rem idle (under 15 percent for two checks a minute apart), before Godot starts. It always ends by writing done.txt.
@@ -15,7 +15,7 @@ set "R=%U%\repo"
 set "O=%U%\b1"
 if not "%~1"=="" set "O=%U%\%~1"
 set "GD=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
-set "SRC=%VT%\audit2\repo\godot"
+set "SRC=%VT%\build\godot"
 if not exist "%O%" mkdir "%O%"
 echo start %date% %time% > "%O%\status.txt"
 rem ---- the clone: fresh, or fetch and check out the branch
