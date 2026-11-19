@@ -298,9 +298,18 @@ side, heavy bakes and Blender renders take more of it, and nothing is started th
 graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
 Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
 bakes 2, with PC_GPU_WEIGHT for the job's chosen weight), or a solo claim that waits for every slot
-to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
-work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
-unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
+to empty and blocks new GPU work while it measures. Slot files are replaced atomically. A slot or solo claim with damaged JSON
+is moved to a retained `gpu_slot_corrupt_*` file so admission can resume. Damaged capacity settings stop admission.
+Claims name the issue, job directory or script. The watchdog and its GPU child each have a recorded PID, start time and
+executable name. The child is recorded before it can start work. A failed kill logs the survivors and leaves an
+`orphaned_child` claim until those exact processes are gone. Claims from older ship checkouts stay held while their PID
+is alive. Admission checks a snapshot outside the shared lock at most once a second. If the lookup fails or the claim files
+change during the lookup, admission waits and checks again. Child registration waits for the lock before starting the child.
+Drain GPU jobs before updating all shared tools copies together, since older launchers cannot track the child.
+A partial write or a reused PID could block the queue, and losing
+the watchdog or failing to kill its child could free capacity while the child was still using it (Board, issue 1193).
+`gpu_go.txt` still wins: no new GPU work starts unless its first line is `GPU cleared` (optionally followed by `: reason`);
+the gaming pause in 3.11 is unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
 graphicsa card can actually handle as a 5080. we don't want to overwhelm it but we don't want to artificially restrict small
 jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
 (R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
