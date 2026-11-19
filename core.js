@@ -327,18 +327,44 @@ function genSector(s){
     let rests=col.filter(n=>n.type==='shipyard'||n.type==='drydock'); while(rests.length>1){ rests.pop().type='battle'; rests=col.filter(n=>n.type==='shipyard'||n.type==='drydock'); }
     if(!col.some(n=>n.type==='battle'||n.type==='elite')){ const cand=col.filter(n=>n.type!=='shipyard'&&n.type!=='drydock'); (cand.length?pick(cand):col[col.length-1]).type='battle'; } }
   { const c3=ri(2,COLS-3), col=cols[c3], fights=col.filter(n=>n.type==='battle'||n.type==='elite'); const cand=col.filter(n=>n.type==='event'||(n.type==='battle'&&fights.length>1)); if(cand.length) pick(cand).type='field'; }
+  const edges=[];
+  for(let c=0;c<COLS-1;c++){
+    const from=cols[c], to=cols[c+1];
+    if(to.length===1 || (from.length===1 && to.length>2)){
+      for(const a of from) for(const b of to) edges.push([a.id,b.id]);
+      continue;
+    }
+    // Keep two types available and give each repeated type enough distinct origins.
+    const maxCopies=Math.min(from.length,to.length-1), counts={};
+    for(const b of to){
+      if(counts[b.type]===maxCopies){
+        if(c===COLS-3) b.type=b.type==='drydock'?'shipyard':'drydock';
+        else b.type=b.type==='battle'?'event':'battle';
+      }
+      counts[b.type]=(counts[b.type]||0)+1;
+    }
+    const routes=from.map(a=>({a, stops:[]}));
+    // Cover every stop, placing repeated types first while the most origins are free.
+    for(const b of [...to].sort((x,y)=>counts[y.type]-counts[x.type])){
+      const nearest=[...routes].sort((x,y)=>Math.abs(x.a.y-b.y)-Math.abs(y.a.y-b.y));
+      const route=nearest.find(r=>r.stops.length<2 && r.stops.every(n=>n.type!==b.type));
+      route.stops.push(b);
+    }
+    for(const {a,stops} of routes){
+      const nearest=[...to].sort((x,y)=>Math.abs(x.y-a.y)-Math.abs(y.y-a.y));
+      for(const b of nearest){
+        if(stops.length===2) break;
+        if(stops.every(n=>n.type!==b.type)) stops.push(b);
+      }
+      stops.sort((x,y)=>Math.abs(x.y-a.y)-Math.abs(y.y-a.y) || x.row-y.row);
+      for(const b of stops) edges.push([a.id,b.id]);
+    }
+  }
   for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite') Object.assign(n,rollEncounter(n.type,n.col)); // shown on the map
   if(typeof RUN!=='undefined'&&RUN) for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'||n.type==='boss') n.rw=rollNodeReward(n.type);
   // every column after the first offers at least one fight that isn't a plain Engagement, and no two neighbours share a fight type
   for(let c2=1;c2<COLS-1;c2++){ const f=cols[c2].filter(n=>n.type==='battle'||n.type==='elite'); if(f.length&&!f.some(n=>ENC_SPECIAL.includes(n.enc))){ const n=pick(f), e=pick(ENC_SPECIAL); n.enc=e; n.shape=pick(ENCOUNTERS[e].shapes); }
     for(let i=1;i<f.length;i++) if(f[i].enc===f[i-1].enc){ const e=pick(ENC_POOL.filter(x=>x!==f[i].enc)); f[i].enc=e; f[i].shape=pick(ENCOUNTERS[e].shapes); } }
-  const edges=[];
-  for(let c=0;c<COLS-1;c++){
-    const A=cols[c], B=cols[c+1];
-    for(const a of A){ const near=[...B].sort((x,y)=>Math.abs(x.y-a.y)-Math.abs(y.y-a.y));
-      edges.push([a.id,near[0].id]); if(near[1] && rnd()<.45 && Math.abs(near[1].y-a.y)<.5) edges.push([a.id,near[1].id]); }
-    for(const b of B){ if(!edges.some(e=>e[1]===b.id)){ const near=[...A].sort((x,y)=>Math.abs(x.y-b.y)-Math.abs(y.y-b.y))[0]; edges.push([near.id,b.id]); } }
-  }
   // fleet archetypes and node modifiers on ordinary fights (bosses keep their own escort)
   for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'){ const x=rnd(); n.arch=x<.25?'swarm':x<.47?'heavy':x<.62?'carrier':null; const y=rnd(); n.mod=n.col>=2&&y<.14?'bounty':n.col>=2&&n.type==='battle'&&y<.26?'veteran':null; }
   // one condition per sector, never the same twice in a run
