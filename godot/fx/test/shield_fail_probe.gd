@@ -12,7 +12,8 @@ extends SceneTree
 ##   PROBE_SHAPES     fitted,egg (default both)
 ##   PROBE_LOOKS      today,shear,collapse (default all three); "shear_low" is the shear with the cheaper crack network
 ##   PROBE_RADII      camera radii, comma list (default 170,60)
-##   PROBE_CLIP       1: write clip frames (every second frame, 1280x720) per story
+##   PROBE_CLIP       1: clip frames (every second frame, 1280x720, 30 a second) at camera 170: one folder per subject and
+##                    shield shape, the three looks back to back, each after a one second title card
 ##   PROBE_COST       1: the cost pass instead (PROBE_COST_SHIPS shielded ships, every one failing at once, GPU time)
 ##   PROBE_BLOCKS     1: allow placeholder blocks (a cloud preview of the script only, never a picture for Ryan)
 ## Prints SHIELD1078_DONE (or SHIELD1078_FAILED) last.
@@ -186,10 +187,16 @@ func _story(sid: String, shape: String, look: String, radius: int) -> void:
 	bench.fx.rng.seed = 11
 	seed(2070)
 	clip_dir = ""
-	if _env("PROBE_CLIP", "") == "1":
-		clip_dir = out.path_join("clip_%s_%s_c%d_%s" % [sid, shape, radius, look])
-		DirAccess.make_dir_recursive_absolute(clip_dir)
-		clip_n = 0
+	if _env("PROBE_CLIP", "") == "1" and radius == 170:
+		clip_dir = out.path_join("clip_%s_%s_c%d" % [sid, shape, radius])
+		if not DirAccess.dir_exists_absolute(clip_dir):
+			DirAccess.make_dir_recursive_absolute(clip_dir)
+			clip_n = 0
+		var card := await _card("SHIELD1078 %s · prototype · %s shield · %s · camera %d" % [REV, shape, str(rules_hulls[sid].get("n", sid)), radius],
+			LOOK_NAMES.get(look, look))
+		for i in 30:
+			card.save_jpg(clip_dir.path_join("f_%04d.jpg" % clip_n), 0.9)
+			clip_n += 1
 	var row := {"subject": sid, "shape": shape, "look": look, "radius": radius, "moments": {}}
 	# 1. one shield hit
 	var t1 := _fire("A", true, 3)
@@ -294,6 +301,27 @@ func _sheet(sid: String, shape: String, radius: int, rows: Array) -> void:
 		sheet.save_png(out.path_join(name))
 	vp.queue_free()
 	print("SHIELD1078 sheet ", name)
+
+
+# a 1280x720 title card for the clip
+func _card(top: String, big: String) -> Image:
+	var vp := SubViewport.new()
+	vp.size = Vector2i(1280, 720)
+	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	root.add_child(vp)
+	var bg := ColorRect.new()
+	bg.color = Color(0.03, 0.03, 0.05)
+	bg.size = Vector2(1280, 720)
+	vp.add_child(bg)
+	_label(vp, top, Vector2(40, 40), 22, Color(1, 0.85, 0.5))
+	_label(vp, big, Vector2(40, 320), 56, Color(1, 1, 1))
+	_label(vp, "One shield hit, two hits at once, a shield hit beside a hull hit, then the failure", Vector2(40, 410), 22, Color(0.75, 0.75, 0.8))
+	for i in 3:
+		await RenderingServer.frame_post_draw
+	var img := vp.get_texture().get_image()
+	img.convert(Image.FORMAT_RGB8)
+	vp.queue_free()
+	return img
 
 
 func _label(parent: Node, text: String, pos: Vector2, px: int, col: Color, width := 0) -> void:

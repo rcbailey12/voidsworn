@@ -1,20 +1,22 @@
 @echo off
 rem Issue 1078: the shield failure looks (today's, energy shear, clean collapse) on the installed ships, for Ryan to pick.
 rem   shield_looks_1078.bat [REF]     REF defaults to origin/opus/issue-1078
-rem Writes Downloads\voidsworn_test\shield1078\<run>\: the sheets (one per subject, shield shape and camera), clip
-rem frames and an mp4 per story when an ffmpeg is found, then the cost pass with the GPU to itself (R293: PC_GPU_MODE=solo,
-rem every shielded ship failing in the same frame, GPU time per look). status.txt says where it is. Nothing is deleted.
+rem Writes S1078_HOME (default Downloads\voidsworn_test\opus1078): work\<commit>\ (stills, clip frames) and out\ (the sheets (one per subject, shield shape and camera), clip
+rem an mp4 per story when an ffmpeg is found, the logs and json), then the cost pass with the GPU to itself (R293: PC_GPU_MODE=solo,
+rem every shielded ship failing in the same frame, GPU time per look). out\result.txt logs each step and ends "all done".
+rem Writes only under S1078_HOME. Nothing is deleted.
 rem Optional settings: S1078_SHIPS (a godot folder with the installed hulls, default build\godot), S1078_SKIP_LOOK=1,
 rem S1078_SKIP_COST=1, S1078_SUBJECTS (rules ids).
 setlocal enabledelayedexpansion
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
-set "HOME1078=%VT%\shield1078"
+if "%S1078_HOME%"=="" set "S1078_HOME=%VT%\opus1078"
+set "HOME1078=%S1078_HOME%"
 set "REF=%~1"
 if "%REF%"=="" set "REF=origin/opus/issue-1078"
 if "%S1078_SHIPS%"=="" set "S1078_SHIPS=%VT%\build\godot"
-if not exist "%HOME1078%" mkdir "%HOME1078%"
-set "ST=%HOME1078%\status.txt"
-echo shield1078 start %date% %time% ref=%REF% > "%ST%"
+if not exist "%HOME1078%\out" mkdir "%HOME1078%\out"
+set "ST=%HOME1078%\out\result.txt"
+echo shield1078 start %date% %time% ref=%REF% >> "%ST%"
 set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 set "TMO=%VT%\build\tools\pc\tmo.bat"
@@ -29,7 +31,9 @@ if errorlevel 1 (
   goto finish
 )
 for /f %%H in ('git -C "%R%" rev-parse --short^=8 HEAD') do set "SHA=%%H"
-set "OUT=%HOME1078%\%SHA%"
+set "OUT=%HOME1078%\work\%SHA%"
+set "RES=%HOME1078%\out\%SHA%"
+if not exist "%RES%" mkdir "%RES%"
 if not exist "%OUT%" mkdir "%OUT%"
 echo commit %SHA% >> "%ST%"
 rem the installed hulls and the import cache a fresh clone lacks (copy only, never over newer files)
@@ -100,5 +104,12 @@ git -C "%R%" checkout -f --detach %SHA% > nul 2>&1
 echo DONE %SHA% %date% %time% >> "%ST%"
 
 :finish
+rem what the Board brings back: sheets, clips, json and logs (no clip frames)
+copy /y "%OUT%\*_log.txt" "%RES%\" > nul 2>&1
+if exist "%OUT%\look" copy /y "%OUT%\look\*.png" "%RES%\" > nul 2>&1
+if exist "%OUT%\look" copy /y "%OUT%\look\*.json" "%RES%\" > nul 2>&1
+if exist "%OUT%\look" copy /y "%OUT%\look\*.mp4" "%RES%\" > nul 2>&1
+for /d %%D in ("%OUT%\cost*") do copy /y "%%D\shield1078.json" "%RES%\%%~nxD.json" > nul 2>&1
 echo shield1078 end %date% %time% >> "%ST%"
+echo all done >> "%ST%"
 endlocal
