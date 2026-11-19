@@ -73,6 +73,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Text;
 public static class RunnerProcessSnapshot {
   [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
   struct Entry {
@@ -95,6 +96,88 @@ public static class RunnerProcessSnapshot {
       if (Marshal.GetLastWin32Error() != 18) throw new Win32Exception();
       return result;
     } finally { CloseHandle(h); }
+  }
+}
+
+// The child cannot do GPU work until its identity is in the claim. The startup job
+// kills it if the watchdog dies during that handoff. Once running, the claim tracks it.
+public sealed class GpuProcessStart : IDisposable {
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+  struct StartupInfo {
+    public int size;
+    public string reserved, desktop, title;
+    public int x, y, xSize, ySize, xChars, yChars, fill, flags;
+    public short show, reservedSize;
+    public IntPtr reservedData, input, output, error, attributes;
+  }
+  [StructLayout(LayoutKind.Sequential)]
+  struct ProcessInfo { public IntPtr process, thread; public int pid, tid; }
+  [StructLayout(LayoutKind.Sequential)]
+  struct JobLimits {
+    public long processTime, jobTime;
+    public uint flags;
+    public UIntPtr minWorkSet, maxWorkSet;
+    public uint maxProcesses;
+    public UIntPtr affinity;
+    public uint priority, scheduling;
+    public ulong readOps, writeOps, otherOps, readBytes, writeBytes, otherBytes;
+    public UIntPtr processMemory, jobMemory, peakProcessMemory, peakJobMemory;
+  }
+  [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr CreateJobObject(IntPtr security, IntPtr name);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetInformationJobObject(IntPtr job, int kind, ref JobLimits limits, int size);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool InitializeProcThreadAttributeList(IntPtr list, int count, int flags, ref IntPtr size);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern bool UpdateProcThreadAttribute(IntPtr list, uint flags, IntPtr attribute, IntPtr value, IntPtr size, IntPtr previous, IntPtr returned);
+  [DllImport("kernel32.dll")] static extern void DeleteProcThreadAttributeList(IntPtr list);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool CreateProcess(
+    string application, StringBuilder command, IntPtr processSecurity, IntPtr threadSecurity, bool inherit, uint flags,
+    IntPtr environment, string cwd, ref StartupInfo startup, out ProcessInfo process);
+  [DllImport("kernel32.dll")] static extern IntPtr GetStdHandle(int number);
+  [DllImport("kernel32.dll", SetLastError = true)] static extern uint ResumeThread(IntPtr thread);
+  [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+
+  IntPtr job;
+  ProcessInfo child;
+  public int Pid { get { return child.pid; } }
+  void SetJobLimits(uint flags) {
+    var limits = new JobLimits { flags = flags };
+    if (!SetInformationJobObject(job, 9, ref limits, Marshal.SizeOf(typeof(JobLimits)))) throw new Win32Exception();
+  }
+  public GpuProcessStart(string command, string cwd) {
+    job = CreateJobObject(IntPtr.Zero, IntPtr.Zero);
+    if (job == IntPtr.Zero) throw new Win32Exception();
+    try {
+      SetJobLimits(0x2000); // JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+      IntPtr bytes = IntPtr.Zero;
+      InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref bytes);
+      IntPtr attributes = Marshal.AllocHGlobal(bytes);
+      IntPtr jobList = Marshal.AllocHGlobal(IntPtr.Size);
+      try {
+        if (!InitializeProcThreadAttributeList(attributes, 1, 0, ref bytes)) throw new Win32Exception();
+        try {
+          Marshal.WriteIntPtr(jobList, job);
+          // PROC_THREAD_ATTRIBUTE_JOB_LIST attaches the job atomically at creation.
+          // UpdateProcThreadAttribute retains the pointer to jobList until creation.
+          if (!SetJobAttribute(attributes, jobList)) throw new Win32Exception();
+          var startup = new StartupInfo { size = Marshal.SizeOf(typeof(StartupInfo)), attributes = attributes, flags = 0x100,
+            input = GetStdHandle(-10), output = GetStdHandle(-11), error = GetStdHandle(-12) };
+          const uint createSuspended = 0x4, extendedStartupInfo = 0x80000;
+          if (!CreateProcess(null, new StringBuilder(command), IntPtr.Zero, IntPtr.Zero, true,
+              createSuspended | extendedStartupInfo, IntPtr.Zero, cwd, ref startup, out child)) throw new Win32Exception();
+        } finally { DeleteProcThreadAttributeList(attributes); }
+      } finally { Marshal.FreeHGlobal(jobList); Marshal.FreeHGlobal(attributes); }
+    } catch { Dispose(); throw; }
+  }
+  bool SetJobAttribute(IntPtr attributes, IntPtr jobList) {
+    return UpdateProcThreadAttribute(attributes, 0, new IntPtr(0x2000D), jobList, new IntPtr(IntPtr.Size), IntPtr.Zero, IntPtr.Zero);
+  }
+  public void Resume() {
+    if (ResumeThread(child.thread) == uint.MaxValue) throw new Win32Exception();
+    SetJobLimits(0);
+  }
+  public void Dispose() {
+    if (job != IntPtr.Zero) { CloseHandle(job); job = IntPtr.Zero; }
+    if (child.thread != IntPtr.Zero) { CloseHandle(child.thread); child.thread = IntPtr.Zero; }
+    if (child.process != IntPtr.Zero) { CloseHandle(child.process); child.process = IntPtr.Zero; }
   }
 }
 '@
@@ -135,11 +218,13 @@ function Stop-RunTree($Process, $Tree, $Log) {
   } finally { $ErrorActionPreference = $ea }
   Write-KillLog $Log "taskkill PID $($Process.Id) exit ${code}: $($reply -join ' ')"
   $deadline = [DateTime]::UtcNow.AddSeconds(15)
+  $simulateFailedKill = $env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_FAIL_KILL -eq '1' -and $code -ne 0
   do {
     # Discover children before stopping their parents, and repeat in case one spawned during taskkill.
     Update-RunTree $Tree
     $live = @($Tree.Values | Where-Object { -not $_.HasExited } | Sort-Object StartTime -Descending)
     foreach ($child in $live) {
+      if ($simulateFailedKill) { continue }
       try { $child.Kill() }
       catch { if (-not $child.HasExited) { Write-KillLog $Log "handle kill PID $($child.Id) failed: $($_.Exception.Message)" } }
     }
@@ -150,10 +235,22 @@ function Stop-RunTree($Process, $Tree, $Log) {
       Write-KillLog $Log "kill verified: all $($Tree.Count) processes gone (PIDs $((@($Tree.Keys) | Sort-Object) -join ', '))"
       return
     }
-  } while ([DateTime]::UtcNow -lt $deadline)
+  } while (-not $simulateFailedKill -and [DateTime]::UtcNow -lt $deadline)
   $failure = "KILL FAILED: surviving PIDs $(($live | ForEach-Object { $_.Id }) -join ', '); checkout kept"
   Write-KillLog $Log $failure
   throw $failure
+}
+function Get-GpuProcessIdentity($Process) {
+  return @{ pid = $Process.Id; startTime = [string]$Process.StartTime.ToFileTimeUtc(); exe = $Process.ProcessName.ToLowerInvariant() }
+}
+function Update-GpuClaim($Action, $Processes) {
+  $identities = @($Processes | ForEach-Object {
+    try { Get-GpuProcessIdentity $_ }
+    catch { if (-not $_.HasExited) { throw } }
+  })
+  if (-not $identities.Count) { return }
+  ConvertTo-Json -InputObject $identities -Compress | & $gpuNode $gpuHelper $Action $gpuRoot $gpuToken
+  if ($LASTEXITCODE -ne 0) { throw "GPU: could not $Action claim $gpuToken" }
 }
 if ($LibraryOnly) { return }
 $raw = $env:TMO_ARGS
@@ -211,20 +308,27 @@ if (Test-Path -LiteralPath $bundledNode) { $gpuNode = $bundledNode }
 $gpuRoot = $root
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_GPU_ROOT) { $gpuRoot = $env:PC_TEST_GPU_ROOT }
 $gpuToken = ''
+$retainGpuClaim = $false
+$OutputEncoding = New-Object Text.UTF8Encoding($false)
 try {
-$classify = @{ exe = $Exe; args = $argLine; cwd = (Get-Location).Path; requested = [string]$env:PC_GPU_MODE; weight = [string]$env:PC_GPU_WEIGHT } | ConvertTo-Json -Compress
+$classify = @{ exe = $Exe; args = $argLine; cwd = (Get-Location).Path; requested = [string]$env:PC_GPU_MODE
+  weight = [string]$env:PC_GPU_WEIGHT; issue = [string]$env:PC_GPU_ISSUE; jobDir = [string]$env:JOB_DIR } | ConvertTo-Json -Compress
 $gpuClass = ($classify | & $gpuNode $gpuHelper classify) -join ''
 if ($LASTEXITCODE -ne 0) { throw 'GPU command classification failed' }
 $gpuClass = $gpuClass | ConvertFrom-Json
 $gpuMode = $gpuClass.mode
 if ($gpuMode) {
-  Write-Output "GPU: waiting for $gpuMode claim, weight $($gpuClass.weight) (issue $env:PC_GPU_ISSUE)"
+  if (-not $gpuClass.label) {
+    Write-Output 'GPU: set PC_GPU_ISSUE or JOB_DIR, or pass the script name for admission'
+    exit 126
+  }
+  Write-Output "GPU: waiting for $gpuMode claim, weight $($gpuClass.weight) ($($gpuClass.label))"
   # Admission has its own clock in gpu_slots.js (PC_GPU_WAIT_SECONDS, default 300).
   # Read the helper's diagnostic even under Windows PowerShell's native stderr handling.
   $ea = $ErrorActionPreference
   try {
     $ErrorActionPreference = 'Continue'
-    & $gpuNode $gpuHelper acquire $gpuRoot ([string]$env:PC_GPU_ISSUE + ':gpu') $PID $gpuMode $gpuClass.weight 2>&1 | ForEach-Object {
+    & $gpuNode $gpuHelper acquire $gpuRoot $gpuClass.label $PID $gpuMode $gpuClass.weight 2>&1 | ForEach-Object {
       $line = [string]$_
       if ($line -eq 'WAIT') { Write-Host "GPU: still waiting for $gpuMode claim" }
       elseif ($line -cmatch '\A[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z') { $gpuToken = $line }
@@ -250,7 +354,19 @@ $nextScan = $scanEvery
 # Child commands may use tmo.bat too. Their own timeout must never overwrite this agent's resume note.
 $env:TMO_REPO = ''; $env:TMO_OUT = ''; $env:TMO_LOG = ''; $env:TMO_ERR_LOG = ''
 try {
-  if ($argLine -ne '') { $p = Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }
+  if ($gpuToken) {
+    $command = '"' + $Exe + '" ' + $argLine
+    if ($Exe -match '\.(?:cmd|bat)$') { $command = '"' + $env:ComSpec + '" /d /s /c "' + $command + '"' }
+    $startup = New-Object GpuProcessStart($command, (Get-Location).Path)
+    try {
+      $p = [Diagnostics.Process]::GetProcessById($startup.Pid)
+      $null = $p.Handle
+      Update-GpuClaim track @($p)
+      $timer.Restart()
+      $startup.Resume()
+    } finally { $startup.Dispose() }
+  }
+  elseif ($argLine -ne '') { $p = Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }
   else { $p = Start-Process -FilePath $Exe -NoNewWindow -PassThru }
 } catch {
   "$(Get-Date -Format s) START FAILED $Exe $argLine : $_" | Out-File $log -Append -Encoding utf8
@@ -260,6 +376,8 @@ try {
 $null = $p.Handle   # keeps the exit code readable after the process ends
 $tree = @{ }; $tree[$p.Id] = $p
 $completed = $false
+$killAttempted = $false
+$killVerified = $false
 try {
 $poll = 5000
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_POLL_MS) { $poll = [int]$env:PC_TEST_POLL_MS }
@@ -284,22 +402,43 @@ while ($true) {
   if ($reason) { break }
 }
 $secs = [int]$timer.Elapsed.TotalSeconds
+$killAttempted = $true
 Stop-RunTree $p $tree $log
+$killVerified = $true
 if ($watch) { Save-RunResume $watchRepo $watchOut $logs $reason $base }
 "$(Get-Date -Format s) TIMEOUT $reason after $secs s (ceiling $Seconds s), verified dead tree of PID $($p.Id): $Exe $argLine" | Out-File $log -Append -Encoding utf8
 Write-Output "run_timeout: TIMEOUT $reason after $secs s, killed $Exe (PID $($p.Id)) and its children"
 exit 124
 } finally {
-  # Reap on an unexpected watchdog error too. A successful queue launcher may deliberately start background jobs.
-  if (-not $completed) {
-    Update-RunTree $tree
-    if (@($tree.Values | Where-Object { -not $_.HasExited }).Count) { Stop-RunTree $p $tree $log }
+  try {
+    # Reap on unexpected watchdog errors. A clean queue launcher may start background jobs.
+    if (-not $completed -and (-not $killAttempted -or -not $gpuToken)) {
+      Update-RunTree $tree
+      if (@($tree.Values | Where-Object { -not $_.HasExited }).Count) {
+        $killAttempted = $true
+        Stop-RunTree $p $tree $log
+        $killVerified = $true
+      }
+    }
+  } finally {
+    try {
+      if ($gpuToken) {
+        $retainGpuClaim = $true
+        Update-RunTree $tree
+        $survivors = @($tree.Values | Where-Object { -not $_.HasExited })
+        if ($survivors.Count) {
+          Write-KillLog $log "GPU: retaining claim $gpuToken as orphaned_child for PIDs $($survivors.Id -join ', ')"
+          Update-GpuClaim orphan $survivors
+        } elseif (-not $killAttempted -or $killVerified) { $retainGpuClaim = $false }
+      }
+    } finally {
+      foreach ($child in $tree.Values) { $child.Dispose() }
+    }
   }
-  foreach ($child in $tree.Values) { $child.Dispose() }
 }
 } finally {
-  if ($gpuToken) {
+  if ($gpuToken -and -not $retainGpuClaim) {
     & $gpuNode $gpuHelper release $gpuRoot $gpuToken
-    if ($LASTEXITCODE -ne 0) { Write-Output "GPU: release failed; dead owner PID $PID will be reclaimed" }
+    if ($LASTEXITCODE -ne 0) { Write-Output "GPU: release failed. Claim $gpuToken will be checked at next admission" }
   }
 }
