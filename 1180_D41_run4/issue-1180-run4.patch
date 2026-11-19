@@ -1,0 +1,315 @@
+diff --git a/contrib/opus/tools/runner_cleanup_tests.js b/contrib/opus/tools/runner_cleanup_tests.js
+index 3557aeea..efbd5451 100644
+--- a/contrib/opus/tools/runner_cleanup_tests.js
++++ b/contrib/opus/tools/runner_cleanup_tests.js
+@@ -5,7 +5,8 @@ const os = require('node:os');
+ const path = require('node:path');
+ const { spawnSync } = require('node:child_process');
+ const windows = process.platform === 'win32';
+-const common = path.resolve(__dirname, '../../../tools/pc/runner_common.ps1');
++const sourceRepo = path.resolve(__dirname, '../../..');
++const common = path.join(sourceRepo, 'tools/pc/runner_common.ps1');
+ const janitor = path.join(path.dirname(common), 'janitor.ps1');
+ const ownerFile = '.voidsworn-run-owner';
+ const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner-cleanup-proof-'));
+@@ -185,14 +186,38 @@ try {
+   const laneB = path.join(pc, 'board_b');
+   fs.mkdirSync(laneB);
+   const caches = makeCopy('repo-kept-r336', 1, laneB);
+-  const ignored = ['godot/campaign/test/golden/c1.jsonl', 'godot/campaign/test/out/c1.jsonl',
+-    'godot/campaign/test/parity_campaign_log.txt', 'godot/audio/build/test.gd.uid', '.onboarding_checks/build.txt',
+-    'godot/gen/ships/cache 1.scn', 'godot/assets/ships/manifest.bak_1/manifest.json', 'godot/.stage7-replaced-1/previous/test.glb'];
+-  const rules = ['godot/campaign/test/golden/', 'godot/campaign/test/out/', 'godot/campaign/test/parity_campaign_log.txt',
+-    'godot/audio/build/*.uid', '.onboarding_checks/', 'godot/gen/', 'godot/assets/ships/*/'];
++  const generatedShip = 'godot/gen/ships/cache 1.scn';
++  const ignored = ['godot/campaign/test/out/c1.jsonl', 'godot/audio/build/test.gd.uid', 'godot/scenes/deep/test script.gd.uid',
++    '.onboarding_checks/xdg/build.txt', generatedShip, 'godot/assets/ships/manifest.bak_1/manifest.json',
++    'godot/.stage7-replaced-1/previous/test.glb'];
++  const rules = ['godot/campaign/test/out/', 'godot/**/*.uid', '.onboarding_checks/', 'godot/gen/', 'godot/assets/ships/*/'];
+   write(path.join(caches, '.git', 'info', 'exclude'), rules.join('\n') + '\n');
+   for (const file of ignored) write(path.join(caches, file), 'generated cache');
+-  write(path.join(pc, 'build', ignored[5]), 'generated cache');
++  write(path.join(pc, 'build', generatedShip), 'generated cache');
++  // The real campaign parity launchers regenerate these two ignored outputs.
++  const campaignOutputs = [
++    ['golden-jsonl', 'godot/campaign/test/golden/c1.jsonl'],
++    ['parity-log', 'godot/campaign/test/parity_campaign_log.txt']
++  ].map(([name, file]) => {
++    assert(git(['-C', sourceRepo, 'check-ignore', '-v', '--', file]).startsWith('godot/campaign/test/.gitignore:'), file);
++    const dir = makeCopy('repo-kept-' + name, 1, laneB);
++    write(path.join(dir, '.git', 'info', 'exclude'), '/' + file + '\n');
++    write(path.join(dir, file), 'generated campaign parity output');
++    dateTree(dir, 26);
++    return dir;
++  });
++  const protectedFiles = [
++    'godot/campaign/test/golden/preview.mp4',
++    '.onboarding_checks/notes.md',
++    'godot/.stage7-replaced-1/run.bat',
++    'contrib/__pycache__/proof.pyc'
++  ].map((file, index) => {
++    const dir = makeCopy('repo-kept-protected-' + index, 1, laneB);
++    write(path.join(dir, '.git', 'info', 'exclude'), '/' + file + '\n');
++    write(path.join(dir, file), 'work to keep');
++    dateTree(dir, 26);
++    return dir;
++  });
+   const wrongGen = makeCopy('repo-kept-wrong-gen', 2, laneB);
+   write(path.join(wrongGen, '.git', 'info', 'exclude'), 'godot/gen/\n');
+   write(path.join(wrongGen, 'godot/gen/proof.uid'), 'local');
+@@ -233,7 +258,8 @@ try {
+   const oldRetry = scratch(temp, ownerName(303, 'c'), 26);
+   const freshRetry = scratch(temp, ownerName(304, 'd'), 4);
+   const legacy = scratch(temp, `voidsworn-run-${'e'.repeat(32)}`, 4);
+-  for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, legacy]) {
++  const tokenOnly = scratch(temp, 'owned-scratch', 4);
++  for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, legacy, tokenOnly]) {
+     const marker = path.join(dir, ownerFile);
+     write(marker, 'f'.repeat(32));
+     dated(marker, 26);
+@@ -251,6 +277,15 @@ try {
+   const parityOld = scratch(temp, 'voidsworn-parity-old', 4);
+   const tuneOld = scratch(temp, 'tune2-old', 4);
+   const recent = scratch(temp, 'issue-306-recent', 2);
++  const recorded = scratch(temp, 'recorded-scratch', 4);
++  const recordedLocked = scratch(temp, 'recorded-scratch-locked', 4);
++  const replaced = scratch(temp, 'recorded-scratch-replaced', 4);
++  for (const [issue, dir, token] of [[312, recorded], [302, recordedLocked], [313, replaced, 'b'.repeat(32)], [306, recent]]) {
++    write(path.join(pc, 'board_d', 'issue-' + issue, 'status.json'), JSON.stringify({ status: 'checked_push', scratch: { path: dir, token } }));
++  }
++  write(path.join(replaced, ownerFile), 'a'.repeat(32));
++  dateTree(replaced, 4);
++  const lookalikes = ['issue-notes', 'voidsworn-parity-x', 'stage7-checked-x'].map(name => scratch(temp, name, 4));
+   const opus = scratch(pc, 'opus901out1', 73);
+   const recentOpus = scratch(pc, 'opus902', 71);
+   const oldStage7 = scratch(temp, 'stage7-checked-old', 4);
+@@ -261,6 +296,8 @@ try {
+   write(activeMarker, '');
+   dateTree(liveHelper, 5);
+   const invalidOwner = scratch(temp, ownerName(307, 'f'), 26);
++  write(path.join(invalidOwner, ownerFile), 'not a runner token');
++  dateTree(invalidOwner, 26);
+   const never = ['build', 'build_e', 'work217', 'repo-mirror-b.git', 'recipe', 'runner_backups', 'opus-nonjob']
+     .map(name => scratch(pc, name, 26));
+   never.push(makeCopy('repo', 1, laneB), scratch(temp, 'ordinary-folder', 26), scratch(root, 'issue-910-out-of-scope', 26));
+@@ -302,9 +339,10 @@ try {
+         JANITOR_PROOF_ACTIVE: activeMarker, PC_TEST_JANITOR_NOW: fixtureNow.toISOString(), ...extra });
+   }
+   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
+-  const remove = [caches, oldOwned, oldRetry, legacy, plainOld, parityOld, tuneOld, opus, oldStage7, workClean, ...recover];
+-  const preserve = [edited, laneNewest, wrongGen, invalidRepo, activeOwned, plainActive, parityActive,
+-    freshRetry, recent, recentOpus, invalidOwner, recentStage7, liveHelper, workLive, workLocked, workNew];
++  const remove = [caches, ...campaignOutputs, oldOwned, oldRetry, legacy, tokenOnly, recorded, opus, workClean, ...recover];
++  const unowned = [...lookalikes, plainOld, parityOld, tuneOld, oldStage7, recentStage7, plainActive, parityActive];
++  const preserve = [edited, laneNewest, wrongGen, invalidRepo, ...protectedFiles, activeOwned, recordedLocked, replaced,
++    freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew, ...unowned];
+   function decision(report, dir, word) {
+     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
+     assert(row?.includes(word) && /\d+ bytes/.test(row), `missing ${word} and size for ${dir}: ${row || report}`);
+@@ -317,16 +355,24 @@ try {
+       return { bytes: fs.readFileSync(full), modified: fs.statSync(full, { bigint: true }).mtimeNs };
+     });
+   }
++  const indexTimestamp = dir => fs.statSync(path.join(dir, '.git', 'index'), { bigint: true }).mtimeNs;
++  const indexBeforeScans = oldCopies.map(indexTimestamp);
+   const beforeScan = oldCopies.map(checkoutSnapshot);
+   const dry = runJanitor('--dry-run');
+   assert.deepEqual(oldCopies.map(checkoutSnapshot), beforeScan);
+   const secondDry = runJanitor('--dry-run');
++  assert.deepEqual(oldCopies.map(indexTimestamp), indexBeforeScans, 'two scans left .git/index timestamps unchanged');
+   assert.deepEqual(oldCopies.map(checkoutSnapshot), beforeScan);
+   for (const dir of oldCopies) {
+     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
+   }
+   for (const dir of remove) decision(dry, dir, 'would remove');
+-  for (const dir of preserve) decision(dry, dir, 'kept');
++  for (const dir of preserve) if (!unowned.includes(dir)) decision(dry, dir, 'kept');
++  for (const dir of unowned) decision(dry, dir, 'would keep: name match without owner record');
++  decision(dry, recorded, 'scratch named in runner status');
++  decision(dry, tokenOnly, 'scratch with ownership token');
++  decision(dry, recordedLocked, 'issue #302 lock is held');
++  decision(dry, replaced, 'ownership token does not match runner status');
+   for (const dir of recover) decision(dry, dir, 'would remove (after checked salvage');
+   decision(dry, failedSalvage, 'would remove (after checked salvage');
+   for (const dir of [...remove, ...preserve, ...never]) assert(fs.existsSync(dir), `dry run changed ${dir}`);
+@@ -345,6 +391,7 @@ try {
+     assert(!fs.existsSync(dir), `janitor left ${dir}`);
+   }
+   for (const dir of [...preserve, ...never]) assert(fs.existsSync(dir), `janitor removed ${dir}`);
++  for (const dir of unowned) decision(live, dir, 'kept: name match without owner record');
+   decision(live, failedSalvage, 'untracked path cannot be verified');
+   assert(fs.existsSync(failedSalvage));
+   const historyBackup = path.join(salvageRoot, 'board_b_repo-kept-local-history', 'salvage.bundle');
+@@ -378,6 +425,8 @@ try {
+   assert.equal(nightRun('2026-07-19T10:59:59Z'), '');
+   if (windows) {
+     const inUse = scratch(temp, 'issue-309-in-use', 4);
++    write(path.join(inUse, ownerFile), 'f'.repeat(32));
++    dateTree(inUse, 4);
+     const heldFile = path.join(inUse, 'nested', 'proof.txt');
+     decision(runJanitor('', heldFile), inUse, 'kept');
+     assert.equal(read(heldFile), 'issue-309-in-use');
+diff --git a/docs/RULEBOOK.md b/docs/RULEBOOK.md
+index b4a8a5bd..69632560 100644
+--- a/docs/RULEBOOK.md
++++ b/docs/RULEBOOK.md
+@@ -282,9 +282,11 @@ Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk
+ 
+ Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
+ (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
+-`__pycache__` and `.pyc` caches, regenerated `golden/`, `out/` and the parity log in
+-`godot/campaign/test/` and `godot/rules/test/`, ignored Godot `.uid` files including those under `godot/audio/build/`, and
+-ignored `.onboarding_checks/` output. All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
++`__pycache__` and `.pyc` caches, ignored Godot `.uid` files (including `.gd.uid` files under `godot/`), and
++ignored `.onboarding_checks/` output. The campaign parity check regenerates ignored `godot/campaign/test/golden/*.jsonl`,
++`out/` and `parity_campaign_log.txt`. The rules parity check regenerates its own `golden/`, `out/` and parity log.
++Untracked `CODEX_TASK.md`, `contrib/` files, batch files, Markdown and ordinary media stay out of the rebuildable list.
++All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
+ the shared build by size and SHA-256 (issue 1107). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
+ and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
+ uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
+@@ -310,8 +312,9 @@ keeps the copy. Salvage folders are kept. Why: old job copies can be large and s
+ Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
+ 
+ Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
+-successful install. The janitor checks TEMP job, parity and `stage7-checked-*` scratch after three hours without a new write,
+-and `opus<N>` and `opus<N>out*` helper folders after three days so the Board has time to relay their results. A held issue lock
++successful install. The janitor checks TEMP scratch after three hours without a new write, and requires a `.voidsworn-run-owner`
++token or a runner status file naming that exact scratch path. Folder prefixes only put a folder on the report for review.
++The janitor checks `opus<N>` and `opus<N>out*` helper folders after three days so the Board has time to relay their results. A held issue lock
+ or a held helper lock protects scratch. Active board `repo` folders, `build*`, repo mirrors, `recipe`, `runner_backups` and
+ other locations stay out of the scan.
+ The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
+diff --git a/tools/pc/janitor.ps1 b/tools/pc/janitor.ps1
+index afe1bfc8..81cdcf55 100644
+--- a/tools/pc/janitor.ps1
++++ b/tools/pc/janitor.ps1
+@@ -7,7 +7,7 @@ function Log($line) {
+   Write-Host $line
+ }
+ function Get-CleanupRuns($root) {
+-  # Runners deployed before R336 recorded the scratch path in status.json but did not name it by issue.
++  # Read ownership from the runner's status file, including older scratch paths.
+   foreach ($lane in @('board','board_b','board_c','board_d','work217')) {
+     $base = Join-Path $root $lane
+     if (-not (Test-Path -LiteralPath $base -PathType Container)) { continue }
+@@ -31,7 +31,7 @@ function Get-CleanupRuns($root) {
+           }
+         } catch { }
+         $repo = if ($lane -eq 'work217') { Join-Path $run.FullName 'repo' } else { Join-Path $base 'repo' }
+-        if ($lane -eq 'work217' -or $s.scratch.path -match '[\\/]voidsworn-run-[0-9a-f]{32}$') {
++        if ($lane -eq 'work217' -or $s.scratch.path -is [string]) {
+           [pscustomobject]@{ Issue = $issue; State = $s; Out = $out; Repo = $repo; Lane = $lane; Name = "$($job.Name)_$($run.Name)" }
+         }
+       }
+@@ -113,7 +113,22 @@ function Assert-HelperScratchInactive($dir) {
+   catch { throw 'helper scratch lock is held or could not be verified' }
+   if ($lease) { $lease.Dispose() }
+ }
+-function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, $owned) {
++function Report-KeptTemp($dir, $reason, $dryRun) {
++  $size = 'size unavailable'
++  try { $size = "$((Measure-CleanupDirectory $dir).Bytes) bytes" }
++  catch { $reason += "; $($_.Exception.Message)" }
++  $action = if ($dryRun) { 'would keep' } else { 'kept' }
++  Log "$($dir.FullName) ($size; ${action}: $reason)"
++}
++function Assert-TempScratchOwner($dir, $record) {
++  if (-not $record -or $record.token) {
++    $token = Read-ScratchOwner $dir.FullName
++    if ($record -and $token -cne $record.token) { throw 'ownership token does not match runner status' }
++  }
++  if ($record.created -and [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and
++      [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
++}
++function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, $tempScratch, $record) {
+   $size = 'size unavailable'; $issueLock = $null
+   try {
+     $busy = ''
+@@ -126,8 +141,8 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
+     $size = "$($stats.Bytes) bytes"
+     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
+     if ($busy) { throw $busy }
+-    if ($owned) {
+-      $null = Read-ScratchOwner $dir.FullName
++    if ($tempScratch) {
++      Assert-TempScratchOwner $dir $record
+       Assert-HelperScratchInactive $dir
+       $retry = Get-FailedScratchMarker $dir
+       if ($retry -and $retry.LastWriteTimeUtc -gt $now.AddDays(-1)) { throw 'newest failed scratch kept for a retry for one day' }
+@@ -190,23 +205,40 @@ try {
+     try { Remove-OlderKeptRepos $board $mirror $dryRun $now $salvageRoot }
+     catch { Log "kept lane $board (scan unavailable: $($_.Exception.Message))" }
+   }
+-  $legacy = @{}
++  $scratchClaims = @{}
+   $runs = @(Get-CleanupRuns $root)
+   foreach ($run in $runs) {
+-    if ($run.State.scratch.path -match '[\\/]voidsworn-run-[0-9a-f]{32}$') { $legacy[[string]$run.State.scratch.path] = $run.Issue }
++    $path = $run.State.scratch.path
++    if ($path -is [string] -and $path) {
++      if (-not $scratchClaims.ContainsKey($path)) { $scratchClaims[$path] = @() }
++      $scratchClaims[$path] += $run
++    }
+   }
+   # Check old runners once, and take each current issue lock again immediately before making its decision.
+   $activeLegacy = @(Get-ActiveLegacyIssues $runs)
+   Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
+   foreach ($dir in (Get-Item -LiteralPath $temp -Force).EnumerateDirectories()) {
+-    if ($dir.Name -notmatch '^(voidsworn|issue|tune2-|stage7-checked-)') { continue }
+-    $owned = $dir.Name -like 'voidsworn-run-*'
+-    $issue = $legacy[$dir.FullName]
+-    if (-not $issue -and ($dir.Name -match '^(?:issue|voidsworn(?:[-_](?:issue|parity|run))?|tune2)[-_]*([1-9][0-9]{0,9})(?=[-_.]|$)' -or
+-        $dir.Name -match '[-_]issue[-_]*([1-9][0-9]{0,9})(?=[-_.]|$)')) { $issue = $Matches[1] }
+-    $why = if ($owned) { 'runner scratch' } elseif ($dir.Name -like 'voidsworn-parity-*') { 'parity scratch' }
+-      elseif ($dir.Name -like 'stage7-checked-*') { 'stage 7 install scratch' } else { 'job scratch' }
+-    Clear-ScratchFolder $dir $issue $why 3 $temp $now $dryRun $activeLegacy $owned
++    $claims = $scratchClaims[$dir.FullName]
++    if ($claims.Count -gt 1) {
++      Report-KeptTemp $dir 'multiple runner status files claim this scratch' $dryRun
++      continue
++    }
++    $claim = $null; $issue = $null
++    if ($claims) {
++      $claim = $claims[0]
++      $issue = $claim.Issue
++      $why = 'scratch named in runner status'
++    } elseif (Test-Path -LiteralPath (Join-Path $dir.FullName $scratchOwnerFile)) {
++      # The runner embeds its issue in this format. Use it only to check the issue lock.
++      if ($dir.Name -match '^voidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}$') { $issue = $Matches[1] }
++      $why = 'scratch with ownership token'
++    } else {
++      if ($dir.Name -match '^(voidsworn|issue|tune2-|stage7-checked-)') {
++        Report-KeptTemp $dir 'name match without owner record' $dryRun
++      }
++      continue
++    }
++    Clear-ScratchFolder $dir $issue $why 3 $temp $now $dryRun $activeLegacy $true $claim.State.scratch
+   }
+   foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories('opus*')) {
+     if ($dir.Name -notmatch '^opus([1-9][0-9]*)(?:out.*)?$') { continue }
+diff --git a/tools/pc/runner_common.ps1 b/tools/pc/runner_common.ps1
+index b8e33f5a..e20f5aca 100644
+--- a/tools/pc/runner_common.ps1
++++ b/tools/pc/runner_common.ps1
+@@ -263,6 +263,11 @@ function Get-RepoCleanupStatus($repo) {
+ }
+ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWork = $false) {
+   foreach ($line in $status) {
++    # Keep authored files out of the cache list, even inside an ignored directory.
++    if ($line -match '^(?:!!|\?\?) "?(?:contrib/|[^"\\:\r\n]+\.(?:bat|md)"?$)') {
++      if ($allowWork -and $line.StartsWith('?? ')) { continue }
++      throw "working tree needs keeping: $line"
++    }
+     # These installer leftovers can be untracked or ignored, depending on the checkout's ignore rules.
+     if ($line -match '^(?:!!|\?\?) ("?)(godot/(?:\.stage7-replaced-[^/"\\:\r\n]+|assets/ships/manifest\.bak_[^/"\\:\r\n]+)/[^"\\:\r\n]+)(?<!/)\1$' -and
+         (Test-Path -LiteralPath (Join-Path $repo $Matches[2]) -PathType Leaf)) {
+@@ -276,7 +281,7 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
+       $Matches[1]
+       continue
+     }
+-    if (-not $inGen -and $line -match '^!! ("?)(godot/(?:[^"\\:\r\n]+\.uid|(?:campaign|rules)/test/(?:golden|out)/[^"\\:\r\n]+|campaign/test/parity_campaign_log\.txt|rules/test/parity_log\.txt)|\.onboarding_checks/[^"\\:\r\n]+)(?<!/)\1$') {
++    if (-not $inGen -and $line -match '^!! ("?)(godot/(?:[^"\\:\r\n]+\.uid|campaign/test/(?:golden/[^/"\\:\r\n]+\.jsonl|out/[^"\\:\r\n]+|parity_campaign_log\.txt)|rules/test/(?:(?:golden|out)/[^"\\:\r\n]+|parity_log\.txt))|\.onboarding_checks/[^"\\:\r\n]+)(?<!/)\1$') {
+       $Matches[2]
+       continue
+     }

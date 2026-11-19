@@ -1,0 +1,1 @@
+D41's own log.txt was overwritten by D44 (1180 run 5, started 17:48 local); its last.md (16:12) and final status.json (saved by the runner as status.json.4c8e1ab7....tmp.previous at 16:37) survived, and its run 4 patch and reports are in its kept scratch folder voidsworn-run-f3dbf944d81e440088426930df7896a3 (copied here).

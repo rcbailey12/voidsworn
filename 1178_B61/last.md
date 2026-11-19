@@ -1,0 +1,3 @@
+**Issue #1178 is blocked.** GitHub confirms the runner already claimed it, but the required enemy AI change for [#1160](https://github.com/rcbailey12/voidsworn/issues/1160) is still open in [PR #1202](https://github.com/rcbailey12/voidsworn/pull/1202). The Board log also lists [#1177](https://github.com/rcbailey12/voidsworn/issues/1177) as a dependency.
+
+No files changed. I skipped the paired simulation and parity checks because the required baseline is missing. Nothing was committed or pushed. Requeue #1178 on fresh `main` once both dependencies land.

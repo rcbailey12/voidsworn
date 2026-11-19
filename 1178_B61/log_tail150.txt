@@ -1,0 +1,150 @@
+﻿365:3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
+380:## 4. Ships and concepts
+438:## 5. Ship build pipeline
+531:## 6. Battle look
+607:## 7. Movement
+637:## 8. Battle sound
+658:## 9. Screens and interface
+722:## 10. The campaign map, space and the board
+759:## 11. Story, names and the campaign
+776:## 12. Automatic checks
+778:12.1 **Checks protect crashes, saves, rules parity, comfort and frame rate. A test that pins a look number is updated in the
+782:12.2 **A check's state comes from the real functions, never typed by hand; missing things fail loudly; one source per fact.**
+786:12.3 **Every push to an agent branch runs the checks once; every test script under godot/**/test/ has its line in
+789:12.4 **A change to data.js or battle.js names every copy it must refresh, and rules parity passes.** Why: the oracle copies
+792:12.5 **The look bench: bench a commit twice and keep the second run; a change differs where it is meant to and nowhere else;
+796:12.6 **The player-path recording of Battles 1 to 3 is the acceptance check for visual and teaching changes.** Use
+82:- LATEST (21:50 UTC Nov 19): lane check. MERGED 1198 (1193 gpu_slots self-heal; PC install waits for 1200, together, GPU drained), 1214 (1206 dead files archived, 82 pure renames; Fable caught seven stray .gdignore files first), 1224 (1223 picture jobs default to build\godot), 1225 (1185 smaller collect), 1226 (1203 calm thrusters; Ryan shown), 1221 (1217 phase 1); closed 1203, 1206, 1223, 1185 (ship_job.bat copy to ship_job\ waits for the chains to drain). R340, Ryan 21:17: Clean collapse is the shield failure for every faction (PR 1170, playbook effects.md); Glasswright band brighter; run 4 queued after 1217 on the PC. Ryan's real battle_opts.json is rewritten by captures because every clone shares the Godot project name: issue 1228 (throwaway profile in run_timeout.ps1, after 1200). 1192 run 3 done (PR 1200 at 42e9ee03 with 1193 merged in, runner687 flake fix; Fable reading). 1180 run 4 refused on two Base lines (Board's fault, body fixed), requeued D41; C67 1177. 17I 1058 run 7 done; 17J 1070 run 4 solo. 1079 RUN3 failed its scene 207 gate again (log stops after [attach] with no error). GPU picture line: 1204 proof running, then 1217 (p4 default), then 1078 run 4. 1217 stack: 1222, 1227, 1229 re-merged after the squash, merge on green. C: 187 GB.
+84:- LATEST (19:45 UTC Nov 19): MERGED 1173 (1152 run 2, GPU audit safe fixes; maps per ship 8.5 to 29.8 MB, PNG roles), 1195 (1144 truth pass runs 1 and 2, Board bounded the volley preview states to whole points: 32,734 to 814 on a stress ship), 1208 (1207 doc sync; LOOP lines synced on main); closed 1152, 1144, 1207, PR 1162 (superseded). Blocked: PR 1198 (Fable: old-format slot claims wiped; failed lookup ends admission) and PR 1200 (fatal lines too broad, 50-line rule, solo cap 1200 s): run 2 briefs queued C64 (after C63 1187) and D38 (after D37 1180 run 2). PR 1202 (1160 AI) held: each faction's Standard within 5, Veteran gets a fleet budget edge (Ryan 19:16: fleet size is the main lever; 1178 now leads with it). CD5 r5 accepted (Ryan: closest yet); its wrapper replaces the held 1183 step in chain 1119B. C12 rerun queued as HELPERS_CHAIN_1119C. Neon health audit and weapon effects audit checked: new 1203 (thrusters, lane B58), 1204, 1205, 1206, 1211 (Opus cloud helpers), 1212 (weapon looks after 1205); load time is 1070 run 4; 1177 adds win-then-use-the-stop at column 4. Plasma lance rename card with Ryan. PR 1189 (1147) main merged by the Board's helper, merge on green.
+85:- LATEST (18:50 UTC Nov 19): MERGED 1197 (1175: an unmet Nemesis holds every column 4 stop, dodge rate 78% to 0 over 3,000 seeds; boss stops show objective and board; Godot saves saved_in_yard) and 1199 (1182: unknown Nemesis keys show the raw key, never crash); closed 1175 and 1182; 1178 now waits on 1160 and 1177 only. ship_job.bat from 1190 installed in ship_job\ (CRLF, old copy kept as ship_job_pre1190.bat) before chain 1119B. Green and waiting on Fable: PR 1198 (1193 gpu_slots self-heal) then PR 1200 (1192 stall watchdog; both edit run_timeout.ps1, so 1200 merges main after 1198); both deploy to the tool copies only with the GPU drained. PC link parked since about 18:15 (wakes when Ryan writes), so no lane read this hour.
+87:- LATEST (17:35 UTC Nov 19): MERGED 867 (ion lock re-derives catches; Board refreshed 32 saved battles, Fable checked each), 1171 (1077 prototype, off by default; its clips and timing still owed, 1077 open), 1188 (1143 recorder; recording is run 3 on B57 after B56 1152 run 2); closed 371. Ryan ran STOP_OLD_1077.bat (13 stale 1077 processes, nothing deleted); GPU now 1070 solo. Neon's storage and pipeline audits checked in code and hold: 1180 run 2 section (godot/gen, work217, salvage then remove per R339, stage7 temp, private TEMP), backlog 1185 to 1187, urgent 1193 (gpu_slots self-heal, running C62) and 1192 (inner stall watchdog, waits on D35 1180), backlog 1194. Artoo's cross-branch report: 1058 run 7 now Base main (combined check with 1173 if merged), 1155 and 1078 moved to safe checkouts, 1178 waits for 1175 to 1177, 1183 carries authored_look. PR 1190 (Board's ship_job fix: tracked *.import restored, git pathspec filter, the 18 death atlas .import files committed in Godot's form) with Fable; it must land and be copied to ship_job\ before HELPERS_CHAIN_1119B (S8, Warden, Vigil, CD5; waits for 1070 end and chain_1119 all done). Waiting on 1070 too: 17I 1058 run 7, OPUS1077_RERUN, OPUS1078_RUN2 (holds run 3). PR 1191 (1176) reviewed, merge on green. C: 179 GB.
+92:- LATEST (16:10 UTC Nov 19): R335, Ryan 16:03: yes to the campaign pacing backlog. Issues 1175 (Nemesis can be dodged at column 4; boss stops show their fight; trial label), 1176 (route choices), 1177 (fewer popups, repair choices; after 1147), 1178 (Sector 3, late sinks, faction economies; after 1160), all codex and blocked until a lane opens, in that order. Faction action stays off the rail (R177). S8 rerun of stages 6 and 7 queued behind its first run (OPUS1158_WAIT). Read-only disk report disk_report_1119 queued to find what filled the disk.
+?? CODEX_TASK.md
+
+ exited 1 in 379ms:
+cd6d4f59 FINDINGS R332 and LOOP: enemy AI job 1160; 1143, 1148, 1149 next runs queued
+* codex/issue-1178
+  remotes/origin/codex/issue-1177
+  remotes/origin/opus/issue-1160
+fatal: unable to access 'https://github.com/rcbailey12/voidsworn/': schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030e) - No credentials are available in the security package
+
+ succeeded in 923ms:
+
+{"merge_commit_sha":null,"merged":false,"merged_at":null,"state":"open"}
+{"labels":["codex","blocked","running"],"state":"open"}
+Name   Source                            
+----   ------                            
+gh.exe C:\Program Files\GitHub CLI\gh.exe
+
+
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "gh api repos/rcbailey12/voidsworn/branches/main --jq '.commit.sha'; gh api 'repos/rcbailey12/voidsworn/issues/1178/comments?per_page=100' --jq '.[] | .body | split(\"\\n\") | .[0]'; gh api 'repos/rcbailey12/voidsworn/pulls?head=rcbailey12:codex/issue-1178&state=all' --jq '.[] | {number,state,merged_at}'" in C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "gh api repos/rcbailey12/voidsworn/issues/1085 --jq '{title, body}'; gh api repos/rcbailey12/voidsworn/issues/1086 --jq '{title, body}'; rg -n 'Overall|43\\.7|38\\.8|17\\.4' contrib/muse/reviews/admiral_balance_2026_11/sim_results.md" in C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "gh api repos/rcbailey12/voidsworn/issues/1160 --jq '{state, labels: [.labels[].name], body}'; gh api 'repos/rcbailey12/voidsworn/issues/1160/timeline?per_page=100' --jq '.[] | select(.event == \"cross-referenced\" or .event == \"closed\") | {event, source: .source.issue.number, title: .source.issue.title, url: .source.issue.html_url}'" in C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -LiteralPath docs/RULEBOOK.md | Select-Object -Skip 134 -First 29; Get-Content -LiteralPath contrib/opus/LOOP.md | Select-Object -Skip 61 -First 12; git status --short' in C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+ succeeded in 209ms:
+2.4 **The job board is GitHub issues with owner labels, each opening with the fixed block** (Owner, Brief, Deliver to, Branch,
+Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
+`codex/`, `muse/`, `work/` or `opus/issue-N` branches; nobody pushes to main except LOOP.md and FINDINGS. Why: any agent can
+pick up a job without asking, and main stays reviewed. Set: Ryan, Nov 2 and 4 (R75, R102). Ids: agents-04, agents-05,
+agents-09. A run brief for a PC job goes into the issue body (under the fixed block, marked as the job now): the runner
+builds the task from the body only and never reads comments (R281).
+When the Board needs Ryan's answer on a job, it adds the `ryan` label and one issue-body line `Ask Ryan: <one question> | Picture: <link>`, then removes both when he answers; Mission Control reads only this marker so it cannot mistake a dispatch lock for a question (Ryan, Nov 17, issue 951).
+The PC runner merges `origin/<branch>` from the optional Base line and commits that merge before starting the agent;
+a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
+also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on
+retries and at the end), naming seat, machine, lane folder, branch, start time, ceiling, last commit and how to resume.
+Before checkout or model calls, every PC runner refuses closed or running jobs and a delivery branch or open PR for the job from another seat prefix (same-prefix reruns are allowed); a body with exactly one fixed block and no run history needs no marker and is passed whole, otherwise exactly one line outside code fences containing `THIS IS THE JOB NOW` in heading, bold or plain form selects the fixed block plus that run; Effort (Codex) is required only for Codex, and the label and status comment must be set and read back before work, while later reporting failures are logged without changing the result (R291, issue 888). It clears its own running claim at the end. Why: merge-left partials
+on 800, 815 and 44, and jobs with no visible running seat. Set: Ryan R270, issue 846 (788 step 3).
+
+One current instruction. A job's current run brief sits at the top of its issue body, under the fixed block, marked as the
+job now; older runs are marked done in the body. A brief in a comment is not an instruction: the PC runner builds the task
+from the body only, so a comment brief silently reruns the old job. Why: 373 run 3 was briefed in a comment and came back
+as a rerun of run 2. Set: Board (R281).
+
+An open issue is not proof the work is undone. Issues here stay open after their pull requests merge (2.5), so before
+queueing or relabelling an issue, search for a merged pull request that names it; on every merge, close the issue in the
+same step when its scope is done, and where a merge is partial, say what scope remains. Artoo's dispatch sweep (2.7)
+lists open issues with merged pull requests before each queueing round; the sweep is the audit, not the mechanism. Why:
+780, 781, 783 and 824 were queued again after pull requests 796, 787, 825 and 832 had merged (Ryan: "Why did you miss all
+those old jobs were already merged? That's a big miss."). Set: Board (R288).
+
+2.5 **Never write a GitHub closing word before an issue number in a commit; use `gh api` REST, never GraphQL.** Why: commit
+1429ca3 closed PR 320 by accident; GraphQL is blocked here (ends when it is unblocked). Set: Board. Ids: loop-15, loop-20.
+
+
+## How a run works
+
+1. Read HANDOFF.md section 0 and this file. Set the lock and push it first.
+2. Board check: open PRs, open issues and labels (gh api REST, never GraphQL). PC queue folders only when a PC job is running.
+3. Review each new PR yourself, by diff, never by title, then sweep its impact (R129): every caller of each changed function, save and old-profile behaviour, the JS and Godot twins, every UI path that shows it, which tests actually ran in CI. Check claims against the done-when, look at the shots. Read the PR's Artoo comments on its current head commit and settle each (verify against live main; evidence, not rulings; R295). Merge if good; hold what Holds lists; file a follow-up for anything the sweep finds. Outside-check conditions still open at merge become issues (the PR 680 form) or a line in the PR's FINDINGS row, so none rides on memory (Muse audit 706 finding 10).
+4. Release the next job only to a live seat, one at a time. Before releasing, check it is not already queued or running.
+5. Anything for Ryan goes under "Waiting on Ryan" with a pick and plain trade-offs. In an unattended run use one PushNotification, never AskUserQuestion.
+6. Tell Ryan only when something lands or needs him: two lines and one image.
+7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
+8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
+
+?? CODEX_TASK.md
+
+ succeeded in 867ms:
+{"body":"Owner: codex\nBrief: below; contrib/muse/design/chorus_economy_2026_11/design.md (approach A, Biomass at Feeding Grounds, and the recommended direction), campaign_run.js rewardFlow (line 584: credits pay flat per win, (25+12*s+3*col)*kindMult, half on a partial win), the shipyard and drydock repair code (campaign_run.js lines 216 to 227), sim3d.js campaign and campaignrewards modes, contrib/muse/tools/montecarlo/, the playtest-and-balance skill\nDeliver to: contrib/deepseek/chorus_biomass_1118/ (the sim script, results CSV, README with the tables)\nBranch: work/issue-1085-deepseek\nBase: work/issue-1085-deepseek\nEffort: DeepSeek workhorse, one run (run 2), cap 3600 s\nDone when: one README with measured numbers compares, for Chorus runs played by the existing campaign bot on paired seeds (at least 200 runs per setup): today's credits economy; biomass paid flat per win like credits (same formula, half on a partial win) and spent on Chorus repair and growth in place of shipyard purchases; and the same plus a small kill or wreck bonus capped per battle. Per setup: run win rate, sectors reached, fleet size and total hull after each sector, the share of runs that fall into a loss spiral (two losses in a row with no affordable recovery), and the spread of income per battle. What Ryan will see: one short table and a one-line pick.\n\n## THIS IS THE JOB NOW (Board, Nov 18 2026, run 2): measure the loss spiral the README describes\n\nThe first run delivered PR 1094 on this branch (Base above). Artoo found that its headline loss-spiral number does not measure what the README says. README and driver_biomass.js lines 148 to 150 say \"no affordable 25 percent hull repair of the worst ship\", but lines 145 and 155 to 157 price a full repair of all that ship's missing hull: ceil(worstMissing / 2 * priceMult). A 100-hull ship missing 50 with 20 to spend counts as unrecoverable even though a 25-hull repair costs 13.\n\n1. Make the code match the stated test: a repair of 25 percent of the worst ship's maximum hull (capped at what it is missing), priced as the shipped repair is priced, or the cheapest hull purchase. Add a tiny test with Artoo's example (100-hull ship, 50 missing, 20 to spend: recoverable) and one that is truly unrecoverable.\n2. Rerun every setup on the same paired seeds and replace the spiral, starvation and pick text with the new numbers. Show run 1's spiral share beside run 2's in one column so the change is visible.\n3. Commit the per-run records (one CSV row per run and setup) so anyone can recount them.\n4. Keep everything else as run 1 left it. Plain words, no em dashes.\n\n## Run 1 (done, PR 1094): does flat-paid biomass keep the Chorus out of a loss spiral\n\nWhy. Ryan, Nov 18 15:21 UTC, on Muse's Chorus proposal: \"A losing fleet starves isn't any different from credits with other ships, no? Same exact concept.\" The Board agreed: if biomass is built, pay it flat per win like credits, with at most a small kill or wreck bonus. This measures whether that holds up before anyone builds it.\n\n1. Sims only. No change to battle.js, data.js, core.js, campaign_run.js or the Godot game; patch copies live in the job folder and load the real files read-only.\n2. Keep the biomass prices on the same scale as today's credit prices so the comparison is about the flow, not the price list. Say every assumption you had to make.\n3. Paired seeds across setups. Report means with a spread, not single runs.\n\n\n---\n_Generated by [Claude Code](https://claude.ai/code)_","title":"Chorus biomass sim: flat per win like credits, against today"}
+{"body":"Owner: codex\nBrief: below; contrib/muse/design/faction_economy_ge_2026_11/design.md (as corrected by PR 1080: drydock repairs 60 percent of missing hull; Glasswright prism and aperture carry .05 armour), the Glasswright recommendation (G-A annealing halls, G-B cullet, G-C commissions, G-D quick anneals) and the Eclipse recommendation (E-A Archive slots, E-B core recovery, E-C dormant yards, E-D flat plate pool), campaign_run.js rewardFlow and repair code, the sim from issue 1085 (contrib/deepseek/chorus_biomass_1118/) as the harness to reuse, the playtest-and-balance skill\nDeliver to: contrib/deepseek/ge_economy_1118/ (sim script, results CSV, README)\nBranch: work/issue-1086-deepseek\nBase: main\nEffort: DeepSeek workhorse, one run, cap 3600 s\nDone when: one README with measured numbers compares, for Glasswright runs and Eclipse runs on paired seeds (at least 200 per setup): today's economy against each faction's recommended direction in its simplest form, with the same measures as the Chorus sim (run win rate, sectors reached, fleet size and hull per sector, loss-spiral share, income spread). What Ryan will see: one short table per faction and a one-line pick.\n\n## THIS IS THE JOB NOW (Board, Nov 18 2026, 21:35 UTC): run 2, one commission at a time and the corrected loss spiral\n\nThe first run (PR 1102) is on this branch. Two things change its numbers:\n\n1. Artoo on PR 1102: the commission sim lets one shop visit queue several hulls at once (commBusy is checked once before the stock loop in sim/driver_ge.js, and mcGeBuyHull has no queue check), which breaks README assumption 5 (at most one commission in flight) and can commit more fleet points than the cap. Enforce one pending order at the purchase point, and add a regression case to a small test file in this folder: two affordable 4-point offers, fleet 2 of cap 6, 1,000 credits, so exactly one is queued.\n2. The issue 1085 harness was corrected after this run started (PR 1094, merged): the loss spiral now prices a 25 percent repair of the worst ship, capped at what it is missing (contrib/deepseek/chorus_biomass_1118/sim/spiral.js). Use that shared test for both factions instead of the full-repair test.\n\nThen rerun all nine setups on the same paired seeds (7000 to 7239), and put run 1 beside run 2 in the README table, as the 1085 report did. Say in one line per faction whether the pick changes. Add the new test to contrib/opus/tools/run_all_checks.js as 1085 did. No game file changes.\n\n## Run 1 (done, Nov 18, PR 1102): measure the Glasswright and Eclipse economy ideas the same way\n\nWhy. Ryan, Nov 18 15:25 UTC: \"We should look at the same for glasswrights and eclipse.\" Muse's proposals (PR 1066, corrected in 1080) are ideas only; this measures whether their simplest forms keep the fleet out of a loss spiral before anyone builds them. The Base line merges the Chorus sim branch (issue 1085) first; reuse its harness, and if that branch is missing, stop and say so.\n\n1. Sims only, as in the Chorus job: no change to the game files.\n2. Simplest forms only: Glasswright kiln repair priced like today's shipyard repair with a free hairline floor, cullet as a capped refund from your own losses, commissions that arrive after one jump; Eclipse Archive slots bought with credits, a backed-up ship restored at the next Archive stop, core recovery only on a win. Say every assumption.\n\n\n---\n_Generated by [Claude Code](https://claude.ai/code)_","title":"Glasswright and Eclipse economy sims: the recommended ideas against today"}
+18:| Overall | 200 | 64.0% | 57.1% to 70.3% | 37 | 24 | 11 | 128 | 11.17 |
+43:| Overall | 200 | 61.0% | 54.1% to 67.5% | 25 | 38 | 15 | 122 | 11.32 |
+68:| Overall | 200 | 67.0% | 60.2% to 73.1% | 32 | 20 | 14 | 134 | 11.26 |
+93:| Overall | 200 | 64.0% | 57.1% to 70.3% | 36 | 24 | 12 | 128 | 11.05 |
+118:| Overall | 200 | 61.0% | 54.1% to 67.5% | 26 | 35 | 17 | 122 | 11.23 |
+143:| Overall | 200 | 68.0% | 61.2% to 74.1% | 32 | 26 | 6 | 136 | 11.24 |
+
+ exited 1 in 966ms:
+{"body":"Owner: opus\nBrief: below; /mnt/project-files/ai_audit_review/verdict.md (the Board's check of the Gemini \"Neon\" enemy AI audit; project file, copy what you need into the README); docs/shots/ai_fixes_1118/README.md (issue 1062's paired-seed method and baseline); the playtest-and-balance skill; battle.js (aiUnit, aiPickActivation, aiObjScore, evalThreat, nemProf, nemTargetBonus) and godot/rules/rules.gd (the same functions, _ai_threat_cell, aiVet, aiShouldBrace); godot/rules/data/tables.json NEM_PERSONA\nDeliver to: battle.js, godot/rules/rules.gd, godot/rules/test/saved/ (refreshed records and changes.txt), a paired-seed harness script under tools/ (named in the README) with a short test, docs/shots/ai_personality_1119/README.md (the table: faction by sector by level, before and after)\nBranch: opus/issue-1160\nBase: main\nEffort: one Opus worker (cloud: node and Godot 4.7.2 headless); sims may run on the PC queue lane C if the cloud is too slow\nDone when: all 284 seeded battles match between browser and Godot; the standing checks and Godot rules parity pass; on the widened paired harness (all six enemy factions, sectors 1 to 3, both levels, same seeds before and after) Standard's player win rate stays within 5 points of its baseline with medians steady and no rise in battles past round 12, and Veteran's player win rate lands 8 to 12 points below Standard's (never under 40%) with no rise in battles past round 12. What Ryan will see: Standard enemies that fight in their faction's style, and a Veteran setting that is clearly harder.\n\n## THIS IS THE JOB NOW (Board, Nov 19 2026, 15:00 UTC): faction personality at Standard, and a Veteran that is clearly harder\n\nWhy. Ryan picked \"Also make Veteran clearly harder\" on the enemy AI card (R332). Today most faction personality is Veteran only, and in issue 1062's sim Veteran was not harder than Standard (player wins 60.0% vs 61.5%).\n\n1. Claim the issue first (opus label set; post your status comment). Write the harness first: issue 1062's paired method (sim3d.js player bot, paired seeds, before and after on the same seeds), widened to all six enemy factions and sectors 1 to 3 at both levels. Run it on main and keep the numbers as the baseline. Name the battles per row (at least 200) and the noise.\n2. In battle.js and rules.gd together: turn on at both levels the range bands, ram setup, hurt weighting and the hold and intercept role splits (today behind aiVet() in aiUnit and aiObjScore); add an ion storm cost for shielded ships to threat scoring (storms drain shields each round, rules.gd 1697; _ai_threat_cell and evalThreat know only nebula and debris); wire the Cunning Nemesis rear flag (NEM_PERSONA rear: 1, read nowhere; its text promises \"Strikes your flanks\").\n3. Veteran keeps focus fire, the death cliff, the full threat model and smart activation order. Then tune Veteran (not Standard) until its player win rate sits 8 to 12 points under Standard's on the harness. Prefer sharper decisions over bigger numbers: no extra hull, shields, damage or fleet budget for Veteran. Say in the README what you tuned and why.\n4. Refresh the saved records so all 284 seeded battles match browser and Godot, and list every changed battle in changes.txt.\n5. The PR body carries the before and after table and the method. Opus-written code gets an outside check (Artoo); never merge your own PR. Do not touch .github/workflows.\n\nNot in this job (they wait for Ryan's design call or a second job): faction signature plays (Glasswright recharge, Chorus feed, Eclipse rise, Sunward brace cover, Hullbreaker boarding), boss commands beyond one per battle, doctrine banners, telegraphs, boss phases.\n\n---\n_Generated by [Claude Code](https://claude.ai/code)_","labels":["opus"],"state":"open"}
+function not defined: referenced/0
+
+ succeeded in 1012ms:
+d2717a321366f81e639f0ad21336f905e47c30e8
+failed to parse jq expression (line 1, column 21)
+    .[] | .body | split(\n) | .[0]
+                        ^  unexpected token "\\"
+
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$events = gh api '"'repos/rcbailey12/voidsworn/issues/1160/timeline?per_page=100' | ConvertFrom-Json; "'$events | Where-Object { $_.event -in @('"'cross-referenced','closed') } | ForEach-Object { [pscustomobject]@{ event="'$_.event; number=$_.source.issue.number; title=$_.source.issue.title; url=$_.source.issue.html_url } } | Format-Table -AutoSize; $found = gh api '"'search/issues?q=repo%3Arcbailey12%2Fvoidsworn+is%3Apr+is%3Amerged+1160' | ConvertFrom-Json; "'$found.items | Select-Object number,title,html_url | Format-Table -AutoSize' in C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+exec
+"C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$comments = gh api '"'repos/rcbailey12/voidsworn/issues/1178/comments?per_page=100' | ConvertFrom-Json; "'$comments | ForEach-Object { ($_.body -split '"'\\r?\\n' | Select-Object -First 1) }; "'$pr = gh api repos/rcbailey12/voidsworn/pulls/1202 | ConvertFrom-Json; $pr | Select-Object number,title,state,merged,merged_at,html_url | Format-List; gh api repos/rcbailey12/voidsworn/issues/1177 --jq '"'{state, labels: [.labels[].name]}'" in C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+ succeeded in 662ms:
+
+event            number title                                                                               url        
+-----            ------ -----                                                                               ---        
+cross-referenced   1178 Late run: harder Sector 3, late money sinks, and the faction economies              https://...
+cross-referenced   1202 Issue 1160: Enemy AI: faction personality at Standard, and a clearly harder Veteran https://...
+
+
+
+ succeeded in 1160ms:
+**Artooâ€™s review (technical):** The paired Sector 3 baseline currently waits only for #1160. #1176 changes which routes players can take, #1175 changes when they must fight the Nemesis, and #1177 changes repair choices. All can move who reaches Sector 3 and with how much hull or money, which are part of this jobâ€™s acceptance results. Setup can run in parallel, but rerun the baseline/tuned pairs against the same integrated campaign stack before treating the 240-run numbers as the shipped result.
+<!-- voidsworn-runner-status branch=codex/issue-1178 -->
+
+
+number    : 1202
+title     : Issue 1160: Enemy AI: faction personality at Standard, and a clearly harder Veteran
+state     : open
+merged    : False
+merged_at : 
+html_url  : https://github.com/rcbailey12/voidsworn/pull/1202
+
+
+
+{"labels":["codex","blocked"],"state":"open"}
+
+codex
+**Issue #1178 is blocked.** GitHub confirms the runner already claimed it, but the required enemy AI change for [#1160](https://github.com/rcbailey12/voidsworn/issues/1160) is still open in [PR #1202](https://github.com/rcbailey12/voidsworn/pull/1202). The Board log also lists [#1177](https://github.com/rcbailey12/voidsworn/issues/1177) as a dependency.
+
+No files changed. I skipped the paired simulation and parity checks because the required baseline is missing. Nothing was committed or pushed. Requeue #1178 on fresh `main` once both dependencies land.
+tokens used
+39,339
+**Issue #1178 is blocked.** GitHub confirms the runner already claimed it, but the required enemy AI change for [#1160](https://github.com/rcbailey12/voidsworn/issues/1160) is still open in [PR #1202](https://github.com/rcbailey12/voidsworn/pull/1202). The Board log also lists [#1177](https://github.com/rcbailey12/voidsworn/issues/1177) as a dependency.
+
+No files changed. I skipped the paired simulation and parity checks because the required baseline is missing. Nothing was committed or pushed. Requeue #1178 on fresh `main` once both dependencies land.

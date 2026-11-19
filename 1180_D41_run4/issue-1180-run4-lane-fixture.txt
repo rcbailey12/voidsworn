@@ -1,0 +1,15 @@
+PASS Codex task prompt forbids .github/workflows edits (issue 873) (elapsed 0.00 s)
+PASS shared runner contract, chain launcher and issue 722 start checks (elapsed 0.01 s)
+PASS GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the missing-tool refusal (elapsed 0.01 s)
+PASS OpenAI arm defaults, isolated key name, lean config and local stand-in config (elapsed 0.01 s)
+Evidence: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f3dbf944d81e440088426930df7896a3\runner687 proof tzJ44M
+Fixture setup: 0.81 s (tiny shared source and stubs; retry delay 0 s)
+PASS Codex refuses same-issue and different-issue launches before writes, blocks refresh during final reporting, and releases the lane (elapsed 60.91 s)
+PASS runner687+722+860+985: 5 checks, Windows entry points, local Git and stub agents only. Preservation commits and pushes use TEMP remotes only; no model usage.
+Evidence: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f3dbf944d81e440088426930df7896a3\runner687 proof tzJ44M
+Timing: 61.00 s wall time; cumulative child times below overlap in parallel batches
+Fixture setup: 0.81 s (includes static checks and Git init)
+git:init: 1 calls, 0.14 s
+where.exe: 1 calls, 0.57 s
+runner entry point: 5 calls, 78.25 s
+lane_tools_refresh.ps1:-Build: 1 calls, 0.58 s
