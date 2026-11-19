@@ -9,6 +9,8 @@ rem Steps: the pinned commit, both headless checks, the A16 clips off and strain
 rem AVIs, then frame times solo (R293): three sessions of the prepared timing and the cold case, off and strain.
 rem Every Godot start runs in a throwaway profile (opus1077\profile_<N>\appdata); Ryan's real battle_opts.json and
 rem board_look.cfg are hashed before the first Godot start and at the end (and on any stop); a difference is FAILED.
+rem The checkout is the 1078 safe checkout (issue 1179, PR 1190): the clone's tracked changes saved first, only the
+rem copied hulls and .import files restored, no forced checkout; anything else stops the run.
 rem Writes only under opus1077\ (out_pass3c_<A> and scratch_pass3c_<A>, A the first unused attempt number). Never
 rem deletes anything. Logs to that folder's result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
@@ -31,8 +33,8 @@ for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo dr
 if not exist "%C%\.git" (set "FAILMSG=no clone at %C%" & goto fail)
 git -C "%C%" fetch -q --depth 1 origin %EXPECT% >> "%RES%" 2>&1
 if errorlevel 1 (set "FAILMSG=git fetch of %EXPECT% failed" & goto fail)
-git -C "%C%" checkout -q FETCH_HEAD >> "%RES%" 2>&1
-if errorlevel 1 (set "FAILMSG=git checkout failed" & goto fail)
+call :safe_checkout FETCH_HEAD
+if errorlevel 1 goto fail
 set COMMIT=
 for /f %%H in ('git -C "%C%" rev-parse HEAD') do set COMMIT=%%H
 echo commit=%COMMIT% >> "%RES%"
@@ -138,3 +140,42 @@ echo FAILED: %FAILMSG% >> "%RES%"
 if defined REALU (call :realcheck & if errorlevel 1 (echo FAILED: Ryan's real options changed during the run >> "%RES%") else (echo real options unchanged >> "%RES%"))
 echo all done %DATE% %TIME% >> "%RES%"
 exit /b 1
+
+rem ---------------------------------------------------------------- :safe_checkout REF (from tools/pc/jobs/shield_looks_1078.bat)
+rem Never a forced checkout (file loss, issue 1179). Save the clone's tracked changes first (git status and a binary patch, in
+rem the output folder), stop if any is outside godot\assets\ships and the .import files (the only tracked files these jobs
+rem write), restore only those from the clone's own commit, then a plain checkout that also refuses to overwrite ignored files.
+:safe_checkout
+set "SC_REF=%~1"
+set "SC_DIR=%O%\checkout_%RANDOM%"
+set "SC_LIST="
+set "SC_PATCH="
+mkdir "%SC_DIR%"
+if not exist "%SC_DIR%" (set "FAILMSG=checkout %SC_REF%: could not make %SC_DIR%, nothing was touched" & exit /b 1)
+git -C "%C%" status --porcelain --untracked-files=no > "%SC_DIR%\clone_changes_before_checkout.txt" 2> "%SC_DIR%\backup_errors.txt"
+if errorlevel 1 (set "FAILMSG=checkout %SC_REF%: could not list the clone's changes, nothing was touched" & exit /b 1)
+git -C "%C%" diff --cached --quiet >> "%SC_DIR%\backup_errors.txt" 2>&1
+if errorlevel 1 (
+  git -C "%C%" diff --cached --binary > "%SC_DIR%\clone_staged_changes.patch" 2>> "%SC_DIR%\backup_errors.txt"
+  set "FAILMSG=checkout %SC_REF%: the clone has staged changes (saved in %SC_DIR%) or git failed; nothing was touched"
+  exit /b 1
+)
+git -C "%C%" diff --binary HEAD > "%SC_DIR%\clone_changes_before_checkout.patch" 2>> "%SC_DIR%\backup_errors.txt"
+if errorlevel 1 (set "FAILMSG=checkout %SC_REF%: could not save the patch, nothing was touched" & exit /b 1)
+for %%Z in ("%SC_DIR%\clone_changes_before_checkout.txt") do set "SC_LIST=%%~zZ"
+for %%Z in ("%SC_DIR%\clone_changes_before_checkout.patch") do set "SC_PATCH=%%~zZ"
+if not defined SC_LIST set "SC_LIST=-1"
+if not defined SC_PATCH set "SC_PATCH=-1"
+if %SC_LIST% LSS 0 (set "FAILMSG=checkout %SC_REF%: the change list was not written, nothing was touched" & exit /b 1)
+if %SC_LIST% GTR 0 if %SC_PATCH% LEQ 0 (set "FAILMSG=checkout %SC_REF%: changes are listed but the patch is empty, nothing was touched" & exit /b 1)
+git -C "%C%" status --porcelain --untracked-files=no -- . ":(exclude)godot/assets/ships" ":(glob,exclude)godot/**/*.import" > "%SC_DIR%\clone_changes_unexpected.txt" 2>> "%SC_DIR%\backup_errors.txt"
+if errorlevel 1 (set "FAILMSG=checkout %SC_REF%: git status of the clone failed, nothing was reset" & exit /b 1)
+for %%Z in ("%SC_DIR%\clone_changes_unexpected.txt") do if %%~zZ GTR 0 (set "FAILMSG=checkout %SC_REF%: the clone has local changes outside godot\assets\ships and the .import files, listed in %SC_DIR%; nothing was reset" & exit /b 1)
+git -C "%C%" checkout -q HEAD -- godot/assets/ships >> "%SC_DIR%\git.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=checkout %SC_REF%: could not restore godot\assets\ships, see %SC_DIR%\git.txt" & exit /b 1)
+git -C "%C%" checkout -q HEAD -- ":(glob)godot/**/*.import" >> "%SC_DIR%\git.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=checkout %SC_REF%: could not restore the .import files, see %SC_DIR%\git.txt" & exit /b 1)
+git -C "%C%" checkout -q --no-overwrite-ignore --detach %SC_REF% >> "%SC_DIR%\git.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=checkout %SC_REF% refused, see %SC_DIR%\git.txt; nothing was forced" & exit /b 1)
+echo checked out %SC_REF% safely, saved changes in %SC_DIR% >> "%RES%"
+exit /b 0
