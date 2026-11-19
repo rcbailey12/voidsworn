@@ -5,6 +5,7 @@ const API = preload("res://rules/battle_api.gd")
 const Career = preload("res://story/career.gd")
 const Story = preload("res://story/story.gd")
 const Host = preload("res://main/campaign_host.gd")
+const LEGACY := "res://campaign/test/fixtures/issue_1125/"
 
 class SaveProbe extends Campaign:
 	var writes: Array[String] = []
@@ -40,17 +41,11 @@ class EndScene extends "res://scenes/battle/battle.gd":
 
 var failures := 0
 var scratch := ""
-var legacy_dir := ""
-var record_legacy := false
 
 func _initialize() -> void:
 	_run.call_deferred()
 
 func _run() -> void:
-	var args := OS.get_cmdline_user_args()
-	if args.size() == 2:
-		record_legacy = args[0] == "--record-legacy"
-		legacy_dir = args[1]
 	scratch = OS.get_environment("TEMP") if OS.has_environment("TEMP") else "/tmp"
 	scratch = scratch.path_join("voidsworn_resume_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()])
 	if DirAccess.make_dir_absolute(scratch) != OK:
@@ -89,14 +84,10 @@ func _load(text: String):
 	c.load_save_text(text)
 	return c
 
-func _legacy(name_: String, text: String) -> String:
-	if legacy_dir.is_empty(): return text
-	var path := legacy_dir.path_join(name_ + ".json")
-	if record_legacy:
-		_put(path, text)
-		return text
-	assert(FileAccess.file_exists(path))
-	return FileAccess.get_file_as_string(path)
+func _legacy(name_: String) -> String:
+	var text := FileAccess.get_file_as_string(LEGACY + name_ + ".json")
+	assert(not text.is_empty(), "Missing old save: " + name_)
+	return text
 
 func _external(c):
 	var api = API.new()
@@ -120,6 +111,8 @@ func _boss_approach(c) -> String:
 
 func _story_boss() -> void:
 	var c = _campaign(3)
+	c.save_path = scratch.path_join("boosted.json")
+	c.persist_on = true
 	var id = _boss_approach(c)
 	c.showBeat3()
 	c.act("eventChoice", "0")
@@ -128,15 +121,13 @@ func _story_boss() -> void:
 	c.act("enterNode", id)
 	var cfg: Dictionary = c.B["cfg"]
 	assert(cfg["storyMods"]["power"])
-	var d = _load(c.save_text())
+	var d = _load(FileAccess.get_file_as_string(c.save_path))
 	_external(d)
 	d.act("continueRun")
 	if d.page["kind"] == "map" and d.availableNodes().has(id): d.act("enterNode", id)
 	var reopened: bool = d.B != null and d.B["cfg"].get("node") == id and d.B["cfg"].get("seed") == cfg["seed"] and d.B["cfg"].get("storyMods", {}).get("power", false)
 	_check(reopened, "1: closing mid-fight lets Continue replay the same boosted boss")
-	# Serialize the exact old checkpoint: arrived at an unfinished node, modifier already consumed.
-	c.saveRun()
-	d = _load(_legacy("story_boss", c.save_text()))
+	d = _load(_legacy("story_boss"))
 	_external(d)
 	d.act("continueRun")
 	_check(d.B != null and d.B["cfg"].get("node") == id and d.B["cfg"].get("storyMods", {}).get("power", false),
@@ -169,6 +160,7 @@ func _breakthrough() -> void:
 	var scene := EndScene.new()
 	var hud := EndHud.new()
 	var sound := EndSound.new()
+	scene.external = true; scene.in_campaign = true
 	scene.hud = hud; scene.sfx = sound; scene.api = api; scene.V = api.view()
 	scene.add_child(hud); scene.add_child(sound); root.add_child(scene)
 	scene.set_process(false); scene.set_physics_process(false)
@@ -236,15 +228,7 @@ func _boss_payout() -> void:
 				if run.get("pos") == id and run.get("sector") == sector and not run.has("reward"): legacy = text
 		_check(legacy == "" and (c.page["kind"] == "end" if sector == 3 else c.RUN["sector"] == 2),
 			"5: finishing sector %d never saves a paid boss with no onward route" % sector)
-		if legacy == "":
-			# Equivalent old window, built from the last real promotion checkpoint.
-			for text in c.writes:
-				var old: Dictionary = JSON.parse_string(text)
-				if old["run"].get("pos") != id or old["run"].get("reward", {}).get("stage") != "promo": continue
-				old["run"].erase("reward")
-				legacy = JSON.stringify(old)
-			assert(legacy != "")
-		var d = _load(_legacy("boss_%d" % sector, legacy))
+		var d = _load(_legacy("boss_%d" % sector))
 		var credits_once: float = d.SAVED_RUN["credits"]
 		var cap_once: float = d.SAVED_RUN["cpCap"]
 		d.act("continueRun")
@@ -276,8 +260,7 @@ func _prize_reload() -> void:
 	var d = _load(c.writes[0])
 	d.act("continueRun")
 	_check(_salvage_then_reward(d, credits), "7: reloading a paid prize shows salvage and then the next reward, with one ransom")
-	old["run"]["reward"]["stage"] = "prize"
-	d = _load(_legacy("prize", JSON.stringify(old)))
+	d = _load(_legacy("prize"))
 	d.act("continueRun")
 	_check(_salvage_then_reward(d, credits), "7 legacy: an empty prize stage still shows salvage and the next reward")
 
@@ -315,17 +298,20 @@ func _career_backup() -> void:
 	c.save_profile()
 	c.award("lightning")
 	c.save_profile()
-	var backup := _legacy("career", FileAccess.get_file_as_string(c.save_path + ".bak"))
-	assert(not backup.is_empty())
+	var d := Career.new()
+	d.save_path = c.save_path
+	d.load_profile()
+	_check(d.P["medals"].has("lightning") and not FileAccess.get_file_as_string(c.save_path + ".bak").contains("lightning"),
+		"9: a successful Career write leaves the previous good profile in the backup")
+	var backup := _legacy("career")
 	_put(c.save_path + ".bak", backup)
-	_put(c.save_path, '{"v":')
+	var damaged := '{"v":1,"medals":[]}'
+	_put(c.save_path, damaged)
 	assert(DirAccess.make_dir_absolute(c.save_path + ".tmp") == OK)
 	for i in range(2):
 		c.load_profile()
 		c.award("last_stand")
 		c.save_profile()
-	var d := Career.new()
-	d.save_path = c.save_path
 	d.load_profile()
-	_check(FileAccess.get_file_as_string(d.save_path + ".bak") == backup and d.P["medals"].has("first_blood") and not d.P["medals"].has("last_stand"),
+	_check(FileAccess.get_file_as_string(d.save_path) == damaged and FileAccess.get_file_as_string(d.save_path + ".bak") == backup and d.P["medals"].has("first_blood") and not d.P["medals"].has("last_stand"),
 		"9: a damaged Career primary and two blocked writes leave the last good copy readable")

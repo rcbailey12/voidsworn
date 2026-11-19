@@ -3111,7 +3111,7 @@ func ACT_prizeConfirm() -> void:
 			RUN["credits"] = float(RUN["credits"]) + float(o["ransom"]); RUN["ransoms"] = float(z0(RUN.get("ransoms"))) + 1; got.append("the " + str(p["name"]) + " is ransomed (+" + numstr(o["ransom"]) + ")")
 		tel("prize_pick", {"k": r["k"], "tpl": p["tpl"], "def": not r["mine"]})
 	R["prizes"] = []; R["prizeSel"] = null
-	R["stage"] = "salvage" if not R["wrecks"].is_empty() else "pick"
+	R["stage"] = "salvage" if not or_(R.get("wrecks"), []).is_empty() else "pick"
 	saveRun()
 	var t = ", ".join(PackedStringArray(got))
 	if t != "": toast(t.substr(0, 1).to_upper() + t.substr(1) + ".")
@@ -3419,7 +3419,8 @@ func finish_battle(result: String, battle = null) -> void:
 	pending_battle = null
 	if B == null: return
 	if result == "retreat":
-		if jt(B.get("campaign")) and not jt(B.get("finished")) and (B["cfg"].get("kind") != "boss" or BattleAPI.settled_result(str(B.get("over")), B) == "retreat"):
+		# Bosses only use rout and ambush, so they cannot end in a forced breakthrough withdrawal.
+		if jt(B.get("campaign")) and not jt(B.get("finished")) and B["cfg"].get("kind") != "boss":
 			finishBattle("retreat")
 		return
 	B["over"] = result; ACT_c3continue()

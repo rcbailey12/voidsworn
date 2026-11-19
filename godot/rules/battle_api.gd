@@ -46,7 +46,8 @@ static func settled_result(raw: String, battle: Dictionary) -> String:
 
 func battle_result() -> String:
 	_mutex.lock()
-	var outcome = settled_result(str(R.B.get("over")), R.B)
+	var raw := str(R.B.get("over"))
+	var outcome := settled_result(raw, R.B) if RulesScript.jt(R.B.get("campaign")) else raw
 	_mutex.unlock()
 	return outcome
 
