@@ -57,7 +57,12 @@ assert(/for %%S in \(%STAGES%\) do call :stage %%S/.test(text), 'the stages loop
 const stage = text.slice(text.indexOf(':stage'));
 assert(/if defined FAILED \(\s*\r?\n\s*echo %1 SKIPPED/.test(stage), 'a failed stage skips the later stages');
 const co = main.findIndex(l => /checkout -q -f -B shipjob FETCH_HEAD/.test(l.s));
-assert(co > 0 && main.slice(0, co).some(l => /status --porcelain/.test(l.s)), 'a forced checkout of the own clone, its local changes logged first');
+const pre = main.slice(0, co).map(l => l.s);
+assert(co > 0 && pre.some(s => /status --porcelain/.test(s)) && pre.some(s => /diff --binary HEAD > "%O%\\clone_changes_before_checkout\.patch"/.test(s)),
+  'every local change in the clone is listed and saved before the forced checkout');
+const unexpected = pre.findIndex(s => /findstr \/v \/r \/c:"\^\.\. godot\/assets\/ships\/"/.test(s));
+assert(unexpected > 0 && /set "FAILED=checkout: the clone has local changes outside/.test(pre[unexpected + 1]) && guard.test(pre[unexpected + 2]),
+  'a change outside godot/assets/ships stops the job before the forced checkout');
 pass('the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count');
 
 // the wait default

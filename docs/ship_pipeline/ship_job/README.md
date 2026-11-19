@@ -26,7 +26,10 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 
 1. Runs from its own copy, `JOB_DIR\ship_job_running.bat`: cmd reads a .bat as it goes, so a checkout must never rewrite the
    file that is running.
-2. Its own clone `JOB_DIR\repo` (depth 50), the branch checked out, `PAINT_BASE` merged if set (a failed merge is aborted
+2. Its own clone `JOB_DIR\repo` (depth 50), the branch checked out with a forced checkout. Before it, every local change in
+   the clone is listed and saved (`out\clone_changes_before_checkout.txt` and `.patch`). Only changes under
+   `godot/assets/ships/` (what stage 7's install writes, the manifest among them) are reset; any other change, such as a
+   hand fix left in the clone, stops the job with nothing reset (Artoo on PR 1179). Then `PAINT_BASE` merged if set (a failed merge is aborted
    and stops the job), then a `commit=` line.
 3. The headless import, then each stage in its own cmd, logged with its exit code. A failed stage skips every later stage.
    Stage 7 installs into the clone's own godot folder, never into Ryan's game.
