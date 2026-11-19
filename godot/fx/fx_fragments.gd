@@ -37,7 +37,7 @@ const PROFILES := [
 const CROWN := [0.095, -0.06, 0.045, -0.035, 0.03, 0.055]
 const CENTRE_DEPTH := [0.075, 0.075, 0.15, 0.15, 0.12, 0.105]
 
-static var _meshes: Array[Array] = []
+static var _meshes: Array[Array] = []   # not GPU: vertex arrays (Packed arrays), not meshes
 static var _atlas_image: Image
 
 

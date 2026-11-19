@@ -5,7 +5,7 @@ const CRAFT := preload("res://render/squadron_craft.gd")
 const LOOK := preload("res://fx/faction_look.gd")
 static var ship_manifest_path := "res://assets/ships/manifest.json"
 static var ship_cache_dir := "res://gen/ships"
-static var _model_codes: Dictionary = {}
+static var _model_codes: Dictionary = {}   # not GPU: model code strings
 static var _indexed_manifest := ""
 # Local flight amplitudes, in craft lengths and radians. Formation clearance
 # includes the whole weave, bank and (for spores) breathing cycle.

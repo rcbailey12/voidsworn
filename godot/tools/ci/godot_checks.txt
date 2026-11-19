@@ -91,6 +91,7 @@ headless|assets/ships/test/station_size_check.gd|-|-|issue 975: an installed T2 
 headless|render/test/formation_check.gd|-|-|issue 843: no projected wingmate footprints overlap through flight for every factory craft kind, sheet-sized Sunward hulls and wide, long, tall, nested and breathing mesh regressions
 headless|render/test/hull_lift_check.gd|-|-|issue 811: only E14 lifts after fitting; movement and revival keep its height; markers, camera, hard points and shields follow
 headless|render/test/variant_ship_check.gd|-|-|issue 812: named variant hull selection, base fallback, inherited scale and board clearance; VARIANT_EXPORTS adds real GLB cache readback
+headless|render/test/mesh_watch_check.gd|-|-|issue 1204: one shared new-mesh watcher serves both rim lights and the nebula fog guard (one node_added connection, one end-of-frame pass), and a hull whose material is set two frames late still gets its rim and fog guard
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
