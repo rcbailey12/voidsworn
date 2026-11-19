@@ -48,6 +48,8 @@ const CELL := Vector2i(384, 216)
 # camera 170 is a 1 to 1 pixel crop (the battle camera at true size); closer cameras are a wider crop scaled down
 const CROP := {170: Vector2i(384, 216), 60: Vector2i(1152, 648), 26: Vector2i(1920, 1080)}
 const FAIL_AT := [0.1, 0.3, 0.55, 0.85]
+const FAIL_WINDOW := 168   # cost pass frames per failure (2.8 s at 60)
+const SETTLE := 60         # cost pass frames between failures (1 s)
 const LOOK_NAMES := {"today": "Today's look (default)", "shear": "Energy shear", "shear_low": "Energy shear, lower quality",
 	"collapse": "Clean collapse"}
 
@@ -407,10 +409,13 @@ func _cost() -> void:
 					for cycle in 2:
 						for id in ids:
 							bench.fx.shield_break(id, 3)
-						fail_ms.append_array(await _gpu_window(vrid, 96))    # 1.6 s, the whole failure
+						# 2.8 s: the shader's 1.6 s and the longest particle tail of any look (today's Glasswright glints
+						# start up to 0.5 s late and live up to 2.0 s), the same window for every look and for main
+						fail_ms.append_array(await _gpu_window(vrid, FAIL_WINDOW))
 						for id in ids:
 							bench.fx.sync_ship(id, bench._unit(1.0, 5))
-						for i in 12:
+						# then everything clears before the next failure or the next quiet window
+						for i in SETTLE:
 							await bench._step()
 					var row := {"shape": shape, "radius": int(r), "look": look, "repeat": rep, "ships": n,
 						"quiet_median_ms": _median(quiet), "fail_median_ms": _median(fail_ms), "fail_p95_ms": _pct(fail_ms, 0.95),
