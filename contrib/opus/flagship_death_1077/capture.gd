@@ -94,10 +94,11 @@ func _run() -> void:
 		_write("capture.json", info, out)
 	elif mode == "timing":
 		info["timing"] = await _timing()
+		# (the rerun at 1236bbc3 lost this file: the cold branch wrote it instead, over the prepared run's numbers)
+		_write("timing_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
 	elif mode == "cold":
 		info["timing"] = await _cold()
 		_write("cold_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
-		_write("timing_%s.json" % ("strain" if OS.get_environment("VS_DEATH_STORY") == "strain" else "off"), info, out)
 	bench._clear()
 	bench.queue_free()
 	await process_frame

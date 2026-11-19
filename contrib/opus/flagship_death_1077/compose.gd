@@ -14,6 +14,9 @@ var chapters: Array = []
 
 
 func _initialize() -> void:
+	# the PC's window came up 1920x1080 under the project's stretch settings and drew the page at half size, cropped (rerun at
+	# 1236bbc3): draw at one to one in the top 1920x600 of whatever window opens (the review copy is cropped to it)
+	root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	var args := OS.get_cmdline_user_args()
 	var scratch: String = args[0]
 	var radius: String = args[1]
