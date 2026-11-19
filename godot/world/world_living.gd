@@ -19,6 +19,7 @@ const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
+const WAKE := preload("res://world/nebula_wake.gd")
 
 const HD := preload("res://world/hull_debris.gd")
 var _chunk_task := -1
@@ -36,6 +37,9 @@ var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var _storm_bursts: Array = []
 var clock := 0.0
+# Issue 1079 prototype (off by default): ships disturb the calm nebula as they pass. Storm gas is never touched.
+var _wake = null
+var _wake_mats: Array[ShaderMaterial] = []
 
 # Issue 368, R270: route A is the default. today is retained only for historical bench pairs.
 var gas_route := selected_route()
@@ -346,6 +350,8 @@ func build(world) -> void:
 	if presenter != null and presenter.get("floats") is Array:
 		_tick_presenter = presenter
 	rng.seed = int(W.setting.get("seed", 7)) * 31 + 991
+	if bool(W.get("nebula_wake")):
+		_wake = WAKE.new(W.quality)
 	var pts: Dictionary = W._terr_pts
 	# Background specks originally drew after gas at priority 0. Put them behind it.
 	for child in W.get_children():
@@ -489,6 +495,9 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
 	sh.code = _gas_card_shader(storm)
+	if _wake != null and not storm:
+		sh.code = WAKE.into_cards(sh.code, _wake.points)
+		_wake_mats.append(m)
 	m.shader = sh
 	if expanded:
 		m.set_shader_parameter("height_scale", GAS_HEIGHT)
@@ -550,6 +559,9 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	var mat := ShaderMaterial.new()
 	var shader := Shader.new()
 	shader.code = ION.FOG if storm else FOG_SHADER
+	if _wake != null and not storm:
+		shader.code = WAKE.into_fog(shader.code, _wake.points)
+		_wake_mats.append(mat)
 	mat.shader = shader
 	if _fog_noise == null:
 		_fog_noise = load(NOISE_PATH).texture()
@@ -856,6 +868,10 @@ func _process(dt: float) -> void:
 		(g[0] as ShaderMaterial).set_shader_parameter("gas_time", clock)
 	for m in fog_mats:
 		m.set_shader_parameter("gas_time", clock)
+	if _wake != null and not _wake_mats.is_empty():
+		var views = W.get_parent().get("views") if W.get_parent() != null else null
+		_wake.update(dt, (views as Dictionary).values() if views is Dictionary else [])
+		_wake.apply(_wake_mats)
 	_present_storm_ticks(dt)
 	for burst in _storm_bursts:
 		if clock >= float(burst.next): _start_storm_burst(burst)
