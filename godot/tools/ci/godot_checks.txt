@@ -16,6 +16,7 @@ headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit p
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issue 1075: protocol offer cards explain current fleet fit, caps and refits; fixed seeds prove the pool, draws and saves are read-only
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
+headless|campaign/test/truth_pass_test.gd|-|-|issue 1144: emergency starters after reload and truthful capstone and Nemesis text on the campaign controls
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
 headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
@@ -94,6 +95,7 @@ headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle
 headless|scenes/battle/test/targeted_ability_test.gd|-|-|issue 1124: marked Nova and Blink clicks reach the rules; unmarked clicks do not
 headless|scenes/battle/test/click_after_camera_move_test.gd|-|-|issue 1124: releases pick the current camera ray; HUD clicks and drags do not pick
 headless|scenes/battle/test/armed_preview_test.gd|-|-|issue 1124: switching guns clears an invalid burn-and-fire ghost, card and command
+headless|scenes/battle/test/volley_preview_test.gd|-|-|issue 1144: target preview against actual seeded volleys, including the planned hex, shared shield routing and low-odds landed-hit routing
 headless|scenes/battle/test/danger_revision_test.gd|-|-|issue 1124: knocking a gun out in place refreshes danger hatching, badges and the threat map
 headless|main/test/title_settings_test.gd|-|-|issue 1124: title settings buttons update their labels, persist and apply each press in the isolated user folder
 headless|main/test/title_continue_test.gd|-|-|issue 1124: real title and host hide Continue without a run and resume an old save in the isolated user folder

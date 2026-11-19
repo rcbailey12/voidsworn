@@ -2201,6 +2201,18 @@ func nemAssignSlot() -> Variant:
 		if jt(a[j]): return a[j]
 		j -= 1
 	return null
+# The sector dialog may name an outgoing hunter who is no longer active. Read
+# the existing assignment and registry without resolving or creating anybody.
+func nemCanReturn(fac: String) -> bool:
+	if RUN == null or jt(RUN.get("over")) or not (RUN.get("nemAssign") is Array): return false
+	var N = RUN.get("nems", {}).get(fac)
+	if not (N is Dictionary) or jt(N.get("dead")): return false
+	var assigned = nemAssignSlot()
+	var slots: Array = RUN["nemAssign"]
+	for sector in range(int(RUN["sector"]), 4):
+		if sector <= slots.size() and jt(slots[sector - 1]): assigned = slots[sector - 1]
+		if assigned == fac and z0(N.get("met")) < sector: return true
+	return false
 func nemActive() -> Variant:
 	if RUN == null: return null
 	if RUN.get("fleet") == null: return RUN.get("nem")
@@ -3401,7 +3413,7 @@ func battleScreen(cfg: Dictionary) -> void:
 			cfg = cfg.duplicate(); cfg["seed"] = sd
 			JSM.rnd_seed((int(sd) ^ 0x5bd1e995) & 0xFFFFFFFF)
 	if RUN["fleet"].size() <= 1 and float(z0(RUN.get("reinf"))) < float(RUN["sector"]):
-		RUN["reinf"] = RUN["sector"]; var sh = newShip("warden"); RUN["fleet"].append(sh)
+		RUN["reinf"] = RUN["sector"]; var sh = newShip(cheapHull(RUN["fac"])); RUN["fleet"].append(sh)
 		toast("The sector garrison sends the " + str(sh["name"]) + " to reinforce you."); tel("reinforced", {})
 	var nd = findNode(cfg["node"]) if jt(cfg.get("node")) else null
 	if nd != null and not jt(nd.get("enc")) and cfg["kind"] != "boss":

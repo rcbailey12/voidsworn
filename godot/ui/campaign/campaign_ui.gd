@@ -1697,7 +1697,9 @@ func _end_detail_body(d: Dictionary, section: String) -> Control:
 		var linebtn = _end_btn("Choose " + str(C.ADMIRALS[flown["id"]]["n"]) + "'s level " + str(5 + C.lineageBuild(flown["id"])["picks"].size()) + " skill" if int(flown["pending"]) > 0 else ("Choose Command evolution" if flown["capstoneReady"] else "View admiral line"), "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")
 		if linebtn != null:
 			linebtn.tooltip_text = "Recorded skills: " + (", ".join(PackedStringArray(flown["chosen"])) if not flown["chosen"].is_empty() else "None yet") + "."
-			if flown.get("hasCap", false) and int(flown.get("capLevel", 0)) > 0: linebtn.tooltip_text += "\nCapstone mastery: " + str(C.CAPSTONE_MASTERY_PERKS[int(flown["capLevel"]) - 1]["d"])
+			if flown.get("hasCap", false) and int(flown.get("capLevel", 0)) > 0:
+				var effect := _capstone_effect(int(flown["capLevel"]) - 1)
+				if not effect.is_empty(): linebtn.tooltip_text += "\nCapstone mastery: " + effect
 			for perk in flown["earned"]: linebtn.tooltip_text += "\n" + str(perk["n"]) + " earned: " + str(perk["d"])
 			r2.add_child(linebtn)
 		for row in receipt["shadow"]:
@@ -1809,6 +1811,11 @@ func _lineage(id) -> Control:
 	v.add_child(lbl("Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset " + C.numstr(build["respecs"]) + " times. You have " + C.numstr(C.z0(C.META.get("renown"))) + " renown.", 18, BONE3))
 	var row = hbox(); add(row, abtn("Reset line: " + C.numstr(C.lineageRespecCost(id)) + " renown", "offerRespec", id)); add(row, abtn("Back to Admiral mastery", "progTab", "mastery")); v.add_child(row)
 	return v
+func _capstone_effect(i: int) -> String:
+	var value = C.CAPSTONE_MASTERY_PERKS[i].get("d")
+	var effect := value.strip_edges() as String if value is String else ""
+	return "" if effect.begins_with("Placeholder:") else effect
+
 # Job 7 step 14: the mastery levels on the chosen capstone evolution, in the same block as the evolution choice.
 func _capstone_mastery(id) -> Control:
 	var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var v = vbox(6)
@@ -1821,7 +1828,8 @@ func _capstone_mastery(id) -> Control:
 	for i in range(C.CAPSTONE_MASTERY_PERKS.size()):
 		var earned = l > i; var cv = card(earned, 300)
 		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, BONE, font_semi))
-		cv[1].add_child(lbl(str(C.CAPSTONE_MASTERY_PERKS[i]["d"]), 17, BONE2))
+		var effect := _capstone_effect(i)
+		if not effect.is_empty(): cv[1].add_child(lbl(effect, 17, BONE2))
 		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 17, BONE3))
 		if not earned: cv[0].modulate.a = 0.55
 		row.add_child(cv[0])
@@ -1855,13 +1863,13 @@ func _modal(md: Dictionary) -> void:
 				v.add_child(rich("With the flagship broken, the fleet jumps deeper. Fleet command expands: [b]" + c("+3 command points", VERD) + "[/b], and crews patch 40% of every hull during the transit.", 17))
 				v.add_child(rich("Scanners confirm [b]" + esc(F["n"]) + "[/b] ahead.", 17))
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
-			if md["kind"] == "sector" and d.get("adapt") != null and d.get("adaptFac") != null:   # #121 (A4): the commander who fought the sector just ended
+			if md["kind"] == "sector" and d.get("adapt") != null and d.get("adaptFac") != null and C.nemCanReturn(d["adaptFac"]):
 				var na = d["adapt"]; var nf = d["adaptFac"]
 				# the Nemesis adaptation: its own well with the reserved red bar and the NEMESIS tag, as the battle's Nemesis block
 				var aw = blk(ALERT, 5, 14, 10); aw[0].set_meta("keep", true)
 				var ah = hbox(8); ah.add_child(tagl("Nemesis", ALERT, true)); ah.add_child(lbl("ADAPTED TO YOU", 17, BONE, font_caps, false)); aw[1].add_child(ah)
 				aw[1].add_child(rich(c(esc(str(d.get("adaptWho", ""))) + " has adapted: ", BONE2) + "[b]" + c(esc(C.nemAdaptName(na, nf)), BLOOD) + "[/b] " + c("(" + esc(str(d.get("adaptWhy", ""))) + ")", BONE3), 17))
-				aw[1].add_child(rich(c(esc(C.nemAdaptDesc(na, nf)), BONE2), 18))
+				aw[1].add_child(rich(c("If you meet this hunter again: " + esc(C.nemAdaptDesc(na, nf)), BONE2), 18))
 				if str(d.get("adaptLine", "")) != "": aw[1].add_child(rich("[i]" + c(esc(str(d["adaptLine"])), BLOOD) + "[/i]", 17))
 				v.add_child(aw[0])
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", EMBER) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
