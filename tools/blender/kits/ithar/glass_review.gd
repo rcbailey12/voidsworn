@@ -8,6 +8,7 @@ const VARIANTS := {
 	"A": Vector2(0.0, 0.0),
 	"B": Vector2(0.78, 0.0),
 	"C": Vector2(0.04, 1.0),
+	"R4": Vector2(0.78, 0.23),
 }
 
 
@@ -45,6 +46,7 @@ static func _material(sky: ShaderMaterial, variant: String) -> ShaderMaterial:
 	material.shader = GLASS
 	var finish: Vector2 = VARIANTS[variant]
 	material.set_shader_parameter("smoke", finish.x)
+	material.set_shader_parameter("neutral_glass", variant == "R4")
 	material.set_shader_parameter("dispersion", finish.y)
 	var nebula = sky.get_shader_parameter("neb_tex")
 	if nebula is Texture2D:

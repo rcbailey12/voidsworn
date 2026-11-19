@@ -1,4 +1,4 @@
-"""Polished blown glass, silver veins and stored light for the Glasswrights."""
+"""No-wear neutral glass and ice-blue light for the Glasswrights."""
 import bpy
 import numpy as np
 
@@ -10,55 +10,33 @@ SOFT_RIM = False
 LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14,
               bump_distance=.00035, bump_strength=.22)
 
-# Pale blue on thin glass grades into a deeper blue at the thicker shoulders.
-# The review shader reads the atlas's red channel as an optical depth proxy.
-# Each tuple is thin tint, thick tint, roughness and metallic.
+# Neutral fallback and optical-depth mask. The review shader reads the red channel.
 GLASS = {
-    'cd5_strand_glass': ((.58, .76, .86), (.16, .34, .53), .068, .0),
-    'cd5_clear': ((.52, .70, .83), (.27, .45, .63), .052, .0),
-    'cd5_body_clear': ((.51, .71, .85), (.19, .37, .59), .057, .0),
-    'cd5_pearl': ((.36, .54, .72), (.14, .30, .49), .079, .0),
-    'cd5_body_pearl': ((.37, .56, .73), (.15, .31, .50), .079, .0),
+    'cd5_strand_glass': (0.58, 0.16, 0.068),
+    'cd5_clear': (0.52, 0.27, 0.052),
+    'cd5_body_clear': (0.51, 0.19, 0.057),
 }
-ZONES = {
-    **GLASS,
-    'cd5_silver': ((.55, .62, .68), (.77, .81, .86), .081, 1.0),
-    'cd5_frame': ((.14, .22, .26), (.30, .38, .42), .12, .88),
-}
+FRAME_TONE = (0.032, 0.032, 0.032)
+ZONES = {**GLASS, 'cd5_frame': (0.032, 0.032, 0.46)}
 FALLBACK = 'cd5_frame'
-ZONE_OPACITY = dict.fromkeys(GLASS, .34)
+ZONE_OPACITY = dict.fromkeys(GLASS, 0.34)
 ATLAS_OPACITY = {'H': ZONE_OPACITY['cd5_strand_glass']}
 DECALS = ()
 
-STORED_LIGHT = {
-    'amber': ((1.0, .73, .48), 5.7),
-    'violet': ((.74, .72, 1.0), 5.5),
-    'green': ((.58, .85, 1.0), 5.0),
-}
-GLOW = {
-    'cd5_white': ((.73, .86, 1.0), 13.0),
-    'cd5_drive': ((.53, .51, .92), 8.0),
-    'cd5_drive_core': ((.87, .90, 1.0), 19.0),
-}
-for colour, (rgb, power) in STORED_LIGHT.items():
-    for zone, gain in ((colour, .72), (f'{colour}_deep', .22), (f'{colour}_hot', 1.32),
-                       (f'pane_{colour}', .22), (f'sliver_{colour}', .48)):
-        GLOW[f'cd5_{zone}'] = (rgb, power * gain)
-GLOW_HULL = tuple(GLOW)
+GLOW = {'cd5_white': ((0.94, 0.94, 0.94), 2.2)}
 
 
 def surface_layers(c, zone, tiles):
     nt = c.nt
-    low, high, roughness, metal = ZONES[zone]
+    low, high, roughness = ZONES[zone]
+    height = math_(nt, 'ADD', 0.0, 0.0)
+    rough = math_(nt, 'ADD', roughness, 0.0)
     flow = c.noise(12, 2, .54, stretch=(.28, 1.28, 1.28))
     if zone == 'cd5_strand_glass':
         pearl = node(nt, 'ShaderNodeAttribute', attribute_name='pearl_flow')
         flow = pearl.outputs['Fac']
-    col = mixc(nt, low, high, ramp(nt, flow, .22, .76))
-    if zone in GLASS:
-        return col, math_(nt, 'ADD', 0.0, 0.0), math_(nt, 'ADD', roughness, 0.0), metal
-    rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', flow, .031))
-    return col, flow, rough, metal
+    col = mixc(nt, (low,) * 3, (high,) * 3, ramp(nt, flow, .22, .76))
+    return col, height, rough, 0.0
 
 
 def trim_sheet():
@@ -78,8 +56,8 @@ def glow_material(zone, hull=False):
     material = bpy.data.materials.new(f'ithar_light_{zone}')
     material.use_nodes = True
     bsdf = material.node_tree.nodes.get('Principled BSDF')
-    bsdf.inputs['Base Color'].default_value = tuple(v * .17 for v in rgb) + (1,)
-    bsdf.inputs['Roughness'].default_value = .11
+    bsdf.inputs['Base Color'].default_value = (*(v * 0.17 for v in rgb), 1)
+    bsdf.inputs['Roughness'].default_value = 0.16
     bsdf.inputs['Emission Color'].default_value = (*rgb, 1)
     bsdf.inputs['Emission Strength'].default_value = power
     material['ps_glow'] = 1
@@ -92,9 +70,7 @@ def inside_material(zone):
     material = bpy.data.materials[zone].copy()
     material.name = f'ithar_inside_{zone}'
     bsdf = material.node_tree.nodes.get('Principled BSDF')
-    rgb = bsdf.inputs['Base Color'].default_value
-    bsdf.inputs['Base Color'].default_value = tuple(v * .48 for v in rgb[:3]) + (1,)
-    bsdf.inputs['Emission Strength'].default_value *= .44
-    bsdf.inputs['Transmission Weight'].default_value = 0.0
+    bsdf.inputs['Base Color'].default_value = (*FRAME_TONE, 1)
+    bsdf.inputs['Coat Weight'].default_value = 0.0
     material['ps_inside'] = 1
     return material

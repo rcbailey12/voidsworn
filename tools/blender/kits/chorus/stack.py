@@ -4,7 +4,7 @@ import os
 import bpy
 import numpy as np
 
-from paint3 import math_, mixc, ramp
+from paint3 import math_, mixc, node, ramp
 
 
 FINISH = os.environ.get('CHORUS_FINISH', 'chitin')
@@ -32,12 +32,16 @@ ZONES = {
     'amber': ((.29, .15, .025), (.15, .066, .011), .55),
 }
 HARD_SHELL = {
-    'hide': ((.22, .26, .081), (.044, .054, .013), .34),
-    'chitin': ((.38, .23, .067), (.088, .061, .016), .31),
-    'bone': ((.48, .365, .174), (.238, .173, .073), .43),
+    'hide': ((.132, .090, .041), (.061, .040, .016), .38),
+    'chitin': ((.147, .096, .042), (.067, .041, .016), .35),
+    'bone': ((.162, .110, .052), (.080, .049, .020), .41),
+    'carapace': ((.147, .096, .042), (.103, .064, .026), .37),
+    'carapace_joint': ((.041, .026, .012), (.016, .010, .005), .28),
 }
 if FINISH == 'chitin':
     ZONES.update(HARD_SHELL)
+else:
+    ZONES.update(carapace=ZONES['hide'], carapace_joint=ZONES['flesh2'])
 
 FALLBACK = 'flesh'
 DECALS = ()
@@ -92,11 +96,26 @@ def hard_layers(c, base, shade, roughness):
     return col, height, rough, 0.0
 
 
+def carapace_layers(c, base, shade, roughness):
+    nt = c.nt
+    tone = node(nt, 'ShaderNodeAttribute', attribute_name='scute_tone').outputs['Fac']
+    col = mixc(nt, base, shade, tone)
+    shadow = ramp(nt, c.ao, .92, .42)
+    col = mixc(nt, col, (.034, .021, .009), math_(nt, 'MULTIPLY', shadow, .46))
+    grain = c.noise(136, 2, .55, stretch=(.50, 1.22, 1.22))
+    height = math_(nt, 'MULTIPLY', grain, .065)
+    rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', grain, .07))
+    return col, height, rough, 0.0
+
+
 def surface_layers(c, zone, tiles):
     nt = c.nt
     base, shade, roughness = ZONES[zone]
-    if FINISH == 'chitin' and zone in HARD_SHELL:
-        return hard_layers(c, base, shade, roughness)
+    if FINISH == 'chitin':
+        if zone == 'carapace':
+            return carapace_layers(c, base, shade, roughness)
+        if zone in HARD_SHELL and zone != 'carapace_joint':
+            return hard_layers(c, base, shade, roughness)
     broad = c.noise(11, 3, .61, stretch=(.74, 1.25, 1.25))
     flow = c.noise(38, 3, .64, stretch=(.31, 1.42, 1.42), w=.19)
     folds = ramp(nt, flow, .37, .62)

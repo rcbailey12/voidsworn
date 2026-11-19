@@ -2,6 +2,81 @@
 
 Refs #1058. The finish review uses an isolated Godot project. The two hulls still need Ryan's approval for the shared build.
 
+## Run 4 finishes
+
+- **C11 Bladeback / B21_11.** Eight broad, low shoulder bands per side shingle
+  from bow to stern. A raised rear lip hangs over a dark fold, with small
+  plate-to-plate shifts in the same ochre-brown tone.
+  [Build sheet](../../ship_pipeline/build_sheets/chorus_C11/README.md) |
+  [Source manifest](../../ship_pipeline/build_sheets/chorus_C11/manifest.json) |
+  [Chorus stack](../../../tools/blender/kits/chorus/stack.py)
+- **CD5 The Unfinished / I8_37.** Run 3 B's smoke and clear reflections cover
+  charcoal fittings and one ice-blue core. Four dim filaments follow the hull
+  and stop at the shatter joints. Rainbow colour comes from grazing edges and
+  bright glints. The baked fallback uses neutral grey.
+  [Build sheet](../../ship_pipeline/build_sheets/ithar_CD5/README.md) |
+  [Source manifest](../../ship_pipeline/build_sheets/ithar_CD5/manifest.json) |
+  [Recipe](../../../tools/recipe/ships/ithar_CD5.json) |
+  [Glass shader](../../../tools/blender/kits/ithar/blown_glass.gdshader)
+
+The 1280 by 720 sheets show A4, Run 3 and Run 4 from both sides at radius
+170 and 26. CD5 uses Run 3 B and includes a plain rod and sphere under each
+glass finish in the same battle light. The older A4 reverse views use a
+darker sky. C11's bands are visible in the battle views. CD5's core reads
+pale blue-white up close, and the dim guides are easiest to see there.
+
+- [C11 comparison](C11_finish_run4.jpg)
+- [CD5 comparison and glass reference](CD5_finish_run4.jpg)
+
+### Run 4 export and damage checks
+
+Both builds passed the six-view surface check, Stage 6 LOD bench, Stage 7
+hard-point check and planted-fault checks, isolated ShipView readback and
+cache map comparison. Both used two 4096-pixel atlases at 64 OptiX samples
+and exported 2048-pixel game maps.
+
+| Export | GLB triangles | GLB surfaces | Stage 6 draws, 20 full-detail copies at 1080p |
+| --- | ---: | ---: | ---: |
+| C11 / B21_11 | 184,980 | 14 | 130 |
+| CD5 / I8_37 | 222,082 | 14 | 90 |
+
+The Godot damage probes found zero split machines and zero interior triangles
+outside the matching wreck pieces on both exports. C11 has 13 machines and
+two tears. CD5 has eight machines and six fractures. CD5's separate ray count
+against the whole unbroken hull flagged 199 triangles, down from 316 in Run
+3. A cross-section check placed all 45 distinct flagged corners inside the
+authored outline. The installed hull snapshot, including damage geometry,
+counted 185,208
+triangles and 16 surfaces for C11 and 222,178 triangles and 16 surfaces for CD5.
+
+CD5 r3 had 461,770 triangles and 334 unjoined pieces. Run 4's bake grouped
+114 input meshes into the exported surfaces. Removing the groove slivers,
+silver runs and braided guides accounts for most of the reduction.
+
+Standing checks returned 74 passes and two known baselines.
+
+### Run 4 Scene 207 cost at 1080p
+
+The isolated project put C11 in the Chorus Spitter's slot and CD5 in the
+Glasswright Lancet's slot in the same 24-ship scene. It used battle source
+`3b616ac3` and installed manifest SHA-256
+`06a9d9125b289c194695e91e8d9137bf8b497dd15933ed17b02a01528095dc9d`.
+Three separate Godot 4.7.2 processes ran on the RTX 5080 under solo GPU claims.
+Each timed both finishes using Forward+, fitted shields, 4x MSAA, full mesh
+detail and vsync off. Each case warmed up for 180 frames and measured at
+least 720 frames and eight seconds. The smoked finish kept all five glass
+surfaces after the volleys.
+
+| Finish in the same scene | Frame median | Frame p95 | Frame p99 | Worst frame | GPU median | Visible + shadow draws |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Run 4 smoked glass | 3.58 ms | 5.69 ms | 7.27 ms | 77.43 ms | 2.67 ms | 478 + 313 |
+| Baked neutral fallback | 3.52 ms | 8.47 ms | 10.76 ms | 62.61 ms | 2.71 ms | 474 + 313 |
+
+Both finishes passed the **12.5 ms median gate** in every session. The table
+uses the middle of the three session statistics except for the worst frame,
+which is the largest recorded sample. CD5 fits the measured flagship budget.
+[Scene 207 sampling method](../../../contrib/codex/perf_1118/README.md)
+
 ## Run 3 finishes
 
 - **C11 Bladeback / B21_11.** The chitin has overlapping shoulder plates with raised

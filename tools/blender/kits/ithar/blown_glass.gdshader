@@ -13,6 +13,7 @@ uniform float sun_gain = 1.0;
 uniform float smoke = 0.0;
 uniform float dispersion = 0.0;
 uniform bool reference_glass = false;
+uniform bool neutral_glass = false;
 
 vec2 sky_uv(vec3 d) {
 	return vec2(atan(d.x, -d.z) / TAU + 0.5, acos(clamp(d.y, -1.0, 1.0)) / PI);
@@ -34,6 +35,9 @@ void fragment() {
 	float fresnel = 0.042 + 0.958 * rim;
 	float thickness = (mix(0.12, 0.75, optical_depth) + smoke * 0.38) / max(facing, 0.32);
 	vec3 absorption = mix(vec3(0.14, 0.062, 0.029), vec3(2.15, 1.42, 1.17), smoke);
+	if (neutral_glass) {
+		absorption = vec3(dot(absorption, vec3(0.2126, 0.7152, 0.0722)));
+	}
 	vec3 transmission = exp(-absorption * thickness);
 
 	vec3 ray = normalize(mat3(INV_VIEW_MATRIX) * reflect(-v, n));
@@ -43,7 +47,7 @@ void fragment() {
 	vec3 reflected = sky_reflection(ray);
 	vec3 key = vec3(1.0, 0.94, 0.84) * (star * 8.0 + glint * 0.19) * sun_gain;
 	vec3 reflected_glass = reflected * fresnel + key * max(0.28, fresnel);
-	reflected_glass += vec3(0.30, 0.45, 0.58) * rim;
+	reflected_glass += (neutral_glass ? vec3(0.42) : vec3(0.30, 0.45, 0.58)) * rim;
 
 	vec3 into = refract(-v, n, 1.0 / 1.46);
 	vec2 texel = 1.0 / VIEWPORT_SIZE;

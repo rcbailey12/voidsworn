@@ -12,9 +12,9 @@
  "bake": "stack",
  "cell": "CD5",
  "outline_gate": 0.9,
- "outline_third_slack": 5.0,
+ "outline_third_slack": 5,
  "lights": {},
- "light_min_px": 2.0,
- "notes": "CD5 r3 (R298), with issue 1058's sealed glass boundary and recessed interiors. The sheet supplies geometry, mounts, class length and break paths through the build contract. The Glasswright stack bakes the tinted glass fallback. The isolated review applies the clear, smoked or prismatic finish over that export.",
+ "light_min_px": 2,
+ "notes": "CD5 r3 (R298) with issue 1058 run 4 interior. The sheet supplies geometry, mounts, length and break paths. The Glasswright stack bakes the neutral glass fallback, smoky structure and one ice-blue core with dim guides. The isolated review applies the smoked glass shader.",
  "parts": []
 }

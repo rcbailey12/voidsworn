@@ -1,6 +1,20 @@
 # Glasswright flagship CD5: The Unfinished
 
-## Issue 1058 finish review on r3
+## Issue 1058 run 4 finish review on r3
+
+| Part | Run 4 change | Reason |
+| --- | --- | --- |
+| Glass skin | Keep the six rolled strands, caps and narrow chamfers from Run 3 B. Use neutral smoked absorption and a weak prism effect along grazing edges and glints. | Reflections and light provide colour without coloured glass paint. |
+| Decks, frames, ribs and optic hardware | One charcoal tone. The centre reservoir becomes a single ice-blue core, based on the Glasswright engine and shield palette. | Read one interior with a clear focal point through the glass. |
+| Internal light guides | Replace the braided tubes, 216 groove slivers and exterior silver traces with four narrow, equally spaced tracks along the hull. Guides stop at the existing compartment gaps. | Read thin lengthwise lines and leave room for the authored shatter paths. |
+| Lances, turning optics and drive groups | Refinish the visible fittings and lens backings in charcoal, and keep small neutral drive and lance apertures. | Remove the old kit colours while preserving the shape, pivot and firing arc of each optic. |
+
+The sheet keeps the existing tapered silhouette, two lances, three turning
+optics, three engines and six authored fractures. The records and pictures
+below document the r3 source build.
+[Finish review and export checks](../../../shots/finish_chorus_glass_1118/README.md)
+
+## Issue 1058 finish review before run 4
 
 | Part | Work in this review | Reason |
 | --- | --- | --- |
