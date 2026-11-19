@@ -112,7 +112,7 @@ var not_ported: String:
 func np(what: String) -> void:
 	if not_ported == "": not_ported = what
 	push_error("NOT PORTED: " + what)
-func jt(x) -> bool: # JS truthiness (named jt: Object.tr is taken)
+static func jt(x) -> bool: # JS truthiness (named jt: Object.tr is taken)
 	if x == null: return false
 	match typeof(x):
 		TYPE_BOOL: return x
@@ -3898,10 +3898,14 @@ func setupObjective(type) -> void:
 			if hdist(h, o.hex) <= 1 and blocks(terr(h.q, h.r)): B["terrain"].erase(hkey(h.q, h.r))
 	B["obj"] = o
 func survivorsP() -> int:
+	return count_player_survivors(B["units"])
+static func count_player_survivors(units: Array) -> int:
 	var n = 0
-	for u in B["units"]:
-		if u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited"))): n += 1
+	for u in units:
+		if player_ship_survives(u): n += 1
 	return n
+static func player_ship_survives(u: Dictionary) -> bool:
+	return u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited")))
 # R314: rules that measure from the station (defend, guns, guard, wing support) measure from its edge, not its centre.
 # The edge distances match the old 7-hex station: damage and the guard ring 1 hex out (the hexes touching the station body),
 # guns 4 hexes out, wing support 2 hexes out. The enemy pull aims one ring outside the damaging perimeter.

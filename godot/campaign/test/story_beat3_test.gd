@@ -84,7 +84,7 @@ func reward_checks(c, ui) -> void:
 		check(c.RUN["storyNext"] == pending, "pending modifier survives reload")
 		if row[0] == "chorus" and row[1] == 0: c.act("storyCore"); c.act("boonDecline")
 		var b = real_battle(c, api); var r = api.R
-		check(c.RUN.get("storyNext") == null and c.SAVED_RUN.get("storyNext") == null, "battle entry saves consumption")
+		check(c.RUN.get("storyNext") == null and c.SAVED_RUN.get("storyNext") == pending, "battle entry spends the live modifier and keeps the retry checkpoint")
 		check(" ".join(PackedStringArray(r.storyModifierLines())).contains(row[3]), "battle modifier visible")
 		for u in b["units"]:
 			var wanted = row[2] if u["side"] == "player" and (row[0] != "voidsworn" or c.jt(u.get("pflag"))) else 1.0
@@ -97,6 +97,7 @@ func reward_checks(c, ui) -> void:
 			check(actual == base * wanted, "exact weapon damage multiplier")
 		check(r.storyDamageMult({"side": "player", "isSq": true}) == (1.0 if row[0] == "voidsworn" else row[2]), "later wings share fleet damage only")
 		await battle_shot(api, ui, str(row[0]) + ("_power_battle" if row[0] == "voidsworn" else "_damage_down_battle" if row[1] == 0 else "_damage_up_battle"))
+		c.finish_battle("retreat", c.B)
 		c.RUN = c.clone(c.SAVED_RUN); real_battle(c, api)
 		check(api.R.storyDamageMult(c.B["units"][0]) == 1.0, "following battle is normal")
 	choose(c, "hegemony", 0)
