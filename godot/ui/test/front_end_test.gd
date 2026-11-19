@@ -60,6 +60,7 @@ func run() -> void:
 	await title_checks(snd)
 	await campaign_checks(snd)
 	music_checks()
+	showcase_checks()
 	Kit.sound = null; UiScale.set_player(1.0)
 	print("Front end: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(0 if fails == 0 else 1)
@@ -95,8 +96,12 @@ func title_checks(snd: FakeSound) -> void:
 	await frames()
 	var vs := Vector2(root.size)
 	t._settings(); await frames(5)
-	var screen := Rect2(Vector2.ZERO, vs)
-	check(screen.encloses(t.settings_panel.get_global_rect()), "Settings fits the 1920x1080 window at Larger (bottom %d)" % int(t.settings_panel.get_global_rect().end.y))
+	await create_timer(0.35).timeout   # the drawer's slide
+	var pr: Rect2 = t.settings_panel.get_global_rect()
+	check(absf(pr.end.x - vs.x) <= 1.0 and pr.position.y <= 1.0 and absf(pr.end.y - vs.y) <= 1.0, "Settings is a full-height drawer on the right edge (%s)" % str(pr))
+	var screen := Rect2(Vector2.ZERO, vs).grow(0.5)
+	check(screen.encloses(pr), "Settings fits the 1920x1080 window at Larger (bottom %d)" % int(pr.end.y))
+	check(t.settings_dim.color.a <= 0.5, "the dim behind a drawer is light (%.2f), so the battle stays in view" % t.settings_dim.color.a)
 	var sc: ScrollContainer = t.settings_panel.find_children("*", "ScrollContainer", true, false)[0]
 	check(sc.get_v_scroll_bar().max_value <= sc.size.y + 1.0, "Settings needs no scrolling at Larger")
 	var unwrapped := 0; var rows := 0
@@ -123,6 +128,18 @@ func title_checks(snd: FakeSound) -> void:
 	t._unhandled_input(esc()); await frames()
 	check(t.settings_panel == null and t.settings_dim == null and m.saves == saves + 1, "Esc closes Settings and saves")
 	check(snd.heard.has("ui_cancel"), "Esc on Settings plays the back cue")
+	# phase 2 title: one ember action first, every other entry a quiet link, all in the left column
+	var kids: Array = t.menu.get_children().filter(func(c): return c is Button)
+	var primaries := 0
+	for b in kids:
+		if b.get_meta("kit_sound", "") == "primary": primaries += 1
+	check(kids.size() >= 6 and kids[0].get_meta("kit_sound", "") == "primary" and primaries == 1, "the title has exactly one ember action, first (%d entries)" % kids.size())
+	check(t.menu.get_global_rect().end.x < vs.x * 0.45, "the title menu stays in the left column")
+	# a click on the dim closes a drawer like Esc
+	t._settings(); await frames()
+	var click := InputEventMouseButton.new(); click.button_index = MOUSE_BUTTON_LEFT; click.pressed = true
+	t.settings_dim.gui_input.emit(click); await frames()
+	check(t.settings_panel == null, "a click beside the Settings drawer closes it")
 	# Credits: Esc closes it, and it names every font the game ships
 	t._credits(); await frames()
 	var text := t.credits_bbcode()
@@ -186,6 +203,14 @@ func campaign_checks(snd: FakeSound) -> void:
 	check(was_a == "aspect" and str(C.page["kind"]) == "aspect" and C.RUN != null, "Esc on the aspect page changes nothing until it has a Back (phase 4)")
 	ui.queue_free(); UiScale.set_player(1.0)
 	await frames()
+
+
+func showcase_checks() -> void:
+	var M = load("res://main/main.gd")
+	var facs: Array = M.showcase_factions()
+	var seen := {}
+	for i in facs.size(): seen[M.next_showcase_fac()] = true
+	check(facs.size() == 5 and not facs.has("voidsworn") and seen.size() == 5, "the title battle cycles the enemy through the five other factions with built ships (%s)" % str(facs))
 
 
 func music_checks() -> void:
