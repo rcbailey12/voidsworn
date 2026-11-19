@@ -59,7 +59,7 @@ var stills := {}          # moment -> Image (the current story)
 var clip_dir := ""
 var clip_n := 0
 var clip_started := {}
-var report := {"rev": REV, "stories": [], "cost": []}
+var report := {"rev": REV, "stories": [], "cost": [], "scenes": {}}
 
 
 func _initialize() -> void:
@@ -173,6 +173,8 @@ func _scene(sid: String, shape: String, look: String, radius: float) -> bool:
 	if bench.A == null or b == null or bench.T == null:
 		_fail("placeholder or missing ship for " + sid)
 		return false
+	_note_scene(bench.T)
+	_note_scene(bench.A)
 	var sh = bench.fx.ship("T")
 	if not sh.shielded or sh._shield_mat == null:
 		_fail(sid + " has no shield")
@@ -380,9 +382,11 @@ func _cost() -> void:
 		for i in n:
 			var sid: String = subjects[i % subjects.size()]
 			var p := Vector3((i % 4 - 1.5) * 30.0, 0, (int(i / 4) - 0.5) * 34.0)
-			if bench.story_ship("T%d" % i, rules_hulls[sid], p) == null:
+			var v = bench.story_ship("T%d" % i, rules_hulls[sid], p)
+			if v == null:
 				_fail("placeholder or missing ship " + sid)
 				return
+			_note_scene(v)
 			ids.append("T%d" % i)
 		await bench.fx.warmup(bench.cam)
 		for i in 90:
@@ -413,6 +417,18 @@ func _cost() -> void:
 						"fail_max_ms": _pct(fail_ms, 1.0)}
 					report["cost"].append(row)
 					print("SHIELD1078 cost ", JSON.stringify(row))
+
+
+# the installed ship each picture or number was drawn from: its packed scene path and sha256 (Artoo on PR 1170: prove
+# which hull files a run used, so runs can be compared)
+func _note_scene(view) -> void:
+	if view == null:
+		return
+	var code := str(view.code)
+	if report["scenes"].has(code):
+		return
+	var path: String = Bench.SV.manifest().get("ships", {}).get(code, {}).get("res", "")
+	report["scenes"][code] = {"res": path, "sha256": FileAccess.get_sha256(path) if path != "" and FileAccess.file_exists(path) else ""}
 
 
 # switch one ship's failure look in place (on main, which has no such setting, only today's look exists)

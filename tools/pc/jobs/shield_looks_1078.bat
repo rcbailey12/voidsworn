@@ -44,9 +44,10 @@ set "RES=%HOME1078%\out\%ATT%"
 if not exist "%RES%" mkdir "%RES%"
 if not exist "%OUT%" mkdir "%OUT%"
 echo commit %SHA% attempt %ATT%: results in out\%ATT% >> "%ST%"
-rem the installed hulls and the import cache a fresh clone lacks (copy only, never over newer files)
-if exist "%S1078_SHIPS%\gen" robocopy "%S1078_SHIPS%\gen" "%R%\godot\gen" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_gen.txt" 2>&1
-if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_ships.txt" 2>&1
+rem the installed hulls, copied fresh every attempt into this job's own clone (robocopy replaces every file whose size or time differs, so a reused
+rem clone never keeps an old hull; the probe records each drawn ship's scene sha256 in its json), and the import cache
+if exist "%S1078_SHIPS%\gen" robocopy "%S1078_SHIPS%\gen" "%R%\godot\gen" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_gen.txt" 2>&1
+if exist "%S1078_SHIPS%\assets\ships" robocopy "%S1078_SHIPS%\assets\ships" "%R%\godot\assets\ships" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_ships.txt" 2>&1
 if not exist "%R%\godot\.godot" if exist "%S1078_SHIPS%\.godot" robocopy "%S1078_SHIPS%\.godot" "%R%\godot\.godot" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%OUT%\copy_cache.txt" 2>&1
 set "PICTURE_STAMP_TOOL=%R%\tools\picture_provenance.py"
 set "PICTURE_SOURCE_REPO=%R%"
