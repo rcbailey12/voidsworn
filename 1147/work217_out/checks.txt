@@ -1,0 +1,643 @@
+## node contrib/opus/tools/run_all_checks.js (limit 1800 s)
+exit 1 
+Running auto_pr_body_tests (limit 300 s)...
+PASS: auto_pr_body_tests (11.64 s) | PASS auto_pr_body_tests: create and edit keep short bodies and bound long workhorse, Codex, plain and issue-less Muse bodies
+Running b1_tests (limit 300 s)...
+PASS: b1_tests (0.36 s) | PASS: exit 0
+Running b3_tests (limit 300 s)...
+PASS: b3_tests (0.65 s) | PASS: exit 0
+Running b4_tests (limit 300 s)...
+PASS: b4_tests (2.56 s) | PASS: exit 0
+Running backlog_tests (limit 300 s)...
+PASS: backlog_tests (0.49 s) | PASS: exit 0
+Running build_manifest_tests (limit 300 s)...
+PASS: build_manifest_tests (0.72 s) | PASS build_manifest_tests: 20 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, ithar_CD5, voidsworn_S8, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason
+Running campaign_start_test (limit 300 s)...
+PASS: campaign_start_test (0.47 s) | PASS: exit 0
+Running capstone_mastery_tests (limit 300 s)...
+PASS: capstone_mastery_tests (0.25 s) | PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect.
+Running check_em_dashes_tests (limit 300 s)...
+PASS: check_em_dashes_tests (1.27 s) | PASS: punctuation gate catches planted marks in renamed, spaced, PowerShell and workflow paths
+Running checks_truth_tests (limit 300 s)...
+PASS: checks_truth_tests (0.14 s) | PASS: the checks runner result words behave as issue 358 requires
+Running chorus_eat_core_tests (limit 300 s)...
+PASS: chorus_eat_core_tests (0.35 s) | PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15.
+Running cinder_prizes_tests (limit 300 s)...
+PASS: cinder_prizes_tests (0.40 s) | PASS: exit 0
+Running core_sync_tests (limit 300 s)...
+PASS: core_sync_tests (0.93 s) | PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings.
+Running doc_check_tests (limit 300 s)...
+PASS: doc_check_tests (8.10 s) | PASS: 141 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 101 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 284) or latest record, and the two stale entry-document claims stay gone
+Running effect_caps_tests (limit 300 s)...
+PASS: effect_caps_tests (0.34 s) | PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.
+Running env_reconcile_tests (limit 300 s)...
+PASS: env_reconcile_tests (0.38 s) | PASS: exit 0
+Running free_exit_tests (limit 300 s)...
+PASS: free_exit_tests (0.46 s) | PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.
+Running fx_death_spawn_tests (limit 300 s)...
+PASS: fx_death_spawn_tests (3.24 s) | PASS: every fx_death picture records its spawn and the vent uses the hull ray
+Running fx_late_shader_tests (limit 300 s)...
+PASS: fx_late_shader_tests (3.84 s) | PASS: the late shader behaviour check passed
+Running gen_open_work_tests (limit 300 s)...
+PASS: gen_open_work_tests (0.52 s) | PASS: 13 open work generator tests (offline)
+Running gpu_slots_tests (limit 300 s)...
+FAIL: gpu_slots_tests (2.18 s) | FAIL: exit 1
+
+FAIL gpu_slots_tests (first 15 output lines):
+PASS fake processes: exactly two slots, holder issue/start, missing and withdrawn go block
+PASS fake processes: solo drains both, blocks arrivals, releases, and reclaims dead slots and waiters
+PASS gaming gate also blocks solo admission
+PASS weighted load: no partial admission, live raised capacity, lowered capacity, solo across all slots, dead weighted claims
+PASS invalid capacity and weights fail closed
+PASS launch classification: capture shared, timing scene and known benches solo, headless and code skip
+PASS GPU admission fails promptly at impossible weight and times out with the go gate closed
+Error: listen EADDRINUSE: address already in use 127.0.0.1:47847
+    at Server.setupListenHandle [as _listen2] (node:net:1907:16)
+    at listenInCluster (node:net:1964:12)
+    at node:net:2170:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+
+Running hardpoint_contract_tests (limit 300 s)...
+PASS: hardpoint_contract_tests (1.70 s) | PASS the hard point contract tables and standing gate behave
+Running heat_tests (limit 300 s)...
+PASS: heat_tests (0.53 s) | PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool.
+Running inheritance_tests (limit 300 s)...
+PASS: inheritance_tests (0.48 s) | PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.
+Running ion_tests (limit 300 s)...
+PASS: ion_tests (0.53 s) | PASS: exit 0
+Running lineage_tests (limit 300 s)...
+PASS: lineage_tests (0.38 s) | PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets.
+Running memory_lint_tests (limit 300 s)...
+PASS: memory_lint_tests (0.38 s) | PASS: 180 cited ruling ids all have a contrib/opus/FINDINGS.md row; 51 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 15 LATEST lines (target 15 or fewer)
+Running nemesis_121_tests (limit 300 s)...
+PASS: nemesis_121_tests (0.27 s) | PASS: exit 0
+Running nemesis_122_tests (limit 300 s)...
+PASS: nemesis_122_tests (0.25 s) | PASS: exit 0
+Running nemesis_395_tests (limit 300 s)...
+PASS: nemesis_395_tests (0.27 s) | PASS: exit 0
+Running nemesis_clash_tests (limit 300 s)...
+PASS: nemesis_clash_tests (0.56 s) | PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).
+Running nemesis_teach_tests (limit 300 s)...
+PASS: nemesis_teach_tests (0.53 s) | PASS: exit 0
+Running paint_lint_tests (limit 300 s)...
+PASS: paint_lint_tests (1.10 s) | PASS paint_lint: colour, welded islands, adjacency and a planted loose box
+Running paint_sheet_camera_tests (limit 300 s)...
+PASS: paint_sheet_camera_tests (2.03 s) | PASS paint sheet camera: 19 saved cameras and clip edge cases
+Running parity_cleanup_tests (limit 300 s)...
+PASS: parity_cleanup_tests (0.39 s) | PASS parity cleanup: pass, failure, exception, other runs, explicit records, CI and PC pause
+Running picture_provenance_tests (limit 300 s)...
+PASS: picture_provenance_tests (62.61 s) | PASS picture provenance self-test; artifacts kept in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2\picture889-qtmrh_z9
+Running r1_tests (limit 300 s)...
+PASS: r1_tests (124.33 s) | PASS: exit 0
+Running report_paths_tests (limit 300 s)...
+PASS: report_paths_tests (3.57 s) | PASS report_paths_tests: both public messages keep report links and safe check rows; raw checks and partial resume stay local
+Running reporting_238_tests (limit 300 s)...
+PASS: reporting_238_tests (0.36 s) | PASS MP8 danger bands
+Running run_all_checks_live_tests (limit 300 s)...
+PASS: run_all_checks_live_tests (4.14 s) | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+Running runner_cleanup_tests (limit 300 s)...
+PASS: runner_cleanup_tests (34.54 s) | PASS runner cleanup: checked push only, scratch ownership and replacement, pause, and rebuildable kept checkouts
+Running runner_job_tests (limit 300 s)...
+PASS: runner_job_tests (74.38 s) | PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it
+Running runner_stall_tests (limit 300 s)...
+PASS: runner_stall_tests (25.38 s) | PASS runner stall checks (11 groups)
+Running shadow_xp_tests (limit 300 s)...
+PASS: shadow_xp_tests (0.16 s) | PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.
+Running shield_pool_tests (limit 300 s)...
+PASS: shield_pool_tests (0.27 s) | PASS: exit 0
+Running squadron_auto_tests (limit 300 s)...
+PASS: squadron_auto_tests (0.26 s) | PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders.
+Running story_beat3_tests (limit 300 s)...
+PASS: story_beat3_tests (0.38 s) | PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry.
+Running ui_spec_tests (limit 300 s)...
+PASS: ui_spec_tests (0.36 s) | PASS: exit 0
+Running weapon_match_tests (limit 300 s)...
+PASS: weapon_match_tests (0.42 s) | PASS weapon match self-test (36 planted faults, 20 sheet ships in the table)
+Running progression_telemetry_test (limit 300 s)...
+PASS: progression_telemetry_test (0.22 s) | PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin.
+Running tree_effects_test (limit 300 s)...
+PASS: tree_effects_test (153.07 s) | PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says
+Running tree_handoff_test (limit 300 s)...
+PASS: tree_handoff_test (0.52 s) | PASS: real campaign picks reach the battle for all six factions (four skills each):
+Running tree_table_walk_test (limit 300 s)...
+PASS: tree_table_walk_test (1.54 s) | PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked
+Running tree_last_rows_test (limit 300 s)...
+PASS: tree_last_rows_test (6.87 s) | PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers
+Running oracle_copy_test (limit 300 s)...
+PASS: oracle_copy_test (0.52 s) | PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files
+Running smoke_safety_test (limit 300 s)...
+PASS: smoke_safety_test (15.35 s) | PASS map pace smoke safety (6 saved files held)
+Running spiral_test (limit 300 s)...
+PASS: spiral_test (0.15 s) | PASS: 6 spiral recovery checks
+Running commission_test (limit 300 s)...
+PASS: commission_test (0.33 s) | PASS: 7 commission checks
+Running runner_selftest (limit 600 s)...
+FAIL: runner_selftest (119.25 s) | FAIL runner687: AssertionError [ERR_ASSERTION]: mock agent never reached its checkout
+
+FAIL runner_selftest (first 15 output lines):
+PASS Codex task prompt forbids .github/workflows edits (issue 873) (elapsed 0.00 s)
+PASS shared runner contract, chain launcher and issue 722 start checks (elapsed 0.02 s)
+PASS GitHub CLI lookup uses PATH, ProgramFiles, then LOCALAPPDATA and keeps the missing-tool refusal (elapsed 0.03 s)
+PASS OpenAI arm defaults, isolated key name, lean config and local stand-in config (elapsed 0.08 s)
+Evidence: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2\runner687 proof LvqTiN
+Fixture setup: 0.59 s (tiny shared source and stubs; retry delay 0 s)
+PASS OpenAI missing key, named prices, probe plus agent usage, idempotent ledger, default/configured budget, dry isolation, month rollover and unknown-usage refusal (elapsed 9.01 s)
+PASS only a confirmed non-partial real push with passing checks releases a chain (elapsed 10.47 s)
+PASS a success exit without push confirmation cannot release a chain (elapsed 10.59 s)
+PASS missing or legacy predecessor status fails closed (elapsed 10.74 s)
+PASS unfinished predecessor times out; a stale run id stops the chain (elapsed 12.19 s)
+PASS codex: closed refuses before checkout, probe or agent, with no GitHub writes (elapsed 12.84 s)
+PASS codex: no-current refuses before checkout, probe or agent, with no GitHub writes (elapsed 13.20 s)
+PASS codex: other-pr refuses before checkout, probe or agent, with no GitHub writes (elapsed 13.74 s)
+PASS untracked-pyc: checkout and all bytes kept aside even beside a Python cache (elapsed 14.46 s)
+Running g2_export_selftest (limit 300 s)...
+PASS: g2_export_selftest (8.12 s) | PASS: Play launches the promoted export in a path with spaces
+Running pause_all_selftest (limit 300 s)...
+PASS: pause_all_selftest (10.22 s) | PASS pause_all Windows fixture matrix
+Running lane_tools_refresh_selftest (limit 300 s)...
+PASS: lane_tools_refresh_selftest (0.13 s) | PASS: lane tools refresh keeps old tools, refuses busy lanes and caps dated backups
+Running stage5_fail_selftest (limit 600 s)...
+PASS: stage5_fail_selftest (23.55 s) | PASS stage5_fail_selftest: 45 checks, fake executables only, no GPU, no network.
+Running nem_assign_enum (limit 300 s)...
+PASS: nem_assign_enum (1.10 s) | PASS: all issue 120 enumeration checks
+Running nem_direct_reads_report (limit 300 s)...
+PASS: nem_direct_reads_report (0.99 s) | PASS: report only, 202 direct save reads outside godot/campaign (main 9, render 7, scenes 48, story 41, tools 3, ui 92, world 2)
+Running naming_lint_game.test (limit 300 s)...
+PASS: naming_lint_game.test (0.51 s) | PASS: exit 0
+Running naming_lint_game (limit 300 s)...
+PASS: naming_lint_game (96.74 s) | PASS: naming lint within the baseline
+Running checks (limit 300 s)...
+PASS: checks (0.21 s) | PASS: within the pack baseline
+Running fast_selection_test (limit 300 s)...
+PASS: fast_selection_test (1.18 s) | PASS: --fast selects 59 of 76 rows using fast marks and gates
+Running fleet_invariants (limit 300 s)...
+PASS: fleet_invariants (0.82 s) | PASS: exit 0
+Running save_fuzz (limit 300 s)...
+PASS: save_fuzz (0.17 s) | PASS: exit 0
+Running softlock_sweep (limit 300 s)...
+PASS: softlock_sweep (33.27 s) | PASS: exit 0
+Running table_xref (limit 300 s)...
+PASS: table_xref (0.19 s) | PASS: exit 0
+Running findings_tests (limit 300 s)...
+KNOWN: findings_tests (3.87 s) | KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5
+Running oracle_drift_guard (limit 300 s)...
+KNOWN: oracle_drift_guard (1.61 s) | KNOWN: 12 constant difference(s) within the baseline
+Running fixture_check (limit 300 s)...
+PASS: fixture_check (0.78 s) | PASS fixture corrupt2 pair
+
+check | result | seconds | detail
+--- | --- | --- | ---
+auto_pr_body_tests | PASS | 11.64 | PASS auto_pr_body_tests: create and edit keep short bodies and bound long workhorse, Codex, plain and issue-less Muse bodies
+b1_tests | PASS | 0.36 | PASS: exit 0
+b3_tests | PASS | 0.65 | PASS: exit 0
+b4_tests | PASS | 2.56 | PASS: exit 0
+backlog_tests | PASS | 0.49 | PASS: exit 0
+build_manifest_tests | PASS | 0.72 | PASS build_manifest_tests: 20 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, ithar_CD5, voidsworn_S8, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason
+campaign_start_test | PASS | 0.47 | PASS: exit 0
+capstone_mastery_tests | PASS | 0.25 | PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect.
+check_em_dashes_tests | PASS | 1.27 | PASS: punctuation gate catches planted marks in renamed, spaced, PowerShell and workflow paths
+checks_truth_tests | PASS | 0.14 | PASS: the checks runner result words behave as issue 358 requires
+chorus_eat_core_tests | PASS | 0.35 | PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15.
+cinder_prizes_tests | PASS | 0.40 | PASS: exit 0
+core_sync_tests | PASS | 0.93 | PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings.
+doc_check_tests | PASS | 8.10 | PASS: 141 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 101 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 284) or latest record, and the two stale entry-document claims stay gone
+effect_caps_tests | PASS | 0.34 | PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.
+env_reconcile_tests | PASS | 0.38 | PASS: exit 0
+free_exit_tests | PASS | 0.46 | PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.
+fx_death_spawn_tests | PASS | 3.24 | PASS: every fx_death picture records its spawn and the vent uses the hull ray
+fx_late_shader_tests | PASS | 3.84 | PASS: the late shader behaviour check passed
+gen_open_work_tests | PASS | 0.52 | PASS: 13 open work generator tests (offline)
+gpu_slots_tests | FAIL | 2.18 | FAIL: exit 1
+hardpoint_contract_tests | PASS | 1.70 | PASS the hard point contract tables and standing gate behave
+heat_tests | PASS | 0.53 | PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool.
+inheritance_tests | PASS | 0.48 | PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.
+ion_tests | PASS | 0.53 | PASS: exit 0
+lineage_tests | PASS | 0.38 | PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets.
+memory_lint_tests | PASS | 0.38 | PASS: 180 cited ruling ids all have a contrib/opus/FINDINGS.md row; 51 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 21 lines (target about 50); LOOP 15 LATEST lines (target 15 or fewer)
+nemesis_121_tests | PASS | 0.27 | PASS: exit 0
+nemesis_122_tests | PASS | 0.25 | PASS: exit 0
+nemesis_395_tests | PASS | 0.27 | PASS: exit 0
+nemesis_clash_tests | PASS | 0.56 | PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121).
+nemesis_teach_tests | PASS | 0.53 | PASS: exit 0
+paint_lint_tests | PASS | 1.10 | PASS paint_lint: colour, welded islands, adjacency and a planted loose box
+paint_sheet_camera_tests | PASS | 2.03 | PASS paint sheet camera: 19 saved cameras and clip edge cases
+parity_cleanup_tests | PASS | 0.39 | PASS parity cleanup: pass, failure, exception, other runs, explicit records, CI and PC pause
+picture_provenance_tests | PASS | 62.61 | PASS picture provenance self-test; artifacts kept in C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2\picture889-qtmrh_z9
+r1_tests | PASS | 124.33 | PASS: exit 0
+report_paths_tests | PASS | 3.57 | PASS report_paths_tests: both public messages keep report links and safe check rows; raw checks and partial resume stay local
+reporting_238_tests | PASS | 0.36 | PASS MP8 danger bands
+run_all_checks_live_tests | PASS | 4.14 | PASS: live failure detail and first 15 lines precede the next row; all result lines carry seconds; final table, JSON, filters, fast mode and exit codes hold; both runner caps are 1800 s and parity stays 1500 s
+runner_cleanup_tests | PASS | 34.54 | PASS runner cleanup: checked push only, scratch ownership and replacement, pause, and rebuildable kept checkouts
+runner_job_tests | PASS | 74.38 | PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it
+runner_stall_tests | PASS | 25.38 | PASS runner stall checks (11 groups)
+shadow_xp_tests | PASS | 0.16 | PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.
+shield_pool_tests | PASS | 0.27 | PASS: exit 0
+squadron_auto_tests | PASS | 0.26 | PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders.
+story_beat3_tests | PASS | 0.38 | PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry.
+ui_spec_tests | PASS | 0.36 | PASS: exit 0
+weapon_match_tests | PASS | 0.42 | PASS weapon match self-test (36 planted faults, 20 sheet ships in the table)
+progression_telemetry_test | PASS | 0.22 | PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin.
+tree_effects_test | PASS | 153.07 | PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says
+tree_handoff_test | PASS | 0.52 | PASS: real campaign picks reach the battle for all six factions (four skills each):
+tree_table_walk_test | PASS | 1.54 | PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked
+tree_last_rows_test | PASS | 6.87 | PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers
+oracle_copy_test | PASS | 0.52 | PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files
+smoke_safety_test | PASS | 15.35 | PASS map pace smoke safety (6 saved files held)
+spiral_test | PASS | 0.15 | PASS: 6 spiral recovery checks
+commission_test | PASS | 0.33 | PASS: 7 commission checks
+runner_selftest | FAIL | 119.25 | FAIL runner687: AssertionError [ERR_ASSERTION]: mock agent never reached its checkout
+g2_export_selftest | PASS | 8.12 | PASS: Play launches the promoted export in a path with spaces
+pause_all_selftest | PASS | 10.22 | PASS pause_all Windows fixture matrix
+lane_tools_refresh_selftest | PASS | 0.13 | PASS: lane tools refresh keeps old tools, refuses busy lanes and caps dated backups
+stage5_fail_selftest | PASS | 23.55 | PASS stage5_fail_selftest: 45 checks, fake executables only, no GPU, no network.
+nem_assign_enum | PASS | 1.10 | PASS: all issue 120 enumeration checks
+nem_direct_reads_report | PASS | 0.99 | PASS: report only, 202 direct save reads outside godot/campaign (main 9, render 7, scenes 48, story 41, tools 3, ui 92, world 2)
+naming_lint_game.test | PASS | 0.51 | PASS: exit 0
+naming_lint_game | PASS | 96.74 | PASS: naming lint within the baseline
+checks | PASS | 0.21 | PASS: within the pack baseline
+fast_selection_test | PASS | 1.18 | PASS: --fast selects 59 of 76 rows using fast marks and gates
+fleet_invariants | PASS | 0.82 | PASS: exit 0
+save_fuzz | PASS | 0.17 | PASS: exit 0
+softlock_sweep | PASS | 33.27 | PASS: exit 0
+table_xref | PASS | 0.19 | PASS: exit 0
+findings_tests | KNOWN | 3.87 | KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5
+oracle_drift_guard | KNOWN | 1.61 | KNOWN: 12 constant difference(s) within the baseline
+fixture_check | PASS | 0.78 | PASS fixture corrupt2 pair
+
+## tools\pc\parity.bat nopause (limit 1500 s)
+exit 0 
+Voidsworn rules parity: 284 battles, 4 workers
+Started (UTC): 2026-11-19T17:01:45.560Z; Node v22.11.0; Godot C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+Records and log: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2\voidsworn-parity-vGVEik
+[1/5] Exporting the game data tables for Godot...
+  data export: PASS
+[2/5] Random numbers: first 10,000 draws from 3 seeds...
+  seed 1001: PASS
+  seed 7: PASS
+  seed 4242424242: PASS
+[3/5] Math functions on all 316,090 inputs...
+  math: PASS (math 316090 values, differences from Node: none)
+[4/5] Seeded battles, every action compared (state hash, PRNG state)...
+  worker 1: batch ended (71 assigned battles; Godot exit 0)
+  worker 0: batch ended (71 assigned battles; Godot exit 0)
+  worker 3: batch ended (71 assigned battles; Godot exit 0)
+  worker 2: batch ended (71 assigned battles; Godot exit 0)
+  battle s1: PASS (161 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s2: PASS (192 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s3: PASS (168 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle s4: PASS (263 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s5: PASS (389 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s6: PASS (247 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s7: PASS (432 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s8: PASS (123 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s9: PASS (325 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s10: PASS (243 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s11: PASS (143 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s12: PASS (99 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s13: PASS (162 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s14: PASS (135 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s15: PASS (182 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s16: PASS (242 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s17: PASS (119 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s18: PASS (266 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle s19: PASS (172 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s20: PASS (131 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s21: PASS (206 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s22: PASS (144 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s23: PASS (690 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle s24: PASS (526 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle s25: PASS (321 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s26: PASS (167 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s27: PASS (232 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s28: PASS (277 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s29: PASS (180 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s30: PASS (322 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s31: PASS (230 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle s32: PASS (79 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s33: PASS (135 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s34: PASS (168 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s35: PASS (305 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s36: PASS (201 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s37: PASS (272 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s38: PASS (369 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s39: PASS (517 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s40: PASS (270 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s41: PASS (229 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s42: PASS (150 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s43: PASS (174 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s44: PASS (185 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s45: PASS (145 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s46: PASS (197 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s47: PASS (89 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s48: PASS (118 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s49: PASS (62 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s50: PASS (88 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s51: PASS (124 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s52: PASS (164 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s53: PASS (110 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s54: PASS (56 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s55: PASS (176 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s56: PASS (153 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s57: PASS (141 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_casttwice: PASS (93 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_flakskip: PASS (106 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_lensaloft: PASS (56 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_longfocus: PASS (36 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_recordedangle: PASS (55 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_burnflaw: PASS (34 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_longlight: PASS (38 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_flawforever: PASS (49 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_twoimages: PASS (54 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_angles: PASS (76 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_refraction: PASS (55 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_mirrorturns: PASS (38 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_falsehulls: PASS (62 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_rechargelit: PASS (24 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_glasscorrected: PASS (68 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle t_hardlight: PASS (70 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_wardglass: PASS (54 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_deployread: PASS (21 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_castcorrected: PASS (32 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_flagshiplens: PASS (36 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_firstlight: PASS (55 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heldaccount: PASS (74 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_namedledger: PASS (58 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_inheritedaim: PASS (82 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_everygun: PASS (73 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_sworndeploy: PASS (33 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_debtsreserve: PASS (40 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_flagshipLedger: PASS (33 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_standardreroll: PASS (66 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_preyname: PASS (68 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_salvotwohands: PASS (70 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_debthunts: PASS (55 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_twosalvos: PASS (66 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_namedprey: PASS (64 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_escortname: PASS (37 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_firstwave: PASS (45 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_wingreserve: PASS (58 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_generation: PASS (29 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_wingsdebt: PASS (80 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_rollwings: PASS (87 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_oathwings: PASS (132 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_holdcounted: PASS (40 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_oathstillness: PASS (42 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_unpaid: PASS (133 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_wallanswers: PASS (84 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_irontestament: PASS (45 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_restoreninth: PASS (93 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_restoredbeyond: PASS (109 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_copiescontribute: PASS (73 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_tenthframe: PASS (110 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_earliercopy: PASS (84 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_arcswarm: PASS (180 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_noonchoice: PASS (89 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_copyfires: PASS (55 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_coronashadow: PASS (58 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_everyframe: PASS (95 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_noonrepeat: PASS (65 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_onesuncopy: PASS (60 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_copiedbehind: PASS (56 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_unseenarchive: PASS (60 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_uncopiedtarget: PASS (58 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_iterationkill: PASS (56 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_silentarchive: PASS (79 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_outshadow: PASS (86 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_longcopy: PASS (67 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_platesshadow: PASS (93 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_twicerestored: PASS (115 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_layersshift: PASS (75 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_nolayer: PASS (110 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_stillness: PASS (131 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_tenthousand: PASS (163 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_restoredfleet: PASS (112 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_iterationswap: PASS (50 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_ecl_flagshipindex: PASS (57 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_ecl_framezero: PASS (114 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_choosebrood: PASS (53 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_sporetide: PASS (54 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_everythroat: PASS (52 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_secondthroat: PASS (115 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_rundown: PASS (77 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_razorprey: PASS (96 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_frenzyfeeds: PASS (122 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_breathbite: PASS (130 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_throatred: PASS (68 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_preyeverymouth: PASS (101 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_growhurts: PASS (105 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_skinthick: PASS (65 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_fleshknit: PASS (54 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_refuseholes: PASS (101 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_tideend: PASS (43 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_tornback: PASS (125 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_acidbeforeaim: PASS (58 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_throatspits: PASS (150 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle t_burnstays: PASS (87 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_acidseams: PASS (46 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_manymouths: PASS (73 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_volleygrows: PASS (90 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_mouthdeep: PASS (88 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_broodreserve: PASS (43 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_firstthroat: PASS (66 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_throatdeep: PASS (32 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_runbigger: PASS (51 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_railboarding: PASS (54 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_packcloses: PASS (48 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_rushrail: PASS (80 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_allscars: PASS (61 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_mawopens: PASS (63 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_burncarry: PASS (46 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_warlordrun: PASS (63 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_knifeback: PASS (50 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_darktorps: PASS (69 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_cutturn: PASS (60 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_secondknife: PASS (82 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_smilecut: PASS (42 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_everyknife: PASS (50 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_darkknives: PASS (93 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_cutfeeds: PASS (117 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_hb_patchedwing: PASS (57 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_hulkmore: PASS (31 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_retasked: PASS (86 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_wreckline: PASS (28 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_wholeyard: PASS (69 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_screaming: PASS (113 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_swarmscrap: PASS (48 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_privatewing: PASS (58 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_weldmatters: PASS (158 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_hb_patchguns: PASS (121 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_scrapfront: PASS (147 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_hb_weldedfight: PASS (126 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_doublebolted: PASS (104 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_packbites: PASS (141 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_hb_weldedwhole: PASS (145 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_hb_nothingbroken: PASS (113 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle t_hb_preyscent: PASS (52 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_loosepack: PASS (31 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle t_hb_firstscar: PASS (47 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_hb_trophystandard: PASS (35 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_widenet: PASS (43 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_secondvolley: PASS (133 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_sharedsolution: PASS (62 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_colddrill: PASS (54 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_rollingfire: PASS (74 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_irontempo: PASS (166 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle t_heg_livingrelay: PASS (58 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_onevoice: PASS (66 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_formation: PASS (76 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_drill: PASS (78 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_beacon: PASS (61 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_stdforward: PASS (48 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_filedtriplicate: PASS (63 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_strikebook: PASS (66 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_crossfire: PASS (56 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_filedbefore: PASS (112 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_totalinterdiction: PASS (131 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_sevenbreach: PASS (113 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_permanentfile: PASS (92 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_oneorder: PASS (66 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_cruisers: PASS (80 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_launchorder: PASS (55 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_secondwave: PASS (89 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_rehearsed: PASS (79 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_fullgroup: PASS (129 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t_heg_escorts: PASS (91 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_onetarget: PASS (46 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_standinggroup: PASS (87 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_columnstraight: PASS (102 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_overflow: PASS (112 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_bell: PASS (105 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_rotation: PASS (102 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_columnendures: PASS (115 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_filedarmor: PASS (139 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_standardcovers: PASS (153 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t_heg_flagshipstandard: PASS (135 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_flightpaths: PASS (87 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_replay: PASS (105 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_starlings: PASS (96 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_flightcast: PASS (92 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_forgeahead: PASS (99 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_onelens: PASS (36 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_lighttogether: PASS (31 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_sunlens: PASS (37 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_mirroraside: PASS (66 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_splitthree: PASS (53 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_fleetelsewhere: PASS (63 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_weakside: PASS (36 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_prismsface: PASS (37 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_lensrotates: PASS (23 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_facetlit: PASS (24 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_ledgerarcs: PASS (40 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_debtdue: PASS (51 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_grandledger: PASS (56 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_lastaccount: PASS (44 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_torpfirst: PASS (70 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7a_rearreckoning: PASS (72 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7a_salvoend: PASS (84 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7a_accountsplits: PASS (96 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7a_screensshift: PASS (48 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_wallearly: PASS (41 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7a_wallmoves: PASS (41 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ecl_formation_a: PASS (99 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7b_ecl_formation_b: PASS (77 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ecl_formation_c: PASS (101 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7b_ecl_formation_d: PASS (70 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ecl_shadow: PASS (76 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ecl_wall: PASS (113 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7b_ecl_archive: PASS (96 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ecl_iterfire: PASS (112 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7b_ecl_triage: PASS (95 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ch_broodsplits: PASS (64 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ch_nine: PASS (59 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ch_teeth: PASS (97 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t7b_ch_tideearly: PASS (117 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle t7b_ch_growth: PASS (107 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7b_ch_spat: PASS (83 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t7b_ecl_targetarchived: PASS (36 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t529_roles_strike: PASS (78 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t529_roles_screen: PASS (79 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t529_roles_mend: PASS (82 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t529_roles_change: PASS (92 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle t529_spawned: PASS (72 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t529_nostop: PASS (104 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t529_scent: PASS (53 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t529_may_debt_no: PASS (42 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle t529_may_grow_no: PASS (99 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle s983_station_defend: PASS (136 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s983_station_plain: PASS (113 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s983_teaching_station_defend: PASS (125 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+[4b] Threat overlay, rounds 1 to 3...
+  threat map s4: PASS
+  threat map s19: PASS
+  threat map s23: PASS
+[4c] Threads and the hard stop (s4, s23)...
+  threads: PASS
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 1024 events, 60 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 10, 1837 events, 104 reads during enemy steps on a worker)
+[5/5] Enemy think time (report only; game bar: worst under about 0.5 s)...
+s4: 28 enemy activations
+    Node   think per activation: average 0.099 s, worst 0.216 s (round 1); per round: average 0.552 s, worst 0.926 s
+    Godot  think per activation: average 0.177 s, worst 0.404 s (round 2); per round: average 0.992 s, worst 2.240 s
+    Godot/Node: 1.8x on average. Worst enemy think is inside the 0.5 s bar
+    Godot peaked at ship activation 13 of 28. The timer includes round-end work when it runs in that step.
+s5: 59 enemy activations
+    Node   think per activation: average 0.068 s, worst 0.203 s (round 2); per round: average 0.491 s, worst 1.004 s
+    Godot  think per activation: average 0.203 s, worst 0.546 s (round 1); per round: average 1.499 s, worst 2.912 s
+    Godot/Node: 3.0x on average. Worst enemy think MISSES the 0.5 s bar (report only)
+    Godot peaked at ship activation 4 of 59. The timer includes round-end work when it runs in that step.
+s23: 55 enemy activations
+    Node   think per activation: average 0.074 s, worst 0.226 s (round 3); per round: average 0.340 s, worst 0.792 s
+    Godot  think per activation: average 0.123 s, worst 0.504 s (round 2); per round: average 0.562 s, worst 1.959 s
+    Godot/Node: 1.7x on average. Worst enemy think MISSES the 0.5 s bar (report only)
+    Godot peaked at ship activation 20 of 55. The timer includes round-end work when it runs in that step.
+[saved] Checking Godot results against the reviewed results in the repo...
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+PASS: saved Godot results; 284 battles checked, 0 changed, 0 other files changed, 0 failures; 29.903 s
+Changed-battles report: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2\voidsworn-parity-vGVEik\changed-battles.txt
+Whole rules parity step: 488.567 s
+PASS: the Godot port matches the game's rules exactly.
+Parity scratch removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2\voidsworn-parity-vGVEik
+
+Campaign parity (G3)
+[1/4] Campaign tables still match the root JS files...
+  PASS 
+[2/4] Playing 30 seeded runs in the JS game and in Godot...
+[3/4] Comparing every click (buttons on screen, campaign state, saved copy, PRNG state)...
+  run 1: PASS 
+  run 2: PASS 
+  run 3: PASS 
+  run 4: PASS 
+  run 5: PASS 
+  run 6: PASS 
+  run 7: PASS 
+  run 8: PASS 
+  run 9: PASS 
+  run 10: PASS 
+  run 11: PASS 
+  run 12: PASS 
+  run 13: PASS 
+  run 14: PASS 
+  run 15: PASS 
+  run 16: PASS 
+  run 17: PASS 
+  run 18: PASS 
+  run 19: PASS 
+  run 20: PASS 
+  run 21: PASS 
+  run 22: PASS 
+  run 23: PASS 
+  run 24: PASS 
+  run 25: PASS 
+  run 26: PASS 
+  run 27: PASS 
+  run 28: PASS 
+  run 29: PASS 
+  run 30: PASS 
+[4/4] Cross-twin save hand-off (fixed seed and step count, record by record)...
+  PASS 
+
+PASS: the Godot campaign matches the game on all 30 seeded runs, and the cross-twin save hand-off check passes.
+
+

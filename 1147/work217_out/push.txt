@@ -1,0 +1,6 @@
+remote: 
+remote: Create a pull request for 'work/issue-1147-openai' on GitHub by visiting:        
+remote:      https://github.com/rcbailey12/voidsworn/pull/new/work/issue-1147-openai        
+remote: 
+To https://github.com/rcbailey12/voidsworn
+ * [new branch]        HEAD -> work/issue-1147-openai

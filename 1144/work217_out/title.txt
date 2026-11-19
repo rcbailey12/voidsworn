@@ -1,0 +1,1 @@
+Truth pass: previews and text that match the rules, with checks

@@ -1,0 +1,13 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+DEATH_SEAM ship C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7\godot\assets\ships\B19_11\B19_11.glb
+DEATH_SEAM kill_frame death_ms=5.4 power_down_frames_after=1 power_down_ms_per_frame=["1.9", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0"] surfaces=11 powered=11
+DEATH_SEAM machines=10 machines_split=0 []
+DEATH_SEAM inside_triangles=10434 inside_outside_hull=7 fragment_inside_triangles=3221 pieces=10 main=2 (outside the whole ship before the break, a sheet matter: 124)
+DEATH_SEAM cut_worker_ms=1002.7 main_thread_ms piece_build=35.7 (most in one frame 19.1; headless also builds the geometry here, a game window builds it on the worker) death=5.4 break_up=0.6
+ERROR: inside triangles outside their own piece's hull: 7
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/death_seam_check.gd:39)
+       [1] _run (res://fx/test/death_seam_check.gd:265)
+DEATH_SEAM failures=1

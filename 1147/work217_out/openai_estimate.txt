@@ -1,0 +1,1 @@
+OpenAI estimate USD: 2.6824213; running total 29.8735669 / budget 94; input 240, cached input 21159713, output 56597

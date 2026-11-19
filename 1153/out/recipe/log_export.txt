@@ -1,0 +1,14 @@
+GPU: waiting for shared claim, weight 2 (issue )
+GPU: acquired shared claim a24e23dc-29c7-4b2c-ab7e-c96ab806dad7
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+12:23:23 | INFO: Starting glTF 2.0 export
+12:23:24 | INFO: Extracting primitive: B19_11
+12:23:24 | INFO: Primitives created: 11
+12:23:24 | INFO: Finished glTF 2.0 export in 0.10091924667358398 s
+
+[export7] B19_11 triangles 118545 hard points {"gun": 3, "engine": 4, "bay": 0, "breach": 2, "core": 1, "rcs": 4, "board": 2} turrets 0 (0 triangles) files ['B19_11.glb']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\export\B19_11
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\C12.blend"
+
+Blender quit

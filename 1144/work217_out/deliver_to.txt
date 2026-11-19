@@ -1,0 +1,1 @@
+the files above that each fix needs, the new checks under godot/**/test/ with their lines in godot/tools/ci/godot_checks.txt, contrib/openai/truth_pass_1119/README.md (and the checks.yml patch as text, since runners may not edit workflow files)

@@ -1,0 +1,31 @@
+ contrib/codex/pipeline_1119/README.md              |  95 ++++++++++++++++++---
+ contrib/codex/pipeline_1119/compare_game.py        |  53 ++++++++++++
+ contrib/opus/reviews/attach_370/pc/run370a.bat     |   1 +
+ contrib/opus/reviews/handoff_559_probe/run559.bat  |   2 +
+ contrib/opus/reviews/turrets_560/pc/run560.bat     |   1 +
+ docs/shots/issue-1152-codex/C19_51_game_b.png      | Bin 0 -> 431142 bytes
+ .../C19_51_game_b.png.provenance.json              |  77 +++++++++++++++++
+ docs/shots/issue-1152-codex/C19_51_game_battle.png | Bin 0 -> 315011 bytes
+ .../C19_51_game_battle.png.provenance.json         |  77 +++++++++++++++++
+ docs/shots/issue-1152-codex/C19_51_game_d.png      | Bin 0 -> 748994 bytes
+ .../C19_51_game_d.png.provenance.json              |  77 +++++++++++++++++
+ docs/shots/issue-1152-codex/C19_51_game_near.png   | Bin 0 -> 356276 bytes
+ .../C19_51_game_near.png.provenance.json           |  77 +++++++++++++++++
+ docs/shots/issue-1152-codex/C19_51_game_q.png      | Bin 0 -> 452477 bytes
+ .../C19_51_game_q.png.provenance.json              |  77 +++++++++++++++++
+ docs/shots/issue-1152-codex/C19_51_game_s.png      | Bin 0 -> 441812 bytes
+ .../C19_51_game_s.png.provenance.json              |  77 +++++++++++++++++
+ docs/shots/issue-1152-codex/C19_51_game_t.png      | Bin 0 -> 390418 bytes
+ .../C19_51_game_t.png.provenance.json              |  77 +++++++++++++++++
+ docs/shots/issue-1152-codex/C19_51_game_u.png      | Bin 0 -> 357356 bytes
+ .../C19_51_game_u.png.provenance.json              |  77 +++++++++++++++++
+ godot/fx/test/check_damage_surface.bat             |   2 +-
+ godot/fx/test/check_squadrons.bat                  |   2 +-
+ godot/fx/test/fixtures/C19_51_unbaked.sheet.txt    |   2 +-
+ tools/blender/r209/pc/r7_run.bat                   |   1 +
+ tools/blender/r209/pc/r7b_run.bat                  |   1 +
+ tools/blender/r209/pc/r8_run.bat                   |   1 +
+ tools/blender/r209/pc/r8b_run.bat                  |   1 +
+ tools/recipe/manifest_merge.py                     |  13 ++-
+ tools/recipe/manifest_merge_selftest.py            |  65 +++++++++-----
+ 30 files changed, 817 insertions(+), 39 deletions(-)

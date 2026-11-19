@@ -1,0 +1,47 @@
+https://github.com/rcbailey12/voidsworn
+From https://github.com/rcbailey12/voidsworn
+   bcc60ab3..cd6d4f59  main                   -> main
+ * [new branch]        opus/issue-1158        -> opus/issue-1158
+ * [new branch]        work/issue-1144-openai -> work/issue-1144-openai
+ * [new ref]           refs/pull/1161/head    -> refs/pull/1161/head
+ * [new ref]           refs/pull/1161/merge   -> refs/pull/1161/merge
+ * [new ref]           refs/pull/1162/head    -> refs/pull/1162/head
+ * [new ref]           refs/pull/1162/merge   -> refs/pull/1162/merge
+cd6d4f598b25be9fec076c11ed7b4d4483fa05a7
+0116d6a48984da8dfee78f47b6064fc410c654de
+Merge made by the 'ort' strategy.
+ campaign3d.js                                      |   2 +-
+ contrib/openai/truth_pass_1119/README.md           |  29 ++++++
+ .../issue-1144-openai/TRUTH-1144-HUNTER-GONE.png   | Bin 0 -> 42684 bytes
+ .../TRUTH-1144-HUNTER-GONE.png.provenance.json     |  36 +++++++
+ .../issue-1144-openai/TRUTH-1144-HUNTER-RETURN.png | Bin 0 -> 59476 bytes
+ .../TRUTH-1144-HUNTER-RETURN.png.provenance.json   |  36 +++++++
+ .../shots/issue-1144-openai/TRUTH-1144-MASTERY.png | Bin 0 -> 77298 bytes
+ .../TRUTH-1144-MASTERY.png.provenance.json         |  36 +++++++
+ .../issue-1144-openai/TRUTH-1144-REINFORCEMENT.png | Bin 0 -> 75389 bytes
+ .../TRUTH-1144-REINFORCEMENT.png.provenance.json   |  36 +++++++
+ docs/shots/issue-1144-openai/TRUTH-1144-VOLLEY.png | Bin 0 -> 25972 bytes
+ .../TRUTH-1144-VOLLEY.png.provenance.json          |  36 +++++++
+ godot/campaign/campaign.gd                         |  14 ++-
+ godot/campaign/test/truth_pass_test.gd             | 114 +++++++++++++++++++++
+ godot/rules/rules.gd                               |  56 ++++++++--
+ godot/scenes/battle/battle.gd                      |  84 +++++++--------
+ godot/scenes/battle/test/volley_preview_test.gd    | 102 ++++++++++++++++++
+ godot/tools/ci/godot_checks.txt                    |   2 +
+ godot/ui/campaign/campaign_ui.gd                   |  16 ++-
+ tools/onboarding_cards.json                        |   6 +-
+ tools/test_onboarding.js                           |  18 ++--
+ 21 files changed, 555 insertions(+), 68 deletions(-)
+ create mode 100644 contrib/openai/truth_pass_1119/README.md
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-HUNTER-GONE.png
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-HUNTER-GONE.png.provenance.json
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-HUNTER-RETURN.png
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-HUNTER-RETURN.png.provenance.json
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-MASTERY.png
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-MASTERY.png.provenance.json
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-REINFORCEMENT.png
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-REINFORCEMENT.png.provenance.json
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-VOLLEY.png
+ create mode 100644 docs/shots/issue-1144-openai/TRUTH-1144-VOLLEY.png.provenance.json
+ create mode 100644 godot/campaign/test/truth_pass_test.gd
+ create mode 100644 godot/scenes/battle/test/volley_preview_test.gd

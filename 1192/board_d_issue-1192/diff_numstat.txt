@@ -1,0 +1,16 @@
+136	1	contrib/opus/tools/runner_stall_tests.js
+10	0	docs/RULEBOOK.md
+1	0	tools/pc/codex_issue.bat
+15	5	tools/pc/jobs/ship_job.bat
+357	22	tools/pc/run_timeout.ps1
+6	4	tools/pc/tmo.bat
+1	0	tools/pc/work_issue.bat
+4	2	tools/recipe/1_concept_in.bat
+10	2	tools/recipe/2_shape_ref.bat
+25	9	tools/recipe/3_trace_hull.bat
+25	11	tools/recipe/4_parts_kit.bat
+12	6	tools/recipe/5_paint_bake.bat
+5	2	tools/recipe/6_lod.bat
+11	5	tools/recipe/7_export.bat
+10	0	tools/recipe/env.bat
+7	0	tools/recipe/install_godot.bat

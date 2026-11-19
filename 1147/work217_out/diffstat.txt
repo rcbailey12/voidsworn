@@ -1,0 +1,46 @@
+ battle.js                                          |  16 +-
+ campaign_run.js                                    |   8 +-
+ contrib/openai/truth_pass2_1119/README.md          |  37 ++
+ contrib/opus/tools/nemesis_121_tests.js            |   7 +-
+ core.js                                            |   6 +-
+ data.js                                            |  16 +-
+ godot/campaign/campaign.gd                         |  60 ++-
+ godot/campaign/campaign_view.gd                    |   4 +-
+ godot/campaign/data/campaign_tables.json           |   2 +-
+ godot/campaign/test/boon_fleet_test.gd             |  21 +
+ godot/campaign/test/onboarding_test.gd             |  30 +-
+ godot/campaign/test/story_beat3_test.gd            |  26 +-
+ godot/campaign/test/truth_pass_test.gd             | 100 +++++
+ godot/rules/battle_api.gd                          |  13 +
+ godot/rules/data/tables.json                       |   2 +-
+ godot/rules/rules.gd                               |  10 +-
+ godot/rules/test/saved/changes.txt                 | 438 +++------------------
+ godot/rules/test/saved/records/s1.jsonl.br         | Bin 16702 -> 16737 bytes
+ godot/rules/test/saved/records/s10.jsonl.br        | Bin 27325 -> 27386 bytes
+ godot/rules/test/saved/records/s17.jsonl.br        | Bin 14525 -> 14460 bytes
+ godot/rules/test/saved/records/s9.jsonl.br         | Bin 33538 -> 33486 bytes
+ .../test/saved/records/t7a_torpfirst.jsonl.br      | Bin 9835 -> 9850 bytes
+ .../saved/records/t7b_ecl_formation_c.jsonl.br     | Bin 12259 -> 12237 bytes
+ .../test/saved/records/t7b_ecl_shadow.jsonl.br     | Bin 10540 -> 10588 bytes
+ .../test/saved/records/t_ecl_copiedbehind.jsonl.br | Bin 8749 -> 8766 bytes
+ .../saved/records/t_ecl_iterationkill.jsonl.br     | Bin 8748 -> 8757 bytes
+ .../test/saved/records/t_ecl_longcopy.jsonl.br     | Bin 9538 -> 9551 bytes
+ .../test/saved/records/t_ecl_outshadow.jsonl.br    | Bin 11268 -> 11294 bytes
+ .../saved/records/t_ecl_silentarchive.jsonl.br     | Bin 10907 -> 10938 bytes
+ .../saved/records/t_ecl_uncopiedtarget.jsonl.br    | Bin 8814 -> 8847 bytes
+ .../saved/records/t_ecl_unseenarchive.jsonl.br     | Bin 9161 -> 9198 bytes
+ godot/rules/test/saved/records/t_unpaid.jsonl.br   | Bin 14833 -> 14809 bytes
+ .../rules/test/saved/records/t_wingsdebt.jsonl.br  | Bin 11196 -> 11195 bytes
+ godot/rules/test/saved/results.json                |  50 +--
+ godot/scenes/battle/battle.gd                      |  87 ++--
+ godot/tools/ci/godot_checks.txt                    |   8 +-
+ godot/ui/battle/hud.gd                             |   6 +-
+ godot/ui/battle/ledger.gd                          |  10 +-
+ godot/ui/campaign/campaign_tips.gd                 |   7 +-
+ godot/ui/campaign/campaign_ui.gd                   |  27 +-
+ godot/ui/campaign/test/debrief_ledger_test.gd      |   2 +-
+ godot/ui/career/career_screen.gd                   |  17 -
+ godot/ui/career/test/career_honours_test.gd        |   5 +
+ tools/onboarding_cards.json                        |  21 +-
+ tools/test_onboarding.js                           |   8 +-
+ 45 files changed, 485 insertions(+), 559 deletions(-)

@@ -1,0 +1,37 @@
+{
+ "note": "outline_thirds.py: overlap per third at the concept camera, and the inner edge distances (px at 1024).",
+ "cells": {
+  "C12": {
+   "bow": {
+    "overlap": 50.9,
+    "concept_covered": 51.0,
+    "cell_outside": 0.6,
+    "edge_cell_to_concept_median_px": 10.6,
+    "edge_cell_within_6px": 34.2,
+    "edge_concept_to_cell_median_px": 5.0,
+    "edge_concept_within_6px": 58.8
+   },
+   "midship": {
+    "overlap": 65.7,
+    "concept_covered": 76.9,
+    "cell_outside": 18.1,
+    "edge_cell_to_concept_median_px": 3.2,
+    "edge_cell_within_6px": 71.3,
+    "edge_concept_to_cell_median_px": 3.0,
+    "edge_concept_within_6px": 75.8
+   },
+   "stern": {
+    "overlap": 32.7,
+    "concept_covered": 65.3,
+    "cell_outside": 60.5,
+    "edge_cell_to_concept_median_px": 3.6,
+    "edge_cell_within_6px": 71.6,
+    "edge_concept_to_cell_median_px": 3.6,
+    "edge_concept_within_6px": 69.9
+   },
+   "whole": {
+    "overlap": 54.8
+   }
+  }
+ }
+}

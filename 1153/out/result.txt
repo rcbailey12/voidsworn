@@ -1,0 +1,25 @@
+start Thu 11/19/2026 11:09:07.25 
+commit=4d886988e2e559c14f61a0f678208a15579fd1dc
+import exit 0 
+chorus_C12 1_concept_in start 11:09:23.83 
+chorus_C12 1_concept_in exit 0 at 11:09:28.76 
+chorus_C12 2_shape_ref start 11:09:28.76 
+chorus_C12 2_shape_ref exit 0 at 11:16:40.05 
+chorus_C12 3_trace_hull start 11:16:40.05 
+chorus_C12 3_trace_hull exit 0 at 11:21:56.24 
+chorus_C12 4_parts_kit start 11:21:56.24 
+chorus_C12 4_parts_kit exit 0 at 12:07:35.73 
+chorus_C12 5_paint_bake start 12:07:35.74 
+chorus_C12 5_paint_bake exit 0 at 12:18:06.72 
+chorus_C12 6_lod start 12:18:06.72 
+chorus_C12 6_lod exit 0 at 12:22:40.25 
+chorus_C12 7_export start 12:22:40.25 
+chorus_C12 7_export exit 0 at 12:23:50.09 
+chorus_C12 gpu readback exit 0 
+chorus_C12 authored interiors exit 0 
+chorus_C12 death seam exit 1 
+chorus_C12 ship exit 0 
+shots exit 0 
+collect exit 0 
+done Thu 11/19/2026 12:25:41.18 
+all done 

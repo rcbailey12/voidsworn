@@ -1,0 +1,17 @@
+Owner: codex
+Brief: below; the review "Embers: what would most improve the game" (Finding 2, approved by Ryan Nov 19 12:45 UTC, R328); tools/test_onboarding.js; godot/scenes/battle/battle.gd (_target_info, lines about 4991 to 5001); godot/rules/rules.gd (_expectedVs_raw, line about 2899); godot/campaign/campaign.gd (the reinforcement at line about 3361); godot/ui/campaign/campaign_ui.gd (Placeholder mastery text, line about 1818; the Nemesis "ADAPTED TO YOU" banner, line about 1856); campaign_run.js and data.js only if parity needs the same rules fix
+Deliver to: the files above that each fix needs, the new checks under godot/**/test/ with their lines in godot/tools/ci/godot_checks.txt, contrib/openai/truth_pass_1119/README.md (and the checks.yml patch as text, since runners may not edit workflow files)
+Branch: work/issue-1144-deepseek
+Base: work/issue-1144-openai
+Effort: DeepSeek workhorse (deepseek arm), cap 10800 s; run 1 was the OpenAI seat
+Done when: the onboarding test passes and a patch adds it to the checks; a new preview-versus-result check fails on today's main and passes after the fix; each item below is fixed or explained with a test where one fits; rules parity, the standing checks and the Godot game checks pass. What Ryan will see: the damage preview matches what a volley does, no placeholder text, the right reinforcement for his faction, a Nemesis banner that only promises what happens.
+
+## THIS IS THE JOB NOW (Board, Nov 19 2026, 15:25 UTC): run 2, shield routing only on landed hits in the preview
+
+Base work/issue-1144-openai (run 1, PR 1162). One exact fix in the volley preview; nothing else changes.
+
+Artoo (PR 1162, technical): the new preview applies shield routing after any positive expected drain (godot/rules/rules.gd, the preview recurrence near lines 2948 to 2961), but in combat routing follows an actual landed hit (near lines 2979 to 2981). Worked case: four independent 30 percent hit shots, each strong enough to fill the facing, a 60 point pool with 25 percent starting coverage: combat absorbs 19.14 shield on average, the preview says 23.4, so the card moves damage from hull to shields.
+
+1. Make the preview's expected shield and hull match combat's own rule: routing happens only on a landed hit. Compute the expectation over the hit and miss branches (or an exact equivalent); do not change combat.
+2. Extend godot/scenes/battle/test/volley_preview_test.gd with a low-odds, high-pool case (Artoo's numbers above) that fails on run 1's code and passes after the fix, beside the existing 85 percent cases, which must still pass. Compare against seeded volleys as run 1's test does.
+3. Rules parity, the standing checks and the Godot game checks pass. The README in contrib/openai/truth_pass_1119/ gets a run 2 section with the before and after numbers.

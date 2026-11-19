@@ -1,0 +1,30 @@
+{
+    "run":  "297eb47f6f6d4c098236eb7a61e818dc",
+    "started":  "2026-11-19T17:11:58.1733429Z",
+    "commit":  "709cb4269c0385c6b83e942d6da7711b88f58532",
+    "branch":  "codex/issue-1152",
+    "finished":  "2026-11-19T18:19:48.4664289Z",
+    "reason":  "non-partial push confirmed and runner checks passed",
+    "status":  "checked_push",
+    "model":  "gpt-6.2-sol",
+    "instruction_run":  "297eb47f6f6d4c098236eb7a61e818dc",
+    "github":  {
+                   "resume":  "codex_issue.bat 1152",
+                   "issue":  "1152",
+                   "marker":  "\u003c!-- voidsworn-runner-status branch=codex/issue-1152 --\u003e",
+                   "comment":  7011526020,
+                   "started":  "2026-11-19T17:12:04.3669098Z",
+                   "ceiling":  "14400",
+                   "claimed":  false,
+                   "folder":  "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board_b\\repo",
+                   "start_commit":  "7bc332b477ed7a7870926b5fa9504e8927f73bc1",
+                   "seat":  "codex",
+                   "lane":  "B"
+               },
+    "effort":  "high",
+    "scratch":  {
+                    "path":  "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-212d86aa70c74373b9cf3a53366709ef",
+                    "created":  "639307051668386409",
+                    "token":  "f2e7fba221c74074a236734d13f39d17"
+                }
+}

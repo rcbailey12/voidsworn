@@ -1,0 +1,1 @@
+GPU slots heal themselves: atomic writes, PID checks, no release on failed kill, no anonymous claims

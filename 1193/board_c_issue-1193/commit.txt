@@ -1,0 +1,41 @@
+Codex (issue #1193): GPU slots heal themselves: atomic writes, PID checks, no release on failed kill, no anonymous claims
+
+Implemented issue #1193. `tools/pc/gpu_slots.js` now writes claims atomically, archives damaged slot files, and checks PID, start time, and executable name. Claims require an issue, job directory, or script name.
+
+`tools/pc/run_timeout.ps1` records the child before it can use the GPU. A failed kill logs the surviving PIDs and retains the claim until those processes exit. Updated `docs/RULEBOOK.md` §3.4 and added regression coverage in `contrib/opus/tools/gpu_slots_tests.js`.
+
+All 21 GPU slot test groups, 11 runner stall groups, and the CPU-only `tmo.bat` smoke test passed on Windows. The standing suite reported two known baseline results and one sandbox hard-link error. The affected export test passed when rerun with Node in the writable temp folder.
+
+Drain GPU jobs before replacing both tools across the shared copies. Changes are uncommitted.
+
+**Hashwrite output**
+
+```text
+9936378fdbc6722fe50b64572a99c55e5038f7b88c418172f610adbb638919ec  gpu_slots.js
+e7d4dde95e3b1e046b58067341fc8cac659ed3d62cbb5cb3a1a7c93b39831f4c  run_timeout.ps1
+```
+
+Runner checks:
+PASS: standing checks
+PASS: parity
+
+Refs #1193
+
+## Runner (issue 377)
+
+Earlier commits (runner Base and resume merges included), under this one:
+- 1a621eec9ea59cf765968a7a60d8bb472a3f310d
+- 1236bbc30a736b0caddea507edca9e835dae001e
+- f2e937256ef256397aec7a87e8e83c8c3c1ad2f1
+- 1dca6c29a24ca7bc3bd3f65b1560879ee7926934
+- 685d8e3254adc29d9d657dcd8c4a52a01f3bd328
+- 1a42e8a79541154d763097a99b4ffe542c67afc2
+- 65b32f503574191cef9307245ad29fd6c549e81e
+- 2495c88426812d04d860ffa9dd6617e95ad79925
+- 9be55f23ab00b27e999bec92fea2e96eb1381c28
+- 16b2984178a86b41f0c8f2080968767ff575dbea
+- b78e93f05a293a2e6d92ad139ac1f1e11c3ff2c7
+- 5087d79045711b9f8bc3485591be511551c72e61
+- 8de4aad6f61bc3748fbf2e0589bd212c36f23fb6
+
+Run-Number: 1

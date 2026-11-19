@@ -1,0 +1,81 @@
+GPU: waiting for shared claim, weight 2 (issue )
+GPU: still waiting for shared claim
+GPU: acquired shared claim c84998c2-d560-4a1c-b166-40c9fbf24a6e
+[SPARSE] Conv backend: flex_gemm; Attention backend: flash_attn
+torch 2.8.0+cu128 cuda True NVIDIA GeForce RTX 5080
+C:\Users\rcbai\Downloads\trellis2\code\venv\Lib\site-packages\timm\models\layers\__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+C:\Users\rcbai\Downloads\trellis2\code\venv\Lib\site-packages\timm\models\registry.py:4: FutureWarning: Importing from timm.models.registry is deprecated, please import via timm.models
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.models", FutureWarning)
+[ATTENTION] Using backend: flash_attn
+Please wait...
+[INFO] Local DINOv3 found. Loading from: C:\Users\rcbai\Downloads\trellis2\code\MODELS\dinov3
+[INFO] Local RMBG-2.0 found. Loading from: C:\Users\rcbai\Downloads\trellis2\code\MODELS\RMBG-2.0
+run signature (image: PIL.Image.Image, num_samples: int = 1, seed: int = 42, sparse_structure_sampler_params: dict = {}, shape_slat_sampler_params: dict = {}, tex_slat_sampler_params: dict = {}, preprocess_image: bool = True, return_latent: bool = False, return_before_decode: bool = False, pipeline_type: Optional[str] = None, max_num_tokens: int = 49152) -> List[trellis2.representations.mesh.base.MeshWithVoxel]
+C:\Users\rcbai\Downloads\trellis2\code\venv\Lib\site-packages\torch\nn\modules\module.py:1355: UserWarning: expandable_segments not supported on this platform (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\c10/cuda/CUDAAllocatorConfig.h:35.)
+  return t.to(
+[TIMING] manual_seed: 0.09s
+[TIMING] image_cond_model.to(device): 2.97s
+[TIMING] get_cond(512): 0.24s
+[TIMING] sparse_structure_flow_model.to(device): 0.80s
+Sampling sparse structure:   0%|          | 0/12 [00:00<?, ?it/s]Sampling sparse structure:   8%|8         | 1/12 [00:01<00:12,  1.16s/it]Sampling sparse structure:  17%|#6        | 2/12 [00:01<00:06,  1.64it/s]Sampling sparse structure:  25%|##5       | 3/12 [00:01<00:04,  2.04it/s]Sampling sparse structure:  33%|###3      | 4/12 [00:02<00:03,  2.32it/s]Sampling sparse structure:  42%|####1     | 5/12 [00:02<00:02,  2.49it/s]Sampling sparse structure:  50%|#####     | 6/12 [00:02<00:02,  2.63it/s]Sampling sparse structure:  58%|#####8    | 7/12 [00:03<00:01,  2.71it/s]Sampling sparse structure:  67%|######6   | 8/12 [00:03<00:01,  2.75it/s]Sampling sparse structure:  75%|#######5  | 9/12 [00:03<00:01,  2.79it/s]Sampling sparse structure:  83%|########3 | 10/12 [00:04<00:00,  2.85it/s]Sampling sparse structure:  92%|#########1| 11/12 [00:04<00:00,  3.34it/s]Sampling sparse structure: 100%|##########| 12/12 [00:04<00:00,  3.86it/s]Sampling sparse structure: 100%|##########| 12/12 [00:04<00:00,  2.67it/s]
+[TIMING] Sampling sparse structure step 0: 1.16s
+[TIMING] Sampling sparse structure step 1: 0.23s
+[TIMING] Sampling sparse structure step 2: 0.35s
+[TIMING] Sampling sparse structure step 3: 0.34s
+[TIMING] Sampling sparse structure step 4: 0.35s
+[TIMING] Sampling sparse structure step 5: 0.34s
+[TIMING] Sampling sparse structure step 6: 0.35s
+[TIMING] Sampling sparse structure step 7: 0.35s
+[TIMING] Sampling sparse structure step 8: 0.35s
+[TIMING] Sampling sparse structure step 9: 0.34s
+[TIMING] Sampling sparse structure step 10: 0.18s
+[TIMING] Sampling sparse structure step 11: 0.17s
+[TIMING] sparse_structure sampling (all steps): 4.50s
+[TIMING] sparse_structure_flow_model.cpu(): 1.37s
+Sampling shape SLat (LR):   0%|          | 0/12 [00:00<?, ?it/s]Sampling shape SLat (LR):   8%|8         | 1/12 [00:00<00:09,  1.18it/s]Sampling shape SLat (LR):  17%|#6        | 2/12 [00:01<00:05,  1.84it/s]Sampling shape SLat (LR):  25%|##5       | 3/12 [00:01<00:04,  2.19it/s]Sampling shape SLat (LR):  33%|###3      | 4/12 [00:01<00:03,  2.37it/s]Sampling shape SLat (LR):  42%|####1     | 5/12 [00:02<00:02,  2.60it/s]Sampling shape SLat (LR):  50%|#####     | 6/12 [00:02<00:02,  2.71it/s]Sampling shape SLat (LR):  58%|#####8    | 7/12 [00:02<00:01,  2.80it/s]Sampling shape SLat (LR):  67%|######6   | 8/12 [00:03<00:01,  2.89it/s]Sampling shape SLat (LR):  75%|#######5  | 9/12 [00:03<00:01,  2.93it/s]Sampling shape SLat (LR):  83%|########3 | 10/12 [00:03<00:00,  3.50it/s]Sampling shape SLat (LR):  92%|#########1| 11/12 [00:03<00:00,  4.08it/s]Sampling shape SLat (LR): 100%|##########| 12/12 [00:04<00:00,  4.49it/s]Sampling shape SLat (LR): 100%|##########| 12/12 [00:04<00:00,  2.98it/s]
+[TIMING] Sampling shape SLat (LR) step 0: 0.85s
+[TIMING] Sampling shape SLat (LR) step 1: 0.33s
+[TIMING] Sampling shape SLat (LR) step 2: 0.35s
+[TIMING] Sampling shape SLat (LR) step 3: 0.36s
+[TIMING] Sampling shape SLat (LR) step 4: 0.32s
+[TIMING] Sampling shape SLat (LR) step 5: 0.34s
+[TIMING] Sampling shape SLat (LR) step 6: 0.33s
+[TIMING] Sampling shape SLat (LR) step 7: 0.32s
+[TIMING] Sampling shape SLat (LR) step 8: 0.33s
+[TIMING] Sampling shape SLat (LR) step 9: 0.16s
+[TIMING] Sampling shape SLat (LR) step 10: 0.15s
+[TIMING] Sampling shape SLat (LR) step 11: 0.17s
+Sampling shape SLat (HR):   0%|          | 0/12 [00:00<?, ?it/s]Sampling shape SLat (HR):   8%|8         | 1/12 [00:04<00:48,  4.42s/it]Sampling shape SLat (HR):  17%|#6        | 2/12 [00:08<00:44,  4.41s/it]Sampling shape SLat (HR):  25%|##5       | 3/12 [00:13<00:39,  4.41s/it]Sampling shape SLat (HR):  33%|###3      | 4/12 [00:17<00:35,  4.43s/it]Sampling shape SLat (HR):  42%|####1     | 5/12 [00:22<00:30,  4.42s/it]Sampling shape SLat (HR):  50%|#####     | 6/12 [00:26<00:26,  4.42s/it]Sampling shape SLat (HR):  58%|#####8    | 7/12 [00:30<00:22,  4.42s/it]Sampling shape SLat (HR):  67%|######6   | 8/12 [00:35<00:17,  4.42s/it]Sampling shape SLat (HR):  75%|#######5  | 9/12 [00:39<00:13,  4.43s/it]Sampling shape SLat (HR):  83%|########3 | 10/12 [00:42<00:07,  3.74s/it]Sampling shape SLat (HR):  92%|#########1| 11/12 [00:44<00:03,  3.27s/it]Sampling shape SLat (HR): 100%|##########| 12/12 [00:46<00:00,  2.95s/it]Sampling shape SLat (HR): 100%|##########| 12/12 [00:46<00:00,  3.87s/it]
+[TIMING] Sampling shape SLat (HR) step 0: 4.42s
+[TIMING] Sampling shape SLat (HR) step 1: 4.41s
+[TIMING] Sampling shape SLat (HR) step 2: 4.41s
+[TIMING] Sampling shape SLat (HR) step 3: 4.45s
+[TIMING] Sampling shape SLat (HR) step 4: 4.41s
+[TIMING] Sampling shape SLat (HR) step 5: 4.42s
+[TIMING] Sampling shape SLat (HR) step 6: 4.41s
+[TIMING] Sampling shape SLat (HR) step 7: 4.42s
+[TIMING] Sampling shape SLat (HR) step 8: 4.45s
+[TIMING] Sampling shape SLat (HR) step 9: 2.20s
+[TIMING] Sampling shape SLat (HR) step 10: 2.22s
+[TIMING] Sampling shape SLat (HR) step 11: 2.21s
+Sampling texture SLat:   0%|          | 0/12 [00:00<?, ?it/s]Sampling texture SLat:   8%|8         | 1/12 [00:02<00:23,  2.16s/it]Sampling texture SLat:  17%|#6        | 2/12 [00:04<00:21,  2.18s/it]Sampling texture SLat:  25%|##5       | 3/12 [00:06<00:19,  2.18s/it]Sampling texture SLat:  33%|###3      | 4/12 [00:08<00:17,  2.19s/it]Sampling texture SLat:  42%|####1     | 5/12 [00:10<00:15,  2.19s/it]Sampling texture SLat:  50%|#####     | 6/12 [00:13<00:13,  2.19s/it]Sampling texture SLat:  58%|#####8    | 7/12 [00:15<00:10,  2.19s/it]Sampling texture SLat:  67%|######6   | 8/12 [00:17<00:08,  2.19s/it]Sampling texture SLat:  75%|#######5  | 9/12 [00:19<00:06,  2.19s/it]Sampling texture SLat:  83%|########3 | 10/12 [00:21<00:04,  2.19s/it]Sampling texture SLat:  92%|#########1| 11/12 [00:24<00:02,  2.19s/it]Sampling texture SLat: 100%|##########| 12/12 [00:26<00:00,  2.19s/it]Sampling texture SLat: 100%|##########| 12/12 [00:26<00:00,  2.19s/it]
+[TIMING] Sampling texture SLat step 0: 2.16s
+[TIMING] Sampling texture SLat step 1: 2.19s
+[TIMING] Sampling texture SLat step 2: 2.19s
+[TIMING] Sampling texture SLat step 3: 2.19s
+[TIMING] Sampling texture SLat step 4: 2.19s
+[TIMING] Sampling texture SLat step 5: 2.19s
+[TIMING] Sampling texture SLat step 6: 2.19s
+[TIMING] Sampling texture SLat step 7: 2.19s
+[TIMING] Sampling texture SLat step 8: 2.19s
+[TIMING] Sampling texture SLat step 9: 2.19s
+[TIMING] Sampling texture SLat step 10: 2.19s
+[TIMING] Sampling texture SLat step 11: 2.19s
+chorus_C12 pipeline 1536_cascade res 1536
+C:\Users\rcbai\Downloads\trellis2\code\venv\Lib\site-packages\cumesh\remeshing.py:244: UserWarning: Using torch.cross without specifying the dim arg is deprecated.
+Please either pass the dim explicitly or simply use torch.linalg.cross.
+The default value of dim will change to agree with that of linalg.cross in a future release. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\aten\src\ATen\native\Cross.cpp:67.)
+mesh chorus_C12 166.9s vram GB 4.7
+TRELLIS BAKEOFF DONE
+Stage 2 done: C:\Users\rcbai\Downloads\voidsworn_test\bakeoff\chorus_C12_trellis.glb

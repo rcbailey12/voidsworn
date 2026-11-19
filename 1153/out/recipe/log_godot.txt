@@ -1,0 +1,23 @@
+GPU: waiting for solo claim, weight 1 (issue )
+GPU: acquired solo claim 012b43a9-0830-49f4-b551-97d89d55c3e8
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[209] bench {"draw_calls":0.0,"frame_median_ms":0.493,"frame_p99_ms":0.808,"gpu_median_ms":0.388999998569489,"label":"empty_1.0","lod_threshold":1.0,"primitives":0,"render_cpu_median_ms":0.108999997377396,"scaling_3d":1.0}
+[209] bench {"draw_calls":0.0,"frame_median_ms":1.551,"frame_p99_ms":1.842,"gpu_median_ms":1.41199994087219,"label":"empty_2.0","lod_threshold":1.0,"primitives":0,"render_cpu_median_ms":0.127000004053116,"scaling_3d":2.0}
+[209] bench {"draw_calls":105.0,"frame_median_ms":0.562,"frame_p99_ms":0.866,"gpu_median_ms":0.451999992132187,"label":"C12_off_1","lod_threshold":0.0,"primitives":592725,"render_cpu_median_ms":0.157000005245209,"scaling_3d":1.0}
+[209] bench {"draw_calls":210.0,"frame_median_ms":1.563,"frame_p99_ms":1.861,"gpu_median_ms":1.41999995708466,"label":"C12_off_20_1.0","lod_threshold":0.0,"primitives":11854500,"render_cpu_median_ms":0.284000009298325,"scaling_3d":1.0}
+[209] bench {"draw_calls":210.0,"frame_median_ms":3.118,"frame_p99_ms":3.207,"gpu_median_ms":2.88299989700317,"label":"C12_off_20_2.0","lod_threshold":0.0,"primitives":11854500,"render_cpu_median_ms":0.349000006914139,"scaling_3d":2.0}
+[209] bench {"draw_calls":105.0,"frame_median_ms":0.541,"frame_p99_ms":0.85,"gpu_median_ms":0.426999986171722,"label":"C12_auto_1","lod_threshold":1.0,"primitives":282445,"render_cpu_median_ms":0.159999996423721,"scaling_3d":1.0}
+[209] bench {"draw_calls":304.0,"frame_median_ms":1.151,"frame_p99_ms":1.358,"gpu_median_ms":0.953000009059906,"label":"C12_auto_20_1.0","lod_threshold":1.0,"primitives":5687320,"render_cpu_median_ms":0.293000012636185,"scaling_3d":1.0}
+[209] bench {"draw_calls":304.0,"frame_median_ms":2.591,"frame_p99_ms":2.667,"gpu_median_ms":2.34500002861023,"label":"C12_auto_20_2.0","lod_threshold":1.0,"primitives":5687320,"render_cpu_median_ms":0.363000005483627,"scaling_3d":2.0}
+[209] bench {"draw_calls":70.0,"frame_median_ms":0.555,"frame_p99_ms":0.844,"gpu_median_ms":0.449000000953674,"label":"C12_hand_1","lod_threshold":0.0,"primitives":537085,"render_cpu_median_ms":0.144999995827675,"scaling_3d":1.0}
+[209] bench {"draw_calls":238.0,"frame_median_ms":1.273,"frame_p99_ms":1.604,"gpu_median_ms":1.1710000038147,"label":"C12_hand_20_1.0","lod_threshold":0.0,"primitives":8237650,"render_cpu_median_ms":0.256999999284744,"scaling_3d":1.0}
+[209] bench {"draw_calls":238.0,"frame_median_ms":2.836,"frame_p99_ms":2.912,"gpu_median_ms":2.60400009155273,"label":"C12_hand_20_2.0","lod_threshold":0.0,"primitives":8237650,"render_cpu_median_ms":0.308999985456467,"scaling_3d":2.0}
+[209] bench {"draw_calls":238.0,"frame_median_ms":1.271,"frame_p99_ms":1.615,"gpu_median_ms":1.17299997806549,"label":"C12_hand_20_1.0","lod_threshold":0.0,"primitives":8237650,"render_cpu_median_ms":0.280000001192093,"scaling_3d":1.0}
+[209] bench {"draw_calls":238.0,"frame_median_ms":2.836,"frame_p99_ms":2.943,"gpu_median_ms":2.6029999256134,"label":"C12_hand_20_2.0","lod_threshold":0.0,"primitives":8237650,"render_cpu_median_ms":0.30799999833107,"scaling_3d":2.0}
+[209] bench {"draw_calls":304.0,"frame_median_ms":1.147,"frame_p99_ms":1.319,"gpu_median_ms":0.949999988079071,"label":"C12_auto_20_1.0","lod_threshold":1.0,"primitives":5687320,"render_cpu_median_ms":0.340999990701675,"scaling_3d":1.0}
+[209] bench {"draw_calls":304.0,"frame_median_ms":2.591,"frame_p99_ms":2.702,"gpu_median_ms":2.34899997711182,"label":"C12_auto_20_2.0","lod_threshold":1.0,"primitives":5687320,"render_cpu_median_ms":0.36599999666214,"scaling_3d":2.0}
+[209] bench {"draw_calls":210.0,"frame_median_ms":1.559,"frame_p99_ms":1.873,"gpu_median_ms":1.42400002479553,"label":"C12_off_20_1.0","lod_threshold":0.0,"primitives":11854500,"render_cpu_median_ms":0.277999997138977,"scaling_3d":1.0}
+[209] bench {"draw_calls":210.0,"frame_median_ms":3.105,"frame_p99_ms":3.185,"gpu_median_ms":2.89100003242493,"label":"C12_off_20_2.0","lod_threshold":0.0,"primitives":11854500,"render_cpu_median_ms":0.337000012397766,"scaling_3d":2.0}
+[209] BENCH DONE

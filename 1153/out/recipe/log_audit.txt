@@ -1,0 +1,22 @@
+GPU: waiting for shared claim, weight 2 (issue )
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: acquired shared claim 7b79bacf-bfe0-4bb7-9630-5accb96c4913
+[audit] {"problems": [], "parts": 115, "crossing_break_lines": [], "structure_across_seams": ["S1p", "S2p", "S2s"], "guns_with_normals": 2, "guns_into_ship": 0, "guns": 2, "break_lines": {"t_lines": [0.1308221633354977], "l_line": [], "l_lines": []}, "result": "PASS"}
+[audit] PASS
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\build\C12.blend"

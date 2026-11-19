@@ -1,0 +1,20 @@
+Codex (issue #1192): PC jobs: inner stall watchdog, fatal-line abort, per-step caps (hung GPU steps)
+
+Implemented issue #1192 in the working tree without committing or pushing.
+
+- `run_timeout.ps1` and `tmo.bat` now stop idle, fatal, or over-cap steps with exit `124`, retain child output, and verify the whole process tree is gone before releasing its GPU claim.
+- The ship and recipe launchers use named step caps. The Codex and work runners default to a 1,800-second GPU admission wait, and the ship runner keeps its 3,600-second default. Updated Rulebook 3.4 and the standing watchdog tests.
+
+On Windows, the fake Godot step stopped 1.33 seconds after launch under a one-second idle setting. The watchdog verified the tree was gone before releasing the claim. The Jolt fatal line stopped its step in 0.29 seconds, and the two-second solo cap passed.
+
+The full standing run recorded 74 passes and two known baseline results. Its one failure came from the temporary Node executable’s name triggering Godot classification. That check passed on rerun with the corrected fixture name. `git diff --check` passed. Lane D is code only, so the proof used fake Godot and skipped a real GPU ship build.
+
+Runner checks:
+PASS: standing checks
+PASS: parity
+
+Refs #1192
+
+## Runner (issue 377)
+
+Run-Number: 1

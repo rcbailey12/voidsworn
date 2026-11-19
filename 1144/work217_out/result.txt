@@ -1,0 +1,27 @@
+started Thu 11/19/2026  9:16:40.45 () 
+drive C: has 89.7 GB free (min_free_gb floor 60)
+WARNING: these runner files differ from the Board-copied hashes: codex_issue.bat, codex_issue.ps1, gpu_slots.js, review_evidence.ps1, run_timeout.ps1, runner_common.ps1, tmo.bat, work_issue.bat, work_issue.ps1
+model: deepseek/deepseek-flash
+GitHub CLI: C:\Program Files\GitHub CLI\gh.exe
+job claimed: issue #1144 by deepseek, run 44d0535ced8a4ee7902df980bf908f7a; current instruction validated
+mirror fetch attempt 1/3
+local clone attempt 1/3
+Base: fetching and merging origin/work/issue-1144-openai before the agent
+Base fetch attempt 1/3
+Base already merged by the runner: origin/work/issue-1144-openai (0116d6a48984da8dfee78f47b6064fc410c654de). The merge is committed; do not merge it yourself.
+issue #1144 prepared for the deepseek arm
+run scratch created: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-62a271cd65424c3da52627c03902b754
+preflight: opencode deepseek/deepseek-flash
+preflight passed: opencode deepseek/deepseek-flash
+agent running  9:17:27.07 
+opencode exit 0 at 11:17:52.44 
+refuse list: nothing refused
+scope: every changed file is inside the issue's Deliver to
+checks: node exit 1, parity exit 0 at 11:38:01.83 
+commit 52d9779f0 (run 1 of work/issue-1144-deepseek) carries the staged change (4 files)
+pushed diff checked: GitHub's work/issue-1144-deepseek (52d9779f0) carries exactly out\diffstat.txt (4 files)
+pushed work/issue-1144-deepseek 
+runner status: unverified (dry/test push or checks did not pass; chain stays stopped)
+GitHub CLI: C:\Program Files\GitHub CLI\gh.exe
+run folder size: 5.64 GB (repo copy 5.64 GB, out 1.6 MB) in C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1144-deepseek\20261119_091640
+repo copy kept: this run did not end in a checked push

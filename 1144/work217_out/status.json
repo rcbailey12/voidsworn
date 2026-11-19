@@ -1,0 +1,29 @@
+{
+    "run":  "44d0535ced8a4ee7902df980bf908f7a",
+    "started":  "2026-11-19T15:16:41.0060254Z",
+    "commit":  "52d9779f008dbcb3c0b317a05889ea1bf080571f",
+    "branch":  "work/issue-1144-deepseek",
+    "finished":  "2026-11-19T17:38:09.8453255Z",
+    "reason":  "dry/test push or checks did not pass; chain stays stopped",
+    "status":  "unverified",
+    "model":  "deepseek/deepseek-flash",
+    "instruction_run":  "44d0535ced8a4ee7902df980bf908f7a",
+    "github":  {
+                   "resume":  "work_issue.bat 1144 deepseek",
+                   "issue":  "1144",
+                   "marker":  "\u003c!-- voidsworn-runner-status branch=work/issue-1144-deepseek --\u003e",
+                   "comment":  7013283842,
+                   "started":  "2026-11-19T15:16:47.8027796Z",
+                   "ceiling":  "10800",
+                   "claimed":  false,
+                   "folder":  "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\work217\\issue-1144-deepseek\\20261119_091640\\repo",
+                   "start_commit":  "90934bb577affcb0d9a17d5519727e3bc9f4deee",
+                   "seat":  "deepseek",
+                   "lane":  "other"
+               },
+    "scratch":  {
+                    "path":  "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-62a271cd65424c3da52627c03902b754",
+                    "created":  "639306982365868667",
+                    "token":  "1b471c4fa7db4a30af554b4de03d77c5"
+                }
+}

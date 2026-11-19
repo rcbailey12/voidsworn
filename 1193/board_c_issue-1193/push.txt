@@ -1,0 +1,6 @@
+remote: 
+remote: Create a pull request for 'codex/issue-1193' on GitHub by visiting:        
+remote:      https://github.com/rcbailey12/voidsworn/pull/new/codex/issue-1193        
+remote: 
+To https://github.com/rcbailey12/voidsworn
+ * [new branch]        HEAD -> codex/issue-1193

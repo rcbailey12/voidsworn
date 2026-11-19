@@ -1,0 +1,13 @@
+arm: deepseek
+model: deepseek/deepseek-flash
+opencode exit: 0
+started: 2026-11-19T09:17:26
+agent finished: 2026-11-19T11:17:52 (120.4 minutes)
+pushed: 2026-11-19T11:38:08
+steps (model calls): 82
+tool calls: 99 (failed: 0)
+tokens: input 98825, output 16109, reasoning 45535, cache read 7966080, cache write 0
+cost OpenCode estimated from its price table (USD): 0.0757
+balance before: 4.64 USD
+balance after: 4.57 USD
+real charge (balance before minus after): 0.0700 USD

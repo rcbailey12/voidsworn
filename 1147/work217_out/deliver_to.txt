@@ -1,0 +1,1 @@
+the files above that each fix needs, tests under godot/**/test/ with their lines in godot/tools/ci/godot_checks.txt, contrib/openai/truth_pass2_1119/README.md (one row per item: fixed, or why not, with the test that covers it)

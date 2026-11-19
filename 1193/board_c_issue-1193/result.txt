@@ -1,0 +1,59 @@
+started Thu 11/19/2026 11:27:46.24 
+drive C: has 180.6 GB free (min_free_gb floor 60)
+runner files match the Board hashes (9 checked)
+model: gpt-6.2-sol
+GitHub CLI: C:\Program Files\GitHub CLI\gh.exe
+job claimed: issue #1193 by codex, run 83b497c6f852480d83925019fd172193; current instruction validated
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+WARNING: C:\Users\rcbai\Downloads\voidsworn_test\board_c has 16 repo-kept-* copies; left in place during checkout
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-21f1637f37cd4c49b04eae1a5492281b: 4659901064 logical bytes (4.34 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-23d20056060541b8afc09c0373a3e146: 5919916005 logical bytes (5.513 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-340964e7bc7c425689942d89f326d6a3: 4966835533 logical bytes (4.626 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-7103eb6705144c7da25ef676a676852a: 4705225664 logical bytes (4.382 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-8dd5fc6e7acf42969eae2fa889c4513e: 5019581364 logical bytes (4.675 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-9075e39696d7483bb9cafb50b653e185: 5049215392 logical bytes (4.702 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-96274c5e12614a6fa657520bb5ea5cd5: 5015499910 logical bytes (4.671 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-a36f2cdee24b4113ae0dda302bec15b4: 4892774851 logical bytes (4.557 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-a3fa48601ec14a92a61aec42e3f5433d: 5027802563 logical bytes (4.683 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-baf094fa7e524314913e246510826cbc: 4939998181 logical bytes (4.601 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-c7c6705abe3a484e9c6740d259d70ae2: 4900345723 logical bytes (4.564 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-cd65042adcce4cad8afca2973f280396: 4883035196 logical bytes (4.548 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-cda24df7415544789281c98e76cb824d: 4993392350 logical bytes (4.65 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-f0742ce10f714821ac62c915a53d8454: 4996901019 logical bytes (4.654 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-fa05aa510ae4426e8cf1f35e7d08dc04: 4842593849 logical bytes (4.51 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-ff7ceba4a37440d3adafaabf9aaddff3: 5051920694 logical bytes (4.705 GiB)
+earlier checkout reused in place; ignored files left in place
+Base: fetching and merging origin/main before the agent
+Base fetch attempt 1/3
+Base already merged by the runner: origin/main (1236bbc30a736b0caddea507edca9e835dae001e). The merge is committed; do not merge it yourself.
+effort: xhigh
+run scratch created: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d
+preflight: codex gpt-6.2-sol
+preflight passed: codex gpt-6.2-sol
+codex exit 0 
+refuse list: nothing refused
+scope: every changed file is inside the issue's Deliver to
+checks: node exit 0, parity exit 0 
+commit 1df9aa74f (run 1 of codex/issue-1193) carries the staged change (4 files)
+pushed diff checked: GitHub's codex/issue-1193 (1df9aa74f) carries exactly out\diffstat.txt (4 files)
+pushed codex/issue-1193 
+run scratch kept: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d (linked path: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d\runner687 proof TzLr5T\reuse-linked-shared-ship\repo-kept-d8564f339c964234bbff6ec9c2b43742\godot\assets\ships\B16_23)
+kept checkout retained (newest): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-ff7ceba4a37440d3adafaabf9aaddff3
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-23d20056060541b8afc09c0373a3e146 (working tree needs keeping: !! .onboarding_checks/xdg/Godot/app_userdata/Voidsworn/battle_opts.json)
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-cda24df7415544789281c98e76cb824d
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-340964e7bc7c425689942d89f326d6a3
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-9075e39696d7483bb9cafb50b653e185
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-a3fa48601ec14a92a61aec42e3f5433d
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-8dd5fc6e7acf42969eae2fa889c4513e
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-96274c5e12614a6fa657520bb5ea5cd5
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-f0742ce10f714821ac62c915a53d8454
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-c7c6705abe3a484e9c6740d259d70ae2 (working tree needs keeping: ?? contrib/codex/map_eval_1118/README.md)
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-baf094fa7e524314913e246510826cbc
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-a36f2cdee24b4113ae0dda302bec15b4
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-cd65042adcce4cad8afca2973f280396
+kept checkout removed (rebuildable): C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-fa05aa510ae4426e8cf1f35e7d08dc04
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-7103eb6705144c7da25ef676a676852a (Git holds local state: MERGE_HEAD)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-21f1637f37cd4c49b04eae1a5492281b (Git holds local state: MERGE_HEAD)
+runner status: checked_push (non-partial push confirmed and runner checks passed)
+GitHub CLI: C:\Program Files\GitHub CLI\gh.exe

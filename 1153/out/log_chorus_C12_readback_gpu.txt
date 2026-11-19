@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 1 (issue )
+GPU: acquired shared claim f42c8bbb-300d-408a-bb6d-ea50f984945d
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+INSTALL READBACK PASS code=B19_11 nodes=16

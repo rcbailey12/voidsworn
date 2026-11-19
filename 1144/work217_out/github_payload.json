@@ -1,0 +1,3 @@
+{
+    "body":  "\u003c!-- voidsworn-runner-status branch=work/issue-1144-deepseek --\u003e\nRunner status: unverified\n\n- Seat: deepseek\n- Run: 44d0535ced8a4ee7902df980bf908f7a\n- Lane: other\n- Branch: work/issue-1144-deepseek\n- Started (UTC): 2026-11-19T15:16:47.8027796Z\n- Ceiling: 10800 seconds\n- Last commit: 52d9779f008dbcb3c0b317a05889ea1bf080571f\n- How to resume: work_issue.bat 1144 deepseek\n- Finished (UTC): 2026-11-19T17:38:09.8453255Z\n- Result: dry/test push or checks did not pass; chain stays stopped"
+}

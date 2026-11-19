@@ -1,0 +1,30 @@
+{
+    "run":  "88debee6dd384b7cab4e6af1fa7d584e",
+    "started":  "2026-11-19T14:47:51.8855501Z",
+    "commit":  "8c9af122fdf376fe6ce5351d0929ff9e7767dd7e",
+    "branch":  "work/issue-1147-openai",
+    "finished":  "2026-11-19T17:11:34.9998011Z",
+    "reason":  "dry/test push or checks did not pass; chain stays stopped",
+    "status":  "unverified",
+    "model":  "openai/gpt-6.2-sol",
+    "effort":  "high",
+    "instruction_run":  "88debee6dd384b7cab4e6af1fa7d584e",
+    "github":  {
+                   "resume":  "work_issue.bat 1147 openai",
+                   "issue":  "1147",
+                   "marker":  "\u003c!-- voidsworn-runner-status branch=work/issue-1147-openai --\u003e",
+                   "comment":  7012536009,
+                   "started":  "2026-11-19T14:47:58.2804291Z",
+                   "ceiling":  "10800",
+                   "claimed":  false,
+                   "folder":  "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\work217\\issue-1147-openai\\20261119_084751\\repo",
+                   "start_commit":  "cd6d4f598b25be9fec076c11ed7b4d4483fa05a7",
+                   "seat":  "openai",
+                   "lane":  "other"
+               },
+    "scratch":  {
+                    "path":  "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn-run-712dc42077764a9f989169468b84ccb2",
+                    "created":  "639306965246214517",
+                    "token":  "894f7580fe4342b9badab87fe9d5edf6"
+                }
+}

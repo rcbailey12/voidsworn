@@ -1,0 +1,7 @@
+Stage 5: the chorus kit has no paint stack yet (tools\blender\kits\chorus\stack.py): unpainted
+Stage 5: no paint stack for this ship yet (bake none): the unpainted stage 4 build goes on.
+blink PASS C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\bow_blink.gif concept and model alternating at 1024 px
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS licences: no downloaded textures are used (nothing to record)
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+Stage 5 done: renders in C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\r and C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12\close

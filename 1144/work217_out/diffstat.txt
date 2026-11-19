@@ -1,0 +1,5 @@
+ contrib/openai/truth_pass_1119/README.md        | 14 +++++
+ godot/rules/rules.gd                            | 41 +++++++++++---
+ godot/scenes/battle/test/volley_preview_test.gd | 71 ++++++++++++++++++++++++-
+ godot/tools/ci/godot_checks.txt                 |  2 +-
+ 4 files changed, 118 insertions(+), 10 deletions(-)
