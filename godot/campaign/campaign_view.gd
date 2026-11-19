@@ -170,7 +170,8 @@ static func nem_dossier(C) -> Array:
 	if N.get("traits") is Array and N["traits"].size() > 0:
 		var ts: Array = []
 		for t in N["traits"]:
-			if C.NEM_TRAITS.has(t): ts.append("[b]" + str(C.NEM_TRAITS[t]["n"]) + "[/b] (" + str(C.NEM_TRAITS[t]["d"]).trim_suffix(".") + ")")
+			var entry = C.BattleAPI.nem_entry(C.NEM_TRAITS, t, N["fac"])
+			if entry != null: ts.append("[b]" + str(entry["n"]) + "[/b] (" + str(entry["d"]).trim_suffix(".") + ")")
 		if not ts.is_empty(): out.append(["text", "Strengths: " + "; ".join(PackedStringArray(ts))])
 	if beh.get("d") != null: out.append(["text", str(C.nemSay(str(beh["d"]), N))])
 	var warn := nem_warn(C, N)
@@ -198,7 +199,9 @@ static func nem_dossier(C) -> Array:
 		out.append(["text", "Comeback: " + ("spent, the next kill is final" if _jt(N.get("revived")) else str(C.nemSay("in sector III his flagship rises once more after it falls; before that he withdraws like any rival", N)))])
 	var ws: Array = []; var unknown := 0
 	for w in N["weak"]:
-		if N["revealed"].has(w): ws.append("[b]" + str(C.NEM_WEAK[w]["n"]) + "[/b] (" + str(C.NEM_WEAK[w].get("d", "")).trim_suffix(".") + ")")
+		if N["revealed"].has(w):
+			var entry = C.BattleAPI.nem_entry(C.NEM_WEAK, w, N["fac"])
+			ws.append("[b]" + str(entry["n"]) + "[/b] (" + str(entry["d"]).trim_suffix(".") + ")")
 		else: unknown += 1
 	if unknown > 0: ws.append(("%d unknown" % unknown if ws.size() > 0 or unknown > 1 else "unknown") + " (win against him to learn " + ("one" if unknown > 1 else "it") + ")")
 	out.append(["text", "Weaknesses: " + "; ".join(PackedStringArray(ws))])

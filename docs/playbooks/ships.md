@@ -163,6 +163,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
    treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
    later Sunward build.
+14. **One shared ship job (issue 1174, Board, Nov 19 2026).** Every ship build run on the PC is a three-line wrapper around
+   `tools/pc/jobs/ship_job.bat` (docs/ship_pipeline/ship_job/README.md): it stops after a failed stage, takes shots only of
+   this run's own checked install, waits up to 3600 s for the GPU and ends "done PASS" or "done FAILED: <step>", then
+   "all done". Why: on Nov 19 the C12 and C13 runners and S9's first run took pictures after a failed build, and 1155, 1157
+   and 1158 failed a stage on the old 300 s GPU wait.
 
 ### Named variant parts (issue 812)
 

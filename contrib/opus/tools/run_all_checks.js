@@ -147,7 +147,7 @@ function buildChecks() {
     'lineage_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',
     'nemesis_395_tests', 'nemesis_clash_tests', 'nemesis_teach_tests',
     'paint_sheet_camera_tests', 'reporting_238_tests', 'runner_stall_tests',
-    'shadow_xp_tests', 'shield_pool_tests', 'squadron_auto_tests', 'story_beat3_tests',
+    'shadow_xp_tests', 'shield_pool_tests', 'ship_job_tests', 'squadron_auto_tests', 'story_beat3_tests',
     'ui_spec_tests', 'weapon_match_tests',
   ]);
   // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
