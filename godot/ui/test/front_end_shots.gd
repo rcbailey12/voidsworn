@@ -42,7 +42,7 @@ func _shot(name: String, caption: String) -> void:
 	if img.get_height() > 720:
 		img.resize(int(round(img.get_width() * 720.0 / img.get_height())), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join(name + ".png")
-	img.save_png(p)
+	preload("res://tools/picture_provenance.gd").save_png(img, p)
 	print("[front-end-shots] saved ", p)
 	cap.queue_free()
 
