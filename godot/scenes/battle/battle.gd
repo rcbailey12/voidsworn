@@ -17,6 +17,7 @@ signal finished(result: Dictionary)
 signal storm_drained(pos: Vector3)
 signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance trace films it)
 signal wings_together(n: int)   # F1: your strike craft just started their moves together (the trace films it)
+signal recording_cue(kind: String, text: String)
 
 const API := preload("res://rules/battle_api.gd")
 const Campaign := preload("res://campaign/campaign.gd")
@@ -621,6 +622,7 @@ func _begin(a) -> void:
 			voice.setup_from_rules(api.R, V)  # until the story layer reads battle_api.gd (setup_from_api)
 		for l in voice.opening():
 			hud.add_log(l["text"], l["kind"])
+			recording_cue.emit("voice", l["text"])
 	var adm := _api_admiral()
 	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
 		var A = TBL.get("ADMIRALS", {}).get(adm, {})
@@ -1245,6 +1247,7 @@ func _play_event(e: Dictionary) -> void:
 	if voice != null:   # story hook
 		for l in voice.on_event(e):
 			hud.add_log(l["text"], l["kind"])
+			recording_cue.emit("voice", l["text"])
 	match e["t"]:
 		"adaptation":
 			if not adaptation_heard:
@@ -1868,6 +1871,7 @@ func _cine_release() -> void:
 	cam.t = cine_saved["t"]
 	cine_saved = {}
 	hud.letterbox(false)
+	recording_cue.emit("cut_end", "")
 
 
 func _play_fire(e: Dictionary, grp: Array) -> void:
@@ -1877,6 +1881,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var cined := _cine_wants(ckind, a_id, t_id)
 	if cined:
 		_cine_frame(a_id, t_id)
+		recording_cue.emit("cut_start", "%s: %s to %s" % [ckind, _name(a_id), _name(t_id)])
 		await wait(320.0)
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
@@ -2216,6 +2221,7 @@ func _play_death(e: Dictionary) -> void:
 	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
 		_kill_frame(id)
+		recording_cue.emit("cut_start", "kill: %s" % _name(id))
 		cined = true
 	var cause := str(e.get("cause", "blast"))
 	var friend := _side(id) == "player"
@@ -2310,6 +2316,7 @@ func _end_flow() -> void:
 		var vl: String = voice.closing(win)
 		if vl != "":
 			body += "\n\n" + vl
+			recording_cue.emit("voice", vl)
 	hud.show_end(heading, body, win, external)
 
 
