@@ -1673,7 +1673,8 @@ func startSideTurn(side) -> int:
 			var rg = u["regen"] * (B["condRegen"] if B != null and jt(B.get("condRegen")) else 1)
 			if float(z0(u.get("chainCut"))) > 0: rg = JSM.jsround(rg * (1.0 - float(u["chainCut"])))   # Chain Lightning (R246 pool): the broken shield's next recharge is cut
 			if not jt(u.get("regenLock")):
-				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg); syncShields(u)
+				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg)
+			syncShields(u)   # route just cleared: re-derive the catches even when an ion lock skips the regen
 		ithChargeTurn(u); u["regenLock"] = null; u["chainCut"] = 0
 		if jt(u.get("hullRegen")) and u["hp"] < u["maxHp"] and not jt(u.get("pyre")):
 			var mmH = treeRoleMul(u); var hrH = JSM.jsround(u["hullRegen"] * mmH) if mmH != 1.0 else u["hullRegen"]
@@ -2103,6 +2104,10 @@ func torpThreat(u, v) -> float:
 static func nem_entry(table: Dictionary, key, fac) -> Variant:
 	var entry = table.get(key)
 	return entry.get("v", {}).get(fac, entry) if entry != null else null
+# Issue 1182: a save from an older build can hold a trait or weakness key the table no longer has; show the raw key, never crash.
+static func nem_entry_name(table: Dictionary, key, fac) -> String:
+	var entry = nem_entry(table, key, fac)
+	return str(entry.get("n", key)) if entry is Dictionary else str(key)
 
 func nemWeak(k) -> bool: return B != null and B.get("nem") != null and B["nem"].get("weak") != null and B["nem"]["weak"].has(k)
 func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, faction behaviour, duel fleet, honed, riches, artillery line, memory lines)
@@ -2322,7 +2327,7 @@ func nemTrip(k: String) -> void:
 	if B["nem"].get("revealed") == null: B["nem"]["revealed"] = []
 	B["nem"]["revealed"].append(k)
 	var entry = nem_entry(TB.NEM_WEAK, k, B["nem"].get("fac"))
-	logm("Weakness found: " + String(entry["n"]) + ". " + String(entry["d"]), "s")
+	logm(("Weakness found: " + str(entry["n"]) + ". " + str(entry["d"])) if entry is Dictionary else ("Weakness found: " + str(k) + "."), "s")
 func nemBreak() -> void:
 	if B == null or B.get("nem") == null or jt(B.get("nemBroken")) or not nemWeak("anchor"): return
 	var f = null

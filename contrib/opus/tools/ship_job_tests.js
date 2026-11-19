@@ -63,9 +63,12 @@ assert(main.slice(0, co).some(l => /^git -C "%C%" checkout -q HEAD -- godot\/ass
 const pre = main.slice(0, co).map(l => l.s);
 assert(co > 0 && pre.some(s => /status --porcelain/.test(s)) && pre.some(s => /diff --binary HEAD > "%O%\\clone_changes_before_checkout\.patch"/.test(s)),
   'every local change in the clone is listed and saved before the forced checkout');
-const unexpected = pre.findIndex(s => /findstr \/v \/r \/c:"\^\.\. godot\/assets\/ships\/"/.test(s));
-assert(unexpected > 0 && /set "FAILED=checkout: the clone has local changes outside/.test(pre[unexpected + 1]) && guard.test(pre[unexpected + 2]),
-  'a change outside godot/assets/ships stops the job before the forced checkout');
+const unexpected = pre.findIndex(s => /status --porcelain --untracked-files=no -- \. ":\(exclude\)godot\/assets\/ships" ":\(glob,exclude\)godot\/\*\*\/\*\.import" > "%O%\\clone_changes_unexpected\.txt"/.test(s));
+assert(unexpected > 0 && /set "FAILED=checkout: git status/.test(pre[unexpected + 1]) && guard.test(pre[unexpected + 2])
+  && /set "FAILED=checkout: the clone has local changes outside/.test(pre[unexpected + 3]) && guard.test(pre[unexpected + 4]),
+  'a change outside godot/assets/ships and the rewritten *.import files stops the job before the checkout (git filters, not findstr: PR 1190)');
+assert(!pre.some(s => /findstr/.test(s)), 'no findstr filter on the git status list (its $ needs a CR)');
+assert(main.slice(0, co).some(l => /^git -C "%C%" checkout -q HEAD -- ":\(glob\)godot\/\*\*\/\*\.import" /.test(l.s)), 'the rewritten *.import files are restored after the patch is saved');
 pass('the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count');
 
 // the wait default

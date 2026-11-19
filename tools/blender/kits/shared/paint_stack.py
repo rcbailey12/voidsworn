@@ -27,6 +27,7 @@ import numpy as np
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 from paint3 import node, math_, mixc, mulc, ramp
+from cycles_devices import configure_cycles_device
 
 INFO = {}
 
@@ -118,17 +119,7 @@ def bake_copy(objs, name, zone_by_kind=None, module_tones=None, plate_mesh=None)
 
 def gpu(samples):
     sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.samples = samples
-    try:
-        prefs = bpy.context.preferences.addons['cycles'].preferences
-        for t in ('OPTIX', 'CUDA'):
-            try:
-                prefs.compute_device_type = t; prefs.get_devices()
-                if not [d for d in prefs.devices if d.type == t]: continue
-                for d in prefs.devices: d.use = True
-                sc.cycles.device = 'GPU'; return t
-            except Exception: pass
-    except Exception: pass
-    sc.cycles.device = 'CPU'; return 'CPU'
+    return configure_cycles_device(sc)
 
 
 def new_image(name, res, colour=True, fill=(0, 0, 0, 1), float_buffer=False):

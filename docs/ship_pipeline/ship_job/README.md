@@ -29,7 +29,7 @@ What it does, in order (each step's exit code goes to `JOB_DIR\out\result.txt`, 
 2. Its own clone `JOB_DIR\repo` (depth 50), then the branch. Every tracked change in the clone is listed and saved first
    (`out\clone_changes_before_checkout.txt` and `.patch`). A tracked change outside `godot/assets/ships/` (a hand fix left
    in the clone) stops the job with nothing reset. Only `godot/assets/ships/` (what stage 7's install writes, manifest.json
-   among it) is restored from the clone's own commit. The checkout itself is never forced and refuses to overwrite untracked
+   among it) is restored from the clone's own commit. Tracked `godot/**/*.import` files, which the headless import rewrites (Nov 19: the S9 rerun stopped on 18 of them), are restored the same way after the patch is saved. The checkout itself is never forced and refuses to overwrite untracked
    or ignored files (`--no-overwrite-ignore`), so a local file the branch now tracks stops the job instead of being replaced
    (Artoo on PR 1179, two rounds). Then `PAINT_BASE` merged if set (a failed merge is aborted
    and stops the job), then a `commit=` line.
