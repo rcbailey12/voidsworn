@@ -144,6 +144,17 @@ read-only drawing, moved-content routes, progression returns and heir gates, and
 the same scenarios with a renderer. Keep 1920x1080 originals in the issue's shots folder and comparison sheets at no taller
 than 720 px in docs/shots/debrief_db1/. Stage the installed model cache before captures; a missing model fails the capture.
 
+### Between-fight cards (issue 1177, R335)
+
+The victory card lists the wrecks and lets the player work one directly. If there are captured ships, deal with the batch
+of prizes before selecting a wreck so prize decisions get first claim on command points. Put all captains with a pending
+perk on one promotions card and keep it open until their picks are made. A reload restores the current reward stage.
+
+Drydock and field repair cards show the fleet hull and credit gain for both choices before applying either. The full
+service keeps the previous free repair rate. The lighter service adds a credit stipend. If the Nemesis holds a shipyard,
+drydock, field repair or event, the route says “You fight him here, then use the stop.” Winning opens that stop after the
+battle rewards. See [the seeded check and picture list](../shots/after_win_1177/README.md).
+
 ### Career (CR4, issue 869)
 
 Ryan settled CR4, The Honours Board (R286). Its source notes and CR4.png are on the design branch muse/issue-794 at
