@@ -528,11 +528,13 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
     narrower upper tier on a shoulder), 2 twin (two columns sharing one fin stack), 3 raked (the leading edge raked back).
     h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side.
     glow: 'fins' (the first S8 build: fins packed 0.17 apart, so the glowing stack reads as one whole lit tower) or 'slats'
-    (R331, Nov 19 2026: the ember in the fin slats: the glowing fins stand at least 0.26 apart, three or more of them, so the
-    dark iron core shows between every pair and the spire reads as lit stripes on iron)."""
+    (R331, Nov 19 2026: the ember in the fin slats, the one Sunward spire treatment, R333: the glowing fins stand at least 0.26
+    apart, three or more of them, and reach 60 percent as far out, so the dark iron core shows between every pair and the spire
+    reads as lit stripes on iron, about half the lit area of the old towers; call it with glow='slats' and no other setting)."""
     assert glow in ('fins', 'slats')
     if glow == 'slats':
         pitch = max(pitch, 0.26)
+        spread *= 0.6
     p = Part('radiator')
     p.type = 'radiator'
     zr = 0.26

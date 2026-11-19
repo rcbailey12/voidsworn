@@ -8,6 +8,14 @@ a base, not a trace (R205, R207, R233, R236). The original sheet pictures show t
 sandbox (Blender 5.3, Cycles CPU, 32 samples). `build.py voidsworn_S8 <out> render` rebuilds the sheet from its design file.
 Issue 1059 moves the shell rooms and hoists into the gun galleries and sets the decks, frames and liner clear of the wreck tears.
 
+**Change of Nov 19 2026 (issue 1158, R331).** Ryan, on the Sunward concepts: "can we scale down the giant radiator/orange towers
+on each ship a bit too?", and "Yes" to the same on S8. Only the spire rows R1 to R7 change: each spire at 70 percent of its
+height (tallest 2.6 to 1.8), the same seven, the same stations, lengths and profiles, and the ember in the fin slats (three to
+five glowing fins at least 0.26 apart, reaching 60 percent as far, over the dark iron core) instead of a whole lit tower. The
+fit check is still all zero and the weapon match PASS. The views, the overview and the battle camera picture on this sheet
+are still the Nov 15 build; the before and after is [docs/shots/ships/S8/](../../../shots/ships/S8/) (blockout revision 2,
+then the painted run).
+
 ![voidsworn_S8 overview](voidsworn_S8_sheet_overview.jpg)
 
 Start here: [the overview](voidsworn_S8_sheet_overview.jpg), [the whole concept beside the build](voidsworn_S8_compare_S8.jpg)
@@ -29,7 +37,8 @@ Files: design `tools/blender/build_sheets/ships/voidsworn_S8.py`, inventory `voi
 4. **S8's four deck turrets in its grid**, on low forged tubs at the deck edges: the two Sear turrets forward (turret T: one
    heavy emitter each), the two spark flak twins aft (flak T). Each pair is one data.js slot and every mount fires every volley.
 5. **The spire line**: seven radiator spires on a forged spine block, tallest at the middle of the row, four profiles (blade,
-   raked, stepped, twin): stacked radiator fins glowing ember between iron posts. The command deck looks out through ember slits
+   raked, stepped, twin): a few glowing radiator fins standing apart between iron posts, the dark iron core between them
+   (the ember in the fin slats, the shared Sunward option `radiator(..., glow='slats')`; R331, issue 1158). The command deck looks out through ember slits
    in the spine block's face. A dorsal power trunk runs forward from it along the centreline (S8's centre strip).
 6. **Two big ember bells**, 2.1 across, on riveted drums running 1.55 deep into the stern; bell rings, ember lining, glowing plug.
 7. **INSIDE**: iron decks (the bow deck; the gun deck and the upper deck forward; the main and upper decks aft), 16 frames (split
@@ -83,7 +92,7 @@ inside; E11 117,298, 13 surfaces, 7,677 inside. Costs are reported, never capped
 | **Build** | **5.22** | **8.03** | 3.79 | 4.30 |
 
 The build is deeper and wider than S8 by design (listed below): the gun deck and shell rooms need the depth, the faction sheet
-puts the widest point at the stern third, and the spires stand taller than S8's bank. Structure per cell (S8 by eye / build):
+puts the widest point at the stern third. (Since issue 1158 the spires stand at about S8's bank height: the tallest 1.8.) Structure per cell (S8 by eye / build):
 bow top 4/6, bow side 2/5, mid top 8/14, mid side 5/10, stern top 7/9, stern side 6/9.
 
 ## B-3 clearance (issue 1059)
