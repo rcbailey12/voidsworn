@@ -57,7 +57,6 @@ GUN_X = (1.74, 0.435, -0.87, -2.175)   # the four battery ports a side, stations
 BALL_Z = 0.0       # the broadside deck line
 GUN_S = 1.0        # the Sear battery's size against S8's heavy broadside (1.0): the concept's heavy, barrel-like collars
 PL = dict(size=(0.3, 0.56), thick=(0.02, 0.045))
-SPIRE_K = 0.6      # the spires are built at S8's detail and scaled down by this (their fins and posts keep the family pitch)
 TIP = 7.25
 
 
@@ -257,12 +256,10 @@ def build(K):
     # lit fin slats spaced wider and reaching less far, about half the old lit area (R331; the same radiator glow='slats' as S8's issue 1158)
     SPIRES = [(-2.33, 0.8, 0), (-3.05, 1.02, 3), (-3.77, 1.2, 2), (-4.49, 1.0, 1), (-5.21, 0.78, 0)]   # rev 2: one tight row (the Board)
     PROF = ('blade', 'stepped', 'twin', 'raked')
-    k = SPIRE_K
+    SC = 0.6   # the kit's radiator scale= (issue 1156): built at flagship detail, shrunk by SC, the same call as Warden's spires
     for i, (x, h, prof) in enumerate(SPIRES):
         L = 0.62
-        hs = h / k
-        part = HP.radiator(hs, L / k, profile=prof, spread=0.2 + 0.42 * hs / 2.6, seed=i, glow='slats')   # S8's R331 spires (issue 1158)
-        part.transform(Matrix.Scale(k, 4))
+        part = HP.radiator(h, L, profile=prof, spread=SC * (0.2 + 0.42 * (h / SC) / 2.6), seed=i, scale=SC, glow='slats')   # S8's R331 spires (issue 1158)
         K.organ('R%d' % (i + 1), part, (x, 0.0, SPZ), (0, 0, 1), fwd=(1, 0, 0), inv='spires', what='radiator spire, %.2f tall, profile %s' % (h, PROF[prof]),
                 kind='radiator', note='sheds the reactor\'s heat: spaced ember fin slats between iron posts (R331)')
         K.mass('Radiator spire R%d (%s, %.2f tall)' % (i + 1, PROF[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fin slats on iron',
