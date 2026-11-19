@@ -1,6 +1,6 @@
 {
  "code": "chorus_C13",
- "sheet_version": 1,
+ "sheet_version": 2,
  "routes_note": "kit = the Chorus parts kit (tools/blender/kits/chorus/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
@@ -45,7 +45,7 @@
    "kind": "spine_bed",
    "what": "spine bed, 1.2 across",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "spine_bed"
@@ -54,7 +54,7 @@
   {
    "id": "S1p",
    "kind": "sac",
-   "what": "bile sac, 1.0 across",
+   "what": "bile sac, 0.8 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -65,7 +65,7 @@
   {
    "id": "S2p",
    "kind": "sac",
-   "what": "bile sac, 1.6 across",
+   "what": "bile sac, 1.4 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -76,7 +76,7 @@
   {
    "id": "S3p",
    "kind": "sac",
-   "what": "bile sac, 1.5 across",
+   "what": "bile sac, 1.4 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -87,7 +87,7 @@
   {
    "id": "S4p",
    "kind": "sac",
-   "what": "bile sac, 1.2 across",
+   "what": "bile sac, 1.0 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -98,7 +98,7 @@
   {
    "id": "S1s",
    "kind": "sac",
-   "what": "bile sac, 1.1 across",
+   "what": "bile sac, 0.9 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -109,7 +109,7 @@
   {
    "id": "S2s",
    "kind": "sac",
-   "what": "bile sac, 1.6 across",
+   "what": "bile sac, 1.4 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -120,7 +120,7 @@
   {
    "id": "S3s",
    "kind": "sac",
-   "what": "bile sac, 1.4 across",
+   "what": "bile sac, 1.2 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -131,7 +131,7 @@
   {
    "id": "S4s",
    "kind": "sac",
-   "what": "bile sac, 0.9 across",
+   "what": "bile sac, 0.8 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -142,7 +142,7 @@
   {
    "id": "H1",
    "kind": "sac",
-   "what": "hanging sac, 0.9 across",
+   "what": "hanging sac, 0.8 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -153,7 +153,7 @@
   {
    "id": "H2",
    "kind": "sac",
-   "what": "hanging sac, 1.1 across",
+   "what": "hanging sac, 0.9 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -164,7 +164,7 @@
   {
    "id": "H3",
    "kind": "sac",
-   "what": "hanging sac, 1.0 across",
+   "what": "hanging sac, 0.8 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -327,7 +327,7 @@
  "break_pieces": [
   {
    "name": "bow piece",
-   "stations": "0.0 to 19.4 percent",
+   "stations": "0.0 to 19.2 percent",
    "bounded_by": [
     "B-1"
    ],
@@ -335,7 +335,7 @@
   },
   {
    "name": "midships piece 1",
-   "stations": "19.4 to 60.9 percent",
+   "stations": "19.2 to 60.7 percent",
    "bounded_by": [
     "B-1",
     "B-2"
@@ -344,7 +344,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "60.9 to 100.0 percent",
+   "stations": "60.7 to 100.0 percent",
    "bounded_by": [
     "B-2"
    ],
