@@ -133,15 +133,17 @@ def build(K):
     K.mass('Tendril knot', _bpy.data.objects['T1_mount_flesh'], 'flesh mound, tendrils', note='the knot with a crown on the back: the frigate\'s mark from above (R233)')
 
     # ---------------- the domes on the flanks (bile stores) ----------------
+    caps = []   # R341, the Board: the armour caps the domes' tops
     for i, x in enumerate(DOMES):
         for side in (1, -1):
             sn = 'p' if side > 0 else 's'
             pos, nrm = K.hpt(x, side_th(-0.12, side), out=-0.015)
             fid = 'S%d%s' % (i + 1, sn)
             r = (0.3, 0.33, 0.24)[i]
-            K.organ(fid, HP.sac(r, h=r * 1.02, seed=70 + 2 * i + (side > 0), kind='sac', glow=1, rim=1.0), pos, nrm, fwd=(1, 0, 0), inv='bile_domes',
+            K.organ(fid, HP.sac(r, h=r * 1.02, seed=70 + 2 * i + (side > 0), kind='sac', glow=1, rim=1.0, armour=True), pos, nrm, fwd=(1, 0, 0), inv='bile_domes',
                     what='bile dome, %.1f across' % (2 * r), note='a bile store in a wrinkled socket, fed forward to the knoll by the veins')
             K.mass('Bile dome %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome', note='a dome on the flank')
+            caps.append(((fid + '_',), tuple(pos), tuple(nrm), r, 1.2, 0.5))   # the crown's bile window open
 
     # ---------------- the hanging sacs (the regrow reserve, regen 3) ----------------
     for i, (x, side, r) in enumerate(SACS):
@@ -175,9 +177,10 @@ def build(K):
 
     # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
     # the draped tendrils lie over the shell (skipped as keep-outs); the knot they grow from stays open
-    plates.armour(K, _k, 1.95, -1.75, seed=1341, skip=('T1_body_',), rows=6, scute=0.4, thick=0.07,
+    plates.dome_caps(K, _k, caps, seed=1342)
+    plates.armour(K, _k, 2.15, -1.75, seed=1341, skip=('T1_body_',), rows=6, scute=0.4, thick=0.05,
                   note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the knoll, the tendril knot, '
-                       'domes, sacs, siphons and vents stand clear, the tendrils lie over it')
+                       'sacs, siphons and vents stand clear, the domes capped in smaller scutes, the tendrils lie over it')
 
     # ---------------- colour zones ----------------
     K.colour('warm brown flesh (paint stage)', 2.35, -1.75, 'whole body')

@@ -109,12 +109,16 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    exactly the same, still alien, but think about it as a warship. we should have that textured feel and armored shell defense";
    issue 1234). Every Chorus sheet calls the shared kit's `plates.armour` (tools/blender/kits/chorus/plates.py, R333), never
    its own plates: thick keratin scutes in bands from belly to back on both flanks, each band lapping the one below and offset
-   half a scute, every free lip standing proud aft over the next scute's root. The keep-outs are read from the sheet's own
-   fittings (guns, maws, glands, sacs, siphons, vents, the spine row; `keep` names grown-in features such as a face), so they
-   stand in open sockets of wet hide; lumps of grown flesh (C13's knolls) go under the shell (`drape`), and what lies on the
-   hull (C12's tendrils, `skip`) lies over it. No skin folds, pore fields or flank veins under the shell. The paint
-   (tools/blender/kits/chorus/stack.py): warm brown hide between the plates, not dark olive; horn-brown scutes with grooves along
-   their length, growth lines parallel to the lip, a dark root and a paler worn lip; the trailing veils dark torn membrane with
+   half a scute, every free lip standing proud aft over the next scute's root. Round 2 (the Board and Ryan, Nov 19: not round
+   pebble plates; "close the gap around open skin"): each scute comes to a point or a squared chisel aft, is thickest at the lip
+   with a dark shadow gap under it and carries one or two raised keels; the bands run from belly to spine, smaller scutes
+   fill round each fitting, sacs and knolls get caps of smaller scutes (`plates.dome_caps`, the sac's bile window open at its
+   crown) and a gland's knoll a ring round its slopes, its vent and spines open. The keep-outs are read from the sheet's own
+   fittings (guns, maws, glands, sacs, siphons, vents, the spine row; `keep` names grown-in features such as a face or C13's
+   knolls), so they stand in sockets of wet hide, siphons and vents in wider ones clear of their jets; what lies on the hull
+   (C12's tendrils, `skip`) lies over it. No skin folds, pore fields or flank veins under the shell. The paint
+   (tools/blender/kits/chorus/stack.py): warm brown hide between the plates, not dark olive; horn-brown scutes with coarse
+   grooves along their length, pits, growth lines parallel to the lip, a dark root and a paler worn lip, all reading at camera 26; the trailing veils dark torn membrane with
    a faint warm glow, not flat lime; the bile light only in sac windows and deep in the vents.
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit

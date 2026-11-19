@@ -100,6 +100,7 @@ def build(K):
         return th if side > 0 else math.pi - th
 
     # ---------------- the spine glands (the two spine volleys) ----------------
+    gland_rings = []
     for fid, slot, mouth, aim, r, rk, ns in GLANDS:
         a = Vector(aim).normalized(); L_ = 0.95
         root = Vector(mouth) - a * L_
@@ -108,6 +109,9 @@ def build(K):
         K.spinal(fid, tuple(root), L_, r=r, slot=slot, weapon='bioplasma', inv='glands_f' if slot == 'F' else 'glands_t', style='gland', aim=tuple(a),
                  band=(-10, 0, 10, 20) if slot == 'F' else (20, 35, 50, 70), knoll=rk, spines=ns, seed=40 + int(fid[1:]), gland_at=0.5, note=what)
         K.mass('Spine gland %s' % fid, _bpy.data.objects['%s_mount_flesh' % fid], 'flesh knoll', note=what.split(':')[0])
+        # R341 (Ryan, Nov 19: close the gaps round the open skin): a ring of scutes round the gland knoll's lower slopes, under
+        # its spines; the vent and the spines stay open
+        gland_rings.append((('%s_mount_flesh' % fid,), tuple(root + a * (L_ * 0.98 - rk * 0.92)), tuple(a), rk * 1.1, 1.8, 1.28))
 
     # ---------------- the spine bed (regrowth of spent spines) ----------------
     pos, nrm = K.hpt(-1.55, math.pi / 2 + 0.18, out=-0.12)
@@ -116,11 +120,13 @@ def build(K):
     K.mass('Spine bed', _bpy.data.objects['SB1_mount_flesh'], 'flesh knoll', note='the knoll aft of the dorsal glands')
     # the lumps of the back and shoulders: knolls of grown flesh between the glands (the picture's lumpy mass)
     items = []
+    caps = []   # the domes the armour caps (R341, the Board: the knolls and the flank sacs wrapped, the glands open)
     for k, (x, th, rr) in enumerate(((2.9, 1.1, 0.55), (0.9, 2.0, 0.7), (-0.9, 0.95, 0.75), (-0.75, 2.3, 0.62), (2.55, 2.15, 0.5), (-2.0, 1.5, 0.5),
                                      (0.8, 0.55, 0.55), (-1.35, 2.75, 0.5), (3.4, 1.7, 0.38),
                                      (0.1, 0.3, 0.62), (-0.4, 2.85, 0.6))):   # the mid-body's side blisters bulge out (the Board on v2)
         pos, nrm = K.hpt(x, th, out=-rr * 0.5)
         items.append((HP.knoll(rr, seed=70 + k, armour=True), HP.frame(pos, (1, 0, 0), nrm)))
+        caps.append((('knolls_',), tuple(pos), tuple(nrm), rr * 1.15, 1.25))
     K.grown_hull('knolls', items, inv='knolls', kind='knoll')
     K.mass('Back and shoulder knolls', _bpy.data.objects['knolls_flesh'], 'flesh', note='lumps of grown flesh over the back and shoulders')
 
@@ -130,9 +136,10 @@ def build(K):
         for i, (x, th, rr) in enumerate(SACS[side]):
             pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
             fid = 'S%d%s' % (i + 1, sn)
-            K.organ(fid, HP.sac(rr, h=rr * 1.05, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
+            K.organ(fid, HP.sac(rr, h=rr * 1.05, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, armour=True), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
                     what='bile sac, %.1f across' % (2 * rr), note='a round bile sac bulging from the lower flank; it swells before a volley')
             K.mass('Bile sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome')
+            caps.append(((fid + '_',), tuple(pos), tuple(nrm), rr, 1.2, 0.5))   # the crown's bile window open
     for a_, b_ in (('S1p', 'S2p'), ('S2p', 'S3p'), ('S3p', 'S4p'), ('S1s', 'S2s'), ('S2s', 'S3s'), ('S3s', 'S4s'), ('S2s', 'H2'), ('S2p', 'H1'), ('S3p', 'H3')):
         K.allow_touch(a_, b_, 'the bile sacs grow in a cluster along the flank, swelling into each other (the picture\'s merged sacs)')
     for i, (x, y, rr) in enumerate(HANGING):
@@ -166,8 +173,9 @@ def build(K):
     # v2 are gone: they lay where the scutes now lie. The wet hide shows only in the sockets round the fittings and between scutes.
 
     # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
-    plates.armour(K, _k, 4.45, -2.8, seed=1341, drape=('knolls',), rows=7, scute=0.62, thick=0.12,
-                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; glands, sacs, siphons, vents and knolls stand clear')
+    plates.dome_caps(K, _k, caps + gland_rings, seed=1342)
+    plates.armour(K, _k, 4.45, -2.8, seed=1341, keep=('knolls',), rows=7, scute=0.62, thick=0.12, back=1.55,
+                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; glands, siphons and vents stand clear, the knolls and flank sacs capped in smaller scutes')
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 4.75, -2.95, 'whole body')

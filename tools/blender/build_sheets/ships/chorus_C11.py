@@ -147,15 +147,17 @@ def build(K):
     K.mass('Mane', _bpy.data.objects['T1_mount_flesh'], 'flesh crest, tendrils', note='the plume rising from the back behind the blades')
 
     # ---------------- the bile sacs (domes on the flanks) ----------------
+    caps = []   # R341, the Board: the armour caps the sacs' tops
     for i, x in enumerate(SACS):
         for side in (1, -1):
             sn = 'p' if side > 0 else 's'
             pos, nrm = K.hpt(x, side_th(-0.42, side), out=-0.02)
             # a dome half sunk into the lower flank, bulging out of the hide (round 3)
             fid = 'S%d%s' % (i + 1, sn)
-            K.organ(fid, HP.sac(0.98, h=0.98 * 1.06, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=1.0), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
+            K.organ(fid, HP.sac(0.98, h=0.98 * 1.06, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=1.0, armour=True), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
                     what='bile sac, 1.9 across', note='a bile reservoir in a wrinkled socket, fed forward to the throats by the veins')
             K.mass('Bile sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome', note='a dome on the flank below the shoulder')
+            caps.append(((fid + '_',), tuple(pos), tuple(nrm), 0.98, 1.2, 0.5))   # the crown's bile window open
 
     # ---------------- siphons ----------------
     for side in (1, -1):
@@ -190,9 +192,10 @@ def build(K):
     # they lay where the scutes now lie. The wet hide shows only in the sockets round the fittings and between scutes.
 
     # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
-    plates.armour(K, _k, 5.45, -4.9, seed=1341, keep=('face', 'wound', 'blade_row'), rows=8, scute=0.95, thick=0.18,
+    plates.dome_caps(K, _k, caps, seed=1342)
+    plates.armour(K, _k, 5.65, -4.9, seed=1341, keep=('face', 'wound', 'blade_row'), rows=8, scute=0.95, thick=0.18,
                   note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the face, throats, blade row, '
-                       'mane, sacs, siphons and vents stand clear')
+                       'mane, siphons and vents stand clear, the sacs capped in smaller scutes')
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 7.25, -5.6, 'whole body')

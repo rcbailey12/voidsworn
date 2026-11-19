@@ -934,13 +934,16 @@ def thruster(r=0.3, nozzles=3):
 
 
 # ------------------------------------------------------------------------------------------------ sacs, blades, scutes
-def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0):
+def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0, armour=False):
     """a sac grown out of the hull (local +Z out of the hull): root, a socket of wrinkled tissue (mount); sac, the bulge (mount:
     it grows into the hull); crease, creases across it; vein, veins over it; glow, windows where the bile shows through.
     kind 'brood' adds the birth slit (slit: its length as a share of the sac) between two lip rolls (lip): a launch opening for
-    the spore swarms. Fit: the slit's aperture along +Z."""
+    the spore swarms. Fit: the slit's aperture along +Z. armour (R341): no creases or veins (the armour caps lie over the sac's
+    shoulders, plates.dome_caps) and the bile windows gathered at the open crown."""
     p = Part(kind)
     h = h or r * 1.1
+    if armour:
+        creases = veins = 0
     cz = h - r * 1.0
     # hang > 1: a pendulous lobe, swelling away from the body and narrowing to a soft neck where it grows out
     p.add('sac', 'mount', 'flesh', blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.06,
@@ -983,14 +986,16 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
         p.add('vein%d' % i, 'body', 'flesh2' if i % 2 else 'bilewet', welt(pts, nrm, r * 0.045, r * 0.03, n=4))
     for i in range(glow):
         a = 2 * math.pi * (i + 0.3) / max(1, glow); th = max(thb + 0.05, rnd.uniform(-0.2, 0.6))
+        if armour:
+            th = rnd.uniform(1.28, 1.42)   # inside the caps' open crown
         u = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
         c = Vector((r * u.x, r * 0.96 * u.y, cz + r * u.z))
         p.add('glow%d' % i, 'body', 'bile', moved(blob(r * 0.13, r * 0.09, r * 0.035, nu=10, nv=5, seed=i), frame(c, u.orthogonal(), u)))
     # pores over the sac's skin (it breathes the swarm's air), at the hull's grain
-    npo = pores if pores is not None else int(18 * r * r * 4)
+    npo = pores if pores is not None else int(18 * r * r * (1 if armour else 4))
     V, F = [], []
     for i in range(npo):
-        a = rnd.uniform(0, 2 * math.pi); th = rnd.uniform(thb + 0.05, 1.35)
+        a = rnd.uniform(0, 2 * math.pi); th = rnd.uniform(1.25, 1.45) if armour else rnd.uniform(thb + 0.05, 1.35)
         u = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
         c = Vector((r * u.x, r * 0.96 * u.y, cz + r * u.z))
         vv, ff = pore(c, u, r * rnd.uniform(0.025, 0.045), n=6)
