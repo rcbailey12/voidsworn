@@ -11,7 +11,7 @@
 # model <out> <resolved> <default>: stamp the resolved model into status.json and result.txt, and warn when it
 #   differs from the arm default, whatever the provider.
 # base <repo> <out> <issue body file>: parse the optional Base line, fetch and commit its merge before the agent.
-# announce <out> <issue> <seat> <repo> <ceiling seconds> <resume command> <push mode>: validate and claim before work.
+# announce <out> <issue> <seat> <repo> <ceiling seconds> <resume command> <push mode> [assignment branch]: validate and claim.
 # board-dryrun <out>: list ACCEPT or REFUSE for every open codex, muse or opus issue, without claims or agent calls.
 # Test claims require PC_TEST_GH and PC_TEST_GH_DB; real dry runs validate read-only. Linux probes use pwsh and real git.
 # Public runner diagnostics are built from fixed text. Keep exceptions, reports from interrupted agents,
@@ -399,7 +399,7 @@ function Gh-Pages($endpoint) {
   $pages = Require-Gh 'GET' $endpoint $null $true
   foreach ($page in $pages) { foreach ($item in $page) { $item } }
 }
-function Current-Body($body, $prefix) {
+function Current-Body($body, $prefix, [ref]$assignment) {
   # A marker is a line, not a heading or an occurrence: bold and plain run lines work too.
   $current = @(); $runs = @(); $fence = ''; $offset = 0
   $runLabel = '(?:run[ \t]+[0-9]+|(?:earlier|previous|old)[ \t-]+runs?)\b'
@@ -431,6 +431,13 @@ function Current-Body($body, $prefix) {
       throw "current instruction refused: fixed block needs one ${field}: line; no agent started"
     }
   }
+  # The first tokens name the assignment. Older briefs can add a parenthetical note on either line.
+  if ($assignment) {
+    $assignment.Value = @{
+      owner = [regex]::Match($fixed, '(?im)^[ \t]*Owner:[ \t]*([^ \t\r\n]+)').Groups[1].Value.Trim('`')
+      branch = [regex]::Match($fixed, '(?im)^[ \t]*Branch:[ \t]*([^ \t\r\n]+)').Groups[1].Value.Trim('`')
+    }
+  }
   if ($prefix -eq 'codex' -and $fixed -notmatch '(?im)\bEffort \(Codex\):[ \t]*(xhigh|high|medium)\b') {
     throw 'current instruction refused: Codex fixed block needs Effort (Codex): high or xhigh; no agent started'
   }
@@ -459,18 +466,29 @@ function Current-Body($body, $prefix) {
   }
   return ($fixed.Trim() + "`n`n" + $body.Substring($h.start, $end - $h.start).Trim())
 }
-function Seat-Prefix($seat, $branch) {
-  if ($branch -match '^(codex|work|muse|opus)/') { return $Matches[1] }
-  if ($seat -in @('codex','opus','muse')) { return $seat }
-  return 'work'
-}
 function Find-BaseLines($body) {
   [regex]::Matches($body, '(?im)^[ \t]*Base:[ \t]*([^\r\n]*)')
 }
-function Validate-Job($i, $issue, $prefix, $pulls, $branches) {
+function Validate-Job($i, $issue, $seat, $pulls, $branches, $launchBranch = "$seat/issue-$issue") {
   if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
   if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
-  $body = Current-Body ([string]$i.body) $prefix
+  $prefix = $seat
+  $owners = @($seat)
+  if ($seat -in @('deepseek','deepseekpro','kimi','kimicode','sonnet','opus','openai') -and $launchBranch -ceq "work/issue-$issue-$seat") {
+    $prefix = 'work'
+    # The Board assigns workhorse jobs under Owner: codex or names the arm itself.
+    $owners += 'codex'
+  } elseif ($seat -notin @('codex','muse','opus') -or $launchBranch -cne "$seat/issue-$issue") {
+    throw "job refused: invalid launch assignment for seat $seat; no agent started"
+  }
+  $assignment = $null
+  $body = Current-Body ([string]$i.body) $prefix ([ref]$assignment)
+  if ($assignment.branch -cne $launchBranch) {
+    throw "job refused: Branch: assigns issue #$issue to $($assignment.branch), launch is for $launchBranch; no agent started"
+  }
+  if ($assignment.owner -notin $owners) {
+    throw "job refused: Owner: $($assignment.owner) does not match the $seat launch for issue #$issue; no agent started"
+  }
   $jobBranch = "^(codex|work|muse|opus)/issue-$issue(?:-|$)"
   foreach ($pr in $pulls) {
     $ref = [string]$pr.head.ref
@@ -511,7 +529,7 @@ function Issue-Lock($issue) {
     }
   }
 }
-function End-Announcement($s, $code) {
+function End-Announcement($s) {
   if (-not $s.github -or -not $s.github.claimed) { return }
   try {
     $g = $s.github
@@ -521,7 +539,8 @@ function End-Announcement($s, $code) {
     $comment = ConvertFrom-Json $raw
     if (-not ([string]$comment.body).Contains("- Run: $($s.run)")) { Log 'GitHub finish skipped: status comment belongs to another run'; return }
     $label = 'failed'
-    if ($code -eq '0' -and $s.status -in @('checked_push','unverified')) { $label = 'finished' }
+    if ($s.status -eq 'checked_push') { $label = 'finished' }
+    if ($s.status -eq 'unverified') { $label = 'unverified' }
     if ($s.status -eq 'partial') { $label = 'partial' }
     if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $code) } }
     # Clearing the owned label must still be attempted when editing the comment fails.
@@ -707,11 +726,11 @@ try {
       $i = Require-Gh 'GET' "issues/$issue"
       if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
       if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
-      $prefix = Seat-Prefix $args[3] $s.branch
-      $body = Current-Body ([string]$i.body) $prefix
+      $launchBranch = $args[8]
+      if (-not $launchBranch) { $launchBranch = $s.branch }
       $pulls = @(Gh-Pages 'pulls?state=open&per_page=100')
       $branches = @(Gh-Pages 'branches?per_page=100')
-      $body = Validate-Job $i $issue $prefix $pulls $branches
+      $body = Validate-Job $i $issue $args[3] $pulls $branches $launchBranch
       $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
       # Snapshot exactly what was validated. Prep must never re-fetch a possibly changed or older brief.
       Put (Join-Path $out 'validated_issue.json') (@{ number = $issue; title = $i.title; body = $body; run = $s.run } | ConvertTo-Json)
@@ -921,7 +940,7 @@ try {
     Log "runner status: $status ($reason)"
     # State is authoritative; reporting errors never change it or the runner exit code.
     $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
-    End-Announcement $s $code
+    End-Announcement $s
     exit 0
   }
   else { throw "unknown runner step $mode" }
@@ -930,7 +949,7 @@ try {
     Log $_.Exception.Message
     if (Test-Path (Join-Path $out 'status.json')) {
       State 'failed' $_.Exception.Message
-      End-Announcement (Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json) '14'
+      End-Announcement (Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json)
     }
   }
   else { Write-Host $_.Exception.Message }
