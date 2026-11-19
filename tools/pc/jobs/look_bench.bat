@@ -30,7 +30,7 @@ if "%AFTER%"=="" set "AFTER=origin/main"
 if not exist "%LB_HOME%" mkdir "%LB_HOME%"
 set "ST=%LB_HOME%\status.txt"
 echo look bench start %date% %time% after=%AFTER% before=%BEFORE% > "%ST%"
-set /p G=<"%VT%\godot_path.txt"
+if exist "%VT%\godot_path.txt" set /p G=<"%VT%\godot_path.txt"
 if "%G%"=="" set "G=%VT%\godot\Godot_v4.7.2-stable_win64_console.exe"
 
 if /i not "%GOWAIT%"=="go" goto gook
@@ -41,11 +41,37 @@ timeout /t 60 /nobreak > nul
 goto gowait
 :gook
 
-rem ---- the bench tool (its own checkout, never the one under test)
+rem ---- the bench tool and game use separate checkouts from the same refreshed PC mirror
 set "TOOL=%LB_HOME%\tool"
-if not exist "%TOOL%\.git" git -c core.autocrlf=false clone https://github.com/rcbailey12/voidsworn "%TOOL%" > "%LB_HOME%\git_tool.txt" 2>&1
-git -C "%TOOL%" fetch origin >> "%LB_HOME%\git_tool.txt" 2>&1
-git -C "%TOOL%" checkout -f --detach %LB_TOOL_REF% >> "%LB_HOME%\git_tool.txt" 2>&1
+set "R=%LB_HOME%\repo"
+set "MIRROR=%VT%\repo-mirror.git"
+rem Use the same mirror lock as runner_common.ps1 around refresh and local Git reads.
+powershell -NoProfile -Command ^
+  "$ErrorActionPreference = 'Stop'; $mirror = $env:MIRROR; $source = 'https://github.com/rcbailey12/voidsworn';" ^
+  "function Run-Git { & git.exe @args; if ($LASTEXITCODE -ne 0) { throw ('git failed: ' + ($args -join ' ')) } }" ^
+  "$lock = $null; $deadline = [DateTime]::UtcNow.AddMinutes(30);" ^
+  "while (-not $lock) { try { $lock = [IO.File]::Open($mirror + '.lock', 'OpenOrCreate', 'ReadWrite', 'None') }" ^
+  "  catch [IO.IOException] { if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }; Start-Sleep -Milliseconds 500 } }" ^
+  "try {" ^
+  "  if (-not (Test-Path -LiteralPath (Join-Path $mirror 'HEAD'))) { Run-Git init --bare $mirror; Run-Git --git-dir $mirror remote add --mirror=fetch origin $source }" ^
+  "  if ((Run-Git --git-dir $mirror config --get remote.origin.url) -ne $source) { throw 'shared repo copy has an unexpected origin; kept unchanged' }" ^
+  "  Write-Output ('refreshing shared mirror ' + $mirror);" ^
+  "  Run-Git --git-dir $mirror -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 fetch --prune origin;" ^
+  "  Run-Git --git-dir $mirror symbolic-ref HEAD refs/heads/main;" ^
+  "  foreach ($checkout in @($env:TOOL, $env:R)) {" ^
+  "    if (-not (Test-Path -LiteralPath (Join-Path $checkout '.git'))) { Write-Output ('local clone ' + $checkout); Run-Git -c core.autocrlf=false clone --local -q $mirror $checkout }" ^
+  "    Run-Git -C $checkout fetch --no-tags $mirror '+refs/heads/*:refs/remotes/origin/*' 'refs/tags/*:refs/tags/*';" ^
+  "  }" ^
+  "} finally { $lock.Dispose() }" > "%LB_HOME%\git_tool.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: shared mirror clone or fetch, see git_tool.txt >> "%ST%"
+  goto finish
+)
+call :checkout "%TOOL%" "%LB_TOOL_REF%" >> "%LB_HOME%\git_tool.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: cannot check out %LB_TOOL_REF%, see git_tool.txt >> "%ST%"
+  goto finish
+)
 if not exist "%TOOL%\godot\bench\look_bench.gd" (
   echo FAILED: no bench script at %LB_TOOL_REF% >> "%ST%"
   echo FAILED: no bench script at %LB_TOOL_REF%
@@ -54,11 +80,6 @@ if not exist "%TOOL%\godot\bench\look_bench.gd" (
 if "%BEFORE%"=="" set /p BEFORE=<"%TOOL%\docs\shots\look_bench\BASELINE.txt"
 rem Use the installed watchdog, never the old checkout being measured.
 set "TMO=%~dp0..\tmo.bat"
-
-rem ---- the game checkout under test
-set "R=%LB_HOME%\repo"
-if not exist "%R%\.git" git -c core.autocrlf=false clone https://github.com/rcbailey12/voidsworn "%R%" > "%LB_HOME%\git_repo.txt" 2>&1
-git -C "%R%" fetch origin >> "%LB_HOME%\git_repo.txt" 2>&1
 
 set "RUN_A="
 set "RUN_B="
@@ -114,7 +135,7 @@ rem ---------------------------------------------------------------- one bench r
 set "REF=%~1"
 set "RUNNAME=%~2"
 set "PRE=%~3"
-git -C "%R%" checkout -f --detach %REF% >> "%LB_HOME%\git_repo.txt" 2>&1
+call :checkout "%R%" "%REF%" >> "%LB_HOME%\git_repo.txt" 2>&1
 if errorlevel 1 (
   echo FAILED: cannot check out %REF% >> "%ST%"
   echo FAILED: cannot check out %REF%
@@ -168,3 +189,10 @@ if errorlevel 1 (
 )
 echo %SHA% > "%RUNDIR%\DONE.txt"
 exit /b 0
+
+:checkout
+rem A bare branch name follows the refreshed mirror branch. Commit hashes, tags and origin/branch still work.
+set "LB_REF=%~2"
+git -C "%~1" show-ref --verify --quiet "refs/remotes/origin/%LB_REF%" && set "LB_REF=refs/remotes/origin/%LB_REF%"
+git -C "%~1" checkout -f --detach "%LB_REF%"
+exit /b %ERRORLEVEL%
