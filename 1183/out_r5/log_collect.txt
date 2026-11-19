@@ -1,0 +1,46 @@
+﻿
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Thursday, November 19, 2026 4:20:38 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\
+	    New File  		     829	log_build.txt
+100%  
+	    New File  		    1267	log_sheet_contract.txt
+100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\build\
+	    New File  		    1006	CD5_build.json
+100%  
+	    New File  		    2001	sheet_contract_selftest.json
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :         4         4         0         0         0         0
+   Bytes :     4.9 k     4.9 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :             5103000 Bytes/sec.
+   Speed :             291.996 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 4:20:38 PM
+

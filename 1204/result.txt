@@ -1,0 +1,9 @@
+ran opus1204\go1204_pc.bat (PC copy of go1204.bat: SHIPS and LB_SHIPS = build\godot, look bench from the clone) Thu 11/19/2026 15:53:11.15 
+bot runs started Thu 11/19/2026 15:53:11.15 
+bot runs exit code 1 (0 is clean; -1073741819 is the old access violation) 
+SCRIPT ERROR: Trying to cast a freed object.
+SCRIPT ERROR: Trying to cast a freed object.
+SCRIPT ERROR: Trying to cast a freed object.
+SCRIPT ERROR: Trying to cast a freed object.
+[botrun] SUMMARY 5 runs, 3 wins, 5 errors, 0 softlocks, 1590.7 s real time (average 318.1 s)
+look bench started Thu 11/19/2026 16:19:47.85 

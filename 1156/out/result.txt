@@ -1,0 +1,19 @@
+﻿start voidsworn_S9 V14_23 opus/issue-1156 Thu 11/19/2026 15:52:08.54 
+inputs STAGES=4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_155206 
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=bf319ab6ab634a1edd177297a9e5660b934a6bd2
+import exit 0 
+4_parts_kit start 15:52:44.60 
+4_parts_kit exit 0 at 16:00:08.57 
+5_paint_bake start 16:00:08.59 
+5_paint_bake exit 0 at 16:10:19.28 
+6_lod start 16:10:19.28 
+6_lod exit 0 at 16:11:28.25 
+7_export start 16:11:28.26 
+7_export exit 1 at 16:11:45.68 
+checks and shots SKIPPED: stage 7_export failed, so the installed glb is not this run's 
+stages exit 1 
+collect exit 0 
+done FAILED: a stage (see the SKIPPED line above) Thu 11/19/2026 16:11:46.14 
+all done 

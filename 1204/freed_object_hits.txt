@@ -1,0 +1,68 @@
+﻿---- bot_log.txt line 13768
+[turret] turret_1 (T1) on D21_23: arc -180 to 180, trains all round
+[turret] turret_2 (T2) on D21_23: arc -180 to 180, trains all round
+[attach] scorch on D21_23: placed on the plating (a surface sample; not a hard point type)
+SCRIPT ERROR: Trying to cast a freed object.
+   at: precompute (res://fx/fx_death.gd:1113)
+   GDScript backtrace (most recent call first):
+       [0] precompute (res://fx/fx_death.gd:1113)
+       [1] l_cut_first (res://fx/fx.gd:1275)
+       [2] _run_later (res://fx/fx.gd:447)
+       [3] step (res://fx/fx.gd:368)
+       [4] _process (res://fx/fx.gd:352)
+SCRIPT ERROR: Trying to cast a freed object.
+   at: _power_down (res://fx/fx_death.gd:2043)
+   GDScript backtrace (most recent call first):
+       [0] _power_down (res://fx/fx_death.gd:2043)
+       [1] _death_inner (res://fx/fx_death.gd:1904)
+---- bot_log.txt line 13776
+       [2] _run_later (res://fx/fx.gd:447)
+       [3] step (res://fx/fx.gd:368)
+       [4] _process (res://fx/fx.gd:352)
+SCRIPT ERROR: Trying to cast a freed object.
+   at: _power_down (res://fx/fx_death.gd:2043)
+   GDScript backtrace (most recent call first):
+       [0] _power_down (res://fx/fx_death.gd:2043)
+       [1] _death_inner (res://fx/fx_death.gd:1904)
+       [2] death (res://fx/fx_death.gd:1893)
+       [3] death (res://fx/fx.gd:1390)
+       [4] _play_death (res://scenes/battle/battle.gd:2285)
+       [5] _play_event (res://scenes/battle/battle.gd:1457)
+       [6] _play_batch (res://scenes/battle/battle.gd:1197)
+       [7] _play_fire (res://scenes/battle/battle.gd:2084)
+       [8] wait (res://scenes/battle/battle.gd:1107)
+SCRIPT ERROR: Trying to cast a freed object.
+---- bot_log.txt line 13788
+       [6] _play_batch (res://scenes/battle/battle.gd:1197)
+       [7] _play_fire (res://scenes/battle/battle.gd:2084)
+       [8] wait (res://scenes/battle/battle.gd:1107)
+SCRIPT ERROR: Trying to cast a freed object.
+   at: precompute (res://fx/fx_death.gd:1113)
+   GDScript backtrace (most recent call first):
+       [0] precompute (res://fx/fx_death.gd:1113)
+       [1] _lance_recut (res://fx/fx_death.gd:1082)
+       [2] _death_inner (res://fx/fx_death.gd:1938)
+       [3] death (res://fx/fx_death.gd:1893)
+       [4] death (res://fx/fx.gd:1390)
+       [5] _play_death (res://scenes/battle/battle.gd:2285)
+       [6] _play_event (res://scenes/battle/battle.gd:1457)
+       [7] _play_batch (res://scenes/battle/battle.gd:1197)
+       [8] _play_fire (res://scenes/battle/battle.gd:2084)
+       [9] wait (res://scenes/battle/battle.gd:1107)
+---- bot_log.txt line 13801
+       [7] _play_batch (res://scenes/battle/battle.gd:1197)
+       [8] _play_fire (res://scenes/battle/battle.gd:2084)
+       [9] wait (res://scenes/battle/battle.gd:1107)
+SCRIPT ERROR: Trying to cast a freed object.
+   at: precompute (res://fx/fx_death.gd:1113)
+   GDScript backtrace (most recent call first):
+       [0] precompute (res://fx/fx_death.gd:1113)
+       [1] _death_inner (res://fx/fx_death.gd:1940)
+       [2] death (res://fx/fx_death.gd:1893)
+       [3] death (res://fx/fx.gd:1390)
+       [4] _play_death (res://scenes/battle/battle.gd:2285)
+       [5] _play_event (res://scenes/battle/battle.gd:1457)
+       [6] _play_batch (res://scenes/battle/battle.gd:1197)
+       [7] _play_fire (res://scenes/battle/battle.gd:2084)
+       [8] wait (res://scenes/battle/battle.gd:1107)
+ERROR: Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.
