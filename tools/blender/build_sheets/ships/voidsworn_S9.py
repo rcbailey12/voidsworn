@@ -446,10 +446,12 @@ def build(K):
                  path=[(-0.45, SPZ - 0.09), (-1.2, SPZ - 0.092), (-2.0, SPZ - 0.09), (-2.58, SPZ - 0.091)], kind='long')
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215), hidden until a piece breaks: iron decks, ember-lit crew spaces, frames, the repeater magazine, the reactor and its machinery. Sunward breaks along the gun decks (factions.md); deaths blow it apart unevenly, a ragged bite where the reactor goes (R186).'))
     K.point('core', 'hp_core', (-1.65, 0, -0.08))
-    # Two breach anchors (Frigate base 2, Sunward +0), on the broadside band, one each side, evenly spaced along the hull
-    for i, (x, side) in enumerate(((0.7, 1), (-1.3, -1))):
-        K.point('breach', 'hp_breach_%d' % i, (x, side * hw_at(x, BAND_Z), BAND_Z), side='port' if side > 0 else 'stbd', section='mid' if x > 0 else 'eng',
-                note='on the broadside band, between the louvres')
+    # Two breach anchors (Frigate base 2, Sunward +0): the contract for two is one in the prow and one in the engine section
+    # (hardpoints.sections_for), one each side. Each sits on the hull side at least 0.03 of the length from every part (check_export):
+    # the prow one at the band's forward end between the L2 lamp and the Q1 thruster, the engine one low on the band aft of V1.
+    for i, (x, side, z, sec) in enumerate(((1.52, 1, BAND_Z, 'prow'), (-1.55, -1, -0.06, 'eng'))):
+        K.point('breach', 'hp_breach_%d' % i, (x, side * hw_at(x, z), z), side='port' if side > 0 else 'stbd', section=sec,
+                note='on the hull side by the broadside band, clear of the louvres, lamps and thrusters')
     for i, side in enumerate((1, -1)):
         p, n = facet_pt(1.75, side, 0.55)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(p), side='port' if side > 0 else 'stbd')
