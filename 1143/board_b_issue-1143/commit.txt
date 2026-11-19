@@ -1,0 +1,26 @@
+Codex (issue #1143): Record the first three battles the way a player sees them
+
+The player-path recorder is updated. The six-battle recording, clips, and contact sheets are still pending because the Windows export requires a clean commit. I did not commit or push. Run 1’s media still fails provenance verification.
+
+The launcher now gives each seed and retry its own temporary profile. I updated RULEBOOK 12.6, screenshot-verdict, and the [recording README](docs/shots/player_path_1119/README.md), and added JPG and MP4 verification.
+
+Both seeds reached Battle 1 in Windows headless tests. The profile check left Ryan’s normal files unchanged. I found no evidence that run 1 changed his saves, settings, or story state. The available logs cannot confirm whether an earlier aborted launch read his settings.
+
+Onboarding, storm-drain, and provenance tests passed. The standing suite had 72 passes, two known results, and two sandbox hard-link failures. Both failed checks passed on retry.
+
+Runner checks:
+PASS: standing checks
+PASS: parity
+
+Refs #1143
+
+## Runner (issue 377)
+
+Earlier commits (runner Base and resume merges included), under this one:
+- 72cf31ce613a2b5a4a7014273ab56b32ad07be06
+- 0b82eaa0e43c43d822b2db72b08404fb890dbc91
+- 9134d441a6264d9131642702f585e27f0e05902b
+- 16b7cb7bc5dc7511a2cf5789b799da0f40839893
+- 8d2c8dc44ed7ebba4b6b9e7f77f393c1760009f2
+
+Run-Number: 1

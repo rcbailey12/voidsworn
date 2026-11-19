@@ -1,0 +1,12 @@
+15	5	.claude/skills/screenshot-verdict/SKILL.md
+30	0	contrib/codex/player_path_1119/NOTES.md
+207	0	contrib/codex/player_path_1119/compose.py
+102	0	contrib/codex/player_path_1119/run.ps1
+6	0	docs/RULEBOOK.md
+83	0	docs/shots/player_path_1119/README.md
+4	1	godot/main/campaign_host.gd
+25	4	godot/main/main.gd
+417	0	godot/main/player_path.gd
+7	0	godot/scenes/battle/battle.gd
+8	0	tools/pc/jobs/player_path.bat
+49	1	tools/picture_provenance.py

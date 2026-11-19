@@ -1,0 +1,48 @@
+started Thu 11/19/2026 10:22:45.74 
+drive C: has 192.2 GB free (min_free_gb floor 60)
+WARNING: these runner files differ from the Board-copied hashes: codex_issue.bat, codex_issue.ps1, gpu_slots.js, review_evidence.ps1, run_timeout.ps1, runner_common.ps1, tmo.bat, work_issue.bat, work_issue.ps1
+model: gpt-6.2-sol
+GitHub CLI: C:\Program Files\GitHub CLI\gh.exe
+job claimed: issue #1143 by codex, run 2821751d01674a5bb6620ed3a4b737b9; current instruction validated
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+WARNING: C:\Users\rcbai\Downloads\voidsworn_test\board_b has 10 repo-kept-* copies; left in place during checkout
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-25e45b7ab14b47f6ac5b84cab0ae9943: 11936578973 logical bytes (11.117 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-2e8db0d35f8044d9bcd72e8f3fffdd09: 5179477610 logical bytes (4.824 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-5d8322cd44564d0482dbf5bbf2740441: 12050070854 logical bytes (11.223 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-8c54864d2d5448fea410dd2bf3d231ab: 5643248924 logical bytes (5.256 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a199aac6e71b43a2aead0c4601d7a571: 5126544674 logical bytes (4.774 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a89882fa7a7143cebaecd9fc731ff308: 11641096610 logical bytes (10.842 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-b1d569e806a544d2aa7541b503ffb351: 5038478624 logical bytes (4.692 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-c24ce97e0c6044d3af55441060ddafb0: 5917582465 logical bytes (5.511 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-d5932feeb459446997aea75a80d20fb9: 5139053305 logical bytes (4.786 GiB)
+WARNING: kept checkout C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-f252f10ad8464e37a7376c6bcbf3d1c3: 12487718704 logical bytes (11.63 GiB)
+earlier checkout reused in place; ignored files left in place
+Base: fetching and merging origin/main before the agent
+Base fetch attempt 1/3
+Base already merged by the runner: origin/main (0b82eaa0e43c43d822b2db72b08404fb890dbc91). The merge is committed; do not merge it yourself.
+effort: xhigh
+run scratch created: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-679b801e1cb64bd58239d0ed409c69ae
+preflight: codex gpt-6.2-sol
+preflight passed: codex gpt-6.2-sol
+codex exit 0 
+refuse list: nothing refused
+WARNING: 1 changed file(s) outside the issue's Deliver to (godot, tools/pc/jobs/player_path.bat, docs/shots/player_path_1119, docs/RULEBOOK.md, .claude/skills/screenshot-verdict/SKILL.md, contrib/codex/player_path_1119):
+  M tools/picture_provenance.py
+checks: node exit 0, parity exit 0 
+commit 5beedd156 (run 1 of codex/issue-1143) carries the staged change (12 files)
+pushed diff checked: GitHub's codex/issue-1143 (5beedd156) carries exactly out\diffstat.txt (12 files)
+pushed codex/issue-1143 
+run scratch kept: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-679b801e1cb64bd58239d0ed409c69ae (linked path: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-679b801e1cb64bd58239d0ed409c69ae\runner687 proof RLC7tA\reuse-linked-shared-ship\repo-kept-31972821484d4bee9b1673fc076baa16\godot\assets\ships\B16_23)
+kept checkout retained (newest): C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-2e8db0d35f8044d9bcd72e8f3fffdd09
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a199aac6e71b43a2aead0c4601d7a571 (working tree needs keeping: ?? docs/shots/battle_baseline_1118/BATTLE1076_A16_c26.mp4)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-b1d569e806a544d2aa7541b503ffb351 (working tree needs keeping:  M godot/ui/battle/test/ledger_readability_test.gd)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-c24ce97e0c6044d3af55441060ddafb0 (working tree needs keeping: !! .onboarding_checks/xdg/Godot/app_userdata/Voidsworn/battle_opts.json)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-d5932feeb459446997aea75a80d20fb9 (working tree needs keeping: ?? docs/shots/battle_baseline_1118/BATTLE1076_A16_c26.mp4)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-25e45b7ab14b47f6ac5b84cab0ae9943 (working tree needs keeping: !! godot/assets/ships/D20_23/D20_23.glb (shared ship copy could not be verified))
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a89882fa7a7143cebaecd9fc731ff308 (working tree needs keeping: !! godot/assets/ships/D20_23/D20_23.glb (shared ship copy could not be verified))
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-8c54864d2d5448fea410dd2bf3d231ab (working tree needs keeping: !! .onboarding_checks/xdg/Godot/app_userdata/Voidsworn/battle_opts.json)
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-f252f10ad8464e37a7376c6bcbf3d1c3 (working tree needs keeping: !! godot/assets/ships/C13s_23/C13s_23_base.jpg (shared ship copy could not be verified))
+kept checkout retained: C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-5d8322cd44564d0482dbf5bbf2740441 (working tree needs keeping: !! godot/assets/ships/C13s_23/C13s_23_base.jpg (shared ship copy could not be verified))
+runner status: checked_push (non-partial push confirmed and runner checks passed)
+GitHub CLI: C:\Program Files\GitHub CLI\gh.exe

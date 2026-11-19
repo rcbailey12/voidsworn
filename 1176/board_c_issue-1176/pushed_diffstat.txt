@@ -1,0 +1,15 @@
+ core.js                                            |  40 +++++--
+ docs/shots/issue-1176-codex/route-1176-01.png      | Bin 0 -> 70660 bytes
+ .../route-1176-01.png.provenance.json              |  36 ++++++
+ docs/shots/issue-1176-codex/route-1176-02.png      | Bin 0 -> 77882 bytes
+ .../route-1176-02.png.provenance.json              |  36 ++++++
+ docs/shots/issue-1176-codex/route-1176-03.png      | Bin 0 -> 74469 bytes
+ .../route-1176-03.png.provenance.json              |  36 ++++++
+ docs/shots/route_choice_1176/README.md             |  26 ++++
+ docs/shots/route_choice_1176/draw_maps.js          | 133 +++++++++++++++++++++
+ godot/campaign/campaign.gd                         |  49 ++++++--
+ godot/campaign/test/RECORD.md                      |   6 +-
+ godot/campaign/test/run_resume_test.gd             |   6 +-
+ godot/campaign/test/sector_routes_test.gd          |  77 ++++++++++++
+ godot/tools/ci/godot_checks.txt                    |   1 +
+ 14 files changed, 421 insertions(+), 25 deletions(-)

@@ -1,0 +1,13 @@
+ .claude/skills/screenshot-verdict/SKILL.md |  20 +-
+ contrib/codex/player_path_1119/NOTES.md    |  30 +++
+ contrib/codex/player_path_1119/compose.py  | 207 ++++++++++++++
+ contrib/codex/player_path_1119/run.ps1     | 102 +++++++
+ docs/RULEBOOK.md                           |   6 +
+ docs/shots/player_path_1119/README.md      |  83 ++++++
+ godot/main/campaign_host.gd                |   5 +-
+ godot/main/main.gd                         |  29 +-
+ godot/main/player_path.gd                  | 417 +++++++++++++++++++++++++++++
+ godot/scenes/battle/battle.gd              |   7 +
+ tools/pc/jobs/player_path.bat              |   8 +
+ tools/picture_provenance.py                |  50 +++-
+ 12 files changed, 953 insertions(+), 11 deletions(-)

@@ -1,0 +1,14 @@
+33	7	core.js
+-	-	docs/shots/issue-1176-codex/route-1176-01.png
+36	0	docs/shots/issue-1176-codex/route-1176-01.png.provenance.json
+-	-	docs/shots/issue-1176-codex/route-1176-02.png
+36	0	docs/shots/issue-1176-codex/route-1176-02.png.provenance.json
+-	-	docs/shots/issue-1176-codex/route-1176-03.png
+36	0	docs/shots/issue-1176-codex/route-1176-03.png.provenance.json
+26	0	docs/shots/route_choice_1176/README.md
+133	0	docs/shots/route_choice_1176/draw_maps.js
+36	13	godot/campaign/campaign.gd
+3	3	godot/campaign/test/RECORD.md
+4	2	godot/campaign/test/run_resume_test.gd
+77	0	godot/campaign/test/sector_routes_test.gd
+1	0	godot/tools/ci/godot_checks.txt

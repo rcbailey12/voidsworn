@@ -1,0 +1,19 @@
+RUNNER_READY
+
+OpenAI Codex v0.166.0
+--------
+workdir: C:\Users\rcbai\Downloads\voidsworn_test\board_c\issue-1176\preflight
+model: gpt-6.2-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: low
+reasoning summaries: none
+session id: 01a1f4a0-e99f-7cb0-a006-ca2eed11df48
+--------
+user
+Reply with exactly RUNNER_READY. Do not use tools or read any files.
+codex
+RUNNER_READY
+tokens used
+3,742

@@ -1,0 +1,31 @@
+start Thu 11/19/2026  8:56:27.61 
+commit=0200981052b4d8b940fb12ccf44f7a3ce8aa26cd
+1_concept_in start  9:00:39.37 
+1_concept_in exit 0 at  9:01:22.94 
+2_shape_ref start  9:01:24.23 
+2_shape_ref exit 0 at  9:12:03.34 
+3_trace_hull start  9:12:03.39 
+3_trace_hull exit 0 at  9:16:10.85 
+4_parts_kit start  9:16:10.85 
+4_parts_kit exit 0 at  9:18:12.82 
+5_paint_bake start  9:18:12.82 
+5_paint_bake exit 0 at  9:35:21.85 
+6_lod start  9:35:21.85 
+6_lod exit 1 at  9:40:29.63 
+7_export start  9:40:30.24 
+7_export exit 1 at  9:45:39.01 
+preview exit 126 
+7_export install start  9:50:41.25 
+7_export install exit 1 at  9:56:07.47 
+import exit 0 
+shots exit 1 
+gpu readback exit 126 
+done Thu 11/19/2026 10:08:43.31 
+run 2 starts after run 1 ended Thu 11/19/2026 10:08:58.90 
+rerun start Thu 11/19/2026 10:08:58.91 
+commit=0200981052b4d8b940fb12ccf44f7a3ce8aa26cd
+6_lod start 10:08:59.12 
+6_lod exit 1 at 11:09:02.11 
+skipped the rest after: 6_lod exit 1 
+RUN2 FAILED: 6_lod exit 1 
+all done Thu 11/19/2026 11:09:02.22 

@@ -1,0 +1,1 @@
+the player-path recording mode (godot/ where the mode lives, plus tools/pc/jobs/player_path.bat), docs/shots/player_path_1119/ (README, clips, one contact sheet per battle), docs/RULEBOOK.md (a new rule in section 12), .claude/skills/screenshot-verdict/SKILL.md, contrib/codex/player_path_1119/

@@ -1,0 +1,18 @@
+GPU: waiting for shared claim, weight 1 (issue )
+GPU: still waiting for shared claim
+GPU: acquired shared claim 779168fb-0812-4abc-a55d-efea8318c730
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\opus1158\out\shots facs ["voidsworn"] sets ["cams"]
+ERROR: placeholder hull: V1b_r_23
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:141)
+       [1] _spawn (res://assets/ships/test/a4_shots.gd:155)
+       [2] _cams (res://assets/ships/test/a4_shots.gd:234)
+       [3] _run (res://assets/ships/test/a4_shots.gd:181)
+       [4] _ready (res://assets/ships/test/a4_shots.gd:67)
+placeholder hull: V1b_r_23
+placeholder hull: 1 hull(s) had no built file; no picture written

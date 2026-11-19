@@ -1,0 +1,1 @@
+core.js and godot/campaign/campaign.gd together, a 3,000-seed map check under godot/campaign/test/ (listed in godot/tools/ci/godot_checks.txt), refreshed campaign parity records, docs/shots/route_choice_1176/README.md with before and after map pictures

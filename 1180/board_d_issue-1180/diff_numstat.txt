@@ -1,0 +1,11 @@
+141	11	contrib/opus/tools/runner_cleanup_tests.js
+18	8	docs/RULEBOOK.md
+3	3	tools/pc/codex_issue.bat
+2	3	tools/pc/codex_issue.ps1
+3	0	tools/pc/janitor.bat
+187	0	tools/pc/janitor.ps1
+192	69	tools/pc/runner_common.ps1
+2	2	tools/pc/runner_selftest.js
+7	0	tools/pc/watcher.bat
+6	1	tools/pc/work_issue.bat
+14	0	tools/pc/work_issue.ps1

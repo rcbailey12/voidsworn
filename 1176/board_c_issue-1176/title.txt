@@ -1,0 +1,1 @@
+Sector map: more real route choices (two exits, no same-type forks)
