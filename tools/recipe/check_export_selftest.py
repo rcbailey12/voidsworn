@@ -35,6 +35,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import check_export as CE, gamedata
 shipj, src = sys.argv[1], sys.argv[2]; ship = json.load(open(shipj)); code = ship.get('game_code') or ship['ship']
 last = len(gamedata.weapons(ship['game_ship'])) - 1
+wing = gamedata.ship_attr(ship['game_ship'], 'cls') == 'Squadron'
 
 def write_glb(path, g, blob):
     js = json.dumps(g, separators=(',', ':')).encode(); js += b' ' * (-len(js) % 4)
@@ -180,16 +181,17 @@ def turret_no_mesh(g):
     for n in g['nodes']:
         if re.fullmatch(r'turret_\d+_turn', str(n.get('name', ''))): n['name'] += 'x'
 _g0, _blob0 = CE.read_glb(os.path.join(src, code + '.glb'))
-WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
 CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
-         ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, WRONG_SIDE), ('no_core', no_core, 1, 'hp_core'),
-         ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'),
-         ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
-         ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
-         ('breach_inward', breach_inward, 1, 'is not the outward normal'),
-         ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
-         ('liner_only', liner_only, 1, 'no authored interior rooms'),
-         ('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
+         ('backward', backward, 1, 'aimed backward'), ('no_core', no_core, 1, 'hp_core'),
+         ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'))
+if not wing:
+    WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
+    CASES += (('wrong_side', wrong_side, 1, WRONG_SIDE), ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
+              ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
+              ('breach_inward', breach_inward, 1, 'is not the outward normal'),
+              ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
+              ('liner_only', liner_only, 1, 'no authored interior rooms'),
+              ('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
 
 def sided_points(g, kind, side):
     return [n for n in g['nodes'] if n.get('name', '').startswith(f'hp_{kind}_') and n.get('extras', {}).get('side') == side]
@@ -204,7 +206,7 @@ def same_side(g, kind):
 for kind in ('rcs', 'board'):
     if sided_points(_g0, kind, 'P') and sided_points(_g0, kind, 'S'):
         CASES += ((f'same_side_{kind}', lambda g, kind=kind: same_side(g, kind), 1, f'hp_{kind} on each side'),)
-if any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
+if not wing and any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
     CASES += (('no_trim_marker', no_trim_marker, 1, 'from a part (at least'),)
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
     CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
