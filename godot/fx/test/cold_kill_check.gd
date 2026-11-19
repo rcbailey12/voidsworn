@@ -4,7 +4,8 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   1. the cut side by side (each surface and each seal on its own worker) gives exactly the pieces of the one-thread cut;
 #   2. a cold kill: A16 arrives after the battle has started and dies 6 frames later, before its cut is ready, with the
 #      frames paced at 60 a second as the game runs. It must still break into pieces (the hull holds its tell until the
-#      cut is done; it used to pop with no pieces at 2.67 s), and the kill frame's own time is printed.
+#      cut is done; it used to pop with no pieces at 2.67 s), and the kill frame's own time is printed;
+#   3. a stuck cut holds the death (and so the kill camera and the turn) no longer than DEATH.cold_cut_wall of real time.
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted fixture
 # (the same fixture death_seam_check.gd uses and keeps fresh). Times are printed, not checked: CI machines vary.
 const FX := preload("res://fx/fx.gd")
@@ -143,6 +144,30 @@ func _run() -> void:
 	print("COLD_KILL kill cut_ready_at_kill=%s kill_frame_ms=%.1f worst_later_frame_ms=%.1f hidden_after=%.2fs held_past_split=%s outcome=%s pieces=%d" % [
 		str(ready_at_kill), kill_ms, worst, hidden_after, str(s.has_meta("death_cut_wait")), outcome, pieces])
 	check(outcome == "fractured", "the cold kill broke into pieces (%s)" % outcome)
+	fx.release()
+	ship.visible = false
+	# 3. a stuck cut (a worker that never ends): the hull holds no longer than DEATH.cold_cut_wall of real time, then pops,
+	#    so the kill camera and the turn, which wait for the core flash, are never held longer than that
+	ship = _load_ship(world)
+	fx = _fx(world)
+	fx.defer_initial_cuts = true
+	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
+	s = fx.ship("a16")
+	DEATH.precompute(fx, s, "blast", true)
+	while not DEATH.finish_precompute(fx, s):
+		await process_frame
+	var gate := Semaphore.new()
+	var tid: int = fx.submit_death_cut(func() -> void: gate.wait())
+	s.set_meta("cut_task", tid)
+	var t_stuck := Time.get_ticks_usec()
+	fx.death("a16", "big")
+	while s.death_core_pending and Time.get_ticks_usec() - t_stuck < int((DEATH.cold_cut_wall + 3.0) * 1e6):
+		await _frame(fx)
+	var held := float(Time.get_ticks_usec() - t_stuck) / 1e6
+	gate.post()
+	print("COLD_KILL stuck_cut held=%.2fs cap=%.1fs core_pending=%s hidden=%s" % [held, DEATH.cold_cut_wall, str(s.death_core_pending), str(s.has_meta("death_hidden"))])
+	check(not s.death_core_pending and s.has_meta("death_hidden"), "a stuck cut still ends the death")
+	check(held <= DEATH.cold_cut_wall + 0.25, "a stuck cut holds the battle %.2f s, no longer than the %.1f s cap" % [held, DEATH.cold_cut_wall])
 	fx.release()
 	world.queue_free()
 	print("COLD_KILL failures=%d" % failures)

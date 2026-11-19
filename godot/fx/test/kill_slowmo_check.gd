@@ -99,7 +99,7 @@ func _core_picture(fx, tier: String) -> float:
 
 func _late_cut(stall_through_deadline: bool, release_past_deadline := false) -> void:
 	var before := failures
-	DEATH.cold_cut_wall = 1.0 if stall_through_deadline else 12.0
+	DEATH.cold_cut_wall = 1.0 if stall_through_deadline else 5.0
 	var battle := BattleFixture.new()
 	root.add_child(battle)
 	battle.cam = battle.CamRig.new()
@@ -174,7 +174,7 @@ func _late_cut(stall_through_deadline: bool, release_past_deadline := false) -> 
 	await create_timer(1.0).timeout
 	_check(battle.cine_saved.is_empty(), "camera returns after the actual core and its tail")
 	battle.free()
-	DEATH.cold_cut_wall = 12.0
+	DEATH.cold_cut_wall = 5.0
 	print("%s %s" % ["PASS" if before == failures else "FAIL", "late cut past the deadline keeps its pieces" if release_past_deadline else ("deadline fallback cue" if stall_through_deadline else "late core flash, slow motion and camera hold")])
 
 

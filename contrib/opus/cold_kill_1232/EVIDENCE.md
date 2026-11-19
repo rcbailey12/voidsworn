@@ -1,6 +1,6 @@
 # Issue 1232: the first capital kill of a session (evidence)
 
-Fix commit cb721036 (branch opus/issue-1232, base main 280bb3a9). Stage: code, headless checks only; the PC timing run
+Fix commit, second pass after the Board read (cap and free cores) (branch opus/issue-1232, base main 280bb3a9). Stage: code, headless checks only; the PC timing run
 (OPUS1232_RUN.bat in this folder) is queued through the Board.
 
 ## What the first death built
@@ -22,8 +22,10 @@ in the battle before it started, and its hull's death overlays were never drawn.
 
 1. fx_death._cut: each surface and each piece's seal on its own worker, merged in surface order. Same pieces, checked by
    hash in fx/test/cold_kill_check.gd: one thread 3844 ms, side by side 1826 ms on this 4-core container.
-2. fx_death._break_up_when_ready: with no earlier cut, the hull holds its tell until its own cut is done; only a cut still
-   running 12 s of real time after the death (a stuck worker) ends in the no-pieces pop.
+2. fx_death._break_up_when_ready: with no earlier cut, the hull holds its tell until its own cut is done, for at most 5 s
+   of real time from the death (Board on PR 1240: the kill camera and the turn wait for the core flash, so the cap bounds
+   them; a capital's death is 2.67 s, so a late cut adds at most about 2.3 s). Past the cap, the old no-pieces pop.
+   The side by side cut uses all cores but two, leaving the main and render threads theirs (Board on PR 1240).
 3. fx.add_ship after the load: the cut starts 0.1 s after arrival (staggered only behind other waiting cuts), and
    fx.warm_arrival draws the new hull once, a thousandth of its size, with the tear overlay and its cuttable surfaces.
 4. fx.warmup: the real tear (and the strain tear when on) on every hull's own format; the unused VOL, CHUNK, CRACKS and
@@ -32,8 +34,9 @@ in the battle before it started, and its hull's death overlays were never drawn.
 
 ## Headless checks (Godot 4.7.2.stable.official.ed1daf0bf, this container)
 
-- fx/test/cold_kill_check.gd (new): same pieces; A16 arriving and killed 6 frames later (frames paced to 60 a second):
-  kill frame 26.8 ms, outcome fractured, 4 pieces, hidden at 2.02 s.
+- fx/test/cold_kill_check.gd (new): same pieces (one thread 4040 ms, side by side on 2 of 4 cores 2196 ms); A16 arriving
+  and killed 6 frames later (frames paced to 60 a second): kill frame 17.9 ms, fractured, 4 pieces, hidden at 2.07 s; a
+  stuck cut held the death 5.07 s against the 5 s cap, then popped.
 - fx/test/kill_slowmo_check.gd: a cut that lands 0.5 s past the deadline now keeps its pieces (new case); a stuck worker
   still pops after the real-time wait.
 - Every fx/test headless line in godot_checks.txt passed (23 of 23), load_all 247 scripts 0 failed, death_seam_check 0

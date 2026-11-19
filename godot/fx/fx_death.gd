@@ -1451,11 +1451,13 @@ static func _cut(job: Dictionary) -> Array:
 		for sd in surfs:
 			_cut_surface(job, sd, pieces, ns, plan, warp, seeds)
 	else:
+		# leave two cores to the game (render and main threads, other pool work): Board on PR 1240
+		var lanes := clampi(OS.get_processor_count() - 2, 1, surfs.size())
 		var parts: Array = []
 		for i in surfs.size():
 			parts.append({"pieces": _blank_pieces(job, plan, ns, n_main)})
 		var gid := WorkerThreadPool.add_group_task(func(i: int) -> void:
-			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds), surfs.size(), -1, true, "death cut surfaces")
+			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds), surfs.size(), lanes, true, "death cut surfaces")
 		WorkerThreadPool.wait_for_group_task_completion(gid)
 		for part in parts:
 			var own: Array = part["pieces"]
@@ -1473,7 +1475,7 @@ static func _cut(job: Dictionary) -> Array:
 		for pc in pieces:
 			_seal_piece(pc)
 	else:
-		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), -1, true, "death cut seals")
+		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), clampi(OS.get_processor_count() - 2, 1, pieces.size()), true, "death cut seals")
 		WorkerThreadPool.wait_for_group_task_completion(sid)
 	return pieces
 
@@ -2228,8 +2230,10 @@ static func _update_dying(fx, s) -> void:
 # An unfinished worker never blocks the death frame, even past its nominal split time.
 # Use a previous cut immediately. With none, the hull holds its tell until its own cut is done: issue 1232, a capital
 # killed before its first cut was ready (A16's cut ran 5.4 s on the PC against a 2.67 s death) popped with no pieces.
-# Only a cut still running cold_cut_wall seconds of real time after the death (a stuck worker) ends in the no-pieces pop.
-static var cold_cut_wall := 12.0   # a tuning value; fx/test/kill_slowmo_check.gd lowers it to test the pop
+# The wait is capped: a cut still running cold_cut_wall seconds of real time after the death ends in the no-pieces pop, so
+# the kill camera and the turn (both wait for the core flash) never hold longer than that (Board on PR 1240: well under the
+# first 12 s). A capital's death is 2.67 s, so a late cut adds at most about 2.3 s. Checked in fx/test/cold_kill_check.gd.
+static var cold_cut_wall := 5.0   # a tuning value; fx/test/kill_slowmo_check.gd lowers it to test the pop
 
 static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: float) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
