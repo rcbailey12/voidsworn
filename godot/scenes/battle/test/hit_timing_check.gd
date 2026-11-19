@@ -12,7 +12,7 @@ extends SceneTree
 #     ship under the quarter-speed clock, the last hit a critical. Exactly one shot cue per beam (the miss too), each on
 #     its own effect fire time on the effect clock and before the hit it carries; each hit still lands on its own shot; the critical keeps the glass contact cue with
 #     the heavy tail under it. Then an ion lance shield hit carrying the ion lock: the lock reaches the nameplate state
-#     when the hit lands, not before.
+#     when the hit lands and expires at the locked ship's side turn start.
 #  C. the pure helpers: hit_arrivals maps hit k to the k-th true shot; shield_break_hit picks the last absorbed hit.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -220,7 +220,9 @@ func _run() -> void:
 	b.gfx._pause_depth = 0.25
 	b.gfx._pause_until = float(b.gfx.now) + 1000.0
 	r = await _fire(b, a, t, [true], [[0, 9]], [], "lance")
-	for i in 120:
+	for i in 240:
+		if not b.lands.is_empty() and float(b.gfx.now) >= float(b.lands[-1]["now"]) + rec.CRIT_BEAT + TOL:
+			break
 		await process_frame
 	b.gfx._pause_until = -1.0
 	b.gfx._pause_depth = 1.0
@@ -253,7 +255,7 @@ func _run() -> void:
 	b.gfx._pause_depth = 1.0
 	var dark: Array = []
 	var glass: Array = []
-	var heavy := 0
+	var heavy: Array = []
 	for x in rec.heard:
 		match str(x[0]):
 			"lance_dark":
@@ -261,7 +263,7 @@ func _run() -> void:
 			"hit_glass":
 				glass.append(float(x[1]))
 			"hit_heavy":
-				heavy += 1
+				heavy.append(float(x[1]))
 	_check(b.lands.size() == 2, "E: both null lance hits land (got %d)" % b.lands.size())
 	# Artoo (PR 1220): every beam has a cue, the missing one too, each on its own fire time on the effect clock
 	# the fire times come from the effect itself (the volley's record), not from what the battle passed to the cues
@@ -287,7 +289,12 @@ func _run() -> void:
 	_check(glass.size() == 2, "E: each hit on glass plays the glass contact cue, the critical too (heard %d)" % glass.size())
 	if b.lands.size() == 2 and glass.size() == 2:
 		_check(absf(glass[1] - float(b.lands[1]["now"])) < 0.001, "E: the critical's glass cue lands with its hit")
-	_check(heavy == 1, "E: the critical adds one heavy tail under the glass cue (got %d)" % heavy)
+	_check(heavy.size() == 1, "E: the critical adds one heavy tail under the glass cue (got %d)" % heavy.size())
+	if glass.size() == 2 and heavy.size() == 1:
+		var gap := float(heavy[0]) - float(glass[1])
+		_check(gap >= rec.CRIT_BEAT - 0.001 and gap <= rec.CRIT_BEAT + TOL,
+			"E: the critical tail waits %.2f effect seconds under hit pause (heard %.3f)" % [rec.CRIT_BEAT, gap])
+		print("critical audio trace (effect seconds): glass=%.3f heavy=%.3f gap=%.3f" % [glass[1], heavy[0], gap])
 	# the ion lock: an ion lance shield hit locks the target's regen when it lands
 	b.VU[a]["fac"] = "hegemony"
 	b.disp[t]["regenLock"] = false
@@ -300,6 +307,34 @@ func _run() -> void:
 	if b.lands.size() == 1:
 		_check(not bool(b.lands[0]["lock0"]), "E: the ion lock is not shown before its hit lands")
 	_check(bool(b.disp[t].get("regenLock", false)), "E: the ion lock reaches the nameplate state when its hit lands")
+	# Play events from the actual rules turn-start path. Both sides can hold a lock independently.
+	var rules = b.api.R
+	var target: Dictionary = rules.alive("player")[0]
+	var other: Dictionary = rules.alive("enemy")[0]
+	other["regenLock"] = 1
+	target["regenLock"] = 1
+	b.disp[a]["regenLock"] = true
+	b.bot = true
+	await b._play_event({"t": "round", "round": 1})
+	_check(b.disp[a]["regenLock"] and b.disp[t]["regenLock"], "E: the round banner leaves both locks active")
+	b.api.take_events()
+	for side in ["enemy", "player"]:
+		rules.startSideTurn(side)
+		var events: Array = b.api.take_events()
+		var unlocks: Array = events.filter(func(e: Dictionary) -> bool: return e["t"] == "regen_unlock")
+		var unit_id: String = a if side == "enemy" else t
+		_check(unlocks == [{"t": "regen_unlock", "unit": unit_id}], "E: %s turn emits only its ship's unlock" % side)
+		for event in unlocks:
+			await b._play_event(event)
+		var unit: Dictionary = other if side == "enemy" else target
+		_check(unit.get("regenLock") == null, "E: %s rules cleared the lock" % side)
+		_check(not b.disp[unit_id]["regenLock"], "E: %s nameplate clears when its side starts" % side)
+		if side == "enemy":
+			_check(b.disp[t]["regenLock"], "E: enemy turn start leaves the player lock active")
+	var late_land: Dictionary = (b.vols[-1][1] as Dictionary).duplicate()
+	late_land.merge({"numbers": false, "left": 1}, true)
+	b._land_hit(t, {"target": t, "regenLock": true, "hull": 0, "shield": 1, "quad": 0}, 0, late_land)
+	_check(not b.disp[t]["regenLock"], "E: a late hit from before the expiry cannot restore the icon")
 	b.free()
 	if failures == 0:
 		print("hit timing: PASS ([miss, miss, hit] on the effect clock under hit pause; shield break on the second of three hits; target ringed and named; lance cues on the effect clock; null lance, glass critical and ion lock combined)")

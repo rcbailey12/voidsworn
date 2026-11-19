@@ -86,6 +86,7 @@ var PACE := {}
 var V := {}                # the view the picture is synced to
 var VU := {}               # id -> unit in V
 var disp := {}             # id -> {hp, sh} as drawn (changes as hits land)
+var regen_unlocks := {}    # id -> number of lock expiries played, so a late hit cannot restore an expired lock
 var views := {}            # id -> ShipView
 var wrecked := {}
 var board: Node3D
@@ -522,6 +523,7 @@ func _begin(a) -> void:
 	views.clear()
 	wrecked.clear()
 	disp.clear()
+	regen_unlocks.clear()
 	batches.clear()
 	fx.clear()
 	hud.hide_end()
@@ -1263,8 +1265,6 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				adaptation_heard = true
 				sfx.play("adapt_shift")
 		"round":
-			for d in disp.values():
-				d["regenLock"] = false
 			_log("Round %d." % int(e["round"]), "x")
 			if finale_fight and world != null and world.has_method("finale_for_round"):
 				world.finale_for_round(int(e["round"]))   # R78 Q18: one more sector catches the new sun
@@ -1275,6 +1275,10 @@ func _play_event(e: Dictionary, batch_view := {}) -> void:
 				sfx.turn("round")
 				hud.banner("Round %d" % int(e["round"]))
 				await wait(float(PACE["banner"]) + 140.0)
+		"regen_unlock":
+			if disp.has(e["unit"]):
+				disp[e["unit"]]["regenLock"] = false
+				regen_unlocks[e["unit"]] = int(regen_unlocks.get(e["unit"], 0)) + 1
 		"log":
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
 		"float":
@@ -1965,7 +1969,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	# issue 1211: what each landing hit does: its number (torpedoes keep their one result line), and the shield break with
 	# "Shields down" on the hit that empties the shield (the last hit the shield absorbed), not after the volley
 	var land := {"numbers": not e.has("torpedo"), "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
-		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false}
+		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
+		"regen_unlocks": int(regen_unlocks.get(t_id, 0))}
 	for g in grp:
 		if g["t"] == "shield_down":
 			land["downs"].append(g)
@@ -2027,7 +2032,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 				if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 					sfx.shield(_pos(t_id))
 				else:
-					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"])))
+					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"]), _at_fx))
 		total = _fx_wait(float(r.get("done", 0.6)), imp, sp, dying.has(str(t_id)), btot)
 	elif fam in ["lance", "ion"]:
 		sfx.lance(fam == "ion", fac, from)
@@ -2145,7 +2150,7 @@ func _at_fx(at: float, f: Callable) -> void:
 # Issue 1211: one hit lands. Its HP and shield drop, its number rises (one running total per volley for shield, one for
 # hull, so a broadside reads as a count, not a pile), and the hit that empties the shield breaks it there and then.
 func _land_hit(t_id, h: Dictionary, k: int, land: Dictionary) -> void:
-	_apply_hit(h)
+	_apply_hit(h, int(land["regen_unlocks"]) == int(regen_unlocks.get(t_id, 0)))
 	land["left"] = int(land.get("left", 0)) - 1
 	if bool(land.get("ended", false)) and int(land["left"]) <= 0:
 		_aim_off(land)
@@ -2274,15 +2279,15 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 			if fam == "torp":
 				sfx.boom(0.8, p)
 			else:
-				sfx.impact(fam, tfac, p, bool(h["crit"])))
+				sfx.impact(fam, tfac, p, bool(h["crit"]), _at_fx))
 
 
-func _apply_hit(h: Dictionary) -> void:
+func _apply_hit(h: Dictionary, show_regen_lock := true) -> void:
 	var t_id = h.get("target")
 	if t_id == null or not disp.has(t_id):
 		return
 	var d: Dictionary = disp[t_id]
-	if bool(h.get("regenLock", false)):
+	if show_regen_lock and bool(h.get("regenLock", false)):
 		d["regenLock"] = true
 	d["hp"] = maxf(0.0, float(d["hp"]) - float(h["hull"]))
 	var q := int(h.get("quad", 0))

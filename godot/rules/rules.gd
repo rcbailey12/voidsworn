@@ -1675,7 +1675,10 @@ func startSideTurn(side) -> int:
 			if not jt(u.get("regenLock")):
 				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg)
 			syncShields(u)   # route just cleared: re-derive the catches even when an ion lock skips the regen
-		ithChargeTurn(u); u["regenLock"] = null; u["chainCut"] = 0
+		ithChargeTurn(u)
+		if jt(u.get("regenLock")):
+			emit({"t": "regen_unlock", "unit": u["id"]})
+		u["regenLock"] = null; u["chainCut"] = 0
 		if jt(u.get("hullRegen")) and u["hp"] < u["maxHp"] and not jt(u.get("pyre")):
 			var mmH = treeRoleMul(u); var hrH = JSM.jsround(u["hullRegen"] * mmH) if mmH != 1.0 else u["hullRegen"]
 			u["hp"] = min(u["maxHp"], u["hp"] + hrH); treeMarkRepair(u)

@@ -1,0 +1,315 @@
+{
+  "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "1212_before_after_3.png",
+  "date": "2026-11-19T23:06:49Z",
+  "sources": [
+    {
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "ithar_turret_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "012f398dd76c04fb136a77f4468c4d840c201bfcea984f7e0b7c706fc68749f2",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_turret_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "414edddf36f7e16b64681f06be063d49182a87005b2cef42a08ee37b6dd8d092",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_flak_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "9a48fa0ca3840b3b1ab0704b9dd1b48f06fc573de0e13e284c7de304a7e10ef9",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "ithar_flak_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "3d63846f7c0cac9b44a8c27bed8469d0510cdb7aaf6aa13cd280654c84b4f1a8",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_gauss_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "efd04de62ad9043bfa3d7b0573d8ab64603ad29e4e9f724b9931edffc1a1da72",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_gauss_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "207d367c80654e5a2c29182f378d3424aab4d584463f4966873eb80dd295b292",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_doom_hit.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "1de34d514b5065c3e89e5d54e7d07fd28299226cd842b02f3f3c764af8286fd8",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_doom_hit.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "dd9158d217338e127c89e66e16533485f3febd62340900fe1f1ab14c2fdcfd0b",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_gsentry_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "cd8b7ef105a01cde6b749196573d851924385190c0d2736df91c2e2ffe99228d",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_gsentry_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "38ab5a7c1d4270cf35e58c6a5e36674c6de060eb3c6ff1b1d4693e336f3d2240",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_flak_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "87f06d00dbd624e11510a3fa08e497039a33f6f73c415b010c8d8658336e8380",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_flak_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "269b7eeabc7d85c76a7b77d8a278296e317698ac6789abb4b474e695b87e111e",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_nlance_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "efd04de62ad9043bfa3d7b0573d8ab64603ad29e4e9f724b9931edffc1a1da72",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "deathless_nlance_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "14f9bfa2445de29cdb93180b8c8be98e8bcc979d981bd05d98a0b23cfe875767",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "chorus_spores_fire.png",
+      "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "fa1c521e49cadfb8fffc0b09c9846a3061ef23ac324a487ce2a0fb41afe7dfa3",
+      "sources": [
+        {
+          "source_commit": "280bb3a9849b91190debbe80afbc3f9510d65911",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "chorus_spores_fire.png",
+      "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+      "source_dirty": true,
+      "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+      "stage": "installed in game",
+      "date": "2026-11-19T23:06:49Z",
+      "image_sha256": "5585807ed736e8fc667b90cf6f4593a51b4b0ca6dc91237a1586b74ae87966b4",
+      "sources": [
+        {
+          "source_commit": "ba2d932d8152c37f862d22fd7f4caf7a8b081cd7",
+          "source_dirty": true,
+          "source_diff_sha256": "e9b44083d324e30d50589f68fba4c9aa961782e8032d47dfd9aae7d0b305173a",
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "f6a5526fa2769d7bbec9631f1f40582c6d141696c6e1bcc8d83f7c5d5d566bc7"
+  ],
+  "stamp_template_sha256": "f6a5526fa2769d7bbec9631f1f40582c6d141696c6e1bcc8d83f7c5d5d566bc7",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgFdPT4F/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fVkkBQeGyWgcAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "9f520c36b675ab74923e89be4a5c1d37582a8456490b89e71fedec46bb5c48b0"
+}
