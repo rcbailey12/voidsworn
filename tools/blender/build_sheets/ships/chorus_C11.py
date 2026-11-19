@@ -9,7 +9,6 @@
 # length to height 2.9 (C10 is 5.2 and 6.5: two classes).
 # +X bow, +Y port, +Z up. Throat rims x = +7.25, vent mouths x = -5.6, filament tips about x = -7.25.
 import math
-import random
 
 CODE = 'chorus_C11'
 NAME = 'The bladeback (Chorus cruiser)'
@@ -64,10 +63,6 @@ def dense(key, step=0.3):
 HULL = dense(KEY)
 SACS = (2.54, -0.14, -2.66)
 VENTS = 6
-SHOULDER_RECESSES = tuple((x, 1.02, 0.50) for x in SACS) + ((-3.95, 0.76, 1.04),)
-BELLY_RECESSES = tuple((x, 1.02, -0.53) for x in SACS)
-CASING = ((5.40, -4.44, -0.38, 1.34, SHOULDER_RECESSES),
-          (5.18, -4.27, -1.49, -0.51, BELLY_RECESSES))
 
 
 def build(K):
@@ -87,14 +82,6 @@ def build(K):
     hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the short broad body', hull, 'dark olive flesh', note='blunt at the bow, widest at 40 percent, tapering hard aft')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
-    for side, mesh, tones, growth in plates.overlapping_plates(K.hpt, CASING, (4, 5), seed=21):
-        shell = K.hull_detail('carapace_' + side, mesh, 'carapace', inv='side_blades',
-                              kind='chitin', subs=['plate', 'rim', 'growth'])
-        K.mass('Shingled carapace (' + side + ')', shell, 'ochre-brown chitin',
-               note='Individual, thick-lipped scutes over wet hide with open sac sockets.')
-        for name, values in (('scute_tone', tones), ('scute_progress', growth)):
-            attr = shell.data.attributes.new(name, 'FLOAT', 'POINT')
-            attr.data.foreach_set('value', values)
     K.mark('hide', 'plate', ['pad', 'pore'])
 
     def side_th(th, side):
@@ -187,7 +174,6 @@ def build(K):
                  note='pulse vent with three glowing filaments splayed outward')
     K.mass('Vent ring', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='six pulse vents round the stern\'s end')
 
-    rnd = random.Random(611)
     # ---------------- the dorsal spines and their root tissue ----------------
     wound = [K.hpt(x, math.pi / 2, out=-0.02) for x in [4.7 - 0.3 * k for k in range(20)]]
     K.hull_detail('wound_channel', HP.welt([p_ for p_, n_ in wound], [n_ for p_, n_ in wound], 0.46, 0.04, n=6), 'tissue', inv='wound', kind='wound',
@@ -200,64 +186,22 @@ def build(K):
                               kind='spine', subs=['collar', 'blade', 'growth', 'edge'])
     K.hull_detail('blade_row_sockets', sockets, 'carapace_joint')
     K.mass('Dorsal spines', spine_row, 'pale bone', note='Uneven backswept blades with wet root sockets.')
-    # pore fields: the head and the upper flanks (dense, as the picture)
-    for name, x0, x1, t0, t1, nper in (('head', 3.2, 6.4, 0.2, 1.45, 260), ('flank', -1.8, 4.2, 0.18, 0.62, 160)):
-        V, F = [], []
-        for side in (1, -1):
-            for _ in range(nper):
-                x = rnd.uniform(x0, x1); th = rnd.uniform(t0, t1)
-                pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
-                vv, ff = HP.pore(pos, nrm, rnd.uniform(0.02, 0.045), n=6)
-                o = len(V); V += vv; F += [tuple(q + o for q in f) for f in ff]
-        K.hull_detail('pores_' + name, (V, F), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
-    # veins: from the sacs forward to the throats
-    for side in (1, -1):
-        V, F = [], []
+    # R341 (Ryan, Nov 19): the whole body is armoured, so the pore fields, veins, flank folds and scar patches of v4 are gone:
+    # they lay where the scutes now lie. The wet hide shows only in the sockets round the fittings and between scutes.
 
-        def run(pts_xt, w):
-            pts = []; nrms = []
-            for x, th in pts_xt:
-                p_, n_ = K.hpt(x, side_th(th, side), out=0.0); pts.append(p_); nrms.append(n_)
-            vv, ff = HP.welt(pts, nrms, w, w * 0.5, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-        run([(3.45 + 0.3 * k, -0.28 + 0.02 * math.sin(k)) for k in range(9)], 0.09)
-        run([(-2.4 + 0.35 * k, 0.17 + 0.03 * math.sin(k)) for k in range(17)] + [(3.6 + 0.3 * k, 0.17 - 0.1 * k) for k in range(1, 5)], 0.07)
-        K.hull_detail('veins_%s' % ('p' if side > 0 else 's'), (V, F), 'vein', inv='veins', kind='vein', subs=['vein', 'branch'])
-    # flank folds: skin wrinkles in broken runs, swept back from the throats above and below the sacs (never a long rope)
-    V, F = [], []
-    for side in (1, -1):
-        for k in range(26):
-            th0 = rnd.choice((rnd.uniform(0.18, 0.8), rnd.uniform(-1.35, -0.82)))
-            xa = rnd.uniform(-3.6, 6.0); ln = rnd.uniform(1.2, 2.8)
-            pts = []; nrms = []; ws = []; hs = []
-            for j in range(10):
-                t = j / 9
-                x = xa - ln * t
-                if x < -4.5 or any(abs(x - sx) < 0.65 and abs(th0 - st) < 0.4 for sx, st in ((4.55, -0.62), (-3.95, 0.25))):
-                    break   # stop short of the siphons
-                th = th0 + 0.02 * math.sin(j * 1.1 + k) + (0.05 * t if th0 > 0 else -0.04 * t)
-                p_, n_ = K.hpt(x, side_th(th, side), out=-0.02); pts.append(p_); nrms.append(n_)
-                env = math.sin(math.pi * (0.08 + 0.84 * t))
-                ws.append(0.34 * env + 0.04); hs.append(0.075 * env + 0.01)
-            if len(pts) < 4:
-                continue
-            vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-    K.hull_detail('flank_folds', (V, F), 'flesh2', inv='flank_folds', kind='welt', subs=['welt'])
-    for k, (x, th, r, side) in enumerate(((5.0, 1.05, 0.35, -1), (1.2, 0.95, 0.4, 1), (-1.0, 0.55, 0.32, -1), (-3.0, 1.2, 0.36, 1), (3.0, -1.0, 0.33, 1))):
-        pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
-        (pv, pf), (kv, kf) = HP.scar(pos, nrm, r, seed=10 + k, knits=3)
-        K.hull_detail('scar%d_patch' % k, (pv, pf), 'scar', inv='scars', kind='scar', subs=['patch', 'knit'])
-        K.hull_detail('scar%d_knit' % k, (kv, kf), 'tissue')
+    # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
+    plates.armour(K, _k, 5.45, -4.9, seed=1341, keep=('face', 'wound', 'blade_row'), rows=8, scute=0.95, thick=0.18,
+                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the face, throats, blade row, '
+                       'mane, sacs, siphons and vents stand clear')
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 7.25, -5.6, 'whole body')
-    K.colour('dark olive-ochre chitin', 5.7, -4.9, 'the shingled shoulders, flanks and belly')
+    K.colour('brown keratin scutes over warm brown hide (R341)', 5.45, -4.9, 'the armour shell, belly to back')
     K.colour('pale weathered bone', 4.6, -1.15, 'the dorsal spines')
     K.colour('raw transition tissue', 4.8, -1.2, 'the wound along the spine')
     K.colour('amber light', 7.25, 6.4, 'the throat glands')
     K.colour('bile yellow-green light', -5.6, -7.25, 'the vents and the filament nodes')
-    K.colour('dim bile', 6.0, -2.5, 'the veins, the sac windows, the acid pores')
+    K.colour('dim bile', 6.0, -2.5, 'the sac windows')
 
     # ---------- INSIDE: flesh, bone and organs ----------
     K.septum('lower', -1.0, 5.5, -3.0)
@@ -306,6 +250,9 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
+    K.change('An armour shell of banded overlapping keratin scutes over the whole body in place of the shingled casing; the pore fields, veins, '
+             'flank folds and scar patches of v4 removed', 'Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, '
+             'minus the spine, maw, engines and weapons; the face, throats, blade row, mane, sacs, siphons and vents stand in open sockets')
     K.change('Amber in the maws; olive flesh, dark ochre chitin and pale bone', 'Ryan picked the concept amber on the run 6 sheet; the vents and sacs keep the Chorus bile colour.')
     K.change('The two throats are one battery, the Spine volley (bioplasma F): fleshy rimmed holes flush in a domed face', 'data.js b_razor has one bioplasma slot; both throats fire it (two muzzles, one slot). R184\'s single throat stays a later fleet-sheet question; the accepted picture has two')
     K.change('The plume of hair on the back is the boarding tendrils (tendril T), a fixed mane on a muscle crest', 'the slot is all round; a mane reaches every way at once, so it is fixed, not a turret. Its roots stop well forward of the stern so no tendril hangs in a vent\'s jet')

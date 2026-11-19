@@ -104,6 +104,18 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
    half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
    Each engine ring shares the ship's normalized pattern (R308).
+   **The Chorus armour and paint** (R341, Ryan, Nov 19 2026 22:04 UTC: "the armor should be comprehensive and across the entire
+   body, minus things like the spine, maw, 'engines', weapons, etc. it should be almost like an armadillo, pangolin, etc. not
+   exactly the same, still alien, but think about it as a warship. we should have that textured feel and armored shell defense";
+   issue 1234). Every Chorus sheet calls the shared kit's `plates.armour` (tools/blender/kits/chorus/plates.py, R333), never
+   its own plates: thick keratin scutes in bands from belly to back on both flanks, each band lapping the one below and offset
+   half a scute, every free lip standing proud aft over the next scute's root. The keep-outs are read from the sheet's own
+   fittings (guns, maws, glands, sacs, siphons, vents, the spine row; `keep` names grown-in features such as a face), so they
+   stand in open sockets of wet hide; lumps of grown flesh (C13's knolls) go under the shell (`drape`), and what lies on the
+   hull (C12's tendrils, `skip`) lies over it. No skin folds, pore fields or flank veins under the shell. The paint
+   (tools/blender/kits/chorus/stack.py): warm brown hide between the plates, not dark olive; horn-brown scutes with grooves along
+   their length, growth lines parallel to the lip, a dark root and a paler worn lip; the trailing veils dark torn membrane with
+   a faint warm glow, not flat lime; the bile light only in sac windows and deep in the vents.
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and

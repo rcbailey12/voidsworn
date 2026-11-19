@@ -61,9 +61,6 @@ def dense(key, step=0.15):
 
 
 HULL = dense(KEY)
-# the hide: callused pads at frigate scale (the plates are the hide's grain; R325's grown chitin plates are the paint stack's)
-PL = dict(size=(0.22, 0.45), thick=(0.012, 0.028), skip=0.15, stack=0.0, mats={'flesh': 5, 'hide': 3, 'flesh2': 2, 'scar': 0.3},
-          rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.016, stride=3)   # every third section: the loft is dense for a 6.5 hull
 MOUND_X = -0.45
 DOMES = (1.3, 0.5, -1.12)
 SACS = ((0.3, 1, 0.38), (-0.6, -1, 0.34))   # (x, side, r): the regrow reserve, one each side, staggered
@@ -77,11 +74,17 @@ def build(K):
     from mathutils import Vector
     import bpy as _bpy
     import random
+    import sys
+    if _k._KITS not in sys.path:
+        sys.path.append(_k._KITS)
+    from chorus import plates
     HP = _k.HP
+    plates.register(_k)   # the armour shell's materials (R341)
 
-    hull = K.hull(HULL, 'flesh', shell=0.14, plates=dict(PL, seed=31, inv='hide'), rounded=True, pexp=PEXP, n=30, smooth=True, wobble=WOBBLE)
+    hull = K.hull(HULL, 'flesh', shell=0.14, rounded=True, pexp=PEXP, n=30, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the compact knot of flesh', hull, 'dark olive flesh', note='narrow at the prow, widest a little aft of the middle, rounding into the stern')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
+    K.mark('hide', 'plate', ['pad', 'pore'])
 
     def side_th(th, side):
         return th if side > 0 else math.pi - th
@@ -167,84 +170,23 @@ def build(K):
                  note='pulse vent with three wide flowing veils that fan, cup and curl, splayed away from the ring\'s centre')
     K.mass('Vent ring', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents round the stern\'s end, their veils streaming aft')
 
-    # ---------------- the back folds ----------------
-    # the back: long fleshy folds and ridges running bow to stern, large enough to read at the battle camera (the Board on
-    # blockout v2: the picture's back is wrinkled flesh with lengthwise folds, no bone); they run on under the tendrils
-    V, F = [], []
-    for k, (th0, x0, x1, w, h) in enumerate(((math.pi / 2, 2.15, -1.55, 0.24, 0.05), (1.22, 2.2, -1.45, 0.2, 0.045), (1.92, 2.0, -1.5, 0.2, 0.045),
-                                             (0.92, 2.05, -1.3, 0.17, 0.04), (2.22, 1.9, -1.35, 0.17, 0.04), (0.62, 1.7, -1.1, 0.15, 0.035),
-                                             (2.52, 1.75, -1.15, 0.15, 0.035))):
-        pts = []; nrms = []; ws = []; hs = []
-        n_ = 30
-        for j in range(n_ + 1):
-            t = j / n_; x = x0 + (x1 - x0) * t
-            th = th0 + 0.05 * math.sin(t * 7 + k * 1.3) + 0.03 * math.sin(t * 17 + k)
-            p_, n0 = K.hpt(x, th, out=-0.012); pts.append(p_); nrms.append(n0)
-            env = math.sin(math.pi * (0.04 + 0.92 * t)) ** 0.5 * (1 + 0.25 * math.sin(t * 11 + k * 2.3))
-            ws.append(w * env + 0.02); hs.append(0.6 * h * env + 0.004)
-        vv, ff = HP.welt(pts, nrms, ws, hs, n=6)
-        o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-    K.hull_detail('back_folds', (V, F), 'flesh2', inv='back_folds', kind='welt', subs=['welt'])
-    # pore fields: the back and the upper flanks (the picture's pitted patches)
-    for name, x0, x1, t0, t1, nper in (('back', -0.2, 1.9, 0.45, 1.35, 120), ('flank', -1.4, 1.6, 0.05, 0.5, 80)):
-        V, F = [], []
-        for side in (1, -1):
-            for _ in range(nper):
-                x = rnd.uniform(x0, x1); th = rnd.uniform(t0, t1)
-                if abs(x - MOUND_X) < 0.75 and th > 0.9:
-                    continue   # not under the knot
-                pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
-                vv, ff = HP.pore(pos, nrm, rnd.uniform(0.012, 0.026), n=6)
-                o = len(V); V += vv; F += [tuple(q + o for q in f) for f in ff]
-        K.hull_detail('pores_' + name, (V, F), 'pore', inv='pore_fields', kind='pore', subs=['rim', 'pit'])
-    # veins: from the domes forward to the knoll
-    for side in (1, -1):
-        V, F = [], []
+    # R341 (Ryan, Nov 19): the whole body is armoured, so the back folds, pore fields, veins, flank folds and scar patches of v3
+    # are gone: they lay where the scutes now lie. The wet hide shows only in the sockets round the fittings and between scutes.
 
-        def run(pts_xt, w):
-            pts = []; nrms = []
-            for x, th in pts_xt:
-                p_, n_ = K.hpt(x, side_th(th, side), out=0.0); pts.append(p_); nrms.append(n_)
-            vv, ff = HP.welt(pts, nrms, w, w * 0.5, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-        run([(-0.95 + 0.17 * k, 0.16 + 0.015 * math.sin(k)) for k in range(19)] + [(2.25 + 0.0 * k, 0.16 - 0.05 * k) for k in range(1, 2)], 0.045)
-        K.hull_detail('veins_%s' % ('p' if side > 0 else 's'), (V, F), 'vein', inv='veins', kind='vein', subs=['vein', 'branch'])
-    # folds: skin wrinkles in broken runs, swept back from the knoll over the prow and above and below the domes
-    V, F = [], []
-    for side in (1, -1):
-        for k in range(22):
-            th0 = rnd.choice((rnd.uniform(0.3, 1.0), rnd.uniform(-1.3, -0.45)))
-            xa = rnd.uniform(-0.4, 2.35); ln = rnd.uniform(0.5, 1.2)
-            pts = []; nrms = []; ws = []; hs = []
-            for j in range(10):
-                t = j / 9
-                x = xa - ln * t
-                if x < -1.5 or any(abs(x - sx) < 0.3 and abs(th0 - st) < 0.35 for sx, st in ((1.75, -0.55), (-1.5, 0.6))):
-                    break   # stop short of the siphons
-                if th0 > 0.8 and abs(x - MOUND_X) < 0.9:
-                    break   # and of the knot
-                th = th0 + 0.02 * math.sin(j * 1.1 + k)
-                p_, n_ = K.hpt(x, side_th(th, side), out=-0.01); pts.append(p_); nrms.append(n_)
-                env = math.sin(math.pi * (0.08 + 0.84 * t))
-                ws.append(0.15 * env + 0.02); hs.append(0.035 * env + 0.006)
-            if len(pts) < 4:
-                continue
-            vv, ff = HP.welt(pts, nrms, ws, hs, n=5)
-            o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-    K.hull_detail('folds', (V, F), 'flesh2', inv='folds', kind='welt', subs=['welt'])
-    for k, (x, th, r, side) in enumerate(((1.6, 1.15, 0.15, -1), (0.15, 0.6, 0.17, 1), (-1.0, 1.05, 0.14, -1))):
-        pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
-        (pv, pf), (kv, kf) = HP.scar(pos, nrm, r, seed=10 + k, knits=3)
-        K.hull_detail('scar%d_patch' % k, (pv, pf), 'scar', inv='scars', kind='scar', subs=['patch', 'knit'])
-        K.hull_detail('scar%d_knit' % k, (kv, kf), 'tissue')
+    # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
+    # the draped tendrils lie over the shell (skipped as keep-outs); the knot they grow from stays open
+    plates.armour(K, _k, 1.95, -1.75, seed=1341, skip=('T1_body_',), rows=6, scute=0.4, thick=0.07,
+                  note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the knoll, the tendril knot, '
+                       'domes, sacs, siphons and vents stand clear, the tendrils lie over it')
 
     # ---------------- colour zones ----------------
-    K.colour('dark olive flesh, hard chitin plates over most of the hull (paint stage, R325)', 2.35, -1.75, 'whole body')
+    K.colour('warm brown flesh (paint stage)', 2.35, -1.75, 'whole body')
+    K.colour('brown keratin scutes over warm brown hide (R341)', 1.95, -1.75, 'the armour shell, belly to back')
     K.colour('raw puckered flesh', 3.0, 2.2, 'the prow knoll')
     K.colour('pale ochre bone', 3.0, 2.8, 'the short hooks round the bore')
     K.colour('bile yellow-green light', 3.0, 2.4, 'the gland deep in the knoll\'s vent')
     K.colour('bile yellow-green light', -1.7, -3.25, 'the vents and the light in the membranes')
-    K.colour('dim bile', 2.2, -1.5, 'the veins, the dome windows, the tendril tips\' acid pores')
+    K.colour('dim bile', 2.2, -1.5, 'the dome windows, the tendril tips\' acid pores')
 
     # ---------- INSIDE: flesh, bone and organs ----------
     K.septum('lower', -0.42, 1.9, -1.3, inset=0.22, t=0.05)
@@ -288,6 +230,9 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
+    K.change('An armour shell of banded overlapping keratin scutes over the whole body; the hide pads, back folds, pore fields, veins, '
+             'flank folds and scar patches of v3 removed', 'Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, '
+             'minus the spine, maw, engines and weapons; the knoll, the tendril knot, domes, sacs, siphons and vents stand in open sockets')
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone; hard chitin plates over most of the hull in the paint (R325, Ryan Nov 19)',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette')
     K.change('The head\'s puckered mouth is the spine volley (bioplasma F): one deep dark bore with a fat lip and twelve short bone hooks (Board on blockout v2: a deep bore, never a disc or a lit dot; the head blends into the body)',

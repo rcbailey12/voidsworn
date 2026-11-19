@@ -575,14 +575,17 @@ def _spine_field(p, c, RK, nsp, r, rp, th_deg, seed, axis=None):
     p.add('knollp', 'mount', 'pore', (PV, PF))
 
 
-def knoll(rk, seed=0):
+def knoll(rk, seed=0, armour=False):
     """a knoll of grown flesh (issue 1154, the spitter's lumpy back): a lumpy dome half sunk into the hull (local +Z out of the
-    hull), a few wrinkle rolls round its foot and pores over it. Structure: it tears with the hull."""
+    hull), a few wrinkle rolls round its foot and pores over it. Structure: it tears with the hull. armour (R341, the whole
+    body armoured): a smooth dome with no pores, for the shell to drape over (plates.armour(drape=...)), as a pangolin's
+    scales ride over its shoulders."""
     import random
     rp = random.Random(seed)
     p = Part('knoll')
     # a blister rising out of the flesh, not a ball sitting on it: low and wide, its foot skinned into the hull by the rolls
-    p.add('dome', 'mount', 'flesh', blob(rk * rp.uniform(1.05, 1.3), rk * rp.uniform(0.95, 1.15), rk * 0.62, centre=(0, 0, 0), nu=24, nv=12, seed=seed, amp=0.12))
+    ax, ay, az = rk * rp.uniform(1.05, 1.3), rk * rp.uniform(0.95, 1.15), rk * 0.62
+    p.add('dome', 'mount', 'flesh', blob(ax, ay, az, centre=(0, 0, 0), nu=24, nv=12, seed=seed, amp=0.04 if armour else 0.12))
     for k in range(3):
         a0 = rp.uniform(0, 2 * math.pi); pts = []
         for j in range(9):
@@ -590,12 +593,13 @@ def knoll(rk, seed=0):
             pts.append(Vector((rk * 1.12 * math.cos(a), rk * 1.02 * math.sin(a), rk * (0.08 + 0.05 * math.sin(3 * a)))))
         p.add('roll%d' % k, 'mount', 'flesh2', tube(pts, [rk * 0.06, rk * 0.1, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.12, rk * 0.1, rk * 0.05], n=6))
     PV, PF = [], []
-    for k in range(24):
+    for k in range(0 if armour else 24):
         a = rp.uniform(0, 2 * math.pi); th = rp.uniform(0.3, 1.3)
         n_ = Vector((math.cos(th) * math.cos(a), math.cos(th) * math.sin(a), math.sin(th)))
         vv, ff = pore(Vector((n_.x * rk * 1.15, n_.y * rk * 1.05, n_.z * rk * 0.62)), n_, rk * rp.uniform(0.025, 0.05), n=6)
         o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
-    p.add('pore', 'mount', 'pore', (PV, PF))
+    if PV:
+        p.add('pore', 'mount', 'pore', (PV, PF))
     p.fit = dict(radius=rk)
     return p
 

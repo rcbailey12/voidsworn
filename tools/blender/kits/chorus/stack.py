@@ -13,26 +13,30 @@ LAYERS = dict(ao_short=0.013, ao_long=0.045, edge_radius=0.0008, edge_gain=16,
 
 # Linear RGB light and dark endpoints, with the zone's base roughness.
 ZONES = {
-    'flesh': ((.075, .067, .031), (.033, .027, .011), .26),
-    'flesh2': ((.073, .053, .024), (.021, .013, .006), .28),
-    'hide': ((.093, .078, .032), (.043, .034, .013), .28),
-    'scar': ((.125, .091, .037), (.063, .044, .017), .37),
+    # R341 (Ryan, Nov 19): warm brown hide between the plates, not dark olive
+    'flesh': ((.098, .060, .030), (.036, .019, .009), .26),
+    'flesh2': ((.104, .056, .028), (.030, .014, .007), .28),
+    'hide': ((.112, .070, .034), (.044, .024, .011), .28),
+    'scar': ((.125, .081, .037), (.063, .038, .017), .37),
     'chitin': ((.128, .093, .031), (.060, .040, .013), .63),
     'bone': ((.52, .43, .27), (.26, .19, .10), .61),
-    'tissue': ((.152, .086, .038), (.058, .029, .015), .23),
+    'tissue': ((.152, .076, .038), (.058, .026, .015), .23),
     'maw': ((.029, .019, .007), (.008, .005, .002), .19),
     'pore': ((.018, .013, .005), (.006, .004, .002), .31),
-    'vein': ((.045, .067, .018), (.024, .029, .008), .23),
+    'vein': ((.060, .040, .016), (.024, .016, .007), .23),
     'amber': ((.29, .15, .025), (.15, .066, .011), .55),
-    'carapace': ((.135, .107, .047), (.063, .045, .018), .68),
+    # the armour shell: dark horn-brown keratin, worn paler at the free lips
+    'carapace': ((.100, .068, .038), (.026, .017, .009), .55),
     'carapace_joint': ((.043, .030, .015), (.018, .010, .005), .22),
 }
 FALLBACK = 'flesh'
 DECALS = ()
 GLOW = {
-    'bile': ((.47, .84, .036), 2.7),
-    'bilewet': ((.27, .52, .026), .51),
-    'membrane': ((.25, .34, .033), .38),
+    # R341: the bile light kept to the sac windows and deep in the vents, yellower and lower so no flat lime disc reads
+    'bile': ((.55, .62, .05), 1.6),
+    'bilewet': ((.22, .24, .03), .30),
+    # R341: the trailing veils are dark torn membrane with a faint warm glow through them, not flat lime
+    'membrane': ((.16, .06, .02), .12),
     'maw_amber': ((.99, .53, .11), 2.7),
     'maw_amber_wet': ((.64, .25, .038), .51),
 }
@@ -52,10 +56,23 @@ def hard_layers(c, zone, base, shade, roughness):
     if zone == 'carapace':
         progress = node(nt, 'ShaderNodeAttribute', attribute_name='scute_progress').outputs['Fac']
         plate_tone = node(nt, 'ShaderNodeAttribute', attribute_name='scute_tone').outputs['Fac']
-        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', plate_tone, .32))
-        # Scatter fine growth marks near the free edge. The plate face has no repeating wave.
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', plate_tone, .26))
+        # Scatter fine growth marks near the free edge.
         margin = ramp(nt, progress, .65, .92)
         fine_marks = math_(nt, 'MULTIPLY', fine_marks, margin)
+        # R341, the keratin texture: grooves running the length of each scute (a pangolin's striations), growth lines parallel
+        # to the free lip, the root dark where it slides under the scute ahead, the lip worn paler
+        ridges = ramp(nt, c.noise(120, 2, .45, stretch=(.12, 1.0, 1.0)), .47, .62)
+        lines = ramp(nt, math_(nt, 'SINE', math_(nt, 'MULTIPLY', progress, 44.0)), .72, .97)
+        lines = math_(nt, 'MULTIPLY', lines, ramp(nt, progress, .25, .6))
+        root = math_(nt, 'SUBTRACT', 1.0, ramp(nt, progress, .04, .4))
+        lip = ramp(nt, progress, .88, .99)
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', ridges, .30))
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', lines, .16))
+        tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', root, .45))
+        tone = math_(nt, 'SUBTRACT', tone, math_(nt, 'MULTIPLY', lip, .35))
+        height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', ridges, -.16))
+        height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', lines, -.07))
     tone = math_(nt, 'ADD', tone, math_(nt, 'MULTIPLY', fine_marks, .07), clamp=True)
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', fine_marks, .10))
     rough = math_(nt, 'ADD', roughness, math_(nt, 'MULTIPLY', variation, .075))
