@@ -64,6 +64,9 @@ var flash_area_logging := false
 
 # --- settings (API.md 1, 8)
 var quality = "max"
+# Issue 1077 (prototype, off by default): a big hull strains along its break lines before it splits, and its wreck stays
+# grouped where it broke. rendering/effects/death_story="strain" or VS_DEATH_STORY=strain turns it on; nothing else does.
+var death_story := false
 var reduce_flashing = false:
 	set(v):
 		reduce_flashing = v
@@ -244,6 +247,10 @@ func setup(opts := {}) -> void:
 	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
 	fx_atlas = String(opts.get("fx_atlas", OS.get_environment("VS_FX_ATLAS")))
 	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
+	var story := String(opts.get("death_story", OS.get_environment("VS_DEATH_STORY")))
+	if story.is_empty():
+		story = str(ProjectSettings.get_setting("rendering/effects/death_story", "off"))
+	death_story = story == "strain"
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"
@@ -1145,7 +1152,7 @@ func hull_damage_template(source: Material, length: float, organic: bool, power 
 	if not power:
 		return _damage_templates[key]
 	if not _power_templates.has(key):
-		_power_templates[key] = DEATH.power_material(_damage_templates[key].duplicate())
+		_power_templates[key] = DEATH.power_material(_damage_templates[key].duplicate(), death_story)
 	return _power_templates[key]
 
 
@@ -1656,7 +1663,9 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
 				continue
 			seen[smi.mesh.get_instance_id()] = true
-			for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]:
+			var overlays := [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]
+			if death_story and dstate.has("tear_strain_mat"): overlays.append(dstate["tear_strain_mat"])
+			for ov in overlays:
 				var wm := MeshInstance3D.new()
 				wm.mesh = smi.mesh
 				for si in smi.mesh.get_surface_count():
