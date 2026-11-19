@@ -2912,6 +2912,53 @@ func _expected_hull(raw: float, absorbed: float, armor: float, rear: bool, brace
 	var hull := (raw - absorbed) * (1.0 - (armor * 0.5 if rear else armor))
 	hull *= brace_factor
 	return hull * guard_factor
+# HUD only. Carry the expected pool down shot by shot in firing order, using the
+# average damage roll and hit chance. This is an estimate, not a simulated attack.
+func previewVolley(u: Dictionary, guns: Array, t: Dictionary) -> Dictionary:
+	var out := {}
+	if guns.is_empty(): return out
+	var source := u.duplicate()
+	var target := t.duplicate()
+	var route = t.get("route")
+	if route is Array: target["route"] = route.duplicate()
+	var quad = shieldQuad(t, u); var rear = treeIsRear(u, t, quad)
+	var brace = braceMul(t); var guard = cmdTaken(t) * guardMul(t)
+	# Travelling torpedoes do not spend shields before the direct guns land.
+	var delayed := []
+	var torp_first: bool = u["side"] == "player" and cmdActive("player", "hunt") and treeSkill("torpFirst") != null
+	for i in guns:
+		var w: Dictionary = u["weapons"][i]
+		var hit := hitChance(source, w, t)
+		if source["side"] == "player" and not jt(source.get("isSq")):
+			source["sureUsed"] = z0(source.get("sureUsed")) + 1
+		var shot := {"hit": hit, "shield": 0.0, "hull": 0.0, "quad": quad, "rear": rear}
+		out[i] = shot
+		var torp := torpTravels(w, u)
+		if torp and not torp_first: delayed.append([w, shot])
+		else: _estimate_gun(u, w, target, shot, brace, guard, float(TB.TORP_WARHEAD) if torp else 1.0)
+	for entry in delayed:
+		_estimate_gun(u, entry[0], target, entry[1], brace, guard, float(TB.TORP_WARHEAD))
+	return out
+func _estimate_gun(u, w, t, shot: Dictionary, brace: float, guard: float, damage_scale: float) -> void:
+	var per := dmgMult(u, w, t, shot.rear) * damage_scale
+	var odds := float(shot.hit) / 100.0
+	var quad := int(shot.quad)
+	var pierce := _expected_pierce(u, w); var ion := ionVs(u, w, t)
+	var armor: float = maxf(0.0, float(t["armor"]) - z0(t.get("shredded"))) * (1.0 - z0(w.get("armorPierce")))
+	for i in int(w["shots"]):
+		var absorbed := _expected_absorbed(per, pierce, t["sh"][quad], ion)
+		var drain := absorbed * ion * odds
+		shot.shield += drain
+		shot.hull += _expected_hull(per, absorbed, armor, shot.rear, brace, guard) * odds
+		if drain > 0.0: _spend_shield(t, quad, drain)
+func _spend_shield(t, quad: int, damage: float) -> void:
+	var lossy: float = 1.0 + float(TB.SHIELD_ROUTE_LOSS) if (jt(t.get("route")) and jt(t["route"][quad])) else 1.0
+	t["shp"] = max(0, z0(t.get("shp")) - damage * lossy)
+	if float(t["shp"]) < 1: t["shp"] = 0   # a pool under 1 point is empty
+	if float(t["shp"]) > 0:
+		if not jt(t.get("route")): t["route"] = [0, 0, 0, 0]
+		t["route"][quad] = 1
+	syncShields(t)   # R246: route power on the struck side; when the pool empties all sides drop
 func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	var of = ownerFx(att); var rear = treeIsRear(att, t, quad); var pierce = 1.0 if (w.get("k") == "lance" and jt(of.get("lanceSure"))) else z0(w.get("pierce")); var ion = ionVs(att, w, t)
 	if jt(t.get("_treePierce")): pierce = 1.0; t["_treePierce"] = 0
@@ -2931,14 +2978,7 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 			t["regenLock"] = 1   # v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
 	var shieldable: float = dmg * (1.0 - pierce); var through: float = dmg - shieldable
 	var s = z0(t["sh"][quad]); var sh0 = s; var sp0: float = float(z0(t.get("shp"))); var absorbed: float = min(shieldable, float(s) / ion)
-	if absorbed > 0:
-		var lossy: float = 1.0 + float(TB.SHIELD_ROUTE_LOSS) if (jt(t.get("route")) and jt(t["route"][quad])) else 1.0
-		t["shp"] = max(0, sp0 - absorbed * ion * lossy)
-		if float(t["shp"]) < 1: t["shp"] = 0   # a pool under 1 point is empty
-		if float(t["shp"]) > 0:
-			if not jt(t.get("route")): t["route"] = [0, 0, 0, 0]
-			t["route"][quad] = 1
-		syncShields(t)   # R246 (issue 371): the struck side routes power at a loss; when the pool empties, shields drop on every side at once
+	if absorbed > 0: _spend_shield(t, quad, absorbed * ion)
 	shieldable -= absorbed
 	var gc = treeSkill("glassCorrected")
 	if gc != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("glassUsed")) and t["shMax"] > 0 and sp0 > 0 and float(z0(t.get("shp"))) <= 0:

@@ -3728,6 +3728,7 @@ func _attack_tip(t_id: String) -> String:
 	var n := 0
 	# Same current-position weapon set as the activation card, including while a move is planned.
 	var firing := _firing_set(t_id)
+	var volley := _volley_preview(sel, firing, t_id)
 	var idx: Array = [armed] if armed >= 0 else range(su["weapons"].size())
 	for i in idx:
 		var vw: Dictionary = su["weapons"][i]
@@ -3738,7 +3739,7 @@ func _attack_tip(t_id: String) -> String:
 		var right := ""
 		if i in firing:
 			tg = tg.duplicate()
-			tg.merge(_fire_preview(sel, i, t_id), true)
+			tg.merge(volley[i], true)
 			hull += float(tg.get("hull", 0))
 			sh += float(tg.get("shield", 0))
 			n += 1
@@ -4270,12 +4271,13 @@ func _card_info() -> Dictionary:
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "":
 		var set := _firing_set(target)
+		var volley := _volley_preview(id, set, target)
 		var sh := 0.0
 		var hl := 0.0
 		var torp_rows := PackedStringArray()
 		var torp_why := ""
 		for i in set:
-			var tg := _fire_preview(id, int(i), target)
+			var tg: Dictionary = volley[i]
 			sh += float(tg.get("shield", 0))
 			hl += float(tg.get("hull", 0))
 			if u["weapons"][i]["kind"] == "torp":
@@ -4428,7 +4430,7 @@ func _panel_info() -> Dictionary:
 			right = "%d%%" % int(pv["hit"])
 			hit = int(pv["hit"])
 			dmg = int(round(float(pv.get("shield", 0)) + float(pv.get("hull", 0))))
-		elif tgt != "" and pst != null and api.has_method("preview_fire_at"):
+		elif tgt != "" and pst != null:
 			var pa := _fire_preview_at(id, wi, tgt, pst)
 			if bool(pa.get("bears", false)):
 				right = "%d%%" % int(pa["hit"])
@@ -4833,34 +4835,27 @@ func _torpedo_result(hits: Array, at: Vector3) -> void:
 	_float_at(at, "TORPEDO MISS" if hits.is_empty() else "TORPEDO HIT: %d shield / %d hull" % [int(shield), int(hull)], Color("#ffc781"), -24)
 
 
-# Presentation query only: use the rules' own estimator with the travelling warhead multiplier.
-# No live weapon, target, RNG or battle state is changed.
+# Presentation queries after _api_join. Each gun tooltip estimates that gun alone.
+func _volley_preview(id: String, guns: Array, tid: String, st = null) -> Dictionary:
+	if guns.is_empty(): return {}
+	var u = api.unit(id)
+	var source = u if st == null else api.R.stateView(u, st)
+	return api.R.previewVolley(source, guns, api.unit(tid))
+
+
 func _fire_preview(id: String, wi: int, tid: String) -> Dictionary:
-	var preview: Dictionary = api.preview_fire(id, wi, tid)
-	var u = api.unit(id)
-	var w = u["weapons"][wi]
-	if w["k"] == "torp" and not _jt(u.get("isSq")):
-		var warhead: Dictionary = w.duplicate(true)
-		warhead["dmg"] = float(w["dmg"]) * api.R.TB.TORP_WARHEAD
-		var estimate: Dictionary = api.R.expectedVs(u, warhead, api.unit(tid))
-		preview["shield"] = estimate["shield"]
-		preview["hull"] = estimate["hull"]
-	return preview
+	return _volley_preview(id, [wi], tid)[wi]
 
 
-# the same preview as the ship would stand at a reach state (the planned hex): the rules' preview_fire_at
+# The same single-gun preview from a planned hex, if the gun can fire there.
 func _fire_preview_at(id: String, wi: int, tid: String, st: Dictionary) -> Dictionary:
-	var preview: Dictionary = api.preview_fire_at(id, wi, tid, st)
-	if preview.is_empty():
-		return {}
 	var u = api.unit(id)
-	var w = u["weapons"][wi]
-	if w["k"] == "torp" and not _jt(u.get("isSq")):
-		var warhead: Dictionary = w.duplicate(true)
-		warhead["dmg"] = float(w["dmg"]) * api.R.TB.TORP_WARHEAD
-		var estimate: Dictionary = api.R.expectedVs(api.R.stateView(u, st), warhead, api.unit(tid))
-		preview["shield"] = estimate["shield"]
-		preview["hull"] = estimate["hull"]
+	var t = api.unit(tid)
+	if u == null or t == null or wi < 0 or wi >= u["weapons"].size(): return {}
+	var source = api.R.stateView(u, st)
+	if not api.R.canFire(source, u["weapons"][wi], t): return {}
+	var preview: Dictionary = api.R.previewVolley(source, [wi], t)[wi]
+	preview["bears"] = true
 	return preview
 
 
@@ -4972,44 +4967,42 @@ func _target_info() -> Dictionary:
 	if tid == "" or not VU.has(tid) or VU[tid]["dead"] or not _api_join():
 		return {}
 	var tu: Dictionary = VU[tid]
+	var ru = api.unit(sel)
+	var foe = api.unit(tid)
+	if ru == null or foe == null: return {}
 	var d: Dictionary = disp.get(tid, {"hp": tu["hp"], "sh": tu["sh"]})
 	# with a move planned, the odds are read as the ship would stand at the planned hex (the Fire block does the same)
 	var set: Array = []
-	var pv: Array = []
-	if plan != null and api.has_method("preview_fire_at"):
-		var ru = api.unit(sel)
-		var idx: Array = [armed] if armed >= 0 else range((ru["weapons"] as Array).size() if ru != null else 0)
+	if plan != null:
+		var planned = api.R.stateView(ru, plan)
+		var idx: Array = [armed] if armed >= 0 else range(ru["weapons"].size())
 		for i in idx:
-			if not _vweapon_ready(sel, int(i)):
-				continue
-			var pa := _fire_preview_at(sel, int(i), tid, plan)
-			if bool(pa.get("bears", false)):
+			if _vweapon_ready(sel, int(i)) and api.R.canFire(planned, ru["weapons"][i], foe):
 				set.append(i)
-				pv.append(pa)
 	else:
 		set = _firing_set(tid)
-		for i in set:
-			pv.append(_fire_preview(sel, int(i), tid))
+	var volley := _volley_preview(sel, set, tid, plan)
 	var es := 0.0
 	var eh := 0.0
 	var best := -1
 	var best_index := -1
 	var gun := ""
 	var kind := ""
-	for i in pv.size():
-		var p: Dictionary = pv[i]
+	var delayed := false
+	for i in set:
+		var p: Dictionary = volley[i]
 		es += float(p.get("shield", 0))
 		eh += float(p.get("hull", 0))
+		var weapon: Dictionary = VU[sel]["weapons"][i]
+		delayed = delayed or (weapon["kind"] == "torp" and not bool(VU[sel]["squadron"]))
 		if int(p.get("hit", 0)) > best:
 			best = int(p.get("hit", 0))
-			best_index = int(set[i])
-			var weapon: Dictionary = VU[sel]["weapons"][best_index]
+			best_index = int(i)
 			gun = str(weapon["name"])
 			kind = str(weapon["kind"])
-	# Round the total once, then split it so the two displayed amounts add up.
-	var total := int(round(es + eh))
 	var shields := int(round(es))
-	var hull := total - shields
+	var hull := int(round(eh))
+	var total := shields + hull
 	var line := ""
 	if set.is_empty():
 		line = "[color=#a7b09d]%s[/color]" % ("No ready gun bears on it from the planned hex." if plan != null else _cant_fire_reason(tid))
@@ -5017,11 +5010,12 @@ func _target_info() -> Dictionary:
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
 		line = "%s%s: about %d damage" % [who, " from the planned hex" if plan != null else "", total]
 		line += ": %d to shields, %d to hull." % [shields, hull] if shields > 0 else ", all to hull."
+		if delayed: line += " Includes torpedo impacts estimated at current defenses."
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
-		"defenses": _target_defenses(api.unit(tid)), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
+		"defenses": _target_defenses(foe), "exp_hull": hull, "exp_shields": shields, "line": line, "bearing": set.size(), "hit": best, "gun_index": best_index, "gun": gun, "kind": kind}
 
 
 func _torpedo_why() -> String:
