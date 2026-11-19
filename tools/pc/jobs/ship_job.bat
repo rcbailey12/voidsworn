@@ -91,7 +91,7 @@ if not defined PAINT_BASE goto based
 git -C "%C%" fetch -q --depth 50 origin %PAINT_BASE% >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=fetch PAINT_BASE %PAINT_BASE%"
 if defined FAILED goto collect
-git -C "%C%" -c user.name=%JOB_DIR% -c user.email=%JOB_DIR%@localhost merge -q --no-edit FETCH_HEAD >> "%RES%" 2>&1
+git -C "%C%" -c user.name=%JOB_DIR% -c user.email=%JOB_DIR%@localhost merge -q --no-edit --no-overwrite-ignore FETCH_HEAD >> "%RES%" 2>&1
 if errorlevel 1 set "FAILED=merge PAINT_BASE %PAINT_BASE%"
 if defined FAILED git -C "%C%" merge --abort >> "%RES%" 2>&1
 if defined FAILED goto collect
