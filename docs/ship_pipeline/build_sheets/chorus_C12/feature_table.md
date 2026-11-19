@@ -17,15 +17,15 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 |---|---|
 | model length | 6.497 |
 | length side | 6.511 |
-| length top | 6.506 |
-| length disagreement percent | 0.09 |
-| beam top | 3.111 |
-| beam bow | 3.122 |
+| length top | 6.511 |
+| length disagreement percent | 0.0 |
+| beam top | 3.189 |
+| beam bow | 3.2 |
 | beam disagreement percent | 0.17 |
-| height side | 2.95 |
-| height bow | 2.944 |
+| height side | 2.989 |
+| height bow | 2.983 |
 | height disagreement percent | 0.09 |
-| widest at station percent | 45.3 |
+| widest at station percent | 45.0 |
 | hull beam | 2.51 |
 | hull depth | 1.67 |
 | L to B hull | 2.59 |
@@ -143,7 +143,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 132 objects, 18 parts, 480 close pairs, 207 rays, 2 guns, 0 sensor pairs, 0 turrets swept, 8 cones, 0 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 132 objects, 18 parts, 482 close pairs, 207 rays, 2 guns, 0 sensor pairs, 0 turrets swept, 8 cones, 0 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

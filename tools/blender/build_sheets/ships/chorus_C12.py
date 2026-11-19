@@ -106,7 +106,7 @@ def build(K):
             arch = ARCH * math.sin(math.pi * min(1.0, t * 1.6)) * (1 - t) ** 0.5   # the cables rise out of the knot before they lie down
             x = xs[0] + (xs[1] - xs[0]) * t + 0.09 * math.sin(t * 6.5 + 2 * side + xs[0])
             th = ths[0] + (ths[1] - ths[0]) * t + 0.06 * math.sin(t * 4 + side)
-            p_, n0 = K.hpt(x, side_th(th, side) if side else th, out=R_T + 0.11 + arch)
+            p_, n0 = K.hpt(x, side_th(th, side) if side else th, out=R_T + 0.15 + arch)
             pts.append(p_)
         if hang:
             e = pts[-1]; d0 = (pts[-1] - pts[-2]).normalized()
