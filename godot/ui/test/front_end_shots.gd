@@ -61,6 +61,11 @@ func _shot(name: String, caption: String) -> void:
 	root.add_child(cap)
 	await _wait(0.2)
 	var img := root.get_viewport().get_texture().get_image()
+	# a 1080p or 4K slot only counts if the frame really is that size before the 720 high shrink (Artoo on PR 1233:
+	# a clamped window once gave two identical "sizes" on the combat capture, PR 1220)
+	var want := _asked_size()
+	if want != Vector2i.ZERO and Vector2i(img.get_width(), img.get_height()) != want:
+		_failed += 1; printerr("[front-end-shots] FAIL ", name, " is ", img.get_width(), "x", img.get_height(), ", not the asked ", want.x, "x", want.y)
 	if img.get_height() > 720:
 		img.resize(int(round(img.get_width() * 720.0 / img.get_height())), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join(name + ".png")
@@ -68,6 +73,15 @@ func _shot(name: String, caption: String) -> void:
 	if err != OK: _failed += 1; printerr("[front-end-shots] FAIL could not save ", p, " (", error_string(err), ")")
 	else: print("[front-end-shots] saved ", p)
 	cap.queue_free()
+
+
+# the --resolution the command line asked for, or zero when none was given
+func _asked_size() -> Vector2i:
+	var args := OS.get_cmdline_args()
+	var i := args.find("--resolution")
+	if i < 0 or i + 1 >= args.size(): return Vector2i.ZERO
+	var parts := str(args[i + 1]).split("x")
+	return Vector2i(int(parts[0]), int(parts[1])) if parts.size() == 2 else Vector2i.ZERO
 
 
 func _scale(v: float) -> void:
