@@ -11,7 +11,6 @@ extends SceneTree
 const API := preload("res://rules/battle_api.gd")
 const LOOK := preload("res://world/board_look.gd")
 const Battle := preload("res://scenes/battle/battle.gd")
-const PROV := preload("res://tools/picture_provenance.gd")
 const AT := [0.15, 0.3, 0.45, 0.6, 0.8, 1.05, 1.4]   # effect seconds after the volley starts
 
 var args := {}
@@ -96,12 +95,12 @@ func _run() -> void:
 		if img == null or img.is_empty():
 			continue   # (no picture this frame: a due still waits for the next drawn frame, it is never skipped)
 		if args.has("frames"):
-			if PROV.save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [kase, h, frame])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_frame_%03d.png" % [kase, h, frame])) == OK:
 				frames_ok += 1
 			else:
 				failed += 1
 		if due:
-			if PROV.save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [kase, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
+			if preload("res://tools/picture_provenance.gd").save_png(img, out.path_join("%s_%dp_%d_t%03d.png" % [kase, h, n, int(round(float(AT[n]) * 100.0))])) == OK:
 				stills += 1
 			else:
 				failed += 1
