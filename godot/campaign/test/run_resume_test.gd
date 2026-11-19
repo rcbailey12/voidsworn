@@ -219,7 +219,8 @@ func _boss_payout() -> void:
 		var before_credits: float = c.RUN["credits"]
 		for i in range(20):
 			if c.RUN == null or c.RUN.get("reward") == null: break
-			var acts: Array = c.screen_acts().filter(func(a): return a[2] == 1)
+			# Keep the default prize choices and advance to the next reward.
+			var acts: Array = c.screen_acts().filter(func(a): return a[2] == 1 and a[0] != "prizeSet")
 			var click: Array = acts[0]
 			c.writes.clear()
 			c.act(click[0], click[1])
@@ -261,8 +262,9 @@ func _prize_reload() -> void:
 	d.act("continueRun")
 	_check(_salvage_then_reward(d, credits), "7: reloading a paid prize shows salvage and then the next reward, with one ransom")
 	d = _load(_legacy("prize"))
+	var legacy_credits: float = d.SAVED_RUN["credits"]
 	d.act("continueRun")
-	_check(_salvage_then_reward(d, credits), "7 legacy: an empty prize stage still shows salvage and the next reward")
+	_check(_salvage_then_reward(d, legacy_credits), "7 legacy: an empty prize stage still shows salvage and the next reward")
 
 func _salvage_then_reward(c, credits: float) -> bool:
 	if c.modal_d == null or c.modal_d["kind"] != "salvage" or c.RUN["credits"] != credits or c.RUN["ransoms"] != 1: return false

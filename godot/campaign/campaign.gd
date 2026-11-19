@@ -1015,6 +1015,42 @@ func genSector(s: int) -> Dictionary:
 		var cand = col.filter(func(n): return n["type"] == "event" or (n["type"] == "battle" and fights.size() > 1))
 		if cand.size() > 0:
 			var nf = pick(cand); nf["type"] = "field"
+	var edges = []
+	for c in range(COLS - 1):
+		var from_col: Array = cols[c]
+		var to_col: Array = cols[c + 1]
+		if to_col.size() == 1 or (from_col.size() == 1 and to_col.size() > 2):
+			for a in from_col:
+				for b in to_col: edges.append([a["id"], b["id"]])
+			continue
+		# Keep two types available and give each repeated type enough distinct origins.
+		var max_copies := mini(from_col.size(), to_col.size() - 1)
+		var counts := {}
+		for b in to_col:
+			if counts.get(b["type"], 0) == max_copies:
+				if c == COLS - 3: b["type"] = "shipyard" if b["type"] == "drydock" else "drydock"
+				else: b["type"] = "event" if b["type"] == "battle" else "battle"
+			counts[b["type"]] = counts.get(b["type"], 0) + 1
+		var routes := from_col.map(func(a): return {"a": a, "stops": []})
+		# Cover every stop, placing repeated types first while the most origins are free.
+		for b in ssort(to_col.duplicate(), func(x, y): return counts[y["type"]] - counts[x["type"]]):
+			var nearest = ssort(routes.duplicate(), func(x, y): return absf(x["a"]["y"] - b["y"]) - absf(y["a"]["y"] - b["y"]))
+			for route in nearest:
+				var stops: Array = route["stops"]
+				if stops.size() < 2 and stops.all(func(n): return n["type"] != b["type"]):
+					stops.append(b)
+					break
+		for route in routes:
+			var a: Dictionary = route["a"]
+			var stops: Array = route["stops"]
+			var nearest = ssort(to_col.duplicate(), func(x, y): return absf(x["y"] - a["y"]) - absf(y["y"] - a["y"]))
+			for b in nearest:
+				if stops.size() == 2: break
+				if stops.all(func(n): return n["type"] != b["type"]): stops.append(b)
+			stops = ssort(stops, func(x, y):
+				var distance := absf(x["y"] - a["y"]) - absf(y["y"] - a["y"])
+				return distance if distance != 0.0 else x["row"] - y["row"])
+			for b in stops: edges.append([a["id"], b["id"]])
 	for col in cols:
 		for n in col:
 			if n["type"] == "battle" or n["type"] == "elite": n.merge(rollEncounter(n["type"], n["col"]), true)
@@ -1030,19 +1066,6 @@ func genSector(s: int) -> Dictionary:
 			if f[i]["enc"] == f[i - 1]["enc"]:
 				var cur = f[i]["enc"]
 				var e2 = pick(ENC_POOL.filter(func(x): return x != cur)); f[i]["enc"] = e2; f[i]["shape"] = pick(ENCOUNTERS[e2]["shapes"])
-	var edges = []
-	for c in range(COLS - 1):
-		var Acol = cols[c]; var Bcol = cols[c + 1]
-		for a in Acol:
-			var ay = float(a["y"])
-			var near = ssort(Bcol.duplicate(), func(x, y): return absf(float(x["y"]) - ay) - absf(float(y["y"]) - ay))
-			edges.append([a["id"], near[0]["id"]])
-			if near.size() > 1 and rnd() < 0.45 and absf(float(near[1]["y"]) - ay) < 0.5: edges.append([a["id"], near[1]["id"]])
-		for b in Bcol:
-			if not edges.any(func(e): return e[1] == b["id"]):
-				var by = float(b["y"])
-				var near2 = ssort(Acol.duplicate(), func(x, y): return absf(float(x["y"]) - by) - absf(float(y["y"]) - by))[0]
-				edges.append([near2["id"], b["id"]])
 	for col in cols:
 		for n in col:
 			if n["type"] == "battle" or n["type"] == "elite":

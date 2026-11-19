@@ -1,0 +1,36 @@
+{
+  "source_commit": "6a8235a996ccfcf21936379f10672c2b90a18a04",
+  "source_dirty": true,
+  "source_diff_sha256": "4c9ca6a38601444b8ccac0c5de21313d7e9b35b04c0afbb9a007e897cfc6f042",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "route-1176-02.png",
+  "date": "2026-11-19T16:41:37Z",
+  "sources": [
+    {
+      "source_commit": "6a8235a996ccfcf21936379f10672c2b90a18a04",
+      "source_dirty": true,
+      "source_diff_sha256": "4c9ca6a38601444b8ccac0c5de21313d7e9b35b04c0afbb9a007e897cfc6f042",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    602,
+    564,
+    700
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "859df0163d080d03ec877061314686365f34aeadd075fa4fbc61b64d8c0e575b"
+  ],
+  "stamp_template_sha256": "859df0163d080d03ec877061314686365f34aeadd075fa4fbc61b64d8c0e575b",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAB0UlEQVR4nO3WsQ3AIADAMMrM2A/6/41wBEMVyb4gY571fnsAAITNvwMAAG4ZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAIy6AzH0AgZF5wg9AAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "bd99ecd7153e5a648b16625e33c006bc5ed320c5f633893655e3f18516e66e6c"
+}
