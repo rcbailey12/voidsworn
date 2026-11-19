@@ -321,8 +321,8 @@ static func stop(C, n) -> Dictionary:
 	if rw is Dictionary and not done:
 		row["reward"] = reward_label(C, rw) + (" (rare or better)" if _jt(rw.get("min")) else "")
 		row["reward_min"] = _jt(rw.get("min"))
-	if nem_here and not (t in ["battle", "elite", "boss"]): row["reward"] = "Salvage"   # his fight is an elite fight; the stop itself pays nothing
-	if t == "elite" and not done: row["reward"] = (str(row["reward"]) + " and salvage") if row["reward"] != "" else "Salvage"
+	if nem_here and not (t in ["battle", "elite", "boss"]): row["reward"] = "A patron's signal (rare or better)"; row["reward_min"] = true   # his elite fight pays rewardFlow's fallback: a random patron's boon, rare or better
+	if (t == "elite" or (nem_here and not (t in ["battle", "boss"]))) and not done: row["reward"] = (str(row["reward"]) + " and salvage") if row["reward"] != "" else "Salvage"
 	return row
 
 
@@ -362,7 +362,7 @@ static func here_name(C) -> String:
 	if C.RUN == null or not _jt(C.RUN.get("pos")): return ""
 	var n = C.findNode(C.RUN["pos"])
 	if n == null: return ""
-	if _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]): return str(C.ENCOUNTERS[n["enc"]]["n"])
+	if n["type"] != "boss" and _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]): return str(C.ENCOUNTERS[n["enc"]]["n"])   # issue 1175: the boss stop keeps its own name
 	return stop_name(C, n)
 
 

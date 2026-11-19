@@ -30,7 +30,7 @@ func _init() -> void:
 			for n in cols[cols.size() - 3]:
 				if C.nemNodeIs(n, N) != (C.nemNodeTag(n, N) == "Nemesis meeting") or not C.nemNodeIs(n, N): tag_bad += 1
 	C.RUN = null
-	var play_bad := 0 if report else _play_rest_meetings()
+	var play_bad := 0 if report else _play_rest_meetings() + _reload_meetings()
 	print("nem_dodge: %d of %d sectors let an unmet Nemesis be dodged (%.1f%%)" % [dodge, total, 100.0 * dodge / total])
 	print("nem_dodge: %d boss stops without an objective and board shape on the map; %d column 4 stops not marked and tagged as the meeting" % [boss_bad, tag_bad])
 	print("nem_dodge: boss roll digest %d" % h)   # node/nem_dodge.js prints the same digest from the browser game
@@ -100,4 +100,51 @@ func _play_rest_meetings() -> int:
 	var bc = D.B["cfg"] if D.B != null and D.B.get("cfg") is Dictionary else {}
 	if bc.get("obj") != "ambush" or bc.get("shape") != "hourglass": bad += 1; printerr("FAIL: the boss fight did not use its stop's objective and board: %s %s" % [bc.get("obj"), bc.get("shape")])
 	print("nem_dodge: meetings played at a column 4 shipyard, drydock, field and event; boss fight read its stop (%d failed)" % bad)
+	return bad
+
+# A meeting at a rest stop replays the same fight after a reload (Artoo, PR 1197): the stop carries a battle seed like a fight
+# stop. For a map made now and for an old map whose column 4 rest stop has no seed: opening the saved map twice gives the
+# same fight, and a reload in the middle of that fight gives it again (seed, objective, board, enemy ships).
+func _fight_print(C) -> String:
+	if C.B == null or not (C.B.get("cfg") is Dictionary): return "no battle"
+	var foes: Array = []
+	for u in C.B["units"]:
+		if u["side"] == "enemy": foes.append(str(u["tpl"]))
+	foes.sort()
+	return "%s|%s|%s|%s" % [str(C.B["seed"]), str(C.B["cfg"].get("obj")), str(C.B["cfg"].get("shape")), ",".join(PackedStringArray(foes))]
+func _fresh():
+	var C = CampaignScript.new(); C.load_tables(); C.fixed_clock = true; C.persist_on = false
+	return C
+func _reload_meetings() -> int:
+	var bad := 0
+	for legacy in [false, true]:
+		var C = _fresh(); JSM.rnd_seed(11752)
+		C.newRun("vex", "voidsworn")
+		var cols: Array = C.RUN["map"]["cols"]; var n = cols[cols.size() - 3][0]; n["type"] = "shipyard"
+		for k in ["enc", "shape", "arch", "mod", "rw", "seed"]: n.erase(k)
+		var from = cols[cols.size() - 4][0]
+		if not C.RUN["map"]["edges"].any(func(e): return e[0] == from["id"] and e[1] == n["id"]): C.RUN["map"]["edges"].append([from["id"], n["id"]])
+		C.RUN["pos"] = from["id"]; from["done"] = true
+		C.ensureNemesis()["met"] = 0; C.RUN["nemStrike"] = false
+		if legacy: C.saveRun()   # an old map: the rest stop was saved with no seed
+		else: C.mapScreen()      # a map made now: opening it gives every column 4 stop its seed
+		var text0: String = C.save_text()
+		if legacy:   # the first Continue of the old save opens the map, which gives the stop its seed and saves it
+			var L = _fresh(); JSM.rnd_seed(77)
+			L.load_save_text(text0); L.titleScreen(); L.act("continueRun"); text0 = L.save_text()
+		var tag := "old map" if legacy else "new map"
+		var prints: Array = []
+		for i in range(2):
+			var A = _fresh(); JSM.rnd_seed(500 + i)   # different random state each time: only the saved seed may decide
+			A.load_save_text(text0); A.titleScreen(); A.act("continueRun"); A.act("enterNode", n["id"])
+			prints.append(_fight_print(A))
+			if i == 0:
+				var mid: String = A.save_text()
+				var Bc = _fresh(); JSM.rnd_seed(900)
+				Bc.load_save_text(mid); Bc.titleScreen(); Bc.act("continueRun")
+				if Bc.page.get("kind") == "map" and Bc.availableNodes().has(n["id"]): Bc.act("enterNode", n["id"])   # closed mid-fight: Continue, then the same stop
+				prints.append(_fight_print(Bc))
+		if prints[0] == "no battle" or prints.any(func(x): return x != prints[0]):
+			bad += 1; printerr("FAIL: %s: the Nemesis fight at a rest stop changed on reload: %s" % [tag, str(prints)])
+		else: print("nem_dodge: %s, rest-stop meeting replays the same fight on reopen and mid-fight reload (%s)" % [tag, prints[0]])
 	return bad

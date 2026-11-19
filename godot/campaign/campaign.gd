@@ -1813,12 +1813,12 @@ func _resume_node() -> bool:
 		_advance_sector()
 		return true
 	if RUN.get("curNode") != n["id"]: return false
+	if n["type"] == "shipyard" and saved_in_yard:   # issue 1175: a save taken on the map after leaving through the fleet screen opens the map, as the browser game does
+		shipyardScreen(n)
+		return true
 	if _is(n, ["battle", "elite", "boss"]) or nemNodeIs(n):   # issue 1175: a Nemesis meeting at a rest stop resumes as the fight
 		_restore_legacy_story_modifier()
 		_enter_battle_node(n)
-		return true
-	if n["type"] == "shipyard" and saved_in_yard:   # issue 1175: a save taken on the map after leaving through the fleet screen opens the map, as the browser game does
-		shipyardScreen(n)
 		return true
 	if n["type"] == "event" and not RUN["seenEvents"].is_empty():
 		var id = RUN["seenEvents"].back()
@@ -3346,7 +3346,9 @@ func _advance_sector() -> void:
 func nodeSeeds(nodes: Array) -> int:
 	var n = 0
 	for nd in nodes:
-		if nd != null and not jt(nd.get("done")) and nd.get("seed") == null and _is(nd, ["battle", "elite", "boss", "event"]):
+		# issue 1175: every column 4 stop can hold the Nemesis fight, so each carries a battle seed like a fight stop
+		var c4 = RUN != null and RUN.get("map") is Dictionary and nd != null and float(nd.get("col", -1)) == float(RUN["map"]["cols"].size() - 3)
+		if nd != null and not jt(nd.get("done")) and nd.get("seed") == null and (_is(nd, ["battle", "elite", "boss", "event"]) or c4):
 			nd["seed"] = floor(rnd() * 4294967296.0); n += 1
 	return n
 func initFinishedRuns() -> void:

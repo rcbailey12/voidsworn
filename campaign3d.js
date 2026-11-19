@@ -43,7 +43,7 @@ function fieldRepairs(n){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp;
 // campaign battles run in the 3D engine
 // v53: owner's rule, a reload replays the same node and enemy fleet. Every fight node gets a seed when the map first shows it (saved with the run);
 // battleScreen seeds the pre-battle rolls from it and hands it to startBattle, so the same saved run always rebuilds the same battle
-function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss'||nd.type==='event')){ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
+function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss'||nd.type==='event'||(RUN&&RUN.map&&nd.col===RUN.map.cols.length-3))){ /* issue 1175: every column 4 stop can hold the Nemesis fight */ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
 function teachingBattle(cfg){
   if(!RUN||RUN.teachingGate!==true) return cfg;
   const key=RUN.sector+':'+String(cfg.node||'event')+(cfg.eventRelic?':event':'');

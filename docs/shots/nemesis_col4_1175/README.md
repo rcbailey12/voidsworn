@@ -7,7 +7,7 @@
    stop reached the rest stop and the flagship without the meeting the map text calls certain. `nemNodeIs` changed the same way
    in `godot/campaign/campaign.gd` and `campaign_run.js`; entering such a stop opens his fight (an elite Nemesis battle). The
    stop's own use (the shop, the repairs, the event) is lost to that fight; the route row says so ("His fleet holds this
-   shipyard: you fight him here instead of using it.") and pays Salvage, like any elite fight. The hunt clock is unchanged.
+   shipyard: you fight him here instead of using it.") and says what his fight pays. The hunt clock is unchanged.
 2. **The map shows it.** The 3D map's red diamond, the route rows (open and closed) and the danger reading now mark rest and
    event stops in column 4 too (`map3d.gd`, `map_intel.gd`, `campaign_view.gd`, `campaign_ui.gd`). The browser map already
    printed the tag from `nemNodeTag`.
@@ -44,10 +44,18 @@
   credits; the boss roll moved the seeded run's credits (534, was at most 404). That cross comparison was coincidence, not the
   point of the check, which still proves Continue does not pay the boss twice.
 
-## Known gap
+## Reload replays the same meeting (Artoo, PR 1197)
 
-A Nemesis meeting at a rest stop has no fixed battle seed (rest stops never had one), so a reload in the middle of that fight
-replays a different roll. Fight stops are unaffected.
+Every column 4 stop now carries a battle seed (`nodeSeeds` in `campaign.gd` and `campaign3d.js`), like a fight stop, so a
+Nemesis fight at a shipyard, drydock or field replays the same fight after a reload. Old maps get the seed the first time the
+map opens, and it is saved at once. `nem_dodge_test.gd` checks it for a new map and an old map (rest stop saved with no seed):
+opening the save twice from different random states, and closing mid-fight then Continue, give the same seed, objective, board
+and enemy ships. With the seed rule switched off the same check fails (three different fights). Campaign parity still matches
+on all 30 seeds, so both twins seed alike.
+
+The outside check also led to: the route row for his fight at a rest or event stop now names what it pays (a patron's signal,
+rare or better, and salvage: rewardFlow's fallback for a stop with no reward of its own), the flagship stop keeps its own name
+when the fleet is on it, and an old save taken inside a column 4 shipyard reopens the yard as before.
 
 ## Pictures (cloud, orders rail only, no ship drawn)
 
