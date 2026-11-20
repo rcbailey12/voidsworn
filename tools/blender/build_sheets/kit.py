@@ -212,7 +212,8 @@ class Kit:
         if not w:
             return 0.0
         a, sd = w
-        return a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
+        fn = getattr(self, 'wob_fn', None)   # issue 1291: a sheet's own swellings and folds grown into the skin, on top
+        return (fn(x, t) if fn else 0.0) + a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
                     + 0.2 * math.cos(0.9 * x - 1.0 * t))
 
     def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None, n=None, smooth=False, wobble=False):
@@ -1009,9 +1010,68 @@ class Kit:
     def organ_room(self, name, kind, centre, radii, note='', seed=0, n=(22, 12)):
         """a grown organ or chamber inside the hull (a lumpy ellipsoid, never a box that reaches the skin)"""
         V, F = HP.blob(*radii, centre=centre, nu=n[0], nv=n[1], seed=seed, amp=0.1)
+        # issue 1291: a room that reaches the skin shows through it in game (C13's lime "disc" was the fore gland's spine sac
+        # pushing out of the hull beside the knoll). Shrink the room about its centre until every vertex sits inside the hull's
+        # skin with a margin.
+        k_ = self._room_fit(V, centre)
+        moved_ = 0
+        while k_ < 0.7 and moved_ < 8 and getattr(self, 'hull_sections', None):
+            # a room centred at or past the skin: pull it in toward the section's middle before shrinking it
+            s_ = sec_at(self.hull_sections, centre[0]); zc_ = (s_[3] + s_[4]) / 2
+            nc = (centre[0], centre[1] * 0.85, zc_ + (centre[2] - zc_) * 0.85)
+            V = [tuple(v[i] + nc[i] - centre[i] for i in range(3)) for v in V]
+            centre = nc; moved_ += 1
+            k_ = self._room_fit(V, centre)
+        if moved_:
+            print('[inside] %s: moved in to (%.2f, %.2f, %.2f)' % ((name,) + tuple(centre)))
+        if k_ < 1.0:
+            V = [tuple(centre[i] + (v[i] - centre[i]) * k_ for i in range(3)) for v in V]
+            radii = tuple(r_ * k_ for r_ in radii)
+            print('[inside] %s: shrunk to %d%% to stay inside the hull' % (name, round(k_ * 100)))
         self._obj('in_' + name, V, F, kind, inside=True, smooth=True)
         c = centre; r = radii
         self.inside.append(dict(kind='space', name=name, mat=kind, x=(c[0] - r[0], c[0] + r[0]), y=(c[1] - r[1], c[1] + r[1]), z=(c[2] - r[2], c[2] + r[2]), note=note))
+
+    def _room_fit(self, V, centre, margin=0.05):
+        """the scale (<= 1) about centre that keeps every vertex of V inside the hull's skin by margin: a ray from the hull
+        section's middle out through each vertex finds the outer skin (issue 1291). 1.0 when there is no hull yet."""
+        hob = bpy.data.objects.get(self.code + '_hull')
+        if hob is None or not getattr(self, 'hull_sections', None):
+            return 1.0
+        from mathutils.bvhtree import BVHTree
+        dg = bpy.context.evaluated_depsgraph_get()
+        tree = BVHTree.FromObject(hob, dg)
+        mw = hob.matrix_world; mi = mw.inverted()
+        cen = Vector(centre); k = 1.0
+        for v in V:
+            v = Vector(v)
+            s_ = sec_at(self.hull_sections, v.x)
+            o = Vector((v.x, 0.0, (s_[3] + s_[4]) / 2))
+            d = v - o
+            if d.length < 1e-6:
+                continue
+            # the outer skin: the last wall along the ray (the shell's inner wall hides nothing, the skin does)
+            lo_ = mi @ o; ld = (mi.to_3x3() @ d).normalized(); far = None
+            for _ in range(8):
+                hit = tree.ray_cast(lo_, ld)
+                if hit[0] is None:
+                    break
+                far = hit[0]; lo_ = hit[0] + ld * 1e-4
+            if far is None:
+                continue
+            wall = (mw @ far - o).length - margin
+            if d.length > wall:
+                # the scale about the room's centre that brings this vertex back to the wall (along the room's own ray)
+                dv = v - cen
+                lo, hi = 0.0, 1.0
+                for _ in range(20):
+                    mid = (lo + hi) / 2
+                    if ((cen + dv * mid) - o).length <= wall:
+                        lo = mid
+                    else:
+                        hi = mid
+                k = min(k, lo)
+        return max(0.4, k)
 
     def hoop(self, name, x, inset=0.3, w=0.14, t=0.12, kind='bonefr'):
         """a bone frame hoop inside the rounded hull at station x: a ring following the hull's section, inset from the skin"""
