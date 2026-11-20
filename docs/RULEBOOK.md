@@ -347,7 +347,8 @@ a failure marks it `.voidsworn-run-failed` with the job's name and keeps only th
 janitor keeps for one day. When a job_wrap job ends, the janitor runs once more with `--after-job` in a
 hidden window. That run shares the hourly allowance with the low-space trigger, skips without a word while another
 janitor holds its lock, any `gpu_slot_N` or `gpu_solo` claim file is non-empty or the Board's pause is on, and stops
-between folders if a GPU claim starts, so a solo measurement is never timed alongside it. Why: these four leftovers
+between folders if a GPU claim starts, so a solo measurement is never timed alongside it. The watchdog and scratch_done.ps1 check the
+Board's pause right before each removal and keep the folder for a later pass. Why: these four leftovers
 refilled C: by about 120 GB a day between nightly runs (issue 1180 dry run 2).
 The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
 run before the first live run. A pause removes nothing (3.11).

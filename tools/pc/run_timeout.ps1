@@ -499,12 +499,21 @@ function Remove-LinkSafeTree($dir) {
   }
   for ($i = $dirs.Count - 1; $i -ge 0; $i--) { [IO.Directory]::Delete($dirs[$i], $false) }
 }
+function Test-CleanupPaused {
+  # The same pause line runner_common.ps1 Cleanup-Paused reads. Tests point PC_CLEANUP_PAUSE_FILE at a fixture.
+  $flag = if ($env:PC_RUNNER_TEST -ceq '1' -and $env:PC_CLEANUP_PAUSE_FILE) { $env:PC_CLEANUP_PAUSE_FILE }
+    elseif ($env:USERPROFILE) { Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt' } else { $null }
+  if (-not $flag -or -not (Test-Path -LiteralPath $flag -PathType Leaf)) { return $false }
+  return [string](Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
+}
 function Remove-CreatedProfile {
   # Issue 1180 (Board, Nov 20): a throwaway Godot profile is removed once its process tree has ended, with the
   # voidsworn-run folder when this launch made that too. Only what this launch created; PC_KEEP_GODOT_PROFILE=1 keeps it
   # (a two-launch gate or a warm-cache bench). A failed removal is logged and left for the janitor.
   if (-not $script:createdProfile -or $env:PC_KEEP_GODOT_PROFILE -ceq '1') { return }
   try {
+    # The Board's PC pause removes nothing (RULEBOOK 3.11); the janitor takes the profile on a later pass.
+    if (Test-CleanupPaused) { throw 'PC pause is active' }
     Remove-LinkSafeTree $script:createdProfile
     if ($script:createdScratch) {
       [IO.File]::Delete((Join-Path $script:createdScratch '.voidsworn-run-owner'))

@@ -26,9 +26,11 @@ function scratch(char, { owner = true, failedKey = null } = {}) {
   if (failedKey !== null) fs.writeFileSync(path.join(dir, '.voidsworn-run-failed'), failedKey);
   return dir;
 }
+const pauseFile = path.join(outside, 'gpu_go.txt');
 const run = (dir, code, key) => {
   const r = spawnSync(shell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, '-Scratch', dir, '-Code', String(code),
-    '-BaseTemp', base, '-JobKey', key], { encoding: 'utf8', timeout: 30000 });
+    '-BaseTemp', base, '-JobKey', key], { encoding: 'utf8', timeout: 30000,
+    env: { ...process.env, PC_RUNNER_TEST: '1', PC_CLEANUP_PAUSE_FILE: pauseFile } });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   return r.stdout;
 };
@@ -52,6 +54,20 @@ try {
   assert(!fs.existsSync(olderSame), 'an older failure of the same job goes');
   assert(fs.existsSync(olderOther), 'another job\'s failure stays');
   assert(fs.existsSync(notOwned), 'a folder without an ownership token is never touched');
+
+  // The Board's PC pause removes nothing (Artoo on PR 1280): a paused PASS and a paused retry keep every folder.
+  fs.writeFileSync(pauseFile, 'GPU not cleared: paused by the Board at 12:30\n');
+  const pausedPass = scratch('7');
+  assert.match(run(pausedPass, 0, 'ship_job C:\\jobs\\four'), /left for the janitor: .*PC pause is active/);
+  assert(fs.existsSync(path.join(pausedPass, 'tool', 'cache', 'big.bin')), 'a paused PASS keeps its scratch');
+  const pausedKey = 'ship_job C:\\jobs\\five';
+  const pausedOlder = scratch('8', { failedKey: pausedKey });
+  const pausedNew = scratch('6');
+  assert.match(run(pausedNew, 1, pausedKey), /older failed scratch kept: .*PC pause is active/);
+  assert(fs.existsSync(pausedOlder) && fs.existsSync(pausedNew), 'a paused retry removes no older failure');
+  fs.writeFileSync(pauseFile, 'GPU cleared\n');
+  assert.match(run(pausedPass, 0, 'ship_job C:\\jobs\\four'), /job scratch removed after PASS/);
+  assert(!fs.existsSync(pausedPass), 'after the pause the next pass removes it');
 
   // A held run marker (tools still running) keeps the folder.
   const busy = scratch('f');

@@ -5,6 +5,7 @@
 #            same job goes, so each job keeps only its newest failure. The janitor removes it after that day.
 # Only a folder named voidsworn-run-<32 hex> directly under the base TEMP, carrying a valid .voidsworn-run-owner token
 # and no held .voidsworn-run-active marker, is touched. Every problem is logged and leaves the folder for the janitor.
+# The Board's PC pause (gpu_go.txt, RULEBOOK 3.11) removes nothing: it is checked right before every removal.
 param([string]$Scratch, [int]$Code, [string]$BaseTemp, [string]$JobKey)
 $ErrorActionPreference = 'Stop'
 function Test-Owned($dir) {
@@ -16,6 +17,14 @@ function Test-Owned($dir) {
   if ($owner -isnot [IO.FileInfo] -or $owner.Length -ne 32 -or [IO.File]::ReadAllText($owner.FullName) -cnotmatch '\A[0-9a-f]{32}\z') { return $null }
   return $item
 }
+function Test-Paused {
+  # The same pause line runner_common.ps1 Cleanup-Paused reads. Tests point PC_CLEANUP_PAUSE_FILE at a fixture.
+  $flag = if ($env:PC_RUNNER_TEST -ceq '1' -and $env:PC_CLEANUP_PAUSE_FILE) { $env:PC_CLEANUP_PAUSE_FILE }
+    elseif ($env:USERPROFILE) { Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt' } else { $null }
+  if (-not $flag -or -not (Test-Path -LiteralPath $flag -PathType Leaf)) { return $false }
+  return [string](Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
+}
+function Assert-NotPaused { if (Test-Paused) { throw 'PC pause is active' } }
 function Assert-Idle($dir) {
   $marker = Join-Path $dir '.voidsworn-run-active'
   if (Test-Path -LiteralPath $marker) {
@@ -42,6 +51,7 @@ try {
   if (-not $dir) { Write-Output "job scratch left for the janitor (not an owned voidsworn-run folder under $BaseTemp): $Scratch"; exit 0 }
   Assert-Idle $dir.FullName
   if ($Code -eq 0) {
+    Assert-NotPaused
     Remove-LinkSafeTree $dir.FullName
     Write-Output "job scratch removed after PASS: $($dir.FullName)"
     exit 0
@@ -56,6 +66,7 @@ try {
       $marker = Join-Path $old.FullName '.voidsworn-run-failed'
       if (-not (Test-Path -LiteralPath $marker -PathType Leaf) -or [IO.File]::ReadAllText($marker) -cne $key) { continue }
       Assert-Idle $old.FullName
+      Assert-NotPaused
       Remove-LinkSafeTree $old.FullName
       Write-Output "older failed scratch of the same job removed: $($old.FullName)"
     } catch { Write-Output "older failed scratch kept: $($old.FullName) ($($_.Exception.Message))" }

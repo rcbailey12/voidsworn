@@ -104,6 +104,13 @@ console.log('LOCALAPPDATA=' + process.env.LOCALAPPDATA);
   checkIsolated(keptLaunch, true);
   assert.match(fs.readFileSync(path.join(path.dirname(keptLaunch.appData), owner), 'utf8'), /^[a-f0-9]{32}$/);
 
+  // The Board's PC pause removes nothing (Artoo on PR 1280): the profile is kept for a later janitor pass.
+  const pauseFile = path.join(home, 'gpu_go.txt');
+  fs.writeFileSync(pauseFile, 'GPU not cleared: paused by the Board at 12:30\n');
+  const pausedLaunch = launch('batch', { PC_RUN_SCRATCH: '', PC_CLEANUP_PAUSE_FILE: pauseFile });
+  checkIsolated(pausedLaunch, true);
+  assert.ok(pausedLaunch.output.includes('Godot profile kept for the janitor') && pausedLaunch.output.includes('PC pause is active'), pausedLaunch.output);
+
   const inherited = launch('batch', { PC_REAL_PROFILE: '1' });
   assert.equal(inherited.appData, callerAppData);
   assert.equal(inherited.localAppData, callerLocalAppData);
