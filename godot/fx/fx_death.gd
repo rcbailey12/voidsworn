@@ -852,7 +852,9 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var capital: bool = s.death_tier == "capital" or int(s.get_meta("death_cut_count", 1)) >= 2
 	# 1. uneven pieces, in order along x
 	var sizes: Array = []
-	if capital:
+	# issue 1077 (prototype): Ryan on pass 5, one crack: a strained death breaks once, so a capital splits in two like a cruiser
+	var story: bool = fx != null and "death_story" in fx and fx.death_story
+	if capital and not story:
 		sizes = [0.50 + r.randf_range(-0.02, 0.02), 0.30 + r.randf_range(-0.02, 0.02)]
 		sizes.append(1.0 - float(sizes[0]) - float(sizes[1]))
 		for i in range(sizes.size() - 1, 0, -1):
@@ -867,6 +869,12 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var authored: Array = seam_data if seam_data is Array else []
 	var transverse: Array = authored.filter(func(b): return not b.has("span"))
 	transverse.sort_custom(func(a, b): return a["at"].x < b["at"].x)
+	if story and transverse.size() > 1:
+		# one crack: the authored joint nearest the core (the core goes off on it)
+		var keep = transverse[0]
+		for t in transverse:
+			if absf(float(t["at"].x) - h.core.x) < absf(float(keep["at"].x) - h.core.x): keep = t
+		transverse = [keep]
 	if not transverse.is_empty():
 		sizes.clear()
 		var prev := x0
@@ -2645,17 +2653,17 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	var away_l: Vector3 = (s.get_meta("death_grow", [Vector3.UP])[0] as Vector3)
 	var away_w: Vector3 = (s.xf().basis * away_l).normalized() if away_l.length() > 0.01 else Vector3.UP
 	# issue 1077 (prototype): Ryan on pass 4B, "way too much smoke". The strained wreck stays where it broke, so the core's
-	# body and the gas over it sat on the wreck: one smaller, shorter body puff and a thin, small, short gas veil
+	# body and the gas over it sat on the wreck: no body puff and no gas veil
 	var story: bool = fx.death_story
-	if story: _smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px * 0.6, 1.2, frame, 0.12, 1, 1)
-	else: _smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px, 2.0 if capital else 1.6, frame, 0.12, 3, 3)
+	# pass 5 (Ryan: no haze at the split): no body puff either; the chain blasts' small puffs are the smoke
+	if not story: _smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px, 2.0 if capital else 1.6, frame, 0.12, 3, 3)
 	if fx.quality != "low":
-		var gas_size: float = s.hull.L * (0.8 if capital else 0.7) * (0.45 if story else 1.0)
-		var gas_life: float = (3.6 if capital else 3.0) * (0.55 if story else 1.0)
-		var gas := flipbook(fx, p, Vector3.UP, gas_size, "cool", gas_life, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.18 if story else 0.38, atlas_band(s.hull.L), null)
-		(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
-		gas.set_meta("spawn_frame", frame)
-		fx.record_spawn(s, p, false, frame)
+		# pass 5: no gas veil on a strained death (Ryan: no haze at the split); the sparks below stay
+		if not story:
+			var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
+			(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
+			gas.set_meta("spawn_frame", frame)
+			fx.record_spawn(s, p, false, frame)
 		var gm: Array = s.get_meta("death_grow", [])
 		var axis_w: Vector3 = (s.xf().basis * (gm[3] as Vector3)).normalized() if gm.size() >= 4 else s.xf().basis.x
 		var away: Vector3 = (s.xf().basis * (gm[0] as Vector3)).normalized() if gm.size() >= 4 else Vector3.FORWARD
@@ -3195,7 +3203,8 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 	for mat in mats: wreck["heat_births"][mat] = fx.now
 	wreck["cut_events"].append({"section": index, "t": fx.now})
 	if wreck.get("organic", false): return
-	if fx.quality != "low":
+	# issue 1077 (prototype): Ryan on pass 5, no haze at the split: a strained big hull's pieces part without the cool puff
+	if fx.quality != "low" and not (big and fx.death_story):
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	if not big and src != null and fx.quality != "low":
 		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))

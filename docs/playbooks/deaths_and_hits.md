@@ -113,7 +113,9 @@ Prototype, not installed (issue 1077, off by default until Ryan picks it): `rend
 (fx_death.gd `_strain_begin`), on the fracture plan's break lines (the authored seams on a new build): the plating along
 each line bulges and ripples, hairline cracks light along a ragged line that steps across the plates (never a straight
 cut, Ryan on pass 4B), and the hull groans between the chain blasts (sparks, a small plate, a jolt). Smoke is light: one
-small puff per blast and a thin, short veil at the core (Ryan on pass 4B: "way too much smoke"). After the split the pieces part by about a fifth of the length and settle, fragments slow,
+small puff per blast, no smoke body or gas veil at the core and no puff where the pieces part (Ryan on pass 4B: "way too
+much smoke"; pass 5: no haze at the split). A strained death breaks on one crack: a capital splits in two like a cruiser,
+and on an authored hull only the joint nearest the core breaks (fx_death.gd `fracture_plan`, Ryan on pass 5). After the split the pieces part by about a fifth of the length and settle, fragments slow,
 and a warm light sits in each gap; the torn insides are sooted (fx.gd `wreck_interior`), since the grouped wreck keeps them
 in view. Chorus ruptures and burnt-out hulks are unchanged. Ryan chose this as the direction for big-hull deaths (Nov 20
 2026); it stays off by default until its clip is approved. Check: fx/test/death_story_check.gd (quality low and high).
