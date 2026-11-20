@@ -285,6 +285,9 @@ def glow_material(zone, hull=False):
     bsdf.inputs['Emission Color'].default_value = (*colour, 1)
     bsdf.inputs['Emission Strength'].default_value = power
     material['ps_glow'] = 1
+    # issue 1291 run D2: the wet veils caught LookRim's full specular as hot white spots at the tips. Like the Eclipse and
+    # Hegemony glow materials, they take the soft rim (godot/render/look.gd) that the baked hull and parts already get.
+    material['rim_soft'] = 1
     material['authored_look'] = 1
     if hull:
         material['hull_surface'] = 1
