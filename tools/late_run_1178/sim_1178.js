@@ -80,7 +80,7 @@ const game = mod.exports.loadGame(path.resolve(root), { extra: ['bot.js', 'drive
 (async () => {
   const facs = game.api.get('RUN_FACTIONS.slice()'), adm = game.api.get('ADMIRALS');
   const rows = [];
-  for (const fac of facs) {
+  for (const fac of facs.filter(f => !process.env.FAC || f === process.env.FAC)) {   // FAC=<id> runs one faction
     const ids = Object.keys(adm).filter(id => (adm[id].fac || 'voidsworn') === fac);
     for (let i = 0; i < RUNS; i++) {
       const r = await game.api.runOne({ fac, admiral: ids[i % ids.length], ai: AI, seed: SEED + i, policy: 'baseline', priceMult: 1, cpDelta: 0, credMult: 1 });

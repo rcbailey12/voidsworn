@@ -57,7 +57,9 @@ and halfway toward it at Veteran. Raising Veteran's 1.25 is the one-number lever
 | Veteran | 177 | 241.4 | 157.2 | -84.2 (-110 to -59), -34.9% | 220 / 188 | 183 a run |
 
 The first try priced relics at 150 and the command point at 160: Standard fell 34.9% but Veteran only 29.4%, so the prices
-came down to 120 and 130. Timeouts: Standard 6 before, 6 after; Veteran 11 before, 11 after; no driver errors. All-seed
+came down to 120 and 130. Evidence strength (Artoo): at Veteran a one-third drop is 80.5 credits, inside the 95%
+interval, so the point estimate clears the target but this sample does not show it clears it reliably; at Standard both the
+estimate and the interval clear it. Timeouts: Standard 6 before, 6 after; Veteran 11 before, 11 after; no driver errors. All-seed
 survival above keeps every run; timeouts resolve as the harness always has (a non-boss timeout is a retreat, a boss
 timeout a loss).
 
@@ -74,7 +76,11 @@ timeout a loss).
 a run at Standard and 1,140 at Veteran; Glasswrights about 92 and 67 cullet credits; Eclipse recover 1.6 and 2.4 cores and
 regrow 0.65 and 1.2.
 
-**Watch: Chorus at Veteran** drops 20 points (47 to 31 wins of 80), far more than the 1085 sim's 4 to 6. Biomass cannot buy
+**Watch: Chorus at Veteran** drops 20 points (47 to 31 wins of 80), far more than the 1085 sim's 4 to 6. Confirmed on 240
+Chorus Veteran runs per arm (seeds 1 to 240, Board's ask): 129 wins (53.8%) before, 91 (37.9%) after, 45 seeds flip from a
+win to a loss and 7 the other way. Losses rise in every sector (S1 61 to 68, S2 42 to 49, S3 8 to 32), so the economy, not
+only the Sector 3 fleets, is the cause: a Chorus-specific fix (biomass tuning) is the lever, not Veteran's 1.25. Every other
+faction falls 10 points or less at Veteran. Biomass cannot buy
 refits and credits cannot buy hull work, and the harder Sector 3 lands on that. The Eclipse hold steady while every other
 faction drops 5 to 10, which is the core recovery doing what 1086 measured.
 
