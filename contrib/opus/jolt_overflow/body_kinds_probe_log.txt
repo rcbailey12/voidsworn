@@ -1,0 +1,13 @@
+== static
+static frames=361
+== anim_still
+anim_still frames=362
+== anim_moving
+WARNING: Jolt Physics job system exceeded the maximum number of jobs. This should not happen. Please report this. Waiting for jobs to become available...
+anim_moving frames=215
+== rigid_sleep
+rigid_sleep frames=358
+== rigid_still
+rigid_still frames=360
+== rigid_freeze
+rigid_freeze frames=361
