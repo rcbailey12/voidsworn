@@ -247,7 +247,8 @@ function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.val)?H.
 function prizeScrap(tpl){ return Math.round(shipValue(tpl)*.35); }
 // issue 1290: what decommissioning pays. A ship regrown from an Eclipse core pays nothing until it has fought a battle (regrow is 20%
 // of value, scrap 35%, so regrow-then-sell was free money). Paid in the hull purse: biomass for the Chorus, credits for the rest.
-function sellValue(s){ return s&&s.regrown?0:prizeScrap(s.tpl); }
+// issue 1384: after it has fought, a regrown ship pays at most what its regrow cost, so regrow, fight once, sell never profits.
+function sellValue(s){ return s&&s.regrown?0:s&&s.corePaid!=null?Math.min(s.corePaid,prizeScrap(s.tpl)):prizeScrap(s.tpl); }
 function ensureFlagship(){ if(!RUN||!RUN.fleet||!RUN.fleet.length) return null; if(!flagshipOf()){ const f=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1)||derive(b).maxHp-derive(a).maxHp)[0]; RUN.flagUid=f.uid; return f; } return flagshipOf(); }
 function runFx(){ const o={}; if(RUN) for(const r of RUN.relics){ const x=RELICS[r]?RELICS[r].run:unknownId('relic',r); if(x) for(const k in x) o[k]=(o[k]||0)+x[k]; } if(RUN && META.unlocked.salvagers) o.credPct=(o.credPct||0)+.2; return o; }
 function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); w.cd=b.cd||0;

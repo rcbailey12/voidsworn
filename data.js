@@ -1057,7 +1057,8 @@ for(const [fid,F] of Object.entries(FACTIONS)){ if(F.boss&&HULLS[F.boss]) HULLS[
 // Glasswright hull rise (PR 1353). Shop price only: h.val keeps the ladder price, so ransom, strip, scrap and Cinder Line
 // prices (shipValue, capturedHullPrice) and every enemy ship are unchanged.
 const SHOP_DISCOUNT={hegemony:.8,voidsworn:.95};
-for(const [fid,d] of Object.entries(SHOP_DISCOUNT)) for(const id of FACTIONS[fid].roster){ const h=HULLS[id]; if(!h||h.sq||h.val!=null) continue;
+// issue 1384: the Crusade's Daybreak dreadnought (ascendant) sits on FACTIONS.voidsworn.boss, not the roster, but its yards sell it
+for(const [fid,d] of Object.entries(SHOP_DISCOUNT)) for(const id of [...FACTIONS[fid].roster,FACTIONS[fid].boss]){ const h=HULLS[id]; if(!h||h.sq||h.val!=null||!Number.isFinite(h.cost)) continue;
   h.val=h.cost; h.cost=Math.round(h.cost*d/5)*5; }
 
 // ---------- progression between runs ----------
