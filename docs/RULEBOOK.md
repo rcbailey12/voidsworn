@@ -290,8 +290,9 @@ Set: Ryan, Nov 18 (R326) and Nov 19, 16:30 UTC (R336); lean folders and the disk
 
 Before setting aside an earlier checkout, the runner reuses it only when its working tree is clean and all local history
 (including reflogs) is in the freshly fetched mirror. It allows ignored Godot `.godot` and `.import` caches, Python
-`__pycache__` and `.pyc` caches, regenerated `golden/`, `out/` and the parity log in
-`godot/campaign/test/` and `godot/rules/test/`, ignored Godot `.uid` files including those under `godot/audio/build/`, and
+`__pycache__` and `.pyc` caches, regenerated `golden/*.jsonl`, `out/` and `parity_campaign_log.txt` under
+`godot/campaign/test/`, regenerated `golden/`, `out/` and `parity_log.txt` under `godot/rules/test/`, ignored Godot `.uid`
+files including script UIDs and those under `godot/audio/build/`, and
 ignored `.onboarding_checks/` output. All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
 the shared build by size and SHA-256 (issue 1107). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
 and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
@@ -318,10 +319,11 @@ keeps the copy. Salvage folders are kept. Why: old job copies can be large and s
 Nov 19, 17:01 UTC, "Yes, after a checked backup" (R339).
 
 Ship jobs and the look bench give their tools an owned TEMP folder. Stage 7 removes its checked export scratch after a
-successful install. The janitor checks TEMP job, parity and `stage7-checked-*` scratch after three hours without a new write,
-and `opus<N>` and `opus<N>out*` helper folders after three days so the Board has time to relay their results. A held issue lock
-or a held helper lock protects scratch. Active board `repo` folders, `build*`, repo mirrors, `recipe`, `runner_backups` and
-other locations stay out of the scan.
+successful install. A TEMP folder untouched for three hours can be removed when it carries a valid `.voidsworn-run-owner`
+token or a runner's `status.json` names its exact path. Name matches alone are report-only, including `voidsworn-parity-*`
+and `stage7-checked-*`. The janitor checks `opus<N>` and `opus<N>out*` helper folders after three days so the Board has time
+to relay their results. A held issue lock or a held helper lock protects scratch. Active board `repo` folders, `build*`,
+repo mirrors, `recipe`, `runner_backups` and other locations stay out of the scan.
 The log gives each candidate's size, decision and reason, along with free space before and after. The Board reads the dry
 run before the first live run. A pause removes nothing (3.11).
 

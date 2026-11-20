@@ -7,7 +7,7 @@ function Log($line) {
   Write-Host $line
 }
 function Get-CleanupRuns($root) {
-  # Runners deployed before R336 recorded the scratch path in status.json but did not name it by issue.
+  # Runner status records supply the exact scratch path and its issue.
   foreach ($lane in @('board','board_b','board_c','board_d','work217')) {
     $base = Join-Path $root $lane
     if (-not (Test-Path -LiteralPath $base -PathType Container)) { continue }
@@ -31,12 +31,24 @@ function Get-CleanupRuns($root) {
           }
         } catch { }
         $repo = if ($lane -eq 'work217') { Join-Path $run.FullName 'repo' } else { Join-Path $base 'repo' }
-        if ($lane -eq 'work217' -or $s.scratch.path -match '[\\/]voidsworn-run-[0-9a-f]{32}$') {
+        if ($lane -eq 'work217' -or $s.scratch.path -is [string]) {
           [pscustomobject]@{ Issue = $issue; State = $s; Out = $out; Repo = $repo; Lane = $lane; Name = "$($job.Name)_$($run.Name)" }
         }
       }
     }
   }
+}
+function Get-RecordedTempScratch($runs, $temp) {
+  $records = @{}
+  foreach ($run in $runs) {
+    $path = $run.State.scratch.path
+    if ($path -isnot [string] -or -not $path) { continue }
+    try {
+      if ([IO.Path]::GetFullPath($path) -ne $path -or (Split-Path -Parent $path) -ne $temp) { continue }
+    } catch { continue }
+    $records[$path] += @($run)
+  }
+  return $records
 }
 function Get-ActiveLegacyIssues($runs) {
   $running = @($runs | Where-Object { $_.State.status -eq 'running' })
@@ -113,7 +125,7 @@ function Assert-HelperScratchInactive($dir) {
   catch { throw 'helper scratch lock is held or could not be verified' }
   if ($lease) { $lease.Dispose() }
 }
-function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, $owned) {
+function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $activeLegacy, [switch]$tempScratch, $records, $hasOwner) {
   $size = 'size unavailable'; $issueLock = $null
   try {
     $busy = ''
@@ -126,8 +138,16 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     $size = "$($stats.Bytes) bytes"
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
-    if ($owned) {
-      $null = Read-ScratchOwner $dir.FullName
+    if ($tempScratch) {
+      if (-not $hasOwner -and -not $records) { throw 'name match without owner record' }
+      $token = if ($hasOwner) { Read-ScratchOwner $dir.FullName }
+      foreach ($run in $records) {
+        if ($run.Issue -ne $issue) { throw 'runner status records disagree on the owning issue' }
+        $record = $run.State.scratch
+        if ($token -and $record.token -and $token -cne $record.token) { throw 'ownership token differs from runner status' }
+        if ($record.created -and [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT -and
+            [string]$dir.CreationTimeUtc.Ticks -ne $record.created) { throw 'recorded directory was replaced' }
+      }
       Assert-HelperScratchInactive $dir
       $retry = Get-FailedScratchMarker $dir
       if ($retry -and $retry.LastWriteTimeUtc -gt $now.AddDays(-1)) { throw 'newest failed scratch kept for a retry for one day' }
@@ -137,7 +157,10 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     if ($dryRun) { $action = 'would remove' }
     else { Remove-CleanupDirectory $dir; $action = 'removed' }
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
-  } catch { Log "kept $($dir.FullName) ($size; $($_.Exception.Message))" }
+  } catch {
+    $action = if ($dryRun) { 'would keep' } else { 'kept' }
+    Log "$action $($dir.FullName) ($size; $($_.Exception.Message))"
+  }
   finally { if ($issueLock) { $issueLock.Dispose() } }
 }
 
@@ -190,27 +213,23 @@ try {
     try { Remove-OlderKeptRepos $board $mirror $dryRun $now $salvageRoot }
     catch { Log "kept lane $board (scan unavailable: $($_.Exception.Message))" }
   }
-  $legacy = @{}
   $runs = @(Get-CleanupRuns $root)
-  foreach ($run in $runs) {
-    if ($run.State.scratch.path -match '[\\/]voidsworn-run-[0-9a-f]{32}$') { $legacy[[string]$run.State.scratch.path] = $run.Issue }
-  }
+  $recordedScratch = Get-RecordedTempScratch $runs $temp
   # Check old runners once, and take each current issue lock again immediately before making its decision.
   $activeLegacy = @(Get-ActiveLegacyIssues $runs)
   Clear-WorkRunRepos @($runs | Where-Object { $_.Lane -eq 'work217' }) $mirror $dryRun $now $temp $salvageRoot $activeLegacy
   foreach ($dir in (Get-Item -LiteralPath $temp -Force).EnumerateDirectories()) {
-    if ($dir.Name -notmatch '^(voidsworn|issue|tune2-|stage7-checked-)') { continue }
-    $owned = $dir.Name -like 'voidsworn-run-*'
-    $issue = $legacy[$dir.FullName]
-    if (-not $issue -and ($dir.Name -match '^(?:issue|voidsworn(?:[-_](?:issue|parity|run))?|tune2)[-_]*([1-9][0-9]{0,9})(?=[-_.]|$)' -or
-        $dir.Name -match '[-_]issue[-_]*([1-9][0-9]{0,9})(?=[-_.]|$)')) { $issue = $Matches[1] }
-    $why = if ($owned) { 'runner scratch' } elseif ($dir.Name -like 'voidsworn-parity-*') { 'parity scratch' }
-      elseif ($dir.Name -like 'stage7-checked-*') { 'stage 7 install scratch' } else { 'job scratch' }
-    Clear-ScratchFolder $dir $issue $why 3 $temp $now $dryRun $activeLegacy $owned
+    $records = $recordedScratch[$dir.FullName]
+    $hasOwner = -not ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+      (Test-Path -LiteralPath (Join-Path $dir.FullName $scratchOwnerFile))
+    if (-not $records -and -not $hasOwner -and $dir.Name -notmatch '^(voidsworn|issue|tune2-|stage7-checked-)') { continue }
+    $issue = if ($records) { $records[0].Issue } elseif ($hasOwner -and
+        $dir.Name -match '\Avoidsworn-run-([1-9][0-9]*)-[0-9a-f]{32}\z') { $Matches[1] }
+    Clear-ScratchFolder $dir $issue 'owned TEMP scratch' 3 $temp $now $dryRun $activeLegacy -TempScratch -Records $records -HasOwner $hasOwner
   }
   foreach ($dir in (Get-Item -LiteralPath $root -Force).EnumerateDirectories('opus*')) {
     if ($dir.Name -notmatch '^opus([1-9][0-9]*)(?:out.*)?$') { continue }
-    Clear-ScratchFolder $dir $Matches[1] 'helper folder' 72 $temp $now $dryRun $activeLegacy $false
+    Clear-ScratchFolder $dir $Matches[1] 'helper folder' 72 $temp $now $dryRun $activeLegacy
   }
 } catch {
   if ($script:log) { Log "janitor stopped: $($_.Exception.Message)" }

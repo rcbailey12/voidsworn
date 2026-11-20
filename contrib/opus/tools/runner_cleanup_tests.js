@@ -185,14 +185,34 @@ try {
   const laneB = path.join(pc, 'board_b');
   fs.mkdirSync(laneB);
   const caches = makeCopy('repo-kept-r336', 1, laneB);
-  const ignored = ['godot/campaign/test/golden/c1.jsonl', 'godot/campaign/test/out/c1.jsonl',
-    'godot/campaign/test/parity_campaign_log.txt', 'godot/audio/build/test.gd.uid', '.onboarding_checks/build.txt',
-    'godot/gen/ships/cache 1.scn', 'godot/assets/ships/manifest.bak_1/manifest.json', 'godot/.stage7-replaced-1/previous/test.glb'];
-  const rules = ['godot/campaign/test/golden/', 'godot/campaign/test/out/', 'godot/campaign/test/parity_campaign_log.txt',
-    'godot/audio/build/*.uid', '.onboarding_checks/', 'godot/gen/', 'godot/assets/ships/*/'];
+  const generatedShip = 'godot/gen/ships/cache 1.scn';
+  const ignored = ['godot/campaign/test/out/c1.jsonl', 'godot/audio/build/test.gd.uid',
+    'godot/scenes/campaign/test.gd.uid', '.onboarding_checks/build.txt', generatedShip,
+    'godot/assets/ships/manifest.bak_1/manifest.json', 'godot/.stage7-replaced-1/previous/test.glb'];
+  const rules = ['godot/campaign/test/out/', 'godot/**/*.uid', '.onboarding_checks/', 'godot/gen/', 'godot/assets/ships/*/'];
   write(path.join(caches, '.git', 'info', 'exclude'), rules.join('\n') + '\n');
   for (const file of ignored) write(path.join(caches, file), 'generated cache');
-  write(path.join(pc, 'build', ignored[5]), 'generated cache');
+  write(path.join(pc, 'build', generatedShip), 'generated cache');
+  // parity_campaign.bat sends each seed to golden_campaign.js and writes the log itself.
+  // Test the two outputs separately, using the actual checkout's ignore rules as evidence.
+  const checkout = path.resolve(__dirname, '../../..');
+  const campaignOutput = (name, file, ignore) => {
+    assert.equal(git(['-C', checkout, 'check-ignore', '--', file]), file);
+    const dir = makeCopy(`repo-kept-${name}`, 2, laneB);
+    write(path.join(dir, '.git', 'info', 'exclude'), `${ignore}\n`);
+    write(path.join(dir, file), 'campaign parity fixture');
+    dateTree(dir, 8);
+    return dir;
+  };
+  const golden = campaignOutput('campaign-golden', 'godot/campaign/test/golden/c1.jsonl', '/godot/campaign/test/golden/');
+  const parityLog = campaignOutput('campaign-log', 'godot/campaign/test/parity_campaign_log.txt', '/godot/campaign/test/parity_campaign_log.txt');
+  const goldenNotes = campaignOutput('campaign-notes', 'godot/campaign/test/golden/notes.md', '/godot/campaign/test/golden/');
+  const localWork = ['CODEX_TASK.md', 'contrib/notes.txt', 'rebuild.bat', 'notes.md', 'shot.png'].map((file, i) => {
+    const dir = makeCopy(`repo-kept-untracked-work-${i}`, 2, laneB);
+    write(path.join(dir, file), 'work to keep');
+    dateTree(dir, 8);
+    return dir;
+  });
   const wrongGen = makeCopy('repo-kept-wrong-gen', 2, laneB);
   write(path.join(wrongGen, '.git', 'info', 'exclude'), 'godot/gen/\n');
   write(path.join(wrongGen, 'godot/gen/proof.uid'), 'local');
@@ -232,35 +252,46 @@ try {
   const activeOwned = scratch(temp, ownerName(302, 'b'), 4);
   const oldRetry = scratch(temp, ownerName(303, 'c'), 26);
   const freshRetry = scratch(temp, ownerName(304, 'd'), 4);
-  const legacy = scratch(temp, `voidsworn-run-${'e'.repeat(32)}`, 4);
-  for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, legacy]) {
-    const marker = path.join(dir, ownerFile);
-    write(marker, 'f'.repeat(32));
-    dated(marker, 26);
-    dated(dir, 26);
+  function markOwned(dir, hours, token = 'f'.repeat(32)) {
+    write(path.join(dir, ownerFile), token);
+    dated(path.join(dir, ownerFile), hours);
+    dated(dir, hours);
   }
+  const tokenOnly = scratch(temp, 'owned-tool-output', 4);
+  for (const dir of [oldOwned, activeOwned, oldRetry, freshRetry, tokenOnly]) markOwned(dir, 26);
   for (const [dir, hours] of [[oldRetry, 25], [freshRetry, 4]]) {
     const marker = path.join(dir, '.voidsworn-run-failed');
     write(marker, '');
     dated(marker, hours);
     dated(dir, 26);
   }
-  const plainActive = scratch(temp, 'issue302-loose', 4);
-  const parityActive = scratch(temp, 'voidsworn-parity-issue-302-copy', 4);
-  const plainOld = scratch(temp, 'issue-305-old', 4);
-  const parityOld = scratch(temp, 'voidsworn-parity-old', 4);
-  const tuneOld = scratch(temp, 'tune2-old', 4);
+  const lookalikes = ['issue-notes', 'voidsworn-parity-x', 'stage7-checked-x', 'tune2-old',
+    'voidsworn-parity-issue-302-copy'].map(name => scratch(temp, name, 4));
+  function recordScratch(issue, dir, extra = {}) {
+    write(path.join(laneB, `issue-${issue}`, 'status.json'), JSON.stringify({
+      status: 'failed', scratch: { path: dir, ...extra }
+    }));
+  }
+  const recordedOnly = scratch(temp, 'voidsworn-parity-recorded', 4);
+  const recordedActive = scratch(temp, 'recorded-active-output', 4);
+  recordScratch(305, recordedOnly);
+  recordScratch(302, recordedActive);
+  const replaced = scratch(temp, 'stage7-checked-replaced', 4);
+  markOwned(replaced, 4);
+  recordScratch(311, replaced, { token: 'e'.repeat(32) });
   const recent = scratch(temp, 'issue-306-recent', 2);
+  markOwned(recent, 2);
   const opus = scratch(pc, 'opus901out1', 73);
   const recentOpus = scratch(pc, 'opus902', 71);
   const oldStage7 = scratch(temp, 'stage7-checked-old', 4);
-  const recentStage7 = scratch(temp, 'stage7-checked-recent', 2);
+  markOwned(oldStage7, 4);
   const liveHelper = scratch(temp, `voidsworn-run-${'f'.repeat(32)}`, 5);
   write(path.join(liveHelper, ownerFile), 'f'.repeat(32));
   const activeMarker = path.join(liveHelper, '.voidsworn-run-active');
   write(activeMarker, '');
   dateTree(liveHelper, 5);
   const invalidOwner = scratch(temp, ownerName(307, 'f'), 26);
+  markOwned(invalidOwner, 26, 'invalid token');
   const never = ['build', 'build_e', 'work217', 'repo-mirror-b.git', 'recipe', 'runner_backups', 'opus-nonjob']
     .map(name => scratch(pc, name, 26));
   never.push(makeCopy('repo', 1, laneB), scratch(temp, 'ordinary-folder', 26), scratch(root, 'issue-910-out-of-scope', 26));
@@ -302,9 +333,9 @@ try {
         JANITOR_PROOF_ACTIVE: activeMarker, PC_TEST_JANITOR_NOW: fixtureNow.toISOString(), ...extra });
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
-  const remove = [caches, oldOwned, oldRetry, legacy, plainOld, parityOld, tuneOld, opus, oldStage7, workClean, ...recover];
-  const preserve = [edited, laneNewest, wrongGen, invalidRepo, activeOwned, plainActive, parityActive,
-    freshRetry, recent, recentOpus, invalidOwner, recentStage7, liveHelper, workLive, workLocked, workNew];
+  const remove = [caches, golden, parityLog, oldOwned, oldRetry, tokenOnly, recordedOnly, opus, oldStage7, workClean, ...recover];
+  const preserve = [edited, laneNewest, wrongGen, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive,
+    ...lookalikes, replaced, freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
     assert(row?.includes(word) && /\d+ bytes/.test(row), `missing ${word} and size for ${dir}: ${row || report}`);
@@ -326,7 +357,13 @@ try {
     assert.equal(decision(secondDry, dir, 'would remove'), decision(dry, dir, 'would remove'));
   }
   for (const dir of remove) decision(dry, dir, 'would remove');
-  for (const dir of preserve) decision(dry, dir, 'kept');
+  for (const dir of preserve) decision(dry, dir, dir.startsWith(temp + path.sep) || dir === recentOpus ? 'would keep' : 'kept');
+  for (const dir of lookalikes) {
+    assert.match(decision(dry, dir, 'would keep'), /name match without owner record/);
+  }
+  assert.match(decision(dry, recordedActive, 'would keep'), /issue #302 lock is held/);
+  assert.match(decision(dry, replaced, 'would keep'), /ownership token differs from runner status/);
+  assert.match(decision(dry, invalidOwner, 'would keep'), /ownership token file changed/);
   for (const dir of recover) decision(dry, dir, 'would remove (after checked salvage');
   decision(dry, failedSalvage, 'would remove (after checked salvage');
   for (const dir of [...remove, ...preserve, ...never]) assert(fs.existsSync(dir), `dry run changed ${dir}`);
@@ -362,6 +399,7 @@ try {
   assert.match(execute(windows ? 'powershell.exe' : 'pwsh', ['-NoProfile', '-Command', zipRead], undefined, { FIXTURE_ZIP: zip }),
     /^unfinished\.txt\r?\nlocal workhorse note$/);
   const nightly = scratch(temp, 'issue-308-rate-limit', 4);
+  markOwned(nightly, 4);
   assert.equal(runJanitor('--low-space'), '');
   assert(fs.existsSync(nightly));
   const nightTemp = path.join(root, 'night-temp');
@@ -378,11 +416,13 @@ try {
   assert.equal(nightRun('2026-07-19T10:59:59Z'), '');
   if (windows) {
     const inUse = scratch(temp, 'issue-309-in-use', 4);
+    markOwned(inUse, 4);
     const heldFile = path.join(inUse, 'nested', 'proof.txt');
     decision(runJanitor('', heldFile), inUse, 'kept');
     assert.equal(read(heldFile), 'issue-309-in-use');
   }
   const pausedTemp = scratch(temp, 'issue-310-pause', 4);
+  markOwned(pausedTemp, 4);
   write(flag, 'GPU not cleared: paused by the Board at 12:30');
   assert.match(runJanitor(), /janitor skipped during the PC pause/);
   assert(fs.existsSync(pausedTemp));

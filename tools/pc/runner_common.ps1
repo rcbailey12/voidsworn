@@ -276,7 +276,8 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
       $Matches[1]
       continue
     }
-    if (-not $inGen -and $line -match '^!! ("?)(godot/(?:[^"\\:\r\n]+\.uid|(?:campaign|rules)/test/(?:golden|out)/[^"\\:\r\n]+|campaign/test/parity_campaign_log\.txt|rules/test/parity_log\.txt)|\.onboarding_checks/[^"\\:\r\n]+)(?<!/)\1$') {
+    # parity_campaign.bat writes the campaign golden JSONL files and the parity log.
+    if (-not $inGen -and $line -match '^!! ("?)(godot/(?:[^"\\:\r\n]+\.uid|(?:campaign|rules)/test/out/[^"\\:\r\n]+|campaign/test/(?:golden/[^/"\\:\r\n]+\.jsonl|parity_campaign_log\.txt)|rules/test/(?:golden/[^"\\:\r\n]+|parity_log\.txt))|\.onboarding_checks/[^"\\:\r\n]+)(?<!/)\1$') {
       $Matches[2]
       continue
     }
