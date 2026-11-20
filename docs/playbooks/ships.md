@@ -189,6 +189,13 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    this run's own checked install, waits up to 3600 s for the GPU and ends "done PASS" or "done FAILED: <step>", then
    "all done". Why: on Nov 19 the C12 and C13 runners and S9's first run took pictures after a failed build, and 1155, 1157
    and 1158 failed a stage on the old 300 s GPU wait.
+14. **One fix reaches every ship of its kind (R333, Ryan, Nov 19 2026).** A fix or look change lands in the faction kit, the
+   paint stack, the shared parts or a shared helper, never in one ship's file alone, and its pull request names which other
+   ships pick it up and how (rebuilt from the kit, rebaked from the stack, or already calling the shared option). A change
+   that is truly one ship's says why in its pull request. Why: "let's make sure all the changes we're doing are cohesive and
+   tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
+   treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
+   later Sunward build.
 
 ### Named variant parts (issue 812)
 
