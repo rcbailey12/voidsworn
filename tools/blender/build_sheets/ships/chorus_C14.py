@@ -25,7 +25,7 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_chorus_2026_11/chorus_C14_broo
 CONCEPT_VIEWS = dict(top=dict(box=(20, 40, 590, 680), largest=True, flip=False, rot=-90), side=dict(box=(605, 120, 1180, 700), largest=True, flip=False))
 CROPS = [('bow (the front folds and the spine pore)', (605, 200, 900, 560)), ('midships (the openings and the pore patch)', (760, 120, 1060, 640)),
          ('stern (membranes)', (950, 20, 1600, 560))]
-SHEET = dict(version=5, round='blockout v5, the armour shell (R341, issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
+SHEET = dict(version=6, round='blockout v6, the armour shell with the sacs capped (R341, issue 1155)', date='2026-11-19', blend='opus1155\\chorus_C14',
              before='First full layout', before_note='The first complete C14 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.1, 2.0)    # a domed back, a round belly: a sac, no flat face anywhere
@@ -296,13 +296,14 @@ def build(K):
         K.mass('Launch opening %s' % fid, _bpy.data.objects['%s_mount_flesh' % fid], 'flesh neck and lip', note='thick fleshy rim, drawn empty')
 
     # ---------------- the teardrop sacs under the belly (spore feed storage, regrowth flesh) ----------------
+    caps = []   # R341, Ryan (Nov 20, "armour the sacs"): each bulb capped in small scutes, as C11 and C12
     for i, (x, th, r) in enumerate(SACS):
         for side in (1, -1):
             sn = 'p' if side > 0 else 's'
             pos, nrm = K.hpt(x, side_th(th, side), out=-0.05)
             hang = (Vector(nrm) * 0.3 + Vector((0, 0, -1))).normalized()   # straight down, a little out
             fid = 'S%d%s' % (i + 1, sn)
-            sac = HP.sac(r, h=r * SAC_HANG[i], seed=70 + 2 * i + (side > 0), kind='sac', glow=1, hang=3.0, creases=1, veins=2)
+            sac = HP.sac(r, h=r * SAC_HANG[i], seed=70 + 2 * i + (side > 0), kind='sac', glow=1, hang=3.0, creases=1, veins=2, armour=True)
             for c_ in sac.comps:   # pale smooth teardrops (Board v2 note 4): the bulb in pale hide, nothing standing off it
                 if c_['name'] == 'sac':
                     c_['mat'] = 'hide'
@@ -312,6 +313,7 @@ def build(K):
                                                           [r * 0.5, r * 0.24, r * 0.3, r * 0.45, r * 0.68, r * 0.88], n=14))
             K.organ(fid, sac, pos, hang, fwd=(1, 0, 0), inv='teardrop_sacs',
                     what='teardrop sac, %.1f across' % (2 * r), note='spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly')
+            caps.append(((fid + '_mount_hide',), tuple(Vector(pos) + hang * cz_), tuple(hang), r, 1.75, 0.5))   # the bulb, crown at its foot, the bile slit open
     K.mass('Teardrop sacs', _bpy.data.objects['S3p_mount_flesh'], 'flesh sacs', note='a fringe of teardrops under the belly')
 
     # ---------------- siphons ----------------
@@ -334,10 +336,11 @@ def build(K):
     # ---------------- the armour shell (R341): banded scutes over the whole body, every fitting in an open socket ----------------
     # the front's creased lobes and spine pore (the maw), the honeycomb field and its rim (the spore cloud) stay bare; the five
     # launch necks, the sacs' necks, the siphons and the vents stand in open sockets; the shell runs from the front skin's
-    # sunk back edge to the stern. The teardrop sacs stay pale and smooth (Board v2 note 4), uncapped.
+    # sunk back edge to the stern. The teardrop sacs are capped in smaller scutes (Ryan, Nov 20).
+    plates.dome_caps(K, _k, caps, seed=1356)
     shells = plates.armour(K, _k, 4.3, -5.0, seed=1355, keep=('front_', 'face', 'eye_hole', 'pores_front', 'spore_field'), rows=9, scute=0.95, thick=0.2,
                   note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, '
-                       'the honeycomb field, the five launch necks, the sacs, siphons and vents stand clear')
+                       'the honeycomb field, the five launch necks, siphons and vents stand clear, the sacs capped in smaller scutes')
     # where the stern falls away under a leaning launch lip, a scute laid over the neck's foot would run into the lip: leave that
     # scute off (the kit trims by the fitting's foot; the lip stands out of its reach)
     import bmesh
@@ -439,8 +442,8 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
-    K.change('An armour shell of banded overlapping keratin scutes over the whole sac (seven bands, lips aft); the stretch folds, body folds, wrinkles, shoulder pores and scar patches of v4 removed; the creased front, the spine pore, the honeycomb field, the launch necks and the pale sacs stay bare',
-             'Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, minus the spine, maw, engines and weapons; the shared kit (plates.armour, R333) as C11, C12 and C13. The sacs stay pale and smooth (the Board on v2, note 4)')
+    K.change('An armour shell of banded overlapping keratin scutes over the whole sac (seven bands, lips aft); the stretch folds, body folds, wrinkles, shoulder pores and scar patches of v4 removed; the creased front, the spine pore, the honeycomb field and the launch necks stay bare; each teardrop sac capped in smaller scutes (Ryan, Nov 20)',
+             'Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, minus the spine, maw, engines and weapons; the shared kit (plates.armour, R333) as C11, C12 and C13; Ryan on v5 (Nov 20): "Accept, but armour the sacs"')
     K.change('No modelled hide pads (their pores read as rivets and their edges as panel seams, the Board on v2); the hide\'s grown plates are paint (stage 5). Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette. R325: hard chitin with a little wet-flesh variety')
     K.change('Five launch openings on necks of flesh, one on the back at the stern, a pair high on the aft shoulders, a pair on the rim at the forward corners',
