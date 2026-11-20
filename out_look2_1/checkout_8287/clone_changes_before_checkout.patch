@@ -1,0 +1,17 @@
+diff --git a/godot/assets/ships/test/a4_shots.tscn b/godot/assets/ships/test/a4_shots.tscn
+index ce071b652..6a16e961f 100644
+--- a/godot/assets/ships/test/a4_shots.tscn
++++ b/godot/assets/ships/test/a4_shots.tscn
+@@ -1,6 +1,6 @@
+-[gd_scene load_steps=2 format=3]
+-
+-[ext_resource type="Script" path="res://assets/ships/test/a4_shots.gd" id="1"]
+-
+-[node name="A4Shots" type="Node3D"]
+-script = ExtResource("1")
++[gd_scene load_steps=2 format=3]
++
++[ext_resource type="Script" path="res://assets/ships/test/a4_shots.gd" id="1"]
++
++[node name="A4Shots" type="Node3D"]
++script = ExtResource("1")
