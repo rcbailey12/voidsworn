@@ -25,6 +25,9 @@ set S=%W%\scratch_%TAG%_%A%
 mkdir "%O%"
 mkdir "%S%"
 set RES=%O%\result.txt
+rem The ships to capture: this list, or the first line of opus1399\ships.txt when that file exists (drop a row without editing the bat).
+set SHIPS=i_wisp,i_song,i_boss,d_scythe,d_harvester,d_boss,c_boss
+if exist "%W%\ships.txt" set /p SHIPS=<"%W%\ships.txt"
 set BAD=0
 echo start %DATE% %TIME% attempt %A% tag %TAG% > "%RES%"
 findstr /b /c:"GPU cleared" "%V%\gpu_go.txt" >nul 2>&1 || (echo gpu_go.txt is not GPU cleared: stopped >> "%RES%" & echo all done >> "%RES%" & exit /b 0)
@@ -80,7 +83,7 @@ call "%TM%" 3600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import
 set E=%ERRORLEVEL%
 echo import exit %E% >> "%RES%"
 if not "%E%"=="0" (set "FAILMSG=import failed" & goto fail)
-call "%TM%" 5400 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1399/capture.gd -- "%S%" i_wisp,i_song,i_boss,d_scythe,d_harvester,d_boss,c_boss %TAG% > "%O%\log_capture.txt" 2>&1
+call "%TM%" 5400 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1399/capture.gd -- "%S%" %SHIPS% %TAG% > "%O%\log_capture.txt" 2>&1
 set E=%ERRORLEVEL%
 echo capture exit %E% >> "%RES%"
 findstr /c:"CAPTURE1399 DONE" "%O%\log_capture.txt" >nul 2>&1 || set BAD=1
