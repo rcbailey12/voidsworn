@@ -74,7 +74,7 @@ func _run() -> void:
 		sv.set_process(false)
 		fx.add_ship("C", sv, {"faction": "corsair", "cls": "Cruiser", "size": 0.8, "code": sv.code})
 		var s = fx.ship("C")
-		if not ROOT.world_sized(s): print("PROBE WARN %s: the hull is analysed at file size (L %.2f), not as the game does" % [tag, s.hull.L])
+		if not ROOT.at_game_size(s, ROOT.game_length(sv.code, "Cruiser")): print("PROBE WARN %s: %s" % [tag, ROOT.size_note(s, ROOT.game_length(sv.code, "Cruiser"))])
 		print("INSTALLED %s code=%s authored=%s seams=%s" % [tag, sv.code, s.hull.authored, s.hull.seams])
 		await _camera(170)
 		await fx.warmup(cam)

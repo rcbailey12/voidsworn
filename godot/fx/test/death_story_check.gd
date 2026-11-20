@@ -114,25 +114,9 @@ func _kill(story: bool, quality: String) -> Dictionary:
 	var ship := _load_ship()
 	check(ship != null, "A16 loads")
 	if ship == null: return {}
-	var length := 26.0
-	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
-		var ex = nd.get_meta("extras", {})
-		if ex is Dictionary and ex.has("length_world"): length = float(ex["length_world"])
-	world.add_child(ship)
-	var box := AABB()
-	var first := true
-	for mi in ship.find_children("*", "MeshInstance3D", true, false):
-		var bb: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).mesh.get_aabb()
-		box = bb if first else box.merge(bb)
-		first = false
-	# as ShipView draws it: the hull node scaled to the class length under an unscaled root, so the hull's numbers are
-	# world lengths (scaling the root instead would leave L at the file's own unit and the speeds a scale off)
-	world.remove_child(ship)
-	var holder := Node3D.new()
-	world.add_child(holder)
-	holder.add_child(ship)
-	ship.scale = Vector3.ONE * (length / maxf(box.size.x, 0.0001))
-	ship = holder
+	# as ShipView draws it (fx/test/world_root.gd): the hull scaled to its game length under an unscaled root, so the hull's
+	# numbers are world lengths (scaling the root instead would leave L at the file's own unit and the speeds a scale off)
+	ship = ROOT.hold(world, ship)
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
@@ -140,7 +124,7 @@ func _kill(story: bool, quality: String) -> Dictionary:
 	check(fx.death_story == story, "the switch reads %s" % story)
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
-	check(ROOT.world_sized(s), "the hull is analysed at world size, as the game does (L %.2f)" % s.hull.L)
+	check(ROOT.at_game_size(s, ROOT.held_length(s.root)), ROOT.size_note(s, ROOT.held_length(s.root)))
 	var t_wait := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t_wait < 120000:
 		fx.step(1.0 / 60.0)

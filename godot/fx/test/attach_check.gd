@@ -495,11 +495,12 @@ func _real_hulls(only: Array) -> int:
 		var fac := str(fc[0]) if FLOOK.has(str(fc[0])) else "hegemony"
 		var cls := str(fc[1]) if FLOOK.has(str(fc[0])) else "Cruiser"
 		var root3: Node3D
+		var want: float = ROOT.game_length(code, cls)   # ShipView's own length for this hull (HULL_LEN, else its class)
 		x += 80.0
 		if built:
 			var sv = SV.new()
 			world.add_child(sv)
-			sv.setup({"id": code, "fac": fac, "cls": cls, "facing": 0, "code": code, "L": float(HT.CLS_LEN.get(cls, 10.0)) * HT.SHIP_K}, Vector3(x, 0, 200), true)
+			sv.setup({"id": code, "fac": fac, "cls": cls, "facing": 0, "code": code}, Vector3(x, 0, 200), true)
 			sv.set_process(false)
 			root3 = sv
 		else:
@@ -515,12 +516,12 @@ func _real_hulls(only: Array) -> int:
 			node.position = Vector3(x, 0, 200)
 			# Issues 1309 and 1355: the hull scaled to its class length under the unscaled stand-in, as ShipView draws it
 			# (fx/test/world_root.gd); left at the glb's own size, about one unit long, the hit test misses small parts
-			ROOT.hold(world, scene as Node3D, float(HT.CLS_LEN.get(cls, 10.0)) * HT.SHIP_K, -1.0, node)
+			ROOT.hold(world, scene as Node3D, want, -1.0, node)
 			root3 = node
 		# The attach walk uses the hull analysis. Building each fitted shield does not affect its points or triangles.
 		fx.add_ship("real_" + code, root3, {"faction": fac, "cls": cls, "size": 1.0, "code": code, "shielded": false})
 		var s = fx.ship("real_" + code)
-		check(ROOT.world_sized(s), "%s: the hull is analysed at world size, as the game does (L %.2f)" % [code, s.hull.L])
+		check(ROOT.at_game_size(s, want), "%s: %s" % [code, ROOT.size_note(s, want)])
 		_walk("real_" + code, s, true)
 		fx.remove_ship("real_" + code)
 		root3.queue_free()

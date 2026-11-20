@@ -83,7 +83,7 @@ func _run() -> void:
 	fx.defer_initial_cuts = true
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
-	check(ROOT.world_sized(s), "the hull is analysed at world size, as the game does (L %.2f)" % s.hull.L)
+	check(ROOT.at_game_size(s, ROOT.held_length(s.root)), ROOT.size_note(s, ROOT.held_length(s.root)))
 	check(s.hull.authored, "A16's seams reach the hull reader")
 	DEATH.precompute(fx, s, "blast", true)
 	var job: Dictionary = s.get_meta("cut_job")

@@ -71,7 +71,8 @@ func _run() -> void:
 				{"p": [0, 0, 0], "n": [0, 1, 0], "span": [-7, 5]}]})
 	# Issues 1309 and 1355: rooted the way the game roots it (fx/test/world_root.gd): an unscaled node at world size, the
 	# ship scaled under it (scaling the root left a written GLB, about one unit long, analysed at file size)
-	var holder := ROOT.hold(world, ship, -1.0, 1.7 if args.is_empty() else 40.0)
+	# A written GLB is held at the length the game draws it (its code and class); only the built fixture keeps a fixed scale.
+	var holder := ROOT.hold(world, ship, -1.0, 1.7 if args.is_empty() else -1.0)
 	holder.position = Vector3(2, 3, 4)
 	var fx = FX.new()
 	world.add_child(fx)
@@ -79,7 +80,7 @@ func _run() -> void:
 	fx.setup({"death_story": "off", "quality": "low", "camera": null, "shake": 0.0})
 	fx.add_ship("authored", holder, {"faction": "corsair", "cls": "Cruiser", "size": 0.8})
 	var s = fx.ship("authored")
-	check(ROOT.world_sized(s), "the hull is analysed at world size, as the game does (L %.2f)" % s.hull.L)
+	check(ROOT.at_game_size(s, ROOT.held_length(s.root)), ROOT.size_note(s, ROOT.held_length(s.root)))
 	check(s.hull.authored, "GLB extras reached hull reader")
 	# issue 532 (R225 (c): a check reads the ship's own numbers): the seams the ship carries, counted from its own
 	# voidsworn_destruct record, never the fixture's two transverse and one longitudinal (A17 has two transverse, A16 three)
