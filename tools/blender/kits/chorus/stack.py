@@ -112,6 +112,8 @@ if LOOK == 'grown':
     GLOW['bile'] = ((.52, .78, .06), 1.1)
     # the veils: tan leathery membrane with the warm light faint through it (the concept), not glossy maroon
     GLOW['membrane'] = ((.20, .11, .04), .10)
+    # deeper relief: the hide's creases must read in the light at camera 26, not only in the colour
+    LAYERS.update(bump_distance=0.004, bump_strength=1.0)
 GROWN = {
     # hide: muddy olive-brown, light and dark ends, base roughness (matte)
     'flesh': ((.112, .085, .046), (.024, .016, .009), .72),
@@ -187,7 +189,7 @@ def grown_flesh(c, zone, base, shade, roughness):
     col = mixc(nt, col, PAD, math_(nt, 'MULTIPLY', pads, .3))
     col = mixc(nt, col, shade, math_(nt, 'MULTIPLY', pores, .75))
     height = math_(nt, 'MULTIPLY', folds, -.12)
-    height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', wr, -.36))
+    height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', wr, -.5))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', cracks, -.12))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', fine, -.08))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', veins, .22))

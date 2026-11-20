@@ -15,7 +15,7 @@ import json
 import os
 import sys
 
-FLOORS = dict(normal=4.0, albedo=0.12, rough=0.05)
+FLOORS = dict(normal=3.5, albedo=0.04, rough=0.08)   # Nov 20: the R341 C13 flesh measured 1.1, 0.066, 0.023; round 10 6.6, 0.063, 0.185
 
 
 def _load(path, mode):

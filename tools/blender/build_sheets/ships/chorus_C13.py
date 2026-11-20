@@ -96,7 +96,7 @@ def build(K):
     calm = [(1.6, 1.45, 0.55), (-0.15, 1.8, 0.6), (-1.55, 1.75, 0.5), (3.55, -0.15, 0.5), (3.55, math.pi + 0.15, 0.5),
             (-2.45, 0.35, 0.45), (-2.45, math.pi - 0.35, 0.45)]
     calm += [(x, th if sd > 0 else math.pi - th, rr * 1.6) for sd in (1, -1) for (x, th, rr) in SACS[sd]]   # the sacs are their own bulges
-    K.wob_fn = body.field(1291, 4.3, -2.8, swell=26, folds=26, wrinkles=60, sweeps=34, depth=0.17, keep=calm,
+    K.wob_fn = body.field(1291, 4.3, -2.8, swell=26, folds=30, wrinkles=150, sweeps=44, depth=0.19, keep=calm,
                           shell=(3.75, -2.35, 0.5))   # the armadillo shell below: no creases under it
     hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=160, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the broad lumpy body', hull, 'dark olive flesh', note='a rounded nose bulb, broad in the middle, short at the tail')
@@ -139,7 +139,7 @@ def build(K):
         for i, (x, th, rr) in enumerate(SACS[side]):
             pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
             fid = 'S%d%s' % (i + 1, sn)
-            K.organ(fid, HP.sac(rr * 1.12, h=rr * 1.1, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, creases=3, veins=6, window='slit'), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
+            K.organ(fid, HP.sac(rr * 1.12, h=rr * 1.1, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, creases=6, veins=6, window='slit'), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
                     what='bile sac, %.1f across' % (2 * rr), note='a round bile sac bulging from the lower flank; it swells before a volley')
             K.mass('Bile sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome')
     for a_, b_ in (('S1p', 'S2p'), ('S2p', 'S3p'), ('S3p', 'S4p'), ('S1s', 'S2s'), ('S2s', 'S3s'), ('S3s', 'S4s'), ('S2s', 'H2'), ('S2p', 'H1'), ('S3p', 'H3')):
@@ -150,7 +150,7 @@ def build(K):
         pos, nrm = K.hpt(x, th, out=-0.06)
         hang = (Vector(nrm) * 0.4 + Vector((0, 0, -1))).normalized()
         fid = 'H%d' % (i + 1)
-        K.organ(fid, HP.sac(rr * 1.1, h=rr * 1.4, seed=80 + i, kind='sac', glow=1, rim=0.45, hang=1.35, creases=3, veins=5, window='slit'), pos, hang, fwd=(1, 0, 0), inv='hanging_sacs',
+        K.organ(fid, HP.sac(rr * 1.1, h=rr * 1.4, seed=80 + i, kind='sac', glow=1, rim=0.45, hang=1.35, creases=5, veins=5, window='slit'), pos, hang, fwd=(1, 0, 0), inv='hanging_sacs',
                 what='hanging sac, %.1f across' % (2 * rr), note='a bile sac hanging under the belly: the spitter\'s deep reserve')
         K.mass('Hanging sac %d' % (i + 1), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh sac')
 
