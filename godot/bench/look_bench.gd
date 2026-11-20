@@ -276,8 +276,13 @@ func _setup_view() -> void:
 
 # --sound: the battle's sound player and death observer, and the bench picture on screen for --write-movie.
 func _sound_setup() -> void:
+	# The death cues are positional (AudioStreamPlayer3D). They are heard only through a listener in their own world:
+	# the bench camera lives in the SubViewport, whose 3D listener is off by default, and a player in the root window's
+	# world has no camera at all. PC run 1 (issue 1238) recorded digital silence that way. So the sound player lives in
+	# the SubViewport's world and that viewport listens.
+	vp.audio_listener_enable_3d = true
 	sfx = preload("res://audio/sfx.gd").new()
-	add_child(sfx)
+	world.add_child(sfx)
 	sfx.cam = cam
 	death_audio = preload("res://audio/death_audio.gd").new()
 	death_audio.sfx = sfx
