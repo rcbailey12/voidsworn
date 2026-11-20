@@ -133,3 +133,53 @@ function Save-CheckoutSalvage($repo, $mirror, $state, $dest) {
     } catch { Log "salvage scratch kept: $staging ($($_.Exception.Message))" }
   }
 }
+
+# Issue 1180 run 7 (Artoo and the Board, PR 1260): ship and gen files the shared build looks to have superseded are kept
+# once each in salvage\superseded_store\<sha256>.bin (the same D20_23.glb from three lanes is stored once), read back by
+# size and SHA-256, and listed in a per-checkout manifest. Only the manifest folder is per checkout.
+function Test-StoreEntry($file, $hash, $length) {
+  return ($file -is [IO.FileInfo] -and -not ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+    $file.Length -eq $length -and (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLower() -eq $hash)
+}
+function Save-SupersededArchive($repo, $paths, $dest) {
+  $root = Split-Path -Parent $dest
+  $dir = [IO.Directory]::CreateDirectory($root)
+  Assert-PlainDirectory $dir
+  $store = [IO.Directory]::CreateDirectory((Join-Path $root 'superseded_store'))
+  Assert-PlainDirectory $store
+  $staging = Join-Path $root ".checking-$([guid]::NewGuid().ToString('N'))"
+  $null = [IO.Directory]::CreateDirectory($staging)
+  try {
+    $manifest = @(); $bytes = 0L; $newBytes = 0L; $reused = 0
+    foreach ($path in $paths) {
+      $source = Get-Item -LiteralPath (Join-Path $repo $path) -Force
+      if ($source -isnot [IO.FileInfo] -or ($source.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "archive source changed: $path" }
+      $hash = (Get-FileHash -LiteralPath $source.FullName -Algorithm SHA256).Hash.ToLower()
+      $blob = Join-Path $store.FullName "$hash.bin"
+      $existing = Get-Item -LiteralPath $blob -Force -ErrorAction SilentlyContinue
+      if ($existing) {
+        if (-not (Test-StoreEntry $existing $hash $source.Length)) { throw "archive store entry does not match: $hash.bin" }
+        $reused++
+      } else {
+        $part = Join-Path $staging "$hash.part"
+        [IO.File]::Copy($source.FullName, $part, $false)
+        if (-not (Test-StoreEntry (Get-Item -LiteralPath $part -Force) $hash $source.Length)) { throw "archive read-back failed: $path" }
+        [IO.File]::Move($part, $blob)
+        if (-not (Test-StoreEntry (Get-Item -LiteralPath $blob -Force) $hash $source.Length)) { throw "archive read-back failed: $path" }
+        $newBytes += $source.Length
+      }
+      $manifest += "$hash  $($source.Length)  $path"
+      $bytes += $source.Length
+    }
+    Put (Join-Path $staging 'superseded_manifest.txt') (($manifest -join "`n") + "`n")
+    if (Cleanup-Paused) { throw 'PC pause is active' }
+    # Directory.Move fails if an archive already exists. Never overwrite one.
+    [IO.Directory]::Move($staging, $dest)
+    Log "superseded archive verified: $dest ($($paths.Count) files, $bytes bytes; $newBytes new bytes in the shared store, $reused already stored)"
+  } finally {
+    if (Test-Path -LiteralPath $staging) {
+      try { Remove-CleanupDirectory (Get-Item -LiteralPath $staging -Force) }
+      catch { Log "archive scratch kept: $staging ($($_.Exception.Message))" }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const crypto = require('node:crypto');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
@@ -217,6 +218,31 @@ try {
   write(path.join(wrongGen, '.git', 'info', 'exclude'), 'godot/gen/\n');
   write(path.join(wrongGen, 'godot/gen/proof.uid'), 'local');
   write(path.join(pc, 'build/godot/gen/proof.uid'), 'other');
+  // Issue 1180 run 7: the copy's differing gen file is newer than the build's, so it is not superseded and is kept.
+  // The never-touch fixtures later re-date pc/build, so the build times are applied just before the first scan.
+  const buildTimes = [[path.join(pc, 'build/godot/gen/proof.uid'), 40]];
+  // A differing ship or gen file counts as rebuildable for removal only when the shared build holds the same file written
+  // strictly later (superseded). Newer copies, files missing from the build and untrusted times keep the copy.
+  function shipCopy(name, file, copyHours, buildHours, ignore = 'godot/assets/ships/*/', bytes = `${name} copy bake`) {
+    const dir = makeCopy(`repo-kept-${name}`, 2, laneB);
+    write(path.join(dir, '.git', 'info', 'exclude'), `${ignore}\n`);
+    write(path.join(dir, file), bytes);
+    dateTree(dir, 26);
+    if (copyHours !== null) dated(path.join(dir, file), copyHours);
+    if (buildHours !== null) {
+      write(path.join(pc, 'build', file), `${name} installed bake, longer`);
+      buildTimes.push([path.join(pc, 'build', file), buildHours]);
+    }
+    return dir;
+  }
+  const shipSuperseded = shipCopy('ship-superseded', 'godot/assets/ships/T1_11/T1_11.glb', 26, 10);
+  // The same superseded bytes in a second lane copy are stored once (Board, Nov 20).
+  const shipSupersededTwin = shipCopy('ship-superseded-twin', 'godot/assets/ships/T1_11/T1_11.glb', 26, 10, undefined, 'ship-superseded copy bake');
+  const genSuperseded = shipCopy('gen-superseded', 'godot/gen/manifest.json', 26, 10, 'godot/gen/');
+  const shipNewer = shipCopy('ship-newer', 'godot/assets/ships/T2_11/T2_11.glb', 26, 40);
+  const shipMissing = shipCopy('ship-missing', 'godot/assets/ships/T3_11/T3_11.glb', 26, null);
+  const shipOldTime = shipCopy('ship-old-time', 'godot/assets/ships/T4_11/T4_11.glb', null, 10);
+  fs.utimesSync(path.join(shipOldTime, 'godot/assets/ships/T4_11/T4_11.glb'), new Date(Date.UTC(1990, 0, 1)), new Date(Date.UTC(1990, 0, 1)));
   const edited = makeCopy('repo-kept-hand-edit', 2, laneB);
   write(path.join(edited, 'tracked.txt'), 'hand edit');
   const localHistory = makeCopy('repo-kept-local-history', 2, laneB);
@@ -348,8 +374,8 @@ try {
         JANITOR_PROOF_ACTIVE: activeMarker, PC_TEST_JANITOR_NOW: fixtureNow.toISOString(), ...extra });
   }
   const recover = [localHistory, trashUntracked, trashStaged, workDirty];
-  const remove = [caches, golden, parityLog, oldOwned, oldRetry, tokenOnly, recordedFull, opus, oldStage7, workClean, ...recover];
-  const preserve = [edited, laneNewest, wrongGen, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
+  const remove = [caches, golden, parityLog, shipSuperseded, shipSupersededTwin, genSuperseded, oldOwned, oldRetry, tokenOnly, recordedFull, opus, oldStage7, workClean, ...recover];
+  const preserve = [edited, laneNewest, wrongGen, shipNewer, shipMissing, shipOldTime, invalidRepo, goldenNotes, ...localWork, activeOwned, recordedActive, pathOnly, survivorBare,
     ...lookalikes, replaced, ...(windows ? [survivorCopied] : []), freshRetry, recent, recentOpus, invalidOwner, liveHelper, workLive, workLocked, workNew];
   function decision(report, dir, word) {
     const row = report.split(/\r?\n/).find(line => line.includes(`${dir} (`));
@@ -363,6 +389,7 @@ try {
       return { bytes: fs.readFileSync(full), modified: fs.statSync(full, { bigint: true }).mtimeNs };
     });
   }
+  for (const [file, hours] of buildTimes) dated(file, hours);
   const beforeScan = oldCopies.map(checkoutSnapshot);
   const dry = runJanitor('--dry-run');
   assert.deepEqual(oldCopies.map(checkoutSnapshot), beforeScan);
@@ -378,6 +405,20 @@ try {
   }
   assert.match(decision(dry, recordedActive, 'would keep'), /issue #302 lock is held/);
   assert.match(decision(dry, replaced, 'would keep'), /ownership token differs from runner status/);
+  for (const [dir, file] of [[shipSuperseded, 'godot/assets/ships/T1_11/T1_11.glb'], [genSuperseded, 'godot/gen/manifest.json']]) {
+    assert(dry.split(/\r?\n/).some(line => line.startsWith(`superseded by the shared build: ${file} (copy `) && /bytes; build .* bytes\)$/.test(line)),
+      `superseded call for ${dir} must log both times and sizes`);
+  }
+  // Artoo, PR 1260: an older ignored GLB with unique bytes and a newer, different same-name build file is only nominated;
+  // it is archived and read back before its checkout goes.
+  assert.match(decision(dry, shipSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files, \d+ bytes/);
+  assert.match(decision(dry, genSuperseded, 'would remove'), /after checked archive of 1 superseded ship or gen files/);
+  assert.match(decision(dry, shipNewer, 'retained'), /shared ship copy could not be verified/);
+  assert.match(dry, /copy is not older than the shared build, kept: godot\/assets\/ships\/T2_11\/T2_11\.glb \(copy /);
+  assert.match(decision(dry, shipMissing, 'retained'), /shared ship copy could not be verified/);
+  assert.match(decision(dry, shipOldTime, 'retained'), /shared ship copy could not be verified/);
+  assert.match(dry, /shared copy time not trusted, kept: godot\/assets\/ships\/T4_11\/T4_11\.glb/);
+  assert.match(decision(dry, wrongGen, 'retained'), /shared generated copy could not be verified/);
   assert.match(decision(dry, pathOnly, 'would keep'), /runner status record lacks token or creation time/);
   assert.match(decision(dry, survivorBare, 'would keep'), /runner status record names a folder without its ownership token/);
   if (windows) assert.match(decision(dry, survivorCopied, 'would keep'), /recorded directory was replaced/);
@@ -400,6 +441,21 @@ try {
     assert(!fs.existsSync(dir), `janitor left ${dir}`);
   }
   for (const dir of [...preserve, ...never]) assert(fs.existsSync(dir), `janitor removed ${dir}`);
+  const store = path.join(salvageRoot, 'superseded_store');
+  const stored = {};
+  for (const [dir, file, bytes] of [[shipSuperseded, 'godot/assets/ships/T1_11/T1_11.glb', 'ship-superseded copy bake'],
+    [shipSupersededTwin, 'godot/assets/ships/T1_11/T1_11.glb', 'ship-superseded copy bake'],
+    [genSuperseded, 'godot/gen/manifest.json', 'gen-superseded copy bake']]) {
+    const archive = path.join(salvageRoot, `board_b_${path.basename(dir)}_superseded`);
+    const row = read(path.join(archive, 'superseded_manifest.txt'));
+    const hash = crypto.createHash('sha256').update(bytes).digest('hex');
+    assert.equal(row, `${hash}  ${Buffer.byteLength(bytes)}  ${file}\n`);
+    assert.equal(read(path.join(store, `${hash}.bin`)), bytes, `the store keeps the unique bytes of ${file}`);
+    assert.match(live, new RegExp(`superseded archive verified: ${archive.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')} \\(1 files, \\d+ bytes; `));
+    stored[hash] = true;
+  }
+  assert.deepEqual(fs.readdirSync(store).sort(), Object.keys(stored).map(hash => `${hash}.bin`).sort());
+  assert.match(live, /0 new bytes in the shared store, 1 already stored\)/);
   decision(live, failedSalvage, 'untracked path cannot be verified');
   assert(fs.existsSync(failedSalvage));
   const historyBackup = path.join(salvageRoot, 'board_b_repo-kept-local-history', 'salvage.bundle');

@@ -294,7 +294,12 @@ Before setting aside an earlier checkout, the runner reuses it only when its wor
 `godot/campaign/test/`, regenerated `golden/`, `out/` and `parity_log.txt` under `godot/rules/test/`, ignored Godot `.uid`
 files including script UIDs and those under `godot/audio/build/`, and
 ignored `.onboarding_checks/` output. All ignored files under `godot/gen/` and other ignored files under `godot/assets/ships/` must match the same path in
-the shared build by size and SHA-256 (issue 1107). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
+the shared build by size and SHA-256 (issue 1107). For removal only, never for reuse, a differing ship or `godot/gen/` file
+is a candidate when the shared build holds the same file written strictly later; a copy file with no trusted time (before
+2000 or in the future) is kept, and each such call logs both times and sizes. Times only nominate: the janitor copies
+those files once each into `salvage\superseded_store\<sha256>.bin`, reads each back by size and SHA-256, lists them in
+`salvage\<lane>_<name>_superseded\superseded_manifest.txt`, and only then removes the copy;
+any failed check keeps it (issue 1180 run 7, Board Nov 20; Artoo on PR 1260). The safe list also includes stage 7 leftovers in `godot/.stage7-replaced-*`
 and `godot/assets/ships/manifest.bak_*`. The runner fetches and switches to the new branch with those files in place. A collision or an
 uncertain check keeps the earlier checkout beside repo. More than two `repo-kept-*` copies triggers a warning naming each
 copy and its size. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
