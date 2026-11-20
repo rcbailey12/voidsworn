@@ -36,6 +36,34 @@ if ($mode -eq 'run') {
   } catch { Write-Host "job refused: could not hold the issue lock and run work_issue.bat ($($_.Exception.Message))"; exit 14 }
 }
 
+function Start-Utf8InputProcess($start) {
+  # Issue 1335: PowerShell 5.1 (.NET Framework) writes redirected stdin in [Console]::InputEncoding and emits its
+  # preamble when the process starts. Under code page 65001 that is a UTF-8 BOM, so git read '<BOM>create ...' and
+  # every salvage on Nov 20 was kept; under a legacy page such as 437, non-ASCII text leaves in that page. Newer .NET
+  # takes StandardInputEncoding. On 5.1 the console input encoding becomes BOM-free UTF-8 around the start and is put
+  # back after. A preamble that would still be written stops the call before anything starts. Send the text itself
+  # with Write-Utf8Input, which writes UTF-8 bytes whatever the console page is (Artoo on PR 1345).
+  $noBom = New-Object Text.UTF8Encoding($false)
+  if ($start.PSObject.Properties['StandardInputEncoding']) { $start.StandardInputEncoding = $noBom; return [Diagnostics.Process]::Start($start) }
+  $saved = $null
+  try { $saved = [Console]::InputEncoding } catch { }
+  $isUtf8 = { param($e) $e -and $e.CodePage -eq 65001 -and -not $e.GetPreamble().Length }
+  try {
+    if (-not (& $isUtf8 $saved)) { try { [Console]::InputEncoding = $noBom } catch { } }
+    $now = $null; try { $now = [Console]::InputEncoding } catch { }
+    if ($now -and $now.GetPreamble().Length) { throw 'stdin encoding still writes a byte order mark; nothing started' }
+    return [Diagnostics.Process]::Start($start)
+  } finally {
+    if ($saved) { try { if (-not $saved.Equals([Console]::InputEncoding)) { [Console]::InputEncoding = $saved } } catch { } }
+  }
+}
+function Write-Utf8Input($process, [string]$text) {
+  # UTF-8 bytes straight to the pipe, so the console code page cannot change the text (issue 1335).
+  $bytes = (New-Object Text.UTF8Encoding($false)).GetBytes($text)
+  $process.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
+  $process.StandardInput.BaseStream.Flush()
+  $process.StandardInput.Close()
+}
 # Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
 # GitHub link on the delivery branch, so it opens on a phone; every other path under the user's home folder becomes
 # %USERPROFILE%\..., so no PC folder name reaches a public pull request. Everything else is left exactly as written.
@@ -141,10 +169,11 @@ function OpenAI-Agent($out, $repo, $exe, $model, $variant, [int]$cap) {
       $start.RedirectStandardInput = $true
       $start.RedirectStandardOutput = $true
       $start.StandardOutputEncoding = $utf8
-      $process = [Diagnostics.Process]::Start($start)
+      # OpenCode reads the prompt as UTF-8; no byte order mark in front of it (issue 1335).
+      $process = Start-Utf8InputProcess $start
       try {
         # OpenCode reads the message from stdin. The watchdog can record its command line on a timeout.
-        try { $process.StandardInput.Write($prompt); $process.StandardInput.Close() } catch [IO.IOException] { }
+        try { Write-Utf8Input $process $prompt } catch [IO.IOException] { }
         if ($resumes) {
           Add-Content -LiteralPath (Join-Path $out 'result.txt') -Value ('rate limited, resumed {0} of {1}' -f $resumes, $waits.Count) -Encoding UTF8
         }

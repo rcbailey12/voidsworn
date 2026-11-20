@@ -1041,6 +1041,10 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 				breaks[-1]["at"] = Vector3(_break_x(breaks[-1], h.c.z), h.c.y, h.c.z)
 	for b in authored:
 		if not b.has("span"): continue
+		# one crack (issue 1077): a strained death keeps no lengthwise joint either. A lengthwise break's plane splits its
+		# whole parent piece, and once a crosswise joint is dropped that parent runs past the joint's own span, so the plane
+		# would cut plating and insides where no joint was built (S8 and S9: insides outside their piece's hull)
+		if story: continue
 		var parent := 0
 		var mid: float = (float(b["span"][0]) + float(b["span"][1])) * 0.5
 		for t in transverse:
