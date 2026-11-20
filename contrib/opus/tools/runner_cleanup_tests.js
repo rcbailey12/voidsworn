@@ -621,6 +621,28 @@ try {
   assert.match(nightRun('2026-11-19T09:00:00Z'), /janitor --nightly/);
   assert.match(nightRun('2026-07-19T10:59:59Z'), /janitor --nightly/);
   assert.equal(nightRun('2026-07-19T10:59:59Z'), '');
+  // Issue 1180: --after-job skips silently while any GPU claim is held, and shares the hourly allowance with --low-space.
+  const nightVt = path.join(root, 'night-profile', 'Downloads', 'voidsworn_test');
+  const afterJob = (now, extra = {}) => runJanitor('--after-job', lockPath, {
+    PC_TEST_JANITOR_NOW: now, PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile'), ...extra
+  });
+  write(path.join(nightVt, 'gpu_solo'), '{"token":"t","issue":"bench","pid":1,"mode":"solo"}\n');
+  write(path.join(nightVt, 'gpu_slot_1'), '');
+  assert.equal(afterJob('2026-11-20T15:00:00Z'), '', 'a held solo claim stops the after-job cleanup');
+  write(path.join(nightVt, 'gpu_solo'), '');
+  write(path.join(nightVt, 'gpu_slot_2'), '{"token":"u","issue":"render","pid":2,"mode":"shared"}\n');
+  assert.equal(afterJob('2026-11-20T15:00:00Z'), '', 'a held shared claim stops it too');
+  write(path.join(nightVt, 'gpu_slot_2'), '');
+  assert.match(afterJob('2026-11-20T15:00:00Z'), /janitor --after-job/, 'empty claim files: it runs, the GPU checks spent no allowance');
+  assert.equal(afterJob('2026-11-20T15:30:00Z'), '', 'once an hour');
+  assert.equal(runJanitor('--low-space', lockPath, {
+    PC_TEST_JANITOR_NOW: '2026-11-20T15:40:00Z', PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+  }), '', 'the low-space trigger shares the hour');
+  assert.match(afterJob('2026-11-20T16:00:01Z'), /janitor --after-job/);
+  const heldLock = path.join(nightVt, 'janitor.lock');
+  assert.equal(runJanitor('--after-job', heldLock, {
+    PC_TEST_JANITOR_NOW: '2026-11-20T18:00:00Z', PC_RUN_TEMP: nightTemp, JANITOR_PROOF_ACTIVE: '', USERPROFILE: path.join(root, 'night-profile')
+  }), '', 'a busy janitor lock: skipped without a word');
   if (windows) {
     const inUse = scratch(temp, 'issue-309-in-use', 4);
     markOwned(inUse, 4);
