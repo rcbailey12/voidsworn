@@ -103,6 +103,14 @@ func _run() -> void:
 	check(_rim(late), "a hull whose material was set two frames late did not get its rim")
 	check(_fogless(late), "a hull whose material was set two frames late did not get the nebula fog guard")
 
+	# 5 (issue 1315): a faction with READ rim_light 0 (the Glasswrights) stays off both rim lights but keeps the fog guard
+	var pale := _mesh(null)
+	scene.add_child(pale)
+	pale.set_surface_override_material(0, LOOK.hull(StandardMaterial3D.new(), "ithar", true))
+	await _frames(2)
+	check(not _rim(pale), "a Glasswright hull joined a rim light layer (READ ithar rim_light is 0)")
+	check(_fogless(pale), "a Glasswright hull lost the nebula fog guard")
+
 	scene.queue_free()
 	await _frames(2)
 	if fails.is_empty():

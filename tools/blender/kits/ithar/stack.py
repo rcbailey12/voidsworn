@@ -47,9 +47,10 @@ WEIGHTS = (55, 27, 18)
 PANEL = dict(amber=(0.88, 0.13, 0.0), violet=(0.42, 0.02, 0.95), green=(0.03, 0.55, 0.10))
 # Round 5 (outside read, Nov 19: "flat orange, purple and lime gravel"): each panel is lit from behind, so its colour runs
 # from a DEEP tone at the lead border to a HOT tone in the middle (parts.mosaic_tint writes the graded colour per vertex).
-TONES = dict(amber=((0.40, 0.035, 0.0), (1.0, 0.40, 0.015)),
-             violet=((0.13, 0.0, 0.36), (0.62, 0.10, 1.0)),
-             green=((0.0, 0.18, 0.03), (0.20, 0.78, 0.04)))
+# Warming round (issue 1282, Ryan Nov 20: "put it in, then warm it up"): deep tones lifted so the panel edges glow too.
+TONES = dict(amber=((0.50, 0.06, 0.0), (1.0, 0.42, 0.02)),
+             violet=((0.18, 0.01, 0.45), (0.66, 0.14, 1.0)),
+             green=((0.01, 0.24, 0.04), (0.24, 0.82, 0.06)))
 # The bake marks its materials authored_look (shared paint_stack.py), so godot/render/look.gd keeps these values instead of
 # applying the faction's older read caps (R329). No soft-rim mark: the pearl's own shine is the look.
 AUTHORED_LOOK = True
@@ -59,13 +60,14 @@ LOOK = dict(
     # Round 5: each ribbon is a bundle of fine strands (STRANDS across it), each strand its own pearl tone with a bright
     # silver line between strands, and a facing colour shift (the iridescence) that the review shows and the game's rim
     # approximates. Tones sampled from the concept's pearl clusters.
-    pearl=dict(base=lin((246, 236, 228)), tones=(lin((252, 238, 226)), lin((240, 212, 214)), lin((240, 222, 190)),
-                                                 lin((228, 214, 232))),
-               iris=(lin((255, 214, 150)), lin((240, 170, 205)), lin((175, 170, 245)), lin((160, 225, 225))),
-               iris_weight=0.60, strands=7.0, line=0.07, metallic=0.55, roughness=0.08, coat=1.0, coat_roughness=0.04,
+    # Warming round (issue 1282): champagne like the concept, not lilac grey. Warm strand tones, a gold-to-rose shift.
+    pearl=dict(base=lin((240, 216, 170)), tones=(lin((246, 226, 182)), lin((232, 198, 142)), lin((242, 216, 168)),
+                                                 lin((226, 200, 160))),
+               iris=(lin((255, 204, 120)), lin((246, 172, 112)), lin((236, 162, 168)), lin((205, 180, 230))),
+               iris_weight=0.45, strands=7.0, line=0.07, metallic=0.65, roughness=0.08, game_roughness=0.18, coat=1.0, coat_roughness=0.04,
                thin_film_nm=520.0, transmission=0.0, wear=0.0),
-    silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, transmission=0.0),
-    mosaic=dict(emission=2.6, roughness=0.10, coat=0.35, cell_scale=4.2, lead=0.045, sparkle=0.006, facet_tilt=0.45,
+    silver=dict(base=(0.92, 0.91, 0.90), metallic=1.0, roughness=0.10, game_roughness=0.20, transmission=0.0),
+    mosaic=dict(emission=3.4, roughness=0.10, coat=0.35, cell_scale=4.2, lead=0.045, sparkle=0.006, facet_tilt=0.45,
                 body=0.08, cell_lo=0.55, cell_hi=1.2, lead_rgb=(0.035, 0.026, 0.018), transmission=0.0),
     gem=dict(emission=3.0, roughness=0.06, transmission=0.0),
     tip=dict(base=(1.0, 0.33, 0.05), emission=9.0),
@@ -349,7 +351,7 @@ def setup(kit):
         'gw_root_green': gem('gw_root_green', PANEL['green'], 0.7),
         'gw_drive': gem('gw_drive', (0.62, 0.42, 1.0), 0.45),
         'gw_drive_cut': gem('gw_drive_cut', (0.78, 0.62, 1.0), 0.25, metallic=0.4, cut=True),
-        'gw_drive_core': gem('gw_drive_core', (0.88, 0.80, 1.0), 1.6),
+        'gw_drive_core': gem('gw_drive_core', (0.80, 0.62, 1.0), 0.9),   # warming round: dimmer, violet, not white
     }
     for name, m in made.items():
         kit.MATS[name] = (tuple(m.diffuse_color[:3]), 0)
@@ -363,7 +365,9 @@ def setup(kit):
 # The bake runs on the contract's scene, scaled to length one, so pattern sizes are per ship length here.
 SCALE = 1.0
 EMISSIVE_ATLAS = True
-EMISSIVE_STRENGTH = 1.6          # the atlas holds emission / this (8-bit maps clip at 1); the material multiplies it back
+EMISSIVE_STRENGTH = 2.1          # the atlas holds emission / this (8-bit maps clip at 1); the material multiplies it back
+#                                  (warming round: 1.6 to 2.1 with the mosaic at 3.4, so the atlas clips no more and the game
+#                                  panels glow about a third brighter)
 CELLS_PER_LENGTH = 109.0         # LOOK mosaic cell_scale (4.2 per world unit) on a 26-unit Ark, as in the review
 LAYERS = dict(ao_short=.009, ao_long=.026, edge_radius=.0004, edge_gain=14, bump_distance=.0004, bump_strength=.30)
 ZONES = {z: {} for z in ('gw_pearl', 'gw_silver', 'gw_mosaic', 'gw_lance')}
@@ -373,7 +377,7 @@ DECALS = ()
 GLOW = {
     'gw_gem_amber': (PANEL['amber'], LOOK['gem']['emission']), 'gw_gem_violet': (PANEL['violet'], LOOK['gem']['emission']),
     'gw_gem_green': (PANEL['green'], LOOK['gem']['emission']),
-    'gw_drive': ((0.62, 0.42, 1.0), 0.45), 'gw_drive_cut': ((0.78, 0.62, 1.0), 1.2), 'gw_drive_core': ((0.88, 0.80, 1.0), 1.6),
+    'gw_drive': ((0.62, 0.42, 1.0), 0.45), 'gw_drive_cut': ((0.78, 0.62, 1.0), 0.7), 'gw_drive_core': ((0.80, 0.62, 1.0), 0.9),
     'gw_tip': (LOOK['tip']['base'], 4.0),
 }
 
@@ -398,11 +402,13 @@ def surface_layers(c, zone, tiles):
             t.inputs[1].default_value = 0.19; t.inputs[2].default_value = 0.48
             col = mixc(nt, col, PANEL['violet'], t.outputs[0])
         metal = _m(nt, 'ADD', L['metallic'], _m(nt, 'MULTIPLY', line, 1 - L['metallic']))
-        rough = _m(nt, 'SUBTRACT', L['roughness'], _m(nt, 'MULTIPLY', line, 0.04))
+        # Warming round (issue 1282): the game map is rougher than the review. Godot has no clear coat, so at 0.08 the key
+        # light made tiny glints hot enough to bloom into a white halo at camera 170 (PC run W1C, shot q).
+        rough = _m(nt, 'SUBTRACT', L['game_roughness'], _m(nt, 'MULTIPLY', line, 0.04))
         return col, _m(nt, 'MULTIPLY', _m(nt, 'SUBTRACT', height, _m(nt, 'MULTIPLY', line, 0.4)), 0.3), rough, metal
     if zone in ('gw_silver', 'cd5_silver'):
         L = LOOK['silver']
-        return mixc(nt, L['base'], L['base'], 0.0), zero, math_(nt, 'ADD', L['roughness'], 0.0), L['metallic']
+        return mixc(nt, L['base'], L['base'], 0.0), zero, math_(nt, 'ADD', L['game_roughness'], 0.0), L['metallic']
     if zone == 'gw_mosaic':
         L = LOOK['mosaic']
         tint = node(nt, 'ShaderNodeAttribute', attribute_name='gw_tint', attribute_type='GEOMETRY').outputs['Color']

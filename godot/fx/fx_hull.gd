@@ -122,6 +122,7 @@ uniform bool fx_organic = false;
 uniform int fx_scorch_count = 0;
 uniform vec4 fx_scorch[8]; // issue 484: a death's wound (centre, reach) on a wreck piece
 uniform float fx_scorch_heat = 0.0;
+uniform vec3 fx_scorch_col = vec3(1.0, 0.30, 0.05);   // R367: the scorch heat in the faction's death colour
 varying vec3 fx_hull_p;
 float fx_scorch_at(vec3 p) {
 	float s = 0.0;
@@ -320,7 +321,7 @@ if (fx_scorch_count > 0) {
 	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc)) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc));
 	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc);
 	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
-	EMISSION += vec3(1.0, 0.30, 0.05) * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
+	EMISSION += fx_scorch_col * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
 }
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
 if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
