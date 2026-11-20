@@ -207,6 +207,8 @@ func _ready() -> void:
 		shots_dir = str(args["ui-shots"])
 	if args.has("tree-shots"):
 		shots_dir = str(args["tree-shots"])
+	if args.has("torp-shots"):
+		shots_dir = str(args["torp-shots"])   # issue 1379: eight frames of every torpedo and rocket volley, close (torp-cam, default 34)
 	_load_opts()
 	if shots_dir != "" or args.has("sheet-check"):
 		tips_off = true   # screenshot jobs: no onboarding tip card covering the top of the screen
@@ -1982,6 +1984,12 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		if g["t"] == "shield_down":
 			land["downs"].append(g)
 	_aim_on(a_id, t_id, land)
+	if args.has("torp-shots") and fam == "torp":   # issue 1379 capture: the flight and the hit, close on the pair
+		cam.focus(_pos(t_id).lerp(from, 0.35), float(args.get("torp-cam", 34)))
+		var tag := "r%s_%s" % [str(V.get("round", 1)), str(a_id)]
+		for fi in 8:
+			var at := 0.5 + fi * 0.2
+			_at_fx(at, func() -> void: _snap("tp_%s_%02d" % [tag, fi]))
 	if gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
