@@ -159,15 +159,21 @@ func _three(prepared: bool) -> Dictionary:
 	# gate and Jolt is idle within 8 s. The cold run is a stress result: reported, never gated.
 	var fractured := 0
 	for k in pieces: if String(pieces[k]["outcome"]) == "fractured": fractured += 1
-	var why: Array = []
+	# INVALID: the fixture did not hold (not prepared, or fewer than three real fractures), so the run measures nothing.
+	# MISS: a valid run whose timing or rest is over the line (main's misses are the baseline). Both exit non-zero.
+	var bad: Array = []
+	var miss: Array = []
 	if prepared:
-		if not all_built: why.append("not prepared")
-		if fractured < 3: why.append("%d of 3 fractured" % fractured)
-		if float(w.wall.p99) > BUDGET_MS: why.append("p99 %.2f ms over %.1f" % [w.wall.p99, BUDGET_MS])
-		if rest_at < 0.0 or rest_at > 8.0: why.append("active bodies not 0 within 8 s (%.2f)" % rest_at)
+		if not all_built: bad.append("not prepared")
+		if fractured < 3: bad.append("%d of 3 fractured" % fractured)
+		if float(w.wall.p99) > BUDGET_MS: miss.append("p99 %.2f ms over %.1f" % [w.wall.p99, BUDGET_MS])
+		if rest_at < 0.0 or rest_at > 8.0: miss.append("active bodies not 0 within 8 s (%.2f)" % rest_at)
 	res["fractured"] = fractured
-	res["gate"] = ("PASS" if why.is_empty() else "FAIL: " + ", ".join(why)) if prepared else "STRESS (not gated)"
-	if prepared and not why.is_empty(): failed = true
+	if not prepared: res["gate"] = "STRESS (not gated)"
+	elif not bad.is_empty(): res["gate"] = "INVALID: " + ", ".join(bad + miss)
+	elif not miss.is_empty(): res["gate"] = "MISS: " + ", ".join(miss)
+	else: res["gate"] = "PASS"
+	if prepared and not (bad.is_empty() and miss.is_empty()): failed = true
 	print("CAPTURE1237 GATE %s %s" % ["prepared" if prepared else "cold", res["gate"]])
 	print("CAPTURE1237 %s kill=%.1f ms wall p50=%.2f p95=%.2f p99=%.2f worst=%.2f gpu p99=%.2f budget=%.1f within=%s bodies_peak=%d zero_after=%.2f s pieces=%s pictures=%s" % [
 		"prepared" if prepared else "cold", kill_ms, w.wall.p50, w.wall.p95, w.wall.p99, w.wall.worst, w.gpu.p99, BUDGET_MS,

@@ -6,8 +6,9 @@ rem tmo.bat with the GPU solo (R293) and its own temp profile (PR 1249); your re
 rem Its own clone in Downloads\voidsworn_test\opus1237; built ships copied in from Downloads\voidsworn_test\build\godot (copy only).
 rem Each run writes to a fresh folder: Downloads\voidsworn_test\opus1237\out\<run stamp>\<after|before>\ and status.txt there.
 rem Exit code (Artoo on PR 1255): 0 only when every step ran, both commits are recorded, each AFTER prepared run passed its
-rem gate (prepared, 3 of 3 fractured, p99 inside 12.5 ms, Jolt idle within 8 s), every run ended DONE or with a gate line,
-rem nothing leaked at quit and your settings are unchanged. Before (main) is the baseline: its gate result is reported only.
+rem gate (prepared, 3 of 3 fractured, p99 inside 12.5 ms, Jolt idle within 8 s) with exit 0, each main prepared run is at
+rem least valid (prepared, 3 of 3 fractured; its timing and rest misses are the baseline, reported only), nothing leaked
+rem at quit and your settings are unchanged.
 rem Nothing is deleted.
 setlocal enabledelayedexpansion
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
@@ -103,26 +104,23 @@ set "TMO_STEP="
 set "CAPTURE1237_SHA="
 findstr /b /c:"CAPTURE1237 prepared" /c:"CAPTURE1237 cold" /c:"CAPTURE1237 GATE" "%L%" > "%O%\summary_%CK%.txt"
 for /f "usebackq delims=" %%Z in ("%O%\summary_%CK%.txt") do echo %NAME% %CK%: %%Z >> "%ST%"
-if not exist "%O%\%CK%\%~1.json" (
-  echo FAILED: %NAME% %CK% wrote no %~1.json ^(exit %CODE%^), see %L% >> "%ST%"
-  set /a FAILS+=1
-) else (
-  findstr /c:"CAPTURE1237 DONE" "%L%" > nul
-  if errorlevel 1 (
-    findstr /c:"CAPTURE1237 GATE prepared FAIL" "%L%" > nul
-    if errorlevel 1 (
-      echo FAILED: %NAME% %CK% did not finish ^(exit %CODE%^), see %L% >> "%ST%"
-      set /a FAILS+=1
-    ) else (
-      if "%NAME%"=="after" (
-        echo FAILED: %NAME% %CK% missed its gate >> "%ST%"
-        set /a FAILS+=1
-      ) else (
-        echo baseline: %NAME% %CK% misses the gate ^(reported, not a failure^) >> "%ST%"
-      )
-    )
-  )
+rem Accepted: DONE with exit 0; or, on main only, a valid run that MISSES (exit non-zero, reported as the baseline).
+rem INVALID (not prepared, or fewer than 3 real fractures) fails on both arms: it is no baseline and no proof.
+set "RES=broken"
+findstr /c:"CAPTURE1237 DONE" "%L%" > nul && set "RES=done"
+findstr /c:"CAPTURE1237 GATE prepared MISS" "%L%" > nul && set "RES=miss"
+findstr /c:"CAPTURE1237 GATE prepared INVALID" "%L%" > nul && set "RES=invalid"
+if not exist "%O%\%CK%\%~1.json" set "RES=nojson"
+if "%RES%"=="done" if not "%CODE%"=="0" set "RES=badexit"
+if "%RES%"=="miss" if "%CODE%"=="0" set "RES=badexit"
+if "%RES%"=="done" goto cap_ok
+if "%RES%"=="miss" if "%NAME%"=="before" (
+  echo baseline: %NAME% %CK% is a valid run over the line ^(reported, not a failure^) >> "%ST%"
+  goto cap_ok
 )
+echo FAILED: %NAME% %CK% result %RES% ^(exit %CODE%^), see %L% >> "%ST%"
+set /a FAILS+=1
+:cap_ok
 findstr /i /c:"leaked" /c:"still in use at exit" "%L%" > "%O%\leaks_%CK%.txt"
 if not errorlevel 1 (
   echo FAILED: leaks at quit, %NAME% %CK%, see leaks_%CK%.txt >> "%ST%"
