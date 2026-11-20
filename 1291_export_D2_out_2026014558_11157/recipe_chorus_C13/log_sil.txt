@@ -1,0 +1,2 @@
+[score] C13 {'overlap': 66.2, 'concept_covered': 78.6, 'cell_outside': 19.2, 'triangles': 265604}
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-ef2f734cf36845d08c623f197c03ce01

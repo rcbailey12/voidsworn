@@ -1,0 +1,6 @@
+GPU: waiting for shared claim, weight 2 (1291)
+GPU: acquired shared claim 9b617947-2cf1-47cb-a5c0-2505a55fa3e4
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13\C13.blend"
+PASS detail check: normal relief 5.48 deg (floor 3.50), albedo contrast 0.075 (floor 0.040), roughness spread 0.201 (floor 0.080), 374413 texels
+GPU: released shared claim 9b617947-2cf1-47cb-a5c0-2505a55fa3e4

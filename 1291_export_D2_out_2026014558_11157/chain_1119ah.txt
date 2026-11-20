@@ -1,0 +1,7 @@
+waiting for chain_1119ag all done Fri 11/20/2026  1:41:29.32 
+HELPERS_CHAIN_1119AH stopped by the Board before it ran anything (11/20 01:42:58); replaced by HELPERS_CHAIN_1119AH_B.bat (OPUS1291_EXPORT_D2.bat, no out move, same log). OPUS1291_EXPORT_D.bat left unrun.
+waiting for chain_1119ag all done (HELPERS_CHAIN_1119AH_B) Fri 11/20/2026  1:42:58.57 
+chain start Fri 11/20/2026  1:45:58.14 
+1291 Chorus export D2 start  1:45:58.14 
+1291 Chorus export D2 exit 0 at  2:04:30.30 
+all done Fri 11/20/2026  2:04:30.30 

@@ -1,0 +1,8 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b0aa03266a41483fb63be6dc857632b9\godot-profile-a54af470d26448f19a92163e339049b5
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[assets] A4 ship B20_11
+[assets] check B20_11 loads=true skins=0 heavy_skins=0 hardpoints=16 hull_meshes=1 holes=0 heavies=0 wreck_chunks=0
+[assets] check: 1 A4 ships in the manifest
+[assets] ships refreshed: 1 A4 ships in res://gen/manifest.json
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b0aa03266a41483fb63be6dc857632b9\godot-profile-a54af470d26448f19a92163e339049b5

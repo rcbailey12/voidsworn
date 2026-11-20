@@ -1,0 +1,25 @@
+start Fri 11/20/2026  1:45:58.15 
+commit=c41ef199459d7612908e3eef930e8f72fd94f2fc 
+profile guard APPDATA=C:\Users\rcbai\Downloads\voidsworn_test\opus1291\profile_2026014558_11157\Roaming 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+checked copies in C:\Users\rcbai\Downloads\voidsworn_test\opus1291\checked\2026014558_11157 
+chorus_C13 (B20_11) start  1:51:07.19 
+chorus_C13 3_trace_hull start  1:51:07.20 
+chorus_C13 3_trace_hull exit 0 at  1:52:42.91 
+chorus_C13 4_parts_kit start  1:52:42.91 
+chorus_C13 4_parts_kit exit 0 at  1:54:27.49 
+chorus_C13 5_paint_bake start  1:54:27.50 
+chorus_C13 5_paint_bake exit 0 at  2:00:00.73 
+chorus_C13 6_lod start  2:00:00.74 
+chorus_C13 6_lod exit 0 at  2:01:09.89 
+chorus_C13 7_export start  2:01:09.90 
+chorus_C13 7_export exit 0 at  2:02:35.93 
+[identity] B20_11 matches the staged install: 8 files, glb 7b55a0750064bfb4706c2bd7a807d41227b6ef0b1c1ff1f8705ada48288dc475
+chorus_C13 staged as B20_11 
+staging import exit 0 
+B20_11 gpu readback exit 0 
+B20_11 authored interiors exit 0 
+B20_11 death seam exit 0 
+B20_11 shots exit 0 
+trial only: checked and captured, nothing published into build\godot 
+all done PASS Fri 11/20/2026  2:04:30.29 
