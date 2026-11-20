@@ -50,6 +50,10 @@ class Probe extends "res://scenes/battle/battle.gd":
 		said.append([text, float(gfx.now)])
 		super._float(id, text, col, dy)
 
+	func _float_tally(f, id, text: String, col: Color, dy: float):
+		said.append([text, float(gfx.now)])
+		return super._float_tally(f, id, text, col, dy)
+
 class RecSfx extends "res://audio/sfx.gd":
 	var fx_clock = null
 	var heard: Array = []   # [cue name, effect time]
@@ -206,9 +210,14 @@ func _run() -> void:
 		_check(float(b.breaks[0]) < at3 or is_equal_approx(at2, at3), "B: the break comes before the third hit (%.3f vs %.3f)" % [float(b.breaks[0]), at3])
 		var sd := -1.0
 		for x in b.said:
-			if str(x[0]) == "Shields down":
+			if str(x[0]).begins_with("Shields down") and sd < 0.0:
 				sd = float(x[1])
 		_check(absf(sd - at2) < 0.001, "B: \"Shields down\" shows on the breaking hit (at %.3f)" % sd)
+		var lone := 0
+		for x in b.said:
+			if str(x[0]) == "Shields down":
+				lone += 1
+		_check(lone == 0, "B: \"Shields down\" joins the shield count's label instead of a second label on top of it (%s)" % str(b.said))
 		_check(int(b.lands[0]["k"]) == 0 and int(b.lands[1]["k"]) == 1 and int(b.lands[2]["k"]) == 2, "B: hits land in order")
 		_check(float(b.disp[t]["sh"][0]) == 0.0, "B: the shield reads empty after the break")
 	# D: a lance at quarter speed; the cue recorder replaces the battle's sound player

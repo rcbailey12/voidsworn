@@ -128,7 +128,8 @@ var floats: Array = []
 var ended := false
 var fired_in_act := {}     # unit id -> weapons fired this activation (volley pace)
 var aim := {}              # issue 1211: the enemy volley playing now, {"a": attacker id, "t": target id}; its target is ringed and named
-const AIM_RING := Color("#ff4433")   # the target ring under an enemy volley (glass_shell ALERT: danger)
+const AIM_RING := Color("#ff4433")
+const FLOAT_LANE_SHIELD := -26.0   # a ship's shield number sits one line above its hull number (issue 1211)   # the target ring under an enemy volley (glass_shell ALERT: danger)
 var tips := {}
 var tips_off := false
 var tip_pending := ""
@@ -1970,7 +1971,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
 	# issue 1211: what each landing hit does: its number (torpedoes keep their one result line), and the shield break with
 	# "Shields down" on the hit that empties the shield (the last hit the shield absorbed), not after the volley
-	var land := {"numbers": not e.has("torpedo"), "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
+	var land := {"t_id": str(t_id), "numbers": not e.has("torpedo"), "sh": 0.0, "hull": 0.0, "crit": false, "break_k": shield_break_hit(hits),
 		"downs": [], "tsv": tsv, "L": L, "shield_col": shield_col, "left": hits.size(), "ended": false,
 		"regen_unlocks": int(regen_unlocks.get(t_id, 0))}
 	for g in grp:
@@ -2160,14 +2161,16 @@ func _land_hit(t_id, h: Dictionary, k: int, land: Dictionary) -> void:
 		land["sh"] = float(land["sh"]) + float(h["shield"])
 		land["hull"] = float(land["hull"]) + float(h["hull"])
 		if float(h["shield"]) > 0:
-			land["sh_f"] = _float_tally(land.get("sh_f"), t_id, "−%d shield" % int(land["sh"]), Color("#92b8e8"), -18)
-		if float(h["hull"]) > 0:
-			if bool(h["crit"]):
-				land["crit"] = true
-			land["hull_f"] = _float_tally(land.get("hull_f"), t_id, "−%d hull" % int(land["hull"]), Color("#ffd27a") if bool(land["crit"]) else Color("#ffad3b"), 0)
-		if bool(h["crit"]) and not bool(land.get("crit_f", false)):
+			land["sh_f"] = _float_tally(land.get("sh_f"), t_id, _shield_text(land), Color("#92b8e8"), FLOAT_LANE_SHIELD)
+		if bool(h["crit"]):
+			land["crit"] = true
+		if float(h["hull"]) > 0 or (bool(h["crit"]) and land.get("hull_f") != null):
+			# a critical reads in the hull number ("Critical −8 hull"), not as a third label over the name
+			land["hull_f"] = _float_tally(land.get("hull_f"), t_id, ("Critical −%d hull" if bool(land["crit"]) else "−%d hull") % int(land["hull"]),
+				Color("#ffd27a") if bool(land["crit"]) else Color("#ffad3b"), 0)
+		elif bool(h["crit"]) and not bool(land.get("crit_f", false)):
 			land["crit_f"] = true
-			_float(t_id, "Critical", Color("#ffb23e"), 18)
+			_float(t_id, "Critical", Color("#ffb23e"), FLOAT_LANE_SHIELD * 2.0)
 	if k == int(land["break_k"]):
 		_shield_downs(land)
 
@@ -2185,6 +2188,10 @@ func _float_tally(f, id, text: String, col: Color, dy: float):
 	return floats[-1] if not floats.is_empty() else null
 
 
+func _shield_text(land: Dictionary) -> String:
+	return ("Shields down\n−%d shield" if bool(land.get("broke", false)) else "−%d shield") % int(land["sh"])
+
+
 # The volley's shield breaks (each shield_down event once): the shield shatters, "Shields down" and the break sound.
 func _shield_downs(land: Dictionary) -> void:
 	if bool(land.get("downs_played", false)):
@@ -2194,7 +2201,13 @@ func _shield_downs(land: Dictionary) -> void:
 		var d: Dictionary = disp.get(g["unit"], {})
 		if d.has("sh"):
 			d["sh"][int(g["quad"])] = 0
-		_float(g["unit"], "Shields down", Color("#9fe2ff"), -40)
+		var sf = land.get("sh_f")
+		if str(g["unit"]) == str(land.get("t_id", "")) and sf is Dictionary and is_instance_valid((sf as Dictionary)["lbl"]):
+			# one label, two lines: "Shields down" over the volley's shield count, never a second label on top of it
+			land["broke"] = true
+			land["sh_f"] = _float_tally(sf, g["unit"], _shield_text(land), Color("#9fe2ff"), FLOAT_LANE_SHIELD)
+		else:
+			_float(g["unit"], "Shields down", Color("#9fe2ff"), FLOAT_LANE_SHIELD)
 		sfx.shield(_pos(g["unit"]), true)
 		if gfx != null and gfx.has_method("shield_break"):
 			gfx.shield_break(str(g["unit"]), int(g["quad"]))
@@ -5018,7 +5031,14 @@ func _process(dt: float) -> void:
 		var lbl: Label = f.lbl
 		var wp: Vector3 = (f.pos as Vector3) + Vector3(0, 4.0 + f.t * 6.0, 0)
 		lbl.visible = not cam.is_position_behind(wp)
-		lbl.position = cam.unproject_position(wp) - lbl.size * 0.5 + Vector2(0, f.dy)
+		var fp := cam.unproject_position(wp)
+		var pc = hud.plates.get(str(f.get("id", ""))) if f.has("id") else null
+		if pc != null and is_instance_valid(pc) and (pc as Control).visible:
+			# a ship's numbers start above its name plate and rise from there, never across it (run 2 pictures)
+			var base := minf(fp.y + lbl.size.y * 0.5, (pc as Control).position.y - 4.0 * hud.k)
+			lbl.position = Vector2(fp.x - lbl.size.x * 0.5, base - lbl.size.y + f.dy)
+		else:
+			lbl.position = fp - lbl.size * 0.5 + Vector2(0, f.dy)
 		var f_end := float(f.get("end", 1.6))
 		lbl.modulate.a = clampf(f_end - f.t, 0.0, 1.0)
 		if f.t > f_end:
@@ -5049,6 +5069,7 @@ func _float(id, text: String, col: Color, dy := 0.0) -> void:
 	if not views.has(id):
 		return
 	_float_at(_pos(id), text, col, dy)
+	floats[-1]["id"] = str(id)
 
 
 func _float_at(pos: Vector3, text: String, col: Color, dy := 0.0) -> void:
@@ -5254,11 +5275,11 @@ func _torpedo_why() -> String:
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
 	if sh > 0:
-		_float(id, "−%d shield" % int(sh), Color("#92b8e8"), -18)
+		_float(id, "−%d shield" % int(sh), Color("#92b8e8"), FLOAT_LANE_SHIELD)
 	if hull > 0:
-		_float(id, "−%d hull" % int(hull), Color("#ffd27a") if crit else Color("#ffad3b"), 0)
-	if crit:
-		_float(id, "Critical", Color("#ffb23e"), 18)
+		_float(id, ("Critical −%d hull" if crit else "−%d hull") % int(hull), Color("#ffd27a") if crit else Color("#ffad3b"), 0)
+	elif crit:
+		_float(id, "Critical", Color("#ffb23e"), FLOAT_LANE_SHIELD * 2.0)
 
 
 # ---------------------------------------------------------------- onboarding (ui3d.js tutorialCheck)
