@@ -157,8 +157,9 @@ ships catch, store and release light.
 - **Who they are (lore 6.1):** the Starwrights who stayed flesh; the finest optical engineers who ever lived. They built the
   collectors, mirrors and beam lines that carried a star's light across a system, and watched that machine kill their sun.
 - **A small elite fleet, never a swarm (Ryan, Nov 20, issue 1298).** "Glasswrights aren't supposed to be a swarm faction like
-  chorus or even hullbreakers. A little more elite." Few ships, each worth more: balance them with more hull on every
-  Glasswright hull (player and enemy copies alike, "so it's consistent"), not with cheaper or more numerous ships. They stay
+  chorus or even hullbreakers. A little more elite." Few ships, each worth more: balance them with more hull on the
+  four fleet hulls (sliver, lancet, prism, aperture; player and enemy copies alike, "so it's consistent"), not with cheaper
+  or more numerous ships. The boss, The Unfinished, is not a fleet hull and keeps its own hull (470). They stay
   glassy: no armour added, evasion and shields still carry them.
 - **First rule, ahead of any shape rule (R192).** Ryan, Nov 11: "It doesn't match with how I envision the glasswrights being
   artistic, thoughtful in creation and looking to create beauty with function, even in these warships." Every structural

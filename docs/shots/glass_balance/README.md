@@ -14,7 +14,9 @@ docs/playbooks/factions.md (Glasswrights section).
 | i_song, Glasswright prism (4 CP) | 90 | 108 | +20% |
 | i_carrier, Glasswright aperture (5 CP) | 140 | 168 | +20% |
 
-The boss (i_boss) and the Sliver lancer variant follow their base hulls as before; nothing else changes. No armour,
+The boss, The Unfinished (i_boss, 470), is left unchanged on purpose: it is a fight every other faction faces, not a
+Glasswright fleet ship. The Sliver lancer is a variant built from the sliver, so it takes the new 36 with no override of
+its own. Nothing else changes. No armour,
 shields, evasion or price changed, so they stay glassy: hull per command point over the four base hulls goes from 26.7 to
 31.7, still the lowest of six (field 37.6 to 47.4 in the PR 1294 table). Ships per command point do not change (no command
 point cost changed). At the Veteran final boss the bot fleet has 5.0 ships and 489 total hull (before 5.2 and 430; field
@@ -58,7 +60,8 @@ Noise: one standard error of a 240-run rate is about 3 points; paired changes wi
 
 What it shows:
 - **Glasswrights move into the field.** Veteran 26.7% to 44.6% (62 seeds turn to wins, 19 the other way), inside the 30
-  to 50% target. Standard 62.1% to 68.8%; still last at Standard (field 67.5 to 81.7), so not overshooting.
+  to 50% target. Standard 62.1% to 68.8%: from last to fourth of six, a hair above Hegemony (67.9%) and Crusade (67.5%) and within noise
+  of them, so near the bottom and not clearly separated; not overshooting.
 - **The others dip a little at Veteran, as expected with tougher enemy Glasswrights** (Ryan accepted this, 14:24 UTC).
   Crusade -4.2, Eclipse -3.8, Hegemony -3.3, Hullbreakers -1.7, Chorus +2.1. Each is within about 1.5 standard errors on
   its own, but four of five lean down, so read it as a small real cost. Hegemony's Sector 2 losses rise 48 to 64.
