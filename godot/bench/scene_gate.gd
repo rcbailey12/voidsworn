@@ -16,6 +16,7 @@ extends Node
 #
 #   godot --path godot --rendering-method forward_plus --resolution 1920x1080 res://bench/scene_gate.tscn -- --out DIR
 #         [--sessions 3] [--warmup 120] [--frames 720] [--modes base,shadows_off,...] [--camera engagement|turn]
+#         [--build-wait-s 60] (a cold clone that bakes its skies first needs longer)
 #
 # Writes DIR/scene_gate.json (every mode, every session, plus the scene's per-ship and per-class counts) and
 # DIR/scene_base.png (the base scene as measured). Modes, each on a freshly built battle:
@@ -32,6 +33,7 @@ extends Node
 #   fleet_x2     a visual copy of every hull hovering above it (40 hulls), effects as base
 #   deaths       base plus three ship deaths during the measured frames
 #   floor        nothing but the board and the sky (no ships, world, HUD or effects)
+#   wake_idle    issue 1079: base with the nebula wake prototype on, ships still (wake_full: every wake point live, worst case)
 # --trace (issue 220): in the base and deaths modes, also write DIR/trace_<mode>_s<session>.json, one row per measured
 # frame: frame, process, physics, render CPU and GPU ms, the effects system's own main-thread sections (fx.prof, ms),
 # new pipeline compiles by kind, volleys fired and objects created that frame; and add a per-section summary of the
@@ -175,6 +177,9 @@ func _run() -> void:
 		PG.finish(0)
 		return
 	var sessions := int(args.get("sessions", 3))
+	# --build-wait-s (issue 1079): how long one battle build may take. A fresh clone bakes its skies cold (about 40 s
+	# each on the RTX 5080, several at once), which passed the 60 s default before the first base build finished.
+	build_wait_usec = int(float(args.get("build-wait-s", 60)) * 1000000.0)
 	var modes: Array = MODES.duplicate()
 	if args.has("modes"):
 		modes = Array(str(args["modes"]).split(",", false))
@@ -592,6 +597,8 @@ func _build(mode: String, seed: int) -> bool:
 	b.args["no-tips"] = true
 	if mode in ["fx_off", "floor"]:
 		b.args["nofx"] = true
+	if mode.begins_with("wake_"):
+		b.args["nebula_wake"] = "true"   # issue 1079: the nebula wake prototype, off in every other mode
 	var sc := {"seed": seed, "sector": 3, "admiral": "vex", "fleet": FLEET.duplicate(), "enemies": ENEMIES.duplicate(),
 		"fac": "corsair", "obj": "rout", "shape": "open", "map": str(args.get("map", "storm")), "dep": "line", "kind": "battle"}
 	var api = API.new()
@@ -732,6 +739,11 @@ func _apply(mode: String) -> void:
 				var c: Node3D = sv.hull.duplicate(0)   # meshes and materials only: no scripts, no effects
 				b.add_child(c)
 				c.global_transform = Transform3D(sv.hull.global_basis, sv.hull.global_position + Vector3(0, 22.0, 0))
+		"wake_full":
+			# Issue 1079 worst case: every wake point live at full strength on nebula hexes (wake_idle: on, ships still).
+			var living = b.world._living if b.world != null else null
+			if living != null and living._wake != null and not b.world._terr_pts["neb"].is_empty():
+				living._wake.hold_full(b.world._terr_pts["neb"])
 		"floor":
 			b.hud.visible = false
 			if b.world != null:
