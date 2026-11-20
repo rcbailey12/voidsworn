@@ -1,0 +1,23 @@
+start ithar_GF1 ithar_GF1 board/pin-1373b Fri 11/20/2026 13:25:55.88 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=close FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1373l\repo
+commit=c0a73df2f252ad3d8e212a27561a7b2e70da581d
+import exit 0 
+1_concept_in start 13:30:09.51 
+1_concept_in exit 0 at 13:30:11.90 
+2_shape_ref start 13:30:11.90 
+2_shape_ref exit 0 at 13:30:12.60 
+3_trace_hull start 13:30:12.61 
+3_trace_hull exit 0 at 13:31:18.49 
+4_parts_kit start 13:31:18.49 
+4_parts_kit exit 1 at 13:31:24.25 
+5_paint_bake SKIPPED: stage 4_parts_kit failed 
+6_lod SKIPPED: stage 4_parts_kit failed 
+7_export SKIPPED: stage 4_parts_kit failed 
+checks and shots SKIPPED: stage 4_parts_kit failed, so the installed glb is not this run's 
+stages exit 1 
+collect: see log_collect.txt 
+done FAILED: a stage (see the SKIPPED line above) Fri 11/20/2026 13:31:24.33 
+all done 
+pin ok c0a73df2f252ad3d8e212a27561a7b2e70da581d 

@@ -1,0 +1,51 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 1:31:24 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373l\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\
+	    New File  		     436	audit.json100%  
+	    New File  		     506	concept_camera.json100%  
+	    New File  		     680	log_audit.txt100%  
+	    New File  		     526	log_b0dump.txt100%  
+	    New File  		     579	log_build.txt100%  
+	    New File  		    1225	log_sheet_contract.txt100%  
+	    New File  		      98	log_sil.txt100%  
+	    New File  		     361	log_sildump.txt100%  
+	    New File  		     579	log_standing.txt100%  
+	    New File  		     690	log_thirds.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\build\
+	    New File  		     629	GF1_build.json100%  
+	    New File  		    1623	sheet_contract_selftest.json100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         3         2         1         0         0         0
+   Files :        13        13         0         0         0         0
+   Bytes :     7.7 k     7.7 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :              991500 Bytes/sec.
+   Speed :              56.734 MegaBytes/min.
+   Ended : Friday, November 20, 2026 1:31:24 PM
+

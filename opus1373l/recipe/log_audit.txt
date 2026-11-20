@@ -1,0 +1,5 @@
+[audit] {"problems": ["part Ep floats 0.11 game units off the hull", "part Eu floats 0.11 game units off the hull", "part Es floats 0.09 game units off the hull"], "parts": 11, "crossing_break_lines": [], "structure_across_seams": [], "guns_with_normals": 1, "guns_into_ship": 0, "guns": 1, "break_lines": {"t_lines": [-0.2988947321713931], "l_line": [], "l_lines": []}, "result": "FAIL"}
+[audit] FAIL
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\build\GF1.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-9e7c7de14dd64128bfce72ff0f675872

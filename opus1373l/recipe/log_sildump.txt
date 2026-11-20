@@ -1,0 +1,7 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim 868fffeb-05cd-4d47-b369-005defe9065f
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\GF1.npz (32482, 3, 3) objects 30
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
+GPU: released shared claim 868fffeb-05cd-4d47-b369-005defe9065f
