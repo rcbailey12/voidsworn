@@ -52,7 +52,8 @@ function teachingBattle(cfg){
   cfg=Object.assign({},cfg,{runBattle:n,teachingGate:true});
   if(RUN.sector!==1||n>2||cfg.kind==='boss') return cfg;
   Object.assign(cfg,{teachingBattle:n,fac:n===1?'hegemony':'corsair'});
-  if(n===1) Object.assign(cfg,{shape:'open',arena:'strip',dep:'line',edgeFeature:true});
+  // R366 (Ryan, Nov 20, issue 1393): Battle 2 gets Battle 1's open strip; its Corsairs and round 3-4 reinforcements stay
+  if(n===1||n===2) Object.assign(cfg,{shape:'open',arena:'strip',dep:'line',edgeFeature:true});
   return cfg;
 }
 function saveTeachingHistory(){

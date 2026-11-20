@@ -106,10 +106,10 @@ const HULLS = {
   b_brood:{n:'Chorus brood-sac',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:180,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:6},
   b_boss:{n:'The Ninefold Maw',cls:'Bio-titan',fac:'chorus',size:1.3,cp:12,hp:650,sh:0,rg:0,ar:.25,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['bioplasma','F'],['tendril','T'],['spores','T']],ab:'launch',hangar:3,regen:20,boss:true},
   // ---- The Ithar (elder race)
-  i_wisp:{n:'Glasswright sliver',cls:'Frigate',fac:'ithar',size:.46,cp:1,hp:30,sh:12,rg:6,ar:0,sp:7,tn:3,ev:28,w:[['shard','F']],ab:'blink'},
-  i_blade:{n:'Glasswright lancet',cls:'Destroyer',fac:'ithar',size:.58,cp:2,hp:60,sh:15,rg:8,ar:0,sp:6,tn:3,ev:24,w:[['shard','F'],['startorp','F']],ab:'blink'},
-  i_song:{n:'Glasswright prism',cls:'Cruiser',fac:'ithar',size:.74,cp:4,hp:90,sh:26,rg:10,ar:.05,sp:5,tn:2,ev:16,w:[['pulsar','F'],['pulsar','F'],['turret','T']],ab:'surge'},
-  i_carrier:{n:'Glasswright aperture',cls:'Carrier',fac:'ithar',size:.84,cp:5,hp:140,sh:28,rg:10,ar:.05,sp:4,tn:2,ev:12,w:[['pulsar','F'],['turret','T']],ab:'launch',hangar:2},
+  i_wisp:{n:'Glasswright sliver',cls:'Frigate',fac:'ithar',size:.46,cp:1,hp:36,sh:12,rg:6,ar:0,sp:7,tn:3,ev:28,w:[['shard','F']],ab:'blink'},
+  i_blade:{n:'Glasswright lancet',cls:'Destroyer',fac:'ithar',size:.58,cp:2,hp:68,sh:15,rg:8,ar:0,sp:6,tn:3,ev:24,w:[['shard','F'],['startorp','F']],ab:'blink'},
+  i_song:{n:'Glasswright prism',cls:'Cruiser',fac:'ithar',size:.74,cp:4,hp:108,sh:26,rg:10,ar:.05,sp:5,tn:2,ev:16,w:[['pulsar','F'],['pulsar','F'],['turret','T']],ab:'surge'},
+  i_carrier:{n:'Glasswright aperture',cls:'Carrier',fac:'ithar',size:.84,cp:5,hp:168,sh:28,rg:10,ar:.05,sp:4,tn:2,ev:12,w:[['pulsar','F'],['turret','T']],ab:'launch',hangar:2},
   i_boss:{n:'The Unfinished',cls:'Ark',fac:'ithar',size:1.26,cp:11,hp:470,sh:34,rg:14,ar:.2,sp:3,tn:2,ev:6,w:[['pulsar','F'],['pulsar','F'],['pulsar','T'],['turret','T'],['flak','T']],ab:'surge',boss:true},
   // ---- The Deathless Dynasty
   d_scythe:{n:'Eclipse mote',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:2,reanimate:true},
@@ -1053,6 +1053,13 @@ for(const [fid,F] of Object.entries(FACTIONS)){ if(F.boss&&HULLS[F.boss]) HULLS[
   for(const id of F.roster){ const h=HULLS[id]; if(!h||h.sq) continue; const cp=h.cp||1;
     if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3;
     const pm=(FAC_PRICE[fid]||{})[h.cls]||1; if(pm!==1&&h.cost0==null){ h.cost0=h.cost; h.cost=Math.round(h.cost*pm/5)*5; } } }
+// Issue 1354 (Nov 20): Navy hulls 20% and Crusade hulls 5% cheaper in the shop, to lift both back above 30% at Veteran after the
+// Glasswright hull rise (PR 1353). Shop price only: h.val keeps the ladder price, so ransom, strip, scrap and Cinder Line
+// prices (shipValue, capturedHullPrice) and every enemy ship are unchanged.
+const SHOP_DISCOUNT={hegemony:.8,voidsworn:.95};
+// issue 1384: the Crusade's Daybreak dreadnought (ascendant) sits on FACTIONS.voidsworn.boss, not the roster, but its yards sell it
+for(const [fid,d] of Object.entries(SHOP_DISCOUNT)) for(const id of [...FACTIONS[fid].roster,FACTIONS[fid].boss]){ const h=HULLS[id]; if(!h||h.sq||h.val!=null||!Number.isFinite(h.cost)) continue;
+  h.val=h.cost; h.cost=Math.round(h.cost*d/5)*5; }
 
 // ---------- progression between runs ----------
 // Hull variants: bought once with renown, then sold in your faction's shipyards beside the standard hull
@@ -1517,8 +1524,8 @@ const LINEAGE_TREES={
           ],
           [
             {
-              "n": "Torpedoes Run First",
-              "d": "torpedoes fired during the salvo round strike at once instead of travelling."
+              "n": "Torpedoes Run True",
+              "d": "torpedoes fired during the salvo round gain +10 to hit."
             },
             {
               "n": "Rear Arc Reckoning",
@@ -1575,7 +1582,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "The Named Prey Falls",
-        "d": "when the salvo is declared, choose one enemy; every torpedo in the fleet may retarget to it, and it takes +25% damage from all hits this round."
+        "d": "when the salvo is declared, choose one enemy; it takes +25% damage from all hits this round."
       }
     ]
   },
@@ -3348,7 +3355,7 @@ Object.assign(BOONS,{
   h_brood:{p:'hunger',n:'Brood Harvest',d:m=>`Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it${m>1?`, and repairs ${boonPct(.1*(m-1))} of its hull`:''}.`,fx:m=>({broodTithe:1,broodRepair:.1*(m-1)})},
   a_mark:{p:'star',n:'Marked for Death',d:m=>`Each round, the first enemy ship your lances hit is marked: your whole fleet aims ${Math.round(10*m)} better against it until the round ends.`,fx:m=>({markLance:m})},
   r_slip:{p:'rook',n:'Slip the Net',d:m=>`Your ships may move after firing, up to ${m>=2?'90% of':m>=1.5?'70% of':'half'} the movement they had left (without climbing over or diving under).`,fx:m=>({fade:m>=2?.9:(m>=1.5?.7:.5)})},
-  e_spread:{p:'ember',n:'Spread Pattern',d:m=>`If a torpedo finds no target, enemy ships within 1 hex of its aim hex take ${boonPct(.3*m)} of one torpedo\u2019s damage.`,fx:m=>({spread:.3*m})},
+  e_spread:{p:'ember',n:'Spread Pattern',d:m=>`If a torpedo salvo misses, it bursts: its target and enemy ships within 1 hex take ${boonPct(.3*m)} of one torpedo\u2019s damage.`,fx:m=>({spread:.3*m})},
   L_iron:{p:'iron',leg:1,n:'Unbreakable',d:()=>'Legendary. Every ship survives its first killing blow each battle at 1 hull.',fx:()=>({lastStand:1})},
   L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Working shield generators refill the pool at the start of your turn, before storm damage.',fx:()=>({stormRegen:1})},
   L_hunger:{p:'hunger',leg:1,n:'The Endless Swarm',d:()=>'Legendary. Launch ships field two more wings and carry 99 spares.',fx:()=>({hangar:2,endless:1})},

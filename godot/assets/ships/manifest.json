@@ -50,100 +50,102 @@
    "damage_preview": "previews/B16_23_damage.jpg"
   },
   "B19_11": {
-   "name": "Chorus drone-spawn",
+   "name": "The drone-spawn, the Chorus frigate (The Chorus)",
    "faction": "chorus",
    "cls": "Frigate",
    "band": "S",
+   "game_ship": "b_drone",
    "length_world": 6.5,
    "hardpoints": {
-    "gun": 1,
-    "engine": 2,
-    "breach": 4,
-    "core": 1
+    "gun": 3,
+    "engine": 4,
+    "breach": 2,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 4,
-   "skins": 9,
+   "breaches": 2,
+   "turrets": 0,
    "files": {
     "B19_11.glb": {
-     "bytes": 4941792,
-     "sha256": "c5943750d656e89dec5c85e6b3cebd977c3b1b3a003eb37113aa902b6cd0c292"
+     "bytes": 7801680,
+     "sha256": "16d785163cf7899128f966508929484904f4031051a321d86df746b72b9ba0c1"
     },
     "B19_11_base.jpg": {
-     "bytes": 1201554,
-     "sha256": "504dc855377e9a79e09bf443754456c5f0dd4865b1e96199287e3421651336a0"
+     "bytes": 794891,
+     "sha256": "1639d80b6ad653d81b5c0d7c90caf24470fdd67b402c527c395cf77b44023484"
     },
-    "B19_11_damage.glb": {
-     "bytes": 6148832,
-     "sha256": "f44de4d87da8267c7c44aa7845788bb2f963b1a7afb6c982fa5652d77d2d7187"
+    "B19_11_normal.png": {
+     "bytes": 6785731,
+     "sha256": "2a06a3fedb9fe931cb12c6550f8dcee974591829ace3da7c09041d114d8e9799"
     },
-    "B19_11_emissive.jpg": {
-     "bytes": 239756,
-     "sha256": "04281a24acbba25e5c3c3c5178654d656e972f9065299559ce1350413339a36a"
+    "B19_11_orm.png": {
+     "bytes": 4640641,
+     "sha256": "1a0620c6318f4f8d40e7c51592ff2511c7db15e0e0b552ab671c33b1a0246732"
     },
-    "B19_11_normal.jpg": {
-     "bytes": 1650137,
-     "sha256": "b4153b8044004f3f00c03e0c77cde6987ceb04a2cf37353dc3a397ef4142e9fd"
+    "B19_11_parts_base.jpg": {
+     "bytes": 1018874,
+     "sha256": "91a4b1d2cef7c2be9e3802129ef7c3bc68ba45564d6a22b502085bf1535f8ddb"
     },
-    "B19_11_orm.jpg": {
-     "bytes": 2480332,
-     "sha256": "2e306bc9b0ed174c56744a4942e4c9d23fd2ac521d7d3a3e7afc515fc1dc37c1"
+    "B19_11_parts_normal.png": {
+     "bytes": 6204248,
+     "sha256": "6ba78b2c8b5d64cb7699e528f41741137a49a036df6013df2640ff2026fb005d"
     },
-    "B19_11_wreck.glb": {
-     "bytes": 2855280,
-     "sha256": "6a6b027597e9b8275fb6ced2993dcec8cdce1e8aaaa1549eb95f3fbbcf5d5845"
+    "B19_11_parts_orm.png": {
+     "bytes": 5552891,
+     "sha256": "1844bec50597729f558ba6a1a449722872530cc26ab3feafb7e06a12b53110b8"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B19_11\\",
-   "preview": "previews/B19_11.jpg",
-   "damage_preview": "previews/B19_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B19_11\\"
   },
   "B20_11": {
-   "name": "Chorus spitter",
+   "name": "The spitter, the Chorus destroyer (The Chorus)",
    "faction": "chorus",
    "cls": "Destroyer",
    "band": "M",
+   "game_ship": "b_spitter",
    "length_world": 9.5,
    "hardpoints": {
-    "gun": 2,
-    "engine": 2,
-    "breach": 6,
-    "core": 1
+    "gun": 3,
+    "engine": 3,
+    "breach": 3,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 3,
+   "turrets": 0,
    "files": {
     "B20_11.glb": {
-     "bytes": 5036572,
-     "sha256": "68a28fdfff4bf9c5226c2f30c52d7428a41fd9608371a3f7b2780bee73356513"
+     "bytes": 11961592,
+     "sha256": "ba51126ac613b58ee027218e6e8c36fd86a39798ab875c1eae16ae2d73fb71fc"
     },
     "B20_11_base.jpg": {
-     "bytes": 1257844,
-     "sha256": "5a8583a977c2eb6637b3bc1baf356a3be8b65e68dc1a3a4ff9aa6be132f6c470"
+     "bytes": 845467,
+     "sha256": "7b899afc275ec57fee5590d9f441d97ce1aa1fc3f51ec6490a9764bbf07ad440"
     },
-    "B20_11_damage.glb": {
-     "bytes": 21591756,
-     "sha256": "55269e047dfb1580d64fde4410437147445c469db85afefe70c6158ff496b9c1"
+    "B20_11_normal.png": {
+     "bytes": 6628474,
+     "sha256": "1f05e437c5a368c30632d6445b6bd417ad7b201fa7bb02b6cdbda3412aad0ab5"
     },
-    "B20_11_emissive.jpg": {
-     "bytes": 291170,
-     "sha256": "34341959ebbf65d2493e4b70b0e737f2d29a4ca46d3cb76f74a9edc4bca6330f"
+    "B20_11_orm.png": {
+     "bytes": 4864219,
+     "sha256": "d58c6fc27fa4d498ed8c290d0ad007267818fa339571f8d95e6bb2368279d6bc"
     },
-    "B20_11_normal.jpg": {
-     "bytes": 1618935,
-     "sha256": "0db8f65e3aece3fbc6511ba9ac1a4150ba9dafc851fa541b93fdb75631071ad8"
+    "B20_11_parts_base.jpg": {
+     "bytes": 1038529,
+     "sha256": "0d084534ed531505f5db77a17052d8609b43a973ba7269800ca58d28a8b32854"
     },
-    "B20_11_orm.jpg": {
-     "bytes": 2614559,
-     "sha256": "85322d2fb94eb987d237a0614e8ac1afef70e0fa48b4a14a28be12dce07bda72"
+    "B20_11_parts_normal.png": {
+     "bytes": 6253635,
+     "sha256": "3b42922c78708538bf27b1647914c1b66350b2d42772ec9bfec475e71de7def9"
     },
-    "B20_11_wreck.glb": {
-     "bytes": 2945228,
-     "sha256": "c35eb61736a674ec370d2781795e7404c839c45880260b7ab02e023d81de4db6"
+    "B20_11_parts_orm.png": {
+     "bytes": 5544785,
+     "sha256": "689f8702ef3743218662a6aa707d3a50d57982c49eff41b78ce735238523ca9a"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B20_11\\",
-   "preview": "previews/B20_11.jpg",
-   "damage_preview": "previews/B20_11_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B20_11\\"
   },
   "B21_11": {
    "name": "Chorus bladeback",
@@ -161,32 +163,32 @@
    "skins": 13,
    "files": {
     "B21_11.glb": {
-     "bytes": 5974212,
-     "sha256": "c6ed6cdd2fb77b6341cb19036ab4cb55c3b1141d755e567243d39b542ffeffeb"
+     "bytes": 11067500,
+     "sha256": "29d40b47be87bb86d57fcdfd9b8598d6769dc9b4c131114d11cee047699e16be"
     },
     "B21_11_base.jpg": {
-     "bytes": 1304126,
-     "sha256": "ed54bcd1ae92627bb250270a6c26f4a01e7f7ee955cb4eceaa99f0f41a7ba9f5"
+     "bytes": 941841,
+     "sha256": "6446b3b776ea07ca6c24f948b7ee881d57b1a76e14793a40173707d7833a5eab"
     },
-    "B21_11_damage.glb": {
-     "bytes": 20149544,
-     "sha256": "82ae1bde875aa7528df5664470a1be275b579b95a54be36421b7e625f6daf0e9"
+    "B21_11_normal.png": {
+     "bytes": 3863273,
+     "sha256": "bb560313f761fe99fd258e490837c320417a6dff5303f72f691f7536e88fcd2f"
     },
-    "B21_11_emissive.jpg": {
-     "bytes": 287838,
-     "sha256": "83bc1fa2d27fa470836c7290b208d711b6c87db5c8878c1d68dd8165381f13f8"
+    "B21_11_orm.png": {
+     "bytes": 4936624,
+     "sha256": "b0a9f4dd5c6d4b9d3d636554a35f3454f67b03ca9bbf2bab37a1a24ef738f3be"
     },
-    "B21_11_normal.jpg": {
-     "bytes": 1740712,
-     "sha256": "a4f2c30c75f41cd72368847f7196e16d13f7f0609a02c7d56f934d246484d425"
+    "B21_11_parts_base.jpg": {
+     "bytes": 896599,
+     "sha256": "5d1af637ccd48d8e77a14a8ba7af4a8f680c42cf14023e520ca6e940fe165f35"
     },
-    "B21_11_orm.jpg": {
-     "bytes": 2782092,
-     "sha256": "8e0e0dd8d642780114b1fd531212e3d257d9ec353051d6411da692e25fcd9fbb"
+    "B21_11_parts_normal.png": {
+     "bytes": 2831002,
+     "sha256": "bc0666cfc37bd38d224a73b280a56cfc878261736770ef4e9bae56f049962e3c"
     },
-    "B21_11_wreck.glb": {
-     "bytes": 3385760,
-     "sha256": "7839c2b2477bf9e0b5b1bf6945d8097088380a13c7ba086488719e0178498e3a"
+    "B21_11_parts_orm.png": {
+     "bytes": 4888660,
+     "sha256": "42c5eb7bb6e3f8c3a6af605ff8ab95f6bab84baccacc9aae97d49cf0c36bd084"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\B21_11\\",
@@ -823,36 +825,36 @@
    "turrets": 4,
    "files": {
     "H4_11.glb": {
-     "bytes": 12609092,
-     "sha256": "08529398fb54c2f0598632de8b8af14e593408acdddbea42f7d153746dfea2d3"
+     "bytes": 12608852,
+     "sha256": "33f1ef3062d7d42a3ae935d063e3d6a944a98a1c2dc253de8655d0ec46c321d2"
     },
     "H4_11_base.jpg": {
-     "bytes": 1550851,
-     "sha256": "fd3b90691ece58b9ae99b82bffddc0db391d791917b46e14e694146a0cb256ed"
+     "bytes": 1551438,
+     "sha256": "f5a31af1e56f08119f59ea021854fbfe28dcbdccc8f3235e87ac9bec583cf548"
     },
     "H4_11_glow_emission.jpg": {
-     "bytes": 712318,
-     "sha256": "71f3dd7ab7778a81ef2eead9140be7811ed7dc76857b1b97b3e3d2161bdd95b6"
+     "bytes": 712622,
+     "sha256": "1fe347f47ef0006ec02b376049faf63183b9a4d6a03bb93904f4a23d921149dc"
     },
     "H4_11_normal.jpg": {
-     "bytes": 377436,
-     "sha256": "cd15f8859a603a9b1b5b8001e5c1f5469b2d8f13d3615cbfa35f75f3a0ea5575"
+     "bytes": 377202,
+     "sha256": "b11e0ba7667d6f3484a3e44fc79183378551f45c8e9897cfdfc750bb08f778d1"
     },
     "H4_11_orm.jpg": {
-     "bytes": 1774976,
-     "sha256": "fb7b138a18c7acbb818cdd740e5e9fc581286b5e9c6141db3d35dbe8eb58f904"
+     "bytes": 1778646,
+     "sha256": "87ade02158a4284aa943ffd9629b91f2ee33a0593116b95c08581835259fc57c"
     },
     "H4_11_parts_base.jpg": {
-     "bytes": 1149449,
-     "sha256": "b815d8b2bc9b7124b13bf7200d91f56cf39110a3c624d09bf4c98fa12b308114"
+     "bytes": 1149586,
+     "sha256": "ade32a3da3730f4ac443639ccb3b1563eccf50c6695d0dc1a3fd57b34d4189e5"
     },
     "H4_11_parts_normal.jpg": {
-     "bytes": 426402,
-     "sha256": "2eec6a5ea9d5d38a5ec3c793021db557d30344455e05f9fcdce45cd81b4109f5"
+     "bytes": 426315,
+     "sha256": "402ec563e5509f051023f5602ad7c26962dfa57359491e51f1b249c36560d119"
     },
     "H4_11_parts_orm.jpg": {
-     "bytes": 1495199,
-     "sha256": "a0dce3fd8883ac7bf0a5c8bcb84d7dbff7876baf9435f9279d7e372bbf2070d7"
+     "bytes": 1495344,
+     "sha256": "a36deba47153e14e8075f728493ff6d6306435a71a5a84c0bbface342f754001"
     }
    },
    "pc_path": "godot/assets/ships/H4_11/"
@@ -1210,32 +1212,36 @@
    "skins": 21,
    "files": {
     "I8_37.glb": {
-     "bytes": 1027980,
-     "sha256": "2a0e11d58cd8087a71fe46e8fda367303263638d3c103016c3b2c0cfeecf0a49"
+     "bytes": 20768712,
+     "sha256": "01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc"
     },
     "I8_37_base.jpg": {
-     "bytes": 2013851,
-     "sha256": "f9af8e1ef20379609b81542369325e8faec658250a7799f6bda74c2faa41748f"
+     "bytes": 1768514,
+     "sha256": "36c6a13ac01fd129d3cab8cca7c66dfb6537164934091c8482e1f3d83656befd"
     },
-    "I8_37_damage.glb": {
-     "bytes": 7720524,
-     "sha256": "cdc77fdebbe236b1f1e35598b264898020f451d1bc4714efadd4d65d6714da7a"
+    "I8_37_emission.jpg": {
+     "bytes": 355238,
+     "sha256": "1ed3299a9eec513a1b89126b9761fdf298b15aed2d2d90fda3d63f6e1c8d8b13"
     },
-    "I8_37_emissive.jpg": {
-     "bytes": 649105,
-     "sha256": "a47ebed3a972f0c35b7b96159bcc41da849824d28bd979924644f0d10fd96757"
+    "I8_37_normal.png": {
+     "bytes": 2349042,
+     "sha256": "f541bb2bb50ab920574cdbbb28530850e1508b647eacce885510b549dd01f3ee"
     },
-    "I8_37_normal.jpg": {
-     "bytes": 584750,
-     "sha256": "5708d01f1f7494e0ae74b959ca216a88524bb12634e66787901065d286508548"
+    "I8_37_orm.png": {
+     "bytes": 4717114,
+     "sha256": "cfc64dcd8a2932f2209628fab53864a74889fe28f0b50aff1568927ee32a8fd9"
     },
-    "I8_37_orm.jpg": {
-     "bytes": 891481,
-     "sha256": "d1aae1a8d00dc286d688b325ca0123b2b00bd56e8d2c2826653519b859c7d8ab"
+    "I8_37_parts_base.jpg": {
+     "bytes": 803073,
+     "sha256": "c1825833adccdd62fd26c83c4b60fe7d8cdf17f0de32c0351da66d169b2241bc"
     },
-    "I8_37_wreck.glb": {
-     "bytes": 827068,
-     "sha256": "184d92da078b936274eac0f44ca253d3900c8d7608e66c807fd18dfa58963fc0"
+    "I8_37_parts_normal.png": {
+     "bytes": 702729,
+     "sha256": "a83e42c8fec10bf8668599a9e8326a3f8debc37ad0b4aca679707e52989e6b8f"
+    },
+    "I8_37_parts_orm.png": {
+     "bytes": 2316719,
+     "sha256": "b2aa0f356dc94e7e41c9f021ecb4c4358911cb87e53434f7a6dd47ce233d443c"
     }
    },
    "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I8_37\\",
@@ -1474,52 +1480,57 @@
    "preview": "previews/S2_23.jpg"
   },
   "V14_23": {
-   "name": "Warden-class frigate",
+   "name": "Warden-class frigate, the Sunward knife (Sunward Crusade)",
    "faction": "voidsworn",
    "cls": "Frigate",
    "band": "S",
+   "game_ship": "warden",
    "length_world": 6.5,
    "hardpoints": {
-    "gun": 3,
+    "gun": 7,
     "engine": 2,
-    "breach": 4,
-    "core": 1
+    "breach": 2,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 4,
-   "skins": 9,
+   "breaches": 2,
+   "turrets": 2,
    "files": {
     "V14_23.glb": {
-     "bytes": 5261576,
-     "sha256": "d16ba875b838731fa5df48c724838ca5253ce58fe03408f8bb81713b964f5bcc"
+     "bytes": 6003024,
+     "sha256": "6fcf53844e1076d4038876f4b8f94e7c9853489fa7a3a7dd7ed57bdf1dd03da4"
     },
     "V14_23_base.jpg": {
-     "bytes": 1278949,
-     "sha256": "cddee4279e643cca2524b2b3f8d55f5cfc7d8c8320e709676a829503a1839b9c"
+     "bytes": 1230098,
+     "sha256": "ee277ec88da57dafeef01b010a9077c64a390ce150395d50cd7998e87ce51233"
     },
-    "V14_23_damage.glb": {
-     "bytes": 19825748,
-     "sha256": "16e373b26e29d353418fab266f3503d506e2706296c202bb6717f744bec0b883"
+    "V14_23_glow_emission.jpg": {
+     "bytes": 448498,
+     "sha256": "b6e06404003b53bcc3284778eef41b249970e028246affabe6d3f2055b990414"
     },
-    "V14_23_emissive.jpg": {
-     "bytes": 140036,
-     "sha256": "a17d250dfc3c6568c135492eff2f4e6481ac6aab86dcf3b94b9f48e1a696fe4d"
+    "V14_23_normal.png": {
+     "bytes": 4581595,
+     "sha256": "a2d118e37179f18f25a978fa19009fbae3ce14f7a9e4cd0cb59608ff7d0651a4"
     },
-    "V14_23_normal.jpg": {
-     "bytes": 2295707,
-     "sha256": "b994bd7e3cfbe8302d49736b7e2c59d742158cf9477cbcd3d099894f8587450f"
+    "V14_23_orm.png": {
+     "bytes": 6649208,
+     "sha256": "16c32f8abff86bce3f880b0b4cff4d6024dde19d7a950a8854f4ff1889bc745e"
     },
-    "V14_23_orm.jpg": {
-     "bytes": 1900870,
-     "sha256": "6f675da05e755ede7ad9ae2d0459bdd5f892c925331b71fabfb154abae157cd3"
+    "V14_23_parts_base.jpg": {
+     "bytes": 1066747,
+     "sha256": "f1b781043d0a7a12d23c688a0a91978976328e3fa0e23d261f3646ddc0660139"
     },
-    "V14_23_wreck.glb": {
-     "bytes": 2964328,
-     "sha256": "a1ffc7c00a1b2c2435f0d5c6bce663959c16ca0b1dfd25d905881d076636e4e6"
+    "V14_23_parts_normal.png": {
+     "bytes": 3282893,
+     "sha256": "b6a77f644b261e01e3849f087e5581022bacabb5f5132f61a12c5f30a1406766"
+    },
+    "V14_23_parts_orm.png": {
+     "bytes": 6292066,
+     "sha256": "ed142c9e7c5aa7fd779b0ea17e128b91936ad1a2b4f9b24a62374f04ee49dc26"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V14_23\\",
-   "preview": "previews/V14_23.jpg",
-   "damage_preview": "previews/V14_23_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V14_23\\"
   },
   "V15_37": {
    "name": "Harrow-class destroyer",
@@ -1570,52 +1581,57 @@
    "damage_preview": "previews/V15_37_damage.jpg"
   },
   "V16_37": {
-   "name": "Vigil-class cruiser",
+   "name": "Vigil-class cruiser (Sunward Crusade)",
    "faction": "voidsworn",
    "cls": "Cruiser",
    "band": "M",
+   "game_ship": "penitent",
    "length_world": 14.5,
    "hardpoints": {
-    "gun": 5,
+    "gun": 9,
     "engine": 2,
-    "breach": 6,
-    "core": 1
+    "breach": 4,
+    "core": 1,
+    "rcs": 4,
+    "board": 2
    },
-   "breaches": 6,
-   "skins": 13,
+   "breaches": 4,
+   "turrets": 0,
    "files": {
     "V16_37.glb": {
-     "bytes": 4531504,
-     "sha256": "5079732110ead4fb74286a96520568d495120b351d9ec44943f6d9a984307061"
+     "bytes": 10443868,
+     "sha256": "dd2b04cc555989ff3d90eb91b49af65850238082c2d922616bdd478b1a6b567d"
     },
     "V16_37_base.jpg": {
-     "bytes": 1143387,
-     "sha256": "5f7b90ac4d818ab64a71d5e222870a6fb983f4f34a7c85c9bb4b64489fa3710d"
+     "bytes": 1663959,
+     "sha256": "8e73334600fc8053eb9a00aa54d4df9ce54f8fcc98e838734c869443d1d6c1c1"
     },
-    "V16_37_damage.glb": {
-     "bytes": 38386448,
-     "sha256": "78f2c37ff2cc1f48de8fdb290c080f94b62262f9d1d056b869a956532bb18d44"
+    "V16_37_glow_emission.jpg": {
+     "bytes": 514774,
+     "sha256": "4e7c68647522b3aea55d38c35014362b2a0ecccf7008fa9a1f089646bd9d9b94"
     },
-    "V16_37_emissive.jpg": {
-     "bytes": 132888,
-     "sha256": "e26aad1a08d355b34f2f7381bfc79f54c31a86542ee6bb431054ddb2cbada733"
+    "V16_37_normal.png": {
+     "bytes": 4379124,
+     "sha256": "d4f06cd1ff75eb0be4872410a85663821de0abadb69f292cc48cc7ace70baaa4"
     },
-    "V16_37_normal.jpg": {
-     "bytes": 2313213,
-     "sha256": "534e48d6e38750fe3470fec83f86acb30749a2593bf737b11b2139132bae8a9c"
+    "V16_37_orm.png": {
+     "bytes": 8390764,
+     "sha256": "c2ab18f8676e47201d0dbc23daa079afd5cb4f52817df6065b49de4a4c3f3804"
     },
-    "V16_37_orm.jpg": {
-     "bytes": 1646267,
-     "sha256": "1f6d92edfbc3694164eb1fe11f4a2f6c36028008f63df21127c12bd074eb6154"
+    "V16_37_parts_base.jpg": {
+     "bytes": 1070987,
+     "sha256": "9e74f505000e685f54510f45e8cdadbfe273e4586fb6f0250e87fac3c8e66692"
     },
-    "V16_37_wreck.glb": {
-     "bytes": 2713952,
-     "sha256": "af43041171070cbe74ad914df15b230e15c1fd25870d9d1e684ded04614f03a0"
+    "V16_37_parts_normal.png": {
+     "bytes": 3044792,
+     "sha256": "5fdd138f317d0e208d859054b9b6bc8323efa028653825238f9d7faa9928cd33"
+    },
+    "V16_37_parts_orm.png": {
+     "bytes": 6352726,
+     "sha256": "566d8938e9575e3b5512df4f7b094c8eab2a9b2a5061a9b6ff0b16f2f0f97b90"
     }
    },
-   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V16_37\\",
-   "preview": "previews/V16_37.jpg",
-   "damage_preview": "previews/V16_37_damage.jpg"
+   "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\V16_37\\"
   },
   "V17_37": {
    "name": "Bastion-class battleship",
@@ -1733,36 +1749,36 @@
    "turrets": 4,
    "files": {
     "V1b_r_23.glb": {
-     "bytes": 13271080,
-     "sha256": "e5686f47f2e6c45235f2eb4ca5c7fc3c7d7a17855304a92ecfb708ae6587615a"
+     "bytes": 13087572,
+     "sha256": "90d0e68d91bbc052e54604a0196e2f03995ef537e41658ff03047cd036e90498"
     },
     "V1b_r_23_base.jpg": {
-     "bytes": 1653241,
-     "sha256": "243df4319f41a5d277e07ba80e1edb840f567b21397f2ccaf305cfc8dd0e6519"
+     "bytes": 1658192,
+     "sha256": "9ddf4ba9690bc42fe8609f8313f1556729d431972e29fa64bbce990fd36f57ef"
     },
     "V1b_r_23_glow_emission.jpg": {
-     "bytes": 938731,
-     "sha256": "be0907037ed4baa9635f833ff60408b0f3e723fb372d61c8931205b8be3a9354"
+     "bytes": 558103,
+     "sha256": "6366faa98b9dfec66881b768ab7a8de6b6e06dbc08156047edf13a833233a516"
     },
-    "V1b_r_23_normal.jpg": {
-     "bytes": 527520,
-     "sha256": "c7e868ae1687f9eea466984abbf1a8f6cbd88f645733ab3765de8b61b7aff420"
+    "V1b_r_23_normal.png": {
+     "bytes": 4219521,
+     "sha256": "c864bf981964d137bd7843c002b0df95d10b489a8e99b87d8eae66fb61dcf826"
     },
-    "V1b_r_23_orm.jpg": {
-     "bytes": 2008858,
-     "sha256": "f3596754c4dcf51be0fa2111f5bb53fe03d2d14c775b4f622952361cfe1a241c"
+    "V1b_r_23_orm.png": {
+     "bytes": 8302565,
+     "sha256": "502ad0f40f25afd1ea2b80c7eed648715433a6e97923b55b44e77e8c6689ff14"
     },
     "V1b_r_23_parts_base.jpg": {
-     "bytes": 1145097,
-     "sha256": "a0b1ed987072c5b7f0790028e25604bc5c86cc6a16629bac6997aac96d160bfa"
+     "bytes": 1167882,
+     "sha256": "95997ddeb528433d29ba84885ad9cd3e55590abc247b37d30340cade01e9cc6b"
     },
-    "V1b_r_23_parts_normal.jpg": {
-     "bytes": 292006,
-     "sha256": "75b6607f79bede829adbf09e9e48b280dc23884ea103a56b619cb85a0981188f"
+    "V1b_r_23_parts_normal.png": {
+     "bytes": 2962010,
+     "sha256": "61b4675752a18828ab1a32bdece09ec15088086ee8809e5ea3c562cc88e6e157"
     },
-    "V1b_r_23_parts_orm.jpg": {
-     "bytes": 1705233,
-     "sha256": "939d8b070a8a96c5050b82716290d94b9045f47b777871756189503306a80e5f"
+    "V1b_r_23_parts_orm.png": {
+     "bytes": 6797738,
+     "sha256": "44b3884074f994e2a62d69b1082bb380d5e84e3fa9a4d8fc2c0d0ee2a40d51b0"
     }
    },
    "pc_path": "godot/assets/ships/V1b_r_23/"

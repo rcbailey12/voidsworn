@@ -19,6 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 const ROOT = process.env.VS_ROOT || path.resolve(__dirname, '../../..');
+const inputs = require('./sparse_check_inputs')(ROOT);
 
 const fails = [];
 const fail = what => fails.push(what);
@@ -66,7 +67,8 @@ function handoffSection0(text) {
   return next ? rest.slice(0, next.index) : rest;
 }
 
-const ROOT_NAMES = new Set(fs.readdirSync(ROOT));
+const skipped = inputs.skipped(ROOT);
+const ROOT_NAMES = new Set([...fs.readdirSync(ROOT), ...skipped.map(file => file.split('/')[0])]);
 const paths = new Set();
 
 for (const entry of ENTRY_FILES) {
@@ -92,7 +94,7 @@ for (const entry of ENTRY_FILES) {
       const first = token.split('/')[0];
       // Only root-relative repo paths. A relative path like render/ship_view.gd
       // (relative to godot/) is resolved below, not skipped when it exists.
-      if (!ROOT_NAMES.has(first) && !fs.existsSync(path.join(ROOT, 'godot', token))) continue;
+      if (!ROOT_NAMES.has(first) && !inputs.exists(path.join(ROOT, 'godot', token))) continue;
       paths.add(token);
     }
   }
@@ -102,9 +104,9 @@ let checkedPaths = 0;
 for (const token of [...paths].sort()) {
   const clean = token.replace(/\/$/, '');
   if (GENERATED.has(clean) || NOT_YET_WRITTEN.has(clean)) continue;
-  if (fs.existsSync(path.join(ROOT, token))) { checkedPaths++; continue; }
+  if (inputs.exists(path.join(ROOT, token))) { checkedPaths++; continue; }
   // A path written relative to the Godot product folder, as the skills often do.
-  if (!token.startsWith('godot/') && fs.existsSync(path.join(ROOT, 'godot', token))) { checkedPaths++; continue; }
+  if (!token.startsWith('godot/') && inputs.exists(path.join(ROOT, 'godot', token))) { checkedPaths++; continue; }
   fail('a path named in an entry document does not exist: ' + token);
 }
 // Guard against a regex that stops matching and passes silently.
@@ -171,12 +173,13 @@ const COUNT_PATTERNS = [
   /(\d+)\s+of\s+(\d+)\s+battles/gi,
 ];
 
-const readmes = walkReadmes(ROOT, []).filter(f => !datedSnapshot(rel(f)));
+const skippedReadmes = skipped.filter(file => /^readme\.md$/i.test(path.basename(file))).map(file => path.join(ROOT, file));
+const readmes = [...new Set([...walkReadmes(ROOT, []), ...skippedReadmes])].filter(f => !datedSnapshot(rel(f)));
 if (readmes.length === 0) fail('the README scan found no files; check datedSnapshot and walkReadmes');
 
 for (const full of readmes) {
   const name = rel(full);
-  const text = fs.readFileSync(full, 'utf8');
+  const text = inputs.read(full);
   for (const re of COUNT_PATTERNS) {
     re.lastIndex = 0;
     let m;

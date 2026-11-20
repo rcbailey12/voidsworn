@@ -183,7 +183,8 @@ def build(K):
     # round F (Ryan, Nov 20 07:00 CT: "armor more across the entire ship body, not just at the top"): the bands wrap from the
     # top down both flanks to the edge of the belly (section angle -1.2, about 70 degrees below the beam), and the fused chitin
     # clusters move from the lower flanks to the strip of belly the bands leave open
-    plates.armadillo(K, _k, 3.75, -2.35, seed=1343, lo=-1.2, band=0.46, lap=1.45, thick=0.075,
+    # close_gaps=False: the published C13 keeps its accepted bands byte for byte (issue 1291 kit fix; armadillo_check.py)
+    plates.armadillo(K, _k, 3.75, -2.35, seed=1343, lo=-1.2, band=0.46, lap=1.45, thick=0.075, close_gaps=False,
                      note='armadillo bands of grown chitin wrapping the body from belly edge to belly edge, lips aft; broken round the glands, spine bed, sacs and siphons; hide rolled at the edges')
     plates.dome_caps(K, _k, caps, seed=1345, flat=True,
                      note='flat grown chitin caps over the flank sacs, two rings of thin plates lying close, the bile slits open at each crown (round G)')

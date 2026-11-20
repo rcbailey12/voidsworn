@@ -109,6 +109,12 @@ uniform float calm_intensity = 0.0;
 uniform float pic_spin = 0.0;
 uniform vec2 pic_shape = vec2(1.0);
 uniform float smoke_tone = 1.0;
+// R367 (issue 1399): a faction's own death. fac_fire.a 1 turns the hot gas from the baked orange to fac_mid (cooler) and
+// fac_fire.rgb (hottest), fac_prism puts a rainbow edge on it, fac_smoke keeps that share of the smoke. Defaults: today's.
+uniform vec4 fac_fire = vec4(1.0, 1.0, 1.0, 0.0);
+uniform vec3 fac_mid = vec3(1.0);
+uniform float fac_prism = 0.0;
+uniform float fac_smoke = 1.0;
 varying float elapsed;
 varying float particle_depth;
 vec2 cell_uv(vec2 uv, float frame) {
@@ -158,15 +164,27 @@ void fragment() {
 	float lit = 0.25 + 0.55 * max(dot(normal, sun), 0.0) + thick.g * 0.2;
 	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
 	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
+	core = mix(core, mix(fac_fire.rgb, fac_mid, age), fac_fire.a);
 	ALBEDO = smoke * (1.0 - plasma) * power * fx_gain;
 	// One fast ignition, then only cool gas. The caller books both bright
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
 	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * power * fx_gain;
+	float keep = clamp(pulse * 3.0, 0.0, 1.0);
 #ifdef ROUTE_BAKED
 	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
 	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * power, thick.b) * fx_gain;
 	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
+	keep = clamp(thick.b, 0.0, 1.0);
+	if (fac_fire.a > 0.0) {
+		// the baked heat keeps its shape and brightness and takes the faction's colours; its smoke stays as baked
+		float lum = dot(ALBEDO, vec3(0.3, 0.55, 0.15));
+		vec3 ramp = mix(fac_mid, fac_fire.rgb, smoothstep(0.12, 1.1, lum)) * lum * 1.5;
+		vec2 c = UV - 0.5;
+		vec3 bow = 0.55 + 0.45 * cos(6.2831853 * (atan(c.y, c.x) / 6.2831853 + vec3(0.0, 0.33, 0.67)));
+		ramp = mix(ramp, bow * lum * 1.7, fac_prism * smoothstep(0.12, 0.42, length(c)) * 0.85);
+		ALBEDO = mix(ALBEDO, ramp, fac_fire.a * keep);
+	}
 #endif
 	ALBEDO *= mix(1.0, sin(age * 3.14159265), softened);
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
@@ -177,6 +195,7 @@ void fragment() {
 	soft = clamp((-hit.z / hit.w - particle_depth) / max(extent * 0.1, 0.05), 0.0, 1.0);
 #endif
 	ALPHA = gas.a * fade * soft * (elapsed < lifetime ? 1.0 : 0.0);
+	ALPHA *= mix(fac_smoke, 1.0, keep);
 }
 """
 

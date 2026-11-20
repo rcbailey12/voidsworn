@@ -65,6 +65,7 @@ $utf8 = New-Object Text.UTF8Encoding($false)
 $test = $env:PC_RUNNER_TEST -eq '1'
 $scratchOwnerFile = '.voidsworn-run-owner'
 $scratchFailedFile = '.voidsworn-run-failed'
+$fixedBlockPattern = '(?im)^[ \t]*Owner:[^\r\n]*(?:\r?\n(?![ \t]*(?:\r?$|`{3,}|~{3,}))[^\r\n]+)*'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 function Put($path, $value) { [IO.File]::WriteAllText($path, [string]$value, $utf8) }
 function Read($path) { if (Test-Path -LiteralPath $path) { return [IO.File]::ReadAllText($path).Trim() }; return '' }
@@ -368,22 +369,82 @@ function Reuse-Caches($repo, $status = @(Get-RepoCleanupStatus $repo), $allowWor
     throw "working tree needs keeping: $line"
   }
 }
-function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false, $forRemoval = $false) {
+# Issue 1186: code-only lanes leave out the big picture folders unless the issue's Brief or Deliver to line names a path
+# inside one. The profile is '/*' then '!/<dir>/' for each left-out folder, in this order, so the runner can recognise it.
+$codeCheckoutDirs = @('docs/shots','docs/ship_pipeline/build_sheets','contrib/muse/design','hulls_hi','rocks_hi')
+function Code-CheckoutExclusions($body) {
+  $fields = [regex]::Matches($body, '(?im)^[ \t]*(?:Brief|Deliver to):([^\r\n]*)') |
+    ForEach-Object { $_.Groups[1].Value.Replace('\', '/') }
+  foreach ($dir in $codeCheckoutDirs) {
+    $path = [regex]::Escape($dir)
+    if (-not ($fields -match "(?i)(?<![\w./-])(?:\./)?$path(?=/|[^\w.-]|$)")) { $dir }
+  }
+}
+function Code-CheckoutPatterns($excluded) {
+  if (-not @($excluded).Count) { return @() }
+  return @('/*') + @($excluded | ForEach-Object { "!/$_/" })
+}
+function Get-ManagedSparseExclusions($repo) {
+  # Returns the left-out folders of a runner-managed sparse profile, nothing for a full checkout, and throws otherwise.
+  $oldSparse = @(Read-CleanupGit @('-C',$repo,'config','--bool','core.sparseCheckout'))
+  if ($gitExit -notin @(0,1)) { throw 'sparse checkout setting not verified' }
+  if (-not ($oldSparse -contains 'true')) { return @() }
+  $cone = @(Read-CleanupGit @('-C',$repo,'config','--bool','core.sparseCheckoutCone'))
+  if ($gitExit -ne 0 -or $cone.Count -ne 1 -or $cone[0] -ne 'false') { throw 'sparse checkout profile is not runner-managed' }
+  $patternFile = Get-Item -LiteralPath (Join-Path $repo '.git/info/sparse-checkout') -Force -ErrorAction SilentlyContinue
+  if (-not $patternFile -or $patternFile -isnot [IO.FileInfo] -or ($patternFile.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    throw 'sparse checkout patterns are missing or linked'
+  }
+  $lines = @([IO.File]::ReadAllLines($patternFile.FullName) | Where-Object { $_ -ne '' })
+  $excluded = @($codeCheckoutDirs | Where-Object { $lines -ccontains "!/$_/" })
+  if (-not $excluded.Count -or (($lines -join "`n") -cne ((Code-CheckoutPatterns $excluded) -join "`n"))) {
+    throw 'sparse checkout profile is not runner-managed'
+  }
+  return $excluded
+}
+function Assert-NoHiddenSparseEdits($repo, $excluded, $flags) {
+  # Skip-worktree entries hide edits from git status. Allow them only inside the left-out folders, and only while no
+  # such file is on disk: a file that is there could hold an edit that status cannot see.
+  $skipped = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+  foreach ($line in $flags) {
+    if ($line -cmatch '^[a-z] ') { throw 'index may hide tracked edits' }
+    if ($line -cnotmatch '^S ') { continue }
+    $path = $line.Substring(2)
+    if (-not @($excluded | Where-Object { $path.StartsWith("$_/", [StringComparison]::Ordinal) }).Count) { throw 'index may hide tracked edits' }
+    $null = $skipped.Add($path)
+  }
+  foreach ($dir in $excluded) {
+    $full = Join-Path $repo $dir
+    if (-not (Test-Path -LiteralPath $full)) { continue }
+    foreach ($file in [IO.Directory]::EnumerateFiles($full, '*', [IO.SearchOption]::AllDirectories)) {
+      $relative = $file.Substring($repo.TrimEnd('\','/').Length + 1).Replace('\', '/')
+      if ($skipped.Contains($relative)) { throw "index may hide tracked edits: $relative is on disk in a left-out folder" }
+    }
+  }
+}
+function Get-RepoCleanupState($repo, $mirror, $patterns = @(), $allowWork = $false, $forRemoval = $false) {
   if ((Get-Item -LiteralPath $repo -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout is a linked path' }
-  if (-not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container)) { throw 'not a standalone checkout' }
+  $gitDir = Join-Path $repo '.git'
+  if (-not (Test-Path -LiteralPath $gitDir -PathType Container)) { throw 'not a standalone checkout' }
+  Assert-PlainDirectory (Get-Item -LiteralPath $gitDir -Force)
+  Assert-NoGitLocalState $repo
+  Assert-NoLiveWorktree $repo
   $top = @(Read-CleanupGit @('-C',$repo,'rev-parse','--show-toplevel'))
   if ($gitExit -ne 0) { throw "checkout root not verified (Git exit ${gitExit}: $($top[0]))" }
   if ([IO.Path]::GetFullPath($top[0]) -ne [IO.Path]::GetFullPath($repo)) { throw 'checkout root not verified' }
-  # Changing sparse patterns can discard ignored files. Preserve these checkouts instead.
-  $oldSparse = @(Read-CleanupGit @('-C',$repo,'config','--bool','core.sparseCheckout'))
-  if ($gitExit -notin @(0,1)) { throw 'sparse checkout setting not verified' }
-  if ($sparse -or ($oldSparse.Count -and $oldSparse[0] -eq 'true')) { throw 'sparse checkout needs keeping' }
+  # Changing sparse patterns can discard ignored files, so reuse needs the same runner-managed profile (or none).
+  # Removal accepts any runner-managed profile (issue 1186); any other sparse checkout is kept.
+  $excluded = @(Get-ManagedSparseExclusions $repo)
+  if (-not $forRemoval -and ((@($patterns) -join "`n") -cne ((Code-CheckoutPatterns $excluded) -join "`n"))) {
+    throw 'sparse checkout profile differs'
+  }
   $shallow = @(Read-CleanupGit @('-C',$repo,'rev-parse','--is-shallow-repository'))
   # Reuse needs full history. Removal only needs every local commit in the mirror, checked below, so a shallow helper
   # clone qualifies (issue 1180 run 8).
   if ($gitExit -ne 0 -or ($shallow[0] -ne 'false' -and -not ($forRemoval -and $shallow[0] -eq 'true'))) { throw 'complete local history not verified' }
-  $flags = @(Read-CleanupGit @('-C',$repo,'ls-files','-v'))
-  if ($gitExit -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
+  $flags = @(Read-CleanupGit @('-C',$repo,'-c','core.quotePath=false','ls-files','-v'))
+  if ($gitExit -ne 0) { throw 'index flags not verified' }
+  Assert-NoHiddenSparseEdits $repo $excluded $flags
   $status = @(Get-RepoCleanupStatus $repo)
   $script:cleanupSuperseded = @()
   $caches = @(Reuse-Caches $repo $status $allowWork $forRemoval)
@@ -402,13 +463,13 @@ function Get-RepoCleanupState($repo, $mirror, $sparse, $allowWork = $false, $for
   }
   return [pscustomobject]@{ Caches = $caches; Status = $status; Local = @($onlyLocal); MirrorCommits = $pushed; Superseded = $superseded }
 }
-function Get-RebuildableRepoFiles($repo, $mirror, $sparse) {
-  return (Get-RepoCleanupState $repo $mirror $sparse).Caches
+function Get-RebuildableRepoFiles($repo, $mirror, $patterns = @()) {
+  return (Get-RepoCleanupState $repo $mirror $patterns).Caches
 }
-function Can-ReuseRepo($repo, $mirror, $sparse) {
+function Can-ReuseRepo($repo, $mirror, $patterns) {
   if (-not (Test-Path -LiteralPath $repo)) { return $false }
   try {
-    $caches = @(Get-RebuildableRepoFiles $repo $mirror $sparse)
+    $caches = @(Get-RebuildableRepoFiles $repo $mirror $patterns)
     # Keep the whole checkout when an ignored file obstructs the incoming tree.
     $paths = @(Read-CleanupGit @('--git-dir',$mirror,'-c','core.quotePath=false','ls-tree','-r','--name-only','refs/heads/main'))
     if ($gitExit -ne 0) { throw 'incoming paths not verified' }
@@ -846,7 +907,7 @@ function Current-Body($body, $prefix, [ref]$assignment) {
   }
   if ($current.Count -gt 1) { throw "current instruction refused: expected one line containing THIS IS THE JOB NOW outside code fences, found $($current.Count); no agent started" }
   # Take only the opening fixed block, whether it is plain text or fenced for display.
-  $blocks = [regex]::Matches($body, '(?im)^[ \t]*Owner:[^\r\n]*(?:\r?\n(?![ \t]*(?:\r?$|`{3,}|~{3,}))[^\r\n]+)*')
+  $blocks = [regex]::Matches($body, $fixedBlockPattern)
   $fixed = ''; if ($blocks.Count) { $fixed = $blocks[0].Value }
   foreach ($field in @('Owner','Brief','Deliver to','Branch','Done when')) {
     $pattern = [regex]::Escape($field)
@@ -960,9 +1021,18 @@ function Issue-Lock($issue) {
     }
   }
 }
+function Open-HeldLock($path) {
+  # An exclusive lock that child processes inherit. Windows releases it only when every process holding the handle has
+  # exited, so a run whose waiting PowerShell dies keeps its lock while the batch and its tools still work (Artoo, PR 1250).
+  $item = Get-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+  if ($item -and ($item -isnot [IO.FileInfo] -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint))) {
+    throw "lock is not a plain file: $path"
+  }
+  return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', [IO.FileShare]::Inheritable)
+}
 function Invoke-LockedRunner($start, $issue) {
   # Keep the lock until the child finishes recording its result and cleaning its scratch.
-  $lock = Open-CleanupLock (Issue-LockPath $issue)
+  $lock = Open-HeldLock (Issue-LockPath $issue)
   try {
     $start.EnvironmentVariables['PC_RUNNER_LOCKED_ISSUE'] = $issue
     $start.RedirectStandardOutput = $true
@@ -1051,8 +1121,19 @@ try {
     }
   }
   elseif ($mode -eq 'checkout') {
-    $repo = $args[1]; $script:out = $args[2]; $br = $args[3]; $sparse = $args[4]
+    $repo = $args[1]; $script:out = $args[2]; $br = $args[3]
     if ([IO.Path]::GetFileName([IO.Path]::GetFullPath($repo).TrimEnd('\','/')) -ne 'repo') { throw "unexpected checkout path $repo" }
+    $patterns = @()
+    $slot = Split-Path -Leaf (Split-Path -Parent $repo)
+    if ($args[4]) { $patterns = @($args[4] -split '\s+') }
+    elseif ($slot -match '\A(board_[cd]|slot_(deepseek|deepseekpro|kimi|kimicode|sonnet|opus|openai))\z') {
+      # Only the opening fixed block can opt a folder back in. Later prose and older runs never change the profile.
+      $snapshot = Read (Join-Path $out 'validated_issue.json')
+      $fixed = [regex]::Match(($snapshot | ConvertFrom-Json).body, $fixedBlockPattern).Value
+      $excluded = @(Code-CheckoutExclusions $fixed)
+      $patterns = @(Code-CheckoutPatterns $excluded)
+      if ($excluded.Count) { Log "code checkout excludes: $($excluded -join ', ')" }
+    }
     $source = 'https://github.com/rcbailey12/voidsworn'
     $mirror = Repo-Mirror
     if ($test) {
@@ -1080,7 +1161,7 @@ try {
       Retry-Git 'mirror fetch' @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch','--prune','origin')
       # The remote default branch may not yet be set by init --bare.
       Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
-      $reuse = Can-ReuseRepo $repo $mirror $sparse
+      $reuse = Can-ReuseRepo $repo $mirror $patterns
       if ($reuse) {
         Retry-Git 'checkout fetch' @('-C',$repo,'fetch','--no-tags',$mirror,'+refs/heads/*:refs/remotes/origin/*')
       }
@@ -1109,7 +1190,14 @@ try {
     }
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
-    if ($sparse) { Must-Git (@('-C',$repo,'sparse-checkout','set','--no-cone') + @($sparse -split '\s+')) }
+    if (-not $reuse -and $patterns.Count) {
+      # Write the patterns file and settings directly; the checkout below applies them. Passing '/*' as an argument let
+      # PowerShell on Linux expand it into root folders, which left out every file (issue 1186, CI).
+      Must-Git @('-C',$repo,'config','core.sparseCheckout','true')
+      Must-Git @('-C',$repo,'config','core.sparseCheckoutCone','false')
+      $null = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
+      Put (Join-Path $repo '.git/info/sparse-checkout') (($patterns -join "`n") + "`n")
+    }
     $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,'refs/remotes/origin/main')
     $switchExit = $gitExit
     if ($reuse) {

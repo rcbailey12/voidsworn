@@ -39,8 +39,21 @@ function object(type, value) {
   return id;
 }
 function commit(files, parent) {
-  const tree = object('tree', Buffer.concat(Object.entries(files).sort(([a], [b]) => a.localeCompare(b)).map(([name, value]) =>
-    Buffer.concat([Buffer.from('100644 ' + name + '\0'), Buffer.from(object('blob', value), 'hex')]))));
+  function treeFor(entries) {
+    return object('tree', Buffer.concat(Object.entries(entries)
+      .sort(([a, left], [b, right]) => Buffer.compare(Buffer.from(a + (typeof left === 'object' ? '/' : '')), Buffer.from(b + (typeof right === 'object' ? '/' : ''))))
+      .map(([name, value]) => {
+        const directory = typeof value === 'object';
+        return Buffer.concat([Buffer.from((directory ? '40000 ' : '100644 ') + name + '\0'),
+          Buffer.from(directory ? treeFor(value) : object('blob', value), 'hex')]);
+      })));
+  }
+  const tree = treeFor({
+    docs: { shots: { 'shot.png': 'picture' }, ship_pipeline: { build_sheets: { 'sheet.md': 'sheet' } } },
+    contrib: { muse: { design: { 'draft.md': 'design' } } },
+    hulls_hi: { 'hull.glb': 'hull' }, rocks_hi: { 'rock.glb': 'rock' },
+    ...files
+  });
   return object('commit', `tree ${tree}\n${parent ? 'parent ' + parent + '\n' : ''}` +
     'author Fixture <fixture@example.invalid> 1700000000 +0000\ncommitter Fixture <fixture@example.invalid> 1700000000 +0000\n\nRunner fixture\n');
 }
@@ -681,6 +694,60 @@ foreach ($case in @(
   }
   Pass "$lane uses the rebuildable-file list and preserves checkout bytes"
 }
+function Sparse-Start($label, $slot, $brief, $delivery, $history = '') {
+  Init $label 'fixture/sparse'
+  $body = @('Owner: codex', "Brief: $brief", "Deliver to: $delivery", 'Branch: fixture/sparse', 'Done when: proof', '', $history) -join [Environment]::NewLine
+  Put (Join-Path $out 'validated_issue.json') (@{body = $body} | ConvertTo-Json)
+  Shared @('checkout',$slot,$out,'fixture/sparse','')
+  return [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+}
+$env:PC_TEST_SOURCE = $upstream
+$env:PC_TEST_MIRROR = Join-Path $root 'sparse-mirror.git'
+$paths = @('docs/shots/shot.png','docs/ship_pipeline/build_sheets/sheet.md','contrib/muse/design/draft.md','hulls_hi/hull.glb','rocks_hi/rock.glb')
+foreach ($lane in @('board_c','board_d','slot_deepseek','slot_openai','board_b')) {
+  $slot = Join-Path $root "$lane/repo"
+  $null = Sparse-Start "sparse-$lane" $slot 'docs/shots-index.md' 'shared.txt' "Brief: hulls_hi/hull.glb"
+  if (-not (Test-Path -LiteralPath (Join-Path $slot 'shared.txt'))) {
+    # Show what Git did, so a failure on another host can be read from the CI log alone.
+    $seen = @(Get-ChildItem -LiteralPath $slot -Force -Name -ErrorAction SilentlyContinue) -join ', '
+    $gitLog = [IO.File]::ReadAllText((Join-Path $out 'git_log.txt'))
+    $result = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+    $status = (& $script:git -C $slot status --porcelain=v1 2>&1 | Select-Object -First 10) -join ' | '
+    [Console]::Error.WriteLine(("DIAG $lane keeps code: slot holds [$seen]; status [$status]; result [$result]; git log [$gitLog]" -replace '[\r\n]+', ' / '))
+    throw "$lane keeps code (see DIAG line)"
+  }
+  foreach ($name in $paths) {
+    Assert ((Test-Path -LiteralPath (Join-Path $slot $name)) -eq ($lane -eq 'board_b')) "$lane checks out the right paths: $name"
+  }
+  $log = Sparse-Start "sparse-reuse-$lane" $slot 'below' 'shared.txt'
+  Assert ($log.Contains('earlier checkout reused in place')) "$lane failed reuse: $log"
+}
+$slot = Join-Path $root 'board_d/repo'
+$evidence = 'docs/shots/issue-846-codex/proof.png'
+$null = New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $slot $evidence)) -Force
+Put (Join-Path $slot $evidence) 'report evidence'
+Put (Join-Path $slot ($evidence + '.provenance.json')) '{}'
+Put (Join-Path $out 'deliver_to.txt') 'shared.txt'
+& (Join-Path $pc 'work_issue.ps1') guard 846 codex $slot $out
+Assert ($LASTEXITCODE -eq 0) 'runner can stage review evidence in the excluded shots folder'
+$staged = @(& $script:git -C $slot diff --cached --name-only)
+Assert ($staged.Count -eq 2 -and $staged -contains $evidence -and $staged -contains ($evidence + '.provenance.json')) 'only the picture and sidecar are staged'
+Pass 'sparse runner stages new report evidence without materializing historical pictures'
+$slot = Join-Path $root 'slot_openai/repo'
+$log = Sparse-Start 'sparse-opt-in' $slot './docs/shots/shot.png' 'contrib\\muse\\design\\draft.md, rocks_hi/rock.glb'
+Assert ($log.Contains('sparse checkout profile differs')) 'profile changes preserve the old checkout'
+foreach ($i in 0,2,4) { Assert (Test-Path -LiteralPath (Join-Path $slot $paths[$i])) "missing requested path $($paths[$i])" }
+foreach ($i in 1,3) { Assert (-not (Test-Path -LiteralPath (Join-Path $slot $paths[$i]))) "unexpected path $($paths[$i])" }
+$log = Sparse-Start 'sparse-opt-in-reuse' $slot 'docs/shots/shot.png' 'contrib/muse/design/draft.md, rocks_hi/rock.glb'
+Assert ($log.Contains('earlier checkout reused in place')) 'same opt-in profile can be reused'
+& $script:git -C $slot update-index --assume-unchanged shared.txt
+Assert ($LASTEXITCODE -eq 0) 'fixture sets an unsafe index flag on included code'
+Put (Join-Path $slot 'shared.txt') 'hidden local work'
+$log = Sparse-Start 'sparse-hidden-edit' $slot 'docs/shots/shot.png' 'contrib/muse/design/draft.md, rocks_hi/rock.glb'
+Assert ($log.Contains('index may hide tracked edits')) 'included code with a hidden edit requires preservation'
+$kept = Get-ChildItem -LiteralPath (Split-Path -Parent $slot) -Directory | Where-Object { $_.Name -like 'repo-kept-*' }
+Assert (@($kept | Where-Object { [IO.File]::ReadAllText((Join-Path $_.FullName 'shared.txt')) -eq 'hidden local work' }).Count -eq 1) 'hidden edit survives'
+Pass 'lanes C and D and Workhorse slots reuse sparse profiles, honor fixed fields, and preserve hidden edits'
 Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 // Allow the same PC proof to run with pwsh, the engine used by Linux CI.

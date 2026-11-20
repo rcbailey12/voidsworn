@@ -1,0 +1,36 @@
+{
+  "source_commit": "eef9fd8149d43ffadebebe62fa9b725d49415416",
+  "source_dirty": true,
+  "source_diff_sha256": "68acd423c430458bd5624ac667f549ca42ac29ad00c945f0d8bb05eaa9a086e2",
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "S10_battle_bench.jpg",
+  "date": "2026-11-20T16:47:36Z",
+  "sources": [
+    {
+      "source_commit": "eef9fd8149d43ffadebebe62fa9b725d49415416",
+      "source_dirty": true,
+      "source_diff_sha256": "68acd423c430458bd5624ac667f549ca42ac29ad00c945f0d8bb05eaa9a086e2",
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "13cc341d047d293c3a92be088b64380a468b29a1973f5ce8835d14e27e0e98e3"
+  ],
+  "stamp_template_sha256": "0959695057f9aa5aedb235797062c7025053a9a12e2ea23477c3f05c334e442c",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABmUlEQVR4nO3VMQEAIAzAMIZ/0aigHCQK+nVmZgEA9+3XAQDwC9MFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAkQM9gwDHw1W7WAAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "b63e9dbf6ea2fcf50bd4c69d1b8c0f6a6d8ccf9604720a3d3f5648732f4d3fd3"
+}

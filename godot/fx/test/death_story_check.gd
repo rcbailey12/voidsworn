@@ -14,6 +14,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted fixture
 # (the same choice as death_seam_check.gd, which also guards the fixture's freshness).
 const FX := preload("res://fx/fx.gd")
+const ROOT := preload("res://tools/ci/world_root.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
 const INSTALLED := "res://assets/ships/C19_51/C19_51.glb"
@@ -113,25 +114,9 @@ func _kill(story: bool, quality: String) -> Dictionary:
 	var ship := _load_ship()
 	check(ship != null, "A16 loads")
 	if ship == null: return {}
-	var length := 26.0
-	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
-		var ex = nd.get_meta("extras", {})
-		if ex is Dictionary and ex.has("length_world"): length = float(ex["length_world"])
-	world.add_child(ship)
-	var box := AABB()
-	var first := true
-	for mi in ship.find_children("*", "MeshInstance3D", true, false):
-		var bb: AABB = (mi as MeshInstance3D).global_transform * (mi as MeshInstance3D).mesh.get_aabb()
-		box = bb if first else box.merge(bb)
-		first = false
-	# as ShipView draws it: the hull node scaled to the class length under an unscaled root, so the hull's numbers are
-	# world lengths (scaling the root instead would leave L at the file's own unit and the speeds a scale off)
-	world.remove_child(ship)
-	var holder := Node3D.new()
-	world.add_child(holder)
-	holder.add_child(ship)
-	ship.scale = Vector3.ONE * (length / maxf(box.size.x, 0.0001))
-	ship = holder
+	# as ShipView draws it (tools/ci/world_root.gd): the hull scaled to its game length under an unscaled root, so the hull's
+	# numbers are world lengths (scaling the root instead would leave L at the file's own unit and the speeds a scale off)
+	ship = ROOT.hold(world, ship)
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
@@ -139,6 +124,7 @@ func _kill(story: bool, quality: String) -> Dictionary:
 	check(fx.death_story == story, "the switch reads %s" % story)
 	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
+	check(ROOT.at_game_size(s, ROOT.held_length(s.root)), ROOT.size_note(s, ROOT.held_length(s.root)))
 	var t_wait := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t_wait < 120000:
 		fx.step(1.0 / 60.0)

@@ -91,7 +91,19 @@ var pending_bakes := 0
 static func sector_setting(run: Dictionary) -> Dictionary:
 	var map: Dictionary = run["map"] if run.get("map") is Dictionary else {}
 	var biome: Dictionary = map["biome"] if map.get("biome") is Dictionary else {}
-	return SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0)
+	# issue 1272: the sector's anchor planet is its biome's look or that look's remix, keyed by the sector's own map
+	var key := "%s|%s" % [str(run.get("sector", "")), str(map.get("fac", ""))]
+	for col in map.get("cols", []):
+		for n in col: key += str(n.get("type", "")).left(2)
+	return SKY.planet_variant(SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0), key)
+
+
+# Issue 1272: the stop's mood and framing on the sector setting. Dead-star boards and the dawn finale are exempt and keep
+# the sector's own look, base planet included (RULEBOOK 10.10, issue 1271).
+static func stop_setting(s: Dictionary, opts: Dictionary, deadstar: bool, map_kind: String) -> Dictionary:
+	if deadstar or bool(opts.get("finale", false)): return SKY.base_planet(s)
+	if opts.get("stop") is Dictionary: return SKY.stop_mood(s, opts["stop"], map_kind)
+	return s
 
 
 func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
@@ -201,6 +213,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	setting["yaw"] = SKY.setting(biome, fac, mk, deadstar, bseed)["yaw"]
 	setting["deadstar"] = deadstar
 	setting["map"] = mk
+	setting = stop_setting(setting, opts, deadstar, mk)   # issue 1272
 	_yaw = float(setting["yaw"])
 	_baker = BAKER.service(get_tree())
 	var env: Environment = opts.get("environment", null)
@@ -437,7 +450,7 @@ func _make_sky(env: Environment) -> void:
 	var sh := Shader.new()
 	sh.code = SKY.SKY
 	m.shader = sh
-	var lamps: Array = SKY.lamps(setting)
+	var lamps: Array = SKY.lamps(SKY.bake_view(setting))   # issue 1272: bake inputs stay the sector's own
 	var lc: Array = []
 	var lr := RandomNumberGenerator.new()
 	lr.seed = int(setting["seed"]) + 9
@@ -450,6 +463,8 @@ func _make_sky(env: Environment) -> void:
 	m.set_shader_parameter("band_n", setting["band_n"])
 	m.set_shader_parameter("band", float(setting["band"]))
 	m.set_shader_parameter("star_k", float(setting["stars"]))
+	for k in ["mood_tint", "mood_mix", "mood_gain", "mood_dim"]:   # issue 1272: the stop's mood, cheap uniforms
+		if setting.has(k): m.set_shader_parameter(k, setting[k])
 	# Issue 232 E18/BD8 sheet: the live star occlusion floor, overridable for the density sweep (default 0.15).
 	var sf := OS.get_environment("VS_STAR_FLOOR")
 	m.set_shader_parameter("star_floor", float(sf) if sf != "" else 0.15)
@@ -491,10 +506,11 @@ func _load_sky(lamps: Array) -> void:
 	if OS.has_environment("VS_WORLD_PREVIEW"):   # software rendering in the cloud: small bakes
 		size = Vector2i(768, 384)
 	var key := "sky|%d|%s|%d" % [int(setting["seed"]), setting["region"], size.x]
-	var params := {"seed": float(int(setting["seed"]) % 997) * 0.37, "c1": setting["c1"], "c2": setting["c2"], "c3": setting["c3"],
-		"neb": float(setting["neb"]), "cover": float(setting["cover"]), "dust": float(setting["dust"]), "band": float(setting["band"]),
-		"band_n": setting["band_n"], "feature": setting["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
-		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(setting))}
+	var bs: Dictionary = SKY.bake_view(setting)   # issue 1272: a stop mood never rebakes the sector's sky
+	var params := {"seed": float(int(bs["seed"]) % 997) * 0.37, "c1": bs["c1"], "c2": bs["c2"], "c3": bs["c3"],
+		"neb": float(bs["neb"]), "cover": float(bs["cover"]), "dust": float(bs["dust"]), "band": float(bs["band"]),
+		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
+		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
 	var img: Image = await _baker.bake(key, code, params, size, 32)
 	if img == null or _sky_mat == null: return
@@ -521,7 +537,8 @@ func system(with_planet: bool) -> void:
 	var side := -1.0 if r.randf() < 0.5 else 1.0
 	var giant: bool = int(P["kind"]) <= 1
 	var ang := r.randf_range(0.15, 0.18) if giant else r.randf_range(0.11, 0.14)
-	var az := side * r.randf_range(0.36, 0.5)
+	ang *= float(setting.get("frame_scale", 1.0))   # issue 1272 stop framing (boss stops bring the planet nearer)
+	var az := side * (r.randf_range(0.36, 0.5) + float(setting.get("frame_az", 0.0)))   # issue 1272 stop framing
 	var el := -r.randf_range(0.17, 0.22)
 	var dir := turn * Vector3(sin(az) * cos(el), sin(el), -cos(az) * cos(el))
 	var bake_q := _planet_size()

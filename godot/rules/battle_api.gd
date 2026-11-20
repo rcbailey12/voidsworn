@@ -188,6 +188,12 @@ func _clean_cfg(cfg: Dictionary) -> Dictionary:
 
 # A battle from a campaign run (the RUN dictionary: admiral, fac, sector, fleet of ships, relics, boons, ...) and a battle config
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
+# The enemy AI level, "standard" or "veteran" (anything else is Veteran). Set it before new_battle: the enemy fleet is rolled
+# there at this level (battle.js genEnemyFleet reads AI_LEVEL), issue 1336.
+func set_ai_level(level: String) -> void:
+	_enter()
+	R.AI_LEVEL = level if level in ["standard", "veteran"] else "veteran"
+	_leave(false)
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	_enter(); halted = ""
 	if R != null: R.not_ported = ""   # a new battle starts clean
@@ -249,18 +255,13 @@ func _i_view() -> Dictionary:
 			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
 	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
-		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps(), "zones": _zones(), "halt": halted if halted != "" else null}
+		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "zones": _zones(), "halt": halted if halted != "" else null}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
 	var o := {}
 	if R.B.get("obj") == null: return o
 	for h in _hexes:
 		var z = R.objZone(h.q, h.r)
 		if z != null: o[str(h.q) + "," + str(h.r)] = z
-	return o
-func _torps() -> Array: # torpedo salvos in flight: they strike at the start of the firing side's next turn
-	var o := []
-	for s in (R.B["torps"] if R.B.get("torps") != null else []):
-		o.append({"id": s["id"], "side": s["side"], "by": s["by"], "target": s["tid"], "aim": {"q": int(s["aim"]["q"]), "r": int(s["aim"]["r"])}, "from": {"q": int(s["from"]["q"]), "r": int(s["from"]["r"])}, "round": int(s["r"])})
 	return o
 
 # Everything that happened since the last call, in order (API.md lists the event types).
@@ -810,7 +811,7 @@ func _ai_activate(u) -> void:
 	R.eval_begin()
 	for s in states:
 		var v = R.stateView(u, s); var off2 = R.evalOffense(v, R.readyList(u), foes); var th = R.evalThreat(v, foes)
-		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.torpThreat(u, v) * 0.9 - R.syncPull(u, v) * 1.5
+		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.syncPull(u, v) * 1.5
 		if sc > bs:
 			bs = sc; best = s
 	R.eval_end()

@@ -94,16 +94,17 @@ def hard_layers(c, zone, base, shade, roughness):
 
 # ---------------------------------------------------------------------------------------------------- the grown look
 # Issue 1291 (Ryan, Nov 20, on C13 in game: "the flesh just looks like red clay", "none of [the armour] looks right"; he agreed
-# the colour: muddy olive-brown hide, dark red veins, bone-to-horn chitin, the yellow-green glow kept). A ship opts in with
-# "chorus_look": "grown" in its recipe json (tools/recipe/ships/<ship>.json) until Ryan accepts it for the family; every other
-# Chorus ship keeps the R341 finish above. Linear RGB.
+# the colour: muddy olive-brown hide, dark red veins, bone-to-horn chitin, the yellow-green glow kept). Ryan accepted it in game
+# on C13 round G (Nov 20, R349, PR 1308), so it is the family's default: every Chorus ship gets it unless its recipe json says
+# "chorus_look": "r341" (C12's first round G trial, opus1291c12a, missed it because the grown look was still opt-in; Ryan
+# caught the old skin on its sheet). Linear RGB.
 def _look():
     import json, os
     try:
         with open(os.environ.get('R209_SHIP', ''), encoding='utf-8') as f:
-            return json.load(f).get('chorus_look', 'r341')
+            return json.load(f).get('chorus_look', 'grown')
     except (OSError, ValueError):
-        return 'r341'
+        return 'grown'
 
 
 LOOK = _look()
