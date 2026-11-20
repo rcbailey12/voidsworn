@@ -1,0 +1,27 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1183r5d",
+ "ship": "ithar_CD5",
+ "code": "I8_37",
+ "commit": "6b69276a47fc8a0d674d4ad88a5fd244bc5a637d",
+ "glb": "01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc",
+ "files": {
+  "I8_37.glb": "01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc",
+  "I8_37_base.jpg": "36c6a13ac01fd129d3cab8cca7c66dfb6537164934091c8482e1f3d83656befd",
+  "I8_37_emission.jpg": "1ed3299a9eec513a1b89126b9761fdf298b15aed2d2d90fda3d63f6e1c8d8b13",
+  "I8_37_normal.png": "f541bb2bb50ab920574cdbbb28530850e1508b647eacce885510b549dd01f3ee",
+  "I8_37_orm.png": "cfc64dcd8a2932f2209628fab53864a74889fe28f0b50aff1568927ee32a8fd9",
+  "I8_37_parts_base.jpg": "c1825833adccdd62fd26c83c4b60fe7d8cdf17f0de32c0351da66d169b2241bc",
+  "I8_37_parts_normal.png": "a83e42c8fec10bf8668599a9e8326a3f8debc37ad0b4aca679707e52989e6b8f",
+  "I8_37_parts_orm.png": "b2aa0f356dc94e7e41c9f021ecb4c4358911cb87e53434f7a6dd47ce233d443c"
+ },
+ "checked": [
+  "I8_37.glb",
+  "I8_37_base.jpg",
+  "I8_37_emission.jpg",
+  "I8_37_normal.png",
+  "I8_37_orm.png",
+  "I8_37_parts_base.jpg",
+  "I8_37_parts_normal.png",
+  "I8_37_parts_orm.png"
+ ]
+}

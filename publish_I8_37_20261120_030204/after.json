@@ -1,0 +1,76 @@
+{
+ "files": {
+  "I8_37.glb": "01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc",
+  "I8_37_base.jpg": "36c6a13ac01fd129d3cab8cca7c66dfb6537164934091c8482e1f3d83656befd",
+  "I8_37_emission.jpg": "1ed3299a9eec513a1b89126b9761fdf298b15aed2d2d90fda3d63f6e1c8d8b13",
+  "I8_37_normal.png": "f541bb2bb50ab920574cdbbb28530850e1508b647eacce885510b549dd01f3ee",
+  "I8_37_orm.png": "cfc64dcd8a2932f2209628fab53864a74889fe28f0b50aff1568927ee32a8fd9",
+  "I8_37_parts_base.jpg": "c1825833adccdd62fd26c83c4b60fe7d8cdf17f0de32c0351da66d169b2241bc",
+  "I8_37_parts_normal.png": "a83e42c8fec10bf8668599a9e8326a3f8debc37ad0b4aca679707e52989e6b8f",
+  "I8_37_parts_orm.png": "b2aa0f356dc94e7e41c9f021ecb4c4358911cb87e53434f7a6dd47ce233d443c"
+ },
+ "scenes": {
+  "gen/ships/I8_37.scn": "e8fb8817993b76fe8fbefe2499a26ab4af11cfcf1c36a6c4bca132827a29646d",
+  "gen/damage/I8_37_damage.scn": "38003c62bcaa9965db82809c9bfd8fb6900ddcaa9997665429bdce6136bb432f",
+  "gen/wreck/I8_37_wreck.scn": "36c8d08f111ee9390459bc95588f855133179267f54a4af5cf21e3013d0033ec"
+ },
+ "asset_row": {
+  "name": "The Unfinished, Glasswright flagship",
+  "faction": "ithar",
+  "cls": "Ark",
+  "band": "XL",
+  "game_ship": "i_boss",
+  "length_world": 26.0,
+  "hardpoints": {
+   "gun": 5,
+   "engine": 3,
+   "breach": 7,
+   "core": 1,
+   "rcs": 2,
+   "board": 2
+  },
+  "breaches": 7,
+  "turrets": 3,
+  "files": {
+   "I8_37.glb": {
+    "bytes": 20768712,
+    "sha256": "01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc"
+   },
+   "I8_37_base.jpg": {
+    "bytes": 1768514,
+    "sha256": "36c6a13ac01fd129d3cab8cca7c66dfb6537164934091c8482e1f3d83656befd"
+   },
+   "I8_37_emission.jpg": {
+    "bytes": 355238,
+    "sha256": "1ed3299a9eec513a1b89126b9761fdf298b15aed2d2d90fda3d63f6e1c8d8b13"
+   },
+   "I8_37_normal.png": {
+    "bytes": 2349042,
+    "sha256": "f541bb2bb50ab920574cdbbb28530850e1508b647eacce885510b549dd01f3ee"
+   },
+   "I8_37_orm.png": {
+    "bytes": 4717114,
+    "sha256": "cfc64dcd8a2932f2209628fab53864a74889fe28f0b50aff1568927ee32a8fd9"
+   },
+   "I8_37_parts_base.jpg": {
+    "bytes": 803073,
+    "sha256": "c1825833adccdd62fd26c83c4b60fe7d8cdf17f0de32c0351da66d169b2241bc"
+   },
+   "I8_37_parts_normal.png": {
+    "bytes": 702729,
+    "sha256": "a83e42c8fec10bf8668599a9e8326a3f8debc37ad0b4aca679707e52989e6b8f"
+   },
+   "I8_37_parts_orm.png": {
+    "bytes": 2316719,
+    "sha256": "b2aa0f356dc94e7e41c9f021ecb4c4358911cb87e53434f7a6dd47ce233d443c"
+   }
+  },
+  "pc_path": "godot/assets/ships/I8_37/"
+ },
+ "cache_row": {
+  "mirror": false,
+  "res": "res://gen/ships/I8_37.scn",
+  "src": "1795147293:20768712;",
+  "v": 3.0
+ }
+}

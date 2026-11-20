@@ -1,0 +1,1 @@
+[publish] kept I8_37 as it was in C:\Users\rcbai\Downloads\voidsworn_test\build\godot\_replaced\I8_37_20261120_030204

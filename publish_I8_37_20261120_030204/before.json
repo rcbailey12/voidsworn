@@ -1,0 +1,72 @@
+{
+ "files": {
+  "I8_37.glb": "2a0e11d58cd8087a71fe46e8fda367303263638d3c103016c3b2c0cfeecf0a49",
+  "I8_37_base.jpg": "f9af8e1ef20379609b81542369325e8faec658250a7799f6bda74c2faa41748f",
+  "I8_37_damage.glb": "cdc77fdebbe236b1f1e35598b264898020f451d1bc4714efadd4d65d6714da7a",
+  "I8_37_emissive.jpg": "a47ebed3a972f0c35b7b96159bcc41da849824d28bd979924644f0d10fd96757",
+  "I8_37_normal.jpg": "5708d01f1f7494e0ae74b959ca216a88524bb12634e66787901065d286508548",
+  "I8_37_orm.jpg": "d1aae1a8d00dc286d688b325ca0123b2b00bd56e8d2c2826653519b859c7d8ab",
+  "I8_37_wreck.glb": "184d92da078b936274eac0f44ca253d3900c8d7608e66c807fd18dfa58963fc0"
+ },
+ "scenes": {
+  "gen/ships/I8_37.scn": "bd85faa6e4f928548948a2efe52d9a15e1e7592d3dbfbd7621ebc82ca4f75227",
+  "gen/damage/I8_37_damage.scn": "38003c62bcaa9965db82809c9bfd8fb6900ddcaa9997665429bdce6136bb432f",
+  "gen/wreck/I8_37_wreck.scn": "36c8d08f111ee9390459bc95588f855133179267f54a4af5cf21e3013d0033ec"
+ },
+ "asset_row": {
+  "name": "The Unfinished",
+  "faction": "ithar",
+  "cls": "Ark",
+  "band": "XL",
+  "length_world": 26,
+  "hardpoints": {
+   "gun": 5,
+   "engine": 1,
+   "breach": 10,
+   "core": 1
+  },
+  "breaches": 10,
+  "skins": 21,
+  "files": {
+   "I8_37.glb": {
+    "bytes": 1027980,
+    "sha256": "2a0e11d58cd8087a71fe46e8fda367303263638d3c103016c3b2c0cfeecf0a49"
+   },
+   "I8_37_base.jpg": {
+    "bytes": 2013851,
+    "sha256": "f9af8e1ef20379609b81542369325e8faec658250a7799f6bda74c2faa41748f"
+   },
+   "I8_37_damage.glb": {
+    "bytes": 7720524,
+    "sha256": "cdc77fdebbe236b1f1e35598b264898020f451d1bc4714efadd4d65d6714da7a"
+   },
+   "I8_37_emissive.jpg": {
+    "bytes": 649105,
+    "sha256": "a47ebed3a972f0c35b7b96159bcc41da849824d28bd979924644f0d10fd96757"
+   },
+   "I8_37_normal.jpg": {
+    "bytes": 584750,
+    "sha256": "5708d01f1f7494e0ae74b959ca216a88524bb12634e66787901065d286508548"
+   },
+   "I8_37_orm.jpg": {
+    "bytes": 891481,
+    "sha256": "d1aae1a8d00dc286d688b325ca0123b2b00bd56e8d2c2826653519b859c7d8ab"
+   },
+   "I8_37_wreck.glb": {
+    "bytes": 827068,
+    "sha256": "184d92da078b936274eac0f44ca253d3900c8d7608e66c807fd18dfa58963fc0"
+   }
+  },
+  "pc_path": "Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\I8_37\\",
+  "preview": "previews/I8_37.jpg",
+  "damage_preview": "previews/I8_37_damage.jpg"
+ },
+ "cache_row": {
+  "damage": "res://gen/damage/I8_37_damage.scn",
+  "mirror": false,
+  "res": "res://gen/ships/I8_37.scn",
+  "src": "1793566438:1027980;1793566438:7720524;1793566438:827068;",
+  "v": 3.0,
+  "wreck": "res://gen/wreck/I8_37_wreck.scn"
+ }
+}

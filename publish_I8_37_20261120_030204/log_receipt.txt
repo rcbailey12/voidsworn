@@ -1,0 +1,2 @@
+[publish] receipt ok: ithar_CD5 I8_37 commit 6b69276a47fc8a0d674d4ad88a5fd244bc5a637d, glb 01b16b327558445c08d3704096722253fc4b860ff3e1ce16260d996f289dd9dc, 8 listed and 8 checked files
+SHIP=ithar_CD5

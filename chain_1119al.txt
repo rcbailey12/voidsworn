@@ -1,0 +1,10 @@
+publish CD5 start Fri 11/20/2026  3:02:03.81 
+PICTURE_STAMP_TOOL=C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\picture_provenance.py 
+stamp tool and picture_font.json present 
+chain start Fri 11/20/2026  3:02:03.82 
+step 2 publish I8_37 from opus1183r5d start  3:02:03.83 
+step 2 exit 1 at  3:05:13.54 
+step 2 result: C:\Users\rcbai\Downloads\voidsworn_test\publish\I8_37_20261120_030204\result.txt 
+step 2 last line: all done FAILED: shots (the ship is published, read back and sealed; only the picture failed) Fri 11/20/2026  3:05:13.54  
+V14_23 shots-only step skipped: publish_ship.bat has no shots-only mode (Board: skip in that case) 
+all done Fri 11/20/2026  3:05:13.57 
