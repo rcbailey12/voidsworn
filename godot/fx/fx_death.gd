@@ -476,7 +476,7 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		b.angular_damp = damp * 0.5
 		# issue 1236: a plate from a wreck that blocks its hex is kept in that hex (_leash); a reused plate forgets its old one
 		b.set_meta("leash_id", leash)
-		b.remove_meta("leash_r")
+		b.remove_meta("leash_born")
 		b.sleeping = false
 		b.visible = true
 		var mesh := b.get_node("mesh") as MeshInstance3D
@@ -3255,17 +3255,28 @@ static func update(fx, dt: float) -> void:
 # ---------------------------------------------------------------- wrecks that block their hex (issue 1236)
 # The rules turn a dead cruiser or capital's hex into a wreck that blocks movement and fire (rules "wreck" event). The
 # battle anchors that death here, so its pieces, fragments and plates come to rest inside the hex instead of drifting
-# across the board. Each piece may move out to LEASH_R from the hex centre, or LEASH_SLACK past where it was born when a
-# long hull already overhangs that; past LEASH_SOFT of that distance it brakes, and at the limit it stops going outward.
-const LEASH_SOFT := 0.6        # share of a piece's limit where its brake starts
-const LEASH_BRAKE := 4.0       # per second, the brake at the limit (it ramps up from zero at LEASH_SOFT)
-const LEASH_SLACK := 0.2       # share of the hex radius a piece born past the radius may still drift out
+# across the board. A piece brakes from LEASH_SOFT of its rest limit (the hex's rest radius less half the piece's own
+# size) and never drifts past it; a piece past it (a long hull overhangs its hex) is drawn back in, and nothing is ever
+# farther out than where it was born or the rest radius.
+# Ryan, Nov 20 00:45 UTC (option 1 on 1236): a dreadnought's wreck sits inside its one hex. A hull longer than the hex
+# (a cruiser is 23 units, a dreadnought 34, the hex 17 across) settles into tighter pieces: between LEASH_SHRINK seconds
+# after the break the wreck draws together about the hex centre, every piece and the gaps between them, until the whole
+# wreck spans LEASH_FIT of the rest radius. The break itself plays at full size.
+const LEASH_SOFT := 0.6        # share of the rest radius where a piece's brake starts
+const LEASH_BRAKE := 4.0       # per second, the brake at the rest radius (it ramps up from zero at LEASH_SOFT)
+const LEASH_PULL := 1.0        # per second: a piece past the rest radius comes back in at this share of the gap
+const LEASH_FIT := 1.8         # the settled wreck's length, in rest radii (0.8 of the hex radius each: just inside the hex across)
+const LEASH_SHRINK := Vector2(1.5, 5.5)   # seconds after the break: the wreck draws together over this window
 
 
-# The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's radius in world units.
+# The battle calls this on the rules "wreck" event, before the death plays. radius: the hex's rest radius in world units.
 static func anchor_wreck(fx, id: String, centre: Vector3, radius: float) -> void:
 	if not fx.dstate.has("anchors"): fx.dstate["anchors"] = {}
-	fx.dstate["anchors"][id] = {"c": centre, "r": radius}
+	var k := 1.0
+	var s = fx.ships.get(id)
+	if s != null and s.hull != null and float(s.hull.L) > 0.0:
+		k = minf(1.0, radius * LEASH_FIT / float(s.hull.L))
+	fx.dstate["anchors"][id] = {"c": centre, "r": radius, "k": k}
 
 
 # how many pieces of a ship's wreck are still on the board (the battle's fallback hull when a death left none)
@@ -3279,12 +3290,13 @@ static func wreck_pieces(fx, id: String) -> int:
 
 
 # every piece of an anchored wreck: its main pieces, its fragments and the plates it threw
-static func leashed_nodes(fx, id: String) -> Array:
+static func leashed_nodes(fx, id: String, main_only := false) -> Array:
 	var out: Array = []
 	for w in fx.dstate.get("wrecks", []):
 		if w["id"] != id: continue
-		for nd in w["nodes"] + w.get("frags", []):
+		for nd in w["nodes"] + ([] if main_only else w.get("frags", [])):
 			if is_instance_valid(nd): out.append(nd)
+	if main_only: return out
 	for b in fx.dstate.get("debris", []):
 		if is_instance_valid(b) and b.visible and str(b.get_meta("leash_id", "")) == id: out.append(b)
 	return out
@@ -3296,11 +3308,21 @@ static func _leash(fx, dt: float) -> void:
 	for w in fx.dstate["wrecks"]:
 		var an = anchors.get(w["id"])
 		if an == null: continue
+		var k: float = an.get("k", 1.0)
+		var sc := 1.0
+		if k < 1.0:
+			sc = lerpf(1.0, k, smoothstep(float(w["t0"]) + LEASH_SHRINK.x, float(w["t0"]) + LEASH_SHRINK.y, fx.now))
+		var prev: float = w.get("leash_s", 1.0)
+		w["leash_s"] = sc
+		var pieces: Array = w["nodes"] + w.get("frags", [])
+		if sc != prev:
+			for nd in pieces:
+				if is_instance_valid(nd): _draw_in(nd, an, sc, prev)
 		# the kinematic tiers (and a frozen physics piece before its release) move by their fire entries
 		for f in w["fires"]:
 			if f.has("vel") and f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
 				f["vel"] = _leash_vel(f["node"], f["vel"], an, dt)
-		for nd in w["nodes"] + w.get("frags", []):
+		for nd in pieces:
 			if not is_instance_valid(nd): continue
 			if nd is RigidBody3D and not (nd as RigidBody3D).freeze:
 				(nd as RigidBody3D).linear_velocity = _leash_vel(nd, (nd as RigidBody3D).linear_velocity, an, dt)
@@ -3313,21 +3335,62 @@ static func _leash(fx, dt: float) -> void:
 		_leash_clamp(b, an)
 
 
-# how far from the hex centre this piece may go, fixed the first time the leash sees it
-static func leash_limit(nd: Node3D, an: Dictionary) -> float:
-	if nd.has_meta("leash_r"): return float(nd.get_meta("leash_r"))
-	var off: Vector3 = nd.global_position - (an["c"] as Vector3)
+# one step of the wreck drawing together: the piece's place about the hex centre and its meshes about its own origin,
+# both from scale prev to sc (the meshes keep their first local transforms, so steps never add up drift)
+static func _draw_in(nd: Node3D, an: Dictionary, sc: float, prev: float) -> void:
+	var c: Vector3 = an["c"]
+	var f := sc / maxf(prev, 0.001)
+	if nd.has_meta("leash_born"):
+		nd.set_meta("leash_born", maxf(float(an["r"]), float(nd.get_meta("leash_born")) * sc / maxf(prev, 0.001)))
+	var p := leash_centre(nd)
+	for ch in nd.get_children():
+		if not (ch is MeshInstance3D): continue
+		if not ch.has_meta("leash_t0"): ch.set_meta("leash_t0", (ch as Node3D).transform)
+		(ch as Node3D).transform = (ch.get_meta("leash_t0") as Transform3D).scaled(Vector3.ONE * sc)
+	# then the piece's middle (where it was before this step) moves in about the hex centre by the same step
+	var now := leash_centre(nd)
+	var want := Vector3(c.x + (p.x - c.x) * f, p.y, c.z + (p.z - c.z) * f)
+	nd.global_position += Vector3(want.x - now.x, 0.0, want.z - now.z)
+	# pieces drawn together must not shove each other apart again
+	if nd is RigidBody3D and sc < 0.999:
+		(nd as RigidBody3D).collision_mask = HULL_LAYER
+
+
+# where a piece is, for the leash: the middle of its mesh's box (a piece's origin is the mean of its points, which on a
+# lopsided chunk of hull can sit far from what the eye reads as the piece), else its origin
+static func leash_centre(nd: Node3D) -> Vector3:
+	for ch in nd.get_children():
+		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
+			return nd.global_transform * ((ch as MeshInstance3D).transform * (ch as MeshInstance3D).mesh.get_aabb().get_center())
+	return nd.global_position
+
+
+# half the piece's footprint on the board as drawn now (its mesh box, at its current scale), for the rest limit
+static func leash_half(nd: Node3D) -> float:
+	for ch in nd.get_children():
+		if ch is MeshInstance3D and (ch as MeshInstance3D).mesh != null:
+			var sz: Vector3 = (ch as MeshInstance3D).mesh.get_aabb().size * (ch as Node3D).transform.basis.get_scale()
+			return 0.5 * maxf(sz.x, maxf(sz.y, sz.z))
+	return 0.0
+
+
+# how far from the hex centre a piece may ever be: where it was born when that is past the rest radius, else the radius
+static func _born(nd: Node3D, an: Dictionary) -> float:
+	if nd.has_meta("leash_born"): return float(nd.get_meta("leash_born"))
+	var off: Vector3 = leash_centre(nd) - (an["c"] as Vector3)
 	off.y = 0.0
-	var r: float = an["r"]
-	var lim := maxf(r, off.length() + r * LEASH_SLACK) if off.length() > r else r
-	nd.set_meta("leash_r", lim)
+	var lim := maxf(float(an["r"]), off.length())
+	nd.set_meta("leash_born", lim)
 	return lim
 
 
 static func _leash_vel(nd: Node3D, v: Vector3, an: Dictionary, dt: float) -> Vector3:
-	var off: Vector3 = nd.global_position - (an["c"] as Vector3)
+	var off: Vector3 = leash_centre(nd) - (an["c"] as Vector3)
 	off.y = 0.0
-	var lim := leash_limit(nd, an)
+	_born(nd, an)
+	# the whole piece rests inside the rest radius, not only its middle (a quarter of the radius at least, so the
+	# pieces of a big hull do not all pile on the centre)
+	var lim: float = maxf(float(an["r"]) * 0.25, float(an["r"]) - leash_half(nd))
 	var d := off.length()
 	var soft := lim * LEASH_SOFT
 	if d <= soft: return v
@@ -3335,15 +3398,16 @@ static func _leash_vel(nd: Node3D, v: Vector3, an: Dictionary, dt: float) -> Vec
 	if d >= lim:
 		var n := off / d
 		var out := v.x * n.x + v.z * n.z
-		if out > 0.0: v -= n * out
+		# no outward drift at the rest radius; past it, back in at LEASH_PULL of the gap a second
+		v -= n * (out + (d - lim) * LEASH_PULL)
 	return v
 
 
 static func _leash_clamp(nd: Node3D, an: Dictionary) -> void:
 	var c: Vector3 = an["c"]
-	var off: Vector3 = nd.global_position - c
+	var off: Vector3 = leash_centre(nd) - c
 	off.y = 0.0
-	var lim := leash_limit(nd, an)
+	var lim := _born(nd, an)
 	if off.length() > lim:
-		var p := c + off.normalized() * lim
-		nd.global_position = Vector3(p.x, nd.global_position.y, p.z)
+		var back := off - off.normalized() * lim
+		nd.global_position -= back

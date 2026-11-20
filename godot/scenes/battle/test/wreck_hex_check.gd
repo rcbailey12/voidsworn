@@ -6,8 +6,9 @@ extends SceneTree
 #   every rules "wreck" event gets a board wreck: board.wrecks names the hex, the board's own terrain has a hulk there,
 #     the edge mesh (the hex marker the grid shows, Z) was rebuilt with it, and the death is anchored in the effects;
 #   something of the wreck is on the board: its own pieces, or the burnt hulk the board lays when a death left none;
-#   no death piece leaves its hex: every main piece, fragment and thrown plate rests within its leash (the hex's radius
-#     times WRECK_LEASH_K, or a fifth of that past where it was born when a long hull already overhangs the hex).
+#   no death piece leaves its hex: no main piece, fragment or thrown plate is farther out than the hex's rest radius
+#     (radius times WRECK_LEASH_K) or where it was born; the main pieces rest inside the rest radius, and the settled
+#     wreck (drawn together for a hull longer than the hex, Ryan's option 1) reaches at most REACH_MAX hex radii.
 #   a death that left no pieces gets the burnt hulk the map's own wrecks use, in its hex.
 # Prints each wreck's farthest piece in hex radii. With "-- shot <png>" on a windowed run (the PC), also saves the
 # top-down c170 picture at +8 s, 720 px tall, with its code name on it.
@@ -18,6 +19,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const STEP := 1.0 / 60.0
 const SETTLE := 8.0
 const SEED := 1236
+const REACH_MAX := 1.15   # the settled wreck's farthest hull point from the hex centre, in hex radii (1.0 is a hex corner)
 
 class Playback extends "res://scenes/battle/battle.gd":
 	pass
@@ -105,15 +107,31 @@ func _play(quality: String) -> void:
 		var worst := 0.0
 		var over := 0
 		for nd in nodes:
-			var off: Vector3 = (nd as Node3D).global_position - c
+			var off: Vector3 = DEATH.leash_centre(nd) - c
 			off.y = 0.0
-			var lim: float = float(nd.get_meta("leash_r", radius))
 			worst = maxf(worst, off.length() / board.HS)
-			if off.length() > lim + 0.05:
+			# a physics plate can sit a frame's push past its limit (the leash runs before the physics step)
+			if off.length() > float(nd.get_meta("leash_born", radius)) + radius * 0.1:
 				over += 1
-		_check(over == 0, "%s %s: every death piece rests inside its leash (%d of %d outside)" % [quality, id, over, nodes.size()])
-		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d farthest=%.2f hex radii hull_laid=%s" % [
-			quality, id, k, pieces, nodes.size(), worst, str(hull_laid)])
+		_check(over == 0, "%s %s: no death piece is farther out than it was born or the hex (%d of %d)" % [quality, id, over, nodes.size()])
+		# the main pieces: centres at rest inside the hex, and the whole settled wreck about the hex across (option 1)
+		var main_far := 0.0
+		var reach := 0.0
+		for nd in DEATH.leashed_nodes(battle.gfx, id, true):
+			var off: Vector3 = DEATH.leash_centre(nd) - c
+			off.y = 0.0
+			main_far = maxf(main_far, off.length())
+			for mi in (nd as Node).find_children("*", "MeshInstance3D", true, false):
+				if (mi as MeshInstance3D).mesh == null: continue
+				# the real geometry, not its box: a tumbled long piece's box runs well past its corners
+				var xf: Transform3D = (mi as MeshInstance3D).global_transform
+				for v in (mi as MeshInstance3D).mesh.get_faces():
+					var q: Vector3 = xf * v - c
+					reach = maxf(reach, Vector2(q.x, q.z).length())
+		_check(main_far <= radius * 1.05, "%s %s: main pieces rest within the hex (%.2f, rest radius %.2f)" % [quality, id, main_far, radius])
+		_check(reach <= board.HS * REACH_MAX, "%s %s: the settled wreck reaches %.2f hex radii (at most %.2f)" % [quality, id, reach / board.HS, REACH_MAX])
+		print("WRECK_HEX %s %s hex=%s pieces=%d leashed=%d farthest=%.2f main=%.2f reach=%.2f hex radii hull_laid=%s" % [
+			quality, id, k, pieces, nodes.size(), worst, main_far / board.HS, reach / board.HS, str(hull_laid)])
 	if quality == "low" and not want.is_empty():
 		# a death that left no pieces (the cold-kill fallback PR 1231 found): the board lays the burnt hulk in the hex
 		var id: String = want.keys()[0]
