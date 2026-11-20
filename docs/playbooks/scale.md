@@ -154,3 +154,13 @@ and callers pass only a role (grid, move, terrain or hazard edge, torpedo lane, 
 from one table. Storm lightning follows the same family until its baked bolts land (issue 1360). The picks above still
 hold (faint grid near ships, hazard outline in cine, debris rims on hover). Why: the grid, terrain edges, torpedo lanes
 and lightning each chose their own width, glow and colour, so the board read as four different games. Job: issue 1374.
+
+How it works (issue 1374): `godot/render/line_style.gd` is the one place to change a line. Its `ROLE` table holds every
+line colour and strength (grid per look, move hexes and path, hover, threat, targets, blocked shots, each terrain, hazard
+and objective edge, the solid rim, storm bolt colours). Its constants set the width rule
+(`CORE_W` world units up close, never under `CORE_PX` screen pixels), the fade law (a line the pixel floor widens dims in
+step, `WIDEN_DIM`), the glow band (`GLOW_W`, starting at `GLOW_K` of the core) and the edge shimmer (`BREATH`). Grid,
+target and hover rings are core only (no glow), so the grid stays faint. Shaders include `LS.GLSL`; meshes use
+`LS.strip_into` and `LS.material`. Never add a line with its own width, glow or colour: add a role. Torpedo lanes and
+their hex marker are not in it: Ryan picked torpedoes that hit in the same shot with no lane (issue 1379). Check:
+`godot/render/test/line_style_check.gd`.
