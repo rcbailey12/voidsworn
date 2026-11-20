@@ -23,8 +23,7 @@ board/council_1120/playtest_25adec3/.
   reached Battle 3. Whether a plain first route can lose Battle 2 is a fair first-time player question.
 - Ship revisions: B20_11, I8_37 and V14_23 match publish receipts. B19_11, B21_11 and H4_11 are a **PC snapshot, not an
   approved revision**, and the Chorus ships are mid rebuild: do not judge them as finished art.
-- The front-end screen set (setup, faction desks, settings, help, progression) failed to capture for a tools reason and is
-  being rerun; earlier front-end shots from Nov 19 are on the project drive under board/1217/ if a seat has drive access.
+- The front-end screen set is in `frontend/` (added later, see below). It is a Godot checkout capture, not the packaged build.
 - No sound is reviewed. Videos are not in git (8 MB each); the stills cover them.
 
 ## Added for the challenge round
@@ -34,3 +33,9 @@ board/council_1120/playtest_25adec3/.
   05 mid fight on the enemy turn), build 25adec31, the game's own battle camera (not the fixed camera 170). Ship names
   come from the in-game tip card. The enemy ships show in about one frame per set, small: these frames say how those
   factions read as opponents, not how they read when the player commands them. Chorus ships are mid rebuild.
+- `frontend/`: the front-end screens (title, credits, settings, setup, run options, the six faction desks, flagship pick,
+  help, lineage, progression; normal and larger text) plus the F2 to F5 sheets. **Godot checkout capture at b557adc85**, not
+  the packaged playtest 25adec31: the two pins differ. Receipt: PASS for import, front-end tests and pictures at 1080p and 4K.
+  Stills at 720 px tall or less.
+- The Battle 2 footage in the run folders predates merged PR 1398: do not score it as a capture of the current Battle 2 layout.
+- A seat that already submitted (Fable, Neon) may add an evidence-only addendum on these; its blind leg stays as written.
