@@ -97,7 +97,7 @@ def build(K):
             (-2.45, 0.35, 0.45), (-2.45, math.pi - 0.35, 0.45)]
     calm += [(x, th if sd > 0 else math.pi - th, rr * 1.6) for sd in (1, -1) for (x, th, rr) in SACS[sd]]   # the sacs are their own bulges
     K.wob_fn = body.field(1291, 4.3, -2.8, swell=26, folds=30, wrinkles=150, sweeps=44, depth=0.19, keep=calm,
-                          shell=(3.75, -2.35, 0.5))   # the armadillo shell below: no creases under it
+                          shell=(3.75, -2.35, -1.2))   # the armadillo shell below: no creases under it
     hull = K.hull(HULL, 'flesh', shell=0.22, rounded=True, pexp=PEXP, n=160, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the broad lumpy body', hull, 'dark olive flesh', note='a rounded nose bulb, broad in the middle, short at the tail')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
@@ -134,12 +134,14 @@ def build(K):
     K.mass('Back and shoulder knolls', _bpy.data.objects['knolls_flesh'], 'flesh', note='lumps of grown flesh over the back and shoulders')
 
     # ---------------- the bile sacs (round, along the lower flanks) and the hanging sacs ----------------
+    caps = []   # round F (Ryan, Nov 20: armour across the entire body): the shell's caps over the flank sacs, their crowns open
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
         for i, (x, th, rr) in enumerate(SACS[side]):
             pos, nrm = K.hpt(x, side_th(th, side), out=0.0)
             fid = 'S%d%s' % (i + 1, sn)
-            K.organ(fid, HP.sac(rr * 1.12, h=rr * 1.1, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, creases=6, veins=6, window='slit'), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
+            caps.append(((fid + '_',), tuple(pos), tuple(nrm), rr * 1.12, 1.25, 0.45))
+            K.organ(fid, HP.sac(rr * 1.12, h=rr * 1.1, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=0.45, armour=True, window='slit'), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
                     what='bile sac, %.1f across' % (2 * rr), note='a round bile sac bulging from the lower flank; it swells before a volley')
             K.mass('Bile sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome')
     for a_, b_ in (('S1p', 'S2p'), ('S2p', 'S3p'), ('S3p', 'S4p'), ('S1s', 'S2s'), ('S2s', 'S3s'), ('S3s', 'S4s'), ('S2s', 'H2'), ('S2p', 'H1'), ('S3p', 'H3')):
@@ -178,10 +180,13 @@ def build(K):
     # issue 1291 (Ryan, Nov 20: "mix of b and c"): an armadillo shell of grown chitin bands over the back and upper flanks,
     # broken round the glands, the spine bed and the siphons, the hide gathered at its edges; and chitin grown into the flesh in
     # small fused clusters on the lower flanks, between the sacs
-    plates.armadillo(K, _k, 3.75, -2.35, seed=1343, lo=0.5, band=0.46, lap=1.45, thick=0.075,
-                     note='armadillo bands of grown chitin across the back, lips aft; broken round the glands, spine bed and siphons; hide rolled at the edges')
-    plates.fused_patches(K, _k, [(3.0, 0.15, 0.36, 3), (1.6, 0.05, 0.42, 4), (-0.25, 0.0, 0.4, 3), (-1.45, 0.12, 0.34, 3),
-                                 (3.0, math.pi - 0.15, 0.36, 3), (1.3, math.pi - 0.05, 0.42, 4), (-0.6, math.pi, 0.4, 3), (-2.0, math.pi - 0.1, 0.36, 3)],
+    # round F (Ryan, Nov 20 07:00 CT: "armor more across the entire ship body, not just at the top"): the bands wrap from the
+    # top down both flanks to the edge of the belly (section angle -1.2, about 70 degrees below the beam), and the fused chitin
+    # clusters move from the lower flanks to the strip of belly the bands leave open
+    plates.armadillo(K, _k, 3.75, -2.35, seed=1343, lo=-1.2, band=0.46, lap=1.45, thick=0.075,
+                     note='armadillo bands of grown chitin wrapping the body from belly edge to belly edge, lips aft; broken round the glands, spine bed, sacs and siphons; hide rolled at the edges')
+    plates.dome_caps(K, _k, caps, seed=1345, note='grown chitin caps over the flank sacs, lips down, the bile slits open at each crown (round F)')
+    plates.fused_patches(K, _k, [(3.0, -1.5, 0.36, 3), (1.6, -1.65, 0.42, 4), (0.2, -1.5, 0.4, 3), (-1.2, -1.62, 0.36, 3)],
                          seed=1344)
 
     # ---------------- colour zones ----------------

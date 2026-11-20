@@ -508,8 +508,9 @@ def _skirt(section, pts_xt, w, h, rng, creases=True):
     return V, F
 
 
-def armadillo(K, kit_module, x_bow, x_aft, seed, lo=0.42, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide'):
-    """issue 1291 (Ryan, Nov 20: "mix of b and c"): an armadillo-like shell over the back and upper flanks, bands of grown chitin
+def armadillo(K, kit_module, x_bow, x_aft, seed, lo=-1.2, band=0.42, lap=1.4, thick=0.07, skip=(), keep=(), note='', inv='hide'):
+    """issue 1291 (Ryan, Nov 20: "mix of b and c"; round F: "armor more across the entire ship body"): an armadillo-like shell
+    wrapping the body (the default lo=-1.2 runs each band from belly edge to belly edge), bands of grown chitin
     running across the back from flank (section angle lo) to flank (pi - lo), each lying aft over the next; a band is broken
     round a fitting and both broken ends thin into the flesh; hide rolls and creases gather along the shell's lower edges.
     Returns the shell object and the skirt object."""
