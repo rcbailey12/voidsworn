@@ -1,0 +1,257 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+WARNING: glTF: Image index '0' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+WARNING: glTF: Image index '1' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+WARNING: glTF: Image index '2' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+WARNING: glTF: Image index '3' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+WARNING: glTF: Image index '4' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+WARNING: glTF: Image index '5' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_glow_emission.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+WARNING: glTF: Image index '6' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_glow_emission.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:86)
+COLD_KILL ship C:\Users\rcbai\Downloads\voidsworn_test\opus1232\repo\godot\assets\ships\C19_51\C19_51.glb
+[turret] turret_0 (P1) on a16: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on a16: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on a16: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on a16: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on a16: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on a16: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on a16: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on a16: arc -180 to 180, trains all round
+COLD_KILL cut one_thread_ms=3156.8 side_by_side_ms=1533.5 same_pieces=true
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+WARNING: glTF: Image index '0' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+WARNING: glTF: Image index '1' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+WARNING: glTF: Image index '2' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+WARNING: glTF: Image index '3' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+WARNING: glTF: Image index '4' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+WARNING: glTF: Image index '5' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_glow_emission.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+WARNING: glTF: Image index '6' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_glow_emission.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:118)
+COLD_KILL ship C:\Users\rcbai\Downloads\voidsworn_test\opus1232\repo\godot\assets\ships\C19_51\C19_51.glb
+[turret] turret_0 (P1) on a16: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on a16: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on a16: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on a16: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on a16: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on a16: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on a16: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on a16: arc -180 to 180, trains all round
+COLD_KILL kill cut_ready_at_kill=false kill_frame_ms=27.0 worst_later_frame_ms=54.2 hidden_after=2.02s held_past_split=false outcome=fractured pieces=4
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+WARNING: glTF: Image index '0' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+WARNING: glTF: Image index '1' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+WARNING: glTF: Image index '2' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_parts_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_normal.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+WARNING: glTF: Image index '3' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_normal.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_orm.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+WARNING: glTF: Image index '4' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_orm.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_base.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+WARNING: glTF: Image index '5' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_base.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+ERROR: Can't open file from path 'C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_glow_emission.jpg'.
+   at: get_file_as_bytes (core/io/file_access.cpp:907)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+WARNING: glTF: Image index '6' couldn't be loaded as a buffer of MIME type 'image/jpeg' from URI: C:/Users/rcbai/Downloads/voidsworn_test/opus1232/repo/godot/assets/ships/C19_51_glow_emission.jpg because there was no data to load. Skipping it.
+   at: _parse_images (modules/gltf/gltf_document.cpp:2389)
+   GDScript backtrace (most recent call first):
+       [0] _load_ship (res://fx/test/cold_kill_check.gd:36)
+       [1] _run (res://fx/test/cold_kill_check.gd:151)
+       [2] _frame (res://fx/test/cold_kill_check.gd:79)
+COLD_KILL ship C:\Users\rcbai\Downloads\voidsworn_test\opus1232\repo\godot\assets\ships\C19_51\C19_51.glb
+[turret] turret_0 (P1) on a16: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on a16: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on a16: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on a16: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on a16: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on a16: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on a16: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on a16: arc -180 to 180, trains all round
+COLD_KILL stuck_cut held=5.07s cap=5.0s core_pending=false hidden=true
+COLD_KILL failures=0

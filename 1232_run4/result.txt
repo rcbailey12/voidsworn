@@ -1,0 +1,45 @@
+start Thu 11/19/2026 19:25:19.98 attempt 1 
+drive bytes free 108335943680 
+made the sparse clone 
+4.7.2.stable.official.ed1daf0bf
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1232\out_1\checkout_6778 
+after commit=98d470c47bbb09b77e64ba281c9b9650cb5b272d 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+after import exit 0 
+cold kill check exit 0 
+death seam exit 0 
+after s1 arrival exit 0 
+CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=985.7 kill_call=49.3 kill_worst=10.1 kill_p95=2.0 gpu_worst=6.35 pipes_arrive=132 pipes_kill=1 late=0
+after s1 cold exit 0 
+CAPTURE1232 cold watched=15.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=240.7 kill_call=140.4 kill_worst=4996.6 kill_p95=4.3 gpu_worst=18.86 pipes_arrive=113 pipes_kill=97 late=7
+after s2 arrival exit 0 
+CAPTURE1232 arrival watched=9.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=978.2 kill_call=38.8 kill_worst=10.1 kill_p95=2.3 gpu_worst=1.86 pipes_arrive=132 pipes_kill=1 late=0
+after s2 cold exit 0 
+CAPTURE1232 cold watched=15.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=254.2 kill_call=135.1 kill_worst=5058.2 kill_p95=2.2 gpu_worst=1.54 pipes_arrive=113 pipes_kill=97 late=7
+after s3 arrival exit 0 
+CAPTURE1232 arrival watched=9.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=998.2 kill_call=38.6 kill_worst=10.2 kill_p95=2.0 gpu_worst=1.68 pipes_arrive=132 pipes_kill=1 late=0
+after s3 cold exit 0 
+CAPTURE1232 cold watched=15.2s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=236.0 kill_call=142.0 kill_worst=5120.4 kill_p95=2.6 gpu_worst=1.84 pipes_arrive=113 pipes_kill=97 late=7
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1232\out_1\checkout_15381 
+before commit=d2717a321366f81e639f0ad21336f905e47c30e8 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 0 (0 to 7 is success) 
+before import exit 0 
+before s1 arrival exit 0 
+CAPTURE1232 arrival watched=9.0s outcome=fallback (no pieces) pieces=0 frags=0 hidden_after=2.68s held_for_cut=false cut_ready_at_kill=false arrive_worst=857.5 kill_call=282.6 kill_worst=7.7 kill_p95=1.9 gpu_worst=1.87 pipes_arrive=90 pipes_kill=24 late=2
+before s1 cold exit 0 
+CAPTURE1232 cold watched=15.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=257.0 kill_call=136.4 kill_worst=5066.3 kill_p95=2.7 gpu_worst=2.15 pipes_arrive=113 pipes_kill=97 late=7
+before s2 arrival exit 124 
+before s2 cold exit 0 
+CAPTURE1232 cold watched=15.0s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=242.3 kill_call=136.4 kill_worst=4934.0 kill_p95=2.6 gpu_worst=1.37 pipes_arrive=113 pipes_kill=97 late=7
+before s3 arrival exit 0 
+CAPTURE1232 arrival watched=9.0s outcome=fallback (no pieces) pieces=0 frags=0 hidden_after=2.68s held_for_cut=false cut_ready_at_kill=false arrive_worst=844.7 kill_call=262.9 kill_worst=7.8 kill_p95=1.8 gpu_worst=1.32 pipes_arrive=90 pipes_kill=24 late=2
+before s3 cold exit 0 
+CAPTURE1232 cold watched=15.1s outcome=fractured pieces=4 frags=11 hidden_after=2.02s held_for_cut=false cut_ready_at_kill=false arrive_worst=251.8 kill_call=139.0 kill_worst=5089.0 kill_p95=2.4 gpu_worst=1.78 pipes_arrive=113 pipes_kill=97 late=7
+timing results collected 11 of 12 (every row is kept as evidence, the before and cold rows are expected to show the problem) 
+after arrival rows fractured with pieces 3 of 3 
+drive bytes free 272747577344 
+FAILED: only 11 of 12 timing results were collected 
+real options unchanged 
+all done Thu 11/19/2026 19:53:20.95 

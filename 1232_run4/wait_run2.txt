@@ -1,0 +1,6 @@
+waiting for all done in opus1079\run6_wait.txt Thu 11/19/2026 16:35:11.32 
+OPUS1232_RUN2_WAIT stopped by the Board before RUN2 ran (Nov 19 17:00 CST); replaced by OPUS1232_RUN4_WAIT.bat (calls OPUS1232_RUN4.bat, same trigger, same log)
+waiting for all done in opus1079\run6_wait.txt (RUN4 waiter) Thu 11/19/2026 16:58:56.76 
+OPUS1232_RUN4 start Thu 11/19/2026 19:25:19.17 
+OPUS1232_RUN4 exit 1 at 19:53:21.36 
+all done 19:53:21.36 
