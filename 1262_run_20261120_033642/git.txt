@@ -1,0 +1,20 @@
+From https://github.com/rcbailey12/voidsworn
+ * branch                main       -> FETCH_HEAD
+ * branch                opus/issue-1262 -> FETCH_HEAD
+   cff9bffb3..905c79400  main       -> origin/main
+Cloning into 'C:\Users\rcbai\Downloads\voidsworn_test\opus1262\out\run_20261120_033642\repo'...
+done.
+HEAD is now at 905cbf3f2 1262 timing script takes the tools_live watchdog and a throwaway profile per launch (Refs #1262)
+Warning: you are leaving 3 commits behind, not connected to
+any of your branches:
+
+  905cbf3f2 1262 timing script takes the tools_live watchdog and a throwaway profile per launch (Refs #1262)
+  58aa93b3e Merge remote-tracking branch 'origin/main' into opus/issue-1262
+  c53d3823c Cheaper 4K Max: no SSIL, hidden zero underlay, bounded storm cards, ring rocks out of the shadow map (Refs #1262)
+
+If you want to keep them by creating a new branch, this may be a good time
+to do so with:
+
+ git branch <new-branch-name> 905cbf3f2
+
+HEAD is now at 475b98f53 Merge pull request #1287 from rcbailey12/opus/issue-1238-sound

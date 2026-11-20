@@ -1,0 +1,43 @@
+run1262b start Fri 11/20/2026  3:36:42.58 run_20261120_033642 
+new = 905cbf3f2b5ad78e941bd22b9a5bd92485f9386e 
+old = 475b98f53e2c66fadc391e36de016488faf22e30 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\pc\tmo.bat 
+6A3CD167FE64E9C3CF9C44140F840B1F25794582A966FA7A59DDB289B1DC4F42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\pc\tmo.bat
+93768E46A4CEF4E24633F557880744749085C2815F7ABEA142B16B4556C63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\pc\run_timeout.ps1
+new ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+new 905cbf3f2b5ad78e941bd22b9a5bd92485f9386e timed and shot 
+main ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+main 475b98f53e2c66fadc391e36de016488faf22e30 timed and shot 
+Ryan's real options unchanged (battle_opts.json, board_look.cfg) 
+Issue 1262 new timing: median of per-session medians, ms (frame / GPU), fitted shields, GPU solo
+after | gate:max:2:base | 5.379 | 4.994 | sessions 3 | ssil False
+after | dense:max:2:native_lod | 3.933 | 3.460 | sessions 3 | ssil False
+after | gate:max:1:base | 3.062 | 2.541 | sessions 3 | ssil False
+after | dense:max:1:native_lod | 1.658 | 1.293 | sessions 3 | ssil False
+before | gate:max:2:base | 6.210 | 5.840 | sessions 3 | ssil True
+before | dense:max:2:native_lod | 5.205 | 4.803 | sessions 3 | ssil True
+before | gate:max:1:base | 3.236 | 2.738 | sessions 3 | ssil True
+before | dense:max:1:native_lod | 2.072 | 1.604 | sessions 3 | ssil True
+ssil | gate:max:2:base | 5.809 | 5.426 | sessions 3 | ssil True
+ssil | dense:max:2:native_lod | 4.337 | 3.863 | sessions 3 | ssil True
+ssil | gate:max:1:base | 3.156 | 2.652 | sessions 3 | ssil True
+ssil | dense:max:1:native_lod | 1.783 | 1.409 | sessions 3 | ssil True
+underlay | gate:max:2:base | 5.455 | 5.068 | sessions 3 | ssil False
+underlay | dense:max:2:native_lod | 4.004 | 3.532 | sessions 3 | ssil False
+underlay | gate:max:1:base | 3.058 | 2.552 | sessions 3 | ssil False
+underlay | dense:max:1:native_lod | 1.681 | 1.311 | sessions 3 | ssil False
+cards | gate:max:2:base | 5.726 | 5.340 | sessions 3 | ssil False
+cards | dense:max:2:native_lod | 4.812 | 4.337 | sessions 3 | ssil False
+cards | gate:max:1:base | 3.129 | 2.615 | sessions 3 | ssil False
+cards | dense:max:1:native_lod | 1.861 | 1.487 | sessions 3 | ssil False
+rockshadow | gate:max:2:base | 5.354 | 4.962 | sessions 3 | ssil False
+rockshadow | dense:max:2:native_lod | 3.892 | 3.421 | sessions 3 | ssil False
+rockshadow | gate:max:1:base | 3.057 | 2.532 | sessions 3 | ssil False
+rockshadow | dense:max:1:native_lod | 1.642 | 1.277 | sessions 3 | ssil False
+Issue 1262 main timing: median of per-session medians, ms (frame / GPU), fitted shields, GPU solo
+main | gate:max:2:base | 6.185 | 5.818 | sessions 3 | ssil True
+main | dense:max:2:native_lod | 5.193 | 4.753 | sessions 3 | ssil True
+main | gate:max:1:base | 3.238 | 2.728 | sessions 3 | ssil True
+main | dense:max:1:native_lod | 2.077 | 1.617 | sessions 3 | ssil True
+ALL PASS 
+run1262b done Fri 11/20/2026  4:46:08.02 
