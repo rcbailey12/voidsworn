@@ -19,7 +19,7 @@ CODE = 'ithar_GB1'
 NAME = 'The Needle bomber, the Glasswright bomber wing craft'
 FACTION = F.FACTION
 CLASS = F.CLASS
-LENGTH = F.LENGTH
+LENGTH = 1.6   # a plain number: stage 6 reads it without running the sheet (ship.py sheet_length); the same as F.LENGTH
 GAME = "data.js bomber (cls 'Squadron'); length from godot/render/hull_table.gd CLS_LEN['Squadron'] = 1.6 (drawn x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84 on the board, docs/playbooks/scale.md)"
 BEAUTY = 'docs/ship_pipeline/build_sheets/ithar_GF1/concept.jpg'
 CONCEPT_SHEET = BEAUTY

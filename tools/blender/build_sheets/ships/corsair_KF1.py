@@ -20,7 +20,7 @@ CODE = 'corsair_KF1'
 NAME = 'Narrow Glacis fighter (Ashfall Hullbreaker fighter wing craft, the KB1CC family)'
 FACTION = F.FACTION
 CLASS = F.CLASS
-LENGTH = F.LENGTH
+LENGTH = 1.6   # a plain number: stage 6 reads it without running the sheet (ship.py sheet_length); the same as F.LENGTH
 GAME = "data.js fighter (cls 'Squadron', the Hullbreaker adaptive fighter wing); length from godot/render/hull_table.gd CLS_LEN['Squadron'] = 1.6 (drawn x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84 on the board, docs/playbooks/scale.md)"
 BEAUTY = F.BEAUTY
 KIT = 'hullbreakers'
