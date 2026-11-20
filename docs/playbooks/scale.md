@@ -135,6 +135,14 @@ Ryan, Nov 20 01:11 UTC ("Picks ok", Board thread), on the backdrop audit check
   outline along the outer edge of each nebula and storm patch only (no inner hex lines, no debris or rock edges); Z keeps
   the full tactical outlines. Why: the clouds reach about 2.4 hexes from a hazard hex centre, so players could not tell
   where the rules edge was without Z. Job: issue 1267.
+- **Solid and cover rims on hover; reach hatching only with Z (Ryan, Nov 20 2026, issue 1359 thread).** Ryan picked
+  option B of issue 1359 at 17:30 UTC ("can we do b but have it only show up when you hover over it in cinematic mode and
+  then when you have the full grid ... it shows by default"): an amber rim round solid ground (rock, hulk, station and
+  the map's set-piece holes; the planet and station exclusion colour) and a softer tan rim round debris cover. In cine
+  only the patch under the cursor shows its rim; Z shows every patch. At 17:57 UTC he picked "Only with Z" for the enemy
+  reach hatching (issue 271): cine draws none, Z draws it board-wide. Why: at c170 a hulk looked like a bigger piece of
+  the debris around it, and the board-wide hatching blurred into far-off grid lines that came and went with the Move
+  step (Neon backdrop audit H4). Code: godot/render/board.gd, godot/world/board_look.gd.
 - **No dark scrim under the board.** The cine look keeps underlay 0.0 (godot/world/board_look.gd); readability over
   bright skies is solved by the hazard outline and the sky, not a mat under the hexes. Why: a scrim brings back the
   board-game plate RULEBOOK 10.1 rules out (R70).
