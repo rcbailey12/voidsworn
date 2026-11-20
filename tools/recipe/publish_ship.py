@@ -65,6 +65,22 @@ def row(game, rel, code):
     return read_json(p).get('ships', {}).get(code)
 
 
+def _listed(files, code):
+    """CODE_export.json "files": export7 writes {name: {"bytes": N, "sha256": hex}}; a bare hex string is accepted too.
+    Returns ({name: sha256}, {name: bytes}). Anything else is refused (PR 1312 run one stopped on the dict shape)."""
+    if not isinstance(files, dict):
+        raise ValueError(f'{code}_export.json "files" is not a table of files')
+    listed, sizes = {}, {}
+    for name, entry in files.items():
+        digest = entry.get('sha256') if isinstance(entry, dict) else entry
+        if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
+            raise ValueError(f'{code}_export.json lists {name} without a full sha256')
+        listed[name] = digest
+        if isinstance(entry, dict) and 'bytes' in entry:
+            sizes[name] = int(entry['bytes'])
+    return listed, sizes
+
+
 def receipt(job, code, commit, glb_sha, record):
     job = Path(job)
     if not re.fullmatch(r'[0-9a-f]{40}', commit):
@@ -94,12 +110,14 @@ def receipt(job, code, commit, glb_sha, record):
     if not before_end.startswith('done PASS'):
         raise ValueError(f'{res}: the line before "all done" is {before_end!r}, not done PASS')
     export = job / 'out' / 'recipe' / 'export' / code
-    listed = read_json(export / f'{code}_export.json').get('files', {})
+    listed, sizes = _listed(read_json(export / f'{code}_export.json').get('files', {}), code)
     if f'{code}.glb' not in listed:
         raise ValueError(f'{code}_export.json lists no {code}.glb')
     for name, digest in listed.items():
-        if sha256(export / name) != digest:
+        if not (export / name).is_file() or sha256(export / name) != digest:
             raise ValueError(f'{name} in the collected export is not the sha256 its {code}_export.json lists')
+        if name in sizes and (export / name).stat().st_size != sizes[name]:
+            raise ValueError(f'{name} in the collected export is not the size its {code}_export.json lists')
     if listed[f'{code}.glb'] != glb_sha:
         raise ValueError(f'{code}.glb is {listed[code + ".glb"]}, not the expected {glb_sha}')
     inst = job / 'repo' / 'godot' / 'assets' / 'ships' / code
