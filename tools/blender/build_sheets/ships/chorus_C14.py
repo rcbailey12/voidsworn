@@ -108,7 +108,7 @@ def build(K):
     calm += [(x, th_, r * 1.5) for (x, th, r) in SACS for th_ in (th, math.pi - th)]
     calm += [(x, th_, r * 2.5) for (x, th, r) in SIPHONS for th_ in (th, math.pi - th)]
     K.wob_fn = body.field(1155, 4.6, -5.0, swell=40, folds=46, wrinkles=240, sweeps=60, depth=0.28, height=(0.26, 0.6),
-                          size=(0.8, 1.6), keep=calm, shell=(4.3, -4.9, -1.2))   # the armadillo shell below: no creases under it
+                          size=(0.8, 1.6), keep=calm, shell=(4.3, -4.9, plates.WRAP))   # the armadillo shell below: no creases under it
     hull = K.hull(HULL, 'flesh', shell=0.3, rounded=True, pexp=PEXP, n=200, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the giant sac', hull, 'dark olive flesh', note='as long as it is wide, two thirds as tall: one central chamber of folded flesh')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
@@ -353,22 +353,19 @@ def build(K):
     K.mass('Vents', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='four pulse vents at the stern, the membranes streaming aft')
 
     # ---------------- the armour (issue 1291, R349, the C13 round G look on the shared kit) ----------------
-    # armadillo bands of grown chitin wrapping the sac from belly edge to belly edge (section angle -1.2); the creased front, the
+    # armadillo bands of grown chitin wrapping the sac down to the keel (plates.WRAP); the creased front, the
     # spine pore and the honeycomb field stay bare; the bands break round the launch necks, the sacs, the siphons and the vents;
-    # flat caps over the teardrop sacs; small fused chitin clusters on the belly strip the bands leave open
+    # flat caps over the teardrop sacs
     plates.dome_caps(K, _k, caps, seed=1356, flat=True, counts=(6, 8),
                      note='flat grown chitin caps over the teardrop sacs, two rings of thin plates lying close, the bile slit open at each foot (round G)')
-    plates.armadillo(K, _k, 4.3, -4.9, seed=1355, lo=-1.2, band=0.72, lap=1.45, thick=0.12,
+    plates.armadillo(K, _k, 4.3, -4.9, seed=1355, band=0.72, lap=1.45, thick=0.12,
                      keep=('front_', 'face', 'eye_hole', 'pores_front', 'spore_field'),
-                     note='armadillo bands of grown chitin wrapping the sac from belly edge to belly edge, lips aft; broken round the creased front, '
+                     note='armadillo bands of grown chitin wrapping the sac down to the keel, lips aft; broken round the creased front, '
                           'the honeycomb field, the five launch necks, the sacs, siphons and vents; hide rolled at the edges')
-    # small fused chitin clusters on the strip of belly the bands leave open, between the sac rows, both sides
-    spots = [(3.3, -1.5, 0.5, 3), (1.2, -1.55, 0.55, 3), (-0.9, -1.5, 0.55, 3), (-3.0, -1.55, 0.48, 3)]
-    plates.fused_patches(K, _k, spots + [(x, math.pi - t, sz, c) for (x, t, sz, c) in spots], seed=1357, thick=0.1)
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide, dark red veins (paint stage, R349)', 6.2, -5.15, 'whole body')
-    K.colour('grown chitin, bone to horn, over olive-brown hide (R349)', 4.3, -4.9, 'the armadillo bands, belly edge to belly edge')
+    K.colour('grown chitin, bone to horn, over olive-brown hide (R349)', 4.3, -4.9, 'the armadillo bands, down to the keel')
     K.colour('raw transition tissue', 3.0, -2.5, 'the lips of the five openings and the spore patch walls')
     K.colour('wet dark maw, dim bile at the floor', 3.0, -2.5, 'inside the five openings')
     K.colour('bile yellow-green light', 6.2, 5.4, 'the spine pore\'s gland')
@@ -434,7 +431,7 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
-    K.change('The C13 round G look on the shared kit: lumpy swellings and folds grown into the skin (body.field), armadillo bands of grown chitin from belly edge to belly edge (plates.armadillo), flat caps over the teardrop sacs, fused chitin clusters on the open belly; the R341 scute shell of v7 retired. The creased front, the spine pore, the honeycomb field and the launch necks stay bare',
+    K.change('The C13 round G look on the shared kit: lumpy swellings and folds grown into the skin (body.field), armadillo bands of grown chitin down to the keel (plates.armadillo, the kit default plates.WRAP), flat caps over the teardrop sacs; the R341 scute shell of v7 retired. The creased front, the spine pore, the honeycomb field and the launch necks stay bare',
              'Ryan, Nov 20 (R349, issue 1291): C13 round G accepted and made the family look; every Chorus ship follows it through the shared kit (R333); Ryan on v5 (Nov 20): "Accept, but armour the sacs"')
     K.change('No modelled hide pads (their pores read as rivets and their edges as panel seams, the Board on v2); the hide\'s grown plates are paint (stage 5). Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor',
              'R204 and the lore: the colour is fixed in the build; the picture renders the family\'s grey-amber anchor palette. R325: hard chitin with a little wet-flesh variety')
