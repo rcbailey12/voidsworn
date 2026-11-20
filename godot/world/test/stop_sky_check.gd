@@ -88,6 +88,11 @@ func _initialize() -> void:
 					var s: Dictionary = SKY.stop_mood(sector_s, stop, map_name)
 					check(int(s["planet_i"]) == int(sector_s["planet_i"]), "seed %d sector %d: the anchor planet stays at every stop" % [seed, sector])
 					moods[s["mood"]] += 1
+					# a mood never changes the sky bake's inputs, so the sector's baked picture is reused (no rebake on load)
+					var bv: Dictionary = SKY.bake_view(s)
+					for k in ["c1", "c2", "c3", "neb", "cover", "dust", "band", "seed", "feature", "band_n", "region"]:
+						check(var_to_str(bv[k]) == var_to_str(sector_s[k]), "seed %d: a %s stop keeps the bake input %s" % [seed, s["mood"], k])
+					check(var_to_str(SKY.lamps(bv)) == var_to_str(SKY.lamps(sector_s)) and var_to_str(SKY.galaxies(bv)) == var_to_str(SKY.galaxies(sector_s)), "a stop keeps the bake's lamps and galaxies")
 					vistas["%d|%s|%.2f|%.2f" % [int(s["planet_i"]), _sky_key(s), float(s["frame_scale"]), float(s["frame_az"])]] = true
 					if s["mood"] == "plain": plain_sky = s
 					else: by_mood[s["mood"]] = s

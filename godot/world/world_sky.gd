@@ -94,6 +94,11 @@ static func stop_mood(s0: Dictionary, stop: Dictionary, map_kind: String) -> Dic
 	var s := s0.duplicate(true)
 	var mood := stop_kind(stop, map_kind)
 	s["mood"] = mood
+	# The sky picture stays the sector's own bake (its inputs are kept here); the mood rides on cheap sky uniforms, so a
+	# mood stop loads like a plain one (1332 timing on the 5080: a rebake per mood cost 3.7 to 6.1 s).
+	var bake := {}
+	for k in ["c1", "c2", "c3", "neb", "cover", "dust", "band"]: bake[k] = s0[k]
+	s["bake"] = bake
 	var m: Dictionary = STOP_MOOD.get(mood, {})
 	for k in ["neb", "cover", "dust", "band"]:
 		if m.has(k): s[k] = float(s[k]) * float(m[k])
@@ -103,6 +108,12 @@ static func stop_mood(s0: Dictionary, stop: Dictionary, map_kind: String) -> Dic
 		var rv: Array = FLOOK.of(str(stop["fac"])).get("nebula", FLOOK.of("voidsworn")["nebula"])
 		s["c1"] = (s["c1"] as Vector3).lerp((rv[1] as Vector3) * 1.3, float(m["mix"]))
 		s["c3"] = (s["c3"] as Vector3).lerp(rv[2] as Vector3, float(m["mix3"]))
+		var t: Vector3 = rv[1]
+		s["mood_tint"] = t / maxf(t.length(), 0.001)
+		s["mood_mix"] = float(m["mix"])
+	# the baked gas brightness follows neb; dust darkens the gas and swallows more stars
+	s["mood_gain"] = float(m.get("neb", 1.0))
+	s["mood_dim"] = clampf((float(m.get("dust", 1.0)) - 1.0) * 0.25, 0.0, 0.6)
 	var h := absi(hash(str(stop.get("node", "")) + "|" + str(stop.get("kind", ""))))
 	var f: Dictionary = STOP_FRAMES[h % STOP_FRAMES.size()] if stop.has("node") else STOP_FRAMES[0]
 	s["frame_scale"] = float(m.get("frame", f["scale"]))
@@ -119,6 +130,14 @@ static func planet_variant(s0: Dictionary, sector_key: String) -> Dictionary:
 		s["planet_base_i"] = int(s["planet_i"])
 		s["planet_i"] = i + PLANETS.size()
 		s["planet"] = PLANETS_ALT[i]
+	return s
+
+
+# The setting with the sector's own bake inputs (no stop mood): what the sky picture is baked from.
+static func bake_view(s0: Dictionary) -> Dictionary:
+	if not s0.has("bake"): return s0
+	var s := s0.duplicate(true)
+	for k in s0["bake"]: s[k] = s0["bake"][k]
 	return s
 
 
@@ -351,6 +370,10 @@ shader_type sky;
 uniform sampler2D neb_tex : filter_linear, repeat_enable;
 uniform float has_neb = 0.0;
 uniform float neb_gain = 1.0;
+uniform vec3 mood_tint = vec3(1.0);   // issue 1272: a stop's mood on the sector's baked gas (defaults change nothing)
+uniform float mood_mix = 0.0;
+uniform float mood_gain = 1.0;
+uniform float mood_dim = 0.0;
 uniform float seed = 0.0;
 uniform float star_k = 1.0;
 uniform float star_floor = 0.15;   // E18/BD8: brightness of a star seen through the nebula body
@@ -413,8 +436,10 @@ void sky() {
 	if (has_neb > 0.5) {
 		vec2 uv = vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359);
 		vec4 t = texture(neb_tex, uv);
-		col += pow(t.rgb, vec3(2.2)) * neb_gain;
-		T = t.a;
+		vec3 g = pow(t.rgb, vec3(2.2)) * neb_gain * mood_gain;
+		g = mix(g, mood_tint * dot(g, vec3(0.3, 0.59, 0.11)) * 1.7, mood_mix);
+		col += g * (1.0 - mood_dim);
+		T = t.a * (1.0 - mood_dim * 0.6);
 	}
 	if (!AT_CUBEMAP_PASS) {
 		float y = dot(d, band_n);

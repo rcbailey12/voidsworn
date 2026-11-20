@@ -450,7 +450,7 @@ func _make_sky(env: Environment) -> void:
 	var sh := Shader.new()
 	sh.code = SKY.SKY
 	m.shader = sh
-	var lamps: Array = SKY.lamps(setting)
+	var lamps: Array = SKY.lamps(SKY.bake_view(setting))   # issue 1272: bake inputs stay the sector's own
 	var lc: Array = []
 	var lr := RandomNumberGenerator.new()
 	lr.seed = int(setting["seed"]) + 9
@@ -463,6 +463,8 @@ func _make_sky(env: Environment) -> void:
 	m.set_shader_parameter("band_n", setting["band_n"])
 	m.set_shader_parameter("band", float(setting["band"]))
 	m.set_shader_parameter("star_k", float(setting["stars"]))
+	for k in ["mood_tint", "mood_mix", "mood_gain", "mood_dim"]:   # issue 1272: the stop's mood, cheap uniforms
+		if setting.has(k): m.set_shader_parameter(k, setting[k])
 	# Issue 232 E18/BD8 sheet: the live star occlusion floor, overridable for the density sweep (default 0.15).
 	var sf := OS.get_environment("VS_STAR_FLOOR")
 	m.set_shader_parameter("star_floor", float(sf) if sf != "" else 0.15)
@@ -504,10 +506,11 @@ func _load_sky(lamps: Array) -> void:
 	if OS.has_environment("VS_WORLD_PREVIEW"):   # software rendering in the cloud: small bakes
 		size = Vector2i(768, 384)
 	var key := "sky|%d|%s|%d" % [int(setting["seed"]), setting["region"], size.x]
-	var params := {"seed": float(int(setting["seed"]) % 997) * 0.37, "c1": setting["c1"], "c2": setting["c2"], "c3": setting["c3"],
-		"neb": float(setting["neb"]), "cover": float(setting["cover"]), "dust": float(setting["dust"]), "band": float(setting["band"]),
-		"band_n": setting["band_n"], "feature": setting["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
-		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(setting))}
+	var bs: Dictionary = SKY.bake_view(setting)   # issue 1272: a stop mood never rebakes the sector's sky
+	var params := {"seed": float(int(bs["seed"]) % 997) * 0.37, "c1": bs["c1"], "c2": bs["c2"], "c3": bs["c3"],
+		"neb": float(bs["neb"]), "cover": float(bs["cover"]), "dust": float(bs["dust"]), "band": float(bs["band"]),
+		"band_n": bs["band_n"], "feature": bs["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
+		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(bs))}
 	var code := SKY.bake_code()
 	var img: Image = await _baker.bake(key, code, params, size, 32)
 	if img == null or _sky_mat == null: return

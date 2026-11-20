@@ -4,11 +4,11 @@ Stage: installed in game (opus/issue-1272), cloud render (Godot 4.7.2 Forward+ o
 because the cloud copy has no built hulls. Ruling: R352 (keep rival, boss and salvage moods; salvage dust stronger than the
 r1 preview).
 
-- `SKY1272_stops_r3.jpg`: one Hegemony frontier sector, four stops at camera 420, made by `godot/world/stop_sky_shots.gd`
+- `SKY1272_stops_r4.jpg`: one Hegemony frontier sector, four stops at camera 420, made by `godot/world/stop_sky_shots.gd`
   through the game's own path (main.gd stop_of, world.gd sector_setting, world_sky.gd stop_mood). The plain, rival and boss
   stops use a storm map, the salvage stop a wreck-field (graveyard) map, as the game decides salvage by map.
 - `stop_<kind>_c420.jpg` with the provenance record of each source PNG.
-- r3 is drawn after PR 1304 merged, so the battle nebula is rose. The hazard gas stays rose at every stop (RULEBOOK 10.9, R353); only the far sky (panorama, lamp stars, backdrop wisps) takes the rival tint.
+- r4 is drawn after PR 1304 merged, so the battle nebula is rose. The hazard gas stays rose at every stop (RULEBOOK 10.9, R353); only the far sky (panorama, lamp stars, backdrop wisps) takes the rival tint.
 
 What changed: one STOP_MOOD table and one STOP_FRAMES table in world_sky.gd; 8 remixed planet looks (PLANETS_ALT, RULEBOOK
 10.3), chosen per sector. A stop against another faction than the sector's is rival, a boss fight is boss, a fight on a
@@ -17,3 +17,12 @@ wreck-field map is salvage; anything else is plain and draws today's sector sky 
 Check: `godot/world/test/stop_sky_check.gd` (headless, 40 seeded campaigns through three sectors with the real campaign
 generator): backdrop vistas per campaign today 3.0, now 18.2; planet looks seen 16 of 16; smallest sky change from a plain
 stop of the same sector: rival 0.080, boss 0.132, salvage 1.448; the anchor planet never changes inside a sector.
+
+## Load cost (run 2)
+
+The 5080 timing at ce9e7b61 (GPU solo) showed mood stops loading 3.7 to 6.1 s slower than a plain stop: each mood changed the
+sky bake's inputs, so the 4096 sky picture was baked again. Now a stop keeps the sector's bake inputs (`bake` in the setting,
+world_sky.gd bake_view) and the mood rides on four sky-shader uniforms (mood_tint, mood_mix, mood_gain, mood_dim; their
+defaults change nothing). stop_sky_check proves every stop's bake inputs, lamps and galaxies equal the sector's.
+`world/stop_sky_timing.gd --no-stop` times the same stop's scene and fleet with no mood, so the PC run separates mood cost
+from the different fleets and maps those stops bring.
