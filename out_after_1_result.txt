@@ -1,0 +1,4 @@
+start Fri 11/20/2026 14:57:46.26 attempt 1 tag after 
+drive bytes free 304322768896 
+FAILED: checkout FETCH_HEAD: changes are listed but the patch is empty, nothing was touched 
+all done Fri 11/20/2026 14:57:47.29 

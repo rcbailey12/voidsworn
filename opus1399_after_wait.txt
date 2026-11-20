@@ -1,0 +1,4 @@
+waiting for OPUS1399_BEFORE exit in opus1399_before2_wait.txt Fri 11/20/2026 14:47:46.05 
+OPUS1399_AFTER start Fri 11/20/2026 14:57:46.23 
+OPUS1399_AFTER exit 1 at 14:57:47.31 
+AFTER attempt 1 stopped at its safe checkout (CRLF ship test files from BEFORE's ships copy gave an empty patch under the system autocrlf=true); set core.autocrlf=false in opus1399\repo's own config and rerun as attempt 2 14:59:15

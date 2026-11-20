@@ -1,0 +1,3 @@
+ M godot/assets/ships/test/a4_shots.gd
+ M godot/assets/ships/test/a4_shots.tscn
+ M godot/assets/ships/test/station_size_check.gd
