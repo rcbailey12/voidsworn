@@ -137,7 +137,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 ## INSIDE (R98, R209): what each break reveals
 
-Deck levels (height): bow deck -0.10 (12% to 29%); upper deck 0.36 (31% to 91%); gun deck -0.36 (31% to 73%); main_aft deck -0.36 (74% to 91%); keel deck -0.68 (32% to 71%).
+Deck levels (height): bow deck -0.10 (12% to 29%); upper deck 0.36 (31% to 91%); gun deck -0.36 (31% to 73%); main_aft deck -0.36 (74% to 91%).
 
 Bulkhead and frame stations: F0 12.8%, F1 19.0%, F2 25.2%, F3 28.3%, F4 31.1%, F5 42.5%, F6 51.5%, F7 60.4%, F8 69.4%, F9 75.0%, F10 80.5%, F11 86.0%, F12 90.5%.
 
@@ -154,11 +154,10 @@ Bulkhead and frame stations: F0 12.8%, F1 19.0%, F2 25.2%, F3 28.3%, F4 31.1%, F
 | upper rooms (crew) | 32.1 to 58.4 | 0.03 to -0.03 | 0.40 to 0.62 | the gunners' mess and the chalk wall where the names go up before launch |
 | command (bridge) | 59.8 to 65.3 | 0.03 to -0.03 | 0.40 to 0.62 | the command deck under the spine block's slits |
 | plenum (machinery) | 66.0 to 89.5 | 0.03 to -0.03 | 0.40 to 0.62 | the heat plenum feeding the spire line |
-| reactor (core) | 75.0 to 86.0 | 0.03 to -0.03 | -0.86 to 0.30 | the reactor: its heat goes up through the plenum into the spires (hp_core) |
-| coolant p (machinery) | 75.0 to 86.0 | 0.82 to 0.68 | -0.60 to 0.28 | coolant pumps either side of the reactor |
-| coolant s (machinery) | 75.0 to 86.0 | -0.68 to -0.82 | -0.60 to 0.28 | coolant pumps either side of the reactor |
-| engine room (engroom) | 87.0 to 90.8 | 0.03 to -0.03 | -0.70 to 0.30 | the engine room and the two drives' feeds |
-| ballast mid (machinery) | 33.5 to 70.1 | 0.03 to -0.03 | -0.82 to -0.72 | trim tanks under the keel deck |
+| reactor (core) | 75.0 to 86.0 | -0.75 to 0.75 | -0.40 to 0.30 | the reactor: its heat goes up through the plenum into the spires (hp_core) |
+| coolant p (machinery) | 75.0 to 86.0 | 0.82 to 0.93 | -0.40 to 0.28 | coolant pumps either side of the reactor |
+| coolant s (machinery) | 75.0 to 86.0 | -0.93 to -0.82 | -0.40 to 0.28 | coolant pumps either side of the reactor |
+| engine room (engroom) | 87.0 to 90.8 | -0.81 to 0.81 | -0.40 to 0.30 | the engine room and the two drives' feeds |
 
 | Armour zone | Thickness (units) | Note |
 |---|---:|---|
@@ -172,7 +171,7 @@ Bulkhead and frame stations: F0 12.8%, F1 19.0%, F2 25.2%, F3 28.3%, F4 31.1%, F
 |---|---|---|
 | B-1 | 29.7 (seam wanders 28.7 to 30.4) | the spearhead tears from the gun deck at its root, the lance and its capacitor room going with it |
 | B-2 | 91.9 (seam wanders 91.5 to 92.4) | the engine section tears from the reactor section, behind the spire line |
-| B-3 | 32.1 to 72.9 (along) | along the gun decks: the lower hull peels away under the galleries and their shell rooms |
+| B-3 | 32.1 to 72.9 (along) | under the gun deck: the belly plating peels away below the galleries and their shell rooms |
 | B-4 | 59.8 to 90.8 (along) | the spire line snaps off as one piece, the spine block tearing along its root |
 
 Full interiors throughout the hull (R215), hidden until a piece breaks: iron decks, ember-lit gun galleries, frames, the reactor, the lance's capacitor room. Sunward breaks along the gun decks (factions.md); deaths blow it apart unevenly (R186).
@@ -214,6 +213,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **A raised plated dorsal ridge runs from the lance back to the spine block, tapering low before the command slits.** the concept's strongest line (the Board's rev 1 note); it is the lance's power trunk, and it ends low so the bridge slits keep their view.
 - **Attitude thrusters, deck and belly hatches, a hoist head, heat louvres, ember slits, frost running points and a belly armour step added.** a ship in space needs thrusters and access; the reactor needs louvres; the pictures show no underside; every part has a job (R221).
 - **Transverse breaks at the spearhead root (30 percent) and behind the spire line (B-2); the gun deck peel and the spire line peel sit in the one compartment between.** factions.md "How it breaks" (lengthwise between deck rows, the spire line as one piece); the build contract keeps every long seam inside one transverse compartment, and the spire line overlaps the gun deck stations on this hull.
+- **B-3 peels the belly plating below the gun deck, the liner is relieved along that seam and at both joints, frames between the breaks stop above it, and the keel deck and ballast tanks are gone.** the first peel sat on the sloped lower hull and tore through the liner and the rooms behind it, so the death check found 411 inside faces on the outer hull; the S8 liner relief and a clear belly bring that to 0.
 
 ## Designed here, not shown in the picture
 

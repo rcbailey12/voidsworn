@@ -88,6 +88,56 @@ def ring(x, inset=0.0):
     return [(x, y, z) for (y, z) in full]
 
 
+# The B-3 liner relief, the same method as the S8 Daybreak's (voidsworn_S8.py shell_ring and relieve_liner, issue 1059): the
+# shell's inner liner is left out from a strip of each lower flank facet down across the belly, over the whole B-1 to B-2 compartment, so when the
+# belly peels away no liner is left standing outside its own piece's torn plating (the death seam check). The plating stays
+# whole; only the inside lining has the gap.
+B3_RELIEF = (0.2, 0.95)   # the strip along each lower flank facet, as fractions from the lower knuckle toward the belly edge
+B3_SPAN = (-6.05, 2.95)   # the compartment the peel weakens (B-2 to B-1); within 0.5 of either joint the whole ring is relieved
+
+
+def shell_ring(x):
+    """ring(x) with two extra points on each lower flank facet, the edges of the liner relief strip"""
+    half = half_ring(x)
+    a, b = half[4:6]
+    half[5:5] = [tuple(u + (v - u) * t for u, v in zip(a, b)) for t in B3_RELIEF]
+    return [(x, y, z) for y, z in half + [(-y, z) for y, z in reversed(half[1:-1])]]
+
+
+def relieve_liner(hull, shell, stations):
+    """leave the liner out along the relief strip (exterior plating untouched), as S8 does"""
+    import bpy
+    strip = hull.vertex_groups.new(name='B3_relief')
+    liner = hull.vertex_groups.new(name='inner_shell')
+    shell.shell_vertex_group = liner.name
+    ring_size = len(hull.data.vertices) // len(stations)
+    port = range(5, 10)        # from the strip's top edge down the lower facet and across the belly to its centre line
+    flanks = sorted({*port, *(ring_size - j for j in port)})
+    lo, hi = B3_SPAN
+    vs = []
+    for i, x in enumerate(stations):
+        if lo - 0.25 <= x <= lo + 0.5 or hi - 0.5 <= x <= hi + 0.25:
+            vs.extend(i * ring_size + j for j in range(ring_size))
+        elif lo < x < hi:
+            vs.extend(i * ring_size + j for j in flanks)
+    strip.add(vs, 1.0, 'REPLACE')
+    tree = bpy.data.node_groups.new('S10 B-3 liner clearance', 'GeometryNodeTree')
+    for direction in ('INPUT', 'OUTPUT'):
+        tree.interface.new_socket(name='Geometry', in_out=direction, socket_type='NodeSocketGeometry')
+    source = tree.nodes.new('NodeGroupInput'); output = tree.nodes.new('NodeGroupOutput')
+    remove = tree.nodes.new('GeometryNodeDeleteGeometry'); remove.domain = 'FACE'
+    both = tree.nodes.new('ShaderNodeMath'); both.operation = 'MULTIPLY'
+    for i, group in enumerate((strip, liner)):
+        w = tree.nodes.new('GeometryNodeInputNamedAttribute'); w.data_type = 'FLOAT'; w.inputs['Name'].default_value = group.name
+        tree.links.new(w.outputs['Attribute'], both.inputs[i])
+    full = tree.nodes.new('ShaderNodeMath'); full.operation = 'GREATER_THAN'; full.inputs[1].default_value = 0.99
+    tree.links.new(both.outputs[0], full.inputs[0])
+    tree.links.new(full.outputs[0], remove.inputs['Selection'])
+    tree.links.new(source.outputs['Geometry'], remove.inputs['Geometry'])
+    tree.links.new(remove.outputs['Geometry'], output.inputs['Geometry'])
+    hull.modifiers.new('B-3 liner relief', 'NODES').node_group = tree
+
+
 def hw_at(x, z, inset=0.0):
     """the section's half-width at height z (port side), inset by `inset`: 0 when z is outside"""
     h = half_ring(x, inset)
@@ -141,8 +191,9 @@ def build(K):
     xs = sorted({r[0] for r in ST} | {x / 4 for x in range(-25, 26)}, reverse=True)
     xbow = [x for x in xs if x >= 3.2]; xaft = [x for x in xs if x <= 3.2]
     rings = [ring(x) for x in xs]
-    hull = K.loft_rings(CODE + '_hull', rings, 'siron')
+    hull = K.loft_rings(CODE + '_hull', [shell_ring(x) for x in xs], 'siron')
     md = hull.modifiers.new('shell', 'SOLIDIFY'); md.thickness = SHELL; md.offset = -1; md.use_rim = True
+    relieve_liner(hull, md, xs)
     K.mass('Hull: the blade', hull, 'black iron plate',
            note='a long faceted blade: crowned deck, big upper facets, the broadside band, lower facets, a flat worked belly; widest (2.9) at the stern third')
     K.mark('blade', 'hull', ['facet', 'step', 'chamfer'])
@@ -312,7 +363,7 @@ def build(K):
     # ---------------- INSIDE: iron decks, the gun crews' galleries, frames, the reactor, the lance's capacitor room ----------------
     IN = SHELL + 0.04
     B1, B2 = 2.95, -6.05     # the transverse seams (the spearhead's root, the engine section)
-    PEEL = -0.5              # B-3's level: the lower hull peels away under the gun deck
+    PEEL = -0.75             # B-3's level: the belly plating peels away under the gun deck
 
     def deck_slab(name, z, x0, x1, inset=0.02, n=6):
         rs = []
@@ -366,10 +417,9 @@ def build(K):
     deck_slab('bow', -0.1, 5.5, 3.1)
     deck_slab('upper', 0.36, 2.8, -5.9); deck_slab('gun', -0.36, 2.8, -3.3, inset=0.12)
     deck_slab('main_aft', -0.36, -3.5, -5.9)
-    deck_slab('keel', -0.68, 2.6, -3.1, inset=0.05)
     for i, x in enumerate((5.4, 4.5, 3.6, 3.15, 2.75, 1.1, -0.2, -1.5, -2.8, -3.6, -4.4, -5.2, -5.85)):
-        if -3.4 < x < 2.8:
-            frame_at('F%d_upper' % i, x, zr=[(PEEL + 0.1, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, PEEL - 0.1)], record=False)
+        if B2 < x < B1:   # the whole B-1 to B-2 compartment the peel weakens: the frames stop well above it
+            frame_at('F%d_upper' % i, x, zr=[(PEEL + 0.35, 99.0)])
         else:
             frame_at('F%d' % i, x)
     room('lance_capacitors', 'machinery', 5.4, 3.2, -0.04, 0.42, note='the Oath lance\'s capacitor room: the trunk\'s charge banks behind the emitter')
@@ -382,10 +432,9 @@ def build(K):
     room('upper_rooms', 'crew', 2.6, -1.2, 0.4, 0.62, note='the gunners\' mess and the chalk wall where the names go up before launch')
     room('command', 'bridge', -1.4, -2.2, 0.4, 0.62, note='the command deck under the spine block\'s slits')
     room('plenum', 'machinery', -2.3, -5.7, 0.4, 0.62, note='the heat plenum feeding the spire line')
-    room('reactor', 'core', -3.6, -5.2, -0.86, 0.3, ymax=0.75, note='the reactor: its heat goes up through the plenum into the spires (hp_core)')
-    side_room('coolant', 'machinery', -3.6, -5.2, -0.6, 0.28, 0.82, note='coolant pumps either side of the reactor')
-    room('engine_room', 'engroom', -5.35, -5.9, -0.7, 0.3, note='the engine room and the two drives\' feeds')
-    room('ballast_mid', 'machinery', 2.4, -2.9, -0.82, -0.72, note='trim tanks under the keel deck')
+    room('reactor', 'core', -3.6, -5.2, -0.4, 0.3, ymax=0.75, note='the reactor: its heat goes up through the plenum into the spires (hp_core)')
+    side_room('coolant', 'machinery', -3.6, -5.2, -0.4, 0.28, 0.82, note='coolant pumps either side of the reactor')
+    room('engine_room', 'engroom', -5.35, -5.9, -0.4, 0.3, note='the engine room and the two drives\' feeds')
     K.armour('upper facets and deck', 0.16, 'forged plate over the galleries')
     K.armour('broadside band and lips', 0.2, 'the gun deck face, the heaviest belt')
     K.armour('spearhead', 0.22, 'solid forged layers toward the point round the lance')
@@ -398,7 +447,7 @@ def build(K):
                  path=[(B1, reach), (B1, 0.8), (3.1, 0.3), (2.85, -0.2), (3.02, -0.7), (B1, -reach)])
     K.break_line('B-2', B2, 'the engine section tears from the reactor section, behind the spire line',
                  path=[(B2, reach), (-6.0, 0.9), (-6.12, 0.3), (-6.02, -0.3), (-6.1, -0.9), (B2, -reach)])
-    K.break_line('B-3', 0.0, 'along the gun decks: the lower hull peels away under the galleries and their shell rooms',
+    K.break_line('B-3', 0.0, 'under the gun deck: the belly plating peels away below the galleries and their shell rooms',
                  path=[(2.6, PEEL), (1.0, PEEL + 0.02), (-0.8, PEEL - 0.02), (-2.2, PEEL + 0.01), (-3.3, PEEL)], kind='long')
     K.break_line('B-4', -3.6, 'the spire line snaps off as one piece, the spine block tearing along its root',
                  path=[(-1.4, SPZ - 0.2), (-2.8, SPZ - 0.21), (-4.4, SPZ - 0.2), (-5.9, SPZ - 0.21)], kind='long')
@@ -458,6 +507,8 @@ def build(K):
              'a ship in space needs thrusters and access; the reactor needs louvres; the pictures show no underside; every part has a job (R221)')
     K.change('Transverse breaks at the spearhead root (30 percent) and behind the spire line (B-2); the gun deck peel and the spire line peel sit in the one compartment between',
              'factions.md "How it breaks" (lengthwise between deck rows, the spire line as one piece); the build contract keeps every long seam inside one transverse compartment, and the spire line overlaps the gun deck stations on this hull')
+    K.change('B-3 peels the belly plating below the gun deck, the liner is relieved along that seam and at both joints, frames between the breaks stop above it, and the keel deck and ballast tanks are gone',
+             'the first peel sat on the sloped lower hull and tore through the liner and the rooms behind it, so the death check found 411 inside faces on the outer hull; the S8 liner relief and a clear belly bring that to 0')
     K.open_item('The belly is designed here; the concept shows no underside')
     K.open_item('Frost-white markings and the half-sun crest are paint (the Sunward stack), not modelled')
 
