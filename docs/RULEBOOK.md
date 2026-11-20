@@ -378,6 +378,22 @@ if it's timing out actual work?" He took up a stall check, a high backstop and a
 
 PC jobs never use Ryan's real game profile. The watchdog gives each Godot start a fresh profile so captures cannot overwrite his settings (issue 1228, Nov 19).
 
+PC jobs run one tools copy and report honestly (issue 1194, Board, Nov 20). `lane_tools_refresh.ps1 -Build tools_live`
+installs main's tools as a verified, never-edited version under `Downloads\voidsworn_test\tools_live\` with its own
+hashes, named by `tools_live\current.txt`; every `tmo.bat` outside it hands its step to that copy, so an old `build\tools`
+or branch checkout never runs its own watchdog or slot reader (self-tests set `TMO_OWN_COPY=1`). The main watcher refreshes
+tools_live and `build\tools` between jobs. Old lane backups and old tools_live versions rotate instead of stopping the
+refresh: a backup goes only when every file in it is kept in a newer copy or a saved main snapshot, a version only when it
+was replaced over a day ago and no running process names it (the refresh's own rebuildable copies, 3.3). Job bats run
+their steps through `tools/pc/job_wrap.bat`: a GPU label on every claim, the tool preflight before any clone or GPU claim
+(exit 2 on a missing tool), the strict watchdog hash check, a stop on a failed step unless it is marked optional, non-empty
+declared outputs, and `done PASS` or `done FAILED: <steps>` then `all done`, with a non-zero exit after any failure. The
+watchers log each job's exit code and move a failed job to `queue\failed` (`queue_b\failed`). `PC_DOCTOR.bat` is a
+read-only look at the GPU claims (owner, child, age, health), damaged slot files, stuck Godot or Blender processes and
+failed jobs. Why: a stale Nov 18 `build\tools` copy ran the hung 1078 probe, jobs wrote "all done" after failed steps,
+the watcher filed every job as done, and a missing ffmpeg or Pillow showed only after an hour on the GPU (Neon's PC
+pipeline audit, checked by the Board, Nov 19).
+
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
 use for all of this?" (R126); holding the lock hides his windows; Task Manager ignores remote clicks. Set: Ryan (R126); Board

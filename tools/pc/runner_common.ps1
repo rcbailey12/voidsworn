@@ -7,8 +7,11 @@
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
 # hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the runner and watchdog files after copying them.
-# hashcheck <out> <tools dir> <hash file>: warn in result.txt when the running copies differ (warn, never stop).
-#   Test knob: PC_TEST_HASHES.
+# hashcheck <out> <tools dir> <hash file> [strict]: warn in result.txt when the running copies differ. With strict
+#   (issue 1194), a differing or missing watchdog, slot or step helper file (tmo.bat, run_timeout.ps1, gpu_slots.js,
+#   job_wrap.bat) stops the job with exit 14. Test knob: PC_TEST_HASHES.
+# preflight-tools <out> <list> (issue 1194): find each named tool (godot, blender, ffmpeg, node, pil) before a job clones
+#   or claims the GPU. Writes <out>\preflight.txt and <out>\tools.cmd (set JW_GODOT=... lines); exit 2 on a missing tool.
 # model <out> <resolved> <default>: stamp the resolved model into status.json and result.txt, and warn when it
 #   differs from the arm default, whatever the provider.
 # base <repo> <out> <issue body file>: parse the optional Base line, fetch and commit its merge before the agent.
@@ -1194,6 +1197,15 @@ try {
     # hashes file is a warning only: a run must never stop because the Board has not written hashes yet.
     $script:out = $args[1]; $tools = $args[2]; $hashf = $args[3]
     if ($test -and $env:PC_TEST_HASHES) { $hashf = $env:PC_TEST_HASHES }
+    # Issue 1194 (Artoo on PR 1254): strict fails closed. A missing or empty manifest, or one that leaves out a guarded
+    # file, stops the job as surely as a changed file.
+    $strict = $args[4] -eq 'strict'
+    function Stop-Strict($why) {
+      Log "STOPPED: $why"
+      if (Test-Path -LiteralPath (Join-Path $script:out 'status.json')) { State 'failed' "STOPPED: $why" }
+      exit 14
+    }
+    if ($strict -and -not (Test-Path -LiteralPath $hashf)) { Stop-Strict "no hashes file at $hashf" }
     if (-not (Test-Path -LiteralPath $hashf)) {
       Log "WARNING: no Board hashes file at $hashf; the running runner copies are not checked"
       exit 0
@@ -1202,6 +1214,12 @@ try {
     foreach ($l in [IO.File]::ReadAllLines($hashf)) {
       $m = [regex]::Match($l, '^([0-9a-fA-F]{64})\s+(\S+)\s*$')
       if ($m.Success) { $want[$m.Groups[2].Value] = $m.Groups[1].Value.ToLower() }
+    }
+    if ($strict) {
+      $required = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js')
+      if (Test-Path -LiteralPath (Join-Path $tools 'job_wrap.bat')) { $required += 'job_wrap.bat' }
+      $absent = @($required | Where-Object { -not $want.ContainsKey($_) })
+      if ($absent.Count) { Stop-Strict "the hashes file $hashf leaves out: $($absent -join ', ')" }
     }
     if ($want.Count -eq 0) { Log "WARNING: the Board hashes file $hashf has no entries; the running runner copies are not checked"; exit 0 }
     $bad = @()
@@ -1212,6 +1230,76 @@ try {
     }
     if ($bad.Count) { Log "WARNING: these runner files differ from the Board-copied hashes: $($bad -join ', ')" }
     else { Log "runner files match the Board hashes ($($want.Count) checked)" }
+    # Issue 1194: a job must not run a watchdog or slot reader other than the one the hashes name.
+    $guarded = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat')
+    $stop = @($bad | Where-Object { $guarded -contains ($_ -replace ' \(missing\)$', '') })
+    if ($args[4] -eq 'strict' -and $stop.Count) {
+      $why = "STOPPED: the watchdog or slot files differ from $($hashf): $($stop -join ', ')"
+      Log $why
+      if (Test-Path -LiteralPath (Join-Path $script:out 'status.json')) { State 'failed' $why }
+      exit 14
+    }
+  }
+  elseif ($mode -eq 'preflight-tools') {
+    # Issue 1194: jobs found a missing ffmpeg or Pillow only after an hour on the GPU. Each tool: an explicit setting
+    # first, then the PC's usual place. Nothing is installed or changed.
+    $script:out = $args[1]
+    $vt = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
+    $null = [IO.Directory]::CreateDirectory($script:out)
+    $report = Join-Path $script:out 'preflight.txt'
+    $lines = @("tool preflight $([DateTime]::UtcNow.ToString('s'))Z")
+    $sets = @()
+    $missing = @()
+    function Find-Exe($candidates, $command) {
+      foreach ($c in $candidates) { if ($c -and (Test-Path -LiteralPath $c -PathType Leaf)) { return (Get-Item -LiteralPath $c).FullName } }
+      if ($command) {
+        $found = Get-Command -Name $command -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) { return $found.Source }
+      }
+      return ''
+    }
+    foreach ($tool in @(([string]$args[2]) -split '[\s,;]+' | Where-Object { $_ })) {
+      $name = $tool.ToLowerInvariant()
+      $path = ''
+      switch ($name) {
+        'godot' {
+          $listed = ''
+          $pathFile = Join-Path $vt 'godot_path.txt'
+          if (Test-Path -LiteralPath $pathFile) { $listed = ([IO.File]::ReadAllLines($pathFile) | Select-Object -First 1).Trim() }
+          $path = Find-Exe @($env:GODOT_EXE, $listed, (Join-Path $vt 'godot\Godot_v4.7.2-stable_win64_console.exe')) ''
+        }
+        'blender' { $path = Find-Exe @($env:BLENDER_EXE, (Join-Path $vt 'blender\blender-4.5.14-windows-x64\blender.exe')) '' }
+        'ffmpeg' { $path = Find-Exe @($env:FFMPEG_EXE, (Join-Path $vt 'ffmpeg\bin\ffmpeg.exe')) 'ffmpeg' }
+        'node' { $path = Find-Exe @($env:NODE_EXE, (Join-Path $vt 'node\node.exe')) 'node' }
+        'pil' {
+          # Python with Pillow: ComfyUI's portable Python has it on this PC.
+          $pythons = @($env:PIL_PYTHON, (Join-Path $env:USERPROFILE 'Downloads\ComfyUI_windows_portable\python_embeded\python.exe'))
+          foreach ($py in $pythons) {
+            if (-not $py -or -not (Test-Path -LiteralPath $py -PathType Leaf)) { continue }
+            $ea = $ErrorActionPreference
+            try {
+              $ErrorActionPreference = 'Continue'
+              $null = & $py -c 'import PIL' 2>&1
+              if ($LASTEXITCODE -eq 0) { $path = (Get-Item -LiteralPath $py).FullName; break }
+            } catch { } finally { $ErrorActionPreference = $ea }
+          }
+        }
+        default { $lines += "MISSING ${name}: unknown tool name (known: godot, blender, ffmpeg, node, pil)"; $missing += $name; continue }
+      }
+      if ($path) {
+        $lines += "found ${name}: $path"
+        $sets += ('set "JW_' + $name.ToUpperInvariant() + '=' + $path + '"')
+      } elseif ($name -ne $null -and $missing -notcontains $name) {
+        $lines += "MISSING ${name}: set " + @{ godot = 'GODOT_EXE'; blender = 'BLENDER_EXE'; ffmpeg = 'FFMPEG_EXE'; node = 'NODE_EXE'; pil = 'PIL_PYTHON' }[$name] + ' or install it'
+        $missing += $name
+      }
+    }
+    if ($missing.Count) { $lines += "STOPPED: missing tools: $($missing -join ', ')" } else { $lines += 'all tools found' }
+    [IO.File]::WriteAllText($report, (($lines -join "`r`n") + "`r`n"), $utf8)
+    [IO.File]::WriteAllText((Join-Path $script:out 'tools.cmd'), ((@('@echo off') + $sets) -join "`r`n") + "`r`n", (New-Object Text.ASCIIEncoding))
+    foreach ($l in $lines) { Write-Host $l }
+    if ($missing.Count) { exit 2 }
+    exit 0
   }
   elseif ($mode -eq 'model') {
     # Issue 722 (audit 706 finding 6): stamp what will actually run. The bat passes the resolved id and the arm's
