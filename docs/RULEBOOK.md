@@ -329,7 +329,9 @@ token or a runner's `status.json` names its exact path with the same token and c
 a folder that no longer matches it, is report-only). Older scratch with no token can go after a day untouched only when
 its whole name is one our tools generate (`voidsworn-run-[<issue>-]<32 hex>`, `voidsworn-parity-<6 characters>` from
 run_parity.js, `stage7-checked-<code>-<8 characters>` from manifest_merge.py), its issue lock is free and no running
-process names it; links inside are removed as links, never followed. Other name matches are report-only, and agent-chosen
+process names it (the whole folder name, so `opus121` never matches `opus1211`). Links inside any TEMP scratch, owned or
+older, are removed as links and never followed, and the log names each link's target; a folder another account owns
+(Codex sandbox scratch) cannot be read, so it is left in place and the rest is removed. Other name matches are report-only, and agent-chosen
 names go to Ryan as a one-off list. The janitor removes an `opus<N>` or `opus<N>out*` helper folder after a day untouched
 only when no running process names it, every file in its out folders is a blob committed on a board/pc-out relay branch
 in the repo mirror (a loose blob is not a receipt), and everything else in it is a checkout Git shows as rebuildable with

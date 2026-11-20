@@ -128,9 +128,13 @@ function Get-CommandLines {
 }
 function Assert-NoProcessUses($dir) {
   if ($null -eq $script:commandLines) { throw 'running processes could not be checked' }
-  $needle = $dir.FullName.TrimEnd('\','/')
+  # The whole folder name only: opus121 must not match a command line that names opus1211 (R8 dry run).
+  $needle = [regex]::Escape($dir.FullName.TrimEnd('\','/')) + '(?=$|[\\/"''\s])'
   foreach ($line in $script:commandLines) {
-    if ($line.IndexOf($needle, [StringComparison]::OrdinalIgnoreCase) -ge 0) { throw 'a running process names this folder' }
+    if ($line -match $needle) {
+      $shown = if ($line.Length -gt 160) { $line.Substring(0, 160) + '...' } else { $line }
+      throw "a running process names this folder: $shown"
+    }
   }
 }
 # Issue 1180 run 8 (Board, Nov 20): names only our tools create. A runner GUID, run_parity.js mkdtemp (6 characters) and
@@ -208,9 +212,15 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
       try { $issueLock = Open-CleanupLock (Issue-LockPath $issue $temp) $dryRun }
       catch { $busy = "issue #$issue lock is held or could not be verified" }
     }
-    $stats = Measure-CleanupDirectory $dir -AllowLinks:$legacy
+    # TEMP scratch (owned or legacy) may hold selftest junctions to shared ships: each is removed as a link, never
+    # followed, so its target does not matter (Board, R8 dry run). Helper folders still keep on any link.
+    $scratchKind = $legacy -or $tempScratch
+    $stats = Measure-CleanupDirectory $dir -AllowLinks:$scratchKind -AllowUnreadable:$scratchKind
     $size = "$($stats.Bytes) bytes"
     if ($stats.Links.Count) { $size += ", $($stats.Links.Count) links not followed" }
+    if ($stats.Unreadable.Count) { $size += ", $($stats.Unreadable.Count) folders another account owns left in place" }
+    foreach ($link in ($stats.Links | Select-Object -First 5)) { Log "link not followed: $($link.FullName) -> $(Get-LinkTarget $link)" }
+    foreach ($u in ($stats.Unreadable | Select-Object -First 5)) { Log "folder not readable by this account, left in place: $($u.FullName)" }
     if ($dir.FullName -eq $env:PC_RUN_SCRATCH) { throw 'current runner scratch' }
     if ($busy) { throw $busy }
     if ($legacy -or $helper) { Assert-NoProcessUses $dir }
@@ -243,10 +253,14 @@ function Clear-ScratchFolder($dir, $issue, $why, $hours, $temp, $now, $dryRun, $
     else {
       if ($stats.Links.Count) {
         Remove-CleanupLinks $stats.Links
-        $after = Measure-CleanupDirectory $dir
-        if ($after.Latest -gt $now.AddHours(-$hours)) { throw 'folder changed while its links were removed' }
+        # Removing a link updates its parent folder's time, so only files and new links count as a change (CI on 3483c7cf).
+        $after = Measure-CleanupDirectory $dir -AllowLinks -AllowUnreadable
+        if ($after.Links.Count -or $after.FileLatest -gt $now.AddHours(-$hours)) { throw 'folder changed while its links were removed' }
       }
-      Remove-CleanupDirectory $dir; $action = 'removed'
+      if ($stats.Unreadable.Count) {
+        Remove-CleanupReadable $dir $stats.Unreadable
+        $action = "removed all but $($stats.Unreadable.Count) folders another account owns:"
+      } else { Remove-CleanupDirectory $dir; $action = 'removed' }
     }
     Log "$action $($dir.FullName) ($size; $why, untouched for at least $hours hours)"
   } catch {

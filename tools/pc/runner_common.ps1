@@ -506,15 +506,23 @@ function Get-FailedScratchMarker($dir) {
   }
   return $marker
 }
-function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks) {
+function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowLinks, [switch]$allowUnreadable) {
   Assert-PlainDirectory $directory
-  $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @()
-  $worktreeLatest = [DateTime]::MinValue
+  $bytes = 0L; $latest = $directory.LastWriteTimeUtc; $links = @(); $unreadable = @()
+  $fileLatest = [DateTime]::MinValue; $worktreeLatest = [DateTime]::MinValue
   $gitPrefix = (Join-Path $directory.FullName '.git') + [IO.Path]::DirectorySeparatorChar
   $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
   $pending.Push($directory)
   while ($pending.Count) {
-    foreach ($item in $pending.Pop().EnumerateFileSystemInfos()) {
+    $next = $pending.Pop()
+    # A folder another account owns (Codex sandbox scratch) cannot be listed. With -AllowUnreadable it is noted and
+    # skipped, so the rest is still sized (Board, R8 dry run: 68 TEMP rows had no size at all).
+    try { $entries = @($next.EnumerateFileSystemInfos()) }
+    catch {
+      if (-not $allowUnreadable -or $next.FullName -eq $directory.FullName) { throw }
+      $unreadable += ,$next; continue
+    }
+    foreach ($item in $entries) {
       if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         # Links are listed, never followed or counted (legacy selftest fixtures hold junctions to shared ships).
         if (-not $allowLinks) { throw "linked path: $($item.FullName)" }
@@ -524,13 +532,44 @@ function Measure-CleanupDirectory($directory, [switch]$checkout, [switch]$allowL
       if ($item.LastWriteTimeUtc -gt $latest) { $latest = $item.LastWriteTimeUtc }
       if ($item -is [IO.DirectoryInfo]) { $pending.Push($item); continue }
       $bytes += $item.Length
+      if ($item.LastWriteTimeUtc -gt $fileLatest) { $fileLatest = $item.LastWriteTimeUtc }
       if ($checkout -and $item.LastWriteTimeUtc -gt $worktreeLatest -and
           -not $item.FullName.StartsWith($gitPrefix, [StringComparison]::OrdinalIgnoreCase)) {
         $worktreeLatest = $item.LastWriteTimeUtc
       }
     }
   }
-  return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; WorktreeLatest = $worktreeLatest; Links = $links }
+  return [pscustomobject]@{ Bytes = $bytes; Latest = $latest; FileLatest = $fileLatest; WorktreeLatest = $worktreeLatest
+    Links = $links; Unreadable = $unreadable }
+}
+function Get-LinkTarget($link) {
+  # Where a link points, for the log only: it is never followed.
+  try { $t = @((Get-Item -LiteralPath $link.FullName -Force -ErrorAction Stop).Target) | Where-Object { $_ } | Select-Object -First 1 }
+  catch { $t = $null }
+  if ($t) { return [string]$t }; return 'target unknown'
+}
+function Remove-CleanupReadable($dir, $unreadable) {
+  # Remove everything except folders another account owns and the folders that lead to them. Run only after links are
+  # gone and the ownership checks passed; an unreadable folder cannot be listed, so nothing in it is followed or removed.
+  $keep = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+  foreach ($u in $unreadable) {
+    for ($d = $u; $d -and $d.FullName.Length -ge $dir.FullName.Length; $d = $d.Parent) { $null = $keep.Add($d.FullName) }
+  }
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  $pending.Push($dir)
+  while ($pending.Count) {
+    $next = $pending.Pop()
+    if ($unreadable | Where-Object { $_.FullName -eq $next.FullName }) { continue }
+    foreach ($item in @($next.EnumerateFileSystemInfos())) {
+      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "a link appeared: $($item.FullName)" }
+      if ($keep.Contains($item.FullName)) { $pending.Push($item); continue }
+      if (Cleanup-Paused) { throw 'PC pause is active' }
+      if ($item -is [IO.DirectoryInfo]) {
+        Assert-NoLinkedChildren $item.FullName
+        Remove-Item -LiteralPath $item.FullName -Recurse -Force -ErrorAction Stop
+      } else { Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop }
+    }
+  }
 }
 function Remove-CleanupLinks($links) {
   # Remove each link itself, never its target. PowerShell 5.1's Remove-Item -Recurse can follow a junction.
