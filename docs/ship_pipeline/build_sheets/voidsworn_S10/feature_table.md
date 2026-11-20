@@ -128,11 +128,11 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Gun deck upper lip, starboard | 32.5 to 70.5 | -1.57 to -1.25 | 0.21 to 0.38 | darker iron | the armoured shelf over (under) the battery ports; its ends are angled |
 | Gun deck lower lip, starboard | 32.5 to 70.5 | -1.57 to -1.25 | -0.40 to -0.23 | darker iron | the armoured shelf over (under) the battery ports; its ends are angled |
 | Spine block (the spire line's base) | 59.4 to 91.2 | -0.40 to 0.40 | 0.65 to 1.09 | darker iron | a forged block along the centreline aft; the spires stand on it, and it snaps off with them (B-4) |
-| Radiator spire R1 (blade, 0.80 tall) | 64.4 to 68.0 | -0.22 to 0.22 | 1.35 to 1.76 | ember fin slats on iron | one of the five spires of the spire line |
-| Radiator spire R2 (raked, 1.02 tall) | 69.5 to 73.0 | -0.25 to 0.25 | 1.35 to 1.98 | ember fin slats on iron | one of the five spires of the spire line |
-| Radiator spire R3 (twin, 1.20 tall) | 74.3 to 78.0 | -0.27 to 0.27 | 1.35 to 2.16 | ember fin slats on iron | one of the five spires of the spire line |
-| Radiator spire R4 (stepped, 1.00 tall) | 79.2 to 83.0 | -0.25 to 0.25 | 1.35 to 1.96 | ember fin slats on iron | one of the five spires of the spire line |
-| Radiator spire R5 (blade, 0.78 tall) | 84.3 to 87.9 | -0.22 to 0.22 | 1.35 to 1.74 | ember fin slats on iron | one of the five spires of the spire line |
+| Radiator spire R1 (blade, 0.80 tall) | 64.3 to 68.1 | -0.06 to 0.06 | 1.24 to 1.88 | ember fin slats on iron | one of the five spires of the spire line |
+| Radiator spire R2 (raked, 1.02 tall) | 69.3 to 73.0 | -0.06 to 0.06 | 1.24 to 2.10 | ember fin slats on iron | one of the five spires of the spire line |
+| Radiator spire R3 (twin, 1.20 tall) | 74.2 to 78.0 | -0.05 to 0.05 | 1.24 to 2.28 | ember fin slats on iron | one of the five spires of the spire line |
+| Radiator spire R4 (stepped, 1.00 tall) | 79.2 to 83.0 | -0.06 to 0.06 | 1.24 to 2.08 | ember fin slats on iron | one of the five spires of the spire line |
+| Radiator spire R5 (blade, 0.78 tall) | 84.2 to 88.0 | -0.06 to 0.06 | 1.24 to 1.86 | ember fin slats on iron | one of the five spires of the spire line |
 | Belly armour step | 22.5 to 87.4 | -0.69 to 0.69 | -1.09 to -0.83 | darker iron | a second forged layer under the gun deck and the reactor |
 
 ## INSIDE (R98, R209): what each break reveals

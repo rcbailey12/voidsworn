@@ -182,7 +182,7 @@ Concept counts read off the concept sheet by eye (Vigil sheet: bow, the spearhea
 | mid/side | 4 | 7 | Hull: the blade; Dorsal ridge (the lance power trunk forward); Gun deck upper lip, port; Gun deck lower lip, port; Spine block (the spire line's base); Radiator spire R1 (blade, 0.80 tall); Belly armour step |
 | mid/below | no view | 4 | Hull: the blade; Gun deck lower lip, port; Gun deck lower lip, starboard; Belly armour step |
 | stern/top | 6 | 12 | Hull: the blade; Gun deck upper lip, port; Gun deck lower lip, port; Gun deck upper lip, starboard; Gun deck lower lip, starboard; Spine block (the spire line's base); Radiator spire R1 (blade, 0.80 tall); Radiator spire R2 (raked, 1.02 tal |
-| stern/side | 7 | 10 | Hull: the blade; Gun deck upper lip, port; Gun deck lower lip, port; Spine block (the spire line's base); Radiator spire R1 (blade, 0.80 tall); Radiator spire R2 (raked, 1.02 tall); Radiator spire R3 (twin, 1.20 tall); Radiator spire R4 (st |
+| stern/side | 7 | 9 | Hull: the blade; Gun deck upper lip, port; Gun deck lower lip, port; Spine block (the spire line's base); Radiator spire R1 (blade, 0.80 tall); Radiator spire R2 (raked, 1.02 tall); Radiator spire R4 (stepped, 1.00 tall); Radiator spire R5  |
 | stern/below | no view | 4 | Hull: the blade; Gun deck lower lip, port; Gun deck lower lip, starboard; Belly armour step |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
