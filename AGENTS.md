@@ -51,6 +51,8 @@ and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R29
   merge before the agent starts; a conflict stops the run with the checkout kept. Briefs never ask the agent to merge.
   The PC runners set the running label and one status comment per job branch, edit it on retries and at the end, and
   clear the label at the end. GitHub reporting failures are logged and never fail the job (RULEBOOK 2.4, issue 846).
+- Ship concept and build issues carry an "Approved pick:" line copied from the fleet list (docs/ship_pipeline/FLEET.md;
+  `node contrib/opus/tools/fleet_list.js --pick "faction|Class"`), so no brief goes out without Ryan's earlier pick (issue 1421).
 - Ship build issues add four lines to the block (Ryan, Nov 11 2026, R214; template in docs/playbooks/ships.md section 7):
   Route per part, Inside, Paint stack, Budget. Every build pull request body carries its done-when evidence and a method line
   (build sheet link, manifest, budget numbers, changes made to the sheet); the outside check (issue 256) returns a build PR
