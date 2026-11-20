@@ -1,12 +1,14 @@
 @echo off
 rem Issue 1217 phase 5: the start screens check. Double-click it, or queue it.
+rem 0. import the project (headless), so a fresh clone has its textures.
 rem 1. front_end_test (headless): the kit, Settings, the desk, the flagship podium, Esc and Back on every start page.
 rem 2. front_end_shots at 1920x1080 and 3840x2160 with the live title battle: title, Settings, Credits, the faction and
 rem    admiral desk, the flagship podium, Progression, Lineage and How to play.
 rem 3. front_end_sheet: one contact sheet per screen group (F2 title, F3 desk, F4 flagship, F5 pages), each at most 720 tall.
-rem Every run gets its own new folder, Downloads\voidsworn_test\shots\frontend_ui\<commit>_<time>\, and Godot runs with a
-rem throwaway profile inside it (the player-path pattern, PR 1188), so Ryan's own settings and campaign save are never
-rem read or written; front_end_shots refuses to run on Windows without it. Deletes nothing. Exits 1 on any failure.
+rem Every run gets its own new folder, Downloads\voidsworn_test\shots\frontend_ui\<commit>_<time>\. Each Godot start gets
+rem the watchdog's own throwaway profile (tmo.bat, issue 1369: the watchdog is the one owner), so Ryan's own settings and
+rem campaign save are never read or written; front_end_shots refuses to run on Windows without it, so this file clears
+rem PC_REAL_PROFILE. Deletes nothing of its own. Exits 1 on any failure.
 rem Runs in the checkout it sits in (its built ships must be there: godot\gen). Each Godot run goes through tmo.bat.
 setlocal enabledelayedexpansion
 for %%I in ("%~dp0..\..\..") do set "ROOT=%%~fI"
@@ -20,14 +22,14 @@ for /f %%T in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss
 set "OUT=%VT%\shots\frontend_ui\!COMMIT!_!STAMP!"
 if exist "%OUT%" (echo FAIL: %OUT% already exists & exit /b 1)
 mkdir "%OUT%"
-mkdir "%OUT%\profile"
 set "ST=%OUT%\status.txt"
 echo frontend_ui_check start %date% %time% commit !COMMIT! > "%ST%"
-rem the throwaway profile: Godot's user:// resolves under APPDATA on Windows
-set "APPDATA=%OUT%\profile"
-set "LOCALAPPDATA=%OUT%\profile"
-set "VS_SHOTS_PROFILE=%OUT%\profile"
+rem the watchdog gives every Godot start a fresh profile and removes it after; PC_REAL_PROFILE=1 would turn that off
+set "PC_REAL_PROFILE="
 set "RESULT=PASS"
+rem a fresh clone has no imported textures (.godot): import once first, as g2_export does (issue 1369 PC run)
+call "%TMO%" 1800 "%G%" --headless --path "%ROOT%\godot" --import > "%OUT%\import.txt" 2>&1
+if errorlevel 1 (set "RESULT=FAIL" & echo import FAIL, see import.txt >> "%ST%") else (echo import PASS >> "%ST%")
 call "%TMO%" 600 "%G%" --headless --path "%ROOT%\godot" --script res://ui/test/front_end_test.gd > "%OUT%\front_end_test.txt" 2>&1
 set "EC=!ERRORLEVEL!"
 findstr /c:"Front end: PASS" "%OUT%\front_end_test.txt" > nul
