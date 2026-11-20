@@ -1550,6 +1550,7 @@ func genEnemyFleet(fac, s, col, kind, arch, mod) -> Array:
 		list.append({"tpl": F["boss"]}); budget *= RAMP.boss[s]
 	if RUN != null and RUN.get("fleet") != null: budget *= max(RAMP.pwMin, min(RAMP.pwMax, JSM.pow(max(0.5, fleetPower()) / RAMP.refP[s], RAMP.pw)))
 	if AI_LEVEL == "standard": budget *= RAMP.std
+	if AI_LEVEL == "veteran": budget *= RAMP.vet   # issue 1160: Veteran's fleet budget edge (shared table entry)
 	if heatOn("h_hunted"): budget *= 1.15
 	if mod == "bounty": budget *= 1.1
 	var roster = []
@@ -2302,6 +2303,7 @@ func nemProf(u, prof) -> Dictionary:
 	if jt(a.get("tw")): o["tw"] = prof["tw"] * a["tw"]
 	if a.get("range") != null: o["range"] = a["range"]
 	if jt(a.get("flagFront")) and jt(u.get("nemFlag")): o["tw"] = prof["tw"] * 0.6
+	if jt(a.get("rear")): o["rear"] = a["rear"]
 	if jt(F):
 		if F.get("range") != null: o["range"] = max(z0(o.get("range")), F["range"])
 		if jt(F.get("charge")) and jt(u.get("nemFlag")): o["tw"] = o["tw"] * 0.7
@@ -2312,6 +2314,8 @@ func nemTargetBonus(u, t) -> float:
 	var a = P["ai"] if (P != null and jt(P.get("ai"))) else {}; var v = 0.0
 	if jt(a.get("focusWeak")) or (jt(F) and jt(F.get("focusWeak"))): v += 20.0 * (1.0 - float(t["hp"]) / t["maxHp"])
 	if jt(a.get("focusFlag")) and jt(t.get("pflag")): v += 25.0
+	if jt(a.get("rear")) and not jt(t.get("isSq")):
+		var qd = shieldQuad(t, u); v += (10.0 if qd == 2 else (4.0 if qd == 1 or qd == 3 else 0.0)) * a["rear"]
 	if jt(F) and jt(F.get("hunt")) and jt(u.get("nemFlag")) and is_same(t, nemDuelTarget()): v += 30.0
 	return v
 # R42 signatures: his faction behaviour firing (the campaign records them from the event)
@@ -4058,12 +4062,23 @@ func aiObjScore(u, v) -> float:
 		if o.get("c0") == null: o["c0"] = boardBounds().c0
 		var c0 = o.c0; var prog = clamp_((lead - c0) / max(1, o.exitC - c0), 0, 1)
 		return -(max(0, lead + 1 - c) * 1.2 + max(0, absf(v.r - L["r"]) - 2) * 0.5) * (1 + 1.5 * prog)
-	if vet and o.type == "intercept":
-		var d = 99.0
+	if o.type == "intercept":   # issue 1160: the two escorts nearest the convoy screen it at both levels; the rest fight
+		var d = 99.0; var tr = []
 		for x in B["units"]:
-			if jt(x.get("transport")) and not jt(x.get("dead")): d = min(d, hdist(v, x))
-		return -max(0, d - 3) * 1.5 if d < 99 else 0.0
-	if vet and o.type == "hold":
+			if jt(x.get("transport")) and not jt(x.get("dead")):
+				d = min(d, hdist(v, x)); tr.append(x)
+		if d >= 99: return 0.0
+		var dd = func(x): return _mind(x, tr, 99)
+		var esc = []
+		for x in caps("enemy"):
+			if not jt(x.get("transport")): esc.append(x)
+		JSM.ssort(esc, func(a, b):
+			var df = dd.call(a) - dd.call(b)
+			return df if df != 0 else (-1 if String(a["id"]) < String(b["id"]) else 1))
+		var k = JSM.index_same(esc, u)
+		if k < 0 or k > 1: return 0.0
+		return -max(0, d - 3) * 1.5
+	if o.type == "hold":   # issue 1160: the role split runs at both levels; urgency stays Veteran
 		var mine = []
 		for x in caps("enemy"):
 			if not jt(x.get("transport")): mine.append(x)
@@ -6500,6 +6515,7 @@ class AiThreatCell:
 	var arcs: Array[AiThreatArc] = []
 	var terrain: int
 	var brace_factor: float
+	var storm: float
 	var guard_factor: float
 	var totals := {}
 
@@ -6521,6 +6537,8 @@ func _ai_threat_guns(foes: Array, target: Dictionary) -> Array[AiThreatSource]:
 			result.append(source)
 	return result
 
+# issue 1160 (Veteran tuning): a gun that can move into range and fire before this ship acts again counts 0.8 of a gun already bearing (was 0.2)
+const AI_REACH_W := 0.8
 # Whether a foe's gun can reach depends on the candidate hex, independent of its facing and path.
 func _ai_threat_cell(v: Dictionary, foes: Array[AiThreatSource]) -> AiThreatCell:
 	var cell := AiThreatCell.new()
@@ -6544,7 +6562,7 @@ func _ai_threat_cell(v: Dictionary, foes: Array[AiThreatSource]) -> AiThreatCell
 			elif d <= w["r"] + foe.move_range and (in_arc or (foe.can_turn and (_in_arc_angle(left, w["arc"]) or _in_arc_angle(right, w["arc"])))):
 				if ls == null: ls = los(p, v)
 				if not ls: continue
-				weight = 0.2
+				weight = AI_REACH_W
 			else:
 				continue
 			if arc == null:
@@ -6554,6 +6572,7 @@ func _ai_threat_cell(v: Dictionary, foes: Array[AiThreatSource]) -> AiThreatCell
 				cell.arcs.append(arc)
 			arc.guns.append(gun)
 			arc.weights.append(weight)
+	cell.storm = aiStormCost(v)   # issue 1160: the ion storm drain, the same for every pose in this hex
 	if not cell.arcs.is_empty():
 		var terrain = terr(v["q"], v["r"])
 		cell.terrain = 1 if terrain == "neb" else (2 if terrain == "debris" else 0)
@@ -6573,7 +6592,7 @@ func evalThreatVet(v: Dictionary, foes: Array[AiThreatSource], cells: Dictionary
 	if burn_evade and moved >= 3: motion |= 4
 	var pose := motion * 6 + int(v["facing"])
 	var cached: Variant = cell.totals.get(pose)
-	if cached != null: return cached
+	if cached != null: return cached + cell.storm
 	var tot := 0.0
 	for arc in cell.arcs:
 		# For a fixed attacker and hex, target facing affects the estimate through the shield quadrant.
@@ -6606,15 +6625,35 @@ func evalThreatVet(v: Dictionary, foes: Array[AiThreatSource], cells: Dictionary
 		# Keep the original gun order and addition order, including when estimates were reused.
 		for value in values: tot += value
 	if _evc: cell.totals[pose] = tot
-	return tot
+	return tot + cell.storm
 func aiGunLive(p, w) -> bool:
 	if w["k"] == "flak": return false
 	if B != null and jt(B.get("alt")) and (jt(w.get("fired")) or jt(p.get("braced"))): return false
 	return true
-func ramSetup(v, u) -> float:
+# issue 1160: an ion storm drains 10 shield from a shielded hull at the start of its turn, so both threat models (and every side and level
+# that reads them) count that cover as lost when a ship would end its move in one
+func aiStormCost(v) -> float:
+	var sm := float(z0(v.get("shMax")))   # priced like shield damage in the threat models (0.2 a point), and only the shield the ship still has
+	return min(10.0, float(z0(v.get("shp")))) * 0.2 if not jt(v.get("isSq")) and sm > 0 and terr(v["q"], v["r"]) == "storm" else 0.0
+# issue 1160 (Cunning Nemesis, rear flag): a hex behind a ship (or on its flank) that a ready gun reaches from there; the best one counts
+func aiRearScore(v, ready: Array, foes: Array) -> float:
+	var best := 0.0
+	for f in foes:
+		if jt(f.get("isSq")): continue
+		var qd = shieldQuad(f, v); var k := 8.0 if qd == 2 else (3.0 if qd == 1 or qd == 3 else 0.0)
+		if k <= best: continue
+		for w in ready:
+			if inReach(v, w, f):
+				best = k; break
+	return best
+# issue 1160: only the movement left after this move counts (the ram after the volley, as tacticRam makes it); a ram lined up for next round
+# meets a target that has moved, so it scores nothing
+func ramSetup(v, u, left = null) -> float:
+	if left == null: left = u["speed"] if jt(u.get("speed")) else 2
+	if left < 1: return 0.0
 	var d = DIRS[int(v["facing"])]; var q = v["q"]; var r = v["r"]
 	var i = 0
-	while i <= (u["speed"] if jt(u.get("speed")) else 2):
+	while i <= left:
 		q += d[0]; r += d[1]
 		if not onBoard(q, r) or blocks(terr(q, r)): return 0.0
 		var o = unitAt(q, r)
@@ -6754,7 +6793,7 @@ func evalThreat(v, foes: Array) -> float:
 			if hdist(p, v) > w["r"]: continue
 			if not inArc(p, v, w["arc"]): continue
 			var e = expectedVs(p, w, v); tot += e.hull + e.shield * 0.2
-	return tot
+	return tot + aiStormCost(v)   # issue 1160: ion storm drain
 func aiPickPrimary(u, ws: Array, focus) -> Variant: # with target hysteresis: keep last activation's primary while it is worth AI_STICK of the best
 	var pv = 0.0; var primary: Variant = null; var lastV = 0.0
 	var last = u.get("aiLastT")
@@ -7004,10 +7043,10 @@ func aiUnit(u) -> void:
 	var prof = nemProf(u, FACTION_AI[u["fac"]] if jt(FACTION_AI.get(u["fac"])) else FACTION_AI["voidsworn"])
 	var tw: float = 0.0
 	if not states.is_empty():
-		tw = (0.3 if not vet else (0.65 if jt(u.get("flagship")) else aiHurtW(u, prof))) * prof["tw"]
-	var score_range := vet and jt(prof.get("range"))
-	var score_ram := vet and jt(RAM_FAC.get(u["fac"]))
-	var standard_hold: bool = not vet and jt(obj) and obj.type == "hold"
+		tw = (0.65 if vet and jt(u.get("flagship")) else aiHurtW(u, prof)) * prof["tw"]   # issue 1160: the hurt curve at both levels
+	var score_range := jt(prof.get("range"))
+	var score_ram := jt(RAM_FAC.get(u["fac"]))
+	var rear_w: float = float(z0(prof.get("rear")))
 	var formation_weight := 2.0 if vet else 1.2
 	var nem_formation_weight := 2.0 if jt(u.get("nem")) and jt(B.get("nemLine")) else 1.0
 	var threat_guns: Array[AiThreatSource] = []
@@ -7040,7 +7079,9 @@ func aiUnit(u) -> void:
 		if score_range:
 			if prof["range"] > 0: score -= max(0, prof["range"] - hd) * prof["rw"]
 			else: score -= max(0, hd + prof["range"]) * prof["rw"]
-		if score_ram: score += ramSetup(candidate, u) * 0.35
+		if score_ram: score += ramSetup(candidate, u, min(u["mp"] - s.cost, (u["speed"] if jt(u.get("speed")) else 2) - z0(u["st"].get("engine")))) * float(prof["rs"])
+		if rear_w != 0.0:   # issue 1160: a persona with the rear flag (Cunning) works round to your flanks
+			score += aiRearScore(candidate, ready, foes) * rear_w
 		if flE != null:
 			var dv = hdist(candidate, flE); score -= max(0, dv - 3) * (0.6 if escIn >= 2 else 2.0)
 			if dv <= 3:
@@ -7051,7 +7092,6 @@ func aiUnit(u) -> void:
 			score -= max(0, startDist - nd if unloaded else nd - minR) * 4.0
 		score -= s.cost * 0.05
 		score -= torpThreat(u, candidate) * 0.9; score -= syncPull(u, candidate) * formation_weight * nem_formation_weight
-		if standard_hold: score -= hdist(candidate, obj.hex) * 1.6
 		score += aiObjScore(u, candidate); score += aiWellScore(u, candidate)
 		if score > bestScore:
 			bestScore = score; best = s
