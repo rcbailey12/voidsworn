@@ -1,0 +1,4 @@
+start Fri 11/20/2026 14:26:43.44 attempt 1 tag before 
+drive bytes free 323906719744 
+FAILED: checkout FETCH_HEAD: the clone has staged changes (saved in C:\Users\rcbai\Downloads\voidsworn_test\opus1399\out_before_1\checkout_29727) or git failed; nothing was touched 
+all done Fri 11/20/2026 14:27:32.82 

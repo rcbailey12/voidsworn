@@ -1,0 +1,3 @@
+OPUS1399_BEFORE start Fri 11/20/2026 14:26:43.41 
+OPUS1399_BEFORE exit 1 at 14:27:32.83 
+OPUS1399 attempt 1 stopped at its safe checkout (the --local --no-checkout clone I pre-made had an empty index); clone checked out at HEAD c105c0849 on the PC, rerun as attempt 2 14:39:58

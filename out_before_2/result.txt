@@ -1,0 +1,18 @@
+start Fri 11/20/2026 14:39:58.97 attempt 2 tag before 
+drive bytes free 312659238912 
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1399\out_before_2\checkout_32326 
+commit=a3b8c0d1831209e005df524b09b7ffbadd24b48b 
+copy ships robocopy 1 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1399\profile_1\appdata 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+import exit 0 
+capture exit 0 
+drive bytes free 304349286400 
+real options unchanged 
+PASSED 
+all done Fri 11/20/2026 14:57:02.49 
