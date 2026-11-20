@@ -1,0 +1,33 @@
+timing1237 start Fri 11/20/2026  3:15:58.01 
+after = opus/issue-1237 baf022687b6c6a474c5a5a0bb600fab4fe4c804d 
+before = main 905c79400c05ab0545355bfab3c92248e68534e5 
+after prepared_s1: CAPTURE1237 GATE prepared PASS 
+after prepared_s1: CAPTURE1237 prepared kill=5.3 ms wall p50=1.87 p95=3.09 p99=3.81 worst=14.62 gpu p99=1.73 budget=12.5 within=true bodies_peak=0 zero_after=0.00 s pieces={"T0":{"fragments":11,"hull_pieces":4,"outcome":"fractured"},"T1":{"fragments":12,"hull_pieces":4,"outcome":"fractured"},"T2":{"fragments":10,"hull_pieces":4,"outcome":"fractured"}} pictures={"free":68,"made":68,"reused":112} 
+no leaks at quit: after prepared_s1 
+own settings untouched: after prepared_s1 
+after prepared_s2: CAPTURE1237 GATE prepared PASS 
+after prepared_s2: CAPTURE1237 prepared kill=5.2 ms wall p50=1.87 p95=3.00 p99=3.37 worst=13.50 gpu p99=1.72 budget=12.5 within=true bodies_peak=0 zero_after=0.00 s pieces={"T0":{"fragments":11,"hull_pieces":4,"outcome":"fractured"},"T1":{"fragments":12,"hull_pieces":4,"outcome":"fractured"},"T2":{"fragments":10,"hull_pieces":4,"outcome":"fractured"}} pictures={"free":68,"made":68,"reused":112} 
+no leaks at quit: after prepared_s2 
+own settings untouched: after prepared_s2 
+after prepared_s3: CAPTURE1237 GATE prepared PASS 
+after prepared_s3: CAPTURE1237 prepared kill=5.3 ms wall p50=1.87 p95=3.00 p99=4.10 worst=13.48 gpu p99=1.72 budget=12.5 within=true bodies_peak=0 zero_after=0.00 s pieces={"T0":{"fragments":11,"hull_pieces":4,"outcome":"fractured"},"T1":{"fragments":12,"hull_pieces":4,"outcome":"fractured"},"T2":{"fragments":10,"hull_pieces":4,"outcome":"fractured"}} pictures={"free":68,"made":68,"reused":112} 
+no leaks at quit: after prepared_s3 
+own settings untouched: after prepared_s3 
+after cold_s1: CAPTURE1237 GATE cold STRESS (not gated) 
+after cold_s1: CAPTURE1237 cold kill=115.4 ms wall p50=1.75 p95=2.65 p99=29.67 worst=3889.51 gpu p99=2.00 budget=12.5 within=false bodies_peak=0 zero_after=0.00 s pieces={"T0":{"fragments":11,"hull_pieces":4,"outcome":"fractured"},"T1":{"fragments":12,"hull_pieces":4,"outcome":"fractured"},"T2":{"fragments":0,"hull_pieces":0,"outcome":"fallback (no pieces)"}} pictures={"free":46,"made":46,"reused":94} 
+no leaks at quit: after cold_s1 
+own settings untouched: after cold_s1 
+FAILED: before prepared_s1 result nojson (exit 124), see C:\Users\rcbai\Downloads\voidsworn_test\opus1237\out\20261120_031557\before\log_prepared_s1.txt 
+no leaks at quit: before prepared_s1 
+own settings untouched: before prepared_s1 
+FAILED: before prepared_s2 result nojson (exit 124), see C:\Users\rcbai\Downloads\voidsworn_test\opus1237\out\20261120_031557\before\log_prepared_s2.txt 
+no leaks at quit: before prepared_s2 
+own settings untouched: before prepared_s2 
+FAILED: before prepared_s3 result nojson (exit 124), see C:\Users\rcbai\Downloads\voidsworn_test\opus1237\out\20261120_031557\before\log_prepared_s3.txt 
+no leaks at quit: before prepared_s3 
+own settings untouched: before prepared_s3 
+before cold_s1: CAPTURE1237 GATE cold STRESS (not gated) 
+before cold_s1: CAPTURE1237 cold kill=246.6 ms wall p50=1.96 p95=3.26 p99=11.54 worst=4400.70 gpu p99=1.93 budget=12.5 within=true bodies_peak=0 zero_after=0.00 s pieces={"T0":{"fragments":11,"hull_pieces":4,"outcome":"fractured"},"T1":{"fragments":12,"hull_pieces":4,"outcome":"fractured"},"T2":{"fragments":10,"hull_pieces":4,"outcome":"fractured"}} pictures="n/a on this commit" 
+no leaks at quit: before cold_s1 
+own settings untouched: before cold_s1 
+timing1237 end Fri 11/20/2026  3:36:27.91, failures: 3 

@@ -1,0 +1,28 @@
+waiting for all done in opus1078\cost5_wait.txt Thu 11/19/2026 18:32:40.27 
+OPUS1237_WAIT stopped by the Board before it ran anything (Nov 19 18:38 CST); replaced by OPUS1237_TIMING3_WAIT.bat (calls OPUS1237_TIMING3.bat, same trigger, same log)
+waiting for all done in opus1078\cost5_wait.txt (TIMING3 waiter) Thu 11/19/2026 18:36:16.28 
+OPUS1237_TIMING3_WAIT stopped by the Board before it ran anything (Nov 19 18:40 CST); replaced by OPUS1237_TIMING4_WAIT.bat (calls OPUS1237_TIMING4.bat, same trigger, same log)
+waiting for all done in opus1078\cost5_wait.txt (TIMING4 waiter) Thu 11/19/2026 18:39:15.28 
+OPUS1237_TIMING4_WAIT stopped by the Board before it ran anything (11/19 21:30:46); replaced by OPUS1237_TIMING4_WAIT_B.bat (after 1079 run 8, same log)
+waiting for all done in opus1079_run8_wait.txt (TIMING4 waiter B) Thu 11/19/2026 21:30:46.17 
+OPUS1237_TIMING4_WAIT_B stopped by the Board before it ran anything (11/19 21:44:43); replaced by OPUS1237_TIMING4_WAIT_C.bat (after 1077 pass 5, same log)
+waiting for all done in opus1077_pass5_wait.txt (TIMING4 waiter C) Thu 11/19/2026 21:44:43.82 
+OPUS1237_TIMING4_WAIT_C stopped by the Board before it ran anything (11/19 21:49:23); replaced by OPUS1237_TIMING4_WAIT_D.bat (after 1236 run 4, same log)
+waiting for all done in opus1236_run4_wait.txt (TIMING4 waiter D) Thu 11/19/2026 21:49:23.57 
+OPUS1237_TIMING4_WAIT_D stopped by the Board before it ran anything (11/19 22:14:56); replaced by OPUS1237_TIMING4_WAIT_E.bat (after the 1238 sound re-shoot, same log)
+waiting for all done in opus1238b_wait.txt (TIMING4 waiter E) Thu 11/19/2026 22:14:56.92 
+OPUS1237_TIMING4_WAIT_E stopped by the Board before it ran anything (11/19 22:50:00); replaced by OPUS1237_TIMING4_WAIT_F.bat (after 1079 run 9, same log)
+waiting for all done in opus1079_run9_wait.txt (TIMING4 waiter F) Thu 11/19/2026 22:50:01.12 
+OPUS1237_TIMING4_WAIT_F stopped by the Board before it ran anything (11/19 22:52:53); replaced by OPUS1237_TIMING4_WAIT_G.bat (after 1236 run 5, same log)
+waiting for all done in opus1236_run5_wait.txt (TIMING4 waiter G) Thu 11/19/2026 22:52:54.12 
+OPUS1237_TIMING4_WAIT_G stopped by the Board before it ran anything (11/19 22:55:50); replaced by OPUS1237_TIMING4_WAIT_H.bat (after 1078 glass 6, same log)
+waiting for all done in opus1078_glass6_wait.txt (TIMING4 waiter H) Thu 11/19/2026 22:55:50.25 
+OPUS1237_TIMING4_WAIT_H stopped by the Board before it ran anything (11/19 23:05:56); replaced by OPUS1237_TIMING4_WAIT_I.bat (after 1289 run 2, same log)
+waiting for all done in opus1289_run2_wait.txt (TIMING4 waiter I) Thu 11/19/2026 23:05:56.28 
+OPUS1237_TIMING4_WAIT_I stopped by the Board before it ran anything (11/19 23:12:51); replaced by OPUS1237_TIMING4_WAIT_J.bat (after 1077 pass 6, same log)
+waiting for all done in opus1077_pass6_wait.txt (TIMING4 waiter J) Thu 11/19/2026 23:12:51.77 
+OPUS1237_TIMING4_WAIT_J stopped by the Board before it ran anything (11/19 23:21:54); replaced by OPUS1237_TIMING4_WAIT_K.bat (after 1262 run 1C, same log)
+waiting for all done in opus1262_run1_wait.txt (TIMING4 waiter K) Thu 11/19/2026 23:21:54.63 
+OPUS1237_TIMING4 start Fri 11/20/2026  3:15:57.22 
+OPUS1237_TIMING4 exit 1 at  3:36:27.96 
+all done  3:36:27.96 

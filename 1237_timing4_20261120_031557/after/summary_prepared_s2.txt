@@ -1,0 +1,2 @@
+CAPTURE1237 GATE prepared PASS
+CAPTURE1237 prepared kill=5.2 ms wall p50=1.87 p95=3.00 p99=3.37 worst=13.50 gpu p99=1.72 budget=12.5 within=true bodies_peak=0 zero_after=0.00 s pieces={"T0":{"fragments":11,"hull_pieces":4,"outcome":"fractured"},"T1":{"fragments":12,"hull_pieces":4,"outcome":"fractured"},"T2":{"fragments":10,"hull_pieces":4,"outcome":"fractured"}} pictures={"free":68,"made":68,"reused":112}

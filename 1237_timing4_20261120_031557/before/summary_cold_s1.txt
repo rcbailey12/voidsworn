@@ -1,0 +1,2 @@
+CAPTURE1237 GATE cold STRESS (not gated)
+CAPTURE1237 cold kill=246.6 ms wall p50=1.96 p95=3.26 p99=11.54 worst=4400.70 gpu p99=1.93 budget=12.5 within=true bodies_peak=0 zero_after=0.00 s pieces={"T0":{"fragments":11,"hull_pieces":4,"outcome":"fractured"},"T1":{"fragments":12,"hull_pieces":4,"outcome":"fractured"},"T2":{"fragments":10,"hull_pieces":4,"outcome":"fractured"}} pictures="n/a on this commit"
