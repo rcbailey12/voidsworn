@@ -355,11 +355,11 @@ def build(K):
     shells = plates.armour(K, _k, 4.3, -5.0, seed=1355, keep=('front_', 'face', 'eye_hole', 'pores_front', 'spore_field'), rows=9, scute=0.95, thick=0.2,
                   note='banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, '
                        'the honeycomb field, the five launch necks, siphons and vents stand clear, the sacs capped in smaller scutes')
-    # where the stern falls away under a leaning launch lip, a scute laid over the neck's foot would run into the lip: leave that
+    # where the stern falls away under a leaning launch lip, or a band wraps low past a sac's neck, a scute would run into it: leave that
     # scute off (the kit trims by the fitting's foot; the lip stands out of its reach)
     import bmesh
     from mathutils.bvhtree import BVHTree
-    lips = [ob for ob in K.coll.objects if ob.type == 'MESH' and ob.name[:1] == 'L' and ob.name[1:2].isdigit() and '_body_' in ob.name]
+    lips = [ob for ob in K.coll.objects if ob.type == 'MESH' and ob.name[:1] in 'LS' and ob.name[1:2].isdigit() and '_body_' in ob.name]
     trees = [BVHTree.FromPolygons([ob.matrix_world @ v.co for v in ob.data.vertices], [p_.vertices for p_ in ob.data.polygons]) for ob in lips]
     for sh in shells:
         bm = bmesh.new(); bm.from_mesh(sh.data)
@@ -385,7 +385,7 @@ def build(K):
         if drop:
             bmesh.ops.delete(bm, geom=list(drop), context='FACES')
             bm.to_mesh(sh.data); sh.data.update()
-            print('[armour] %s: %d scute faces left off under the launch lips' % (sh.name, len(drop)))
+            print('[armour] %s: %d scute faces left off under the launch lips and the sac necks' % (sh.name, len(drop)))
         bm.free()
 
     # ---------------- colour zones ----------------
