@@ -92,7 +92,23 @@ func _no_lost_triangles(cls: String, fac: String, throws: bool) -> void:
 	check(job.get("built", false), "%s: the cut finished" % tag)
 	var plan: Dictionary = job.get("plan", {})
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
-	var n_main: int = int(plan.get("n_main", pieces.size()))
+	# Artoo on PR 1388: an empty plan would make every piece "main" and pass the count below, so the plan must be the
+	# authored one, broken on the joint, and each half must hold its own side of the hull
+	check(bool(plan.get("authored", false)) and (plan.get("breaks", []) as Array).size() == 1, "%s: the cut used the authored plan with one break" % tag)
+	var brs: Array = plan.get("breaks", [])
+	check(not brs.is_empty() and absf((brs[0]["at"] as Vector3).x - 1.5) < 0.05, "%s: the break sits on the authored joint at x 1.5" % tag)
+	var n_main: int = int(plan.get("n_main", -1))
+	check(n_main == 2 and pieces.size() >= 2, "%s: two main pieces (n_main %d, pieces %d)" % [tag, n_main, pieces.size()])
+	for i in mini(maxi(n_main, 0), pieces.size()):
+		var lo := INF
+		var hi := -INF
+		for sd in pieces[i]["surfs"]:
+			for v in (sd["arrays"][Mesh.ARRAY_VERTEX] as PackedVector3Array):
+				lo = minf(lo, v.x)
+				hi = maxf(hi, v.x)
+		var ok: bool = _tris(pieces[i]) > 0 and (hi <= 1.5 + 1.0 if i == 0 else lo >= 1.5 - 1.0)
+		check(ok, "%s: main piece %d holds its own side of the joint (x %.2f to %.2f)" % [tag, i, lo, hi])
+	if n_main < 0: n_main = pieces.size()
 	var on_main := 0
 	var on_frags := 0
 	for i in pieces.size():
