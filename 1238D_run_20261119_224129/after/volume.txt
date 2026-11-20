@@ -1,0 +1,26 @@
+[aist#0:1/pcm_s16le @ 000001e219b907c0] Guessed Channel Layout: stereo
+Input #0, avi, from 'C:\Users\rcbai\Downloads\voidsworn_test\opus1238b\shots\run_20261119_224129\after\D1238_after_deaths_with_sound.avi':
+  Duration: 00:00:51.32, start: 0.000000, bitrate: 68711 kb/s
+  Stream #0:0: Video: mjpeg (Baseline) (MJPG / 0x47504A4D), yuvj420p(pc, bt470bg/unknown/unknown), 1920x1080 [SAR 1:1 DAR 16:9], 67174 kb/s, 60 fps, 60 tbr, 60 tbn
+  Stream #0:1: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s
+[Parsed_volumedetect_0 @ 000001e219b93200] n_samples: 0
+Stream mapping:
+  Stream #0:1 -> #0:0 (pcm_s16le (native) -> pcm_s16le (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    encoder         : Lavf61.7.100
+  Stream #0:0: Audio: pcm_s16le, 48000 Hz, stereo, s16, 1536 kb/s
+      Metadata:
+        encoder         : Lavc61.19.100 pcm_s16le
+[Parsed_volumedetect_0 @ 000001e218267780] n_samples: 4926400
+[Parsed_volumedetect_0 @ 000001e218267780] mean_volume: -42.8 dB
+[Parsed_volumedetect_0 @ 000001e218267780] max_volume: -16.0 dB
+[Parsed_volumedetect_0 @ 000001e218267780] histogram_16db: 126
+[Parsed_volumedetect_0 @ 000001e218267780] histogram_17db: 390
+[Parsed_volumedetect_0 @ 000001e218267780] histogram_18db: 680
+[Parsed_volumedetect_0 @ 000001e218267780] histogram_19db: 1072
+[Parsed_volumedetect_0 @ 000001e218267780] histogram_20db: 1874
+[Parsed_volumedetect_0 @ 000001e218267780] histogram_21db: 2870
+[out#0/null @ 000001e219b9f480] video:0KiB audio:9622KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+size=N/A time=00:00:51.31 bitrate=N/A speed=1.58e+03x    

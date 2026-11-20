@@ -1,0 +1,8 @@
+waiting for all done in opus1236_run4_wait.txt Thu 11/19/2026 22:14:56.90 
+OPUS1238B_WAIT stopped by the Board before it ran anything (11/19 22:16:03); replaced by OPUS1238C_WAIT.bat (same log). shots1238b_sound.bat left unrun.
+waiting for all done in opus1236_run4_wait.txt (1238C waiter) Thu 11/19/2026 22:16:04.55 
+OPUS1238C_WAIT stopped by the Board before it ran anything (11/19 22:18:28); replaced by OPUS1238D_WAIT.bat (same log). shots1238c_sound.bat left unrun.
+waiting for all done in opus1236_run4_wait.txt (1238D waiter) Thu 11/19/2026 22:18:28.79 
+shots1238d_sound start Thu 11/19/2026 22:41:29.23 
+shots1238d_sound exit 0 at 23:06:51.61 
+all done 23:06:51.61 

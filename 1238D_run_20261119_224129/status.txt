@@ -1,0 +1,11 @@
+shots1238b start Thu 11/19/2026 22:41:29.65 run_20261119_224129 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+ffmpeg C:\Users\rcbai\Downloads\trellis2\code\venv\Lib\site-packages\imageio_ffmpeg\binaries\ffmpeg-win-x86_64-v7.1.exe 
+own settings untouched: after 
+SOUND CHECK PASS: after loudest moment -16.0 dB 
+mp4 done: after D1238_after_deaths_with_sound_720p.mp4 
+own settings untouched: before 
+SOUND CHECK PASS: before loudest moment -11.3 dB 
+mp4 done: before D1238_before_deaths_with_sound_720p.mp4 
+ALL PASS: both clips have sound 
+shots1238b done Thu 11/19/2026 23:06:51.55 
