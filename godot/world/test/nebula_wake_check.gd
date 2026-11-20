@@ -76,9 +76,49 @@ func _run() -> void:
 			check(c.contains("DENSITY *= 1.0 - " if fog else "d *= 1.0 - "), "%s: the wake thins the gas" % quality)
 		check((b["calm"] as Array).size() == (on._living._wake_mats as Array).size(), "%s: every calm gas material is fed the wake" % quality)
 		var u: PackedFloat32Array = on._living._wake.uniforms()
-		check(u.size() == 8 * (WAKE.LOW_POINTS if quality == "low" else WAKE.HIGH_POINTS), "%s: bounded point count" % quality)
+		check(u.size() == WAKE.FLOATS * (WAKE.LOW_POINTS if quality == "low" else WAKE.HIGH_POINTS), "%s: bounded point count" % quality)
 		off.queue_free()
 		on.queue_free()
+	_trail_check()
 	if failed == 0:
-		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged)")
+		print("nebula wake check: PASS (on reaches every calm gas shader at max, high and low; off and storm unchanged; the trail is one unbroken strip)")
 	quit(1 if failed > 0 else 0)
+
+
+# Ryan, Nov 19: the wake must read as one continuous trail, no stages. A capital-sized stand-in flies a curve, stops,
+# and flies on. Every frame: its newest segment ends at the hull, each segment starts where the one after it ends with
+# the same age there, and nothing in the uniforms is ever more than FADE_S old where it is live.
+func _trail_check() -> void:
+	var src := GDScript.new()
+	src.source_code = "extends Node3D\nvar L := 40.0\nvar dead := false\n"
+	src.reload()
+	var ship: Node3D = src.new()
+	root.add_child(ship)
+	var w = WAKE.new("max")
+	var dt := 1.0 / 30.0
+	var broken := 0
+	var tip_off := 0
+	for k in 300:
+		var t := float(k) * dt
+		var moving := k < 120 or k >= 160
+		if moving:
+			ship.position = Vector3(cos(t * 0.6) * 60.0, 0.0, sin(t * 0.6) * 60.0)
+		w.update(dt, [ship])
+		var h: int = w._head.get(ship.get_instance_id(), -1)
+		if moving and k > 0 and (h < 0 or (w._ring[h].b as Vector3).distance_to(ship.position) > 0.001):
+			tip_off += 1
+		# chain: every closed segment of this ship whose b is some other segment's a must agree in time there
+		for e in w._ring:
+			if (e.a as Vector3).distance_to(e.b) < 0.01:
+				continue
+			for f in w._ring:
+				if f != e and (f.b as Vector3).distance_to(e.a) < 0.001 and absf(float(f.tb) - float(e.ta)) > 0.0001:
+					broken += 1
+	check(tip_off == 0, "trail: the newest segment always ends at the moving hull (%d frames off)" % tip_off)
+	check(broken == 0, "trail: segments meet end to end at the same age (%d seams)" % broken)
+	var live := 0
+	for e in w._ring:
+		if w.clock - float(e.tb) < WAKE.FADE_S and (e.a as Vector3).distance_to(e.b) > 0.01:
+			live += 1
+	check(live >= 3, "trail: a moving capital keeps several live segments (%d)" % live)
+	ship.queue_free()

@@ -225,10 +225,8 @@ func _still(tier: String, size: Vector2i) -> void:
 	living.set_process(false)
 	for ship in b.views.values(): ship.set_process(false)
 	b.gfx.manual = true
-	var n: int = wake.points
-	var half := n / 2
 	var trails := [[pair[0], 0, 70.0 / 105.0], [pair[1], 1, 60.0 / 120.0]]
-	var j := 0
+	wake.forget()
 	for t in trails:
 		var sv = t[0]
 		var r: float = clampf(float(sv.L) * wake.R_PER_L, wake.R_MIN, wake.R_MAX)
@@ -236,12 +234,8 @@ func _still(tier: String, size: Vector2i) -> void:
 		var a: Vector3 = focus + leg[0]
 		var z: Vector3 = focus + leg[1]
 		var dir := Vector2(z.x - a.x, z.z - a.z).normalized()
-		for k in half:
-			var back: float = float(k) * wake.spacing(r)
-			var p: Vector3 = sv.visual_position() - Vector3(dir.x, 0.0, dir.y) * back
-			var age: float = float(k) / float(half) * wake.FADE_S * 0.8
-			wake._ring[j] = {"p": p, "r": r, "dir": dir, "born": wake.clock - age, "spin": wake.push(r)}
-			j += 1
+		# the trail each ship would leave: segments back from the hull, newest end 0.1 s old, each 0.45 s older
+		wake.lay_trail(sv.visual_position(), dir, r, wake.points / 2, 0.1, 0.45)
 	wake.held = false
 	var trail: Array = wake._ring.duplicate(true)
 	# Let the board and its look finish settling (its grid fades in after a build; run 3's Low pair caught that fade).

@@ -1,62 +1,86 @@
 extends RefCounted
 # Issue 1079 prototype: ships disturb the calm nebula as they pass. Visual only, nothing here reads or changes a rule.
-# Bounded: a fixed ring of recent ship positions goes to the gas shaders as uniforms. There is no fluid simulation;
-# each point pushes and thins the gas round it, then fades out within FADE_S seconds.
+# Bounded: a fixed set of short line segments along each ship's recent path goes to the gas shaders as uniforms. There
+# is no fluid simulation. The newest segment of each ship stretches with it every frame and the age runs smoothly along
+# the trail, so the wake is one continuous strip with no steps (Ryan, Nov 19: the point version showed stages).
 # Off by default (settings key nebula_wake, battle flag --nebula-wake). Off, the shaders are byte for byte today's.
 # Shared: every ShipView the battle shows feeds it (every faction and class, squadrons included), sized by hull length.
 
-const HIGH_POINTS := 8      # Max and High quality
-const LOW_POINTS := 4       # Low quality: fewer points, cards only (Low has no fog volume)
-const DROP_EVERY := 0.8     # travel between dropped points, in disturbance radii (a hex is 17.3 units across)
-const DROP_MAX := 8.0       # but never further apart than this, so a capital leaves a smooth trail, not a few big bursts
-const FADE_S := 3.0         # a point is gone this long after the ship left it
-const RISE_S := 0.25        # and comes in over this long, so a new point never pops
+const HIGH_POINTS := 12     # trail segments at Max and High
+const LOW_POINTS := 6       # Low quality: fewer segments, cards only (Low has no fog volume)
+const FLOATS := 12          # floats per segment in the uniform
+const SEG := 12.0           # a ship's newest segment is closed off at this length and a new one starts at its end
+const FADE_S := 3.0         # the gas is calm again this long after the ship left it
+const RISE_S := 0.25        # and the disturbance builds over this long behind the hull, so nothing pops
 const R_PER_L := 0.9        # disturbance radius per unit of hull length
 const R_MIN := 9.0          # a frigate (hull 10.4 long) is about 9.4
 const R_MAX := 26.0         # a capital (hull 30 to 43 long)
-const PUSH := 0.9           # push per point, per unit of spacing over DROP_EVERY: the same gas moved per unit of travel
+const PUSH := 1.35          # push at full strength, world units, times sqrt(radius x PUSH_REF): a frigate about 12.6
+const PUSH_REF := 9.36      # (a capital about 21, so it stirs more than a frigate but not three times as much)
+const PAUSE_S := 0.1        # a ship still for longer than this starts a new trail when it moves again
 
-var points := 8
-var _ring: Array = []       # {p: Vector3, r: float, dir: Vector2, born: float, spin: float (side times push)}
-var _next := 0
-var _last := {}             # ShipView instance id -> last dropped position
+var points := HIGH_POINTS
+# Each slot: a, b (ends, world), ta, tb (clock when the ship was at each end), r, dir (board xz), m (push, sign = swirl
+# side), owner (ship key while it is that ship's growing newest segment, else -1).
+var _ring: Array = []
+var _head := {}             # ship key -> slot index of its newest segment
 var clock := 0.0
-var held := false           # benches only (hold_full): every point stays at full strength
+var held := false           # benches only (hold_full): every segment stays at full strength
 
 
 func _init(quality: String) -> void:
 	points = LOW_POINTS if quality == "low" else HIGH_POINTS
 	for i in points:
-		_ring.append({"p": Vector3.ZERO, "r": 0.0, "dir": Vector2.ZERO, "born": -100.0, "spin": 1.0})
+		_ring.append(_empty())
+
+
+func _empty() -> Dictionary:
+	return {"a": Vector3.ZERO, "b": Vector3.ZERO, "ta": -100.0, "tb": -100.0, "r": 0.0, "dir": Vector2.ZERO, "m": 0.0, "owner": -1}
 
 
 # The GLSL both gas shaders share. wake_at(w) returns xyz: how far the gas at w is pushed (world units),
 # w: how much it is thinned (0 to 1).
 static func glsl(n: int) -> String:
 	return """
-// 8 floats a point: centre xyz, radius, travel direction (board xz), strength 0..1, push (its sign is the swirl side).
-// Plain floats: a Color array would be read as sRGB and converted.
+// 12 floats a segment: end a xyz, end b xyz, radius, travel direction (board xz), age at a, age at b (seconds),
+// push (its sign is the swirl side). Plain floats: a Color array would be read as sRGB and converted.
 uniform float wake_d[%d];
 vec4 wake_at(vec3 w) {
-	vec4 o = vec4(0.0);
+	vec2 acc = vec2(0.0);
+	float wsum = 0.0;
+	float thin = 0.0;
 	for (int i = 0; i < %d; i++) {
-		int k = i * 8;
-		float s = wake_d[k + 6];
-		if (s <= 0.0) { continue; }
-		vec3 d = w - vec3(wake_d[k], wake_d[k + 1], wake_d[k + 2]);
-		float r = wake_d[k + 3];
-		// Round in plan, taller than the hull: the gas layers sit from below the board to well above it.
+		int k = i * 12;
+		float age_a = wake_d[k + 9];
+		float age_b = wake_d[k + 10];
+		if (min(age_a, age_b) >= %.3f) { continue; }
+		vec3 a = vec3(wake_d[k], wake_d[k + 1], wake_d[k + 2]);
+		vec3 e = vec3(wake_d[k + 3], wake_d[k + 4], wake_d[k + 5]) - a;
+		float t = clamp(dot(w - a, e) / max(dot(e, e), 0.0001), 0.0, 1.0);
+		vec3 d = w - (a + e * t);
+		float r = wake_d[k + 6];
+		// The age runs smoothly from one end to the other, so neighbouring segments meet without a seam.
+		float age = mix(age_a, age_b, t);
+		float fall = max(1.0 - age / %.3f, 0.0);
+		float s = clamp(age / %.3f, 0.0, 1.0) * fall * fall;
+		// Round across the path, taller than the hull: the gas layers sit from below the board to well above it.
 		float f = exp(-dot(d.xz, d.xz) / (r * r) - d.y * d.y / (r * r * 2.25)) * s;
+		if (f < 0.001) { continue; }
+		float m = wake_d[k + 11];
 		vec2 out_dir = d.xz / (length(d.xz) + 0.75);
-		float m = wake_d[k + 7];
 		vec2 side = vec2(-out_dir.y, out_dir.x) * sign(m);
-		// Pushed aside and curled, and dragged a little along the ship's path.
-		o.xz += (out_dir * 0.55 + side * 0.45 + vec2(wake_d[k + 4], wake_d[k + 5]) * 0.35) * f * abs(m);
-		o.w = max(o.w, f);
+		// Pushed aside and curled a little, and dragged along the ship's path.
+		vec2 v = (out_dir * 0.55 + side * 0.3 + vec2(wake_d[k + 7], wake_d[k + 8]) * 0.35) * f * abs(m);
+		// Blend overlapping segments by their strength instead of adding them: where two meet they agree, so no
+		// joint is ever pushed twice.
+		float wt = f * f * f * f;
+		acc += v * wt;
+		wsum += wt;
+		thin = max(thin, f);
 	}
-	return o;
+	return vec4(acc.x, 0.0, acc.y, 0.0) / max(wsum, 1e-8) * step(1e-8, wsum) + vec4(0.0, 0.0, 0.0, thin);
 }
-""" % [n * 8, n]
+""" % [n * FLOATS, n, FADE_S, FADE_S, RISE_S]
 
 
 const SHIFT := "// WAKE_SHIFT"
@@ -88,9 +112,10 @@ static func into_fog(code: String, n: int) -> String:
 	return _inject(code, n, "void fog() {", "WORLD_POSITION|0.012", "\tDENSITY *= 1.0 - 0.7 * wk.w;")
 
 
-# Called every frame with the battle's ship views; drops points behind any ship that is moving.
+# Called every frame with the battle's ship views; stretches each moving ship's newest segment to it.
 func update(dt: float, ships: Array) -> void:
 	clock += dt
+	var seen := {}
 	for sv in ships:
 		if not is_instance_valid(sv) or not (sv is Node3D) or not (sv as Node3D).is_visible_in_tree():
 			continue
@@ -98,69 +123,121 @@ func update(dt: float, ships: Array) -> void:
 			continue
 		var at: Vector3 = sv.visual_position() if sv.has_method("visual_position") else (sv as Node3D).position
 		var key: int = sv.get_instance_id()
-		if not _last.has(key):
-			_last[key] = at
-			continue
-		var was: Vector3 = _last[key]
-		var step := Vector2(at.x - was.x, at.z - was.z)
-		if step.length() > 40.0:   # a snap or a revive, not a move
-			_last[key] = at
-			continue
+		seen[key] = true
 		var length := float(sv.get("L")) if sv.get("L") != null else 10.0
 		var r := clampf(length * R_PER_L, R_MIN, R_MAX)
-		if step.length() < spacing(r):
+		var h: int = _head.get(key, -1)
+		if h < 0 or int(_ring[h].owner) != key:
+			_head[key] = _start(key, at, r, -1.0)
 			continue
-		# One swirl side per ship (Ryan, Nov 19: alternating sides made the capital burst and swirl at random).
-		_drop(at, r, step.normalized(), 1.0 if key % 2 == 0 else -1.0)
-		_last[key] = at
+		var e: Dictionary = _ring[h]
+		var step := Vector2(at.x - e.b.x, at.z - e.b.z)
+		if step.length() > 40.0:   # a snap or a revive, not a move
+			_close(key)
+			_head[key] = _start(key, at, r, -1.0)
+			continue
+		if step.length() < 0.01:   # still: the trail behind it fades on its own
+			continue
+		if clock - float(e.tb) > PAUSE_S:
+			# Moving again after a stop: a fresh trail from here, starting at zero strength.
+			_close(key)
+			h = _start(key, e.b, r, clock - dt)
+			_head[key] = h
+			e = _ring[h]
+		e.b = at
+		e.tb = clock
+		var run := Vector2(e.b.x - e.a.x, e.b.z - e.a.z)
+		e.dir = run.normalized() if run.length() > 0.01 else step.normalized()
+		if run.length() >= SEG:
+			_close(key)
+			var n := _start(key, at, r, clock)
+			_ring[n].dir = e.dir
+			_head[key] = n
+	for key in _head.keys():
+		if not seen.has(key):
+			_close(key)
 
 
-# Travel between a ship's points: frigates as before, capitals capped so their points overlap smoothly.
-static func spacing(r: float) -> float:
-	return minf(DROP_EVERY * r, DROP_MAX)
+# A new newest segment for a ship, starting (and for now ending) at `at`. t < 0: not yet moving.
+func _start(key: int, at: Vector3, r: float, t: float) -> int:
+	var i := _free_slot()
+	var side := 1.0 if key % 2 == 0 else -1.0   # one swirl side per ship
+	_ring[i] = {"a": at, "b": at, "ta": t if t >= 0.0 else clock, "tb": t if t >= 0.0 else -100.0, "r": r, "dir": Vector2.ZERO,
+		"m": side * push(r), "owner": key}
+	return i
 
 
-# Push per point (world units at full strength), scaled by the spacing so closer points do not add up to more push.
+func _close(key: int) -> void:
+	var h: int = _head.get(key, -1)
+	if h >= 0 and int(_ring[h].owner) == key:
+		_ring[h].owner = -1
+	_head.erase(key)
+
+
+# The slot whose newer end is oldest (the most faded), never a ship's growing segment unless every slot is one.
+func _free_slot() -> int:
+	var best := -1
+	for pass_i in 2:
+		for i in points:
+			if pass_i == 0 and int(_ring[i].owner) >= 0:
+				continue
+			if best < 0 or float(_ring[i].tb) < float(_ring[best].tb):
+				best = i
+		if best >= 0:
+			break
+	var was := int(_ring[best].owner)
+	if was >= 0:
+		_head.erase(was)
+	return best
+
+
 static func push(r: float) -> float:
-	return PUSH * spacing(r) / DROP_EVERY
+	return PUSH * sqrt(r * PUSH_REF)
 
 
-func _drop(at: Vector3, r: float, dir: Vector2, side := 1.0) -> void:
-	_ring[_next] = {"p": at, "r": r, "dir": dir, "born": clock, "spin": side * push(r)}
-	_next = (_next + 1) % points
-
-
-# Benches only: forget every point and every ship's last place (after a bench moves ships into place).
+# Benches only: forget every segment and every ship's trail (after a bench moves ships into place).
 func forget() -> void:
 	held = false
-	_last.clear()
-	for e in _ring: e.born = -100.0
+	_head.clear()
+	for i in points:
+		_ring[i] = _empty()
 
 
-# Benches only: the worst case, every point live at full strength at these places, for as long as the bench runs.
+# Benches only: the worst case, every segment live at full strength at these places, for as long as the bench runs.
 func hold_full(at: Array, r := R_MAX, dir := Vector2(1.0, 0.0)) -> void:
+	forget()
 	held = true
 	for i in points:
 		var p: Vector3 = at[i % at.size()]
-		_ring[i] = {"p": p, "r": r, "dir": dir, "born": clock, "spin": push(r)}
+		_ring[i] = {"a": p, "b": p + Vector3(dir.x, 0.0, dir.y) * SEG, "ta": clock, "tb": clock, "r": r, "dir": dir,
+			"m": push(r) * (1.0 if i % 2 == 0 else -1.0), "owner": -1}
 
 
-func strength(age: float) -> float:
-	if held:
-		return 1.0
-	if age < 0.0 or age >= FADE_S:
-		return 0.0
-	var rise := clampf(age / RISE_S, 0.0, 1.0)
-	var fall := 1.0 - age / FADE_S
-	return rise * fall * fall
+# Benches only: lay a finished trail behind a ship at `at`, heading `dir`, the newest end `age_b` seconds old and each
+# segment further back `per_seg` seconds older.
+func lay_trail(at: Vector3, dir: Vector2, r: float, count: int, age_b: float, per_seg: float, side := 1.0) -> void:
+	var back := Vector3(-dir.x, 0.0, -dir.y)
+	for k in count:
+		var i := _free_slot()
+		_ring[i] = {"a": at + back * SEG * float(k + 1), "b": at + back * SEG * float(k), "ta": clock - age_b - per_seg * float(k + 1),
+			"tb": clock - age_b - per_seg * float(k), "r": r, "dir": dir, "m": side * push(r), "owner": -1}
 
 
 func uniforms() -> PackedFloat32Array:
 	var out := PackedFloat32Array()
 	for e in _ring:
-		var p: Vector3 = e.p
+		var a: Vector3 = e.a
+		var bb: Vector3 = e.b
 		var dir: Vector2 = e.dir
-		out.append_array([p.x, p.y, p.z, maxf(float(e.r), 0.001), dir.x, dir.y, strength(clock - float(e.born)), float(e.spin)])
+		var age_a := clock - float(e.ta)
+		var age_b := clock - float(e.tb)
+		if held:
+			age_a = RISE_S * 2.0
+			age_b = RISE_S * 2.0
+		elif a.distance_to(bb) < 0.01:
+			age_a = FADE_S + 1.0   # a ship's segment that has not grown yet adds nothing
+			age_b = FADE_S + 1.0
+		out.append_array([a.x, a.y, a.z, bb.x, bb.y, bb.z, maxf(float(e.r), 0.001), dir.x, dir.y, age_a, age_b, float(e.m)])
 	return out
 
 

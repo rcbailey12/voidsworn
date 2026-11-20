@@ -4,9 +4,11 @@ Ships disturb the calm nebula as they pass. Visual only: no rule, move or terrai
 
 ## What it does
 
-- `godot/world/nebula_wake.gd` keeps a small ring of recent ship positions (8 at Max and High, 4 at Low). A ship that
-  has moved about 0.8 of its disturbance radius drops a point. Each point pushes the gas aside, curls it and thins it a
-  little, then fades out over 3 seconds. No fluid simulation, nothing persistent.
+- `godot/world/nebula_wake.gd` keeps a small set of line segments along each ship's recent path (12 at Max and High, 6
+  at Low). A ship's newest segment stretches with it every frame and is closed off every 12 units; the age runs smoothly
+  along the trail, so the wake is one continuous strip with no steps (Ryan, Nov 19: the earlier point version, runs 3
+  and 6, showed stages). The strip pushes the gas aside, curls it and thins it a little, builds over 0.25 s behind the
+  hull and fades out over 3 seconds. No fluid simulation, nothing persistent.
 - The radius comes from hull length: about 9 units for a frigate, up to 26 for a capital (a hex is 17.3 across).
 - It reads every ship the battle shows (`battle.gd` `views`, through `world_living.gd`), so every faction and class
   picks it up, squadrons included. Nothing is per hull.
