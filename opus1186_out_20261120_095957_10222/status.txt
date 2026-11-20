@@ -1,0 +1,29 @@
+[Fri 11/20/2026  9:59:57.89] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-20T15:59:58Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Fri 11/20/2026  9:59:59.42] ready: GPU label 1186
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1 (tools_live version 5b6fdb65e676)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new e11b41f7fba62ab9a22e873033b1a65e153b828b C:\Users\rcbai\Downloads\voidsworn_test\opus1186\out_20261120_095957_10222\new
+[Fri 11/20/2026 10:00:11.93] step new runner selftest start
+[Fri 11/20/2026 10:01:51.57] step new runner selftest ok
+[Fri 11/20/2026 10:01:51.58] step new runner job tests start
+[Fri 11/20/2026 10:02:36.57] step new runner job tests ok
+[Fri 11/20/2026 10:02:36.58] step new runner cleanup tests start
+[Fri 11/20/2026 10:03:55.37] step new runner cleanup tests ok
+[Fri 11/20/2026 10:03:55.38] step new report paths tests start
+[Fri 11/20/2026 10:03:58.21] step new report paths tests ok
+[Fri 11/20/2026 10:03:58.22] step new lane refresh selftest start
+[Fri 11/20/2026 10:04:02.08] step new lane refresh selftest ok
+[Fri 11/20/2026 10:04:02.09] step new pause selftest start
+[Fri 11/20/2026 10:04:08.19] step new pause selftest ok

@@ -1,0 +1,4 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+PASS codex runner: checkout paths become GitHub links on codex/issue-953 and home paths become %USERPROFILE%
+PASS work runner: checkout paths become GitHub links on work/issue-953-deepseek and home paths become %USERPROFILE%
+PASS report_paths_tests: both public messages keep report links and safe check rows; raw checks and partial resume stay local

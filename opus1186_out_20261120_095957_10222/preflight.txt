@@ -1,0 +1,3 @@
+tool preflight 2026-11-20T15:59:58Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found

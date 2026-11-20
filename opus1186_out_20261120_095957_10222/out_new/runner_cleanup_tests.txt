@@ -1,0 +1,3 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+PASS runner cleanup: scratch ownership, failed-run retention, pause, and rebuildable kept checkouts
+PASS janitor: dry and live decisions, retained edits and history, issue locks, age, safe paths, and the automatic rate limit

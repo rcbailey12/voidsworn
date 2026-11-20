@@ -1,0 +1,503 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 6b36778f7fe04a0bac25aa97cc26b07d; current instruction validated
+PASS running REST label and status payload carry the real run context
+runner status: checked_push (non-partial push confirmed and runner checks passed)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS checked finish edits the original comment and clears running
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job claimed: issue #846 by codex, run 9bd36ccd4cf84a37b5ded14c03056a11; current instruction validated
+runner status: partial (STALLED after 30 min)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS retry reuses one paginated comment; partial names its branch and stop reason
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 68935aabd6694fe5a3ad2141c986f9ad; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS failed publish still edits status and clears the label
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 33a8aec3a3924e698a594f53257d013e; current instruction validated
+runner status: unverified (dry/test push or checks did not pass; chain stays stopped)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS a zero-exit confirmed push with failed checks cannot report finished
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 8878aaa4c32f46c08d1876eedc5229dc; current instruction validated
+Base merge stopped: invalid branch 'Z:/private runner/fake-secret-for-status-1100'; no agent started
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS public failed status hides exception paths and secrets and keeps the local diagnostic
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run f81cea4f59a94aec8b76e5708b9a3f9a; current instruction validated
+runner status: partial (CEILING)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status PATCH issues/comments/77 failed: exit 55 fake gh failure
+PASS failed comment edit is logged and label removal still runs
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET issues/846 failed: exit 55 fake gh failure
+cannot validate or claim job: GET issues/846 failed (exit 55 fake gh failure); no agent started
+runner status: failed (cannot validate or claim job: GET issues/846 failed (exit 55 fake gh failure); no agent started)
+PASS start fails closed on GitHub errors without modifying claims
+WARNING: GitHub status GET issues/846 failed: GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs
+cannot validate or claim job: GET issues/846 failed (GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs); no agent started
+PASS missing gh fails closed at start
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 7620d990d90e47f6893ad5f312935c62; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS test dry runs use the fake GitHub service
+GitHub CLI: gh
+job validated: issue #846 (dry run, no claim written)
+PASS production dry runs validate the current brief without labels or comments
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\gh lookup\bin\gh.exe
+job validated: issue #846 (dry run, no claim written)
+PASS production gh lookup: path
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\gh lookup\Program Files\GitHub CLI\gh.exe
+job validated: issue #846 (dry run, no claim written)
+PASS production gh lookup: program
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\gh lookup\Local App Data\Programs\GitHub CLI\gh.exe
+job validated: issue #846 (dry run, no claim written)
+PASS production gh lookup: local
+WARNING: GitHub status GET issues/846 failed: GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs
+cannot validate or claim job: GET issues/846 failed (GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs); no agent started
+PASS production gh lookup: missing
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\gh lookup\Program Files\GitHub CLI\gh.exe
+Board dry run (UTC): 2026-11-20T16:02:05.9150387Z; no claims or agent calls
+PASS board dry run uses the same install-folder fallback
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: issue #846 is not an open job (state: closed); no agent started
+runner status: failed (job refused: issue #846 is not an open job (state: closed); no agent started)
+PASS job refused without writes: closed
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: issue #846 already carries running; another run owns the claim; no agent started
+runner status: failed (job refused: issue #846 already carries running; another run owns the claim; no agent started)
+PASS job refused without writes: running
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: open PR #999 from other seat work/issue-846-deepseek covers issue #846; no agent started
+runner status: failed (job refused: open PR #999 from other seat work/issue-846-deepseek covers issue #846; no agent started)
+PASS job refused without writes: pr
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: open PR #999 from other seat review/another-seat covers issue #846; no agent started
+runner status: failed (job refused: open PR #999 from other seat review/another-seat covers issue #846; no agent started)
+PASS job refused without writes: linked-pr
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: cannot verify tip of delivery branch opus/issue-846 for issue #846; no agent started
+runner status: failed (job refused: cannot verify tip of delivery branch opus/issue-846 for issue #846; no agent started)
+PASS job refused without writes: branch
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: cannot verify tip of delivery branch work/issue-846-deepseek-partial for issue #846; no agent started
+runner status: failed (job refused: cannot verify tip of delivery branch work/issue-846-deepseek-partial for issue #846; no agent started)
+PASS job refused without writes: other-partial
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 1, run lines: 1); no agent started
+runner status: failed (current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 1, run lines: 1); no agent started)
+PASS job refused without writes: missing
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: expected one line containing THIS IS THE JOB NOW outside code fences, found 2; no agent started
+runner status: failed (current instruction refused: expected one line containing THIS IS THE JOB NOW outside code fences, found 2; no agent started)
+PASS job refused without writes: duplicate
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: the current block is empty; no agent started
+runner status: failed (current instruction refused: the current block is empty; no agent started)
+PASS job refused without writes: empty
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: the current block is empty; no agent started
+runner status: failed (current instruction refused: the current block is empty; no agent started)
+PASS job refused without writes: run-label-only
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: the current block is empty; no agent started
+runner status: failed (current instruction refused: the current block is empty; no agent started)
+PASS job refused without writes: run-label-before-history
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: fixed block needs one Brief: line; no agent started
+runner status: failed (current instruction refused: fixed block needs one Brief: line; no agent started)
+PASS job refused without writes: missing-field
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: Codex fixed block needs Effort (Codex): high or xhigh; no agent started
+runner status: failed (current instruction refused: Codex fixed block needs Effort (Codex): high or xhigh; no agent started)
+PASS job refused without writes: missing-effort
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: expected one line containing THIS IS THE JOB NOW outside code fences, found 2; no agent started
+runner status: failed (current instruction refused: expected one line containing THIS IS THE JOB NOW outside code fences, found 2; no agent started)
+PASS job refused without writes: quoted-marker
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 2, run lines: 0); no agent started
+runner status: failed (current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 2, run lines: 0); no agent started)
+PASS job refused without writes: two-fixed
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 1, run lines: 1); no agent started
+runner status: failed (current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 1, run lines: 1); no agent started)
+PASS job refused without writes: earlier-run
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 1, run lines: 1); no agent started
+runner status: failed (current instruction refused: found 0 THIS IS THE JOB NOW lines; without a marker use exactly one fixed block and no run history (fixed blocks: 1, run lines: 1); no agent started)
+PASS job refused without writes: old-numbered-run
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+finished work: delivery branch opus/issue-846-docs tip 5f6084115fde85d959f08550a72e3157a5b0172c is already in main (behind); does not block issue #846
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 55bbbf049266435cabe4970d28ee307a; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS other-seat branch comparison: behind
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+finished work: delivery branch muse/issue-846 tip f94d3684ea6c0406247c011ac3164557afc86bd9 is already in main (identical); does not block issue #846
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 4bc2642ccce4498a812ec121b82cae38; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS other-seat branch comparison: identical
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: delivery branch opus/issue-846-docs from another seat exists for issue #846; no agent started
+PASS other-seat branch comparison: ahead
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: delivery branch opus/issue-846-docs from another seat exists for issue #846; no agent started
+PASS other-seat branch comparison: diverged
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: delivery branch opus/issue-846-docs from another seat exists for issue #846; no agent started
+PASS other-seat branch comparison: unknown
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: delivery branch opus/issue-846-docs from another seat exists for issue #846; no agent started
+PASS other-seat branch comparison: missing
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET compare/main...5f6084115fde85d959f08550a72e3157a5b0172c failed: exit 55 fake gh failure
+cannot validate or claim job: GET compare/main...5f6084115fde85d959f08550a72e3157a5b0172c failed (exit 55 fake gh failure); no agent started
+PASS other-seat branch comparison: read-failure
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+job refused: open PR #999 from other seat opus/issue-846-docs covers issue #846; no agent started
+PASS other-seat branch comparison: open-pr
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+finished work: delivery branch opus/issue-846-docs tip 5f6084115fde85d959f08550a72e3157a5b0172c is already in main (behind); does not block issue #846
+job refused: delivery branch work/issue-846-deepseek from another seat exists for issue #846; no agent started
+PASS other-seat branch comparison: mixed
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET pulls?state=open&per_page=100 failed: exit 55 fake gh failure
+cannot validate or claim job: GET pulls?state=open&per_page=100 failed (exit 55 fake gh failure); no agent started
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET branches?per_page=100 failed: exit 55 fake gh failure
+cannot validate or claim job: GET branches?per_page=100 failed (exit 55 fake gh failure); no agent started
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET issues/846/comments?per_page=100 failed: exit 55 fake gh failure
+cannot validate or claim job: GET issues/846/comments?per_page=100 failed (exit 55 fake gh failure); no agent started
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+WARNING: GitHub status POST issues/846/labels failed: exit 55 fake gh failure
+cannot validate or claim job: POST issues/846/labels failed (exit 55 fake gh failure); no agent started
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+WARNING: GitHub status POST issues/846/comments failed: exit 55 fake gh failure
+cannot validate or claim job: POST issues/846/comments failed (exit 55 fake gh failure); no agent started
+PASS unreadable dispatch state or failed label/comment claim stops before work
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+claim did not land: running label and owned status comment must read back; no agent started
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+claim did not land: running label and owned status comment must read back; no agent started
+PASS a zero-exit API response cannot start work unless label and owned comment actually landed
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 4b41d8fd0e2e4e11a5bff9116321f372; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub finish skipped: status comment belongs to another run
+PASS finish cannot edit or clear a status comment now owned by another run
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run ae3d8bf0377442b197198fa04445398c; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 3fcf052289314e2bbde890d70f5e8784; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 9e99b4e4ef4f4baab429343381865a7f; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS heading, bold and plain current lines allow same-prefix branches and open PR reruns
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run c31728538f0e4fb99562d702acea59d6; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 947fd30e5802440487f997924f43884f; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 48573130fd25448f99b51c4de10eaf45; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 7a9a57ccee9349888781015d3357d428; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run f2e95a65e28c49a2b9715e0e216c553a; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS 975 run 2 keeps long and short Run 1 prose; heading, bold and short plain labels still end the brief
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by deepseek, run 9e066a1e311a4b0d974cbb964370966c; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by kimi, run 0e688fecc92b4e4e905be991391d28b6; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by kimicode, run eb2cf678eb7b4d29b6a7d509337727aa; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by opus, run f6b2dacf6b2541dea46762084484a053; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS work, Kimi and Opus jobs need no Codex Effort or Models line
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run e2e3b4ea26c4416599c756d6847515f7; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 09b46949b091412cb4b32b680705ce53; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by deepseek, run 08b82394ff0b462387a4b90b56ddbc8f; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by deepseek, run 1eb453ad1b764f628869e62967e09d87; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by kimi, run 49820909bf4348b4a38f4abe26496f84; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by kimi, run 9fccc8cbc0e34e27b16e6c2e9735e279; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by kimicode, run 3ea11f7181db47f39a2133c475ddc745; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by kimicode, run 533f5561d1f44cb183aca9e8df418737; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by opus, run bffd57bad091427c87aebfbd153e0ae2; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by opus, run 31beca7cea584646b3e7ea8705066535; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by muse, run 5a4e94cc8dc14e3f88d88bde8322196e; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by muse, run c7b9388c8bee4f76a497e407b150499f; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS new jobs with a single plain or fenced fixed block need no current-run marker on every seat
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by opus, run 556ee626743d4497897960e918626a03; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS Opus API arm uses its actual work branch prefix when allowing reruns
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 1c40caa301ad44399e3b7f65ca0fffa5; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS a marker and instruction on Done when itself are valid, with plain old-run boundary
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 5a5da24f4c444fe8b301cab33f6a6f74; current instruction validated
+issue #846 prepared, effort xhigh
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS Codex keeps the effort embedded on the Owner line used by the live station issue
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run d50373d64ea949dc94efdb69098974d8; current instruction validated
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+PASS current block preserves peer sections and ignores both kinds of fenced marker examples
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+Board dry run (UTC): 2026-11-20T16:02:11.7254148Z; no claims or agent calls
+#846 [codex] ACCEPT
+#847 [opus] REFUSE: current instruction refused: fixed block needs one Owner: line; no agent started
+#849 [muse] ACCEPT
+PASS paginated board dry run uses the same validation, allows reruns and performs only GETs
+Base: fetching and merging origin/work/issue-800 before the agent
+Base fetch attempt 1/3
+Base already merged by the runner: origin/work/issue-800 (0dc132f0d3dee79e66926ce69c8ae23ccebcc44c). The merge is committed; do not merge it yourself.
+PASS Base parses CRLF and commits a real merge while preserving resume context
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET labels/running failed: exit 1 label missing
+job claimed: issue #846 by codex, run 5f24b1a6b99b45cc8039146a686b7a82; current instruction validated
+Base: fetching and merging origin/work/issue-800 before the agent
+Base fetch attempt 1/3
+Base already merged by the runner: origin/work/issue-800 (0dc132f0d3dee79e66926ce69c8ae23ccebcc44c). The merge is committed; do not merge it yourself.
+issue #846 prepared, effort high
+Base: fetching and merging origin/work/issue-800 before the agent
+Base fetch attempt 1/3
+Base already merged by the runner: origin/work/issue-800 (0dc132f0d3dee79e66926ce69c8ae23ccebcc44c). The merge is committed; do not merge it yourself.
+issue #846 prepared for the deepseek arm
+PASS both real prep helpers merge Base and tell the agent it is committed
+runner status: failed (runner exit 8)
+GitHub CLI: C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\fake gh.ps1
+WARNING: GitHub status GET issues/comments/77 failed: Unknown comment
+PASS both prep helpers refuse an earlier run snapshot after init
+Base: fetching and merging origin/fast before the agent
+Base fetch attempt 1/3
+Base already merged by the runner: origin/fast (d668342e1197e56b40a4975f1493c1302e8c22b0). The merge is committed; do not merge it yourself.
+PASS fast-forward Base also gets a committed merge
+Base merge stopped: invalid branch 'bad branch'; no agent started
+Base merge stopped: use one Base: <branch> line; no agent started
+Base merge stopped: invalid branch ''; no agent started
+Base: fetching and merging origin/no-such-branch before the agent
+Base fetch attempt 1/3
+Base fetch failed (exit 128); retry in 0 seconds
+Base fetch attempt 2/3
+Base fetch failed (exit 128); retry in 0 seconds
+Base fetch attempt 3/3
+Base fetch failed after 3 attempts; see git_log.txt
+PASS Base is optional; invalid, duplicate, empty and missing branches stop before the agent
+Base: fetching and merging origin/conflict before the agent
+Base fetch attempt 1/3
+Base merge failed for origin/conflict; checkout and conflict kept; no agent started (see git_log.txt)
+PASS conflicting Base keeps evidence and fails before the agent
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+PASS ship-identical preserves the earlier ship bytes and starts the next branch
+mirror fetch attempt 1/3
+checkout needs keeping: working tree needs keeping: !! godot/assets/ships/B16_23/B16_23.glb (shared ship copy could not be verified)
+earlier checkout kept beside repo as repo-kept-fd5158a8337f4aae88fd704731f09e05
+local clone attempt 1/3
+PASS ship-different preserves the earlier ship bytes and starts the next branch
+mirror fetch attempt 1/3
+checkout needs keeping: working tree needs keeping: !! godot/assets/ships/B16_23/B16_23.glb (shared ship copy could not be verified)
+earlier checkout kept beside repo as repo-kept-49801ef1eb434cb6beccf6c84f6943da
+local clone attempt 1/3
+PASS ship-superseded preserves the earlier ship bytes and starts the next branch
+mirror fetch attempt 1/3
+checkout needs keeping: working tree needs keeping: !! godot/assets/ships/B16_23/B16_23.glb (shared ship copy could not be verified)
+earlier checkout kept beside repo as repo-kept-99dd95a329484c1197908dd29afd0497
+local clone attempt 1/3
+PASS ship-missing preserves the earlier ship bytes and starts the next branch
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+PASS parity-outputs-only uses the rebuildable-file list and preserves checkout bytes
+mirror fetch attempt 1/3
+checkout needs keeping: working tree needs keeping:  M shared.txt
+earlier checkout kept beside repo as repo-kept-69f70bf8eb0a42d9b075a658352bebfa
+local clone attempt 1/3
+PASS parity-tracked-edit uses the rebuildable-file list and preserves checkout bytes
+mirror fetch attempt 1/3
+checkout needs keeping: working tree needs keeping: ?? godot/scenes/unsaved.gd.uid
+earlier checkout kept beside repo as repo-kept-c7ca8e82ed914e6f9d11b8fb55c74de8
+local clone attempt 1/3
+PASS parity-untracked-uid uses the rebuildable-file list and preserves checkout bytes
+mirror fetch attempt 1/3
+checkout needs keeping: working tree needs keeping: !! godot/campaign/test/out-notes/notes.txt
+earlier checkout kept beside repo as repo-kept-2038c7cd3a2b4753b4ff0cc953712153
+local clone attempt 1/3
+PASS parity-ignored-lookalike uses the rebuildable-file list and preserves checkout bytes
+mirror fetch attempt 1/3
+checkout needs keeping: working tree needs keeping: !! godot/campaign/test/out/nested/
+earlier checkout kept beside repo as repo-kept-95f991ae7d694e8ea8da1cbda9f723cd
+local clone attempt 1/3
+PASS parity-nested-repo uses the rebuildable-file list and preserves checkout bytes
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+WARNING: kept checkout sizes unavailable in C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\board_c: Cannot find path 'C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\board_c' because it does not exist.
+local clone attempt 1/3
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+WARNING: kept checkout sizes unavailable in C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\board_d: Cannot find path 'C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\board_d' because it does not exist.
+local clone attempt 1/3
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+WARNING: kept checkout sizes unavailable in C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\slot_deepseek: Cannot find path 'C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\slot_deepseek' because it does not exist.
+local clone attempt 1/3
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+WARNING: kept checkout sizes unavailable in C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\slot_openai: Cannot find path 'C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\slot_openai' because it does not exist.
+local clone attempt 1/3
+code checkout excludes: docs/shots, docs/ship_pipeline/build_sheets, contrib/muse/design, hulls_hi, rocks_hi
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+mirror fetch attempt 1/3
+WARNING: kept checkout sizes unavailable in C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\board_b: Cannot find path 'C:\Users\rcbai\AppData\Local\Temp\runner846 proof g5rykx\board_b' because it does not exist.
+local clone attempt 1/3
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+refuse list: nothing refused
+scope: every changed file is inside the issue's Deliver to
+PASS sparse runner stages new report evidence without materializing historical pictures
+code checkout excludes: docs/ship_pipeline/build_sheets, hulls_hi
+mirror fetch attempt 1/3
+checkout needs keeping: sparse checkout profile differs
+earlier checkout kept beside repo as repo-kept-430ca617b06543fa8f35c20b7cd82713
+local clone attempt 1/3
+code checkout excludes: docs/ship_pipeline/build_sheets, hulls_hi
+mirror fetch attempt 1/3
+checkout fetch attempt 1/3
+earlier checkout reused in place; ignored files left in place
+code checkout excludes: docs/ship_pipeline/build_sheets, hulls_hi
+mirror fetch attempt 1/3
+checkout needs keeping: index may hide tracked edits
+earlier checkout kept beside repo as repo-kept-36642137768f4106ad8d2d9206218230
+local clone attempt 1/3
+PASS lanes C and D and Workhorse slots reuse sparse profiles, honor fixed fields, and preserve hidden edits
+PASS runner job checks (71 groups)
+PASS PowerShell probes elapsed: 39.7 s
+PASS simultaneous Codex starts on two lanes yield exactly one claim; losing run cannot clear it

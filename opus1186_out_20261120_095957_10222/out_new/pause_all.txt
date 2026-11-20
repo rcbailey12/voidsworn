@@ -1,0 +1,19 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+PASS pause retains narrow process matching and read-only bounded GitHub verification
+Evidence: C:\Users\rcbai\AppData\Local\Temp\pause944 proof Qa837z
+PASS finished job, partial checkpoint, all five lanes, wait through DeepSeek checks, narrow kills and waiting windows
+PASS runner mid-checks and pause timeout stay unresolved with no agent process
+PASS remote mismatch, missing confirmation, no changes and missing partial ref fail closed
+PASS malformed status cannot fall back to a successful text log or remote ref
+PASS fake git ls-remote timeout is unresolved
+PASS runner metadata change during verification cannot reuse an old confirmation
+PASS jobs that start while waiting are included
+PASS final inventory catches jobs that start during GitHub verification
+PASS stale Codex and DeepSeek running records are listed, untouched and do not block safe restart
+PASS main lane ignores stale 944/945 despite later starts and awaits 928 checks through finish or timeout
+PASS all five activity files keep an older running record live at the 30-minute boundary
+PASS process paths keep older runners live, preserve windows and avoid folder prefix collisions
+PASS newest lane record stays live even with stale files and no process
+PASS fresh activity promotes a leftover into the pending job inventory
+PASS production git process wrapper reads fake ls-remote output, enforces its deadline and rejects failure
+PASS pause_all Windows fixture matrix
