@@ -219,12 +219,12 @@ def body(K):
     K.mass('Pearl ribbons', ob, 'pearl ribbons with silver edges', note='six ribbons wrap the core stern to bow and twist together to one point, like a drawn flame')
 
     # ---------------- the drive: three cut violet stones round the blunt stern face (no flame, no nozzle) ----------------
-    for ang, sn in STONES:
+    for ang, sn in STONES:   # each stone's pearl seat runs forward into the core's stern swell (stage 4 audit: nothing floats)
         fid = 'E' + sn
         y, z = U(0.022) * math.cos(ang), U(0.018) * math.sin(ang)
         ex = -0.5 * LENGTH + U(0.006)
         R = U(0.013)
-        K._obj(fid + '_seat', *ellipsoid((ex + U(0.012), y, z), (U(0.014), R * 1.15, R * 1.15), 16, 8), 'gw_pearl', smooth=True, grp=fid)
+        K._obj(fid + '_seat', *ellipsoid((ex + U(0.03), y, z), (U(0.035), R * 1.15, R * 1.15), 16, 8), 'gw_pearl', smooth=True, grp=fid)
         K._obj(fid + '_stone', *P.cut_lens((ex, y, z), (-1, 0, 0), R, R * 0.45, 10), 'gw_drive', grp=fid)
         K._obj(fid + '_core', *P.cut_lens((ex - U(0.001), y, z), (-1, 0, 0), R * 0.45, R * 0.6, 8), 'gw_drive_core', grp=fid)
         for o in K.coll.objects:
