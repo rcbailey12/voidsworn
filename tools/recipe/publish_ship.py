@@ -141,108 +141,139 @@ def seal(game, code, dest):
     print(f'[publish] sealed what is now live for {code}')
 
 
+def _put_back(game, code, dest, before, label):
+    """puts CODE back exactly as before.json recorded it (called under the install lock): the kept copies are hashed against
+    the record and staged before anything live moves; any failure puts the live state back as it was"""
+    live = game / 'assets' / 'ships' / code
+    # 1. the kept copies must hash exactly as recorded before the publish, and are staged before anything live moves
+    if before['files'] is not None:
+        kept = {p.name: sha256(p) for p in sorted((dest / 'ship').iterdir()) if p.is_file() and p.suffix not in SKIP} \
+            if (dest / 'ship').is_dir() else None
+        if kept != before['files']:
+            raise ValueError(f'the kept copy of {code} is not what was live before the publish; nothing was touched')
+    for rel, digest in before['scenes'].items():
+        if not (dest / rel).is_file() or sha256(dest / rel) != digest:
+            raise ValueError(f'the kept {rel} is missing or not what was live before the publish; nothing was touched')
+    n = 1
+    while (dest / f'undone_{n}').exists():
+        n += 1
+    aside = dest / f'undone_{n}'
+    stage = aside / 'stage'
+    stage.mkdir(parents=True)
+    if before['files'] is not None:
+        shutil.copytree(dest / 'ship', stage / 'ship')
+    for rel in before['scenes']:
+        (stage / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(dest / rel, stage / rel)
+    manifests = []
+    for rel, key in ((ASSET, 'asset_row'), (CACHE, 'cache_row')):
+        path = game / rel
+        if not path.is_file():
+            if before[key] is None:
+                continue
+            raise ValueError(f'{rel} is missing, so the {code} row cannot be restored; nothing was touched')
+        data = read_json(path)
+        ships = data.setdefault('ships', {})
+        if ships.get(code) == before[key]:
+            continue                      # this row is already right: the file is left exactly as it is
+        if before[key] is None:
+            ships.pop(code, None)
+        else:
+            ships[code] = before[key]
+        staged = stage / (Path(rel).name.replace('.json', f'_{key}.json'))
+        staged.write_text(json.dumps(data, indent=1), encoding='utf-8', newline='\n')
+        manifests.append((path, staged))
+    if (stage / 'ship').exists() and {p.name: sha256(p) for p in (stage / 'ship').iterdir() if p.is_file() and p.suffix not in SKIP} != before['files']:
+        raise ValueError(f'the staged copy of {code} does not hash as recorded; nothing was touched')
+
+    # 2. the live changes, each one recorded so any failure puts the published state back
+    done = []          # (live path, where the published one went or None)
+
+    def swap(target, incoming):
+        gone = None
+        if target.exists():
+            gone = aside / 'published' / target.relative_to(game)
+            gone.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(target, gone)
+        done.append((target, gone))
+        if incoming is not None:
+            os.replace(incoming, target)
+    try:
+        swap(live, stage / 'ship' if before['files'] is not None else None)
+        for s_ in SCENES:
+            rel = s_.format(c=code)
+            swap(game / rel, stage / rel if rel in before['scenes'] else None)
+        for path, staged in manifests:
+            swap(path, staged)
+        restored = state(game, code)
+        for key in ('files', 'scenes', 'asset_row', 'cache_row'):
+            if restored[key] != before[key]:
+                raise ValueError(f'after the {label} {code} {key} is not what it was before the publish')
+    except BaseException as exc:
+        errors = []
+        for target, gone in reversed(done):
+            try:
+                if target.exists():
+                    failed = aside / 'failed' / target.relative_to(game)
+                    failed.parent.mkdir(parents=True, exist_ok=True)
+                    os.replace(target, failed)
+                if gone is not None:
+                    os.replace(gone, target)
+            except OSError as e:
+                errors.append(str(e))
+        if errors:
+            raise RuntimeError(f'{label} failed ({exc}) and could not put the live {code} back: {" | ".join(errors)}; '
+                               f'files in {aside}') from None
+        raise ValueError(f'{exc}; the live {code} was put back as it was') from None
+    print(f"[publish] the {label}: the live {code} it replaced is kept in {aside / 'published'}")
+
+
 def undo(game, code, dest):
     game, dest = Path(game), Path(dest)
     before, after = read_json(dest / 'before.json'), read_json(dest / 'after.json')
-    live = game / 'assets' / 'ships' / code
     with project_lock(game):
         now = state(game, code)
         if now != after:
             moved = [k for k in after if now.get(k) != after.get(k)]
             raise ValueError(f'{code} changed since this publish ({", ".join(moved)}); nothing was touched')
-        # 1. the kept copies must hash exactly as recorded before the publish, and are staged before anything live moves
-        if before['files'] is not None:
-            kept = {p.name: sha256(p) for p in sorted((dest / 'ship').iterdir()) if p.is_file() and p.suffix not in SKIP} \
-                if (dest / 'ship').is_dir() else None
-            if kept != before['files']:
-                raise ValueError(f'the kept copy of {code} is not what was live before the publish; nothing was touched')
-        for rel, digest in before['scenes'].items():
-            if not (dest / rel).is_file() or sha256(dest / rel) != digest:
-                raise ValueError(f'the kept {rel} is missing or not what was live before the publish; nothing was touched')
-        n = 1
-        while (dest / f'undone_{n}').exists():
-            n += 1
-        aside = dest / f'undone_{n}'
-        stage = aside / 'stage'
-        stage.mkdir(parents=True)
-        if before['files'] is not None:
-            shutil.copytree(dest / 'ship', stage / 'ship')
-        for rel in before['scenes']:
-            (stage / rel).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(dest / rel, stage / rel)
-        manifests = []
-        for rel, key in ((ASSET, 'asset_row'), (CACHE, 'cache_row')):
-            path = game / rel
-            if not path.is_file():
-                if before[key] is None:
-                    continue
-                raise ValueError(f'{rel} is missing, so the {code} row cannot be restored; nothing was touched')
-            data = read_json(path)
-            ships = data.setdefault('ships', {})
-            if before[key] is None:
-                ships.pop(code, None)
-            else:
-                ships[code] = before[key]
-            staged = stage / (Path(rel).name.replace('.json', f'_{key}.json'))
-            staged.write_text(json.dumps(data, indent=1), encoding='utf-8', newline='\n')
-            manifests.append((path, staged))
-        if (stage / 'ship').exists() and {p.name: sha256(p) for p in (stage / 'ship').iterdir() if p.is_file() and p.suffix not in SKIP} != before['files']:
-            raise ValueError(f'the staged copy of {code} does not hash as recorded; nothing was touched')
-
-        # 2. the live changes, each one recorded so any failure puts the published state back
-        done = []          # (live path, where the published one went or None)
-
-        def swap(target, incoming):
-            gone = None
-            if target.exists():
-                gone = aside / 'published' / target.relative_to(game)
-                gone.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(target, gone)
-            done.append((target, gone))
-            if incoming is not None:
-                os.replace(incoming, target)
-        try:
-            swap(live, stage / 'ship' if before['files'] is not None else None)
-            for s_ in SCENES:
-                rel = s_.format(c=code)
-                swap(game / rel, stage / rel if rel in before['scenes'] else None)
-            for path, staged in manifests:
-                swap(path, staged)
-            restored = state(game, code)
-            for key in ('files', 'scenes', 'asset_row', 'cache_row'):
-                if restored[key] != before[key]:
-                    raise ValueError(f'after the undo {code} {key} is not what it was before the publish')
-        except BaseException as exc:
-            errors = []
-            for target, gone in reversed(done):
-                try:
-                    if target.exists():
-                        failed = aside / 'failed' / target.relative_to(game)
-                        failed.parent.mkdir(parents=True, exist_ok=True)
-                        os.replace(target, failed)
-                    if gone is not None:
-                        os.replace(gone, target)
-                except OSError as e:
-                    errors.append(str(e))
-            if errors:
-                raise RuntimeError(f'undo failed ({exc}) and could not put the published {code} back: {" | ".join(errors)}; '
-                                   f'files in {aside}') from None
-            raise ValueError(f'{exc}; the published {code} was put back as it was') from None
-    print(f'[publish] the published {code} is kept in {aside / "published"}')
+        _put_back(game, code, dest, before, 'undo')
     print(f'UNDO PASS {code}')
 
 
+def restore(game, code, dest):
+    """after a failed install: manifest_merge's own rollback puts back the ship folder, its scene and both manifests, but the
+    cache refresh rewrites gen/damage and gen/wreck in place (Fable, PR 1312). Puts every kept file and row back from the
+    backup; prints RESTORE PASS when CODE is exactly as before the publish, RESTORE FAILED naming what still differs."""
+    game, dest = Path(game), Path(dest)
+    before = read_json(dest / 'before.json')
+    with project_lock(game):
+        now = state(game, code)
+        if now == before:
+            print(f'RESTORE PASS {code}: already exactly as before the publish')
+            return
+        moved = [k for k in before if now.get(k) != before.get(k)]
+        print(f'[publish] {code} differs from before the publish in {", ".join(moved)}; putting it back')
+        _put_back(game, code, dest, before, 'restore')
+    print(f'RESTORE PASS {code}')
+
+
+def locked(game, *command):
+    """runs COMMAND (the Godot cache build) holding the install lock, so no install or undo runs under it"""
+    import subprocess
+    with project_lock(Path(game)):
+        return subprocess.run(list(command)).returncode
+
+
 def main(cmd, *args):
-    fn = dict(receipt=receipt, backup=backup, seal=seal, undo=undo).get(cmd)
+    fn = dict(receipt=receipt, backup=backup, seal=seal, undo=undo, restore=restore, locked=locked).get(cmd)
     if fn is None:
         raise ValueError(f'unknown command {cmd!r}')
-    fn(*args)
-    return 0
+    return fn(*args) or 0
 
 
 if __name__ == '__main__':
     try:
         sys.exit(main(*sys.argv[1:]))
     except (OSError, ValueError, TypeError, KeyError, RuntimeError) as exc:
-        label = 'UNDO FAILED' if sys.argv[1:2] == ['undo'] else '[publish] FAILED'
+        label = {'undo': 'UNDO FAILED', 'restore': 'RESTORE FAILED'}.get(sys.argv[1] if len(sys.argv) > 1 else '', '[publish] FAILED')
         sys.exit(f'{label}: {exc}')

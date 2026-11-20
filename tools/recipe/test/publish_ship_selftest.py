@@ -7,7 +7,8 @@ listed one, a "pin ok" of another commit, a done FAILED line, a collected file w
 file the export does not hold. Undo: publish A, publish B, undo A puts back only A (its files, scenes and manifest rows) and
 leaves B as published; an undo after A's live files changed refuses and touches nothing; a corrupt or missing kept copy
 is refused before anything live moves (UNDO FAILED, exit 1, never UNDO PASS); a failure forced in the middle of the live
-steps puts the published files, scenes and both manifest rows back, and a clean undo still passes afterwards. Prints PASS lines and exits 0, or stops at the first failure.
+steps puts the published files, scenes and both manifest rows back, and a clean undo still passes afterwards. Restore after
+a failed install puts back the damage and wreck scenes the cache refresh rewrote, and refuses a corrupt kept copy. Prints PASS lines and exits 0, or stops at the first failure.
 """
 import hashlib
 import json
@@ -217,11 +218,45 @@ def check_undo(root):
     ok('after the failed attempt, a clean undo of B still passes')
 
 
+def check_restore(root):
+    """a failed install (Fable, PR 1312): manifest_merge rolls back the ship, its scene and both manifests, but the cache refresh
+    has rewritten the damage and wreck scenes in place; restore puts every kept file back and reports what it did"""
+    game = fake_game(root)
+    (game / 'gen' / 'damage' / 'C3_33_damage.scn').write_bytes(b'old damage C3_33')
+    (game / 'gen' / 'wreck' / 'C3_33_wreck.scn').write_bytes(b'old wreck C3_33')
+    start = snapshot(game)
+    c = game / '_replaced' / 'C3_33_1'
+    rc, out = run('restore', game, 'C3_33', c)
+    assert rc == 1 and 'RESTORE FAILED' in out, 'a restore with no backup must fail: ' + out
+    rc, out = run('backup', game, 'C3_33', c)
+    assert rc == 0, out
+    rc, out = run('restore', game, 'C3_33', c)
+    assert rc == 0 and 'already exactly as before' in out, out
+    (game / 'gen' / 'damage' / 'C3_33_damage.scn').write_bytes(b'new damage from the failed build')
+    (game / 'gen' / 'wreck' / 'C3_33_wreck.scn').write_bytes(b'new wreck from the failed build')
+    rc, out = run('restore', game, 'C3_33', c)
+    assert rc == 0 and 'RESTORE PASS C3_33' in out and 'scenes' in out, out
+    assert snapshot(game) == start, 'restore did not put the damage and wreck scenes back'
+    ok('after a failed install, restore puts back the damage and wreck scenes the cache refresh rewrote in place')
+    (game / 'gen' / 'wreck' / 'C3_33_wreck.scn').write_bytes(b'new wreck again')
+    (c / 'gen' / 'wreck' / 'C3_33_wreck.scn').write_bytes(b'corrupt kept copy')
+    before = snapshot(game)
+    rc, out = run('restore', game, 'C3_33', c)
+    assert rc == 1 and 'RESTORE FAILED' in out and 'RESTORE PASS' not in out and 'nothing was touched' in out, out
+    assert snapshot(game) == before, 'a refused restore touched the game'
+    ok('a restore with a corrupt kept copy reports RESTORE FAILED, exit 1, and touches nothing')
+    rc, out = run('locked', game, sys.executable, '-c', 'raise SystemExit(3)')
+    assert rc == 3, out
+    ok('locked runs a command under the install lock and returns its exit code')
+
+
 def main():
     with tempfile.TemporaryDirectory() as t:
         check_receipts(Path(t))
     with tempfile.TemporaryDirectory() as t:
         check_undo(Path(t))
+    with tempfile.TemporaryDirectory() as t:
+        check_restore(Path(t))
     print(f'publish_ship_selftest: {passed} passed')
     return 0
 

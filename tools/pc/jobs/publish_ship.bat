@@ -19,8 +19,10 @@ rem      build\godot\_replaced\CODE_<stamp>\ (a .gdignore keeps Godot out), reco
 rem      UNDO_CODE.bat there
 rem   4. manifest_merge.py --install from the job's own clone (the tools that built it): the export checks, the install with
 rem      its own rollback, the ship's cache rebuilt and the installed readback; then publish_ship.py seal (below), so the
-rem      undo works from here on
-rem   5. render/build_assets.gd --ships-only over build\godot, then the installed readback again on the published copy
+rem      undo works from here on. If the install fails, publish_ship.py restore puts back every kept file (the damage and wreck
+rem      scenes too, which manifest_merge's rollback leaves rewritten) and the result names anything that still differs
+rem   5. render/build_assets.gd --ships-only over build\godot, under the install lock (publish_ship.py locked), then the
+rem      installed readback again on the published copy
 rem   6. publish_ship.py seal: records what is now live for CODE; the undo refuses once that changes (sealed again here
 rem      after the cache rebuild)
 rem   7. in-game shots of CODE from build\godot (battle and close), so the picture names the hull code
@@ -113,6 +115,8 @@ if defined FAILED goto finish
 copy /y "%V%\tools_live\%TLV%\recipe\manifest_merge.py" "%B%\tool\manifest_merge.py" > nul || set "FAILED=could not keep a copy of manifest_merge.py"
 if defined FAILED goto finish
 call :undo > "%B%\UNDO_%CODE%.bat"
+findstr /c:"publish_ship.py\" undo" "%B%\UNDO_%CODE%.bat" > nul || set "FAILED=could not write %B%\UNDO_%CODE%.bat; nothing was installed"
+if defined FAILED goto finish
 copy /y "%B%\UNDO_%CODE%.bat" "%P%\UNDO_%CODE%.bat" > nul
 echo undo: %B%\UNDO_%CODE%.bat (after a failed install manifest_merge has already rolled back; the undo is for a live publish) >> "%RES%"
 
@@ -122,8 +126,7 @@ call "%TMO%" 3600 "%BPY%" -B "%J%\repo\tools\recipe\manifest_merge.py" --install
 set EL=%ERRORLEVEL%
 echo install exit %EL% >> "%RES%"
 findstr /c:"INSTALL READBACK PASS" "%P%\log_install.txt" >> "%RES%"
-if not "%EL%"=="0" set "FAILED=install (log_install.txt; manifest_merge rolled back, the old files are also in %B%)"
-if defined FAILED goto finish
+if not "%EL%"=="0" goto install_failed
 set "TMO_STEP=publish seal %CODE%"
 call "%TMO%" 600 "%BPY%" -B "%PUB%" seal "%GAME%" %CODE% "%B%" > "%P%\log_seal_install.txt" 2>&1
 set EL=%ERRORLEVEL%
@@ -133,7 +136,7 @@ if defined FAILED goto finish
 
 rem 5. the whole ship cache, then the readback on the published copy
 set "TMO_STEP=publish ships cache"
-call "%TMO%" 2400 "%GD%" --headless --path "%GAME%" --script res://render/build_assets.gd -- --ships-only > "%P%\log_ships_cache.txt" 2>&1
+call "%TMO%" 2400 "%BPY%" -B "%PUB%" locked "%GAME%" "%GD%" --headless --path "%GAME%" --script res://render/build_assets.gd -- --ships-only > "%P%\log_ships_cache.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo ships cache exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=ships cache (log_ships_cache.txt)"
@@ -165,6 +168,18 @@ set EL=%ERRORLEVEL%
 echo shots exit %EL% >> "%RES%"
 if not "%EL%"=="0" set "FAILED=shots (the ship is published, read back and sealed; only the picture failed)"
 
+goto finish
+
+rem a failed install: manifest_merge rolled back the ship, its scene and both manifests, but the cache refresh may have
+rem rewritten the damage and wreck scenes in place (Fable, PR 1312); restore puts every kept file back and says what it did
+:install_failed
+set "TMO_STEP=publish restore %CODE%"
+call "%TMO%" 600 "%BPY%" -B "%PUB%" restore "%GAME%" %CODE% "%B%" > "%P%\log_restore.txt" 2>&1
+set EL=%ERRORLEVEL%
+type "%P%\log_restore.txt" >> "%RES%"
+if "%EL%"=="0" set "FAILED=install (log_install.txt); %CODE% is back exactly as before the publish (log_restore.txt)"
+if not "%EL%"=="0" set "FAILED=install (log_install.txt) AND the restore (log_restore.txt names what still differs; the kept files are in %B%)"
+
 :finish
 if defined FAILED goto failed
 echo published %CODE% from %JOB_DIR% at %COMMIT% into %GAME% >> "%RES%"
@@ -189,7 +204,7 @@ echo if not exist "%%TMO%%" echo no watchdog at %%TMO%% ^> "%%U%%"
 echo if not exist "%%TMO%%" goto failed
 echo call "%%TMO%%" 600 "%BPY%" -B "%B%\tool\publish_ship.py" undo "%GAME%" %CODE% "%B%" ^> "%%U%%" 2^>^&1
 echo if errorlevel 1 goto failed
-echo call "%%TMO%%" 2400 "%GD%" --headless --path "%GAME%" --script res://render/build_assets.gd -- --ships-only ^>^> "%%U%%" 2^>^&1
+echo call "%%TMO%%" 2400 "%BPY%" -B "%B%\tool\publish_ship.py" locked "%GAME%" "%GD%" --headless --path "%GAME%" --script res://render/build_assets.gd -- --ships-only ^>^> "%%U%%" 2^>^&1
 echo if errorlevel 1 goto failed
 echo echo undo of %CODE% PASS ^>^> "%%U%%"
 echo echo undo of %CODE% PASS, log in %%U%%

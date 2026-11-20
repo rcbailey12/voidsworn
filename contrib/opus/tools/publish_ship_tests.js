@@ -24,7 +24,7 @@ const code = raw.split(/\r?\n/).map((l, i) => ({ n: i + 1, s: l.trim() })).filte
 const at = re => code.findIndex(l => re.test(l.s));
 const main = code.slice(0, at(/^:finish$/));
 const undo = code.slice(at(/^:undo$/));
-const guard = /^if defined FAILED goto finish$/i;
+const guard = /^(if defined FAILED )?goto finish$/i;
 const mayFail = s => /set "FAILED=[^"]/i.test(s);
 const isCommand = s => /(tmo\.bat|^powershell |^robocopy |^copy |^fc |^mkdir |^call |^for )/i.test(s);
 
@@ -49,7 +49,11 @@ assert(firstGameWrite > receipt, 'nothing in build\\godot changes before the rec
 assert(raw.includes('.gdignore'), 'the _replaced folder carries a .gdignore');
 const seals = main.filter(l => /"%PUB%" seal "%GAME%" %CODE% "%B%"/.test(l.s)).map(l => main.indexOf(l));
 assert(seals.length === 2 && seals[0] > install && seals[0] < at(/build_assets\.gd -- --ships-only/), 'sealed right after the install and again later');
-pass('receipt before any change; old files kept and the undo written before the install; sealed after it');
+assert(main.some(l => /^findstr \/c:"publish_ship\.py\\" undo" "%B%\\UNDO_%CODE%\.bat"/.test(l.s)), 'the job checks UNDO_CODE.bat was written');
+assert(/^if not "%EL%"=="0" goto install_failed$/.test(main[install + 4].s), 'a failed install goes to the restore');
+assert(main.some(l => /"%PUB%" restore "%GAME%" %CODE% "%B%"/.test(l.s)), 'the restore puts every kept file back after a failed install');
+assert(main.some(l => /"%PUB%" locked "%GAME%" "%GD%" .*build_assets\.gd -- --ships-only/.test(l.s)), 'the cache build runs under the install lock');
+pass('receipt before any change; old files kept and the undo written before the install; sealed after it; restore on a failed install; cache build locked');
 
 for (const l of main) {
   if (/("%GD%"|"%BPY%")/.test(l.s) && !/^if not exist/i.test(l.s) && !/^set /i.test(l.s)) {
