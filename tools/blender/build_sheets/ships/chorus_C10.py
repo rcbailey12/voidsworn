@@ -67,7 +67,7 @@ def dense(key, step=0.4):
 
 HULL = dense(KEY)
 # issue 1291 (R349): the armadillo shell covers the body from behind the head to the tail, so only the head's scar stays
-SCARS = ((9.3, 1.15, 0.42, 1),)
+SCARS = ((10.6, 1.0, 0.36, 1),)   # on the head, ahead of the bands (Ryan Nov 20: armour almost everywhere)
 
 
 def skin_sections():
@@ -254,8 +254,8 @@ def build(K):
     calm += [(x, -math.pi / 2, 1.3) for x in GLANDS]
     calm += mirror([(x, th, r * 1.5) for (x, r, th) in SACS])
     calm += [(-9.6, t, 1.3) for t in (0.0, math.pi / 2, math.pi, -math.pi / 2)]
-    swell = body.field(921, 7.0, -8.6, swell=34, folds=40, wrinkles=200, sweeps=56, depth=0.3, height=(0.2, 0.45),
-                       size=(1.0, 2.0), keep=calm, shell=(7.3, -7.7, -1.2))
+    swell = body.field(921, 9.4, -8.9, swell=34, folds=40, wrinkles=200, sweeps=56, depth=0.3, height=(0.2, 0.45),
+                       size=(1.0, 2.0), keep=calm, shell=(9.6, -8.6, plates.WRAP))
 
     # The loft and its grown folds read the same relief. Working organs and inside
     # anatomy retain the original surface datum. No other Chorus sheet changes.
@@ -376,7 +376,7 @@ def build(K):
             pts = []; nrms = []; ws = []; hs = []
             for j in range(49):
                 t = j / 48
-                x = 11.55 - 4.2 * t * (0.85 + 0.15 * math.sin(k * 1.7))
+                x = 11.55 - 1.9 * t * (0.85 + 0.15 * math.sin(k * 1.7))   # the head only: the bands start behind it
                 th = th0 + (0.62 - th0) * t ** 1.4 * 0.55 + 0.05 * math.sin(t * 10 + k)
                 p_, n_ = K.hpt(x, side_th(th, side), out=-0.02); pts.append(p_); nrms.append(n_)
                 fade = math.sin(math.pi * (0.015 + 0.97 * t)) ** 0.4
@@ -388,7 +388,7 @@ def build(K):
         hf = K.hull_detail('head_folds_%s' % ('p' if side > 0 else 's'), (V, F), 'flesh2' if side > 0 else 'flesh', inv='head_folds', kind='welt', subs=['welt'])
         K.mass('Head folds (%s)' % ('port' if side > 0 else 'starboard'), hf, 'flesh folds', note='fold rolls running back over the head')
     # pore fields: the head behind the mouths, round the vent crown
-    for name, x0, x1, t0, t1, nper in (('head', 8.0, 11.3, -0.3, 1.45, 46), ('tail', -9.9, -7.7, -0.6, 1.5, 22)):
+    for name, x0, x1, t0, t1, nper in (('head', 9.7, 11.3, -0.3, 1.45, 30), ('tail', -9.9, -8.7, -0.6, 1.5, 14)):
         V, F = [], []
         for side in (1, -1):
             for _ in range(nper):
@@ -445,29 +445,24 @@ def build(K):
         th0 = -0.9 + 2 * math.pi * k / 10
         pts = []; nrms = []
         for j in range(8):
-            x = -7.9 - 0.3 * j
+            x = -8.7 - 0.18 * j
             p_, n_ = K.hpt(x, th0 + 0.04 * j, out=0.0); pts.append(p_); nrms.append(n_)
         vv, ff = HP.welt(pts, nrms, 0.12, 0.06, n=5)
         o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
     K.hull_detail('tail_folds', (V, F), 'flesh2', inv='tail_folds', kind='welt', subs=['welt'])
 
     # ---------------- the armour (issue 1291, R349, the C13 round G look on the shared kit) ----------------
-    # armadillo bands of grown chitin over the back behind the head, down to the flank fold,
-    # broken round the flank folds, the crown, the brood sacs, the siphons and the tail; small fused chitin clusters on the
-    # belly between the spore glands. The brood sacs stay uncapped: their birth slits must stay clear (fit check EXIT)
-    # lap 1.45 (the kit closes the bare strip a long step would leave, close_gaps, issue 1291); lo -0.2: on this hull the bands stop just under the flank fold, because the brood
-    # sacs and their necks fill the lower flank and cut the bands there into scraps; the lower flank and belly carry fused chitin
-    plates.armadillo(K, _k, 7.3, -7.7, seed=1352, lo=-0.2, band=1.25, lap=1.45, thick=0.19,
+    # armadillo bands of grown chitin from behind the head to the tail, wrapping down both flanks to the keel (the kit's
+    # default, Ryan Nov 20: "c10 needs the armor all around ... run it down low too"); broken only round the flank folds, the
+    # crown, the brood sacs, the spore glands, the siphons and the tail. The head folds, head pores and the scar sit ahead of the
+    # bands, the tail folds behind them. The brood sacs stay uncapped: their birth slits must stay clear (fit check EXIT)
+    plates.armadillo(K, _k, 9.6, -8.6, seed=1352, band=1.25, lap=1.45, thick=0.19,
                      keep=('flank_fold', 'head_folds', 'pores_', 'tail_folds', 'scar'),
-                     note='armadillo bands of grown chitin over the back down to the flank folds, lips aft; broken round the flank folds, the crown, the brood sacs, siphons and vents; hide rolled at the edges')
-    spots = [(6.8, -1.3, 0.95, 3), (2.6, -1.25, 1.05, 4), (-2.4, -1.28, 1.0, 3), (-7.0, -1.3, 0.8, 3),   # the belly, between the glands
-             (6.9, -0.45, 0.9, 3), (2.7, -0.5, 0.95, 4), (-1.6, -0.45, 0.85, 3), (-5.6, -0.4, 0.75, 3)]   # the lower flank, between the sacs
-    plates.fused_patches(K, _k, [(x, t, sz, n) for (x, t0, sz, n) in spots for t in (t0, math.pi - t0)],
-                         seed=1353, thick=0.14)
+                     note='armadillo bands of grown chitin from behind the head to the tail, down to the keel, lips aft; broken round the flank folds, the crown, the brood sacs, glands, siphons and vents; hide rolled at the edges')
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide, dark red veins (paint stage, R349)', 14.0, -10.2, 'whole body')
-    K.colour('grown chitin, bone to horn, over olive-brown hide (R349)', 7.3, -7.7, 'the armadillo bands on the back, fused clusters below')
+    K.colour('grown chitin, bone to horn, over olive-brown hide (R349)', 9.6, -8.6, 'the armadillo bands, down to the keel')
     K.colour('ochre chitin', 8.2, -8.0, 'the edge of each flank fold')
     K.colour('bile yellow-green light', 14.0, 12.0, 'the throat glands, deep in the mouths')
     K.colour('bile yellow-green light', -10.2, -14.0, 'the vents and the light in the membranes')
@@ -539,6 +534,8 @@ def build(K):
         K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
+    K.change('Armour almost everywhere: the armadillo bands run from behind the head (x 9.6) to the tail (x -8.6) and down both flanks to the keel (the kit default plates.WRAP); the fused belly clusters removed (the belly is banded); the head folds shortened to the head, the head pores, the scar and the tail folds moved clear of the bands',
+             'Ryan, Nov 20 4:18 PM CT, on run C: "c10 needs the armor all around, it randomly stops near the top of the spine? run it down low too. we should cover the chorus ships in armor almost everywhere"')
     K.change('The C13 round G look on the shared kit: lumpy swellings grown into the skin behind the head (body.field), armadillo bands of grown '
              'chitin over the back down to the flank folds, fused chitin clusters on the lower flanks and belly; the flank veins and body scars removed, '
              'the head, its folds and the maws as accepted (R302, R306); the brood sacs uncapped so the birth slits stay clear',
