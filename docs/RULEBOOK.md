@@ -676,7 +676,10 @@ curved, slowing trails. Why: "It looks so simple and like Microsoft paint." (R14
 6.10 **A bigger ship dies longer, not just larger; each faction breaks its own way; the flash core stays near white so a death
 always reads as a death.** Why: every faction died the same faint puff (deaths_and_hits.md). Set: Board, Nov 11, from Muse's
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
-docs/playbooks/deaths_and_hits.md.
+docs/playbooks/deaths_and_hits.md. R367 (Ryan, Nov 20 2026, decision card: "Full faction deaths"): each metal faction dies in its
+own colours and break as deaths_and_hits.md "How each faction dies" describes, replacing the shared orange fire; the colours
+come from faction_looks.json, the one faction colour file (Eclipse violet-white and white-gold, not green). Built for the
+Glasswrights and Eclipse in issue 1399; the Crusade, Hegemony and Hullbreakers follow.
 
 6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
 sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his

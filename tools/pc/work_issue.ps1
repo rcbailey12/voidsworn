@@ -261,6 +261,7 @@ $openaiPrices = @{
   'openai/gpt-6.2-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
   'openai/gpt-6.1-sol' = @{ input = [decimal]2; cached = [decimal]0.10; output = [decimal]10 }
   'openai/gpt-6.1-terra' = @{ input = [decimal]1; cached = [decimal]0.05; output = [decimal]5 }
+  'openai/gpt-6.2-astra' = @{ input = [decimal]8; cached = [decimal]0.80; output = [decimal]40 }
 }
 function OpenAI-Budget($settings) {
   $budget = [decimal]94

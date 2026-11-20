@@ -1174,8 +1174,9 @@ func _update_punch() -> void:
 # Issue 462: the scene dim after a capital's core flash (see scene_dim). A black veil a hair in front of the camera fades
 # in over a quarter of the dip and out over the rest, so the whole frame (sky, ships, effects) loses a little light
 # whatever environment the scene uses. A second dip during one is ignored.
-func dim_scene(t: float) -> void:
-	if not scene_dim or reduce_flashing or _dim_t0 >= 0.0:
+# force: a faction whose own death dims the scene (R367, Eclipse), whatever the scene_dim option says.
+func dim_scene(t: float, force := false) -> void:
+	if (not scene_dim and not force) or reduce_flashing or _dim_t0 >= 0.0:
 		return
 	if camera == null or not is_instance_valid(camera):
 		return
