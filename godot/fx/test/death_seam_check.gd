@@ -117,7 +117,13 @@ func _run() -> void:
 	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
 		var ex = nd.get_meta("extras", {})
 		if ex is Dictionary and ex.has("length_world"): length = float(ex["length_world"])
-	world.add_child(ship)
+	# Issue 1309: root the ship the way the game does (ShipView: an unscaled node in world units, the scaled hull under it),
+	# never the glb scene itself. Analysed in the glb's own frame (about one unit long) the hull's small triangles fall under
+	# Godot's TriangleMesh hit test, so a turret seat (CD5 r5d) read as clear and inside triangles read as outside the ship.
+	var holder := Node3D.new()
+	holder.name = "a16"
+	world.add_child(holder)
+	holder.add_child(ship)
 	var box := AABB()
 	var first := true
 	for mi in ship.find_children("*", "MeshInstance3D", true, false):
@@ -129,7 +135,7 @@ func _run() -> void:
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"quality": "low", "camera": null, "shake": 0.0})
-	fx.add_ship("a16", ship, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
+	fx.add_ship("a16", holder, {"faction": "corsair", "cls": "Battle-barge", "size": 1.22})
 	var s = fx.ship("a16")
 	check(s.hull.authored, "A16's seams reach the hull reader")
 	check(not s.hull.machines.is_empty(), "A16's export names its machines (voidsworn_destruct.machines)")
