@@ -10,10 +10,25 @@ var tag := ""
 var main: Node
 
 
-var _saved_settings = null   # the player's settings file, put back byte for byte at the end (the game shares user://)
+var _saved_settings = null   # the settings file's bytes at the start; the capture never writes it, and checks that at the end
+var _failed := 0             # pictures that did not save
+
+
+# On Windows the capture runs only inside the throwaway profile frontend_ui_check.bat makes (the player-path pattern,
+# PR 1188): the real main scene saves the campaign and may save settings, so it must never see Ryan's own profile.
+func _profile_error() -> String:
+	if OS.get_name() != "Windows": return ""   # the cloud and CI have no player profile
+	var profile := OS.get_environment("VS_SHOTS_PROFILE").replace("\\", "/").simplify_path().trim_suffix("/")
+	var actual := ProjectSettings.globalize_path("user://").replace("\\", "/").simplify_path().trim_suffix("/")
+	if profile == "" or not actual.to_lower().begins_with(profile.to_lower() + "/"):
+		return "user:// (%s) is not inside a throwaway profile; run tools/pc/jobs/frontend_ui_check.bat" % actual
+	return ""
 
 
 func _initialize() -> void:
+	var perr := _profile_error()
+	if perr != "":
+		printerr("[front-end-shots] FAIL ", perr); quit(2); return
 	if FileAccess.file_exists("user://settings.json"):
 		_saved_settings = FileAccess.get_file_as_string("user://settings.json")
 	var a := OS.get_cmdline_user_args()
@@ -45,12 +60,27 @@ func _shot(name: String, caption: String) -> void:
 	root.add_child(cap)
 	await _wait(0.2)
 	var img := root.get_viewport().get_texture().get_image()
+	# a 1080p or 4K slot only counts if the frame really is that size before the 720 high shrink (Artoo on PR 1233:
+	# a clamped window once gave two identical "sizes" on the combat capture, PR 1220)
+	var want := _asked_size()
+	if want != Vector2i.ZERO and Vector2i(img.get_width(), img.get_height()) != want:
+		_failed += 1; printerr("[front-end-shots] FAIL ", name, " is ", img.get_width(), "x", img.get_height(), ", not the asked ", want.x, "x", want.y)
 	if img.get_height() > 720:
 		img.resize(int(round(img.get_width() * 720.0 / img.get_height())), 720, Image.INTERPOLATE_LANCZOS)
 	var p := out.path_join(name + ".png")
-	preload("res://tools/picture_provenance.gd").save_png(img, p)
-	print("[front-end-shots] saved ", p)
+	var err: Error = preload("res://tools/picture_provenance.gd").save_png(img, p)
+	if err != OK: _failed += 1; printerr("[front-end-shots] FAIL could not save ", p, " (", error_string(err), ")")
+	else: print("[front-end-shots] saved ", p)
 	cap.queue_free()
+
+
+# the --resolution the command line asked for, or zero when none was given
+func _asked_size() -> Vector2i:
+	var args := OS.get_cmdline_args()
+	var i := args.find("--resolution")
+	if i < 0 or i + 1 >= args.size(): return Vector2i.ZERO
+	var parts := str(args[i + 1]).split("x")
+	return Vector2i(int(parts[0]), int(parts[1])) if parts.size() == 2 else Vector2i.ZERO
 
 
 func _scale(v: float) -> void:
@@ -109,10 +139,27 @@ func _run() -> void:
 	root.get_viewport().size_changed.emit()
 	await _wait(1.0)
 	await _shot("F3_setup_larger", "%s, UI scale Larger, faction and admiral" % res)
+	# phase 4: the flagship podium (the live ship turns on the PC; the cloud shows the KEEL silhouette)
+	if host != null and "ui" in host and host.ui != null and "aspect_pick" in host.ui:
+		host.C.act("startRun"); await _wait(1.5)
+		await _shot("F4_flagship_larger", "%s, UI scale Larger, flagship and aspect" % res)
+		host.C.act("backToSetup"); await _wait(0.5)
+		main.settings["ui_scale"] = 1.0
+		UiScale.set_player(1.0)
+		root.get_viewport().size_changed.emit()
+		await _wait(1.0)
+		for f in ["voidsworn", "hegemony", "chorus", "ithar"]:
+			host.C.act("pickFaction", f); host.C.act("startRun"); await _wait(2.5)
+			await _shot("F4_flagship_" + f, "%s, UI scale Normal, %s flagship" % [res, str(host.C.FACTIONS[f]["n"])])
+			if f == "voidsworn":
+				host.ui.aspect_pick = str(host.C.W["aspOffer"][0]); host.ui._dirty = true; await _wait(1.0)
+				await _shot("F4_flagship_picked", "%s, UI scale Normal, an aspect picked, Launch ready" % res)
+			host.C.act("backToSetup"); await _wait(0.5)
+		host.C.act("pickFaction", "voidsworn"); await _wait(0.3)
 	main.settings["ui_scale"] = 1.0
 	UiScale.set_player(1.0)
-	if _saved_settings != null:
-		var f := FileAccess.open("user://settings.json", FileAccess.WRITE)
-		f.store_string(_saved_settings)
-		f.close()
-	quit(0)
+	var now = FileAccess.get_file_as_string("user://settings.json") if FileAccess.file_exists("user://settings.json") else null
+	if now != _saved_settings:
+		_failed += 1; printerr("[front-end-shots] FAIL the settings file changed during the capture")
+	print("[front-end-shots] ", "PASS" if _failed == 0 else "FAIL %d problem(s)" % _failed)
+	quit(0 if _failed == 0 else 1)

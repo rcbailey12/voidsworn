@@ -226,10 +226,38 @@ func campaign_checks(snd: FakeSound) -> void:
 	var was_l := str(C.page["kind"])
 	ui._unhandled_input(esc()); await frames()
 	check(was_l == "lineage" and str(C.page["kind"]) == "legacy" and str(C.prog_tab) == "mastery", "Esc on Lineage goes back to Progression's mastery tab")
+	var runs0 := float(C.META["stats"]["runs"]); var adm0 := str(C.picked_admiral); var fac0 := str(C.picked_faction)
 	C.act("newRunScreen"); C.act("startRun"); await frames()
 	var was_a := str(C.page["kind"])
+	var roll = func(): return JSON.stringify({"pat": C.RUN["patrons"], "relics": C.RUN["relics"], "foes": C.RUN["foes"], "map": C.RUN["map"], "offer": C.W["aspOffer"]}, "", true)
+	var roll1: String = roll.call()
 	ui._unhandled_input(esc()); await frames()
-	check(was_a == "aspect" and str(C.page["kind"]) == "aspect" and C.RUN != null, "Esc on the aspect page changes nothing until it has a Back (phase 4)")
+	check(was_a == "aspect" and str(C.page["kind"]) == "admiral" and C.RUN == null and C.SAVED_RUN == null and float(C.META["stats"]["runs"]) == runs0
+		and str(C.picked_admiral) == adm0 and str(C.picked_faction) == fac0,
+		"Esc on the flagship page goes Back to the desk: the unplayed run, its save and its count are gone, the picks kept")
+	C.act("pickFaction", "corsair"); C.act("pickFaction", fac0); await frames()
+	C.act("startRun"); await frames(3)
+	check(roll.call() == roll1 and float(C.META["stats"]["runs"]) == runs0 + 1.0,
+		"Back then Launch is no reroll: same patrons, founder relic, foes, map and aspect offer, and the run counted once")
+	var go: Button = ui.page_box.find_child("LaunchButton", true, false)
+	check(go != null and go.disabled and ui._aspect_cards.size() >= 3, "the flagship page opens with Launch waiting for an aspect pick (%d offers)" % ui._aspect_cards.size())
+	var pick_id: String = ui._aspect_cards[1][1] if ui._aspect_cards.size() > 1 else ""
+	var hit: Button = null
+	if ui._aspect_cards.size() > 1:
+		for b in (ui._aspect_cards[1][0] as Node).find_children("*", "Button", true, false): hit = b
+	var found_hit := hit != null   # the button is freed by the re-render, so remember that it was there
+	if found_hit: hit.pressed.emit()
+	await frames(3)
+	go = ui.page_box.find_child("LaunchButton", true, false)
+	check(found_hit and go != null and not go.disabled and ui.aspect_pick == pick_id and go.text.ends_with(str(C.ASPECTS[pick_id]["n"])),
+		"clicking an aspect card picks it and Launch names it (%s)" % (go.text if go != null else "no button"))
+	var bk: Button = null
+	for b in ui.page_box.find_children("*", "Button", true, false):
+		if (b as Button).text == "Back": bk = b
+	check(bk != null, "the flagship page has a Back button")
+	if go != null: go.pressed.emit()
+	await frames(3)
+	check(C.RUN != null and str(C.RUN.get("aspect")) == pick_id and str(C.page["kind"]) != "aspect", "Launch takes the picked aspect and starts the run (page %s)" % str(C.page["kind"]))
 	ui.queue_free(); UiScale.set_player(1.0)
 	await frames()
 

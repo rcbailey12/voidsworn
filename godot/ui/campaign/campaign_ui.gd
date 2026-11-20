@@ -369,6 +369,7 @@ func render() -> void:
 	for ch in modal_box.get_children(): ch.queue_free()
 	var pg = C.page; _acts = pg["acts"]
 	if pg["kind"] != "admiral": desk_opts_open = false; _drawer_shown = false
+	if pg["kind"] != "aspect": aspect_pick = ""; podium = null
 	var battle = pg["kind"] == "battle"
 	root.visible = not (battle and hide_on_battle and (C.modal_d == null or C.modal_d["kind"] == "retreat"))   # rewards after a fight show over the battle scene
 	bg.color = INK
@@ -383,7 +384,7 @@ func render() -> void:
 	match pg["kind"]:
 		"title": body = _title()
 		"admiral": body = _desk()
-		"aspect": body = _wrap_page(_aspect())
+		"aspect": body = _podium()
 		"map": body = _map()
 		"fleet": body = _fleet(pg["data"])
 		"shipyard": body = _wrap_page(_shipyard())
@@ -806,26 +807,103 @@ func _run_options() -> Control:
 	return v
 
 # ---------------- aspect ----------------
-func _aspect() -> Control:
-	var v = vbox(10); var d = C.page["data"]; var f = d["flag"]
-	v.add_child(gothic("Choose your flagship's aspect"))
-	v.add_child(rich(c("The ", BONE2) + "[b]" + esc(f["name"]) + "[/b]" + c(" (" + esc(C.HULLS[f["tpl"]]["n"]) + ") carries your flag. Pick one aspect for it; it lasts the whole run, and passes to your next-largest ship if the flagship falls.", BONE2), 18))
-	var cards = flow()
+# ---------------- the flagship podium (issue 1217 phase 4; Ryan: its own screen with a big live 3D ship) ----------------
+# Left: the flagship, big, turning slowly (still under Reduce motion), with its name plate. Right: the aspect offers as
+# cards you pick, then what rides along (a patron's gift, Heat, the cores in range). The bar: Back (the rules action
+# backToSetup, both twins) and one ember Launch that takes the picked aspect.
+const Podium = preload("res://ui/campaign/flagship_podium.gd")
+var aspect_pick := ""               # the aspect card picked on this page; Launch takes it
+var _aspect_cards: Array = []       # [card, id] of the last render (front_end_test)
+var podium: Control = null
+func _podium() -> Control:
+	var vs = get_viewport().get_visible_rect().size
+	var d = C.page["data"]; var f = d["flag"]; var R = C.RUN
+	if not (d["opts"] as Array).has(aspect_pick): aspect_pick = ""
+	var fac = str(R["fac"]); var accent = Kit.faction_accent(fac)
+	var host = Control.new(); host.set_anchors_preset(Control.PRESET_FULL_RECT); host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.theme = Kit.theme(k)
+	var veil = TextureRect.new(); veil.texture = GS.ledger_veil(); veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+	veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; veil.stretch_mode = TextureRect.STRETCH_SCALE; veil.mouse_filter = Control.MOUSE_FILTER_IGNORE; host.add_child(veil)
+	var cw = minf(vs.x - px(DESK_PAD) * 2, float(px(1640)))
+	var left = (vs.x - cw) * 0.5
+	var col_w = clampf(cw * 0.36, float(px(420)), float(px(620)))
+	var stage_w = cw - col_w - px(40)
+	# the stage: the ship over a soft glow in its engine colour, and its name plate
+	var stage = Control.new(); stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.offset_left = left; stage.offset_top = px(28); stage.anchor_bottom = 1.0; stage.offset_bottom = -px(96); stage.offset_right = left + stage_w
+	host.add_child(stage)
+	var glow = TextureRect.new(); glow.texture = _podium_glow(accent); glow.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; glow.stretch_mode = TextureRect.STRETCH_SCALE; glow.mouse_filter = Control.MOUSE_FILTER_IGNORE; stage.add_child(glow)
+	podium = Podium.new(); podium.set_anchors_preset(Control.PRESET_FULL_RECT); podium.offset_bottom = -px(120); stage.add_child(podium)
+	podium.setup(C, f, accent, _reduce_motion())
+	var plate = VBoxContainer.new(); plate.add_theme_constant_override("separation", px(4)); plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plate.anchor_top = 1.0; plate.anchor_bottom = 1.0; plate.anchor_right = 1.0; plate.offset_top = -px(112); stage.add_child(plate)
+	plate.add_child(Kit.section("Your flagship", k))
+	plate.add_child(Kit.heading(str(f["name"]), 44, k))
+	var rb = ColorRect.new(); rb.color = accent; rb.custom_minimum_size = Vector2(px(72), maxi(2, px(3))); rb.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; rb.mouse_filter = Control.MOUSE_FILTER_IGNORE; plate.add_child(rb)
+	plate.add_child(Kit.label(str(C.HULLS[f["tpl"]]["n"]) + ", " + str(C.FACTIONS[fac]["n"]), 18, k, GS.TEXT2, null, false))
+	# the column: the aspects, then what rides along
+	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.offset_left = left + stage_w + px(40); sc.offset_right = sc.offset_left + col_w; sc.offset_top = px(28); sc.anchor_bottom = 1.0; sc.offset_bottom = -px(96)
+	host.add_child(sc)
+	var v = VBoxContainer.new(); v.custom_minimum_size.x = col_w - px(4); v.add_theme_constant_override("separation", px(12)); sc.add_child(v)
+	v.add_child(Kit.heading("Choose its aspect", 36, k))
+	v.add_child(Kit.label("One aspect for the whole " + C.runWord() + ". If the flagship falls, it passes to your next-largest ship.", 18, k, GS.TEXT2, null, true, (col_w - px(4)) / k))
+	_aspect_cards = []
 	for kk in d["opts"]:
-		var cv = card(false, 320); cv[1].add_child(lbl(C.ASPECTS[kk]["n"], 20, BONE, font_semi)); cv[1].add_child(lbl(C.ASPECTS[kk]["d"], 18, BONE2))
-		add(cv[1], abtn("Take this aspect", "pickAspect", kk, true)); cards.add_child(cv[0])
-	v.add_child(cards)
-	var R = C.RUN
+		var ac = _aspect_card(str(kk), col_w - px(4), accent); v.add_child(ac); _aspect_cards.append([ac, str(kk)])
 	if C.jt(R.get("giftBoon")):
-		var gb = R["giftBoon"]; v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", now Synced with you: [b]" + esc(C.BOONS[gb]["n"]) + "[/b].", BONE2), 17))
+		var gb = R["giftBoon"]
+		v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", now Synced with you: ", BONE2) + "[b]" + esc(C.BOONS[gb]["n"]) + "[/b]", 17))
 	if R.get("heat") is Array and R["heat"].size() > 0:
 		var hn = []
 		for kk in R["heat"]: hn.append(C.HEAT[kk]["n"])
-		v.add_child(lbl("Heat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, BLOOD))
+		v.add_child(Kit.label("Heat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, k, BLOOD, null, true, (col_w - px(4)) / k))
 	var ps = []
-	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b] (" + esc(str(C.PATRONS[p]["theme"]).to_lower()) + ")")
-	v.add_child(rich(c("Cores in range of this " + C.runWord() + ": ", BONE3) + "; ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 18))
-	return v
+	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b]")
+	var pl = rich(c("Cores in range: ", BONE3) + ", ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 17)
+	var pt = []
+	for p in R["patrons"]: pt.append(str(C.PATRONS[p]["n"]) + ": " + str(C.PATRONS[p]["theme"]).to_lower())
+	pl.tooltip_text = "\n".join(PackedStringArray(pt)); pl.mouse_filter = Control.MOUSE_FILTER_PASS; v.add_child(pl)
+	# the bar
+	var back = kbtn("Back", "backToSetup", "", "back")
+	var go: Button
+	if aspect_pick != "": go = kbtn("Launch with " + str(C.ASPECTS[aspect_pick]["n"]), "pickAspect", aspect_pick, "primary")
+	else:
+		go = Kit.button("Pick an aspect to launch", k, "primary", Callable()); go.disabled = true
+	go.name = "LaunchButton"
+	var bar = Kit.action_bar(k, [back], go)
+	bar.anchor_top = 1.0; bar.anchor_bottom = 1.0; bar.anchor_right = 1.0
+	bar.offset_left = left; bar.offset_right = -left; bar.offset_top = -px(80); bar.offset_bottom = -px(24)
+	host.add_child(bar)
+	return host
+func _aspect_card(id: String, w: float, accent: Color) -> Control:
+	var picked = aspect_pick == id
+	var cv = Kit.card(k, w / k, picked, accent if picked else Color(0, 0, 0, 0)); var body: VBoxContainer = cv[1]
+	cv[0].custom_minimum_size.x = w
+	var inner = floorf(w - px(14) * 2 - px(3) - px(4))
+	var top = HBoxContainer.new(); top.add_theme_constant_override("separation", px(10)); body.add_child(top)
+	var nm = Kit.label(str(C.ASPECTS[id]["n"]), 22, k, GS.TEXT, Kit.medium_font(), true, (inner - px(110)) / k); nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL; top.add_child(nm)
+	if picked: top.add_child(Kit.label("PICKED", 17, k, accent, Kit.medium_font(), false))
+	var dl = Kit.label(str(C.ASPECTS[id]["d"]), 18, k, GS.TEXT2, null, true, inner / k); dl.size_flags_horizontal = Control.SIZE_EXPAND_FILL; body.add_child(dl)
+	# the whole card is the button: a click, or Enter on its focus, picks it
+	var hit = Button.new(); hit.flat = true; hit.set_anchors_preset(Control.PRESET_FULL_RECT); hit.focus_mode = Control.FOCUS_ALL
+	hit.add_theme_stylebox_override("focus", GS.focus_ring(k)); hit.tooltip_text = "Pick " + str(C.ASPECTS[id]["n"])
+	for st in ["normal", "hover", "pressed", "disabled"]: hit.add_theme_stylebox_override(st, StyleBoxEmpty.new())
+	Kit.wire_sound(hit, "tab")
+	hit.pressed.connect(func(): aspect_pick = id; _dirty = true)
+	cv[0].add_child(hit)
+	cv[0].name = "Aspect_" + id
+	return cv[0]
+var _glow_cache := {}
+func _podium_glow(col: Color) -> Texture2D:
+	var key = col.to_html()
+	if _glow_cache.has(key): return _glow_cache[key]
+	var g = Gradient.new(); g.set_color(0, Color(col, 0.20)); g.set_color(1, Color(col, 0.0))
+	var t = GradientTexture2D.new(); t.gradient = g; t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.55); t.fill_to = Vector2(0.5, 0.0); t.width = 256; t.height = 256
+	_glow_cache[key] = t
+	return t
 
 # ---------------- the sector map: the Briefing layout (Ryan's pick, Nov 10 2026, FINDINGS R165) ----------------
 # The first spec (archived) is docs/archive/briefs/campaign_map_briefing.md; the live look is contrib/opus/briefs/campaign_rail_orders_sheet.md; the first picture is contrib/opus/ui_map_design/map_option_C_briefing.jpg.

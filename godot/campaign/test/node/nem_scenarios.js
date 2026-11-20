@@ -165,6 +165,11 @@ nemAfterBattle('win',false,{}); let cc=0; while(RUN.nemClock<NEM_CLOCK&&cc++<8) 
 rec('ah1',{clock:RUN.nemClock,strike:RUN.nemStrike,met:RUN.nems.hegemony.met}); adv(); const e2=earlyN();
 rec('ah2',{sector:RUN.sector,clock:RUN.nemClock,strike:RUN.nemStrike,node:nemNodeIs(e2)});
 rec('ah3',nemClockAdd(1)); rec('ah4',{clock:RUN.nemClock,strike:RUN.nemStrike,node:nemNodeIs(e2)});
+// Issue 1217 phase 4: Back on the flagship page then Launch reuses the parked random state: same patrons, founder relic,
+// foes, map and aspect offer, and the run count is not raised twice, even after changing the faction and back
+function roll(){ return {pat:RUN.patrons,relics:RUN.relics,foes:RUN.foes,map:RUN.map,offer:window._aspOffer,runs:META.stats.runs}; }
+fresh(190); const K1=roll(); rec('rr1',K1); ACT.backToSetup(); rec('rr1b',{run:RUN===null,runs:META.stats.runs,parked:META.parkedRng!=null});
+ACT.pickFaction('corsair'); ACT.pickFaction('voidsworn'); ACT.startRun(); const K2=roll(); rec('rr2',K2); rec('rr3',{same:canonJ(K1)===canonJ(K2),parked:META.parkedRng!=null});
 globalThis.__OUT=OUT;
 `);
 fs.writeFileSync(process.argv[2], __OUT.join('\n') + '\n');
