@@ -203,10 +203,6 @@ function ramLane(u,ri){ try{ const a=hexWorld(u.q,u.r,.9), b=hexWorld(ri.t.q,ri.
     const d=b.subtract(a); d.y=0; d.normalize(); const side=new V3(-d.z,0,d.x), tip=b.subtract(d.scale(HS*.75)), k=HS*.38;
     const ar=MB.CreateTube('ramArrow',{path:[tip.subtract(d.scale(k)).add(side.scale(k)),tip,tip.subtract(d.scale(k)).subtract(side.scale(k))],radius:HS*.09,tessellation:6},G.scene); ar.material=m; ar.isPickable=false; OV.items.push(ar);
     const v=G.views.get(ri.t.id), rm=ringMesh(new C3(1.3,.35,.25),.9,v?Math.max(6,v.L*.66):6.5,.45); rm.position=hexWorld(ri.t.q,ri.t.r,.3); OV.items.push(rm); }catch(e){ console.warn(e); } }
-// B3 travelling torpedoes: every salvo in flight shows its lane from the launch hex to the aim hex, and a ring where it strikes next turn (orange yours, red theirs)
-function torpLane(S){ try{ const a=hexWorld(S.from.q,S.from.r,.9), b=hexWorld(S.aim.q,S.aim.r,.9), mine=S.side==='player', col=mine?new C3(1.25,.62,.18):new C3(1.35,.25,.2), m=mine?(OV.torpMatP||(OV.torpMatP=ovMat('torpLaneP',col,.7))):(OV.torpMatE||(OV.torpMatE=ovMat('torpLaneE',col,.75)));
-    const tb=MB.CreateTube('torpLane',{path:[a,b],radius:HS*.06,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},G.scene); tb.material=m; tb.isPickable=false; G.glow.addExcludedMesh(tb); OV.items.push(tb);
-    tile('torpAim',col,.16,S.aim,OV.items); tile('torpAimE',col,.85,S.aim,OV.items,true); }catch(e){ console.warn(e); } }
 // v49: overlay meshes own their materials (rings, fans, lines), so free those too; the shared tile templates keep theirs
 function ovDispose(m){ if(!m||m.isDisposed&&m.isDisposed()) return; const mats=new Set(); const grab=x=>{ const mt=x&&x.material; if(mt&&!mt._keep&&!(G.aimMats&&Object.values(G.aimMats).includes(mt))) mats.add(mt); }; grab(m); if(m.getChildMeshes) m.getChildMeshes(false).forEach(grab); m.dispose(); mats.forEach(mt=>{ try{ mt.dispose(); }catch(e){} }); }
 function clearOverlays(){ G.aiChipTxt=''; { const ac=document.getElementById('aichip'); if(ac){ ac.style.opacity='0'; ac.innerHTML=''; } } for(const m of OV.items) ovDispose(m); OV.items=[]; for(const m of OV.hover) ovDispose(m); OV.hover=[]; if(OV.fan){ ovDispose(OV.fan); OV.fan=null; } if(OV.ghost){ OV.ghost.dispose(); OV.ghost=null; OV.ghostFor=null; } OV.targets=[]; }
@@ -234,7 +230,6 @@ function refreshOverlays(){
   if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ const g=s.guns>0; if(g) tile('reachG4',new C3(.95,.7,.28),.03,s,OV.items); tile(g?'reachGE3':'reachE2',g?new C3(1,.92,.62):new C3(1,.8,.4),g?.8:.36,s,OV.items,true); /* v53: outline only, so hulls stay readable; a hex your guns can fire from gets a brighter edge and a whisper of fill (additive reads ~3x brighter on screen) */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
     const per=reachOutline(sel,B.reach); if(per) OV.items.push(per); }
   if(sel&&playerTurn&&sel.side==='player'&&!B.mode&&!sel.isSq&&canUse(sel)){ const ri=ramInfo(sel); if(ri) ramLane(sel,ri); }
-  for(const S of (B.torps||[])) torpLane(S);
   if(B.wingSel&&!B.wingSel.dead){ tile('wingSel',new C3(1,.8,.35),.55,B.wingSel,OV.items); tile('wingSelE',new C3(1,.85,.45),.8,B.wingSel,OV.items,true); }
   if(B.side==='player') for(const w of alive('player').filter(x=>x.isSq&&x.wingOrder)){ const o=sqOrder(w); if(!o) continue; const v=G.views.get(o.t.id), R=v?Math.max(5,v.L*.6):5.5, rm=ringMesh(o.kind==='strike'?new C3(1,.55,.2):new C3(.35,.9,.75),.6,R,.22); rm.position=hexWorld(o.t.q,o.t.r,.25); OV.items.push(rm); }
   if(B.mode==='nova'&&sel) for(const h of novaTargets(sel)) tile('nova',new C3(1,.55,.2),.1,h,OV.items);

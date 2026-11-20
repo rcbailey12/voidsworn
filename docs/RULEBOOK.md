@@ -676,7 +676,10 @@ curved, slowing trails. Why: "It looks so simple and like Microsoft paint." (R14
 6.10 **A bigger ship dies longer, not just larger; each faction breaks its own way; the flash core stays near white so a death
 always reads as a death.** Why: every faction died the same faint puff (deaths_and_hits.md). Set: Board, Nov 11, from Muse's
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
-docs/playbooks/deaths_and_hits.md.
+docs/playbooks/deaths_and_hits.md. R367 (Ryan, Nov 20 2026, decision card: "Full faction deaths"): each metal faction dies in its
+own colours and break as deaths_and_hits.md "How each faction dies" describes, replacing the shared orange fire; the colours
+come from faction_looks.json, the one faction colour file (Eclipse violet-white and white-gold, not green). Built for the
+Glasswrights and Eclipse in issue 1399; the Crusade, Hegemony and Hullbreakers follow.
 
 6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
 sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
@@ -799,8 +802,12 @@ Board. Id: screens-11.
 Why: "Options first, then build" (R167); "every step" of the redesign shows distinct options (R137c). Set: Ryan. Ids: R137c,
 program-01.
 
-9.11 **Torpedoes show their hit chance and a visible flight with a clear hit or miss.** Why: his playtest call (R76). Set:
-Ryan, Nov 2. Id: R76b.
+9.11 **Torpedoes fire now: they fly and land in the same activation as any gun, after a heavy flight of about 1.5 s, and
+show their hit chance like any gun.** No lane on the board, no hex aim, no parked torpedo and no strike at the next turn; point
+defence and screening wings still get their chance to shoot a salvo down. Why: "i really dont like the way torpedoes look today
+and how they act. the arrow lines, the delay, etc. it's not intuitive, it doesnt fit the vibe, UI or graphics of the rest of
+the game" (Nov 20, 17:59 UTC); he picked TP-B "Fire now" over a lock-on and a cleaner lane (18:46 UTC). Set: Ryan, Nov 20.
+Id: R364 (replaces R76b's lane and next-turn strike; the visible flight and the clear hit or miss stay).
 
 9.12 **The run debrief shows, in order: headline, first loss, what this run bought, the heir, the recap, the next run, exits.**
 Why: a run is meant to be lost; the debrief names what the death bought (contrib/opus/briefs/debrief_spec.md). Set: Ryan
@@ -882,6 +889,11 @@ progression is ready to test.** Why: he tests the whole game, not the unlock pat
 11.6 **The dawn finale plays on every run from run 5 on that reaches the final boss** (the sector 3 boss), not only on run 5.
 Why: a player who reaches the boss on run 6 or later never saw it. Replaces the run 5 only part of R78 Q18. Set: Ryan, Nov
 20 2026 01:11 UTC ("Picks ok" on the backdrop audit check, Board thread). Job: issue 1271.
+
+11.7 **On a first run, Battle 2 opens on Battle 1's open strip** (open space, strip arena, line deployment, edge feature);
+its Corsairs and the forced round 3 to 4 enemy reinforcements stay. Why: Battle 2 was a big difficulty jump before the first
+shipyard (Neon review finding 9, PR 1380; the council playtest lost seed 121 there). Set: Ryan, Nov 20 2026 19:45 UTC ("Give it
+Battle 1's open strip", Board thread card). Id: R366. Job: issue 1393.
 
 ## 12. Automatic checks
 

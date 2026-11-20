@@ -1,186 +1,1148 @@
-Saved manifest before: aeb99b05371a5fef003b2a5e379269428923307211f75305c8d95a54b0775cee
-Saved manifest after: b491b9564574e2fc18b7bb3a938100db3e579464168e3e12fbbdc0672fd750b9
+Saved manifest before: b491b9564574e2fc18b7bb3a938100db3e579464168e3e12fbbdc0672fd750b9
+Saved manifest after: ab9c7991a2e8a75c5d0d3a963c5dabc2baf10ef34fa38e38d0cc8844e3b656a2
 
 Saved Godot results: changed battles
 Later differences count changed records after the first, aligned by turn index.
+FAIL battle s1
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 174; total records: 135 -> 175
+FAIL battle s2
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 234; total records: 192 -> 235
+FAIL battle s3
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 125; total records: 124 -> 126
+FAIL battle s4
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 263; total records: 262 -> 264
+FAIL battle s5
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 352; total records: 317 -> 353
+FAIL battle s6
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 277; total records: 278 -> 252
+FAIL battle s7
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 343; total records: 327 -> 344
 FAIL battle s8
-  turn 0, round 1, after tick player; unit x09 (enemy i_carrier)
-  state.units[4].hp: 172 -> 207
-  later changed records: 118; total records: 118 -> 119
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 127; total records: 119 -> 128
+FAIL battle s9
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 343; total records: 344 -> 324
+FAIL battle s10
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 180; total records: 181 -> 181
+FAIL battle s11
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 161; total records: 143 -> 162
+FAIL battle s12
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 167; total records: 106 -> 168
+FAIL battle s13
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 184; total records: 185 -> 165
 FAIL battle s14
-  turn 0, round 1, after tick player; unit x09 (enemy i_song)
-  state.units[4].hp: 101 -> 121
-  later changed records: 147; total records: 148 -> 136
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 144; total records: 136 -> 145
+FAIL battle s15
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 196; total records: 197 -> 155
+FAIL battle s16
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 252; total records: 253 -> 250
+FAIL battle s17
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 125; total records: 126 -> 99
+FAIL battle s18
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 262; total records: 263 -> 248
+FAIL battle s19
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 182; total records: 165 -> 183
+FAIL battle s20
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 144; total records: 145 -> 68
+FAIL battle s21
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 247; total records: 248 -> 210
+FAIL battle s22
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 131; total records: 132 -> 84
+FAIL battle s23
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 736; total records: 737 -> 702
+FAIL battle s24
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 621; total records: 622 -> 599
+FAIL battle s25
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 359; total records: 360 -> 342
+FAIL battle s26
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 156; total records: 157 -> 157
 FAIL battle s27
-  turn 0, round 1, after tick player; unit x06 (player i_carrier)
-  state.units[0].hp: 140 -> 168
-  later changed records: 325; total records: 326 -> 257
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 256; total records: 257 -> 236
+FAIL battle s28
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 288; total records: 289 -> 289
+FAIL battle s29
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 196; total records: 146 -> 197
+FAIL battle s30
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 399; total records: 400 -> 368
+FAIL battle s31
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 258; total records: 227 -> 259
+FAIL battle s32
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 107; total records: 108 -> 89
 FAIL battle s33
-  turn 0, round 1, after tick player; unit x09 (enemy i_blade)
-  state.units[4].hp: 45 -> 51
-  later changed records: 218; total records: 163 -> 219
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 218; total records: 219 -> 133
+FAIL battle s34
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 175; total records: 176 -> 150
+FAIL battle s35
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 276; total records: 254 -> 277
 FAIL battle s36
-  turn 0, round 1, after tick player; unit x013 (enemy i_blade)
-  state.units[6].hp: 51 -> 58
-  later changed records: 357; total records: 358 -> 216
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 215; total records: 216 -> 145
+FAIL battle s37
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 336; total records: 337 -> 314
+FAIL battle s38
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 290; total records: 224 -> 291
+FAIL battle s39
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 425; total records: 391 -> 426
+FAIL battle s40
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 347; total records: 348 -> 336
+FAIL battle s41
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 281; total records: 270 -> 282
+FAIL battle s42
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 195; total records: 152 -> 196
 FAIL battle s43
-  turn 0, round 1, after tick player; unit x07 (enemy i_blade)
-  state.units[3].hp: 44 -> 50
-  later changed records: 157; total records: 151 -> 158
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 207; total records: 158 -> 208
+FAIL battle s44
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 191; total records: 107 -> 192
 FAIL battle s45
-  turn 0, round 1, after tick player; unit x07 (enemy i_carrier_a)
-  state.units[3].hp: 157 -> 188
-  later changed records: 291; total records: 292 -> 280
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 279; total records: 280 -> 132
+FAIL battle s46
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 220; total records: 221 -> 152
+FAIL battle s47
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 95; total records: 96 -> 51
+FAIL battle s48
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 140; total records: 120 -> 141
+FAIL battle s49
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 131; total records: 92 -> 132
+FAIL battle s50
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 122; total records: 123 -> 115
+FAIL battle s51
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 161; total records: 142 -> 162
+FAIL battle s52
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 117; total records: 118 -> 118
+FAIL battle s53
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 110; total records: 111 -> 111
+FAIL battle s54
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 77; total records: 78 -> 78
 FAIL battle s55
-  turn 0, round 1, after tick player; unit x04 (player i_carrier)
-  state.units[0].hp: 140 -> 168
-  later changed records: 211; total records: 211 -> 212
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 218; total records: 212 -> 219
 FAIL battle s56
-  turn 0, round 1, after tick player; unit x04 (player i_carrier)
-  state.units[0].hp: 140 -> 168
-  later changed records: 155; total records: 132 -> 156
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 207; total records: 156 -> 208
+FAIL battle s57
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 143; total records: 144 -> 73
 FAIL battle t_casttwice
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 92; total records: 93 -> 93
 FAIL battle t_flakskip
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 105; total records: 106 -> 106
 FAIL battle t_lensaloft
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 57; total records: 58 -> 58
 FAIL battle t_longfocus
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 35; total records: 36 -> 36
 FAIL battle t_recordedangle
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 54; total records: 55 -> 55
 FAIL battle t_burnflaw
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 33; total records: 34 -> 34
 FAIL battle t_longlight
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 37; total records: 38 -> 38
 FAIL battle t_flawforever
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 48; total records: 49 -> 49
 FAIL battle t_twoimages
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 67; total records: 68 -> 68
 FAIL battle t_angles
-  turn 0, round 1, after tick player; unit x04 (player i_wisp)
-  state.units[0].hp: 30 -> 36
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 75; total records: 76 -> 76
 FAIL battle t_refraction
-  turn 0, round 1, after tick player; unit x03 (player i_wisp)
-  state.units[0].hp: 30 -> 36
-  later changed records: 55; total records: 55 -> 56
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 55; total records: 56 -> 56
 FAIL battle t_mirrorturns
-  turn 0, round 1, after tick player; unit x03 (player i_wisp)
-  state.units[0].hp: 30 -> 36
-  later changed records: 49; total records: 38 -> 50
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 49; total records: 50 -> 50
 FAIL battle t_falsehulls
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 61; total records: 62 -> 62
 FAIL battle t_rechargelit
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 23; total records: 24 -> 24
 FAIL battle t_glasscorrected
-  turn 0, round 1, after tick player; unit x03 (player i_wisp)
-  state.units[0].hp: 30 -> 36
-  later changed records: 98; total records: 68 -> 99
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 98; total records: 99 -> 99
 FAIL battle t_hardlight
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 69; total records: 70 -> 70
 FAIL battle t_wardglass
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 53; total records: 54 -> 54
 FAIL battle t_deployread
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 20; total records: 21 -> 21
 FAIL battle t_castcorrected
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 31; total records: 32 -> 32
 FAIL battle t_flagshiplens
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 35; total records: 36 -> 36
 FAIL battle t_firstlight
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 54; total records: 55 -> 55
+FAIL battle t_heldaccount
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 58; total records: 59 -> 41
+FAIL battle t_namedledger
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 57; total records: 58 -> 58
+FAIL battle t_inheritedaim
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t_everygun
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 78; total records: 79 -> 79
+FAIL battle t_sworndeploy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 39; total records: 33 -> 40
+FAIL battle t_debtsreserve
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 39; total records: 40 -> 29
+FAIL battle t_flagshipLedger
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 32; total records: 33 -> 33
+FAIL battle t_standardreroll
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 54; total records: 55 -> 55
+FAIL battle t_preyname
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 67; total records: 68 -> 55
+FAIL battle t_salvotwohands
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 69; total records: 70 -> 63
+FAIL battle t_debthunts
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 67; total records: 68 -> 68
+FAIL battle t_twosalvos
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 67; total records: 68 -> 63
+FAIL battle t_namedprey
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 63; total records: 64 -> 63
+FAIL battle t_escortname
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 36; total records: 37 -> 37
+FAIL battle t_firstwave
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 57; total records: 58 -> 58
+FAIL battle t_wingreserve
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 69; total records: 70 -> 70
+FAIL battle t_generation
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 44; total records: 45 -> 45
+FAIL battle t_wingsdebt
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 79; total records: 80 -> 80
+FAIL battle t_rollwings
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 86; total records: 87 -> 87
+FAIL battle t_oathwings
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 73; total records: 65 -> 74
+FAIL battle t_holdcounted
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 39; total records: 40 -> 40
+FAIL battle t_oathstillness
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 47; total records: 48 -> 48
+FAIL battle t_unpaid
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 129; total records: 130 -> 130
+FAIL battle t_wallanswers
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 83; total records: 84 -> 84
+FAIL battle t_irontestament
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 44; total records: 45 -> 45
+FAIL battle t_ecl_restoreninth
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 91; total records: 92 -> 92
+FAIL battle t_ecl_restoredbeyond
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 131; total records: 132 -> 132
+FAIL battle t_ecl_copiescontribute
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 70; total records: 71 -> 71
+FAIL battle t_ecl_tenthframe
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 109; total records: 110 -> 110
+FAIL battle t_ecl_earliercopy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 84; total records: 85 -> 85
+FAIL battle t_ecl_arcswarm
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 190; total records: 191 -> 191
+FAIL battle t_ecl_noonchoice
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 88; total records: 89 -> 89
+FAIL battle t_ecl_copyfires
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 54; total records: 55 -> 55
+FAIL battle t_ecl_coronashadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 57; total records: 58 -> 58
+FAIL battle t_ecl_everyframe
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 94; total records: 95 -> 95
+FAIL battle t_ecl_noonrepeat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 64; total records: 65 -> 65
+FAIL battle t_ecl_onesuncopy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 58; total records: 59 -> 59
+FAIL battle t_ecl_copiedbehind
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 62; total records: 63 -> 63
+FAIL battle t_ecl_unseenarchive
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 58; total records: 59 -> 59
+FAIL battle t_ecl_uncopiedtarget
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 82; total records: 83 -> 83
+FAIL battle t_ecl_iterationkill
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 74; total records: 75 -> 75
+FAIL battle t_ecl_silentarchive
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 95; total records: 96 -> 96
+FAIL battle t_ecl_outshadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 86; total records: 87 -> 87
+FAIL battle t_ecl_longcopy
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t_ecl_platesshadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 92; total records: 93 -> 93
+FAIL battle t_ecl_twicerestored
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 111; total records: 112 -> 112
+FAIL battle t_ecl_layersshift
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 74; total records: 75 -> 75
+FAIL battle t_ecl_nolayer
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 104; total records: 105 -> 105
+FAIL battle t_ecl_stillness
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 120; total records: 121 -> 121
+FAIL battle t_ecl_tenthousand
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 161; total records: 162 -> 162
+FAIL battle t_ecl_restoredfleet
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 107; total records: 108 -> 108
+FAIL battle t_ecl_iterationswap
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 49; total records: 50 -> 50
+FAIL battle t_ecl_flagshipindex
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 58; total records: 59 -> 59
+FAIL battle t_ecl_framezero
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 113; total records: 114 -> 114
+FAIL battle t_choosebrood
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 70; total records: 71 -> 71
+FAIL battle t_sporetide
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 83; total records: 84 -> 84
+FAIL battle t_everythroat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 71; total records: 72 -> 72
+FAIL battle t_secondthroat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 100; total records: 101 -> 101
+FAIL battle t_rundown
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 83; total records: 84 -> 84
+FAIL battle t_razorprey
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 95; total records: 96 -> 96
+FAIL battle t_frenzyfeeds
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 121; total records: 122 -> 122
+FAIL battle t_breathbite
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 129; total records: 130 -> 130
+FAIL battle t_throatred
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 73; total records: 74 -> 74
+FAIL battle t_preyeverymouth
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 100; total records: 101 -> 101
+FAIL battle t_growhurts
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 104; total records: 105 -> 105
+FAIL battle t_skinthick
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 68; total records: 69 -> 69
+FAIL battle t_fleshknit
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 53; total records: 54 -> 54
+FAIL battle t_refuseholes
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 98; total records: 99 -> 99
+FAIL battle t_tideend
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 42; total records: 43 -> 43
+FAIL battle t_tornback
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 124; total records: 125 -> 125
+FAIL battle t_acidbeforeaim
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 57; total records: 58 -> 58
+FAIL battle t_throatspits
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 149; total records: 150 -> 150
+FAIL battle t_burnstays
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 86; total records: 87 -> 87
+FAIL battle t_acidseams
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 45; total records: 46 -> 46
+FAIL battle t_manymouths
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 72; total records: 73 -> 73
+FAIL battle t_volleygrows
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 89; total records: 90 -> 90
+FAIL battle t_mouthdeep
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 88; total records: 89 -> 89
+FAIL battle t_broodreserve
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 39; total records: 40 -> 40
+FAIL battle t_firstthroat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t_throatdeep
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 31; total records: 32 -> 32
+FAIL battle t_hb_runbigger
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 33; total records: 34 -> 34
+FAIL battle t_hb_railboarding
+  turn 0, round 1, after tick player; unit x04 (player c_raider)
+  state.units[0].name: "No Quarter" -> "Red Tally"
+  later changed records: 98; total records: 99 -> 79
+FAIL battle t_hb_packcloses
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 47; total records: 48 -> 46
+FAIL battle t_hb_rushrail
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 80; total records: 77 -> 81
+FAIL battle t_hb_allscars
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 59; total records: 60 -> 36
+FAIL battle t_hb_mawopens
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 62; total records: 63 -> 42
+FAIL battle t_hb_burncarry
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 69; total records: 46 -> 70
+FAIL battle t_hb_warlordrun
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 54; total records: 49 -> 55
+FAIL battle t_hb_knifeback
+  turn 0, round 1, after tick player; unit x04 (player c_reaver)
+  state.units[0].name: "Salvage Right" -> "Chain of Teeth"
+  later changed records: 49; total records: 50 -> 41
+FAIL battle t_hb_darktorps
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 76; total records: 77 -> 62
+FAIL battle t_hb_cutturn
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 65; total records: 66 -> 57
+FAIL battle t_hb_secondknife
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 86; total records: 87 -> 80
+FAIL battle t_hb_smilecut
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 41; total records: 42 -> 36
+FAIL battle t_hb_everyknife
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 43; total records: 44 -> 44
+FAIL battle t_hb_darkknives
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 92; total records: 93 -> 67
+FAIL battle t_hb_cutfeeds
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 116; total records: 117 -> 94
+FAIL battle t_hb_patchedwing
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 60; total records: 57 -> 61
+FAIL battle t_hb_hulkmore
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 55; total records: 48 -> 56
+FAIL battle t_hb_retasked
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 120; total records: 121 -> 105
+FAIL battle t_hb_wreckline
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 27; total records: 28 -> 28
+FAIL battle t_hb_wholeyard
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 68; total records: 69 -> 65
+FAIL battle t_hb_screaming
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 119; total records: 113 -> 120
+FAIL battle t_hb_swarmscrap
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 88; total records: 89 -> 65
+FAIL battle t_hb_privatewing
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 87; total records: 87 -> 88
+FAIL battle t_hb_weldmatters
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 157; total records: 158 -> 116
+FAIL battle t_hb_patchguns
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 151; total records: 152 -> 149
+FAIL battle t_hb_scrapfront
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 148; total records: 149 -> 148
+FAIL battle t_hb_weldedfight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 133; total records: 134 -> 123
+FAIL battle t_hb_doublebolted
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 151; total records: 105 -> 152
+FAIL battle t_hb_packbites
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 140; total records: 141 -> 126
+FAIL battle t_hb_weldedwhole
+  turn 0, round 1, after tick player; unit x03 (player c_reaver)
+  state.units[0].name: "Second Death" -> "Chain of Teeth"
+  later changed records: 144; total records: 145 -> 139
+FAIL battle t_hb_nothingbroken
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 116; total records: 117 -> 117
+FAIL battle t_hb_preyscent
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 51; total records: 52 -> 44
+FAIL battle t_hb_loosepack
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 30; total records: 31 -> 31
+FAIL battle t_hb_firstscar
+  turn 0, round 1, after tick player; unit x04 (player c_raider)
+  state.units[0].name: "Gut Hook" -> "Forty Captains"
+  later changed records: 51; total records: 52 -> 48
+FAIL battle t_hb_trophystandard
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 34; total records: 35 -> 17
+FAIL battle t_heg_widenet
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 80; total records: 79 -> 81
+FAIL battle t_heg_secondvolley
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 137; total records: 138 -> 138
+FAIL battle t_heg_sharedsolution
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 86; total records: 82 -> 87
+FAIL battle t_heg_colddrill
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 70; total records: 69 -> 71
+FAIL battle t_heg_rollingfire
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 79; total records: 80 -> 71
+FAIL battle t_heg_irontempo
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 186; total records: 187 -> 187
+FAIL battle t_heg_livingrelay
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 77; total records: 78 -> 71
+FAIL battle t_heg_onevoice
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 69; total records: 70 -> 67
+FAIL battle t_heg_formation
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 58; total records: 59 -> 57
+FAIL battle t_heg_drill
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 70; total records: 71 -> 71
+FAIL battle t_heg_beacon
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 68; total records: 69 -> 62
+FAIL battle t_heg_stdforward
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 77; total records: 59 -> 78
+FAIL battle t_heg_filedtriplicate
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 66; total records: 58 -> 67
+FAIL battle t_heg_strikebook
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 79; total records: 67 -> 80
+FAIL battle t_heg_crossfire
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 76; total records: 67 -> 77
+FAIL battle t_heg_filedbefore
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 117; total records: 118 -> 118
+FAIL battle t_heg_totalinterdiction
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 120; total records: 121 -> 121
+FAIL battle t_heg_sevenbreach
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 112; total records: 113 -> 113
+FAIL battle t_heg_permanentfile
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 68; total records: 69 -> 64
+FAIL battle t_heg_oneorder
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 64; total records: 65 -> 65
+FAIL battle t_heg_cruisers
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 76; total records: 77 -> 74
+FAIL battle t_heg_launchorder
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 68; total records: 47 -> 69
+FAIL battle t_heg_secondwave
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 105; total records: 77 -> 106
+FAIL battle t_heg_rehearsed
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].name: "HNS Ascendancy" -> "HNS Dominator"
+  later changed records: 86; total records: 87 -> 77
+FAIL battle t_heg_fullgroup
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 128; total records: 129 -> 129
+FAIL battle t_heg_escorts
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 93; total records: 94 -> 93
+FAIL battle t_heg_onetarget
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 45; total records: 46 -> 44
+FAIL battle t_heg_standinggroup
+  turn 0, round 1, after tick player; unit x04 (player h_vanguard)
+  state.units[0].name: "HNS Dominator" -> "HNS Forecast"
+  later changed records: 76; total records: 77 -> 74
+FAIL battle t_heg_columnstraight
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 119; total records: 120 -> 120
+FAIL battle t_heg_overflow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 135; total records: 136 -> 136
+FAIL battle t_heg_bell
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 132; total records: 133 -> 133
+FAIL battle t_heg_rotation
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 132; total records: 133 -> 133
+FAIL battle t_heg_columnendures
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 126; total records: 127 -> 127
+FAIL battle t_heg_filedarmor
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 144; total records: 145 -> 145
+FAIL battle t_heg_standardcovers
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 165; total records: 166 -> 166
+FAIL battle t_heg_flagshipstandard
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 134; total records: 135 -> 135
 FAIL battle t7a_flightpaths
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 86; total records: 87 -> 87
 FAIL battle t7a_replay
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 104; total records: 105 -> 105
 FAIL battle t7a_starlings
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 95; total records: 96 -> 96
 FAIL battle t7a_flightcast
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
-  later changed records: 97; total records: 92 -> 98
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 97; total records: 98 -> 98
 FAIL battle t7a_forgeahead
-  turn 0, round 1, after tick player; unit x03 (player i_carrier)
-  state.units[0].hp: 140 -> 168
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 98; total records: 99 -> 99
 FAIL battle t7a_onelens
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 35; total records: 36 -> 36
 FAIL battle t7a_lighttogether
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 30; total records: 31 -> 31
 FAIL battle t7a_sunlens
-  turn 0, round 1, after tick player; unit x04 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 36; total records: 37 -> 37
 FAIL battle t7a_mirroraside
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 65; total records: 66 -> 66
 FAIL battle t7a_splitthree
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 52; total records: 53 -> 53
 FAIL battle t7a_fleetelsewhere
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 62; total records: 63 -> 63
 FAIL battle t7a_weakside
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 35; total records: 36 -> 36
 FAIL battle t7a_prismsface
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 36; total records: 37 -> 37
 FAIL battle t7a_lensrotates
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 22; total records: 23 -> 23
 FAIL battle t7a_facetlit
-  turn 0, round 1, after tick player; unit x03 (player i_song)
-  state.units[0].hp: 90 -> 108
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
   later changed records: 23; total records: 24 -> 24
-FAIL: saved Godot results; 284 battles checked, 45 changed, 0 other files changed, 45 failures; 15.043 s
+FAIL battle t7a_ledgerarcs
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 39; total records: 40 -> 35
+FAIL battle t7a_debtdue
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 51; total records: 51 -> 52
+FAIL battle t7a_grandledger
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 57; total records: 56 -> 58
+FAIL battle t7a_lastaccount
+  turn 0, round 1, after tick player; unit x03 (player penitent)
+  state.units[0].name: "Unpaid Debt" -> "Bright Censure"
+  later changed records: 55; total records: 39 -> 56
+FAIL battle t7a_torpfirst
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 69; total records: 70 -> 64
+FAIL battle t7a_rearreckoning
+  turn 0, round 1, after tick player; unit x03 (player harrow)
+  state.units[0].name: "Edge of Winter" -> "Thorn of the Reach"
+  later changed records: 71; total records: 72 -> 36
+FAIL battle t7a_salvoend
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 83; total records: 84 -> 77
+FAIL battle t7a_accountsplits
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 92; total records: 93 -> 93
+FAIL battle t7a_screensshift
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 33; total records: 34 -> 34
+FAIL battle t7a_wallearly
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 40; total records: 41 -> 41
+FAIL battle t7a_wallmoves
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 46; total records: 47 -> 47
+FAIL battle t7b_ecl_formation_a
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 98; total records: 99 -> 99
+FAIL battle t7b_ecl_formation_b
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 82; total records: 83 -> 83
+FAIL battle t7b_ecl_formation_c
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 95; total records: 96 -> 96
+FAIL battle t7b_ecl_formation_d
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 61; total records: 62 -> 62
+FAIL battle t7b_ecl_shadow
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 75; total records: 76 -> 76
+FAIL battle t7b_ecl_wall
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 112; total records: 113 -> 113
+FAIL battle t7b_ecl_archive
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 95; total records: 96 -> 96
+FAIL battle t7b_ecl_iterfire
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 111; total records: 112 -> 112
+FAIL battle t7b_ecl_triage
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 107; total records: 108 -> 108
+FAIL battle t7b_ch_broodsplits
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 63; total records: 64 -> 64
+FAIL battle t7b_ch_nine
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 87; total records: 88 -> 88
+FAIL battle t7b_ch_teeth
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 96; total records: 97 -> 97
+FAIL battle t7b_ch_tideearly
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 116; total records: 117 -> 117
+FAIL battle t7b_ch_growth
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 106; total records: 107 -> 107
+FAIL battle t7b_ch_spat
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 82; total records: 83 -> 83
+FAIL battle t7b_ecl_targetarchived
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 30; total records: 31 -> 31
+FAIL battle t529_roles_strike
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 89; total records: 90 -> 90
+FAIL battle t529_roles_screen
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 79; total records: 80 -> 80
+FAIL battle t529_roles_mend
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 81; total records: 82 -> 82
+FAIL battle t529_roles_change
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 91; total records: 92 -> 92
+FAIL battle t529_spawned
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 66; total records: 67 -> 67
+FAIL battle t529_nostop
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 127; total records: 128 -> 128
+FAIL battle t529_scent
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 52; total records: 53 -> 53
+FAIL battle t529_may_debt_no
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 56; total records: 42 -> 57
+FAIL battle t529_may_grow_no
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 98; total records: 99 -> 99
+FAIL battle s983_station_defend
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 174; total records: 136 -> 175
+FAIL battle s983_station_plain
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 91; total records: 85 -> 92
+FAIL battle s983_teaching_station_defend
+  turn 0, round 1, after tick player; unit none (battle state)
+  state.b.torps: [] -> <missing>
+  later changed records: 118; total records: 119 -> 68
+FAIL file threat_s4.json
+  map.2.10,7: "407178f5c28f5c28" -> "4070d1eb851eb852"
+FAIL file threat_s19.json
+  map.3.1,10: <missing> -> "404a199999999999"
+FAIL file threat_s23.json
+  map.3.10,10: "4076fb851eb851eb" -> "4077a28f5c28f5c2"
+FAIL: saved Godot results; 284 battles checked, 284 changed, 3 other files changed, 287 failures; 24.331 s

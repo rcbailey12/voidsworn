@@ -106,14 +106,6 @@ func _run() -> void:
 	check(BAKE.cache_key("test", "shader-v1", {"quality": "high", "seed": 7}, Vector2i(8, 4)) == key, "cache settings order does not cause rebakes")
 	check(BAKE.cache_key("test", "shader-v1", {"seed": 7, "quality": "high"}, Vector2i(16, 8)) != key, "cache invalidates dimensions")
 	check(absf(disk.get_pixel(0, 0).a - image.get_pixel(0, 0).a) < 0.01, "persistent cache retains sky transmittance alpha")
-	WEAP.torp_lane(fx, "friendly", "small_hit", Vector3(38, 0, 20), 1)
-	WEAP.torp_lane(fx, "enemy", "organic", Vector3(-38, 0, 20), 1)
-	for lane in fx.dstate.lanes.values():
-		var strip: MeshInstance3D = lane.root.get_child(0)
-		var a: Array = strip.mesh.surface_get_arrays(0)
-		var uv: PackedVector2Array = a[Mesh.ARRAY_TEX_UV]
-		check(uv[0].x == 0.0 and uv[1].x == 1.0, "lane UV increases from shooter toward target for both teams")
-	check(WEAP.LANE.contains("s + x * 2.5"), "chevron point leads its wings toward positive lane distance")
 	if OS.get_environment("FB1_SHOTS") != "" and DisplayServer.get_name() != "headless":
 		for i in 480: fx.step(1.0 / 60.0)
 		await captures(s, wounded, organic, crystal, meshes)
@@ -163,11 +155,6 @@ func captures(s, wounded, organic, crystal, chunks: Array) -> void:
 		for i in 12: await process_frame
 		await RenderingServer.frame_post_draw
 		preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join(pair[1] + ".png"))
-	camera.position = Vector3(0, 88, 50); camera.look_at(Vector3(0, 0, 0))
-	for i in 8: await process_frame
-	await RenderingServer.frame_post_draw
-	preload("res://tools/picture_provenance.gd").save_png(get_root().get_texture().get_image(), out.path_join("lanes_both_teams.png"))
-	for lane in fx.dstate.lanes.keys(): WEAP.torp_lane_clear(fx, lane, false)
 	var holder := Node3D.new(); world.add_child(holder); holder.position = Vector3(0, 0, 32)
 	for i in mini(4, chunks.size()):
 		var mi := MeshInstance3D.new(); mi.mesh = chunks[i]; holder.add_child(mi)
