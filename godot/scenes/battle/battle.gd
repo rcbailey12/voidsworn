@@ -572,7 +572,8 @@ func _begin(a) -> void:
 		var vb: Dictionary = api.view()
 		var wi: Dictionary = api.world_info()
 		var world_opts := {"biome": wi.get("biome", {}) if wi.get("biome") is Dictionary else {}, "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
-			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight}
+			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight,
+			"nebula_wake": args.has("nebula-wake") or str(args.get("nebula_wake", "false")) == "true"}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
 		world.build(vb, world_opts)
 		for c in backdrop.get_children():

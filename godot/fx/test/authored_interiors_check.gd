@@ -1,4 +1,6 @@
 extends SceneTree
+# issue 1077: these checks measure the multi-cut split (two cuts, three sections, staged parting), which stays the
+# death_story="off" path; the default one-crack strained death has its own check, fx/test/death_story_check.gd.
 # Issue 557: the written GLB drives the same reader used by damage and death.
 const HULL = preload("res://fx/fx_hull.gd")
 const DEATH = preload("res://fx/fx_death.gd")
@@ -72,7 +74,7 @@ func _run() -> void:
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
-	fx.setup({"quality": "low", "camera": null, "shake": 0.0})
+	fx.setup({"death_story": "off", "quality": "low", "camera": null, "shake": 0.0})
 	fx.add_ship("authored", ship, {"faction": "corsair", "cls": "Cruiser", "size": 0.8})
 	var s = fx.ship("authored")
 	check(s.hull.authored, "GLB extras reached hull reader")

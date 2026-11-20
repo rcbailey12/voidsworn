@@ -23,10 +23,13 @@ rem                                   measured hulls are listed in <OJ_REPO>_shi
 rem                                   must list the same hulls as the first one. Optional OJ_NEED_HULLS: codes that
 rem                                   must be among the matching ships.
 rem   (after init, every job_wrap step runs the watchdog verified at init: TMO_OWN_COPY=1 on that version's tmo.bat)
-rem   tail                            hashes Ryan's options again (a change fails the job), then job_wrap end: "done PASS" or
+rem   tail                            hashes Ryan's options again (a change fails the job), after a PASS removes the job's
+rem                                   own pinned checkouts that hold no work (a failure keeps all; out_* and logs stay;
+rem                                   OJ_KEEP_CHECKOUTS=1 keeps them), then
+rem                                   job_wrap end: "done PASS" or
 rem                                   "done FAILED: ...", then "all done". Exit 0 only on PASS.
 rem Every Godot start in the job goes through: set "JW_STEP=<name>" & call "%JW%" run <seconds> "%JW_GODOT%" ...
-rem Nothing is deleted. The after-job janitor runs only when OPUS_JOB_JANITOR=1 (off by default; Ryan approves turning it on).
+rem The tail removes only the job's own pinned checkouts (RULEBOOK 3.3, R326); nothing else is deleted. The after-job janitor runs only when OPUS_JOB_JANITOR=1 (off by default; Ryan approves turning it on).
 if /i "%~1"=="init" goto oj_init
 if /i "%~1"=="checkout" goto oj_checkout
 if /i "%~1"=="ships" goto oj_ships
@@ -105,6 +108,8 @@ if defined JW_STOP (>> "%OJ_ST%" echo skipped ships: an earlier step failed & ex
 if not defined LB_SHIPS set "LB_SHIPS=%OJ_VT%\build\godot"
 if not exist "%LB_SHIPS%\gen" (call "%JW%" fail "no built ships at %LB_SHIPS%\gen" & exit /b 1)
 >> "%OJ_ST%" echo ships from %LB_SHIPS% into %OJ_REPO%
+rem The tail's checkout removal proves each copied ship file unchanged against this source.
+> "%OJ_OUT%\ships_source.txt" echo %LB_SHIPS%
 rem gen is untracked and copied whole with no skip flags, so the source always wins (as get_ship_files.bat does): its
 rem manifest.json is what the game reads to find the built hulls. The /XF list is for assets\ships only, where
 rem manifest.json is the tracked checksum list (RUN1262C dropped gen\manifest.json and every hull drew as a placeholder).
@@ -147,5 +152,14 @@ goto oj_tail_end
 :oj_tail_changed
 call "%JW%" fail "Ryan's real options changed during the job"
 :oj_tail_end
+rem The job's own pinned checkouts are rebuildable from their pins (RULEBOOK 3.3, R326) and run to 16 GB each, so after a
+rem PASS they go, unless one holds work (dropcheckouts checks). A failed job keeps everything for the post-mortem (R326).
+rem out_*, the logs and the ship records always stay. OJ_KEEP_CHECKOUTS=1 keeps them (logged).
+rem It runs after job_wrap end has written the done line, so a slow or stuck removal can never delay or lose the result.
+set "OJ_DROP=1"
+if "%OJ_KEEP_CHECKOUTS%"=="1" (>> "%OJ_ST%" echo checkouts kept: OJ_KEEP_CHECKOUTS=1& set "OJ_DROP=")
+if defined JW_FAILED (>> "%OJ_ST%" echo checkouts kept: the job failed& set "OJ_DROP=")
 call "%JW%" end
-exit /b %ERRORLEVEL%
+set "OJ_RC=%ERRORLEVEL%"
+if defined OJ_DROP powershell -NoProfile -ExecutionPolicy Bypass -File "%OJ_PS%" dropcheckouts "%OJ_OUT%" >> "%OJ_ST%" 2>&1
+exit /b %OJ_RC%

@@ -16,9 +16,9 @@ extends Node3D
 
 const WR := preload("res://world/world_rocks.gd")
 const WS := preload("res://world/world_shaders.gd")
-const FLOOK := preload("res://fx/faction_look.gd")
 const ION := preload("res://world/ion_storm.gd")
 const NEBULA_HULLS := preload("res://world/nebula_hulls.gd")
+const WAKE := preload("res://world/nebula_wake.gd")
 const LOOK := preload("res://render/look.gd")
 const STORM_TICK_LIFE := 0.45
 
@@ -37,6 +37,9 @@ var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var _storm_bursts: Array = []
 var clock := 0.0
+# Issue 1079 prototype (off by default): ships disturb the calm nebula as they pass. Storm gas is never touched.
+var _wake = null
+var _wake_mats: Array[ShaderMaterial] = []
 
 # Issue 368, R270: route A is the default. today is retained only for historical bench pairs.
 var gas_route := selected_route()
@@ -94,6 +97,7 @@ uniform float gain_a = 1.0;
 uniform float storm = 0.0;
 void fog() {
 	vec3 p = WORLD_POSITION * 0.012 + vec3(0.0006, 0.0002, 0.00035) * gas_time;
+	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
 	float warp = texture(noise_tex, p * 0.55 + 0.31).r;
 	float n = texture(noise_tex, p + vec3(warp * 0.12)).r;
 	n = mix(n, texture(noise_tex, p * 3.1 - vec3(warp * 0.18)).r, 0.18);
@@ -103,14 +107,19 @@ void fog() {
 	float height = smoothstep(-7.0, -2.0, WORLD_POSITION.y) * (1.0 - smoothstep(23.0, 31.5, WORLD_POSITION.y));
 	float shape = foot.g * smoothstep(0.08, 0.65, foot.r) * height;
 	DENSITY = smoothstep(0.32, 0.68, n) * shape * 0.045 * gain_a;
+	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	ALBEDO = mix(c_lit, c_glow, smoothstep(0.58, 0.85, n));
 	EMISSION = mix(c_dark, c_shadow, n) * 0.65;
 	EMISSION += c_glow * smoothstep(0.7, 0.9, n) * (0.2 + storm * 0.25);
 }
 """
 
-# R82: keep the ends violet even under a warm faction sky.
-const NEBULA_FACTION_END_WEIGHT := 0.25
+# Issue 1268 (Ryan, Nov 20 2026, replaces R82's violet): one rose nebula in every region and against every faction, the
+# hydrogen pink of real glowing gas, so it reads apart from the teal ion storm. Linear RGB, from the NEB1268 r1 sheet (E).
+const NEBULA_LIT := Vector3(0.50, 0.12, 0.20)
+const NEBULA_GLOW := Vector3(1.0, 0.72, 0.76)
+const NEBULA_SHADOW := Vector3(0.09, 0.015, 0.04)
+const NEBULA_DARK := Vector3(0.014, 0.002, 0.006)
 # The one scale table's terrain sizes (issue 710, R247; docs/playbooks/scale.md), world units, HEX_S = 10.
 const GAS_PUFF_MIN := 24.0       # a nebula or storm puff's width
 const GAS_PUFF_MAX := 34.0
@@ -121,7 +130,6 @@ const GAS_MASK_MARGIN := 24.0    # the gas footprint reaches this far past its o
 const DEBRIS_ROCK_MIN := 0.3     # a debris field's own rock, at scale 1 a library rock is 2 units long
 const DEBRIS_ROCK_MAX := 2.8
 # Issue 232 E17/NB5 sheet: the live weight, overridable for the three-weight capture (default is the shipped 0.25).
-var faction_end_weight := clampf(float(OS.get_environment("VS_NEB_W")), 0.0, NEBULA_FACTION_END_WEIGHT) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
 
 const GAS_CARD_SUPPORT := """
 const float MIN_GAS_DENSITY = 0.002;
@@ -223,6 +231,7 @@ void fragment() {
 	if (flat_rates > 0.5) { rate = 1.0; }
 	vec3 drift = vec3(0.012, 0.004, 0.007) * gas_time * rate;
 	vec3 p = vW * 0.075 + drift;
+	// WAKE_SHIFT: issue 1079, world/nebula_wake.gd puts the wake's push here when it is on
 	float w = wfbm3(p * 0.55 + 4.0);
 	float n = wfbm3(p + vec3(w) * 0.9);
 	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
@@ -238,6 +247,7 @@ void fragment() {
 	float d = shape * foot * layer * field * vI.z;
 	// Soften contact with distant geometry below the playing surface.
 	d *= clamp((-vv.z / vv.w + VERTEX.z) / 5.0, 0.0, 1.0);
+	// WAKE_THIN: issue 1079, the wake's thinning goes here when it is on
 	if (d <= MIN_GAS_DENSITY) { discard; }
 	float n2 = wfbm3(p + normalize(sun_v) * 0.22 + vec3(w) * 0.9);
 	float lit = clamp(0.5 + (n - n2) * 5.0, 0.0, 1.0);
@@ -410,6 +420,8 @@ func build(world) -> void:
 		_tick_presenter = presenter
 		presenter.connect("storm_drained", _queue_storm_tick)
 	rng.seed = int(W.setting.get("seed", 7)) * 31 + 991
+	if bool(W.get("nebula_wake")):
+		_wake = WAKE.new(W.quality)
 	var pts: Dictionary = W._terr_pts
 	# Background specks originally drew after gas at priority 0. Put them behind it.
 	for child in W.get_children():
@@ -537,6 +549,9 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		_gas_lattice_origin = source.origin
 	var cached_noise := high and _gas_lattice != null
 	sh.code = _gas_card_shader(storm, high, cached_noise)
+	if _wake != null and not storm:
+		sh.code = WAKE.into_cards(sh.code, _wake.points)
+		_wake_mats.append(m)
 	m.shader = sh
 	if cached_noise:
 		m.set_shader_parameter("gas_hash_lattice", _gas_lattice)
@@ -556,21 +571,12 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		_storm_patches.append({"mat": m, "points": ps, "pending": [], "flares": []})
 		_set_flashes([])
 	else:
-		var b: Array = FLOOK.of(W._fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
-		var violet := Vector3(0.434, 0.202, 1.0) # legend #b07cff in linear RGB
-		var faction: Vector3 = b[1]
-		# Match value before the hue blend, so warm skies cannot make brown gas.
-		faction /= maxf(faction.length(), 0.001)
-		var end_tint := faction
-		m.set_shader_parameter("c_dark", Vector3(0.006, 0.002, 0.014).lerp(end_tint * Vector3(0.006, 0.002, 0.014).length(), faction_end_weight))
-		m.set_shader_parameter("c_shadow", Vector3(0.055, 0.012, 0.14))
-		var body := violet.lerp(faction * violet.length(), 0.5)
-		# R82 fixes the violet family: a warm sky may shift it, never neutralise it.
-		body.y = minf(body.y, body.z * 0.24)
-		body.x = minf(body.x, body.z * 0.60)
-		m.set_shader_parameter("c_lit", body * 0.65)
-		m.set_shader_parameter("c_glow", Vector3(0.88, 0.72, 1.0).lerp(end_tint * Vector3(0.88, 0.72, 1.0).length(), faction_end_weight))
+		m.set_shader_parameter("c_dark", NEBULA_DARK)
+		m.set_shader_parameter("c_shadow", NEBULA_SHADOW)
+		m.set_shader_parameter("c_lit", NEBULA_LIT)
+		m.set_shader_parameter("c_glow", NEBULA_GLOW)
 		m.set_shader_parameter("dens", 0.5)
+		_sheet_colour_override(m)
 	# drawn before the board's own fills, so a move hex inside the gas still shows on top
 	m.render_priority = -5
 	gas_mats.append([m, g])
@@ -601,6 +607,9 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	var mat := ShaderMaterial.new()
 	var shader := Shader.new()
 	shader.code = ION.FOG if storm else FOG_SHADER
+	if _wake != null and not storm:
+		shader.code = WAKE.into_fog(shader.code, _wake.points)
+		_wake_mats.append(mat)
 	mat.shader = shader
 	if _fog_noise == null:
 		_fog_noise = load(NOISE_PATH).texture()
@@ -927,6 +936,10 @@ func _process(dt: float) -> void:
 		(g[0] as ShaderMaterial).set_shader_parameter("gas_time", clock)
 	for m in fog_mats:
 		m.set_shader_parameter("gas_time", clock)
+	if _wake != null and not _wake_mats.is_empty():
+		var views = W.get_parent().get("views") if W.get_parent() != null else null
+		_wake.update(dt, (views as Dictionary).values() if views is Dictionary else [])
+		_wake.apply(_wake_mats)
 	var reduced := is_instance_valid(_tick_presenter) and bool(_tick_presenter.get("reduce_flashing"))
 	_present_storm_ticks(reduced)
 	for burst in _storm_bursts:
@@ -1453,3 +1466,19 @@ func _exit_tree() -> void:
 	if _chunk_task >= 0:
 		WorkerThreadPool.wait_for_task_completion(_chunk_task)
 		_chunk_task = -1
+
+
+# Issue 1268: capture-only colour options for Ryan's sky sheet. Off unless a capture sets the env vars;
+# the game never sets them, so defaults and faction_looks.json stay as they are.
+static func _sheet_colour(name: String) -> Variant:
+	var raw := OS.get_environment(name)
+	if raw == "": return null
+	var parts := raw.split(",")
+	if parts.size() != 3: return null
+	return Vector3(float(parts[0]), float(parts[1]), float(parts[2]))
+
+
+func _sheet_colour_override(m: ShaderMaterial) -> void:
+	for pair in [["VS_NEBULA_LIT", "c_lit"], ["VS_NEBULA_GLOW", "c_glow"], ["VS_NEBULA_SHADOW", "c_shadow"]]:
+		var c = _sheet_colour(pair[0])
+		if c != null: m.set_shader_parameter(pair[1], c)

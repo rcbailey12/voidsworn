@@ -34,6 +34,7 @@ const DAWN_COL := Color(1.0, 0.76, 0.46)
 var quality := "max"
 var notes: PackedStringArray = []
 var setting := {}
+var nebula_wake := false   # issue 1079 prototype, off by default (world_living.gd, nebula_wake.gd)
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
 var _rng := RandomNumberGenerator.new()
@@ -158,6 +159,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_disc_mats.clear()
 	_disc_light = null
 	quality = String(opts.get("quality", "max"))
+	nebula_wake = bool(opts.get("nebula_wake", false))
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
 	var biome: Dictionary = opts.get("biome", {}) if opts.get("biome") is Dictionary else {}
