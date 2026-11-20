@@ -236,6 +236,7 @@ function hullKey(){ return RUN&&RUN.fac==='chorus'?'bio':'credits'; }
 function hullFunds(){ return (RUN&&RUN[hullKey()])||0; }
 function hullPay(c){ RUN[hullKey()]=hullFunds()-c; }
 function hullWord(){ return hullKey()==='bio'?'biomass':'credits'; }
+const BIO_KILL={per:8,cap:50}; // issue 1178: the Chorus biomass kill bonus on a win (per enemy ship destroyed, at most cap a battle)
 const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2}; // issue 1178: Sector 3 market prices (times priceMult); core restore = 20% of the hull's value
 // Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 60 a battle
 const CULLET={Frigate:15,Destroyer:30,Cruiser:45,Carrier:50,Battleship:60,cap:60};

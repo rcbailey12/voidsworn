@@ -10,7 +10,7 @@ with the generated tables re-exported.
 | --- | --- | --- |
 | Sector 3 enemy fleets are bigger, per AI level | RAMP.late in battle.js, read by rules.gd and the map intel | 1.4x budget at Standard, 1.25x at Veteran (Veteran already has its 1.1x edge everywhere) |
 | Late market at Sector 3 shipyards | lateStock / lateShopOffers / ACT.lateBuy, both twins | two relics at 120 credits, +1 command point at 130 (one per yard, two a run); prices times the usual price multiplier |
-| Chorus biomass | hullKey / hullFunds / hullPay, factionWinEcon | win pay is banked as biomass plus 2 per kill (at most 12); repairs, new hulls and Marks cost biomass; credits buy refits, class refits, events and the late market |
+| Chorus biomass | hullKey / hullFunds / hullPay, factionWinEcon, BIO_KILL | win pay is banked as biomass plus 8 per kill (at most 50 a battle); repairs, new hulls and Marks cost biomass; credits buy refits, class refits, events and the late market |
 | Glasswright cullet | factionWinEcon | a win refunds credits for your own lost hulls: Frigate 15, Destroyer 30, Cruiser 45, Carrier 50, Battleship 60, at most 60 |
 | Eclipse core recovery | factionWinEcon, ACT.restoreCore | a win recovers the core of the most valuable ship lost (one a battle); a shipyard regrows it at Mk I, full hull, no refits, for 20% of its value |
 
@@ -68,21 +68,51 @@ timeout a loss).
 | Level | Arm | Crusade | Hegemony | Hullbreakers | Chorus | Glasswrights | Eclipse |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Standard | before | 75.0% | 77.5% | 83.8% | 78.8% | 60.0% | 90.0% |
-| Standard | after | 67.5% | 70.0% | 76.3% | 76.3% | 53.8% | 90.0% |
+| Standard | after | 67.5% | 70.0% | 76.3% | 73.8% * | 53.8% | 90.0% |
 | Veteran | before | 37.5% | 40.0% | 43.8% | 58.8% | 33.8% | 55.0% |
-| Veteran | after | 32.5% | 30.0% | 38.8% | 38.8% | 33.8% | 52.5% |
+| Veteran | after | 32.5% | 30.0% | 38.8% | 52.5% * | 33.8% | 52.5% |
 
-80 runs per cell, so each cell is about plus or minus 10 points. Economy counters (after): Chorus earn about 1,660 biomass
-a run at Standard and 1,140 at Veteran; Glasswrights about 92 and 67 cullet credits; Eclipse recover 1.6 and 2.4 cores and
-regrow 0.65 and 1.2.
+80 runs per cell, so each cell is about plus or minus 10 points. * Chorus cells are measured with the final kill bonus
+(8 per kill, at most 50) on the same seeds; every other number in this README was measured with the first bonus (2 per kill,
+at most 12), which only changes Chorus. Economy counters (after): Glasswrights about 92 and 67 cullet credits a run at
+Standard and Veteran; Eclipse recover 1.6 and 2.4 cores and regrow 0.65 and 1.2; Chorus earn about 2,040 biomass a run at
+Standard and 1,430 at Veteran with the final bonus. The Eclipse hold steady while the others drop 5 to 10, which is the core
+recovery doing what 1086 measured.
 
-**Watch: Chorus at Veteran** drops 20 points (47 to 31 wins of 80), far more than the 1085 sim's 4 to 6. Confirmed on 240
-Chorus Veteran runs per arm (seeds 1 to 240, Board's ask): 129 wins (53.8%) before, 91 (37.9%) after, 45 seeds flip from a
-win to a loss and 7 the other way. Losses rise in every sector (S1 61 to 68, S2 42 to 49, S3 8 to 32), so the economy, not
-only the Sector 3 fleets, is the cause: a Chorus-specific fix (biomass tuning) is the lever, not Veteran's 1.25. Every other
-faction falls 10 points or less at Veteran. Biomass cannot buy
-refits and credits cannot buy hull work, and the harder Sector 3 lands on that. The Eclipse hold steady while every other
-faction drops 5 to 10, which is the core recovery doing what 1086 measured.
+### Chorus biomass tuning (Board ask on PR 1276)
+
+The first bonus (2 per kill, at most 12) dropped Chorus at Veteran from 53.8% to 37.9% on 240 runs (seeds 1 to 240), far more
+than any other faction. Kill bonus tried on the same Chorus seeds, everything else fixed:
+
+| Kill bonus (per kill, cap) | Veteran, 240 runs | Veteran losses S1 / S2 / S3 | Standard, 240 runs | Standard, seeds 1 to 80 |
+| --- | ---: | --- | ---: | ---: |
+| before (main, no biomass, no Sector 3 change) | 53.8% (129) | 61 / 42 / 8 | 85.0% (204) | 78.8% (63) |
+| 2, 12 (first build) | 37.9% (91) | 68 / 49 / 32 | 77.9% (187) | 76.3% (61) |
+| 5, 30 | 37.1% (89) | 66 / 50 / 35 | | 66.3% (53) |
+| **8, 50 (shipped)** | **47.5% (114)** | 66 / 41 / 19 | 76.3% (183) | 73.8% (59) |
+| 10, 70 | 45.8% (110) | 66 / 40 / 24 | | 72.5% (58) |
+| 12, 80 | 45.4% (109) | 66 / 41 / 24 | | 75.0% (60) |
+
+Gains stop at 8: 10 and 12 land within noise of it (about plus or minus 3 points at 240 runs). Standard does not move with
+the bonus at all; its drop is all in Sector 3 (losses 3 to 22 or 23 of 240, Sector 1 and 2 unchanged), which is the shared
+fleet change.
+
+**What causes the drop (Artoo's split, Chorus Veteran, same 240 seeds, late market and bot policy fixed):**
+
+| Biomass | Sector 3 fleets 1.25x | Win | Losses S1 / S2 / S3 |
+| --- | --- | ---: | --- |
+| off | off | 53.8% (129) | 61 / 42 / 8 |
+| off | on | 47.9% (115) | 61 / 42 / 22 |
+| on (2, 12) | off | 46.3% (111) | 68 / 49 / 12 |
+| on (2, 12) | on | 37.9% (91) | 68 / 49 / 32 |
+| on (8, 50) | on | 47.5% (114) | 66 / 41 / 19 |
+
+Both causes are real and about the same size (6 to 8 points each), and they stack. The 8 per kill bonus removes the biomass
+cost: with it, Chorus at Veteran (47.5%) matches the biomass-off arm (47.9%) and its Sector 1 and 2 losses return to near
+before. What is left, about 6 points, is the Sector 3 fleet change every faction takes (the others fall 0 to 10 points at
+Veteran). That is 1.3 points outside the Board's 5-point line at Veteran; Standard sits on the line on the 80-seed set (5.0)
+and 8.7 below on 240 seeds. A larger kill bonus does not close it. The remaining levers are not biomass: a smaller Veteran
+1.25, or a Chorus-only Sector 3 easing.
 
 ## Checks run (cloud, Godot 4.7.2, Node 22)
 

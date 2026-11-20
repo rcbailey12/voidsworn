@@ -38,7 +38,7 @@ if(typeof hullKey==='function'){
   // Chorus: the bot's shipyard pass runs twice, first on biomass for hull work (repairs, hulls, Marks), then on credits for refits.
   const _mc78Chorus=mcShipyard;
   mcShipyard=function(n,S){
-    if(RUN.fac!=='chorus') return _mc78Chorus(n,S);
+    if(RUN.fac!=='chorus'||hullKey()!=='bio') return _mc78Chorus(n,S);
     const hk=hullKey, lv=ACT.leaveYard, bm=ACT.buyMod, c=RUN.credits;
     RUN.credits=RUN.bio||0; hullKey=()=>'credits'; ACT.leaveYard=()=>{}; ACT.buyMod=()=>{};
     try{ _mc78Chorus(n,S); } finally { RUN.bio=RUN.credits; RUN.credits=c; hullKey=hk; ACT.leaveYard=lv; ACT.buyMod=bm; }

@@ -646,7 +646,7 @@ const REWARD_DEF={salvage:'Strip a wreck for a refit, scrap it for credits, or t
 function rewardDef(k){ return REWARD_DEF[k]?`<p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">${REWARD_DEF[k]}</p>`:''; }
 function factionWinEcon(credits,summary){
   const lost=(summary.lost||[]).filter(l=>l&&HULLS[l.tpl]), out={};
-  if(RUN.fac==='chorus'){ out.bio=credits+Math.min(12,2*(summary.kills||0)); RUN.bio=(RUN.bio||0)+out.bio; } else RUN.credits+=credits;
+  if(RUN.fac==='chorus'){ out.bio=credits+Math.min(BIO_KILL.cap,BIO_KILL.per*(summary.kills||0)); RUN.bio=(RUN.bio||0)+out.bio; } else RUN.credits+=credits;
   if(RUN.fac==='ithar'&&lost.length){ out.cullet=Math.min(CULLET.cap,lost.reduce((a,l)=>a+(CULLET[HULLS[l.tpl].cls]||20),0)); RUN.credits+=out.cullet; }
   if(RUN.fac==='deathless'&&lost.length){ const best=lost.filter(l=>!HULLS[l.tpl].boss).sort((a,b)=>shipValue(b.tpl)-shipValue(a.tpl))[0];
     if(best){ (RUN.cores=RUN.cores||[]).push(best.tpl); out.core=best.tpl; } }
