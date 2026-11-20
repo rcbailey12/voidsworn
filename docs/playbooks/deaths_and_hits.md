@@ -184,18 +184,26 @@ as written above, replacing the shared orange fire; Glasswrights and Eclipse fir
 Hullbreakers. A faction's death lives in faction_looks.json ("death": style, fire, fire_mid, prism, smoke, spark, light,
 rim), the same file its ships, engines, shields and damage read, and applies to every hull of that faction, old and new,
 player and enemy, on top of the shared timing and the one-crack strained death above. A faction without a "death" entry
-keeps the shared orange fire. Built (issue 1399, round 1):
+keeps the shared orange fire (since round 2 every metal faction has one; the Chorus keeps its own organic death). Built (issue 1399, round 1):
 - Glasswrights (shatter): the death's fire pictures keep their baked shape and take white light with a rainbow edge; no
   smoke is drawn; the fracture plan gives more, smaller fragments (bite 7 or 9, four chips per break); glittering dust
   drifts from the core; torn faces, plate rims and scorch glow its stored light.
 - Eclipse (peel): the fire takes its violet-white, sparks a pale violet (the white-gold stays on its engines); shade plates lift off the hull band by band from
   the stern during the tell (two, four or six bands by class); the scene dims for an instant at its core flash; torn faces
   glow violet; smoke is kept at a sixth.
-- Both, small hulls (frigates and destroyers): with no smoke body the pop gets its own short flash in the faction's light
-  colour with a white star, and a ring of sparks (fx_death.gd _fac_pop; it books the flash budget itself and turns into a soft lift with reduce flashing or a full
-  budget).
+- Every styled faction, small hulls (frigates and destroyers): the pop gets its own short flash in the faction's light
+  colour with a white star, and a ring of sparks (fx_death.gd _fac_pop; it books the flash budget itself and turns into a
+  soft lift with reduce flashing or a full budget). Ryan's look 2 pick for round 1, "more punch and more violet".
+Built (issue 1399, round 2), at the same punch level:
+- Sunward Crusade (drumbeat): ember-gold fire, smoke kept at about a third; during the tell its magazines go off as an even
+  row of small ember pops down one broadside, at most a quarter second apart (three, five or seven by class); ember rims.
+- Hegemony Navy (arc): blue-white fire, smoke kept at a quarter; as the pieces part, blue-white lightning (the shared
+  lightning ribbon) jumps the gap for a third of a second (three, six or eight arcs by class); steel-blue rims.
+- Ashfall Hullbreakers (patch): dirty red fire, smoke kept at about half (soot is theirs); during the tell patch plates tear
+  loose from scattered spots and spin off (two, four or six by class); red rims.
 Not built yet: the Glasswrights' white fracture lines across the optics in the tell, whole rings shearing off, and the
-Nemesis's plates drifting back together. Check: godot/fx/test/faction_death_style_check.gd.
+Nemesis's plates drifting back together; the Sunward spire snapping off as one piece; every Hegemony module's lights dying
+at the same instant and its drones going dark; the Hullbreakers' chains holding then snapping, and loot spilling. Check: godot/fx/test/faction_death_style_check.gd.
 
 ## The hits, upgraded
 
