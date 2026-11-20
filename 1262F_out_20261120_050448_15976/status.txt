@@ -1,0 +1,53 @@
+[Fri 11/20/2026  5:04:48.97] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-20T11:04:49Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Fri 11/20/2026  5:04:50.39] ready: GPU label 1262
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\run_timeout.ps1
+verified c49d8e8c14677a7285f611d37d03a3da3a28294f5ca45452fb4f24c4b2cb5d49 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\jobs\opus_job_head.bat
+verified 7c6f3732fb1514373a56909e7957016df07092f24476fbe2697cebd6823507e7 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\run_timeout.ps1 (tools_live version 9a96b156c4eb)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9a96b156c4eb\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+fetching the shared mirror for 0172d99fc20d91b7c632a31e759bb63f4ac0967a
+checkout new 0172d99fc20d91b7c632a31e759bb63f4ac0967a C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\new
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\new_ships_identity.txt
+[Fri 11/20/2026  5:05:19.97] step new import start
+[Fri 11/20/2026  5:17:11.67] step new import ok
+checkout old 56881a5ecc88b29fff01964320fc569520abae5e C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\old
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\old
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\old
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\old_ships_identity.txt
+ships in C:\Users\rcbai\Downloads\voidsworn_test\opus1262f\out_20261120_050448_15976\old are the same fleet as the first checkout
+[Fri 11/20/2026  5:17:29.09] step old import start
+[Fri 11/20/2026  5:29:17.94] step old import ok
+[Fri 11/20/2026  5:29:17.96] step new timing s1 start
+[Fri 11/20/2026  5:31:53.68] step new timing s1 ok
+[Fri 11/20/2026  5:31:53.70] step old timing s1 start
+[Fri 11/20/2026  5:34:28.85] step old timing s1 ok
+[Fri 11/20/2026  5:34:28.87] step old timing s2 start
+[Fri 11/20/2026  5:36:59.55] step old timing s2 ok
+[Fri 11/20/2026  5:36:59.56] step new timing s2 start
+[Fri 11/20/2026  5:39:30.28] step new timing s2 ok
+[Fri 11/20/2026  5:39:30.30] step new timing s3 start
+[Fri 11/20/2026  5:41:58.84] step new timing s3 ok
+[Fri 11/20/2026  5:41:58.85] step old timing s3 start
+[Fri 11/20/2026  5:44:28.28] step old timing s3 ok
+[Fri 11/20/2026  5:44:28.30] step new shots 4k start
+[Fri 11/20/2026  5:45:36.97] step new shots 4k ok
+[Fri 11/20/2026  5:45:36.98] step old shots 4k start
+[Fri 11/20/2026  5:46:45.58] step old shots 4k ok
+[Fri 11/20/2026  5:46:45.59] step new shots 1080 start
+[Fri 11/20/2026  5:47:53.86] step new shots 1080 ok
+[Fri 11/20/2026  5:47:53.87] step old shots 1080 start
+[Fri 11/20/2026  5:49:02.18] step old shots 1080 ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done PASS
+all done Fri 11/20/2026  5:49:02.65

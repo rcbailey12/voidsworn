@@ -1,0 +1,226 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 336 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked 6aab5564a9fd71d27e142c06aeb53a7b622681762d8544462c11262e9069aadf 4096x2048 in 6863 ms (worker)
+[world] baked 269e6472e8c899979786d2ed711bc585dc7d43d2658c5b9e71f4383a325b85db 4096x2048 in 9353 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 9797 ms (worker)
+[world] baked 04a596a828fed691583b58022709b95f3d020e6d603ddcf6fedc3df1c6c4a941 1024x512 in 10252 ms (worker)
+[world] baked 1cc730ea14ee372aa5f25d7a79f468a83be64cdc653280721129e8bbe9e1ad33 4096x2048 in 2232 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2201 ms (worker)
+[world] baked 5216a2b099522b47e00358f3fbfd1bdf4dbd70ae7f38841c71baff49e061ff35 1024x512 in 1953 ms (worker)
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+PERF1070 DONE dense:max:1:native_lod { "viewport": [1920.0, 1080.0], "3d": [1920.0, 1080.0], "msaa_3d": 2, "screen_aa": 0, "taa": false, "mesh_lod_threshold": 1.0, "vsync": 0, "ssao": true, "ssil": true, "ssr": false, "glow": true, "fog": true, "sdfgi": false, "key_shadows": true, "gas_route": "fog", "screen_space_scaling_mode": 0, "quality": "max", "directional_shadow_atlas": 4096, "fog_grid": [128, 128] }
+[attach] battle x05 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x011 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 285 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.456, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on D21_23: arc -180 to 180, trains all round
+[turret] turret_1 (T1) on D21_23: arc -180 to 180, trains all round
+[turret] turret_2 (T2) on D21_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[world] baked 3ec174b6b1465181e4e32e0a7c59248786b73f667879406b8557562c1bc04b36 4096x2048 in 12703 ms (worker)
+[world] baked 0b053083bcd9948ed3610938421ef1cc25e691789f09ae1443271933f4cfe1c1 4096x2048 in 15106 ms (worker)
+[world] baked 9a7666551ea4cbe0b33099f8f815ee2e17bb811983311eb4406bc4ea370f4b49 1024x512 in 15515 ms (worker)
+[world] baked f9137021ae0e9dfdd9af1459c45e719aa1df55af386ffbb77f3b59b1a1f09f1c 1024x512 in 15946 ms (worker)
+[world] baked d96a99dfaafc20a97242d5fd2f3a0e449ce798d74ca045870744887fe4a87b56 4096x2048 in 2012 ms (worker)
+[world] baked feb1cdbc768926cf95ec705780a02f99b016708e9423c3c93fdbefd2815f50f2 1024x512 in 1931 ms (worker)
+[world] baked 1280898f02613fd9d428e65ce38598817250917cd916599ddd754cd3683e1636 1024x512 in 1817 ms (worker)
+[attach] hp_rcs on D21_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on V18_51; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on V17_37; using the surface ray
+[attach] flare on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on H7_23: placed on the plating (a surface sample; not a hard point type)
+[scene_gate] base built and ready in 32689 ms
+[attach] hp_w on C19_51: no authored point fits this request; using the surface ray
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_w on voidsworn|fighter: no authored point fits this request; using the surface ray
+[attach] hp_w on I14_23: no authored point fits this request; using the surface ray
+[attach] hp_w on D20_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_w on V15_37: no authored point fits this request; using the surface ray
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V1b_r_23: no authored point fits this request; using the surface ray
+[attach] hp_w on corsair|bomber: no authored point fits this request; using the surface ray
+[attach] hp_w on B20_11: no authored point fits this request; using the surface ray
+[attach] hp_w on I11_37: no authored point fits this request; using the surface ray
+[attach] hp_w on V18_51: no authored point fits this request; using the surface ray
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+PERF1070 DONE gate:max:1:base { "viewport": [1920.0, 1080.0], "3d": [1920.0, 1080.0], "msaa_3d": 2, "screen_aa": 0, "taa": false, "mesh_lod_threshold": 0.0, "vsync": 0, "ssao": true, "ssil": true, "ssr": false, "glow": true, "fog": true, "sdfgi": false, "key_shadows": true, "gas_route": "fog", "screen_space_scaling_mode": 0, "quality": "max", "directional_shadow_atlas": 4096, "fog_grid": [128, 128] }
+[attach] battle x011 V1b_r_23: skipped 0; rcs hp 6 ray 0 centre 0 skip 0; gun hp 0 ray 13 centre 0 skip 0
+[attach] battle x012 V17_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x013 V16_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] battle x014 V18_51: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] battle x015 V15_37: skipped 0; rcs hp 0 ray 6 centre 0 skip 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] battle x016 V15_37: skipped 0; rcs hp 0 ray 110 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x017 V14_23: skipped 0; rcs hp 24 ray 0 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] battle x018 V14_23: skipped 0; rcs hp 26 ray 0 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle x019 V14_23: skipped 0; rcs hp 46 ray 0 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x020 V14_23: skipped 0; rcs hp 36 ray 0 centre 0 skip 0
+[attach] battle x021 C19_51: skipped 0; rcs hp 2 ray 2 centre 0 skip 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle x022 C13s_23: skipped 0; rcs hp 15 ray 5 centre 0 skip 0
+[attach] battle x023 H8_23: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle x024 H7_23: skipped 0; rcs hp 0 ray 102 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 34 ray 0 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x026 B19_11: skipped 0; rcs hp 64 ray 0 centre 0 skip 0
+[attach] battle x027 I11_37: skipped 0; rcs hp 0 ray 28 centre 0 skip 0; gun hp 3 ray 3 centre 0 skip 0
+[attach] battle x028 I14_23: skipped 0; rcs hp 0 ray 6 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x029 D21_23: skipped 0; rcs hp 3 ray 3 centre 0 skip 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle x030 D20_23: skipped 0; rcs hp 3 ray 3 centre 0 skip 0; gun hp 0 ray 6 centre 0 skip 0
+[attach] battle x032 voidsworn|fighter: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle x034 corsair|bomber: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 286 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.145, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+PERF1070 DONE dense:max:2:native_lod { "viewport": [1920.0, 1080.0], "3d": [3840.0, 2160.0], "msaa_3d": 2, "screen_aa": 0, "taa": false, "mesh_lod_threshold": 1.0, "vsync": 0, "ssao": true, "ssil": true, "ssr": false, "glow": true, "fog": true, "sdfgi": false, "key_shadows": true, "gas_route": "fog", "screen_space_scaling_mode": 0, "quality": "max", "directional_shadow_atlas": 4096, "fog_grid": [128, 128] }
+[attach] battle x05 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x06 V15_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x07 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x08 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x010 I16_11: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x011 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x012 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[sfx] 71 cues, 67 clip sets, loaded in 284 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.456, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on D21_23: arc -180 to 180, trains all round
+[turret] turret_1 (T1) on D21_23: arc -180 to 180, trains all round
+[turret] turret_2 (T2) on D21_23: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[turret] turret_0 (G1) on voidsworn|fighter: arc -180 to 180, trains all round
+[attach] flare on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on H7_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs on D21_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on D20_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on V18_51; using the surface ray
+[attach] hp_rcs on C13s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on V17_37; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[scene_gate] base built and ready in 24049 ms
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_w on C19_51: no authored point fits this request; using the surface ray
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C19_51: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_w on voidsworn|fighter: no authored point fits this request; using the surface ray
+[attach] hp_w on I14_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_w on D20_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V16_37: no authored point fits this request; using the surface ray
+[attach] hp_w on V15_37: no authored point fits this request; using the surface ray
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V14_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V1b_r_23: no authored point fits this request; using the surface ray
+[attach] hp_w on corsair|bomber: no authored point fits this request; using the surface ray
+[attach] hp_w on B20_11: no authored point fits this request; using the surface ray
+[attach] hp_w on I11_37: no authored point fits this request; using the surface ray
+[attach] hp_w on V18_51: no authored point fits this request; using the surface ray
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V17_37: no authored point fits this request; using the surface ray
+PERF1070 DONE gate:max:2:base { "viewport": [1920.0, 1080.0], "3d": [3840.0, 2160.0], "msaa_3d": 2, "screen_aa": 0, "taa": false, "mesh_lod_threshold": 0.0, "vsync": 0, "ssao": true, "ssil": true, "ssr": false, "glow": true, "fog": true, "sdfgi": false, "key_shadows": true, "gas_route": "fog", "screen_space_scaling_mode": 0, "quality": "max", "directional_shadow_atlas": 4096, "fog_grid": [128, 128] }
+[attach] battle x011 V1b_r_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0; gun hp 0 ray 13 centre 0 skip 0
+[attach] battle x012 V17_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; gun hp 3 ray 1 centre 0 skip 0
+[attach] battle x013 V16_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] battle x014 V18_51: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; gun hp 0 ray 3 centre 0 skip 0
+[attach] battle x015 V15_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] battle x016 V15_37: skipped 0; rcs hp 0 ray 108 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x017 V14_23: skipped 0; gun hp 0 ray 3 centre 0 skip 0; rcs hp 22 ray 0 centre 0 skip 0
+[attach] battle x018 V14_23: skipped 0; rcs hp 24 ray 0 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle x019 V14_23: skipped 0; rcs hp 44 ray 0 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x020 V14_23: skipped 0; rcs hp 54 ray 0 centre 0 skip 0
+[attach] battle x021 C19_51: skipped 0; gun hp 0 ray 4 centre 0 skip 0; rcs hp 1 ray 1 centre 0 skip 0
+[attach] battle x022 C13s_23: skipped 0; rcs hp 14 ray 4 centre 0 skip 0
+[attach] battle x023 H8_23: skipped 0; flare hp 0 ray 1 centre 0 skip 0; rcs hp 0 ray 4 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle x024 H7_23: skipped 0; flare hp 0 ray 1 centre 0 skip 0; rcs hp 0 ray 98 centre 0 skip 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 32 ray 0 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x026 B19_11: skipped 0; rcs hp 74 ray 0 centre 0 skip 0
+[attach] battle x027 I11_37: skipped 0; rcs hp 0 ray 24 centre 0 skip 0; gun hp 3 ray 3 centre 0 skip 0
+[attach] battle x028 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle x029 D21_23: skipped 0; rcs hp 2 ray 2 centre 0 skip 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle x030 D20_23: skipped 0; rcs hp 2 ray 2 centre 0 skip 0; gun hp 0 ray 6 centre 0 skip 0
+[attach] battle x032 voidsworn|fighter: skipped 0; gun hp 0 ray 4 centre 0 skip 0
+[attach] battle x034 corsair|bomber: skipped 0; gun hp 0 ray 1 centre 0 skip 0
