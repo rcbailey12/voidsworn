@@ -1,0 +1,200 @@
+﻿100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   26.18 m   26.18 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1445218842 Bytes/sec.
+   Speed :            82696.085 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 6:29:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Thursday, November 19, 2026 6:29:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1157\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\surface\
+	    New File  		   74942	surface_below.png
+100%  
+	    New File  		   62111	surface_bow.png
+100%  
+	    New File  		   69954	surface_port.png
+100%  
+	    New File  		   70060	surface_starboard.png
+100%  
+	    New File  		   62822	surface_stern.png
+100%  
+	    New File  		   74856	surface_top.png
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   405.0 k   405.0 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           103686250 Bytes/sec.
+   Speed :            5932.974 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 6:29:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Thursday, November 19, 2026 6:29:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1157\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\godot\
+	    New File  		  430107	S10_auto_20.png
+ 30%  
+ 60%  
+ 91%  
+100%  
+	    New File  		  550600	S10_auto_d1.2.png
+ 47%  
+ 95%  
+100%  
+	    New File  		  202650	S10_auto_d16.0.png
+ 64%  
+100%  
+	    New File  		  271584	S10_auto_d3.0.png
+ 48%  
+ 96%  
+100%  
+	    New File  		  212872	S10_auto_d8.0.png
+ 61%  
+100%  
+	    New File  		  429743	S10_hand_20.png
+ 30%  
+ 61%  
+ 91%  
+100%  
+	    New File  		  550588	S10_hand_d1.2.png
+ 47%  
+ 95%  
+100%  
+	    New File  		  202097	S10_hand_d17.4.png
+ 64%  
+100%  
+	    New File  		  201572	S10_hand_d18.6.png
+ 65%  
+100%  
+	    New File  		  274900	S10_hand_d2.9.png
+ 47%  
+ 95%  
+100%  
+	    New File  		  266533	S10_hand_d3.1.png
+ 49%  
+ 98%  
+100%  
+	    New File  		  213458	S10_hand_d7.75.png
+ 61%  
+100%  
+	    New File  		  211683	S10_hand_d8.25.png
+ 61%  
+100%  
+	    New File  		  431683	S10_off_20.png
+ 30%  
+ 60%  
+ 91%  
+100%  
+	    New File  		  550359	S10_off_d1.2.png
+ 47%  
+ 95%  
+100%  
+	    New File  		  202451	S10_off_d16.0.png
+ 64%  
+100%  
+	    New File  		  271350	S10_off_d3.0.png
+ 48%  
+ 96%  
+100%  
+	    New File  		  212496	S10_off_d8.0.png
+ 61%  
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    5.42 m    5.42 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           406194714 Bytes/sec.
+   Speed :           23242.647 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 6:29:05 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Thursday, November 19, 2026 6:29:05 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\export\V16_37\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1157\out\recipe\export\V16_37\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\export\V16_37\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\export\V16_37\
+	    New File  		     156	export_status.txt
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         1         0         0         0         0
+   Files :         1         1         0         0         0         0
+   Bytes :       156       156         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+   Ended : Thursday, November 19, 2026 6:29:05 PM
+

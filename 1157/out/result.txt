@@ -1,0 +1,52 @@
+start voidsworn_S10 V16_37 opus/issue-1157 Thu 11/19/2026 18:15:57.64 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_181556_9345088 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]           (none)               -> refs/pull/1165/merge
+ - [deleted]           (none)               -> refs/pull/1196/merge
+ - [deleted]           (none)               -> refs/pull/1202/merge
+ - [deleted]           (none)               -> refs/pull/1229/merge
+ - [deleted]           (none)               -> refs/pull/1233/merge
+ - [deleted]           (none)               -> refs/pull/1251/merge
+   1aa2fa3a..6385f4b0  board/pc-in-1119     -> board/pc-in-1119
+ * [new branch]        board/pc-out-1119l   -> board/pc-out-1119l
+ * [new branch]        board/pc-out-1119o   -> board/pc-out-1119o
+ * [new branch]        board/pc-out-1119zi  -> board/pc-out-1119zi
+   9c54899f..bf175a32  main                 -> main
+   82b74108..c3dc2b64  opus/issue-1078      -> opus/issue-1078
+   3e76bd49..53e954c7  opus/issue-1155      -> opus/issue-1155
+ * [new branch]        opus/issue-1180      -> opus/issue-1180
+   5fe73fd2..f688de3f  opus/issue-1234      -> opus/issue-1234
+   00f5e275..08b707f8  opus/issue-1238      -> opus/issue-1238
+   82b74108..c3dc2b64  refs/pull/1170/head  -> refs/pull/1170/head
+ + 804b0da8...b32cca92 refs/pull/1170/merge -> refs/pull/1170/merge  (forced update)
+   3e76bd49..53e954c7  refs/pull/1172/head  -> refs/pull/1172/head
+   5fe73fd2..f688de3f  refs/pull/1242/head  -> refs/pull/1242/head
+ + f2baee96...591c2649 refs/pull/1242/merge -> refs/pull/1242/merge  (forced update)
+   00f5e275..08b707f8  refs/pull/1243/head  -> refs/pull/1243/head
+ + d0af8f16...8113f7f1 refs/pull/1243/merge -> refs/pull/1243/merge  (forced update)
+ * [new ref]           refs/pull/1252/head  -> refs/pull/1252/head
+ * [new ref]           refs/pull/1252/merge -> refs/pull/1252/merge
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=3834f610ebb1a696a37c943e661b4940d6777bb3
+import exit 0 
+1_concept_in start 18:16:23.37 
+1_concept_in exit 0 at 18:16:26.12 
+2_shape_ref start 18:16:26.12 
+2_shape_ref exit 0 at 18:19:59.46 
+3_trace_hull start 18:19:59.47 
+3_trace_hull exit 0 at 18:22:27.94 
+4_parts_kit start 18:22:27.94 
+4_parts_kit exit 0 at 18:23:06.62 
+5_paint_bake start 18:23:06.62 
+5_paint_bake exit 0 at 18:28:02.09 
+6_lod start 18:28:02.10 
+6_lod exit 0 at 18:29:02.01 
+7_export start 18:29:02.02 
+7_export exit 1 at 18:29:05.51 
+checks and shots SKIPPED: stage 7_export failed, so the installed glb is not this run's 
+stages exit 1 
+collect: see log_collect.txt 
+done FAILED: a stage (see the SKIPPED line above) Thu 11/19/2026 18:29:05.74 
+all done 
