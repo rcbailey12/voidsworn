@@ -75,6 +75,9 @@ func _run() -> void:
 		"the round field must outreach the feather plus the shader warp")
 	_check(WL.GAS_CLOUD_MARGIN >= WL.GAS_FIELD_REACH + 1.0, "the texture margin must hold the field plus a filter texel")
 	_check(WL.GAS_SHADER.contains("* %.1f;" % (WL.GAS_WARP * 2.0)), "GAS_SHADER's warp no longer matches GAS_WARP")
+	# Run 2 (PC diagnosis): the visible straight edge was the cards' thin floor fade, the same height for every card.
+	_check(WL.GAS_CARD_SUPPORT.contains("const float GAS_FLOOR_FADE = 5.0;") and WL.GAS_CARD_SUPPORT.contains("band < 0.5 ? GAS_FLOOR_FADE : 1.5"),
+		"the bottom gas band must fade in over GAS_FLOOR_FADE (5), not the old 1.5")
 	var gas := WL.new()
 	gas.gas_route = "fog"
 	var patches := _patches()

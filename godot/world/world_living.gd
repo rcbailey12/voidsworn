@@ -126,12 +126,17 @@ const GAS_CARD_SUPPORT := """
 const float MIN_GAS_DENSITY = 0.002;
 // Leave room for rounding when an upper bound drops an empty fragment early.
 const float GAS_DENSITY_BOUND = MIN_GAS_DENSITY * 0.95;
+// Issue 1263 run 2: every bottom-band card was cut by the same thin fade at one height, so the cloud was a slab with a
+// flat floor; seen from the battle camera its near-bottom edge drew one straight line across every patch on the row.
+// The bottom band now starts lower and fades in over 5 band units (half density at -4.0 instead of -3.25).
+const float GAS_FLOOR_FADE = 5.0;
 vec2 gas_band(float band) {
-	return band < 0.5 ? vec2(-4.0, 2.0) : (band < 1.5 ? vec2(1.0, 8.0) : (band < 2.5 ? vec2(6.0, 14.0) : vec2(12.0, 18.0)));
+	return band < 0.5 ? vec2(-6.5, 2.0) : (band < 1.5 ? vec2(1.0, 8.0) : (band < 2.5 ? vec2(6.0, 14.0) : vec2(12.0, 18.0)));
 }
 float gas_layer(float band, float y) {
 	vec2 limits = gas_band(band);
-	return smoothstep(limits.x, limits.x + 1.5, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
+	float lower = band < 0.5 ? GAS_FLOOR_FADE : 1.5;
+	return smoothstep(limits.x, limits.x + lower, y) * (1.0 - smoothstep(limits.y - 1.5, limits.y, y));
 }
 vec2 gas_card_offset(inout vec2 vertex, vec4 card, vec4 centre, mat4 inv_view, float height_scale) {
 	float angle = card.y * 6.2831;
