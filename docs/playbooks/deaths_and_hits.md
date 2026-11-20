@@ -111,8 +111,9 @@ The cruiser's death, longer and heavier:
 Prototype, not installed (issue 1077, off by default until Ryan picks it): `rendering/effects/death_story="strain"` (or
 `VS_DEATH_STORY=strain`) adds strain to every cruiser and capital death before the split above, in the shared death code
 (fx_death.gd `_strain_begin`), on the fracture plan's break lines (the authored seams on a new build): the plating along
-each line bulges and ripples, hairline cracks light, and the hull groans between the chain blasts (sparks, a breath of
-gas, a small plate, a jolt). After the split the pieces part by about a fifth of the length and settle, fragments slow,
+each line bulges and ripples, hairline cracks light along a ragged line that steps across the plates (never a straight
+cut, Ryan on pass 4B), and the hull groans between the chain blasts (sparks, a small plate, a jolt). Smoke is light: one
+small puff per blast and a thin, short veil at the core (Ryan on pass 4B: "way too much smoke"). After the split the pieces part by about a fifth of the length and settle, fragments slow,
 and a warm light sits in each gap; the torn insides are sooted (fx.gd `wreck_interior`), since the grouped wreck keeps them
 in view. Chorus ruptures and burnt-out hulks are unchanged. Ryan chose this as the direction for big-hull deaths (Nov 20
 2026); it stays off by default until its clip is approved. Check: fx/test/death_story_check.gd (quality low and high).
