@@ -1,0 +1,6 @@
+waiting for all done in opus1279_run3b_wait.txt (RUN12 waiter) Fri 11/20/2026  6:09:29.07 
+OPUS1079_RUN12_WAIT stopped by the Board before RUN12 ran (11/20 06:30:42); replaced by OPUS1079_RUN12_WAIT_B.bat (same key and log) with OJ_KEEP_CHECKOUTS=1: no job deletes its checkouts until Ryan OKs the cleanup.
+waiting for all done in opus1279_run3b_wait.txt (RUN12 waiter B, OJ_KEEP_CHECKOUTS=1) Fri 11/20/2026  6:30:42.60 
+OPUS1079_RUN12 start Fri 11/20/2026  6:44:42.17 
+OPUS1079_RUN12 exit 0 at  7:10:22.87 
+all done  7:10:22.87 

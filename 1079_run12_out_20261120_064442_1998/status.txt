@@ -1,0 +1,28 @@
+[Fri 11/20/2026  6:44:43.06] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc
+runner files match the Board hashes (7 checked)
+tool preflight 2026-11-20T12:44:43Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Fri 11/20/2026  6:44:44.13] ready: GPU label 1079
+head C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+verified 86216b7beaa0a5c9cc17d9cdf6a1e0f08f688e81d7b75195abcf2728fbfe3409 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.bat
+verified 0815291019397f59cc6e79468aaef62b2dc04b948454dab7572e490bf7304cd4 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\jobs\opus_job_head.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1 (tools_live version 5b6fdb65e676)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\5b6fdb65e676\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+checkout new 2319632911c7bb2fa5ba3c740b4185b22a8c2f33 C:\Users\rcbai\Downloads\voidsworn_test\opus1079_run12\out_20261120_064442_1998\new
+ships from C:\Users\rcbai\Downloads\voidsworn_test\build\godot into C:\Users\rcbai\Downloads\voidsworn_test\opus1079_run12\out_20261120_064442_1998\new
+tracked files match the pin: C:\Users\rcbai\Downloads\voidsworn_test\opus1079_run12\out_20261120_064442_1998\new
+ships match their cache: 41 hull(s), 0 older entr(ies) with no ship folder listed unchecked; identity in C:\Users\rcbai\Downloads\voidsworn_test\opus1079_run12\out_20261120_064442_1998\new_ships_identity.txt
+[Fri 11/20/2026  6:45:06.25] step new import start
+[Fri 11/20/2026  6:58:22.80] step new import ok
+[Fri 11/20/2026  6:58:22.86] step new storm timing start
+[Fri 11/20/2026  7:10:22.34] step new storm timing ok
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+checkouts kept: OJ_KEEP_CHECKOUTS=1
+done PASS
+all done Fri 11/20/2026  7:10:22.87
