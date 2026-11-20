@@ -1,0 +1,60 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 8:23:16 AM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\opus1291g\out\recipe\export\B20_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\publish\B20_11_20261120_082313\export\B20_11\
+
+    Files : *.*
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         15	C:\Users\rcbai\Downloads\voidsworn_test\opus1291g\out\recipe\export\B20_11\
+	    New File  		  11.4 m	B20_11.glb  8.7% 17.5% 26.2% 35.0% 43.8% 52.5% 61.3% 70.1% 78.8% 87.6% 96.4%100%  
+	    New File  		  845489	B20_11_base.jpg 31%   62%   93%  100%  
+	    New File  		    4164	B20_11_check.json100%  
+	    New File  		   12491	B20_11_export.json100%  
+	    New File  		  457516	B20_11_normal.jpg 28%   57%   85%  100%  
+	    New File  		   6.3 m	B20_11_normal.png  7.9% 15.8% 23.7% 31.6% 39.5% 47.4% 55.3% 63.2% 71.1% 79.0% 87.0% 94.9%100%  
+	    New File  		   1.2 m	B20_11_orm.jpg 20%   40%   61%   81%  100%  
+	    New File  		   4.6 m	B20_11_orm.png 10%   21%   32%   43%   53%   64%   75%   86%   97%  100%  
+	    New File  		 1038557	B20_11_parts_base.jpg 25%   50%   75%  100%  
+	    New File  		  550196	B20_11_parts_normal.jpg 47%   95%  100%  
+	    New File  		   5.9 m	B20_11_parts_normal.png  8.3% 16.7% 25.1% 33.5% 41.9% 50.3% 58.6% 67.0% 75.4% 83.8% 92.2%100%  
+	    New File  		   1.6 m	B20_11_parts_orm.jpg 14%   29%   44%   59%   74%   89%  100%  
+	    New File  		   5.2 m	B20_11_parts_orm.png  9%   18%   28%   37%   47%   56%   66%   75%   85%   94%  100%  
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1322	manifest_entry.json100%  
+	  New Dir         14	C:\Users\rcbai\Downloads\voidsworn_test\opus1291g\out\recipe\export\B20_11\_gltf_source\
+	    New File  		  11.3 m	B20_11.bin  8.7% 17.5% 26.3% 35.1% 43.9% 52.7% 61.5% 70.2% 79.0% 87.8% 96.6%100%  
+	    New File  		   35816	B20_11.gltf100%  
+	    New File  		  672320	C13_hull_albedo.jpg 38%   77%  100%  
+	    New File  		   3.8 m	C13_hull_albedo.png 13%   26%   39%   52%   65%   78%   91%  100%  
+	    New File  		  457516	C13_hull_normal.jpg 28%   57%   85%  100%  
+	    New File  		   6.3 m	C13_hull_normal.png  7.9% 15.8% 23.7% 31.6% 39.5% 47.4% 55.3% 63.2% 71.1% 79.0% 87.0% 94.9%100%  
+	    New File  		   1.2 m	C13_hull_orm.jpg 20%   40%   61%   81%  100%  
+	    New File  		   4.6 m	C13_hull_orm.png 10%   21%   32%   43%   53%   64%   75%   86%   97%  100%  
+	    New File  		   1.0 m	C13_parts_albedo.jpg 23%   47%   71%   94%  100%  
+	    New File  		   4.4 m	C13_parts_albedo.png 11%   22%   33%   45%   56%   67%   78%   90%  100%  
+	    New File  		  550196	C13_parts_normal.jpg 47%   95%  100%  
+	    New File  		   5.9 m	C13_parts_normal.png  8.3% 16.7% 25.1% 33.5% 41.9% 50.3% 58.6% 67.0% 75.4% 83.8% 92.2%100%  
+	    New File  		   1.6 m	C13_parts_orm.jpg 14%   29%   44%   59%   74%   89%  100%  
+	    New File  		   5.2 m	C13_parts_orm.png  9%   18%   28%   37%   47%   56%   66%   75%   85%   94%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        29        29         0         0         0         0
+   Bytes :   86.74 m   86.74 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1467080709 Bytes/sec.
+   Speed :            83947.031 MegaBytes/min.
+   Ended : Friday, November 20, 2026 8:23:16 AM
+

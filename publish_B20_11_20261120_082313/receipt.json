@@ -1,0 +1,25 @@
+{
+ "job": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus1291g",
+ "ship": "chorus_C13",
+ "code": "B20_11",
+ "commit": "f77b42467d6bf69b4558206f7ce0b53226a150ec",
+ "glb": "deffb21eb6e557861cdf64befe1beb50ae6f982f269f4355a2cc879ed103dd0c",
+ "files": {
+  "B20_11.glb": "deffb21eb6e557861cdf64befe1beb50ae6f982f269f4355a2cc879ed103dd0c",
+  "B20_11_base.jpg": "53bd49a02d9ffeb39afa3af2a2d8f4d6f9050f14b5ac87b8a7e2c3f5b96fa524",
+  "B20_11_normal.png": "0faf0d32c5aeb5dc6072a62aecf780ae72c797b25a604f452b940bd1979d39d2",
+  "B20_11_orm.png": "3c6a8cb206f06e70491916be3ed592bc6780656eb412a9a529da4300a7f2b844",
+  "B20_11_parts_base.jpg": "147e73bb1fcf4c5fdfb114c5fac82d07f530a0bb1b2eccd08138c8f50b53c492",
+  "B20_11_parts_normal.png": "f4403e3041286f90666c458b074221b918f4448a98847cc0c92cdba36d1e0a57",
+  "B20_11_parts_orm.png": "24e1d8b3307121eaa09f87649d89105b3885c98eb53897551441b07ae6602b69"
+ },
+ "checked": [
+  "B20_11.glb",
+  "B20_11_base.jpg",
+  "B20_11_normal.png",
+  "B20_11_orm.png",
+  "B20_11_parts_base.jpg",
+  "B20_11_parts_normal.png",
+  "B20_11_parts_orm.png"
+ ]
+}

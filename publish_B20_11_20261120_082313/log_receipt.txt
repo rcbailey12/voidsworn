@@ -1,0 +1,2 @@
+[publish] receipt ok: chorus_C13 B20_11 commit f77b42467d6bf69b4558206f7ce0b53226a150ec, glb deffb21eb6e557861cdf64befe1beb50ae6f982f269f4355a2cc879ed103dd0c, 7 listed and 7 checked files
+SHIP=chorus_C13
