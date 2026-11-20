@@ -54,6 +54,6 @@ moving wreck section is itself a loose awake body, so it keeps the space awake a
 - Run here, Godot 4.7.2 headless, all exit 0, no SCRIPT ERROR, no Jolt warning: load_all (263 scripts, 0 failed),
   jolt_jobs_check, cold_kill_check, death_leap_check, death_plane_check, multi_kill_pace_check, death_story_check,
   destruction_staging_check, fx_smoke, kill_slowmo_check.
-- PC: `OPUS1279_RUN2.bat` (start with `q_opus1279_run2.bat`; run 1's bat had duplicate labels, Artoo on PR 1302, and is removed) runs the 1232 arrival bench five times on main 7ff4320f and five
+- PC: `OPUS1279_RUN3.bat` (start with `q_opus1279_run3.bat`; pinned to the fix merged with main eb23594d after PR 1255, against that main; replaces run 2; run 1's bat had duplicate labels, Artoo on PR 1302, and is removed) runs the 1232 arrival bench five times on main and five
   times on the fix, each in an empty profile, plus jolt_jobs_check on the PC's lane count. Not run yet.
 - `before_main_d2717a32_s2_log_arrival.txt`: RUN4's original overflow log, from relay branch board/pc-out-1119y.
