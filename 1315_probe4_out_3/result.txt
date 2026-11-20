@@ -1,0 +1,7 @@
+start Fri 11/20/2026  2:25:54.15 attempt 3 probe4 pin 9a756ee52da2457b7998e823104889365203fbc4 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1282w2\repo\godot\assets\ships\I8_37\I8_37.glb:
+3606295ff65f4c04cf02dea1020e5c30cd4f8c905b658360fb91310dc90b162c
+CertUtil: -hashfile command completed successfully.
+fetched 26c63a287430841650f13b02812d538e1fec5572 
+FAILED: opus/issue-1315 is at 26c63a287430841650f13b02812d538e1fec5572, not the pinned 9a756ee52da2457b7998e823104889365203fbc4  
+all done Fri 11/20/2026  2:25:54.78 
