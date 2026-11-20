@@ -236,11 +236,12 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   0.6), not gloss, so they show no white hot spots.
 - **Body and armour (R349, Ryan Nov 20; C13 round G accepted in game Nov 20, PR 1308):** a full body of lumpy fused swellings,
   deep folds and wrinkles grown into the skin (kit `body.field`), never a smooth tube with plates on top. Armour is grown
-  chitin over the entire body, not just the top: armadillo bands that wrap from belly edge to belly edge (kit
-  `plates.armadillo`, lo -1.2), banded and ridged, lips aft, hide rolled up into their edges, broken round the organs.
+  chitin almost everywhere (Ryan, Nov 20 4:18 PM CT: "cover the chorus ships in armor almost everywhere"): armadillo bands
+  that wrap down both flanks to the keel (kit `plates.armadillo`, its default `plates.WRAP`; a sheet never stops them
+  higher), banded and ridged, lips aft, hide rolled up into their edges, broken only round the organs.
   Flank and brood sacs wear flat chitin caps, two rings of thin plates lying close with the slit open at the crown (kit
-  `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). Small fused chitin clusters sit on the strip of belly the bands
-  leave open (kit `plates.fused_patches`). No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.
+  `plates.dome_caps(flat=True)`; Ryan: "caps, but flatter"). The belly is banded too, so `plates.fused_patches` is only for a spot
+  the bands cannot reach. No flat stone tiles: the R341 shell (`plates.armour`) is retired for new builds.
   Every Chorus hull uses these kit calls, so a fix in the kit reaches C10 to C14 at once (R333). The grown paint is the
   stack's default for every Chorus ship (a recipe opts out only with "chorus_look": "r341"), and every Chorus ship is gated
   by the stage 5 detail check unless its recipe says "surface_detail": false. Surface detail must read at
