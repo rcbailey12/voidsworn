@@ -1,0 +1,145 @@
+GPU: waiting for shared claim, weight 1 (1399)
+GPU: acquired shared claim 084629a7-ec74-4c86-9cdb-a68f363eb10e
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-685089cf8712466a9ff8de355f33de73\godot-profile-b477918e2e3d44218e5a5237222c5015
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] baked 3be959258c2f38f13f0cfae888e0dfcfaed1e7cdb331cd5abde9f01b2b0da190 4096x2048 in 5666 ms (worker)
+[world] baked d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 9108 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 9575 ms (worker)
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 10059 ms (worker)
+[world] baked 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 2722 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 2659 ms (worker)
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 2548 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+CAPTURE1399 {"adapter":"NVIDIA GeForce RTX 5080","commit":"3bc35520deaf2824b31c268f76db09b25fbc8b27","godot":"4.7.2-stable (official)","renderer":"forward_plus","ship_manifest_sha256":"cd9eb92ccc013f9525e173b5aafddffd5e5186c25f072498fdeef3409d14953e","tag":"r2before","targets":{}}
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[fx] late shader: damage 444838022 frame 9159 32112.8 ms
+[attach] death on V14_23: placed on the plating (a surface sample; not a hard point type)
+CAPTURE1399 warden voidsworn Frigate code=V14_23 r=170.0 split=0.72
+[attach] battle T V14_23: skipped 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; death hp 0 ray 1 centre 0 skip 0
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[attach] death on V14_23: placed on the plating (a surface sample; not a hard point type)
+CAPTURE1399 warden voidsworn Frigate code=V14_23 r=6.44799976348877 split=0.72
+[attach] battle T V14_23: skipped 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; death hp 0 ray 1 centre 0 skip 0
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+CAPTURE1399 penitent voidsworn Cruiser code=V16_37 r=170.0 split=1.38
+[attach] battle T V16_37: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+CAPTURE1399 penitent voidsworn Cruiser code=V16_37 r=14.3840004730225 split=1.38
+[attach] battle T V16_37: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] scorch on V1b_r_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V1b_r_23: no authored point fits this request; using the surface ray
+CAPTURE1399 ascendant voidsworn Dreadnought code=V1b_r_23 r=170.0 split=2.00
+[attach] battle T V1b_r_23: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (F1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_2 (T1) on V1b_r_23: arc -180 to 180, trains all round
+[turret] turret_3 (T2) on V1b_r_23: arc -180 to 180, trains all round
+[attach] scorch on V1b_r_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V1b_r_23: no authored point fits this request; using the surface ray
+CAPTURE1399 ascendant voidsworn Dreadnought code=V1b_r_23 r=26.7839981079102 split=2.00
+[attach] battle T V1b_r_23: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[attach] scorch on H10_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H10_23: no authored point fits this request; using the surface ray
+CAPTURE1399 h_dominion hegemony Battleship code=H10_23 r=170.0 split=2.00
+[attach] battle T H10_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (F1) on H10_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on H10_23: arc -180 to 180, trains all round
+[turret] turret_2 (HP) on H10_23: arc 30 to 150, trains -25.0 to 95.0 from rest
+[turret] turret_3 (HS) on H10_23: arc -150 to -30, trains -95.0 to 25.0 from rest
+[attach] scorch on H10_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H10_23: no authored point fits this request; using the surface ray
+CAPTURE1399 h_dominion hegemony Battleship code=H10_23 r=20.8319990539551 split=2.00
+[attach] battle T H10_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[attach] scorch on H4_11: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H4_11: no authored point fits this request; using the surface ray
+CAPTURE1399 h_boss hegemony Super-dreadnought code=H4_11 r=170.0 split=2.00
+[attach] battle T H4_11: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (F1) on H4_11: arc -180 to 180, trains all round
+[turret] turret_1 (HP) on H4_11: arc 30 to 150, trains -30.0 to 90.0 from rest
+[turret] turret_2 (HS) on H4_11: arc -150 to -30, trains -90.0 to 30.0 from rest
+[turret] turret_3 (T1) on H4_11: arc -180 to 180, trains all round
+[attach] scorch on H4_11: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on H4_11: no authored point fits this request; using the surface ray
+CAPTURE1399 h_boss hegemony Super-dreadnought code=H4_11 r=30.7519990539551 split=2.00
+[attach] battle T H4_11: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] death on C13s_23: placed on the plating (a surface sample; not a hard point type)
+CAPTURE1399 c_raider corsair Frigate code=C13s_23 r=170.0 split=0.72
+[attach] battle T C13s_23: skipped 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; death hp 0 ray 1 centre 0 skip 0
+[turret] turret_0 (T1) on C13s_23: arc -180 to 180, trains all round
+[attach] scorch on C13s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] death on C13s_23: placed on the plating (a surface sample; not a hard point type)
+CAPTURE1399 c_raider corsair Frigate code=C13s_23 r=6.44799976348877 split=0.72
+[attach] battle T C13s_23: skipped 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; death hp 0 ray 1 centre 0 skip 0
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[attach] scorch on C15s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C15s_23: no authored point fits this request; using the surface ray
+CAPTURE1399 c_marauder corsair Cruiser code=C15s_23 r=170.0 split=1.38
+[attach] battle T C15s_23: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (P1) on C15s_23: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_1 (P2) on C15s_23: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (S1) on C15s_23: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_3 (S2) on C15s_23: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_4 (T1) on C15s_23: arc -180 to 180, trains all round
+[turret] turret_5 (T2) on C15s_23: arc -180 to 180, trains all round
+[attach] scorch on C15s_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C15s_23: no authored point fits this request; using the surface ray
+CAPTURE1399 c_marauder corsair Cruiser code=C15s_23 r=14.483200378418 split=1.38
+[attach] battle T C15s_23: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+CAPTURE1399 c_boss corsair Battle-barge code=C19_51 r=170.0 split=2.00
+[attach] battle T C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[turret] turret_0 (P1) on C19_51: arc 30 to 150, trains 0.0 to 120.0 from rest
+[turret] turret_1 (P2) on C19_51: arc 30 to 150, trains -5.0 to 115.0 from rest
+[turret] turret_2 (P3) on C19_51: arc 30 to 150, trains -10.0 to 110.0 from rest
+[turret] turret_3 (S1) on C19_51: arc -150 to -30, trains -120.0 to 0.0 from rest
+[turret] turret_4 (S2) on C19_51: arc -150 to -30, trains -115.0 to 5.0 from rest
+[turret] turret_5 (S3) on C19_51: arc -150 to -30, trains -110.0 to 10.0 from rest
+[turret] turret_6 (T1) on C19_51: arc -180 to 180, trains all round
+[turret] turret_7 (T2) on C19_51: arc -180 to 180, trains all round
+[attach] scorch on C19_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on C19_51: no authored point fits this request; using the surface ray
+CAPTURE1399 c_boss corsair Battle-barge code=C19_51 r=25.7919990539551 split=2.00
+[attach] battle T C19_51: skipped 0; breach hp 4 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+CAPTURE1399 DONE
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-685089cf8712466a9ff8de355f33de73\godot-profile-b477918e2e3d44218e5a5237222c5015
+GPU: released shared claim 084629a7-ec74-4c86-9cdb-a68f363eb10e
