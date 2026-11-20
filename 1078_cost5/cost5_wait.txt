@@ -1,0 +1,4 @@
+waiting for all done in opus1236_wait.txt Thu 11/19/2026 18:12:47.18 
+OPUS1078_COST5 start Thu 11/19/2026 21:43:53.13 
+OPUS1078_COST5 exit 0 at 21:50:37.56 
+all done 21:50:37.56 
