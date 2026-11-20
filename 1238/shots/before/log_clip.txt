@@ -1,0 +1,44 @@
+GPU: waiting for shared claim, weight 1 (1238)
+GPU: still waiting for shared claim
+GPU: still waiting for shared claim
+GPU: acquired shared claim 7af53598-415f-4adb-a55b-bf9ff762b4fe
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-35a2471be413400a86e95a25376b3bbc\godot-profile-c9455bd3475e4a55906bad165700aaf1
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 60 FPS...
+[sfx] 71 cues, 67 clip sets, loaded in 381 ms
+[look_bench] sound on: death cues play and the picture shows in the window (for --write-movie)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] baked 3be959258c2f38f13f0cfae888e0dfcfaed1e7cdb331cd5abde9f01b2b0da190 4096x2048 in 4476 ms (worker)
+[world] baked d977c560622cbb65c56991c476ee0afd823593cb59c58e5c7e9a862bb3b44f51 4096x2048 in 7325 ms (worker)
+[world] baked 8c149981cd5fba284e7c3593831c0df1adb709d79507cbfa26695e1ca5b8d0fe 1024x512 in 7847 ms (worker)
+[world] baked 623fe6f152ddefc618bbcf04375f17ce9d26489bc4ff8761be15f359bce2d669 1024x512 in 8347 ms (worker)
+[world] baked 4ab040e4c9922df89beb0008556aaa3616b6bf2c8054d35740bdbf96492a1c2b 4096x2048 in 2090 ms (worker)
+[world] baked 812810d8dfa100e612bbd0aed246a69974710e0f829c78c0b0ed574b74098f65 1024x512 in 1969 ms (worker)
+[world] baked 3f6b3e30cc235a5c473de1a3811f95eb59b6652665a6af303abb89b063615103 1024x512 in 1840 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[fx] late shader: damage 3607499356 frame 1872 233046.3 ms
+[fx] late shader: death power down 2956913195 frame 1876 233643.9 ms
+[look_bench] d1238_chorus_cruiser at 60: 7 cells
+[look_bench] d1238_chorus_titan at 60: 7 cells
+[fx] late shader: damage 2144712892 frame 2690 343550.2 ms
+[fx] late shader: death power down 3991197195 frame 2690 343557.1 ms
+[look_bench] d1238_glass_cruiser at 60: 7 cells
+[look_bench] late shaders after warm-up (issue 376): 4; pipelines compiled in this run: 385
+[look_bench]   late shader damage 3607499356 frame 1872 233046.3 ms
+[look_bench]   late shader death power down 2956913195 frame 1876 233643.9 ms
+[look_bench]   late shader damage 2144712892 frame 2690 343550.2 ms
+[look_bench]   late shader death power down 3991197195 frame 2690 343557.1 ms
+[look_bench] stills: 3, warnings: 0
+LOOK_BENCH_DONE
+--------------------------------------------------------------------------------
+Done recording movie at path: C:\Users\rcbai\Downloads\voidsworn_test\opus1238\shots\before\D1238_before_deaths_with_sound.avi
+3041 frames at 60 FPS (movie length: 00:00:50:41), recorded in 00:06:25 (12% of real-time speed).
+CPU render time: 0.74 seconds (average: 0.24 ms/frame)
+GPU render time: 0.16 seconds (average: 0.05 ms/frame)
+Encoding time: 55.47 seconds (average: 18.24 ms/frame)
+--------------------------------------------------------------------------------
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-35a2471be413400a86e95a25376b3bbc\godot-profile-c9455bd3475e4a55906bad165700aaf1
+GPU: released shared claim 7af53598-415f-4adb-a55b-bf9ff762b4fe

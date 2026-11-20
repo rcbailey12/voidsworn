@@ -1,0 +1,319 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "477ff485b24939c7ec92f97656b847107b14de261d02ad0e1acaf338fff0df95",
+ "commit": "4f9dbabdc70a4ed8f1a68bdabf10c7c1249cb5bf",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [
+  "damage 3607499356 frame 8172 29647.0 ms",
+  "death power down 2956913195 frame 8176 29782.2 ms",
+  "damage 2144712892 frame 9168 60419.2 ms",
+  "death power down 3991197195 frame 9168 60425.5 ms"
+ ],
+ "late_shaders_after_warmup": 4,
+ "moments_sha256": "4f03755b4f6522b645890802f143a91c1741f402c54dcd5b1213c7a9b400429f",
+ "parts": {
+  "0": {
+   "start_frame": 7200
+  },
+  "2": {
+   "start_frame": 8100
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 7320
+  }
+ },
+ "pipelines_compiled": 788,
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 73,
+     "t": 0.0
+    },
+    {
+     "step": 109,
+     "t": 0.6
+    },
+    {
+     "step": 109,
+     "t": 0.6
+    },
+    {
+     "step": 109,
+     "t": 0.6
+    },
+    {
+     "step": 112,
+     "t": 0.65
+    },
+    {
+     "step": 154,
+     "t": 1.35
+    },
+    {
+     "step": 244,
+     "t": 2.85
+    }
+   ],
+   "file": "moments/d1238_chorus_cruiser__c170.png",
+   "id": "d1238_chorus_cruiser",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 317,
+     "t": 0.0
+    },
+    {
+     "step": 353,
+     "t": 0.6
+    },
+    {
+     "step": 353,
+     "t": 0.6
+    },
+    {
+     "step": 353,
+     "t": 0.6
+    },
+    {
+     "step": 356,
+     "t": 0.65
+    },
+    {
+     "step": 398,
+     "t": 1.35
+    },
+    {
+     "step": 488,
+     "t": 2.85
+    }
+   ],
+   "file": "moments/d1238_chorus_cruiser__c60.png",
+   "id": "d1238_chorus_cruiser",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 561,
+     "t": 0.0
+    },
+    {
+     "step": 597,
+     "t": 0.6
+    },
+    {
+     "step": 597,
+     "t": 0.6
+    },
+    {
+     "step": 597,
+     "t": 0.6
+    },
+    {
+     "step": 600,
+     "t": 0.65
+    },
+    {
+     "step": 642,
+     "t": 1.35
+    },
+    {
+     "step": 732,
+     "t": 2.85
+    }
+   ],
+   "file": "moments/d1238_chorus_titan__c170.png",
+   "id": "d1238_chorus_titan",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 805,
+     "t": 0.0
+    },
+    {
+     "step": 841,
+     "t": 0.6
+    },
+    {
+     "step": 841,
+     "t": 0.6
+    },
+    {
+     "step": 841,
+     "t": 0.6
+    },
+    {
+     "step": 844,
+     "t": 0.65
+    },
+    {
+     "step": 886,
+     "t": 1.35
+    },
+    {
+     "step": 976,
+     "t": 2.85
+    }
+   ],
+   "file": "moments/d1238_chorus_titan__c60.png",
+   "id": "d1238_chorus_titan",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 1049,
+     "t": 0.0
+    },
+    {
+     "step": 1085,
+     "t": 0.6
+    },
+    {
+     "step": 1125,
+     "t": 1.2667
+    },
+    {
+     "step": 1132,
+     "t": 1.3833
+    },
+    {
+     "step": 1151,
+     "t": 1.6844
+    },
+    {
+     "step": 1210,
+     "t": 2.38
+    },
+    {
+     "step": 1300,
+     "t": 3.88
+    }
+   ],
+   "file": "moments/d1238_glass_cruiser__c170.png",
+   "id": "d1238_glass_cruiser",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 1373,
+     "t": 0.0
+    },
+    {
+     "step": 1409,
+     "t": 0.6
+    },
+    {
+     "step": 1449,
+     "t": 1.2667
+    },
+    {
+     "step": 1456,
+     "t": 1.3833
+    },
+    {
+     "step": 1475,
+     "t": 1.6844
+    },
+    {
+     "step": 1534,
+     "t": 2.38
+    },
+    {
+     "step": 1624,
+     "t": 3.88
+    }
+   ],
+   "file": "moments/d1238_glass_cruiser__c60.png",
+   "id": "d1238_glass_cruiser",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 1697,
+     "t": 0.0
+    },
+    {
+     "step": 1711,
+     "t": 0.2333
+    },
+    {
+     "step": 1718,
+     "t": 0.35
+    },
+    {
+     "step": 1736,
+     "t": 0.65
+    },
+    {
+     "step": 1778,
+     "t": 1.35
+    },
+    {
+     "step": 1868,
+     "t": 2.85
+    }
+   ],
+   "file": "moments/d1238_chorus_frigate__c170.png",
+   "id": "d1238_chorus_frigate",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 1941,
+     "t": 0.0
+    },
+    {
+     "step": 1955,
+     "t": 0.2333
+    },
+    {
+     "step": 1962,
+     "t": 0.35
+    },
+    {
+     "step": 1980,
+     "t": 0.65
+    },
+    {
+     "step": 2022,
+     "t": 1.35
+    },
+    {
+     "step": 2112,
+     "t": 2.85
+    }
+   ],
+   "file": "moments/d1238_chorus_frigate__c60.png",
+   "id": "d1238_chorus_frigate",
+   "impacts": [],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}

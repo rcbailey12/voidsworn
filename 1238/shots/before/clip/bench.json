@@ -1,0 +1,142 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "477ff485b24939c7ec92f97656b847107b14de261d02ad0e1acaf338fff0df95",
+ "commit": "4f9dbabdc70a4ed8f1a68bdabf10c7c1249cb5bf",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [
+  "damage 3607499356 frame 1872 233046.3 ms",
+  "death power down 2956913195 frame 1876 233643.9 ms",
+  "damage 2144712892 frame 2690 343550.2 ms",
+  "death power down 3991197195 frame 2690 343557.1 ms"
+ ],
+ "late_shaders_after_warmup": 4,
+ "moments_sha256": "4f03755b4f6522b645890802f143a91c1741f402c54dcd5b1213c7a9b400429f",
+ "parts": {
+  "0": {
+   "start_frame": 900
+  },
+  "2": {
+   "start_frame": 1800
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 1020
+  }
+ },
+ "pipelines_compiled": 385,
+ "stills": [
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 73,
+     "t": 0.0
+    },
+    {
+     "step": 133,
+     "t": 1.0
+    },
+    {
+     "step": 193,
+     "t": 2.0
+    },
+    {
+     "step": 223,
+     "t": 2.5
+    },
+    {
+     "step": 283,
+     "t": 3.5
+    },
+    {
+     "step": 343,
+     "t": 4.5
+    },
+    {
+     "step": 403,
+     "t": 5.5
+    }
+   ],
+   "file": "moments/d1238_chorus_cruiser__c60.png",
+   "id": "d1238_chorus_cruiser",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 476,
+     "t": 0.0
+    },
+    {
+     "step": 536,
+     "t": 1.0
+    },
+    {
+     "step": 596,
+     "t": 2.0
+    },
+    {
+     "step": 626,
+     "t": 2.5
+    },
+    {
+     "step": 686,
+     "t": 3.5
+    },
+    {
+     "step": 746,
+     "t": 4.5
+    },
+    {
+     "step": 806,
+     "t": 5.5
+    }
+   ],
+   "file": "moments/d1238_chorus_titan__c60.png",
+   "id": "d1238_chorus_titan",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 879,
+     "t": 0.0
+    },
+    {
+     "step": 939,
+     "t": 1.0
+    },
+    {
+     "step": 1018,
+     "t": 2.0133
+    },
+    {
+     "step": 1048,
+     "t": 2.5133
+    },
+    {
+     "step": 1108,
+     "t": 3.5133
+    },
+    {
+     "step": 1168,
+     "t": 4.5133
+    },
+    {
+     "step": 1228,
+     "t": 5.5133
+    }
+   ],
+   "file": "moments/d1238_glass_cruiser__c60.png",
+   "id": "d1238_glass_cruiser",
+   "impacts": [],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}

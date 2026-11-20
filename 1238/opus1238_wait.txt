@@ -1,0 +1,10 @@
+waiting for all done in opus1235_wait.txt Thu 11/19/2026 16:50:06.28 
+OPUS1238_WAIT stopped by the Board before shots1238 ran (11/19 19:55:26); replaced by OPUS1238_WAIT_B.bat so 1077 pass 4B runs first
+waiting for all done in opus1077_pass4b_wait.txt (OPUS1238_WAIT_B) Thu 11/19/2026 19:55:26.62 
+OPUS1238_WAIT_B stopped by the Board before shots1238 ran (11/19 20:03:55); replaced by OPUS1238_WAIT_C.bat so 1079 run 7B runs first
+waiting for all done in opus1079_run7b_wait.txt (OPUS1238_WAIT_C) Thu 11/19/2026 20:03:55.75 
+OPUS1238_WAIT_C stopped by the Board before shots1238 ran (11/19 20:05:07); replaced by OPUS1238_WAIT_D.bat (after 1079 7C)
+waiting for all done in opus1079_run7c_wait.txt (OPUS1238_WAIT_D) Thu 11/19/2026 20:05:07.89 
+shots1238 start Thu 11/19/2026 21:00:07.36 
+shots1238 exit 0 at 21:30:18.72 
+all done 21:30:18.72 

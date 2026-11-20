@@ -1,0 +1,10 @@
+shots1238 start Thu 11/19/2026 21:00:08.95 
+done: after strips 
+own settings untouched: after strips 
+done: after clip 
+own settings untouched: after clip 
+done: before strips 
+own settings untouched: before strips 
+done: before clip 
+own settings untouched: before clip 
+shots1238 done Thu 11/19/2026 21:30:18.65 

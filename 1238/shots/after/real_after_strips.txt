@@ -1,0 +1,10 @@
+real profile C:\Users\rcbai\AppData\Roaming\Godot\app_userdata\Voidsworn
+SHA256 hash of C:\Users\rcbai\AppData\Roaming\Godot\app_userdata\Voidsworn\battle_opts.json:
+c92fe4ca1d3e462b0cf27077e15f331ae2815199e1faa0d2201be434d556aad9
+settings.json missing 
+SHA256 hash of C:\Users\rcbai\AppData\Roaming\Godot\app_userdata\Voidsworn\board_look.cfg:
+e9e03d93a3ecb04ea33934f1694541b23f91202f8e2763cebc526da01121630e
+SHA256 hash of C:\Users\rcbai\AppData\Roaming\Godot\app_userdata\Voidsworn\voidsworn_career.json:
+f287f73c9370c68158b9fc844156e6a3529da34f4bb886952dd6d7228c838c44
+SHA256 hash of C:\Users\rcbai\AppData\Roaming\Godot\app_userdata\Voidsworn\voidsworn_campaign.json:
+74c6093e06639c01e1ed37edbeb08258ffc6a13bf5cb040fb16cb8c25ec96145
