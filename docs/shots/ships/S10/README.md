@@ -1,7 +1,7 @@
 # S10 Vigil (V16_37): shots (issue 1157)
 
 - `S10_ingame_vs_concept.jpg`: the accepted concept beside the installed ship in Godot (three-quarter, side, and the battle
-  camera at true size), from the PC run 1157_shipjob7 (PASS, Nov 20 08:50 CT, commit 553659ba, round 4 S8 gun mounts at cruiser size; files on board/pc-out-1119zzzs7).
+  camera at true size), from the PC run 1157_shipjob8 (PASS, Nov 20 09:29 CT, commit 45eecc66, round 5 guns 1.2 times bigger; files on board/pc-out-1119zzzs9).
 - `S10_battle_bench.jpg`: the battle camera (near set) from the same run (1157_shipjob7), with the same frame enlarged 4x.
 - `S10_blob_sweep.jpg`: the nine-cell sweep (bow, midship, stern from top, side and below) beside the concept regions, from the
   build sheet (`docs/ship_pipeline/build_sheets/voidsworn_S10/cells.jpg`). A viewing instrument, not a bar (R121).
