@@ -97,6 +97,7 @@ if errorlevel 1 exit /b 14
 rem (1194) Every tmo.bat step runs the canonical watchdog in tools_live: stop when its files differ from its hashes.
 set "TLV="
 if not "%PC_RUNNER_TEST%"=="1" if exist "%ROOT%\tools_live\current.txt" set /p TLV=<"%ROOT%\tools_live\current.txt"
+if not "%PC_RUNNER_TEST%"=="1" if exist "%ROOT%\tools_live\" if not defined TLV (echo tools_live is installed but current.txt is blank; stopped >> "%O%\result.txt" & exit /b 14)
 if defined TLV (
   %COMMON% hashcheck "%O%" "%ROOT%\tools_live\%TLV%\pc" "%ROOT%\tools_live\%TLV%\hashes.txt" strict
   if errorlevel 1 exit /b 14

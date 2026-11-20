@@ -118,13 +118,20 @@ function Test-Hashes([string]$Version) {
   $hashFile = Join-Path $Version 'hashes.txt'
   if (-not (Test-Path -LiteralPath $hashFile -PathType Leaf)) { return $false }
   $count = 0
+  $listed = @()
   foreach ($line in [IO.File]::ReadAllLines($hashFile)) {
     if ($line -notmatch '^([0-9a-f]{64})  (\S+)$') { continue }
-    $file = Join-Path $Version "pc\$($Matches[2])"
+    $name = $Matches[2]
+    $file = Join-Path $Version "pc\$name"
     $want = $Matches[1]
     if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $false }
     if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant() -ne $want) { return $false }
     $count++
+    $listed += $name
+  }
+  # Every guarded file the version holds must be listed (a partial manifest is not a pass).
+  foreach ($name in $hashedFiles) {
+    if ((Test-Path -LiteralPath (Join-Path $Version "pc\$name") -PathType Leaf) -and $listed -notcontains $name) { return $false }
   }
   return $count -ge 3
 }

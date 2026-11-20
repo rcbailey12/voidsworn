@@ -995,6 +995,15 @@ try {
     # hashes file is a warning only: a run must never stop because the Board has not written hashes yet.
     $script:out = $args[1]; $tools = $args[2]; $hashf = $args[3]
     if ($test -and $env:PC_TEST_HASHES) { $hashf = $env:PC_TEST_HASHES }
+    # Issue 1194 (Artoo on PR 1254): strict fails closed. A missing or empty manifest, or one that leaves out a guarded
+    # file, stops the job as surely as a changed file.
+    $strict = $args[4] -eq 'strict'
+    function Stop-Strict($why) {
+      Log "STOPPED: $why"
+      if (Test-Path -LiteralPath (Join-Path $script:out 'status.json')) { State 'failed' "STOPPED: $why" }
+      exit 14
+    }
+    if ($strict -and -not (Test-Path -LiteralPath $hashf)) { Stop-Strict "no hashes file at $hashf" }
     if (-not (Test-Path -LiteralPath $hashf)) {
       Log "WARNING: no Board hashes file at $hashf; the running runner copies are not checked"
       exit 0
@@ -1003,6 +1012,12 @@ try {
     foreach ($l in [IO.File]::ReadAllLines($hashf)) {
       $m = [regex]::Match($l, '^([0-9a-fA-F]{64})\s+(\S+)\s*$')
       if ($m.Success) { $want[$m.Groups[2].Value] = $m.Groups[1].Value.ToLower() }
+    }
+    if ($strict) {
+      $required = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js')
+      if (Test-Path -LiteralPath (Join-Path $tools 'job_wrap.bat')) { $required += 'job_wrap.bat' }
+      $absent = @($required | Where-Object { -not $want.ContainsKey($_) })
+      if ($absent.Count) { Stop-Strict "the hashes file $hashf leaves out: $($absent -join ', ')" }
     }
     if ($want.Count -eq 0) { Log "WARNING: the Board hashes file $hashf has no entries; the running runner copies are not checked"; exit 0 }
     $bad = @()

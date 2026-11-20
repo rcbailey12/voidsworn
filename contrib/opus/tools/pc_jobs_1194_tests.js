@@ -83,6 +83,14 @@ assert(tmo.includes('set "TMO_LIVE=%USERPROFILE%\\Downloads\\voidsworn_test\\too
 assert(tmo.includes('if "%PC_RUNNER_TEST%"=="1" goto run') && tmo.includes('if "%TMO_OWN_COPY%"=="1" goto run'), 'tests keep their own watchdog');
 assert(tmo.includes('if /i "%~dp0"=="%TMO_LIVE%\\%TMO_VER%\\pc\\" goto run'), 'tools_live does not hand off to itself');
 assert(tmo.includes('set "TMO_PS=%TMO_LIVE%\\%TMO_VER%\\pc\\run_timeout.ps1"') && tmo.includes('-File "%TMO_PS%"'), 'other copies hand off to tools_live');
+// Artoo on PR 1254: once tools_live exists, a blank pointer or a missing target stops the step; it never falls back.
+const tmoCode = tmo.replace(/\r\n/g, '\n');
+assert(tmoCode.includes('if not exist "%TMO_LIVE%\\" goto run\nif not defined TMO_VER goto broken\n'), 'a blank pointer fails closed');
+assert(tmoCode.includes('if not exist "%TMO_LIVE%\\%TMO_VER%\\pc\\run_timeout.ps1" goto broken\nset "TMO_PS='), 'a missing target fails closed');
+assert(/:broken\n[^\n]*\nexit \/b 125/.test(tmoCode), 'a broken install exits 125 without running anything');
+const ship = read(path.join(PC, 'jobs/ship_job.bat'));
+assert(!ship.includes('call "%C%\\tools\\pc\\tmo.bat"') && (ship.match(/call "%TMO%"/g) || []).length === 5, 'ship_job runs every step through the tools_live watchdog');
+assert(ship.includes('if exist "%V%\\tools_live\\" if not defined TMO_OK set "FAILED='), 'ship_job fails closed on a broken install');
 assert(read(path.join(ROOT, 'contrib/opus/tools/run_all_checks.js')).includes("TMO_OWN_COPY: '1'"), 'the standing checks test this checkout');
 pass('every tmo.bat outside tools_live hands its step to the canonical watchdog');
 
@@ -95,9 +103,12 @@ assert(pre.includes("'tools.cmd'") && pre.includes("'set \"JW_' + $name.ToUpperI
 const hc = common.slice(common.indexOf("elseif ($mode -eq 'hashcheck')"), common.indexOf("elseif ($mode -eq 'preflight-tools')"));
 assert(hc.includes("$guarded = @('tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat')"));
 assert(/if \(\$args\[4\] -eq 'strict' -and \$stop\.Count\) \{[\s\S]*?exit 14/.test(hc), 'strict hashcheck stops on a watchdog or slot file');
+assert(/if \(\$strict -and -not \(Test-Path -LiteralPath \$hashf\)\) \{ Stop-Strict/.test(hc), 'strict stops on a missing manifest');
+assert(/leaves out: [\s\S]*?\n    \}\n    if \(\$want\.Count -eq 0\)/.test(hc), 'strict stops on a partial or empty manifest before the empty-file warning');
 for (const [name, root] of [['codex_issue.bat', '%ROOT%'], ['work_issue.bat', '%VT%']]) {
   const bat = read(path.join(PC, name)).replace(/\r\n/g, '\n');
   assert(bat.includes(`  %COMMON% hashcheck "%O%" "${root}\\tools_live\\%TLV%\\pc" "${root}\\tools_live\\%TLV%\\hashes.txt" strict\n  if errorlevel 1 exit /b 14`), name + ' stops on a changed tools_live watchdog');
+  assert(bat.includes(`if exist "${root}\\tools_live\\" if not defined TLV (`), name + ' stops on a blank tools_live pointer');
 }
 pass('tool preflight (godot, blender, ffmpeg, node, pil; exit 2) and the strict watchdog hash check in both runners');
 
@@ -133,7 +144,7 @@ if (hasPwsh) {
   fs.mkdirSync(hashOut);
   const good = path.join(temp, 'good.txt');
   const sum = n => crypto.createHash('sha256').update(fs.readFileSync(path.join(PC, n))).digest('hex');
-  fs.writeFileSync(good, ['tmo.bat', 'gpu_slots.js'].map(n => sum(n) + '  ' + n).join('\n') + '\n');
+  fs.writeFileSync(good, ['tmo.bat', 'run_timeout.ps1', 'gpu_slots.js', 'job_wrap.bat'].map(n => sum(n) + '  ' + n).join('\n') + '\n');
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, good, 'strict']);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const bad = path.join(temp, 'bad.txt');
@@ -143,6 +154,17 @@ if (hasPwsh) {
   assert(read(path.join(hashOut, 'result.txt')).includes('STOPPED: the watchdog or slot files differ from ' + bad + ': run_timeout.ps1'));
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, bad]);
   assert.equal(r.status, 0, 'without strict a difference only warns');
+  r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, path.join(temp, 'none.txt'), 'strict']);
+  assert.equal(r.status, 14, 'strict: a missing manifest stops');
+  const partial = path.join(temp, 'partial.txt');
+  fs.writeFileSync(partial, sum('tmo.bat') + '  tmo.bat\n');
+  r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, partial, 'strict']);
+  assert.equal(r.status, 14, 'strict: a partial manifest stops');
+  assert(read(path.join(hashOut, 'result.txt')).includes('leaves out: run_timeout.ps1, gpu_slots.js, job_wrap.bat'));
+  const empty = path.join(temp, 'empty.txt');
+  fs.writeFileSync(empty, '');
+  r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, empty, 'strict']);
+  assert.equal(r.status, 14, 'strict: an empty manifest stops');
   const vt = path.join(temp, 'vt');
   fs.mkdirSync(vt);
   fs.writeFileSync(path.join(vt, 'gpu_slot_1'), JSON.stringify({ token: 't', issue: 'issue-1194 pwsh', pid: 999999, mode: 'shared', weight: 2,
@@ -175,7 +197,9 @@ const tools = path.join(temp, 'fake tools', 'pc');
 put(path.join(tools, 'tmo.bat'), crlf('@echo off\ncall %2 %3 %4 %5 %6\nexit /b %ERRORLEVEL%\n'));
 fs.copyFileSync(path.join(PC, 'runner_common.ps1'), path.join(tools, 'runner_common.ps1'));
 const hashes = path.join(temp, 'fake tools', 'hashes.txt');
-put(hashes, sha(path.join(tools, 'tmo.bat')) + '  tmo.bat\n');
+put(path.join(tools, 'run_timeout.ps1'), 'exit 0\n');
+put(path.join(tools, 'gpu_slots.js'), '// fake\n');
+put(hashes, ['tmo.bat', 'run_timeout.ps1', 'gpu_slots.js'].map(n => sha(path.join(tools, n)) + '  ' + n).join('\n') + '\n');
 const step = path.join(temp, 'step.bat');
 put(step, crlf('@echo off\nif not "%~2"=="" if "%~3"=="empty" type nul > "%~2"\nif not "%~2"=="" if not "%~3"=="empty" echo made> "%~2"\nexit /b %~1\n'));
 const godot = path.join(temp, 'godot.exe');
@@ -232,6 +256,12 @@ assert(read(path.join(missing.out, 'preflight.txt')).includes('MISSING blender')
 assert(!fs.existsSync(path.join(missing.out, 'cloned.txt')), 'nothing runs after a failed preflight');
 pass('Windows: a missing tool stops the job with exit 2 before its first step');
 
+const partialHashes = path.join(temp, 'fake tools', 'partial.txt');
+put(partialHashes, sha(path.join(tools, 'tmo.bat')) + '  tmo.bat\n');
+const partialRun = job('partial', ['call "%JW%" init "%OUT%" "test1194" ""', 'exit /b %ERRORLEVEL%'].join('\n'), { JW_HASHES: partialHashes });
+assert.equal(partialRun.code, 1, partialRun.text + partialRun.st);
+assert.equal(partialRun.done, 'FAILED: tools hashcheck');
+assert(partialRun.st.includes('leaves out: run_timeout.ps1, gpu_slots.js'), partialRun.st);
 fs.appendFileSync(path.join(tools, 'tmo.bat'), 'rem changed\r\n');
 const tampered = job('tampered', ['call "%JW%" init "%OUT%" "test1194" ""', 'exit /b %ERRORLEVEL%'].join('\n'));
 assert.equal(tampered.code, 1, tampered.text + tampered.st);
@@ -248,7 +278,23 @@ const handoff = spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/c', 'call',
   { env: { ...process.env, USERPROFILE: profile, TMO_OWN_COPY: '', PC_RUNNER_TEST: '' }, encoding: 'utf8', windowsHide: true, timeout: 60000 });
 assert.equal(handoff.status, 7, handoff.stdout + handoff.stderr);
 assert(read(marker).includes('5 fake.exe --x'), 'the arguments reach the canonical watchdog');
-pass('Windows: a checkout tmo.bat hands its step to the installed tools_live watchdog');
+// Fail closed: a copy of tmo.bat with its own (marker) watchdog must never run it once tools_live exists.
+const local = path.join(temp, 'local pc');
+fs.mkdirSync(local, { recursive: true });
+fs.copyFileSync(path.join(PC, 'tmo.bat'), path.join(local, 'tmo.bat'));
+const localMarker = path.join(temp, 'local.txt');
+put(path.join(local, 'run_timeout.ps1'), `Set-Content -LiteralPath '${localMarker}' -Value ran\nexit 0\n`);
+const runLocal = () => spawnSync(process.env.ComSpec || 'cmd.exe', ['/d', '/c', 'call', path.join(local, 'tmo.bat'), '5', 'fake.exe'],
+  { env: { ...process.env, USERPROFILE: profile, TMO_OWN_COPY: '', PC_RUNNER_TEST: '' }, encoding: 'utf8', windowsHide: true, timeout: 60000 });
+put(path.join(vt, 'tools_live', 'current.txt'), '');
+let broken = runLocal();
+assert.equal(broken.status, 125, broken.stdout + broken.stderr);
+put(path.join(vt, 'tools_live', 'current.txt'), 'fedcba654321\r\n');
+broken = runLocal();
+assert.equal(broken.status, 125, broken.stdout + broken.stderr);
+assert(!fs.existsSync(localMarker), 'the local watchdog never ran');
+put(path.join(vt, 'tools_live', 'current.txt'), version + '\r\n');
+pass('Windows: a checkout tmo.bat hands its step to tools_live, and a blank pointer or missing target stops it (exit 125)');
 
 // The doctor reads fake claims and changes none of them.
 const live = { token: 't1', issue: 'issue-1194 test', pid: process.pid, mode: 'shared', weight: 1, started: new Date(Date.now() - 600000).toISOString(),
