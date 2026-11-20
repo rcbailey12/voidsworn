@@ -484,7 +484,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var spd = (62.0 if lk == "torp" else (85.0 if lk == "rockets" else 55.0)) * fx.unit
 				var tt = dist / spd + 0.25
 				ti = tf + tt
-				ti = _launch(fx, lk, from, mn, to, tf, ti, col, fac, ka, i, bool(hd.get("pd", false)), A, rhythm, spread)
+				ti = _launch(fx, lk, from, mn, to, tf, ti, col, fac, ka, i, bool(hd.get("pd", false)), A, rhythm, spread, faction)
 				tend = ti
 		"flak", "pflak", "spores", "mflak", "gflak", "gsentry":
 			var cadence := 0.19 if lk == "gsentry" else 0.12 if lk == "flak" else 0.07
@@ -787,7 +787,7 @@ static func _muzzle_blast(fx, p: Vector3, dir: Vector3, t: float, col: Color, k:
 	_impact_sparks(fx, p, dir, t, k, col, 4, 9.0)
 
 
-static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool, src = null, rhythm: RandomNumberGenerator = null, spread := 1.0) -> float:
+static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool, src = null, rhythm: RandomNumberGenerator = null, spread := 1.0, faction := "") -> float:
 	var eng: Color = fac["engine"]
 	_vent(fx, from + mn * 0.6 * k, mn, tf, 3.2 * k, 0.35, eng, 0.8, mn * 4.0 * k, 0.7, 1.0, 2, src)
 	var n: int = 4 if lk == "rockets" else 1
@@ -803,7 +803,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		var mid = from.lerp(to, 0.45) + side + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
 		var end = to + (fx.rdir() * 0.6 * k if lk == "rockets" else Vector3.ZERO)
 		var p = {"lk": lk, "t0": t0, "t1": ti + float(pulse["phase"]) * 0.03, "a": from, "b": mid, "c": end, "col": col, "eng": eng * float(pulse["power"]), "k": pk,
-			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, pk, eng * float(pulse["power"])), "dead_at": INF}
+			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, pk, eng * float(pulse["power"]), faction), "dead_at": INF}
 		if intercept: p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
 		var list: Array = fx.dstate.get("proj", [])
 		list.append(p)
@@ -889,11 +889,80 @@ static func _casing(fx, rocket: bool) -> ArrayMesh:
 	return mesh
 
 
-static func _projectile_body(fx, lk: String, k: float, eng: Color) -> Node3D:
+# R362 (docs/playbooks/ships.md section 9): a torpedo or rocket is a solid object beside the ships, so it is built from its
+# faction's part kit (tools/blender/build_sheets/munitions/munitions.py writes fx/munitions/<faction>_<look>.glb, the same
+# frame and length as the code casing: +X the nose, x -1.15 to 1.15) and takes the hull finish (LOOK.hull: the faction's
+# brightness band, the material rim and the "look_hull" mark the rim light reads). A faction with no body file keeps the
+# code casing. Loaded once per body and faction; every shot shares the finished meshes.
+const MUNITIONS_DIR := "res://fx/munitions/"
+
+
+static func _kit_body(fx, lk: String, faction: String) -> Node3D:
+	if faction.is_empty() or lk == "star":
+		return null
+	var key := "munition_%s_%s" % [faction, lk]
+	if not fx.dstate.has(key):
+		fx.dstate[key] = _load_munition(MUNITIONS_DIR + "%s_%s.glb" % [faction, lk], faction)
+	var src = fx.dstate[key]
+	if src == null:
+		return null
+	return (src as Node3D).duplicate()
+
+
+static func _load_munition(path: String, faction: String) -> Node3D:
+	var n: Node = null
+	if ResourceLoader.exists(path):
+		var ps = load(path)
+		if ps is PackedScene:
+			n = (ps as PackedScene).instantiate()
+	elif FileAccess.file_exists(path):
+		# not imported (a partial install, or a cloud run): read the glTF file itself at run time, as world_rocks.gd does
+		var doc := GLTFDocument.new()
+		var st := GLTFState.new()
+		if doc.append_from_buffer(FileAccess.get_file_as_bytes(path), "", st) == OK:
+			n = doc.generate_scene(st)
+	if n == null:
+		return null
+	var root := Node3D.new()
+	root.name = "kit_body"
+	var LOOK = load("res://render/look.gd") if ResourceLoader.exists("res://render/look.gd") else null
+	for m in n.find_children("*", "MeshInstance3D", true, false):
+		var src := m as MeshInstance3D
+		if src.mesh == null:
+			continue
+		var mi := MeshInstance3D.new()
+		mi.name = String(src.name)
+		mi.mesh = src.mesh
+		mi.transform = _to_root(n, src)
+		for i in src.mesh.get_surface_count():
+			var mat: Material = src.get_active_material(i)
+			if mat != null and LOOK != null:
+				mat = LOOK.hull(mat, faction, true)
+			mi.set_surface_override_material(i, mat)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		root.add_child(mi)
+	n.free()
+	return root if root.get_child_count() > 0 else null
+
+
+static func _to_root(root: Node, n: Node3D) -> Transform3D:
+	var xf := n.transform
+	var p := n.get_parent()
+	while p != null and p != root:
+		if p is Node3D:
+			xf = (p as Node3D).transform * xf
+		p = p.get_parent()
+	return xf
+
+
+static func _projectile_body(fx, lk: String, k: float, eng: Color, faction := "") -> Node3D:
 	var node := Node3D.new()
 	node.name = "fx_projectile_" + lk
 	var body := MeshInstance3D.new()
-	if lk == "star":
+	var kit := _kit_body(fx, lk, faction)
+	if kit != null:
+		node.add_child(kit)
+	elif lk == "star":
 		var sphere := SphereMesh.new()
 		sphere.radius = 0.65; sphere.height = 1.3; sphere.radial_segments = 16; sphere.rings = 8
 		body.mesh = sphere
@@ -901,8 +970,11 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color) -> Node3D:
 		body.material_override.set_shader_parameter("tint", Vector3(eng.r, eng.g, eng.b))
 	else:
 		body.mesh = _casing(fx, lk == "rockets")
-	body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	node.add_child(body)
+	if kit == null:
+		body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(body)
+	else:
+		body.free()
 	var drive := MeshInstance3D.new()
 	var quad := QuadMesh.new(); quad.size = Vector2.ONE
 	drive.mesh = quad

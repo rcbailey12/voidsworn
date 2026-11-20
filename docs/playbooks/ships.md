@@ -512,3 +512,11 @@ bombers, spores; issue 1373), battlefield wreckage (issue 1362) and anything new
 (beams, shields, flashes, explosions, skies) stay effects and are not covered. Why: code-made tubes, boxes and grey scrap
 sat beside fully painted hulls and made the whole scene look cheaper (inventory:
 /mnt/project-files/board/asset_sources_1120/blender_vs_code.md). A new solid object that skips the kits needs Ryan's yes.
+
+**Torpedoes and rockets (issue 1379 run 2).** `tools/blender/build_sheets/munitions/munitions.py` builds each body from its
+faction kit's own parts (plates, rivet rings, the craft drive, the rack's rocket noses) in the old casing's frame (+X the
+nose, x -1.15 to 1.15) and writes `godot/fx/munitions/<faction>_<look>.glb` (small files, kept in the repo like the rocks).
+`fx_weapons.gd` flies that body with LOOK.hull on every surface; a faction with no file keeps the code casing.
+`fx/test/munition_body_check.gd` checks the frame and the finish. A new torpedo faction adds a builder there, never a
+code shape. The bodies use the kits' flat colour rows, not a baked paint map: at this size the plates and rivets carry the
+detail; bake them only if the PC close shots show they need it.
