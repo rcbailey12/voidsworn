@@ -311,6 +311,20 @@ def build(K):
             # the neck: the sac hangs from the belly on a thin soft stalk that swells into the bulb (a teardrop, never a ball floating free)
             sac.add('root_neck', 'mount', 'flesh', HP.tube([Vector((0, 0, -0.05)), Vector((0, 0, cz_ * 0.3)), Vector((0, 0, cz_ * 0.55)), Vector((0, 0, cz_ * 0.75)), Vector((0, 0, cz_ * 0.9)), Vector((0, 0, cz_ - r * 0.2))],
                                                           [r * 0.5, r * 0.24, r * 0.3, r * 0.45, r * 0.68, r * 0.88], n=14))
+            # the bare neck under the caps keeps its detail: two veins running down it into the bulb, a crease ring where it swells
+            def neck_r(z):   # the stalk's radius at height z (the root_neck profile above)
+                zs = [0.0, cz_ * 0.3, cz_ * 0.55, cz_ * 0.75]; rs = [r * 0.5, r * 0.24, r * 0.3, r * 0.45]
+                for k_ in range(3):
+                    if z <= zs[k_ + 1]:
+                        u_ = (z - zs[k_]) / max(1e-6, zs[k_ + 1] - zs[k_]); return rs[k_] + (rs[k_ + 1] - rs[k_]) * u_
+                return rs[-1]
+            for k_, a_ in enumerate((0.7 + i, 3.9 + i)):
+                pts_ = [Vector((math.cos(a_ + 0.15 * j) * neck_r(cz_ * (0.36 + 0.36 * j / 7)) * 1.02, math.sin(a_ + 0.15 * j) * neck_r(cz_ * (0.36 + 0.36 * j / 7)) * 1.02,
+                                cz_ * (0.36 + 0.36 * j / 7))) for j in range(8)]
+                sac.add('vein%d' % k_, 'body', 'bilewet' if k_ else 'flesh2', HP.tube(pts_, [r * 0.035] * 8, n=5))
+            zc_ = cz_ * 0.62
+            sac.add('crease0', 'body', 'flesh2', HP.tube([Vector((neck_r(zc_) * math.cos(2 * math.pi * j / 24), neck_r(zc_) * math.sin(2 * math.pi * j / 24), zc_)) for j in range(25)],
+                                                    [r * 0.04] * 25, n=5, cap0=False, cap1=False))
             K.organ(fid, sac, pos, hang, fwd=(1, 0, 0), inv='teardrop_sacs',
                     what='teardrop sac, %.1f across' % (2 * r), note='spore feed for the squadrons and regrowth flesh (regen 6), hanging from the belly')
             caps.append(((fid + '_mount_hide',), tuple(Vector(pos) + hang * cz_), tuple(hang), r, 1.75, 0.5))   # the bulb, crown at its foot, the bile slit open
