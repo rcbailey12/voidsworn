@@ -2,15 +2,16 @@
 // Issue 1311: static checks of tools/pc/jobs/publish_ship.bat, the job that publishes an accepted ship build into build\godot.
 // Runs on any host (no cmd needed). What it holds:
 //   the guard: after every line that can set FAILED, "if defined FAILED goto finish" comes before the next command;
-//   the refusals (no done PASS, a done FAILED, no commit= line, not ending in all done, another code, an export that is not
-//     what the job checked) all come before the first change to build\godot;
-//   the old files are copied aside, with the undo written, before the install;
+//   the receipt check (publish_ship.py receipt, exact commit and glb) comes before the first change to build\godot;
+//   the old files are kept, with the undo written, before the install; the publish is sealed after it;
 //   every Godot and Python step runs through tools_live's tmo.bat;
-//   nothing is deleted: no del, erase, rd, rmdir or Remove-Item anywhere, and the undo only moves and copies;
+//   nothing is deleted: no del, erase, rd, rmdir or Remove-Item anywhere; the undo reports FAILED on any failed step;
+//   and tools/recipe/test/publish_ship_selftest.py (the real receipts, publish A, publish B, undo A, forced failures) passes.
 //   the job ends "all done PASS" or "all done FAILED: ..." on every way out; CRLF line ends.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 const JOB = path.join(ROOT, 'tools/pc/jobs/publish_ship.bat');
 let passed = 0;
@@ -38,21 +39,17 @@ pass('every failure reaches the guard before the next command');
 
 const install = at(/manifest_merge\.py" --install/);
 assert(install > 0, 'the install runs manifest_merge.py --install');
-for (const re of [/done PASS/, /done FAILED/, /commit=/, /LAST:~0,8%"=="all done"/, /built %JCODE%, not %CODE%/, /differs from what the job checked/, /StartsWith\(\$env:WANT/]) {
-  const k = at(re);
-  assert(k > 0 && k < install, `refusal ${re} comes before the install`);
-}
-const firstGameWrite = main.findIndex(l => /%GAME%\\_replaced|"%B%/.test(l.s) && /^(mkdir|if not exist|robocopy|copy|type nul|for |call :undo)/i.test(l.s));
-const lastRefusal = at(/differs from what the job checked/);
-assert(firstGameWrite > lastRefusal, 'nothing in build\\godot changes before the last refusal');
-pass('every refusal comes before the first change to build\\godot');
-
-const backup = at(/robocopy "%GAME%\\assets\\ships\\%CODE%" "%B%\\ship"/);
+const receipt = at(/"%PUB%" receipt "%J%" %CODE% %COMMIT% %GLB_SHA% /);
+const backup = at(/"%PUB%" backup "%GAME%" %CODE% "%B%"/);
 const writeUndo = at(/^call :undo > "%B%\\UNDO_%CODE%\.bat"$/);
-assert(backup > 0 && backup < install, 'the old ship folder is copied aside before the install');
-assert(writeUndo > 0 && writeUndo < install, 'the undo bat is written before the install');
+assert(receipt > 0 && receipt < backup && backup < writeUndo && writeUndo < install, 'receipt, then backup, then the undo, then the install');
+assert(main.some(l => /^if "%GLB_SHA%"=="" \($/.test(l.s)), 'COMMIT and GLB_SHA are required arguments');
+const firstGameWrite = main.findIndex(l => /%GAME%\\_replaced/.test(l.s) && /^(mkdir|if not exist|type nul)/i.test(l.s));
+assert(firstGameWrite > receipt, 'nothing in build\\godot changes before the receipt check');
 assert(raw.includes('.gdignore'), 'the _replaced folder carries a .gdignore');
-pass('old files aside and the undo written before the install');
+const seals = main.filter(l => /"%PUB%" seal "%GAME%" %CODE% "%B%"/.test(l.s)).map(l => main.indexOf(l));
+assert(seals.length === 2 && seals[0] > install && seals[0] < at(/build_assets\.gd -- --ships-only/), 'sealed right after the install and again later');
+pass('receipt before any change; old files kept and the undo written before the install; sealed after it');
 
 for (const l of main) {
   if (/("%GD%"|"%BPY%")/.test(l.s) && !/^if not exist/i.test(l.s) && !/^set /i.test(l.s)) {
@@ -66,12 +63,19 @@ pass('every Godot and Python step runs through tools_live tmo.bat');
 for (const l of code) {
   assert(!/(^|[\s&|(])(del|erase|rd|rmdir)\s/i.test(l.s) && !/Remove-Item/i.test(l.s), `line ${l.n} deletes: ${l.s}`);
 }
-assert(undo.some(l => /^echo if exist .* move /.test(l.s)), 'the undo moves the published ship aside');
+assert(undo.some(l => /publish_ship\.py" undo "%GAME%" %CODE% "%B%"/.test(l.s)), 'the undo runs publish_ship.py undo');
+assert(undo.filter(l => /^echo if errorlevel 1 goto failed$/.test(l.s)).length === 2, 'the undo stops and reports FAILED on either step');
+assert(undo.some(l => /^echo echo undo of %CODE% FAILED/.test(l.s)), 'the undo reports FAILED');
 pass('nothing is deleted, by the job or by its undo');
 
 const outs = code.filter(l => /^echo all done /.test(l.s)).map(l => l.s);
 assert(outs.some(s => s.startsWith('echo all done PASS')) && outs.some(s => s.startsWith('echo all done FAILED: %FAILED%')), 'both endings written');
 assert(!main.some(l => /^exit \/b [1-9]$/.test(l.s) && code.indexOf(l) > at(/^echo start publish/)), 'after the result starts, every way out goes through :finish');
 pass('every way out ends in all done PASS or all done FAILED');
+
+const py = ['python3', 'python'].map(c => spawnSync(c, ['-B', path.join(ROOT, 'tools/recipe/test/publish_ship_selftest.py')], { encoding: 'utf8' })).find(r => !r.error);
+assert(py, 'no python to run publish_ship_selftest.py');
+assert.equal(py.status, 0, 'publish_ship_selftest.py failed:\n' + py.stdout + py.stderr);
+pass('publish_ship_selftest.py: ' + py.stdout.trim().split('\n').pop());
 
 console.log(`publish_ship_tests: ${passed} passed`);

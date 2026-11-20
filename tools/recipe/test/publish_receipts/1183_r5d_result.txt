@@ -1,0 +1,25 @@
+start ithar_CD5 I8_37 opus/issue-1183 Thu 11/19/2026 21:56:22.37 
+inputs STAGES=7_export SETS=battle,close,cams FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+   1df0ef4ee..c00e0eb34  board/pc-in-1119     -> board/pc-in-1119
+ * [new branch]          board/pc-out-1119zc  -> board/pc-out-1119zc
+   2b23ec1a4..b36b7ec45  opus/issue-1077      -> opus/issue-1077
+   1bc76f81e..baf022687  opus/issue-1237      -> opus/issue-1237
+   1bc76f81e..baf022687  refs/pull/1255/head  -> refs/pull/1255/head
+ + c40a69977...bf568936d refs/pull/1255/merge -> refs/pull/1255/merge  (forced update)
+   2b23ec1a4..b36b7ec45  refs/pull/1286/head  -> refs/pull/1286/head
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5d\repo
+commit=6b69276a47fc8a0d674d4ad88a5fd244bc5a637d
+import exit 0 
+7_export start 22:01:18.16 
+7_export exit 0 at 22:04:15.09 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5d\repo\godot\assets\ships\I8_37\I8_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Thu 11/19/2026 22:06:16.97 
+all done 
