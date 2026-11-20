@@ -1,0 +1,89 @@
+{
+  "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+  "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "CD5_r5c_camera170.jpg",
+  "date": "2026-11-20T02:39:02Z",
+  "sources": [
+    {
+      "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+      "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+      "source_dirty": true,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "eb9094e2e5c6f1b55768e2bc16fa974a8b9c31de",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "0b2b16e04904ce97db3004deecd75ea5a5b8fd48",
+      "source_diff_sha256": "09c7e5037778aaa33a12082779b53e03e51136b787bbeb78ec28bda67e211e5f",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "I8_37_cam170.jpg",
+      "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+      "source_dirty": true,
+      "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+      "stage": "installed in game",
+      "date": "2026-11-20T02:31:59Z",
+      "image_sha256": "d5a0d42904c657f9eec90d4dd561cbceb98a1de5d55aef4154b04d6b7e348f95",
+      "sources": [
+        {
+          "source_commit": "99ad9e840c14cbbb467b6ed545a5a5754f4a3f56",
+          "source_diff_sha256": "7d1ba0959e97be3df9e0d6ab0aacff3cc0b3302602a02b64e1a8f29f4efb2065",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "C19_51_game_battle.png",
+      "source_commit": "eb9094e2e5c6f1b55768e2bc16fa974a8b9c31de",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-19T17:51:18Z",
+      "image_sha256": "55a5ec4b6d83bd9f1dbccfa5e09d18c4440b408ca3694238ebc066cf94908164",
+      "sources": [
+        {
+          "source_commit": "eb9094e2e5c6f1b55768e2bc16fa974a8b9c31de",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        },
+        {
+          "source_commit": "0b2b16e04904ce97db3004deecd75ea5a5b8fd48",
+          "source_diff_sha256": "09c7e5037778aaa33a12082779b53e03e51136b787bbeb78ec28bda67e211e5f",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    570,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    150
+  ],
+  "strip_sha256": [
+    "0f0b2ad0cb5393fe9d6c8cbc93a5637c60e6b7ea106025bf3dae2382c31caede"
+  ],
+  "stamp_template_sha256": "a99f4fa54c252b937e5f76715b8f95b97fef42b8bae063ce494194456f63cde2",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAACWCAIAAADLz8LMAAACZ0lEQVR4nO3VoQHAIADAMEBOIPn/1F2xIpZcUNf57DMAgO+t2wEA8BemCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASBiugAQMV0AiJguAERMFwAipgsAEdMFgIjpAkDEdAEgYroAEDFdAIiYLgBETBcAIqYLABHTBYCI6QJAxHQBIGK6ABAxXQCImC4AREwXACKmCwAR0wWAiOkCQMR0ASDyAvVCAVqcx7/vAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "94e196b31c89d70c593fe26ddd187e671644731c7b76c118f7564a7a9cf86c99"
+}
