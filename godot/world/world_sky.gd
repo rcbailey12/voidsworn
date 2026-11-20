@@ -54,6 +54,73 @@ const PLANETS := [
 const FLOOK := preload("res://fx/faction_look.gd")
 
 
+# Issue 1272 (R352): remixed planet looks, one per base look, picked per campaign sector so a run shows more than the three
+# planets its biomes name. Same kinds, new palettes, remixed past recognition (RULEBOOK 10.3). Index i + 8 remixes PLANETS[i].
+const PLANETS_ALT := [
+	{"kind": 0, "a": Vector3(0.62, 0.66, 0.58), "b": Vector3(0.28, 0.3, 0.22), "c": Vector3(0.9, 0.92, 0.82), "atmo": Vector3(0.75, 0.88, 0.7), "rings": false, "moons": 2},
+	{"kind": 1, "a": Vector3(0.3, 0.62, 0.66), "b": Vector3(0.12, 0.34, 0.4), "c": Vector3(0.75, 0.95, 0.95), "atmo": Vector3(0.45, 0.9, 0.95), "rings": true, "moons": 1},
+	{"kind": 0, "a": Vector3(0.74, 0.5, 0.46), "b": Vector3(0.36, 0.18, 0.16), "c": Vector3(0.96, 0.84, 0.76), "atmo": Vector3(1.0, 0.7, 0.6), "rings": true, "moons": 3},
+	{"kind": 2, "a": Vector3(0.42, 0.34, 0.22), "b": Vector3(0.05, 0.08, 0.12), "c": Vector3(0.82, 0.76, 0.66), "atmo": Vector3(0.5, 0.7, 0.95), "rings": false, "moons": 2},
+	{"kind": 3, "a": Vector3(0.36, 0.32, 0.3), "b": Vector3(0.12, 0.08, 0.07), "c": Vector3(0.95, 0.42, 0.18), "atmo": Vector3(0.9, 0.42, 0.25), "rings": false, "moons": 1},
+	{"kind": 4, "a": Vector3(0.52, 0.44, 0.36), "b": Vector3(0.22, 0.17, 0.13), "c": Vector3(0.7, 0.62, 0.52), "atmo": Vector3(0.0, 0.0, 0.0), "rings": true, "moons": 1},
+	{"kind": 5, "a": Vector3(0.82, 0.8, 0.86), "b": Vector3(0.4, 0.44, 0.56), "c": Vector3(0.7, 0.86, 1.0), "atmo": Vector3(0.7, 0.8, 1.0), "rings": false, "moons": 0},
+	{"kind": 0, "a": Vector3(0.66, 0.6, 0.38), "b": Vector3(0.3, 0.24, 0.12), "c": Vector3(0.95, 0.92, 0.7), "atmo": Vector3(0.9, 0.85, 0.5), "rings": false, "moons": 2},
+]
+
+# Issue 1272 (R352): each fight stop keeps the sector's sky and anchor planet but frames and colours it for the stop. One table.
+#   rival: a fight against another faction than the sector's own: some of that faction's nebula colours seep into the sky.
+#   boss: brighter, harder sky and the planet brought nearer. salvage: a fight on a wreck-field map: heavy dust, dimmer glow.
+# The keys scale the setting's own values; "mix" blends c1/c3 toward the rival faction's nebula colours.
+const STOP_MOOD := {
+	"rival": {"mix": 0.45, "mix3": 0.4},
+	"boss": {"neb": 1.6, "cover": 1.25, "c3": 1.3, "frame": 1.5},
+	"salvage": {"dust": 2.6, "neb": 0.6, "band": 0.6},
+}
+# Per-stop framing of the anchor planet (seeded by the stop): how big it sits in the sky and how far round it turns.
+const STOP_FRAMES := [{"scale": 1.0, "az": 0.0}, {"scale": 1.3, "az": -0.1}, {"scale": 0.8, "az": 0.22}, {"scale": 1.12, "az": 0.12}]
+
+
+# Which mood a fight stop gets. stop: {kind, fac, sector_fac}; map_kind from world.gd map_kind (graveyard = wreck field).
+static func stop_kind(stop: Dictionary, map_kind: String) -> String:
+	if str(stop.get("kind", "")) == "boss": return "boss"
+	var fac := str(stop.get("fac", ""))
+	if fac != "" and str(stop.get("sector_fac", fac)) != fac: return "rival"
+	if map_kind == "graveyard": return "salvage"
+	return "plain"
+
+
+# The sector setting for one stop: the same sky seed and anchor planet, with the stop's mood and framing laid on.
+static func stop_mood(s0: Dictionary, stop: Dictionary, map_kind: String) -> Dictionary:
+	var s := s0.duplicate(true)
+	var mood := stop_kind(stop, map_kind)
+	s["mood"] = mood
+	var m: Dictionary = STOP_MOOD.get(mood, {})
+	for k in ["neb", "cover", "dust", "band"]:
+		if m.has(k): s[k] = float(s[k]) * float(m[k])
+	s["cover"] = minf(float(s["cover"]), 1.0)
+	if m.has("c3"): s["c3"] = (s["c3"] as Vector3) * float(m["c3"])
+	if m.has("mix"):
+		var rv: Array = FLOOK.of(str(stop["fac"])).get("nebula", FLOOK.of("voidsworn")["nebula"])
+		s["c1"] = (s["c1"] as Vector3).lerp((rv[1] as Vector3) * 1.3, float(m["mix"]))
+		s["c3"] = (s["c3"] as Vector3).lerp(rv[2] as Vector3, float(m["mix3"]))
+	var h := absi(hash(str(stop.get("node", "")) + "|" + str(stop.get("kind", ""))))
+	var f: Dictionary = STOP_FRAMES[h % STOP_FRAMES.size()] if stop.has("node") else STOP_FRAMES[0]
+	s["frame_scale"] = float(m.get("frame", f["scale"]))
+	s["frame_az"] = float(f["az"])
+	s["haze"] = ((s["c1"] as Vector3) * 0.5 + (s["c2"] as Vector3) * 0.5) * (0.05 + 0.06 * float(s["neb"]))
+	return s
+
+
+# A sector's anchor planet: the biome's look or its remix, picked by the sector's own map (stable across save and load).
+static func planet_variant(s0: Dictionary, sector_key: String) -> Dictionary:
+	var s := s0.duplicate(true)
+	if absi(hash(sector_key)) % 2 == 1:
+		var i := int(s["planet_i"]) % PLANETS_ALT.size()
+		s["planet_i"] = i + PLANETS.size()
+		s["planet"] = PLANETS_ALT[i]
+	return s
+
+
 static func region_for(biome: Dictionary) -> String:
 	var rock := str(biome.get("rock", ""))
 	var pl := int(biome.get("planet", -1))

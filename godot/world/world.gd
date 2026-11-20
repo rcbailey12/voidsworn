@@ -91,7 +91,11 @@ var pending_bakes := 0
 static func sector_setting(run: Dictionary) -> Dictionary:
 	var map: Dictionary = run["map"] if run.get("map") is Dictionary else {}
 	var biome: Dictionary = map["biome"] if map.get("biome") is Dictionary else {}
-	return SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0)
+	# issue 1272: the sector's anchor planet is its biome's look or that look's remix, keyed by the sector's own map
+	var key := "%s|%s" % [str(run.get("sector", "")), str(map.get("fac", ""))]
+	for col in map.get("cols", []):
+		for n in col: key += str(n.get("type", "")).left(2)
+	return SKY.planet_variant(SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0), key)
 
 
 func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
@@ -201,6 +205,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	setting["yaw"] = SKY.setting(biome, fac, mk, deadstar, bseed)["yaw"]
 	setting["deadstar"] = deadstar
 	setting["map"] = mk
+	if opts.get("stop") is Dictionary: setting = SKY.stop_mood(setting, opts["stop"], mk)   # issue 1272
 	_yaw = float(setting["yaw"])
 	_baker = BAKER.service(get_tree())
 	var env: Environment = opts.get("environment", null)
@@ -521,7 +526,8 @@ func system(with_planet: bool) -> void:
 	var side := -1.0 if r.randf() < 0.5 else 1.0
 	var giant: bool = int(P["kind"]) <= 1
 	var ang := r.randf_range(0.15, 0.18) if giant else r.randf_range(0.11, 0.14)
-	var az := side * r.randf_range(0.36, 0.5)
+	ang *= float(setting.get("frame_scale", 1.0))   # issue 1272 stop framing (boss stops bring the planet nearer)
+	var az := side * (r.randf_range(0.36, 0.5) + float(setting.get("frame_az", 0.0)))   # issue 1272 stop framing
 	var el := -r.randf_range(0.17, 0.22)
 	var dir := turn * Vector3(sin(az) * cos(el), sin(el), -cos(az) * cos(el))
 	var bake_q := _planet_size()
