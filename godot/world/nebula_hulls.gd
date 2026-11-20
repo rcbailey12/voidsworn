@@ -2,18 +2,15 @@ extends Node
 # R82: the volume shades the sky, never a hull. Cover intact, damaged and detached hulls,
 # including ships added after battle warmup. No assets or saved resources are rewritten.
 const RIM := preload("res://render/look_rim.gd")
+const MESH_WATCH := preload("res://render/mesh_watch.gd")
 
 
 func _ready() -> void:
-	get_tree().node_added.connect(_added)
+	# issue 1204: the one shared new-mesh watcher calls _protect at the end of the frame a mesh enters (the game
+	# assigns materials right after adding it) and again when a hull material is set later (MeshWatch.touch)
+	MESH_WATCH.listen(get_tree(), _protect)
 	for node in get_parent().find_children("*", "GeometryInstance3D", true, false):
 		_protect(node)
-
-
-func _added(node: Node) -> void:
-	if node is GeometryInstance3D:
-		# The game assigns materials immediately after adding a mesh to the tree.
-		_protect.call_deferred(node)
 
 
 func _protect(node) -> void:
@@ -29,9 +26,12 @@ func _protect(node) -> void:
 func _material(mat: Material) -> void:
 	if mat == null: return
 	if mat is BaseMaterial3D:
-		mat.disable_fog = true
-	elif mat is ShaderMaterial and mat.shader != null and not mat.shader.code.contains("fog_disabled"):
-		# Keep the same Shader resource: damage/death materials already sharing it inherit
-		# the policy too. Uniforms, hull lighting, depth and shadow passes stay intact.
-		mat.shader.code = mat.shader.code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
+		if not mat.disable_fog:
+			mat.disable_fog = true
+	elif mat is ShaderMaterial and mat.shader != null:
+		# Fallback for custom hulls and overlays. Generated damage shaders take
+		# the mode from the source material when they are constructed.
+		var code: String = mat.shader.code
+		if not code.contains("fog_disabled"):
+			mat.shader.code = code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode fog_disabled;")
 	if mat.next_pass != null: _material(mat.next_pass)

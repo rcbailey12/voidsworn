@@ -25,10 +25,6 @@ if not exist "%G%" (
 set "OUT=%ROOT%..\shots\gpu_checks"
 set "R=%OUT%\results.txt"
 if not exist "%OUT%" mkdir "%OUT%"
-rem user:// for these runs lives in the output folder, never in the player's profile
-set "APPDATA=%OUT%\appdata"
-set "LOCALAPPDATA=%OUT%\appdata"
-if not exist "%APPDATA%" mkdir "%APPDATA%"
 if not exist "%ROOT%.onboarding_checks" mkdir "%ROOT%.onboarding_checks"
 echo GPU Godot checks (godot\tools\ci\godot_checks.txt, class gpu), %date% %time% > "%R%"
 echo Clone: %ROOT% >> "%R%"

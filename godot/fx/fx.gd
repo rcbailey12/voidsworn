@@ -160,6 +160,9 @@ var _power_templates := {}
 var _dark_interiors := {}
 var defer_initial_cuts := false
 var _piece_builds: Array = []
+var _shield_jobs := {}
+const LOAD_PIECE_BUDGET := 16000  # microseconds per frame while the cover is up
+const LOAD_CUT_LIMIT := 8
 
 
 static func register_globals() -> void:
@@ -188,6 +191,9 @@ func release() -> void:
 	_end_dim()
 	for tid in _death_cut_tasks.keys():
 		join_death_cut(tid)
+	for job in _shield_jobs.values():
+		WorkerThreadPool.wait_for_task_completion(job["task"])
+	_shield_jobs.clear()
 	for id in ships:
 		var s = ships[id]
 		s.wait_damage()
@@ -1169,10 +1175,39 @@ func queue_death_pieces(ship: SHIP, job: Dictionary) -> void:
 	_piece_builds.append([ship, job])
 
 
+func queue_shield_skin(ship: SHIP, key: String, box: AABB, faces: PackedVector3Array, bob: Vector3) -> void:
+	# Only the triangle field runs on the worker. Normal generation, uploads
+	# and the posed hit collider stay on the main thread under the cover.
+	if not _shield_jobs.has(key):
+		var result := []
+		var task := WorkerThreadPool.add_task(func() -> void:
+			result.append(SHIP.bake_shield_geometry(box, faces)))
+		_shield_jobs[key] = {"task": task, "result": result, "ships": []}
+	_shield_jobs[key]["ships"].append([ship, bob])
+
+
+func _finish_shield_skins() -> void:
+	var deadline := Time.get_ticks_usec() + LOAD_PIECE_BUDGET
+	for key in _shield_jobs.keys():
+		var job: Dictionary = _shield_jobs[key]
+		var task: int = job["task"]
+		if not WorkerThreadPool.is_task_completed(task):
+			continue
+		WorkerThreadPool.wait_for_task_completion(task)
+		_shield_jobs.erase(key)
+		var arrays := SHIP.finish_shield_geometry(job["result"][0])
+		if not arrays.is_empty():
+			SHIP.save_shield_skin(key, arrays)
+			for entry in job["ships"]:
+				entry[0].install_shield_skin(arrays, entry[1])
+		if Time.get_ticks_usec() >= deadline:
+			return
+
+
 func _build_death_pieces() -> void:
 	if _piece_builds.is_empty():
 		return
-	var deadline := Time.get_ticks_usec() + DEATH.PREBUILD_BUDGET
+	var deadline := Time.get_ticks_usec() + (LOAD_PIECE_BUDGET if defer_initial_cuts else DEATH.PREBUILD_BUDGET)
 	while not _piece_builds.is_empty():
 		var entry: Array = _piece_builds[0]
 		if not DEATH.build_pieces(self, entry[0], entry[1], deadline):
@@ -1186,8 +1221,10 @@ func prepare_battle_hulls() -> void:
 	HULL.pause_late_watch()
 	_warm_hull_adapters()
 	var pending: Array[SHIP] = []
+	var deadline := Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	for value in ships.values():
 		var ship: SHIP = value
+		FRAGMENTS.warm_source(ship)
 		if ship.weight <= 0:
 			continue
 		for mesh in ship.meshes:
@@ -1205,20 +1242,25 @@ func prepare_battle_hulls() -> void:
 				if not inside or original.resource_name.ends_with("_inside_skin"):
 					ship.damage_surface(self, mi, si, source)
 		pending.append(ship)
-		await get_tree().process_frame
+		if Time.get_ticks_usec() >= deadline:
+			await get_tree().process_frame
+			deadline = Time.get_ticks_usec() + LOAD_PIECE_BUDGET
 	# Limit simultaneous cuts so the hull workers and renderer can make progress
 	# together while the loading cover is up.
+	var cut_limit := clampi(OS.get_processor_count() / 2, 1, LOAD_CUT_LIMIT)
 	var active: Array[SHIP] = []
 	while not pending.is_empty() or not active.is_empty():
-		while active.size() < 3 and not pending.is_empty():
+		while active.size() < cut_limit and not pending.is_empty():
 			var ship: SHIP = pending.pop_front()
 			DEATH.precompute(self, ship, "blast", true)
 			active.append(ship)
 		for i in range(active.size() - 1, -1, -1):
 			if DEATH.finish_precompute(self, active[i]):
 				active.remove_at(i)
+		_finish_shield_skins()
 		await get_tree().process_frame
-	while not _piece_builds.is_empty():
+	while not _piece_builds.is_empty() or not _shield_jobs.is_empty():
+		_finish_shield_skins()
 		await get_tree().process_frame
 	defer_initial_cuts = false
 
@@ -1527,6 +1569,24 @@ func _warm_hull_adapters() -> void:
 	_shaders["hull_exterior_alpha"] = HULL.shared_shader(HULL.exterior_alpha_code(), "exterior_alpha")
 
 
+func _warm_fragment_finish(at: Vector3, t: float, color: Color) -> void:
+	var pool: FRAGMENTS.Pool = pools["plate"]
+	var finish := {}
+	for ship: SHIP in ships.values():
+		for row in ship.hull.bvh_ranges:
+			var paint: BaseMaterial3D = row["paint"]
+			if paint != null and paint.albedo_texture != null:
+				var maps := FRAGMENTS.finish_maps(paint)
+				finish = {"maps": maps, "uv": Vector2(0.5, 0.5), "finish": Vector4(1, 0, 0, float(maps[1] != null)),
+					"normal_scale": paint.normal_scale if paint.normal_enabled else 0.0}
+				break
+		if not finish.is_empty():
+			break
+	pool.bind_finish(finish, t, t + 0.5)
+	hit_fragment(at, t, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1, color, FRAGMENTS.PLATE, false, finish)
+	pool.flush(t)
+
+
 # Draw the effect materials under the loading cover so their pipelines are ready for battle.
 func warmup(cam: Camera3D, frames := 4) -> void:
 	if cam == null:
@@ -1547,7 +1607,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]:
 		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
 	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
-	hit_fragment(at, T, 0.5, Vector3.ZERO, 0.2, 1.0, 4.0, 0.1, c, FRAGMENTS.PLATE, false)
+	_warm_fragment_finish(at, T, c)
 	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
 	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
 	var tmp = Node3D.new()

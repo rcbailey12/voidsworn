@@ -823,7 +823,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 # The casing has no emission: the drive is bright, the body remains readable.
 const DRIVE := """
 shader_type spatial;
-render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled;
+render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled, fog_disabled;
 global uniform float scene_t;
 global uniform float fx_gain;
 global uniform float fx_calm;
@@ -834,8 +834,8 @@ uniform float throttle = 1.0;
 void vertex() {
 	vec3 centre = (VIEW_MATRIX * MODEL_MATRIX[3]).xyz;
 	float size = extent * length(MODEL_MATRIX[0].xyz);
-	// Motor core plus sheath stay resolved on small rockets at battle range.
-	float pixel = 2.0 * max(-centre.z, 0.01) / (max(abs(PROJECTION_MATRIX[1][1]), 0.0001) * VIEWPORT_SIZE.y);
+	// Motor core plus sheath stay resolved on small rockets at battle range (1080-line pixels, issue 1211: the same at 4K).
+	float pixel = 2.0 * max(-centre.z, 0.01) / (max(abs(PROJECTION_MATRIX[1][1]), 0.0001) * 1080.0);
 	size = max(size, pixel * 12.0);
 	POSITION = PROJECTION_MATRIX * vec4(centre + vec3(VERTEX.xy * size, 0.0), 1.0);
 }
@@ -850,7 +850,7 @@ void fragment() {
 
 const STAR_BODY := """
 shader_type spatial;
-render_mode unshaded;
+render_mode unshaded, fog_disabled;
 global uniform float scene_t;
 global uniform float fx_gain;
 uniform vec3 tint = vec3(1.0);
