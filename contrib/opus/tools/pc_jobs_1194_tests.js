@@ -149,7 +149,7 @@ pass('PC_DOCTOR.bat is read only and shows owner, child, age and health for ever
 const hasPwsh = process.platform !== 'win32' && !spawnSync('pwsh', ['-v'], { encoding: 'utf8' }).error;
 if (hasPwsh) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'pc1194-pwsh-'));
-  const parse = spawnSync('pwsh', ['-NoProfile', '-Command', `$bad = 0; foreach ($f in ($env:PARSE_FILES -split '\|')) { $e = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$e); foreach ($x in $e) { Write-Output "$f $($x.Extent.StartLineNumber): $($x.Message)"; $bad++ } }; exit $bad`,
+  const parse = spawnSync('pwsh', ['-NoProfile', '-Command', `$bad = 0; foreach ($f in $env:PARSE_FILES.Split([char]124)) { $e = $null; $null = [System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$e); foreach ($x in $e) { Write-Output "$f $($x.Extent.StartLineNumber): $($x.Message)"; $bad++ } }; exit $bad`,
     ], { encoding: 'utf8', env: { ...process.env, PARSE_FILES: ['lane_tools_refresh.ps1', 'pc_doctor.ps1', 'runner_common.ps1', 'run_timeout.ps1'].map(n => path.join(PC, n)).join('|') } });
   assert.equal(parse.status, 0, parse.stdout + parse.stderr);
   const ps = (args, env = {}) => spawnSync('pwsh', ['-NoProfile', '-File', ...args], { encoding: 'utf8', env: { ...process.env, USERPROFILE: temp, ...env } });
