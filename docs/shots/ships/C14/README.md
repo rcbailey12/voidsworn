@@ -1,5 +1,10 @@
 # C14 brood-sac carrier (B22_11): shots (issue 1155)
 
+**Status: R341 baseline, not the final look.** Ryan rejected the R341 Chorus look in game on Nov 20 (issue 1291 rebuilds the
+shared Chorus kit, C13 first, then C10 to C14). These shots prove C14's build, export and seams on the R341 stack at fbd9da76;
+the appearance and the shared install are not final. Do not queue another bake of this stack: C14 is re-dressed on 1291's kit
+after Ryan accepts C13. No shared C14 install is verified (the run installs into its own clone only).
+
 All in-game shots come from the PC paint run 3 (shared ship job, wrapper OPUS1155_C14_PAINT3.bat, all seven stages, done PASS
 22:39 CST Nov 19, commit fbd9da76, blockout v7 on main's R341 Chorus stack; no PAINT_BASE). Results came back on
 board/pc-out-1119zu (450f03cc).
