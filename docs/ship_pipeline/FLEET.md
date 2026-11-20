@@ -10,7 +10,7 @@ has the new recipe file layout. It does not prove the approved look is in those 
 column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None
 of this is the playable exe (that is a separate snapshot).
 
-**Totals:** 36 ship slots. 18 new builds installed, 5 with a build sheet but the old hull in game, 4 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
+**Totals:** 36 ship slots. 19 new builds installed, 4 with a build sheet but the old hull in game, 4 with a picked concept only, 8 old with no pick yet, 1 kept on purpose.
 
 ## Sunward Crusade (`voidsworn`)
 
@@ -51,7 +51,7 @@ of this is the playable exe (that is a separate snapshot).
 | Spitter | Destroyer | `B20_11` | New-format build on main | Pending: Tail band fix, run H (PR 1411). Accepted before that: Ryan, Nov 20 (round G, PR 1308). | [chorus_C13_spitter_v7.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spitter_v7.jpg) |  | chorus_C13 |  |  |
 | Bladeback | Cruiser | `B21_11` | New-format build on main | Pending: Round G armour: the installed files still carry the old armour (PR 1347). | [chorus_C11_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg) | R204 | chorus_C11 | #1291 |  |
 | Brood-sac | Carrier | `B22_11` | Concept picked, old hull in game |  | [chorus_C14_brood_sac_v11.jpg](../../contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg) |  |  | #1155 | Built on PR 1172 (draft); waits for its round G re-dress. |
-| The Ninefold Maw (flagship) | Bio-titan | `B16_23` | Build sheet made, old hull in game |  | [chorus_C10_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg) | R204 | chorus_C10 | #1291 | Round G run is PR 1351. |
+| The Ninefold Maw (flagship) | Bio-titan | `B16_23` | New-format build on main | Not recorded | [chorus_C10_beauty.jpg](../../contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg) | R204 | chorus_C10 | #1291 | Round G run is PR 1351. |
 
 ## The Glasswrights (`ithar`)
 
