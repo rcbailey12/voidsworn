@@ -245,6 +245,18 @@ def check_restore(root):
     assert rc == 1 and 'RESTORE FAILED' in out and 'RESTORE PASS' not in out and 'nothing was touched' in out, out
     assert snapshot(game) == before, 'a refused restore touched the game'
     ok('a restore with a corrupt kept copy reports RESTORE FAILED, exit 1, and touches nothing')
+    (c / 'gen' / 'wreck' / 'C3_33_wreck.scn').write_bytes(b'old wreck C3_33')
+    rc, out = run('restore', game, 'C3_33', c)
+    assert rc == 0 and 'RESTORE PASS C3_33' in out, out
+    d = game / '_replaced' / 'C3_33_2'
+    rc, out = run('backup', game, 'C3_33', d)
+    assert rc == 0, out
+    stand_in_install(game, 'C3_33', 'D')
+    landed = snapshot(game)
+    rc, out = run('restore', game, 'C3_33', c)
+    assert rc == 1 and 'RESTORE FAILED' in out and 'another publish' in out and 'nothing was touched' in out, out
+    assert snapshot(game) == landed, 'an older attempt\'s restore rolled back a later publish of the same ship'
+    ok('a failed attempt\'s restore refuses, touching nothing, when a later publish of the same ship landed in the gap')
     rc, out = run('locked', game, sys.executable, '-c', 'raise SystemExit(3)')
     assert rc == 3, out
     ok('locked runs a command under the install lock and returns its exit code')

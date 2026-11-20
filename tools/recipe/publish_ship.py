@@ -9,7 +9,10 @@
       byte the export's. Writes RECORD.json and prints SHIP=<ship id>.
   publish_ship.py backup GAME CODE BACKUP
       Before the install: copies the ship folder and its three cache scenes to BACKUP and records CODE's own rows of both
-      manifests in BACKUP/before.json.
+      manifests in BACKUP/before.json. Marks this attempt as the latest publish of CODE in GAME/_replaced/CODE.owner.
+  publish_ship.py restore GAME CODE BACKUP
+      After a failed install, under the install lock: refuses, touching nothing, unless this attempt is still the latest
+      publish of CODE (a later one took the mark). Puts every kept file and row back; RESTORE PASS or RESTORE FAILED.
   publish_ship.py seal GAME CODE BACKUP
       After a passed publish: records what is now live for CODE (every file's sha256 and both manifest rows) in
       BACKUP/after.json. The undo refuses unless that is still what is live.
@@ -132,7 +135,24 @@ def backup(game, code, dest):
                 (dest / s.format(c=code)).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src, dest / s.format(c=code))
         write_json(dest / 'before.json', state(game, code))
+        claim(game, code, dest)
     print(f'[publish] kept {code} as it was in {dest}')
+
+
+def _owner(game, code):
+    return Path(game) / '_replaced' / f'{code}.owner'
+
+
+def claim(game, code, dest):
+    """marks this attempt as the latest publish of CODE (called under the install lock, by backup). A later publish of the same
+    ship takes the mark, so an older attempt's restore cannot roll back its work (Artoo, PR 1312)"""
+    _owner(game, code).parent.mkdir(parents=True, exist_ok=True)
+    _owner(game, code).write_text(str(Path(dest).resolve()), encoding='utf-8')
+
+
+def owns(game, code, dest):
+    p = _owner(game, code)
+    return p.is_file() and p.read_text(encoding='utf-8').strip() == str(Path(dest).resolve())
 
 
 def seal(game, code, dest):
@@ -247,6 +267,8 @@ def restore(game, code, dest):
     game, dest = Path(game), Path(dest)
     before = read_json(dest / 'before.json')
     with project_lock(game):
+        if not owns(game, code, dest):
+            raise ValueError(f'another publish of {code} started after this one ({_owner(game, code)}); nothing was touched')
         now = state(game, code)
         if now == before:
             print(f'RESTORE PASS {code}: already exactly as before the publish')
