@@ -448,7 +448,9 @@ def _band(section, root, length, lo, hi, t, rng, nu=12, nv=None, sink=0.012):
     never a cut tile). Returns (vertices, faces, growth, ridge) as _armour_scute does."""
     nv = nv or max(8, int((hi - lo) / 0.05))
     row = nv + 1
-    r1, r2 = rng.uniform(0.25, 0.38), rng.uniform(0.52, 0.7)
+    r1, r2 = rng.uniform(0.2, 0.42), rng.uniform(0.48, 0.74)
+    # round D: each band's ridges its own strength, so the shell is not a stack of identical rings
+    k1, k2, k3 = rng.uniform(0.2, 0.75), rng.uniform(0.25, 0.9), rng.uniform(0.5, 1.0)
     ph = rng.uniform(0, math.tau); wav = rng.uniform(0.6, 1.2)
     vertices, growth, ridge = [], [], []
     for under in (False, True):
@@ -460,11 +462,12 @@ def _band(section, root, length, lo, hi, t, rng, nu=12, nv=None, sink=0.012):
                 end = min(1.0, e / 0.12, (1 - e) / 0.12)            # the ends fuse into the flesh
                 lip = length * (1.0 + 0.06 * math.sin(ph + 4 * e) + 0.03 * math.sin(2 * ph + 11 * e))   # an uneven grown edge
                 x = root - a * lip * (0.75 + 0.25 * end)
-                rk = (0.55 * math.exp(-((a - r1) / 0.06) ** 2) + 0.7 * math.exp(-((a - r2) / 0.07) ** 2)
-                      + 0.9 * math.exp(-((a - 0.94) / 0.07) ** 2))
+                rk = (k1 * math.exp(-((a - r1) / 0.06) ** 2) + k2 * math.exp(-((a - r2) / 0.07) ** 2)
+                      + k3 * math.exp(-((a - 0.94) / 0.07) ** 2))
                 rk *= 1.0 + 0.25 * math.sin(ph + wav * 14 * e)
-                gap = 0.003 + 0.5 * t * a ** 1.6
-                thick = t * (0.3 + 0.55 * a ** 2) * end ** 0.7
+                # round D (issue 1291): the band lies nearly flush on the hide, its lip only a little proud
+                gap = 0.002 + 0.28 * t * a ** 1.6
+                thick = t * (0.24 + 0.4 * a ** 2) * end ** 0.7
                 h = gap * end - sink * (1 - a) ** 3 if under else gap * end - sink * (1 - a) ** 3 + thick * (1 + 0.35 * rk)
                 p_, _ = section(x, ang, out=h)
                 vertices.append(p_)
@@ -518,7 +521,9 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=0.42, band=0.42, lap=1.4, th
     x = x_bow; nb = 0; runs_n = 0
     while x - band > x_aft:
         L_ = band * lap
-        lo_ = lo + rng.uniform(-0.08, 0.08); hi_ = math.pi - lo + rng.uniform(-0.08, 0.08)
+        # round D: uneven bands, wider and narrower, their lower edges ragged
+        L_ = band * lap * rng.uniform(0.75, 1.25)
+        lo_ = lo + rng.uniform(-0.16, 0.16); hi_ = math.pi - lo + rng.uniform(-0.16, 0.16)
         n = 80; free = []
         for j in range(n + 1):
             th = lo_ + (hi_ - lo_) * j / n
@@ -548,7 +553,7 @@ def armadillo(K, kit_module, x_bow, x_aft, seed, lo=0.42, band=0.42, lap=1.4, th
             for tt in (a_, b_):
                 pts = [(x - L_ * f, tt + (0.02 if tt == a_ else -0.02)) for f in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)]
                 _append(skirt, *_skirt(K.hpt, pts, 0.14, 0.014, rng))
-        x -= band * rng.uniform(0.9, 1.1); nb += 1
+        x -= band * rng.uniform(0.65, 1.35); nb += 1
     # the first band's root: the hide it grows out of, rolled against it
     print('[armadillo] %d bands, %d runs' % (nb, runs_n), flush=True)
     shell = K.hull_detail('armour_shell', mesh, 'carapace', inv=inv, kind='chitin', subs=['plate', 'rim', 'growth'])

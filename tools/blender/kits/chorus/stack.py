@@ -111,7 +111,7 @@ if LOOK == 'grown':
     # issue 1291: the bile light lower, so the sacs' slits and the glands' depths read as a glow, not white streaks in game
     GLOW['bile'] = ((.52, .78, .06), 1.1)
     # the veils: tan leathery membrane with the warm light faint through it (the concept), not glossy maroon
-    GLOW['membrane'] = ((.20, .11, .04), .10)
+    GLOW['membrane'] = ((.14, .055, .02), .06)   # round D: the warm light faint, so the veil reads as dark wet skin
     # deeper relief: the hide's creases must read in the light at camera 26, not only in the colour
     LAYERS.update(bump_distance=0.004, bump_strength=1.0)
 GROWN = {
@@ -122,15 +122,16 @@ GROWN = {
     'scar': ((.13, .10, .06), (.05, .036, .02), .55),
     'tissue': ((.105, .052, .030), (.030, .013, .008), .38),   # raw transition tissue round the vents and spine roots: redder, wetter
     'vein': ((.050, .009, .007), (.016, .003, .002), .40),     # dark red blood vessels, never maroon flesh
-    'pore': ((.022, .016, .008), (.008, .006, .003), .35),
+    'pore': ((.062, .045, .026), (.030, .020, .012), .45),     # round D: a pit in the hide's own colour, never a black rivet
     'maw': ((.030, .012, .007), (.008, .003, .002), .22),
     # chitin grown out of the hide: pale bone on the worn crests and lips to dark horn at the roots
-    'carapace': ((.095, .072, .042), (.018, .012, .006), .5),
+    'carapace': ((.056, .044, .026), (.013, .009, .005), .62),   # round D: darker, nearer the hide, rough
     'chitin': ((.20, .155, .085), (.04, .028, .013), .55),
 }
 VEIN_RED = (.045, .007, .006)
+FOLD_RED = (.040, .010, .007)   # round D: the wet dark red deep in the folds (the concept's warm shadows)
 PAD = (.15, .135, .09)   # the dusty crowns of the hide's pads
-BONE = (.30, .25, .16)   # worn chitin at a lip
+BONE = (.22, .18, .115)   # worn chitin at a lip (round D: duller)
 MOTTLE = ((.072, .066, .034), (.068, .042, .024), (.036, .028, .018))   # greener, browner, darker patches of the hide
 
 
@@ -171,7 +172,7 @@ def grown_flesh(c, zone, base, shade, roughness):
     edge = _voronoi(c, 62.0, 'DISTANCE_TO_EDGE')
     cracks = math_(nt, 'SUBTRACT', 1.0, ramp(nt, edge, .0, .07))
     cracks = math_(nt, 'MULTIPLY', cracks, math_(nt, 'MULTIPLY', ramp(nt, c.noise(7, 2, .5, w=1.7), .45, .65), .7))
-    veins = _ridge(c, 11.0, 4, (.7, 1.0, 1.0), 2.3, .93, .99)
+    veins = _ridge(c, 11.0, 4, (.7, 1.0, 1.0), 2.3, .89, .985)   # round D: wider, so they read in game
     veins = math_(nt, 'MULTIPLY', veins, ramp(nt, c.noise(3, 2, .5, w=5.1), .42, .62))
     pores = math_(nt, 'SUBTRACT', 1.0, ramp(nt, _voronoi(c, 240.0), .04, .16))
     pores = math_(nt, 'MULTIPLY', pores, ramp(nt, c.noise(9, 2, .5, w=2.3), .45, .62))
@@ -185,7 +186,9 @@ def grown_flesh(c, zone, base, shade, roughness):
     for k, mc in enumerate(MOTTLE):
         m = ramp(nt, c.noise(3.2 + 1.3 * k, 3, .55, w=.7 + 1.1 * k), .52, .7)
         col = mixc(nt, col, mc, math_(nt, 'MULTIPLY', m, .45))
-    col = mixc(nt, col, VEIN_RED, math_(nt, 'MULTIPLY', veins, .75))
+    col = mixc(nt, col, VEIN_RED, math_(nt, 'MULTIPLY', veins, .95))
+    deep = math_(nt, 'MULTIPLY', ramp(nt, folds, .65, .95), ramp(nt, c.ao, .7, .35))
+    col = mixc(nt, col, FOLD_RED, math_(nt, 'MULTIPLY', deep, .45))
     col = mixc(nt, col, PAD, math_(nt, 'MULTIPLY', pads, .3))
     col = mixc(nt, col, shade, math_(nt, 'MULTIPLY', pores, .75))
     height = math_(nt, 'MULTIPLY', folds, -.12)
@@ -197,7 +200,8 @@ def grown_flesh(c, zone, base, shade, roughness):
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', grain, .04))
     # wet only deep in the folds and the cavities (the concept's skin is matte; a wet sheen all over read as glossy clay)
     wet = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', folds, .6), ramp(nt, c.ao, .55, .2))
-    rough = math_(nt, 'SUBTRACT', roughness, math_(nt, 'MULTIPLY', wet, max(0.0, roughness - .18)))
+    wet = math_(nt, 'MAXIMUM', wet, math_(nt, 'MULTIPLY', deep, .8))
+    rough = math_(nt, 'SUBTRACT', roughness, math_(nt, 'MULTIPLY', wet, max(0.0, roughness - .12)))
     rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', c.noise(9, 2, .5), .08), clamp=True)
     return col, height, rough, 0.0
 
@@ -211,20 +215,24 @@ def grown_chitin(c, zone, base, shade, roughness):
     plate_tone = node(nt, 'ShaderNodeAttribute', attribute_name='scute_tone').outputs['Fac']
     root = math_(nt, 'SUBTRACT', 1.0, ramp(nt, progress, .05, .55))
     pale = math_(nt, 'MAXIMUM', ramp(nt, crest, .45, .9), ramp(nt, progress, .85, .99))
-    lines = ramp(nt, math_(nt, 'SINE', math_(nt, 'MULTIPLY', progress, 41.0)), .55, .95)
+    # round D: the growth lines wander (a noise added to the progress), so they read as grown, not machined
+    warp = math_(nt, 'MULTIPLY', c.noise(14, 2, .5), .08)
+    lines = ramp(nt, math_(nt, 'SINE', math_(nt, 'MULTIPLY', math_(nt, 'ADD', progress, warp), 41.0)), .62, .97)
     grain = ramp(nt, c.noise(60, 3, .45, stretch=(.15, 1.0, 1.0)), .4, .65)
     pits = math_(nt, 'SUBTRACT', 1.0, ramp(nt, _voronoi(c, 180.0), .03, .12))
     contact = ramp(nt, c.ao, .95, .5)
     dark = math_(nt, 'ADD', math_(nt, 'MULTIPLY', root, .75), math_(nt, 'MULTIPLY', contact, .5))
-    dark = math_(nt, 'ADD', dark, math_(nt, 'MULTIPLY', lines, .18))
+    dark = math_(nt, 'ADD', dark, math_(nt, 'MULTIPLY', lines, .12))
     dark = math_(nt, 'ADD', dark, math_(nt, 'MULTIPLY', grain, .22))
     dark = math_(nt, 'ADD', dark, math_(nt, 'MULTIPLY', plate_tone, .15))
-    dark = math_(nt, 'SUBTRACT', dark, math_(nt, 'MULTIPLY', pale, .35), clamp=True)
+    mott = ramp(nt, c.noise(4.5, 3, .55, w=2.9), .4, .7)
+    dark = math_(nt, 'ADD', dark, math_(nt, 'MULTIPLY', mott, .25))
+    dark = math_(nt, 'SUBTRACT', dark, math_(nt, 'MULTIPLY', pale, .15), clamp=True)
     col = mixc(nt, base, shade, dark)
-    col = mixc(nt, col, BONE, math_(nt, 'MULTIPLY', ramp(nt, progress, .9, 1.0), .55))   # the worn lip pales to bone
+    col = mixc(nt, col, BONE, math_(nt, 'MULTIPLY', ramp(nt, progress, .9, 1.0), .3))   # the worn lip pales toward bone
     height = math_(nt, 'ADD', math_(nt, 'MULTIPLY', lines, -.2), math_(nt, 'MULTIPLY', grain, -.18))
     height = math_(nt, 'ADD', height, math_(nt, 'MULTIPLY', pits, -.15))
-    rough = math_(nt, 'ADD', .34, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1.0, pale), math_(nt, 'ADD', .2, math_(nt, 'MULTIPLY', grain, .2))))
+    rough = math_(nt, 'ADD', .5, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1.0, pale), math_(nt, 'ADD', .12, math_(nt, 'MULTIPLY', grain, .2))))
     return col, height, rough, 0.0
 
 
@@ -268,9 +276,12 @@ def glow_material(zone, hull=False):
     material.use_nodes = True
     bsdf = material.node_tree.nodes.get('Principled BSDF')
     bsdf.inputs['Base Color'].default_value = (*[v * .14 for v in colour], 1)
-    bsdf.inputs['Roughness'].default_value = .6 if (LOOK == 'grown' and zone == 'membrane') else .25
+    bsdf.inputs['Roughness'].default_value = .25
     if LOOK == 'grown' and zone == 'membrane':
-        bsdf.inputs['Base Color'].default_value = (.10, .065, .035, 1)
+        # issue 1291 round D: the veils as dark wet skin in the hide's colour, not pale paper. The glow materials export as
+        # plain glTF factors (no baked map), so a node pattern here would export white: colour and roughness only.
+        bsdf.inputs['Base Color'].default_value = (.040, .029, .017, 1)
+        bsdf.inputs['Roughness'].default_value = .34
     bsdf.inputs['Emission Color'].default_value = (*colour, 1)
     bsdf.inputs['Emission Strength'].default_value = power
     material['ps_glow'] = 1

@@ -195,11 +195,12 @@ def welt(pts, normals, w, h, n=6):
 
 
 def pore(c, nrm, r, depth=None, n=7):
-    """a sense or acid pore on a surface: a raised rim ring round a sunk pit"""
+    """a sense or acid pore on a surface: a soft lip round a shallow sunk pit (issue 1291 round D: the old tall rim and deep
+    hole read as a dark rivet in game)"""
     c = Vector(c); nrm = Vector(nrm).normalized(); u = nrm.orthogonal().normalized(); w = nrm.cross(u)
-    d = depth or r * 0.9
+    d = depth or r * 0.4
     V = []
-    for rr, hh in ((r * 1.6, -0.01), (r * 1.15, r * 0.45), (r * 0.75, r * 0.2), (r * 0.5, -d)):
+    for rr, hh in ((r * 1.7, -0.01), (r * 1.2, r * 0.14), (r * 0.8, r * 0.04), (r * 0.5, -d)):
         for k in range(n):
             a = 2 * math.pi * k / n
             V.append(tuple(c + (u * math.cos(a) + w * math.sin(a)) * rr + nrm * hh))
