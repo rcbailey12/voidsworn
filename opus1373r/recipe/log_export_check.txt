@@ -1,0 +1,6 @@
+[check] 34656 triangles (7380 on part surfaces), box x -0.498 to 0.502, y -0.050 to 0.160, z -0.193 to 0.194
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 1 written (turret_0 G1); marked by the kit: ['G1']
+[check] slot 0 guns T: 2 hard points
+[check] hard points: {"core": 1, "engine": 3, "gun": 2}
+PASS corsair_KF1 game export: every required point is there and every hard point passes the mesh checks

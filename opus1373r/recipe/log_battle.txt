@@ -1,0 +1,1 @@
+[battle] KF1 {"game": {"bow": 70.7, "midship": 46.2, "stern": 65.7, "whole": 58.1}, "studio": {"bow": 58.1, "midship": 39.3, "stern": 65.9, "whole": 52.5}}

@@ -1,0 +1,341 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:00:33 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373r\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         41	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\
+	    New File  		     285	audit.json100%  
+	    New File  		   38445	bow_blink.gif.provenance.json100%  
+	    New File  		     511	concept_camera.json100%  
+	    New File  		    2112	density.json100%  
+	    New File  		    6957	KF1.json100%  
+	    New File  		     599	licences.json100%  
+	    New File  		     255	lights.json100%  
+	    New File  		     420	log_audit.txt100%  
+	    New File  		    3976	log_audit_selftest.txt100%  
+	    New File  		     606	log_b0dump.txt100%  
+	    New File  		   43868	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     126	log_blink.txt100%  
+	    New File  		     583	log_build.txt100%  
+	    New File  		      67	log_clay.txt100%  
+	    New File  		      62	log_close.txt100%  
+	    New File  		     563	log_detail.txt100%  
+	    New File  		    1544	log_export.txt100%  
+	    New File  		     475	log_export_check.txt100%  
+	    New File  		     888	log_export_selftest.txt100%  
+	    New File  		    4600	log_godot.txt100%  
+	    New File  		     657	log_install_cache.txt100%  
+	    New File  		     445	log_install_readback.txt100%  
+	    New File  		    1454	log_lod.txt100%  
+	    New File  		  415632	log_render.txt 31%   63%   94%  100%  
+	    New File  		   76723	log_render_concept.txt100%  
+	    New File  		  150767	log_render_far.txt 86%  100%  
+	    New File  		    1226	log_sheet_contract.txt100%  
+	    New File  		      98	log_sil.txt100%  
+	    New File  		     185	log_sildump.txt100%  
+	    New File  		     683	log_standing.txt100%  
+	    New File  		     683	log_standing4.txt100%  
+	    New File  		    1331	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      95	log_standing_licences.txt100%  
+	    New File  		     184	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		   73940	log_surface.txt100%  
+	    New File  		     689	log_thirds.txt100%  
+	    New File  		     689	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     346	audit_into_ship.json100%  
+	    New File  		     348	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     285	audit_no_longitudinal.json100%  
+	    New File  		     224	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	    New File  		     348	audit_structure_across.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\build\
+	    New File  		     633	KF1_build.json100%  
+	    New File  		    1626	sheet_contract_selftest.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\glb\
+	    New File  		     306	KF1_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\
+	    New File  		   16787	bench209.json100%  
+	    New File  		    6142	KF1_auto_20.png.provenance.json100%  
+	    New File  		    6144	KF1_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	KF1_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	KF1_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	KF1_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	KF1_hand_20.png.provenance.json100%  
+	    New File  		    6144	KF1_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	KF1_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	KF1_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	KF1_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	KF1_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	KF1_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	KF1_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	KF1_off_20.png.provenance.json100%  
+	    New File  		    6143	KF1_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	KF1_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	KF1_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	KF1_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\r\
+	    New File  		   11336	KF1_battle.png.provenance.json100%  
+	    New File  		   41829	KF1_below.png.provenance.json100%  
+	    New File  		   41642	KF1_below_clay.png.provenance.json100%  
+	    New File  		   41658	KF1_concept.png.provenance.json100%  
+	    New File  		   41813	KF1_concept_cl.png.provenance.json100%  
+	    New File  		   41611	KF1_concept_clay.png.provenance.json100%  
+	    New File  		   41850	KF1_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41630	KF1_hero.png.provenance.json100%  
+	    New File  		   41687	KF1_hero_clay.png.provenance.json100%  
+	    New File  		   41660	KF1_hero_s.png.provenance.json100%  
+	    New File  		   41637	KF1_hero_s_clay.png.provenance.json100%  
+	    New File  		   41652	KF1_side.png.provenance.json100%  
+	    New File  		   41649	KF1_side_clay.png.provenance.json100%  
+	    New File  		   41666	KF1_side_s.png.provenance.json100%  
+	    New File  		   41683	KF1_side_s_clay.png.provenance.json100%  
+	    New File  		   41667	KF1_top.png.provenance.json100%  
+	    New File  		   41644	KF1_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\
+	    New File  		     797	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        11         8         3         0         0         0
+   Files :        90        90         0         0         0         0
+   Bytes :    1.56 m    1.56 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            26522322 Bytes/sec.
+   Speed :            1517.619 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:00:33 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:00:33 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373r\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\r\
+	    New File  		   94249	KF1_battle.png100%  
+	    New File  		   2.5 m	KF1_below.png 19%   39%   59%   79%   99%  100%  
+	    New File  		   2.0 m	KF1_below_clay.png 24%   48%   73%   97%  100%  
+	    New File  		  936776	KF1_concept.png 27%   55%   83%  100%  
+	    New File  		  918221	KF1_concept_cl.png 28%   57%   85%  100%  
+	    New File  		  780621	KF1_concept_clay.png 33%   67%  100%  
+	    New File  		  790292	KF1_concept_clay_cl.png 33%   66%   99%  100%  
+	    New File  		   1.2 m	KF1_hero.png 19%   38%   58%   77%   96%  100%  
+	    New File  		   1.0 m	KF1_hero_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   1.2 m	KF1_hero_s.png 20%   40%   60%   81%  100%  
+	    New File  		   1.0 m	KF1_hero_s_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.4 m	KF1_side.png 20%   41%   62%   83%  100%  
+	    New File  		   2.0 m	KF1_side_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.2 m	KF1_side_s.png 21%   43%   65%   87%  100%  
+	    New File  		   2.0 m	KF1_side_s_clay.png 24%   49%   74%   99%  100%  
+	    New File  		   2.9 m	KF1_top.png 17%   34%   51%   68%   85%  100%  
+	    New File  		   1.9 m	KF1_top_clay.png 12%   25%   37%   50%   62%   75%   87%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   26.08 m   26.08 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1519792222 Bytes/sec.
+   Speed :            86963.208 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:00:33 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:00:33 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373r\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\surface\
+	    New File  		   86808	surface_below.png100%  
+	    New File  		   64932	surface_bow.png100%  
+	    New File  		   69904	surface_port.png100%  
+	    New File  		   69997	surface_starboard.png100%  
+	    New File  		   65239	surface_stern.png100%  
+	    New File  		   86931	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   433.4 k   433.4 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           110952750 Bytes/sec.
+   Speed :            6348.767 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:00:33 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:00:33 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373r\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\godot\
+	    New File  		  533706	KF1_auto_20.png 49%   98%  100%  
+	    New File  		  733482	KF1_auto_d1.2.png 35%   71%  100%  
+	    New File  		  205000	KF1_auto_d16.0.png 63%  100%  
+	    New File  		  300714	KF1_auto_d3.0.png 43%   87%  100%  
+	    New File  		  219099	KF1_auto_d8.0.png 59%  100%  
+	    New File  		  529161	KF1_hand_20.png 49%   99%  100%  
+	    New File  		  733478	KF1_hand_d1.2.png 35%   71%  100%  
+	    New File  		  204402	KF1_hand_d17.4.png 64%  100%  
+	    New File  		  203386	KF1_hand_d18.6.png 64%  100%  
+	    New File  		  307191	KF1_hand_d2.9.png 42%   85%  100%  
+	    New File  		  294662	KF1_hand_d3.1.png 44%   88%  100%  
+	    New File  		  219607	KF1_hand_d7.75.png 59%  100%  
+	    New File  		  217618	KF1_hand_d8.25.png 60%  100%  
+	    New File  		  534212	KF1_off_20.png 49%   98%  100%  
+	    New File  		  733263	KF1_off_d1.2.png 35%   71%  100%  
+	    New File  		  205017	KF1_off_d16.0.png 63%  100%  
+	    New File  		  300502	KF1_off_d3.0.png 43%   87%  100%  
+	    New File  		  218909	KF1_off_d8.0.png 59%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    6.38 m    6.38 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           446227266 Bytes/sec.
+   Speed :           25533.329 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:00:33 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:00:33 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export\corsair_KF1\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1373r\out\recipe\export\corsair_KF1\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export\corsair_KF1\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export\corsair_KF1\
+	    New File  		   3.3 m	corsair_KF1.glb 14%   29%   44%   59%   74%   89%  100%  
+	    New File  		  921165	corsair_KF1_base.jpg 28%   56%   85%  100%  
+	    New File  		    2538	corsair_KF1_check.json100%  
+	    New File  		    6393	corsair_KF1_export.json100%  
+	    New File  		  208109	corsair_KF1_glow_emission.jpg 62%  100%  
+	    New File  		   5.3 m	corsair_KF1_normal.png  9%   18%   28%   37%   47%   56%   65%   75%   84%   94%  100%  
+	    New File  		   5.4 m	corsair_KF1_orm.png  9%   18%   27%   36%   45%   54%   64%   73%   82%   91%  100%  
+	    New File  		  594578	corsair_KF1_parts_base.jpg 44%   88%  100%  
+	    New File  		   4.0 m	corsair_KF1_parts_normal.png 12%   24%   36%   49%   61%   73%   86%   98%  100%  
+	    New File  		   4.9 m	corsair_KF1_parts_orm.png 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		      30	export_status.txt100%  
+	    New File  		    1520	manifest_entry.json100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KF1\export\corsair_KF1\_gltf_source\
+	    New File  		   3.3 m	corsair_KF1.bin 14%   29%   44%   59%   74%   89%  100%  
+	    New File  		   15455	corsair_KF1.gltf100%  
+	    New File  		  721074	KF1_engine_emission.png 36%   72%  100%  
+	    New File  		   5.2 m	KF1_hull_albedo.png  9%   19%   28%   38%   47%   57%   66%   76%   86%   95%  100%  
+	    New File  		   5.3 m	KF1_hull_normal.png  9%   18%   28%   37%   47%   56%   65%   75%   84%   94%  100%  
+	    New File  		   5.4 m	KF1_hull_orm.png  9%   18%   27%   36%   45%   54%   64%   73%   82%   91%  100%  
+	    New File  		   3.2 m	KF1_parts_albedo.png 15%   31%   46%   62%   77%   93%  100%  
+	    New File  		   4.0 m	KF1_parts_normal.png 12%   24%   36%   49%   61%   73%   86%   98%  100%  
+	    New File  		   4.9 m	KF1_parts_orm.png 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   57.04 m   57.04 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           2062511206 Bytes/sec.
+   Speed :           118017.837 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:00:33 PM
+

@@ -1,0 +1,168 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "34656 triangles (7380 on part surfaces), box x -0.498 to 0.502, y -0.050 to 0.160, z -0.193 to 0.194",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 1 written (turret_0 G1); marked by the kit: ['G1']"
+ ],
+ "cls": "Squadron",
+ "faction": "corsair",
+ "expected_breach": 0,
+ "required": {
+  "weapon_slots": 1,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 0,
+  "rcs": 0,
+  "board": 0
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "guns",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_guns_T_0",
+    "hp_w0_guns_T_1"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "core": 1,
+  "engine": 3,
+  "gun": 2
+ },
+ "maps": [
+  "corsair_KF1_parts_normal.png",
+  "corsair_KF1_parts_orm.png",
+  "corsair_KF1_parts_base.jpg",
+  "corsair_KF1_normal.png",
+  "corsair_KF1_orm.png",
+  "corsair_KF1_base.jpg",
+  "corsair_KF1_glow_emission.jpg"
+ ],
+ "tolerance": 0.012000000357627869,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0000000298023224,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_core",
+   "p": [
+    -0.1152,
+    0.01,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.4969,
+    0.0942,
+    0.004
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0075
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.4969,
+    0.0882,
+    -0.0621
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0075
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.4969,
+    0.0862,
+    0.0661
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0075
+  },
+  {
+   "name": "hp_w0_guns_T_0",
+   "p": [
+    -0.0499,
+    0.1397,
+    -0.0388
+   ],
+   "fwd": [
+    0.999,
+    0.052,
+    -0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0021
+  },
+  {
+   "name": "hp_w0_guns_T_1",
+   "p": [
+    -0.0499,
+    0.1397,
+    -0.0514
+   ],
+   "fwd": [
+    0.999,
+    0.052,
+    -0.0
+   ],
+   "turret": "turret_0",
+   "off_mesh": 0.0021
+  }
+ ],
+ "turrets": [
+  {
+   "name": "turret_0",
+   "id": "G1",
+   "socket": "G1",
+   "p": [
+    -0.1403,
+    0.1226,
+    -0.0451
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "muzzles": [
+    "hp_w0_guns_T_0",
+    "hp_w0_guns_T_1"
+   ],
+   "off_mesh": 0.0
+  }
+ ]
+}

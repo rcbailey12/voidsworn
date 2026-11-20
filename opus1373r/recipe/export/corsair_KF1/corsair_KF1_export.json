@@ -1,0 +1,314 @@
+{
+ "ship": "corsair_KF1",
+ "code": "corsair_KF1",
+ "cell": "KF1",
+ "game_ship": "fighter",
+ "faction": "hullbreakers",
+ "cls": "Squadron",
+ "band": "S",
+ "expected_breach": 0,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 33216,
+ "turret_triangles": 1440,
+ "turrets": [
+  {
+   "name": "turret_0",
+   "p": [
+    -0.14027,
+    0.04509,
+    0.12263
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "triangles": 1440,
+   "muzzles": [
+    "hp_w0_guns_T_0",
+    "hp_w0_guns_T_1"
+   ],
+   "kind": "turret",
+   "id": "G1",
+   "socket": "G1",
+   "slot": 0,
+   "weapon": "guns",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0,
+   "rest_yaw": 0.0,
+   "rest_pitch": 3.0,
+   "turns_about": "local +Y (the mount normal)",
+   "arc_frame": "bearing from the bow, + to port"
+  }
+ ],
+ "surfaces": 4,
+ "destruction": {
+  "interior_materials": []
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "guns",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_guns_T_0",
+    "hp_w0_guns_T_1"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 2,
+  "engine": 3,
+  "bay": 0,
+  "breach": 0,
+  "core": 1,
+  "rcs": 0,
+  "board": 0
+ },
+ "length_world": 1.6,
+ "sheet": "corsair_KF1",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {},
+ "hard_points": [
+  {
+   "name": "hp_w0_guns_T_0",
+   "p": [
+    -0.04985,
+    0.03877,
+    0.13972
+   ],
+   "fwd": [
+    0.9986,
+    0.0,
+    0.0523
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "guns",
+   "radius": 0.0017533487935104883,
+   "socket": "G1",
+   "turret": 0
+  },
+  {
+   "name": "hp_w0_guns_T_1",
+   "p": [
+    -0.04985,
+    0.0514,
+    0.13972
+   ],
+   "fwd": [
+    0.9986,
+    0.0,
+    0.0523
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "guns",
+   "radius": 0.0017533487935104883,
+   "socket": "G1",
+   "turret": 0
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49695,
+    -0.00401,
+    0.09418
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.027803102297094887,
+   "engine": "E2"
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.49695,
+    0.06212,
+    0.08817
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.02113035774579211,
+   "engine": "E1"
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.49695,
+    -0.06613,
+    0.08616
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.01890610956202452,
+   "engine": "E3"
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.11522,
+    0.0,
+    0.01002
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  }
+ ],
+ "manifest": {
+  "name": "Narrow Glacis fighter, the Hullbreaker fighter wing craft (Ashfall Hullbreakers)",
+  "faction": "corsair",
+  "cls": "Squadron",
+  "band": "S",
+  "game_ship": "fighter",
+  "length_world": 1.6,
+  "hardpoints": {
+   "gun": 2,
+   "engine": 3,
+   "core": 1
+  },
+  "breaches": 0,
+  "turrets": 1,
+  "files": {
+   "corsair_KF1.glb": {
+    "bytes": 3524560,
+    "sha256": "7ec502e9d04411d14b6fd86fecde6737372d1acb59a6b4f174a28d6154ee2afc"
+   },
+   "corsair_KF1_base.jpg": {
+    "bytes": 921165,
+    "sha256": "e214d26f9964b9915f07f9afb0c4f2337dc5ede87597b00c467e6e9ea6b57075"
+   },
+   "corsair_KF1_glow_emission.jpg": {
+    "bytes": 208109,
+    "sha256": "0ec85429e3be4c103a6e87093ed80cf50d008bfa9854d4d60d604525c0f64595"
+   },
+   "corsair_KF1_normal.png": {
+    "bytes": 5566340,
+    "sha256": "13b5016f9d1909f9324c3dc4ea1163f78a0661fbc3e10f81b4f8a0d84713bad1"
+   },
+   "corsair_KF1_orm.png": {
+    "bytes": 5720815,
+    "sha256": "c6ac7c1dd8de36e4425f4911d889baea92ae4dc1a87f5690b2a943483df9904f"
+   },
+   "corsair_KF1_parts_base.jpg": {
+    "bytes": 594578,
+    "sha256": "0b887f37b57a5309623005e8cae605ba6c498ef75e221b6e1505aba3dffd5024"
+   },
+   "corsair_KF1_parts_normal.png": {
+    "bytes": 4266963,
+    "sha256": "5588c5b9e1821524a21732cd506f72edc6ecdebe37584f310806087929599ec2"
+   },
+   "corsair_KF1_parts_orm.png": {
+    "bytes": 5169902,
+    "sha256": "deb30b42df484b9ee14e2d565a542d527eefba6ef5aabc3b3ffd2f103a91a44d"
+   }
+  },
+  "pc_path": "godot/assets/ships/corsair_KF1/",
+  "wing_role": "fighter"
+ },
+ "files": {
+  "corsair_KF1.glb": {
+   "bytes": 3524560,
+   "sha256": "7ec502e9d04411d14b6fd86fecde6737372d1acb59a6b4f174a28d6154ee2afc"
+  },
+  "corsair_KF1_base.jpg": {
+   "bytes": 921165,
+   "sha256": "e214d26f9964b9915f07f9afb0c4f2337dc5ede87597b00c467e6e9ea6b57075"
+  },
+  "corsair_KF1_glow_emission.jpg": {
+   "bytes": 208109,
+   "sha256": "0ec85429e3be4c103a6e87093ed80cf50d008bfa9854d4d60d604525c0f64595"
+  },
+  "corsair_KF1_normal.png": {
+   "bytes": 5566340,
+   "sha256": "13b5016f9d1909f9324c3dc4ea1163f78a0661fbc3e10f81b4f8a0d84713bad1"
+  },
+  "corsair_KF1_orm.png": {
+   "bytes": 5720815,
+   "sha256": "c6ac7c1dd8de36e4425f4911d889baea92ae4dc1a87f5690b2a943483df9904f"
+  },
+  "corsair_KF1_parts_base.jpg": {
+   "bytes": 594578,
+   "sha256": "0b887f37b57a5309623005e8cae605ba6c498ef75e221b6e1505aba3dffd5024"
+  },
+  "corsair_KF1_parts_normal.png": {
+   "bytes": 4266963,
+   "sha256": "5588c5b9e1821524a21732cd506f72edc6ecdebe37584f310806087929599ec2"
+  },
+  "corsair_KF1_parts_orm.png": {
+   "bytes": 5169902,
+   "sha256": "deb30b42df484b9ee14e2d565a542d527eefba6ef5aabc3b3ffd2f103a91a44d"
+  }
+ },
+ "seconds": 13.8,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}

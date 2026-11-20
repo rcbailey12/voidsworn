@@ -1,0 +1,51 @@
+{
+ "name": "Narrow Glacis fighter, the Hullbreaker fighter wing craft (Ashfall Hullbreakers)",
+ "faction": "corsair",
+ "cls": "Squadron",
+ "band": "S",
+ "game_ship": "fighter",
+ "length_world": 1.6,
+ "hardpoints": {
+  "gun": 2,
+  "engine": 3,
+  "core": 1
+ },
+ "breaches": 0,
+ "turrets": 1,
+ "files": {
+  "corsair_KF1.glb": {
+   "bytes": 3524560,
+   "sha256": "7ec502e9d04411d14b6fd86fecde6737372d1acb59a6b4f174a28d6154ee2afc"
+  },
+  "corsair_KF1_base.jpg": {
+   "bytes": 921165,
+   "sha256": "e214d26f9964b9915f07f9afb0c4f2337dc5ede87597b00c467e6e9ea6b57075"
+  },
+  "corsair_KF1_glow_emission.jpg": {
+   "bytes": 208109,
+   "sha256": "0ec85429e3be4c103a6e87093ed80cf50d008bfa9854d4d60d604525c0f64595"
+  },
+  "corsair_KF1_normal.png": {
+   "bytes": 5566340,
+   "sha256": "13b5016f9d1909f9324c3dc4ea1163f78a0661fbc3e10f81b4f8a0d84713bad1"
+  },
+  "corsair_KF1_orm.png": {
+   "bytes": 5720815,
+   "sha256": "c6ac7c1dd8de36e4425f4911d889baea92ae4dc1a87f5690b2a943483df9904f"
+  },
+  "corsair_KF1_parts_base.jpg": {
+   "bytes": 594578,
+   "sha256": "0b887f37b57a5309623005e8cae605ba6c498ef75e221b6e1505aba3dffd5024"
+  },
+  "corsair_KF1_parts_normal.png": {
+   "bytes": 4266963,
+   "sha256": "5588c5b9e1821524a21732cd506f72edc6ecdebe37584f310806087929599ec2"
+  },
+  "corsair_KF1_parts_orm.png": {
+   "bytes": 5169902,
+   "sha256": "deb30b42df484b9ee14e2d565a542d527eefba6ef5aabc3b3ffd2f103a91a44d"
+  }
+ },
+ "pc_path": "godot/assets/ships/corsair_KF1/",
+ "wing_role": "fighter"
+}

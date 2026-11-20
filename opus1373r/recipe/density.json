@@ -1,0 +1,81 @@
+{
+ "summary": {
+  "paint_flags": [],
+  "mesh_flags": [],
+  "hull": {
+   "area": 2.79589,
+   "triangles": 27276,
+   "tris_per_unit2": 9755.7,
+   "edges_per_unit2": 7322.2,
+   "texels_per_unit2": 4517998.7,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 190.9,
+  "paint_top": 0.3
+ },
+ "types": {
+  "lamp": {
+   "area": 0.00854,
+   "triangles": 792,
+   "tris_per_unit2": 92765.5,
+   "edges_per_unit2": 63014.9,
+   "texels_per_unit2": 139812315.2,
+   "atlas": "parts",
+   "paint_detail_share": 0.379,
+   "tris_per_unit2_vs_hull": 9.51,
+   "edges_per_unit2_vs_hull": 8.61,
+   "texels_per_unit2_vs_hull": 30.95,
+   "paint_detail_share_vs_hull": 1.26
+  },
+  "hull": {
+   "area": 2.79589,
+   "triangles": 27276,
+   "tris_per_unit2": 9755.7,
+   "edges_per_unit2": 7322.2,
+   "texels_per_unit2": 4517998.7,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "slit": {
+   "area": 0.00176,
+   "triangles": 140,
+   "tris_per_unit2": 79642.3,
+   "edges_per_unit2": 68264.8,
+   "texels_per_unit2": 145172151.0,
+   "atlas": "parts",
+   "paint_detail_share": 0.592,
+   "tris_per_unit2_vs_hull": 8.16,
+   "edges_per_unit2_vs_hull": 9.32,
+   "texels_per_unit2_vs_hull": 32.13,
+   "paint_detail_share_vs_hull": 1.97
+  },
+  "gun": {
+   "area": 0.0177,
+   "triangles": 1780,
+   "tris_per_unit2": 100565.5,
+   "edges_per_unit2": 60565.3,
+   "texels_per_unit2": 135844752.7,
+   "atlas": "parts",
+   "paint_detail_share": 0.457,
+   "tris_per_unit2_vs_hull": 10.31,
+   "edges_per_unit2_vs_hull": 8.27,
+   "texels_per_unit2_vs_hull": 30.07,
+   "paint_detail_share_vs_hull": 1.52
+  },
+  "engine": {
+   "area": 0.06393,
+   "triangles": 2958,
+   "tris_per_unit2": 46268.8,
+   "edges_per_unit2": 18113.3,
+   "texels_per_unit2": 128412292.7,
+   "atlas": "parts",
+   "paint_detail_share": 0.501,
+   "tris_per_unit2_vs_hull": 4.74,
+   "edges_per_unit2_vs_hull": 2.47,
+   "texels_per_unit2_vs_hull": 28.42,
+   "paint_detail_share_vs_hull": 1.67
+  }
+ }
+}
