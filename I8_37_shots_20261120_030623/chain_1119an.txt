@@ -1,0 +1,4 @@
+waiting for chain_1119am all done Fri 11/20/2026  3:06:22.74 
+out C:\Users\rcbai\Downloads\voidsworn_test\publish\I8_37_shots_20261120_030623 
+shots start  3:06:23.12 PICTURE_STAMP_TOOL=C:\Users\rcbai\Downloads\voidsworn_test\tools_live\00727650d829\picture_provenance.py PICTURE_SOURCE_REPO=C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5d\repo 
+shots exit 0 at  3:06:29.66 
