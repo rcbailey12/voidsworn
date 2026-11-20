@@ -1,0 +1,16 @@
+﻿powershell.exe : R : Cannot locate the history for command line issue 1180 oneoff2 probe 
+2026-11-19T19:58:02.4042211-06:00 on 
+At line:1 char:365
++ ... 0\oneoff2'; powershell.exe -NoProfile -ExecutionPolicy Bypass -File " ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (R : Cannot loca...42211-06:00 on :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+DESKTOP-D5CTOET.
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1180\oneoff2\PROBE_1180_ONEOFF2.ps1:49 char:1
++ R "issue 1180 oneoff2 probe $(Get-Date -Format o) on $env:COMPUTERNAM ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (issue 1180 oneo...DESKTOP-D5CTOET:String) [Invoke-History], ArgumentExc 
+   eption
+    + FullyQualifiedErrorId : InvokeHistoryNoHistoryForCommandline,Microsoft.PowerShell.Commands.InvokeHistoryCommand
+ 

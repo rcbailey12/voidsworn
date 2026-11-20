@@ -1,0 +1,339 @@
+issue 1180 oneoff2 probe 2026-11-19T19:58:37.6536304-06:00 on DESKTOP-D5CTOET
+C: free 250.7 GB
+mirror refresh exit 0
+relay branches: 39
+
+=== A. board kept copies (7 bad HEAD, 3 MERGE_HEAD)
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-a96a526aa67d494fbbf7d841454ca0cb
+size 4939466734 bytes; newest work file 2026-11-18 00:04; newest any 2026-11-19 17:10; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-975
+rev-parse HEAD: exit 0 f73391e6092383c478261d46787b8bf4600d6528
+FETCH_HEAD: faeabe69e1f32d1b5122fb05282f4cd97a7fd181		branch 'codex/issue-975' of https://github.com/rcbailey12/voidsworn
+status: exit 128, 1 lines
+  fatal: bad object HEAD
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-cb9c4e3c05c8424cba7a86cb5a9de9cb
+size 4918959131 bytes; newest work file 2026-11-18 00:52; newest any 2026-11-19 17:10; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-1035
+rev-parse HEAD: exit 0 a3599103c6ccc1f484d8d0963e132aaf71a3bffa
+FETCH_HEAD: 58b0aac74f5862ea326ed2c1a29fb62c636375d3		branch 'main' of https://github.com/rcbailey12/voidsworn
+status: exit 128, 1 lines
+  fatal: bad object HEAD
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-81506ef10ec64d3c96aa8cacc744b33c
+size 4951606260 bytes; newest work file 2026-11-18 08:22; newest any 2026-11-19 17:10; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-1044
+rev-parse HEAD: exit 0 3f7e6b3dcdb8cfad47ee3c8ea7a4ae892ab0ecbf
+FETCH_HEAD: 4fd5e5203173595918ca64b4d09d812b487c3c64		branch 'main' of https://github.com/rcbailey12/voidsworn
+status: exit 128, 1 lines
+  fatal: bad object HEAD
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-64b7f32ffa4849c7a4bd726da6ea4cb4
+size 4957667296 bytes; newest work file 2026-11-18 10:26; newest any 2026-11-19 17:10; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-1057
+rev-parse HEAD: exit 0 daf6162e378f1bd4b7e75acbd3392091e7cbe2c1
+FETCH_HEAD: cef236c0c6f7f5bdecdad07239efca8568f1b184		branch 'main' of https://github.com/rcbailey12/voidsworn
+status: exit 128, 1 lines
+  fatal: bad object HEAD
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-70f1a89ca7014f369e1696c81db59112
+size 4970535348 bytes; newest work file 2026-11-18 11:49; newest any 2026-11-19 17:10; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-1059
+rev-parse HEAD: exit 0 e350c2c3cecfd5bdb6379c719e788536767371eb
+FETCH_HEAD: daf6162e378f1bd4b7e75acbd3392091e7cbe2c1		branch 'codex/issue-1057' of https://github.com/rcbailey12/voidsworn
+status: exit 128, 1 lines
+  fatal: bad object HEAD
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-aceb3473930c4e27ad65642d23ce25fa
+size 4968884396 bytes; newest work file 2026-11-18 12:10; newest any 2026-11-19 17:10; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-1065
+rev-parse HEAD: exit 0 548b9e320135ea5043553b9c7c10308d31e08823
+FETCH_HEAD: 548b9e320135ea5043553b9c7c10308d31e08823		branch 'main' of https://github.com/rcbailey12/voidsworn
+status: exit 128, 1 lines
+  fatal: bad object HEAD
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-d084110f41ff45c69bea582ef588917c
+size 4972136728 bytes; newest work file 2026-11-18 14:07; newest any 2026-11-19 17:10; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-1082
+rev-parse HEAD: exit 0 ce44665e5375aee0e325c8a240d67a60cacfd67c
+FETCH_HEAD: da09319bdc2c75c10d4a4d019469557940cf81e6		branch 'main' of https://github.com/rcbailey12/voidsworn
+status: exit 128, 1 lines
+  fatal: bad object HEAD
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-0007d7218e4a477fa27a2c925515cd68
+size 5026089498 bytes; newest work file 2026-11-18 21:53; newest any 2026-11-19 14:06; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-1058
+rev-parse HEAD: exit 0 7c17f6c0dfca783f9f0ea0ca9085117b34abd718
+reflog: clone: from C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git [7c17f6c0dfca783f9f0ea0ca9085117b34abd718]
+reflog: checkout: moving from main to codex/issue-1058 [7c17f6c0dfca783f9f0ea0ca9085117b34abd718]
+FETCH_HEAD: ca525c052e2e0e1d407e9c5eed6fc5a3398c25a3		branch 'codex/issue-1058' of https://github.com/rcbailey12/voidsworn
+MERGE_HEAD: ca525c052e2e0e1d407e9c5eed6fc5a3398c25a3
+MERGE_MSG: Runner Base: origin/codex/issue-1058
+MERGE_MSG: 
+MERGE_MSG: # Conflicts:
+status: exit 0, 19 lines
+  A  docs/shots/finish_chorus_glass_1118/C11_finish_run2.jpg
+  A  docs/shots/finish_chorus_glass_1118/C11_finish_run2.jpg.provenance.json
+  A  docs/shots/finish_chorus_glass_1118/C11_no_wear.jpg
+  A  docs/shots/finish_chorus_glass_1118/C11_no_wear.jpg.provenance.json
+  A  docs/shots/finish_chorus_glass_1118/CD5_finish_run2.jpg
+  A  docs/shots/finish_chorus_glass_1118/CD5_finish_run2.jpg.provenance.json
+  A  docs/shots/finish_chorus_glass_1118/CD5_glass_turntable.webp
+  A  docs/shots/finish_chorus_glass_1118/CD5_glass_turntable.webp.provenance.json
+  A  docs/shots/finish_chorus_glass_1118/CD5_no_wear.jpg
+  A  docs/shots/finish_chorus_glass_1118/CD5_no_wear.jpg.provenance.json
+  A  docs/shots/finish_chorus_glass_1118/README.md
+  UU godot/fx/test/fixtures/C19_51_unbaked.sheet.txt
+  A  tools/blender/kits/chorus/stack.py
+  A  tools/blender/kits/ithar/blown_glass.gdshader
+  A  tools/blender/kits/ithar/glass_review.gd
+  A  tools/blender/kits/ithar/stack.py
+  M  tools/blender/kits/shared/paint_stack.py
+  M  tools/recipe/export7.py
+  A  tools/recipe/ships/ithar_CD5.json
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-7103eb6705144c7da25ef676a676852a
+size 4705225664 bytes; newest work file 2026-11-17 14:59; newest any 2026-11-19 14:06; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-946
+rev-parse HEAD: exit 0 1c6378918fec62e83997f98523c6b1dcf0a8a78d
+reflog: merge refs/remotes/origin/codex/issue-985: Merge made by the 'ort' strategy. [56b6cbcfccdeaf5df98f72a846be57abdff24829]
+reflog: runner commit (issue 377) [efdf7e3b524d7736797a877876f4162e74a9a3ab]
+reflog: checkout: moving from codex/issue-985 to codex/issue-1003 [e0c4c37e0fe9009f714b053fc414ef530913e8f2]
+reflog: runner commit (issue 377) [eaa926f2302841dcdf2e40446bede9d94dcadb4e]
+reflog: checkout: moving from codex/issue-1003 to codex/issue-946 [1c6378918fec62e83997f98523c6b1dcf0a8a78d]
+FETCH_HEAD: 000f4b2102074e22b5aeae7acad3bdeb0f6b789d		branch 'muse/issue-946' of https://github.com/rcbailey12/voidsworn
+MERGE_HEAD: 000f4b2102074e22b5aeae7acad3bdeb0f6b789d
+MERGE_MSG: Runner Base: origin/muse/issue-946
+MERGE_MSG: 
+MERGE_MSG: # Conflicts:
+status: exit 0, 2 lines
+  A  contrib/opus/tools/fast_selection_test.js
+  UU contrib/opus/tools/run_all_checks.js
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-21f1637f37cd4c49b04eae1a5492281b
+size 4659901064 bytes; newest work file 2026-11-17 12:34; newest any 2026-11-17 12:50; links 0; unreadable 0
+processes: none
+HEAD file: ref: refs/heads/codex/issue-985
+rev-parse HEAD: exit 0 b8c7421ed62aa0f8382bd509f15f2459a2305743
+reflog: checkout: moving from codex/issue-985 to codex/issue-985 [2b98aa4065499110356ed2683bf88ca5228d5db6]
+reflog: merge refs/remotes/origin/codex/issue-985: Merge made by the 'ort' strategy. [99f05974e94af2de43d1aa30849f0877b9843e36]
+reflog: runner commit (issue 377) [71a1303795e754be35059487379c120e35218cdb]
+reflog: branch: Reset to refs/remotes/origin/main [b8c7421ed62aa0f8382bd509f15f2459a2305743]
+reflog: checkout: moving from codex/issue-985 to codex/issue-985 [b8c7421ed62aa0f8382bd509f15f2459a2305743]
+FETCH_HEAD: 71a1303795e754be35059487379c120e35218cdb		branch 'codex/issue-985' of https://github.com/rcbailey12/voidsworn
+MERGE_HEAD: 71a1303795e754be35059487379c120e35218cdb
+MERGE_MSG: Runner Base: origin/codex/issue-985
+MERGE_MSG: 
+MERGE_MSG: # Conflicts:
+status: exit 0, 9 lines
+  A  tools/pc/openai_api_key.bat
+  M  tools/pc/runner_selftest.bat
+  UU tools/pc/runner_selftest.js
+  UU tools/pc/work/README.md
+  M  tools/pc/work/mock_llm.js
+  M  tools/pc/work/opencode_lean.json
+  M  tools/pc/work/opencode_mock.json
+  M  tools/pc/work_issue.bat
+  M  tools/pc/work_issue.ps1
+
+=== B. helper folders not on the Board active list
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\opus1079
+size 46578340818 bytes; newest file 2026-11-19 19:24; links 0; unreadable 0
+processes: none
+  OPUS1079_RUN3.bat              file             5804 bytes 2026-11-19 13:53
+  out                            folder      379831391 bytes newest 2026-11-19 14:37
+  out3                           folder      353237929 bytes newest 2026-11-19 15:21
+  out5                           folder        5574901 bytes newest 2026-11-19 18:48
+  out6                           folder      357393764 bytes newest 2026-11-19 19:24
+  profile_3                      folder      165464480 bytes newest 2026-11-19 18:48
+  profile_4                      folder      111697045 bytes newest 2026-11-19 19:24
+  run1                           folder    11281565160 bytes newest 2026-11-19 14:02
+  run2                           folder    11307872018 bytes newest 2026-11-19 14:52
+  run3                           folder    11307848795 bytes newest 2026-11-19 18:39
+  run3_wait.txt                  file              181 bytes 2026-11-19 15:21
+  run4                           folder    11307848818 bytes newest 2026-11-19 19:22
+  run4_wait.txt                  file              177 bytes 2026-11-19 15:52
+  run5_wait.txt                  file              180 bytes 2026-11-19 18:48
+  run6_wait.txt                  file              175 bytes 2026-11-19 19:24
+  hash check failed for 200 files; counted as not relayed
+  hash check failed for 200 files; counted as not relayed
+files outside checkouts: 8595; on a relay branch: 5340; not relayed: 3255 (659542937 bytes)
+  not relayed .json      1332 files      112046472 bytes
+  not relayed .jpg       1324 files      267417031 bytes
+  not relayed .cache      528 files      185104700 bytes
+  not relayed .txt         33 files        1064383 bytes
+  not relayed .png         24 files       87250589 bytes
+  not relayed .log          6 files          73120 bytes
+  not relayed .tres         2 files          35696 bytes
+  not relayed .keystore      2 files           5428 bytes
+  largest not relayed: profile_3\appdata\Godot\app_userdata\Voidsworn\vulkan\pipelines.forward_plus.nvidia_geforce_rtx_5080.cache (51996251 bytes)
+  largest not relayed: profile_4\appdata\Godot\app_userdata\Voidsworn\vulkan\pipelines.forward_plus.nvidia_geforce_rtx_5080.cache (39282929 bytes)
+  largest not relayed: profile_3\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\bc5965b84d113d8bad6ee982f7b9003b6c194df84ee71a0a9b4b733e5c012cd9.png (12881283 bytes)
+  largest not relayed: profile_3\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\6aab5564a9fd71d27e142c06aeb53a7b622681762d8544462c11262e9069aadf.png (12219607 bytes)
+  largest not relayed: profile_4\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\6aab5564a9fd71d27e142c06aeb53a7b622681762d8544462c11262e9069aadf.png (12219607 bytes)
+  largest not relayed: profile_3\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\3ec174b6b1465181e4e32e0a7c59248786b73f667879406b8557562c1bc04b36.png (11082852 bytes)
+  largest not relayed: profile_4\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\269e6472e8c899979786d2ed711bc585dc7d43d2658c5b9e71f4383a325b85db.png (6111584 bytes)
+  largest not relayed: profile_3\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\269e6472e8c899979786d2ed711bc585dc7d43d2658c5b9e71f4383a325b85db.png (6111584 bytes)
+  largest not relayed: profile_3\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\0b053083bcd9948ed3610938421ef1cc25e691789f09ae1443271933f4cfe1c1.png (5670797 bytes)
+  largest not relayed: profile_3\appdata\Godot\app_userdata\Voidsworn\world_bakes\v3\02a45cbc07c261c942614e4815066cc667319f84e3c4321e0501ea9417710b7e.png (3727922 bytes)
+  checkout run4\repo: HEAD 93050fc, tracked changes 33
+  checkout run3\repo: HEAD 93050fc, tracked changes 33
+  checkout run2\repo: HEAD 0784559, tracked changes 33
+  checkout run1\repo: HEAD 4b6f085, tracked changes 33
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\opus1153
+size 4764476586 bytes; newest file 2026-11-19 12:25; links 0; unreadable 0
+processes: none
+  C12_RUN7_1153.bat              file             5858 bytes 2026-11-19 09:45
+  out                            folder       99249255 bytes newest 2026-11-19 12:25
+  repo7                          folder     4665221473 bytes newest 2026-11-19 12:23 (git checkout)
+files outside checkouts: 225; on a relay branch: 203; not relayed: 22 (30713149 bytes)
+  not relayed .jpg          8 files        1068863 bytes
+  not relayed .npz          3 files        6952977 bytes
+  not relayed .gd           2 files          21991 bytes
+  not relayed .glb          2 files        8022156 bytes
+  not relayed .blend        2 files       11633670 bytes
+  not relayed .gltf         1 files          24351 bytes
+  not relayed .bin          1 files        2311352 bytes
+  not relayed .gif          1 files         671268 bytes
+  largest not relayed: out\recipe\b0.npz (5910540 bytes)
+  largest not relayed: out\recipe\build\C12.blend (5816835 bytes)
+  largest not relayed: out\recipe\C12.blend (5816835 bytes)
+  largest not relayed: out\recipe\glb\C12.glb (5692796 bytes)
+  largest not relayed: out\recipe\export\B19_11\B19_11.glb (2329360 bytes)
+  largest not relayed: out\recipe\export\B19_11\_gltf_source\B19_11.bin (2311352 bytes)
+  largest not relayed: out\recipe\C12.npz (1007041 bytes)
+  largest not relayed: out\recipe\bow_blink.gif (671268 bytes)
+  largest not relayed: out\shots\B19_11_u.jpg (171792 bytes)
+  largest not relayed: out\shots\B19_11_d.jpg (168428 bytes)
+  checkout repo7: HEAD 4d88698, tracked changes 34
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\opus1158
+size 6261539465 bytes; newest file 2026-11-19 15:52; links 0; unreadable 0
+processes: none
+  OPUS1158_SHIPJOB.bat           file              183 bytes 2026-11-19 11:14
+  out                            folder      806245591 bytes newest 2026-11-19 15:52
+  out_before_20261119_133413     folder        1266944 bytes newest 2026-11-19 11:09
+  repo                           folder     5454014206 bytes newest 2026-11-19 15:51 (git checkout)
+  ship_job_running.bat           file            12541 bytes 2026-11-19 12:01
+files outside checkouts: 300; on a relay branch: 37; not relayed: 263 (806623511 bytes)
+  not relayed .json        92 files        3099907 bytes
+  not relayed .png         90 files      219501160 bytes
+  not relayed .txt         42 files        8684334 bytes
+  not relayed .jpg         22 files       17284755 bytes
+  not relayed .npz          3 files        6420527 bytes
+  not relayed .blend1       2 files      191588992 bytes
+  not relayed .gd           2 files          21991 bytes
+  not relayed .glb          2 files      154656732 bytes
+  largest not relayed: out\recipe\S8.blend1 (183773048 bytes)
+  largest not relayed: out\recipe\S8.blend (183772824 bytes)
+  largest not relayed: out\recipe\glb\S8.glb (141599536 bytes)
+  largest not relayed: out\recipe\S8_hull_masks.png (28317626 bytes)
+  largest not relayed: out\recipe\S8_hull_orm.png (27815885 bytes)
+  largest not relayed: out\recipe\S8_parts_masks.png (22559060 bytes)
+  largest not relayed: out\recipe\S8_parts_orm.png (21253754 bytes)
+  largest not relayed: out\recipe\S8_hull_albedo.png (19993366 bytes)
+  largest not relayed: out\recipe\S8_parts_albedo.png (15738639 bytes)
+  largest not relayed: out\recipe\export\V1b_r_23\V1b_r_23.glb (13057196 bytes)
+  checkout repo: HEAD a2dc4bce, tracked changes 19
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\opus1194
+size 124013919 bytes; newest file 2026-11-19 19:25; links 0; unreadable 0
+processes: none
+  hand_1                         folder          68304 bytes newest 2026-11-19 19:02
+  main                           folder       36727393 bytes newest 2026-11-19 19:21 (git checkout)
+  out2_1                         folder          10675 bytes newest 2026-11-19 19:03
+  out_1                          folder           3767 bytes newest 2026-11-19 18:28
+  repo                           folder       39838138 bytes newest 2026-11-19 19:02 (git checkout)
+  rollout_1                      folder           5872 bytes newest 2026-11-19 19:25
+  rot_1                          folder       47359770 bytes newest 2026-11-19 19:02
+files outside checkouts: 1553; on a relay branch: 21; not relayed: 1532 (47427435 bytes)
+  not relayed .py         662 files        9062522 bytes
+  not relayed .bat        327 files         767047 bytes
+  not relayed .json       268 files        3304998 bytes
+  not relayed .ps1         47 files         594736 bytes
+  not relayed .js          47 files         848052 bytes
+  not relayed .gd          46 files         266468 bytes
+  not relayed .md          44 files         310730 bytes
+  not relayed .txt         40 files           3760 bytes
+  largest not relayed: rot_1\Downloads\voidsworn_test\lane_tools_source\export-2a87a4d7e1e8464785ac844ffe7d4a6f.zip (9077570 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\lane_tools_source\main.git\objects\pack\pack-ad0a242a7fec218f277ef3103e5fd58e5680a2f6.pack (8833468 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\lane_tools_source\0208a829e14b8957fce6b024dc7f3f77b841a05b\music\audition_2026_11\orbital_colossus.mp3 (6066975 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\tools_live\0208a829e14b\music\audition_2026_11\orbital_colossus.mp3 (6066975 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\lane_tools_source\0208a829e14b8957fce6b024dc7f3f77b841a05b\music\audition_2026_11\jrpg_battle_theme.ogg (752003 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\tools_live\0208a829e14b\music\audition_2026_11\jrpg_battle_theme.ogg (752003 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\lane_tools_source\main.git\objects\pack\pack-75b77b20ef19f6a76510969d2be2098d08a2ce85.pack (387439 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\tools_live\0208a829e14b\pc\mission\fixtures\nov17.json (156891 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\lane_tools_source\0208a829e14b8957fce6b024dc7f3f77b841a05b\pc\mission\fixtures\nov17.json (156891 bytes)
+  largest not relayed: rot_1\Downloads\voidsworn_test\tools_live\0208a829e14b\portraits\batches\p64gn.json (124676 bytes)
+  checkout repo: HEAD 9c56f2b2, tracked changes 0
+  checkout main: HEAD 6769f411, tracked changes 0
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\opus1204
+size 11357652242 bytes; newest file 2026-11-19 17:28; links 0; unreadable 0
+processes: none
+  bot_log.txt                    file           954301 bytes 2026-11-19 16:19
+  bot_report.json                file            63868 bytes 2026-11-19 16:19
+  commit.txt                     file               41 bytes 2026-11-19 15:40
+  go1204.bat                     file             2064 bytes 2026-11-19 14:30
+  go1204_pc.bat                  file             2389 bytes 2026-11-19 14:31
+  import_log.txt                 file           313419 bytes 2026-11-19 15:53
+  repo                           folder    11356315380 bytes newest 2026-11-19 15:53 (git checkout)
+  result.txt                     file              624 bytes 2026-11-19 17:28
+  wait.txt                       file              156 bytes 2026-11-19 15:39
+files outside checkouts: 8; on a relay branch: 3; not relayed: 5 (1272329 bytes)
+  not relayed .txt          3 files        1267876 bytes
+  not relayed .bat          2 files           4453 bytes
+  largest not relayed: bot_log.txt (954301 bytes)
+  largest not relayed: import_log.txt (313419 bytes)
+  largest not relayed: go1204_pc.bat (2389 bytes)
+  largest not relayed: go1204.bat (2064 bytes)
+  largest not relayed: wait.txt (156 bytes)
+  checkout repo: HEAD 58bff64, tracked changes 33
+
+--- C:\Users\rcbai\Downloads\voidsworn_test\opus1217
+size 13655238539 bytes; newest file 2026-11-19 17:46; links 0; unreadable 0
+processes: none
+  git.txt                        file             3798 bytes 2026-11-19 17:29
+  import.txt                     file           308080 bytes 2026-11-19 17:41
+  OPUS1217_FRONTEND.bat          file             3444 bytes 2026-11-19 16:21
+  OPUS1217_FRONTEND_p2.bat       file             2736 bytes 2026-11-19 14:33
+  OPUS1217_FRONTEND_p4a.bat      file             2773 bytes 2026-11-19 15:31
+  repo                           folder    13538960949 bytes newest 2026-11-19 17:42 (git checkout)
+  shots                          folder      115950995 bytes newest 2026-11-19 17:46
+  status.txt                     file             5560 bytes 2026-11-19 17:46
+  wait.txt                       file              204 bytes 2026-11-19 17:46
+  hash check failed for 200 files; counted as not relayed
+  hash check failed for 142 files; counted as not relayed
+files outside checkouts: 342; on a relay branch: 0; not relayed: 342 (116277590 bytes)
+  not relayed .cache      238 files       79068018 bytes
+  not relayed .png         48 files       36372171 bytes
+  not relayed .json        44 files         483030 bytes
+  not relayed .txt          6 files         328666 bytes
+  not relayed .bat          3 files           8953 bytes
+  not relayed .log          2 files          10653 bytes
+  not relayed .bak          1 files           6099 bytes
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\vulkan\pipelines.forward_plus.nvidia_geforce_rtx_5080.cache (39097302 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\world_bakes\v3\7c3bbc0a3431e5e067c7a37e7c321b5d6e3aa604ac74faf7ce86ca1f81ceaf58.png (10269102 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\world_bakes\v3\f338162c8d9aae586e58cfa840abf2bc851e04d4d97a56ad13f76b897d0ed72a.png (10236091 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\shader_cache\SceneForwardClusteredShaderRD\073f74b951c9d31091a21a83f7ed2a449ca9faa4f0b5a7052db58dd352175ef7\1a65b7c4a225ef2263b0132b76966b2521deb5c9.vulkan.cache (626608 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\shader_cache\SceneForwardClusteredShaderRD\073f74b951c9d31091a21a83f7ed2a449ca9faa4f0b5a7052db58dd352175ef7\9580272110420ccf99fca0976cbf906cf468a3d3.vulkan.cache (616836 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\shader_cache\SceneForwardClusteredShaderRD\073f74b951c9d31091a21a83f7ed2a449ca9faa4f0b5a7052db58dd352175ef7\1aa00f8c1a98e2eddc755bf5aedc1e427725db2f.vulkan.cache (615040 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\shader_cache\SceneForwardClusteredShaderRD\073f74b951c9d31091a21a83f7ed2a449ca9faa4f0b5a7052db58dd352175ef7\549f481ebeca31ed2c41c1b406f5003d54def4dd.vulkan.cache (614336 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\shader_cache\SceneForwardClusteredShaderRD\073f74b951c9d31091a21a83f7ed2a449ca9faa4f0b5a7052db58dd352175ef7\a58779fa78833eae7950cfd1171e1283e07f3a80.vulkan.cache (612400 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\shader_cache\SceneForwardClusteredShaderRD\073f74b951c9d31091a21a83f7ed2a449ca9faa4f0b5a7052db58dd352175ef7\233d46a21d1004fd4f7ca3e076c6bcd646c675b6.vulkan.cache (611576 bytes)
+  largest not relayed: shots\20261119_174148\profile\Godot\app_userdata\Voidsworn\world_bakes\v3\1606be4c3087264734c0cb76027b733050cc905614d7a1542f21da25d5c83832.png (607597 bytes)
+  checkout repo: HEAD bdf6dd86, tracked changes 0
+
+all done
