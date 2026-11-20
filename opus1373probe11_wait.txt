@@ -1,0 +1,13 @@
+waiting for the five BJ exits Fri 11/20/2026 13:56:17.66 
+mirror fetch exit 0
+9c0acd29c9fe5da9a652517f4fbf2382bfc8c7f3 reachable in the mirror
+clone at 9c0acd29c9fe5da9a652517f4fbf2382bfc8c7f3 
+kit chorus_CS1BA2 copied from opus1373n 
+kit ithar_GF1 copied from opus1373o 
+kit ithar_GB1 copied from opus1373p 
+kit hegemony_HB1 copied from opus1373q 
+kit corsair_KF1 copied from opus1373r 
+import start 15:01:43.17 
+import exit 0 at 15:17:07.04 
+probe start 15:17:07.04 
+OPUS1373 probe exit 1 at 15:17:24.39 
