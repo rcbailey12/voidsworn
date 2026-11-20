@@ -1,0 +1,77 @@
+start Thu 11/19/2026 19:02:09.16 attempt 1 
+commit 9c56f2b23c3332e84dfbeb742b999618885947df 
+---- 1. pc_jobs_1194_tests 
+PASS job_wrap: GPU label, watchdog steps, optional and continue steps, outputs, done lines and exit codes
+PASS the five job bats and run_smoke run through job_wrap: preflight first, no polling, honest end
+PASS look bench: the marker stays open for every step, and a failed bench ends FAILED with a non-zero exit
+PASS watchers log the exit code and move failed jobs to the failed folder; the main one refreshes tools between jobs
+PASS every tmo.bat outside tools_live hands its step to the canonical watchdog
+PASS tool preflight (godot, blender, ffmpeg, node, pil; exit 2) and the strict watchdog hash check in both runners
+PASS PC_DOCTOR.bat is read only and shows owner, child, age and health for every claim
+Evidence: C:\Users\rcbai\AppData\Local\Temp\pc1194 dE38kS
+PASS Windows: a required failure stops later steps, continue and optional behave, empty outputs fail, exit 1
+PASS Windows: a clean job ends PASS with exit 0; a job without a GPU label stops at init
+PASS Windows: a missing tool stops the job with exit 2 before its first step
+PASS Windows: the look bench marker stays held through end, and a failed bench exits 1 (the watcher files it under failed)
+PASS Windows: a changed watchdog file stops the job before any step
+PASS Windows: a checkout tmo.bat hands its step to tools_live, and a blank pointer or missing target stops it (exit 125)
+PASS Windows: the doctor shows owner, age and health, flags a damaged slot and changes nothing
+PASS PC jobs 1194 checks (14 groups)
+---- 1. lane_tools_refresh_selftest 
+PASS: lane tools refresh keeps old tools, refuses busy lanes, rotates old copies safely and installs tools_live
+---- 2. rotation in a throwaway profile 
+2026-11-20T01:02:30Z tools_live checking for running jobs
+2026-11-20T01:02:30Z tools_live created shared shallow source
+2026-11-20T01:02:31Z tools_live fetched origin/main 188d501c1bd83016ae3e80da41f63c1e297a9709
+2026-11-20T01:02:34Z tools_live saved tools snapshot 0208a829e14b8957fce6b024dc7f3f77b841a05b
+2026-11-20T01:02:34Z tools_live copied main tools to the tools_live stage
+2026-11-20T01:02:45Z tools_live installed tools_live\0208a829e14b from origin/main 188d501c1bd83016ae3e80da41f63c1e297a9709
+2026-11-20T01:02:45Z tools_live tools_live now uses 0208a829e14b (was none)
+2026-11-20T01:02:46Z tools_live kept tools_live\f40000000004: a running process uses it
+2026-11-20T01:02:46Z tools_live rotated out tools_live\f50000000005 (a verified copy of a main tools tree, replaced over a day ago)
+2026-11-20T01:02:46Z tools_live rotated out tools_live\f60000000006 (a verified copy of a main tools tree, replaced over a day ago)
+0208a829e14b
+current.txt
+f10000000001
+f20000000002
+f30000000003
+f40000000004
+---- 2. second refresh must reuse the installed version 
+2026-11-20T01:02:47Z tools_live checking for running jobs
+2026-11-20T01:02:47Z tools_live fetched origin/main 188d501c1bd83016ae3e80da41f63c1e297a9709
+2026-11-20T01:02:47Z tools_live tools_live already uses 0208a829e14b
+2026-11-20T01:02:48Z tools_live rotated out tools_live\f40000000004 (a verified copy of a main tools tree, replaced over a day ago)
+runner files match the Board hashes (4 checked)
+---- 3. watchdog hand-off: ship readback and a pinned Blender paint step 
+readback exit 0: 
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\opus1194\hand_1\Downloads\voidsworn_test\tools_live\b11940000001\pc\run_timeout.ps1
+readback step ran
+pinned paint exit 0: 
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\opus1194\hand_1\Downloads\voidsworn_test\tools_live\b11940000001\pc\run_timeout.ps1
+paint step ran
+blank pointer exit 125: 
+tmo: tools_live is installed but current.txt names no usable watchdog (C:\Users\rcbai\Downloads\voidsworn_test\opus1194\hand_1\Downloads\voidsworn_test\tools_live); step not started
+---- 4. PC doctor, read only, real voidsworn_test 
+PC doctor 2026-11-19 19:02 (read only)
+Folder: C:\Users\rcbai\Downloads\voidsworn_test
+
+Tools: tools_live is not installed yet (lane_tools_refresh.ps1 -Build tools_live)
+
+GPU go: GPU cleared: Ryan finished gaming, Board resumed at 2026-11-18 20:48
+Shared capacity: 2 (default)
+  gpu_slot_1: 1077, solo weight 1, age 12 s
+      watchdog: PID 44968 powershell alive
+      GPU child: PID 53180 godot_v4.7.2-stable_win64_console alive
+  gpu_slot_2: free
+  gpu_solo: 1077, solo, age 12 s
+      watchdog: PID 44968 powershell alive
+      GPU child: PID 53180 godot_v4.7.2-stable_win64_console alive
+Claims held: 2
+
+Godot and Blender processes (CPU sampled over 30 s):
+Possibly stuck: 0
+
+queue: 3 running, 0 failed
+queue_b: 0 running, 0 failed
+PASSED 
+all done Thu 11/19/2026 19:03:22.21 

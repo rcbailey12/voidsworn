@@ -1,0 +1,10 @@
+2026-11-20T01:02:30Z tools_live checking for running jobs
+2026-11-20T01:02:30Z tools_live created shared shallow source
+2026-11-20T01:02:31Z tools_live fetched origin/main 188d501c1bd83016ae3e80da41f63c1e297a9709
+2026-11-20T01:02:34Z tools_live saved tools snapshot 0208a829e14b8957fce6b024dc7f3f77b841a05b
+2026-11-20T01:02:34Z tools_live copied main tools to the tools_live stage
+2026-11-20T01:02:45Z tools_live installed tools_live\0208a829e14b from origin/main 188d501c1bd83016ae3e80da41f63c1e297a9709
+2026-11-20T01:02:45Z tools_live tools_live now uses 0208a829e14b (was none)
+2026-11-20T01:02:46Z tools_live kept tools_live\f40000000004: a running process uses it
+2026-11-20T01:02:46Z tools_live rotated out tools_live\f50000000005 (a verified copy of a main tools tree, replaced over a day ago)
+2026-11-20T01:02:46Z tools_live rotated out tools_live\f60000000006 (a verified copy of a main tools tree, replaced over a day ago)

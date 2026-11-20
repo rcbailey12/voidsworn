@@ -1,0 +1,21 @@
+PC doctor 2026-11-19 19:02 (read only)
+Folder: C:\Users\rcbai\Downloads\voidsworn_test
+
+Tools: tools_live is not installed yet (lane_tools_refresh.ps1 -Build tools_live)
+
+GPU go: GPU cleared: Ryan finished gaming, Board resumed at 2026-11-18 20:48
+Shared capacity: 2 (default)
+  gpu_slot_1: 1077, solo weight 1, age 12 s
+      watchdog: PID 44968 powershell alive
+      GPU child: PID 53180 godot_v4.7.2-stable_win64_console alive
+  gpu_slot_2: free
+  gpu_solo: 1077, solo, age 12 s
+      watchdog: PID 44968 powershell alive
+      GPU child: PID 53180 godot_v4.7.2-stable_win64_console alive
+Claims held: 2
+
+Godot and Blender processes (CPU sampled over 30 s):
+Possibly stuck: 0
+
+queue: 3 running, 0 failed
+queue_b: 0 running, 0 failed
