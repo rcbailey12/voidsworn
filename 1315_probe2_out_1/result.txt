@@ -1,0 +1,8 @@
+start Fri 11/20/2026  1:21:39.23 attempt 1 probe2 pin 2d48db679765c5d6f166267e899ba001f83cd5d4 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1282w2\repo\godot\assets\ships\I8_37\I8_37.glb:
+3606295ff65f4c04cf02dea1020e5c30cd4f8c905b658360fb91310dc90b162c
+CertUtil: -hashfile command completed successfully.
+fatal: git upload-pack: not our ref 2d48db679765c5d6f166267e899ba001f83cd5d4
+fatal: remote error: upload-pack: not our ref 2d48db679765c5d6f166267e899ba001f83cd5d4
+FAILED: fetch 2d48db679765c5d6f166267e899ba001f83cd5d4  
+all done Fri 11/20/2026  1:21:39.61 

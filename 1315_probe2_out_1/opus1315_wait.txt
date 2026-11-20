@@ -1,0 +1,6 @@
+waiting for all done in opus1079_run10_wait.txt (1315 waiter) Fri 11/20/2026  0:55:49.73 
+OPUS1315_PROBE_WAIT stopped by the Board before it ran anything (11/20 01:11:39); replaced by OPUS1315_PROBE2_WAIT.bat (same log). OPUS1315_PROBE_RUN.bat left unrun.
+waiting for all done in opus1079_run10_wait.txt (1315 probe 2 waiter) Fri 11/20/2026  1:11:39.39 
+OPUS1315_PROBE2_RUN start Fri 11/20/2026  1:21:39.22 
+OPUS1315_PROBE2_RUN exit 128 at  1:21:39.61 
+all done  1:21:39.61 
