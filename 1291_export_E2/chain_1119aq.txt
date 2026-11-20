@@ -1,0 +1,9 @@
+waiting for chain_1119ao all done Fri 11/20/2026  6:49:32.33 
+mirror refresh  6:50:32.17 
+mirror fetch exit 0
+mirror opus/issue-1291 = ece215c5b45dde198c936c3b21234da7ec3964aa
+ece215c5 reachable in the mirror
+chain start Fri 11/20/2026  6:50:33.57 
+1291 export E2 start  6:50:33.58 
+1291 export E2 exit 0 at  7:17:31.07 
+all done Fri 11/20/2026  7:17:31.07 

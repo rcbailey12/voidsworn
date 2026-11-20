@@ -1,0 +1,37 @@
+{
+ "cell": "C13",
+ "hull_objects": 8,
+ "parts": 148,
+ "interiors": 25,
+ "seconds": 13.3,
+ "notes": [
+  {
+   "route": "build sheet chorus_C13",
+   "contract": {
+    "sheet": "chorus_C13",
+    "game_ship": "b_spitter",
+    "variant": "",
+    "model_length": 9.53789,
+    "scale": 0.10484495569834278,
+    "length_world": 9.5,
+    "t_lines": [
+     -0.1363,
+     0.31453
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 3,
+    "guns": 3,
+    "engines": 3,
+    "bays": 0,
+    "points": 10,
+    "turrets": [],
+    "interior_objects": 25,
+    "slots": [
+     "0 bioplasma T",
+     "1 bioplasma F"
+    ]
+   }
+  }
+ ]
+}
