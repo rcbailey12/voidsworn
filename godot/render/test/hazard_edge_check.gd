@@ -11,7 +11,7 @@ extends SceneTree
 const GUARD := preload("res://tools/ci/check_guard.gd")
 const BOARD := preload("res://render/board.gd")
 const BL := preload("res://world/board_look.gd")
-const VERTS_PER_EDGE := 12   # _edge_into: a line and a fading band, two triangles each
+const VERTS_PER_EDGE := 6   # _edge_into: one shared-style line strip (render/line_style.gd, issue 1374), two triangles
 
 class StubRules extends RefCounted:
 	var v := {}
