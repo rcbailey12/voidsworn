@@ -40,6 +40,13 @@ func _run() -> void:
 
 	campaign.mapScreen()
 	campaign.act("enterNode", campaign.availableNodes()[0])
+	# Stage a weakness found during the Nemesis fight so the capture checks the victory label.
+	var nem := campaign.nemBattleCfg()
+	var hidden: Array = nem["weak"].filter(func(key): return not nem["revealed"].has(key))
+	if hidden.size() < 2:
+		_fail("the seeded Nemesis needs two hidden weaknesses"); return
+	campaign.B["cfg"]["nemesis"] = nem
+	campaign.B["nemFound"] = [hidden.back()]
 	campaign.act("battle", "win")
 	if campaign.modal_d["kind"] == "prize": campaign.act("prizeConfirm")
 	if not await _card("victory", "V1177_victory"): return
@@ -72,6 +79,9 @@ func _card(kind: String, code: String) -> bool:
 	for i in range(4): await process_frame
 	if ui.modal_box.get_child_count() != 2:
 		_fail("the campaign did not draw " + code)
+		return false
+	if kind == "victory" and not ui.modal_box.find_children("*", "Label", true, false).any(func(label): return label.text.begins_with("Weakness confirmed: ")):
+		_fail("the victory card did not draw the weakness confirmation")
 		return false
 	if headless:
 		print("Built ", code)

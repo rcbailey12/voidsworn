@@ -639,6 +639,9 @@ function rewardFlow(summary){
   RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'victory',boonOffer:null,modOffer:null};
   const debrief=beat3Debrief(); if(debrief) RUN.beat3DebriefSeen=true;
   RUN.reward.victory={summary:{kills:summary.kills,rounds:summary.rounds,lost:summary.lost,xp:summary.xp,boonStats:summary.boonStats||{},treeStats:summary.treeStats||{}},credits,extra,flagName:flagMoved?flagMoved.name:'',beat3Debrief:debrief};
+  const confirmed=(summary.nem||[]).filter(line=>line.startsWith('Weakness confirmed: '));
+  if(summary.nemFound) confirmed.push(summary.nemFound);
+  if(confirmed.length) RUN.reward.victory.weaknessConfirmed=confirmed;
   // Bank the win before rewards. A Nemesis-held service stays open until the fleet uses it.
   if(node&&cfg.nemesis&&SERVICE_STOPS.includes(node.type)){ node.nemCleared=true; saveRun(); }
   else completeNode();
@@ -650,11 +653,12 @@ function victoryCard(){
   const details=RUN.reward.victory;
   const heading=`<h2>${RUN.reward.kind==='boss'?'Flagship destroyed':'Victory'}</h2>`;
   if(!details){ modal(heading+next); return; }
-  const {summary,credits,extra,flagName,beat3Debrief}=details;
+  const {summary,credits,extra,flagName,beat3Debrief,weaknessConfirmed=[]}=details;
   const xpLines=summary.xp.map(x=>`<li>${esc(x.cap)} of the ${esc(x.ship)}: +${x.xp} experience${x.up?` <span class="gilt">promoted to ${RANKS[x.rank]}</span>`:''}</li>`).join('');
   const lost=summary.lost.length?`<p class="blood">Lost: ${summary.lost.map(l=>`the ${esc(l.ship)} and ${esc(l.cap)}`).join(', ')}.</p>`:'';
   modal(`${heading}${beat3Debrief?`<p class="gilt">${esc(beat3Debrief)}</p>`:''}
     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra?`<p class="gilt">${esc(extra)}</p>`:''}
+    ${weaknessConfirmed.map(line=>`<p class="gilt">${esc(line)}</p>`).join('')}
     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Protocols in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.</p>':''; })()}
     ${flagName?`<p class="gilt">The admiral transfers the flag to the ${esc(flagName)}. Its aspect goes with it.</p>`:''}
     ${xpLines?`<ul class="num" style="padding-left:18px">${xpLines}</ul>`:''}${next}`);

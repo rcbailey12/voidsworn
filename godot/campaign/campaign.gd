@@ -3145,6 +3145,9 @@ func rewardFlow(summary: Dictionary) -> void:
 	RUN["reward"]["victory"] = {"summary": {"kills": summary["kills"], "rounds": summary["rounds"], "lost": summary["lost"], "xp": summary["xp"],
 		"boonStats": summary.get("boonStats", {}), "treeStats": summary.get("treeStats", {})}, "credits": credits, "extra": extra,
 		"flagName": flagMoved["name"] if flagMoved != null else "", "beat3Debrief": debrief}
+	var confirmed: Array = summary.get("nem", []).filter(func(line): return line.begins_with("Weakness confirmed: "))
+	if summary.has("nemFound"): confirmed.append(summary["nemFound"])
+	if not confirmed.is_empty(): RUN["reward"]["victory"]["weaknessConfirmed"] = confirmed
 	# Bank the win before opening rewards, keeping a Nemesis-held service open until the fleet uses it.
 	if node != null and jt(cfg.get("nemesis")) and _is(node, ["shipyard", "drydock", "field", "event"]):
 		node["nemCleared"] = true

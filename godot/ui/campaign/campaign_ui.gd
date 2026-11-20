@@ -2086,6 +2086,7 @@ func _modal(md: Dictionary) -> void:
 				for l in sm["lost"]: ls.append("the " + str(l["ship"]) + " and " + str(l["cap"]))
 				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
 			if d.get("extra", "") != "": p.call(d["extra"], VERD)
+			for line in d.get("weaknessConfirmed", []): p.call(line, VERD)
 			if not d["wrecks"].is_empty(): _salvage_choices(v, d["wrecks"], acts)
 			if not sm.is_empty() and (R.get("boons") as Array).size() > 0 and (sm.get("boonStats", {}) as Dictionary).is_empty(): p.call("No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.", BONE3)
 			var tstats: Dictionary = sm.get("treeStats", {}) if sm.get("treeStats") is Dictionary else {}

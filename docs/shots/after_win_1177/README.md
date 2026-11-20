@@ -17,21 +17,21 @@ The repair choices use 60% or 30% of missing hull at a drydock, with 35 credits 
 use 20% or 10% of maximum hull, with 15 credits on the smaller patch. The existing repair modifiers apply to both choices.
 The larger service keeps the previous rate at each stop, so the more capable drydock still matters to a damaged fleet.
 
-## Pictures pending a graphics lane
+## Review pictures
 
-The in-game capture script stages these four cards from seeded campaign actions. Lane C is code-only. The pictures and
-their provenance sidecars need a graphics lane with GPU clearance.
+The in-game capture script stages these four cards from seeded campaign actions. Run it on a graphics lane with GPU
+clearance to collect the pictures and their provenance sidecars.
 
 | Picture code | What it shows |
 | --- | --- |
-| `V1177_victory` | Victory and the wreck choices on the same card |
+| `V1177_victory` | Victory, the confirmed Nemesis weakness and the wreck choices on the same card |
 | `P1177_promotions` | Perk picks for several captains on one card |
 | `D1177_drydock` | The drydock's two hull and credit offers |
 | `F1177_field_repairs` | The field stop's two hull and credit offers |
 
-Run from the checkout on the graphics lane. The script writes PNGs up to 1280 by 720 and stamps each with its code and
-source revision. The runner collects them from the issue's `shots` folder.
+Run from the checkout on the graphics lane. The script writes PNGs no taller than 720 px and stamps each with its code
+and source revision. The runner collects them from the issue's `shots` folder.
 
 ```bat
-call tools\pc\tmo.bat 180 "C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe" --path godot --rendering-method gl_compatibility --resolution 1920x1080 --script res://campaign/test/post_win_shots.gd -- "C:\Users\rcbai\Downloads\voidsworn_test\board_c\issue-1177\shots"
+call tools\pc\tmo.bat 180 "C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe" --path godot --rendering-method gl_compatibility --resolution 1920x1080 --script res://campaign/test/post_win_shots.gd -- "C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-1177\shots"
 ```
