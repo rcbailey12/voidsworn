@@ -1,0 +1,48 @@
+start voidsworn_S10 V16_37 opus/issue-1157 Fri 11/20/2026  0:37:46.08 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261120_003745_4230606 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                -> refs/pull/1305/merge
+   42e605338..6670e5630  board/pc-in-1119      -> board/pc-in-1119
+ * [new branch]          board/pc-out-1119zzt  -> board/pc-out-1119zzt
+ * [new branch]          board/pc-out-1119zzzd -> board/pc-out-1119zzzd
+ * [new branch]          board/pc-out-1119zzze -> board/pc-out-1119zzze
+   ac3caebe6..df6137cbb  main                  -> main
+   a2302ad80..ffe2591c6  opus/issue-1157       -> opus/issue-1157
+   60a7cc0f8..ce6c4d5e3  opus/issue-1267-edges -> opus/issue-1267-edges
+ * [new branch]          opus/issue-1311       -> opus/issue-1311
+   a2302ad80..ffe2591c6  refs/pull/1166/head   -> refs/pull/1166/head
+ + c5df2d046...855f76792 refs/pull/1166/merge  -> refs/pull/1166/merge  (forced update)
+ + d3d5e2377...43a02df72 refs/pull/1201/merge  -> refs/pull/1201/merge  (forced update)
+   60a7cc0f8..ce6c4d5e3  refs/pull/1307/head   -> refs/pull/1307/head
+ + a2a3c3cdd...059968dc4 refs/pull/1307/merge  -> refs/pull/1307/merge  (forced update)
+ * [new ref]             refs/pull/1312/head   -> refs/pull/1312/head
+ * [new ref]             refs/pull/1312/merge  -> refs/pull/1312/merge
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=ffe2591c6785a8911ecca568bbad6e5da8d16f10
+import exit 0 
+1_concept_in start  0:38:29.26 
+1_concept_in exit 0 at  0:38:31.73 
+2_shape_ref start  0:38:31.73 
+2_shape_ref exit 0 at  0:38:32.45 
+3_trace_hull start  0:38:32.46 
+3_trace_hull exit 0 at  0:44:28.17 
+4_parts_kit start  0:44:28.18 
+4_parts_kit exit 0 at  0:45:00.70 
+5_paint_bake start  0:45:00.70 
+5_paint_bake exit 0 at  0:49:26.19 
+6_lod start  0:49:26.19 
+6_lod exit 0 at  0:50:26.92 
+7_export start  0:50:26.92 
+7_export exit 0 at  0:51:27.00 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1157\repo\godot\assets\ships\V16_37\V16_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Fri 11/20/2026  0:51:51.20 
+all done 
+pin ok ffe2591c6785a8911ecca568bbad6e5da8d16f10 

@@ -1,0 +1,3 @@
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\S10.npz (71796, 3, 3) objects 343
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-811b2ca45395418591e50ff32b2c1f60

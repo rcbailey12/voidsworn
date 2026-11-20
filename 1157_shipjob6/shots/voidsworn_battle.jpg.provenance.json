@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAAAAXNSR0IArs4c6QAAAYlJREFUeJzt1TEBACAABCHf/qFN4U1Qgm33AAD/GRcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAIg8YdwDIFsdbeAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T06:51:48Z",
+	"image_sha256": "7d24170352fa89188a68d7459f849c943d3da1ae612ef97dd14f3e4a2de8b078",
+	"inputs": [],
+	"picture_name": "voidsworn_battle.jpg",
+	"schema": 1,
+	"source_commit": "ffe2591c6785a8911ecca568bbad6e5da8d16f10",
+	"source_diff_sha256": "943c5f5ab73d62ea29df2fdac2156083f73c91f6f247127ffe6a3e384b894369",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "ffe2591c6785a8911ecca568bbad6e5da8d16f10",
+			"source_diff_sha256": "943c5f5ab73d62ea29df2fdac2156083f73c91f6f247127ffe6a3e384b894369",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "7262484934b2ad7d779d0f5f90d40e94eaa22985fbd8b779d3d16f41030ffa78",
+	"strip_sha256": [
+		"fdef80871c476c5374a501cfdbdf7a263e6e7f0057806d461c7b888f41787b94"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

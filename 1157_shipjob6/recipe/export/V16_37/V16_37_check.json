@@ -1,0 +1,409 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "authored interiors: 11504 triangles, 11 surfaces; authored seams: 4",
+  "70376 triangles (40628 on part surfaces), box x -0.499 to 0.501, y -0.083 to 0.159, z -0.142 to 0.142",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 0 written (none); marked by the kit: none"
+ ],
+ "cls": "Cruiser",
+ "faction": "voidsworn",
+ "expected_breach": 4,
+ "required": {
+  "weapon_slots": 3,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 4,
+  "rcs": 2,
+  "board": 2
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "battery",
+   "arc": "P",
+   "hard_points": [
+    "hp_w0_battery_P_0",
+    "hp_w0_battery_P_1",
+    "hp_w0_battery_P_2",
+    "hp_w0_battery_P_3"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "battery",
+   "arc": "S",
+   "hard_points": [
+    "hp_w1_battery_S_0",
+    "hp_w1_battery_S_1",
+    "hp_w1_battery_S_2",
+    "hp_w1_battery_S_3"
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "lance",
+   "arc": "F",
+   "hard_points": [
+    "hp_w2_lance_F_0"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "board": 2,
+  "breach": 4,
+  "core": 1,
+  "engine": 2,
+  "rcs": 4,
+  "gun": 9
+ },
+ "maps": [
+  "V16_37_normal.png",
+  "V16_37_orm.png",
+  "V16_37_base.jpg",
+  "V16_37_parts_normal.png",
+  "V16_37_parts_orm.png",
+  "V16_37_parts_base.jpg",
+  "V16_37_glow_emission.jpg"
+ ],
+ "tolerance": 0.012,
+ "tolerance_of_length": 0.012,
+ "ship_length": 1.0,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_board_0",
+   "p": [
+    -0.2072,
+    0.0,
+    -0.0999
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    -0.2072,
+    0.0,
+    0.0999
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.312,
+    -0.04,
+    -0.0501
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    -0.587,
+    -0.81
+   ],
+   "clear": 0.0312
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    -0.0095,
+    -0.0561,
+    0.0683
+   ],
+   "fwd": [
+    1.0,
+    -0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    -0.627,
+    0.779
+   ],
+   "clear": 0.0302
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    0.0691,
+    0.0504,
+    -0.0561
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    -0.0,
+    0.707,
+    -0.707
+   ],
+   "clear": 0.0343
+  },
+  {
+   "name": "hp_breach_3",
+   "p": [
+    -0.2417,
+    -0.0207,
+    0.0986
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "off_mesh": 0.0,
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "clear": 0.0434
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.3039,
+    -0.0173,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.4972,
+    -0.0083,
+    -0.0552
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0082
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.4972,
+    -0.0083,
+    0.0552
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0082
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.3867,
+    -0.0211,
+    -0.0399
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    -0.3591,
+    0.0281,
+    -0.0777
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_2",
+   "p": [
+    0.3867,
+    -0.0211,
+    0.0401
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_rcs_3",
+   "p": [
+    -0.3591,
+    0.0281,
+    0.0776
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_battery_P_0",
+   "p": [
+    0.1202,
+    0.0,
+    -0.1172
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w0_battery_P_1",
+   "p": [
+    0.03,
+    0.0,
+    -0.1196
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w0_battery_P_2",
+   "p": [
+    -0.0601,
+    0.0,
+    -0.1219
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w0_battery_P_3",
+   "p": [
+    -0.1502,
+    0.0,
+    -0.1253
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w1_battery_S_0",
+   "p": [
+    0.1202,
+    0.0,
+    0.1172
+   ],
+   "fwd": [
+    -0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w1_battery_S_1",
+   "p": [
+    0.03,
+    0.0,
+    0.1196
+   ],
+   "fwd": [
+    -0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w1_battery_S_2",
+   "p": [
+    -0.0601,
+    0.0,
+    0.1219
+   ],
+   "fwd": [
+    -0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w1_battery_S_3",
+   "p": [
+    -0.1502,
+    0.0,
+    0.1253
+   ],
+   "fwd": [
+    -0.0,
+    0.0,
+    1.0
+   ],
+   "off_mesh": 0.0006
+  },
+  {
+   "name": "hp_w2_lance_F_0",
+   "p": [
+    0.484,
+    -0.0014,
+    0.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0006
+  }
+ ],
+ "turrets": []
+}

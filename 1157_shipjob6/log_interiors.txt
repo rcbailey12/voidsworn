@@ -1,0 +1,5 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7ef6708102af44928611d146ead92cdb\godot-profile-1b1dc26dbaed44b7a38de2eddda27c00
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+AUTHORED_INTERIORS failures=0 interior_triangles=15524
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-82643c05d68d4acf9c79e14e75be3768
