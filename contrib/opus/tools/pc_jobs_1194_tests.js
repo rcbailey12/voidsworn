@@ -172,10 +172,11 @@ if (hasPwsh) {
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, good, 'strict']);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const bad = path.join(temp, 'bad.txt');
-  fs.writeFileSync(bad, '0'.repeat(64) + '  run_timeout.ps1\n' + '0'.repeat(64) + '  runner_common.ps1\n');
+  // every guarded file listed (a partial manifest stops earlier), run_timeout.ps1 with a wrong hash
+  fs.writeFileSync(bad, ['tmo.bat', 'gpu_slots.js', 'job_wrap.bat'].map(n => sum(n) + '  ' + n).join('\n') + '\n' + '0'.repeat(64) + '  run_timeout.ps1\n' + '0'.repeat(64) + '  runner_common.ps1\n');
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, bad, 'strict']);
   assert.equal(r.status, 14, r.stdout + r.stderr);
-  assert(read(path.join(hashOut, 'result.txt')).includes('STOPPED: the watchdog or slot files differ from ' + bad + ': run_timeout.ps1'));
+  assert(read(path.join(hashOut, 'result.txt')).includes('STOPPED: the watchdog or slot files differ from ' + bad + ': run_timeout.ps1'), read(path.join(hashOut, 'result.txt')));
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, bad]);
   assert.equal(r.status, 0, 'without strict a difference only warns');
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, path.join(temp, 'none.txt'), 'strict']);
@@ -184,7 +185,7 @@ if (hasPwsh) {
   fs.writeFileSync(partial, sum('tmo.bat') + '  tmo.bat\n');
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, partial, 'strict']);
   assert.equal(r.status, 14, 'strict: a partial manifest stops');
-  assert(read(path.join(hashOut, 'result.txt')).includes('leaves out: run_timeout.ps1, gpu_slots.js, job_wrap.bat'));
+  assert(read(path.join(hashOut, 'result.txt')).includes('leaves out: run_timeout.ps1, gpu_slots.js, job_wrap.bat'), read(path.join(hashOut, 'result.txt')));
   const empty = path.join(temp, 'empty.txt');
   fs.writeFileSync(empty, '');
   r = ps([path.join(PC, 'runner_common.ps1'), 'hashcheck', hashOut, PC, empty, 'strict']);
