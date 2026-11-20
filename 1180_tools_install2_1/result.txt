@@ -1,0 +1,95 @@
+start Thu 11/19/2026 21:14:56.88 attempt 1 
+---- 1. main's tools 
+main 24d784999c9e93670c3dc0a06ec74c9651333103 
+---- 2. before: versions, and no job starting 
+current before: dc630028a957 
+versions: 2
+  dc630028a957  2026-11-20T01:25:16.8347925Z
+  72366b168801  2026-11-20T03:01:07.4339982Z
+refresh lock free
+---- 3. install tools_live 
+2026-11-20T03:14:59Z tools_live checking for running jobs
+2026-11-20T03:15:00Z tools_live fetched origin/main 24d784999c9e93670c3dc0a06ec74c9651333103
+2026-11-20T03:15:01Z tools_live saved tools snapshot d64cd49994b9bc5a4bcbf62a3d54f7cd18f24e4c
+2026-11-20T03:15:02Z tools_live copied main tools to the tools_live stage
+2026-11-20T03:15:35Z tools_live installed tools_live\d64cd49994b9 from origin/main 24d784999c9e93670c3dc0a06ec74c9651333103
+2026-11-20T03:15:35Z tools_live tools_live now uses d64cd49994b9 (was dc630028a957)
+current after: d64cd49994b9 
+hashes.txt of the new version: 
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42  tmo.bat
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932  run_timeout.ps1
+1c2a8798f063d50c271e14e30ccfea3668ae24ae71b9b9f5d2d5e91b8dab381c  gpu_slots.js
+542b61d467caf0ea37cd23af3b8f1a4ff5938230cc5b85420c7f24d19fb2c04d  job_wrap.bat
+5d2dfa65c25b16f462bb923a6389675609da508f39d321b62c980da94961a4c5  runner_common.ps1
+previous version kept: tools_live\dc630028a957 
+runner files match the Board hashes (5 checked)
+---- 4. an old tmo.bat copy hands off to tools_live 
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1
+install step ran
+---- 5. an ordinary job_wrap init resolves the new version 
+[Thu 11/19/2026 21:15:37.07] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc
+runner files match the Board hashes (5 checked)
+tool preflight 2026-11-20T03:15:39Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Thu 11/19/2026 21:15:39.66] ready: GPU label opus1180_install2
+[Thu 11/19/2026 21:15:39.67] install 2 probe
+done PASS
+all done Thu 11/19/2026 21:15:39.68
+---- 6. janitor dry run (removes nothing) 
+janitor dry run exit 0, full list in janitor_dry.txt 
+free space before: 459696803840 bytes
+Board keep list: 1 paths
+kept checkout would remove (after checked archive of 59 superseded ship or gen files, 251799630 bytes before dedupe): C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-25e45b7ab14b47f6ac5b84cab0ae9943 (11936578973 bytes)
+kept checkout would remove (after checked archive of 59 superseded ship or gen files, 251799630 bytes before dedupe): C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a89882fa7a7143cebaecd9fc731ff308 (11641096610 bytes)
+kept checkout would remove (after checked archive of 59 superseded ship or gen files, 251799630 bytes before dedupe): C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo-kept-01a3b7f7387643f880f1de1126fd278c (10128564078 bytes)
+kept checkout would remove (after checked archive of 1 superseded ship or gen files, 24405 bytes before dedupe): C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1084-openai\20261118_223117\repo (5989776958 bytes)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0592fe522a994357a9b4a4d1c6b4d85b (4632333079 bytes, 4 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d (1372291863 bytes, 2 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1cd66982941249fc8cf002ed52bccdec (3070484702 bytes, 2 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1e8ff4df86a543528b78db2a43062a32 (32 bytes; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1feeba5e919f457c92bcf268f02538d0 (1238118190 bytes, 3 links not followed, 2 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-212d86aa70c74373b9cf3a53366709ef (9872712250 bytes, 2 links not followed, 3 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-315f725a051d4e018b145b7ec7da1d49 (379514261 bytes, 1 links not followed; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-49ee68fd69154bb991cb65bbbba55f7d (1058031943 bytes, 3 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-516ab44bd6e5489f8204ac433c8bf68b (970036596 bytes, 2 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5660932789454f799423a15cdbe79157 (1461248100 bytes, 3 links not followed, 3 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-62a271cd65424c3da52627c03902b754 (1155089793 bytes, 5 links not followed; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-76037b3c57f44545a479839d25f22f6e (727970093 bytes, 2 links not followed, 5 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8b223a64168e41ec81278d00dc743df6 (728308917 bytes, 2 links not followed, 2 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8b7cd6eb643a4311b275ba918dc4996f (785805869 bytes, 3 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-94fdd5cee40c41cea555a1e1a1bc6253 (4295556342 bytes, 2 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ce9565d4d5004b63837c782304d601d7 (935644049 bytes, 6 links not followed, 2 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-da92310f5d3541eca3b5840e2e243e31 (38127849518 bytes, 3 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-de77f47589ee4590ab6e89b3c1b347c0 (4657381113 bytes, 2 links not followed, 4 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f09f6fe17ecc435199493a46dcb5ce45 (162831761 bytes, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would keep C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f3dbf944d81e440088426930df7896a3 (2676477041 bytes, 3 links not followed, 1 folders another account owns left in place; kept: on the Board keep list)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f880c1064c91426ca0d600d0873a7c65 (889485307 bytes, 2 links not followed, 1 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f9fd79a03f18487690a4a9fd0cffafd1 (1193337977 bytes, 5 links not followed, 3 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+would remove C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fb6cbb420eee49299c7dbcb30141a3eb (3738256881 bytes, 3 links not followed, 2 folders another account owns left in place; owned TEMP scratch, untouched for at least 3 hours)
+free space after: 459386191872 bytes
+---- 7. PC doctor, read only 
+PC doctor 2026-11-19 21:19 (read only)
+Folder: C:\Users\rcbai\Downloads\voidsworn_test
+
+Tools: tools_live\d64cd49994b9 (files match their hashes)
+
+GPU go: GPU cleared: Ryan finished gaming, Board resumed at 2026-11-18 20:48
+Shared capacity: 2 (default)
+  gpu_slot_1: 1234, shared weight 2, age 6 min
+      watchdog: PID 40380 powershell alive
+      GPU child: PID 43864 blender alive
+  gpu_slot_2: 1234, shared weight 2, age 6 min
+      watchdog: PID 40380 powershell alive
+      GPU child: PID 43864 blender alive
+  gpu_solo: free
+Claims held: 2
+
+Godot and Blender processes (CPU sampled over 30 s):
+Possibly stuck: 0
+
+queue: 0 running, 0 failed
+queue_b: 0 running, 0 failed
+PASSED 
+all done Thu 11/19/2026 21:20:04.79 

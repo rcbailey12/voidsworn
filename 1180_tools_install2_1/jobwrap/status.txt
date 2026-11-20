@@ -1,0 +1,10 @@
+[Thu 11/19/2026 21:15:37.07] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc
+runner files match the Board hashes (5 checked)
+tool preflight 2026-11-20T03:15:39Z
+found node: C:\Users\rcbai\Downloads\voidsworn_test\node\node.exe
+all tools found
+[Thu 11/19/2026 21:15:39.66] ready: GPU label opus1180_install2
+[Thu 11/19/2026 21:15:39.67] install 2 probe
+done PASS
+all done Thu 11/19/2026 21:15:39.68

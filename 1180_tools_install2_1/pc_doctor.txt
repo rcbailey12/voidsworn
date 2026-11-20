@@ -1,0 +1,21 @@
+PC doctor 2026-11-19 21:19 (read only)
+Folder: C:\Users\rcbai\Downloads\voidsworn_test
+
+Tools: tools_live\d64cd49994b9 (files match their hashes)
+
+GPU go: GPU cleared: Ryan finished gaming, Board resumed at 2026-11-18 20:48
+Shared capacity: 2 (default)
+  gpu_slot_1: 1234, shared weight 2, age 6 min
+      watchdog: PID 40380 powershell alive
+      GPU child: PID 43864 blender alive
+  gpu_slot_2: 1234, shared weight 2, age 6 min
+      watchdog: PID 40380 powershell alive
+      GPU child: PID 43864 blender alive
+  gpu_solo: free
+Claims held: 2
+
+Godot and Blender processes (CPU sampled over 30 s):
+Possibly stuck: 0
+
+queue: 0 running, 0 failed
+queue_b: 0 running, 0 failed
