@@ -47,17 +47,19 @@ if errorlevel 1 goto failed
 rem a quick headless smoke of the exported build: 2 bot battles. Its exit code alone is not proof (issue 1365, Nov 20:
 rem a parse error ran no battle, exited 0, and the previous run's report was still on disk), so the report must be new
 rem and show 2 runs with no errors or softlocks, and the smoke output must hold no script or parse error.
-set "SMOKE_REPORT=%ROOT%..\shots\g2_export_smoke.json"
-set "SMOKE_OUT=%ROOT%..\shots\g2_export_smoke_output.txt"
-if exist "%SMOKE_REPORT%" del /f /q "%SMOKE_REPORT%" >> "%LOG%" 2>&1
-if exist "%SMOKE_REPORT%" (echo FAIL: could not clear the old smoke report >> "%LOG%" & goto failed)
+rem The report and output are named by this candidate's id, so a second export at the same time never shares them;
+rem the gate reads only these, and the fixed-name copies after it are for people.
+set "SHOTS=%ROOT%..\shots"
+set "SMOKE_REPORT=%SHOTS%\g2_export_smoke_%BUILD_ID%.json"
+set "SMOKE_OUT=%SHOTS%\g2_export_smoke_output_%BUILD_ID%.txt"
+set "SMOKE_OK=0"
 set "SMOKE_START="
 for /f %%T in ('powershell -NoProfile -Command "[DateTime]::UtcNow.Ticks"') do set "SMOKE_START=%%T"
 if not defined SMOKE_START goto failed
 call "%TMO%" 900 "%CANDIDATE_EXPORT%\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%SMOKE_REPORT%" > "%SMOKE_OUT%" 2>&1
 set "SMOKE_RC=%ERRORLEVEL%"
 type "%SMOKE_OUT%" >> "%LOG%"
-if not "%SMOKE_RC%"=="0" goto failed
+if not "%SMOKE_RC%"=="0" goto smoke_done
 powershell -NoProfile -Command ^
   "$r = $env:SMOKE_REPORT; $f = Get-Item -LiteralPath $r -ErrorAction SilentlyContinue;" ^
   "if (-not $f) { Write-Output 'FAIL: the smoke wrote no report'; exit 1 };" ^
@@ -67,7 +69,12 @@ powershell -NoProfile -Command ^
   "$bad = @(Select-String -LiteralPath $env:SMOKE_OUT -Pattern 'SCRIPT ERROR','Parse Error' -SimpleMatch);" ^
   "if ($bad.Count) { Write-Output ('FAIL: smoke output has a script error: ' + $bad[0].Line.Trim()); exit 1 };" ^
   "Write-Output 'smoke report checked: 2 runs, 0 errors, 0 softlocks, no script errors'" >> "%LOG%" 2>&1
-if errorlevel 1 goto failed
+if not errorlevel 1 set "SMOKE_OK=1"
+:smoke_done
+rem the latest smoke under fixed names for people (no report this run: the old copy goes, so none is mistaken for it)
+if exist "%SMOKE_REPORT%" (move /y "%SMOKE_REPORT%" "%SHOTS%\g2_export_smoke.json" >nul) else (if exist "%SHOTS%\g2_export_smoke.json" del /f /q "%SHOTS%\g2_export_smoke.json")
+if exist "%SMOKE_OUT%" move /y "%SMOKE_OUT%" "%SHOTS%\g2_export_smoke_output.txt" >nul
+if not "%SMOKE_OK%"=="1" goto failed
 rem Keep the old folder intact. Roll it back if the second same-volume move fails.
 powershell -NoProfile -Command ^
   "$ErrorActionPreference = 'Stop'; $live = $env:LIVE_EXPORT; $backup = $env:BACKUP_EXPORT; $saved = $false;" ^

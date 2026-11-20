@@ -51,10 +51,14 @@ put(path.join(build, 'tools/pc/tmo.bat'), [
   'if "%FIXTURE_FAILURE%"=="promotion" move "%~dp2." "%~dp2..\\unavailable-candidate" >nul',
   // Issue 1365: the smoke's report is the ninth argument after the program; write the one this case needs.
   'shift & shift & shift & shift & shift & shift & shift & shift & shift',
+  'echo fixture smoke report path %~nx1',
   'if "%FIXTURE_FAILURE%"=="parse" echo SCRIPT ERROR: Parse Error: Expected end of statement',
   'if "%FIXTURE_FAILURE%"=="no-report" exit /b 0',
   // copy keeps the old write time, like a report some earlier run left behind
-  'if "%FIXTURE_FAILURE%"=="stale-report" copy /y "%FIXTURE_STALE%" "%~1" >nul & exit /b 0',
+  'if "%FIXTURE_FAILURE%"=="stale-report" (',
+  '  copy /y "%FIXTURE_STALE%" "%~1" >nul',
+  '  exit /b 0',
+  ')',
   'set "FIXTURE_RUNS={},{}"',
   'if "%FIXTURE_FAILURE%"=="one-run" set "FIXTURE_RUNS={}"',
   'set "FIXTURE_ERRORS=0"',
@@ -92,7 +96,14 @@ for (const failure of ['export', 'package', 'smoke', ...reportFailures, 'promoti
   assert.equal(text.includes('fixture smoke check'), !['export', 'package'].includes(failure), text);
   assert.equal(/^OK:/m.test(text), !failure);
   if (reportFailures.includes(failure)) assert.match(text, /^FAIL: (?:the smoke|smoke)/m, `${failure}: ${text}`);
-  if (failure === 'no-report') assert.ok(!fs.existsSync(smokeReport), 'the old report was cleared before the smoke');
+  // Artoo on PR 1366: the gate reads only this candidate's own report and output, never the fixed-name copies
+  if (!['export', 'package', 'smoke'].includes(failure)) {
+    assert.match(text, /^fixture smoke report path g2_export_smoke_[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\.json$/m, text);
+    assert.deepEqual(fs.readdirSync(path.dirname(smokeReport)).filter(n => /^g2_export_smoke.*[0-9a-f]{12}\./.test(n)), [], `${failure}: per-run smoke files left behind`);
+    assert.ok(fs.existsSync(path.join(root, 'shots/g2_export_smoke_output.txt')), `${failure}: the latest smoke output for people`);
+  }
+  if (failure === 'no-report') assert.ok(!fs.existsSync(smokeReport), 'the old fixed-name report is gone when this run wrote none');
+  if (['stale-report', 'one-run', 'errors', 'softlocks', 'parse', ''].includes(failure)) assert.ok(fs.existsSync(smokeReport), `${failure}: the latest report for people`);
   if (failure === 'stale-report') assert.match(text, /older than this run/, text);
   if (failure === 'parse') assert.match(text, /has a script error: SCRIPT ERROR: Parse Error/, text);
   if (!failure) assert.match(text, /smoke report checked: 2 runs, 0 errors, 0 softlocks/);
