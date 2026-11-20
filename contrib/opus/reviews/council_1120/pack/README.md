@@ -29,6 +29,8 @@ board/council_1120/playtest_25adec3/.
 
 ## Added for the challenge round
 
-- `factions/`: one battle each as the Glasswrights (ithar), the Chorus and Eclipse (deathless), six moments each (01 first
-  turn, 05 mid fight on the enemy turn), build 25adec31, the game's own battle camera (not the fixed camera 170). Ship names
-  come from the in-game tip card. Chorus ships are mid rebuild.
+- `factions/`: three battles played **as Sunward against** the Glasswrights (ithar), the Chorus and Eclipse (deathless)
+  (capture log: the player fleet is V14_23 and V15_37; the enemy is the named faction). Six moments each (01 first turn,
+  05 mid fight on the enemy turn), build 25adec31, the game's own battle camera (not the fixed camera 170). Ship names
+  come from the in-game tip card. The enemy ships show in about one frame per set, small: these frames say how those
+  factions read as opponents, not how they read when the player commands them. Chorus ships are mid rebuild.
