@@ -32,9 +32,7 @@ const CLS_LEN := {"Squadron": 1.6, "Transport": 11.0, "Frigate": 6.5, "Destroyer
 	"Dreadnought": 27.0, "Super-dreadnought": 31.0, "Battle-barge": 26.0, "Bio-titan": 28.0, "Ark": 26.0, "Tomb-ark": 28.0}
 # R229: A17's approved claw-tip-to-stern length is 14.6 (its sheet and installed manifest).
 # scale_check checks these hull lengths against the exports; other hulls keep their class length.
-# The Relay beacon O3_11 is 7.5 long, rail end to rail end (Board lock, Nov 20 2026, issue 1413: designs.md's proposal;
-# no class length exists for a placed objective).
-const HULL_LEN := {"C15s_23": 14.6, "O3_11": 7.5}
+const HULL_LEN := {"C15s_23": 14.6}
 
 
 static func length_for(code: String, cls: String) -> float:

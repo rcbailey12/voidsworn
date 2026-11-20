@@ -19,7 +19,7 @@ NAME = 'Relay beacon (Hegemony Navy objective)'
 FACTION = 'Hegemony Navy (hegemony)'
 CLASS = 'beacon'
 LENGTH = 7.5
-GAME = "data.js obj_beacon (no data.js ship: tools/recipe/gamedata.py OBJECTIVES, the relay objective); length 7.5 rail end to rail end: designs.md's proposal, locked by the Board Nov 20 2026 and recorded in godot/render/hull_table.gd HULL_LEN"
+GAME = "data.js obj_beacon (no data.js ship: tools/recipe/gamedata.py OBJECTIVES, the relay objective); length 7.5 rail end to rail end: designs.md's proposal, locked by the Board Nov 20 2026 (the Godot game never places or breaks the beacon, so no game table carries it)"
 BEAUTY = 'docs/ship_pipeline/build_sheets/hegemony_O3/concept_beauty.jpg'
 KIT = 'hegemony'
 CONCEPT_SHEET = 'docs/ship_pipeline/build_sheets/hegemony_O3/concept_sheet.jpg'
@@ -282,7 +282,7 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
     K.change('The rails run along the module, two either side at two heights, in every view', 'designs.md: the front view\'s sideways rails are a picture slip; the top view, the side view and the beauty run them along the module')
     K.change('Length 7.5 to the rail ends, the cradle 4.1 across the rails, the module 2.2 square',
-             'designs.md proposes a 7.5 footprint and a 4.8 cradle span; the top view draws the rails 4.1 apart (followed); the Board locked 7.5 (hull_table.gd HULL_LEN)')
+             'designs.md proposes a 7.5 footprint and a 4.8 cradle span; the top view draws the rails 4.1 apart (followed); the Board locked 7.5')
     K.change('The cradle is one saddle per side at the module\'s middle, an arm and a latched clamp round each rail', 'the top and side views clamp the rails at the middle; a clamp needs a latch (R221)')
     K.change('Four mooring collars, one per rail, the upper pair forward and the lower pair aft', 'designs.md: four mooring collars on the rails; mirrored port and starboard (factions.md: no asymmetry)')
     K.change('Eight station-keeping thruster pads on the module\'s chamfered edges, two stations', 'designs.md: pads on the module\'s sides only, no propulsion row; on the chamfers they fire clear of the rails')
