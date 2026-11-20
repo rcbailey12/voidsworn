@@ -2905,6 +2905,21 @@ static func _glitter(fx, s, p: Vector3, L: float) -> void:
 			inherited + d.normalized() * L * fx.rng.randf_range(0.04, 0.22), 0.7, 0.0, 1.5, 3.0)
 
 
+# R367 (issue 1399, Ryan's look pass): a styled faction's small hull has no smoke body, so its pop needs its own light: a
+# short flash in the faction's light colour with a white star, and a ring of sparks in its spark colour. fx.spr runs it
+# through the flash budget, so reduce flashing and a crowded frame soften it like any other flash.
+static func _fac_pop(fx, s, p: Vector3, L: float) -> void:
+	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	fx.spr(p, fx.now, 0.32, dcol(s, "light", Color(0.9, 0.9, 1.0)), 2.4, L * 0.25, L * 1.1, 0, inherited, 0.0, 0.0, 0.0, 64.0)
+	if fx.quality == "low": return
+	var col := dcol(s, "spark", Color(0.86, 0.93, 1.0))
+	for j in 18:
+		var d: Vector3 = fx.rdir()
+		d.y *= 0.5
+		fx.stk(p, fx.now + fx.rng.randf() * 0.04, 0.45 + fx.rng.randf() * 0.35, col, 5.0, 0.03, maxf(L * 0.004, 0.04), 1,
+			inherited + d.normalized() * L * fx.rng.randf_range(0.5, 1.1), 0.9, 0.0, 1.5, 5.0)
+
+
 # R367 (issue 1399): an Eclipse hull peels during the tell: shade plates lift away band by band, a beat apart, from the
 # stern forward (deaths_and_hits.md, "How each faction dies"). Each band throws two torn plates (the shared plate pool, its
 # rim in the faction's colour) and a short spark off the plating.
@@ -3300,6 +3315,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		flash_site = lip.to_global(lip.get_meta("tear_site", Vector3.ZERO))
 	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s, s.death_tier, xf)
 	if str(dstyle(s).get("style", "")) == "shatter": _glitter(fx, s, flash_site, h.L * 0.6)
+	if not dstyle(s).is_empty(): _fac_pop(fx, s, flash_site, h.L)
 	fx.resolve_death_core(s, true)
 	# The pop is light first, then a short body. The 384 px cells cover both small rows without a rebake.
 	var body_px := 218.0 if s.death_tier == "destroyer" else 180.0

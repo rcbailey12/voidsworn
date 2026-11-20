@@ -188,9 +188,11 @@ keeps the shared orange fire. Built (issue 1399, round 1):
 - Glasswrights (shatter): the death's fire pictures keep their baked shape and take white light with a rainbow edge; no
   smoke is drawn; the fracture plan gives more, smaller fragments (bite 7 or 9, four chips per break); glittering dust
   drifts from the core; torn faces, plate rims and scorch glow its stored light.
-- Eclipse (peel): the fire takes its violet-white, sparks its white-gold; shade plates lift off the hull band by band from
+- Eclipse (peel): the fire takes its violet-white, sparks a pale violet (the white-gold stays on its engines); shade plates lift off the hull band by band from
   the stern during the tell (two, four or six bands by class); the scene dims for an instant at its core flash; torn faces
   glow violet; smoke is kept at a sixth.
+- Both, small hulls (frigates and destroyers): with no smoke body the pop gets its own short flash in the faction's light
+  colour with a white star, and a ring of sparks (fx_death.gd _fac_pop, through the flash budget).
 Not built yet: the Glasswrights' white fracture lines across the optics in the tell, whole rings shearing off, and the
 Nemesis's plates drifting back together. Check: godot/fx/test/faction_death_style_check.gd.
 
