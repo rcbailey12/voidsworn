@@ -309,7 +309,8 @@ A checkout that changes while the runner starts is never reset; the job stops in
 Workhorse runs share one checkout per arm in `work217/slot_<arm>/repo`, reused under the same checks as the Codex lanes.
 The arm's slot lock (`repo.checkout.lock` beside it) and the issue lock are inherited by the whole work_issue.bat process
 tree, so they stay held until every process of that run has exited, even if the PowerShell that took them dies; the
-Codex lane lock works the same way (Artoo on PR 1250). Logs and results stay in each run's own `out/` folder. The old
+Codex lane lock works the same way (Artoo on PR 1250). A work217 tools refresh takes every supported arm's slot lock,
+live and dry run, creating any that do not exist yet, so a fresh arm cannot start mid-refresh (Artoo on PR 1334). Logs and results stay in each run's own `out/` folder. The old
 `remove_repo_copy_after_push` setting no longer applies. Code-only lanes C and D and the Workhorse slots omit
 `docs/shots/`, `docs/ship_pipeline/build_sheets/`, `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the opening
 fixed block's Brief or Deliver to line names a path there. A checkout on the same runner-managed sparse profile is reused;
