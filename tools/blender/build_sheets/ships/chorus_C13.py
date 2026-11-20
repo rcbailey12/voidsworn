@@ -185,7 +185,8 @@ def build(K):
     # clusters move from the lower flanks to the strip of belly the bands leave open
     plates.armadillo(K, _k, 3.75, -2.35, seed=1343, lo=-1.2, band=0.46, lap=1.45, thick=0.075,
                      note='armadillo bands of grown chitin wrapping the body from belly edge to belly edge, lips aft; broken round the glands, spine bed, sacs and siphons; hide rolled at the edges')
-    plates.dome_caps(K, _k, caps, seed=1345, note='grown chitin caps over the flank sacs, lips down, the bile slits open at each crown (round F)')
+    plates.dome_caps(K, _k, caps, seed=1345, flat=True,
+                     note='flat grown chitin caps over the flank sacs, two rings of thin plates lying close, the bile slits open at each crown (round G)')
     plates.fused_patches(K, _k, [(3.0, -1.5, 0.36, 3), (1.6, -1.65, 0.42, 4), (0.2, -1.5, 0.4, 3), (-1.2, -1.62, 0.36, 3)],
                          seed=1344)
 

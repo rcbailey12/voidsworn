@@ -382,12 +382,14 @@ def _dome_section(tree, centre, axis, radius):
     return at
 
 
-def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide'):
+def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide', flat=False):
     """R341 (the Board, Nov 19): small scutes capping the top of each grown dome the shell leaves open (sacs, knolls), lips down
     the dome, so the armour wraps them; never on a gland, maw or vent. domes = [(prefixes, centre, axis, radius, reach)], with
     the hull objects or fittings whose names start with `prefixes` as the dome's surface and `reach` the polar angle (radians
     from the crown) the cap comes down to; an optional sixth value starts the cap that far from the crown, so a gland's knoll is
-    armoured round its slopes with its vent and spines open. One hull-detail object for the ship; returns it."""
+    armoured round its slopes with its vent and spines open. flat (issue 1291 round G, Ryan: "caps, but flatter"): two rings of
+    fewer, wider, thin plates lying close on the dome instead of three rings of keeled scutes, so a cap reads as a shell, not a
+    pinecone. One hull-detail object for the ship; returns it."""
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
     register(kit_module)
@@ -406,19 +408,21 @@ def dome_caps(K, kit_module, domes, seed, name='armour_caps', note='', inv='hide
         if not F:
             continue
         sec = _dome_section(BVHTree.FromPolygons(V, F), Vector(centre), Vector(axis), radius)
-        t = 0.075 * radius   # thinner and calmer than the body's scutes: a cap, never a rosette
+        t = (0.032 if flat else 0.075) * radius   # thinner and calmer than the body's scutes: a cap, never a rosette
         k = 0
         ph = start
-        step = (reach - start) / 3.0
-        for n_ in ((4, 8, 12) if not start else (10, 13, 16)):
+        rings = ((5, 8) if flat else (4, 8, 12)) if not start else ((7, 10) if flat else (10, 13, 16))
+        step = (reach - start) / len(rings)
+        for n_ in rings:
             off = rng.uniform(0, math.tau)
             w = math.tau / n_
             for i in range(n_):
                 lo = off + i * w - 0.24 * w
                 hi = off + (i + 1) * w + 0.24 * w
                 vertices, faces, progress, ridge = _armour_scute(
-                    sec, -ph, step * 1.45, (lo, hi), t * rng.uniform(0.9, 1.1), 1, point=rng.uniform(0.12, 0.22),
-                    sharp=2.5, keels=1, bulge=0.12)
+                    sec, -ph, step * (1.25 if flat else 1.45), (lo, hi), t * rng.uniform(0.9, 1.1), 1,
+                    point=rng.uniform(0.06, 0.12) if flat else rng.uniform(0.12, 0.22),
+                    sharp=1.6 if flat else 2.5, keels=1, bulge=0.03 if flat else 0.12)
                 _append(mesh, vertices, faces)
                 attrs['scute_tone'].extend([rng.uniform(0.1, 0.9)] * len(vertices))
                 attrs['scute_progress'].extend(progress)
