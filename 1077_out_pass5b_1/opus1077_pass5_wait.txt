@@ -1,0 +1,6 @@
+waiting for all done in opus1079_run8_wait.txt Thu 11/19/2026 21:44:43.79 
+OPUS1077_PASS5_WAIT stopped by the Board before PASS5 ran (11/19 21:47:13); replaced by OPUS1077_PASS5B_WAIT.bat (same log). PASS5 left unrun.
+waiting for all done in opus1079_run8_wait.txt (PASS5B waiter) Thu 11/19/2026 21:47:14.03 
+OPUS1077_PASS5B start through q_opus1077_pass5b.bat Thu 11/19/2026 22:27:15.13, expecting out_pass5b_1 
+OPUS1077_PASS5B PASSED at 22:37:15.12 
+all done 22:37:15.13 

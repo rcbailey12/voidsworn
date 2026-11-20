@@ -1,0 +1,1 @@
+FLAGSHIP1077_A16_c26_side_by_side.avi kept on the PC (opus1077\out_pass5b_1): 103981590 bytes, SHA256 F6A7349C0DAED64A94B6F61A17FBAFC6FB1D1C3794190EEC94A5B2D7C6DE5BE9. Over 95 MB, so FLAGSHIP1077_A16_c26_side_by_side_720p.mp4 (720p H.264 crf 20, no audio, trellis2 imageio_ffmpeg v7.1) is pushed instead. The c170 AVI (69.7 MB) is pushed as is.

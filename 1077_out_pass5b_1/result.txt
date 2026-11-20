@@ -1,0 +1,30 @@
+start Thu 11/19/2026 22:27:15.23 attempt 1 
+drive bytes free 431532036096 
+checked out FETCH_HEAD safely, saved changes in C:\Users\rcbai\Downloads\voidsworn_test\opus1077\out_pass5b_1\checkout_5577 
+commit=2b23ec1a46c932badd20cef096cb6968b7aacb8f 
+copy ships robocopy 3 (0 to 7 is success) 
+copy gen robocopy 1 (0 to 7 is success) 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\opus1077\repo\godot\assets\ships\C19_51\C19_51.glb:
+6611595baa1542adbd2c445f33d0fcd33355add59c7c7590c680899af3a9c8e0
+CertUtil: -hashfile command completed successfully.
+throwaway profile C:\Users\rcbai\Downloads\voidsworn_test\opus1077\profile_3\appdata 
+watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat 
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat:
+6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1:
+93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932
+CertUtil: -hashfile command completed successfully.
+4.7.2.stable.official.ed1daf0bf
+import exit 0 
+death story exit 0 
+death seam exit 0 
+clips exit 0 
+compose c170 exit 0 
+compose c26 exit 0 
+FLAGSHIP1077_A16_c170_side_by_side.avi bytes 73123484 
+FLAGSHIP1077_A16_c26_side_by_side.avi bytes 103981590 
+drive bytes free 429212282880 
+real options unchanged 
+PASSED 
+all done Thu 11/19/2026 22:36:49.08 

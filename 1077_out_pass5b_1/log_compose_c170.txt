@@ -1,0 +1,17 @@
+GPU: waiting for shared claim, weight 1 (1077)
+GPU: acquired shared claim 17393939-9cdc-4757-a2b0-969b9c97635e
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-448dd41fbb4640f6be5d5ea9d4938103\godot-profile-ff8b43eddcba48a8a96f1239f13cc24a
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+Movie Maker mode enabled, recording movie in 1920×1080 @ 30 FPS...
+COMPOSE1077 frames=572
+--------------------------------------------------------------------------------
+Done recording movie at path: C:\Users\rcbai\Downloads\voidsworn_test\opus1077\out_pass5b_1\FLAGSHIP1077_A16_c170_side_by_side.avi
+573 frames at 30 FPS (movie length: 00:00:19:03), recorded in 00:01:13 (26% of real-time speed).
+CPU render time: 0.04 seconds (average: 0.07 ms/frame)
+GPU render time: 0.02 seconds (average: 0.04 ms/frame)
+Encoding time: 8.55 seconds (average: 14.92 ms/frame)
+--------------------------------------------------------------------------------
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-448dd41fbb4640f6be5d5ea9d4938103\godot-profile-ff8b43eddcba48a8a96f1239f13cc24a
+GPU: released shared claim 17393939-9cdc-4757-a2b0-969b9c97635e
