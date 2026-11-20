@@ -130,6 +130,14 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 
 `api.entry_reason(id, q, r)` explains blocked terrain/set pieces, off-board cells, other ships, spent activations, brace, exhausted movement, or the lack of a route within the remaining movement costs. Use it after the reach query says a destination is unavailable. Blocker reasons include the kind and coordinates. Neither query changes rules state, consumes random numbers or bumps the API version; both hold the normal API mutex.
 
+### Arrivals known at the start (presentation only)
+
+`api.arrival_previews()` returns the ships the battle's mid-battle event will bring (issue 1289): today at most one, the
+reinforcement (`reinf_enemy` or `reinf_ally`), as a view-like `{id, side, tpl, fac, cls, size, facing, squadron, flagship,
+hp, maxHp}` with the hull the event will make (the faction's cheapest hull, `cheapHull`). Empty when there is no such event
+or it has fired. The battle builds that hull under its loading cover (render/arrival_warm.gd). It does not change rules
+state, consume random numbers or bump the API version; it holds the normal API mutex.
+
 ## The event stream: `take_events()`, and the return of `step()`
 
 Events come in order. Every event has a `t` (type) and plain fields; ids are ship ids from `view()`.

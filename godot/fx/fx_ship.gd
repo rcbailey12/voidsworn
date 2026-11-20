@@ -153,7 +153,9 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	hull.stb_z = float(fx.starboard_z)
 	hull.code = str(root.get("code")) if root.get("code") != null else sid
 	hull.formation = squadron
+	var t_a := Time.get_ticks_usec()   # issue 1289: an arriving ship's parts, named in fx.prof (the arrival bench reads them)
 	hull.analyse(root, meshes, _seed)
+	t_a = fx.pend("add:analyse", t_a)
 	# issue 370: ShipView's movement jets (braking, side, turning) ask the same attach point service
 	if "attach" in root:
 		root.set("attach", hull)
@@ -177,11 +179,14 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	_hide_placeholder_engines()
 	# Detailed wings own one stern trail per moving craft. The hull analyser's
 	# single formation-sized engine would put a giant plume between the craft.
+	t_a = fx.pend("add:damage_root", t_a)
 	if not squadron or root.get("squad_kind") == null or str(root.get("squad_kind")).is_empty():
 		_build_engines(fx)
 		_build_trails(fx)
+	t_a = fx.pend("add:engines", t_a)
 	if shielded:
 		_build_shield(fx)
+	fx.pend("add:shield", t_a)
 	_last_pos = root.global_position
 
 
@@ -567,7 +572,25 @@ func _shield_skin(fx = null) -> ArrayMesh:
 			if arrays.is_empty():
 				return null
 			save_shield_skin(key, arrays)
-	return _pose_shield_skin(arrays, bob)
+	return _posed_skin(fx, key, arrays, bob)
+
+
+# Issue 1289: posing a fitted skin (copy, offset, upload, hit collider) cost every arriving ship 100 ms or more in its
+# arrival frame, cache hit or not. A pose depends only on the cached skin and its offset from the core, so the battle's
+# effects keep each pose they built (fx.shield_poses, freed with the battle) and a second ship of the same hull shares it.
+# Both are read only after this: the shield draws the mesh with its own material and hit tests read the collider.
+func _posed_skin(fx, key: String, arrays: Array, bob: Vector3) -> ArrayMesh:
+	var off := bob - hull.shield_centre()
+	var pk := "%s|%.3f|%.3f|%.3f" % [key, off.x, off.y, off.z]
+	var poses = fx.get("shield_poses") if fx != null else null
+	if poses is Dictionary and (poses as Dictionary).has(pk):
+		var e: Array = poses[pk]
+		_shield_tm = e[1]
+		return e[0]
+	var skin := _pose_shield_skin(arrays, bob)
+	if poses is Dictionary:
+		poses[pk] = [skin, _shield_tm]
+	return skin
 
 
 static func _remember_shield_skin(key: String, arrays: Array) -> void:
@@ -581,10 +604,10 @@ static func save_shield_skin(key: String, arrays: Array) -> void:
 	SHIELD_CACHE.write_skin(key, arrays)
 
 
-func install_shield_skin(arrays: Array, bob: Vector3) -> void:
+func install_shield_skin(arrays: Array, bob: Vector3, fx = null, key := "") -> void:
 	if not is_instance_valid(_shield_mi) or gone:
 		return
-	_shield_mi.mesh = _pose_shield_skin(arrays, bob)
+	_shield_mi.mesh = _posed_skin(fx, key, arrays, bob) if key != "" else _pose_shield_skin(arrays, bob)
 	_shield_mat.set_shader_parameter("fitted_shape", true)
 	_shield_pose = Transform3D(Basis.IDENTITY, hull.shield_centre())
 	_shield_mi.transform = _shield_pose
