@@ -26,3 +26,9 @@ board/council_1120/playtest_25adec3/.
 - The front-end screen set (setup, faction desks, settings, help, progression) failed to capture for a tools reason and is
   being rerun; earlier front-end shots from Nov 19 are on the project drive under board/1217/ if a seat has drive access.
 - No sound is reviewed. Videos are not in git (8 MB each); the stills cover them.
+
+## Added for the challenge round
+
+- `factions/`: one battle each as the Glasswrights (ithar), the Chorus and Eclipse (deathless), six moments each (01 first
+  turn, 05 mid fight on the enemy turn), build 25adec31, the game's own battle camera (not the fixed camera 170). Ship names
+  come from the in-game tip card. Chorus ships are mid rebuild.
