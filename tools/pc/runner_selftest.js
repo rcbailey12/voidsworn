@@ -226,7 +226,9 @@ if (probe) {
   if (brief.includes('Resumed by merging') !== expectResume) process.exit(31);
   if (brief.includes('saved work before stopping') !== expectResume) process.exit(33);
   if (fs.readFileSync('progress.txt','utf8') !== 'from partial\\n') process.exit(32);
-  fs.writeFileSync('agent_started.txt', expectResume ? 'resumed work verified' : 'fresh start verified');
+  if (process.env.STUB_AGENT_NO_CHANGE !== '1') {
+    fs.writeFileSync('agent_started.txt', expectResume ? 'resumed work verified' : 'fresh start verified');
+  }
   const agentHold = process.env.STUB_AGENT_HOLD;
   if (agentHold) {
     fs.writeFileSync(agentHold + '.ready', 'agent owns checkout');
@@ -333,8 +335,7 @@ function fixtureTools(name, scenario = '') {
       }
       if (scenario === 'delivery' && file === 'work_issue.bat') {
         // Keep dryrun's mock agent and fake GitHub. Exercise real delivery logic against a bare TEMP remote.
-        body = body.replace('set "PUSHMODE=dry"', 'set "PUSHMODE=real"')
-          .replace(/(%PS% tidy[^\r\n]*?) "?%DRY%"?(?= >>)/, '$1 0');
+        body = body.replace('set "PUSHMODE=dry"', 'set "PUSHMODE=real"');
       }
     }
     write(path.join(dir, file), body);
@@ -414,10 +415,11 @@ async function job(arm, label, extra = {}) {
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = await runEntryPoint(cmd, env);
   write(path.join(home, 'console.txt'), r.text);
-  assert(fs.existsSync(path.join(home, arm === 'codex' ? 'issue-687/status.json' : 'dryrun-687-' + arm + '/latest.txt')), r.text);
-  const runHome = arm === 'codex' ? home : read(path.join(home, 'dryrun-687-' + arm, 'latest.txt')).trim();
+  const latest = path.join(env.WORK_ROOT, 'dryrun-687-' + arm, 'latest.txt');
+  assert(fs.existsSync(arm === 'codex' ? path.join(home, 'issue-687/status.json') : latest), r.text);
+  const runHome = arm === 'codex' ? home : read(latest).trim();
   const out = path.join(runHome, arm === 'codex' ? 'issue-687' : 'out');
-  const repo = path.join(runHome, 'repo');
+  const repo = arm === 'codex' ? path.join(runHome, 'repo') : path.join(env.WORK_ROOT, 'slot_' + arm, 'repo');
   return { ...r, out, repo, env, result: read(path.join(out, 'result.txt')), state: JSON.parse(read(path.join(out, 'status.json'))) };
 }
 const fixtureSetupSeconds = (Date.now() - started) / 1000;
@@ -508,10 +510,13 @@ try {
     // Repairing the ledger and releasing its lock cannot erase the separate unknown entry.
     if (fault !== 'busy') write(path.join(r.env.WORK_ROOT, 'openai_spend.txt'), '');
     const probeBefore = read(r.env.PC_TEST_TRACE);
+    const checkoutBefore = read(path.join(r.repo, '.git', 'logs', 'HEAD'));
     const refused = await job('openai', 'account-' + fault, extra);
     assert.equal(refused.code, 3, refused.text + refused.result);
     assert.equal(refused.state.status, 'failed'); assert(refused.result.includes('OpenAI usage unknown'), refused.result);
-    assert(!fs.existsSync(refused.repo), 'next paid start refused before checkout');
+    assert.equal(refused.repo, r.repo);
+    assert(!fs.existsSync(path.join(refused.out, 'base_commit.txt')), 'next paid start refused before checkout');
+    assert.equal(read(path.join(refused.repo, '.git', 'logs', 'HEAD')), checkoutBefore, 'refusal leaves the existing slot alone');
     assert.equal(read(r.env.PC_TEST_TRACE), probeBefore, 'next paid start never calls the probe');
     pass('OpenAI ' + fault + ' accounting: guarded partial push retains agent changes, never checked, next paid start refused');
   });
@@ -1007,18 +1012,106 @@ async function testDeliveryCleanup() {
     const publicStatus = JSON.parse(read(r.env.PC_TEST_GH_DB)).comments[0].body;
     const labelShown = expected === 'checked_push' ? 'finished' : expected;
     assert(publicStatus.includes('Runner status: ' + labelShown), publicStatus);
-    assert.equal(fs.existsSync(r.repo), scenario !== 'clean', r.result);
+    assert(fs.existsSync(r.repo), 'the slot stays available after every outcome, even with the old cleanup setting');
+    assert(!fs.existsSync(path.join(path.dirname(r.out), 'repo')), 'the run folder holds no clone');
+    assert.match(r.result, /disk: run folder \d+ logical bytes/);
+    assert.match(r.result, /disk: shared checkout \d+ logical bytes/);
     if (scenario === 'ignored-work') {
       assert.equal(read(path.join(r.repo, 'ignored-work.txt')), 'only in the checkout');
-      assert(r.result.includes('ignored files'), r.result);
     }
     if (scenario === 'local-history') {
       assert.equal(read(path.join(r.repo, '.git/refs/remotes/origin/stale-local')).trim(), extra.STUB_LOCAL_TIP);
-      assert(r.result.includes('local-only history'), r.result);
     }
     assert(fs.existsSync(path.join(r.out, 'result.txt')), 'run evidence stays after cleanup');
-    pass('workhorse delivery and cleanup: ' + scenario);
+    pass('workhorse delivers and keeps the shared slot: ' + scenario);
   });
+}
+async function testWorkhorseSlots() {
+  const workRoot = path.join(root, 'workhorse slots');
+  const hold = path.join(root, 'workhorse-agent-hold');
+  const options = { WORK_ROOT: workRoot, STUB_AGENT_NO_CHANGE: '1' };
+  const first = await job('deepseek', 'slot-first', options);
+  assert.equal(first.code, 0, first.text + first.result);
+  assert.match(first.result, /code checkout excludes: docs\/shots, .*rocks_hi/);
+  const gitDirectory = fs.statSync(path.join(first.repo, '.git')).ino;
+  const second = await job('deepseek', 'slot-second', options);
+  assert.equal(second.code, 0, second.text + second.result);
+  assert.equal(second.repo, first.repo);
+  assert.equal(fs.statSync(path.join(second.repo, '.git')).ino, gitDirectory);
+  assert.match(second.result, /earlier checkout reused in place/);
+  assert.notEqual(second.out, first.out);
+  const firstResult = read(path.join(first.out, 'result.txt'));
+  assert.equal(firstResult, first.result);
+
+  write(path.join(first.repo, 'local-work.txt'), 'unpublished work');
+  const running = job('deepseek', 'slot-held', { ...options, STUB_AGENT_HOLD: hold }).catch(error => ({ error }));
+  let other;
+  try {
+    assert(await waitFor(() => fs.existsSync(hold + '.ready'), 30000), 'mock DeepSeek did not reach the slot');
+    const repoHead = read(path.join(first.repo, '.git', 'HEAD'));
+    const refused = await runEntryPoint('""' + path.join(tools, 'work_issue.bat') + '" 688 deepseek dryrun"', {
+      ...defaults, WORK_ROOT: workRoot
+    });
+    assert.equal(refused.code, 14, refused.text);
+    assert.match(refused.text, /workhorse slot busy/);
+    assert(!fs.existsSync(path.join(workRoot, 'dryrun-688-deepseek')));
+    assert.equal(read(path.join(first.repo, '.git', 'HEAD')), repoHead);
+    other = await job('openai', 'slot-other-arm', options);
+    assert.equal(other.code, 0, other.text + other.result);
+    assert.notEqual(other.repo, first.repo);
+  } finally {
+    write(hold + '.release', 'released');
+  }
+  const held = await running;
+  if (held.error) throw held.error;
+  assert.equal(held.code, 0, held.text + held.result);
+  assert.match(held.result, /working tree needs keeping: \?\? local-work\.txt/);
+  const slot = path.dirname(first.repo);
+  const kept = fs.readdirSync(slot).find(name => name.startsWith('repo-kept-'));
+  assert.equal(read(path.join(slot, kept, 'local-work.txt')), 'unpublished work');
+  const nextOpenai = await job('openai', 'slot-other-arm-again', options);
+  assert.equal(nextOpenai.code, 0, nextOpenai.text + nextOpenai.result);
+  assert.match(nextOpenai.result, /earlier checkout reused in place/);
+  assert.notEqual(nextOpenai.out, other.out);
+  pass('DeepSeek and OpenAI use separate reusable slots with per-run logs, a slot lock and preserved local work');
+
+  // Artoo on PR 1250: stop only the PowerShell that took the slot lock. The batch it started keeps working, so the slot
+  // must stay locked until that whole process tree has exited.
+  const orphanHold = path.join(root, 'workhorse-orphan-hold');
+  const slotLock = first.repo + '.checkout.lock';
+  const lockFree = () => { try { fs.closeSync(fs.openSync(slotLock, 'r+')); return true; } catch { return false; } };
+  const orphan = job('deepseek', 'slot-orphan', { ...options, STUB_AGENT_HOLD: orphanHold }).catch(error => ({ error }));
+  try {
+    assert(await waitFor(() => fs.existsSync(orphanHold + '.ready'), 30000), 'mock DeepSeek did not reach the slot');
+    const holders = run('powershell.exe', ['-NoProfile', '-Command',
+      "Get-CimInstance Win32_Process -Filter \"Name='powershell.exe'\" | Where-Object { $_.CommandLine -and " +
+      "$_.CommandLine.Contains('work_issue.ps1\" run \"687\" \"deepseek\"') -and $_.CommandLine.Contains($env:ORPHAN_SLOT) } | " +
+      'ForEach-Object { $_.ProcessId }'], { ORPHAN_SLOT: first.repo });
+    const pids = holders.text.trim().split(/\s+/).filter(Boolean);
+    assert.equal(pids.length, 1, 'exactly one slot lock holder: ' + holders.text);
+    const killed = run('taskkill.exe', ['/PID', pids[0], '/F']);
+    assert.equal(killed.code, 0, killed.text);
+    const gone = () => { try { process.kill(Number(pids[0]), 0); return false; } catch (e) { return e.code === 'ESRCH'; } };
+    assert(await waitFor(gone, 10000), 'the slot lock holder did not stop');
+    // The batch is still parked in the mock agent, so its tree is alive. Its inherited output pipes keep the launcher's
+    // promise open, so it is awaited only after the release below.
+    assert(!fs.existsSync(orphanHold + '.release'));
+    assert(!lockFree(), 'slot lock released while the batch still runs');
+    const contender = await runEntryPoint('""' + path.join(tools, 'work_issue.bat') + '" 689 deepseek dryrun"', {
+      ...defaults, WORK_ROOT: workRoot
+    });
+    assert.equal(contender.code, 14, contender.text);
+    assert.match(contender.text, /workhorse slot busy/);
+    assert(!fs.existsSync(path.join(workRoot, 'dryrun-689-deepseek')), 'the contender made no run folder');
+  } finally {
+    write(orphanHold + '.release', 'released');
+  }
+  await orphan;
+  assert(await waitFor(lockFree, 90000), 'slot lock still held after the orphaned batch finished');
+  const afterOrphan = await job('deepseek', 'slot-after-orphan', options);
+  assert.equal(afterOrphan.code, 0, afterOrphan.text + afterOrphan.result);
+  assert.equal(afterOrphan.repo, first.repo);
+  pass('the slot lock outlives its PowerShell while the batch lives, refuses another issue, and frees when the batch ends');
 }
 async function testResumeAndFailures() {
   await parallel(arms, async arm => {
@@ -1331,6 +1424,7 @@ async function testRunnerStartChecks() {
   shell = await require('./runner_selftest_shell')(root, concurrency, [here, tools, faultTools, deliveryTools]);
   // The held runner and its contenders must be able to reach the fixture shell without waiting on unrelated cases.
   await testLaneOwnership();
+  await testWorkhorseSlots();
   await parallel([
     testAccounting, testAccountingFaults, testOpenAIModels,
     testCleanAndCacheReuse, testSharedShipCopySafety, testKeptLookalikes, testCampaignParityCleanup, testLateCheckoutEdits,
