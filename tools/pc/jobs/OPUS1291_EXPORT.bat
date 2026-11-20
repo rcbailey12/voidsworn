@@ -1,5 +1,5 @@
 @echo off
-title Chorus spitter rebuild: C13 (and the C11 throat fix) export into the game (issue 1291) - GPU job
+title Chorus spitter rebuild: C13 trial export and in-game shots (issue 1291) - GPU job
 rem Issue 1291 (Ryan, Nov 20 2026: "mix of b and c for armor. Agree on full rebuild. Agree on color. Agree on test spitter"):
 rem the rebuilt chorus_C13 (b_spitter, B20_11) from the shared Chorus kit: swellings and folds grown into the skin, armadillo
 rem bands of grown chitin over the back, grown plates on the flanks, the grown paint (olive-brown hide, dark red veins,
@@ -9,15 +9,20 @@ rem Same chain as R341_EXPORT_1234.bat (Artoo's two phases): stages 3 to 7 into 
 rem private copy proven with staged_identity.py, the GPU readback, interiors, death seam and in-game shots, then publish into
 rem build\godot through manifest_merge --install only when everything passed. The job's own watchdog is tools_live's current
 rem tmo.bat, never the clone's.
-rem   OPUS1291_EXPORT.bat            both ships
-rem   OPUS1291_EXPORT.bat chorus_C13 one ship only
+rem   OPUS1291_EXPORT.bat                  the trial: C13 only, staged, checked and captured, nothing published
+rem   OPUS1291_EXPORT.bat chorus_C11       another ship, same trial path
+rem   set PUBLISH=1 first                  also publish into build\godot (only after Ryan accepts the look)
 rem   PIN=<commit> builds another commit.
-rem Writes only opus1291\, recipe\<ship>\ and, in phase 2, build\godot\assets\ships\<code>\ and the game's ship cache. Nothing
-rem is deleted. Exits 0 only when everything passed and was published; otherwise 1. result.txt ends in "all done".
+rem Each attempt clones fresh into opus1291\repo_<run> and stops if that folder exists. Writes only opus1291\, recipe\<ship>\
+rem and, with PUBLISH=1, build\godot\assets\ships\<code>\ and the game's ship cache. Nothing is deleted. Exits 0 only when
+rem everything passed; otherwise 1. result.txt ends in "all done".
 setlocal enabledelayedexpansion
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1291
-set C=%W%\repo
+set RUN=%DATE:~-4%%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%_%RANDOM%
+set RUN=%RUN: =0%
+rem a fresh pinned clone per attempt (Artoo, PR 1308): never force-reset a checkout that may hold local changes
+set "C=%W%\repo_%RUN%"
 set OUT=%W%\out
 if not exist "%OUT%" mkdir "%OUT%"
 set RES=%OUT%\result.txt
@@ -25,6 +30,10 @@ set BAD=
 echo start %DATE% %TIME% > "%RES%"
 rem the cloud round 10 look (opus/issue-1291)
 if "%PIN%"=="" set PIN=943bfb94632b2ed3746878901c46174009a02a50
+if exist "%C%" (
+  echo FAILED: %C% already exists, refusing to reuse it >> "%RES%"
+  goto fail
+)
 if not exist "%C%\.git" (
   git clone -q --depth 1 --no-checkout https://github.com/rcbailey12/voidsworn "%C%" >> "%RES%" 2>&1
   if errorlevel 1 (
@@ -80,13 +89,12 @@ if not exist "%TMO%" (
   goto fail
 )
 echo watchdog %TMO% >> "%RES%"
-set SHIPS=chorus_C13 chorus_C11
+rem the trial is C13 alone (issue 1291); C11 and the rest follow only after Ryan accepts C13
+set SHIPS=chorus_C13
 if not "%1"=="" set SHIPS=%1
 set STAGES=3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export
 if "%FULL%"=="1" set STAGES=1_concept_in 2_shape_ref %STAGES%
 set DONE=
-set RUN=%DATE:~-4%%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%_%RANDOM%
-set RUN=%RUN: =0%
 set "CHECKED=%W%\checked\%RUN%"
 mkdir "%CHECKED%"
 echo checked copies in %CHECKED% >> "%RES%"
@@ -111,7 +119,12 @@ if not "%EL%"=="0" (
 for %%P in (%DONE%) do call :checks %%P
 if defined BAD goto fail
 
-rem ---- phase 2: publish the checked exports into build\godot ----
+rem ---- phase 2: publish the checked exports into build\godot, only when asked (PUBLISH=1, after Ryan accepts) ----
+if not "%PUBLISH%"=="1" (
+  echo trial only: checked and captured, nothing published into build\godot >> "%RES%"
+  echo all done PASS %DATE% %TIME% >> "%RES%"
+  exit /b 0
+)
 set LIVE=
 for %%P in (%DONE%) do (
   if not defined BAD call :publish %%P
