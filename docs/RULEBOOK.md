@@ -306,6 +306,19 @@ copy and its size. Why: repeated full copies filled C:, and deleting a supposedl
 unique ignored work (issue 860, run 2, Board Nov 16).
 A checkout that changes while the runner starts is never reset; the job stops instead.
 
+Workhorse runs share one checkout per arm in `work217/slot_<arm>/repo`, reused under the same checks as the Codex lanes.
+The arm's slot lock (`repo.checkout.lock` beside it) and the issue lock are inherited by the whole work_issue.bat process
+tree, so they stay held until every process of that run has exited, even if the PowerShell that took them dies; the
+Codex lane lock works the same way (Artoo on PR 1250). Logs and results stay in each run's own `out/` folder. The old
+`remove_repo_copy_after_push` setting no longer applies. Code-only lanes C and D and the Workhorse slots omit
+`docs/shots/`, `docs/ship_pipeline/build_sheets/`, `contrib/muse/design/`, `hulls_hi/` and `rocks_hi/` unless the opening
+fixed block's Brief or Deliver to line names a path there. A checkout on the same runner-managed sparse profile is reused;
+a profile change sets the previous checkout aside beside the slot. A left-out file that is on disk while Git marks it
+skip-worktree counts as possible hidden work and keeps the checkout. The janitor prunes older `repo-kept-*` copies beside
+each slot like a board lane's, and accepts a runner-managed sparse copy under the same checks. Why: a fresh Workhorse
+checkout per run and picture folders in code jobs drove up disk use (issue 1186).
+
+
 Parity removes its own default temp folder when it finishes, pass or fail. After writing the result, the runner cleans up
 its own recorded scratch at every ending. It keeps the newest failed, timed-out or cancelled run's scratch for one day for
 a retry. The janitor runs from the queue watcher between 3:00 and 6:00 AM Central and at runner start when C: is under `janitor_free_gb`

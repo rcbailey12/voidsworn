@@ -245,6 +245,19 @@ try {
     try { $checkoutLock = [IO.File]::Open("$repo.checkout.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
     catch [IO.IOException] { throw 'refused: Codex checkout lock is busy or unavailable' }
   }
+  if ($seat -eq 'work217') {
+    # Issue 1186: a Workhorse run holds its arm's slot lock until its whole process tree exits. Hold every slot lock
+    # through the refresh, so no run starts or keeps going with half-replaced tools.
+    $checkoutLock = @()
+    $workRoot = Join-Path $root 'work217'
+    if (Test-Path -LiteralPath $workRoot -PathType Container) {
+      foreach ($slotLock in Get-ChildItem -LiteralPath $workRoot -Directory -Filter 'slot_*' |
+          ForEach-Object { Join-Path $_.FullName 'repo.checkout.lock' } | Where-Object { Test-Path -LiteralPath $_ }) {
+        try { $checkoutLock += [IO.File]::Open($slotLock, 'Open', 'ReadWrite', 'None') }
+        catch [IO.IOException] { throw "refused: Workhorse slot lock is busy: $slotLock" }
+      }
+    }
+  }
   # Serialize the shared fetch, snapshot, log and backup allocation across lanes. Keep the lock file.
   $lockPath = Join-Path $root 'lane_tools_refresh.lock'
   $lockDeadline = [DateTime]::UtcNow.AddMinutes(2)
@@ -372,5 +385,5 @@ try {
   exit 1
 } finally {
   if ($lock) { $lock.Dispose() }
-  if ($checkoutLock) { $checkoutLock.Dispose() }
+  foreach ($held in @($checkoutLock)) { if ($held) { $held.Dispose() } }
 }

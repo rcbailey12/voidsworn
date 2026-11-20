@@ -15,13 +15,14 @@
 #                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
-#   work_issue.ps1 tidy    <run folder> <root> <settings> <dry>       run folder size; checks status.json and the repo before cleanup
+#   work_issue.ps1 disk    <run folder> <repo>                 separately reports the run and reusable checkout sizes
 # Keys come from the environment (DEEPSEEK_API_KEY, MOONSHOT_API_KEY, KIMI_CODE_API_KEY) and are never written to any file.
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $mode = $args[0]
 if ($mode -eq 'run') {
+  # run <issue> <arm> <dryrun or blank> <slot repo>: hold the slot and issue locks around the whole batch run.
   $issue = $args[1]; $arm = $args[2]; $runMode = $args[3]
   if ($issue -notmatch '^[1-9][0-9]*$' -or $arm -notin @('deepseek','deepseekpro','kimi','kimicode','sonnet','opus','openai')) { exit 14 }
   if ($runMode -ne 'dryrun') { $runMode = '' }
@@ -30,10 +31,24 @@ if ($mode -eq 'run') {
   $start.FileName = $env:COMSPEC
   $start.Arguments = '/d /s /c ""' + $runner + '" ' + $issue + ' ' + $arm + ' "' + $runMode + '" locked"'
   $start.UseShellExecute = $false
+  # Issue 1186: the arm's one reused checkout. Its lock sits beside it, like the Codex lane lock, and is taken before
+  # the issue lock; the batch's process tree inherits both (Artoo on issue 1186 and PR 1250).
+  $slotRepo = $args[4]
+  if (-not $slotRepo -or [IO.Path]::GetFileName([IO.Path]::GetFullPath($slotRepo).TrimEnd('\','/')) -ne 'repo' -or
+      (Split-Path -Leaf (Split-Path -Parent ([IO.Path]::GetFullPath($slotRepo)))) -cne "slot_$arm") {
+    Write-Host 'job refused: workhorse slot path not verified; no agent started'; exit 14
+  }
+  $start.EnvironmentVariables['WORK_LOCKED_REPO'] = $slotRepo
+  $slotLock = $null
   try {
     . (Join-Path $PSScriptRoot 'runner_common.ps1') cleanup-library
+    $full = [IO.Path]::GetFullPath($slotRepo)
+    $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($full))
+    try { $slotLock = Open-HeldLock "$full.checkout.lock" }
+    catch [IO.IOException] { Write-Host 'job refused: workhorse slot busy or slot lock unavailable; no agent started'; exit 14 }
     exit (Invoke-LockedRunner $start $issue)
   } catch { Write-Host "job refused: could not hold the issue lock and run work_issue.bat ($($_.Exception.Message))"; exit 14 }
+  finally { if ($slotLock) { $slotLock.Dispose() } }
 }
 
 # Issue 953: the report and the runner check logs carry PC paths. A path to a file inside this job's checkout becomes a
@@ -570,6 +585,12 @@ elseif ($mode -eq 'guard') {
   $n = $args[1]; $tag = $args[2]; $repo = $args[3]; $out = $args[4]
   $maxMb = 8; if ($env:WORK_MAX_FILE_MB) { $maxMb = [double]$env:WORK_MAX_FILE_MB }
   Push-Location $repo
+  # prepare copies report pictures after checkout, even when the brief did not need the old pictures.
+  $evidence = "docs/shots/issue-$n-$tag"
+  if ((Test-Path -LiteralPath $evidence -PathType Container) -and (Git-One config --bool core.sparseCheckout) -eq 'true') {
+    & git add --sparse --ignore-removal -- $evidence
+    if ($LASTEXITCODE -ne 0) { Write-Host 'guard failed: could not stage review evidence'; Pop-Location; exit 1 }
+  }
   $staged = @(Git-Lines -c core.quotepath=off diff --cached --name-status --no-renames)
   if ($gx -ne 0) { Write-Host 'guard failed: git could not list the staged change'; Pop-Location; exit 1 }
   $dlFile = Join-Path $out 'deliver_to.txt'
@@ -595,7 +616,7 @@ elseif ($mode -eq 'guard') {
     $st = $parts[0].Substring(0, 1); $p = $parts[1]
     $why = Refuse-Reason $st $p $repo $maxMb
     if ($why) { $refused += [pscustomobject]@{ S = $st; P = $p; Why = $why }; continue }
-    if ($p -like "docs/shots/issue-$n-$tag/*") { continue }
+    if ($p -like "$evidence/*") { continue }
     if ($scope.Count -and -not (In-Scope $p $scope)) { $warn += "$st $p" }
   }
   $keep = Join-Path $gdir 'refused'
@@ -605,7 +626,7 @@ elseif ($mode -eq 'guard') {
       $src = Join-Path $repo ($r.P -replace '/', '\'); $dst = Join-Path $keep ($r.P -replace '/', '\')
       try { New-Item -ItemType Directory -Force -Path (Split-Path $dst) | Out-Null; Copy-Item -LiteralPath $src -Destination $dst -Force -ErrorAction Stop } catch { $bad += "copy failed: $($r.P)" }
     }
-    & git reset -q -- ":(literal)$($r.P)" 2>$null
+    & git restore --staged --ignore-skip-worktree-bits -- ":(literal)$($r.P)" 2>$null
   }
   # The refused files must be out of the commit now (they stay in the working folder and in out\refused).
   $after = @(Git-Lines -c core.quotepath=off diff --cached --name-only --no-renames)
@@ -771,67 +792,17 @@ elseif ($mode -eq 'confirm') {
   [IO.File]::WriteAllText((Join-Path $out 'confirmed_commit.txt'), $remote, [Text.Encoding]::ASCII)
   Pop-Location; exit 0
 }
-elseif ($mode -eq 'tidy') {
-  # Every run: report the run folder's size. Only when Ryan's setting says yes (off by default) and the run ended in a
-  # checked push with no local-only work, remove the run's own repo\ copy and keep out\.
-  $run = $args[1]; $root = $args[2]; $setf = $args[3]; $dry = $args[4]
-  function SizeOf($p) { if (-not (Test-Path -LiteralPath $p)) { return [double]0 }; $s = (Get-ChildItem -LiteralPath $p -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum; if ($s) { return [double]$s } else { return [double]0 } }
-  $repo = Join-Path $run 'repo'; $outd = Join-Path $run 'out'
-  $rs = SizeOf $repo; $os = SizeOf $outd
-  Write-Host ('run folder size: {0:N2} GB (repo copy {1:N2} GB, out {2:N1} MB) in {3}' -f (($rs + $os) / 1GB), ($rs / 1GB), ($os / 1MB), $run)
-  $on = $false
-  if (Test-Path -LiteralPath $setf) { foreach ($l in [IO.File]::ReadAllLines($setf)) { if ($l.Trim() -ieq 'remove_repo_copy_after_push=yes') { $on = $true } } }
-  if (-not (Test-Path -LiteralPath $repo)) { exit 0 }
-  if (-not $on) { Write-Host "repo copy kept: remove_repo_copy_after_push is not yes in $setf"; exit 0 }
-  try {
-    $state = Get-Content -LiteralPath (Join-Path $outd 'status.json') -Raw | ConvertFrom-Json
-    if ($dry -eq '1' -or $state.status -ne 'checked_push' -or $state.commit -notmatch '^[0-9a-f]{40,64}$') {
-      throw 'this run did not end in a checked push'
-    }
-    $repo = [IO.Path]::GetFullPath($repo)
-    $rootFull = [IO.Path]::GetFullPath($root).TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
-    if (-not $repo.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase) -or
-        -not (Test-Path -LiteralPath (Join-Path $repo '.git') -PathType Container) -or
-        -not (Test-Path -LiteralPath (Join-Path $outd 'result.txt') -PathType Leaf)) {
-      throw 'the repo and result could not be verified under the workhorse root'
-    }
-    for ($dir = Get-Item -LiteralPath $repo -Force; $dir; $dir = $dir.Parent) {
-      if ($dir.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'checkout path contains a link' }
-    }
-    if (@(Get-ChildItem -LiteralPath $repo -Recurse -Force -Attributes ReparsePoint | Select-Object -First 1).Count) {
-      throw 'checkout contains a link'
-    }
-    $top = Git-One -C $repo rev-parse --show-toplevel
-    if ($gx -ne 0 -or [IO.Path]::GetFullPath($top) -ne $repo) { throw 'checkout root could not be verified' }
-    $worktrees = @(Git-Lines -C $repo worktree list --porcelain | Where-Object { $_ -like 'worktree *' })
-    if ($gx -ne 0 -or $worktrees.Count -ne 1) { throw 'checkout may be shared with another worktree' }
-    # Check refs on the remote itself. Local tracking refs can be stale, and reflogs can hold work without a branch.
-    $refs = @(Git-Lines -C $repo ls-remote --refs origin)
-    if ($gx -ne 0 -or $refs -cnotcontains "$($state.commit)`trefs/heads/$($state.branch)") {
-      throw 'delivery branch could not be verified at the pushed commit'
-    }
-    $exclude = @($refs | ForEach-Object { if ($_ -match '^([0-9a-f]{40,64})\trefs/') { '^' + $Matches[1] } })
-    $local = @($exclude | & git -C $repo rev-list --all --reflog HEAD --max-count=1 --ignore-missing --stdin 2>$null)
-    if ($LASTEXITCODE -ne 0 -or $local.Count) { throw 'checkout may contain local-only history' }
-    $head = Git-One -C $repo rev-parse HEAD
-    if ($gx -ne 0 -or $head -cne $state.commit) { throw 'checkout HEAD differs from the checked push' }
-    $flags = @(Git-Lines -C $repo ls-files -v)
-    if ($gx -ne 0 -or @($flags | Where-Object { $_ -cmatch '^[a-zS] ' }).Count) { throw 'index may hide tracked edits' }
-    $status = @(Git-Lines -C $repo status --porcelain=v1 --untracked-files=all --ignored --ignore-submodules=none)
-    if ($gx -ne 0 -or $status.Count) { throw 'checkout may contain tracked edits, untracked files or ignored files' }
-  } catch {
-    Write-Host "repo copy kept: $($_.Exception.Message)"
-    exit 0
+elseif ($mode -eq 'disk') {
+  $run = $args[1]; $repo = $args[2]
+  foreach ($entry in @(@{ label = 'run folder'; path = $run }, @{ label = 'shared checkout'; path = $repo })) {
+    try {
+      $bytes = 0L
+      if (Test-Path -LiteralPath $entry.path) {
+        $bytes = (Get-ChildItem -LiteralPath $entry.path -Recurse -Force -File | Measure-Object -Property Length -Sum).Sum
+      }
+      Write-Host ('disk: {0} {1} logical bytes ({2:N2} GiB) at {3}' -f $entry.label, [long]$bytes, ($bytes / 1GB), $entry.path)
+    } catch { Write-Host "disk: could not measure $($entry.label) at $($entry.path): $($_.Exception.Message)" }
   }
-  $pauseFlag = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt'
-  if (Test-Path -LiteralPath $pauseFlag) {
-    try { $paused = (Get-Content -LiteralPath $pauseFlag -TotalCount 1 -ErrorAction Stop) -match '^GPU not cleared: paused by the Board\b' }
-    catch { Write-Host 'repo copy kept: could not read the PC pause flag'; exit 0 }
-    if ($paused) { Write-Host 'repo copy kept during the PC pause'; exit 0 }
-  }
-  Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
-  if (Test-Path -LiteralPath $repo) { Write-Host ('repo copy only partly removed: {0:N2} GB left in {1}' -f ((SizeOf $repo) / 1GB), $repo) }
-  else { Write-Host ('repo copy removed after the checked push (Ryan''s setting): {0}, {1:N2} GB freed; out\ kept' -f $repo, ($rs / 1GB)) }
   exit 0
 }
-else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg|guard|commit|confirm|tidy ...'; exit 2 }
+else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg|guard|commit|confirm|disk ...'; exit 2 }
