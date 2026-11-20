@@ -19,10 +19,10 @@ findstr /b /c:"GPU cleared" "%V%\gpu_go.txt" >nul 2>&1 || (echo gpu_go.txt is no
 set "GLB=%C%\godot\assets\ships\I8_37\I8_37.glb"
 if not exist "%GLB%" (echo FAILED: no W2 install at %GLB% >> "%RES%" & goto done)
 certutil -hashfile "%GLB%" SHA256 >> "%RES%" 2>&1
-git -C "%C%" fetch -q --depth 1 origin opus/issue-1315 >> "%RES%" 2>&1
+git -C "%C%" fetch -q --depth 1 origin a2767d27e282d74386ac9ec99e8dd95a97cc6c26 >> "%RES%" 2>&1
 if errorlevel 1 (echo FAILED: fetch opus/issue-1315 >> "%RES%" & goto done)
 git -C "%C%" rev-parse FETCH_HEAD >> "%RES%" 2>&1
-git -C "%C%" show FETCH_HEAD:godot/bench/opus1315/bloom_probe.gd > "%O%\bloom_probe.gd" 2>> "%RES%"
+git -C "%C%" show a2767d27e282d74386ac9ec99e8dd95a97cc6c26:godot/bench/opus1315/bloom_probe.gd > "%O%\bloom_probe.gd" 2>> "%RES%"
 if errorlevel 1 (echo FAILED: could not read the probe script >> "%RES%" & goto done)
 set "TLV="
 if exist "%V%\tools_live\current.txt" set /p TLV=<"%V%\tools_live\current.txt"
