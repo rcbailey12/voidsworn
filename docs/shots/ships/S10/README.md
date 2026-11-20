@@ -2,7 +2,7 @@
 
 - `S10_ingame_vs_concept.jpg`: the accepted concept beside the installed ship in Godot (three-quarter, side, and the battle
   camera at true size), from the PC run 1157_shipjob5 (PASS, Nov 20 00:00 CT, commit e511d6d5; files on board/pc-out-1119zzzb).
-- `S10_battle_bench.jpg`: the battle camera (near set) from the same run, with the same frame enlarged 4x.
+- `S10_battle_bench.jpg`: the battle camera (near set) from the same run (1157_shipjob6), with the same frame enlarged 4x.
 - `S10_blob_sweep.jpg`: the nine-cell sweep (bow, midship, stern from top, side and below) beside the concept regions, from the
   build sheet (`docs/ship_pipeline/build_sheets/voidsworn_S10/cells.jpg`). A viewing instrument, not a bar (R121).
 - `S10_r1_blockout_vs_concept.jpg`, `S10_r2_blockout_vs_concept.jpg`: the blockout rounds the Board looked at before stage 5.
