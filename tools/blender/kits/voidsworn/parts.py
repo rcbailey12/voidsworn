@@ -461,7 +461,7 @@ def _torpedo_cowl(p, R, depth, s):
         p.add('loadring%d' % i, 'mount', 'sworn', revolve([(-bd * f - R * 0.08, R * 0.86), (-bd * f - R * 0.08, R * 0.74), (-bd * f + R * 0.08, R * 0.74),
                                                          (-bd * f + R * 0.08, R * 0.86)], 20, closed=True))
     p.add('bore', 'mount', 'dark', revolve([(-bd, R * 0.86), (-bd, 0.001)], 20))
-    nx = -bd * 0.5
+    nx = -R * 0.36 - 0.02   # the next torpedo's nose just inside the mouth: it reads in the bore, and the muzzle point sits on it (check_export)
     p.add('noseshell', 'mount', 'siron', revolve([(nx - R * 0.9, R * 0.66), (nx - R * 0.2, R * 0.66), (nx + R * 0.15, R * 0.48), (nx + R * 0.32, R * 0.2),
                                                  (nx + R * 0.36, 0.001)], 16, cap0=True))
     p.add('fuse', 'mount', 'embar', ring_band(nx - R * 0.35, R * 0.66, R * 0.12, R * 0.02, 16))

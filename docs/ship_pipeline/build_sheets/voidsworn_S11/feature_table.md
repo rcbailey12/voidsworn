@@ -19,13 +19,13 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | length side | 9.512 |
 | length top | 9.512 |
 | length disagreement percent | 0.0 |
-| beam top | 2.225 |
-| beam bow | 2.225 |
+| beam top | 2.212 |
+| beam bow | 2.212 |
 | beam disagreement percent | 0.0 |
 | height side | 2.05 |
 | height bow | 2.05 |
 | height disagreement percent | 0.0 |
-| widest at station percent | 51.3 |
+| widest at station percent | 48.3 |
 | hull beam | 2.1 |
 | hull depth | 0.89 |
 | L to B hull | 4.52 |
@@ -42,16 +42,16 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | T1 | twin Cinder torpedo tubes in deck cowls (one launcher, fixed forward) | 2 tubes | 22.4 | 0.00 | 0.47 | forward | F torp | picture | the destroyer's salvo (torp F, 1 shot: it leaves either tube in turn); the ship turns to aim it |
 | M1p | heat-vent slit panel 0.7 x 0.3, four long lit slits | 1 | 36.9 | 0.76 | 0.26 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
 | M1s | heat-vent slit panel 0.7 x 0.3, four long lit slits | 1 | 36.9 | -0.76 | 0.26 | - | - | picture | the torpedo magazine sheds its reload heat here (designs.md: ember heat-vent slits) |
-| U1p | band louvre 0.2 x 0.08 | 1 | 29.0 | 0.93 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U2p | band louvre 0.2 x 0.08 | 1 | 38.5 | 1.05 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U3p | band louvre 0.2 x 0.08 | 1 | 52.2 | 1.07 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U4p | band louvre 0.2 x 0.08 | 1 | 66.9 | 0.94 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U5p | band louvre 0.2 x 0.08 | 1 | 77.5 | 0.92 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U1s | band louvre 0.2 x 0.08 | 1 | 29.0 | -0.93 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U2s | band louvre 0.2 x 0.08 | 1 | 38.5 | -1.05 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U3s | band louvre 0.2 x 0.08 | 1 | 52.2 | -1.07 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U4s | band louvre 0.2 x 0.08 | 1 | 66.9 | -0.94 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
-| U5s | band louvre 0.2 x 0.08 | 1 | 77.5 | -0.92 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U1p | band louvre 0.2 x 0.08 | 1 | 29.0 | 0.89 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U2p | band louvre 0.2 x 0.08 | 1 | 38.5 | 1.02 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U3p | band louvre 0.2 x 0.08 | 1 | 52.2 | 1.03 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U4p | band louvre 0.2 x 0.08 | 1 | 66.9 | 0.90 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U5p | band louvre 0.2 x 0.08 | 1 | 77.5 | 0.89 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U1s | band louvre 0.2 x 0.08 | 1 | 29.0 | -0.89 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U2s | band louvre 0.2 x 0.08 | 1 | 38.5 | -1.02 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U3s | band louvre 0.2 x 0.08 | 1 | 52.2 | -1.03 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U4s | band louvre 0.2 x 0.08 | 1 | 66.9 | -0.90 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
+| U5s | band louvre 0.2 x 0.08 | 1 | 77.5 | -0.89 | 0.01 | - | - | picture | a heat louvre in the plated band (the gallery spaces behind it breathe out here) |
 | G1 | sear turret, single turret | 1 barrel | 46.1 | 0.62 | 0.41 | 35 deg off the bow to port, +4 elev | T turret | picture | port sear turret; the pair is the one turret slot (2 shots: one a mount, both fire every volley) |
 | G2 | sear turret, single turret | 1 barrel | 46.1 | -0.62 | 0.41 | 35 deg off the bow to starboard, +4 elev | T turret | picture | starboard sear turret; the pair is the one turret slot (2 shots: one a mount, both fire every volley) |
 | W1 | vision slit 0.065 x 0.028 | 1 | 61.1 | -0.10 | 0.47 | - | - | picture | command deck window, ember-lit, in the spine block's face |
@@ -63,21 +63,21 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | R4 | radiator spire, 0.58 tall, profile twin | 1 | 87.2 | 0.00 | 0.57 | - | - | picture | sheds the reactor's heat: a stack of glowing radiator fins, spaced so the dark iron core shows between every pair |
 | E1 | engine, bell 0.9 across | 1 | 99.8 | 0.55 | -0.05 | exhaust aft | - | picture | port main engine: a riveted drum deep-set in the stern, a deep bell, ember lining and plug |
 | E2 | engine, bell 0.9 across | 1 | 99.8 | -0.55 | -0.05 | exhaust aft | - | picture | starboard main engine: a riveted drum deep-set in the stern, a deep bell, ember lining and plug |
-| Q1p | attitude thruster quad | 1 | 26.9 | 0.71 | -0.20 | - | - | designed | bow attitude thruster on the lower facet |
+| Q1p | attitude thruster quad | 1 | 26.9 | 0.59 | -0.30 | - | - | designed | bow attitude thruster on the lower facet |
 | Q2p | attitude thruster quad | 1 | 84.8 | 0.79 | 0.18 | - | - | designed | stern attitude thruster on the upper facet |
 | V1p | louvre panel 0.32 x 0.13 | 1 | 70.1 | 0.69 | 0.23 | - | - | designed | reactor heat louvre over the reactor room |
 | V2p | louvre panel 0.32 x 0.13 | 1 | 77.5 | 0.69 | 0.23 | - | - | designed | reactor heat louvre over the reactor room |
-| L1p | running light | 1 | 23.7 | 0.71 | -0.15 | - | - | designed | frost-white running point on the knuckle line |
+| L1p | running light | 1 | 25.3 | 0.74 | -0.15 | - | - | designed | frost-white running point on the knuckle line |
 | L2p | running light | 1 | 34.3 | 0.90 | -0.18 | - | - | designed | frost-white running point on the knuckle line |
 | L3p | running light | 1 | 43.7 | 0.98 | -0.19 | - | - | designed | frost-white running point on the knuckle line |
 | L4p | running light | 1 | 54.3 | 0.66 | 0.30 | - | - | designed | frost-white running point on the deck edge |
 | L5p | running light | 1 | 66.9 | 0.59 | 0.30 | - | - | designed | frost-white running point on the deck edge |
 | L6p | running light | 1 | 82.7 | 0.58 | 0.29 | - | - | designed | frost-white running point on the deck edge |
-| Q1s | attitude thruster quad | 1 | 26.9 | -0.71 | -0.20 | - | - | designed | bow attitude thruster on the lower facet |
+| Q1s | attitude thruster quad | 1 | 26.9 | -0.59 | -0.30 | - | - | designed | bow attitude thruster on the lower facet |
 | Q2s | attitude thruster quad | 1 | 84.8 | -0.79 | 0.18 | - | - | designed | stern attitude thruster on the upper facet |
 | V1s | louvre panel 0.32 x 0.13 | 1 | 70.1 | -0.69 | 0.23 | - | - | designed | reactor heat louvre over the reactor room |
 | V2s | louvre panel 0.32 x 0.13 | 1 | 77.5 | -0.69 | 0.23 | - | - | designed | reactor heat louvre over the reactor room |
-| L1s | running light | 1 | 23.7 | -0.71 | -0.15 | - | - | designed | frost-white running point on the knuckle line |
+| L1s | running light | 1 | 25.3 | -0.74 | -0.15 | - | - | designed | frost-white running point on the knuckle line |
 | L2s | running light | 1 | 34.3 | -0.90 | -0.18 | - | - | designed | frost-white running point on the knuckle line |
 | L3s | running light | 1 | 43.7 | -0.98 | -0.19 | - | - | designed | frost-white running point on the knuckle line |
 | L4s | running light | 1 | 54.3 | -0.66 | 0.30 | - | - | designed | frost-white running point on the deck edge |
@@ -166,19 +166,19 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: iron dec
 | Point | Station % | Offset | Height | Side | Section | Note |
 |---|---:|---:|---:|---|---|---|
 | hp_core | 72.2 | 0.00 | -0.10 |  |  |  |
-| hp_breach_0 | 26.3 | 0.81 | 0.07 | port | prow | on the hull side by the broadside band, clear of the louvres, lamps and thrusters |
+| hp_breach_0 | 20.6 | 0.66 | 0.07 | port | prow | on the hull side by the broadside band, clear of the louvres, lamps and thrusters |
 | hp_breach_1 | 61.1 | -0.92 | 0.07 | stbd | mid | on the hull side by the broadside band, clear of the louvres, lamps and thrusters |
 | hp_breach_2 | 87.5 | 0.88 | 0.07 | port | eng | on the hull side by the broadside band, clear of the louvres, lamps and thrusters |
-| hp_rcs_0 | 26.9 | 0.71 | -0.20 | port |  |  |
+| hp_rcs_0 | 26.9 | 0.59 | -0.30 | port |  |  |
 | hp_rcs_2 | 84.8 | 0.79 | 0.18 | port |  |  |
 | hp_board_0 | 63.8 | 0.90 | 0.01 | port |  |  |
-| hp_rcs_1 | 26.9 | -0.71 | -0.20 | stbd |  |  |
+| hp_rcs_1 | 26.9 | -0.59 | -0.30 | stbd |  |  |
 | hp_rcs_3 | 84.8 | -0.79 | 0.18 | stbd |  |  |
 | hp_board_1 | 63.8 | -0.90 | 0.01 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 254 objects, 50 parts, 413 close pairs, 307 rays, 2 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 39 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 254 objects, 50 parts, 420 close pairs, 307 rays, 2 guns, 0 sensor pairs, 2 turrets swept, 6 cones, 39 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

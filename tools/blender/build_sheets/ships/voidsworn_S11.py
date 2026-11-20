@@ -238,7 +238,7 @@ def build(K):
             K.mass('Band %s lip, %s' % (lip, nm), ob, 'darker iron', note='the armoured shelf over (under) the plated band; its ends are angled')
         for i, x in enumerate((2.0, 1.1, -0.2, -1.6, -2.6)):
             p, n = band_pt(x, side)
-            K._surface_part('U%d%s' % (i + 1, nm[0]), HP.vent(0.2, 0.08, 3, depth=0.03, fr=0.015), tuple(p + n * 0.056), tuple(n), (0, 0, 1), 'band_louvres',
+            K._surface_part('U%d%s' % (i + 1, nm[0]), HP.vent(0.2, 0.08, 3, depth=0.03, fr=0.015), tuple(p + n * 0.02), tuple(n), (0, 0, 1), 'band_louvres',
                             'band louvre 0.2 x 0.08', 'vent', 'picture', 'a heat louvre in the plated band (the gallery spaces behind it breathe out here)', aperture=0.4)
     K.mark('gun_deck', 'belt', ['band', 'plate'])
 
@@ -337,7 +337,7 @@ def build(K):
     # ---------------- fittings ----------------
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
-        p, n = lower_pt(2.2, side, 0.35)
+        p, n = lower_pt(2.2, side, 0.75)
         K.thruster('Q1' + sn, tuple(p), tuple(n), r=0.1, inv='thrusters', note='bow attitude thruster on the lower facet')
         p, n = facet_pt(-3.3, side, 0.75)
         K.thruster('Q2' + sn, tuple(p), tuple(n), r=0.1, inv='thrusters', note='stern attitude thruster on the upper facet')
@@ -345,7 +345,7 @@ def build(K):
             p, n = facet_pt(x, side, 0.45)
             K._surface_part('V%d%s' % (i + 1, sn), HP.vent(0.32, 0.13, 4, depth=0.035, fr=0.02), tuple(p), tuple(n), (0, 0, 1), 'vents',
                             'louvre panel 0.32 x 0.13', 'vent', 'designed', 'reactor heat louvre over the reactor room', aperture=0.4)
-        for i, x in enumerate((2.5, 1.5, 0.6)):
+        for i, x in enumerate((2.35, 1.5, 0.6)):
             p, n = lower_pt(x, side, 0.15)
             K._surface_part('L%d%s' % (i + 1, sn), HP.lamp(0.034), tuple(p + n * 0.004), tuple(n), (0, 0, 1), 'lamps', 'running light', 'lamp', 'designed',
                             'frost-white running point on the knuckle line', aperture=0.35)
@@ -460,11 +460,11 @@ def build(K):
     K.point('core', 'hp_core', (-2.1, 0, -0.1))
     # Three breach anchors (Destroyer base 3, Sunward +0): one in each of the prow, mid and engine sections, alternating sides, each on
     # the hull side by the broadside band, clear of the louvres, lamps and thrusters
-    for i, (x, side, z, sec) in enumerate(((2.25, 1, BAND_Z + 0.06, 'prow'), (-1.05, -1, BAND_Z + 0.06, 'mid'), (-3.55, 1, BAND_Z + 0.06, 'eng'))):
+    for i, (x, side, z, sec) in enumerate(((2.8, 1, BAND_Z + 0.06, 'prow'), (-1.05, -1, BAND_Z + 0.06, 'mid'), (-3.55, 1, BAND_Z + 0.06, 'eng'))):
         K.point('breach', 'hp_breach_%d' % i, (x, side * hw_at(x, z), z), side='port' if side > 0 else 'stbd', section=sec,
                 note='on the hull side by the broadside band, clear of the louvres, lamps and thrusters')
     for i, side in enumerate((1, -1)):
-        p, n = lower_pt(2.2, side, 0.35)
+        p, n = lower_pt(2.2, side, 0.75)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(p), side='port' if side > 0 else 'stbd')
         p, n = facet_pt(-3.3, side, 0.75)
         K.point('rcs', 'hp_rcs_%d' % (i + 2), tuple(p), side='port' if side > 0 else 'stbd')
