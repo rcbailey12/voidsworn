@@ -1,5 +1,5 @@
 @echo off
-title Opus 1279: Jolt job overflow on capital arrival, before and after - GPU job
+title Opus 1279 run 2: Jolt job overflow on capital arrival, before and after - GPU job
 rem Issue 1279: on 1232 RUN4, plain main's "before s2 arrival" logged "Jolt Physics job system exceeded the maximum number
 rem of jobs" and run_timeout stopped Godot. This runs the same arrival bench (contrib/opus/cold_kill_1232/capture1232.gd:
 rem warm-up at load with only the shooter, then A16 arrives and is killed 6 frames later) five times on current main
@@ -11,6 +11,10 @@ rem PASSED needs: the jolt_jobs_check passes, all 5 AFTER arrival rows collected
 rem log. BEFORE rows are evidence only (the overflow is intermittent: 1 of 3 on RUN4).
 rem Its own sparse clone in opus1279\repo (godot, tools, contrib\opus\cold_kill_1232; made on the first run). Ryan's real
 rem battle_opts.json and board_look.cfg are hashed before and after. Writes only under opus1279\. Never deletes anything.
+rem Run 2 (Board, Nov 20): every Godot start goes through the installed watchdog tools_live\<current.txt>\pc\tmo.bat (fails
+rem closed if it or run_timeout.ps1 is missing; path and SHA256 in result.txt); the ships copy leaves out manifest.json,
+rem README.md, a4_props.gd, *.uid, test and previews, and the run stops if any tracked .gd in the clone then differs.
+rem Run 1's bat (Artoo on PR 1302) had duplicate :one_commit and :realcheck labels; this file has one of each.
 rem Logs to out_<A>\result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
 set AFTER=978bbcd939bb71ac4fd8293f7fa5a54d44293d10
@@ -51,6 +55,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "foreach ($f in 'battle_o
 set "REAL_APPDATA=%APPDATA%"
 set "REAL_LOCALAPPDATA=%LOCALAPPDATA%"
 set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
+rem the canonical watchdog: tools_live's current version, never the clone's own copy
+set "TLV="
+if exist "%V%\tools_live\current.txt" set /p TLV=<"%V%\tools_live\current.txt"
+if not defined TLV (set "FAILMSG=tools_live\current.txt is missing or empty" & goto fail)
+set "TM=%V%\tools_live\%TLV%\pc\tmo.bat"
+if not exist "%TM%" (set "FAILMSG=no watchdog at %TM%" & goto fail)
+if not exist "%V%\tools_live\%TLV%\pc\run_timeout.ps1" (set "FAILMSG=no run_timeout.ps1 beside %TM%" & goto fail)
+echo watchdog %TM% >> "%RES%"
+certutil -hashfile "%TM%" SHA256 >> "%RES%" 2>&1
+certutil -hashfile "%V%\tools_live\%TLV%\pc\run_timeout.ps1" SHA256 >> "%RES%" 2>&1
 set PC_GPU_WAIT_SECONDS=3600
 set PC_GPU_ISSUE=1279
 "%GD%" --version >> "%RES%" 2>&1
@@ -88,14 +102,19 @@ for /f %%H in ('git -C "%C%" rev-parse HEAD') do set COMMIT=%%H
 echo %WHICH% commit=%COMMIT% >> "%RES%"
 if not "%COMMIT%"=="%REF%" (set "FAILMSG=checked out %COMMIT%, expected %REF%" & exit /b 1)
 echo {"commit": "%COMMIT%"} > "%C%\godot\build_info.json"
-robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /NFL /NDL /NJH /NP > "%OK%\log_copy_ships.txt" 2>&1
+robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NP > "%OK%\log_copy_ships.txt" 2>&1
 set E=%ERRORLEVEL%
 echo copy ships robocopy %E% (0 to 7 is success) >> "%RES%"
 if %E% GEQ 8 (set "FAILMSG=copy ships failed" & exit /b 1)
-if exist "%V%\build\godot\gen" robocopy "%V%\build\godot\gen" "%C%\godot\gen" /E /NFL /NDL /NJH /NP > "%OK%\log_copy_gen.txt" 2>&1
+if exist "%V%\build\godot\gen" robocopy "%V%\build\godot\gen" "%C%\godot\gen" /E /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NFL /NDL /NJH /NP > "%OK%\log_copy_gen.txt" 2>&1
 set E=%ERRORLEVEL%
 echo copy gen robocopy %E% (0 to 7 is success) >> "%RES%"
 if %E% GEQ 8 (set "FAILMSG=copy gen failed" & exit /b 1)
+rem a stale copied script must never run (Board, Nov 20): stop if any tracked .gd now differs from the commit
+git -C "%C%" status --porcelain --untracked-files=no -- "*.gd" > "%OK%\tracked_gd_changes.txt" 2>&1
+if errorlevel 1 (set "FAILMSG=git status of the clone failed after the ships copy" & exit /b 1)
+for %%Z in ("%OK%\tracked_gd_changes.txt") do if %%~zZ GTR 0 (set "FAILMSG=tracked .gd files changed after the ships copy, listed in %OK%\tracked_gd_changes.txt" & exit /b 1)
+echo %WHICH% no tracked .gd changed by the copy >> "%RES%"
 if not exist "%C%\godot\bench\opus1232" mkdir "%C%\godot\bench\opus1232"
 rem the same capture both times (main's copy; the fix does not change it)
 git -C "%C%" show %CAPREF%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
@@ -104,7 +123,6 @@ if errorlevel 1 (
   git -C "%C%" show %CAPREF%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
   if errorlevel 1 (set "FAILMSG=could not write the capture script" & exit /b 1)
 )
-set TM=%C%\tools\pc\tmo.bat
 cd /d "%C%"
 set "APPDATA=%PROF%\import_%WHICH%"
 set "LOCALAPPDATA=%PROF%\import_%WHICH%"
@@ -136,83 +154,6 @@ for %%N in (1 2 3 4 5) do (
   )
   if "%WHICH%"=="after" if "!E!"=="0" findstr /c:"\"outcome\"" "%OK%\s%%N\arrival.json" >nul 2>&1 && set /a GOOD+=1
   findstr /c:"CAPTURE1232 arrival" "%OK%\s%%N\log_arrival.txt" >> "%RES%" 2>nul
-)
-set PC_GPU_MODE=
-set "APPDATA=%REAL_APPDATA%"
-set "LOCALAPPDATA=%REAL_LOCALAPPDATA%"
-exit /b 0
-
-:realcheck
-if errorlevel 1 (set "FAILMSG=Ryan's real options changed during the run; see real_profile_*.txt" & goto fail)
-echo real options unchanged >> "%RES%"
-echo PASSED >> "%RES%"
-echo all done %DATE% %TIME% >> "%RES%"
-exit /b 0
-
-rem ---------------------------------------------------------------- :one_commit (WHICH = after or before)
-:one_commit
-if "%WHICH%"=="after" (set "REF=%AFTER%") else (set "REF=%BEFORE%")
-set "OK=%O%\%WHICH%"
-mkdir "%OK%"
-set "APPDATA=%REAL_APPDATA%"
-set "LOCALAPPDATA=%REAL_LOCALAPPDATA%"
-git -C "%C%" fetch -q --depth 1 origin %REF% >> "%RES%" 2>&1
-if errorlevel 1 (set "FAILMSG=git fetch of %REF% failed" & exit /b 1)
-call :safe_checkout FETCH_HEAD
-if errorlevel 1 exit /b 1
-set COMMIT=
-for /f %%H in ('git -C "%C%" rev-parse HEAD') do set COMMIT=%%H
-echo %WHICH% commit=%COMMIT% >> "%RES%"
-if not "%COMMIT%"=="%REF%" (set "FAILMSG=checked out %COMMIT%, expected %REF%" & exit /b 1)
-echo {"commit": "%COMMIT%"} > "%C%\godot\build_info.json"
-rem the installed ships and generated hulls, copied (robocopy /E only adds and updates; exit 0 to 7 is success, 8+ failed)
-robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /NFL /NDL /NJH /NP > "%OK%\log_copy_ships.txt" 2>&1
-set E=%ERRORLEVEL%
-echo copy ships robocopy %E% (0 to 7 is success) >> "%RES%"
-if %E% GEQ 8 (set "FAILMSG=copy ships failed" & exit /b 1)
-if exist "%V%\build\godot\gen" robocopy "%V%\build\godot\gen" "%C%\godot\gen" /E /NFL /NDL /NJH /NP > "%OK%\log_copy_gen.txt" 2>&1
-set E=%ERRORLEVEL%
-echo copy gen robocopy %E% (0 to 7 is success) >> "%RES%"
-if %E% GEQ 8 (set "FAILMSG=copy gen failed" & exit /b 1)
-if not exist "%C%\godot\bench\opus1232" mkdir "%C%\godot\bench\opus1232"
-rem the capture comes from CAPREF both times (same game code as AFTER; the before commit does not have it)
-git -C "%C%" show %CAPREF%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
-if errorlevel 1 (
-  git -C "%C%" fetch -q --depth 1 origin %CAPREF% >> "%RES%" 2>&1
-  git -C "%C%" show %CAPREF%:contrib/opus/cold_kill_1232/capture1232.gd > "%C%\godot\bench\opus1232\capture1232.gd" 2>> "%RES%"
-  if errorlevel 1 (set "FAILMSG=could not write the capture script" & exit /b 1)
-)
-set TM=%C%\tools\pc\tmo.bat
-cd /d "%C%"
-set "APPDATA=%PROF%\import_%WHICH%"
-set "LOCALAPPDATA=%PROF%\import_%WHICH%"
-mkdir "%APPDATA%"
-call "%TM%" 3600 "%GD%" --headless --path "%C%\godot" --import > "%OK%\log_import.txt" 2>&1
-set E=%ERRORLEVEL%
-echo %WHICH% import exit %E% >> "%RES%"
-if not "%E%"=="0" (set "FAILMSG=%WHICH% import failed" & exit /b 1)
-if "%WHICH%"=="after" (
-  call "%TM%" 1800 "%GD%" --headless --path "%C%\godot" --script res://fx/test/cold_kill_check.gd -- "%C%\godot\assets\ships\C19_51\C19_51.glb" > "%OK%\log_cold_kill_check.txt" 2>&1
-  set E=!ERRORLEVEL!
-  echo cold kill check exit !E! >> "%RES%"
-  if not "!E!"=="0" (set "FAILMSG=cold kill check failed" & exit /b 1)
-  call "%TM%" 1800 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\C19_51\C19_51.glb" > "%OK%\log_death_seam.txt" 2>&1
-  set E=!ERRORLEVEL!
-  echo death seam exit !E! >> "%RES%"
-  if not "!E!"=="0" (set "FAILMSG=death seam check failed" & exit /b 1)
-)
-rem frame times, solo on the GPU (R293): three sessions, each mode in its own process and its own empty profile
-set PC_GPU_MODE=solo
-for %%N in (1 2 3) do for %%M in (arrival cold) do (
-  mkdir "%OK%\s%%N" 2>nul
-  set "APPDATA=%PROF%\%WHICH%_s%%N_%%M"
-  set "LOCALAPPDATA=%PROF%\%WHICH%_s%%N_%%M"
-  mkdir "!APPDATA!"
-  call "%TM%" 1800 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --fixed-fps 60 --script res://bench/opus1232/capture1232.gd -- %%M "%OK%\s%%N" > "%OK%\s%%N\log_%%M.txt" 2>&1
-  set E=!ERRORLEVEL!
-  echo %WHICH% s%%N %%M exit !E! >> "%RES%"
-  if "!E!"=="0" findstr /c:"\"outcome\"" "%OK%\s%%N\%%M.json" >nul 2>&1 && set /a GOOD+=1
-  findstr /c:"CAPTURE1232 %%M" "%OK%\s%%N\log_%%M.txt" >> "%RES%" 2>nul
 )
 set PC_GPU_MODE=
 set "APPDATA=%REAL_APPDATA%"
