@@ -1,5 +1,7 @@
 # Issue 1070, run 2
 
+[Run 4 battle-load and fragment results](run4.md)
+
 The replay used the preserved Run 1 fleet. Both the installed ship manifest and the generated asset manifest matched Run 1. The saved Run 2 before timings use `b7e82cdd25744d9315daabc02fb1c84a81c5a433`. The resumed work uses the merged base `950e1a2f8435e4da702bcbe9104546a9ac2168ac` with the Run 1 assets.
 
 ## Code changes
@@ -74,6 +76,8 @@ Scene 207 uses the same camera, installed V1b_r_23 hull, scripted travel and shi
 [PERF1070_RUN2_BATTLE](../../../../docs/shots/perf_1118/run2/PERF1070_RUN2_BATTLE.jpg)
 
 ## Reproduction
+
+The [Run 3 report](../../../../docs/shots/perf_1118/run2/README.md) uses the current main scene-gate interface. Use the Run 2 delivery checkout or the archived Run 2 probes in `raw/` when replaying an earlier source.
 
 The timing runs use the [Run 1 probe and method](../README.md). The original installed fleet and generated assets are required. The manifests are `bb6258bc3f2a8c9e530776c4fd9a228957462beee10a37db73a37da0dc6ff2d1` and `34244bddf5ae0b792bfd99d2313afba5a8beb319661346cfcdf81651652708c5`. Use [stage.ps1](../stage.ps1) from the matching `b7e82cdd` checkout with the preserved assets, then overlay tracked Godot source from the revision under test and write that revision in `godot/build_info.json`. Keep the preserved asset manifest in both staged projects. Use the merged base for the matched isolation and picture controls and the patched source for the final timing and picture runs. Run the following from the repo root against a staged directory.
 

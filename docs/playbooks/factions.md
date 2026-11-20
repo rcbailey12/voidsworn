@@ -56,7 +56,12 @@ class and faction (issue 363), never from a constant.
 **In one line:** a black iron blade with burning spires.
 
 - **Silhouette:** long, narrow dagger or spearhead, widest at the stern third. A row of tall radiator spires along the spine,
-  tallest amidships. Symmetric.
+  tallest amidships. Symmetric. The spires stand at about 70 percent of the concept table heights, with the same count,
+  stations and profiles, and the ember shows in the fin slats, never as a whole lit tower: every Sunward build makes them
+  with the one shared spire option, `radiator(..., glow='slats')` in tools/blender/kits/voidsworn/parts.py (glowing fins
+  at least 0.26 apart over the dark iron core, about half the old towers' lit area). Why: Ryan, Nov 19 2026 (R331), on the
+  Sunward concepts: "can we scale down the giant radiator/orange towers on each ship a bit too?"; S8 first (issue 1158),
+  then Warden, Vigil, Harrow, Hearth and Bastion (R333).
 - **Shape language:** forged, heavy, vertical. Broadside gun decks in long straight rows. Big engine bells. Plate with rivet
   lines, never rust.
 - **Colours:** black iron, frost-white markings, bright ember (windows, engines, and the spires, which glow because they shed
@@ -157,11 +162,12 @@ ships catch, store and release light.
   you'd expect with their lore. It should feel almost seamless and less bolted on. Like a work of art or blown glass, though
   able to rotate, etc." One continuous skin of glass and metal; no pod, bracket, ring mount or visible seam between lens and
   ship. Forward lenses visibly point forward. G17 (clear bubbles) and G18 (cream tubes) failed this (R201, R206).
-- **Shape language:** a long leaf of flowing, twisted blown glass lit from inside (CD5, R298; it grew from the G13 and G15 base). Rigid,
+- **Shape language:** a long leaf of flowing, twisted pearl ribbons (CD5, R298; it grew from the G13 and G15 base). Rigid,
   symmetric about the long axis. Nothing that reads as a wing, a petal, a sail or a body. No crystal object on a hull and no
   hull shaped like a crystal (R180, R183 (5): every crystal and prism route was scrapped).
-- **Colours:** clear and pearly glass with silver veins, a rainbow fringe on cut edges, a stored light glowing deep inside.
-  Since R298 (the CD5 flagship) the glass also holds amber, violet and green panes lit from inside, like stained blown glass.
+- **Colours (R337, Ryan Nov 19):** opaque, reflective pearl ribbons with silver edges, and glowing amber, violet and green
+  mosaic panels between them, like stained glass. Nothing is see-through: nothing inside an intact hull shows. This replaces
+  the clear, lit-from-inside glass direction (issue 1058 runs 2 to 6 for CD5); issue 1183 rebuilds CD5 to it.
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -187,14 +193,16 @@ violet-white): the green stays, as the light of an eclipse.
   as a sunshade, the ship's heart and guns under and behind it, as E13 is built (R256, Ryan Nov 15). Guns never fire through
   slots in a shade. E14 is the exception being redesigned: its ring stands upright as in the concept, built around one larger
   gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
-- **Colours:** dark violet-black plates, the green-white corona line, a small bright core.
+- **Colours:** dark violet-black plates, the green-white corona line, a small bright core. Engines and weapon bolts are
+  violet with a green weapon core, as godot/fx/faction_looks.json sets them (issue 1205 removed the all-green hull_table
+  FAC3D override; faction_looks.json is the one source).
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
   slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
   patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
   green like the concept, white-hot only at its very centre, and reads at camera 170.
 - **Guns sit (R256, Ryan Nov 15):** clear of the shades: on mounts at the shade's heart or root firing over its plates (E13),
   or at the centre of a ring (E14, being redesigned). This replaces "behind the shade's rim, firing through gaps between plates".
-- **Engines:** no flaming bells. An eclipse ring of pale light.
+- **Engines:** no flaming bells. An eclipse ring of pale violet light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,
   dark decks, the core's light. Breach anchors sit on the shade's bands.
 - **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
@@ -243,11 +251,11 @@ from the current lore, direction first ("Direction first, then fleets"), and onl
 | Faction | Ship | State | Reference picture | Ryan's words, and what is left |
 |---|---|---|---|---|
 | Ashfall Hullbreakers | flagship (Warlord's Pyre-Barge) A16; cruiser (Pack Hunter) A17 | ACCEPTED (R201); build sheets round 2 running (issue 532) | contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg, corsair_A17_beauty.jpg (from round 1 corsair_A.jpg and corsair_B.jpg) | R197: "Yes! Scrap brick as the primary and pack hunter as like a cruiser or something." Round 1 sheets failed (R213: "The guns look randomly placed and don't make sense... the builds look like square blocks basically. It barely looks like the concepts."). A17: "Keep it lean" (length to beam about 3.0). |
-| Eclipse | flagship E11; ring cruiser E12 | ACCEPTED (R206); build sheets next | contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg, deathless_E12_beauty.jpg | Keep the Eclipse purple (E10 lost it, R201). The builder adds the struts the E12 ring arcs lack (R207: "Where there are gaps like eclipse rings not all having structural connections... you should build differently"). |
-| The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); build sheets next | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
+| Eclipse | flagship E11; ring cruiser E12 | ACCEPTED (R206); sheets built and both in the game (issues 618, 642, 1057) | contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg, deathless_E12_beauty.jpg | Keep the Eclipse purple (E10 lost it, R201). The builder adds the struts the E12 ring arcs lack (R207: "Where there are gaps like eclipse rings not all having structural connections... you should build differently"). |
+| The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); sheets built and through the recipe (issue 623; C10 relief, issue 921) | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
 | Sunward Crusade | flagship, S8 shape; fighter SF3, bomber SB4 | FLAGSHIP SHEET ACCEPTED (R254); painted in the sandbox (PR 772), hull to come up a step lighter toward the concept's grey before the PC recipe run (R256); craft SF3 and SB4 confirmed (R256), sheets built (PR 776) | docs/ship_pipeline/build_sheets/voidsworn_S8/ (build sheet); craft: contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg, SB4.jpg | R254: "Everything for sunward flagship is good. The fighters and bombers need a ton of work, new concepts to come." R255: "Agree on sf3 and sb4". Round 1 craft read as jets (no canopies, aero wings or tail fins). |
 | Hegemony Navy | Dominion (h_dominion), H10 shape; Iron Mandate (h_boss), IM5 | BOTH SHEETS ACCEPTED (R256): Dominion (PR 767) and Iron Mandate (PR 775); the Hegemony paint stack is next | docs/ship_pipeline/build_sheets/hegemony_H10/ (build sheet); Iron Mandate: contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." R254: "Can we do a mix of im2 and im3"; R255: "Im5 is my preference". A well-kept navy, never rusty; guns low, sunk in and real (R185). |
-| The Glasswrights | flagship CD5 (Flowing Integrated Optics) | ACCEPTED (R298); build sheet next (issue 912) | Downloads\voidsworn_test\concepts\glasswright_r9\Glasswright_CD5_flowing_integrated_optics.png on the PC; the build sheet (issue 912) copies it into its own folder as concept.jpg | R298: "I love the overall design and the forward lances. The three other optics look somewhat left-heavy and randomly spaced, so clean up their placement in Blender while keeping them integrated into the flowing glass and consistent with their all-direction firing arcs. Treat the picture as a reference, not a literal placement guide." Made in ChatGPT image generation from G15's base (R296). |
+| The Glasswrights | flagship CD5 (Flowing Integrated Optics) | ACCEPTED (R298); build sheet done (issue 912); look restarting from the concept (R337, issue 1183) | Downloads\voidsworn_test\concepts\glasswright_r9\Glasswright_CD5_flowing_integrated_optics.png on the PC; the build sheet (issue 912) copies it into its own folder as concept.jpg | R298: "I love the overall design and the forward lances. The three other optics look somewhat left-heavy and randomly spaced, so clean up their placement in Blender while keeping them integrated into the flowing glass and consistent with their all-direction firing arcs. Treat the picture as a reference, not a literal placement guide." Made in ChatGPT image generation from G15's base (R296). |
 | Station | Vesper Reach, damaged | ACCEPTED (R206: "T2 damaged"); build sheet, then issue 373 | contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg | Concept picture first, then the build (R201 (3)). |
 
 History, not targets: every earlier pick (S8's own render, S9, S10, E4, E8, E9, E10, H8, H9, H11, H12, A10 to A15, G9 to G14,

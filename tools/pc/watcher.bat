@@ -2,17 +2,26 @@
 REM Voidsworn test watcher with a job queue: leave this window open.
 REM Old way still works: drop run.request (runs build\job.bat through run_smoke.bat).
 REM Queue: drop any NAME.bat into queue\ ; jobs run one at a time, oldest first, from build\ ;
-REM output goes to queue\logs\NAME.log, and the job file moves to queue\done\ when finished.
+REM output goes to queue\logs\NAME.log with its exit code, and the job file moves to queue\done\ when it exits 0 or to
+REM queue\failed\ when it exits with any other code (issue 1194).
 cd /d "%~dp0"
 title VS job queue
 if exist watcher_b.bat start "" /min "%~dp0watcher_b.bat"
 if not exist queue mkdir queue
 if not exist queue\done mkdir queue\done
+if not exist queue\failed mkdir queue\failed
 if not exist queue\logs mkdir queue\logs
 if not exist queue\running mkdir queue\running
+set "JANITOR=%~dp0janitor.bat"
+if not exist "%JANITOR%" set "JANITOR=%~dp0build_b\tools\pc\janitor.bat"
+set "JANITOR_MINUTE="
 echo Watching %cd% for run.request and queue\*.bat ... (close this window to stop)
 :loop
 cd /d "%~dp0"
+if not "%JANITOR_MINUTE%"=="%time:~0,5%" (
+  set "JANITOR_MINUTE=%time:~0,5%"
+  if exist "%JANITOR%" call "%JANITOR%" --nightly
+)
 if exist run.request (
   del run.request
   echo [%time%] Smoke run started
@@ -22,17 +31,28 @@ if exist run.request (
 cd /d "%~dp0"
 set "J="
 for /f "delims=" %%F in ('dir /b /od queue\*.bat 2^>nul') do if not defined J set "J=%%F"
-if defined J (
-  move /y "queue\%J%" "queue\running\%J%" >nul
-  echo [%date% %time%] queue: %J% started
-  echo [%date% %time%] started > "queue\logs\%J%.log"
-  pushd build
-  call "%~dp0queue\running\%J%" >> "%~dp0queue\logs\%J%.log" 2>&1
-  popd
-  cd /d "%~dp0"
-  echo [%date% %time%] finished >> "queue\logs\%J%.log"
-  move /y "queue\running\%J%" "queue\done\%J%" >nul
-  echo [%date% %time%] queue: %J% finished
-)
+if not defined J goto idle
+rem (1194) Between jobs, refresh the main queue's build\tools and the canonical tools_live copy that every tmo.bat uses.
+rem A busy or failed refresh keeps the copies it has; the log says why. Nothing here deletes a job's work.
+set "RF=%~dp0lane_tools_refresh.ps1"
+set "TLV="
+if exist "tools_live\current.txt" set /p TLV=<"tools_live\current.txt"
+if defined TLV if exist "tools_live\%TLV%\pc\lane_tools_refresh.ps1" set "RF=%~dp0tools_live\%TLV%\pc\lane_tools_refresh.ps1"
+if exist "%RF%" powershell -NoProfile -ExecutionPolicy Bypass -File "%RF%" -Build tools_live >> "queue\logs\tools_refresh.txt" 2>&1
+if exist "%RF%" powershell -NoProfile -ExecutionPolicy Bypass -File "%RF%" -Build build >> "queue\logs\tools_refresh.txt" 2>&1
+cd /d "%~dp0"
+move /y "queue\%J%" "queue\running\%J%" >nul
+echo [%date% %time%] queue: %J% started
+echo [%date% %time%] started > "queue\logs\%J%.log"
+pushd build
+call "%~dp0queue\running\%J%" >> "%~dp0queue\logs\%J%.log" 2>&1
+set "JX=%ERRORLEVEL%"
+popd
+cd /d "%~dp0"
+rem (1194) The exit code decides where the job file goes: 0 to queue\done, anything else to queue\failed.
+echo [%date% %time%] finished, exit %JX% >> "queue\logs\%J%.log"
+if "%JX%"=="0" (move /y "queue\running\%J%" "queue\done\%J%" >nul) else (move /y "queue\running\%J%" "queue\failed\%J%" >nul)
+if "%JX%"=="0" (echo [%date% %time%] queue: %J% finished) else (echo [%date% %time%] queue: %J% FAILED, exit %JX%, moved to queue\failed)
+:idle
 timeout /t 5 /nobreak >nul
 goto loop

@@ -113,6 +113,34 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
    half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
    Each engine ring shares the ship's normalized pattern (R308).
+   **New finishes keep their own look in the game** (R329, the Board, Nov 19 2026, on an outside review of the Glasswright and
+   Chorus builds): a new no-wear paint stack sets AUTHORED_LOOK, the export writes the glTF extra authored_look, and look.gd
+   keeps that material's albedo, emission, metallic and specular as painted (factor 1.0) instead of the old A4 calibration; the
+   old A4 and the approved satin finishes stay byte-identical. Every finish sheet carries an accepted ship (C19_51) in the same
+   light as a value reference.
+   **The Chorus armour and paint** (R341, Ryan, Nov 19 2026 22:04 UTC: "the armor should be comprehensive and across the entire
+   body, minus things like the spine, maw, 'engines', weapons, etc. it should be almost like an armadillo, pangolin, etc. not
+   exactly the same, still alien, but think about it as a warship. we should have that textured feel and armored shell defense";
+   issue 1234). Every Chorus sheet calls the shared kit's `plates.armour` (tools/blender/kits/chorus/plates.py, R333), never
+   its own plates: thick keratin scutes in bands from belly to back on both flanks, each band lapping the one below and offset
+   half a scute, every free lip standing proud aft over the next scute's root. Round 2 (the Board and Ryan, Nov 19: not round
+   pebble plates; "close the gap around open skin"): each scute comes to a point or a squared chisel aft, is thickest at the lip
+   with a dark shadow gap under it and carries one or two raised keels; the bands run from belly to spine, smaller scutes
+   fill round each fitting, sacs and knolls get caps of smaller scutes (`plates.dome_caps`, the sac's bile window open at its
+   crown) and a gland's knoll a ring round its slopes, its vent and spines open. Round 3 (Neon's review, Nov 19): fewer, bolder bands
+   (5 or 6), a roof keel splitting each face into a lit and a shaded plane, the lip thickest; a scute that meets a fitting is
+   shortened or cut back from that side, never replaced by a patch of small scutes; a seed per ship. The keep-outs are read from the sheet's own
+   fittings (guns, maws, glands, sacs, siphons, vents, the spine row; `keep` names grown-in features such as a face or C13's
+   knolls), so they stand in sockets of wet hide, siphons and vents in wider ones clear of their jets; what lies on the hull
+   (C12's tendrils, `skip`) lies over it. No skin folds, pore fields or flank veins under the shell. The paint
+   (tools/blender/kits/chorus/stack.py): warm brown hide between the plates, not dark olive; horn-brown scutes with coarse
+   grooves along their length, pits, growth lines parallel to the lip, a dark root and a paler worn lip, all reading at camera 26; the trailing veils dark torn membrane with
+   a faint warm glow, not flat lime; the bile light only in sac windows and deep in the vents. Round 3 (Neon): the hide deep wet
+   maroon-umber well under the horn; pale weathered horn on the keel crests and lips (the shell's scute_ridge and
+   scute_progress), charred at the roots, waxy crests and chalky grooves; a restrained yellow-green glow at each veil's root and
+   along its ribs (kit material veilroot), the torn tips dark; the sac windows narrow bile slits under the caps. Ryan accepted
+   round 3 on Nov 19 2026 23:38 UTC ("Accept, keep yellow-green glow"): the yellow-green glow stays. C13's bare stern and the
+   skin between its knolls are fixed in the C13 rebuild (issue 1154).
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
@@ -170,6 +198,13 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    this run's own checked install, waits up to 3600 s for the GPU and ends "done PASS" or "done FAILED: <step>", then
    "all done". Why: on Nov 19 the C12 and C13 runners and S9's first run took pictures after a failed build, and 1155, 1157
    and 1158 failed a stage on the old 300 s GPU wait.
+14. **One fix reaches every ship of its kind (R333, Ryan, Nov 19 2026).** A fix or look change lands in the faction kit, the
+   paint stack, the shared parts or a shared helper, never in one ship's file alone, and its pull request names which other
+   ships pick it up and how (rebuilt from the kit, rebaked from the stack, or already calling the shared option). A change
+   that is truly one ship's says why in its pull request. Why: "let's make sure all the changes we're doing are cohesive and
+   tied together. so like the fixes to the chorus skin should apply everywhere once we land it". First case: the Sunward spire
+   treatment is one parts option, `radiator(..., glow='slats')` (factions.md, Sunward), used by S8 (issue 1158) and every
+   later Sunward build.
 
 ### Named variant parts (issue 812)
 
@@ -418,7 +453,8 @@ hard points.
 - A model's own visual check is a hint, never proof (an AI inspector once passed a prop clipping through a sill); the scripted
   stage 4 audit is the check. Generators drop thin wires, text and fine greebles: build those in code (from the archived
   harness brief, docs/archive/briefs/blender_build_harness.md).
-- Heavy work runs on the PC; GPU work is sized to the job (RULEBOOK 3.4, R293). Never delete anything on the PC.
+- Heavy work runs on the PC; GPU work is sized to the job (RULEBOOK 3.4, R293). Deleting on the PC follows RULEBOOK 3.3:
+  jobs and the cleanup janitor may remove their own rebuildable leftovers under its safe rules; nothing else without Ryan.
 - A hull whose weapon list changes in data.js needs stage 7 again, or check_export.py fails on a missing hard point.
 
 ## 6. Worked example

@@ -679,7 +679,7 @@
         "deathless"
       ],
       "admiral": "matriarch",
-      "credits": 260,
+      "credits": 0,
       "cpCap": 16,
       "sector": 3,
       "relics": [
@@ -1251,7 +1251,8 @@
       },
       "v": 2,
       "eatenCore": null,
-      "eatCoreSeen": false
+      "eatCoreSeen": false,
+      "bio": 260
     },
     "recovered": false
   }

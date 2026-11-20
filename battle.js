@@ -156,8 +156,8 @@ try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE
 // not counted). More ships come mostly from lighter hulls (light: weight on 1 to 2 cp hulls) and a bigger budget (grow); per-ship toughness eases
 // a little as numbers rise (thin) so total threat follows the old difficulty curve. Your fleet's power scales the budget both ways (refP), so a
 // strong fleet meets more and a battered one less (this replaces the old 'never outgrow the player' floor). ceil is a soft ceiling for
-// performance, not a design cap. AI difficulty: Standard meets 10% less. Sims can override any field with RAMP='{...}'.
-let RAMP={grow:[0,1.2,1.2,1.24], light:[0,4,4,5], thin:[0,.73,.67,.62], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.5,.6], escort:.78, std:.9}; // stream B Oct 27 and Nov 1 (step 9b): sectors 2 and 3 eased (grow 1.25/1.35 to 1.2/1.24, thin .68/.64 to .67/.62, boss escorts .55/.65 to .5/.6) to bring sim full-run wins from 13.5% back to about 20% with the bosses still a fight; sector 1 unchanged // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
+// performance, not a design cap. AI difficulty: Standard meets 10% less, Veteran RAMP.vet more (issue 1160). Sims can override any field with RAMP='{...}'.
+let RAMP={grow:[0,1.2,1.2,1.24], light:[0,4,4,5], thin:[0,.73,.67,.62], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.5,.6], escort:.78, std:.9, vet:1.1, late:{standard:1.4,veteran:1.25}}; // issue 1178: late = Sector 3's extra fleet budget per AI level; // issue 1160 (Ryan via the Board, Nov 19): vet is Veteran's fleet budget edge, the shared difficulty lever (issue 1178 tunes it) // stream B Oct 27 and Nov 1 (step 9b): sectors 2 and 3 eased (grow 1.25/1.35 to 1.2/1.24, thin .68/.64 to .67/.62, boss escorts .55/.65 to .5/.6) to bring sim full-run wins from 13.5% back to about 20% with the bosses still a fight; sector 1 unchanged // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
 try{ if(process_env('RAMP')) Object.assign(RAMP,JSON.parse(process_env('RAMP'))); }catch(e){ console.warn('RAMP override ignored (not valid JSON):',e.message); }
 function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
 function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
@@ -168,6 +168,8 @@ function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   // B2: your fleet's power scales the budget both ways around the sector's reference fleet (was: a battered fleet met less, a strong one never more)
   if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ budget*=Math.max(RAMP.pwMin,Math.min(RAMP.pwMax,Math.pow(Math.max(.5,fleetPower())/RAMP.refP[s],RAMP.pw))); }
   if(typeof AI_LEVEL!=='undefined'&&AI_LEVEL==='standard') budget*=RAMP.std;
+  if(s===3&&RAMP.late) budget*=RAMP.late[aiVet()?'veteran':'standard']||1; // issue 1178: Sector 3 bites at each level
+  if(aiVet()) budget*=RAMP.vet; // the level as aiVet reads it: an unset level is Veteran, as in Godot (AI_LEVEL defaults to veteran there)
   if(heatOn('h_hunted')) budget*=1.15;
   if(mod==='bounty') budget*=1.1;
   let roster=F.roster.map(id=>({id,cp:HULLS[id].cp,car:HULLS[id].ab==='launch'}));
@@ -544,12 +546,12 @@ const SYNC_R=3, SYNC_DMG=.12, SYNC_AIM=6; // pass 2 tuning: was .15 and 8 // Heg
 const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.12; // pass 3 tuning: .15 to .12 (pass 2: .2 to .15) // tuned Oct 26 after the first PC pass (enemy Chorus rose from 41 to 51 enemy-side wins in fmatrix) // Chorus: hull share regrown by the killer, by others within FEED_R of the kill, cap per ship per round
 const LEGION_HP=.35; // Deathless: hull a reassembled ship comes back with
 const FAC_RULES={
-  hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their flagship fire as one: a target another synced ship already fired on this round is ${SYNC_AIM} easier to hit and takes +${Math.round(SYNC_DMG*100)}% damage. Lose the flagship and sync is gone for the rest of the battle. Does not stack with Anchored Volley.`},
-  ithar:{n:'Prism charge',d:'At the start of its turn, a shield pool that was not hit since its last turn recharges to full, and a pool that was hit recharges twice. Glasswright hulls cannot Brace.'},
-  chorus:{n:'Feed',d:`When an enemy ship dies, the Chorus ship that killed it regrows ${Math.round(FEED_KILL*100)}% of its hull and every other Chorus ship within ${FEED_R} hexes regrows ${Math.round(FEED_NEAR*100)}%, up to ${Math.round(FEED_CAP*100)}% per ship each round.`},
-  deathless:{n:'Archive restore',d:`The first Eclipse ship to fall each battle (never the flagship) reassembles at the start of the next round with ${Math.round(LEGION_HP*100)}% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.`},
-  corsair:{n:'Close in',d:'Hullbreakers field no lance weapons, and their rocket pods fire salvos that point defense can thin.'},
-  voidsworn:{n:'Line of battle',d:'Broadsides hit harder after a hard burn (drive rule); carriers cost 25% more.'}};
+  hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their command ship gain aim and damage against targets another synced ship fired on this round. They can also back away for 1 movement instead of 2. Lose the command ship and sync is gone for the battle.`},
+  ithar:{n:'Prism charge',d:'Shields refill at the start of a turn if untouched since the last turn, or recharge twice if hit. Ships can slip away after firing, but cannot Brace.'},
+  chorus:{n:'Feed',d:'Living ships regrow hull each round, and ship kills let the killer and nearby allies regrow more. Their own hulls have no shields.'},
+  deathless:{n:'Archive restore',d:`An eligible fallen ship reassembles next round with ${Math.round(LEGION_HP*100)}% hull, but never the flagship. Fold drives pass through ships, rocks and wrecks at no extra cost. Eclipse hulls have no shields.`},
+  corsair:{n:'Close in',d:'Boarding crews have extra strength, and rocket pods fire salvos that point defense can thin. Hullbreakers cannot field lance weapons.'},
+  voidsworn:{n:'Line of battle',d:`Side guns hit harder after moving at least 2 hexes, and Brace covers one adjacent ally facing the same way. Carrier base prices have a ${Math.round((FAC_PRICE.voidsworn.Carrier-1)*100)}% premium before rounding.`}};
 // telemetry for the sims: per-faction counters in B.fstat (never read by rules)
 function fstat(fac,k,n){ if(!B||!fac) return; const F=(B.fstat=B.fstat||{})[fac]||(B.fstat[fac]={}); F[k]=(F[k]||0)+(n==null?1:n); }
 // Hegemony anchor: the player's flagship (or the biggest Hegemony hull when the flagship is not Hegemony); for the enemy a sector flagship, the
@@ -665,9 +667,9 @@ function nemFleeCheck(){ if(!B||!B.nem||!B.nemFlee||B.nemFled||B.over) return; c
   B.nemFled=true; nemSig('flee_battle'); for(const e of alive('enemy').filter(u=>!u.isSq&&!u.transport)){ e.dead=true; e.fled=true; try{ if(typeof fxWithdraw==='function') fxWithdraw(e); }catch(x){} }
   log(`${f.name} breaks off and jumps out with what is left of his fleet. He will be back.`,'s'); checkEnd(); }
 // R42 personality weights for his ships in the AI's move scoring and target choice
-function nemProf(u,prof){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||((!P||!P.ai)&&!F)) return prof; const a=(P&&P.ai)||{}, o=Object.assign({},prof); if(a.tw) o.tw=prof.tw*a.tw; if(a.range!=null) o.range=a.range; if(a.flagFront&&u.nemFlag) o.tw=prof.tw*.6;
+function nemProf(u,prof){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||((!P||!P.ai)&&!F)) return prof; const a=(P&&P.ai)||{}, o=Object.assign({},prof); if(a.tw) o.tw=prof.tw*a.tw; if(a.range!=null) o.range=a.range; if(a.flagFront&&u.nemFlag) o.tw=prof.tw*.6; if(a.rear) o.rear=a.rear;
   if(F){ if(F.range!=null) o.range=Math.max(o.range||0,F.range); if(F.charge&&u.nemFlag) o.tw=o.tw*.7; } return o; } // R42 faction weights on top of his personality: Ithar keep range, a Voidsworn flagship charges
-function nemTargetBonus(u,t){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||!t) return 0; const a=(P&&P.ai)||{}; let v=0; if(a.focusWeak||(F&&F.focusWeak)) v+=20*(1-t.hp/t.maxHp); if(a.focusFlag&&t.pflag) v+=25; if(F&&F.hunt&&u.nemFlag&&t===nemDuelTarget()) v+=30; return v; } // Ithar pick off the weakest; a Voidsworn flagship hunts yours
+function nemTargetBonus(u,t){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||!t) return 0; const a=(P&&P.ai)||{}; let v=0; if(a.focusWeak||(F&&F.focusWeak)) v+=20*(1-t.hp/t.maxHp); if(a.focusFlag&&t.pflag) v+=25; if(a.rear&&!t.isSq){ const qd=shieldQuad(t,u); v+=(qd===2?10:qd===1||qd===3?4:0)*a.rear; } if(F&&F.hunt&&u.nemFlag&&t===nemDuelTarget()) v+=30; return v; } // Ithar pick off the weakest; a Voidsworn flagship hunts yours
 // R42 signatures: his faction behaviour firing, for the battle voice (G1: emit {t:'nem_signature', kind}) and the campaign record
 function nemSig(kind){ if(!B||!B.nem) return; (B.nemSigs=B.nemSigs||[]).push({kind,r:B.round}); if(typeof nemSignature==='function') nemSignature(kind); }
 // R42 weaknesses found by triggering them: logged once, known for the rest of the run (finishBattle merges B.nemFound). No random draws.
@@ -845,7 +847,8 @@ function applyHit(att,w,t,dmg,quad){
   if(B&&B.tr&&B.tr.grandTarget===t.id&&att&&att.side==='player'){ if(!B.tr.grandFirstDone) B.tr.grandFirstDone=1; else pierce=1; } // Vex capstone 1
   if(t._treePierce){ pierce=1; t._treePierce=0; } // Saro T3a: the third and later volley hits ignore shields
   if(!t.isSq&&quad!=null) (t.shHit=t.shHit||[0,0,0,0])[quad]=1; // B3 Ithar prism charge: this facing was hit since the ship's last turn
-  if(!t.isSq&&quad!=null&&w.ion&&att&&att.fac==='hegemony'&&t.shMax>0) t.regenLock=1; // v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
+  const locksRegen=!t.isSq&&quad!=null&&w.ion&&att&&att.fac==='hegemony'&&t.shMax>0;
+  if(locksRegen) t.regenLock=1; // v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
   let shieldable=dmg*(1-pierce), through=dmg-shieldable;
   const s=t.sh[quad]||0; const sh0=s, sp0=t.shp||0; const absorbed=Math.min(shieldable,s/ion);
   if(absorbed>0){ const lossy=(t.route&&t.route[quad])?1+SHIELD_ROUTE_LOSS:1; t.shp=Math.max(0,sp0-absorbed*ion*lossy); if(t.shp<1) t.shp=0; if(t.shp>0){ t.route=t.route||[0,0,0,0]; t.route[quad]=1; } syncShields(t); } // R246 (issue 371): the struck side routes power at a loss; a pool under 1 point is empty, and an empty pool drops every side at once
@@ -881,7 +884,9 @@ function applyHit(att,w,t,dmg,quad){
   t.hp-=hull; att.dealt+=hull;
   let hard=false; { const hl=treeSkill('hardLight'); if(hl&&t.side==='player'&&cmdActive('player','iron')&&!t.treeHardUsed&&t.shMax>0&&sp0>0){ hard=true; t.treeHardUsed=1; treeFx(t,'hardLight','the shield holds the section'); } } // Brin T3b: the first hit with shield left skips section damage
   if(!hard) damageSection(t, t._calledSec||SEC_OF_QUAD[quad], hull, att);
-  return {shield:Math.round(absorbed*ion), hull, crit};
+  const hit={shield:Math.round(absorbed*ion), hull, crit};
+  if(locksRegen) hit.regenLock=true;
+  return hit;
 }
 const SEC_OF_QUAD=['prow','mid','eng','mid'], SEC_NAME={prow:'prow',mid:'midships',eng:'engines'};
 // v41: Restore mends destroyed sections too, giving back what the break took
@@ -1227,7 +1232,7 @@ const KILL_CAUSES={cut:{w:'cut in two by a lance'},big:{w:'blown apart',scrap:1}
 function killCauseOf(w,t){ if(!w) return 'blast'; const k=w.k, tr=w.trait;
   if(tr==='gauss'||k==='gauss'||k==='doom') return 'flay';
   if(tr==='acid'||tr==='spines'||k==='bioplasma'||k==='tendril'||k==='sporeb') return 'melt';
-  if(k==='lance'||k==='beam'||tr==='plasma'&&/lance/i.test(w.n||'')) return 'cut';
+  if(k==='lance'||k==='beam'||tr==='plasma'&&(w.id==='turbo'||w.id==='hturbo')) return 'cut'; // Hegemony plasma batteries keep the cut death by weapon id, not name (issue 1213)
   if(k==='torp'||k==='htorp'||k==='startorp'||k==='bombs') return 'big';
   if((k==='battery'||k==='hbattery'||k==='turret'||k==='autocannon'||k==='scatter')&&(String(t&&t.id).split('').reduce((h,c)=>h*31+c.charCodeAt(0)|0,B?B.round||0:0)>>>0)%10<3) return 'dark'; // no rules RNG for looks
   return 'blast'; }
@@ -1295,8 +1300,9 @@ function aiObjScore(u,v){ const o=B.obj; if(!o||u.isSq) return 0;
     // veterans block the exit lane in front of the leading ship, harder the further it has got
     const L=pl.find(p=>p.q+Math.floor(p.r/2)===lead), c0=o.c0!=null?o.c0:(o.c0=boardBounds().c0), prog=clamp((lead-c0)/Math.max(1,o.exitC-c0),0,1);
     return -(Math.max(0,lead+1-c)*1.2+Math.max(0,Math.abs(v.r-L.r)-2)*.5)*(1+1.5*prog); }
-  if(vet&&o.type==='intercept'){ let d=99; for(const x of B.units) if(x.transport&&!x.dead) d=Math.min(d,hdist(v,x)); return d<99?-Math.max(0,d-3)*1.5:0; } // escorts screen their convoy
-  if(vet&&o.type==='hold'){ // the relay pulls only the two enemy ships nearest it; the rest fight nearby. A ship already holding it uncontested is paid to stay
+  if(o.type==='intercept'){ const tr=B.units.filter(x=>x.transport&&!x.dead); if(!tr.length) return 0; const dd=x=>Math.min(99,...tr.map(t=>hdist(x,t))); // issue 1160: the two escorts nearest the convoy screen it at both levels; the rest fight
+    const esc=caps('enemy').filter(x=>!x.transport).sort((a,b)=>dd(a)-dd(b)||(a.id<b.id?-1:1)), k=esc.indexOf(u); if(k<0||k>1) return 0; return -Math.max(0,dd(v)-3)*1.5; }
+  if(o.type==='hold'){ // issue 1160: both levels. The relay pulls only the two enemy ships nearest it; the rest fight nearby. A ship already holding it uncontested is paid to stay
     const mine=caps('enemy').filter(x=>!x.transport).sort((a,b)=>hdist(a,o.hex)-hdist(b,o.hex)||(a.id<b.id?-1:1)), k=mine.indexOf(u), d=hdist(v,o.hex);
     if(k<0||k>1) return -Math.max(0,d-5)*.4;
     const held=hdist(u,o.hex)<=1&&!caps('player').some(p=>hdist(p,o.hex)<=1); return -d*1.6*urg+(held&&d<=1?4:0); }
@@ -1387,7 +1393,7 @@ function cmdPow(id,tier,side){ const p=CMD_POW[id]; if(!p) return 0; if(tier==nu
 function cmdDesc(c,tier,fac){ if(!c) return ''; const v=cmdPow(c.id,tier), car=fac==='chorus'?'brood':'launch ship', sq=fac==='chorus'?'swarm':'squadron', pct=x=>Math.round(x*100)+'%';
   switch(c.id){
     case 'barrage': return `Every ship fires a free extra volley right now at the best target in range${v?`, with +${pct(v)} damage`:''}. Its normal shots this round still happen.`;
-    case 'hunt': return fac==='hegemony'?`Every ship deals +${pct(v)} damage for the rest of this round.`:`Torpedoes reload at once and every ship deals +${pct(v)} damage for the rest of this round.`;
+    case 'hunt': return fac==='deathless'?`Every ship deals +${pct(v)} damage for the rest of this round. Any ships carrying torpedoes reload them at once.`:fac==='hegemony'?`Every ship deals +${pct(v)} damage for the rest of this round.`:`Torpedoes reload at once and every ship deals +${pct(v)} damage for the rest of this round.`;
     case 'scramble': return `Every ${car} launches ${tier>=2?'two extra wings':'an extra wing'} right now if there are open adjacent hexes, even past its hangar limit. Then every ${sq} you have makes a bonus attack immediately, with +${pct(v)} damage.`;
     case 'iron': return fac==='chorus'||fac==='deathless'?`Your ships take ${pct(v+.1)} less hull damage for the rest of this round.`:`All shields refill and your ships take ${pct(v)} less hull damage for the rest of this round.`;
     case 'restore': return `Every ship repairs ${pct(v)} of its hull right now.`;
@@ -1967,7 +1973,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     if(ct&&side==='player'){ for(const sq of alive(side).filter(x=>x.isSq&&x.treeTwice)){ const t=B.units.find(x=>x.id===sq.treeTgt); if(!t||t.dead||(t.hexMoved||0)!==0) continue; let fired=false; for(const w of sq.weapons) w.fired=false; for(let i=0;i<sq.weapons.length;i++){ if(t.dead||B.over) break; if(canFire(sq,sq.weapons[i],t)){ await fireWeapon(sq,i,t,{half:true}); fired=true; } } if(fired) treeFx(sq,'castTwice','the recorded strike repeats at half damage'); } } }
   if(B===bStart) checkEnd(); return true; }
 // enemy flagships carry a Command of their own: announced a round ahead, fired once, at power 2
-const BOSS_CMD={hegemony:{id:'barrage',n:'Registry broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Brood regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Restore from the Archive'},voidsworn:{id:'hunt',n:'Crusader\u2019s wrath'}};
+const BOSS_CMD={hegemony:{id:'barrage',n:'Registry broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Brood regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Restore from the Archive'},voidsworn:{id:'hunt',n:'Sunward wrath'}};
 function bossCmdText(c,fac){ return cmdDesc(c,1,fac).replace(/your ships/g,'its ships').replace(/against you/g,'against them').replace(/Every ship/g,'Every enemy ship'); }
 function bossCmdTick(){ if(!B||B.over||B.cmdEUsed) return; const boss=B.units.find(u=>u.side==='enemy'&&u.t&&u.t.boss&&!u.dead); if(!boss) return; const c=BOSS_CMD[boss.fac]; if(!c) return;
   if(B.cmdENext==null){ if(B.round>=2||boss.hp<boss.maxHp*.6){ B.cmdENext=B.round+1; log(`${boss.name} is preparing ${c.n}. ${bossCmdText(c,boss.fac)} It strikes next round.`,'e'); try{ if(typeof fxText==='function') fxText(boss,'Preparing: '+c.n,'#ff8a6a',-56); }catch(e){} try{ if(typeof toast==='function'&&typeof document!=='undefined') toast(`${boss.name} is preparing ${c.n}. It strikes next round.`); if(typeof banner==='function'&&typeof document!=='undefined') setTimeout(()=>{ try{ banner(`${c.n} next round`,'#ff8a6a'); }catch(e){} },900); }catch(e){} /* v45: the boss Command gets a banner too */ } return; } }
@@ -2106,11 +2112,13 @@ function evalOffense(a, ready, targets){
 }
 // how each faction fights: threat weight (caution), weight when badly hurt, and a preferred range
 // range>0 keeps at least that many hexes away (kiting); range<0 wants to be within that many hexes (closing in)
+// rs (the ramming factions, RAM_FAC): how much a lined-up ram is worth in move scoring (issue 1160: .35 made the Hullbreakers and the
+// Chorus 7 to 11 points easier once it ran at Standard, and weaker at Veteran too; .15 keeps the habit without the nose-first charges)
 const FACTION_AI={
-  voidsworn:{tw:1,hurt:1,range:0,rw:0},
-  hegemony:{tw:1.15,hurt:1.3,range:3,rw:1.2},   // hold a gun line at range
-  corsair:{tw:.8,hurt:1.4,range:-2,rw:1.2},     // close fast, cut and run when hurt
-  chorus:{tw:.6,hurt:.7,range:-1,rw:1.8},       // swarm into tendril range
+  voidsworn:{tw:1,hurt:1,range:0,rw:0,rs:.15},
+  hegemony:{tw:1.15,hurt:1.3,range:3,rw:.6},    // hold a gun line at range (issue 1160: rw 1.2 to .6 once it ran at Standard, which it made 5 points easier)
+  corsair:{tw:.8,hurt:1.4,range:-2,rw:1.2,rs:.15},     // close fast, cut and run when hurt
+  chorus:{tw:.6,hurt:.7,range:-1,rw:1.8,rs:.15},       // swarm into tendril range
   ithar:{tw:1.3,hurt:1.6,range:2,rw:1.2},       // hit and fade
   deathless:{tw:.55,hurt:.6,range:-3,rw:.8}};   // advance and never flinch
 // ---------- veteran AI helpers ----------
@@ -2119,13 +2127,24 @@ function aiVet(){ return (typeof AI_LEVEL==='undefined'?'veteran':AI_LEVEL)==='v
 // v53-D: guns that already fired this round (alternating) are spent; the after-move term needs the gun to bear after a one-step turn and a clear line
 function evalThreatVet(v,foes){ let tot=0; for(const p of foes){ const d=hdist(p,v); if(d>13) continue; let ls=null;
     for(const w of p.weapons){ if(w.cdLeft>1||w.off>1||!aiGunLive(p,w)) continue; if(d<=w.r&&inArc(p,v,w.arc)){ const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; }
-      else if(d<=w.r+Math.max(1,(p.speed||2)-1)&&aiArcSoon(p,v,w.arc)&&(ls==null?(ls=los(p,v)):ls)){ const e=expectedVs(p,w,v); tot+=(e.hull+e.shield*.2)*.2; } } } return tot; }
+      else if(d<=w.r+Math.max(1,(p.speed||2)-1)&&aiArcSoon(p,v,w.arc)&&(ls==null?(ls=los(p,v)):ls)){ const e=expectedVs(p,w,v); tot+=(e.hull+e.shield*.2)*AI_REACH_W; } } } return tot+aiStormCost(v); }
+// issue 1160 (Veteran tuning): a gun that can move into range and fire before this ship acts again counts 0.8 of a gun already bearing (was 0.2),
+// so a Veteran does not step just inside the reach of guns that will strike first
+const AI_REACH_W=.8;
 // can this gun still fire before the round ends? In alternating play a gun that fired (or a braced hull) is done until the next round; flak never fires at ships
 function aiGunLive(p,w){ if(w.k==='flak') return false; if(B&&B.alt&&(w.fired||p.braced)) return false; return true; }
 // would the target sit in this arc now, or after a one-step turn (if the ship has a turn)?
 function aiArcSoon(p,v,arc){ if(arc==='T'||inArc(p,v,arc)) return true; if(!((p.turns||0)>0)) return false; const f=p.facing; return inArc({q:p.q,r:p.r,facing:(f+1)%6},v,arc)||inArc({q:p.q,r:p.r,facing:(f+5)%6},v,arc); }
 // a position that lines up a ram for next activation
-function ramSetup(v,u){ const d=DIRS[v.facing]; let q=v.q,r=v.r; for(let i=0;i<=(u.speed||2);i++){ q+=d[0]; r+=d[1]; if(!onBoard(q,r)||blocks(terr(q,r))) return 0; const o=unitAt(q,r); if(o&&o!==u){ return (o.side!==u.side&&!o.isSq&&i>=1)?ramEstimate(Object.assign(Object.create(u),{q:v.q,r:v.r,facing:v.facing}),o).dmg:0; } } return 0; }
+// issue 1160: only the movement left after this move counts (the ram after the volley, as tacticRam makes it); a ram lined up for next round
+// meets a target that has moved, so it scores nothing
+function ramSetup(v,u,left){ if(left==null) left=u.speed||2; if(left<1) return 0; const d=DIRS[v.facing]; let q=v.q,r=v.r; for(let i=0;i<=left;i++){ q+=d[0]; r+=d[1]; if(!onBoard(q,r)||blocks(terr(q,r))) return 0; const o=unitAt(q,r); if(o&&o!==u){ return (o.side!==u.side&&!o.isSq&&i>=1)?ramEstimate(Object.assign(Object.create(u),{q:v.q,r:v.r,facing:v.facing}),o).dmg:0; } } return 0; }
+// issue 1160: an ion storm drains 10 shield from a shielded hull at the start of its turn, so both threat models (and every side and level
+// that reads them) count that cover as lost when a ship would end its move in one
+// priced like shield damage in the threat models (0.2 a point), and only the shield the ship still has
+function aiStormCost(v){ return !v.isSq&&v.shMax>0&&terr(v.q,v.r)==='storm'?Math.min(10,v.shp||0)*.2:0; }
+// issue 1160 (Cunning Nemesis, rear flag): a hex behind a ship (or on its flank) that a ready gun reaches from there; the best one counts
+function aiRearScore(v,ready,foes){ let best=0; for(const f of foes){ if(f.isSq) continue; const qd=shieldQuad(f,v), k=qd===2?8:qd===1||qd===3?3:0; if(k<=best) continue; if(ready.some(w=>inReach(v,w,f))) best=k; } return best; }
 // the fleet-wide focus target: the most valuable ship that is closest to dying
 function aiFocusTarget(){ const sh=aiShooters(); let best=null,bv=0; for(const t of alive('player')){ if(t.isSq) continue; const v=aiFocusVal(t,sh); if(v>bv){bv=v;best=t;} } return best; }
 // v53-D: value over effective hull, priced the way expectedVs will price it (brace, guard aura, Iron Command), and worth less when few of our guns can reach it this turn
@@ -2152,7 +2171,7 @@ function evalThreat(v, foes){
   let tot=0;
   for(const p of foes){ if(hdist(p,v)>9) continue;
     for(const w of p.weapons){ if(w.cdLeft>1||w.off>1||!aiGunLive(p,w)) continue; if(hdist(p,v)>w.r) continue; if(!inArc(p,v,w.arc)) continue; const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; } }
-  return tot;
+  return tot+aiStormCost(v); // issue 1160: ion storm drain
 }
 // v53-D: the volley primary is re-picked before every gun from current hull and shields, with damage counted only up to the hull a target has left
 // (a 2-hull wreck is not worth a full broadside); a heavy gun leaves a kill that a lighter ready gun can make to that gun and fires elsewhere
@@ -2272,11 +2291,12 @@ async function aiUnit(u){
       const vet=vet0, focus=focus0;
       const off=vet?evalOffenseVet(v,ready,foes,focus):evalOffense(v,ready,foes);
       const threat=vet?evalThreatVet(v,foes):evalThreat(v,foes);
-      const prof=nemProf(u,(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn), tw=(u.isSq?.15:!vet?.3:u.flagship?.65:aiHurtW(u,prof))*prof.tw; // AI polish: smooth caution curve with hysteresis
+      const prof=nemProf(u,(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn), tw=(u.isSq?.15:vet&&u.flagship?.65:aiHurtW(u,prof))*prof.tw; // AI polish: smooth caution curve with hysteresis (issue 1160: both levels)
       // A 3 CP hull keeps the old price. Limit the spread to keep fleets engaged.
       let score=off-threat*tw; if(vet&&threat>=u.hp) score-=25+3*(clamp(u.t.cp||1,1,7)-3);
-      if(vet&&!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
-      if(vet&&!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u)*.35;
+      if(!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
+      if(!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u,Math.min(u.mp-s.cost,(u.speed||2)-(u.st&&u.st.engine||0)))*prof.rs;
+      if(!u.isSq&&prof.rear) score+=aiRearScore(v,ready,foes)*prof.rear; // issue 1160: a persona with the rear flag (Cunning) works round to your flanks
       if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=flE; if(fl){ const dv=hdist(v,fl); score-=Math.max(0,dv-3)*(escIn>=2?.6:2); if(dv<=3) for(const x of escO) if(hdist(x,v)===1) score-=1; } } // two escorts in the ring cap the pull, and escorts spread out instead of stacking
       if(off<=0||unloaded){
         const hd=Math.min(99,...approachTargets.map(f=>hdist(v,f))), nd=fieldDist(PF,v,hd);
@@ -2284,7 +2304,6 @@ async function aiUnit(u){
       } // travel distance, so a hole or a rock wall between us is not a shortcut
       score-=s.cost*.05;
       if(!u.isSq){ score-=torpThreat(u,v)*.9; score-=syncPull(u,v)*(vet?2:1.2)*(u.nem&&B.nemLine?2:1); } // B3: step out of incoming torpedo lanes; Hegemony keeps formation on its anchor
-      if(B.obj&&B.obj.type==='hold'&&!u.isSq&&!vet) score-=hdist(v,B.obj.hex)*1.6; // veterans: aiObjScore (two nearest, urgency)
       score+=aiObjScore(u,v); score+=aiWellScore(u,v);
       if(score>bestScore){ bestScore=score; best=s; }
     }

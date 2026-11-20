@@ -519,14 +519,22 @@ def gun(barrels=1, cal=0.12, blen=1.6, size=1.0, mount='turret', pitch=0.0, vari
 
 
 # ---------------------------------------------------------------------------------------------------- the radiator spires
-def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0, lean=None, bars=None):
+def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0, lean=None, bars=None, glow='fins'):
     """a radiator spire, standing on the spine block: origin at the root's foot on the spine top, +X forward, +Z up. It sheds
     the reactor's heat (factions.md: the spires glow because they shed the reactor's heat), so it is all radiator: a tapering
     forged column whose two faces are a glowing heat core (the bar) behind a stack of horizontal iron heat fins standing out
     to each side (a heat sink, never a window or an organ pipe), iron posts fore and aft framing the core, a forged cap, gusset
     braces at the root. Never a steeple, a cross, a statue or a mast. profile 0 blade (the cap swept back), 1 stepped (a
     narrower upper tier on a shoulder), 2 twin (two columns sharing one fin stack), 3 raked (the leading edge raked back).
-    h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side."""
+    h: height over the root foot, L: length along the spine at the root, spread: how far the lowest fins reach out each side.
+    glow: 'fins' (the first S8 build: fins packed 0.17 apart, so the glowing stack reads as one whole lit tower) or 'slats'
+    (R331, Nov 19 2026: the ember in the fin slats, the one Sunward spire treatment, R333: the glowing fins stand at least 0.26
+    apart, three or more of them, and reach 60 percent as far out, so the dark iron core shows between every pair and the spire
+    reads as lit stripes on iron, about half the lit area of the old towers; call it with glow='slats' and no other setting)."""
+    assert glow in ('fins', 'slats')
+    if glow == 'slats':
+        pitch = max(pitch, 0.26)
+        spread *= 0.6
     p = Part('radiator')
     p.type = 'radiator'
     zr = 0.26
@@ -604,7 +612,7 @@ def radiator(h, L, spread=0.36, profile=0, fins=None, pitch=0.17, t=0.2, seed=0,
             xa2, xb2, th2 = span(zsh - 0.01)
             p.add('shoulder%d' % ci, 'body', 'siron2', block(xa2 - 0.03, xb2 + 0.03, th2 + 0.08, 0.05, 0.02, zo=zsh - 0.02))
     # the fin stack: horizontal iron fins across the column, reaching out each side, shorter toward the top
-    n = fins or max(5, int((h - zr - 0.3) / pitch))
+    n = fins or (max(3, int((h - zr - 0.3) / pitch) + 1) if glow == 'slats' else max(5, int((h - zr - 0.3) / pitch)))
     fv = []
     for i in range(n):
         z = zr + 0.2 + i * (h - zr - 0.42) / max(1, n - 1)

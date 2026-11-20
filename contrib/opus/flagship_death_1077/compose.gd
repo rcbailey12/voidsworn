@@ -11,9 +11,18 @@ var i := 0
 var dir_off: String
 var dir_on: String
 var chapters: Array = []
+var page: Control
 
 
 func _initialize() -> void:
+	# the project opens maximized, so on the PC the window is not the movie's size and the page came out scaled and clipped
+	# (half size at 1236bbc3, three quarters at 66e55036). The page is a 1920x600 panel, scaled each frame to fill the
+	# window's width from its top left; the movie then holds it across its full width (the review copy is cropped to it)
+	root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+	page = Control.new()
+	page.size = Vector2(1920, 600)
+	root.add_child(page)
+	_fit()
 	var args := OS.get_cmdline_user_args()
 	var scratch: String = args[0]
 	var radius: String = args[1]
@@ -27,7 +36,7 @@ func _initialize() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color(0.02, 0.025, 0.035)
 	bg.size = Vector2(1920, 600)
-	root.add_child(bg)
+	page.add_child(bg)
 	left = _panel(Vector2(0, 60))
 	right = _panel(Vector2(960, 60))
 	_label("A16 (C19_51, Ashfall battle-barge)  /  camera %s  /  issue 1077 prototype, not installed" % radius, Vector2(14, 6), 22, Color(0.92, 0.92, 0.9))
@@ -43,7 +52,7 @@ func _panel(pos: Vector2) -> TextureRect:
 	t.size = Vector2(960, 540)
 	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	t.stretch_mode = TextureRect.STRETCH_SCALE
-	root.add_child(t)
+	page.add_child(t)
 	return t
 
 
@@ -58,11 +67,18 @@ func _label(text: String, pos: Vector2, size: int, col: Color, right_align := fa
 		l.position = pos - Vector2(900, 0)
 	else:
 		l.position = pos
-	root.add_child(l)
+	page.add_child(l)
 	return l
 
 
+func _fit() -> void:
+	var vis: Rect2 = root.get_visible_rect()
+	page.position = vis.position
+	page.scale = Vector2.ONE * (vis.size.x / 1920.0)
+
+
 func _process(_dt: float) -> bool:
+	_fit()
 	if i >= n:
 		print("COMPOSE1077 frames=", n)
 		return true
