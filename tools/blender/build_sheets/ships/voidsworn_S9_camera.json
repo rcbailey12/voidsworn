@@ -1,0 +1,21 @@
+{
+ "az": 92.52586264046762,
+ "el": 40.218749746973145,
+ "roll": -30.966885018073906,
+ "dist": 51.741301765705025,
+ "mm": 285.05654191143543,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.0465836260434803,
+ "sy": -0.06310536240842035,
+ "res": [
+  1024,
+  1024
+ ],
+ "iou": 0.8501,
+ "body_iou": 0.8729,
+ "note": "Warden beauty: view angles from a coarse grid over azimuth, elevation and roll (contrib/opus/tools/issue738/grid.py), then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (edges over 28 or luminance 25 over the blurred picture, closed, filled, largest shape)"
+}

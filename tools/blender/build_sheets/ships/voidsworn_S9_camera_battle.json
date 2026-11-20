@@ -1,0 +1,12 @@
+{
+ "az": 90.0,
+ "el": 34.0,
+ "roll": 0.0,
+ "dist": 170.0,
+ "mm": 180.0,
+ "target": [0.0, 0.0, 1.0],
+ "sx": 0.0,
+ "sy": 0.0,
+ "res": [1280, 720],
+ "note": "the game's default battle camera (godot/render/camera_rig.gd: b 0.98 rad from straight up, so 34 degrees above the board; tools/blender/r209/outline_battle.py CAMS game), on the port beam at range 170, a long lens so the ship fills the frame"
+}
