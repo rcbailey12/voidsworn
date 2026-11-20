@@ -1,0 +1,136 @@
+{
+ "ok": true,
+ "problems": [],
+ "notes": [
+  "24576 triangles (2056 on part surfaces), box x -0.501 to 0.499, y -0.134 to 0.132, z -0.206 to 0.209",
+  "ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03",
+  "turrets: 0 written (none); marked by the kit: none"
+ ],
+ "cls": "Squadron",
+ "faction": "ithar",
+ "expected_breach": 0,
+ "required": {
+  "weapon_slots": 1,
+  "core": 1,
+  "engine": 1,
+  "bay": 0,
+  "breach": 0,
+  "rcs": 0,
+  "board": 0
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "bombs",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_bombs_T_0",
+    "hp_w0_bombs_T_1"
+   ]
+  }
+ ],
+ "hardpoints": {
+  "core": 1,
+  "engine": 3,
+  "gun": 2
+ },
+ "maps": [
+  "ithar_GB1_emission.jpg",
+  "ithar_GB1_normal.png",
+  "ithar_GB1_orm.png",
+  "ithar_GB1_base.jpg",
+  "ithar_GB1_parts_normal.png",
+  "ithar_GB1_parts_orm.png",
+  "ithar_GB1_parts_base.jpg"
+ ],
+ "tolerance": 0.011999999284744264,
+ "tolerance_of_length": 0.012,
+ "ship_length": 0.9999999403953552,
+ "breach_clearance": 0.03,
+ "rows": [
+  {
+   "name": "hp_core",
+   "p": [
+    -0.0498,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.4918,
+    0.0086,
+    -0.0192
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.4918,
+    -0.0179,
+    0.0003
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.4918,
+    0.0092,
+    0.0188
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_bombs_T_0",
+   "p": [
+    0.3186,
+    -0.0351,
+    -0.1751
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  },
+  {
+   "name": "hp_w0_bombs_T_1",
+   "p": [
+    0.3186,
+    -0.0351,
+    0.1751
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   "off_mesh": 0.0
+  }
+ ],
+ "turrets": []
+}

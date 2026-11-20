@@ -1,0 +1,277 @@
+{
+ "ship": "ithar_GB1",
+ "code": "ithar_GB1",
+ "cell": "GB1",
+ "game_ship": "bomber",
+ "faction": "ithar",
+ "cls": "Squadron",
+ "band": "S",
+ "expected_breach": 0,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 24576,
+ "turret_triangles": 0,
+ "turrets": [],
+ "surfaces": 5,
+ "destruction": {
+  "interior_materials": []
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "bombs",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_bombs_T_0",
+    "hp_w0_bombs_T_1"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 2,
+  "engine": 3,
+  "bay": 0,
+  "breach": 0,
+  "core": 1,
+  "rcs": 0,
+  "board": 0
+ },
+ "length_world": 1.6,
+ "sheet": "ithar_GB1",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {},
+ "hard_points": [
+  {
+   "name": "hp_w0_bombs_T_0",
+   "p": [
+    0.3186,
+    0.17512,
+    -0.03512
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "bombs",
+   "radius": 0.027877645968985027,
+   "socket": "BT"
+  },
+  {
+   "name": "hp_w0_bombs_T_1",
+   "p": [
+    0.3186,
+    -0.17512,
+    -0.03512
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "bombs",
+   "radius": 0.027877645968985027,
+   "socket": "BT"
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49184,
+    0.01922,
+    0.00859
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.012943192771314475,
+   "engine": "Ep"
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.49184,
+    -0.00027,
+    -0.01792
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.012943192771314475,
+   "engine": "Es"
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.49184,
+    -0.01877,
+    0.00924
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.012943192771314475,
+   "engine": "Eu"
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.04978,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  }
+ ],
+ "manifest": {
+  "name": "The Needle bomber, the Glasswright bomber wing craft (The Glasswrights)",
+  "faction": "ithar",
+  "cls": "Squadron",
+  "band": "S",
+  "game_ship": "bomber",
+  "length_world": 1.6,
+  "hardpoints": {
+   "gun": 2,
+   "engine": 3,
+   "core": 1
+  },
+  "breaches": 0,
+  "turrets": 0,
+  "files": {
+   "ithar_GB1.glb": {
+    "bytes": 1014128,
+    "sha256": "93fdea7ec729845c098d46f09e494ce99029887a6af27f219ad2360ee2a0cbca"
+   },
+   "ithar_GB1_base.jpg": {
+    "bytes": 837347,
+    "sha256": "71362f83a5c28aeef1589b3b9d421e52c96cfaf116658c4721c47004bc14e94d"
+   },
+   "ithar_GB1_emission.jpg": {
+    "bytes": 387225,
+    "sha256": "d9a75798ce271edd34dc2b33d12240f1f7c69667374d9348a1312b5ffc8d4ab7"
+   },
+   "ithar_GB1_normal.png": {
+    "bytes": 944173,
+    "sha256": "4a645da97b3fa4aeb32e5162e449a049e2d66141573297a8550a11308c1e2f6a"
+   },
+   "ithar_GB1_orm.png": {
+    "bytes": 2674158,
+    "sha256": "c75ad14c6b1e063633d4d1c8e6830a4414913a2e37fa83f7105af8eeb5584627"
+   },
+   "ithar_GB1_parts_base.jpg": {
+    "bytes": 249326,
+    "sha256": "931a73102ae9ba4669f92f2d1b459f2d10f37b0e6b91907693493caedf61f6f9"
+   },
+   "ithar_GB1_parts_normal.png": {
+    "bytes": 67129,
+    "sha256": "53a39bddca175ac12e38cf8d95cebca8eeb378b7e130ed03cf2fdeafbb6e5c5c"
+   },
+   "ithar_GB1_parts_orm.png": {
+    "bytes": 1479426,
+    "sha256": "bcc635760ffd0d8a0e0bc2c13ec10da2c14c766e63ae1b79393bbbb8d6bf2437"
+   }
+  },
+  "pc_path": "godot/assets/ships/ithar_GB1/",
+  "wing_role": "bomber"
+ },
+ "files": {
+  "ithar_GB1.glb": {
+   "bytes": 1014128,
+   "sha256": "93fdea7ec729845c098d46f09e494ce99029887a6af27f219ad2360ee2a0cbca"
+  },
+  "ithar_GB1_base.jpg": {
+   "bytes": 837347,
+   "sha256": "71362f83a5c28aeef1589b3b9d421e52c96cfaf116658c4721c47004bc14e94d"
+  },
+  "ithar_GB1_emission.jpg": {
+   "bytes": 387225,
+   "sha256": "d9a75798ce271edd34dc2b33d12240f1f7c69667374d9348a1312b5ffc8d4ab7"
+  },
+  "ithar_GB1_normal.png": {
+   "bytes": 944173,
+   "sha256": "4a645da97b3fa4aeb32e5162e449a049e2d66141573297a8550a11308c1e2f6a"
+  },
+  "ithar_GB1_orm.png": {
+   "bytes": 2674158,
+   "sha256": "c75ad14c6b1e063633d4d1c8e6830a4414913a2e37fa83f7105af8eeb5584627"
+  },
+  "ithar_GB1_parts_base.jpg": {
+   "bytes": 249326,
+   "sha256": "931a73102ae9ba4669f92f2d1b459f2d10f37b0e6b91907693493caedf61f6f9"
+  },
+  "ithar_GB1_parts_normal.png": {
+   "bytes": 67129,
+   "sha256": "53a39bddca175ac12e38cf8d95cebca8eeb378b7e130ed03cf2fdeafbb6e5c5c"
+  },
+  "ithar_GB1_parts_orm.png": {
+   "bytes": 1479426,
+   "sha256": "bcc635760ffd0d8a0e0bc2c13ec10da2c14c766e63ae1b79393bbbb8d6bf2437"
+  }
+ },
+ "seconds": 9.9,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}

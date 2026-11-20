@@ -1,0 +1,1 @@
+[score] GB1 {'overlap': 57.9, 'concept_covered': 100.0, 'cell_outside': 42.1, 'triangles': 29856}

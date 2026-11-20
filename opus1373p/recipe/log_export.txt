@@ -1,0 +1,14 @@
+INFO Draco mesh compression is available, use library at C:\Users\rcbai\Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\4.5\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+14:26:17 | INFO: Starting glTF 2.0 export
+14:26:17 | INFO: Extracting primitive: ithar_GB1
+14:26:18 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+14:26:20 | WARNING: The active Vertex Color will not be exported, as it is not used in the node tree of the material
+14:26:21 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+14:26:22 | INFO: Primitives created: 5
+14:26:22 | INFO: Finished glTF 2.0 export in 4.807069778442383 s
+
+[export7] ithar_GB1 triangles 24576 hard points {"gun": 2, "engine": 3, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0} turrets 0 (0 triangles) files ['ithar_GB1.glb', 'ithar_GB1_base.jpg', 'ithar_GB1_emission.jpg', 'ithar_GB1_normal.png', 'ithar_GB1_orm.png', 'ithar_GB1_parts_base.jpg', 'ithar_GB1_parts_normal.png', 'ithar_GB1_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GB1\export\ithar_GB1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+Read blend: "C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GB1\GB1.blend"
+run_timeout: background output continues in C:\Users\rcbai\AppData\Local\Temp\runner-step-9e142065526045e8b81aba9c2fd1b7de
