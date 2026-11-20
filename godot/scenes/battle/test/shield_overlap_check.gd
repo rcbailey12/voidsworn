@@ -1,8 +1,8 @@
 extends SceneTree
 # Issue 1211 follow-up (Artoo's review of PRs 1170 and 1220): two enemy volleys overlap on one shield, on the fitted skin
-# and on the egg, with Reduced Flashing off and on. Under a quarter-speed hit pause the first volley lets go before its
-# hits land, so the second volley's hits arrive among them. The first volley drains the shield on its second hit; the
-# second volley only strikes hull. The clean collapse (R340) must start once, on the draining hit, from the shared
+# and on the egg, with Reduced Flashing off and on. Under a quarter-speed hit pause the first (long) volley lets go before
+# its hits land; the second volley (one quick shot, hull only) lands between its first hit and its draining second hit,
+# and the check asserts that order. The clean collapse (R340) must start once, on the draining hit, from the shared
 # shield code (the ship's brk_t is that hit's effect time), never on a hit that leaves shield standing, never twice.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -41,6 +41,29 @@ func _check(ok: bool, message: String) -> void:
 	if not ok:
 		failures += 1
 		printerr("FAIL: ", message)
+
+
+# Artoo (PR 1288): the overlap is enforced, not assumed: some v2 hit lands after v1's first hit and before v1's
+# draining hit (its second), in effect time.
+static func interleaved(lands: Array) -> bool:
+	var first := INF
+	var drain := -INF
+	for L in lands:
+		if str(L[0]) == "v1" and int(L[1]) == 0:
+			first = float(L[2])
+		elif str(L[0]) == "v1" and int(L[1]) == 1:
+			drain = float(L[2])
+	for L in lands:
+		if str(L[0]) == "v2" and float(L[2]) > first and float(L[2]) < drain:
+			return true
+	return false
+
+
+func _orders() -> void:
+	# the order check itself: the interleaved order passes, the old non-interleaved order fails
+	_check(interleaved([["v1", 0, 0.7], ["v2", 0, 1.0], ["v1", 1, 1.3]]), "order check: v1, v2, v1 is interleaved")
+	_check(not interleaved([["v1", 0, 0.7], ["v1", 1, 0.8], ["v2", 0, 1.0], ["v2", 1, 1.1]]), "order check: v1, v1, v2, v2 is not interleaved")
+	_check(not interleaved([["v2", 0, 0.5], ["v1", 0, 0.7], ["v1", 1, 0.8]]), "order check: a v2 hit before v1 starts is not interleaved")
 
 
 func _brk(S) -> float:
@@ -99,21 +122,24 @@ func _case(shape: String, calm: bool) -> void:
 	b.gfx._pause_depth = 0.25
 	b.gfx._pause_until = float(b.gfx.now) + 1000.0
 	# volley 1 drains the shield on its second hit; volley 2 fires while volley 1's hits are still in flight
-	await _volley(b, "v1", a, t, [true, true], [[6, 0], [4, 0]], true)
+	# (a long first volley: its draining hit is its last shot, so the short second volley lands in between)
+	await _volley(b, "v1", a, t, [true, false, false, false, false, false, false, true], [[6, 0], [4, 0]], true)
 	_check(b.lands.size() < 2, "%s: the first volley's hits are still in flight when the second fires (landed %d)" % [name, b.lands.size()])
 	var last := brk0
-	await _volley(b, "v2", a, t, [true, true], [[0, 5], [0, 5]], false)
+	await _volley(b, "v2", a, t, [true], [[0, 5]], false)
 	for i in 900:
 		var bt := _brk(S)
 		if bt != last:
 			brk_seen.append(bt)
 			last = bt
-		if b.lands.size() >= 4 and i > 60:
+		if b.lands.size() >= 3 and i > 60:
 			break
 		await process_frame
 	b.gfx._pause_until = -1.0
 	b.gfx._pause_depth = 1.0
-	_check(b.lands.size() == 4, "%s: all four hits land (got %s)" % [name, str(b.lands)])
+	print("OVERLAP order %s: %s" % [name, str(b.lands)])
+	_check(b.lands.size() == 3, "%s: all three hits land (got %s)" % [name, str(b.lands)])
+	_check(interleaved(b.lands), "%s: a second-volley hit lands between the first volley's first hit and its draining hit (order %s)" % [name, str(b.lands)])
 	var drain := -1.0
 	var tags: Array = []
 	for L in b.lands:
@@ -139,6 +165,7 @@ func _case(shape: String, calm: bool) -> void:
 
 func _run() -> void:
 	LOOK.set_look("cine", false)
+	_orders()
 	for shape in ["fitted", "egg"]:
 		for calm in [false, true]:
 			await _case(shape, calm)
