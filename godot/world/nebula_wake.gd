@@ -11,21 +11,23 @@ const LOW_POINTS := 6       # Low quality: fewer segments, cards only (Low has n
 const FLOATS := 12          # floats per segment in the uniform
 const SEG := 12.0           # a ship's newest segment is closed off at this length and a new one starts at its end
 const FADE_S := 3.0         # the gas is calm again this long after the ship left it
-const RISE_S := 0.25        # and the disturbance builds over this long behind the hull, so nothing pops
+const RISE_S := 0.6         # and the disturbance eases in over this long behind the hull (Ryan, Nov 20: it was sudden)
 const R_PER_L := 0.9        # disturbance radius per unit of hull length
 const R_MIN := 9.0          # a frigate (hull 10.4 long) is about 9.4
 const R_MAX := 26.0         # a capital (hull 30 to 43 long)
 const PUSH := 1.35          # push at full strength, world units, times sqrt(radius x PUSH_REF): a frigate about 12.6
 const PUSH_REF := 9.36      # (a capital about 21, so it stirs more than a frigate but not three times as much)
 const PAUSE_S := 0.1        # a ship still for longer than this starts a new trail when it moves again
+const NEAR := 3.0           # a point takes its ship's trail at the nearest place on it, blended over about this many units
 
 var points := HIGH_POINTS
-# Each slot: a, b (ends, world), ta, tb (clock when the ship was at each end), r, dir (board xz), m (push, sign = swirl
-# side), owner (ship key while it is that ship's growing newest segment, else -1).
+# Each slot: a, b (ends, world), ta, tb (clock when the ship was at each end), r, m (push, sign = swirl side), ship (the
+# ship that left it), owner (ship key while it is that ship's growing newest segment, else -1).
 var _ring: Array = []
 var _head := {}             # ship key -> slot index of its newest segment
 var clock := 0.0
 var held := false           # benches only (hold_full): every segment stays at full strength
+var _laid := 0              # benches only: trails laid by lay_trail, each its own ship
 
 
 func _init(quality: String) -> void:
@@ -35,20 +37,27 @@ func _init(quality: String) -> void:
 
 
 func _empty() -> Dictionary:
-	return {"a": Vector3.ZERO, "b": Vector3.ZERO, "ta": -100.0, "tb": -100.0, "r": 0.0, "dir": Vector2.ZERO, "m": 0.0, "owner": -1}
+	return {"a": Vector3.ZERO, "b": Vector3.ZERO, "ta": -100.0, "tb": -100.0, "r": 0.0, "m": 0.0, "ship": -1, "owner": -1}
 
 
 # The GLSL both gas shaders share. wake_at(w) returns xyz: how far the gas at w is pushed (world units),
 # w: how much it is thinned (0 to 1).
 static func glsl(n: int) -> String:
 	return """
-// 12 floats a segment: end a xyz, end b xyz, radius, travel direction (board xz), age at a, age at b (seconds),
-// push (its sign is the swirl side). Plain floats: a Color array would be read as sRGB and converted.
+// 12 floats a segment: end a xyz, end b xyz, radius, ship group, (spare), age at a, age at b (seconds), push (its sign
+// is the swirl side). Segments come sorted by ship. Plain floats: a Color array would be read as sRGB and converted.
 uniform float wake_d[%d];
 vec4 wake_at(vec3 w) {
+	// Ryan, Nov 20 ("sudden and jerky"): each ship's trail acts as one smooth line. A point takes that ship's trail at the
+	// nearest place on it (blended over a few units, so there is no seam), never at the rounded end of an older segment
+	// beside it; different ships' trails add up. Strength eases in and out with age.
+	vec2 tot = vec2(0.0);
+	float tthin = 0.0;
+	float g = -1.0;
 	vec2 acc = vec2(0.0);
-	float wsum = 0.0;
 	float thin = 0.0;
+	float ws = 0.0;
+	float dmin = 0.0;
 	for (int i = 0; i < %d; i++) {
 		int k = i * 12;
 		float age_a = wake_d[k + 9];
@@ -59,28 +68,35 @@ vec4 wake_at(vec3 w) {
 		float t = clamp(dot(w - a, e) / max(dot(e, e), 0.0001), 0.0, 1.0);
 		vec3 d = w - (a + e * t);
 		float r = wake_d[k + 6];
-		// The age runs smoothly from one end to the other, so neighbouring segments meet without a seam.
 		float age = mix(age_a, age_b, t);
-		float fall = max(1.0 - age / %.3f, 0.0);
-		float s = clamp(age / %.3f, 0.0, 1.0) * fall * fall;
+		float s = smoothstep(0.0, %.3f, age) * (1.0 - smoothstep(0.0, %.3f, age));
+		float d2 = dot(d.xz, d.xz) + d.y * d.y / 2.25;
 		// Round across the path, taller than the hull: the gas layers sit from below the board to well above it.
-		float f = exp(-dot(d.xz, d.xz) / (r * r) - d.y * d.y / (r * r * 2.25)) * s;
-		if (f < 0.001) { continue; }
+		float f = exp(-d2 / (r * r)) * s;
 		float m = wake_d[k + 11];
 		vec2 out_dir = d.xz / (length(d.xz) + 0.75);
 		vec2 side = vec2(-out_dir.y, out_dir.x) * sign(m);
-		// Pushed aside and curled a little, and dragged along the ship's path.
-		vec2 v = (out_dir * 0.55 + side * 0.3 + vec2(wake_d[k + 7], wake_d[k + 8]) * 0.35) * f * abs(m);
-		// Blend overlapping segments by their strength instead of adding them: where two meet they agree, so no
-		// joint is ever pushed twice.
-		float wt = f * f * f * f;
+		vec2 along = e.xz / max(length(e.xz), 0.0001);
+		vec2 v = (out_dir * 0.55 + side * 0.3 + along * 0.35) * f * abs(m);
+		float gi = wake_d[k + 7];
+		if (gi != g) {
+			if (ws > 0.0) { tot += acc / ws; tthin = max(tthin, thin / ws); }
+			g = gi; acc = vec2(0.0); thin = 0.0; ws = 0.0; dmin = d2;
+		}
+		if (d2 < dmin) {
+			float sc = exp((d2 - dmin) / (2.0 * %.3f));
+			acc *= sc; thin *= sc; ws *= sc; dmin = d2;
+		}
+		// A faded old stretch gives way smoothly to a newer trail of another ship close by.
+		float wt = exp((dmin - d2) / (2.0 * %.3f)) * (1.0 - smoothstep(%.3f, %.3f, age)) + 1e-20;
 		acc += v * wt;
-		wsum += wt;
-		thin = max(thin, f);
+		thin += f * wt;
+		ws += wt;
 	}
-	return vec4(acc.x, 0.0, acc.y, 0.0) / max(wsum, 1e-8) * step(1e-8, wsum) + vec4(0.0, 0.0, 0.0, thin);
+	if (ws > 0.0) { tot += acc / ws; tthin = max(tthin, thin / ws); }
+	return vec4(tot.x, 0.0, tot.y, tthin);
 }
-""" % [n * FLOATS, n, FADE_S, FADE_S, RISE_S]
+""" % [n * FLOATS, n, FADE_S, RISE_S, FADE_S, NEAR * NEAR, NEAR * NEAR, FADE_S * 0.4, FADE_S]
 
 
 const SHIFT := "// WAKE_SHIFT"
@@ -147,12 +163,9 @@ func update(dt: float, ships: Array) -> void:
 		e.b = at
 		e.tb = clock
 		var run := Vector2(e.b.x - e.a.x, e.b.z - e.a.z)
-		e.dir = run.normalized() if run.length() > 0.01 else step.normalized()
 		if run.length() >= SEG:
 			_close(key)
-			var n := _start(key, at, r, clock)
-			_ring[n].dir = e.dir
-			_head[key] = n
+			_head[key] = _start(key, at, r, clock)
 	for key in _head.keys():
 		if not seen.has(key):
 			_close(key)
@@ -162,8 +175,8 @@ func update(dt: float, ships: Array) -> void:
 func _start(key: int, at: Vector3, r: float, t: float) -> int:
 	var i := _free_slot()
 	var side := 1.0 if key % 2 == 0 else -1.0   # one swirl side per ship
-	_ring[i] = {"a": at, "b": at, "ta": t if t >= 0.0 else clock, "tb": t if t >= 0.0 else -100.0, "r": r, "dir": Vector2.ZERO,
-		"m": side * push(r), "owner": key}
+	_ring[i] = {"a": at, "b": at, "ta": t if t >= 0.0 else clock, "tb": t if t >= 0.0 else -100.0, "r": r,
+		"m": side * push(r), "ship": key, "owner": key}
 	return i
 
 
@@ -209,26 +222,32 @@ func hold_full(at: Array, r := R_MAX, dir := Vector2(1.0, 0.0)) -> void:
 	held = true
 	for i in points:
 		var p: Vector3 = at[i % at.size()]
-		_ring[i] = {"a": p, "b": p + Vector3(dir.x, 0.0, dir.y) * SEG, "ta": clock, "tb": clock, "r": r, "dir": dir,
-			"m": push(r) * (1.0 if i % 2 == 0 else -1.0), "owner": -1}
+		_ring[i] = {"a": p, "b": p + Vector3(dir.x, 0.0, dir.y) * SEG, "ta": clock, "tb": clock, "r": r,
+			"m": push(r) * (1.0 if i % 2 == 0 else -1.0), "ship": i, "owner": -1}
 
 
 # Benches only: lay a finished trail behind a ship at `at`, heading `dir`, the newest end `age_b` seconds old and each
 # segment further back `per_seg` seconds older.
 func lay_trail(at: Vector3, dir: Vector2, r: float, count: int, age_b: float, per_seg: float, side := 1.0) -> void:
+	var trail_id := -2 - _laid
+	_laid += 1
 	var back := Vector3(-dir.x, 0.0, -dir.y)
 	for k in count:
 		var i := _free_slot()
 		_ring[i] = {"a": at + back * SEG * float(k + 1), "b": at + back * SEG * float(k), "ta": clock - age_b - per_seg * float(k + 1),
-			"tb": clock - age_b - per_seg * float(k), "r": r, "dir": dir, "m": side * push(r), "owner": -1}
+			"tb": clock - age_b - per_seg * float(k), "r": r, "m": side * push(r), "ship": trail_id, "owner": -1}
 
 
 func uniforms() -> PackedFloat32Array:
+	# Sorted by ship, so the shader can take each ship's trail as one line; a ship's group is its place in this order.
+	var order := range(points)
+	order.sort_custom(func(x, y): return int(_ring[x].ship) < int(_ring[y].ship))
+	var groups := {}
 	var out := PackedFloat32Array()
-	for e in _ring:
+	for i in order:
+		var e: Dictionary = _ring[i]
 		var a: Vector3 = e.a
 		var bb: Vector3 = e.b
-		var dir: Vector2 = e.dir
 		var age_a := clock - float(e.ta)
 		var age_b := clock - float(e.tb)
 		if held:
@@ -237,7 +256,9 @@ func uniforms() -> PackedFloat32Array:
 		elif a.distance_to(bb) < 0.01:
 			age_a = FADE_S + 1.0   # a ship's segment that has not grown yet adds nothing
 			age_b = FADE_S + 1.0
-		out.append_array([a.x, a.y, a.z, bb.x, bb.y, bb.z, maxf(float(e.r), 0.001), dir.x, dir.y, age_a, age_b, float(e.m)])
+		if not groups.has(e.ship):
+			groups[e.ship] = float(groups.size())
+		out.append_array([a.x, a.y, a.z, bb.x, bb.y, bb.z, maxf(float(e.r), 0.001), groups[e.ship], 0.0, age_a, age_b, float(e.m)])
 	return out
 
 
