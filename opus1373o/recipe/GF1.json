@@ -1,0 +1,107 @@
+{
+ "cell": "GF1",
+ "route": "build sheet ithar_GF1 + the ithar paint stack (kits/ithar/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 58.6,
+ "geometry_seconds": 0.3,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 19,
+  "part_objects": 4,
+  "glow_objects": 7,
+  "interior_objects": 3,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 5.9,
+  "bake_H_albedo_s": 4.7,
+  "bake_H_orm_s": 4.7,
+  "bake_H_emission_s": 4.7,
+  "bake_H_normal_s": 5.0,
+  "zones_H": [
+   "gw_mosaic",
+   "gw_pearl",
+   "gw_silver"
+  ],
+  "bake_P_masks_s": 7.7,
+  "bake_P_albedo_s": 4.6,
+  "bake_P_orm_s": 4.6,
+  "bake_P_normal_s": 9.0,
+  "zones_P": [
+   "gw_pearl"
+  ],
+  "glow_materials": [
+   "ithar_glow_gw_drive",
+   "ithar_glow_gw_drive_core",
+   "ithar_glow_gw_gem_amber"
+  ],
+  "inside_materials": [
+   "ithar_inside_core",
+   "ithar_inside_crew",
+   "ithar_inside_engroom"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.2071,
+    "area": 0.98527,
+    "texels_per_unit2": 3526847.9
+   },
+   "parts": {
+    "uv_share": 0.5848,
+    "area": 0.02001,
+    "texels_per_unit2": 490223218.2
+   }
+  },
+  "stack_seconds": 57.3
+ },
+ "density": {
+  "paint_flags": [
+   "engine: paint_detail_share 0.0 is 0.00 of the hull's 0.3",
+   "gun: paint_detail_share 0.0 is 0.00 of the hull's 0.3"
+  ],
+  "mesh_flags": [],
+  "hull": {
+   "area": 0.98527,
+   "triangles": 26000,
+   "tris_per_unit2": 26388.7,
+   "edges_per_unit2": 6686.5,
+   "texels_per_unit2": 3526847.9,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 35.34,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "ithar_GF1",
+  "game_ship": "fighter",
+  "variant": "",
+  "model_length": 1.60592,
+  "scale": 0.6226973586904023,
+  "length_world": 1.6,
+  "t_lines": [
+   -0.29889
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 1,
+  "guns": 1,
+  "engines": 3,
+  "bays": 0,
+  "points": 1,
+  "turrets": [
+   "G1_turret"
+  ],
+  "interior_objects": 3,
+  "slots": [
+   "0 guns T"
+  ]
+ },
+ "triangles": 32482,
+ "objects": 30,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}

@@ -1,0 +1,51 @@
+{
+ "name": "The Needle, the Glasswright fighter wing craft (The Glasswrights)",
+ "faction": "ithar",
+ "cls": "Squadron",
+ "band": "S",
+ "game_ship": "fighter",
+ "length_world": 1.6,
+ "hardpoints": {
+  "gun": 1,
+  "engine": 3,
+  "core": 1
+ },
+ "breaches": 0,
+ "turrets": 1,
+ "files": {
+  "ithar_GF1.glb": {
+   "bytes": 1127904,
+   "sha256": "56e691b1b0674d161e80418b7d4499a122a79a6ae0be07c8c9385d881f20b1d0"
+  },
+  "ithar_GF1_base.jpg": {
+   "bytes": 820426,
+   "sha256": "fde9f90e441c1540cac3ab32bd28747b00679b2a2b8f9ba52241b37249fb6022"
+  },
+  "ithar_GF1_emission.jpg": {
+   "bytes": 288600,
+   "sha256": "ca3d34e34d237aa70952ab25da9acf6f8b0af1b84f37f760a3984d34a04c71ec"
+  },
+  "ithar_GF1_normal.png": {
+   "bytes": 911433,
+   "sha256": "045380c97673dbbb40e78eb94ce65c34985b7110f2d7ad47689dcf24c8917d44"
+  },
+  "ithar_GF1_orm.png": {
+   "bytes": 2618595,
+   "sha256": "3338e82aaf907c29d9c26ba896bf0210436e67a48b8831f3422b521437237e62"
+  },
+  "ithar_GF1_parts_base.jpg": {
+   "bytes": 227460,
+   "sha256": "191bf3ec7dd9c31e53404cc4e9a1feedec027e3b0603a9e969f23f74ee640e13"
+  },
+  "ithar_GF1_parts_normal.png": {
+   "bytes": 65887,
+   "sha256": "653618299a36fca7d951a80d39b04635b8b494bfadb97233fe052ff5bd8cf666"
+  },
+  "ithar_GF1_parts_orm.png": {
+   "bytes": 1400376,
+   "sha256": "1b38b7be2c19a283b8dcb1e28c237b594d0727e761ad73b7a09625b49d9d305d"
+  }
+ },
+ "pc_path": "godot/assets/ships/ithar_GF1/",
+ "wing_role": "fighter"
+}

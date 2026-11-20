@@ -1,0 +1,284 @@
+{
+ "ship": "ithar_GF1",
+ "code": "ithar_GF1",
+ "cell": "GF1",
+ "game_ship": "fighter",
+ "faction": "ithar",
+ "cls": "Squadron",
+ "band": "S",
+ "expected_breach": 0,
+ "unbaked": false,
+ "maps": 2048,
+ "triangles": 27164,
+ "turret_triangles": 38,
+ "turrets": [
+  {
+   "name": "turret_0",
+   "p": [
+    0.07472,
+    0.0,
+    0.07737
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "triangles": 38,
+   "muzzles": [
+    "hp_w0_guns_T_0"
+   ],
+   "kind": "turret",
+   "id": "G1",
+   "socket": "G1",
+   "slot": 0,
+   "weapon": "guns",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0,
+   "rest_yaw": 0.0,
+   "rest_pitch": 0.0,
+   "turns_about": "local +Y (the mount normal)",
+   "arc_frame": "bearing from the bow, + to port"
+  }
+ ],
+ "surfaces": 4,
+ "destruction": {
+  "interior_materials": []
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "guns",
+   "arc": "T",
+   "hard_points": [
+    "hp_w0_guns_T_0"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 1,
+  "engine": 3,
+  "bay": 0,
+  "breach": 0,
+  "core": 1,
+  "rcs": 0,
+  "board": 0
+ },
+ "length_world": 1.6,
+ "sheet": "ithar_GF1",
+ "points_from": "the build (r209_points)",
+ "authored_moved": {},
+ "hard_points": [
+  {
+   "name": "hp_w0_guns_T_0",
+   "p": [
+    0.09066,
+    0.0,
+    0.08136
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 0,
+   "weapon": "guns",
+   "radius": 0.0019926315478092874,
+   "socket": "G1",
+   "turret": 0
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.49218,
+    0.01924,
+    0.0086
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.012952105060760367,
+   "engine": "Ep"
+  },
+  {
+   "name": "hp_eng_1",
+   "p": [
+    -0.49218,
+    -0.00027,
+    -0.01793
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.012952105060760367,
+   "engine": "Es"
+  },
+  {
+   "name": "hp_eng_2",
+   "p": [
+    -0.49218,
+    -0.01878,
+    0.00924
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.012952105060760367,
+   "engine": "Eu"
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.04982,
+    0.0,
+    0.0
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  }
+ ],
+ "manifest": {
+  "name": "The Needle, the Glasswright fighter wing craft (The Glasswrights)",
+  "faction": "ithar",
+  "cls": "Squadron",
+  "band": "S",
+  "game_ship": "fighter",
+  "length_world": 1.6,
+  "hardpoints": {
+   "gun": 1,
+   "engine": 3,
+   "core": 1
+  },
+  "breaches": 0,
+  "turrets": 1,
+  "files": {
+   "ithar_GF1.glb": {
+    "bytes": 1127904,
+    "sha256": "56e691b1b0674d161e80418b7d4499a122a79a6ae0be07c8c9385d881f20b1d0"
+   },
+   "ithar_GF1_base.jpg": {
+    "bytes": 820426,
+    "sha256": "fde9f90e441c1540cac3ab32bd28747b00679b2a2b8f9ba52241b37249fb6022"
+   },
+   "ithar_GF1_emission.jpg": {
+    "bytes": 288600,
+    "sha256": "ca3d34e34d237aa70952ab25da9acf6f8b0af1b84f37f760a3984d34a04c71ec"
+   },
+   "ithar_GF1_normal.png": {
+    "bytes": 911433,
+    "sha256": "045380c97673dbbb40e78eb94ce65c34985b7110f2d7ad47689dcf24c8917d44"
+   },
+   "ithar_GF1_orm.png": {
+    "bytes": 2618595,
+    "sha256": "3338e82aaf907c29d9c26ba896bf0210436e67a48b8831f3422b521437237e62"
+   },
+   "ithar_GF1_parts_base.jpg": {
+    "bytes": 227460,
+    "sha256": "191bf3ec7dd9c31e53404cc4e9a1feedec027e3b0603a9e969f23f74ee640e13"
+   },
+   "ithar_GF1_parts_normal.png": {
+    "bytes": 65887,
+    "sha256": "653618299a36fca7d951a80d39b04635b8b494bfadb97233fe052ff5bd8cf666"
+   },
+   "ithar_GF1_parts_orm.png": {
+    "bytes": 1400376,
+    "sha256": "1b38b7be2c19a283b8dcb1e28c237b594d0727e761ad73b7a09625b49d9d305d"
+   }
+  },
+  "pc_path": "godot/assets/ships/ithar_GF1/",
+  "wing_role": "fighter"
+ },
+ "files": {
+  "ithar_GF1.glb": {
+   "bytes": 1127904,
+   "sha256": "56e691b1b0674d161e80418b7d4499a122a79a6ae0be07c8c9385d881f20b1d0"
+  },
+  "ithar_GF1_base.jpg": {
+   "bytes": 820426,
+   "sha256": "fde9f90e441c1540cac3ab32bd28747b00679b2a2b8f9ba52241b37249fb6022"
+  },
+  "ithar_GF1_emission.jpg": {
+   "bytes": 288600,
+   "sha256": "ca3d34e34d237aa70952ab25da9acf6f8b0af1b84f37f760a3984d34a04c71ec"
+  },
+  "ithar_GF1_normal.png": {
+   "bytes": 911433,
+   "sha256": "045380c97673dbbb40e78eb94ce65c34985b7110f2d7ad47689dcf24c8917d44"
+  },
+  "ithar_GF1_orm.png": {
+   "bytes": 2618595,
+   "sha256": "3338e82aaf907c29d9c26ba896bf0210436e67a48b8831f3422b521437237e62"
+  },
+  "ithar_GF1_parts_base.jpg": {
+   "bytes": 227460,
+   "sha256": "191bf3ec7dd9c31e53404cc4e9a1feedec027e3b0603a9e969f23f74ee640e13"
+  },
+  "ithar_GF1_parts_normal.png": {
+   "bytes": 65887,
+   "sha256": "653618299a36fca7d951a80d39b04635b8b494bfadb97233fe052ff5bd8cf666"
+  },
+  "ithar_GF1_parts_orm.png": {
+   "bytes": 1400376,
+   "sha256": "1b38b7be2c19a283b8dcb1e28c237b594d0727e761ad73b7a09625b49d9d305d"
+  }
+ },
+ "seconds": 9.8,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}

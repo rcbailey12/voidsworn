@@ -1,0 +1,37 @@
+{
+ "cell": "GF1",
+ "hull_objects": 19,
+ "parts": 11,
+ "interiors": 3,
+ "seconds": 0.3,
+ "notes": [
+  {
+   "route": "build sheet ithar_GF1",
+   "contract": {
+    "sheet": "ithar_GF1",
+    "game_ship": "fighter",
+    "variant": "",
+    "model_length": 1.60592,
+    "scale": 0.6226973586904023,
+    "length_world": 1.6,
+    "t_lines": [
+     -0.29889
+    ],
+    "l_line": [],
+    "l_lines": [],
+    "muzzles": 1,
+    "guns": 1,
+    "engines": 3,
+    "bays": 0,
+    "points": 1,
+    "turrets": [
+     "G1_turret"
+    ],
+    "interior_objects": 3,
+    "slots": [
+     "0 guns T"
+    ]
+   }
+  }
+ ]
+}

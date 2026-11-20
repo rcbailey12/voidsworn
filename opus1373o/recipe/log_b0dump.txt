@@ -1,0 +1,10 @@
+GPU: waiting for shared claim, weight 2 (1373)
+GPU: acquired shared claim dc2bed63-6b90-4aa5-b2d1-c00841b5b0b2
+14:11:22 | INFO: Data are loaded, start creating Blender stuff
+14:11:22 | INFO: Blender create Mesh node geometry_0
+14:11:23 | INFO: glTF import finished in 0.54s
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_GF1\b0.npz (552815, 3, 3) objects 1
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
+GPU: released shared claim dc2bed63-6b90-4aa5-b2d1-c00841b5b0b2

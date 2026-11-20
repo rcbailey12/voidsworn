@@ -1,0 +1,1 @@
+[battle] GF1 {"game": {"bow": 33.9, "midship": 78.8, "stern": 41.5, "whole": 52.9}, "studio": {"bow": 20.0, "midship": 75.4, "stern": 33.3, "whole": 43.9}}
