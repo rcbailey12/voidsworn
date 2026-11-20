@@ -95,4 +95,4 @@ Picked or ruled things that have no hull code of their own in hull_table.gd.
 | Glasswright fighter (Starling Shard) | [fighter_starling_v2d.webp](../../contrib/muse/design/glasswright_family_2026_11/img/fighter_starling_v2d.webp) | R370 | #1373 | Ryan's Nov 16 pick V2d, confirmed Nov 20 over GF1. |
 | Glasswright bomber (Heliograph Prism) | [bomber_heliograph_w4b.webp](../../contrib/muse/design/glasswright_family_2026_11/img/bomber_heliograph_w4b.webp) | R370 | #1373 | Ryan's Nov 16 pick W4b, confirmed Nov 20 over GB1. |
 | Eclipse variants: Mote sentinel, Archive guard flare, Turreted zenith | none |  | #1419 | Parts built (issue 812) but not installed; each still draws its base ship. |
-| Eclipse battleship (Totality) | none | R63 | #1419 | Ruled, not in the game data, no picture. Ryan, Nov 20 2026 22:17 UTC, project chat: "yes on 2 and 3, agree with you"; the coordinator relays that as yes, build it after the current ships land. The Board confirms and records the ruling (issue 1419). |
+| Eclipse battleship (Totality) | none | R373 | #1423 | Ryan, Nov 20: yes, after the current ship replacements land. Not in the game data yet, no picture. |
