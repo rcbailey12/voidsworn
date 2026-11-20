@@ -190,8 +190,7 @@ func _scene(sid: String, shape: String, look: String, radius: float) -> bool:
 	if not sh.shielded or sh._shield_mat == null:
 		_fail(sid + " has no shield")
 		return false
-	if (sh._shield_tm != null) != (shape == "fitted"):
-		_fail("%s did not build the %s shield" % [sid, shape])
+	if not _shape_ok(sh, sid, shape):
 		return false
 	if "_fail_look" in sh and sh._fail_look != ["today", "shear", "collapse"].find("shear" if look == "shear_low" else look):
 		_fail("%s did not pick up the %s look" % [sid, look])
@@ -400,6 +399,9 @@ func _cost() -> void:
 			_note_scene(v)
 			ids.append("T%d" % i)
 		await _settle_shields()
+		for id in ids:
+			if not _shape_ok(bench.fx.ship(id), id, shape):
+				return
 		await bench.fx.warmup(bench.cam)
 		for i in 90:
 			await bench._step()
@@ -440,6 +442,9 @@ func _cost() -> void:
 # frame at the battle camera, with reduce flashing off and on, and every frame's luminance is counted the scene gate's
 # way. Stills of the brightest frame are kept for the eye.
 const GATE := preload("res://bench/scene_gate.gd")
+# an instance, called dynamically: main's scene_gate has these helpers as plain methods, and the main cost run parses this
+# same file (PC run 4: "Cannot call non-static function _luma() on the class" there)
+var gate = null
 
 
 func _flash() -> void:
@@ -448,11 +453,14 @@ func _flash() -> void:
 	var n := int(_env("PROBE_FLASH_SHIPS", "4"))
 	# the Glasswrights carry the brightest band since R340; the Hullbreakers' field stutters (Board on PR 1170)
 	var groups := {"glasswrights": ["i_boss", "i_carrier"], "hullbreakers": ["c_boss", "c_hulk"]}
+	gate = GATE.new()
 	for group in groups:
 		var subjects: Array = groups[group]
 		for shape in shapes:
 			if not await _flash_group(group, subjects, shape, looks, n):
-				return
+				break
+	gate.free()
+	gate = null
 
 
 func _flash_group(group: String, subjects: Array, shape: String, looks: PackedStringArray, n: int) -> bool:
@@ -473,6 +481,9 @@ func _flash_group(group: String, subjects: Array, shape: String, looks: PackedSt
 		_note_scene(v)
 		ids.append("G%d" % i)
 	await _settle_shields()
+	for id in ids:
+		if not _shape_ok(bench.fx.ship(id), id, shape):
+			return false
 	await bench.fx.warmup(bench.cam)
 	for i in 90:
 		await bench._step()
@@ -496,12 +507,12 @@ func _flash_group(group: String, subjects: Array, shape: String, looks: PackedSt
 				if img == null or img.is_empty():
 					_fail("flash pass: empty frame %d (%s, %s, %s, %s)" % [i, group, shape, look, "calm" if calm else "normal"])
 					return false
-				var lum: Dictionary = GATE._luma(img)
+				var lum: Dictionary = gate._luma(img)
 				rows.append({"i": i, "mean": float(lum["mean"]), "block": float(lum["block"])})
 				if float(lum["block"]) > peak and img != null:
 					peak = float(lum["block"])
 					peak_img = img
-			var st: Dictionary = GATE._flash_stats(rows)
+			var st: Dictionary = gate._flash_stats(rows)
 			var max_delta := 0.0
 			for j in range(1, rows.size()):
 				max_delta = maxf(max_delta, maxf(absf(rows[j]["mean"] - rows[j - 1]["mean"]), absf(rows[j]["block"] - rows[j - 1]["block"])))
@@ -534,6 +545,18 @@ func _settle_shields() -> void:
 		guard += 1
 	if not bench.fx._shield_jobs.is_empty():
 		_fail("fitted shield skins were still baking after 3600 frames")
+
+
+# the live shape of one measured ship: a fitted skin that never landed (no source faces, or a bake that made no mesh)
+# leaves the egg, and that fails the probe instead of being recorded under the fitted label (Artoo on PR 1170)
+func _shape_ok(sh, what: String, shape: String) -> bool:
+	if sh == null or not sh.shielded or sh._shield_mat == null:
+		_fail(what + " has no shield")
+		return false
+	if (sh._shield_tm != null) != (shape == "fitted"):
+		_fail("%s shows the %s shield, not the %s one" % [what, "fitted" if sh._shield_tm != null else "egg", shape])
+		return false
+	return true
 
 
 # the installed ship each picture or number was drawn from: its packed scene path and sha256 (Artoo on PR 1170: prove
