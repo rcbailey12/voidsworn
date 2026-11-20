@@ -191,7 +191,7 @@ def build(K):
     # ---------------- the bow gun: the Sear repeater in its forged casemate at the spearhead's root ----------------
     gz = deck_z(GUN_X, 0.0) - 0.005
     gpos = Vector((GUN_X, 0.0, gz))
-    part = HP.gun(3, 0.019, 0.34, 0.5, 'casemate', pitch=0.0, weapon='autocannon')
+    part = HP.gun(3, 0.019, 0.4, 0.38, 'casemate', pitch=0.0, weapon='autocannon')   # Ryan, Nov 20: smaller, less boxy, the barrels out front as on the concept
     part = K.emit('A1', part, HP.frame(gpos, (1, 0, 0), (0, 0, 1)), 'bow_gun')
     for ob in K.coll.objects:
         if ob.get('grp') == 'A1' and ob.get('role') != 'mount':
@@ -369,7 +369,7 @@ def build(K):
             hw = hw_at(x, z, IN) - inset
             rs.append([(x, hw, z - 0.012), (x, hw, z + 0.012), (x, -hw, z + 0.012), (x, -hw, z - 0.012)])
         K.loft_rings('in_deck_' + name, rs, 'deck', inside=True)
-        K.inside.append(dict(kind='deck', name={'main_aft': 'main', 'lower_aft': 'lower'}.get(name, name), z=z, x=(x1, x0)))
+        K.inside.append(dict(kind='deck', name={'main_aft': 'main', 'lower_aft': 'lower', 'main_bow': 'main'}.get(name, name), z=z, x=(x1, x0)))
 
     def frame_at(name, x, zr=None, record=True):
         """a frame ring inside the skin at station x; zr: the heights it keeps (a list of (lo, hi)), so a frame never straddles a
@@ -413,17 +413,18 @@ def build(K):
             w = min(hw_at(x, z, IN) for x in (x0, x1, (x0 + x1) / 2) for z in (z0, z1)) - 0.012
             ya, yb = (y_in, w) if side > 0 else (-w, -y_in)
             K.room('%s_%s' % (name, 'p' if side > 0 else 's'), kind, min(x0, x1), max(x0, x1), ya, yb, z0, z1, note=note)
-    # Forward of B-1 the lower hull peels away along the band (B-2, z -0.12): the decks and rooms keep clear of -0.17 to -0.07.
-    deck_slab('main', 0.0, 2.45, -0.3); deck_slab('lower', -0.2, 1.95, -0.3)
+    # Between B-1 and B-4 the lower hull peels away along the band (B-2, z -0.12): the decks and rooms keep clear of -0.17 to -0.07.
+    # Forward of B-4 the spearhead snaps off whole, so its frames are full rings; no deck, room or frame crosses B-4 (x 1.64).
+    deck_slab('main_bow', 0.0, 2.45, 1.74); deck_slab('main', 0.0, 1.54, -0.3); deck_slab('lower', -0.2, 1.54, -0.3)
     deck_slab('main_aft', 0.0, -1.0, -2.85); deck_slab('lower_aft', -0.22, -0.95, -2.85)
-    for i, x in enumerate((2.75, 2.2, 1.7, 1.2, 0.7, 0.2, -0.25, -1.0, -1.45, -1.95, -2.45, -2.85)):
-        if x > -0.4:
+    for i, x in enumerate((2.6, 2.2, 1.48, 1.2, 0.7, 0.2, -0.25, -1.0, -1.45, -1.95, -2.45, -2.85)):
+        if -0.4 < x < 1.64:   # between B-1 and B-4 the lower hull peels away (B-2): the frame keeps clear of the peel band
             frame_at('F%d_upper' % i, x, zr=[(-0.065, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -0.175)], record=False)
         else:
             frame_at('F%d' % i, x)
     room('repeater_magazine', 'magazine', 2.4, 2.0, 0.025, 0.075, note='the Sear repeater\'s magazine and feed, under the casemate')
-    room('bow_stores', 'hold', 2.0, 1.6, -0.25, -0.18, note='bow stores and the bow thrusters\' feeds')
-    room('crew_deck', 'crew', 1.7, 0.55, 0.025, 0.16, note='the crew deck: berths and the mess, the chalk wall where the names go up before launch')
+    room('bow_stores', 'hold', 2.0, 1.75, -0.25, -0.18, note='bow stores and the bow thrusters\' feeds')
+    room('crew_deck', 'crew', 1.54, 0.55, 0.025, 0.16, note='the crew deck: berths and the mess, the chalk wall where the names go up before launch')
     room('fire_plot', 'bridge', 0.45, -0.25, 0.025, 0.2, ymax=0.26, note='the plotting room (no AI: plotted by hand)')
     side_room('flak_magazine', 'magazine', 0.1, -0.3, 0.025, 0.2, 0.3, note='the spark flak magazines, under the tubs')
     room('ballast_fwd', 'machinery', 1.4, -0.3, -0.29, -0.19, note='trim tanks and pumps under the crew deck')
@@ -441,7 +442,9 @@ def build(K):
     K.break_line('B-1', -0.4, 'the bow and gun section tears from the reactor section: aft of the flak tubs at the flanks, ahead of the spine block on the centreline',
                  path=TRANS)
     K.break_line('B-2', 0.0, 'along the band: the lower hull peels away under the crew deck, the magazines and the stores',
-                 path=[(2.7, -0.12), (1.6, -0.122), (0.6, -0.118), (-0.35, -0.12)], kind='long')
+                 path=[(1.55, -0.12), (1.0, -0.121), (0.4, -0.118), (-0.35, -0.12)], kind='long')
+    K.break_line('B-4', 1.64, 'the spearhead snaps off whole at the casemate\'s back, so the peel along the band (B-2) stays aft of it, '
+                 'where the band is tall enough for its torn edge', path=[(1.64, 9.0), (1.64, -9.0)])
     K.break_line('B-3', -1.6, 'the spire line snaps off as one piece, the spine block tearing along its root',
                  path=[(-0.45, SPZ - 0.09), (-1.2, SPZ - 0.092), (-2.0, SPZ - 0.09), (-2.58, SPZ - 0.091)], kind='long')
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215), hidden until a piece breaks: iron decks, ember-lit crew spaces, frames, the repeater magazine, the reactor and its machinery. Sunward breaks along the gun decks (factions.md); deaths blow it apart unevenly, a ragged bite where the reactor goes (R186).'))
@@ -482,6 +485,8 @@ def build(K):
              'designs.md\'s table (3 spires, tallest 0.9) outranks the picture; Ryan, Nov 19 2026 (R331): "can we scale down the giant radiator/orange towers on each ship a bit too?", so about 70 percent of the table\'s heights')
     K.change('The spires\' fins stand further apart, so the ember shows as lit slats with dark iron between them, not as a whole lit tower', 'R331: the ember shows in the slats, not as a whole lit tower (factions.md Sunward silhouette line)')
     K.change('One flak pair (two twin tubs at the deck edges, station 60 percent), not the beauty\'s four tubs', 'designs.md\'s table and data.js warden carry one flak slot (3 shots); four tubs would be silent or extra mounts (R241)')
+    K.change('Round 3 (Ryan, Nov 20, on the in-game pictures: "fix ember glow and the boxy gun"): the casemate is about a quarter smaller (size 0.38, was 0.5) with a steeper glacis and narrower roof, and the three barrels reach further out of it',
+             'the concept\'s bow gun is a compact sloped house with its barrels well out front; ours read as a big box on the spearhead. The spires\' heat core now glows under iron ribs (the shared radiator glow=\'slats\', so S8, Vigil and every Sunward build get it)')
     K.change('The bow gun is a fixed casemate (the Sear repeater: three barrels round a spindle in a forged housing with a sloped glacis), not a turning turret with a cupola',
              'data.js autocannon is arc F; a fixed forward mount matches the game, and the frigate turns to bring it to bear (R241); the concept\'s cupola read as a second gun, so the sight is a slit in the glacis')
     K.change('The broadside band is plated and louvred, with no ports and no lit gallery slits', 'designs.md: no broadside slot in data, so no ports (R241: no decorative guns)')
@@ -490,6 +495,7 @@ def build(K):
     K.change('Two ember bells 0.55 across at plus and minus 0.4 on riveted drums, the stern widened to 1.2 to carry them', 'designs.md\'s table; the stern face must hold both drums (factions.md: two to four bells, deep-set)')
     K.change('The beam is 1.36 at the knuckle (1.47 over the band lips), not the table\'s 1.5', 'the concept\'s own top view measures about 1.2 over the hull; the lips and louvres bring the envelope near the table, the hull stays a narrow knife')
     K.change('Attitude thrusters, deck and belly hatches, heat louvres, frost running points, a belly armour step added', 'a ship in space needs thrusters and access; the reactor needs louvres; the concept shows no underside; every part has a job (R221)')
+    K.change('A second transverse break, B-4 at x 1.64: the spearhead snaps off whole, and the band peel (B-2) runs only between B-1 and B-4', 'the death seam check (stage 7 run, Nov 19): the peel plane tilts and waves across the beam, and in the shallow bow its torn edge reached the knuckle, leaving 154 inside triangles (the hull liner and the bow stores) outside their piece; the bow piece has no peel, so 0 remain')
     K.change('The concept\'s long centre rail is the dorsal power trunk, banded, from the casemate back to the spine block', 'the rail needs a job (R221): it feeds the repeater from the reactor')
     # ---------- the fit report's fix column: every finding the check made while this sheet was designed (issue 1156) ----------
     K.fix('Deck hatches H1 and H2: the seam ring inside the crowned deck', 'hatches lifted 0.016 onto the crown')

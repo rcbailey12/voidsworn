@@ -176,7 +176,7 @@ Concept counts read off the concept sheet by eye (Warden sheet: bow, the spearhe
 | mid/side | 4 | 6 | Hull: the blade; Band upper lip, port; Band lower lip, port; Flak tub, port; Spine block (the spire line's base); Belly armour step |
 | mid/below | no view | 10 | Hull: the blade; Band upper lip, port; Band lower lip, port; Band upper lip, starboard; Band lower lip, starboard; Flak tub, port; Flak tub, starboard; Spine block (the spire line's base); Belly armour step; Dorsal power trunk |
 | stern/top | 5 | 10 | Hull: the blade; Band upper lip, port; Band lower lip, port; Band upper lip, starboard; Band lower lip, starboard; Spine block (the spire line's base); Radiator spire R1 (raked, 0.47 tall); Radiator spire R2 (stepped, 0.65 tall); Radiator s |
-| stern/side | 6 | 8 | Hull: the blade; Band upper lip, port; Band lower lip, port; Spine block (the spire line's base); Radiator spire R1 (raked, 0.47 tall); Radiator spire R2 (stepped, 0.65 tall); Radiator spire R3 (blade, 0.52 tall); Belly armour step |
+| stern/side | 6 | 5 | Hull: the blade; Band upper lip, port; Band lower lip, port; Spine block (the spire line's base); Belly armour step |
 | stern/below | no view | 7 | Hull: the blade; Band upper lip, port; Band lower lip, port; Band upper lip, starboard; Band lower lip, starboard; Spine block (the spire line's base); Belly armour step |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)

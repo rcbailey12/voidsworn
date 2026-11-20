@@ -1,0 +1,54 @@
+{
+  "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+  "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "S9_battle_bench.jpg",
+  "date": "2026-11-20T02:09:26Z",
+  "sources": [
+    {
+      "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+      "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "voidsworn_battle_near.jpg",
+      "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+      "source_dirty": true,
+      "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+      "stage": "installed in game",
+      "date": "2026-11-20T01:56:06Z",
+      "image_sha256": "9d42c1107acaff0deadee7d63db2e4ec87d094f01429beb690fc76a5f63f9411",
+      "sources": [
+        {
+          "source_commit": "944f20f1216020c6d5a06b2200668fccdb748db7",
+          "source_diff_sha256": "6f8ae0c5f09798c7f58184ba76ee648807c3b15696455a7c1b57c784c633a924",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "c9e16abe49c1821cd0e82cadf72fc45533a6635a1279a4ef4a82fd0588fdaacc"
+  ],
+  "stamp_template_sha256": "50602e6668079ac9e0d531ed0f54bc450f0f4f5b3f041c872a965fccd2d4f240",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAACyUlEQVR4nO3dy20jZxSE0bpNeuGQHMXE4MgmBkcxIRljk3290MMGvJ7iSDxnVRAloBcNfPopipyZCQA/wLevX5L89vsfj74QfhbHoy8AAJ6F6AJAiegCQInoAkCJ6AJAiegCQInoAkCJ6AJAiegCQInoAkCJ6AJAiegCQInoAkCJ6AJAiegCQInoAkCJ6AJAiegCQInoAkCJ6AJAiegCQInoAkCJ6AJAiegCQInoAkCJ6AJAiegCQMl1NplkkySTxLZt+4PvTSazSS7JJufO7vvjM7uXef2+e6DoOnm7E/87bNu2P/TeJPPe4pcxR5Kcm2OyO5Pdf88c0HA953DStW37U+1NJjv7epDdOfZy7HGcL18597jtkXOT8+UnoeQ6c0/ebtkXtm3bH3pPkswmR3aTZDPnXLKb49jcd2+Z14eg6frL+kUP+IQmmdt7iW/n3nZyOfLXPcfk3GTGU8uUXb9HdIFP6v/n4Htm8uvs940TB31Xdx3wXDZ/7vH28ipHXaquj74AgLbNJcckO3t79LXwXEQXeDrH5uWFzf5liDLRBZ7OZK97bvbv8Rc2qkQXeDr3Y++b8TJS6rz3MvCE5u3dM6DKSRd4PutpZR7DSRcASkQXAEpEFwBKRBcASkQXAEpEFwBKRBcASkQXAEpEFwBKRBcASkQXAEpEFwBKRBcASkQXAEpEFwBKRBcASnyIPcCP9e3rl0dfAj8LJ10AKJkZ3QWey+YyuSWbzKOvheeiuABQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUCK6AFAiugBQIroAUPIP1RChe+UPUVoAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "c56272bb7fe8d3e3ec44f5f5851a4a69c0857c1914fec859890f1a0ce9013804"
+}
