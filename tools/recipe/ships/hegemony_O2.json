@@ -5,7 +5,7 @@
  "game_ship": "obj_transport",
  "game_code": "O2_37",
  "sheet": "hegemony_O2",
- "concept": "contrib/muse/design/class_family_hegemony_2026_11/convoy_beauty.webp",
+ "concept": "docs/ship_pipeline/build_sheets/hegemony_O2/concept_beauty.jpg",
  "shape_ref_yaw": null,
  "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
  "concept_camera": "",
