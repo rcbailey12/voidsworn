@@ -1,7 +1,7 @@
 # Challenge round: Fable on Neon's blind whole-game leg
 
-Neon's leg: issue 1387, branch neon/issue-1387, read at 89bf7e17 (15 findings, 5 fun, 5 not fun).
-Checked against: the code on claude/project-thread-8hcjwy (89bf7e17), live main at 69955313 (Nov 20, after R366), the pack
+Neon's leg: issue 1387, branch neon/issue-1387, report file at commit fb893f7d (15 findings, 5 fun, 5 not fun).
+Checked against: the code on claude/project-thread-8hcjwy at 89bf7e17 (the game and council base Neon reviewed), live main at 69955313 (Nov 20, after R366), the pack
 pictures (opened, not trusted from the text), docs/RULEBOOK.md, contrib/opus/FINDINGS.md up to R366 on main, the rename map,
 and the open issue list on GitHub. Two things were run in headless Godot 4.7.2, not only read: the battle menu at three UI
 scales, and the battle shelf at Larger. Findings only; nothing but this file was written.
@@ -282,8 +282,9 @@ route choice, the refit trade). Nothing to challenge there.
    finding 4), and the row that would undo it is on screen but the title and frame are gone. This is how a player
    will meet finding 4, and it happens on the comfort setting RULEBOOK 9.8 says must be reachable mid battle.
 5. **The fix list needs live-main line numbers.** Main moved during the blind round: every board line now comes from
-   render/line_style.gd (R362), rock hexes get a rim (R361), torpedoes lose their lane (R364), Battle 2 changes layout
-   (R366). Neon's and Fable's board.gd and battle.gd line numbers for rings, edges and torpedo text are from 89bf7e17
+   render/line_style.gd (R362) and rock hexes get a rim (R361), both merged. Two are still pending at main 69955313, not
+   fixed: torpedo gameplay (R364, open issue 1392) and the Battle 2 layout (R366, issue 1393, claimed, not merged). Do
+   not discard a finding as fixed on the strength of those two. Neon's and Fable's board.gd and battle.gd line numbers for rings, edges and torpedo text are from 89bf7e17
    and 25adec31. Whoever files the ranked list should re-point findings 1, 3, 9 and 12 at main first, or the jobs open
    on stale lines.
 
