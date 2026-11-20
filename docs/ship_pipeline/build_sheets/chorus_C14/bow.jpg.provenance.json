@@ -1,14 +1,14 @@
 {
-  "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+  "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
   "source_dirty": false,
   "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "bow.jpg",
-  "date": "2026-11-20T00:35:52Z",
+  "date": "2026-11-20T00:59:57Z",
   "sources": [
     {
-      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+      "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built"
@@ -17,15 +17,15 @@
   "inputs": [
     {
       "picture_name": "bow.png",
-      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+      "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-20T00:35:46Z",
-      "image_sha256": "9a6b21ff99b99cdf8b848263921255cbf80196fb519131c5895ebe0f4dc3ff02",
+      "date": "2026-11-20T00:59:50Z",
+      "image_sha256": "381fb5c55e3432bdfb3a554c04079145078c8d1bf8a15cc43d8d2ca9202be40d",
       "sources": [
         {
-          "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+          "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
           "source_dirty": false,
           "source_diff_sha256": "",
           "stage": "sheet built"
@@ -44,11 +44,11 @@
     98
   ],
   "strip_sha256": [
-    "c37bfc6f614f05e23d51e249d16d8c9d90988dbbe18655940d2ef1f6dda4d794"
+    "6401518f99da26016bab572c08cfb3c091a7e4cef7a7553c94f38b41bb1a72a7"
   ],
-  "stamp_template_sha256": "52a1e23cc64dc2878c3b2edc2730442cd6dc14c9f46eae6f60ccdeb8feed4d48",
+  "stamp_template_sha256": "f8fc87939b3d6c4aa90dd1037131d650e113066cef5408fae0c841dd9586fa24",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABPElEQVR4nO3UMRHAMAzAQLewfOWPq4s4JMM/Ak16dr8BYOY9HQBwC0MEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIkB95fwF0Wpp7TwAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "52ed2daa658452444a6e931e9c825975c3e461f16375cabce9f4632654894fec"
+  "image_sha256": "b39bdd094a56258777201ccf019e8911fb90bf8b8efaa29a235348a6a7963fde"
 }

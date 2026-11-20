@@ -120,7 +120,7 @@
   {
    "cell": "bow/side",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -174,7 +174,7 @@
   {
    "cell": "bow/below",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -237,7 +237,7 @@
   {
    "cell": "mid/top",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -273,7 +273,7 @@
   {
    "cell": "mid/side",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -300,7 +300,7 @@
   {
    "cell": "mid/below",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -336,7 +336,7 @@
   {
    "cell": "stern/top",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -381,7 +381,7 @@
   {
    "cell": "stern/side",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -408,7 +408,7 @@
   {
    "cell": "stern/below",
    "id": "hide",
-   "built": 2,
+   "built": 3,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -447,47 +447,47 @@
   {
    "cell": "bow/top",
    "concept": 4,
-   "build": 9
+   "build": 10
   },
   {
    "cell": "bow/side",
    "concept": 4,
-   "build": 7
+   "build": 8
   },
   {
    "cell": "bow/below",
    "concept": 3,
-   "build": 1
+   "build": 2
   },
   {
    "cell": "mid/top",
    "concept": 5,
-   "build": 9
+   "build": 10
   },
   {
    "cell": "mid/side",
    "concept": 5,
-   "build": 6
+   "build": 7
   },
   {
    "cell": "mid/below",
    "concept": 3,
-   "build": 0
+   "build": 1
   },
   {
    "cell": "stern/top",
    "concept": 3,
-   "build": 5
+   "build": 6
   },
   {
    "cell": "stern/side",
    "concept": 3,
-   "build": 4
+   "build": 5
   },
   {
    "cell": "stern/below",
    "concept": 2,
-   "build": 0
+   "build": 1
   }
  ],
  "ratios": {
@@ -501,7 +501,7 @@
    "env_LB": 1.35,
    "env_LH": 1.62,
    "hull_LB": 1.65,
-   "hull_LH": 1.95
+   "hull_LH": 1.94
   }
  }
 }

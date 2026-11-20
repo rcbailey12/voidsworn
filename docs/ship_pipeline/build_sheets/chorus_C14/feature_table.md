@@ -1,6 +1,6 @@
 # chorus_C14: The brood-sac (Chorus carrier), build sheet
 
-The Chorus (chorus) | class Carrier | version 5 (blockout v5, the armour shell (R341, issue 1155)), 2026-11-19 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus1155\chorus_C14\chorus_C14\chorus_C14_blockout.blend`
+The Chorus (chorus) | class Carrier | version 6 (blockout v6, the armour shell with the sacs capped (R341, issue 1155)), 2026-11-19 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus1155\chorus_C14\chorus_C14\chorus_C14_blockout.blend`
 
 **Length 16.5 world units** (data.js b_brood (cls 'Carrier'); length from godot/render/hull_table.gd CLS_LEN['Carrier'] = 16.5). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -31,8 +31,8 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | L to B hull | 1.76 |
 | L to H hull | 2.41 |
 | prow overhang | 0.65 |
-| outline iou percent | 73.9 |
-| mass outline iou percent | 74.3 |
+| outline iou percent | 73.6 |
+| mass outline iou percent | 73.9 |
 | PASS | True |
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
@@ -103,8 +103,9 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Launch opening L5 | 11.7 to 35.5 | -5.59 to -2.33 | -1.83 to 2.26 | flesh neck and lip | thick fleshy rim, drawn empty |
 | Teardrop sacs | 25.4 to 30.8 | 1.88 to 2.92 | -5.04 to -2.53 | flesh sacs | a fringe of teardrops under the belly |
 | Vents | 66.3 to 72.4 | -0.28 to 0.28 | 0.33 to 0.91 | flesh | four pulse vents at the stern, the membranes streaming aft |
-| Armour shell (port) | 12.8 to 72.3 | -0.03 to 5.14 | -3.77 to 3.96 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, the sacs, siphons and vents stand clear |
-| Armour shell (starboard) | 12.8 to 72.4 | -5.02 to 0.03 | -3.65 to 3.89 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, the sacs, siphons and vents stand clear |
+| Armour caps | 12.1 to 70.3 | -3.30 to 3.48 | -5.58 to -2.56 | brown keratin scutes | small scutes capping the sacs and knolls, lips down (R341) |
+| Armour shell (port) | 12.8 to 72.3 | -0.03 to 5.14 | -3.77 to 3.96 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, siphons and vents stand clear, the sacs capped in smaller scutes |
+| Armour shell (starboard) | 12.8 to 72.4 | -5.02 to 0.03 | -3.65 to 3.89 | brown keratin scutes | banded keratin scutes from belly to back, lips aft, half a scute offset per band; the creased front and spine pore, the honeycomb field, the five launch necks, siphons and vents stand clear, the sacs capped in smaller scutes |
 
 ## INSIDE (R98, R209): what each break reveals
 
@@ -176,7 +177,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 252 objects, 33 parts, 397 close pairs, 217 rays, 2 guns, 0 sensor pairs, 1 turrets swept, 8 cones, 5 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 235 objects, 33 parts, 552 close pairs, 217 rays, 2 guns, 0 sensor pairs, 1 turrets swept, 8 cones, 5 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -184,7 +185,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 ## Changed from the picture (R207)
 
-- **An armour shell of banded overlapping keratin scutes over the whole sac (seven bands, lips aft); the stretch folds, body folds, wrinkles, shoulder pores and scar patches of v4 removed; the creased front, the spine pore, the honeycomb field, the launch necks and the pale sacs stay bare.** Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, minus the spine, maw, engines and weapons; the shared kit (plates.armour, R333) as C11, C12 and C13. The sacs stay pale and smooth (the Board on v2, note 4).
+- **An armour shell of banded overlapping keratin scutes over the whole sac (seven bands, lips aft); the stretch folds, body folds, wrinkles, shoulder pores and scar patches of v4 removed; the creased front, the spine pore, the honeycomb field and the launch necks stay bare; each teardrop sac capped in smaller scutes (Ryan, Nov 20).** Ryan, Nov 19 (R341): the Chorus armour covers the entire body like a pangolin or armadillo, minus the spine, maw, engines and weapons; the shared kit (plates.armour, R333) as C11, C12 and C13; Ryan on v5 (Nov 20): "Accept, but armour the sacs".
 - **No modelled hide pads (their pores read as rivets and their edges as panel seams, the Board on v2); the hide's grown plates are paint (stage 5). Colour: dark olive flesh with hard chitin hide, bile yellow-green light; the openings dark inside with a dim bile glow at the floor.** R204 and the lore: the colour is fixed in the build; the picture renders the family's grey-amber anchor palette. R325: hard chitin with a little wet-flesh variety.
 - **Five launch openings on necks of flesh, one on the back at the stern, a pair high on the aft shoulders, a pair on the rim at the forward corners.** designs.md: five openings round the rim, evenly dispersed with wide stretches of plain flesh; the front view draws them round the axis, the plan round the disc; placed so each launches clear of every other part (fit check EXIT) and none sits in the vents' jets. The job text said two openings; designs.md, the beauty and the sheet all draw five, so five are built (flagged to the Board).
 - **The openings are drawn empty: a deep dark chamber 2.2 deep, a dim glow at its floor, nothing in it; 2.1 across, fat round lips on short necks 0.6 tall close to the rim (the Board on v1 note 3 and v2 note 5).** Ryan, Nov 13: no pods shown; squadron capacity (hangar 3) is an internal fact, a brood chamber under each opening.

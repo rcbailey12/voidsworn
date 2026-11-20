@@ -1,14 +1,14 @@
 {
-  "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+  "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
   "source_dirty": false,
   "source_diff_sha256": "",
   "stage": "sheet built",
   "schema": 1,
   "picture_name": "weapon_spores.jpg",
-  "date": "2026-11-20T00:35:57Z",
+  "date": "2026-11-20T01:00:03Z",
   "sources": [
     {
-      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+      "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built"
@@ -17,15 +17,15 @@
   "inputs": [
     {
       "picture_name": "weapon_spores.png",
-      "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+      "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
       "source_dirty": false,
       "source_diff_sha256": "",
       "stage": "sheet built",
-      "date": "2026-11-20T00:35:39Z",
-      "image_sha256": "623759e2900bf8a4e9601e0de9df6d276127ab3da1a8e8d0cb9dec2a10177eb0",
+      "date": "2026-11-20T00:59:41Z",
+      "image_sha256": "6d1fe375e786d64b73dabd2bb80f214b223028dd6e8919a15776d5f8649fc05e",
       "sources": [
         {
-          "source_commit": "868d639618e4b1d9d196327a0a40dc16078c2b79",
+          "source_commit": "acb4bbb5ca2b6d8ff5d33f3cfa55cc29b656987d",
           "source_dirty": false,
           "source_diff_sha256": "",
           "stage": "sheet built"
@@ -44,11 +44,11 @@
     49
   ],
   "strip_sha256": [
-    "dcbdbf4715ee26f379c61f09b4df72caa3e27e590397ff29ed709ddd934bae05"
+    "66cbc61f82789427d04cd74dc59b902a39e4e3540b281e72b4d247f48086bbbd"
   ],
-  "stamp_template_sha256": "456b7d8658bf4f4c19a001da064c9507dfaad20ccc1ab6c95b7a1b8d7ff24046",
+  "stamp_template_sha256": "4d5294e3b7b539d9e04a09b2a455a382b92383e10633def5a396e826edac8bd2",
   "covered_pixels": [
     "iVBORw0KGgoAAAANSUhEUgAAANgAAAAxCAIAAAA3CfDwAAAAoElEQVR4nO3SMREAIBDAsAdZHP51IYMOiYIOXefcgd/27wCYMSIRRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIghFJMCIJRiTBiCQYkQQjkmBEEoxIwgOvUwESapuuagAAAABJRU5ErkJggg=="
   ],
-  "image_sha256": "0430e2d0e1c8eb52bf469e94ac9639d13ef6544653c7656cc6b392c5f697aab0"
+  "image_sha256": "81ceebc39e245ac4fbea113c0c67b26b2b58545b0884b8d15c462e3a2e874034"
 }

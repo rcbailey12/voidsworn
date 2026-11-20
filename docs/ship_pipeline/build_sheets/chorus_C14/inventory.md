@@ -43,7 +43,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 41; parts whose inventory id names no line with a job: 0.
+Built kit parts: 42; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, chorus_C14_model.json)
 
@@ -71,7 +71,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | pore_fields | pore fields over the front folds, and one small eye-hole above the mou | 2 / 2 | Y | Y | Y |
 | siphons | puckered jet siphons, a pair forward and a pair aft | 4 / 4 | Y | Y | Y |
 | launch_mouths | five launch openings on thick necks round the rim, drawn empty, dark w | 5 / 5 | Y | Y | Y |
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | teardrop_sacs | a fringe of pale smooth teardrop sacs, fat at the bottom, on long thin | 18 / 18 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 
@@ -82,7 +82,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | spine_pore | a small dark pinch where the front folds meet, no ring lip | 1 / 1 | Y | Y | Y |
 | front_lobes | the front's skin folds: six big uneven lobes parted by deep creases th | 1 / 1 | Y | Y | Y |
 | launch_mouths | five launch openings on thick necks round the rim, drawn empty, dark w | 5 / 5 | Y | Y | Y |
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | teardrop_sacs | a fringe of pale smooth teardrop sacs, fat at the bottom, on long thin | 18 / 18 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 
@@ -94,7 +94,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | spore_patch | a ragged cluster of big pores at the front of the honeycomb field, off | 1 / 1 | Y | Y | Y |
 | spore_field | a honeycomb of pores over the upper front, about a fifth of the top, s | 1 / 1 | Y | Y | Y |
 | body_folds | the raised roll of skin round the honeycomb field | 1 / 1 | Y | Y | Y |
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 
 ### mid/side
@@ -103,7 +103,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | launch_mouths | five launch openings on thick necks round the rim, drawn empty, dark w | 5 / 5 | Y | Y | Y |
 | spore_field | a honeycomb of pores over the upper front, about a fifth of the top, s | 1 / 1 | Y | Y | Y |
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | teardrop_sacs | a fringe of pale smooth teardrop sacs, fat at the bottom, on long thin | 18 / 18 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 
@@ -111,7 +111,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | teardrop_sacs | a fringe of pale smooth teardrop sacs, fat at the bottom, on long thin | 18 / 18 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 
@@ -120,7 +120,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | launch_mouths | five launch openings on thick necks round the rim, drawn empty, dark w | 5 / 5 | Y | Y | Y |
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 | vents | the membranes streaming from the stern, lit from within | 4 / 4 | Y | Y | Y |
 
@@ -130,7 +130,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | siphons | puckered jet siphons, a pair forward and a pair aft | 4 / 4 | Y | Y | Y |
 | launch_mouths | five launch openings on thick necks round the rim, drawn empty, dark w | 5 / 5 | Y | Y | Y |
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 | vents | the membranes streaming from the stern, lit from within | 4 / 4 | Y | Y | Y |
 
@@ -138,7 +138,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 2 / 1 | Y | Y | Y |
+| hide | overlapping scutes in seven bands from belly to back, lips aft, every  | 3 / 1 | Y | Y | Y |
 | teardrop_sacs | a fringe of pale smooth teardrop sacs, fat at the bottom, on long thin | 18 / 18 | Y | Y | Y |
 | body | a vast sac of folded, scarred flesh, as long as it is wide | 1 / 1 | Y | Y | Y |
 | vents | the membranes streaming from the stern, lit from within | 4 / 4 | Y | Y | Y |
@@ -150,15 +150,15 @@ Concept counts read off the concept sheet by eye (C14 sheet: bow = the front lob
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 4 | 9 | Hull: the giant sac; Front: the puckered face; Front folds; Spore field and patch; Launch opening L4; Launch opening L5; Teardrop sacs; Armour shell (port); Armour shell (starboard) |
-| bow/side | 4 | 7 | Hull: the giant sac; Front: the puckered face; Front folds; Spore field and patch; Launch opening L4; Teardrop sacs; Armour shell (port) |
-| bow/below | 3 | 1 | Teardrop sacs |
-| mid/top | 5 | 9 | Hull: the giant sac; Launch opening L1; Launch opening L2; Launch opening L3; Launch opening L4; Launch opening L5; Vents; Armour shell (port); Armour shell (starboard) |
-| mid/side | 5 | 6 | Hull: the giant sac; Launch opening L1; Launch opening L2; Launch opening L4; Vents; Armour shell (port) |
-| mid/below | 3 | 0 |  |
-| stern/top | 3 | 5 | Hull: the giant sac; Launch opening L1; Vents; Armour shell (port); Armour shell (starboard) |
-| stern/side | 3 | 4 | Hull: the giant sac; Launch opening L1; Vents; Armour shell (port) |
-| stern/below | 2 | 0 |  |
+| bow/top | 4 | 10 | Hull: the giant sac; Front: the puckered face; Front folds; Spore field and patch; Launch opening L4; Launch opening L5; Teardrop sacs; Armour caps; Armour shell (port); Armour shell (starboard) |
+| bow/side | 4 | 8 | Hull: the giant sac; Front: the puckered face; Front folds; Spore field and patch; Launch opening L4; Teardrop sacs; Armour caps; Armour shell (port) |
+| bow/below | 3 | 2 | Teardrop sacs; Armour caps |
+| mid/top | 5 | 10 | Hull: the giant sac; Launch opening L1; Launch opening L2; Launch opening L3; Launch opening L4; Launch opening L5; Vents; Armour caps; Armour shell (port); Armour shell (starboard) |
+| mid/side | 5 | 7 | Hull: the giant sac; Launch opening L1; Launch opening L2; Launch opening L4; Vents; Armour caps; Armour shell (port) |
+| mid/below | 3 | 1 | Armour caps |
+| stern/top | 3 | 6 | Hull: the giant sac; Launch opening L1; Vents; Armour caps; Armour shell (port); Armour shell (starboard) |
+| stern/side | 3 | 5 | Hull: the giant sac; Launch opening L1; Vents; Armour caps; Armour shell (port) |
+| stern/below | 2 | 1 | Armour caps |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -167,6 +167,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.12 | 0.99 | 1.17 | 0.99 |
-| build | 1.35 | 1.62 | 1.65 | 1.95 |
+| build | 1.35 | 1.62 | 1.65 | 1.94 |
 
 Lines not present, shaped and detailed without a reason: 0.
