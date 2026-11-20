@@ -1,3 +1,4 @@
 @echo off
-rem Issue 1154: queue the C13 recipe run (C13_RUN_1154.bat front) in its own minimised window.
-start "c1154run" /min cmd /c "%USERPROFILE%\Downloads\voidsworn_test\opus1154\repo\tools\pc\jobs\C13_RUN_1154.bat front"
+rem Issue 1154: RETIRED with C13_RUN_1154.bat (Artoo, Nov 20). C13 now runs through tools\pc\jobs\OPUS1291_EXPORT.bat.
+echo q_c1154.bat is retired; queue tools\pc\jobs\OPUS1291_EXPORT.bat (issue 1291)
+exit /b 1
