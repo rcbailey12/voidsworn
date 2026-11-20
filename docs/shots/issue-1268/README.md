@@ -10,3 +10,11 @@ Stage: capture-only option sheet. No game default changed.
 - Rerun: `VS_SHEET_HIDE_SHIPS=1 VS_NEBULA_LIT=r,g,b VS_NEBULA_GLOW=r,g,b VS_NEBULA_SHADOW=r,g,b godot --path godot --resolution 1280x720 --script res://world/sky_sheet_shots.gd -- --out DIR --region nebula --tag C_gold`.
 
 Opus's picks: nebula C gold (violet sinks into the violet-pink sky there), frontier C gold, boneyard E rose, deep A violet, world A violet. D steel blue is the one to rule out: it is too close to the teal ion storm.
+
+## r2 (Nov 20 2026): Ryan picked rose everywhere
+
+Ryan: "shouldn't we have nebulas be one color? ... I want it to be semi realistic", then "Yes agree on rose". world_living.gd now
+draws the battle nebula in one rose colour (NEBULA_LIT, NEBULA_GLOW, NEBULA_SHADOW, NEBULA_DARK) in every region and against
+every faction; the R82 violet clamp and the faction tint share are gone. RULEBOOK 10.9 is rewritten in the same PR.
+`NEB1268_rose_default_r2.jpg` is the game default with no override (nebula and boneyard regions, c170 and c26; cloud render,
+ships hidden). The capture-only VS_NEBULA_* override stays for later sheets.
