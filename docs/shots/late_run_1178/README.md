@@ -35,31 +35,32 @@ Rebuild: `godot --path godot --rendering-method gl_compatibility --resolution 12
 driver. The same bot policy in both arms (Artoo on PR 1276): the issue 1177 repair-stop pick, and in Sector 3 with 300 or
 more credits a preference for shipyard stops. On the new tree only, the bot also buys the best late-market offer it can
 afford while keeping enough for a full repair, and regrows recovered cores it can afford. "Before" is main a07f4a20 with
-that same policy. Bot rates, not player rates.
+that same policy. "After" is this branch at bc1826bb, the final settings (Chorus kill bonus 8, at most 50), rerun in full
+after the bonus change (Artoo on PR 1276). Bot rates, not player rates.
 
 ### Where runs are lost
 
 | Level | Arm | Win | Lost in S1 / S2 / S3 (per run) | Share of losses S1 / S2 / S3 | Win once in S3 |
 | --- | --- | ---: | --- | --- | ---: |
 | Standard | before | 77.5% | 12.7% / 8.3% / 1.5% | 56.5% / 37.0% / 6.5% | 98.2% |
-| Standard | after | 72.3% | 12.3% / 7.5% / 7.9% | 44.4% / 27.1% / 28.6% | 90.1% |
+| Standard | after | 71.9% | 12.5% / 7.3% / 8.3% | 44.4% / 25.9% / 29.6% | 89.6% |
 | Veteran | before | 44.8% | 34.6% / 17.9% / 2.7% | 62.6% / 32.5% / 4.9% | 94.3% |
-| Veteran | after | 37.7% | 34.8% / 18.3% / 9.2% | 55.9% / 29.4% / 14.7% | 80.4% |
+| Veteran | after | 40.0% | 34.4% / 17.5% / 8.1% | 57.3% / 29.2% / 13.5% | 83.1% |
 
-Sector 1 and 2 loss rates move by at most 0.8 points (limit 3). Sector 3's share of losses rises to Sector 2's at Standard
+Sector 1 and 2 loss rates move by at most 1.0 point (limit 3). Sector 3's share of losses passes Sector 2's at Standard
 and halfway toward it at Veteran. Raising Veteran's 1.25 is the one-number lever if the Board wants more.
 
 ### Credits on entering the final boss
 
 | Level | Seeds reaching the boss in both arms | Before | After | Change (95%) | Boss reached before / after | Late market spend on those seeds |
 | --- | ---: | ---: | ---: | --- | --- | ---: |
-| Standard | 352 | 291.0 | 163.3 | -127.7 (-146 to -109), -43.9% | 377 / 363 | 212 a run |
-| Veteran | 177 | 241.4 | 157.2 | -84.2 (-110 to -59), -34.9% | 220 / 188 | 183 a run |
+| Standard | 350 | 292.2 | 162.2 | -130.0 (-148 to -112), -44.5% | 377 / 362 | 217 a run |
+| Veteran | 185 | 242.3 | 148.9 | -93.4 (-119 to -68), -38.6% | 220 / 198 | 195 a run |
 
 The first try priced relics at 150 and the command point at 160: Standard fell 34.9% but Veteran only 29.4%, so the prices
-came down to 120 and 130. Evidence strength (Artoo): at Veteran a one-third drop is 80.5 credits, inside the 95%
-interval, so the point estimate clears the target but this sample does not show it clears it reliably; at Standard both the
-estimate and the interval clear it. Timeouts: Standard 6 before, 6 after; Veteran 11 before, 11 after; no driver errors. All-seed
+came down to 120 and 130. Evidence strength (Artoo): at Veteran a one-third drop is 80.8 credits, inside the 95%
+interval (-119 to -68), so the point estimate clears the target but this sample does not show it clears it reliably; at Standard both the
+estimate and the interval clear it. Timeouts: Standard 6 before, 6 after; Veteran 11 before, 11 after (final rerun: Standard 6, Veteran 11); no driver errors. All-seed
 survival above keeps every run; timeouts resolve as the harness always has (a non-boss timeout is a retreat, a boss
 timeout a loss).
 
@@ -68,15 +69,13 @@ timeout a loss).
 | Level | Arm | Crusade | Hegemony | Hullbreakers | Chorus | Glasswrights | Eclipse |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Standard | before | 75.0% | 77.5% | 83.8% | 78.8% | 60.0% | 90.0% |
-| Standard | after | 67.5% | 70.0% | 76.3% | 73.8% * | 53.8% | 90.0% |
+| Standard | after | 67.5% | 70.0% | 76.3% | 73.8% | 53.8% | 90.0% |
 | Veteran | before | 37.5% | 40.0% | 43.8% | 58.8% | 33.8% | 55.0% |
-| Veteran | after | 32.5% | 30.0% | 38.8% | 52.5% * | 33.8% | 52.5% |
+| Veteran | after | 32.5% | 30.0% | 38.8% | 52.5% | 33.8% | 52.5% |
 
-80 runs per cell, so each cell is about plus or minus 10 points. * Chorus cells are measured with the final kill bonus
-(8 per kill, at most 50) on the same seeds; every other number in this README was measured with the first bonus (2 per kill,
-at most 12), which only changes Chorus. Economy counters (after): Glasswrights about 92 and 67 cullet credits a run at
-Standard and Veteran; Eclipse recover 1.6 and 2.4 cores and regrow 0.65 and 1.2; Chorus earn about 2,040 biomass a run at
-Standard and 1,430 at Veteran with the final bonus. The Eclipse hold steady while the others drop 5 to 10, which is the core
+80 runs per cell, so each cell is about plus or minus 10 points. Economy counters (after): Chorus earn about 1,950
+biomass a run at Standard and 1,500 at Veteran; Glasswrights about 92 and 69 cullet credits; Eclipse recover 1.6 and 2.4 cores
+and regrow 0.65 and 1.2. The Eclipse hold steady while the others drop 5 to 10, which is the core
 recovery doing what 1086 measured.
 
 ### Chorus biomass tuning (Board ask on PR 1276)
@@ -113,6 +112,20 @@ before. What is left, about 6 points, is the Sector 3 fleet change every faction
 Veteran). That is 1.3 points outside the Board's 5-point line at Veteran; Standard sits on the line on the 80-seed set (5.0)
 and 8.7 below on 240 seeds. A larger kill bonus does not close it. The remaining levers are not biomass: a smaller Veteran
 1.25, or a Chorus-only Sector 3 easing.
+
+**How each arm was built** (all on a detached checkout, Chorus only, `FAC=chorus node tools/late_run_1178/sim_1178.js <dir> veteran 240 1 <out>`;
+Standard the same with `standard 240 1` or `standard 80 1`):
+
+- Biomass off, fleets off: main a07f4a20 unchanged (the "before" arm).
+- Biomass on, fleets on: this branch at the stated BIO_KILL (1671b7aa for 2/12; bc1826bb for 8/50).
+- Biomass off, fleets on: 1671b7aa with three edits. core.js: `function hullKey(){ return 'credits'; }` and the newRun line
+  `if(fac==='chorus'){ RUN.bio=RUN.credits; RUN.credits=0; }` removed; campaign_run.js factionWinEcon: the Chorus test
+  `if(RUN.fac==='chorus')` replaced by `if(false)`, so win pay goes to credits. Late market, cullet and cores untouched.
+- Biomass on, fleets off: 1671b7aa with battle.js `late:{standard:1.4,veteran:1.25}` changed to `late:{standard:1,veteran:1}`.
+- Kill bonus arms: 1671b7aa plus the BIO_KILL table edit of bc1826bb, with `const BIO_KILL={per:N,cap:M};` set in core.js.
+
+The sim's Chorus shipyard shim skips its biomass pass when hullKey() is not 'bio', so the biomass-off arm runs the plain
+credits shipyard.
 
 ## Checks run (cloud, Godot 4.7.2, Node 22)
 
