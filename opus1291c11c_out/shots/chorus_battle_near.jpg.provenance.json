@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAAAAXNSR0IArs4c6QAAAYlJREFUeJzt1TEBACAABCHf/qFN4U1Qgm33AAD/GRcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAItIFgIh0ASAiXQCISBcAIg8YdwDIFsdbeAAAAABJRU5ErkJggg=="
+	],
+	"date": "2026-11-20T21:47:55Z",
+	"image_sha256": "181d5d523c0babbdcb5d958fbb23963a78d9b0d72fbd219bd4444181db18d394",
+	"inputs": [],
+	"picture_name": "chorus_battle_near.jpg",
+	"schema": 1,
+	"source_commit": "86e44eb2089a130e0c014c2d0cea7d196e1e215b",
+	"source_diff_sha256": "c51813177e67d1d9011231b04d89945876453f8da90bad1d824268631cdf96ee",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "86e44eb2089a130e0c014c2d0cea7d196e1e215b",
+			"source_diff_sha256": "c51813177e67d1d9011231b04d89945876453f8da90bad1d824268631cdf96ee",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		982,
+		636,
+		1080
+	],
+	"stamp_template_sha256": "aa22c5bfee370b243cdb0c5ebac48e661e6702bd654171234101412fa734bde4",
+	"strip_sha256": [
+		"14016e81ce6875d827b7980df7814a88cca17223aa90308b301618d7f7995dbe"
+	],
+	"strip_size": [
+		636,
+		98
+	]
+}

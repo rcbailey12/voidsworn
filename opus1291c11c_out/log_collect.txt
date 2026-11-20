@@ -1,0 +1,533 @@
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:47:57 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11c\out\recipe\
+
+    Files : *.txt
+	    *.json
+	    *.md
+	    *.jpg
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\proj
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         40	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\
+	    New File  		     354	audit.json100%  
+	    New File  		   42333	bow_blink.gif.provenance.json100%  
+	    New File  		    2536	C11.json100%  
+	    New File  		     510	concept_camera.json100%  
+	    New File  		    2545	density.json100%  
+	    New File  		     265	detail_check.json100%  
+	    New File  		     468	log_audit.txt100%  
+	    New File  		    3998	log_audit_selftest.txt100%  
+	    New File  		     605	log_b0dump.txt100%  
+	    New File  		   47499	log_bake.txt100%  
+	    New File  		     157	log_battle.txt100%  
+	    New File  		     125	log_blink.txt100%  
+	    New File  		     654	log_build.txt100%  
+	    New File  		      66	log_clay.txt100%  
+	    New File  		      61	log_close.txt100%  
+	    New File  		     471	log_detail.txt100%  
+	    New File  		    1254	log_export.txt100%  
+	    New File  		     620	log_export_check.txt100%  
+	    New File  		    1863	log_export_selftest.txt100%  
+	    New File  		    4651	log_godot.txt100%  
+	    New File  		     648	log_install_cache.txt100%  
+	    New File  		     441	log_install_readback.txt100%  
+	    New File  		    1462	log_lod.txt100%  
+	    New File  		  669412	log_render.txt 39%   78%  100%  
+	    New File  		  123053	log_render_concept.txt100%  
+	    New File  		  241531	log_render_far.txt 54%  100%  
+	    New File  		    1443	log_sheet_contract.txt100%  
+	    New File  		      99	log_sil.txt100%  
+	    New File  		     234	log_sildump.txt100%  
+	    New File  		     683	log_standing.txt100%  
+	    New File  		     683	log_standing4.txt100%  
+	    New File  		    1205	log_standing_all.txt100%  
+	    New File  		     214	log_standing_battle.txt100%  
+	    New File  		      68	log_standing_licences.txt100%  
+	    New File  		      85	log_standing_lights.txt100%  
+	    New File  		      81	log_standing_paint.txt100%  
+	    New File  		   91534	log_surface.txt100%  
+	    New File  		     691	log_thirds.txt100%  
+	    New File  		     691	log_thirds4.txt100%  
+	    New File  		       0	log_trace.txt
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\audit_selftest\
+	    New File  		     224	audit_bad_longitudinal.json100%  
+	    New File  		     220	audit_empty_break_lines.json100%  
+	    New File  		     415	audit_into_ship.json100%  
+	    New File  		     417	audit_machine_across.json100%  
+	    New File  		     240	audit_no_break_lines.json100%  
+	    New File  		     354	audit_no_longitudinal.json100%  
+	    New File  		     232	audit_no_normals.json100%  
+	    New File  		     224	audit_one_normal_missing.json100%  
+	    New File  		     354	audit_structure_across.json100%  
+	  New Dir          2	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\build\
+	    New File  		     655	C11_build.json100%  
+	    New File  		    1672	sheet_contract_selftest.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\clay\
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\close\
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\glb\
+	    New File  		     313	C11_lods.json100%  
+	  New Dir         19	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\
+	    New File  		   23713	bench209.json100%  
+	    New File  		    6142	C11_auto_20.png.provenance.json100%  
+	    New File  		    6144	C11_auto_d1.2.png.provenance.json100%  
+	    New File  		    6145	C11_auto_d16.0.png.provenance.json100%  
+	    New File  		    6144	C11_auto_d3.0.png.provenance.json100%  
+	    New File  		    6144	C11_auto_d8.0.png.provenance.json100%  
+	    New File  		    6142	C11_hand_20.png.provenance.json100%  
+	    New File  		    6144	C11_hand_d1.2.png.provenance.json100%  
+	    New File  		    6145	C11_hand_d17.4.png.provenance.json100%  
+	    New File  		    6145	C11_hand_d18.6.png.provenance.json100%  
+	    New File  		    6144	C11_hand_d2.9.png.provenance.json100%  
+	    New File  		    6144	C11_hand_d3.1.png.provenance.json100%  
+	    New File  		    6145	C11_hand_d7.75.png.provenance.json100%  
+	    New File  		    6145	C11_hand_d8.25.png.provenance.json100%  
+	    New File  		    6141	C11_off_20.png.provenance.json100%  
+	    New File  		    6143	C11_off_d1.2.png.provenance.json100%  
+	    New File  		    6144	C11_off_d16.0.png.provenance.json100%  
+	    New File  		    6143	C11_off_d3.0.png.provenance.json100%  
+	    New File  		    6143	C11_off_d8.0.png.provenance.json100%  
+	  New Dir         17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\r\
+	    New File  		   11376	C11_battle.png.provenance.json100%  
+	    New File  		   41801	C11_below.png.provenance.json100%  
+	    New File  		   41638	C11_below_clay.png.provenance.json100%  
+	    New File  		   45950	C11_concept.png.provenance.json100%  
+	    New File  		   46165	C11_concept_cl.png.provenance.json100%  
+	    New File  		   44479	C11_concept_clay.png.provenance.json100%  
+	    New File  		   45066	C11_concept_clay_cl.png.provenance.json100%  
+	    New File  		   41730	C11_hero.png.provenance.json100%  
+	    New File  		   41631	C11_hero_clay.png.provenance.json100%  
+	    New File  		   41660	C11_hero_s.png.provenance.json100%  
+	    New File  		   41705	C11_hero_s_clay.png.provenance.json100%  
+	    New File  		   41672	C11_side.png.provenance.json100%  
+	    New File  		   41601	C11_side_clay.png.provenance.json100%  
+	    New File  		   41682	C11_side_s.png.provenance.json100%  
+	    New File  		   41695	C11_side_s_clay.png.provenance.json100%  
+	    New File  		   41735	C11_top.png.provenance.json100%  
+	    New File  		   41620	C11_top_clay.png.provenance.json100%  
+	  New Dir          1	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\
+	    New File  		     801	surface_check.json100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\textures\
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        13        10         3         0         0         0
+   Files :        89        89         0         0         0         0
+   Bytes :    1.98 m    1.98 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            37798545 Bytes/sec.
+   Speed :            2162.850 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:47:57 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:47:57 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\clay\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11c\out\recipe\clay\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\clay\
+	    New File  		   1.4 m	C11_aft_clay.png 17%   35%   53%   70%   88%  100%  
+	    New File  		   1.5 m	C11_aft_concept.png 16%   32%   49%   65%   82%   98%  100%  
+	    New File  		   1.5 m	C11_aft_studio.png 16%   32%   48%   64%   81%   97%  100%  
+	    New File  		  735145	C11_bow_clay.png 35%   71%  100%  
+	    New File  		  852889	C11_bow_concept.png 30%   61%   92%  100%  
+	    New File  		  865460	C11_bow_studio.png 30%   60%   90%  100%  
+	    New File  		   1.3 m	C11_cas_clay.png 18%   37%   56%   74%   93%  100%  
+	    New File  		   1.3 m	C11_cas_concept.png 18%   37%   55%   74%   93%  100%  
+	    New File  		   1.3 m	C11_cas_studio.png 17%   35%   53%   71%   89%  100%  
+	    New File  		   1.4 m	C11_drums_clay.png 17%   34%   51%   68%   86%  100%  
+	    New File  		   1.6 m	C11_drums_concept.png 15%   30%   45%   60%   75%   90%  100%  
+	    New File  		   1.6 m	C11_drums_studio.png 14%   29%   44%   58%   73%   88%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         1         0         0         0         0
+   Files :        12        12         0         0         0         0
+   Bytes :   15.69 m   15.69 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           914408111 Bytes/sec.
+   Speed :           52322.851 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:47:57 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:47:57 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\r\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11c\out\recipe\r\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  17	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\r\
+	    New File  		   94153	C11_battle.png100%  
+	    New File  		   2.9 m	C11_below.png 17%   34%   51%   68%   85%  100%  
+	    New File  		   2.3 m	C11_below_clay.png 20%   41%   62%   83%  100%  
+	    New File  		   1.0 m	C11_concept.png 23%   46%   69%   92%  100%  
+	    New File  		   1.0 m	C11_concept_cl.png 23%   47%   70%   94%  100%  
+	    New File  		  894692	C11_concept_clay.png 29%   58%   87%  100%  
+	    New File  		  916231	C11_concept_clay_cl.png 28%   57%   85%  100%  
+	    New File  		   1.3 m	C11_hero.png 17%   35%   53%   71%   89%  100%  
+	    New File  		   1.1 m	C11_hero_clay.png 21%   43%   65%   87%  100%  
+	    New File  		   1.4 m	C11_hero_s.png 17%   35%   52%   70%   87%  100%  
+	    New File  		   1.2 m	C11_hero_s_clay.png 20%   41%   61%   82%  100%  
+	    New File  		   3.0 m	C11_side.png 16%   33%   49%   66%   82%   99%  100%  
+	    New File  		   2.4 m	C11_side_clay.png 20%   41%   61%   82%  100%  
+	    New File  		   2.9 m	C11_side_s.png 16%   33%   50%   67%   84%  100%  
+	    New File  		   2.4 m	C11_side_s_clay.png 20%   40%   61%   81%  100%  
+	    New File  		   3.0 m	C11_top.png 16%   32%   49%   65%   81%   98%  100%  
+	    New File  		   2.3 m	C11_top_clay.png 20%   41%   62%   83%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :        17        17         0         0         0         0
+   Bytes :   30.75 m   30.75 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1697169736 Bytes/sec.
+   Speed :            97112.831 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:47:57 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:47:57 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\close\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11c\out\recipe\close\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\close\
+	    New File  		   1.4 m	C11_aft_clay.png 17%   35%   53%   70%   88%  100%  
+	    New File  		   1.5 m	C11_aft_concept.png 16%   33%   49%   66%   82%   99%  100%  
+	    New File  		   1.5 m	C11_aft_studio.png 16%   32%   48%   65%   81%   97%  100%  
+	    New File  		  737311	C11_bow_clay.png 35%   71%  100%  
+	    New File  		  849456	C11_bow_concept.png 30%   61%   92%  100%  
+	    New File  		  862109	C11_bow_studio.png 30%   60%   91%  100%  
+	    New File  		   1.3 m	C11_cas_clay.png 18%   37%   56%   74%   93%  100%  
+	    New File  		   1.3 m	C11_cas_concept.png 18%   37%   56%   74%   93%  100%  
+	    New File  		   1.3 m	C11_cas_studio.png 17%   35%   53%   71%   89%  100%  
+	    New File  		   1.4 m	C11_drums_clay.png 17%   34%   51%   69%   86%  100%  
+	    New File  		   1.6 m	C11_drums_concept.png 15%   30%   45%   60%   75%   90%  100%  
+	    New File  		   1.6 m	C11_drums_studio.png 14%   29%   44%   59%   73%   88%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         1         0         0         0         0
+   Files :        12        12         0         0         0         0
+   Bytes :   15.65 m   15.65 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           820726350 Bytes/sec.
+   Speed :           46962.338 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:47:57 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:47:57 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11c\out\recipe\surface\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                   6	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\surface\
+	    New File  		   85631	surface_below.png100%  
+	    New File  		   76898	surface_bow.png100%  
+	    New File  		   85093	surface_port.png100%  
+	    New File  		   85660	surface_starboard.png100%  
+	    New File  		   76582	surface_stern.png100%  
+	    New File  		   86172	surface_top.png100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         1         0         1         0         0         0
+   Files :         6         6         0         0         0         0
+   Bytes :   484.4 k   484.4 k         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :            99207200 Bytes/sec.
+   Speed :            5676.681 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:47:57 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:47:57 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11c\out\recipe\godot\
+
+    Files : *.png
+	    *.jpg
+	    *.jpeg
+	    *.gif
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\proj
+	    
+  Options : /S /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	                  18	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\godot\
+	    New File  		  680777	C11_auto_20.png 38%   77%  100%  
+	    New File  		  895730	C11_auto_d1.2.png 29%   58%   87%  100%  
+	    New File  		  208243	C11_auto_d16.0.png 62%  100%  
+	    New File  		  342820	C11_auto_d3.0.png 38%   76%  100%  
+	    New File  		  227425	C11_auto_d8.0.png 57%  100%  
+	    New File  		  680646	C11_hand_20.png 38%   77%  100%  
+	    New File  		  895031	C11_hand_d1.2.png 29%   58%   87%  100%  
+	    New File  		  207353	C11_hand_d17.4.png 63%  100%  
+	    New File  		  206530	C11_hand_d18.6.png 63%  100%  
+	    New File  		  352022	C11_hand_d2.9.png 37%   74%  100%  
+	    New File  		  336002	C11_hand_d3.1.png 39%   78%  100%  
+	    New File  		  229464	C11_hand_d7.75.png 57%  100%  
+	    New File  		  226119	C11_hand_d8.25.png 57%  100%  
+	    New File  		  680465	C11_off_20.png 38%   77%  100%  
+	    New File  		  894819	C11_off_d1.2.png 29%   58%   87%  100%  
+	    New File  		  207882	C11_off_d16.0.png 63%  100%  
+	    New File  		  342749	C11_off_d3.0.png 38%   76%  100%  
+	    New File  		  228105	C11_off_d8.0.png 57%  100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    7.47 m    7.47 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           603244769 Bytes/sec.
+   Speed :           34517.942 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:47:57 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Friday, November 20, 2026 3:47:57 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1291c11c\out\recipe\export\B21_11\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         11	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\
+	    New File  		  10.7 m	B21_11.glb  9.2% 18.5% 27.8% 37.0% 46.3% 55.6% 64.9% 74.1% 83.4% 92.7%100%  
+	    New File  		  824952	B21_11_base.jpg 31%   63%   95%  100%  
+	    New File  		    5304	B21_11_check.json100%  
+	    New File  		   15293	B21_11_export.json100%  
+	    New File  		   6.3 m	B21_11_normal.png  7.9% 15.8% 23.7% 31.6% 39.5% 47.4% 55.3% 63.2% 71.1% 79.0% 86.9% 94.9%100%  
+	    New File  		   4.5 m	B21_11_orm.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		 1010711	B21_11_parts_base.jpg 25%   51%   77%  100%  
+	    New File  		   5.4 m	B21_11_parts_normal.png  9%   18%   27%   36%   45%   54%   63%   72%   81%   90%  100%  
+	    New File  		   5.2 m	B21_11_parts_orm.png  9%   19%   28%   38%   48%   57%   67%   76%   86%   96%  100%  
+	    New File  		      25	export_status.txt100%  
+	    New File  		    1319	manifest_entry.json100%  
+	  New Dir          8	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_gltf_source\
+	    New File  		  10.7 m	B21_11.bin  9.2% 18.5% 27.8% 37.1% 46.4% 55.7% 65.0% 74.3% 83.6% 92.9%100%  
+	    New File  		   41302	B21_11.gltf100%  
+	    New File  		   3.8 m	C11_hull_albedo.png 13%   26%   39%   52%   65%   78%   91%  100%  
+	    New File  		   6.3 m	C11_hull_normal.png  7.9% 15.8% 23.7% 31.6% 39.5% 47.4% 55.3% 63.2% 71.1% 79.0% 86.9% 94.9%100%  
+	    New File  		   4.5 m	C11_hull_orm.png 10%   21%   32%   43%   54%   65%   76%   87%   98%  100%  
+	    New File  		   4.2 m	C11_parts_albedo.png 11%   23%   35%   47%   58%   70%   82%   94%  100%  
+	    New File  		   5.4 m	C11_parts_normal.png  9%   18%   27%   36%   45%   54%   63%   72%   81%   90%  100%  
+	    New File  		   5.2 m	C11_parts_orm.png  9%   19%   28%   38%   48%   57%   67%   76%   86%   96%  100%  
+	  New Dir          0	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\backward\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5179	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\breach_count\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5047	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\breach_inward\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5211	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\breach_near\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5177	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\liner_only\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5207	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_board\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4826	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     460	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_core\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5014	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     461	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_engine\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4156	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     459	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_interior\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5246	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_rcs\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4503	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     462	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_seams\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5154	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_slot\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    4769	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\no_socket\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5169	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\off_mesh\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5189	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\pass\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5121	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+	  New Dir          5	C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11\export\B21_11\_selftest\wrong_side\
+	    New File  		   4.9 m	B21_11.glb 10%   20%   30%   40%   50%   60%   70%   81%   91%  100%  
+	    New File  		    5201	B21_11_check.json100%  
+	    New File  		   13623	B21_11_export.json100%  
+	    New File  		      51	export_status.txt100%  
+	    New File  		     475	manifest_entry.json100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :        19        19         0         0         0         0
+   Files :        99        99         0         0         0         0
+   Bytes :  153.85 m  153.85 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           1177590080 Bytes/sec.
+   Speed :            67382.244 MegaBytes/min.
+   Ended : Friday, November 20, 2026 3:47:57 PM
+
