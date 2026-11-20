@@ -8,6 +8,11 @@ const WS := preload("res://world/world_shaders.gd")
 static var _wreck_mat: ShaderMaterial
 var visuals := {}   # hex key -> actual solid node, used by the coverage check
 
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_wreck_mat = null
+
 # Review-only station footprint, read from the real view. No live asset swap here:
 # issue 373 requires the build sheet, scene gate and Ryan's look first. The main
 # seven-cell terrain station is separate from station-kind holes elsewhere.

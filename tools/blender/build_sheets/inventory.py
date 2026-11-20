@@ -82,6 +82,8 @@ def ratios(rd):
         # otherwise every shape over 400 px counts (the Eclipse ring cruiser's arcs are separate pieces in plan)
         def cut(v):
             x0, y0, x1, y1 = v['box']; dd = ndimage.binary_opening(d[y0:y1, x0:x1], np.ones((3, 3)))
+            if v.get('rot'):   # issue 1153: a sheet that draws its plan bow down (C12) turns it bow left, degrees counter-clockwise
+                dd = np.rot90(dd, int(v['rot']) // 90)
             if v.get('largest', True):
                 return clean(dd)
             lab, n = ndimage.label(dd); sz = ndimage.sum(dd, lab, range(1, n + 1))

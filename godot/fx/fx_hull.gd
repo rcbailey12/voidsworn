@@ -166,7 +166,7 @@ float fx_mouth_edge(int i, vec3 p) {
 # A surface overlay cannot discard the opaque skin underneath it.
 # Weak cache: identical generated PBR shaders reuse the pipelines warmed by fx.
 # Materials keep their own textures/uniforms. No static GPU resource survives shutdown.
-static var _shader_refs := {}
+static var _shader_refs := {}   # not GPU: weak refs only, nothing is kept alive
 
 # Issue 569: a see-through hull surface (the Glasswright sail membranes, GLB alpha blend, which
 # Godot imports as TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) carries its alpha through the damage path
@@ -183,8 +183,8 @@ static func exterior_alpha_code() -> String:
 # per name, with the frame and the time. A name in this list is a miss in the warm-up list. The flag is off during a
 # warm-up (a bench may warm more than once), and logging is once per name so a hot path cannot flood the log.
 static var late_watch := false
-static var _late := {}
-static var _late_lines: Array = []
+static var _late := {}   # not GPU: shader names -> frame and time
+static var _late_lines: Array = []   # not GPU: log lines
 
 
 static func start_late_watch() -> void:
@@ -270,9 +270,9 @@ static func set_damage_pose(mat: ShaderMaterial, frame: Transform3D, mouths: Dic
 # Issue 220: the damage shader's source is a pure function of the hull shader's source, so it is worked out once per
 # hull shader and kept (the regex and the character walk in _inject cost about a millisecond per surface, and every
 # hull rebuild, death and death piece made one per surface on the main thread). Same code out, same shader.
-static var _dmg_code := {}
-static var _uniform_names := {}
-static var _ext_codes := {}
+static var _dmg_code := {}   # not GPU: shader source text
+static var _uniform_names := {}   # not GPU: uniform name lists
+static var _ext_codes := {}   # not GPU: shader source text
 
 
 static func _uniforms_of(shader: Shader) -> Array:

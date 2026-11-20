@@ -2,18 +2,15 @@ extends Node
 # R82: the volume shades the sky, never a hull. Cover intact, damaged and detached hulls,
 # including ships added after battle warmup. No assets or saved resources are rewritten.
 const RIM := preload("res://render/look_rim.gd")
+const MESH_WATCH := preload("res://render/mesh_watch.gd")
 
 
 func _ready() -> void:
-	get_tree().node_added.connect(_added)
+	# issue 1204: the one shared new-mesh watcher calls _protect at the end of the frame a mesh enters (the game
+	# assigns materials right after adding it) and again when a hull material is set later (MeshWatch.touch)
+	MESH_WATCH.listen(get_tree(), _protect)
 	for node in get_parent().find_children("*", "GeometryInstance3D", true, false):
 		_protect(node)
-
-
-func _added(node: Node) -> void:
-	if node is GeometryInstance3D:
-		# The game assigns materials immediately after adding a mesh to the tree.
-		_protect.call_deferred(node)
 
 
 func _protect(node) -> void:

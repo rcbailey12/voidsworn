@@ -1,4 +1,6 @@
 'use strict';
+// Issue 1194: test this checkout's tmo.bat, never the PC's installed tools_live copy.
+process.env.TMO_OWN_COPY = '1';
 // Issue 687: actual Windows .bat runs against tiny local Git fixtures and stub agents.
 // Issue 722 extends it: the resolved-model stamp, the free-space floor and the Board hashes check (audit 706
 // findings 6 and 7), all in test mode through the same entry points.
@@ -320,7 +322,7 @@ function gitEnvironment(env) {
 // runner_stall_tests row still exercise the real timeout code.
 function fixtureTools(name, scenario = '') {
   const dir = path.join(root, name);
-  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js']) {
+  for (const file of ['codex_issue.bat', 'codex_issue.ps1', 'work_issue.bat', 'work_issue.ps1', 'runner_common.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat']) {
     let body = read(path.join(here, file));
     if (file.endsWith('.bat')) {
       body = body.replace(/powershell -NoProfile (?:-ExecutionPolicy Bypass )?(?=-File |-Command "(?:\(Get-Date\)|Get-Date -Format))/g,
@@ -1301,7 +1303,7 @@ async function testRunnerStartChecks() {
   pass('a low-disk run stops before the mirror, the model probe and the agent');
   // The Board writes work217\runner_hashes.txt with hashwrite after copying the runner and watchdog files; hashcheck then
   // guards the running copies. A mismatch or a missing file is a warning, never a stop.
-  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js'];
+  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'review_evidence.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js', 'janitor.ps1', 'janitor_salvage.ps1', 'janitor.bat'];
   const hashesGood = path.join(root, 'board_hashes_good.txt');
   write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
@@ -1363,4 +1365,10 @@ finally {
     Object.entries(totals).map(([step, t]) => step + ': ' + t.calls + ' calls, ' + t.seconds.toFixed(2) + ' s').join('\n') + '\n';
   write(path.join(root, 'timings.txt'), timingNote);
   console.log(timingNote.trim());
+  // Issue 1180 (Board, Nov 20): a passing run removes its evidence root (several GB of clones per standing-checks run
+  // filled TEMP). A failure keeps it for reading. rmSync removes junctions as links and never follows them.
+  if (process.exitCode !== 1 && process.env.RUNNER_SELFTEST_KEEP !== '1') {
+    try { fs.rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); console.log('Evidence removed after PASS: ' + root); }
+    catch (e) { console.log('Evidence kept (could not remove: ' + e.message + '): ' + root); }
+  } else console.log('Evidence kept: ' + root);
 } })();

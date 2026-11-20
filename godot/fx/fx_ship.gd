@@ -45,7 +45,7 @@ var _eng_mat: ShaderMaterial
 var _eng_rib_mat: ShaderMaterial
 var _eng_sputter = false
 var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t, level], seed, r}
-static var _trail_indices: Dictionary = {}
+static var _trail_indices: Dictionary = {}   # not GPU: index arrays (PackedInt32Array)
 var _last_pos = Vector3.INF
 var _moving = 0.0
 var _shield_mi: MeshInstance3D = null
@@ -54,7 +54,7 @@ var _shield_tm: TriangleMesh = null
 var _shield_pose := Transform3D.IDENTITY
 # Keep enough recent hulls for a fleet without retaining every asset or pose used in a run.
 const SHIELD_SKIN_CACHE_LIMIT := 48
-static var _shield_skin_arrays: Dictionary = {}
+static var _shield_skin_arrays: Dictionary = {}   # not GPU: mesh arrays on the CPU, size capped
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()

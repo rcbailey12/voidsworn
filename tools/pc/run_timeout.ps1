@@ -446,6 +446,96 @@ function Protect-GpuStepClaim($Job, $Log) {
     Start-Sleep -Seconds 1
   }
 }
+function New-GodotProfile($Target, $Arguments) {
+  if ($env:PC_REAL_PROFILE -ceq '1') { return }
+  if ([IO.Path]::GetFileName($Target) -notmatch '^(Godot|Voidsworn)(.*\.exe)?$') {
+    # A caller can override the engine path and rename the Windows executable.
+    $app = Get-Command -Name $Target -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $app -or $app.FileVersionInfo.FileDescription -notlike 'Godot Engine*') { return }
+  }
+  $scratch = $env:PC_RUN_SCRATCH
+  if ($scratch) {
+    $owner = Join-Path $scratch '.voidsworn-run-owner'
+    if ([IO.File]::ReadAllText($owner) -cnotmatch '\A[0-9a-f]{32}\z') {
+      throw "Invalid runner scratch ownership token: $owner"
+    }
+  } else {
+    # Standalone queue jobs use the same owned scratch format as the agent runners.
+    $scratch = Join-Path ([IO.Path]::GetTempPath()) ("voidsworn-run-" + [Guid]::NewGuid().ToString('N'))
+    $null = New-Item -ItemType Directory -Path $scratch
+    [IO.File]::WriteAllText((Join-Path $scratch '.voidsworn-run-owner'), [Guid]::NewGuid().ToString('N'))
+    $script:createdScratch = $scratch
+  }
+  $profile = Join-Path $scratch ("godot-profile-" + [Guid]::NewGuid().ToString('N'))
+  $null = New-Item -ItemType Directory -Path $profile
+  $script:createdProfile = $profile
+  if ($env:PC_GODOT_EXPORT_TEMPLATES -and $Arguments -match '(?:^|\s)--export-release\s') {
+    # Exporting needs these shared tools, but does not need the player's user data.
+    $templates = $env:PC_GODOT_EXPORT_TEMPLATES
+    $destination = Join-Path $profile ('Godot\export_templates\' + (Split-Path -Leaf $templates))
+    $null = New-Item -ItemType Directory -Path $destination -Force
+    foreach ($name in @('windows_release_x86_64.exe', 'windows_release_x86_64_console.exe')) {
+      Copy-Item -LiteralPath (Join-Path $templates $name) -Destination $destination
+    }
+  }
+  return $profile
+}
+function Remove-LinkSafeTree($dir) {
+  # Delete a folder this launch made without ever following a link: links go as links, then files, then folders.
+  $item = Get-Item -LiteralPath $dir -Force -ErrorAction SilentlyContinue
+  if (-not $item) { return }
+  if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { [IO.Directory]::Delete($item.FullName, $false); return }
+  $dirs = New-Object 'Collections.Generic.List[string]'
+  $pending = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+  $pending.Push($item)
+  while ($pending.Count) {
+    $next = $pending.Pop(); $dirs.Add($next.FullName)
+    foreach ($entry in @($next.EnumerateFileSystemInfos())) {
+      if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        if ($entry -is [IO.DirectoryInfo]) { [IO.Directory]::Delete($entry.FullName, $false) } else { [IO.File]::Delete($entry.FullName) }
+      } elseif ($entry -is [IO.DirectoryInfo]) { $pending.Push($entry) }
+      else { $entry.Attributes = [IO.FileAttributes]::Normal; [IO.File]::Delete($entry.FullName) }
+    }
+  }
+  for ($i = $dirs.Count - 1; $i -ge 0; $i--) { [IO.Directory]::Delete($dirs[$i], $false) }
+}
+function Test-CleanupPaused {
+  # The same pause line runner_common.ps1 Cleanup-Paused reads. Tests point PC_CLEANUP_PAUSE_FILE at a fixture.
+  $flag = if ($env:PC_RUNNER_TEST -ceq '1' -and $env:PC_CLEANUP_PAUSE_FILE) { $env:PC_CLEANUP_PAUSE_FILE }
+    elseif ($env:USERPROFILE) { Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\gpu_go.txt' } else { $null }
+  if (-not $flag -or -not (Test-Path -LiteralPath $flag -PathType Leaf)) { return $false }
+  return [string](Get-Content -LiteralPath $flag -TotalCount 1) -match '^GPU not cleared: paused by the Board\b'
+}
+function Remove-CreatedProfile {
+  # Issue 1180 (Board, Nov 20): a throwaway Godot profile is removed once its process tree has ended, with the
+  # voidsworn-run folder when this launch made that too. Only what this launch created; PC_KEEP_GODOT_PROFILE=1 keeps it
+  # (a two-launch gate or a warm-cache bench). A failed removal is logged and left for the janitor.
+  if (-not $script:createdProfile -or $env:PC_KEEP_GODOT_PROFILE -ceq '1') { return }
+  try {
+    # The Board's PC pause removes nothing (RULEBOOK 3.11); the janitor takes the profile on a later pass.
+    if (Test-CleanupPaused) { throw 'PC pause is active' }
+    Remove-LinkSafeTree $script:createdProfile
+    if ($script:createdScratch) {
+      [IO.File]::Delete((Join-Path $script:createdScratch '.voidsworn-run-owner'))
+      [IO.Directory]::Delete($script:createdScratch, $false)
+    }
+    Write-Output "run_timeout: Godot profile removed: $($script:createdProfile)"
+  } catch { Write-Output "run_timeout: Godot profile kept for the janitor ($($script:createdProfile)): $($_.Exception.Message)" }
+  $script:createdProfile = $null; $script:createdScratch = $null
+}
+function Start-WithGodotProfile($Profile, [scriptblock]$Start) {
+  if (-not $Profile) { return (& $Start) }
+  $appData = $env:APPDATA
+  $localAppData = $env:LOCALAPPDATA
+  try {
+    $env:APPDATA = $Profile
+    $env:LOCALAPPDATA = $Profile
+    & $Start
+  } finally {
+    $env:APPDATA = $appData
+    $env:LOCALAPPDATA = $localAppData
+  }
+}
 if ($LibraryOnly) { return }
 $raw = $env:TMO_ARGS
 if (-not $raw) { Write-Output 'usage: tmo.bat <seconds> <exe> [args ...]'; exit 125 }
@@ -586,7 +676,9 @@ if (-not $watch) {
       Initialize-RunTree
       $files = [RunnerStepFiles]::new([string]$stepOut)
       $null = [IO.Directory]::CreateDirectory($spool)
-      $job = [RunnerStep]::new($command, $cwd, $outPath, $errPath)
+      $profile = New-GodotProfile $target $argLine
+      if ($profile) { Write-Output "run_timeout: Godot profile: $profile" }
+      $job = Start-WithGodotProfile $profile { [RunnerStep]::new($command, $cwd, $outPath, $errPath) }
       $p = [Diagnostics.Process]::GetProcessById($job.Pid)
       $null = $p.Handle
       $stdout = [RunnerStepOutput]::new($outPath, $false, $extraFatal)
@@ -671,6 +763,7 @@ if (-not $watch) {
       if ($p) { $p.Dispose() }
       if ($files) { $files.Dispose() }
       if ($job) { $job.Dispose() }
+      if ($finished -and -not $keepSpool) { Remove-CreatedProfile }
       if (-not $keepSpool) {
         # These are the files and the empty scratch directory created above.
         try {
@@ -690,8 +783,12 @@ $scanEvery = 60.0
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_SCAN_S) { $scanEvery = [double]$env:PC_TEST_SCAN_S }
 $nextScan = $scanEvery
 try {
-  if ($argLine -ne '') { $p = Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }
-  else { $p = Start-Process -FilePath $Exe -NoNewWindow -PassThru }
+  $profile = New-GodotProfile $Exe $argLine
+  if ($profile) { Write-Output "run_timeout: Godot profile: $profile" }
+  $p = Start-WithGodotProfile $profile {
+    if ($argLine -ne '') { Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }
+    else { Start-Process -FilePath $Exe -NoNewWindow -PassThru }
+  }
 } catch {
   "$(Get-Date -Format s) START FAILED $Exe $argLine : $_" | Out-File $log -Append -Encoding utf8
   Write-Output "run_timeout: could not start $Exe : $_"
@@ -729,6 +826,11 @@ exit 124
   if (-not $completed) {
     Update-RunTree $tree
     if (@($tree.Values | Where-Object { -not $_.HasExited }).Count) { Stop-RunTree $p $tree $log }
+  }
+  if ($completed) {
+    # Only when no process this launch started is still alive (a queue launcher may leave background jobs on purpose).
+    try { Update-RunTree $tree; if (-not @($tree.Values | Where-Object { -not $_.HasExited }).Count) { Remove-CreatedProfile } }
+    catch { Write-Output "run_timeout: Godot profile kept for the janitor: $($_.Exception.Message)" }
   }
   foreach ($child in $tree.Values) { $child.Dispose() }
 }

@@ -1224,7 +1224,9 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 	var si := 0
 	for sd in pc["surfs"]:
 		if bool(sd.get("interior", false)):
-			am.surface_set_material(si, sd["mat"])
+			# issue 1077 (prototype): the grouped wreck keeps its torn insides in view up close, and the live inside paint read
+			# as flat grey slabs there (pass 3, c26), so a strained wreck's insides are powered down and sooted
+			am.surface_set_material(si, fx.wreck_interior(sd["mat"]) if fx != null and fx.death_story else sd["mat"])
 			si += 1
 			continue
 		var length := float(pc.get("section_scale", 1.0))
@@ -2346,7 +2348,7 @@ static func _break_lines(job: Dictionary) -> Array:
 # narrow band round each line bulges and ripples (in the power-down material and the tear overlay, the same function),
 # hairline cracks light along the lines, and between the chain blasts the hull groans: a spit of sparks, a breath of
 # gas and now and then one small plate from a point on a line, with a jolt to the shudder. Then the existing split.
-const STRAIN_AMP := 0.0045     # of the length: the bulge at full strain
+const STRAIN_AMP := 0.010      # of the length: the bulge at full strain (0.0045 did not read in the PC clip at 1236bbc3)
 const STRAIN_BAND := 0.05      # of the length: half the width of the buckled band each side of a line
 const STRAIN_RIPPLE := 0.06    # of the length: the ripple's wavelength
 const STRAIN_GROANS := {"capital": [0.28, 0.68, 1.02, 1.38, 1.72], "cruiser": [0.30, 0.62, 0.92, 1.20]}
@@ -2399,7 +2401,7 @@ static func _strain_begin(fx, s, T: float, tl: DeathTimeline, seeds: PackedVecto
 			nn.append(Vector4(1.0, 0.0, 0.0, 1.0))
 	var full: float = maxf(tl.cut - 0.3, 0.5)
 	var strain := {"at": at, "n": nn, "lines": use.slice(0, 3), "k": Vector3(L * STRAIN_AMP, TAU / maxf(L * STRAIN_RIPPLE, 0.001), 0.0),
-		"t": Vector2(0.10, full), "hair": Vector3(maxf(L * 0.0025, 0.005), TAU / maxf(L * 0.03, 0.001), 1.6),
+		"t": Vector2(0.10, full), "hair": Vector3(maxf(L * 0.005, 0.005), TAU / maxf(L * 0.03, 0.001), 3.0),
 		"groans": STRAIN_GROANS.get(s.death_tier, STRAIN_GROANS["cruiser"])}
 	s.set_meta("death_strain", strain)
 	# the power-down materials built on the kill frame so far; the rest pick it up as they are built (_power_surface)
@@ -2864,11 +2866,14 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			rb.mass = maxf(float(pc["n"]) / 400.0, 5.0)
 			rb.linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
 			rb.angular_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
-			rb.linear_damp = STORY_DAMP if story else 0.0
-			rb.angular_damp = STORY_DAMP * 0.5 if story else 0.0
+			# no engine damping: under Jolt it did not slow the pieces (PC clip at 1236bbc3: the strained pieces kept their
+			# speed and drifted 1.9 L apart), so update() slows a strained piece itself, as it does the kinematic tiers
+			rb.linear_damp = 0.0
+			rb.angular_damp = 0.0
 			rb.freeze = s.death_big and not organic
 			rb.collision_layer = DEBRIS_LAYER
-			rb.collision_mask = HULL_LAYER | DEBRIS_LAYER
+			# a strained wreck's slow pieces part along their break lines; touching neighbours shoved them a further 0.13 L apart
+			rb.collision_mask = HULL_LAYER if story else HULL_LAYER | DEBRIS_LAYER
 			rb.physics_material_override = fx.dstate["bounce"]
 			var pts: PackedVector3Array = pc["hull"] if pc.has("hull") else PackedVector3Array()
 			if not pc.has("hull"):
@@ -3235,8 +3240,15 @@ static func update(fx, dt: float) -> void:
 		var prev: float = float(w.get("speed", 1.0))
 		for nd in w["nodes"]:
 			if is_instance_valid(nd) and nd is RigidBody3D:
-				(nd as RigidBody3D).linear_velocity *= speed / prev
-				(nd as RigidBody3D).angular_velocity *= speed / prev
+				var f := speed / prev
+				var fa := f
+				if nd.has_meta("story_damp") and not (nd as RigidBody3D).freeze:
+					# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
+					var dmp: float = nd.get_meta("story_damp")
+					f *= exp(-dmp * dt)
+					fa *= exp(-dmp * 0.5 * dt)
+				(nd as RigidBody3D).linear_velocity *= f
+				(nd as RigidBody3D).angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
 		# Heat fades over a few seconds. The cold opaque cap remains.

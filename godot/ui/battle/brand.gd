@@ -27,6 +27,11 @@ static func keel_faces() -> Array[Font]:
 static var _cache := {}
 
 
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_cache.clear()
+
+
 # the imported font when the project has been imported or exported, else the raw file (a copy without .godot/)
 static func load_font(p: String) -> Font:
 	if _cache.has(p):

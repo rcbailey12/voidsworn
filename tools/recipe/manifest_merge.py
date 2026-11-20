@@ -92,7 +92,7 @@ def is_export_map(code, name):
 def export_snapshot(export, snapshot, code):
     # Read the exact texture set from the GLB. Earlier exports can leave maps
     # of either format in the same directory.
-    from check_export import read_glb
+    from glb_io import read_glb
 
     glb = code + '.glb'
     copy_verified(export / glb, snapshot / glb)
@@ -245,6 +245,10 @@ def install_export(export, project, code, godot, job, ship, *options):
                 print(line)
 
     install(project, code, snapshot, expected, refresh, readback)
+    try:
+        shutil.rmtree(snapshot)
+    except OSError as exc:
+        print(f'Could not remove checked export scratch {snapshot}: {exc}', file=sys.stderr)
     return 0
 
 

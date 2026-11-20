@@ -924,7 +924,7 @@ func _process(dt: float) -> void:
 
 # ---------------------------------------------------------------- debris: dense rock and wreck clusters
 
-static var _piece_radii := {}
+static var _piece_radii := {}   # not GPU: piece radii (numbers)
 
 static func _piece_radius(mesh: Mesh) -> float:
 	var id := mesh.get_instance_id()
@@ -1208,6 +1208,12 @@ void fragment() {
 const WRECK_NAMES := ["hull_fragment", "broken_frame", "truss", "hull_section", "engine_bell", "weapon_sponson"]
 const WRECK_DIR := "res://world/wreckage/"
 static var _wreck_mesh_cache: Array = []
+
+
+# Issue 1204: drop what this script's statics hold before the engine shuts down (render/static_caches.gd calls it at quit)
+static func clear_static() -> void:
+	_wreck_mesh_cache = []
+	_piece_radii.clear()   # keyed by those meshes' instance ids
 
 
 # Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A

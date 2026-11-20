@@ -2057,7 +2057,10 @@ static func tear_strain_code() -> String:
 			float dash = smoothstep(0.15, 0.75, sin(dot(cut_p, vec3(3.1, 7.7, 5.3)) * fx_hair.y + float(i) * 1.7) * 0.5 + 0.5);
 			float flick = 0.65 + 0.35 * sin(scene_t * 23.0 + float(i) * 2.1 + dot(cut_p, vec3(0.9, 1.3, 0.7)));
 			col += ember * fx_hair.z * line * dash * flick * amt;
-			col += ember * vec3(0.6, 0.45, 0.35) * 0.05 * fx_strain_band(i, cut_p) * amt;
+			// far away the band itself carries the tell (the hairlines are under a pixel at the battle camera): it brightens as a
+			// pixel grows towards a tenth of the band's half width
+			float far = clamp(pxw / max(fx_strain_n[i].w * 0.1, 1e-4), 0.0, 1.0);
+			col += ember * vec3(0.6, 0.45, 0.35) * (0.12 + 0.33 * far) * flick * fx_strain_band(i, cut_p) * amt;
 		}
 	}
 	if (dot(col, col) < 1e-6) { discard; }""")
