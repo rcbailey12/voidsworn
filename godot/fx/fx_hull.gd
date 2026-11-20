@@ -543,13 +543,41 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	H = maxf(box.size.y, 0.05)
 	c = box.get_center()
 	bvh_ranges.clear()
-	var faces = faces_of(root, meshes, bvh_ranges)
-	tri_count = faces.size() / 3
-	tm = TriangleMesh.new()
-	if faces.size() >= 3:
-		tm.create_from_faces(faces)
+	# Issue 1289: the triangles, the hit BVH and the turret reach depend only on the hull's meshes and their pose, so the
+	# battle's effects keep them per hull (shared, set by fx_ship.setup) and a later ship of the same hull reuses them: an
+	# arriving A16 spent about 270 ms here on the PC. Read only after this; each ship keeps its own samples and points.
+	var geo_key: String = _geo_key(root, meshes) if shared is Dictionary else ""
+	var geo = (shared as Dictionary).get(geo_key) if geo_key != "" else null
+	var faces: PackedVector3Array
+	if geo is Dictionary:
+		faces = geo["faces"]
+		tm = geo["tm"]
+		for r in geo["ranges"]:
+			var mi := meshes[int(r["mi_index"])] as MeshInstance3D
+			var e: Dictionary = r.duplicate()
+			e.erase("mi_index")
+			e["mi"] = mi
+			var paint := mi.get_active_material(int(r["surface"])) as BaseMaterial3D
+			e["paint"] = paint if paint != null else (r["mesh"] as Mesh).surface_get_material(int(r["surface"])) as BaseMaterial3D
+			bvh_ranges.append(e)
 	else:
-		tm = null
+		faces = faces_of(root, meshes, bvh_ranges)
+		tm = TriangleMesh.new()
+		if faces.size() >= 3:
+			tm.create_from_faces(faces)
+		else:
+			tm = null
+		if geo_key != "":
+			var keep: Array = []
+			for r in bvh_ranges:
+				var e: Dictionary = r.duplicate()
+				e["mi_index"] = meshes.find(r["mi"])
+				e.erase("mi")
+				e.erase("paint")
+				keep.append(e)
+			geo = {"faces": faces, "tm": tm, "ranges": keep}
+			shared[geo_key] = geo
+	tri_count = faces.size() / 3
 	_samples(900)
 	_find_bow()
 	_find_nozzles()
@@ -561,7 +589,41 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_read_turrets(root)
 	_read_points(root)
 	_find_core(faces)
-	_turret_clearance(root, meshes)
+	if geo is Dictionary and geo.has("turrets") and (geo["turrets"] as Array).size() == turrets.size():
+		for k in turrets.size():
+			(turrets[k] as Dictionary).merge(geo["turrets"][k], true)
+	else:
+		_turret_clearance(root, meshes)
+		if geo is Dictionary:
+			var reach: Array = []
+			for t in turrets:
+				reach.append({"full": t.get("full"), "ymin": t.get("ymin"), "ymax": t.get("ymax"), "blocked": t.get("blocked", [])})
+			geo["turrets"] = reach
+
+
+var shared = null   # issue 1289: the battle's per-hull geometry (fx.hull_shared), or null to analyse alone
+
+
+# The hull's geometry and pose: each mesh resource and its frame in the ship's root. Same key, same triangles.
+# The frames are composed from local transforms (not world ones), so the key does not depend on where the ship stands.
+func _geo_key(root: Node3D, meshes: Array) -> String:
+	var parts := PackedStringArray()
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi == null or not is_instance_valid(mi) or mi.mesh == null:
+			parts.append("-")
+			continue
+		var frame := Transform3D.IDENTITY
+		var part: Node3D = mi
+		while part != null and part != root:
+			if part.top_level:
+				return ""   # placed in the world, not under the ship: no sharing
+			frame = part.transform * frame
+			part = part.get_parent_node_3d()
+		if part != root:
+			return ""
+		parts.append("%d@%s" % [mi.mesh.get_instance_id(), str(frame)])
+	return "|".join(parts)
 
 
 func section_of(x: float) -> int:

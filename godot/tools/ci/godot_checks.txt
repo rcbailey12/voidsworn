@@ -14,6 +14,7 @@ headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep 
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
 headless|world/test/backdrop_clip_check.gd|-|-|issue 1264: ringed giant planets, rings and moons stay inside the camera far plane at r 900 with the widest pan, and rock fades read the live near plane
+headless|world/test/max_4k_cost_check.gd|-|-|issue 1262: Max skips SSIL, the zero underlay is not drawn, Max storm cards are bounded; VS_1262_OLD brings each back
 headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cache on disk keeps under its cap, least recently used first, never the running battle's maps or the map just saved; stale .tmp files go
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/boon_fleet_test.gd|-|-|issues 1075 and 1147: protocol cards explain fleet fit, caps, refits and Brace eligibility without changing offers, RNG or saves
@@ -50,6 +51,7 @@ headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|sh
 headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices, gated run payoff and one-time victory debrief across reloads
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
+headless|rules/test/arrival_preview_test.gd|-|-|issue 1289: the rules name the reinforcement hull at battle start without changing the battle, and the ship that arrives is that hull
 headless|rules/test/safety/ruled_numbers_test.gd|-|-|issue 979: 15 independent rules values with FINDINGS references, no browser fixtures; also run by the rules safety net
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
 headless|rules/test/map_trial_test.gd|-|-|issue 1050: compare the live port with the JS map trial for every encounter
@@ -75,6 +77,7 @@ headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanu
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
+headless|fx/test/multi_death_check.gd|-|-|issue 1237: three capitals dying together draw pooled pictures (a second wave builds almost none), every debris plate rests within 8 s, wreck sections leave Jolt after their window, and the power-down budget is shared by the frame
 headless|fx/test/multi_kill_pace_check.gd|-|-|issue 1238: three Chorus Bio-Titans killed in one volley overlap their death waits (each kill but the last waits its 0.8 s floor) instead of stacking
 headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
 headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
@@ -94,6 +97,7 @@ headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield br
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
+headless|render/test/arrival_warm_check.gd|-|-|issue 1289: the arrival warm kit builds the reinforcement's hull into the effects for the load, then parks it hidden and keeps it loaded
 headless|render/test/install_refresh_check.gd|-|-|issue 592: the stage 7 install route in user://: the real asset builder (--ships-only) rebuilds a replaced hull's cache entry, drops its old damage and wreck scenes, and ShipView draws the new hull
 headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test ship (render/test/fixtures/T560_fx) turrets turn smoothly to the target bearing inside their arc and clear of their own ship, fire from the turned muzzle, go back to rest; fixed guns never move; the same hits as fixed guns
 headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes of ships, fighters, station, terrain, planet, wrecks, explosions and the campaign map and fails when any object leaves its target range in docs/playbooks/scale.md
