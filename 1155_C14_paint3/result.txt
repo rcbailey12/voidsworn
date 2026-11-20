@@ -1,0 +1,30 @@
+start chorus_C14 B22_11 opus/issue-1155 Thu 11/19/2026 22:06:23.09 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=chorus PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_220622_1554229 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=fbd9da76aa5fdc2edd72c2bd62f68015c6e11b36
+import exit 0 
+1_concept_in start 22:07:05.16 
+1_concept_in exit 0 at 22:07:08.83 
+2_shape_ref start 22:07:08.84 
+2_shape_ref exit 0 at 22:07:10.25 
+3_trace_hull start 22:07:10.25 
+3_trace_hull exit 0 at 22:20:33.57 
+4_parts_kit start 22:20:33.57 
+4_parts_kit exit 0 at 22:22:00.34 
+5_paint_bake start 22:22:00.35 
+5_paint_bake exit 0 at 22:29:55.44 
+6_lod start 22:29:55.45 
+6_lod exit 0 at 22:35:29.35 
+7_export start 22:35:29.36 
+7_export exit 0 at 22:38:41.13 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1155\repo\godot\assets\ships\B22_11\B22_11.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 0 
+shots exit 0 
+collect: see log_collect.txt 
+done PASS Thu 11/19/2026 22:39:36.43 
+all done 

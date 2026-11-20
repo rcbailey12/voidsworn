@@ -1,0 +1,126 @@
+{
+ "cell": "C14",
+ "route": "build sheet chorus_C14 + the chorus paint stack (kits/chorus/stack.py, kits/shared/paint_stack.py)",
+ "build_seconds": 89.4,
+ "geometry_seconds": 7.5,
+ "res": 4096,
+ "parts_res": 4096,
+ "samples": 64,
+ "paint": {
+  "hull_objects": 11,
+  "part_objects": 163,
+  "glow_objects": 61,
+  "interior_objects": 28,
+  "device": "OPTIX",
+  "samples": 64,
+  "textures": [],
+  "decals": [],
+  "bake_H_masks_s": 10.1,
+  "bake_H_albedo_s": 7.3,
+  "bake_H_orm_s": 7.1,
+  "bake_H_normal_s": 9.1,
+  "zones_H": [
+   "carapace",
+   "flesh",
+   "flesh2",
+   "maw",
+   "pore"
+  ],
+  "bake_P_masks_s": 9.3,
+  "bake_P_albedo_s": 7.6,
+  "bake_P_orm_s": 8.0,
+  "bake_P_normal_s": 7.4,
+  "zones_P": [
+   "chitin",
+   "flesh",
+   "flesh2",
+   "hide",
+   "maw",
+   "pore",
+   "tissue"
+  ],
+  "glow_materials": [
+   "chorus_light_bile",
+   "chorus_light_bilewet",
+   "chorus_light_membrane",
+   "chorus_light_veilroot"
+  ],
+  "inside_materials": [
+   "chorus_inside_bonefr",
+   "chorus_inside_brood",
+   "chorus_inside_engroom",
+   "chorus_inside_ganglion",
+   "chorus_inside_gland",
+   "chorus_inside_gut",
+   "chorus_inside_organ",
+   "chorus_inside_septum",
+   "chorus_inside_vat"
+  ],
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.487,
+    "area": 2.99567,
+    "texels_per_unit2": 2727230.6
+   },
+   "parts": {
+    "uv_share": 0.3111,
+    "area": 2.44687,
+    "texels_per_unit2": 2132827.7
+   }
+  },
+  "stack_seconds": 78.5
+ },
+ "density": {
+  "paint_flags": [
+   "sac: paint_detail_share 0.197 is 0.66 of the hull's 0.3"
+  ],
+  "mesh_flags": [
+   "launch: tris_per_unit2 14903.5 is 0.15 of the hull's 97016.0",
+   "launch: edges_per_unit2 8788.9 is 0.49 of the hull's 18090.1"
+  ],
+  "hull": {
+   "area": 2.99567,
+   "triangles": 290628,
+   "tris_per_unit2": 97016.0,
+   "edges_per_unit2": 18090.1,
+   "texels_per_unit2": 2727230.6,
+   "atlas": "hull",
+   "paint_detail_share": 0.3
+  },
+  "rule": "R224: a part type more than 25 percent under the hull is flagged",
+  "paint_bar_per_unit": 39.57,
+  "paint_top": 0.3
+ },
+ "contract": {
+  "sheet": "chorus_C14",
+  "game_ship": "b_brood",
+  "variant": "",
+  "model_length": 16.49543,
+  "scale": 0.06062284431597817,
+  "length_world": 16.5,
+  "t_lines": [
+   -0.22127,
+   0.11821,
+   0.26068
+  ],
+  "l_line": [],
+  "l_lines": [],
+  "muzzles": 4,
+  "guns": 2,
+  "engines": 4,
+  "bays": 5,
+  "points": 14,
+  "turrets": [
+   "G1_turret"
+  ],
+  "interior_objects": 28,
+  "slots": [
+   "0 bioplasma F",
+   "1 spores T"
+  ]
+ },
+ "triangles": 442322,
+ "objects": 235,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}

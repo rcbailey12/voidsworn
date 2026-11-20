@@ -1,0 +1,2 @@
+  battle camera C14: game bow 56.2 midship 86.4 stern 46.5 whole 65.1, studio bow 51.3 midship 80.9 stern 61.9 whole 68.7
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded

@@ -1,0 +1,8 @@
+[armour] port: 61 scutes (41 trimmed), 32 left open round fittings
+[armour] starboard: 55 scutes (33 trimmed), 36 left open round fittings
+[armour] armour_port: 2128 scute faces left off under the launch lips
+[armour] armour_starboard: 1824 scute faces left off under the launch lips
+[sil] dumped C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14\C14.npz (442322, 3, 3) objects 235
+Blender 4.5.14 LTS (hash 62c1db4208e8 built 2026-09-15 01:33:49)
+
+Blender quit
