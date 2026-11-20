@@ -1,0 +1,12 @@
+BLOOM_PROBE glb C:/Users/rcbai/Downloads/voidsworn_test/opus1282w2/repo/godot/assets/ships/I8_37/I8_37.glb sha256 3606295ff65f4c04cf02dea1020e5c30cd4f8c905b658360fb91310dc90b162c renderer forward_plus adapter NVIDIA GeForce RTX 5080 stern box [P: (1050, 100), S: (500, 400)]
+BLOOM_PROBE scene C:/Users/rcbai/Downloads/voidsworn_test/opus1282w2/repo/godot/gen/ships/I8_37.scn sha256 75ae1bb62e1dd50431ae79d9c6019ef5651083ed66d0872b9c264dd87c9ba6f2 built from glb stamp 1795156401:20768564;
+BLOOM_PROBE base stern over245=1290 over200=8086 of 200000 (raw png over245=1295)
+BLOOM_PROBE noglow stern over245=1119 over200=3071 of 200000 (raw png over245=1233)
+BLOOM_PROBE noemit stern over245=1276 over200=7170 of 200000 (raw png over245=1286)
+BLOOM_PROBE metal_0.3 stern over245=1039 over200=10348 of 200000 (raw png over245=1085)
+BLOOM_PROBE metal_0 stern over245=945 over200=11941 of 200000 (raw png over245=996)
+BLOOM_PROBE rough_0.45 stern over245=1274 over200=7129 of 200000 (raw png over245=1333)
+BLOOM_PROBE noemit_metal_0.3 stern over245=1059 over200=9369 of 200000 (raw png over245=1079)
+BLOOM_PROBE nokey stern over245=1282 over200=7063 of 200000 (raw png over245=1275)
+BLOOM_PROBE nofill stern over245=1124 over200=6673 of 200000 (raw png over245=1165)
+BLOOM_PROBE nosky stern over245=1290 over200=8086 of 200000 (raw png over245=1295)
