@@ -1190,7 +1190,14 @@ try {
     }
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
-    if (-not $reuse -and $patterns.Count) { Must-Git (@('-C',$repo,'sparse-checkout','set','--no-cone','--') + $patterns) }
+    if (-not $reuse -and $patterns.Count) {
+      # Write the patterns file and settings directly; the checkout below applies them. Passing '/*' as an argument let
+      # PowerShell on Linux expand it into root folders, which left out every file (issue 1186, CI).
+      Must-Git @('-C',$repo,'config','core.sparseCheckout','true')
+      Must-Git @('-C',$repo,'config','core.sparseCheckoutCone','false')
+      $null = [IO.Directory]::CreateDirectory((Join-Path $repo '.git/info'))
+      Put (Join-Path $repo '.git/info/sparse-checkout') (($patterns -join "`n") + "`n")
+    }
     $null = Git @('-C',$repo,'checkout','--no-overwrite-ignore','-q','-B',$br,'refs/remotes/origin/main')
     $switchExit = $gitExit
     if ($reuse) {
