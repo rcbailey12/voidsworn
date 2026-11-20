@@ -707,7 +707,14 @@ $paths = @('docs/shots/shot.png','docs/ship_pipeline/build_sheets/sheet.md','con
 foreach ($lane in @('board_c','board_d','slot_deepseek','slot_openai','board_b')) {
   $slot = Join-Path $root "$lane/repo"
   $null = Sparse-Start "sparse-$lane" $slot 'docs/shots-index.md' 'shared.txt' "Brief: hulls_hi/hull.glb"
-  Assert (Test-Path -LiteralPath (Join-Path $slot 'shared.txt')) "$lane keeps code"
+  if (-not (Test-Path -LiteralPath (Join-Path $slot 'shared.txt'))) {
+    # Show what Git did, so a failure on another host can be read from the CI log alone.
+    $seen = @(Get-ChildItem -LiteralPath $slot -Force -Name -ErrorAction SilentlyContinue) -join ', '
+    $gitLog = [IO.File]::ReadAllText((Join-Path $out 'git_log.txt'))
+    $result = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+    $status = (& $script:git -C $slot status --porcelain=v1 2>&1 | Select-Object -First 10) -join ' | '
+    throw ("$lane keeps code: slot holds [$seen]; status [$status]; result [$result]; git log [$gitLog]" -replace "\r?\n", " / ")
+  }
   foreach ($name in $paths) {
     Assert ((Test-Path -LiteralPath (Join-Path $slot $name)) -eq ($lane -eq 'board_b')) "$lane checks out the right paths: $name"
   }
