@@ -1996,6 +1996,7 @@ func lateShopOffers() -> Array:
 	var st = yard_node["stock"]["late"]; var pm = priceMult(); var L = TB["LATE_SHOP"]
 	var rc = jsround(float(L["relic"]) * pm); var cc = jsround(float(L["cp"]) * pm); var out = []
 	for r in st["relics"]:
+		if L["skip"].has(r) and not st["bought"].has(r): continue   # issue 1290: an older save's yard stock never sells a skipped relic
 		out.append({"id": "relic:" + str(r), "kind": "relic", "r": r, "cost": rc, "value": 2, "ok": not st["bought"].has(r) and not RUN["relics"].has(r) and float(RUN["credits"]) >= rc, "done": st["bought"].has(r)})
 	var lc = float(z0(RUN.get("lateCp")))
 	out.append({"id": "cp", "kind": "cp", "cost": cc, "value": 1, "ok": not jt(st["cp"]) and lc < float(L["cpMax"]) and float(RUN["credits"]) >= cc, "done": jt(st["cp"]), "full": lc >= float(L["cpMax"])})

@@ -63,6 +63,28 @@ func _run() -> void:
 				if r == "ledger" or r == "logbook" or r == "salvage": _fail("late market offered " + r + " at col " + str(col) + " battles " + str(b)); return
 	print("PASS: no ledger, logbook or Scrap rig in 96 late market rolls")
 
+	# 1b. An older save's yard stock (fixtures/issue_1290/old_yard.json, shared with contrib/opus/tools/late_stock_1290_tests.js):
+	# the stored ledger is never sold, the bought logbook stays bought, the command point stays taken, the stock is not rewritten
+	var fx = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/test/fixtures/issue_1290/old_yard.json"))
+	if fx == null: _fail("cannot read the old yard fixture"); return
+	for k in fx["run"]: campaign.RUN[k] = fx["run"][k].duplicate(true) if fx["run"][k] is Array else fx["run"][k]
+	var oy = {"id": "y", "col": 2, "type": "shipyard", "stock": fx["stock"].duplicate(true)}
+	campaign.yard_node = oy
+	var offers = campaign.lateShopOffers()
+	for o in offers:
+		if fx["expect"]["hidden"].has(o.get("r")): _fail("old yard still offers " + str(o.get("r"))); return
+	var sale = offers.filter(func(o): return o["kind"] == "relic" and o["ok"]).map(func(o): return o["r"])
+	var shown = offers.filter(func(o): return o["kind"] == "relic" and o["done"]).map(func(o): return o["r"])
+	if sale != fx["expect"]["forSale"] or shown != fx["expect"]["boughtShown"]: _fail("old yard offers " + str(sale) + " bought " + str(shown)); return
+	if offers.filter(func(o): return o["kind"] == "cp")[0]["done"] != fx["expect"]["cpDone"]: _fail("old yard command point state changed"); return
+	campaign.ACT_lateBuy("relic:ledger")
+	if float(campaign.RUN["credits"]) != float(fx["expect"]["creditsAfterLedgerTry"]) or campaign.RUN["relics"].has("ledger"): _fail("the stored ledger was sold"); return
+	var mc = offers.filter(func(o): return o.get("r") == "martyr")[0]["cost"]
+	campaign.ACT_lateBuy("relic:martyr")
+	if float(campaign.RUN["credits"]) != 500.0 - float(mc) or not campaign.RUN["relics"].has("martyr"): _fail("buying the martyr from the old yard failed"); return
+	if oy["stock"]["late"]["relics"] != fx["stock"]["late"]["relics"] or oy["stock"]["late"]["bought"] != ["logbook", "martyr"]: _fail("the old yard stock was rewritten"); return
+	print("PASS: an older save's yard never sells the ledger, keeps its history, and still sells the martyr")
+
 	# 2. Eclipse: a regrown ship decommissions for 0 until it has fought
 	_start("nekhet", "deathless", 1291)
 	var tpl = campaign.RUN["fleet"][campaign.RUN["fleet"].size() - 1]["tpl"]

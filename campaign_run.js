@@ -200,7 +200,9 @@ function lateStock(n){
 function lateShopOffers(){
   const st=yardNode&&yardNode.stock&&yardNode.stock.late; if(!st) return [];
   const pm=priceMult(), rc=Math.round(LATE_SHOP.relic*pm), cc=Math.round(LATE_SHOP.cp*pm);
-  const out=st.relics.map(r=>({id:'relic:'+r,kind:'relic',r,cost:rc,value:2,ok:!st.bought.includes(r)&&!RUN.relics.includes(r)&&RUN.credits>=rc,done:st.bought.includes(r)}));
+  // issue 1290: a yard stocked before the skip list (an older save) still never sells a skipped relic; one already bought stays
+  // listed as bought, so the purchase history and the command point state are untouched
+  const out=st.relics.filter(r=>!LATE_SHOP.skip.includes(r)||st.bought.includes(r)).map(r=>({id:'relic:'+r,kind:'relic',r,cost:rc,value:2,ok:!st.bought.includes(r)&&!RUN.relics.includes(r)&&RUN.credits>=rc,done:st.bought.includes(r)}));
   out.push({id:'cp',kind:'cp',cost:cc,value:1,ok:!st.cp&&(RUN.lateCp||0)<LATE_SHOP.cpMax&&RUN.credits>=cc,done:st.cp,full:(RUN.lateCp||0)>=LATE_SHOP.cpMax});
   return out;
 }
