@@ -215,6 +215,20 @@ function Remove-OldBackups {
   }
 }
 
+function Switch-LivePointer([string]$Pointer, [string]$Version) {
+  # current.txt flips in one rename, so a reader sees the old version or the new one, never half of either. Returns the
+  # version it named before. File.Replace needs a real null for "no backup": PowerShell turns $null into "" for a .NET
+  # string parameter, which Windows rejects ("The path is not of a legal form"; the Nov 20 1180 install), so pass
+  # [NullString]::Value. A .tmp left by an interrupted flip is harmless: each flip writes its own new name.
+  $previous = if (Test-Path -LiteralPath $Pointer) { ([IO.File]::ReadAllText($Pointer)).Trim() } else { '' }
+  if ($previous -eq $Version) { return $previous }
+  $temp = "$Pointer.$([guid]::NewGuid().ToString('N')).tmp"
+  [IO.File]::WriteAllText($temp, $Version + "`r`n")
+  if (Test-Path -LiteralPath $Pointer) { [IO.File]::Replace($temp, $Pointer, [NullString]::Value) } else { [IO.File]::Move($temp, $Pointer) }
+  if (([IO.File]::ReadAllText($Pointer)).Trim() -ne $Version) { throw "current.txt does not name $Version after the switch" }
+  return $previous
+}
+
 function Copy-Tools([string]$From, [string]$To, [string]$Step) {
   & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /IS /IT /R:1 /W:1 /XJ /NFL /NDL /NJH /NJS /NP | Out-Null
   if ($LASTEXITCODE -lt 0 -or $LASTEXITCODE -ge 8) { throw "$Step failed (robocopy exit $LASTEXITCODE)" }
@@ -311,12 +325,8 @@ try {
     }
     if (-not (Test-Hashes $target)) { throw "tools_live\$version does not match its hashes.txt" }
     # current.txt flips in one rename, so a reader sees the old version or the new one, never half of either.
-    $pointer = Join-Path $liveRoot 'current.txt'
-    $previous = if (Test-Path -LiteralPath $pointer) { ([IO.File]::ReadAllText($pointer)).Trim() } else { '' }
+    $previous = Switch-LivePointer (Join-Path $liveRoot 'current.txt') $version
     if ($previous -ne $version) {
-      $temp = "$pointer.$([guid]::NewGuid().ToString('N')).tmp"
-      [IO.File]::WriteAllText($temp, $version + "`r`n")
-      if (Test-Path -LiteralPath $pointer) { [IO.File]::Replace($temp, $pointer, $null) } else { [IO.File]::Move($temp, $pointer) }
       Write-Step "tools_live now uses $version (was $(if ($previous) { $previous } else { 'none' }))"
     } else { Write-Step "tools_live already uses $version" }
     try { Remove-OldLiveVersions $version } catch { Write-Step "kept old tools_live versions: $($_.Exception.Message)" }

@@ -27,7 +27,11 @@ assert.match(script, /'work217', 'build', 'tools_live'\)\]/, 'build and tools_li
 assert.match(script, /if \(\$seat -eq 'build'\) \{[\s\S]*?queue\\running[\s\S]*?throw "refused: a queue job is still running/, 'build refuses while a queue job runs');
 const live = script.slice(script.indexOf("if ($seat -eq 'tools_live') {\n    $null = [IO.Directory]::CreateDirectory($liveRoot)"));
 assert.match(live, /Test-ToolsMatch \$staged \$snapshot \$sourceFiles[\s\S]*?Write-Hashes \$staged[\s\S]*?\[IO\.Directory\]::Move\(\$staged, \$target\)/, 'tools_live installs a verified, hashed copy in one move');
-assert.match(live, /\[IO\.File\]::Replace\(\$temp, \$pointer, \$null\)/, 'current.txt flips in one rename');
+assert.match(live, /Switch-LivePointer \(Join-Path \$liveRoot 'current\.txt'\) \$version/, 'current.txt flips through Switch-LivePointer');
+// Issue 1180 (Nov 20 install): PowerShell passes $null to a .NET string parameter as "", which File.Replace rejects, so a
+// second install (current.txt already there) threw. The backup argument must be a real null.
+assert.doesNotMatch(script, /::Replace\([^)\n]*\$null\)/, 'File.Replace never gets $null as its backup path');
+assert.match(script, /\[IO\.File\]::Replace\(\$temp, \$Pointer, \[NullString\]::Value\)/, 'current.txt flips in one rename with no backup');
 assert.match(live, /\[IO\.Directory\]::Move\(\$target, \$aside\)/, 'an incomplete version is set aside, not deleted');
 assert.doesNotMatch(live.slice(0, live.indexOf('exit 0')), /Copy-Tools \$liveTools|Move\(\$liveTools/, 'tools_live never edits a version in place');
 assert.match(script, /fetch origin\/main[^\n]+--depth=1/, 'fetch main into a shallow source');
@@ -55,5 +59,35 @@ for (const step of steps) {
 assert.doesNotMatch(script, /Copy-Tools \$snapshot \$liveTools\b/, 'stage the overlay before touching live tools');
 assert.match(script, /robocopy\.exe[^\n]+\/E[^\n]+\n\s+if \(\$LASTEXITCODE -lt 0 -or \$LASTEXITCODE -ge 8\) \{ throw/);
 assert.match(script, /Write-Step \$message[^\n]+\n  exit 1/);
+
+// Live: run the pointer switch itself in PowerShell, first with no current.txt (move), then over an existing one (replace).
+{
+  const os = require('node:os');
+  const { spawnSync } = require('node:child_process');
+  const shell = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
+  if (spawnSync(shell, ['-NoProfile', '-Command', 'exit 0']).error) {
+    if (process.env.CI) throw new Error(`${shell} is required in CI for the current.txt switch fixture`);
+    console.log(`SKIP current.txt switch fixture: no ${shell} here (CI runs it)`);
+  } else {
+    const fn = /^function Switch-LivePointer[\s\S]*?^\}$/m.exec(script);
+    assert.ok(fn, 'Switch-LivePointer is defined');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'live-pointer-'));
+    try {
+      const pointer = path.join(dir, 'current.txt');
+      const flip = version => {
+        const r = spawnSync(shell, ['-NoProfile', '-Command', `${fn[0]}\nWrite-Output (Switch-LivePointer $env:FIX_POINTER $env:FIX_VERSION)`],
+          { encoding: 'utf8', env: { ...process.env, FIX_POINTER: pointer, FIX_VERSION: version }, timeout: 60000 });
+        assert.equal(r.status, 0, r.stdout + r.stderr);
+        return r.stdout.trim();
+      };
+      assert.equal(flip('aaaaaaaaaaaa'), '', 'first install: no previous version');
+      assert.equal(fs.readFileSync(pointer, 'utf8'), 'aaaaaaaaaaaa\r\n');
+      assert.equal(flip('bbbbbbbbbbbb'), 'aaaaaaaaaaaa', 'second install replaces an existing current.txt');
+      assert.equal(fs.readFileSync(pointer, 'utf8'), 'bbbbbbbbbbbb\r\n');
+      assert.equal(flip('bbbbbbbbbbbb'), 'bbbbbbbbbbbb', 'same version: unchanged');
+      assert.deepEqual(fs.readdirSync(dir), ['current.txt'], 'no .tmp or backup file is left behind');
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  }
+}
 
 console.log('PASS: lane tools refresh keeps old tools, refuses busy lanes, rotates old copies safely and installs tools_live');
