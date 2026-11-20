@@ -51,7 +51,8 @@ FITS = {
     'htorp': ({'rack', 'bow_launcher'}, {'launcher'}),        # torp
     'bioplasma': ({'throat'}, {'fixed'}),                     # bio: the Chorus throat, fixed forward
     'hturbo': ({'gun'}, {'turret', 'casemate'}),              # battery: the Hegemony heavy plasma lance (issue 759: low shoulder turrets)
-    'ion': ({'ion_trench'}, {'fixed'}),                       # lance: the Hegemony ion cannon, an emitter trench in the bow face (R183 (1))
+    'ion': ({'ion_trench'}, {'fixed'}),
+    'lance': ({'lance'}, {'fixed'}),                          # lance: the Sunward Oath lance, one emitter in the spearhead's point (issue 1157, the Vigil)                       # lance: the Hegemony ion cannon, an emitter trench in the bow face (R183 (1))
     'pulsar': ({'gun'}, {'fixed', 'turret'}),                 # lance: Glasswright bow waveguide or grown turning optic (CD5, issue 912)
     'turbo': ({'gun'}, {'turret', 'casemate'}),               # battery: the Hegemony plasma lance (issue 768: the Iron Mandate's bridge turret)
     'tendril': ({'tendril', 'mane', 'drape'}, {'turret', 'fixed'}),   # bio: a tendril crown turns; the mane and C12's drape are fixed organs

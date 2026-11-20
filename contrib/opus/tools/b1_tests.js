@@ -256,6 +256,10 @@ ASYNC.push(['B-7 a Nova cast abandoned by a stall does not spend the cooldown; a
   T.STALL = true; const r1 = await T.useAbility(u, { hex }); const cd1 = u.abCd; T.STALL = false; await T.useAbility(u, { hex });
   return r1 === false && cd1 === 0 && u.abCd > 0;
 }]);
+check('1354 shop discount lowers only the shop price: prize, strip and scrap values keep the ladder price', () => {
+  const v = T.HULLS.h_vanguard, w = T.HULLS.warden;
+  return v.cost === 200 && T.prizeScrap('h_vanguard') === Math.round(250 * .35) && w.cost === 65 && T.prizeScrap('warden') === Math.round(70 * .35);
+});
 ASYNC.push(['B-6 a blink whose animation stalled still costs the cooldown (no free repeat jump)', async () => {
   T.RUN = T.migrateRun(Object.assign(base(), { fac: 'ithar', fleet: [T.newShip('i_blade')] })); T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_picket' }] });
   const u = T.B.units.find(x => x.side === 'player' && x.ab === 'blink'); u.abCd = 0; const hex = T.blinkHexes(u)[0]; if (!hex) throw new Error('no blink hex');

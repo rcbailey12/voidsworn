@@ -31,8 +31,11 @@ const pool = u => u.hp + u.sh.reduce((a, b) => a + b, 0);
 const logged = (n0, re) => T.B.log.slice(n0).some(l => re.test(l.m));
 
 // ---- data-only pass ----
+// Issue 1354: Navy and Crusade shop prices carry a shop discount (20% and 5%); h.val keeps the ladder price for prize values.
 check('price ladder (balance v2): Hegemony unchanged, Chorus frigates cheap, Deathless and Ithar dear, Voidsworn carriers +10%', () =>
-  T.HULLS.h_picket.cost === 70 && T.HULLS.h_vanguard.cost === 250 && T.HULLS.b_drone.cost === 45 && T.HULLS.d_harvester.cost === 415 && T.HULLS.i_wisp.cost === 90 && T.HULLS.reliquary.cost === 285 && T.HULLS.warden.cost === 70);
+  T.HULLS.h_picket.val === 70 && T.HULLS.h_vanguard.val === 250 && T.HULLS.b_drone.cost === 45 && T.HULLS.d_harvester.cost === 415 && T.HULLS.i_wisp.cost === 90 && T.HULLS.reliquary.val === 285 && T.HULLS.warden.val === 70);
+check('issue 1354 shop discount: Navy 20% and Crusade 5% off in the shop only', () =>
+  T.HULLS.h_picket.cost === 55 && T.HULLS.h_vanguard.cost === 200 && T.HULLS.reliquary.cost === 270 && T.HULLS.warden.cost === 65 && T.HULLS.b_drone.val == null && T.HULLS.i_wisp.val == null);
 check('Ithar cannot Brace; other factions still can', () => { battle('ithar', ['i_song'], 'hegemony', ['h_picket']); const it = P()[0]; battle('voidsworn', ['penitent'], 'hegemony', ['h_picket']); const vo = P()[0];
   return !T.canOrder(it, 'brace') && T.canOrder(vo, 'brace'); });
 check('Corsair gate: no lance-kind hulls (prize Add refused, tow refused), other factions unaffected', () => {

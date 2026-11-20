@@ -1,6 +1,6 @@
 # Issue 1290: the late-balance fixes from the PR 1276 review. Checks that the late market never offers the Smuggler's ledger, the Scrap rig or
 # the logbook, that a ship regrown from an Eclipse core decommissions for 0 until it has fought a battle (then for the usual
-# 35%), and that the Chorus decommission into biomass. Headless it checks the rules and that the pages build; with a display it
+# 35%, capped at what the regrow cost since issue 1384), and that the Chorus decommission into biomass. Headless it checks the rules and that the pages build; with a display it
 # also saves the two decommission pictures.
 #   godot --path godot --rendering-method gl_compatibility --resolution 1280x720 --script res://campaign/test/late_fixes_1290.gd -- <out folder>
 extends SceneTree
@@ -111,7 +111,7 @@ func _run() -> void:
 	if campaign.B == null: _fail("no battle started: page " + str(campaign.page.get("kind"))); return
 	campaign.act("battle", "win")
 	if grown.get("regrown"): _fail("the regrown mark survived a battle"); return
-	if campaign.sellValue(grown) != campaign.prizeScrap(grown["tpl"]): _fail("after a battle the ship sells for " + str(campaign.sellValue(grown))); return
+	if campaign.sellValue(grown) != minf(float(grown["corePaid"]), campaign.prizeScrap(grown["tpl"])): _fail("after a battle the ship sells for " + str(campaign.sellValue(grown))); return   # issue 1384: at most its regrow cost
 	print("PASS: after one battle it decommissions for ", campaign.sellValue(grown))
 
 	# 3. Chorus: decommission pays biomass, not credits

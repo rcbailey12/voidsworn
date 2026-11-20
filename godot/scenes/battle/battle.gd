@@ -50,9 +50,10 @@ const REACH_C := Board.REACH_FILL
 const EMBER_3D := ShipView.EMBER   # the ring under the ship that is up (issue 271: ember, lime retired R191)
 const REACH_RING := Board.REACH_RING
 const REACH_HOT := Board.REACH_HOT
-const TARGET_RING := Color(1.0, 0.25, 0.2, 0.95)
-const TARGET_PLAN := Color(1.0, 0.62, 0.22, 0.9)
-const TARGET_ON := Color(1.0, 0.85, 0.75, 1.0)
+# issue 1374 (R362): every ring and line colour comes from the one line style's role table (render/line_style.gd)
+const TARGET_RING: Color = Board.LS.ROLE["target"]
+const TARGET_PLAN: Color = Board.LS.ROLE["target_plan"]
+const TARGET_ON: Color = Board.LS.ROLE["target_on"]
 const QUAD_NAME := ["prow", "starboard", "rear", "port"]
 const SEC_NAME := {"prow": "prow", "mid": "midships", "eng": "engines"}
 const MOVE_PER := {"voidsworn": 1.25, "hegemony": 0.75, "corsair": 0.85, "chorus": 1.1, "ithar": 1.0, "deathless": 0.6}
@@ -410,11 +411,7 @@ func _build_arrow() -> void:
 	path_dots.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_dots)
 	path_line = MeshInstance3D.new()
-	var lm := ShaderMaterial.new()
-	var line_shader := Shader.new()
-	line_shader.code = Board.OUTLINE_SHADER
-	lm.shader = line_shader
-	path_line.material_override = lm
+	path_line.material_override = Board.LS.material()   # issue 1374: the shared line style
 	path_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_line)
 
@@ -575,6 +572,7 @@ func _begin(a) -> void:
 			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight,
 			"nebula_wake": args.has("nebula-wake") or str(args.get("nebula_wake", "false")) == "true"}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
+		if args.get("stop") is Dictionary: world_opts["stop"] = args["stop"]   # issue 1272: the stop's sky mood
 		world.build(vb, world_opts)
 		for c in backdrop.get_children():
 			c.queue_free()
@@ -2873,12 +2871,12 @@ func _overlay() -> void:
 	if ability_mode:
 		for h in _ability_hexes():
 			fills[board.key(h["q"], h["r"])] = Color(0.92, 0.92, 1.0, 0.26)
-			rings[board.key(h["q"], h["r"])] = Color(1.0, 1.0, 1.0, 0.85)
+			rings[board.key(h["q"], h["r"])] = Board.LS.ROLE["ability"]
 	if mode == "board" and not u.is_empty():
 		for b in _ui(sel).get("board", []):
 			var tu: Dictionary = VU.get(b["target"], {})
 			if not tu.is_empty():
-				rings[board.key(tu["q"], tu["r"])] = Color(1, 0.75, 0.3, 1)
+				rings[board.key(tu["q"], tu["r"])] = Board.LS.ROLE["board"]
 	# the rehearsed position (a planned move, or the attack-move's stopping hex): the ghost, its path, arcs from there,
 	# and orange rings on enemies its guns would reach from there
 	var pst = plan if plan != null else (atk["st"] if atk != null else null)
@@ -2943,10 +2941,10 @@ func _path_dots(u: Dictionary, st) -> void:
 	for i in samples.size() - 1:
 		var a: Vector3 = samples[i]
 		var b: Vector3 = samples[i + 1]
-		var side := (b - a).cross(Vector3.UP).normalized() * 0.65
-		for v in [[a, 0.55], [b, 0.55], [b + side, 0.0], [a, 0.55], [b + side, 0.0], [a + side, 0.0], [a, 0.55], [a - side, 0.0], [b - side, 0.0], [a, 0.55], [b - side, 0.0], [b, 0.55]]:
-			line.set_color(Color(0.45, 0.78, 1.0, v[1]))
-			line.add_vertex(v[0])
+		# issue 1374: a centred line in the shared style, half on each side of the path
+		var side := (b - a).cross(Vector3.UP).normalized()
+		Board.LS.strip_into(line, a, b, side, side, "path", Color(0, 0, 0, -1), true)
+		Board.LS.strip_into(line, a, b, -side, -side, "path", Color(0, 0, 0, -1), true)
 	path_line.mesh = line.commit()
 	path_line.visible = true
 
