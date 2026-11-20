@@ -1,5 +1,5 @@
 @echo off
-title Opus 1279 run 3B: Jolt job overflow on capital arrival, before and after - GPU job
+title Opus 1279 run 3C: Jolt job overflow on capital arrival, before and after - GPU job
 rem Issue 1279: on 1232 RUN4, plain main's "before s2 arrival" logged "Jolt Physics job system exceeded the maximum number
 rem of jobs" and run_timeout stopped Godot. This runs the same arrival bench (contrib/opus/cold_kill_1232/capture1232.gd:
 rem warm-up at load with only the shooter, then A16 arrives and is killed 6 frames later) five times on current main
@@ -9,13 +9,14 @@ rem nonzero exit and a "FATAL Jolt" line. It also runs the headless check fx/tes
 rem prints this PC's lane budget.
 rem PASSED needs: the jolt_jobs_check passes, all 5 AFTER arrival rows collected, and no "job system exceeded" in any AFTER
 rem log. BEFORE rows are evidence only (the overflow is intermittent: 1 of 3 on RUN4).
-rem Its own sparse clone in opus1279\repo (godot, tools, contrib\opus\cold_kill_1232; made on the first run). Ryan's real
+rem A fresh sparse clone for every attempt in opus1279\out_<A>\repo (godot, tools, contrib\opus\cold_kill_1232), cloned with
+rem core.autocrlf=false (run 3B reused run 1's autocrlf clone and stopped on line-ending-only .import changes, as 1289 run 3). Ryan's real
 rem battle_opts.json and board_look.cfg are hashed before and after. Writes only under opus1279\. Never deletes anything.
 rem Run 2 (Board, Nov 20): every Godot start goes through the installed watchdog tools_live\<current.txt>\pc\tmo.bat (fails
 rem closed if it or run_timeout.ps1 is missing; path and SHA256 in result.txt); the ships copy leaves out manifest.json,
 rem README.md, a4_props.gd, *.uid, test and previews, and the run stops if any tracked .gd in the clone then differs.
 rem Run 1's bat (Artoo on PR 1302) had duplicate :one_commit and :realcheck labels; this file has one of each.
-rem Run 3B (replaces runs 2 and 3; gen copied whole with its manifest.json, Board): run 3 was the same job pinned to the fix merged with main after PR 1255 (issue 1237), against that main.
+rem Run 3C (replaces 3B: fresh clone per attempt, autocrlf off). Run 3B (replaced runs 2 and 3; gen copied whole with its manifest.json, Board): run 3 was the same job pinned to the fix merged with main after PR 1255 (issue 1237), against that main.
 rem Logs to out_<A>\result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
 set AFTER=ef0c138dd22ecbe10f48433ebe07f92907bb8aab
@@ -23,13 +24,13 @@ set BEFORE=eb23594d290d1a7d7e32281b94f6545394ef2a90
 set CAPREF=eb23594d290d1a7d7e32281b94f6545394ef2a90
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1279
-set C=%W%\repo
 if not exist "%W%" mkdir "%W%"
 set A=1
 :findattempt
 if exist "%W%\out_%A%" (set /a A+=1 & goto findattempt)
 set O=%W%\out_%A%
 mkdir "%O%"
+set C=%O%\repo
 set RES=%O%\result.txt
 set GOOD=0
 set HITS_AFTER=0
@@ -38,13 +39,13 @@ echo start %DATE% %TIME% attempt %A% > "%RES%"
 findstr /b /c:"GPU cleared" "%V%\gpu_go.txt" >nul 2>&1 || (echo gpu_go.txt is not GPU cleared: stopped >> "%RES%" & echo all done >> "%RES%" & exit /b 0)
 for /f "tokens=3" %%F in ('dir /-c "%V%" ^| findstr /c:"bytes free"') do echo drive bytes free %%F >> "%RES%"
 if not exist "%C%\.git" (
-  git clone -q --filter=blob:none --no-checkout --depth 1 https://github.com/rcbailey12/voidsworn.git "%C%" >> "%RES%" 2>&1
+  git clone -q -c core.autocrlf=false --filter=blob:none --no-checkout --depth 1 https://github.com/rcbailey12/voidsworn.git "%C%" >> "%RES%" 2>&1
   if errorlevel 1 (set "FAILMSG=git clone failed" & goto fail)
   git -C "%C%" sparse-checkout set godot tools contrib/opus/cold_kill_1232 >> "%RES%" 2>&1
   if errorlevel 1 (set "FAILMSG=sparse-checkout failed" & goto fail)
   git -C "%C%" checkout -q main >> "%RES%" 2>&1
   if errorlevel 1 (set "FAILMSG=first checkout of the sparse clone failed" & goto fail)
-  echo made the sparse clone >> "%RES%"
+  echo made a fresh sparse clone, core.autocrlf=false >> "%RES%"
 )
 set "REALU=%APPDATA%\Godot\app_userdata\Voidsworn"
 set N=1
