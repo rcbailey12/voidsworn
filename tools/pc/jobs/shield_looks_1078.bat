@@ -88,6 +88,17 @@ set "PICTURE_STAMP_TOOL=%R%\tools\picture_provenance.py"
 set "PICTURE_SOURCE_REPO=%R%"
 call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%OUT%\import.txt" 2>&1
 echo imported %date% %time% >> "%ST%"
+rem GLASS6 drew the old I8_37 scene although CD5 was published: rebuild the ship cache (gen\ships) from the copied
+rem assets\ships, as the recipe's stage 7 install does (render\build_assets.gd --ships-only), so a newly installed hull is
+rem never shadowed by a stale cached scene. Then log what the drawn subjects' files are.
+call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --script res://render/build_assets.gd -- --ships-only > "%OUT%\ships_cache.txt" 2>&1
+if errorlevel 1 (
+  echo FAILED: the ship cache rebuild failed, see %OUT%\ships_cache.txt >> "%ST%"
+  set "JOBFAIL=1"
+  goto finish
+)
+echo ship cache rebuilt from assets\ships %date% %time% >> "%ST%"
+powershell -NoProfile -Command "foreach ($p in @((Join-Path $env:S1078_SHIPS 'assets\ships\I8_37\I8_37.glb'), (Join-Path $env:S1078_SHIPS 'gen\ships\I8_37.scn'), (Join-Path $env:R 'godot\assets\ships\I8_37\I8_37.glb'), (Join-Path $env:R 'godot\gen\ships\I8_37.scn'))) { if (Test-Path -LiteralPath $p) { 'file ' + $p + ' ' + (Get-Item -LiteralPath $p).LastWriteTime.ToString('s') + ' sha256 ' + (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash } else { 'absent ' + $p } }" >> "%ST%" 2>&1
 
 if "%S1078_SKIP_LOOK%"=="1" goto flash
 set "PROBE_OUT=%OUT%\look"
@@ -111,6 +122,8 @@ rem clips: ffmpeg from PATH, else the one inside ComfyUI's portable Python (imag
 set "FF="
 where ffmpeg > nul 2>&1 && set "FF=ffmpeg"
 set "CPY=%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.exe"
+rem the trellis venv carries imageio_ffmpeg too (Board, Nov 20)
+if not exist "%CPY%" set "CPY=%USERPROFILE%\Downloads\trellis2\code\venv\Scripts\python.exe"
 if "%FF%"=="" if exist "%CPY%" for /f "delims=" %%F in ('"%CPY%" -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())" 2^>nul') do set "FF=%%F"
 if "%FF%"=="" (
   echo no ffmpeg on this PC: the Iron Mandate clip frames go to out\ for the cloud to encode, the rest stay in work\ >> "%ST%"
