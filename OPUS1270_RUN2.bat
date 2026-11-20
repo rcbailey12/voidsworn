@@ -1,15 +1,15 @@
 @echo off
-title Opus 1270 run 1: region light tint preview (boneyard) with real hulls - GPU job
+title Opus 1270 run 2: region light tint preview (boneyard) with real hulls - GPU job
 rem Issue 1270 (Opus helper, sky and lighting thread): pictures for Ryan's region light choice. Capture only, no game change.
 rem godot/world/sky_sheet_shots.gd on opus/issue-1268 (pinned below) draws the same storm-map battle with the real hulls,
 rem and lays a share of the region's sky tint on the key light, fill and ambient (the #362 rim light is not touched).
-rem Shots: boneyard at tint 0 (today), 0.10, 0.18, 0.30; nebula region at 0 (the untouched region); each at camera 170 and
+rem Run 2: adds S18, the tint taken from the sky colour on screen instead of the region table. Shots: boneyard at tint 0 (today), 0.10, 0.18, 0.30; nebula region at 0 (the untouched region); each at camera 170 and
 rem a camera 26 close-up on a player hull. 1920x1080, quality high.
 rem Its own sparse clone in opus1270\repo; hulls copied in from build\godot (copy only). Throwaway profile per run (R334).
 rem Every Godot start goes through tools_live\<current.txt>\pc\tmo.bat (fails closed if missing). Never deletes anything.
 rem Logs to out_<A>\result.txt and ends with "all done". Pictures in out_<A>\shots\*.png.
 setlocal EnableDelayedExpansion
-set REF=17463bb157d8c2bea266c512ddb561495370ffc7
+set REF=e5130784abfb806236329ee0e7e462d93a181462
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus1270
 set C=%W%\repo
@@ -63,17 +63,18 @@ call :shot boneyard L00 0
 call :shot boneyard L10 0.10
 call :shot boneyard L18 0.18
 call :shot boneyard L30 0.30
+call :shot boneyard S18 0.18 --light-from-sky
 call :shot nebula L00 0
 set "APPDATA=%REAL_APPDATA%"
 set "LOCALAPPDATA=%REAL_LOCALAPPDATA%"
-echo shots collected !GOOD! of 5 runs >> "%RES%"
-if not "!GOOD!"=="5" (set "FAILMSG=only !GOOD! of 5 runs saved pictures" & goto fail)
+echo shots collected !GOOD! of 6 runs >> "%RES%"
+if not "!GOOD!"=="6" (set "FAILMSG=only !GOOD! of 6 runs saved pictures" & goto fail)
 echo PASSED >> "%RES%"
 echo all done %DATE% %TIME% >> "%RES%"
 exit /b 0
 
 :shot
-call "%TM%" 1200 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --script res://world/sky_sheet_shots.gd -- --out "%O%\shots" --region %1 --tag %2 --light %3 --ship-close > "%O%\log_%1_%2.txt" 2>&1
+call "%TM%" 1200 "%GD%" --path "%C%\godot" --rendering-method forward_plus --windowed --resolution 1280x720 --script res://world/sky_sheet_shots.gd -- --out "%O%\shots" --region %1 --tag %2 --light %3 --ship-close %4 > "%O%\log_%1_%2.txt" 2>&1
 echo %1 %2 exit !ERRORLEVEL! >> "%RES%"
 if exist "%O%\shots\%1_%2_c26.png" set /a GOOD+=1
 findstr /c:"placeholder hull" "%O%\log_%1_%2.txt" >> "%RES%" 2>nul
