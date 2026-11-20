@@ -13,6 +13,7 @@ extends SceneTree
 #     its own effect fire time on the effect clock and before the hit it carries; each hit still lands on its own shot; the critical keeps the glass contact cue with
 #     the heavy tail under it. Then an ion lance shield hit carrying the ion lock: the lock reaches the nameplate state
 #     when the hit lands and expires at the locked ship's side turn start.
+#  F. a critical the armour absorbs, then a normal hull hit: one hull label, never two "Critical" labels.
 #  C. the pure helpers: hit_arrivals maps hit k to the k-th true shot; shield_break_hit picks the last absorbed hit.
 
 const GUARD := preload("res://tools/ci/check_guard.gd")
@@ -344,6 +345,20 @@ func _run() -> void:
 	late_land.merge({"numbers": false, "left": 1}, true)
 	b._land_hit(t, {"target": t, "regenLock": true, "hull": 0, "shield": 1, "quad": 0}, 0, late_land)
 	_check(not b.disp[t]["regenLock"], "E: a late hit from before the expiry cannot restore the icon")
+	# F: Artoo (PR 1256): a critical the armour absorbs, then a normal hull hit; one hull label, never two "Critical"
+	r = await _fire(b, a, t, [true, true], [[0, 0, true], [0, 5]], [])
+	var crits: Array = []
+	for x in b.said:
+		if str(x[0]).begins_with("Critical"):
+			crits.append(str(x[0]))
+	_check(b.lands.size() == 2, "F: both hits land (got %d)" % b.lands.size())
+	_check(crits == ["Critical", "Critical", "Critical −5 hull"] or crits == ["Critical", "Critical −5 hull"],
+		"F: the absorbed critical and the next hull hit share one label, rewritten (got %s)" % str(crits))
+	var labels := 0
+	for f in b.floats:
+		if is_instance_valid(f["lbl"]) and str((f["lbl"] as Label).text).begins_with("Critical"):
+			labels += 1
+	_check(labels <= 1, "F: never two critical labels on screen (got %d)" % labels)
 	b.free()
 	if failures == 0:
 		print("hit timing: PASS ([miss, miss, hit] on the effect clock under hit pause; shield break on the second of three hits; target ringed and named; lance cues on the effect clock; null lance, glass critical and ion lock combined)")

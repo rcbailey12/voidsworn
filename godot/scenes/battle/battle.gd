@@ -2164,13 +2164,13 @@ func _land_hit(t_id, h: Dictionary, k: int, land: Dictionary) -> void:
 			land["sh_f"] = _float_tally(land.get("sh_f"), t_id, _shield_text(land), Color("#92b8e8"), FLOAT_LANE_SHIELD)
 		if bool(h["crit"]):
 			land["crit"] = true
-		if float(h["hull"]) > 0 or (bool(h["crit"]) and land.get("hull_f") != null):
-			# a critical reads in the hull number ("Critical −8 hull"), not as a third label over the name
-			land["hull_f"] = _float_tally(land.get("hull_f"), t_id, ("Critical −%d hull" if bool(land["crit"]) else "−%d hull") % int(land["hull"]),
-				Color("#ffd27a") if bool(land["crit"]) else Color("#ffad3b"), 0)
-		elif bool(h["crit"]) and not bool(land.get("crit_f", false)):
-			land["crit_f"] = true
-			_float(t_id, "Critical", Color("#ffb23e"), FLOAT_LANE_SHIELD * 2.0)
+		if float(h["hull"]) > 0 or bool(h["crit"]):
+			# one hull label per volley: a critical reads in it ("Critical −8 hull"); a critical the armour absorbed shows
+			# "Critical" there, and a later hull hit rewrites that same label (Artoo, PR 1256: never two critical labels)
+			var txt := "−%d hull" % int(land["hull"]) if float(land["hull"]) > 0 else ""
+			if bool(land["crit"]):
+				txt = ("Critical " + txt).strip_edges()
+			land["hull_f"] = _float_tally(land.get("hull_f"), t_id, txt, Color("#ffd27a") if bool(land["crit"]) else Color("#ffad3b"), 0)
 	if k == int(land["break_k"]):
 		_shield_downs(land)
 
