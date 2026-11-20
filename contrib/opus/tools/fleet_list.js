@@ -6,7 +6,9 @@
 // concept, ruling, job, note). This file reads the rest from the repo and joins them:
 //   hull code        godot/render/hull_table.gd AI_HULLS (what the game draws for that faction and class)
 //   build sheet      tools/recipe/ships/*.json, the recipe whose game_code is that hull
-//   installed build  godot/assets/ships/manifest.json: a new build has *_parts_* maps, a Nov 1 hull does not
+//   build format     godot/assets/ships/manifest.json: a new build has *_parts_* maps, a Nov 1 hull does not. That is
+//                    the file layout only. Whether the approved look is in those files is the hand-kept 'accepted' and
+//                    'pending' text; proving the model the game renders is issue 1410's guard, not this list.
 //
 //   node contrib/opus/tools/fleet_list.js            print the problems, exit 1 on any
 //   node contrib/opus/tools/fleet_list.js --write    also rewrite docs/ship_pipeline/FLEET.md
@@ -52,7 +54,7 @@ function isNewBuild(entry) {
 }
 
 function stageOf(row) {
-  if (row.installed) return 'New build installed';
+  if (row.installed) return 'New-format build on main';
   if (row.sheets.length) return 'Build sheet made, old hull in game';
   if (row.concept || row.picked) return 'Concept picked, old hull in game';
   if (row.keep) return 'Old hull kept on purpose';
@@ -76,7 +78,7 @@ function build(root = ROOT) {
     if (!(slot in hulls)) { problems.push(slot + ' is in ' + FLEET + ' but not in ' + HULL_TABLE + ' AI_HULLS'); continue; }
     const hull = hulls[slot];
     const row = { slot, faction: slot.split('|')[0], cls: slot.split('|')[1], hull, ship: r.ship || '', concept: r.concept || null,
-      ruling: r.ruling || '', job: r.job || null, note: r.note || '', keep: r.keep || '', picked: !!r.picked,
+      ruling: r.ruling || '', job: r.job || null, note: r.note || '', keep: r.keep || '', picked: !!r.picked, accepted: r.accepted || '', pending: r.pending || '',
       sheets: recipes[hull] || [], installed: isNewBuild(manifest[hull]), inManifest: !!manifest[hull] };
     row.stage = stageOf(row);
     if (!row.ship) problems.push(slot + ': the row has no ship name');
@@ -92,7 +94,9 @@ function build(root = ROOT) {
     if (!r.ship) problems.push('other[' + i + ']: no ship name');
     if (r.concept && !fs.existsSync(path.join(root, r.concept))) problems.push('other[' + i + '] (' + r.ship + '): concept file is missing: ' + r.concept);
     if (!r.job && !r.keep) problems.push('other[' + i + '] (' + r.ship + '): no job and no keep reason');
-    return { ship: r.ship || '', concept: r.concept || null, ruling: r.ruling || '', job: r.job || null, note: r.note || '', keep: r.keep || '' };
+    if (!r.key) problems.push('other[' + i + '] (' + r.ship + '): no key, so --pick cannot find it');
+    if (r.key && (r.key in fleet.slots)) problems.push('other[' + i + ']: key ' + r.key + ' is also a slot');
+    return { slot: r.key || '', hull: '', ship: r.ship || '', concept: r.concept || null, ruling: r.ruling || '', job: r.job || null, note: r.note || '', keep: r.keep || '' };
   });
   return { rows, other, problems };
 }
@@ -101,6 +105,17 @@ function build(root = ROOT) {
 function pickLine(row) {
   if (row.concept) return 'Approved pick: ' + row.concept + (row.ruling ? ' (' + row.ruling + ')' : '') + (row.note ? '. ' + row.note : '');
   return 'Approved pick: none recorded for ' + row.ship + (row.note ? '. ' + row.note : '');
+}
+
+// A brief asks by slot key ("ithar|Cruiser"), by hull code, or by an 'other' key ("ithar|fighter").
+function findPick(data, want) {
+  return data.rows.concat(data.other).find(r => want && (r.slot === want || r.hull === want)) || null;
+}
+
+function lookOf(r) {
+  if (r.pending) return 'Pending: ' + r.pending + (r.accepted ? ' Accepted before that: ' + r.accepted + '.' : '');
+  if (r.accepted) return 'Accepted: ' + r.accepted;
+  return r.installed ? 'Not recorded' : '';
 }
 
 function link(p) { return p ? '[' + path.basename(p) + '](../../' + p.split(path.sep).join('/') + ')' : 'none'; }
@@ -117,10 +132,12 @@ function render(data) {
   out.push('`node contrib/opus/tools/fleet_list.js --write`. The standing check fleet_list_tests fails when this page is stale.');
   out.push('');
   out.push('One row per ship the game draws. "Approved concept" is the picture Ryan picked; a build or concept brief copies it');
-  out.push('into its "Approved pick" line. "New build installed" means main\'s ship manifest holds the new recipe build for that');
-  out.push('hull code; it does not say Ryan has accepted the look, and it is not the playable exe (that is a separate snapshot).');
+  out.push('into its "Approved pick" line. "New-format build on main" means only that main\'s ship manifest row for that hull code');
+  out.push('has the new recipe file layout. It does not prove the approved look is in those files: the "Approved look in game"');
+  out.push('column says what Ryan accepted and what is still pending, and issue 1410 checks the model the game renders. None');
+  out.push('of this is the playable exe (that is a separate snapshot).');
   out.push('');
-  out.push('**Totals:** ' + rows.length + ' ship slots. ' + count('New build installed') + ' new builds installed, '
+  out.push('**Totals:** ' + rows.length + ' ship slots. ' + count('New-format build on main') + ' new builds installed, '
     + count('Build sheet made, old hull in game') + ' with a build sheet but the old hull in game, '
     + count('Concept picked, old hull in game') + ' with a picked concept only, '
     + count('Old hull, no pick yet') + ' old with no pick yet, ' + count('Old hull kept on purpose') + ' kept on purpose.');
@@ -131,10 +148,10 @@ function render(data) {
       out.push('');
       out.push('## ' + (FACTION_NAMES[fac] || fac) + (FACTION_NAMES[fac] && !['craft', 'obj'].includes(fac) ? ' (`' + fac + '`)' : ''));
       out.push('');
-      out.push('| Ship | Class | Hull code | Stage | Approved concept | Ruling | Build sheet | Job | Note |');
-      out.push('|---|---|---|---|---|---|---|---|---|');
+      out.push('| Ship | Class | Hull code | Stage | Approved look in game | Approved concept | Ruling | Build sheet | Job | Note |');
+      out.push('|---|---|---|---|---|---|---|---|---|---|');
     }
-    out.push('| ' + [cell(r.ship), cell(r.cls), '`' + r.hull + '`', r.stage, link(r.concept), cell(r.ruling) || '', r.sheets.join(', '),
+    out.push('| ' + [cell(r.ship), cell(r.cls), '`' + r.hull + '`', r.stage, cell(lookOf(r)), link(r.concept), cell(r.ruling) || '', r.sheets.join(', '),
       r.job ? '#' + r.job : '', cell(r.keep || r.note)].join(' | ') + ' |');
   }
   if (other.length) {
@@ -143,9 +160,9 @@ function render(data) {
     out.push('');
     out.push('Picked or ruled things that have no hull code of their own in hull_table.gd.');
     out.push('');
-    out.push('| What | Approved concept | Ruling | Job | Note |');
-    out.push('|---|---|---|---|---|');
-    for (const r of other) out.push('| ' + [cell(r.ship), link(r.concept), cell(r.ruling), r.job ? '#' + r.job : '', cell(r.keep || r.note)].join(' | ') + ' |');
+    out.push('| What | Pick key | Approved concept | Ruling | Job | Note |');
+    out.push('|---|---|---|---|---|---|');
+    for (const r of other) out.push('| ' + [cell(r.ship), '`' + r.slot + '`', link(r.concept), cell(r.ruling), r.job ? '#' + r.job : '', cell(r.keep || r.note)].join(' | ') + ' |');
   }
   out.push('');
   return out.join('\n');
@@ -156,7 +173,7 @@ function main() {
   const data = build();
   const pickAt = args.indexOf('--pick');
   if (pickAt >= 0) {
-    const row = data.rows.find(r => r.slot === args[pickAt + 1] || r.hull === args[pickAt + 1]);
+    const row = findPick(data, args[pickAt + 1]);
     if (!row) { console.error('No slot or hull code "' + args[pickAt + 1] + '" in ' + FLEET); process.exit(1); }
     console.log(pickLine(row));
     return;
@@ -167,9 +184,9 @@ function main() {
   }
   for (const p of data.problems) console.log('PROBLEM: ' + p);
   if (data.problems.length) { console.log('FAIL: ' + data.problems.length + ' fleet list problem(s)'); process.exit(1); }
-  console.log('PASS: ' + data.rows.length + ' ship slots listed, ' + data.rows.filter(r => r.installed).length + ' new builds installed');
+  console.log('PASS: ' + data.rows.length + ' ship slots listed, ' + data.rows.filter(r => r.installed).length + ' in the new build format');
 }
 
 if (require.main === module) main();
 
-module.exports = { build, render, pickLine, readHullTable, isNewBuild, stageOf, FLEET, PAGE };
+module.exports = { build, render, pickLine, findPick, lookOf, readHullTable, isNewBuild, stageOf, FLEET, PAGE };
