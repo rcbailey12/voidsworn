@@ -164,16 +164,19 @@ battle rewards. See [the seeded check and picture list](../shots/after_win_1177/
 ### Late market and faction purses (issue 1178, R335)
 
 Sector 3 shipyards add a Late market: two relics (picked from the run's useful, unowned relics without touching the random
-stream) and one Command expansion (+1 command point, at most two a run), all paid in credits. Paid repair prices never
+stream; never the Smuggler's ledger, the logbook or the Scrap rig, which cannot earn back 120 that late, LATE_SHOP.skip, issue 1290) and one Command expansion (+1 command point, at most two a run), all paid in credits. Paid repair prices never
 change (Oct 29 ruling). Three factions show their own money on the shipyard, the map purse and the victory card:
 
 - Chorus: hull work (repairs, new hulls, Marks) is paid in biomass, earned flat per win like credits plus 8 per kill, at
-  most 50 a battle (BIO_KILL in core.js). Credits still buy refits, class refits, events and the late market. Every hull button names biomass.
-- Glasswrights: a win refunds cullet credits for the fleet's own lost hulls by class (15, 30, 45, 50, 60), at most 60.
-- Eclipse: a win recovers the core of the most valuable ship lost; a shipyard regrows it at Mk I for 20% of its value.
+  most 50 a battle (BIO_KILL in core.js). Credits still buy refits, class refits, events and the late market. Every hull button names biomass, and decommissioning pays biomass too (issue 1290).
+- Glasswrights: a win refunds cullet credits for the fleet's own lost hulls by class (25, 45, 70, 85, 100, about 25% of
+  the price and still under the 35% decommission value), at most 100 a battle (issue 1290).
+- Eclipse: a win recovers the core of the most valuable ship lost; a shipyard regrows it at Mk I for 20% of its value. A regrown ship
+  decommissions for 0 until it has fought a battle, so regrow-then-sell is not free money (issue 1290).
 
 Check: godot --headless --path godot --script res://campaign/test/late_run_shots.gd builds all four pages; with a display
-and an output folder it saves L1178, B1178, E1178 and C1178. Numbers and pictures: [the late run README](../shots/late_run_1178/README.md).
+and an output folder it saves L1178, B1178, E1178 and C1178.
+res://campaign/test/late_fixes_1290.gd checks the issue 1290 rules and saves D1290 and B1290 (the two decommission dialogs). Numbers and pictures: [the late run README](../shots/late_run_1178/README.md).
 
 ### Career (CR4, issue 869)
 

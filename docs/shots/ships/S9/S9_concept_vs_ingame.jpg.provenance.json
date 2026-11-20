@@ -1,0 +1,71 @@
+{
+  "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+  "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "S9_concept_vs_ingame.jpg",
+  "date": "2026-11-20T04:47:04Z",
+  "sources": [
+    {
+      "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+      "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "V14_23_q.jpg",
+      "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+      "source_dirty": true,
+      "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+      "stage": "installed in game",
+      "date": "2026-11-20T03:55:28Z",
+      "image_sha256": "87fa6155a7a30a1d7cd94f50690f2657c899a4bfd35828e319b1567fc250566b",
+      "sources": [
+        {
+          "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+          "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "V14_23_s.jpg",
+      "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+      "source_dirty": true,
+      "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+      "stage": "installed in game",
+      "date": "2026-11-20T03:55:28Z",
+      "image_sha256": "89391654b818ced3d9ac6efb7e93af07823eb798f4499d1d6a8c1c780446fa61",
+      "sources": [
+        {
+          "source_commit": "2c2e86da0b4a8ef930012c4b4d6e85752c95635a",
+          "source_diff_sha256": "3c5738b924fa64e1dc00dfe5dc1612d3ca657d5b5817fa2d84c3c251ea3be2cc",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    671,
+    318,
+    720
+  ],
+  "strip_size": [
+    318,
+    49
+  ],
+  "strip_sha256": [
+    "5b01bafd2066be7b4ed26c05f19aeb4091e05e87651891c63f3371b7ec882451"
+  ],
+  "stamp_template_sha256": "3c78995c0500401bb978ea2971fc909d23f4d0144b0f510d57e462865a5e8af4",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAT4AAAAxCAIAAADMe1IGAAAAq0lEQVR4nO3TQQ3AMADEsN34gy6HfqpINoJ8sm0fUPO/DgBuWBeSrAtJ1oUk60KSdSHJupBkXUiyLiRZF5KsC0nWhSTrQpJ1Icm6kGRdSLIuJFkXkqwLSdaFJOtCknUhybqQZF1Isi4kWReSrAtJ1oUk60KSdSHJupBkXUiyLiRZF5KsC0nWhSTrQpJ1Icm6kGRdSLIuJFkXkqwLSdaFJOtCknUhybqQZF1IOtosAGX+H5JoAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "550ce4dbe2d5c6bcac0bb76c85f0a9d351cf4d2de90326dc6a08930f044cbc6b"
+}
