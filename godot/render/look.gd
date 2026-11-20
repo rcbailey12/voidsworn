@@ -78,7 +78,7 @@ const RIM_SOFT_LAYER := 1 << 14      # issue 601: the stack-painted surfaces (RI
 const RIM_SCRIPT := "res://render/look_rim.gd"
 # Bench probes only (contrib/opus/reviews/readability_362/): numbers laid over READ and RIM for one run, never saved. The game
 # never sets this.
-static var tune := {}
+static var tune := {}   # not GPU: look numbers read from json
 
 
 static func read_of(faction: String) -> Dictionary:
@@ -209,6 +209,11 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 	var ex = m.get_meta("extras", {})
 	if ex is Dictionary and (ex as Dictionary).has("rim_soft"):
 		m.set_meta("look_rim_soft", true)
+	if ex is Dictionary and (ex as Dictionary).get("authored_look", 0) == 1:
+		m.rim_enabled = true
+		m.rim = float(ex.get("rim", 0.08))
+		m.rim_tint = float(ex.get("rim_tint", 0.15))
+		return m
 	var r := read_of(faction)
 	if r.is_empty():
 		var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])

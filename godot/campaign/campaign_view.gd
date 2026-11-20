@@ -49,7 +49,9 @@ static func header(C) -> Dictionary:
 static func purse(C) -> Dictionary:
 	var R = C.RUN
 	if R == null: return {}
-	return {"credits": float(R["credits"]), "cp": float(C.fleetCP()), "cp_cap": float(R["cpCap"])}
+	var out = {"credits": float(R["credits"]), "cp": float(C.fleetCP()), "cp_cap": float(R["cpCap"])}
+	if R.get("fac") == "chorus": out["bio"] = float(C.z0(R.get("bio")))   # issue 1178: the Chorus purse shows biomass too
+	return out
 
 
 # the admiral leading the run: id, doctrine
@@ -237,7 +239,7 @@ static func nem_panel(C, N) -> Dictionary:
 # ---------------------------------------------------------------- the map's words
 
 const KIND_WORD := {"battle": "Fight", "elite": "Elite fight", "boss": "Flagship fight", "event": "Event", "shipyard": "Shipyard", "drydock": "Drydock", "field": "Field repairs"}
-const KIND_NOTE := {"shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "a free hull patch", "event": "anything can happen"}
+const KIND_NOTE := {"shipyard": "buy, repair, upgrade", "drydock": "repairs or repairs with credits", "field": "a hull patch or a smaller patch with credits", "event": "anything can happen"}
 
 
 # a faction's name inside a sentence ("the Glasswrights", "Ashfall Hullbreakers")
@@ -293,7 +295,7 @@ static func stop(C, n) -> Dictionary:
 		else:
 			row["objective"] = "The sector's command ship and its escort. Beat it to end the sector."
 	elif not (t in ["battle", "elite"]):
-		row["objective"] = "His fleet holds this " + str(row["kind_word"]).to_lower() + ": you fight him here instead of using it."
+		row["objective"] = "You fight him here, then use the stop."
 	elif _jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]):
 		row["objective"] = str(C.ENCOUNTERS[n["enc"]]["d"])
 		if _jt(n.get("arch")) and C.ARCHETYPES.has(n["arch"]):

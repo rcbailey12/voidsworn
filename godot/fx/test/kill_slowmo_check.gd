@@ -97,8 +97,9 @@ func _core_picture(fx, tier: String) -> float:
 	return -1.0
 
 
-func _late_cut(stall_through_deadline: bool) -> void:
+func _late_cut(stall_through_deadline: bool, release_past_deadline := false) -> void:
 	var before := failures
+	DEATH.cold_cut_wall = 1.0 if stall_through_deadline else 5.0
 	var battle := BattleFixture.new()
 	root.add_child(battle)
 	battle.cam = battle.CamRig.new()
@@ -139,26 +140,42 @@ func _late_cut(stall_through_deadline: bool) -> void:
 	# Let the old wall-clock hold expire while the actual split is still pending.
 	await create_timer(nominal + 0.9).timeout
 	_check(not battle.cine_saved.is_empty(), "camera still holds after its old nominal release time")
-	if not stall_through_deadline:
+	if not stall_through_deadline and not release_past_deadline:
 		gate.post()
 		while not WorkerThreadPool.is_task_completed(tid):
 			await process_frame
 	var born := -1.0
+	if release_past_deadline:
+		# issue 1232: a cut that finishes after the deadline still gives the hull its pieces; the tell holds until then
+		var dl: float = float(s.get_meta("death_start")) + float(s.get_meta("death_timeline").end)
+		while fx.now < dl + 0.5:
+			fx.step(1.0 / 60.0)
+			await process_frame
+		_check(not s.has_meta("death_hidden"), "the hull holds its tell past the deadline while its cut runs")
+		gate.post()
+		while fx.has_method("submit_death_cut") and fx._death_cut_tasks.has(tid) and not WorkerThreadPool.is_task_completed(tid):
+			await process_frame
 	while born < 0.0 and fx.now < 4.0:
 		fx.step(1.0 / 60.0)
 		born = _core_picture(fx, "cruiser")
 		await process_frame
+	if release_past_deadline:
+		_check(born > 0.0 and not fx.dstate.wrecks.is_empty() and not fx.dstate.wrecks[0].nodes.is_empty(),
+			"the late cut breaks the hull into its pieces")
 	if stall_through_deadline:
+		# issue 1232: a cut still running at the deadline is waited for (in real time, DEATH.cold_cut_wall, lowered for this
+		# check); a stuck one still ends in the no-pieces pop. This death started over cold_cut_wall ago, so it pops on time.
 		var deadline: float = s.get_meta("death_timeline").end
 		_check(born >= deadline and born <= deadline + 1.0 / 60.0 and not fx.dstate.wrecks.is_empty() and fx.dstate.wrecks[0].nodes.is_empty(),
-			"deadline uses the no-pieces fallback without waiting for the worker")
+			"a stuck worker past the deadline and the real-time wait uses the no-pieces fallback")
 		gate.post()
 	_check(born > nominal + 0.15 and fx._death_slow_left == FX.DEATH_SLOW_S, "slow motion starts on the real core birth")
 	_check(not battle.cine_saved.is_empty(), "camera holds on the real core birth")
 	await create_timer(1.0).timeout
 	_check(battle.cine_saved.is_empty(), "camera returns after the actual core and its tail")
 	battle.free()
-	print("%s %s" % ["PASS" if before == failures else "FAIL", "deadline fallback cue" if stall_through_deadline else "late core flash, slow motion and camera hold"])
+	DEATH.cold_cut_wall = 5.0
+	print("%s %s" % ["PASS" if before == failures else "FAIL", "late cut past the deadline keeps its pieces" if release_past_deadline else ("deadline fallback cue" if stall_through_deadline else "late core flash, slow motion and camera hold")])
 
 
 func _run() -> void:
@@ -177,6 +194,7 @@ func _run() -> void:
 	var mid: Array = await _play("Cruiser", 0.76, true, 1.8)
 	_check(float(mid[1]) >= 0.0 and float(mid[2]) < float(mid[1]) + 0.1, "a key or a click during the beat ends it (%.2f to %.2f)" % [mid[1], mid[2]])
 	await _late_cut(false)
+	await _late_cut(false, true)
 	await _late_cut(true)
 	print("KILL_SLOWMO cruiser core %.2f beat %.2f-%.2f | capital core %.2f beat %.2f-%.2f | failures=%d" % [cr[0], cr[1], cr[2], cap[0], cap[1], cap[2], failures])
 	quit(1 if failures > 0 else 0)

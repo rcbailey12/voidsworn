@@ -701,7 +701,7 @@
    "hit_3.ogg"
   ]
  },
-  "hit_heavy": {
+ "hit_heavy": {
   "bus": "impacts",
   "g": 0.46,
   "max": 3,
@@ -740,7 +740,49 @@
    "hit_heavy_0.ogg",
    "hit_heavy_1.ogg",
    "hit_heavy_2.ogg"
-  ]
+  ],
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "hitWet",
+      "g": 0.8,
+      "r": 0.6,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "boomLow",
+      "g": 0.45,
+      "r": 1.0,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "crackGlass",
+      "g": 0.7,
+      "r": 0.9,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "boomLow",
+      "g": 0.45,
+      "r": 1.0,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "hit_las": {
   "bus": "impacts",
@@ -1063,7 +1105,63 @@
    "boom_s_0.ogg",
    "boom_s_1.ogg",
    "boom_s_2.ogg"
-  ]
+  ],
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "gunGlob",
+      "g": 0.9,
+      "r": 0.8,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "hitWet",
+      "g": 0.6,
+      "r": 0.7,
+      "d": 0.03,
+      "pj": null
+     },
+     {
+      "s": "boomLow",
+      "g": 0.35,
+      "r": 1.0,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "shieldShatter",
+      "g": 0.7,
+      "r": 1.0,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "hitGlass",
+      "g": 0.5,
+      "r": 0.8,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "boomLow",
+      "g": 0.3,
+      "r": 1.2,
+      "d": 0,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "boom_m": {
   "bus": "explosions",
@@ -1136,7 +1234,77 @@
   "synth": [
    "boom_l_0.ogg",
    "boom_l_1.ogg"
-  ]
+  ],
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "torpSac",
+      "g": 1.0,
+      "r": 0.55,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "gunGlob",
+      "g": 0.7,
+      "r": 0.45,
+      "d": 0.04,
+      "pj": null
+     },
+     {
+      "s": "boomLow",
+      "g": 0.6,
+      "r": 0.7,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "hitWet",
+      "g": 0.45,
+      "r": 0.5,
+      "d": 0.25,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "shieldShatter",
+      "g": 0.9,
+      "r": 0.75,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "crackGlass",
+      "g": 0.7,
+      "r": 0.6,
+      "d": 0.05,
+      "pj": null
+     },
+     {
+      "s": "boomLow",
+      "g": 0.5,
+      "r": 0.8,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "starShimmer",
+      "g": 0.4,
+      "r": 0.6,
+      "d": 0.25,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "phase": {
   "bus": "impacts",
@@ -1602,7 +1770,49 @@
   ],
   "synth": [
    "wreck_0.ogg"
-  ]
+  ],
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "torpSac",
+      "g": 0.6,
+      "r": 0.4,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "hitWet",
+      "g": 0.4,
+      "r": 0.45,
+      "d": 0.3,
+      "pj": null
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "crackGlass",
+      "g": 0.6,
+      "r": 0.5,
+      "d": 0,
+      "pj": null
+     },
+     {
+      "s": "hitGlass",
+      "g": 0.4,
+      "r": 0.5,
+      "d": 0.3,
+      "pj": null
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "ui_select": {
   "bus": "ui",
@@ -1790,7 +2000,63 @@
    }
   ],
   "synth": [],
-  "duration": 4.0
+  "duration": 4.0,
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "puff",
+      "g": 0.5,
+      "r": 0.45,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitWet",
+      "g": 0.3,
+      "r": 0.4,
+      "d": 0.5,
+      "pj": 0.025
+     },
+     {
+      "s": "boomLow",
+      "g": 0.35,
+      "r": 0.5,
+      "d": 1.1,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "starShimmer",
+      "g": 0.35,
+      "r": 0.45,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "choirBell",
+      "g": 0.3,
+      "r": 0.4,
+      "d": 0.4,
+      "pj": 0.025
+     },
+     {
+      "s": "boomLow",
+      "g": 0.3,
+      "r": 0.5,
+      "d": 1.1,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "death_powerdown": {
   "bus": "death",
@@ -1823,9 +2089,57 @@
    }
   ],
   "synth": [],
-  "duration": 0.6
+  "duration": 0.6,
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "puff",
+      "g": 0.5,
+      "r": 0.55,
+      "d": 0,
+      "pj": 0.025,
+      "end_rate": 0.35
+     },
+     {
+      "s": "torpSac",
+      "g": 0.4,
+      "r": 0.45,
+      "d": 0.1,
+      "pj": 0.025,
+      "end_rate": 0.3
+     }
+    ],
+    "synth": [],
+    "duration": 1.2
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "shieldShimmer",
+      "g": 0.45,
+      "r": 0.7,
+      "d": 0,
+      "pj": 0.025,
+      "end_rate": 0.3
+     },
+     {
+      "s": "choirBell",
+      "g": 0.3,
+      "r": 0.5,
+      "d": 0,
+      "pj": 0.025,
+      "end_rate": 0.3
+     }
+    ],
+    "synth": [],
+    "duration": 1.0
+   }
+  }
  },
-  "death_vent": {
+ "death_vent": {
   "bus": "death",
   "g": 0.42,
   "max": 2,
@@ -1847,7 +2161,49 @@
    }
   ],
   "synth": [],
-  "duration": 0.5
+  "duration": 0.5,
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "puff",
+      "g": 0.45,
+      "r": 0.9,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitWet",
+      "g": 0.3,
+      "r": 0.6,
+      "d": 0.15,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "whoosh",
+      "g": 0.45,
+      "r": 1.7,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "starShimmer",
+      "g": 0.25,
+      "r": 0.8,
+      "d": 0.1,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "death_crack": {
   "bus": "death",
@@ -1887,12 +2243,27 @@
   "synth": [],
   "variants": {
    "ithar": {
+    "replace": true,
     "layers": [
      {
       "s": "crackGlass",
-      "g": 0.35,
-      "r": 1.6,
-      "d": 0.1,
+      "g": 0.6,
+      "r": 1.0,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitGlass",
+      "g": 0.4,
+      "r": 0.7,
+      "d": 0.08,
+      "pj": 0.025
+     },
+     {
+      "s": "choirBell",
+      "g": 0.3,
+      "r": 0.5,
+      "d": 0,
       "pj": 0.025
      }
     ],
@@ -1900,7 +2271,36 @@
      "hit_glass_0.ogg",
      "hit_glass_1.ogg",
      "hit_glass_2.ogg"
-    ]
+    ],
+    "duration": 0.8
+   },
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "grappleWet",
+      "g": 0.6,
+      "r": 0.6,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "gunGlob",
+      "g": 0.45,
+      "r": 0.5,
+      "d": 0.12,
+      "pj": 0.025
+     },
+     {
+      "s": "hitWet",
+      "g": 0.35,
+      "r": 0.5,
+      "d": 0.2,
+      "pj": 0.025
+     }
+    ],
+    "synth": [],
+    "duration": 0.6
    }
   },
   "duration": 0.4
@@ -1927,7 +2327,49 @@
    }
   ],
   "synth": [],
-  "duration": 0.72
+  "duration": 0.72,
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "grappleWet",
+      "g": 0.4,
+      "r": 0.8,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitWet",
+      "g": 0.2,
+      "r": 0.7,
+      "d": 0.12,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "shieldShimmer",
+      "g": 0.35,
+      "r": 0.8,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitGlass",
+      "g": 0.25,
+      "r": 0.7,
+      "d": 0.1,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "chunk_cool": {
   "bus": "death",
@@ -1958,7 +2400,49 @@
    }
   ],
   "synth": [],
-  "duration": 1.5
+  "duration": 1.5,
+  "variants": {
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "hitWet",
+      "g": 0.3,
+      "r": 0.55,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "puff",
+      "g": 0.2,
+      "r": 0.7,
+      "d": 0.2,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   },
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "hitGlass",
+      "g": 0.35,
+      "r": 0.6,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "starShimmer",
+      "g": 0.2,
+      "r": 0.7,
+      "d": 0.2,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "hulk_vent": {
   "bus": "death",
@@ -1989,7 +2473,49 @@
    }
   ],
   "synth": [],
-  "duration": 1.15
+  "duration": 1.15,
+  "variants": {
+   "ithar": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "whoosh",
+      "g": 0.5,
+      "r": 1.4,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "crackGlass",
+      "g": 0.3,
+      "r": 0.6,
+      "d": 0.45,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   },
+   "chorus": {
+    "replace": true,
+    "layers": [
+     {
+      "s": "puff",
+      "g": 0.5,
+      "r": 0.9,
+      "d": 0,
+      "pj": 0.025
+     },
+     {
+      "s": "hitWet",
+      "g": 0.3,
+      "r": 0.5,
+      "d": 0.45,
+      "pj": 0.025
+     }
+    ],
+    "synth": []
+   }
+  }
  },
  "arrive_jump": {
   "bus": "impacts",

@@ -1,0 +1,47 @@
+{
+  "note": "issue 1290: a Sector 3 shipyard saved before LATE_SHOP.skip existed. Its late stock lists the Smuggler's ledger for sale, the logbook already bought, and the command point already taken. Read by contrib/opus/tools/late_stock_1290_tests.js and godot/campaign/test/late_fixes_1290.gd.",
+  "run": {
+    "sector": 3,
+    "credits": 500,
+    "lateCp": 1,
+    "cpCap": 11,
+    "relics": [
+      "logbook"
+    ]
+  },
+  "stock": {
+    "hulls": [
+      "warden",
+      "harrow",
+      "penitent"
+    ],
+    "mods": [],
+    "sold": [],
+    "cap": [],
+    "late": {
+      "relics": [
+        "ledger",
+        "martyr",
+        "logbook"
+      ],
+      "bought": [
+        "logbook"
+      ],
+      "cp": true
+    }
+  },
+  "expect": {
+    "forSale": [
+      "martyr"
+    ],
+    "boughtShown": [
+      "logbook"
+    ],
+    "hidden": [
+      "ledger"
+    ],
+    "cpDone": true,
+    "creditsAfterLedgerTry": 500,
+    "martyrCostsOfferPrice": true
+  }
+}

@@ -7,6 +7,7 @@
 extends SceneTree
 const CampaignScript = preload("res://campaign/campaign.gd")
 const JSM = preload("res://rules/battle_api.gd").JSM
+const View = preload("res://campaign/campaign_view.gd")
 const PER_SECTOR := 1000
 
 func _init() -> void:
@@ -57,8 +58,7 @@ func _reach_boss_unmet(C, m, N) -> bool:
 			if e[0] == id and not C.nemNodeIs(byId[e[1]], N): frontier.append(e[1])
 	return false
 
-# Play the meeting at each kind of column 4 stop that is not a fight: the stop opens his fight (an elite Nemesis battle),
-# a won fight returns to the map with the stop done and him met this sector, and the boss fight uses the objective on its stop.
+# Issue 1177: every service remains open after its Nemesis fight, through a reload of the rewards and the service itself.
 func _play_rest_meetings() -> int:
 	var bad := 0
 	for kind in ["shipyard", "drydock", "field", "event"]:
@@ -73,20 +73,39 @@ func _play_rest_meetings() -> int:
 		C.RUN["pos"] = from["id"]; from["done"] = true
 		var N = C.ensureNemesis(); N["met"] = 0; C.RUN["nemStrike"] = false
 		C.mapScreen()
+		if not str(View.stop(C, n)["objective"]).contains("then use the stop"):
+			bad += 1; printerr("FAIL: the %s route does not say what follows the fight" % kind)
 		C.act("enterNode", n["id"])
 		var ok1: bool = C.page.get("kind") == "battle" and C.B != null and C.B.get("cfg") is Dictionary and C.jt(C.B["cfg"].get("nemesis"))
 		if not ok1: bad += 1; printerr("FAIL: a %s in column 4 did not open the Nemesis fight (page %s)" % [kind, C.page.get("kind")]); continue
 		C.act("battle", "win")
+		var stop_id: String = n["id"]
+		var D = _fresh()
+		D.load_save_text(C.save_text()); D.titleScreen(); D.act("continueRun")
+		C = D; n = C.findNode(stop_id)
 		for i in range(30):
-			if C.page.get("kind") == "map" and C.modal_d == null: break
-			var acts: Array = C.screen_acts().filter(func(a): return a[2] == 1)
+			if C.RUN.get("reward") == null: break
+			var acts: Array = C.screen_acts().filter(func(a): return a[2] == 1 and a[0] in ["prizeConfirm", "takeSalvage", "rewardNext", "takeMod", "takeBoon", "takeRelic", "takePerk"])
 			if acts.is_empty(): break
-			var a = acts.back()   # the confirm or next button closes each reward step
-			for x in acts:
-				if x[0] in ["prizeConfirm", "rewardNext", "takeSalvage", "closeModal", "backMap"]: a = x
+			var a = acts[0]
 			C.act(a[0], a[1])
-		var ok2: bool = C.page.get("kind") == "map" and C.jt(n.get("done")) and float(C.nemActive()["met"]) >= float(C.RUN["sector"])
-		if not ok2: bad += 1; printerr("FAIL: after the meeting at a %s: page %s, done %s" % [kind, C.page.get("kind"), str(n.get("done"))])
+		if C.RUN.get("reward") != null or C.jt(n.get("done")) or not _at_service(C, kind):
+			bad += 1; printerr("FAIL: after the meeting at a %s: page %s, modal %s" % [kind, C.page.get("kind"), str(C.modal_d.get("kind")) if C.modal_d != null else "none"]); continue
+		var service_acts: Array = C.screen_acts().duplicate(true)
+		var event_id = C.cur_event["id"] if kind == "event" else null
+		var battles = C.RUN["stats"]["battles"]
+		D = _fresh(); D.load_save_text(C.save_text()); D.titleScreen(); D.act("continueRun")
+		if not _at_service(D, kind) or D.screen_acts() != service_acts or D.RUN["stats"]["battles"] != battles or (kind == "event" and D.cur_event["id"] != event_id):
+			bad += 1; printerr("FAIL: the %s service changed or replayed the battle on reload" % kind); continue
+		if kind == "shipyard": D.act("leaveYard")
+		elif kind == "event":
+			for j in range(D.cur_event["o"].size()):
+				var choice = D.cur_event["o"][j]
+				if not D.eventOptOk(choice) or (choice.get("r") is Dictionary and D.jt(choice["r"].get("fight"))): continue
+				D.act("eventChoice", str(j)); break
+		else: D.act("repairStop", "service")
+		if not D.jt(D.findNode(stop_id).get("done")) or D.RUN.get("curNode") != null:
+			bad += 1; printerr("FAIL: using the %s did not finish the stop" % kind)
 	# the flagship fight uses the objective and board its stop showed
 	var D = CampaignScript.new(); D.load_tables(); D.fixed_clock = true
 	JSM.rnd_seed(11751)
@@ -99,8 +118,14 @@ func _play_rest_meetings() -> int:
 	D.mapScreen(); D.act("enterNode", boss["id"])
 	var bc = D.B["cfg"] if D.B != null and D.B.get("cfg") is Dictionary else {}
 	if bc.get("obj") != "ambush" or bc.get("shape") != "hourglass": bad += 1; printerr("FAIL: the boss fight did not use its stop's objective and board: %s %s" % [bc.get("obj"), bc.get("shape")])
-	print("nem_dodge: meetings played at a column 4 shipyard, drydock, field and event; boss fight read its stop (%d failed)" % bad)
+	print("nem_dodge: the win led to the column 4 shipyard, drydock, field and event and each resumed on reload; boss fight read its stop (%d failed)" % bad)
 	return bad
+
+func _at_service(c, kind: String) -> bool:
+	if kind == "shipyard": return c.page.get("kind") == "shipyard" and c.modal_d == null
+	if c.modal_d == null: return false
+	if kind == "event": return c.modal_d["kind"] == "event"
+	return c.modal_d["kind"] == "repair_stop" and c.modal_d["data"]["kind"] == kind
 
 # A meeting at a rest stop replays the same fight after a reload (Artoo, PR 1197): the stop carries a battle seed like a fight
 # stop. For a map made now and for an old map whose column 4 rest stop has no seed: opening the saved map twice gives the

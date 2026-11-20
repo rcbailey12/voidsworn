@@ -1,4 +1,6 @@
 'use strict';
+// Issue 1194: test this checkout's tmo.bat, never the PC's installed tools_live copy.
+process.env.TMO_OWN_COPY = '1';
 // R293: Linux CI runs the real policy, file transactions and competing clients.
 // Fake workers hold claims without touching the graphics card. Windows also runs
 // the watchdog, proving release on normal exit, failed start and timeout.
