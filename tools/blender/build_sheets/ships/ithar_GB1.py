@@ -23,7 +23,7 @@ LENGTH = F.LENGTH
 GAME = "data.js bomber (cls 'Squadron'); length from godot/render/hull_table.gd CLS_LEN['Squadron'] = 1.6 (drawn x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84 on the board, docs/playbooks/scale.md)"
 BEAUTY = 'docs/ship_pipeline/build_sheets/ithar_GF1/concept.jpg'
 CONCEPT_SHEET = BEAUTY
-SHEET = dict(F.SHEET, round='first sheet (the bomber of Ryan\'s GF1 pick)',
+SHEET = dict(F.SHEET, round='round 2: fatter, blunt bow, green mosaic (Ryan: could not tell it from the fighter)',
              blend_where='built in the issue 1373 cloud thread (Blender 4.5 bpy wheel, Cycles CPU); `build.py ithar_GB1 <out> render` rebuilds it from this file',
              before='The GF1 family', before_note='The Needle fighter\'s body at bomber proportions, with two seed-stone launch wells at the bow.')
 CAMERA = F.CAMERA
@@ -31,12 +31,16 @@ U = F.U
 
 # the bomber's proportions, set on the shared body (fuller: about 3.6 to 1, seven ribbons)
 F.CODE = CODE
-F.HW, F.HH = 0.13 * LENGTH, 0.092 * LENGTH
-F.NRIB = 7
-F.HALF = 0.25
-F.CORE_NOTE = 'a fuller spindle about 3.6 to 1 (the heavier craft of the family), a point at the bow, a blunt stern face for the stones'
+# Round 2 (Ryan, Nov 20: "hard to read any difference between the fighter and bomber"): much fatter with a blunt rounded bow,
+# five broad ribbons so more of the mosaic shows, and the mosaic mostly green (the bomber's seed-stone colour; the fighter is amber)
+F.HW, F.HH = 0.175 * LENGTH, 0.125 * LENGTH
+F.BOW_EXP, F.BOW_MIN = 0.22, 0.32
+F.NRIB = 5
+F.HALF = 0.26
+F.MOSAIC_WEIGHTS = (14, 18, 68)
+F.CORE_NOTE = 'a fat seed about 2.6 to 1 with a blunt rounded bow (the heavier craft of the family), a blunt stern face for the stones'
 SEED_X = U(0.27)       # the launch wells' station
-SEED_A = 0.42          # their section angle below the beam (radians)
+SEED_A = 0.30          # their section angle below the beam (radians)
 
 
 def build(K):
@@ -50,11 +54,11 @@ def build(K):
         a = -SEED_A if side > 0 else math.pi + SEED_A
         c = Vector(F.core(SEED_X, a))
         nrm = Vector((0.0, c.y, c.z)).normalized()
-        r = U(0.020)
+        r = U(0.028)
         well = c + nrm * U(0.012)
-        K._obj(fid + '_well_lip', *F.ellipsoid(tuple(well), (U(0.034), r * 1.25, r * 1.25), 16, 8), 'gw_silver', smooth=True, grp=fid)
-        K._obj(fid + '_seed', *F.ellipsoid(tuple(well + nrm * U(0.004)), (U(0.028), r, r), 16, 8), 'gw_gem_green', smooth=True, grp=fid)
-        tip = well + nrm * U(0.004) + Vector((U(0.028), 0, 0))
+        K._obj(fid + '_well_lip', *F.ellipsoid(tuple(well), (U(0.044), r * 1.25, r * 1.25), 16, 8), 'gw_silver', smooth=True, grp=fid)
+        K._obj(fid + '_seed', *F.ellipsoid(tuple(well + nrm * U(0.004)), (U(0.036), r, r), 16, 8), 'gw_gem_green', smooth=True, grp=fid)
+        tip = well + nrm * U(0.004) + Vector((U(0.036), 0, 0))
         K._obj(fid + '_seed_tip', *P.cut_lens(tuple(tip), (1, 0, 0), r * 0.7, r * 0.5, 8), 'gw_gem_green', grp=fid)
         for o in K.coll.objects:
             if o.get('grp') == fid:
@@ -77,4 +81,5 @@ def build(K):
     K.built.append(dict(id=fid, kind='launcher', type='bomb_tube', inv=['seed_wells'], shaped=True, detailed=True, subs=['silver lip', 'seed stone', 'cut tip']))
     K.change('The bomb payload is two cut green seed stones in silver-lipped wells either side of the bow, fixed forward',
              'R254: nothing hung under the hull; the Glasswrights fight with light from cut stones; the bomber turns onto its target (weapon_match.py bombs)')
-    K.change('Fuller than the fighter (about 3.6 to 1 against 5 to 1) with seven ribbons', 'the bomber reads as the heavier craft of the same family')
+    K.change('Round 2: a fat seed about 2.6 to 1 with a blunt rounded bow, five broad ribbons, a mostly green mosaic (the fighter: 5 to 1, a needle point, amber)',
+             'Ryan, Nov 20: the first bomber read the same as the fighter; it must read as the heavier craft of the family at a glance')

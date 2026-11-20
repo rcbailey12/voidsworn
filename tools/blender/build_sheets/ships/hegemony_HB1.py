@@ -37,6 +37,7 @@ F.ST = [(n, hw, zt * DEPTH_K, zb * DEPTH_K) for (n, hw, zt, zb) in F.ST]
 F.HULL = [(U(r[0]), U(r[1]), U(r[1]), U(r[3]), U(r[2]), 0.0, 0.0) for r in F.ST]
 BX = 0.36     # the cassette's station: the prow recess, its back clear of the sensor slit in the ridge's front face
 CELL = 0.05   # the tube pitch (share of LENGTH)
+SINK = -0.3   # round 2 (Ryan, Nov 20: "a weird block at the top"): the cassette sits lower (its bores still clear the prow ahead)
 
 
 def build(K):
@@ -46,7 +47,19 @@ def build(K):
         F.build(K)
     finally:
         K.gun = real_gun
-    K.launcher('BT', (U(BX), 0.0, F.deck(BX) + U(CELL * 0.5)), 1, 2, cell=U(CELL), depth=U(0.085), yaw=0.0, pitch=0.0, slot='T', weapon='bombs',
+    K.launcher('BT', (U(BX), 0.0, F.deck(BX) - U(CELL * SINK)), 1, 2, cell=U(CELL), depth=U(0.085), yaw=0.0, pitch=0.0, slot='T', weapon='bombs',
                inv='bomb_cassette', note='the bomb payload (data.js bombs T, 2 shots): a machined cassette of two tubes in the prow recess, fixed forward; the craft turns onto its target')
     K.change('Built on the accepted HF1D fighter: the same machined wedge half as deep again, with a two-tube bomb cassette in the prow recess',
              'issue 1373: the Navy had no bomber model; one family per faction, the bomber reads as the heavier craft (R259, R362)')
+    # round 2: a sloped armoured fairing runs from the cassette's top back down to the deck, so it reads as a shaped prow hood, not a box
+    x0, x1 = BX - 0.085 * 1.1 + 0.004, 0.205
+    ztop = F.deck(BX) - U(CELL * SINK) + U(CELL * 0.5) - U(0.001)
+    hw0, hw1 = U(CELL) * 0.98, U(CELL) * 0.55
+    zb0, zb1 = F.deck(x0) - U(0.004), F.deck(x1) - U(0.004)
+    zt1 = F.deck(x1) + U(0.003)
+    V = [(U(x0), -hw0, zb0), (U(x0), hw0, zb0), (U(x0), hw0, ztop), (U(x0), -hw0, ztop),
+         (U(x1), -hw1, zb1), (U(x1), hw1, zb1), (U(x1), hw1, zt1), (U(x1), -hw1, zt1)]
+    Fc = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (3, 7, 6, 2), (0, 4, 7, 3), (1, 2, 6, 5)]
+    K._obj('HB1_cassette_fairing', V, Fc, 'hgrey', grp='hull')
+    K.change('Round 2: the bomb cassette sits lower, and a sloped armoured fairing runs from its top back down to the deck',
+             'Ryan, Nov 20: the first sheet\'s cassette stood on the deck as a weird block; now it reads as a shaped prow hood')
