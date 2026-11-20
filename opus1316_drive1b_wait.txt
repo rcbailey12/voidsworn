@@ -1,0 +1,11 @@
+waiting for OPUS1272_TIMING exit in opus1272_timing_wait.txt Fri 11/20/2026  9:17:53.62 
+mirror refresh  9:17:53.63 
+mirror fetch exit 0
+ed0dde7e530b075d4fb3c085d06eeccbaacc7889 reachable in the mirror
+75ab0c6255a9c839c0da26a6f7123e81879fe91d reachable in the mirror
+OPUS1316_DRIVE1 start Fri 11/20/2026  9:17:54.96 
+OPUS1316_DRIVE1 exit 1 at 10:31:46.25 
+run folder out_20261120_091755_1987
+result: done FAILED: new bench
+after-job janitor ran, output in janitor_after_1316b.txt 10:31:47.22 
+all done Fri 11/20/2026 10:31:47.22 
