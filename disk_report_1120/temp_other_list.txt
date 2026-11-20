@@ -1,0 +1,31 @@
+﻿# folders directly under %TEMP% that are not voidsworn-run-*, voidsworn-parity-* or stage7-checked-*, over 200 MB (links listed with size 0, not followed). Read only, 2026-11-19T19:19:49
+# full path | size bytes | last write time | is it a link
+C:\Users\rcbai\AppData\Local\Temp\opencode | 39592555467 | 2026-11-18 19:25:37 | no
+C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_main | 7419625891 | 2026-11-18 14:33:41 | no
+C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_matched_20261118_184540 | 7396150183 | 2026-11-18 21:21:14 | no
+C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_base_20261118_184429 | 7374103660 | 2026-11-18 18:44:43 | no
+C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_after_20261118_185114 | 7366256985 | 2026-11-18 21:30:03 | no
+C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_20261118_184351 | 7302439278 | 2026-11-18 18:43:52 | no
+C:\Users\rcbai\AppData\Local\Temp\rules-safety-xUeOMj | 1842446508 | 2026-11-18 19:09:19 | no
+C:\Users\rcbai\AppData\Local\Temp\rules-safety-qtqhqb | 1842443450 | 2026-11-18 19:13:49 | no
+C:\Users\rcbai\AppData\Local\Temp\terrain_fx_100 | 1841439949 | 2026-11-17 08:08:37 | no
+C:\Users\rcbai\AppData\Local\Temp\rules-safety-xXN5f9 | 1833011172 | 2026-11-17 17:41:36 | no
+C:\Users\rcbai\AppData\Local\Temp\rules-safety-mLen7a | 1827626945 | 2026-11-17 13:14:31 | no
+C:\Users\rcbai\AppData\Local\Temp\rules-safety-MWKwL1 | 1795452516 | 2026-11-17 09:40:09 | no
+C:\Users\rcbai\AppData\Local\Temp\claude | 1738064271 | 2026-11-19 19:14:25 | no
+C:\Users\rcbai\AppData\Local\Temp\ion930 | 1640604001 | 2026-11-17 01:09:39 | no
+C:\Users\rcbai\AppData\Local\Temp\wm676 | 1422422182 | 2026-11-16 01:28:48 | no
+C:\Users\rcbai\AppData\Local\Temp\vs371main | 1385416264 | 2026-11-14 18:00:47 | no
+C:\Users\rcbai\AppData\Local\Temp\i675 | 1184663624 | 2026-11-13 20:06:57 | no
+C:\Users\rcbai\AppData\Local\Temp\eclipse642d_20261114_074954 | 1137269564 | 2026-11-14 08:05:09 | no
+C:\Users\rcbai\AppData\Local\Temp\im5_install970 | 1040438626 | 2026-11-17 04:30:54 | no
+C:\Users\rcbai\AppData\Local\Temp\sh372_run4 | 970046391 | 2026-11-16 12:20:34 | no
+C:\Users\rcbai\AppData\Local\Temp\tune-WhbP90 | 772576341 | 2026-11-14 18:10:22 | no
+C:\Users\rcbai\AppData\Local\Temp\treefx-0Ll5lU | 408289796 | 2026-11-13 13:06:27 | no
+C:\Users\rcbai\AppData\Local\Temp\Madden NFL 27 | 404770586 | 2026-11-17 20:38:52 | no
+C:\Users\rcbai\AppData\Local\Temp\treefx-N7RABJ | 398631245 | 2026-11-13 20:34:01 | no
+C:\Users\rcbai\AppData\Local\Temp\treefx-ciMk1a | 360018203 | 2026-11-18 15:06:22 | no
+C:\Users\rcbai\AppData\Local\Temp\treefx-a9LWdH | 306993244 | 2026-11-13 19:36:18 | no
+C:\Users\rcbai\AppData\Local\Temp\runner846-pwsh-7.4.6 | 279896091 | 2026-11-16 05:50:55 | no
+C:\Users\rcbai\AppData\Local\Temp\stage873 7LZfLV | 277889697 | 2026-11-16 12:40:44 | no
+C:\Users\rcbai\AppData\Local\Temp\runner846-pwsh-7.7.0 | 268465905 | 2026-11-16 05:52:15 | no

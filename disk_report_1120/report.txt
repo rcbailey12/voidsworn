@@ -1,0 +1,434 @@
+﻿disk report (read only, reparse points skipped) 2026-11-19T18:46:29
+C: free 129.02 GB, used 1,730.86 GB
+growth window: files created or written since 2026-11-19T14:00:00
+
+==== voidsworn_test, top level
+   61.44 GB  new/changed since 14:00    25.77 GB    136639 files  latest 11-19 18:41  C:\Users\rcbai\Downloads\voidsworn_test\board
+   61.09 GB  new/changed since 14:00    17.68 GB    112914 files  latest 11-19 18:41  C:\Users\rcbai\Downloads\voidsworn_test\board_b
+   32.41 GB  new/changed since 14:00    10.98 GB     55228 files  latest 11-19 18:46  C:\Users\rcbai\Downloads\voidsworn_test\opus1079
+   21.46 GB  new/changed since 14:00     0.00 GB      9745 files  latest 11-19 08:09  C:\Users\rcbai\Downloads\voidsworn_test\build
+   20.14 GB  new/changed since 14:00     7.19 GB     52001 files  latest 11-19 18:42  C:\Users\rcbai\Downloads\voidsworn_test\board_c
+   19.94 GB  new/changed since 14:00     6.23 GB     40871 files  latest 11-19 18:42  C:\Users\rcbai\Downloads\voidsworn_test\board_d
+   18.82 GB  new/changed since 14:00     6.92 GB     31295 files  latest 11-19 17:28  C:\Users\rcbai\Downloads\voidsworn_test\look_bench
+   14.71 GB  new/changed since 14:00     3.02 GB      6179 files  latest 11-19 18:43  C:\Users\rcbai\Downloads\voidsworn_test\recipe
+   13.98 GB  new/changed since 14:00     1.52 GB     51475 files  latest 11-19 18:12  C:\Users\rcbai\Downloads\voidsworn_test\opus1078
+   13.09 GB  new/changed since 14:00     7.57 GB     17795 files  latest 11-19 18:28  C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2
+   12.72 GB  new/changed since 14:00     7.20 GB     16940 files  latest 11-19 17:46  C:\Users\rcbai\Downloads\voidsworn_test\opus1217
+   12.20 GB  new/changed since 14:00     6.68 GB     16664 files  latest 11-19 15:39  C:\Users\rcbai\Downloads\voidsworn_test\opus1211
+   11.89 GB  new/changed since 14:00     0.00 GB      5349 files  latest 11-18 21:30  C:\Users\rcbai\Downloads\voidsworn_test\sync_old
+   11.18 GB  new/changed since 14:00     0.00 GB     21308 files  latest 11-19 16:03  C:\Users\rcbai\Downloads\voidsworn_test\opus1077
+   11.12 GB  new/changed since 14:00     2.66 GB     35412 files  latest 11-19 17:54  C:\Users\rcbai\Downloads\voidsworn_test\work217
+   10.58 GB  new/changed since 14:00     5.09 GB     16527 files  latest 11-19 17:28  C:\Users\rcbai\Downloads\voidsworn_test\opus1204
+    6.70 GB  new/changed since 14:00     6.21 GB     18086 files  latest 11-19 17:37  C:\Users\rcbai\Downloads\voidsworn_test\opus1153b
+    6.68 GB  new/changed since 14:00     6.22 GB     17985 files  latest 11-19 18:42  C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5b
+    6.53 GB  new/changed since 14:00     6.07 GB     17686 files  latest 11-19 16:20  C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5
+    6.13 GB  new/changed since 14:00     1.21 GB     15294 files  latest 11-19 18:15  C:\Users\rcbai\Downloads\voidsworn_test\opus1156
+    6.04 GB  new/changed since 14:00     1.07 GB     15190 files  latest 11-19 18:03  C:\Users\rcbai\Downloads\voidsworn_test\opus1155
+    5.83 GB  new/changed since 14:00     0.82 GB     14947 files  latest 11-19 15:52  C:\Users\rcbai\Downloads\voidsworn_test\opus1158
+    5.58 GB  new/changed since 14:00     1.26 GB     15129 files  latest 11-19 18:29  C:\Users\rcbai\Downloads\voidsworn_test\opus1157
+    5.41 GB  new/changed since 14:00     2.55 GB     14911 files  latest 11-19 16:04  C:\Users\rcbai\Downloads\voidsworn_test\opus1154
+    4.44 GB  new/changed since 14:00     0.00 GB     14946 files  latest 11-19 12:25  C:\Users\rcbai\Downloads\voidsworn_test\opus1153
+    4.12 GB  new/changed since 14:00     0.00 GB      5379 files  latest 11-19 18:02  C:\Users\rcbai\Downloads\voidsworn_test\build_b
+    3.95 GB  new/changed since 14:00     3.49 GB      3669 files  latest 11-19 18:29  C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+    3.29 GB  new/changed since 14:00     0.00 GB        38 files  latest 10-25 17:32  C:\Users\rcbai\Downloads\voidsworn_test\godot
+    3.18 GB  new/changed since 14:00     0.00 GB      1319 files  latest 11-17 04:44  C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror-b.git
+    3.11 GB  new/changed since 14:00     0.03 GB      2008 files  latest 11-19 18:40  C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror-c.git
+    1.97 GB  new/changed since 14:00     1.67 GB     13469 files  latest 11-19 18:46  C:\Users\rcbai\Downloads\voidsworn_test\board1119
+    1.51 GB  new/changed since 14:00     0.00 GB       990 files  latest 11-18 00:18  C:\Users\rcbai\Downloads\voidsworn_test\runner_src_1117
+    1.18 GB  new/changed since 14:00     0.04 GB        62 files  latest 11-19 18:37  C:\Users\rcbai\Downloads\voidsworn_test\bakeoff
+    1.03 GB  new/changed since 14:00     0.00 GB      9235 files  latest 11-16 21:22  C:\Users\rcbai\Downloads\voidsworn_test\blender
+    0.79 GB  new/changed since 14:00     0.00 GB      1141 files  latest 11-19 18:43  C:\Users\rcbai\Downloads\voidsworn_test\(files in the root)
+    0.71 GB  new/changed since 14:00     0.00 GB       439 files  latest 10-22 13:18  C:\Users\rcbai\Downloads\voidsworn_test\textures
+    0.29 GB  new/changed since 14:00     0.00 GB        39 files  latest 10-26 13:47  C:\Users\rcbai\Downloads\voidsworn_test\music
+    0.22 GB  new/changed since 14:00     0.00 GB       416 files  latest 10-20 20:07  C:\Users\rcbai\Downloads\voidsworn_test\rocks
+    0.13 GB  new/changed since 14:00     0.00 GB      8323 files  latest 11-18 17:26  C:\Users\rcbai\Downloads\voidsworn_test\runner_backups
+    0.09 GB  new/changed since 14:00     0.00 GB       180 files  latest 10-20 19:39  C:\Users\rcbai\Downloads\voidsworn_test\bake
+    0.09 GB  new/changed since 14:00     0.00 GB      2521 files  latest 10-20 13:02  C:\Users\rcbai\Downloads\voidsworn_test\node
+    0.08 GB  new/changed since 14:00     0.00 GB      3060 files  latest 11-18 22:27  C:\Users\rcbai\Downloads\voidsworn_test\lane_tools_source
+    0.07 GB  new/changed since 14:00     0.00 GB       272 files  latest 11-14 06:43  C:\Users\rcbai\Downloads\voidsworn_test\hb682out
+    0.07 GB  new/changed since 14:00     0.00 GB       272 files  latest 11-14 09:17  C:\Users\rcbai\Downloads\voidsworn_test\hb676out
+    0.06 GB  new/changed since 14:00     0.00 GB        30 files  latest 11-01 17:52  C:\Users\rcbai\Downloads\voidsworn_test\f3
+    0.05 GB  new/changed since 14:00     0.00 GB      2992 files  latest 11-17 06:53  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117_62cd
+    0.05 GB  new/changed since 14:00     0.00 GB      2936 files  latest 11-17 05:42  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117e
+    0.04 GB  new/changed since 14:00     0.00 GB        60 files  latest 10-21 10:35  C:\Users\rcbai\Downloads\voidsworn_test\bake_p2k
+    0.04 GB  new/changed since 14:00     0.00 GB         4 files  latest 11-01 12:04  C:\Users\rcbai\Downloads\voidsworn_test\r1
+    0.04 GB  new/changed since 14:00     0.00 GB       210 files  latest 11-16 05:48  C:\Users\rcbai\Downloads\voidsworn_test\sq858_out
+    0.04 GB  new/changed since 14:00     0.00 GB      2205 files  latest 11-17 02:25  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117d
+    0.04 GB  new/changed since 14:00     0.04 GB      1014 files  latest 11-19 18:28  C:\Users\rcbai\Downloads\voidsworn_test\opus1194
+    0.03 GB  new/changed since 14:00     0.03 GB        18 files  latest 11-19 18:42  C:\Users\rcbai\Downloads\voidsworn_test\salvage
+    0.03 GB  new/changed since 14:00     0.00 GB       180 files  latest 10-20 19:43  C:\Users\rcbai\Downloads\voidsworn_test\bake_lo
+    0.03 GB  new/changed since 14:00     0.00 GB         3 files  latest 11-19 06:09  C:\Users\rcbai\Downloads\voidsworn_test\clips1076
+    0.03 GB  new/changed since 14:00     0.00 GB       116 files  latest 11-14 09:39  C:\Users\rcbai\Downloads\voidsworn_test\ecl642r3out
+    0.03 GB  new/changed since 14:00     0.00 GB       116 files  latest 11-14 19:27  C:\Users\rcbai\Downloads\voidsworn_test\eclmain1115out
+    0.03 GB  new/changed since 14:00     0.00 GB      1462 files  latest 11-17 00:49  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117c
+    0.02 GB  new/changed since 14:00     0.00 GB       122 files  latest 11-15 07:20  C:\Users\rcbai\Downloads\voidsworn_test\ecl1314out
+    0.02 GB  new/changed since 14:00     0.02 GB       590 files  latest 11-19 18:43  C:\Users\rcbai\Downloads\voidsworn_test\opus1180
+    0.02 GB  new/changed since 14:00     0.00 GB        12 files  latest 11-16 14:26  C:\Users\rcbai\Downloads\voidsworn_test\concepts
+    0.01 GB  new/changed since 14:00     0.00 GB        56 files  latest 11-16 03:13  C:\Users\rcbai\Downloads\voidsworn_test\hb696out
+    0.01 GB  new/changed since 14:00     0.00 GB       790 files  latest 11-19 17:54  C:\Users\rcbai\Downloads\voidsworn_test\build_d
+    0.01 GB  new/changed since 14:00     0.00 GB       790 files  latest 11-19 18:21  C:\Users\rcbai\Downloads\voidsworn_test\build_c
+    0.01 GB  new/changed since 14:00     0.00 GB       788 files  latest 11-19 16:37  C:\Users\rcbai\Downloads\voidsworn_test\build_e
+    0.01 GB  new/changed since 14:00     0.00 GB       748 files  latest 11-17 06:53  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117_62m
+    0.01 GB  new/changed since 14:00     0.00 GB       748 files  latest 11-17 06:53  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117_62b
+    0.01 GB  new/changed since 14:00     0.00 GB       749 files  latest 11-17 12:34  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117_1007c
+    0.01 GB  new/changed since 14:00     0.00 GB       122 files  latest 11-01 17:26  C:\Users\rcbai\Downloads\voidsworn_test\portraits
+    0.01 GB  new/changed since 14:00     0.00 GB       120 files  latest 10-20 20:13  C:\Users\rcbai\Downloads\voidsworn_test\fx
+    0.01 GB  new/changed since 14:00     0.00 GB       235 files  latest 11-18 00:18  C:\Users\rcbai\Downloads\voidsworn_test\mc_src_1118b
+    0.01 GB  new/changed since 14:00     0.00 GB       235 files  latest 11-17 23:18  C:\Users\rcbai\Downloads\voidsworn_test\mc_src_1118
+    0.00 GB  new/changed since 14:00     0.00 GB      2843 files  latest 11-19 18:40  C:\Users\rcbai\Downloads\voidsworn_test\queue
+    0.00 GB  new/changed since 14:00     0.00 GB        70 files  latest 11-17 17:34  C:\Users\rcbai\Downloads\voidsworn_test\mc_verify1
+    0.00 GB  new/changed since 14:00     0.00 GB       155 files  latest 11-18 00:18  C:\Users\rcbai\Downloads\voidsworn_test\mission_backup_20261118_061812_e2c93ecb
+    0.00 GB  new/changed since 14:00     0.00 GB       137 files  latest 11-17 23:19  C:\Users\rcbai\Downloads\voidsworn_test\mission_backup_20261118_051805_433be775
+    0.00 GB  new/changed since 14:00     0.00 GB        32 files  latest 11-17 22:41  C:\Users\rcbai\Downloads\voidsworn_test\shots
+    0.00 GB  new/changed since 14:00     0.00 GB        25 files  latest 10-21 14:52  C:\Users\rcbai\Downloads\voidsworn_test\comfy_ref
+    0.00 GB  new/changed since 14:00     0.00 GB        24 files  latest 11-17 16:15  C:\Users\rcbai\Downloads\voidsworn_test\mc_page_1117_161351
+    0.00 GB  new/changed since 14:00     0.00 GB        27 files  latest 11-15 11:02  C:\Users\rcbai\Downloads\voidsworn_test\ui1115out
+    0.00 GB  new/changed since 14:00     0.00 GB         2 files  latest 11-16 05:39  C:\Users\rcbai\Downloads\voidsworn_test\refs
+    0.00 GB  new/changed since 14:00     0.00 GB         1 files  latest 11-18 23:36  C:\Users\rcbai\Downloads\voidsworn_test\mission_local
+    0.00 GB  new/changed since 14:00     0.00 GB        77 files  latest 11-18 00:18  C:\Users\rcbai\Downloads\voidsworn_test\mission
+    0.00 GB  new/changed since 14:00     0.00 GB        36 files  latest 11-19 15:52  C:\Users\rcbai\Downloads\voidsworn_test\opus1154out
+    0.00 GB  new/changed since 14:00     0.00 GB         1 files  latest 11-17 23:19  C:\Users\rcbai\Downloads\voidsworn_test\mc_verify2
+    0.00 GB  new/changed since 14:00     0.00 GB         1 files  latest 11-18 00:18  C:\Users\rcbai\Downloads\voidsworn_test\mc_verify3
+    0.00 GB  new/changed since 14:00     0.00 GB        51 files  latest 11-17 13:36  C:\Users\rcbai\Downloads\voidsworn_test\mission_backup_1117_1009
+    0.00 GB  new/changed since 14:00     0.00 GB       470 files  latest 11-16 20:10  C:\Users\rcbai\Downloads\voidsworn_test\queue_b
+    0.00 GB  new/changed since 14:00     0.00 GB         6 files  latest 11-19 09:27  C:\Users\rcbai\Downloads\voidsworn_test\opus1156out
+    0.00 GB  new/changed since 14:00     0.00 GB        43 files  latest 11-17 13:36  C:\Users\rcbai\Downloads\voidsworn_test\mission_backup_1117_996c
+    0.00 GB  new/changed since 14:00     0.00 GB        18 files  latest 11-16 21:54  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117b
+    0.00 GB  new/changed since 14:00     0.00 GB        12 files  latest 11-16 15:51  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117
+    0.00 GB  new/changed since 14:00     0.00 GB        16 files  latest 11-14 20:25  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117_oa
+    0.00 GB  new/changed since 14:00     0.00 GB        13 files  latest 11-16 09:54  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1117m
+    0.00 GB  new/changed since 14:00     0.00 GB         5 files  latest 11-14 18:45  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1115
+    0.00 GB  new/changed since 14:00     0.00 GB         4 files  latest 11-19 17:23  C:\Users\rcbai\Downloads\voidsworn_test\ship_job
+    0.00 GB  new/changed since 14:00     0.00 GB         6 files  latest 11-19 16:58  C:\Users\rcbai\Downloads\voidsworn_test\opus1232
+    0.00 GB  new/changed since 14:00     0.00 GB         3 files  latest 11-16 11:33  C:\Users\rcbai\Downloads\voidsworn_test\runner_backup_1116
+    0.00 GB  new/changed since 14:00     0.00 GB         6 files  latest 11-17 00:50  C:\Users\rcbai\Downloads\voidsworn_test\mission_backup_1117_996b
+    0.00 GB  new/changed since 14:00     0.00 GB         6 files  latest 11-17 00:50  C:\Users\rcbai\Downloads\voidsworn_test\mission_backup_1117_996
+    0.00 GB  new/changed since 14:00     0.00 GB         1 files  latest 11-17 10:52  C:\Users\rcbai\Downloads\voidsworn_test\mc_probe_out
+    0.00 GB  new/changed since 14:00     0.00 GB        18 files  latest 11-12 09:03  C:\Users\rcbai\Downloads\voidsworn_test\branch_del
+    0.00 GB  new/changed since 14:00     0.00 GB         2 files  latest 11-17 19:28  C:\Users\rcbai\Downloads\voidsworn_test\pause1118
+    0.00 GB  new/changed since 14:00     0.00 GB         2 files  latest 11-18 19:42  C:\Users\rcbai\Downloads\voidsworn_test\pause1119
+    0.00 GB  new/changed since 14:00     0.00 GB         2 files  latest 10-20 19:10  C:\Users\rcbai\Downloads\voidsworn_test\__pycache__
+    0.00 GB  new/changed since 14:00     0.00 GB         3 files  latest 11-01 06:05  C:\Users\rcbai\Downloads\voidsworn_test\outputs
+    0.00 GB  new/changed since 14:00     0.00 GB         4 files  latest 11-16 21:55  C:\Users\rcbai\Downloads\voidsworn_test\runner1117
+    0.00 GB  new/changed since 14:00     0.00 GB         4 files  latest 11-19 13:27  C:\Users\rcbai\Downloads\voidsworn_test\opus1183
+    0.00 GB  new/changed since 14:00     0.00 GB         2 files  latest 11-17 12:05  C:\Users\rcbai\Downloads\voidsworn_test\probe_62
+    0.00 GB  new/changed since 14:00     0.00 GB         0 files  latest 01-01 00:00  C:\Users\rcbai\Downloads\voidsworn_test\disk_report_1120
+
+==== one level down (board*, build*, work217, opus*, ship_job, recipe, queue)
+   12.65 GB  new/changed since 14:00     7.13 GB     16640 files  latest 11-19 18:28  C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\repo
+   12.63 GB  new/changed since 14:00     0.73 GB     16839 files  latest 11-19 18:02  C:\Users\rcbai\Downloads\voidsworn_test\opus1078\repo
+   12.61 GB  new/changed since 14:00     7.09 GB     16598 files  latest 11-19 17:42  C:\Users\rcbai\Downloads\voidsworn_test\opus1217\repo
+   11.99 GB  new/changed since 14:00     6.47 GB     16557 files  latest 11-19 15:39  C:\Users\rcbai\Downloads\voidsworn_test\opus1211\repo
+   11.12 GB  new/changed since 14:00     2.66 GB     16609 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-25e45b7ab14b47f6ac5b84cab0ae9943
+   10.84 GB  new/changed since 14:00     0.00 GB         6 files  latest 11-17 22:31  C:\Users\rcbai\Downloads\voidsworn_test\build\export
+   10.84 GB  new/changed since 14:00     2.66 GB     16466 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a89882fa7a7143cebaecd9fc731ff308
+   10.58 GB  new/changed since 14:00     5.09 GB     16519 files  latest 11-19 15:53  C:\Users\rcbai\Downloads\voidsworn_test\opus1204\repo
+   10.53 GB  new/changed since 14:00     5.07 GB     16562 files  latest 11-19 14:52  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run2
+   10.53 GB  new/changed since 14:00     5.07 GB     16564 files  latest 11-19 18:39  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run3
+   10.51 GB  new/changed since 14:00     0.00 GB     16433 files  latest 11-19 14:02  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run1
+   10.13 GB  new/changed since 14:00     0.00 GB     16248 files  latest 11-19 15:58  C:\Users\rcbai\Downloads\voidsworn_test\opus1077\repo
+    9.43 GB  new/changed since 14:00     2.66 GB     12616 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo-kept-01a3b7f7387643f880f1de1126fd278c
+    8.83 GB  new/changed since 14:00     0.00 GB       104 files  latest 11-19 13:58  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-1143
+    7.16 GB  new/changed since 14:00     0.00 GB      7244 files  latest 11-19 08:09  C:\Users\rcbai\Downloads\voidsworn_test\build\godot
+    6.68 GB  new/changed since 14:00     6.22 GB     17972 files  latest 11-19 18:42  C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5b\repo
+    6.60 GB  new/changed since 14:00     6.13 GB     17855 files  latest 11-19 17:36  C:\Users\rcbai\Downloads\voidsworn_test\opus1153b\repo
+    6.59 GB  new/changed since 14:00     4.53 GB     17470 files  latest 11-19 17:58  C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo
+    6.57 GB  new/changed since 14:00     4.35 GB     17975 files  latest 11-19 18:20  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+    6.54 GB  new/changed since 14:00     4.45 GB     17763 files  latest 11-19 17:53  C:\Users\rcbai\Downloads\voidsworn_test\board\repo
+    6.53 GB  new/changed since 14:00     6.07 GB     17672 files  latest 11-19 16:20  C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5\repo
+    5.89 GB  new/changed since 14:00     0.97 GB     14897 files  latest 11-19 18:01  C:\Users\rcbai\Downloads\voidsworn_test\opus1155\repo
+    5.70 GB  new/changed since 14:00     3.55 GB     14082 files  latest 11-19 17:58  C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+    5.67 GB  new/changed since 14:00     0.00 GB     17316 files  latest 11-19 11:12  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-1ff71d6a04814dadba964d1032d78f1f
+    5.60 GB  new/changed since 14:00     2.66 GB     16775 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1084-openai
+    5.55 GB  new/changed since 14:00     1.22 GB     14963 files  latest 11-19 18:29  C:\Users\rcbai\Downloads\voidsworn_test\opus1157\repo
+    5.55 GB  new/changed since 14:00     0.64 GB     14798 files  latest 11-19 18:15  C:\Users\rcbai\Downloads\voidsworn_test\opus1156\repo
+    5.41 GB  new/changed since 14:00     2.55 GB     14907 files  latest 11-19 15:51  C:\Users\rcbai\Downloads\voidsworn_test\opus1154\repo
+    5.29 GB  new/changed since 14:00     0.00 GB     16177 files  latest 11-19 05:52  C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1118-openai
+    5.08 GB  new/changed since 14:00     0.07 GB     14647 files  latest 11-19 15:51  C:\Users\rcbai\Downloads\voidsworn_test\opus1158\repo
+    4.82 GB  new/changed since 14:00     2.66 GB     13323 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-2e8db0d35f8044d9bcd72e8f3fffdd09
+    4.77 GB  new/changed since 14:00     2.66 GB     13168 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a199aac6e71b43a2aead0c4601d7a571
+    4.74 GB  new/changed since 14:00     0.00 GB     12915 files  latest 11-19 08:45  C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo-kept-2cbac755feda40f694e1e33fa0b6a4e8
+    4.70 GB  new/changed since 14:00     0.00 GB     12945 files  latest 11-19 04:06  C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-ff7ceba4a37440d3adafaabf9aaddff3
+    4.69 GB  new/changed since 14:00     2.66 GB     12959 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-b1d569e806a544d2aa7541b503ffb351
+    4.68 GB  new/changed since 14:00     2.64 GB     12808 files  latest 11-19 14:06  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-0007d7218e4a477fa27a2c925515cd68
+    4.63 GB  new/changed since 14:00     2.66 GB     10540 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-d084110f41ff45c69bea582ef588917c
+    4.63 GB  new/changed since 14:00     2.66 GB     10549 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-70f1a89ca7014f369e1696c81db59112
+    4.63 GB  new/changed since 14:00     2.66 GB     10523 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-aceb3473930c4e27ad65642d23ce25fa
+    4.62 GB  new/changed since 14:00     2.66 GB     10403 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-64b7f32ffa4849c7a4bd726da6ea4cb4
+    4.61 GB  new/changed since 14:00     2.66 GB     10368 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-81506ef10ec64d3c96aa8cacc744b33c
+    4.60 GB  new/changed since 14:00     2.66 GB     10245 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-a96a526aa67d494fbbf7d841454ca0cb
+    4.58 GB  new/changed since 14:00     2.66 GB     10253 files  latest 11-19 17:10  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-cb9c4e3c05c8424cba7a86cb5a9de9cb
+    4.49 GB  new/changed since 14:00     0.00 GB      9998 files  latest 11-18 22:54  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-836469265b074cdd9b34aa7964afd780
+    4.38 GB  new/changed since 14:00     2.64 GB     10021 files  latest 11-19 14:06  C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-7103eb6705144c7da25ef676a676852a
+    4.34 GB  new/changed since 14:00     0.00 GB     14721 files  latest 11-19 12:23  C:\Users\rcbai\Downloads\voidsworn_test\opus1153\repo7
+    4.34 GB  new/changed since 14:00     0.00 GB      9445 files  latest 11-17 12:50  C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo-kept-21f1637f37cd4c49b04eae1a5492281b
+    3.50 GB  new/changed since 14:00     0.00 GB      2089 files  latest 10-26 19:39  C:\Users\rcbai\Downloads\voidsworn_test\build_b\godot
+    3.09 GB  new/changed since 14:00     0.00 GB      1739 files  latest 11-16 14:01  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-368
+    1.63 GB  new/changed since 14:00     0.00 GB       539 files  latest 11-17 00:17  C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_A20
+    1.58 GB  new/changed since 14:00     0.00 GB       503 files  latest 11-17 00:05  C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_A19
+    1.58 GB  new/changed since 14:00     0.00 GB       564 files  latest 11-17 00:32  C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_A16
+    1.51 GB  new/changed since 14:00     0.00 GB       503 files  latest 11-16 23:52  C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_A18
+    1.41 GB  new/changed since 14:00     0.00 GB      1431 files  latest 11-17 02:26  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-368
+    1.23 GB  new/changed since 14:00     0.00 GB       529 files  latest 11-16 23:15  C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_A17
+    1.16 GB  new/changed since 14:00     0.00 GB      1408 files  latest 11-15 10:20  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-367
+    1.14 GB  new/changed since 14:00     0.00 GB       184 files  latest 11-18 00:04  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-975
+    1.07 GB  new/changed since 14:00     0.00 GB       399 files  latest 11-14 19:17  C:\Users\rcbai\Downloads\voidsworn_test\recipe\deathless_E11
+    0.99 GB  new/changed since 14:00     0.54 GB     30909 files  latest 11-19 18:02  C:\Users\rcbai\Downloads\voidsworn_test\opus1078\work
+    0.92 GB  new/changed since 14:00     0.00 GB       196 files  latest 11-04 03:20  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-146
+    0.76 GB  new/changed since 14:00     0.00 GB       397 files  latest 11-14 19:26  C:\Users\rcbai\Downloads\voidsworn_test\recipe\deathless_E12
+    0.75 GB  new/changed since 14:00     0.75 GB       266 files  latest 11-19 15:52  C:\Users\rcbai\Downloads\voidsworn_test\opus1158\out
+    0.75 GB  new/changed since 14:00     0.56 GB       232 files  latest 11-19 15:51  C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S8
+    0.71 GB  new/changed since 14:00     0.00 GB      1005 files  latest 11-15 19:13  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-815
+    0.66 GB  new/changed since 14:00     0.00 GB      5762 files  latest 11-16 12:32  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-372
+    0.64 GB  new/changed since 14:00     0.00 GB       741 files  latest 11-15 13:34  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-800
+    0.63 GB  new/changed since 14:00     0.63 GB       232 files  latest 11-19 18:15  C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S9
+    0.63 GB  new/changed since 14:00     0.63 GB      5325 files  latest 11-19 15:51  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_u
+    0.63 GB  new/changed since 14:00     0.00 GB       571 files  latest 11-16 02:54  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-849
+    0.62 GB  new/changed since 14:00     0.00 GB       127 files  latest 11-17 10:58  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-975
+    0.60 GB  new/changed since 14:00     0.00 GB       417 files  latest 11-15 07:20  C:\Users\rcbai\Downloads\voidsworn_test\recipe\deathless_E14
+    0.53 GB  new/changed since 14:00     0.40 GB       226 files  latest 11-19 15:51  C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C13
+    0.51 GB  new/changed since 14:00     0.00 GB       417 files  latest 11-15 07:08  C:\Users\rcbai\Downloads\voidsworn_test\recipe\deathless_E13
+    0.49 GB  new/changed since 14:00     0.49 GB       159 files  latest 11-19 18:29  C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10
+    0.48 GB  new/changed since 14:00     0.48 GB       238 files  latest 11-19 16:11  C:\Users\rcbai\Downloads\voidsworn_test\opus1156\out_before_20261119_180346_0976039
+    0.47 GB  new/changed since 14:00     0.00 GB      2403 files  latest 11-19 11:08  C:\Users\rcbai\Downloads\voidsworn_test\opus1077\scratch3
+    0.47 GB  new/changed since 14:00     0.00 GB      2403 files  latest 11-19 13:41  C:\Users\rcbai\Downloads\voidsworn_test\opus1077\scratch5
+    0.44 GB  new/changed since 14:00     0.42 GB       201 files  latest 11-19 18:01  C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C14
+    0.42 GB  new/changed since 14:00     0.00 GB       117 files  latest 11-16 06:16  C:\Users\rcbai\Downloads\voidsworn_test\recipe\corsair_KB1CC
+    0.40 GB  new/changed since 14:00     0.40 GB       235 files  latest 11-19 15:40  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_j
+    0.40 GB  new/changed since 14:00     0.00 GB       377 files  latest 10-20 18:37  C:\Users\rcbai\Downloads\voidsworn_test\build\gallery
+    0.40 GB  new/changed since 14:00     0.00 GB       245 files  latest 11-16 10:15  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-373
+    0.37 GB  new/changed since 14:00     0.33 GB       226 files  latest 11-19 17:36  C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C12
+    0.35 GB  new/changed since 14:00     0.35 GB      2666 files  latest 11-19 14:37  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\out
+    0.35 GB  new/changed since 14:00     0.35 GB      1060 files  latest 11-19 18:23  C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\profile
+    0.33 GB  new/changed since 14:00     0.33 GB      2671 files  latest 11-19 15:21  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\out3
+    0.32 GB  new/changed since 14:00     0.00 GB       219 files  latest 11-17 23:57  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-1016
+    0.30 GB  new/changed since 14:00     0.00 GB       121 files  latest 11-04 16:25  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-163
+    0.30 GB  new/changed since 14:00     0.00 GB        79 files  latest 11-17 18:40  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-863
+    0.29 GB  new/changed since 14:00     0.18 GB      3495 files  latest 11-19 18:02  C:\Users\rcbai\Downloads\voidsworn_test\opus1078\out
+    0.27 GB  new/changed since 14:00     0.00 GB       100 files  latest 11-11 17:43  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-532
+    0.26 GB  new/changed since 14:00     0.00 GB       100 files  latest 11-18 01:53  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-1036
+    0.23 GB  new/changed since 14:00     0.00 GB       145 files  latest 11-15 17:12  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-373
+    0.22 GB  new/changed since 14:00     0.00 GB       573 files  latest 11-16 17:23  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-726
+    0.21 GB  new/changed since 14:00     0.21 GB       100 files  latest 11-19 15:39  C:\Users\rcbai\Downloads\voidsworn_test\opus1211\shots
+    0.20 GB  new/changed since 14:00     0.00 GB       210 files  latest 11-13 16:17  C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C11
+    0.20 GB  new/changed since 14:00     0.00 GB       152 files  latest 11-04 18:51  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-183
+    0.20 GB  new/changed since 14:00     0.00 GB       220 files  latest 11-13 16:16  C:\Users\rcbai\Downloads\voidsworn_test\recipe\chorus_C10
+    0.20 GB  new/changed since 14:00     0.20 GB        88 files  latest 11-19 18:43  C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5
+    0.19 GB  new/changed since 14:00     0.00 GB       158 files  latest 11-16 01:07  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-369
+    0.19 GB  new/changed since 14:00     0.00 GB       184 files  latest 11-03 20:57  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-129
+    0.18 GB  new/changed since 14:00     0.00 GB      2139 files  latest 10-27 17:40  C:\Users\rcbai\Downloads\voidsworn_test\build_b\r35
+    0.18 GB  new/changed since 14:00     0.00 GB       181 files  latest 11-04 00:38  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-61
+    0.17 GB  new/changed since 14:00     0.17 GB      2358 files  latest 11-19 18:04  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_o
+    0.17 GB  new/changed since 14:00     0.00 GB      1044 files  latest 11-11 02:14  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-426
+    0.17 GB  new/changed since 14:00     0.00 GB       315 files  latest 11-17 08:29  C:\Users\rcbai\Downloads\voidsworn_test\board_b\issue-100
+    0.15 GB  new/changed since 14:00     0.15 GB       294 files  latest 11-19 18:46  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\profile_3
+    0.14 GB  new/changed since 14:00     0.00 GB       149 files  latest 11-06 15:48  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-198
+    0.14 GB  new/changed since 14:00     0.00 GB       157 files  latest 11-04 22:23  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-187
+    0.14 GB  new/changed since 14:00     0.00 GB       187 files  latest 11-04 22:54  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-195
+    0.13 GB  new/changed since 14:00     0.00 GB        80 files  latest 11-18 00:52  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-1035
+    0.12 GB  new/changed since 14:00     0.00 GB        35 files  latest 11-04 11:28  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-166
+    0.12 GB  new/changed since 14:00     0.00 GB       305 files  latest 11-11 10:56  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-487
+    0.12 GB  new/changed since 14:00     0.00 GB       169 files  latest 11-19 12:46  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_h
+    0.11 GB  new/changed since 14:00     0.10 GB       206 files  latest 11-19 18:03  C:\Users\rcbai\Downloads\voidsworn_test\opus1155\out
+    0.11 GB  new/changed since 14:00     0.11 GB        59 files  latest 11-19 17:50  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_zg
+    0.11 GB  new/changed since 14:00     0.00 GB       248 files  latest 11-04 06:54  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-67
+    0.11 GB  new/changed since 14:00     0.11 GB       335 files  latest 11-19 17:46  C:\Users\rcbai\Downloads\voidsworn_test\opus1217\shots
+    0.11 GB  new/changed since 14:00     0.11 GB      2204 files  latest 11-19 14:50  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_n
+    0.11 GB  new/changed since 14:00     0.00 GB       102 files  latest 10-21 08:09  C:\Users\rcbai\Downloads\voidsworn_test\build\fxshots
+    0.10 GB  new/changed since 14:00     0.00 GB       965 files  latest 11-14 12:46  C:\Users\rcbai\Downloads\voidsworn_test\board\issue-463
+    0.10 GB  new/changed since 14:00     0.08 GB       230 files  latest 11-19 17:37  C:\Users\rcbai\Downloads\voidsworn_test\opus1153b\out
+    0.10 GB  new/changed since 14:00     0.00 GB       529 files  latest 11-19 13:44  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_i
+    0.10 GB  new/changed since 14:00     0.10 GB       199 files  latest 11-19 18:30  C:\Users\rcbai\Downloads\voidsworn_test\board1119\pcout_s
+    0.10 GB  new/changed since 14:00     0.10 GB        92 files  latest 11-19 18:28  C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\shots
+
+==== TEMP (C:\Users\rcbai\AppData\Local\Temp) folders over 500 MB
+   36.87 GB  new/changed since 14:00     0.00 GB    117507 files  latest 11-18 21:31  C:\Users\rcbai\AppData\Local\Temp\opencode
+   35.51 GB  new/changed since 14:00     0.00 GB     58083 files  latest 11-19 13:57  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-da92310f5d3541eca3b5840e2e243e31
+   28.87 GB  new/changed since 14:00     0.89 GB     72719 files  latest 11-19 16:32  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f3d0971ccb3042fa9e9973a4ba0066a4
+   25.06 GB  new/changed since 14:00     0.00 GB     35264 files  latest 11-19 08:06  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c17e1187c4464c92bb380b52cfbef05f
+   15.01 GB  new/changed since 14:00     0.00 GB     91131 files  latest 11-19 08:34  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-d1c08feabbd049fc9b9aa5bda07117b0
+   14.76 GB  new/changed since 14:00     0.00 GB     61882 files  latest 11-19 13:31  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2f75d57bd0d14d3ba332acbbf3ff9d1e
+   10.11 GB  new/changed since 14:00     1.60 GB     51398 files  latest 11-19 15:06  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-a3e8f6f6caf54e50a47d202dfad06ebd
+    9.19 GB  new/changed since 14:00     0.00 GB     45633 files  latest 11-19 12:19  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-212d86aa70c74373b9cf3a53366709ef
+    6.91 GB  new/changed since 14:00     0.00 GB      7379 files  latest 11-18 14:40  C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_main
+    6.89 GB  new/changed since 14:00     0.00 GB      7293 files  latest 11-18 21:33  C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_matched_20261118_184540
+    6.87 GB  new/changed since 14:00     0.00 GB      7211 files  latest 11-18 18:44  C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_base_20261118_184429
+    6.86 GB  new/changed since 14:00     0.00 GB      7300 files  latest 11-18 21:33  C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_after_20261118_185114
+    6.80 GB  new/changed since 14:00     0.00 GB      7154 files  latest 11-18 17:28  C:\Users\rcbai\AppData\Local\Temp\voidsworn1070_run2_20261118_184351
+    4.34 GB  new/changed since 14:00     4.11 GB     34792 files  latest 11-19 16:41  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-de77f47589ee4590ab6e89b3c1b347c0
+    4.31 GB  new/changed since 14:00     3.86 GB     60991 files  latest 11-19 15:42  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0592fe522a994357a9b4a4d1c6b4d85b
+    4.00 GB  new/changed since 14:00     3.22 GB     35958 files  latest 11-19 14:41  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-94fdd5cee40c41cea555a1e1a1bc6253
+    3.77 GB  new/changed since 14:00     3.32 GB     39324 files  latest 11-19 17:53  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-3962a65d6a1a4b86a3ecaffc9f778d12
+    3.48 GB  new/changed since 14:00     1.92 GB     52402 files  latest 11-19 14:42  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-fb6cbb420eee49299c7dbcb30141a3eb
+    2.86 GB  new/changed since 14:00     2.63 GB     42312 files  latest 11-19 16:41  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1cd66982941249fc8cf002ed52bccdec
+    2.68 GB  new/changed since 14:00     2.45 GB     33432 files  latest 11-19 18:20  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-c3a0f93d3f55499da85fe414a8c3bb56
+    2.49 GB  new/changed since 14:00     2.34 GB     46789 files  latest 11-19 16:25  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f3dbf944d81e440088426930df7896a3
+    1.72 GB  new/changed since 14:00     0.00 GB      1159 files  latest 11-18 19:09  C:\Users\rcbai\AppData\Local\Temp\rules-safety-xUeOMj
+    1.72 GB  new/changed since 14:00     0.00 GB      1159 files  latest 11-18 19:13  C:\Users\rcbai\AppData\Local\Temp\rules-safety-qtqhqb
+    1.71 GB  new/changed since 14:00     0.00 GB      1022 files  latest 11-17 08:09  C:\Users\rcbai\AppData\Local\Temp\terrain_fx_100
+    1.71 GB  new/changed since 14:00     0.00 GB      1159 files  latest 11-17 17:41  C:\Users\rcbai\AppData\Local\Temp\rules-safety-xXN5f9
+    1.70 GB  new/changed since 14:00     0.00 GB      1159 files  latest 11-17 13:14  C:\Users\rcbai\AppData\Local\Temp\rules-safety-mLen7a
+    1.67 GB  new/changed since 14:00     0.00 GB      1147 files  latest 11-17 09:40  C:\Users\rcbai\AppData\Local\Temp\rules-safety-MWKwL1
+    1.62 GB  new/changed since 14:00     1.62 GB       103 files  latest 11-19 18:46  C:\Users\rcbai\AppData\Local\Temp\claude
+    1.53 GB  new/changed since 14:00     0.00 GB       918 files  latest 11-17 01:11  C:\Users\rcbai\AppData\Local\Temp\ion930
+    1.36 GB  new/changed since 14:00     1.14 GB     43609 files  latest 11-19 17:31  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-5660932789454f799423a15cdbe79157
+    1.32 GB  new/changed since 14:00     0.00 GB      5127 files  latest 11-14 03:00  C:\Users\rcbai\AppData\Local\Temp\wm676
+    1.29 GB  new/changed since 14:00     0.00 GB      7058 files  latest 11-14 18:00  C:\Users\rcbai\AppData\Local\Temp\vs371main
+    1.28 GB  new/changed since 14:00     0.00 GB     31375 files  latest 11-19 12:09  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1029146854084a55be8f7e5cbef7432d
+    1.15 GB  new/changed since 14:00     0.00 GB     47044 files  latest 11-19 12:19  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1feeba5e919f457c92bcf268f02538d0
+    1.11 GB  new/changed since 14:00     0.89 GB     79249 files  latest 11-19 17:39  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f9fd79a03f18487690a4a9fd0cffafd1
+    1.10 GB  new/changed since 14:00     0.00 GB      5157 files  latest 11-13 21:12  C:\Users\rcbai\AppData\Local\Temp\i675
+    1.08 GB  new/changed since 14:00     0.00 GB     69261 files  latest 11-19 11:38  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-62a271cd65424c3da52627c03902b754
+    1.06 GB  new/changed since 14:00     0.00 GB       696 files  latest 11-14 08:05  C:\Users\rcbai\AppData\Local\Temp\eclipse642d_20261114_074954
+    0.99 GB  new/changed since 14:00     0.00 GB     46922 files  latest 11-19 13:03  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-49ee68fd69154bb991cb65bbbba55f7d
+    0.97 GB  new/changed since 14:00     0.00 GB       491 files  latest 11-17 04:30  C:\Users\rcbai\AppData\Local\Temp\im5_install970
+    0.90 GB  new/changed since 14:00     0.00 GB      4701 files  latest 11-16 12:20  C:\Users\rcbai\AppData\Local\Temp\sh372_run4
+    0.90 GB  new/changed since 14:00     0.00 GB     31176 files  latest 11-19 14:05  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-516ab44bd6e5489f8204ac433c8bf68b
+    0.90 GB  new/changed since 14:00     0.00 GB        12 files  latest 10-20 13:01  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b257bfeef23a46c5b50b1052ae02c7ca
+    0.87 GB  new/changed since 14:00     0.00 GB     73263 files  latest 11-19 11:39  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-ce9565d4d5004b63837c782304d601d7
+    0.83 GB  new/changed since 14:00     0.60 GB     31709 files  latest 11-19 15:29  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-f880c1064c91426ca0d600d0873a7c65
+    0.82 GB  new/changed since 14:00     0.00 GB        11 files  latest 10-20 13:01  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-712dc42077764a9f989169468b84ccb2
+    0.73 GB  new/changed since 14:00     0.18 GB     46723 files  latest 11-19 14:25  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8b7cd6eb643a4311b275ba918dc4996f
+    0.72 GB  new/changed since 14:00     0.00 GB      1404 files  latest 11-14 18:10  C:\Users\rcbai\AppData\Local\Temp\tune-WhbP90
+    0.71 GB  new/changed since 14:00     0.71 GB       230 files  latest 11-19 18:52  C:\Users\rcbai\AppData\Local\Temp\stage7-checked-I8_37-wswvnmdz
+    0.68 GB  new/changed since 14:00     0.00 GB     31431 files  latest 11-19 13:42  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-8b223a64168e41ec81278d00dc743df6
+    0.68 GB  new/changed since 14:00     0.00 GB     30898 files  latest 11-19 13:23  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-76037b3c57f44545a479839d25f22f6e
+    0.67 GB  new/changed since 14:00     0.00 GB         9 files  latest 10-20 13:01  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-7fa3833db1e64a418cfd69073e14fdfe
+    0.67 GB  new/changed since 14:00     0.00 GB         9 files  latest 10-20 13:01  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-2c77816056da466d911a631e0acdc995
+    0.67 GB  new/changed since 14:00     0.00 GB         9 files  latest 10-20 13:01  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-b7e7f00353a7439690fddc03ceab4959
+    0.56 GB  new/changed since 14:00     0.56 GB       207 files  latest 11-19 18:00  C:\Users\rcbai\AppData\Local\Temp\stage7-checked-B22_11-eousyhdu
+
+==== TEMP totals by name prefix
+  187.55 GB  new/changed since 14:00    29.46 GB    56 folders  voidsworn-run-*
+  137.44 GB  new/changed since 14:00     1.62 GB  5213 folders  others
+   34.34 GB  new/changed since 14:00     0.00 GB    40 folders  voidsworn* (other)
+    2.69 GB  new/changed since 14:00     2.64 GB    21 folders  stage7-checked-*
+    0.01 GB  new/changed since 14:00     0.00 GB     2 folders  godot*
+    1.00 GB  loose files in TEMP root (2317)
+
+==== Godot and Blender user, cache and temp folders
+    5.53 GB  new/changed since 14:00     0.55 GB      2782 files  latest 11-19 18:54  C:\Users\rcbai\AppData\Roaming\Godot
+    0.00 GB  new/changed since 14:00     0.00 GB         1 files  latest 10-25 17:32  C:\Users\rcbai\AppData\Local\Godot
+    0.00 GB  new/changed since 14:00     0.00 GB         1 files  latest 10-20 18:54  C:\Users\rcbai\AppData\Roaming\Blender Foundation
+    0.00 GB  new/changed since 14:00     0.00 GB         0 files  latest 01-01 00:00  C:\Users\rcbai\AppData\Local\Temp\blender_a31188
+    0.00 GB  new/changed since 14:00     0.00 GB         0 files  latest 01-01 00:00  C:\Users\rcbai\AppData\Local\Temp\blender_a42832
+    0.00 GB  new/changed since 14:00     0.00 GB         0 files  latest 01-01 00:00  C:\Users\rcbai\AppData\Local\Blender Foundation
+    0.00 GB  new/changed since 14:00     0.00 GB         0 files  latest 01-01 00:00  C:\Users\rcbai\AppData\Local\Temp\blender_a06960
+
+==== other places on C:
+  565.89 GB  new/changed since 14:00   140.22 GB    973203 files  latest 11-19 18:55  C:\Users\rcbai\Downloads
+  363.02 GB  new/changed since 14:00    33.72 GB   5115417 files  latest 11-19 19:00  C:\Users\rcbai\AppData\Local\Temp
+   25.04 GB  new/changed since 14:00     0.00 GB     22749 files  latest 11-19 18:34  C:\Users\rcbai\.cache
+   18.91 GB  new/changed since 14:00     0.07 GB     44859 files  latest 11-19 19:00  C:\ProgramData
+    1.33 GB  new/changed since 14:00     0.12 GB      7639 files  latest 11-19 19:00  C:\Users\rcbai\.codex
+    1.27 GB  new/changed since 14:00     0.00 GB       809 files  latest 11-18 13:13  C:\Users\rcbai\AppData\Local\npm-cache
+    1.06 GB  new/changed since 14:00     0.00 GB        64 files  latest 11-08 06:23  C:\Users\rcbai\AppData\Roaming\npm
+    0.75 GB  new/changed since 14:00     0.00 GB      2475 files  latest 11-15 11:51  C:\Users\rcbai\AppData\Local\OpenAI
+    0.23 GB  new/changed since 14:00     0.00 GB       720 files  latest 11-19 17:37  C:\Windows\Temp
+
+==== biggest growers since 14:00 (new or changed bytes)
+    7.13 GB new  of    12.65 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1211_run2\repo
+    7.09 GB new  of    12.61 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1217\repo
+    6.92 GB new  of    18.82 GB  C:\Users\rcbai\Downloads\voidsworn_test\look_bench
+    6.47 GB new  of    11.99 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1211\repo
+    6.22 GB new  of     6.68 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5b\repo
+    6.13 GB new  of     6.60 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1153b\repo
+    6.07 GB new  of     6.53 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5\repo
+    5.09 GB new  of    10.58 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1204\repo
+    5.07 GB new  of    10.53 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run2
+    5.07 GB new  of    10.53 GB  C:\Users\rcbai\Downloads\voidsworn_test\opus1079\run3
+    4.53 GB new  of     6.59 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_c\repo
+    4.45 GB new  of     6.54 GB  C:\Users\rcbai\Downloads\voidsworn_test\board\repo
+    4.35 GB new  of     6.57 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo
+    4.11 GB new  of     4.34 GB  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-de77f47589ee4590ab6e89b3c1b347c0
+    3.86 GB new  of     4.31 GB  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0592fe522a994357a9b4a4d1c6b4d85b
+    3.55 GB new  of     5.70 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo
+    3.49 GB new  of     3.95 GB  C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+    3.32 GB new  of     3.77 GB  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-3962a65d6a1a4b86a3ecaffc9f778d12
+    3.22 GB new  of     4.00 GB  C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-94fdd5cee40c41cea555a1e1a1bc6253
+    2.66 GB new  of     4.82 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-2e8db0d35f8044d9bcd72e8f3fffdd09
+    2.66 GB new  of     4.77 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a199aac6e71b43a2aead0c4601d7a571
+    2.66 GB new  of     5.60 GB  C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-1084-openai
+    2.66 GB new  of     4.69 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-b1d569e806a544d2aa7541b503ffb351
+    2.66 GB new  of     4.60 GB  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-a96a526aa67d494fbbf7d841454ca0cb
+    2.66 GB new  of    11.12 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-25e45b7ab14b47f6ac5b84cab0ae9943
+    2.66 GB new  of     4.58 GB  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-cb9c4e3c05c8424cba7a86cb5a9de9cb
+    2.66 GB new  of     4.63 GB  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-d084110f41ff45c69bea582ef588917c
+    2.66 GB new  of     4.63 GB  C:\Users\rcbai\Downloads\voidsworn_test\board\repo-kept-aceb3473930c4e27ad65642d23ce25fa
+    2.66 GB new  of    10.84 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_b\repo-kept-a89882fa7a7143cebaecd9fc731ff308
+    2.66 GB new  of     9.43 GB  C:\Users\rcbai\Downloads\voidsworn_test\board_d\repo-kept-01a3b7f7387643f880f1de1126fd278c
+
+==== PART 2 (whole-folder view, not only today) 2026-11-19T19:01:00
+
+==== (a) voidsworn_test total 432.20 GB, by category (reparse points skipped)
+  164.88 GB  opus helper folders (job clones, outputs)
+           32.41 opus1079 | 13.98 opus1078 | 13.09 opus1211_run2 | 12.72 opus1217 | 12.20 opus1211 | 11.92 opus1077 | 10.58 opus1204 | 6.84 opus1183r5b
+  164.59 GB  job copies: board* (lane checkouts and repo-kept)
+           61.44 board | 61.09 board_b | 20.14 board_c | 19.94 board_d | 1.97 board1119
+   36.77 GB  recipe, bake and render outputs
+           18.82 look_bench | 14.86 recipe | 1.18 bakeoff | 1.03 blender | 0.71 textures | 0.09 bake | 0.04 bake_p2k | 0.03 bake_lo
+   21.46 GB  shared build (build\godot ships, gen, import cache) and old tools
+           21.46 build
+   12.96 GB  other
+           11.89 sync_old | 0.29 music | 0.22 rocks | 0.08 lane_tools_source | 0.07 hb682out | 0.07 hb676out | 0.06 f3 | 0.04 r1
+   11.12 GB  job copies: work217 run repos
+           11.12 work217
+   10.23 GB  git mirrors
+           3.95 repo-mirror.git | 3.18 repo-mirror-b.git | 3.11 repo-mirror-c.git
+    4.16 GB  runner tools copies build_b..e
+           4.12 build_b | 0.01 build_e | 0.01 build_d | 0.01 build_c
+    3.38 GB  node and godot binaries
+           3.29 godot | 0.09 node
+    1.85 GB  queue, runner logs and backups, relays
+           1.51 runner_src_1117 | 0.13 runner_backups | 0.05 runner_backup_1117_62cd | 0.05 runner_backup_1117e | 0.04 runner_backup_1117d | 0.03 runner_backup_1117c | 0.01 runner_backup_1117_62b | 0.01 runner_backup_1117_1007c
+    0.01 GB  mission folders and backups
+           0.00 mission_backup_20261118_051805_433be775 | 0.00 mission_backup_1117_996c | 0.00 mission_local | 0.00 mission_backup_20261118_061812_e2c93ecb | 0.00 mission_backup_1117_1009 | 0.00 mission | 0.00 mission_backup_1117_996b | 0.00 mission_backup_1117_996
+    0.79 GB  loose files in the voidsworn_test root
+   52.49 GB  of the above is Godot import caches (.godot folders): 33 folders across all copies
+    5.80 GB  of the above is .blend / .blend1 files
+  137.14 GB  of the above is .git folders inside job copies (depth up to 4)
+
+==== (b) %TEMP% by prefix
+  187.55 GB    57 folders  voidsworn-run-*
+  135.82 GB  5202 folders  others
+   34.34 GB    40 folders  voidsworn* (other)
+    2.69 GB    21 folders  stage7-checked-*
+    1.62 GB     1 folders  claude*
+    0.01 GB     2 folders  godot*
+    0.00 GB    13 folders  tool temp (tmp, pip, npm, node, pyinstaller)
+  362.02 GB  TEMP total (folders) plus     1.00 GB loose files
+
+==== (c) biggest folders on C: outside voidsworn_test
+  372.82 GB  C:\Program Files (x86)
+   79.81 GB  C:\Program Files
+   68.55 GB  C:\Users\rcbai\Videos
+   65.88 GB  C:\Users\rcbai\Downloads\ComfyUI_windows_portable
+   60.86 GB  C:\AI
+   55.90 GB  C:\$Recycle.Bin (all users)
+   40.57 GB  C:\AMD
+   33.78 GB  C:\Windows
+   31.11 GB  C:\Users\rcbai\Downloads\trellis2
+   26.84 GB  C:\Users\rcbai\AppData\Local\NVIDIA
+   25.04 GB  C:\Users\rcbai\.cache
+   21.86 GB  C:\RogueLauncherCache
+   18.91 GB  C:\ProgramData
+   13.93 GB  C:\Users\rcbai\Downloads\voidsworn_sfx
+   11.21 GB  C:\Users\rcbai\AppData\Roaming\Vortex
+   10.83 GB  C:\Users\rcbai\.local
+   10.26 GB  C:\Users\rcbai\AppData\Local\Claude-Data
+    7.35 GB  C:\Users\rcbai\Downloads\CaiCache
+    5.53 GB  C:\Users\rcbai\AppData\Roaming\Godot
+    4.31 GB  C:\Users\rcbai\AppData\Local\Google
+    2.73 GB  C:\Users\rcbai\AppData\Roaming\Twitch
+    2.72 GB  C:\Users\rcbai\AppData\Local\Microsoft
+    2.41 GB  C:\Users\rcbai\AppData\Local\Larian Studios
+    2.33 GB  C:\Users\rcbai\AppData\Local\Packages
+    1.90 GB  C:\Users\rcbai\AppData\Local\Programs
+
+==== (d) drives
+C:  used 1,740.71 GB  free 119.17 GB  total 1,859.89 GB  
+D:  used 0.43 GB  free 0.60 GB  total 1.03 GB  
+volume C: label '' NTFS Fixed  size 1,859.89 GB  free 119.12 GB  health Healthy
+volume D: label '' NTFS Fixed  size 1.03 GB  free 0.60 GB  health Healthy
+
+==== shadow copies / restore points (read only)
