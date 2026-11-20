@@ -36,7 +36,7 @@ F.CODE = CODE
 F.ST = [(n, hw, zt * DEPTH_K, zb * DEPTH_K) for (n, hw, zt, zb) in F.ST]
 F.HULL = [(U(r[0]), U(r[1]), U(r[1]), U(r[3]), U(r[2]), 0.0, 0.0) for r in F.ST]
 BX = 0.36     # the cassette's station: the prow recess, its back clear of the sensor slit in the ridge's front face
-CELL = 0.05   # the tube pitch (share of LENGTH)
+CELL = 0.034  # the tube pitch (share of LENGTH); round 2: smaller tubes so the cassette sits low
 SINK = -0.3   # round 2 (Ryan, Nov 20: "a weird block at the top"): the cassette sits lower (its bores still clear the prow ahead)
 
 
