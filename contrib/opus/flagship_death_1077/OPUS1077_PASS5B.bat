@@ -1,15 +1,17 @@
 @echo off
-title Opus 1077 pass 5: ragged tear, less smoke, clips only - GPU job
+title Opus 1077 pass 5B: ragged tear, less smoke, clips only - GPU job
 rem Issue 1077, pass 5 (Ryan on pass 4B: "Way too much smoke, it looks weird. Also the two straight clean lines of the glow
 rem and break"). On the pinned commit the strained death's tear, hairlines and glow run on a ragged line across the plates,
 rem and its smoke is cut back hard. Every Godot start goes through the canonical watchdog, tools_live\<current>\pc\tmo.bat
 rem (its resolved path and hashes are in the receipt).
+rem 5B (Board, after 1236 failed): the installed-ships copy skips manifest.json, README.md, a4_props.gd and *.uid, so the
+rem build folder's older a4_props.gd (no LARGE_STATION_SIZE, which board.gd needs at this pin) never overwrites the clone's.
 rem Clips only, no timing (pass 3C's solo timing stands: the changes are one material per inside surface and one shader term).
 rem Steps: the pinned commit by the 1078 safe checkout, both headless checks, the A16 clips off and strain at c170 and c26,
 rem the two side-by-side AVIs, every step checked, nonzero unless all are present. The capture claims the GPU solo by itself.
 rem Every Godot start runs in a throwaway profile (opus1077\profile_<N>\appdata); Ryan's real battle_opts.json and
 rem board_look.cfg are hashed before the first Godot start and at the end (and on any stop); a difference is FAILED.
-rem Writes only under opus1077\ (out_pass5_<A> and scratch_pass5_<A>, A the first unused attempt number). Never deletes
+rem Writes only under opus1077\ (out_pass5b_<A> and scratch_pass5b_<A>, A the first unused attempt number). Never deletes
 rem anything. Logs to that folder's result.txt and ends with "all done".
 setlocal EnableDelayedExpansion
 set EXPECT=2b23ec1a46c932badd20cef096cb6968b7aacb8f
@@ -18,9 +20,9 @@ set W=%V%\opus1077
 set C=%W%\repo
 set A=1
 :findattempt
-if exist "%W%\out_pass5_%A%" (set /a A+=1 & goto findattempt)
-set O=%W%\out_pass5_%A%
-set S=%W%\scratch_pass5_%A%
+if exist "%W%\out_pass5b_%A%" (set /a A+=1 & goto findattempt)
+set O=%W%\out_pass5b_%A%
+set S=%W%\scratch_pass5b_%A%
 mkdir "%O%"
 mkdir "%S%"
 set RES=%O%\result.txt
@@ -39,7 +41,7 @@ echo commit=%COMMIT% >> "%RES%"
 if not "%COMMIT%"=="%EXPECT%" (set "FAILMSG=checked out %COMMIT%, expected %EXPECT%" & goto fail)
 echo {"commit": "%COMMIT%"} > "%C%\godot\build_info.json"
 rem the installed ships and generated hulls, copied (robocopy /E only adds and updates; exit 0 to 7 is success, 8+ failed)
-robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /NFL /NDL /NJH /NP > "%O%\log_copy_ships.txt" 2>&1
+robocopy "%V%\build\godot\assets\ships" "%C%\godot\assets\ships" /E /NFL /NDL /NJH /NP /XF manifest.json README.md a4_props.gd *.uid > "%O%\log_copy_ships.txt" 2>&1
 set E=%ERRORLEVEL%
 echo copy ships robocopy %E% (0 to 7 is success) >> "%RES%"
 if %E% GEQ 8 (set "FAILMSG=copy ships failed" & goto fail)
