@@ -27,7 +27,7 @@ Sound is not reviewed. Clips go to Fable and Muse with the audio stripped.
 - docs/playbooks/screens.md, factions.md, scale.md, effects.md, deaths_and_hits.md.
 - godot/story/ (README.md, outlines.md, outlines_variants.md, data/), docs/words/ and the in-game help text.
 - Faction names: contrib/opus/compute/rename_map_final.md (ids never change; display names do).
-- What is already known, so nobody repeats it: contrib/opus/reviews/codebase_audit_1120.md (bugs 1336 to 1338), the Neon
+- What is already known, so nobody repeats it: contrib/opus/reviews/codebase_audit_1120.md on branch claude/project-thread-r8cctm, PR 1339 (bugs 1336 to 1338), the Neon
   audits in /mnt/project-files/audits/ (front-end UI, weapon fx readability, ship destruction, backdrops, codebase health,
   all Nov 19), and contrib/opus/OPEN_WORK.md. A finding already in one of these counts only if it adds new evidence or says
   the planned fix will not work.
