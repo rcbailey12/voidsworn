@@ -1,0 +1,11 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1ac9677bc9d9443ea1337d2dbf0c7534\godot-profile-9ff7d6e6c453462eaa7c8808a86f86da
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[turret] turret_0 (O1) on authored: arc -180 to 180, trains all round
+[turret] turret_1 (O2) on authored: arc -180 to 180, trains all round
+[turret] turret_2 (O3) on authored: arc -180 to 180, trains all round
+[turret] turret_0 (O1) on this hull: arc -180 to 180, trains all round
+[turret] turret_1 (O2) on this hull: arc -180 to 180, trains all round
+[turret] turret_2 (O3) on this hull: arc -180 to 180, trains all round
+AUTHORED_INTERIORS failures=0 interior_triangles=29472
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-1ac9677bc9d9443ea1337d2dbf0c7534\godot-profile-9ff7d6e6c453462eaa7c8808a86f86da
