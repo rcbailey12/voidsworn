@@ -1,0 +1,77 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1379)
+GPU: acquired shared claim 37cf60d0-00d8-4ba3-b0cf-9e9196baf8d1
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-074bb81ea1894b6bb703e71844ccaea9\godot-profile-0f8f898706de4f0f820ddedc30123960
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 71 cues, 67 clip sets, loaded in 510 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.704, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[world] baked ffb8cbf9f0ea0e7f7d8eb01677a708330d0d0045df82bc24a512cfc5f0291f2a 4096x2048 in 11303 ms (worker)
+[world] baked fc8637f02fe4b71a723b9f5b5af190eee1c68a55d506205ab64fb01eaef3996e 4096x2048 in 14792 ms (worker)
+[world] baked 6940aea55d4cda3e7600db41b266cc549113c7704d1b1407d76481f8390419d1 1024x512 in 15259 ms (worker)
+[world] baked c40b0491d57aa43acbc25fff9e4cb50d4600c65300be171b4856d462844a2e60 4096x2048 in 1854 ms (worker)
+[world] baked 76edccd3e961bde73c17a529331f695b60edc26cf68a6f51b325f8fcbb248cd2 1024x512 in 1845 ms (worker)
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/01_start.png
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/02_move_preview.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/03_attack_tip.png
+[attach] hp_rcs missing on H8_23; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/04_threat_topdown.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/05_fire_1.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/06_fire_2.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/07_fire_3.png
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/08_fire_4.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/09_tp_r1_x05_00.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/10_tp_r1_x05_01.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/11_tp_r1_x05_02.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/12_tp_r1_x05_03.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/13_tp_r1_x05_04.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/14_tp_r1_x05_05.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/15_tp_r1_x05_06.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/16_tp_r1_x05_07.png
+[attach] scorch on V16_37: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/17_tp_r2_x05_00.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/18_tp_r2_x05_01.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/19_tp_r2_x05_02.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/20_tp_r2_x05_03.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/21_tp_r2_x05_04.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/22_tp_r2_x05_05.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/23_tp_r2_x05_06.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/24_tp_r2_x05_07.png
+[attach] hp_breach on V16_37: no authored point fits this request; using the surface ray
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/25_tp_r4_x05_00.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/26_tp_r4_x05_01.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/27_tp_r4_x05_02.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/28_tp_r4_x05_03.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/29_tp_r4_x05_04.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/30_tp_r4_x05_05.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/31_tp_r4_x05_06.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/32_tp_r4_x05_07.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/33_tp_r5_x05_00.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/34_tp_r5_x05_01.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/35_tp_r5_x05_02.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/36_tp_r5_x05_03.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/37_tp_r5_x05_04.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/38_tp_r5_x05_05.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/39_tp_r5_x05_06.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/40_tp_r5_x05_07.png
+[shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1379d\out_20261120_165554_23250\out_new\before_hegemony/41_end.png
+[battle] report: {"errors":[],"pace":{"by_round":[13.2,10.5,10.3,5.5],"enemy_s_max":13.19,"enemy_s_mean":9.88,"movement":"brisk","per_round_by_kind":{"ability":0.11,"activation":0.1,"aiEnd":0.13,"death":0.2,"fire":1.64,"move":7.18,"ram":0.32,"round":0.2},"rounds":4},"pipeline_compiles_in_play":11,"result":"win","round":5,"secs":145.035}
+[attach] battle x04 V16_37: skipped 0; rcs hp 260 ray 0 centre 0 skip 0; gun hp 12 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 2 ray 2 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 0 ray 36 centre 0 skip 0; gun hp 12 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 16 ray 0 centre 0 skip 0; core hp 2 ray 0 centre 0 skip 0; gun hp 12 ray 0 centre 0 skip 0
+[attach] battle x07 H8_23: skipped 0; rcs hp 0 ray 98 centre 0 skip 0; gun hp 8 ray 0 centre 0 skip 0; breach hp 2 ray 0 centre 0 skip 0; scorch hp 0 ray 4 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x08 H8_23: skipped 0; rcs hp 0 ray 10 centre 0 skip 0; gun hp 10 ray 0 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x09 H8_23: skipped 0; rcs hp 0 ray 66 centre 0 skip 0; gun hp 10 ray 0 centre 0 skip 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 7 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0
+[attach] battle x010 H8_23: skipped 0; rcs hp 0 ray 64 centre 0 skip 0; breach hp 1 ray 0 centre 0 skip 0; scorch hp 0 ray 3 centre 0 skip 0; gun hp 3 ray 0 centre 0 skip 0
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-074bb81ea1894b6bb703e71844ccaea9\godot-profile-0f8f898706de4f0f820ddedc30123960
+GPU: released shared claim 37cf60d0-00d8-4ba3-b0cf-9e9196baf8d1

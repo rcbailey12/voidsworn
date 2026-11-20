@@ -1,0 +1,6 @@
+OPUS1379_BODY_RUN3 waiter waiting for OPUS1399_R2BURST exit in opus1399_burst_wait.txt Fri 11/20/2026 16:40:53.25 
+OPUS1379_BODY_RUN3 start 16:55:54.15 
+OPUS1379_BODY_RUN3 exit 0 at 17:23:35.93 
+run folder out_20261120_165554_23250
+result: done PASS
+all done Fri 11/20/2026 17:23:36.34 
