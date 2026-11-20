@@ -452,6 +452,7 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 	if not bool(st.get("physics_on", false)) or count <= 0:
 		return
 	var pool: Array = st["debris"]
+	fx.wake_physics()
 	var awake: Dictionary = st.get("debris_awake", {})
 	st["debris_awake"] = awake
 	var sc = 0 if size < 0.3 * fx.unit else (1 if size < 0.6 * fx.unit else 2)
@@ -1522,6 +1523,21 @@ static func _torn(plan: Dictionary, vl: PackedVector3Array, vp: PackedInt32Array
 
 static var cut_serial := false   # issue 1232: the one-thread cut, for fx/test/cold_kill_check.gd to compare against
 
+# Issue 1279: Jolt's physics jobs queue on the same high-priority worker lanes as the cut's side-by-side work. Two cuts
+# at once (an arrival's cut beside another), each on every lane but two, left the physics jobs waiting until Jolt's job
+# table filled and the step stalled. One cut runs side by side at a time, and it leaves two lanes free beyond every lane
+# low-priority work can hold (the cut's own waiting task is one of those), so the physics step always finds a lane.
+static var _lanes_lock := Mutex.new()
+
+
+static func cut_lanes(work: int) -> int:
+	var threads := int(ProjectSettings.get_setting("threading/worker_pool/max_threads", -1))
+	if threads <= 0:
+		threads = OS.get_processor_count()
+	var ratio := float(ProjectSettings.get_setting("threading/worker_pool/low_priority_thread_ratio", 0.3))
+	var low := clampi(int(threads * ratio), 1, maxi(threads - 1, 1))
+	return clampi(threads - 2 - low, 1, maxi(work, 1))
+
 static func _cut(job: Dictionary) -> Array:
 	var seeds: PackedVector3Array = job["seeds"]
 	var plan: Dictionary = job.get("plan", {})
@@ -1540,14 +1556,16 @@ static func _cut(job: Dictionary) -> Array:
 		for sd in surfs:
 			_cut_surface(job, sd, pieces, ns, plan, warp, seeds)
 	else:
-		# leave two cores to the game (render and main threads, other pool work): Board on PR 1240
-		var lanes := clampi(OS.get_processor_count() - 2, 1, surfs.size())
+		# leave lanes to the game and to Jolt (Board on PR 1240, issue 1279)
+		var lanes := cut_lanes(surfs.size())
 		var parts: Array = []
 		for i in surfs.size():
 			parts.append({"pieces": _blank_pieces(job, plan, ns, n_main)})
+		_lanes_lock.lock()
 		var gid := WorkerThreadPool.add_group_task(func(i: int) -> void:
 			_cut_surface(job, surfs[i], (parts[i] as Dictionary)["pieces"], ns, plan, warp, seeds), surfs.size(), lanes, true, "death cut surfaces")
 		WorkerThreadPool.wait_for_group_task_completion(gid)
+		_lanes_lock.unlock()
 		for part in parts:
 			var own: Array = part["pieces"]
 			for c in ns:
@@ -1564,8 +1582,10 @@ static func _cut(job: Dictionary) -> Array:
 		for pc in pieces:
 			_seal_piece(pc)
 	else:
-		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), clampi(OS.get_processor_count() - 2, 1, pieces.size()), true, "death cut seals")
+		_lanes_lock.lock()
+		var sid := WorkerThreadPool.add_group_task(func(i: int) -> void: _seal_piece(pieces[i]), pieces.size(), cut_lanes(pieces.size()), true, "death cut seals")
 		WorkerThreadPool.wait_for_group_task_completion(sid)
+		_lanes_lock.unlock()
 	return pieces
 
 
@@ -2986,6 +3006,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var node: Node3D
 		var is_main = i == main_i
 		if phys:
+			fx.wake_physics()
 			var rb = RigidBody3D.new()
 			rb.gravity_scale = 0.0
 			rb.axis_lock_linear_y = true
@@ -3277,6 +3298,7 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, ang: Vector3, mats: Array, L: float, big: bool, index: int, src = null) -> void:
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
 	if node is RigidBody3D:
+		fx.wake_physics()
 		node.freeze = false
 		node.linear_velocity = vel * fx.anim_speed()
 		node.angular_velocity = ang * fx.anim_speed()
