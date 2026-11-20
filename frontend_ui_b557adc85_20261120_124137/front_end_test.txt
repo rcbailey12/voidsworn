@@ -1,0 +1,64 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-74cde2bba87844ad9d03135f39fefcd0\godot-profile-2d6cb5dba5ac417d8abc0aed6a8e468d
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: a long kit label wraps inside a 200 px column (201 px, 4 lines)
+PASS: a short kit label keeps its natural width on one line
+PASS: a primary kit button plays ui_confirm on press
+PASS: a quiet kit button plays ui_click on press
+PASS: a back kit button plays ui_cancel on press
+PASS: a kit link plays the hover cue, then the press cue
+[title-layout] window 1920x1080 title 89px text 797 wide, fits, menu on screen (bottom 863), 6 of 6 menu buttons take keyboard focus, focus on "New run" PASS
+PASS: Settings is a full-height drawer on the right edge ([P: (516.0, 0.0), S: (1404.0, 1080.0)])
+PASS: Settings fits the 1920x1080 window at Larger (bottom 1080)
+PASS: the dim behind a drawer is light (0.45), so the battle stays in view
+PASS: Settings needs no scrolling at Larger
+PASS: all 17 settings names wrap and stay clear of their control (17 rows, 0 bad)
+PASS: every settings control is one width ([200])
+[title] rebuilt for 1920 x 1080 (scale 0.900, title size 62)
+[title-layout] window 1920x1080 title 62px text 555 wide, fits, menu on screen (bottom 755), 6 of 6 menu buttons take keyboard focus, focus on "Small" PASS
+PASS: changing the UI scale keeps focus on the UI scale row
+PASS: the UI scale cycled from Larger to Small
+PASS: Esc closes Settings and saves
+PASS: Esc on Settings plays the back cue
+PASS: the title has exactly one ember action, first (6 entries)
+PASS: the title menu stays in the left column
+PASS: a click beside the Settings drawer closes it
+PASS: Credits names every shipped font (missing: [])
+PASS: Esc closes Credits
+[title] rebuilt for 1920 x 1080 (scale 1.300, title size 89)
+[title-layout] window 1920x1080 title 89px text 797 wide, fits, menu on screen (bottom 863), 6 of 6 menu buttons take keyboard focus, focus on "New run" PASS
+PASS: a wrapped toast grows up and stays on screen (bottom 955 of 1080)
+PASS: the setup page opens
+PASS: at Larger every faction's desk fits with no scroll and its admiral cards line up: one width, one bottom per row ([])
+PASS: picking a faction plays its music preview (["hegemony", "corsair", "chorus", "ithar", "deathless"])
+PASS: at Larger the desk also fits a 1280x1024 window with no scroll (over by -21 px)
+PASS: Accept on Run options opens the drawer and focus starts inside it (MapTrialToggle)
+PASS: Tab and Shift+Tab stay inside the open drawer (left it for [])
+PASS: Accept inside the drawer changes its option and the focus stays on that control after the redraw (MapTrialToggle)
+PASS: nothing on the desk behind the drawer was pressed
+PASS: Esc closes the Run options drawer first, stays on the desk, and gives focus back to Run options (RunOptionsButton)
+PASS: the setup page's Back plays the back cue and goes back (["ui_cancel"], title)
+PASS: Esc on admiral goes back to title
+PASS: Esc on legacy goes back to title
+PASS: Esc on help goes back to title
+PASS: Esc on Lineage goes back to Progression's mastery tab
+PASS: Progression (each tab), Lineage and How to play: one Back in the fixed bar, card rows on the kit grid, one card width per grid ([])
+PASS: How to play has an index link for each of its 8 sections (8 links)
+PASS: Esc on the flagship page goes Back to the desk: the unplayed run, its save and its count are gone, the picks kept
+PASS: Back then Launch is no reroll: same patrons, founder relic, foes, map and aspect offer, and the run counted once
+PASS: the flagship page opens with Launch waiting for an aspect pick (3 offers)
+PASS: clicking an aspect card picks it and Launch names it (Launch with Aspect of the Ram)
+PASS: the flagship page has a Back button
+PASS: Launch takes the picked aspect and starts the run (page map)
+PASS: the faction preview plays each faction's own track ({ "voidsworn": "fac_voidsworn", "hegemony": "fac_hegemony", "corsair": "fac_corsair", "chorus": "fac_chorus", "ithar": "fac_ithar", "deathless": "fac_deathless" })
+PASS: an unknown faction has no preview (the title music stays)
+PASS: the title battle cycles the enemy through the five other factions with built ships (["chorus", "corsair", "deathless", "hegemony", "ithar"])
+Front end: PASS
+ERROR: 6 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+WARNING: 6 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2735)
+WARNING: 24 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 6 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-74cde2bba87844ad9d03135f39fefcd0\godot-profile-2d6cb5dba5ac417d8abc0aed6a8e468d

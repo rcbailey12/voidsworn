@@ -1,0 +1,76 @@
+GPU: waiting for shared claim, weight 1 (1369)
+GPU: acquired shared claim 8ed8cf59-bdca-4948-8863-d654fadc94a2
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9fac43a46eb94d79aaa2077a85ce029d\godot-profile-1ceb207b7223445ba428b90d987e94a4
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 37 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[sfx] 71 cues, 67 clip sets, loaded in 319 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.573, target 4.4; visual tuning (R191)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+[hud] rebuilt for 1920 x 1080 (scale 1.000)
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[front-end-shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[world] baked dc2d05852e1cd4d7f1f8da211385e0be0cba2731adbaf09cbf7022dfc52c722e 4096x2048 in 7410 ms (worker)
+[world] baked f9241b7ea7f145ae13451ad61f52acf7e8841ffc19167b9a9bf76259d450d6b9 4096x2048 in 10252 ms (worker)
+[world] baked b845be032f4aa8d8420abf7fae65a8b16146335fd13ff4f5f0deaf73cb2e17e4 1024x512 in 10666 ms (worker)
+[world] baked 0fa6282784be64d4a845036cc36a9e9856859944854ccb7670f1a206aed75af4 1024x512 in 11094 ms (worker)
+[world] baked 4ec8f616cc883f0be98ec07dfd19fc8551a9293a60f756fdd11a032229cd6c1a 4096x2048 in 2421 ms (worker)
+[world] baked 5c39909974e612d5002a783ffef2ca9eecf3d29c6b58901efca7d9af00dd7b1b 1024x512 in 2381 ms (worker)
+[world] baked 512a64792b797652a45b2d34246ea999e20f0985ebbd44ca2106b2a110bd8d39 1024x512 in 2302 ms (worker)
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[front-end-shots] showcase ready, enemy ithar
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F2_settings_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F2_title_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F2_credits_normal.png
+[title] rebuilt for 1920 x 1080 (scale 1.300, title size 89)
+[title-layout] window 1920x1080 title 89px text 797 wide, fits, playtest line on screen, menu on screen (bottom 911), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F2_settings_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F2_title_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F2_credits_larger.png
+[title] rebuilt for 1920 x 1080 (scale 1.000, title size 68)
+[title-layout] window 1920x1080 title 68px text 610 wide, fits, playtest line on screen, menu on screen (bottom 816), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x07 I16_11: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x08 I14_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[attach] battle x09 I11_37: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_setup_normal.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_desk_voidsworn.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_desk_hegemony.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_desk_corsair.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_desk_chorus.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_desk_ithar.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_desk_deathless.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_run_options.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_run_options_keys.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F3_setup_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F4_flagship_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F4_flagship_voidsworn.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F4_flagship_picked.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F4_flagship_hegemony.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F4_flagship_chorus.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F4_flagship_ithar.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_progression_variants.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_progression_legacy.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_progression_mastery.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_progression_favour.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_progression_heat.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_progression_fallen.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_lineage.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_help.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_help_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_progression_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\1920x1080/F5_lineage_larger.png
+[front-end-shots] PASS
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-9fac43a46eb94d79aaa2077a85ce029d\godot-profile-1ceb207b7223445ba428b90d987e94a4
+GPU: released shared claim 8ed8cf59-bdca-4948-8863-d654fadc94a2

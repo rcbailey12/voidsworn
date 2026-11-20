@@ -1,0 +1,9 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-a53e07ec1c7c4f8aa2f97a6698b579b0\godot-profile-d6b960f3b73048a0ae30defff61148c5
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[front-end-sheet] C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\3840x2160\sheets/sheet_F2.png 6 pictures, 1598x612
+[front-end-sheet] C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\3840x2160\sheets/sheet_F3.png 10 pictures, 1600x689
+[front-end-sheet] C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\3840x2160\sheets/sheet_F4.png 6 pictures, 1598x612
+[front-end-sheet] C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\b557adc85_20261120_124137\3840x2160\sheets/sheet_F5.png 11 pictures, 1600x689
+[front-end-sheet] 4 sheet(s)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-a53e07ec1c7c4f8aa2f97a6698b579b0\godot-profile-d6b960f3b73048a0ae30defff61148c5

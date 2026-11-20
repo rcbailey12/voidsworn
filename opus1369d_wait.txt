@@ -1,0 +1,6 @@
+waiting for OPUS1359 capture exit in opus1359_wait.txt Fri 11/20/2026 12:27:18.35 
+mirror fetch exit 0
+b557adc85895311f8796c25ce958de0ccc0dd49c reachable in the mirror
+clone at b557adc85895311f8796c25ce958de0ccc0dd49c 
+OPUS1369 frontend start 12:41:36.47 
+OPUS1369 frontend exit 0 at 12:57:05.42 
