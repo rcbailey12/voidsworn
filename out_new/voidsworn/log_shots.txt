@@ -1,0 +1,24 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1421)
+GPU: acquired shared claim ec4eb28c-888b-46ba-a7ff-10c57982711c
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0940cd2fdde1463e812749bc94095a26\godot-profile-c35593abc1a34c1a967b005de6a773cf
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn facs ["voidsworn"] sets ["cams"]
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V14_23_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V14_23_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V15_37_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V15_37_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V16_37_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V16_37_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V17_37_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V17_37_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V1b_r_23_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V1b_r_23_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V18_51_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\voidsworn/V18_51_cam60.jpg
+[a4shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-0940cd2fdde1463e812749bc94095a26\godot-profile-c35593abc1a34c1a967b005de6a773cf
+GPU: released shared claim ec4eb28c-888b-46ba-a7ff-10c57982711c

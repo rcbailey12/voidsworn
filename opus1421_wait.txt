@@ -1,0 +1,6 @@
+waiting for OPUS1399_R2AFTER2 exit in opus1399_r2_wait2.txt Fri 11/20/2026 16:27:23.76 
+OPUS1421_FLEET_SHOTS start 16:35:23.15 
+OPUS1421_FLEET_SHOTS exit 0 at 16:52:48.10 
+run folder out_20261120_163523_20605
+result: done PASS
+all done Fri 11/20/2026 16:52:48.53 

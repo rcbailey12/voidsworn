@@ -1,0 +1,22 @@
+tmo: watchdog C:\Users\rcbai\Downloads\voidsworn_test\tools_live\9204dbb0c395\pc\run_timeout.ps1
+GPU: waiting for shared claim, weight 1 (1421)
+GPU: acquired shared claim 60ad01a9-7a92-4001-8f28-85055d476b42
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-084fdafd5dbe4558815f855809635cbf\godot-profile-50e2ce630609492b928252042806405c
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[a4shots] window (1920, 1080) viewport (1920.0, 1080.0)
+[a4shots] out C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus facs ["chorus"] sets ["cams"]
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B19_11_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B19_11_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B20_11_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B20_11_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B21_11_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B21_11_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B22_11_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B22_11_cam60.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B16_23_cam170.jpg
+[a4shots] C:\Users\rcbai\Downloads\voidsworn_test\opus1421\out_20261120_163523_20605\out_new\chorus/B16_23_cam60.jpg
+[a4shots] done
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-084fdafd5dbe4558815f855809635cbf\godot-profile-50e2ce630609492b928252042806405c
+GPU: released shared claim 60ad01a9-7a92-4001-8f28-85055d476b42
