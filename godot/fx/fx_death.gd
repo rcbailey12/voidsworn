@@ -49,7 +49,7 @@ class DeathTimeline:
 	var sec_from := 0.0       # the secondaries' window, after the break
 	var sec_to := 0.0
 	var cool := 14.0          # how long the torn faces take to go dark
-	func _init(big: bool, cut_count: int, tier_name := "", cause := "blast") -> void:
+	func _init(big: bool, cut_count: int, tier_name := "", cause := "blast", organic := false) -> void:
 		tier = tier_name
 		cuts = cut_count if big else 1
 		if not big:
@@ -90,6 +90,15 @@ class DeathTimeline:
 			beats.append({"name": "core_flash", "at": cut + core_delay})
 			beats.append({"name": "secondaries", "at": cut + sec_from})
 		beats.append({"name": "drift_and_cool", "at": cut + (sec_from if big else 0.3)})
+		if big and organic:
+			# Issue 1238 (F5.1): a big Chorus hull keeps its class's length of death (cruiser 1.38 s, capital 2.0 s to the
+			# rupture) but none of the metal beats: no vent, no chain blasts along a tear, no core fireball, no secondaries.
+			# The slow-motion beat lands just after the skin bursts.
+			chain = []
+			secondaries = 0
+			core_delay = 0.1
+			beats = [{"name": "power_loss", "at": 0.0}, {"name": "rupture", "at": cut}, {"name": "core_flash", "at": cut + core_delay},
+				{"name": "drift_and_cool", "at": cut + 0.6}]
 
 const ATLAS_DIR := "res://fx/atlases/death/"
 # One pixel at the staging camera (r 170, vertical FOV 45, 1080 lines). The floor holds distant events readable;
@@ -1288,7 +1297,9 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false, 
 	var si := 0
 	for sd in pc["surfs"]:
 		if bool(sd.get("interior", false)):
-			am.surface_set_material(si, sd["mat"])
+			# issue 1077 (prototype): the grouped wreck keeps its torn insides in view up close, and the live inside paint read
+			# as flat grey slabs there (pass 3, c26), so a strained wreck's insides are powered down and sooted
+			am.surface_set_material(si, fx.wreck_interior(sd["mat"]) if fx != null and fx.death_story else sd["mat"])
 			si += 1
 			continue
 		var length := float(pc.get("section_scale", 1.0))
@@ -1979,13 +1990,21 @@ static func _death_inner(fx, s, cause: String) -> float:
 		# The skin ruptures under pressure and spills real hull fragments and spores.
 		s.set_meta("death_organic", true)
 		s.set_meta("death_hulk", false)
-		s.set_meta("death_split", T + 0.35)
 		s.set_meta("death_spore_next", T)
 		if "_vel" in s.root: s.set_meta("death_velocity", s.root.get("_vel"))
 		if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 			precompute(fx, s, "rupture")
-		fx.later(T + 0.35, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
-		return 0.95
+		if not s.death_big:
+			s.set_meta("death_split", T + 0.35)
+			fx.later(T + 0.35, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
+			return 0.95
+		# Issue 1238 (F5.1): a Chorus cruiser, capital or Bio-Titan swells and bleeds spores for its class's length before
+		# the skin gives, so it no longer pops like a drone; its timeline also gives it the kill slow-motion beat (fx.death).
+		var otl := DeathTimeline.new(true, 1, s.death_tier, "rupture", true)
+		s.set_meta("death_timeline", otl)
+		s.set_meta("death_split", T + otl.cut)
+		fx.later(T + otl.cut, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + otl.cut + 2.5))
+		return otl.end
 	# Explicit burn-outs retain their cold hulk. Ordinary kills always break up.
 	var hulk := cause == "dark" or cause == "hulk"
 	s.set_meta("death_hulk", hulk)
@@ -2243,11 +2262,17 @@ static func _update_dying(fx, s) -> void:
 		(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age if s.death_big else 1.0)
 	if bool(s.get_meta("death_organic", false)):
 		if fx.now >= float(s.get_meta("death_spore_next", INF)):
-			s.set_meta("death_spore_next", fx.now + 0.06)
+			# Issue 1238: a big Chorus hull bleeds spores faster as it nears the rupture (0.06 s apart down to 0.03 s).
+			var gap := 0.06
+			if s.death_big and s.has_meta("death_timeline"):
+				var otl: DeathTimeline = s.get_meta("death_timeline")
+				gap = lerpf(0.06, 0.03, clampf(age / maxf(otl.cut, 0.01), 0.0, 1.0))
+			s.set_meta("death_spore_next", fx.now + gap)
 			var point: Dictionary = s.hull.random_sample(-1, 2.0)
 			fx.spr(s.to_world(point.p), fx.now, 2.5, s.fac.damage_glow * Color(0.4, 0.5, 0.3), 0.35,
 				s.hull.L * 0.015, s.hull.L * 0.13, 20, s.dir_world(point.n) * s.hull.L * 0.1, 0.65)
-		return
+		if not s.death_big:
+			return
 	if bool(s.get_meta("death_hulk", false)): return
 	var velocity: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var rot := Basis.IDENTITY if s.death_big else Basis.from_euler(Vector3(age * 0.65, age * 0.38, age * 0.54))
@@ -2389,7 +2414,7 @@ static func _break_lines(job: Dictionary) -> Array:
 # narrow band round each line bulges and ripples (in the power-down material and the tear overlay, the same function),
 # hairline cracks light along the lines, and between the chain blasts the hull groans: a spit of sparks, a breath of
 # gas and now and then one small plate from a point on a line, with a jolt to the shudder. Then the existing split.
-const STRAIN_AMP := 0.0045     # of the length: the bulge at full strain
+const STRAIN_AMP := 0.010      # of the length: the bulge at full strain (0.0045 did not read in the PC clip at 1236bbc3)
 const STRAIN_BAND := 0.05      # of the length: half the width of the buckled band each side of a line
 const STRAIN_RIPPLE := 0.06    # of the length: the ripple's wavelength
 const STRAIN_GROANS := {"capital": [0.28, 0.68, 1.02, 1.38, 1.72], "cruiser": [0.30, 0.62, 0.92, 1.20]}
@@ -2442,7 +2467,7 @@ static func _strain_begin(fx, s, T: float, tl: DeathTimeline, seeds: PackedVecto
 			nn.append(Vector4(1.0, 0.0, 0.0, 1.0))
 	var full: float = maxf(tl.cut - 0.3, 0.5)
 	var strain := {"at": at, "n": nn, "lines": use.slice(0, 3), "k": Vector3(L * STRAIN_AMP, TAU / maxf(L * STRAIN_RIPPLE, 0.001), 0.0),
-		"t": Vector2(0.10, full), "hair": Vector3(maxf(L * 0.0025, 0.005), TAU / maxf(L * 0.03, 0.001), 1.6),
+		"t": Vector2(0.10, full), "hair": Vector3(maxf(L * 0.005, 0.005), TAU / maxf(L * 0.03, 0.001), 3.0),
 		"groans": STRAIN_GROANS.get(s.death_tier, STRAIN_GROANS["cruiser"])}
 	s.set_meta("death_strain", strain)
 	# the power-down materials built on the kill frame so far; the rest pick it up as they are built (_power_surface)
@@ -2903,11 +2928,14 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			rb.mass = maxf(float(pc["n"]) / 400.0, 5.0)
 			rb.linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
 			rb.angular_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
-			rb.linear_damp = STORY_DAMP if story else 0.0
-			rb.angular_damp = STORY_DAMP * 0.5 if story else 0.0
+			# no engine damping: under Jolt it did not slow the pieces (PC clip at 1236bbc3: the strained pieces kept their
+			# speed and drifted 1.9 L apart), so update() slows a strained piece itself, as it does the kinematic tiers
+			rb.linear_damp = 0.0
+			rb.angular_damp = 0.0
 			rb.freeze = s.death_big and not organic
 			rb.collision_layer = DEBRIS_LAYER
-			rb.collision_mask = HULL_LAYER | DEBRIS_LAYER
+			# a strained wreck's slow pieces part along their break lines; touching neighbours shoved them a further 0.13 L apart
+			rb.collision_mask = HULL_LAYER if story else HULL_LAYER | DEBRIS_LAYER
 			rb.physics_material_override = fx.dstate["bounce"]
 			var pts: PackedVector3Array = pc["hull"] if pc.has("hull") else PackedVector3Array()
 			if not pc.has("hull"):
@@ -3006,6 +3034,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	if organic:
+		# Issue 1238: a big Chorus rupture is its kill beat. No fireball: the beat (and the death sound's low end) lands
+		# just after the skin bursts.
+		if s.death_big and s.has_meta("death_timeline"):
+			fx.later(T + (s.get_meta("death_timeline") as DeathTimeline).core_delay, func l_rupture_beat() -> void:
+				fx.resolve_death_core(s, fx.ships.get(s.id) == s))
 		return
 	if s.death_big and s.has_meta("death_timeline") and not wreck["nodes"].is_empty():
 		# Beat 2: the core flash comes 0.28 s after the halves part, at the lip of the torn face; then beat 3.
@@ -3296,8 +3329,15 @@ static func update(fx, dt: float) -> void:
 		var prev: float = float(w.get("speed", 1.0))
 		for nd in w["nodes"]:
 			if is_instance_valid(nd) and nd is RigidBody3D:
-				(nd as RigidBody3D).linear_velocity *= speed / prev
-				(nd as RigidBody3D).angular_velocity *= speed / prev
+				var f := speed / prev
+				var fa := f
+				if nd.has_meta("story_damp") and not (nd as RigidBody3D).freeze:
+					# issue 1077 (prototype): a strained wreck's physics pieces slow and settle where it broke
+					var dmp: float = nd.get_meta("story_damp")
+					f *= exp(-dmp * dt)
+					fa *= exp(-dmp * 0.5 * dt)
+				(nd as RigidBody3D).linear_velocity *= f
+				(nd as RigidBody3D).angular_velocity *= fa
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
 		# Heat fades over a few seconds. The cold opaque cap remains.

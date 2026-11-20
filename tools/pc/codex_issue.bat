@@ -68,6 +68,8 @@ set "BR=%CODEX_TEST_BRANCH%"
 set "PUSHMODE=test"
 :setup
 rem The PowerShell parent owns the lane until this batch returns, including final reporting.
+set "PC_RUNNER_TEST=0"
+if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT set "PC_RUNNER_TEST=1"
 if "%~2"=="locked" if /i "%CODEX_LOCKED_REPO%"=="%R%" goto :locked
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1" run "%N%" "%R%"
 exit /b %ERRORLEVEL%
@@ -76,8 +78,6 @@ set "CODEX_LOCKED_REPO="
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%codex_issue.ps1""
 set "PSW=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%work_issue.ps1""
 set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%TP%runner_common.ps1""
-set "PC_RUNNER_TEST=0"
-if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT set "PC_RUNNER_TEST=1"
 set "CHECKS_OK=0"
 rem The run's commit carries Ryan's git identity, as before.
 set "GIT_AUTHOR_NAME=Ryan Bailey"
@@ -91,9 +91,17 @@ if errorlevel 1 exit /b 14
 rem (722) Free-space floor, Board hashes and the resolved model stamp, as in work_issue.bat.
 set "SETF=%ROOT%\work217\runner_settings.txt"
 set "HASHF=%ROOT%\work217\runner_hashes.txt"
-%COMMON% space "%O%" "%SETF%" "%ROOT%"
+%COMMON% space "%O%" "%SETF%" "%ROOT%" "%PUSHMODE%"
 if errorlevel 1 exit /b 14
 %COMMON% hashcheck "%O%" "%TPC%" "%HASHF%"
+rem (1194) Every tmo.bat step runs the canonical watchdog in tools_live: stop when its files differ from its hashes.
+set "TLV="
+if not "%PC_RUNNER_TEST%"=="1" if exist "%ROOT%\tools_live\current.txt" set /p TLV=<"%ROOT%\tools_live\current.txt"
+if not "%PC_RUNNER_TEST%"=="1" if exist "%ROOT%\tools_live\" if not defined TLV (echo tools_live is installed but current.txt is blank; stopped >> "%O%\result.txt" & exit /b 14)
+if defined TLV (
+  %COMMON% hashcheck "%O%" "%ROOT%\tools_live\%TLV%\pc" "%ROOT%\tools_live\%TLV%\hashes.txt" strict
+  if errorlevel 1 exit /b 14
+)
 %COMMON% model "%O%" "%CODEX_MODEL%" "%CODEX_MODEL%"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14

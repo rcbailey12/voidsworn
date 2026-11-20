@@ -158,6 +158,8 @@ var hull_arrays := {}
 var _damage_templates := {}
 var _power_templates := {}
 var _dark_interiors := {}
+var _wreck_interiors := {}
+const WRECK_SOOT := 0.33   # issue 1077: a strained wreck's insides, a third as bright
 var defer_initial_cuts := false
 var _piece_builds: Array = []
 var _shield_jobs := {}
@@ -208,6 +210,7 @@ func release() -> void:
 	_damage_templates.clear()
 	_power_templates.clear()
 	_dark_interiors.clear()
+	_wreck_interiors.clear()
 	_piece_builds.clear()
 	_later.clear()
 	_core_at.clear()
@@ -1199,6 +1202,21 @@ func dark_interior(source: Material) -> Material:
 	return _dark_interiors[source]
 
 
+# Issue 1077 (prototype): a strained wreck's insides, powered down and sooted (the dark copy, its colour a third as bright
+# and fully rough), so torn decks read as burnt metal in the gap, not as flat grey panels. One copy per source material.
+func wreck_interior(source: Material) -> Material:
+	if source == null: return source
+	if not _wreck_interiors.has(source):
+		var dark: Material = (dark_interior(source) as Material).duplicate()
+		if dark is BaseMaterial3D:
+			var b := dark as BaseMaterial3D
+			b.albedo_color = Color(b.albedo_color.r * WRECK_SOOT, b.albedo_color.g * WRECK_SOOT, b.albedo_color.b * WRECK_SOOT, b.albedo_color.a)
+			b.roughness = 1.0
+			b.metallic_specular = 0.2
+		_wreck_interiors[source] = dark
+	return _wreck_interiors[source]
+
+
 func queue_death_pieces(ship: SHIP, job: Dictionary) -> void:
 	_piece_builds.append([ship, job])
 
@@ -1460,7 +1478,8 @@ func death(id: String, cause := "blast") -> float:
 	var r: float = DEATH.death(self, s, cause)
 	pend("death", t0)
 	_core_at.erase(id)
-	# A burnt-out hulk or Chorus rupture has no staged core.
+	# A burnt-out hulk or a small hull has no staged core; a big Chorus rupture has one (issue 1238: its kill beat comes
+	# just after the skin bursts, with no fireball).
 	if s.death_big and s.has_meta("death_timeline"):
 		var tl = s.get_meta("death_timeline")
 		_core_at[id] = float(s.get_meta("death_start")) + float(tl.cut) + float(tl.core_delay)

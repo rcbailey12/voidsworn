@@ -9,11 +9,13 @@
 //   the last line: every way out of the main job writes "done PASS" or "done FAILED: ..." and then "all done";
 //   both jobs refresh and clone from the local mirror under the runner's lock;
 //   the ship job collects only deliverables and lists backups older than the newest two for the janitor;
-//   no delete or move commands, and output only under the job folder;
+//   no delete or move commands, and output only under the job folder and the helper's own TEMP;
 //   every wrapper in docs/ship_pipeline/ship_job/wrappers/ is three lines that set the inputs and call ship_job.bat.
 const assert = require('assert');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 const JOB = path.join(ROOT, 'tools/pc/jobs/ship_job.bat');
 const LOOK = path.join(ROOT, 'tools/pc/jobs/look_bench.bat');
@@ -35,7 +37,9 @@ const shots = main.filter(l => /a4_shots\.tscn/.test(l.s));
 assert.equal(shots.length, 1, 'exactly one shots command in the main job');
 const before = main[main.indexOf(shots[0]) - 1];
 assert(guard.test(before.s), `line ${before.n} before the shots must be the FAILED guard, is: ${before.s}`);
-const firstFail = main.findIndex(l => mayFail(l.s));
+// Issue 1180: the private TEMP setup runs before :run_tools and may fail on its own; the build steps start inside :run_tools.
+const runTools = main.findIndex(l => l.s === ':run_tools');
+const firstFail = main.findIndex((l, i) => i > runTools && mayFail(l.s));
 assert(firstFail > 0, 'the job sets FAILED somewhere');
 for (let i = firstFail; i < main.indexOf(shots[0]); i++) {
   if (!mayFail(main[i].s)) continue;
@@ -66,12 +70,30 @@ assert(main.slice(0, co).some(l => /^git -C "%C%" checkout -q HEAD -- godot\/ass
 const pre = main.slice(0, co).map(l => l.s);
 assert(co > 0 && pre.some(s => /status --porcelain/.test(s)) && pre.some(s => /diff --binary HEAD > "%O%\\clone_changes_before_checkout\.patch"/.test(s)),
   'every tracked change in the clone is listed and saved before the checkout');
-const unexpected = pre.findIndex(s => /status --porcelain --untracked-files=no -- \. ":\(exclude\)godot\/assets\/ships" ":\(glob,exclude\)godot\/\*\*\/\*\.import" > "%O%\\clone_changes_unexpected\.txt"/.test(s));
+const unexpected = pre.findIndex(s => /status --porcelain --untracked-files=no -- \. ":\(exclude\)godot\/assets\/ships" ":\(glob,exclude\)godot\/\*\*\/\*\.import" "%TMO_EXCL%" > "%O%\\clone_changes_unexpected\.txt"/.test(s));
 assert(unexpected > 0 && /set "FAILED=checkout: git status/.test(pre[unexpected + 1]) && guard.test(pre[unexpected + 2])
   && /set "FAILED=checkout: the clone has local changes outside/.test(pre[unexpected + 3]) && guard.test(pre[unexpected + 4]),
   'a change outside godot/assets/ships and the rewritten *.import files stops the job before the checkout (git filters, not findstr: PR 1190)');
 assert(!pre.some(s => /findstr/.test(s)), 'no findstr filter on the git status list (its $ needs a CR)');
 assert(main.slice(0, co).some(l => /^git -C "%C%" checkout -q HEAD -- ":\(glob\)godot\/\*\*\/\*\.import" /.test(l.s)), 'the rewritten *.import files are restored after the patch is saved');
+// Issue 1194 (Artoo on PR 1254): a pinned commit's recipe stages call the clone's own tmo.bat, so the job copies the
+// tools_live tmo.bat over it after the checkout, and restores the committed file before the next checkout.
+assert(main.slice(0, co).some(l => l.s === 'if defined TMO_GEN git -C "%C%" checkout -q HEAD -- tools/pc/tmo.bat >> "%RES%" 2>&1'), 'the hand-off copy is restored before the checkout, only when it is the recorded copy');
+// Artoo on PR 1254 (760e4bad): a staged edit with the worktree equal to HEAD is not in the patch, and the restores erased it.
+const staged = pre.findIndex(s => s === 'git -C "%C%" diff --cached --quiet HEAD >> "%O%\\log_clone_status.txt" 2>&1');
+const firstReset = pre.findIndex(s => /checkout -q HEAD -- /.test(s));
+assert(staged > 0 && staged < firstReset && /set "FAILED=checkout: the clone has staged changes/.test(pre[staged + 1]) && guard.test(pre[staged + 2]),
+  'a staged change stops the job before any reset');
+const gen = pre.findIndex(s => s === 'if defined TMO_LEFT if defined TMO_REC if /i "%TMO_LEFT%"=="%TMO_REC%" set "TMO_GEN=1"');
+const excl = pre.findIndex(s => s === 'if defined TMO_GEN set "TMO_EXCL=:(exclude)tools/pc/tmo.bat"');
+assert(gen > 0 && excl > gen && excl < unexpected && pre[excl - 1] === 'set "TMO_EXCL=:(exclude)godot/assets/ships"', 'tmo.bat leaves the unexpected list only when it is the recorded hand-off copy');
+const record = main.findIndex(l => l.s === 'if defined TMO_OK git -C "%C%" hash-object -- tools/pc/tmo.bat > "%C%\\.git\\ship_job_tmo_handoff.txt" 2>> "%RES%"');
+assert(record > main.findIndex(l => l.s === 'if defined TMO_OK copy /y "%TMO%" "%C%\\tools\\pc\\tmo.bat" > nul'), 'the hand-off copy hash is recorded after the copy');
+assert(text.includes("for /f %%H in ('git -C \"%C%\" hash-object -- tools/pc/tmo.bat 2^>nul') do set \"TMO_LEFT=%%H\""), 'the left-over tmo.bat is hashed the same way');
+const based = main.findIndex(l => l.s === ':based');
+const overlay = main.findIndex(l => l.s === 'if defined TMO_OK copy /y "%TMO%" "%C%\\tools\\pc\\tmo.bat" > nul');
+const stagesAt = main.findIndex(l => /cmd \/c ""%~f0" ship"/.test(l.s));
+assert(based > 0 && overlay > based && overlay < stagesAt, 'the clone tmo.bat hands off to tools_live before any stage runs');
 pass('the guard: a failed fetch, merge, import, stage, install or check never reaches the shots; all three checks count');
 
 // the wait default
@@ -110,9 +132,12 @@ for (const l of code) {
   assert(!/^(del|erase|rd|rmdir|move)\b|\b(del|rmdir|rd) \/[sq]|\b(Remove-Item|Move-Item)\b/i.test(l.s),
     `line ${l.n} deletes or moves: ${l.s}`);
   assert(!/^robocopy .*\/(MIR|PURGE|MOV|MOVE)\b/i.test(l.s), `line ${l.n} deletes or moves: ${l.s}`);
-  for (const m of l.s.matchAll(/>>?\s*("[^"]*"|\S+)/g)) {
+  for (const m of l.s.matchAll(/(?<!\^)>>?\s*("[^"]*"|\S+)/g)) {
     const target = m[1].replace(/"/g, '');
     if (target === 'nul' || target === '&1') continue;
+    if (l.s.startsWith('call :run_tools 9>') && target === '%TEMP%\\.voidsworn-run-active') continue;
+    // 1194: the hash of the clone's tmo.bat hand-off copy lives in the job's own clone metadata
+    if (target === '%C%\\.git\\ship_job_tmo_handoff.txt') continue;
     assert(/^%(O|RES)%/.test(target), `line ${l.n} writes outside the job's out folder: ${target}`);
   }
 }
@@ -162,6 +187,59 @@ assert(janitor > start && janitor < firstFail + 1 &&
   main[janitor].s.includes('> "%O%\\out_before_for_janitor.txt"'), 'list only backup folders older than the newest two for the janitor before any build step');
 pass('the newest two backups stay off the janitor list');
 
+const bench = fs.readFileSync(path.join(ROOT, 'tools/pc/jobs/look_bench.bat'), 'utf8');
+function tempSetup(script) {
+  const start = script.indexOf('powershell -NoProfile -Command "$ErrorActionPreference=\'Stop\'; $id=');
+  const end = script.indexOf(':run_tools', script.indexOf('exit /b %RUN_EL%', start));
+  assert(start >= 0 && end > start, 'sets the helper temp before its tools run');
+  return script.slice(start, end);
+}
+const setups = [tempSetup(text), tempSetup(bench)];
+for (const setup of setups) {
+  assert.match(setup, /voidsworn-run-.*\.voidsworn-run-owner/);
+  assert.match(setup, /set \/p TEMP=.*\r?\nset "TMP=%TEMP%"\r?\nset "TMPDIR=%TEMP%"/);
+  assert.match(setup, /call :run_tools 9>"%TEMP%\\\.voidsworn-run-active"\r?\nset "RUN_EL=%ERRORLEVEL%"/);
+  // Issue 1180: after the marker is released, TEMP goes back to the base and scratch_done.ps1 ends the scratch with the
+  // job's exit code (removed on PASS, newest failure per job kept a day); the job still exits with the tools' code.
+  assert.match(setup, /set "BASE_TEMP=%TEMP%"\r?\nset \/p TEMP=/);
+  assert.match(setup, /set "TEMP=%BASE_TEMP%"\r?\nset "TMP=%BASE_TEMP%"\r?\nset "TMPDIR=%BASE_TEMP%"/);
+  assert.match(setup, /scratch_done\.ps1" -Scratch "%RUN_SCRATCH%" -Code %RUN_EL% -BaseTemp "%BASE_TEMP%" -JobKey "/);
+  assert.match(setup, /\r?\nexit \/b %RUN_EL%\r?\n/);
+}
+if (process.platform === 'win32') {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'helper-temp-proof-'));
+  try {
+    for (const [number, setup] of setups.entries()) {
+      const probe = path.join(tmp, `helper${number}.bat`);
+      const lines = ['@echo off', 'setlocal', 'set "O=%PROOF_HOME%"', 'set "LB_HOME=%PROOF_HOME%"',
+        'set "RES=%PROOF_HOME%\\setup.log"', 'set "ST=%RES%"', setup,
+        ':run_tools', 'powershell -NoProfile -Command "try { [IO.File]::Open((Join-Path $env:TEMP \'.voidsworn-run-active\'),\'Open\',\'Read\',\'None\').Dispose(); exit 1 } catch [IO.IOException] { exit 0 }"',
+        'if errorlevel 1 exit /b 1', 'echo TMP=%TMP%', 'echo TEMP=%TEMP%', 'echo TMPDIR=%TMPDIR%',
+        'exit /b 0', ':collect', ':finish', 'exit /b 1'];
+      fs.writeFileSync(probe, lines.map(line => line.replace(/\r?\n/g, '\r\n')).join('\r\n') + '\r\n');
+      const run = spawnSync('cmd.exe', ['/d', '/c', probe], { env: { ...process.env, TEMP: tmp, PROOF_HOME: tmp }, encoding: 'utf8', timeout: 15000 });
+      assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}\n${fs.readFileSync(path.join(tmp, 'setup.log'), 'utf8')}`);
+      const fromEnv = run.stdout.trim().split(/\r?\n/).map(line => line.split('=')[1]);
+      assert.equal(fromEnv.length, 3);
+      const [dir] = fromEnv;
+      assert(fromEnv.every(value => value === dir));
+      assert.equal(path.dirname(dir), tmp);
+      assert.equal(fs.readFileSync(path.join(dir, '.voidsworn-run-owner'), 'utf8'), path.basename(dir).slice('voidsworn-run-'.length));
+      assert(fs.existsSync(path.join(dir, '.voidsworn-run-active')));
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
+pass('both helper launchers give their tools separate owned TEMP folders');
+
+const stage7 = spawnSync(process.env.PYTHON || 'python', ['-B', path.join(ROOT, 'tools/recipe/manifest_merge_selftest.py')],
+  { encoding: 'utf8', timeout: 20000 });
+assert.equal(stage7.status, 0, `${stage7.error || ''}\n${stage7.stdout}\n${stage7.stderr}`);
+assert.match(stage7.stdout, /PASS stage 7 scratch removed after successful install/);
+assert.match(stage7.stdout, /PASS stage 7 scratch kept after failed install/);
+pass('stage 7 removes the checked export scratch after success and keeps it after a failure');
+
 // the wrappers
 const wrappers = fs.existsSync(WRAPPERS) ? fs.readdirSync(WRAPPERS).filter(f => /\.bat$/i.test(f)) : [];
 assert(wrappers.length >= 1, 'at least one wrapper (the S10 port) in docs/ship_pipeline/ship_job/wrappers');
@@ -173,4 +251,37 @@ for (const f of wrappers) {
   assert(/^call "%USERPROFILE%\\Downloads\\voidsworn_test\\ship_job\\ship_job\.bat"$/.test(w[2].trim()), f + ' calls the shared copy');
 }
 pass(`the wrappers: ${wrappers.length} three-line wrapper(s) set the inputs and call the shared job`);
+{
+  // 1194 (Artoo on PR 1254, 760e4bad): the same git commands the job runs, on a real repo. A staged tmo.bat edit with the
+  // worktree equal to HEAD leaves the patch empty, so the job must stop on git diff --cached before any restore; a hand
+  // edit of the hand-off copy no longer matches the recorded hash, so it stays on the unexpected list.
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'shipjob1194-'));
+  const g = (...a) => spawnSync('git', ['-C', repo, '-c', 'user.name=t', '-c', 'user.email=t@t', ...a], { encoding: 'utf8' });
+  fs.mkdirSync(path.join(repo, 'tools', 'pc'), { recursive: true });
+  fs.mkdirSync(path.join(repo, 'godot', 'assets', 'ships'), { recursive: true });
+  const tmo = path.join(repo, 'tools', 'pc', 'tmo.bat');
+  fs.writeFileSync(tmo, 'old watchdog\n');
+  fs.writeFileSync(path.join(repo, 'godot', 'assets', 'ships', 'manifest.json'), '{}\n');
+  assert.equal(g('init', '-q').status, 0);
+  g('add', '.'); assert.equal(g('commit', '-qm', 'base').status, 0);
+  const status = excl => g('status', '--porcelain', '--untracked-files=no', '--', '.', ':(exclude)godot/assets/ships', ':(glob,exclude)godot/**/*.import', excl).stdout.trim();
+  // staged edit, worktree back at HEAD
+  fs.writeFileSync(tmo, 'hand fix\n'); g('add', tmo); fs.writeFileSync(tmo, 'old watchdog\n');
+  assert.equal(g('diff', '--binary', 'HEAD').stdout, '', 'the patch misses a staged edit when the worktree matches HEAD');
+  assert.equal(g('diff', '--cached', '--quiet', 'HEAD').status, 1, 'git diff --cached stops the job on a staged edit');
+  g('reset', '-q');
+  assert.equal(g('diff', '--cached', '--quiet', 'HEAD').status, 0, 'a clean index passes');
+  // the hand-off copy: recorded hash matches, so it is excluded and restored
+  fs.writeFileSync(tmo, 'tools_live hand-off\r\n');
+  const rec = g('hash-object', '--', 'tools/pc/tmo.bat').stdout.trim();
+  assert(/^[0-9a-f]{40}$/.test(rec));
+  assert.equal(g('hash-object', '--', 'tools/pc/tmo.bat').stdout.trim(), rec, 'the left-over copy matches its record');
+  assert.equal(status(':(exclude)tools/pc/tmo.bat'), '', 'the recorded copy is not an unexpected change');
+  // a hand edit of the copy: hash differs, so the filler exclude keeps tmo.bat on the unexpected list
+  fs.appendFileSync(tmo, 'rem hand edit\r\n');
+  assert.notEqual(g('hash-object', '--', 'tools/pc/tmo.bat').stdout.trim(), rec, 'a hand edit no longer matches the record');
+  assert(/tools\/pc\/tmo\.bat/.test(status(':(exclude)godot/assets/ships')), 'a hand-edited tmo.bat stops the job as unexpected');
+  fs.rmSync(repo, { recursive: true, force: true });
+}
+pass('1194: a staged clone change stops the job before any reset; only the recorded tmo.bat hand-off copy is restored');
 console.log(`PASS ship job checks (${passed} groups)`);
