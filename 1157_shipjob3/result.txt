@@ -1,0 +1,44 @@
+start voidsworn_S10 V16_37 opus/issue-1157 Thu 11/19/2026 19:56:57.28 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close FACS=voidsworn PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+the earlier run's out folder is now out_before_20261119_195656_5937649 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]             (none)                      -> refs/pull/1266/merge
+   0a52bebe1..e50bf5213  board/pc-in-1119            -> board/pc-in-1119
+ * [new branch]          board/pc-out-1119y          -> board/pc-out-1119y
+ * [new branch]          board/pc-out-1119zy         -> board/pc-out-1119zy
+   498a8a9fc..2a5112338  main                        -> main
+   ab441594c..a76a2b1aa  opus/issue-1077             -> opus/issue-1077
+ * [new branch]          opus/issue-1178             -> opus/issue-1178
+   107a1bb10..27c74bf6f  opus/issue-1180-helper-base -> opus/issue-1180-helper-base
+ * [new branch]          opus/issue-1180-keep        -> opus/issue-1180-keep
+   ab441594c..a76a2b1aa  refs/pull/1231/head         -> refs/pull/1231/head
+ + a4de2f950...2293c51e6 refs/pull/1231/merge        -> refs/pull/1231/merge  (forced update)
+   107a1bb10..27c74bf6f  refs/pull/1275/head         -> refs/pull/1275/head
+ + c6fe6a39e...e54cfd367 refs/pull/1275/merge        -> refs/pull/1275/merge  (forced update)
+ * [new ref]             refs/pull/1276/head         -> refs/pull/1276/head
+ * [new ref]             refs/pull/1276/merge        -> refs/pull/1276/merge
+ * [new ref]             refs/pull/1277/head         -> refs/pull/1277/head
+ * [new ref]             refs/pull/1277/merge        -> refs/pull/1277/merge
+restoring the clone's install files listed in clone_changes_before_checkout.txt, saved first in clone_changes_before_checkout.patch 
+commit=0be79bf45dbabd4cc78a6ce0207f6f2e76b78c68
+import exit 0 
+1_concept_in start 19:57:30.78 
+1_concept_in exit 0 at 19:57:33.98 
+2_shape_ref start 19:57:33.99 
+2_shape_ref exit 0 at 19:57:35.50 
+3_trace_hull start 19:57:35.50 
+3_trace_hull exit 0 at 19:58:52.56 
+4_parts_kit start 19:58:52.56 
+4_parts_kit exit 0 at 19:59:27.65 
+5_paint_bake start 19:59:27.65 
+5_paint_bake exit 0 at 20:03:56.79 
+6_lod start 20:03:56.79 
+6_lod exit 0 at 20:05:00.68 
+7_export start 20:05:00.69 
+7_export exit 1 at 20:05:21.12 
+checks and shots SKIPPED: stage 7_export failed, so the installed glb is not this run's 
+stages exit 1 
+collect: see log_collect.txt 
+done FAILED: a stage (see the SKIPPED line above) Thu 11/19/2026 20:05:21.39 
+all done 

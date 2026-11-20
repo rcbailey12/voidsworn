@@ -1,0 +1,27 @@
+  outline S10: bow 35.7, midship 62.3, stern 29.8, whole 44.5 (reported, not a pass bar; old gate 90, old per-third floor 85.0)
+  inner edges within 6 px bow 72.5, midship 64.8, stern 77.4
+  REPORT bow overlap 35.7 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT midship overlap 62.3 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT stern overlap 29.8 percent is below the old per-third floor 85.0; no failure (RULEBOOK 5.8)
+  REPORT whole overlap 44.5 percent is below the old gate 90; no failure (RULEBOOK 5.8)
+PASS outline per third and inner edge data are present; the overlap is reported, not a pass bar
+  battle camera S10: game bow 52.1 midship 58.7 stern 37.8 whole 49.7, studio bow 57.2 midship 81.7 stern 70.5 whole 71.1
+PASS the outline score from the second camera (the game battle camera, r 170) is recorded
+PASS paint is judged on the concept side, the far side and the underside stills
+PASS the concept and model blink sheet exists
+PASS licences: 2 downloaded texture(s), each with a source, a licence and what it is used for
+PASS lights: no window or trim lights are declared (the paint has no light map yet)
+PASS every standing check
+[export7] V16_37 triangles 87232 hard points {"gun": 9, "engine": 2, "bay": 0, "breach": 4, "core": 1, "rcs": 4, "board": 2} turrets 0 (0 triangles) files ['V16_37.glb', 'V16_37_base.jpg', 'V16_37_glow_emission.jpg', 'V16_37_normal.png', 'V16_37_orm.png', 'V16_37_parts_base.jpg', 'V16_37_parts_normal.png', 'V16_37_parts_orm.png']
+[export7] written C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\export\V16_37
+[check] authored interiors: 15040 triangles, 11 surfaces; authored seams: 4
+[check] 72192 triangles (39844 on part surfaces), box x -0.499 to 0.501, y -0.083 to 0.159, z -0.143 to 0.143
+[check] ship length 1.0000: off-mesh limit 0.012 of it, 0.0120; breach clearance at least 0.03
+[check] turrets: 0 written (none); marked by the kit: none
+[check] slot 0 battery P: 4 hard points
+[check] slot 1 battery S: 4 hard points
+[check] slot 2 lance F: 1 hard points
+[check] hard points: {"board": 2, "breach": 4, "core": 1, "engine": 2, "rcs": 4, "gun": 9}
+[check] PROBLEM: the mid section has no breach anchor (the contract for 4 is {'prow': 1, 'mid': 2, 'eng': 1})
+FAIL V16_37 game export: 1 problems
+Stage 7 FAILED: check failed. See C:\Users\rcbai\Downloads\voidsworn_test\recipe\voidsworn_S10\log_export_check.txt
