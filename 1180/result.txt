@@ -1,0 +1,12 @@
+started Thu 11/19/2026 19:21:20.57 
+3483c7cfbea5f5f13afd3a16d0e5cf7f60e5c292
+janitor dry run started Thu 11/19/2026 19:21:24.17 
+janitor dry run exit code 0 (0 is clean) 
+would remove rows: 1 
+keep rows: 175 
+dubious ownership rows: 0 
+superseded calls: 133 
+free space before: 109588439040 bytes
+free space after: 108832862208 bytes
+all done
+all done Thu 11/19/2026 19:22:46.53 
