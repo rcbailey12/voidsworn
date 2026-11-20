@@ -198,7 +198,7 @@ def build(K):
     K.organ_room('heart_vat', 'vat', (0.7, 0.0, 0.05), (0.75, 0.6, 0.5), note='the heart vat: the core (hp_core), lit bile-green', seed=5)
     K.organ_room('bile_main', 'gland', (1.1, 0.0, -0.8), (1.1, 0.75, 0.35), note='the main bile store, fed by the flank sacs', seed=6)
     for i, (x, sg) in enumerate(((1.0, 1), (-0.75, 1), (0.7, -1), (-1.0, -1))):
-        K.organ_room('bile_store_%d' % i, 'gland', (x, sg * 1.0, -0.55), (0.42, 0.32, 0.3), note='the bile store behind a flank sac', seed=10 + i)
+        K.organ_room('bile_store_%d' % i, 'gland', (x, sg * 0.82, -0.45), (0.4, 0.28, 0.26), note='the bile store behind a flank sac', seed=10 + i)
     K.organ_room('gut', 'gut', (-0.6, 0.0, -0.3), (1.0, 0.7, 0.45), note='the gut', seed=20)
     K.organ_room('regrowth_p', 'organ', (-1.5, 0.75, 0.45), (0.42, 0.32, 0.26), note='regrowth tissue (regen 4)', seed=21)
     K.organ_room('regrowth_s', 'organ', (-1.5, -0.75, 0.45), (0.42, 0.32, 0.26), note='regrowth tissue', seed=22)
@@ -247,4 +247,5 @@ def build(K):
              'minus the spine, maw, engines and weapons; the glands, sacs, siphons, vents and spine bed stand in open sockets')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
     K.change('Boarding origins on the upper flanks at x 1.3, though b_spitter carries no tendril', 'the export contract needs one boarding origin a side on every ship (check_export.py); the stinger variant (b_spitter_s, tendril T) is its own job')
+    K.change('The four flank bile stores sit deeper (y 0.82, z -0.45, a little smaller)', 'the R341 export death seam check: on the armoured build 34 of their triangles stood outside their piece\'s plating after the break; the sacs above them are unchanged')
     K.open_item('The variant b_spitter_s (Spitter stinger: bioplasma T, tendril T) is not built here; it needs a named variant (ships.md, issue 812)')
