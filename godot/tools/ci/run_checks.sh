@@ -4,9 +4,10 @@
 # First it proves the list is whole: every .gd file under godot/**/test/ is listed once, and every listed file exists.
 # Then each headless line (except the ones another named step runs) runs with a time limit. A check fails on a non-zero
 # exit, on the time limit, or on any SCRIPT ERROR line in its log. Prints one line per check and exits 1 on any failure.
-# The whole list also has a time budget (GODOT_CHECKS_BUDGET, 780 s; a healthy run takes about 200 s): a check gets
+# The whole list also has a time budget (GODOT_CHECKS_BUDGET, 1080 s; a healthy run took about 730 s on Nov 20 2026 with
+# 122 checks, up from about 200 s; raised from 780 s when PR 1329's 18 s check tipped it over): a check gets
 # 300 s or what is left of the budget, whichever is less, and a check the budget never reached is a FAIL, never a quiet
-# skip. So this script always ends well inside GitHub's 30 minute job limit, and a red job stays red instead of being
+# skip. So this script always ends well inside the job's 40 minute limit, and a red job stays red instead of being
 # cancelled (a script that does not compile makes several checks sit until their limit: commit 138ff38, 1020 s).
 cd "$(dirname "$0")/../.." || exit 1
 P=$(pwd)            # godot/
@@ -16,7 +17,7 @@ LIST="$P/tools/ci/godot_checks.txt"
 T="${RUNNER_TEMP:-/tmp}/godot_checks"
 rm -rf "$T"; mkdir -p "$T/logs" "$T/fixtures" "$T/xdg"
 F=0
-BUDGET="${GODOT_CHECKS_BUDGET:-780}"
+BUDGET="${GODOT_CHECKS_BUDGET:-1080}"
 
 # 1. the list is whole
 grep -v '^#' "$LIST" | grep -v '^$' | cut -d'|' -f2 | sort > "$T/listed.txt"
