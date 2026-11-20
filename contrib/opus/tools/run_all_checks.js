@@ -141,7 +141,7 @@ function buildChecks() {
     'auto_pr_body_tests', 'b1_tests', 'b3_tests', 'b4_tests', 'backlog_tests', 'build_manifest_tests',
     'campaign_start_test', 'capstone_mastery_tests', 'checks_truth_tests',
     'chorus_eat_core_tests', 'cinder_prizes_tests', 'core_sync_tests', 'doc_check_tests',
-    'effect_caps_tests', 'env_reconcile_tests', 'free_exit_tests', 'fx_death_spawn_tests',
+    'effect_caps_tests', 'env_reconcile_tests', 'fleet_list_tests', 'free_exit_tests', 'fx_death_spawn_tests',
     'fx_late_shader_tests', 'gen_open_work_tests', 'gpu_slots_tests',
     'hardpoint_contract_tests', 'heat_tests', 'inheritance_tests', 'ion_tests',
     'lineage_tests', 'memory_lint_tests', 'nemesis_121_tests', 'nemesis_122_tests',

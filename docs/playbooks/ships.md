@@ -272,6 +272,11 @@ review sheets in the job's shots folder. No test export is installed into the li
 
 ## 2. Inputs (what must exist before a hull is started)
 
+The fleet list (docs/ship_pipeline/FLEET.md, made from docs/ship_pipeline/fleet.json; issue 1421) names, for every ship the
+game draws, the concept Ryan approved, its ruling, its job and whether the new build is installed. Read its row before
+writing a concept or build brief, and copy its "Approved pick" line into the brief. A new pick is added to fleet.json in
+the same pull request that records it.
+
 1. Ryan's picked direction for the faction (docs/playbooks/factions.md, "The concept redo"; FINDINGS has each pick).
 2. A fleet brief for the faction: one written feature table per ship (class, length, beam, weapon slots from data.js, engines,
    break lines, the three or four features that make it that ship). The table outranks every picture.
@@ -484,6 +489,7 @@ Deliver to: tools/recipe/ships/SHIP.json, tools/blender/kits/FACTION/ (only what
 Branch: opus/issue-<number>
 Effort: one Opus worker; GPU jobs through the PC queue
 Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
+Approved pick: <the line from `node contrib/opus/tools/fleet_list.js --pick "FACTION|Class"`: the concept Ryan approved, with its ruling>
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
