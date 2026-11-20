@@ -1,0 +1,200 @@
+﻿ 43%  
+ 86%  
+100%  
+	    New File  		  203710	CD5_off_d16.0.png
+ 64%  
+100%  
+	    New File  		  280319	CD5_off_d3.0.png
+ 46%  
+ 93%  
+100%  
+	    New File  		  215985	CD5_off_d8.0.png
+ 60%  
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         0         2         0         0         0
+   Files :        18        18         0         0         0         0
+   Bytes :    5.80 m    5.80 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           468203461 Bytes/sec.
+   Speed :           26790.816 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 6:54:50 PM
+
+
+-------------------------------------------------------------------------------
+   ROBOCOPY     ::     Robust File Copy for Windows                              
+-------------------------------------------------------------------------------
+
+  Started : Thursday, November 19, 2026 6:54:50 PM
+   Source : C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\
+     Dest : C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5b\out\recipe\export\I8_37\
+
+    Files : *.*
+	    
+Exc Files : b0.npz
+	    *.blend
+	    
+ Exc Dirs : sil
+	    C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\godot\proj
+	    
+  Options : *.* /S /E /DCOPY:DA /COPY:DAT /XJ /R:1 /W:1 
+
+------------------------------------------------------------------------------
+
+	  New Dir         12	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\
+	    New File  		      24	export_status.txt
+100%  
+	    New File  		  19.8 m	I8_37.glb
+  5.0%
+ 10.0%
+ 15.0%
+ 20.1%
+ 25.1%
+ 30.1%
+ 35.1%
+ 40.2%
+ 45.2%
+ 50.2%
+ 55.2%
+ 60.3%
+ 65.3%
+ 70.3%
+ 75.3%
+ 80.4%
+ 85.4%
+ 90.4%
+ 95.4%
+100%  
+	    New File  		   1.4 m	I8_37_base.jpg
+ 16%  
+ 33%  
+ 50%  
+ 67%  
+ 84%  
+100%  
+	    New File  		    6590	I8_37_check.json
+100%  
+	    New File  		  899877	I8_37_emission.jpg
+ 29%  
+ 58%  
+ 87%  
+100%  
+	    New File  		   17893	I8_37_export.json
+100%  
+	    New File  		   2.0 m	I8_37_normal.png
+ 24%  
+ 48%  
+ 73%  
+ 97%  
+100%  
+	    New File  		   3.8 m	I8_37_orm.png
+ 12%  
+ 25%  
+ 38%  
+ 51%  
+ 64%  
+ 77%  
+ 90%  
+100%  
+	    New File  		  803073	I8_37_parts_base.jpg
+ 32%  
+ 65%  
+ 97%  
+100%  
+	    New File  		  702729	I8_37_parts_normal.png
+ 37%  
+ 74%  
+100%  
+	    New File  		   2.2 m	I8_37_parts_orm.png
+ 22%  
+ 45%  
+ 67%  
+ 90%  
+100%  
+	    New File  		    1430	manifest_entry.json
+100%  
+	  New Dir          9	C:\Users\rcbai\Downloads\voidsworn_test\recipe\ithar_CD5\export\I8_37\_gltf_source\
+	    New File  		   2.6 m	CD5_hull_albedo.png
+ 18%  
+ 37%  
+ 56%  
+ 74%  
+ 93%  
+100%  
+	    New File  		   2.3 m	CD5_hull_emission.png
+ 21%  
+ 42%  
+ 63%  
+ 84%  
+100%  
+	    New File  		   2.0 m	CD5_hull_normal.png
+ 24%  
+ 48%  
+ 73%  
+ 97%  
+100%  
+	    New File  		   3.8 m	CD5_hull_orm.png
+ 12%  
+ 25%  
+ 38%  
+ 51%  
+ 64%  
+ 77%  
+ 90%  
+100%  
+	    New File  		  609318	CD5_parts_albedo.png
+ 43%  
+ 86%  
+100%  
+	    New File  		  702729	CD5_parts_normal.png
+ 37%  
+ 74%  
+100%  
+	    New File  		   2.2 m	CD5_parts_orm.png
+ 22%  
+ 45%  
+ 67%  
+ 90%  
+100%  
+	    New File  		  19.8 m	I8_37.bin
+  5.0%
+ 10.0%
+ 15.1%
+ 20.1%
+ 25.1%
+ 30.2%
+ 35.2%
+ 40.2%
+ 45.3%
+ 50.3%
+ 55.3%
+ 60.4%
+ 65.4%
+ 70.4%
+ 75.5%
+ 80.5%
+ 85.5%
+ 90.6%
+ 95.6%
+100%  
+	    New File  		   49918	I8_37.gltf
+100%  
+
+------------------------------------------------------------------------------
+
+               Total    Copied   Skipped  Mismatch    FAILED    Extras
+    Dirs :         2         2         0         0         0         0
+   Files :        21        21         0         0         0         0
+   Bytes :   66.12 m   66.12 m         0         0         0         0
+   Times :   0:00:00   0:00:00                       0:00:00   0:00:00
+
+
+   Speed :           2236746516 Bytes/sec.
+   Speed :           127987.662 MegaBytes/min.
+   Ended : Thursday, November 19, 2026 6:54:50 PM
+

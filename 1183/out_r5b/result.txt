@@ -1,0 +1,45 @@
+start ithar_CD5 I8_37 opus/issue-1183 Thu 11/19/2026 18:29:07.12 
+inputs STAGES=1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export SETS=battle,close,cams FACS=ithar PAINT_BASE= PC_GPU_WAIT_SECONDS=3600 
+refreshing shared mirror C:\Users\rcbai\Downloads\voidsworn_test\repo-mirror.git
+From https://github.com/rcbailey12/voidsworn
+ - [deleted]           (none)               -> refs/pull/1167/merge
+ - [deleted]           (none)               -> refs/pull/1242/merge
+   6385f4b0..ebe80332  board/pc-in-1119     -> board/pc-in-1119
+ * [new branch]        board/pc-out-1119zd  -> board/pc-out-1119zd
+   34643587..bc0f81f1  codex/issue-1177     -> codex/issue-1177
+   bf175a32..4750f3d0  main                 -> main
+   c3dc2b64..7e5ac603  opus/issue-1078      -> opus/issue-1078
+   511d5374..8b7fad29  opus/issue-1180      -> opus/issue-1180
+ * [new branch]        opus/issue-1194      -> opus/issue-1194
+   c3dc2b64..7e5ac603  refs/pull/1170/head  -> refs/pull/1170/head
+ + 89a8beee...b87b38fd refs/pull/1172/merge -> refs/pull/1172/merge  (forced update)
+   34643587..bc0f81f1  refs/pull/1244/head  -> refs/pull/1244/head
+   511d5374..8b7fad29  refs/pull/1252/head  -> refs/pull/1252/head
+ + 484352a4...eb6ae85e refs/pull/1252/merge -> refs/pull/1252/merge  (forced update)
+ * [new ref]           refs/pull/1254/head  -> refs/pull/1254/head
+ * [new ref]           refs/pull/1254/merge -> refs/pull/1254/merge
+local clone C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5b\repo
+commit=05dc7804671f0a1281d62710e23b542ffc2c4c69
+import exit 0 
+1_concept_in start 18:34:21.66 
+1_concept_in exit 0 at 18:34:23.15 
+2_shape_ref start 18:34:23.15 
+2_shape_ref exit 0 at 18:37:42.76 
+3_trace_hull start 18:37:42.76 
+3_trace_hull exit 0 at 18:38:56.72 
+4_parts_kit start 18:38:56.72 
+4_parts_kit exit 0 at 18:39:30.41 
+5_paint_bake start 18:39:30.42 
+5_paint_bake exit 0 at 18:49:05.26 
+6_lod start 18:49:05.26 
+6_lod exit 0 at 18:50:11.93 
+7_export start 18:50:11.93 
+7_export exit 0 at 18:52:24.85 
+stages exit 0 
+install fresh: C:\Users\rcbai\Downloads\voidsworn_test\opus1183r5b\repo\godot\assets\ships\I8_37\I8_37.glb 
+gpu readback exit 0 
+authored interiors exit 0 
+death seam exit 1 
+collect: see log_collect.txt 
+done FAILED: checks: death_seam Thu 11/19/2026 18:54:50.72 
+all done 
