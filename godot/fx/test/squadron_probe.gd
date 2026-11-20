@@ -27,6 +27,7 @@ func _run() -> void:
 	for pair in OS.get_environment("SQUADRON_EXPECT").split(",", false):
 		var kv := pair.split("=")
 		if kv.size() == 2: expect[kv[0].strip_edges()] = kv[1].strip_edges()
+	_add_trial_entries()
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	vp = SubViewport.new()
 	vp.size = Vector2i(2560, 1440)
@@ -271,3 +272,35 @@ func _timing() -> void:
 	var f := FileAccess.open(out.path_join("timing.txt"), FileAccess.WRITE)
 	f.store_string("\n".join(lines) + "\n")
 	f.close()
+
+
+# Issue 1373: a trial install (ship_job without PUBLISH) puts the model in assets/ships and gen/ships but never in the
+# manifest, and the wing loader finds craft through the manifest. SQUADRON_ENTRIES lists each job's
+# recipe/export/<code>/manifest_entry.json (OS paths, comma separated); the probe merges them into a copy of the manifest
+# in user:// and points the wing loader at the copy. The game's own manifest is never written.
+func _add_trial_entries() -> void:
+	var paths := OS.get_environment("SQUADRON_ENTRIES").split(",", false)
+	if paths.is_empty():
+		return
+	var manifest = JSON.parse_string(FileAccess.get_file_as_string(WING.ship_manifest_path))
+	if not manifest is Dictionary or not manifest.get("ships") is Dictionary:
+		push_error("SQUADRON_ENTRIES: cannot read " + WING.ship_manifest_path)
+		PG.note("trial manifest")
+		return
+	for raw in paths:
+		var path := raw.strip_edges().replace("\\", "/")
+		var entry = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not entry is Dictionary:
+			push_error("SQUADRON_ENTRIES: cannot read " + path)
+			PG.note("trial entry " + path)
+			continue
+		var code := path.get_base_dir().get_file()   # export/<code>/manifest_entry.json; the entry's own glb name wins
+		for fname in entry.get("files", {}):
+			if str(fname).ends_with(".glb"): code = str(fname).get_basename()
+		manifest["ships"][code] = entry
+		print("SQUADRON_ENTRIES added %s (%s|%s)" % [code, entry.get("faction", ""), entry.get("wing_role", "")])
+	var out_path := "user://squadron_probe_manifest.json"
+	var f := FileAccess.open(out_path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(manifest))
+	f.close()
+	WING.ship_manifest_path = out_path
