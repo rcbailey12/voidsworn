@@ -1,0 +1,2924 @@
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-3bc2a3619b7c42de89d1faeb73991bca\godot-profile-eae8d1c079b043bb86871580f7d6b2b6
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: a long kit label wraps inside a 200 px column (201 px, 4 lines)
+PASS: a short kit label keeps its natural width on one line
+PASS: a primary kit button plays ui_confirm on press
+PASS: a quiet kit button plays ui_click on press
+PASS: a back kit button plays ui_cancel on press
+PASS: a kit link plays the hover cue, then the press cue
+[title-layout] window 1920x1080 title 89px text 797 wide, fits, menu on screen (bottom 863), 6 of 6 menu buttons take keyboard focus, focus on "New run" PASS
+PASS: Settings is a full-height drawer on the right edge ([P: (516.0, 0.0), S: (1404.0, 1080.0)])
+PASS: Settings fits the 1920x1080 window at Larger (bottom 1080)
+PASS: the dim behind a drawer is light (0.45), so the battle stays in view
+PASS: Settings needs no scrolling at Larger
+PASS: all 17 settings names wrap and stay clear of their control (17 rows, 0 bad)
+PASS: every settings control is one width ([200])
+[title] rebuilt for 1920 x 1080 (scale 0.900, title size 62)
+[title-layout] window 1920x1080 title 62px text 555 wide, fits, menu on screen (bottom 755), 6 of 6 menu buttons take keyboard focus, focus on "Small" PASS
+PASS: changing the UI scale keeps focus on the UI scale row
+PASS: the UI scale cycled from Larger to Small
+PASS: Esc closes Settings and saves
+PASS: Esc on Settings plays the back cue
+PASS: the title has exactly one ember action, first (6 entries)
+PASS: the title menu stays in the left column
+PASS: a click beside the Settings drawer closes it
+PASS: Credits names every shipped font (missing: [])
+PASS: Esc closes Credits
+[title] rebuilt for 1920 x 1080 (scale 1.300, title size 89)
+[title-layout] window 1920x1080 title 89px text 797 wide, fits, menu on screen (bottom 863), 6 of 6 menu buttons take keyboard focus, focus on "New run" PASS
+PASS: a wrapped toast grows up and stays on screen (bottom 955 of 1080)
+PASS: the setup page opens
+PASS: at Larger every faction's desk fits with no scroll and its admiral cards line up: one width, one bottom per row ([])
+PASS: picking a faction plays its music preview (["hegemony", "corsair", "chorus", "ithar", "deathless"])
+PASS: at Larger the desk also fits a 1280x1024 window with no scroll (over by -21 px)
+PASS: Accept on Run options opens the drawer and focus starts inside it (MapTrialToggle)
+PASS: Tab and Shift+Tab stay inside the open drawer (left it for [])
+PASS: Accept inside the drawer changes its option and the focus stays on that control after the redraw (MapTrialToggle)
+PASS: nothing on the desk behind the drawer was pressed
+PASS: Esc closes the Run options drawer first, stays on the desk, and gives focus back to Run options (RunOptionsButton)
+PASS: the setup page's Back plays the back cue and goes back (["ui_cancel"], title)
+PASS: Esc on admiral goes back to title
+PASS: Esc on legacy goes back to title
+PASS: Esc on help goes back to title
+PASS: Esc on Lineage goes back to Progression's mastery tab
+PASS: Progression (each tab), Lineage and How to play: one Back in the fixed bar, card rows on the kit grid, one card width per grid ([])
+PASS: How to play has an index link for each of its 8 sections (8 links)
+PASS: Esc on the flagship page goes Back to the desk: the unplayed run, its save and its count are gone, the picks kept
+PASS: Back then Launch is no reroll: same patrons, founder relic, foes, map and aspect offer, and the run counted once
+PASS: the flagship page opens with Launch waiting for an aspect pick (3 offers)
+PASS: clicking an aspect card picks it and Launch names it (Launch with Aspect of the Ram)
+PASS: the flagship page has a Back button
+ERROR: Unable to open file: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H7_23/H7_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H7_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I11_37_base.jpg-344e8bccebe9974f84d093baf48f4328.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I11_37_base.jpg-344e8bccebe9974f84d093baf48f4328.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I11_37/I11_37_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I11_37_orm.jpg-b77a94d5e685aa67712562b1ab1d1a39.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I11_37_orm.jpg-b77a94d5e685aa67712562b1ab1d1a39.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I11_37/I11_37_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I11_37_emissive.jpg-47bbb988d4196586611e5c77b426d3c8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I11_37_emissive.jpg-47bbb988d4196586611e5c77b426d3c8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I11_37/I11_37_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I11_37/I11_37_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I11_37.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I11_37_base.jpg-344e8bccebe9974f84d093baf48f4328.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I11_37_base.jpg-344e8bccebe9974f84d093baf48f4328.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I11_37/I11_37_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I11_37_orm.jpg-b77a94d5e685aa67712562b1ab1d1a39.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I11_37_orm.jpg-b77a94d5e685aa67712562b1ab1d1a39.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I11_37/I11_37_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I11_37_emissive.jpg-47bbb988d4196586611e5c77b426d3c8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I11_37_emissive.jpg-47bbb988d4196586611e5c77b426d3c8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I11_37/I11_37_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I11_37/I11_37_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I11_37.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I15_11_base.jpg-efc80f82f398e58d0105a25c47c758e9.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I15_11_base.jpg-efc80f82f398e58d0105a25c47c758e9.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I15_11/I15_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I15_11_orm.jpg-efda4a6aa3efb09bca8a881ca8653516.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I15_11_orm.jpg-efda4a6aa3efb09bca8a881ca8653516.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I15_11/I15_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I15_11_emissive.jpg-ad3a9b6b4d5a7634f098b1cfcc8bce4e.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I15_11_emissive.jpg-ad3a9b6b4d5a7634f098b1cfcc8bce4e.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I15_11/I15_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I15_11/I15_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I15_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H9_23/H9_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H9_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H7_23/H7_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H7_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H7_23/H7_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H7_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I15_11_base.jpg-efc80f82f398e58d0105a25c47c758e9.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I15_11_base.jpg-efc80f82f398e58d0105a25c47c758e9.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I15_11/I15_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I15_11_orm.jpg-efda4a6aa3efb09bca8a881ca8653516.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I15_11_orm.jpg-efda4a6aa3efb09bca8a881ca8653516.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I15_11/I15_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I15_11_emissive.jpg-ad3a9b6b4d5a7634f098b1cfcc8bce4e.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I15_11_emissive.jpg-ad3a9b6b4d5a7634f098b1cfcc8bce4e.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I15_11/I15_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I15_11/I15_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I15_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _enemy_fleet (res://ui/campaign/map3d.gd:436)
+       [3] _add_node (res://ui/campaign/map3d.gd:466)
+       [4] _build (res://ui/campaign/map3d.gd:287)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H7_23/H7_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H7_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_base.jpg-3c66f164b5f6e1501f84da491192d6eb.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_orm.jpg-2a85ec0f237d4725d615112b5b021e3a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_emissive.jpg-760fb88272768484cda78c5346fe74ab.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H7_23_normal.jpg-0e6d7455c8c43abc58a59f269ebd41fb.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H7_23/H7_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H7_23/H7_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H7_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:612)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_base.jpg-0541e73529730983726d8cda824292c3.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_orm.jpg-93f3773e617bceaab55808f019b07c3c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/I14_23_emissive.jpg-15f046958dcb0cd339a59ad517934f0d.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/I14_23/I14_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/I14_23/I14_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/I14_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _patrol (res://ui/campaign/map3d.gd:619)
+       [3] _add_patrols (res://ui/campaign/map3d.gd:616)
+       [4] _build (res://ui/campaign/map3d.gd:293)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_base.jpg-00bf9da3b27a7b4691b005a132622fbe.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_base.jpg-00bf9da3b27a7b4691b005a132622fbe.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_orm.jpg-736ca87f6aa94e058af355b090a1a4e8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_orm.jpg-736ca87f6aa94e058af355b090a1a4e8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_normal.jpg-0c90a8fa2459bb48b2983871147898f4.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_normal.jpg-0c90a8fa2459bb48b2983871147898f4.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_base.jpg-dd63f0f9fef8786d62422f60dffb4bee.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_base.jpg-dd63f0f9fef8786d62422f60dffb4bee.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_orm.jpg-ee86614ff587e992f4d6bf4a71600d2a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_orm.jpg-ee86614ff587e992f4d6bf4a71600d2a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_normal.jpg-400af7ba3bae90a41b805c5cad395c9f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_normal.jpg-400af7ba3bae90a41b805c5cad395c9f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_glow_emission.jpg-e76ff0a8f500d1035b07cc9809064fbf.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_glow_emission.jpg-e76ff0a8f500d1035b07cc9809064fbf.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_glow_emission.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H10_23/H10_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H10_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_base.jpg-00bf9da3b27a7b4691b005a132622fbe.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_base.jpg-00bf9da3b27a7b4691b005a132622fbe.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_orm.jpg-736ca87f6aa94e058af355b090a1a4e8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_orm.jpg-736ca87f6aa94e058af355b090a1a4e8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_normal.jpg-0c90a8fa2459bb48b2983871147898f4.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_normal.jpg-0c90a8fa2459bb48b2983871147898f4.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_base.jpg-dd63f0f9fef8786d62422f60dffb4bee.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_base.jpg-dd63f0f9fef8786d62422f60dffb4bee.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_orm.jpg-ee86614ff587e992f4d6bf4a71600d2a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_orm.jpg-ee86614ff587e992f4d6bf4a71600d2a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_normal.jpg-400af7ba3bae90a41b805c5cad395c9f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_normal.jpg-400af7ba3bae90a41b805c5cad395c9f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_glow_emission.jpg-e76ff0a8f500d1035b07cc9809064fbf.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_glow_emission.jpg-e76ff0a8f500d1035b07cc9809064fbf.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_glow_emission.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H10_23/H10_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H10_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_base.jpg-00bf9da3b27a7b4691b005a132622fbe.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_base.jpg-00bf9da3b27a7b4691b005a132622fbe.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_orm.jpg-736ca87f6aa94e058af355b090a1a4e8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_orm.jpg-736ca87f6aa94e058af355b090a1a4e8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_normal.jpg-0c90a8fa2459bb48b2983871147898f4.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_normal.jpg-0c90a8fa2459bb48b2983871147898f4.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_base.jpg-dd63f0f9fef8786d62422f60dffb4bee.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_base.jpg-dd63f0f9fef8786d62422f60dffb4bee.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_orm.jpg-ee86614ff587e992f4d6bf4a71600d2a.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_orm.jpg-ee86614ff587e992f4d6bf4a71600d2a.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_parts_normal.jpg-400af7ba3bae90a41b805c5cad395c9f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_parts_normal.jpg-400af7ba3bae90a41b805c5cad395c9f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_parts_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Unable to open file: res://.godot/imported/H10_23_glow_emission.jpg-e76ff0a8f500d1035b07cc9809064fbf.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://.godot/imported/H10_23_glow_emission.jpg-e76ff0a8f500d1035b07cc9809064fbf.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://assets/ships/H10_23/H10_23_glow_emission.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Can't load dependency: 'res://assets/ships/H10_23/H10_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+ERROR: Failed loading resource: res://gen/ships/H10_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _hull (res://ui/campaign/map3d.gd:222)
+       [2] _dead_hull (res://ui/campaign/map3d.gd:327)
+       [3] _build_region (res://ui/campaign/map3d.gd:409)
+       [4] _build (res://ui/campaign/map3d.gd:294)
+       [5] _load_sector (res://ui/campaign/map3d.gd:188)
+PASS: Launch takes the picked aspect and starts the run (page map)
+PASS: the faction preview plays each faction's own track ({ "voidsworn": "fac_voidsworn", "hegemony": "fac_hegemony", "corsair": "fac_corsair", "chorus": "fac_chorus", "ithar": "fac_ithar", "deathless": "fac_deathless" })
+PASS: an unknown faction has no preview (the title music stays)
+PASS: the title battle cycles the enemy through the five other factions with built ships (["chorus", "corsair", "deathless", "hegemony", "ithar"])
+Front end: PASS
+ERROR: 6 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+WARNING: 6 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2735)
+WARNING: 24 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-3bc2a3619b7c42de89d1faeb73991bca\godot-profile-eae8d1c079b043bb86871580f7d6b2b6

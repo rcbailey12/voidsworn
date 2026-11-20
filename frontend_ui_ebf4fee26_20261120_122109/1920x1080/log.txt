@@ -1,0 +1,2910 @@
+GPU: waiting for shared claim, weight 1 (1369)
+GPU: acquired shared claim 05989d45-2fe3-4340-97ba-f38eb1bcee13
+run_timeout: Godot profile: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-697f3de6ee3f40c0b28fd37d648605f6\godot-profile-fd133bc72466477fa660d4ee36fa881c
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 11 cues, 10 clip sets, loaded in 88 ms
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] setup (res://fx/fx.gd:270)
+       [2] _build_world (res://scenes/battle/battle.gd:352)
+       [3] _ready (res://scenes/battle/battle.gd:216)
+       [4] _start_showcase (res://main/main.gd:334)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] setup (res://fx/fx.gd:271)
+       [2] _build_world (res://scenes/battle/battle.gd:352)
+       [3] _ready (res://scenes/battle/battle.gd:216)
+       [4] _start_showcase (res://main/main.gd:334)
+ERROR: No loader found for resource: res://fx/textures/hot_tail.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:343)
+       [1] setup (res://fx/fx.gd:272)
+       [2] _build_world (res://scenes/battle/battle.gd:352)
+       [3] _ready (res://scenes/battle/battle.gd:216)
+       [4] _start_showcase (res://main/main.gd:334)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] setup (res://fx/fx.gd:274)
+       [2] _build_world (res://scenes/battle/battle.gd:352)
+       [3] _ready (res://scenes/battle/battle.gd:216)
+       [4] _start_showcase (res://main/main.gd:334)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] setup (res://fx/fx.gd:275)
+       [2] _build_world (res://scenes/battle/battle.gd:352)
+       [3] _ready (res://scenes/battle/battle.gd:216)
+       [4] _start_showcase (res://main/main.gd:334)
+[sfx] 71 cues, 67 clip sets, loaded in 996 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.802, target 4.4; visual tuning (R191)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Unable to open file: res://.godot/imported/V15_37_base.jpg-270755cc200e2fe8128c8da8f5af5963.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://.godot/imported/V15_37_base.jpg-270755cc200e2fe8128c8da8f5af5963.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://assets/ships/V15_37/V15_37_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Unable to open file: res://.godot/imported/V15_37_orm.jpg-81aeaa37ccedfed51d02be002f358b43.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://.godot/imported/V15_37_orm.jpg-81aeaa37ccedfed51d02be002f358b43.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://assets/ships/V15_37/V15_37_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Unable to open file: res://.godot/imported/V15_37_emissive.jpg-905798296d522703c6d81257c2a75811.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://.godot/imported/V15_37_emissive.jpg-905798296d522703c6d81257c2a75811.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://assets/ships/V15_37/V15_37_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Unable to open file: res://.godot/imported/V15_37_normal.jpg-35e02874606e0a1b41d7e5f529b2dde8.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://.godot/imported/V15_37_normal.jpg-35e02874606e0a1b41d7e5f529b2dde8.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://assets/ships/V15_37/V15_37_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Can't load dependency: 'res://assets/ships/V15_37/V15_37_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: Failed loading resource: res://gen/ships/V15_37.scn.
+[attach] hp_core missing on V15_37 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] _make_view (res://scenes/battle/battle.gd:833)
+       [2] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+[turret] turret_0 (F1) on V14_23: arc -180 to 180, trains all round
+[turret] turret_1 (F2) on V14_23: arc -180 to 180, trains all round
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:339)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _build_engines (res://fx/fx_ship.gd:340)
+       [3] setup (res://fx/fx_ship.gd:185)
+       [4] add_ship (res://fx/fx.gd:1402)
+       [5] _register_fx_ship (res://scenes/battle/battle.gd:845)
+       [6] _make_view (res://scenes/battle/battle.gd:837)
+       [7] _begin (res://scenes/battle/battle.gd:587)
+[world] baked c895615760e048276b4ed558837246712488f5757a7b2b6dc37f988cd975d89b 4096x2048 in 7921 ms (worker)
+[world] baked 138ef715702bbbe7b98c920700cd1112c0fef6515d418f026e2765bf22f729f2 4096x2048 in 10249 ms (worker)
+[world] baked cf6ed33160b6675e7307f28b0e4543e9b21790f48742d411e70121b630d90596 1024x512 in 10675 ms (worker)
+[world] baked 764fbe01e06459d70f849215ce2cab690a2c0c52d9661a711c1d0a1562957faa 4096x2048 in 2081 ms (worker)
+[world] baked 90f3632eb0ff5d7d9d9601b2fb978a8986b48dfc8c610adc589957ccd183944c 1024x512 in 1942 ms (worker)
+[attach] hp_rcs missing on V15_37; using the surface ray
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] warmup (res://fx/fx.gd:1769)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/textures/hot_tail.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:343)
+       [1] mat (res://fx/fx.gd:350)
+       [2] warmup (res://fx/fx.gd:1769)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] warmup (res://fx/fx.gd:1769)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] warmup (res://fx/fx.gd:1769)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/textures/lit_flake.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:345)
+       [1] mat (res://fx/fx.gd:350)
+       [2] warmup (res://fx/fx.gd:1779)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_color.png-f9857c9d59a142df16f10db83f24f845.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_color.png-f9857c9d59a142df16f10db83f24f845.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/flash_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_flow.png-ff9d01525024ce6eb3a67959a3332a08.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_flow.png-ff9d01525024ce6eb3a67959a3332a08.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/flash_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/flash_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_color.png-0773abd316be11ce3f8ad7eb1235f416.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_color.png-0773abd316be11ce3f8ad7eb1235f416.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/vent_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/vent_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_thickness.png-1cc6fd02ec15164cc3183b2ebddb08bc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_thickness.png-1cc6fd02ec15164cc3183b2ebddb08bc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/vent_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_color.png-ff27920880281a9a5255c753a80e7d1b.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_color.png-ff27920880281a9a5255c753a80e7d1b.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/cool_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/cool_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_thickness.png-cae1280999a7dddb4c8b4b08cc34baed.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_thickness.png-cae1280999a7dddb4c8b4b08cc34baed.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/small/cool_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_color.png-cb78344d11e5e3dbca33f11e07703986.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_color.png-cb78344d11e5e3dbca33f11e07703986.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/flash_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_flow.png-109022610873f18776552b6db7526994.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_flow.png-109022610873f18776552b6db7526994.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/flash_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_thickness.png-4d9c9c9f706f46764d714dcf2675cb9f.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_thickness.png-4d9c9c9f706f46764d714dcf2675cb9f.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/flash_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_color.png-ca42eea7c42b5fbd364035abd9c2064c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_color.png-ca42eea7c42b5fbd364035abd9c2064c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/vent_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_flow.png-cd31d40c48d49af3722e09af0a05c915.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_flow.png-cd31d40c48d49af3722e09af0a05c915.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/vent_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_thickness.png-347a9540e79e274b2e07836b6a081c74.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_thickness.png-347a9540e79e274b2e07836b6a081c74.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/vent_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_color.png-38bb9e194befc5e138fa671d6db9d0c0.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_color.png-38bb9e194befc5e138fa671d6db9d0c0.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/cool_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_flow.png-0406494604f1e6357b106d7abf5d4007.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_flow.png-0406494604f1e6357b106d7abf5d4007.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/cool_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_thickness.png-745f9abd39ccbc04a04d8a955ded2534.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_thickness.png-745f9abd39ccbc04a04d8a955ded2534.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/cruiser/cool_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_color.png-dab140bc077d841545dda2974125f4a6.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_color.png-dab140bc077d841545dda2974125f4a6.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/flash_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_flow.png-427c67f8dcd91ba36470ec04a6471288.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_flow.png-427c67f8dcd91ba36470ec04a6471288.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/flash_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/flash_thickness.png-d252400dd76c6c9ed9b693ab72266cb3.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/flash_thickness.png-d252400dd76c6c9ed9b693ab72266cb3.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/flash_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_color.png-d0f6399a67844214da006e9828fcddb0.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_color.png-d0f6399a67844214da006e9828fcddb0.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/vent_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_flow.png-1cb3ba0250dfde655387c1ca4331ae81.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_flow.png-1cb3ba0250dfde655387c1ca4331ae81.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/vent_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/vent_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_color.png-d7085d81fda62f3209517595257b3fad.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_color.png-d7085d81fda62f3209517595257b3fad.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/cool_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_flow.png-4c93a37be3d29f0a01b5d8ba8c419f07.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_flow.png-4c93a37be3d29f0a01b5d8ba8c419f07.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/cool_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/death/capital/cool_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] flipbook_material (res://fx/fx_death.gd:249)
+       [1] warmup (res://fx/fx.gd:1782)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/muzzle_color.png-d866575bddd03dfde6ab234b6815bdd5.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/muzzle_color.png-d866575bddd03dfde6ab234b6815bdd5.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/weapons/muzzle/muzzle_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/muzzle_flow.png-183c22ac4fcfd3987f295a582a3aa707.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/muzzle_flow.png-183c22ac4fcfd3987f295a582a3aa707.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/weapons/muzzle/muzzle_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/muzzle_thickness.png-97913ed58a2c86faac4dc4ef953b2f02.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/muzzle_thickness.png-97913ed58a2c86faac4dc4ef953b2f02.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/weapons/muzzle/muzzle_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/impact_color.png-b77ee11ad6e3216d0ad670896b0d827c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/impact_color.png-b77ee11ad6e3216d0ad670896b0d827c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/weapons/impact/impact_color.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/impact_flow.png-fe3149efafd5705ff69f4bad30962f50.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/impact_flow.png-fe3149efafd5705ff69f4bad30962f50.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/weapons/impact/impact_flow.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Unable to open file: res://.godot/imported/impact_thickness.png-5cd36c668ef82a30f927eead5495ed5a.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://.godot/imported/impact_thickness.png-5cd36c668ef82a30f927eead5495ed5a.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: Failed loading resource: res://fx/atlases/weapons/impact/impact_thickness.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _weapon_gas_material (res://fx/fx_weapons.gd:679)
+       [1] warmup (res://fx/fx.gd:1799)
+       [2] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [3] _warmup (res://scenes/battle/battle.gd:787)
+       [4] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/impact/impact_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1755)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/impact/impact_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1755)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/impact/impact_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1755)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/impact/impact_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/impact/impact_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/impact/impact_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/impact/impact_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/impact/impact_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/impact/impact_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/impact/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/impact/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/impact/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/impact/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/impact/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/impact/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/impact/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/impact/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/impact/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/macro/impact_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/macro/impact_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/macro/impact_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/macro/impact_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/macro/impact_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/macro/impact_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/macro/impact_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/macro/impact_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/macro/impact_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/macro/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/macro/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/weapons/macro/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] hull_impact_material (res://fx/fx_weapons.gd:1737)
+       [3] warmup (res://fx/fx.gd:1805)
+       [4] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [5] _warmup (res://scenes/battle/battle.gd:787)
+       [6] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/macro/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/macro/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/weapons/macro/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/macro/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/macro/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/weapons/macro/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/small/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/small/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/small/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/small/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/small/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/small/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/small/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/small/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/small/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/cruiser/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/cruiser/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/cruiser/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/cruiser/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/cruiser/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/cruiser/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/cruiser/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/cruiser/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/cruiser/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/capital/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/capital/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s0/death/capital/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/capital/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/capital/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s1/death/capital/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/capital/flash_color.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/capital/flash_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/atlases/rebake/s2/death/capital/flash_thickness.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] route_texture (res://fx/fx_death.gd:261)
+       [1] route_material (res://fx/fx_death.gd:280)
+       [2] warmup (res://fx/fx.gd:1810)
+       [3] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [4] _warmup (res://scenes/battle/battle.gd:787)
+       [5] prepare_battle_hulls (res://fx/fx.gd:1357)
+ERROR: No loader found for resource: res://fx/textures/beam_flow.png (expected type: unknown)
+   at: _load (core/io/resource_loader.cpp:332)
+   GDScript backtrace (most recent call first):
+       [0] _mat (res://fx/fx.gd:341)
+       [1] mat (res://fx/fx.gd:350)
+       [2] _wing_trail_update (res://fx/fx_weapons.gd:1167)
+       [3] warm_craft_trail (res://fx/fx_weapons.gd:1199)
+       [4] warmup (res://fx/fx.gd:1902)
+       [5] <anonymous lambda> (res://scenes/battle/battle.gd:785)
+       [6] _warmup (res://scenes/battle/battle.gd:787)
+       [7] prepare_battle_hulls (res://fx/fx.gd:1357)
+[front-end-shots] showcase ready, enemy chorus
+[title] rebuilt for 2560 x 1440 (scale 1.333, title size 91)
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[front-end-shots] FAIL F2_settings_normal is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F2_settings_normal.png
+[front-end-shots] FAIL F2_title_normal is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F2_title_normal.png
+[front-end-shots] FAIL F2_credits_normal is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F2_credits_normal.png
+[title] rebuilt for 2560 x 1440 (scale 1.733, title size 120)
+[title-layout] window 2560x1440 title 120px text 1075 wide, fits, playtest line on screen, menu on screen (bottom 1215), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F2_settings_larger.png
+[front-end-shots] FAIL F2_settings_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] FAIL F2_title_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F2_title_larger.png
+[front-end-shots] FAIL F2_credits_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F2_credits_larger.png
+[title] rebuilt for 2560 x 1440 (scale 1.333, title size 91)
+[title-layout] window 2560x1440 title 91px text 814 wide, fits, playtest line on screen, menu on screen (bottom 1088), 8 of 8 menu buttons take keyboard focus, focus on "New run" PASS
+[attach] battle x04 V16_37: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x05 V15_37: skipped 0; rcs hp 0 ray 4 centre 0 skip 0
+[attach] battle x06 V14_23: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x07 B20_11: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x08 B19_11: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x09 B21_11: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[attach] battle x010 B19_11: skipped 0; rcs hp 2 ray 0 centre 0 skip 0
+[attach] battle x011 B19_11: skipped 0; rcs hp 4 ray 0 centre 0 skip 0
+[front-end-shots] FAIL F3_setup_normal is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_setup_normal.png
+[front-end-shots] FAIL F3_desk_voidsworn is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_desk_voidsworn.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_desk_hegemony.png
+[front-end-shots] FAIL F3_desk_hegemony is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_desk_corsair.png
+[front-end-shots] FAIL F3_desk_corsair is 2560x1440, not the asked 1920x1080
+[front-end-shots] FAIL F3_desk_chorus is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_desk_chorus.png
+[front-end-shots] FAIL F3_desk_ithar is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_desk_ithar.png
+[front-end-shots] FAIL F3_desk_deathless is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_desk_deathless.png
+[front-end-shots] FAIL F3_run_options is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_run_options.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_run_options_keys.png
+[front-end-shots] FAIL F3_run_options_keys is 2560x1440, not the asked 1920x1080
+[front-end-shots] FAIL F3_setup_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F3_setup_larger.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F4_flagship_larger.png
+[front-end-shots] FAIL F4_flagship_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] FAIL F4_flagship_voidsworn is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F4_flagship_voidsworn.png
+[front-end-shots] FAIL F4_flagship_picked is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F4_flagship_picked.png
+ERROR: Unable to open file: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/H9_23/H9_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/H9_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/H9_23/H9_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/H9_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/H9_23/H9_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/H9_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_base.jpg-13ea8c1c5ac260e1df5fe55bc8404606.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_orm.jpg-bee2b542d6416d017b15ff7b5f3da6c8.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_emissive.jpg-cd78db9469c719868c6902f68012f356.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/H9_23_normal.jpg-f3e57a4b6edb503981710bf71bcefbd9.s3tc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/H9_23/H9_23_normal.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/H9_23/H9_23_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/H9_23.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F4_flagship_hegemony.png
+[front-end-shots] FAIL F4_flagship_hegemony is 2560x1440, not the asked 1920x1080
+ERROR: Unable to open file: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/B22_11/B22_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/B22_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/B22_11/B22_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/B22_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/B22_11/B22_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/B22_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_base.jpg-7280921241931fe30c7664e2c69351c6.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_orm.jpg-56e0c92ed13aac64d5b55c5e5e9fc74f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/B22_11_emissive.jpg-142e3d0d57306b53b34fc31465c68105.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/B22_11/B22_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/B22_11/B22_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/B22_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+[front-end-shots] FAIL F4_flagship_chorus is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F4_flagship_chorus.png
+ERROR: Unable to open file: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/I16_11/I16_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/I16_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/I16_11/I16_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/I16_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/I16_11/I16_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/I16_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://ui/campaign/flagship_podium.gd:30)
+       [1] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [2] render (res://ui/campaign/campaign_ui.gd:391)
+       [3] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_base.jpg-423db7f2cb9db20e92571209972e67dc.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_base.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_orm.jpg-4a702881006bea5c432b54d135dfdb9c.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_orm.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Unable to open file: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://.godot/imported/I16_11_emissive.jpg-ca84462e38275a190710d466ff76479f.bptc.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://assets/ships/I16_11/I16_11_emissive.jpg.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Can't load dependency: 'res://assets/ships/I16_11/I16_11_base.jpg'.
+   at: parse_variant (core/io/resource_format_binary.cpp:444)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+ERROR: Failed loading resource: res://gen/ships/I16_11.scn.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] setup (res://render/ship_view.gd:124)
+       [1] setup (res://ui/campaign/flagship_podium.gd:57)
+       [2] _podium (res://ui/campaign/campaign_ui.gd:946)
+       [3] render (res://ui/campaign/campaign_ui.gd:391)
+       [4] _process (res://ui/campaign/campaign_ui.gd:128)
+[front-end-shots] FAIL F4_flagship_ithar is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F4_flagship_ithar.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_progression_variants.png
+[front-end-shots] FAIL F5_progression_variants is 2560x1440, not the asked 1920x1080
+[front-end-shots] FAIL F5_progression_legacy is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_progression_legacy.png
+[front-end-shots] FAIL F5_progression_mastery is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_progression_mastery.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_progression_favour.png
+[front-end-shots] FAIL F5_progression_favour is 2560x1440, not the asked 1920x1080
+[front-end-shots] FAIL F5_progression_heat is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_progression_heat.png
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_progression_fallen.png
+[front-end-shots] FAIL F5_progression_fallen is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_lineage.png
+[front-end-shots] FAIL F5_lineage is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_help.png
+[front-end-shots] FAIL F5_help is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_help_larger.png
+[front-end-shots] FAIL F5_help_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_progression_larger.png
+[front-end-shots] FAIL F5_progression_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] FAIL F5_lineage_larger is 2560x1440, not the asked 1920x1080
+[front-end-shots] saved C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109\1920x1080/F5_lineage_larger.png
+[front-end-shots] FAIL 33 problem(s)
+run_timeout: Godot profile removed: C:\Users\rcbai\AppData\Local\Temp\voidsworn-run-697f3de6ee3f40c0b28fd37d648605f6\godot-profile-fd133bc72466477fa660d4ee36fa881c
+GPU: released shared claim 05989d45-2fe3-4340-97ba-f38eb1bcee13

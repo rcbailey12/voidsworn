@@ -1,0 +1,7 @@
+frontend_ui_check start Fri 11/20/2026 12:21:09.50 commit ebf4fee26 
+front_end_test PASS 
+1920x1080 pictures or sheets FAIL, see 1920x1080\log.txt and 1920x1080\sheets_log.txt 
+3840x2160 pictures or sheets FAIL, see 3840x2160\log.txt and 3840x2160\sheets_log.txt 
+RESULT FAIL 
+folder C:\Users\rcbai\Downloads\voidsworn_test\shots\frontend_ui\ebf4fee26_20261120_122109 
+done Fri 11/20/2026 12:24:26.53 
