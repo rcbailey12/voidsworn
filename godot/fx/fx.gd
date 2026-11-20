@@ -1507,6 +1507,15 @@ func clear_wreck(id: String) -> void:
 	_core_at.erase(id)
 
 
+# issue 1236: the rules made this ship's hex a wreck that blocks; its death pieces stay inside that hex
+func anchor_wreck(id: String, centre: Vector3, radius: float) -> void:
+	DEATH.anchor_wreck(self, id, centre, radius)
+
+
+func wreck_pieces(id: String) -> int:
+	return DEATH.wreck_pieces(self, id)
+
+
 func jump_out(id: String) -> void:
 	if ships.has(id):
 		(ships[id] as SHIP).jump_out(self)

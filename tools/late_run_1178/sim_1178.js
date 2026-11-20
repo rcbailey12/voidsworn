@@ -29,7 +29,7 @@ function mc78StopPick(n){
 }
 const _mc78Fight=mcFight;
 mcFight=async function(cfg,S,isNem){
-  if(cfg&&cfg.kind==='boss'&&RUN&&RUN.sector===3&&MC78.bossCredits==null){ MC78.bossCredits=RUN.credits; MC78.bossShips=RUN.fleet.length; }
+  if(cfg&&cfg.kind==='boss'&&RUN&&RUN.sector===3&&MC78.bossCredits==null){ MC78.bossCredits=RUN.credits; MC78.bossShips=RUN.fleet.length; MC78.bossMaxHp=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp,0); }
   return _mc78Fight(cfg,S,isNem);
 };
 if(typeof factionWinEcon==='function'){ const _f78=factionWinEcon; factionWinEcon=function(c,sm){ const o=_f78(c,sm);
@@ -87,7 +87,7 @@ const game = mod.exports.loadGame(path.resolve(root), { extra: ['bot.js', 'drive
       const last = r.battles[r.battles.length - 1];
       rows.push({ fac, admiral: r.admiral, seed: r.seed, won: r.won, sector: r.sectorReached,
         lossSector: r.won ? null : (last ? last.s : r.sectorReached), bossCredits: r.m78.bossCredits ?? null,
-        bossShips: r.m78.bossShips ?? null, creditsEnd: r.m78.creditsEnd, lateBuys: r.m78.lateBuys || 0,
+        bossShips: r.m78.bossShips ?? null, bossMaxHp: r.m78.bossMaxHp ?? null, creditsEnd: r.m78.creditsEnd, lateBuys: r.m78.lateBuys || 0,
         lateSpent: r.m78.lateSpent || 0, lateIds: r.m78.lateIds || [], bio: r.m78.bio || 0, cullet: r.m78.cullet || 0, cores: r.m78.cores || 0, coreRestores: r.m78.coreRestores || 0,
         battles: r.battles.map(b => [b.s, b.kind, b.res, b.pCP, b.eCP, b.lost]), timeouts: r.timeouts, errors: r.errors });
     }
