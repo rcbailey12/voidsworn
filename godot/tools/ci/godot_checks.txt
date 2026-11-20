@@ -14,6 +14,7 @@ headless|world/test/storm_drain_check.gd|-|-|issue 1148: two shield drains keep 
 headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|world/test/nebula_wake_check.gd|-|-|issue 1079: the nebula wake reaches every calm gas shader at max, high and low when on (high is where 1210 picks its optimised cards); off and storm shaders unchanged
 headless|world/test/audit_leftovers_check.gd|-|-|issue 1130: missing wreck kit pieces, Max storm fog, one nebula bench build, and gallery MSAA parity
+headless|world/test/backdrop_clip_check.gd|-|-|issue 1264: ringed giant planets, rings and moons stay inside the camera far plane at r 900 with the widest pan, and rock fades read the live near plane
 headless|world/test/cloud_edge_check.gd|-|-|issue 1263: storm and nebula cloud footprints reach zero smoothly inside their texture on all four sides, so no cloud ends in a straight line
 headless|world/test/max_4k_cost_check.gd|-|-|issue 1262: Max skips SSIL, the zero underlay is not drawn, Max storm cards are bounded; VS_1262_OLD brings each back
 headless|world/test/bake_cache_cap_check.gd|-|-|issue 1265: the planet bake cache on disk keeps under its cap, least recently used first, never the running battle's maps or the map just saved; stale .tmp files go

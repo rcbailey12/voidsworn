@@ -52,6 +52,9 @@ shader_type spatial;
 render_mode cull_back;
 // A sphere about the pose's origin bounds every orientation of this batch's mesh.
 instance uniform float rock_radius = 1.0;
+global uniform float cam_near;
+global uniform vec4 cam_eye;
+global uniform vec3 cam_fwd;
 varying flat float camera_cover;
 // #230 option B (issue #541): rocks turn at their stored rate under the cap law by default; VS_ROCK_TUMBLE=0 holds the pose.
 uniform float tumble_k = 0.0;
@@ -120,9 +123,16 @@ void vertex() {
 	vL = VERTEX;
 	vScale = length(MODEL_MATRIX[0].xyz);
 	float radius = rock_radius * max(vScale, max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
-	float clearance = distance(CAMERA_POSITION_WORLD, MODEL_MATRIX[3].xyz) - radius;
-	// The battle camera's near plane is 0.5 units out. Fade the whole instance before it can cut the surface.
-	camera_cover = smoothstep(2.0, 2.0 + max(1.0, radius * 0.25), clearance);
+	// Artoo, PR 1306: measure from the gameplay camera the rig publishes, not this pass's own camera, so a shadow pass
+	// (seen from the light) fades the rock exactly as the view does. Without a live rig, the pass's camera is used.
+	vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;
+	vec3 fwd = cam_eye.w > 0.5 ? cam_fwd : -INV_VIEW_MATRIX[2].xyz;
+	float clearance = distance(eye, MODEL_MATRIX[3].xyz) - radius;
+	// Issue 1264: fade the whole instance before the live near plane (cam_near, set by camera_rig.gd: 1, 5 or 15 by
+	// zoom since issue 368) can cut its surface. Depth along the view, not straight-line distance, is what the near
+	// plane cuts, so a rock off to the side fades by its depth too.
+	float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;
+	camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));
 	vC = COLOR;
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
@@ -271,6 +281,9 @@ const CRYSTAL_SHADER := """
 shader_type spatial;
 render_mode cull_back;
 instance uniform float rock_radius = 1.0;
+global uniform float cam_near;
+global uniform vec4 cam_eye;
+global uniform vec3 cam_fwd;
 varying flat float camera_cover;
 uniform vec3 glow = vec3(0.3, 0.8, 1.0);
 uniform vec3 edge = vec3(0.7, 0.45, 1.0);
@@ -287,8 +300,14 @@ void vertex() {
 	vC = COLOR;
 	float scale = max(length(MODEL_MATRIX[0].xyz), max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
 	float radius = rock_radius * scale;
-	float clearance = distance(CAMERA_POSITION_WORLD, MODEL_MATRIX[3].xyz) - radius;
-	camera_cover = smoothstep(2.0, 2.0 + max(1.0, radius * 0.25), clearance);
+	// Artoo, PR 1306: measure from the gameplay camera the rig publishes, not this pass's own camera, so a shadow pass
+	// (seen from the light) fades the rock exactly as the view does. Without a live rig, the pass's camera is used.
+	vec3 eye = cam_eye.w > 0.5 ? cam_eye.xyz : CAMERA_POSITION_WORLD;
+	vec3 fwd = cam_eye.w > 0.5 ? cam_fwd : -INV_VIEW_MATRIX[2].xyz;
+	float clearance = distance(eye, MODEL_MATRIX[3].xyz) - radius;
+	// Issue 1264: as ROCK_SHADER, fade before the live near plane cuts the surface.
+	float depth_clear = dot(MODEL_MATRIX[3].xyz - eye, fwd) - radius;
+	camera_cover = smoothstep(cam_near + 1.5, cam_near + 1.5 + max(1.0, radius * 0.25), min(clearance, depth_clear));
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
 	float axis_length = length(ic.xyz);
