@@ -212,6 +212,57 @@ def material_setup():
     kit.KIT_NAME = 'ithar_CD5 on the shared Glasswright kit (tools/blender/kits/ithar)'
 
 
+def thick_shell(ob, t, centre):
+    """give an open surface real thickness t without a solidify modifier (r5c): a back layer along the vertex normals
+    (inward, or split either side when `centre`) and walls on the open edges. Point attributes are copied to the back
+    layer. A vertex with no normal (a pinched ribbon tip) stays put, so no spikes."""
+    import bpy
+    me = ob.data
+    n = len(me.vertices)
+    co = [v.co.copy() for v in me.vertices]
+    nr = [me.vertex_normals[i].vector.copy() for i in range(n)]
+    a, b = (0.5 * t, -0.5 * t) if centre else (0.0, -t)
+    verts = [c + q * a for c, q in zip(co, nr)] + [c + q * b for c, q in zip(co, nr)]
+    faces = [tuple(p.vertices) for p in me.polygons]
+    faces += [tuple(v + n for v in reversed(f)) for f in faces]
+    count = {}
+    for f in me.polygons:
+        vs = list(f.vertices)
+        for i in range(len(vs)):
+            e = (vs[i], vs[(i + 1) % len(vs)])
+            count[tuple(sorted(e))] = count.get(tuple(sorted(e)), 0) + 1
+    for f in me.polygons:
+        vs = list(f.vertices)
+        for i in range(len(vs)):
+            u, w = vs[i], vs[(i + 1) % len(vs)]
+            if count[tuple(sorted((u, w)))] == 1:
+                faces.append((w, u, u + n, w + n))
+    attrs = {}
+    for at in me.attributes:
+        if at.domain == 'POINT' and not at.name.startswith('.') and at.name != 'position':
+            if at.data_type == 'FLOAT':
+                vals = [0.0] * n; at.data.foreach_get('value', vals); attrs[at.name] = ('FLOAT', vals)
+            elif at.data_type == 'FLOAT_COLOR':
+                vals = [0.0] * (4 * n); at.data.foreach_get('color', vals); attrs[at.name] = ('FLOAT_COLOR', vals)
+    mats = list(me.materials)
+    new = bpy.data.meshes.new(me.name + '_thick')
+    new.from_pydata([tuple(v) for v in verts], [], faces)
+    for m in mats:
+        new.materials.append(m)
+    for name, (kind, vals) in attrs.items():
+        if kind == 'FLOAT':
+            new.attributes.new(name, 'FLOAT', 'POINT')
+        else:
+            new.color_attributes.new(name, 'FLOAT_COLOR', 'POINT')
+    for name, (kind, vals) in attrs.items():   # fetch after creating all (adding one moves the others' storage)
+        at = new.attributes[name]
+        at.data.foreach_set('value' if kind == 'FLOAT' else 'color', vals + vals)
+    for p in new.polygons:
+        p.use_smooth = True
+    ob.data = new
+    new.update()
+
+
 def own_part():
     # Part is a data container, not a borrowed shape.
     from kit import HP
@@ -297,9 +348,10 @@ def build(K):
         rgb, g = gw.mosaic_tint(x, a, gap_of, stack.PALETTE, stack.WEIGHTS, seed=0, tones=stack.TONES)  # seed 0: amber 57, violet 26, green 16 on top (the concept's shares)
         tint.data[i].color = tuple(rgb) + (1,)
         glow.data[i].value = g
-    md = hull.modifiers.new('shell', 'SOLIDIFY')
-    md.thickness = 0.065
-    md.offset = -1
+    # r5c (death seam check, r5b): the core's thickness is real geometry, not a 'skin' modifier. The export lines a skin
+    # modifier's back with a dark inside material; under the ribbons that lining tore apart from its own piece at every
+    # break and breach (about 3,000 of the 3,500 triangles outside their piece). The core's inner face is mosaic too.
+    thick_shell(hull, 0.065, centre=False)
     K.mass('Mosaic core', hull, 'opaque glowing stained-glass mosaic',
            note='Run 2 oval core, unchanged optic roots; leaf panels of amber, violet and green cells; never see-through.')
     K.mark('flowing_hull', 'hull', ['bevel', 'step', 'overhang'])
@@ -330,7 +382,10 @@ def build(K):
             ob.data.attributes.new(an, 'FLOAT', 'POINT')
         for an, vals in attrs.items():
             ob.data.attributes[an].data.foreach_set('value', vals)
-        sd = ob.modifiers.new('shell', 'SOLIDIFY'); sd.thickness = 0.035; sd.offset = 0  # 'shell': the contract renames it 'skin' and scales it
+        # r5c: the ribbon's thickness is real geometry, not a solidify modifier. A modifier would be the contract's 'skin',
+        # and the export lines a skin's back with an inside material: a ribbon's underside is outside plating over the
+        # mosaic, not an inside lining (death seam check, r5b).
+        thick_shell(ob, 0.035, centre=True)
         ob['zone'] = 'pearl ribbon'
         for side in (-1, 1):
             pts = r.edge(skin, side, 180)
@@ -379,21 +434,43 @@ def build(K):
         K.built.append(dict(id=fid, kind='engine', inv=['stern_cluster'], shaped=True, detailed=True,
                             subs=['grown root', 'recessed lens', 'stored light', 'bloom']))
     # Full internal construction follows the leaf, not rectangular room boxes.
+    # r5c (death seam check, PC run r5b): an inside object goes whole to the piece its middle lies in, so a deck or light
+    # core running across a break stuck out of its own piece. Each is cut into one span per compartment, with a gap at
+    # every break (its jagged path wanders 0.14 either side), and no frame stands on a break.
+    BREAKS = (-10.95, -7.45, -4.55, -1.45, 1.45)
+    BREACH_X = (-8.8, -3.1, 4.0, 8.0)     # the breach anchors below: a bite opens the hull there
+    GAP = 0.22
+    edges = [-11.3] + [v for b in BREAKS for v in (b - GAP, b + GAP)] + [6.6]   # clear of the thin stern and nose tips
+    spans = [(edges[i], edges[i + 1]) for i in range(0, len(edges), 2)]
     for z, name in ((-0.55, 'lower'), (0.20, 'upper')):
-        vv, ff = grid_surface(lambda x, t, z=z * SLIM: (x, (width(x) * SLIM - 0.40) * t, z),
-                             80, 14, -11.8, 8.6, -0.73, 0.73, False)
-        ob = K._obj('in_deck_' + name, vv, ff, 'cd5_frame', inside=True)
-        mod = ob.modifiers.new('shell', 'SOLIDIFY'); mod.thickness = 0.06
-        K.inside.append(dict(kind='deck', name=name, z=z, x=(-11.8, 8.6), note='layered glass deck follows the leaf'))
+        for si, (x0, x1) in enumerate(spans):
+            n = max(4, int(80 * (x1 - x0) / 20.4))
+            vv, ff = grid_surface(lambda x, t, z=z * SLIM: (x, (width(x) * SLIM - 0.40) * t, z),
+                                 n, 14, x0, x1, -0.55, 0.55, False)
+            ob = K._obj('in_deck_%s_%d' % (name, si), vv, ff, 'cd5_frame', inside=True)
+            mod = ob.modifiers.new('shell', 'SOLIDIFY'); mod.thickness = 0.06
+        K.inside.append(dict(kind='deck', name=name, z=z, x=(edges[0], edges[-1]), note='layered glass deck follows the leaf, one span per compartment'))
     for i in range(15):
         x = -11.6 + 1.35 * i
-        pts = [skin(x, a * 2 * math.pi / 64, inset=0.23) for a in range(65)]
+        # off every break (its jagged path) and out from under every breach bite (death seam check, r5b)
+        for _ in range(4):
+            near = [b for b in BREAKS if abs(x - b) < 0.65] + [b for b in BREACH_X if abs(x - b) < 0.9]
+            if not near:
+                break
+            x = near[0] + (0.65 if near[0] in BREAKS else 0.9) * (1 if x >= near[0] else -1) + (0.01 if x >= near[0] else -0.01)
+        if x > 6.6 or any(abs(x - b) < 0.65 for b in BREAKS) or any(abs(x - b) < 0.9 for b in BREACH_X):
+            continue    # the nose is too thin for a frame, or no clear room between a break and a breach
+        pts = [skin(x, a * 2 * math.pi / 64, inset=1.0) for a in range(65)]
         K._obj('in_frame_%02d' % i, *tube_mesh(pts, [0.065] * len(pts), 8), 'cd5_frame', inside=True)
         K.inside.append(dict(kind='bulkhead', name='annealed frame %02d' % i, x=x, note='open structural glass frame'))
     for k, col in enumerate(('amber', 'violet', 'green')):
-        pts = [(-11.8 + 21.0 * i / 100, 0.30 * math.cos(i * 0.07 + k * 2.1),
-                -0.07 + 0.21 * math.sin(i * 0.07 + k * 2.1)) for i in range(101)]
-        K._obj('in_light_core_' + col, *tube_mesh(pts, [0.10] * len(pts), 12), 'cd5_' + col, inside=True, smooth=True)
+        line = lambda x: (x, 0.30 * math.cos((x + 11.8) / 0.21 * 0.07 + k * 2.1),
+                          -0.07 + 0.21 * math.sin((x + 11.8) / 0.21 * 0.07 + k * 2.1))
+        for si, (x0, x1) in enumerate(spans):
+            x1 = min(x1, 9.2)
+            n = max(4, int(100 * (x1 - x0) / 21.0))
+            pts = [line(x0 + (x1 - x0) * i / n) for i in range(n + 1)]
+            K._obj('in_light_core_%s_%d' % (col, si), *tube_mesh(pts, [0.10] * len(pts), 12), 'cd5_' + col, inside=True, smooth=True)
     for x, fid, _, col in OPTICS:
         K._obj('in_reservoir_' + fid, *ellipsoid((x, 0, 0.40), (0.65, 0.52, 0.35)),
                'cd5_' + col, inside=True, smooth=True)
@@ -408,9 +485,9 @@ def build(K):
         path = [(x + dx, y) for dx, y in ((0, -6), (0.13, -3), (-0.12, -1.4),
                                          (0.09, 0), (-0.14, 1.3), (0.12, 3), (0, 6))]
         K.break_line('B%d' % (i + 1), x, 'ragged shatter path at the lens bay; whole optics, never a straight saw cut', path=path)
-    # Fore optic peels away above the forward waveguides, without cutting either lance.
-    K.break_line('O3-peel', 6.0, 'whole fore optic above the flowing skin; one compartment',
-                 path=[(4.6, 1.28), (7.4, 1.28)], kind='long')  # r5: between the lance tops and the O3 seat (root bottom 1.32)
+    # r5c: no O3 peel. On the slimmer hull a level plane clear of O3 and both lances lies at the hull top, and the game's
+    # peel takes the whole compartment above it, so it opened the bow piece (death seam check, r5b: insides outside their
+    # piece). O3 stays whole in the bow piece; the playbook allows as many peels as the faction needs, including none.
     K.point('core', 'hp_core', (-0.4, 0, 0.10))
     for i, (x, side, sec) in enumerate(((-8.8, 1, 'eng'), (-8.8, -1, 'eng'),
                                        (-3.1, 1, 'mid'), (-3.1, -1, 'mid'), (4, 1, 'prow'),
