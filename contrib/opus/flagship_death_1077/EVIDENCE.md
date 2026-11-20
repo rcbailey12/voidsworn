@@ -1,5 +1,19 @@
 # Issue 1077: flagship death prototype, PC evidence
 
+## Pass 4B at 8216f983, Nov 20 2026 (PASSED)
+
+PC run OPUS1077_PASS4B.bat attempt 1: pinned commit, safe checkout, throwaway profile (real options unchanged), every
+Godot start through the canonical watchdog tools_live\dc630028a957\pc\tmo.bat, import, both headless checks (28 sooted
+inside surfaces with strain, 0 without; travel unchanged from pass 3), clips and both side-by-sides. For Ryan:
+/mnt/project-files/pc/1077/review/pass4/ (FLAGSHIP1077_A16_strain_death.mp4, 23 s, battle camera then close camera;
+FLAGSHIP1077_A16_stills.jpg, the camera named on each pair).
+
+- The torn insides now read as dark burnt metal up close, not flat grey slabs.
+- The strain band now shows at the battle camera as a wider warm glow along the break.
+- The wreck numbers match pass 3: main pieces 0.57 L, fragments 0.55 L (today 1.35 L and 2.44 L).
+- compose.gd's page now overshoots the movie slightly (scale about 1.05, about 45 px clipped at each outer edge); the
+  review clip is re-cut from the two panels with its own labels.
+
 ## Pass 3C at 66e55036, Nov 19 2026 (PASSED)
 
 PC run OPUS1077_PASS3C.bat attempt 1: pinned commit checked out safely, throwaway profile (real options unchanged), import,
