@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"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"
+	],
+	"date": "2026-11-19T21:48:25Z",
+	"image_sha256": "8caefc7dd1135ee9cbc483531e8d77d9a5bc58613acaf374ac91d4becda51534",
+	"inputs": [],
+	"picture_name": "F5_help.png",
+	"schema": 1,
+	"source_commit": "4e7f379032ea2260ebea301b760b1d03337263fa",
+	"source_diff_sha256": "b0a4d9fe31b5fb5c42c6f63b251128062e7fc6677c46863eb479c9f8bf36d502",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "4e7f379032ea2260ebea301b760b1d03337263fa",
+			"source_diff_sha256": "b0a4d9fe31b5fb5c42c6f63b251128062e7fc6677c46863eb479c9f8bf36d502",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		671,
+		318,
+		720
+	],
+	"stamp_template_sha256": "06e58c74713a20a55bae9a9aa0c5817cdc302d769873cd3713f0b5b7413267c5",
+	"strip_sha256": [
+		"06e58c74713a20a55bae9a9aa0c5817cdc302d769873cd3713f0b5b7413267c5"
+	],
+	"strip_size": [
+		318,
+		49
+	]
+}
