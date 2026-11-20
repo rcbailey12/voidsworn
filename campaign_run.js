@@ -176,7 +176,7 @@ ACT.takePerk=arg=>{ const [uid,p]=arg.split(':'); const s=RUN.fleet.find(x=>x.ui
 // R78 Q9: the price of a captured hull at the Cinder Line yards. It is sold off the Crusade's own ladder (the base
 // cost before the owner's faction pricing, times the Crusade class price), then the yard price multiplier applies,
 // so a captured Eclipse mote costs what a Warden costs, not what Eclipse pays for it.
-function capturedHullPrice(t){ return Math.round(Math.round((t.cost0!=null?t.cost0:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*priceMult()); }
+function capturedHullPrice(t){ return Math.round(Math.round((t.cost0!=null?t.cost0:t.val!=null?t.val:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*priceMult()); }
 // R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock, so a captured
 // battleship waits for u_battleship like the Cathedral, and likewise a carrier for u_carrier, a dreadnought for u_dread.
 function cinderPool(){ return CINDER_PRIZES.filter(h=>{ const cl=HULLS[h].cls; return cl==='Carrier'?!!META.unlocked.u_carrier:cl==='Battleship'?!!META.unlocked.u_battleship:cl==='Dreadnought'?!!META.unlocked.u_dread:true; }); }

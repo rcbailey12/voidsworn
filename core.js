@@ -243,7 +243,7 @@ const LATE_SHOP={relic:120,cp:130,cpMax:2,core:.2,skip:['ledger','logbook','salv
 // Glasswright cullet (1086 G-B): a win refunds credits for your own lost hulls, by class, at most 100 a battle (issue 1290: about 25% of
 // a hull's price, up from 15 to 18%; still under the 35% decommission value, so losing a ship never profits)
 const CULLET={Frigate:25,Destroyer:45,Cruiser:70,Carrier:85,Battleship:100,cap:100};
-function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
+function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.val)?H.val:H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
 function prizeScrap(tpl){ return Math.round(shipValue(tpl)*.35); }
 // issue 1290: what decommissioning pays. A ship regrown from an Eclipse core pays nothing until it has fought a battle (regrow is 20%
 // of value, scrap 35%, so regrow-then-sell was free money). Paid in the hull purse: biomass for the Chorus, credits for the rest.
