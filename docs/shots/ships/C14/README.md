@@ -1,6 +1,17 @@
 # C14 brood-sac carrier (B22_11): shots (issue 1155)
 
-**Status: R341 baseline, not the final look.** Ryan rejected the R341 Chorus look in game on Nov 20 (issue 1291 rebuilds the
+**Current: round G with armour almost everywhere (issue 1291, R374), PC run H.** Shared ship job at commit 625d3f2a (pin
+board/pin-1155-c14h, job dir opus1155c14h), done PASS 17:17 CST Nov 20: stages 3 to 7, readback, interiors and death seam all exit
+0; stage 5 detail check gated PASS (normal relief 5.22 deg). 512,449 triangles, 16 surfaces. glb sha256 ea473110...5934d07
+(manifest row B22_11). Results on board/pc-out-1155c14h (218024d6).
+
+- `C14_runH_concept_vs_ingame.jpg`: the accepted concept beside run H in Godot (three-quarter, side, top, below, close).
+- Publish: waits for Ryan's yes; the publish and its readback are linked here and on PR 1172 when done.
+- `C14_roundG_cloud_preview.jpg`: the first round G cloud preview (before the keel wrap), kept as history.
+
+Everything below is the **R341 baseline** (history, superseded by run H).
+
+**R341 baseline (history).** Ryan rejected the R341 Chorus look in game on Nov 20 (issue 1291 rebuilds the
 shared Chorus kit, C13 first, then C10 to C14). These shots prove C14's build, export and seams on the R341 stack at fbd9da76;
 the appearance and the shared install are not final. Do not queue another bake of this stack: C14 is re-dressed on 1291's kit
 after Ryan accepts C13. No shared C14 install is verified (the run installs into its own clone only).

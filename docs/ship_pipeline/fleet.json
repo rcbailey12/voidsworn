@@ -23,7 +23,7 @@
     "chorus|Frigate": {"ship": "Drone-spawn", "concept": "contrib/muse/design/class_family_chorus_2026_11/chorus_C12_drone_spawn_v10.jpg", "job": 1291, "pending": "Round G skin run (PR 1342).", "note": "Skin is the round G Chorus look (issue 1291), not the concept's colours."},
     "chorus|Destroyer": {"ship": "Spitter", "concept": "contrib/muse/design/class_family_chorus_2026_11/chorus_C13_spitter_v7.jpg", "accepted": "Ryan, Nov 20 (round G, PR 1308)", "pending": "Tail band fix, run H (PR 1411)."},
     "chorus|Cruiser": {"ship": "Bladeback", "concept": "contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg", "ruling": "R204", "job": 1291, "pending": "Round G armour: the installed files still carry the old armour (PR 1347)."},
-    "chorus|Carrier": {"ship": "Brood-sac", "concept": "contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg", "job": 1155, "note": "Built on PR 1172 (draft); waits for its round G re-dress."},
+    "chorus|Carrier": {"ship": "Brood-sac", "concept": "contrib/muse/design/class_family_chorus_2026_11/chorus_C14_brood_sac_v11.jpg", "job": 1155, "note": "Round G with armour almost everywhere (R374): PC run H passed (opus1155c14h, 625d3f2a); waits for Ryan's yes, then publish and PR 1172."},
     "chorus|Bio-titan": {"ship": "The Ninefold Maw (flagship)", "concept": "contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg", "ruling": "R204", "job": 1291, "note": "Round G run is PR 1351."},
 
     "ithar|Frigate": {"ship": "Sliver", "concept": "contrib/muse/design/glasswright_family_2026_11/img/frigate_sliver_r2a.webp", "ruling": "R369", "job": 1415, "note": "Ryan's Nov 16 pick R2a. Built in the CD5 finish (R337)."},
