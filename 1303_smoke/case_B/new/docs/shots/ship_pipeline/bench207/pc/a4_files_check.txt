@@ -1,0 +1,1 @@
+A4 ship files copied from build\godot\assets\ships into the clone: 252 of 252 match godot/assets/ships/manifest.json sha256 (the reviewed builds).

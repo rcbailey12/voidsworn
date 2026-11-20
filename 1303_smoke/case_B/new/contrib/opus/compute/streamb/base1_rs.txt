@@ -1,0 +1,12 @@
+RUNSIM {
+ "s1 battle": "691 battles, won 97%, lost/fight 0.22, e/p cp 1.00, rounds 4.0",
+ "s1 boss": "203 battles, won 90%, lost/fight 0.68, e/p cp 1.87, rounds 7.6",
+ "s1 elite": "128 battles, won 90%, lost/fight 0.63, e/p cp 1.39, rounds 4.5",
+ "s2 battle": "316 battles, won 89%, lost/fight 0.60, e/p cp 1.39, rounds 4.4",
+ "s2 boss": "127 battles, won 84%, lost/fight 0.91, e/p cp 1.95, rounds 8.5",
+ "s2 elite": "89 battles, won 76%, lost/fight 0.96, e/p cp 1.59, rounds 5.2",
+ "s3 battle": "180 battles, won 91%, lost/fight 0.50, e/p cp 1.63, rounds 4.3",
+ "s3 boss": "85 battles, won 82%, lost/fight 1.11, e/p cp 2.34, rounds 6.7",
+ "s3 elite": "57 battles, won 89%, lost/fight 0.96, e/p cp 1.89, rounds 4.5"
+}
+reach {"1":240,"2":182,"3":107,"won":70}

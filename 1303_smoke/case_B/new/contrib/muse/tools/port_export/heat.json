@@ -1,0 +1,37 @@
+{
+ "h_flag": {
+  "n": "Vengeful flagships",
+  "d": "Sector flagships have 20% more hull.",
+  "w": 1
+ },
+ "h_hunted": {
+  "n": "Hunted",
+  "d": "Enemy fleets are 15% larger.",
+  "w": 2
+ },
+ "h_elite": {
+  "n": "Veteran escorts",
+  "d": "One ship in every enemy fleet is an elite.",
+  "w": 1
+ },
+ "h_undying": {
+  "n": "Undying foes",
+  "d": "Any enemy ship may reassemble once when destroyed.",
+  "w": 2
+ },
+ "h_coffers": {
+  "n": "Lean coffers",
+  "d": "Shipyard prices are 25% higher.",
+  "w": 1
+ },
+ "h_repair": {
+  "n": "Short supplies",
+  "d": "Every repair restores half as much.",
+  "w": 1
+ },
+ "h_cmd": {
+  "n": "Slow orders",
+  "d": "Your Command reaches full power a round later.",
+  "w": 1
+ }
+}

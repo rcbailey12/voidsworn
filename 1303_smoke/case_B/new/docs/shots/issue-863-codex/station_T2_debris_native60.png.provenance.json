@@ -1,0 +1,54 @@
+{
+  "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+  "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "station_T2_debris_native60.png",
+  "date": "2026-11-18T00:03:11Z",
+  "sources": [
+    {
+      "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+      "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "station_T2_debris60.png",
+      "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+      "source_dirty": true,
+      "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+      "stage": "installed in game",
+      "date": "2026-11-17T23:58:22Z",
+      "image_sha256": "135f7e6ae4ffd3b8653febc4c1d06d0f21d8e236de75f8add748bae13133b3bd",
+      "sources": [
+        {
+          "source_commit": "b70e1580505120cc138c5dbcf3277c00e6296ddb",
+          "source_diff_sha256": "8db3a27538799ca0c0b0a529dbfc7ea580159983378cfb883a2e1a5f93590e97",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "b8ebe8c94a9a6c91da6b290b8393286fa9ae9c2f54486b36f19feb1e6c28a831"
+  ],
+  "stamp_template_sha256": "b8ebe8c94a9a6c91da6b290b8393286fa9ae9c2f54486b36f19feb1e6c28a831",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAACw0lEQVR4nO3av0uUcQDHce/uuUc9T6hTosUIqQxqbukvSNoLAqF/QGoLqqGiHwQFrgVFFA0ORUtLg1sQBLUUoQZRoUJ0ipQH1tDQJggR+lnu9RqfZ3jgs7x5vs9TqZWNHgBg+1UDzwAARBcAcrzpAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoAkCI6AJAiOgCQIjoArBlJifGb92eMuhmKrWyselNAPhnl86e2jMystZZG9x9eP7j/OVrN423QbHxAgD8l2ql0t/f6KlUluZfDfWWd6euv3/7cmjf0Qvnz1n0L8fLAGyZubnZarXaHGz29fV1Vr4MD7fqP+ce3b9z5eoNKzteBmDrXZw8OTY2trLcbreXy7Le2tkaaDbLHXtn38x8+FY8fHCva0f3TReAbXHm9PFOZ/3QwdFaURRF2RholGXv4sLC9LMX679+v373qQt3F10AttGJY0d2DbcO7B8tinp/ozH95PnK6o+vS+3PS8tduLvoApAwOTFeL+uPn84sfl/t2sVFFwBC/L0MACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwAhogsAIaILACGiCwA9GX8AOgpP78fjS2IAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "fb3dc0c116bdfeb87bc70edbaff0144ea8a474e85c776253eea4d2ee0696ce68"
+}

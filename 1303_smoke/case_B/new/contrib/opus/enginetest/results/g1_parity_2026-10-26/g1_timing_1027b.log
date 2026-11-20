@@ -1,0 +1,32 @@
+[Mon 10/26/2026 12:01:23.17] started 
+scenario s4 226 records end win -> C:\Users\rcbai\Downloads\voidsworn_test\build\godot\rules\test\golden\s4.jsonl
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s4 226 records end win -> C:\Users\rcbai\Downloads\voidsworn_test\build\godot\rules\test\out\s4.jsonl
+226 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+scenario s5 331 records end win -> C:\Users\rcbai\Downloads\voidsworn_test\build\godot\rules\test\golden\s5.jsonl
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s5 331 records end win -> C:\Users\rcbai\Downloads\voidsworn_test\build\godot\rules\test\out\s5.jsonl
+331 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+scenario s23 736 records end loss -> C:\Users\rcbai\Downloads\voidsworn_test\build\godot\rules\test\golden\s23.jsonl
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s23 736 records end loss -> C:\Users\rcbai\Downloads\voidsworn_test\build\godot\rules\test\out\s23.jsonl
+736 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+  s4: 26 enemy activations
+    Node   think per activation: average 0.031 s, worst 0.049 s (turn undefined); per round: average 0.200 s, worst 0.265 s
+    Godot  think per activation: average 0.113 s, worst 0.279 s (turn undefined); per round: average 0.731 s, worst 1.169 s
+    Godot/Node: 3.7x on average. Worst enemy think is inside the 0.5 s bar
+  s5: 41 enemy activations
+    Node   think per activation: average 0.027 s, worst 0.048 s (turn undefined); per round: average 0.185 s, worst 0.335 s
+    Godot  think per activation: average 0.111 s, worst 0.291 s (turn undefined); per round: average 0.758 s, worst 1.452 s
+    Godot/Node: 4.1x on average. Worst enemy think is inside the 0.5 s bar
+  s23: 73 enemy activations
+    Node   think per activation: average 0.030 s, worst 0.063 s (turn undefined); per round: average 0.194 s, worst 0.388 s
+    Godot  think per activation: average 0.086 s, worst 0.456 s (turn undefined); per round: average 0.568 s, worst 1.441 s
+    Godot/Node: 2.9x on average. Worst enemy think is inside the 0.5 s bar
+[Mon 10/26/2026 12:01:23.18] finished 

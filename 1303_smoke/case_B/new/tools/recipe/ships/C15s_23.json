@@ -1,0 +1,301 @@
+{
+ "ship": "C15s_23",
+ "name": "Hullbreaker cruiser (Ashfall Hullbreakers)",
+ "faction": "hullbreakers",
+ "game_ship": "c_marauder",
+ "game_code": "C15s_23",
+ "length_world": 14.5,
+ "concept": "docs/ship_pipeline/concepts/C15s_23.webp",
+ "shape_ref": "Downloads/voidsworn_test/bakeoff/C15s_23_trellis.glb",
+ "shape_ref_yaw": 22.0,
+ "concept_camera": "docs/shots/ship_pipeline/route209/round4/concept_camera.json",
+ "hull": "armA8",
+ "tune": "tools/blender/r209/tune5_P.json",
+ "bake": "bakeAb6.py",
+ "cell": "Ab8",
+ "outline_gate": 0.9,
+ "notes": "Weapon positions and sizes measured off the concept through its fitted camera (round 6 README, section 1). pos: ship frame, x to the bow, y to port, z up, length 1. seat: 'flank' finds y on the hull at (x, z); 'top' finds z on the deck at (x, y). pair: true adds the starboard mirror; variant_s gives the mirror its own salvage detail. Casemates: aimed level, 8 degrees forward of the beam (Board ruling on PR 341, round 8; round 7 had 15 from round 6's last commit); the outline score is not allowed to bend the guns. Round 8: the bow guns sit at a fixed height (seat abs, z 0.0095) with their collar at the new hood face (x 0.386) and the muzzles at x 0.448, from the bow fit (tools/blender/r209/fit8.py). Round 7: the forward pair back toward the concept's spot (x 0.356; round 6 had pulled it aft to 0.338 for the score), both pairs flat on the new slab side (proud 0.004). Game export (round 7): game_ship is the ship's id in data.js (its weapon list is the slot order), game_code the ship folder's name in godot/assets/ships. A socket's slot (slot_s for its starboard mirror) says which weapon slot its muzzles fire for: the casemates are the port and starboard scatter batteries (0, 1), the forward and sponson drum racks the torpedoes (2), the two top turrets the flak (3). Sockets with no slot (the twin bow guns, the waist and aft drums) get no hard point.",
+ "parts": [
+  {
+   "name": "casF",
+   "part": "casemate",
+   "seat": "flank",
+   "pos": [
+    0.356,
+    0,
+    -0.054
+   ],
+   "aim": [
+    0.139,
+    0.99,
+    0.0
+   ],
+   "size": 0.098,
+   "pair": true,
+   "variant": 0,
+   "variant_s": 1,
+   "extra": {
+    "h": 0.92,
+    "barrel": 0.52,
+    "proud": 0.004
+   },
+   "slot": 0,
+   "slot_s": 1
+  },
+  {
+   "name": "casA",
+   "part": "casemate",
+   "seat": "flank",
+   "pos": [
+    0.232,
+    0,
+    -0.054
+   ],
+   "aim": [
+    0.139,
+    0.99,
+    0.0
+   ],
+   "size": 0.096,
+   "pair": true,
+   "variant": 1,
+   "variant_s": 2,
+   "extra": {
+    "h": 0.96,
+    "barrel": 0.55,
+    "proud": 0.004
+   },
+   "slot": 0,
+   "slot_s": 1
+  },
+  {
+   "name": "bow",
+   "part": "bow_battery",
+   "seat": "abs",
+   "pos": [
+    0.355,
+    0,
+    0.0095
+   ],
+   "aim": [
+    1,
+    0,
+    0
+   ],
+   "size": 0.0105,
+   "extra": {
+    "gap": 0.028,
+    "barrel": 0.064,
+    "hooded": 1
+   }
+  },
+  {
+   "name": "rackF",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    0.238,
+    0,
+    0.0
+   ],
+   "size": 0.1,
+   "variant": 0,
+   "extra": {
+    "n": 2,
+    "pitch": 0.046,
+    "r": 0.017,
+    "L": 0.09,
+    "zc": 0.066
+   },
+   "slot": 2
+  },
+  {
+   "name": "rackM",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    0.104,
+    0.137,
+    0.0
+   ],
+   "size": 0.1,
+   "pair": true,
+   "variant": 0,
+   "variant_s": 1,
+   "extra": {
+    "n": 3,
+    "pitch": 0.045,
+    "stagger": 0.012,
+    "r": 0.019,
+    "L": 0.098,
+    "zc": 0.05
+   },
+   "slot": 2,
+   "slot_s": 2
+  },
+  {
+   "name": "rackA",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    -0.214,
+    0,
+    0.0
+   ],
+   "size": 0.1,
+   "variant": 2,
+   "extra": {
+    "n": 2,
+    "pitch": 0.04,
+    "r": 0.017,
+    "L": 0.084,
+    "zc": 0.042
+   }
+  },
+  {
+   "name": "rackW",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    -0.052,
+    0.134,
+    0.0
+   ],
+   "size": 0.1,
+   "pair": true,
+   "variant": 1,
+   "variant_s": 2,
+   "extra": {
+    "n": 1,
+    "r": 0.017,
+    "L": 0.078,
+    "lift": 0.002
+   }
+  },
+  {
+   "name": "turA",
+   "part": "turret",
+   "seat": "top",
+   "pos": [
+    -0.332,
+    0.0,
+    0.0
+   ],
+   "aim": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "size": 0.014,
+   "pair": false,
+   "variant": 0,
+   "extra": {
+    "elev": 14
+   },
+   "slot": 3
+  },
+  {
+   "name": "turS",
+   "part": "turret",
+   "seat": "top",
+   "pos": [
+    -0.448,
+    0.0,
+    0.0
+   ],
+   "aim": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "size": 0.012,
+   "pair": false,
+   "variant": 1,
+   "extra": {
+    "elev": 10
+   },
+   "slot": 3
+  },
+  {
+   "name": "mkID",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    0.448,
+    0,
+    -0.072
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "frame",
+    "w": 0.026,
+    "h": 0.018
+   }
+  },
+  {
+   "name": "mkTag",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    0.302,
+    0,
+    -0.04
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "tag",
+    "w": 0.006,
+    "h": 0.026
+   }
+  },
+  {
+   "name": "mkTag2",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    0.17,
+    0,
+    -0.03
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "frame",
+    "w": 0.018,
+    "h": 0.012,
+    "kind": "yellow",
+    "line": 0.0018
+   }
+  },
+  {
+   "name": "mkDisc",
+   "part": "marking",
+   "seat": "top",
+   "pos": [
+    0.455,
+    0.03,
+    0.0
+   ],
+   "extra": {
+    "mark": "disc",
+    "w": 0.022,
+    "above": 0.0012
+   }
+  },
+  {
+   "name": "lamps",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    -0.262,
+    0,
+    0.024
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "lamps",
+    "n": 7,
+    "step": 0.013
+   }
+  }
+ ]
+}

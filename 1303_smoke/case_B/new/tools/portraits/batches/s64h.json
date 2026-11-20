@@ -1,0 +1,258 @@
+{
+ "out": "s64",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "nem_corsair_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_1.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_1.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_1.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_1.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_1.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_1.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_2.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_2.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_2.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_2.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_2.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_2.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_3.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_3.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_3.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_3.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_3.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_3.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_4.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_4.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_4.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_4.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_4.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_4.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_5.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_5.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_5.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_5.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_5.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_5.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_6.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_6.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_6.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_6.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop64/nem_corsair_6.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop64/nem_corsair_6.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  }
+ ]
+}

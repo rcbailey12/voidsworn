@@ -1,0 +1,281 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "blank": {
+    "draw_calls": 0.0,
+    "frame_median_ms": 0.444,
+    "frame_p99_ms": 0.741,
+    "frames": 360,
+    "gpu_median_ms": 0.388000011444092,
+    "label": "empty",
+    "render_cpu_median_ms": 0.105999998748302,
+    "warmup": 100
+  },
+  "capture_probe_sha256": "ef8d3cb4859ce4136c5a3840d680d8c310092ab35bc1282c97ec929d3c4b4256",
+  "fleet_layout": "5 by 4 shared copies; spacing 1.15 lengths; camera r=8 lengths",
+  "godot": {
+    "build": "official",
+    "hash": "ed1daf0bf001b61586d9930840f2f1394092c079",
+    "hex": 263938,
+    "major": 4,
+    "minor": 7,
+    "patch": 2,
+    "status": "stable",
+    "string": "4.7.2-stable (official)",
+    "timestamp": 0
+  },
+  "normal_proof": "raw and high-pass donor only; local micro-normal excluded from both",
+  "renderer": "forward_plus",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "rows": [
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 158.0,
+        "frame_median_ms": 2.76,
+        "frame_p99_ms": 3.296,
+        "frames": 360,
+        "gpu_median_ms": 2.68099999427795,
+        "label": "today_20",
+        "render_cpu_median_ms": 0.264999985694885,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          1.04101479053497,
+          0.409542322158813,
+          0.536779165267944
+        ],
+        "triangles": 256468,
+        "world_length": 41.6
+      },
+      "material_crops": {},
+      "route": "today",
+      "single": {
+        "draw_calls": 54.0,
+        "frame_median_ms": 0.658,
+        "frame_p99_ms": 0.982,
+        "frames": 360,
+        "gpu_median_ms": 0.602999985218048,
+        "label": "today_1",
+        "render_cpu_median_ms": 0.142000004649162,
+        "warmup": 100
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 10.0,
+        "frame_median_ms": 3.976,
+        "frame_p99_ms": 4.683,
+        "frames": 360,
+        "gpu_median_ms": 3.88700008392334,
+        "label": "V1_20",
+        "render_cpu_median_ms": 0.156000003218651,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          1.04101502895355,
+          0.405977010726929,
+          0.516829073429108
+        ],
+        "triangles": 307477,
+        "world_length": 41.6
+      },
+      "material_crops": {
+        "bow": {
+          "normal": [
+            -0.0336659885942936,
+            0.0,
+            0.999433100223541
+          ],
+          "target": [
+            12.8745079040527,
+            -5.00390958786011,
+            6.55495023727417
+          ]
+        },
+        "panel": {
+          "normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "target": [
+            2.60985922813416,
+            -1.09272682666779,
+            7.99220085144043
+          ]
+        }
+      },
+      "route": "V1",
+      "single": {
+        "draw_calls": 3.0,
+        "frame_median_ms": 0.68,
+        "frame_p99_ms": 0.982,
+        "frames": 360,
+        "gpu_median_ms": 0.623000025749207,
+        "label": "V1_1",
+        "render_cpu_median_ms": 0.115000002086163,
+        "warmup": 100
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 9.0,
+        "frame_median_ms": 40.199,
+        "frame_p99_ms": 40.758,
+        "frames": 360,
+        "gpu_median_ms": 40.0009994506836,
+        "label": "Raw_20",
+        "render_cpu_median_ms": 0.219999998807907,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.999999940395355,
+          0.338275939226151,
+          0.322813153266907
+        ],
+        "triangles": 13878546,
+        "world_length": 41.6
+      },
+      "material_crops": {},
+      "route": "Raw",
+      "single": {
+        "draw_calls": 3.0,
+        "frame_median_ms": 2.799,
+        "frame_p99_ms": 3.361,
+        "frames": 360,
+        "gpu_median_ms": 2.71600008010864,
+        "label": "Raw_1",
+        "render_cpu_median_ms": 0.148000001907349,
+        "warmup": 100
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 18.0,
+        "frame_median_ms": 3.133,
+        "frame_p99_ms": 3.702,
+        "frames": 360,
+        "gpu_median_ms": 3.0460000038147,
+        "label": "V2_20",
+        "render_cpu_median_ms": 0.159999996423721,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.999999940395355,
+          0.33794766664505,
+          0.315056145191193
+        ],
+        "triangles": 289047,
+        "world_length": 41.6
+      },
+      "material_crops": {
+        "bow": {
+          "normal": [
+            0.543929696083069,
+            0.0407669469714165,
+            0.838139891624451
+          ],
+          "target": [
+            12.092812538147,
+            -2.82106518745422,
+            4.07333183288574
+          ]
+        },
+        "panel": {
+          "normal": [
+            -0.0509913675487041,
+            0.561271250247955,
+            0.826059579849243
+          ],
+          "target": [
+            -0.635488569736481,
+            -0.436832308769226,
+            4.96639347076416
+          ]
+        }
+      },
+      "route": "V2",
+      "single": {
+        "draw_calls": 6.0,
+        "frame_median_ms": 0.676,
+        "frame_p99_ms": 0.999,
+        "frames": 360,
+        "gpu_median_ms": 0.619000017642975,
+        "label": "V2_1",
+        "render_cpu_median_ms": 0.115000002086163,
+        "warmup": 100
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 9.0,
+        "frame_median_ms": 5.523,
+        "frame_p99_ms": 6.071,
+        "frames": 360,
+        "gpu_median_ms": 5.25,
+        "label": "V3_20",
+        "render_cpu_median_ms": 0.159999996423721,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.982147991657257,
+          0.313135057687759,
+          0.354637086391449
+        ],
+        "triangles": 622570,
+        "world_length": 41.6
+      },
+      "material_crops": {
+        "bow": {
+          "normal": [
+            0.0328714288771153,
+            0.0,
+            0.999459564685822
+          ],
+          "target": [
+            13.0333337783813,
+            -2.67051696777344,
+            6.458899974823
+          ]
+        },
+        "panel": {
+          "normal": [
+            -0.00792841799557209,
+            -0.000000834060472243436,
+            0.999968588352203
+          ],
+          "target": [
+            -1.33020198345184,
+            -3.58682179450989,
+            6.63336181640625
+          ]
+        }
+      },
+      "route": "V3",
+      "single": {
+        "draw_calls": 3.0,
+        "frame_median_ms": 0.77,
+        "frame_p99_ms": 1.071,
+        "frames": 360,
+        "gpu_median_ms": 0.712000012397766,
+        "label": "V3_1",
+        "render_cpu_median_ms": 0.114000000059605,
+        "warmup": 100
+      }
+    }
+  ],
+  "textures": "BC7 colour/ORM; BC5 normal; mipmaps; 100 warm-up, 360 measured frames",
+  "vsync": "disabled"
+}

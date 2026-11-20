@@ -1,0 +1,18 @@
+{
+  "basis": "Observed final model captures against the refreshed references. No underside art exists; below cells judge visible construction only.",
+  "V1": {
+    "top": ["REBUILD: ragged fittings around the new bridge", "REBUILD: fused tanks, pipes and old weapon bases", "REBUILD: crossed prongs and fused bow fittings"],
+    "side": ["REBUILD: old stubs around the new engine", "REBUILD: wavy panels and merged pipe roots", "REBUILD: rounded armour and hunting gear"],
+    "below_inspect": ["REBUILD: blended engine-root and pipe joins", "REBUILD: fused belly machinery transitions", "REBUILD: blended prongs and belly armour"]
+  },
+  "V2": {
+    "top": ["REBUILD: torn exhaust and machinery clusters", "REBUILD: fused deck machinery and pipes", "REBUILD: small fused dishes and weapon shapes"],
+    "side": ["REBUILD: ragged bells and detached fragments", "REBUILD: wavy slab and fused upper fittings", "REBUILD: floating blocks and indistinct claws"],
+    "below_inspect": ["REBUILD: lumpy engine roots and loose fragments", "REBUILD: broad bulges and fused belly blocks", "REBUILD: slab nose and fused equipment"]
+  },
+  "V3": {
+    "top": ["CLEAN: separate service fittings and bell mounts", "CLEAN: plate stacks, pipes and mounted racks", "REBUILD: dish/scoop scale and bow mass"],
+    "side": ["CLEAN: separate bells, banks and manifolds", "CLEAN: mounted parts and distinct panel edges", "REBUILD: boxy snout differs from reference"],
+    "below_inspect": ["CLEAN: separate engine ribs and manifolds", "CLEAN: belly seams, pipes and radiators", "CLEAN: flat armour, chines and separate pipes"]
+  }
+}

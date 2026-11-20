@@ -1,0 +1,118 @@
+{
+  "now": "2026-11-17T04:38:00Z",
+  "chains": {
+    "codex_chain_16b": {
+      "issues": [
+        928,
+        929,
+        912,
+        930,
+        920,
+        921
+      ],
+      "text": "start Mon 11/16/2026 20:46:00.00\n928 start 20:46:00.00\n"
+    },
+    "codex_chain_15h": {
+      "issues": [
+        823,
+        824
+      ],
+      "text": "waiting for codex_chain_old.txt\npaused by the Board; not started\n"
+    },
+    "codex_chain_15z": {
+      "issues": [
+        912,
+        930
+      ],
+      "text": "waiting for codex_chain_15y.txt\npaused by the Board; not started\n"
+    },
+    "codex_chain_16a": {
+      "issues": [
+        920,
+        921
+      ],
+      "text": "waiting for codex_chain_15z.txt\nstopped by the Board; not started\n"
+    },
+    "codex_lane_b23": {
+      "issues": [
+        903
+      ],
+      "text": "waiting for codex_lane_b22.txt\npaused by the Board; not started\n"
+    },
+    "codex_lane_b25": {
+      "issues": [
+        922
+      ],
+      "text": "waiting for codex_lane_b24.txt\npaused by the Board; not started\n"
+    },
+    "ds_15s": {
+      "issues": [
+        932
+      ],
+      "text": "932 start Mon 11/16/2026 18:48:00.00\n932 end 19:58:00.00\nall done 19:58:00.00\n"
+    },
+    "codex_lane_b24": {
+      "issues": [
+        936
+      ],
+      "text": "start Mon 11/16/2026 22:33:00.00\n936 start 22:33:00.00\n"
+    }
+  },
+  "jobs": [
+    {
+      "folder": "board/issue-928",
+      "issue": 928,
+      "startedAgo": 112,
+      "status": "running",
+      "age": 40,
+      "checksAge": 1,
+      "title": "Hull hit redo: fireball, sparks, tumbling debris, glowing scar, no floating ring (R303)"
+    },
+    {
+      "folder": "board/issue-944",
+      "issue": 944,
+      "startedAgo": 40,
+      "status": "running",
+      "age": 38
+    },
+    {
+      "folder": "board_c/issue-944",
+      "issue": 944,
+      "startedAgo": 30,
+      "status": "checked_push",
+      "age": 4,
+      "title": "Pause and restart reports each job"
+    },
+    {
+      "folder": "board_d/issue-945",
+      "issue": 945,
+      "startedAgo": 30,
+      "status": "checked_push",
+      "age": 4,
+      "title": "Runner self-test finishes inside its limit"
+    },
+    {
+      "folder": "work217/issue-932-deepseek/20261116_184800/out",
+      "issue": 932,
+      "startedAgo": 230,
+      "status": "running",
+      "age": 227
+    },
+    {
+      "folder": "work217/issue-932-deepseek/out",
+      "issue": 932,
+      "startedAgo": 210,
+      "status": null,
+      "age": 160,
+      "result": "clone failed\npush stopped\nall done\n"
+    },
+    {
+      "folder": "board_b/issue-936",
+      "issue": 936,
+      "startedAgo": 5,
+      "status": "running",
+      "age": 1,
+      "title": "Hullbreaker capitals A16 to A20: rust-red push"
+    }
+  ]
+}

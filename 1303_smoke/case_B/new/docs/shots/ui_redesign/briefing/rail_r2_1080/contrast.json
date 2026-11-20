@@ -1,0 +1,387 @@
+{
+  "method": "WCAG sRGB relative luminance. Foreground theme colors versus every pixel in each text allocation on the rail-hidden capture. Worst pixel and color reported. Anti-aliased edge pixels are not foreground colors.",
+  "sectors": [
+    {
+      "sector": 1,
+      "minimum": 6.54,
+      "by_text": [
+        {
+          "text": "I",
+          "min_contrast": 8.883,
+          "background_max_luminance": 0.000368,
+          "size": 17.0
+        },
+        {
+          "text": "II",
+          "min_contrast": 10.828,
+          "background_max_luminance": 0.002364,
+          "size": 17.0
+        },
+        {
+          "text": "III",
+          "min_contrast": 11.01,
+          "background_max_luminance": 0.001496,
+          "size": 17.0
+        },
+        {
+          "text": "Jump 1 of 7",
+          "min_contrast": 10.946,
+          "background_max_luminance": 0.001799,
+          "size": 19.0
+        },
+        {
+          "text": "OLD BATTLEFIELD",
+          "min_contrast": 16.328,
+          "background_max_luminance": 0.003677,
+          "size": 70.0
+        },
+        {
+          "text": "Held by the Ashfall Hullbreakers",
+          "min_contrast": 17.02,
+          "background_max_luminance": 0.001496,
+          "size": 21.0
+        },
+        {
+          "text": "Ion season: shields recharge 25% slower.",
+          "min_contrast": 10.877,
+          "background_max_luminance": 0.002125,
+          "size": 19.0
+        },
+        {
+          "text": "1",
+          "min_contrast": 8.674,
+          "background_max_luminance": 0.001582,
+          "size": 132
+        },
+        {
+          "text": "RELAY",
+          "min_contrast": 16.321,
+          "background_max_luminance": 0.003702,
+          "size": 54.0
+        },
+        {
+          "text": "Fight an Ashfall Hullbreakers hulk den",
+          "min_contrast": 16.526,
+          "background_max_luminance": 0.003035,
+          "size": 20.0
+        },
+        {
+          "text": "Easy",
+          "min_contrast": 10.946,
+          "background_max_luminance": 0.001799,
+          "size": 19.0
+        },
+        {
+          "text": "Hold the relay, unopposed, for 3 rounds.",
+          "min_contrast": 16.621,
+          "background_max_luminance": 0.002732,
+          "size": 20.0
+        },
+        {
+          "text": "Pays",
+          "min_contrast": 6.54,
+          "background_max_luminance": 0.000607,
+          "size": 19.0
+        },
+        {
+          "text": "Signal of Kharon",
+          "min_contrast": 17.121,
+          "background_max_luminance": 0.001192,
+          "size": 19.0
+        },
+        {
+          "text": "JUMP TO RELAY",
+          "min_contrast": 8.485,
+          "background_max_luminance": 0.002732,
+          "size": 34.0
+        },
+        {
+          "text": "Enter",
+          "min_contrast": 8.689,
+          "background_max_luminance": 0.001496,
+          "size": 19.0
+        },
+        {
+          "text": "2",
+          "min_contrast": 17.208,
+          "background_max_luminance": 0.000932,
+          "size": 36
+        },
+        {
+          "text": "BREAKTHROUGH",
+          "min_contrast": 16.697,
+          "background_max_luminance": 0.002493,
+          "size": 32.0
+        },
+        {
+          "text": "Easy fight. Pays Signal of Astra",
+          "min_contrast": 10.828,
+          "background_max_luminance": 0.002364,
+          "size": 18.0
+        },
+        {
+          "text": "3",
+          "min_contrast": 16.906,
+          "background_max_luminance": 0.001843,
+          "size": 36
+        },
+        {
+          "text": "UNKNOWN SIGNAL",
+          "min_contrast": 16.621,
+          "background_max_luminance": 0.002732,
+          "size": 32.0
+        },
+        {
+          "text": "No fight",
+          "min_contrast": 11.071,
+          "background_max_luminance": 0.001214,
+          "size": 18.0
+        },
+        {
+          "text": "Nemesis",
+          "min_contrast": 6.957,
+          "background_max_luminance": 0.000607,
+          "size": 17.0
+        },
+        {
+          "text": "HIGH NADIR ESSANE",
+          "min_contrast": 17.099,
+          "background_max_luminance": 0.001257,
+          "size": 32.0
+        },
+        {
+          "text": "Hunt clock 0.5 of 4",
+          "min_contrast": 10.623,
+          "background_max_luminance": 0.00337,
+          "size": 17
+        },
+        {
+          "text": "COLD FURY",
+          "min_contrast": 17.013,
+          "background_max_luminance": 0.001518,
+          "size": 28.0
+        },
+        {
+          "text": "135 / 135",
+          "min_contrast": 17.401,
+          "background_max_luminance": 0.000368,
+          "size": 19
+        },
+        {
+          "text": "EDGE OF WINTER",
+          "min_contrast": 16.641,
+          "background_max_luminance": 0.002667,
+          "size": 28.0
+        },
+        {
+          "text": "98 / 98",
+          "min_contrast": 17.194,
+          "background_max_luminance": 0.000975,
+          "size": 19
+        },
+        {
+          "text": "BLACK ANVIL",
+          "min_contrast": 16.794,
+          "background_max_luminance": 0.002189,
+          "size": 28.0
+        },
+        {
+          "text": "50 / 50",
+          "min_contrast": 16.429,
+          "background_max_luminance": 0.003347,
+          "size": 19
+        }
+      ]
+    },
+    {
+      "sector": 3,
+      "minimum": 6.579,
+      "by_text": [
+        {
+          "text": "I",
+          "min_contrast": 11.276,
+          "background_max_luminance": 0.000282,
+          "size": 17.0
+        },
+        {
+          "text": "II",
+          "min_contrast": 11.271,
+          "background_max_luminance": 0.000304,
+          "size": 17.0
+        },
+        {
+          "text": "III",
+          "min_contrast": 8.845,
+          "background_max_luminance": 0.000585,
+          "size": 17.0
+        },
+        {
+          "text": "Jump 1 of 7",
+          "min_contrast": 10.941,
+          "background_max_luminance": 0.001821,
+          "size": 19.0
+        },
+        {
+          "text": "ION NEBULA",
+          "min_contrast": 16.429,
+          "background_max_luminance": 0.003347,
+          "size": 70.0
+        },
+        {
+          "text": "Held by the Chorus",
+          "min_contrast": 17.027,
+          "background_max_luminance": 0.001475,
+          "size": 21.0
+        },
+        {
+          "text": "Scarcity: repairs restore 25% less.",
+          "min_contrast": 10.987,
+          "background_max_luminance": 0.001604,
+          "size": 19.0
+        },
+        {
+          "text": "1",
+          "min_contrast": 8.785,
+          "background_max_luminance": 0.000932,
+          "size": 132
+        },
+        {
+          "text": "BREAKTHROUGH",
+          "min_contrast": 16.336,
+          "background_max_luminance": 0.003653,
+          "size": 54.0
+        },
+        {
+          "text": "Fight a Chorus bloat pod",
+          "min_contrast": 16.415,
+          "background_max_luminance": 0.003394,
+          "size": 20.0
+        },
+        {
+          "text": "Even",
+          "min_contrast": 11.208,
+          "background_max_luminance": 0.000585,
+          "size": 19.0
+        },
+        {
+          "text": "Get your ships onto the far jump hexes.",
+          "min_contrast": 17.121,
+          "background_max_luminance": 0.001192,
+          "size": 20.0
+        },
+        {
+          "text": "Pays",
+          "min_contrast": 6.579,
+          "background_max_luminance": 0.000304,
+          "size": 19.0
+        },
+        {
+          "text": "Signal of Vyre",
+          "min_contrast": 17.311,
+          "background_max_luminance": 0.000629,
+          "size": 19.0
+        },
+        {
+          "text": "JUMP TO BREAKTHROUGH",
+          "min_contrast": 8.433,
+          "background_max_luminance": 0.003058,
+          "size": 34.0
+        },
+        {
+          "text": "Enter",
+          "min_contrast": 8.841,
+          "background_max_luminance": 0.000607,
+          "size": 19.0
+        },
+        {
+          "text": "2",
+          "min_contrast": 17.013,
+          "background_max_luminance": 0.001518,
+          "size": 36
+        },
+        {
+          "text": "DECAPITATION",
+          "min_contrast": 16.906,
+          "background_max_luminance": 0.001843,
+          "size": 32.0
+        },
+        {
+          "text": "Even fight. Pays Refit",
+          "min_contrast": 10.868,
+          "background_max_luminance": 0.002169,
+          "size": 18.0
+        },
+        {
+          "text": "3",
+          "min_contrast": 17.297,
+          "background_max_luminance": 0.000672,
+          "size": 36
+        },
+        {
+          "text": "RELAY",
+          "min_contrast": 17.02,
+          "background_max_luminance": 0.001496,
+          "size": 32.0
+        },
+        {
+          "text": "Even fight. Pays Signal of Vyre",
+          "min_contrast": 11.127,
+          "background_max_luminance": 0.000953,
+          "size": 18.0
+        },
+        {
+          "text": "Nemesis",
+          "min_contrast": 6.918,
+          "background_max_luminance": 0.000889,
+          "size": 17.0
+        },
+        {
+          "text": "ELDER THROAT THRUMMING MAW",
+          "min_contrast": 16.822,
+          "background_max_luminance": 0.002103,
+          "size": 32.0
+        },
+        {
+          "text": "Hunt clock 2.5 of 4",
+          "min_contrast": 11.071,
+          "background_max_luminance": 0.001214,
+          "size": 17
+        },
+        {
+          "text": "VANGUARD CRUISER",
+          "min_contrast": 16.999,
+          "background_max_luminance": 0.00156,
+          "size": 28.0
+        },
+        {
+          "text": "148 / 161",
+          "min_contrast": 10.882,
+          "background_max_luminance": 0.001886,
+          "size": 19
+        },
+        {
+          "text": "DOMINION DREADNOUGHT",
+          "min_contrast": 16.336,
+          "background_max_luminance": 0.003653,
+          "size": 28.0
+        },
+        {
+          "text": "117 / 230",
+          "min_contrast": 11.091,
+          "background_max_luminance": 0.000911,
+          "size": 19
+        }
+      ]
+    }
+  ],
+  "min_design_px": 17.0,
+  "overlap_failures": [],
+  "action_hover": {
+    "sample_rgb": [
+      255,
+      138,
+      58
+    ],
+    "contrast": 8.3
+  }
+}

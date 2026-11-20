@@ -1,0 +1,16 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 67 cues, 67 clip sets, loaded in 355 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.456, target 4.4; visual tuning (R191)
+[world] loaded 41bddf4ec97a586e10167a412e5568edef996bc8b3bfa95dc42ecaa7cf2050ed 4096x2048 in 4794 ms (worker)
+[world] loaded 2a2fa2f080559a98a04c9727f34c5527bcbfc832723ce52c60b38b60c4692c59 4096x2048 in 4867 ms (worker)
+[world] loaded bfb4738e12f25bdd8a19c9fafdb46a36b2d27eb2035fbc28a774a3851dd563b0 1024x512 in 4860 ms (worker)
+[world] loaded 26c1181c33b392ff3d4d2783c3b165db5d7839e1f8a6d1ff2864b00c4ee86708 1024x512 in 4861 ms (worker)
+[world] loaded b351a636418c33bf0ffe40726a5994c46913188dc02a9a1908c00c8d7ae8e372 4096x2048 in 75 ms (worker)
+[world] loaded 29401d682e61fa49e4e6528678e4cd92ca91656b15e25bddc555da5525e9fa5f 1024x512 in 75 ms (worker)
+[world] loaded 914e4bdca78d949a26ea118bc365eef1a29b909d3237be3f7bb0657cafac18c1 1024x512 in 73 ms (worker)
+[scene_gate] base built in 13937 ms (ready after 13937 ms)
+[scene_gate] 1 base gpu 2.558 frame 6.417 cpu 1.167 dc 522+324 prims 4067738+2941298
+[scene_gate] 1 base late shaders after warm-up (issue 376): 0
+[scene_gate] DONE

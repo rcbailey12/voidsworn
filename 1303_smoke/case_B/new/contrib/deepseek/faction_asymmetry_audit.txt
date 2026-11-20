@@ -1,0 +1,1055 @@
+PART 1, MEASURE THE SAMENESS. From the pack only, quantify how similar the factions are today: the class ladder and price ladder per faction, stat bands per class, weapon stat lines per faction (expected damage per volley, range, accuracy), the squadron system, admiral cost curves and command pools, and any mechanic that only one faction has. Cite file and line for every claim. Maximum 10 findings, most damning first.
+
+PART 2, PROPOSE ASYMMETRY. Give each of the six factions a distinct playstyle identity at the StarCraft bar. For each: unit-count profile (swarm, standard, elite), range profile, shield and survivability model, movement character, economy, win condition, lose condition, one prohibition (something it cannot do that another faction can), and the smallest change set that gets it there using mechanics already in the pack. Flag anything needing a new engine system as ENGINE CHANGE. End with the three changes you would make first, and how you would prove with simulation data that the factions had actually become different.
+We need answer huge. Need audit pack only. Need be red team. Need cite file line exact quote under 20 words numeric where claim numeric. Max 10 findings most damning first. Then proposals six factions distinct. Need use file lines. Need not use franchise vocab in proposals. Refer benchmarks okay but don't borrow terms. Need end three first changes and proof sim data. End "Not checked". Need be concise enough but detailed.
+
+We need analyze data. Need Part1 quantify sameness. We need citations file and line. There are two files data.js and battle.js and campaign_meta maybe. Annex not line numbers? Need cite original file lines. Use data.js line numbers. Need quotes exact under 20 words where claim numeric. Mark OBSERVED/INFERRED. Max 10 findings.
+
+Key observations:
+
+All factions share core hull classes: Frigate cp1 cost70, Destroyer cp2 cost130, Cruiser cp3/4 cp? cost190/200/250, Carrier cp4/5 cost250/260/310, boss cp10-12. Price ladder identical for frigate and destroyer: data lines 61,72,78,84,90,96 all 70? Need cite. Frigates all 70 at lines 61,72,78,84,90,96. Destroyers 130 lines 62,73,79,85,91,97. Cruisers: 200/250/190/190/250/250. Carriers 260/250/310/250. Boss varied. But core cost ladder identical lower tiers. Also auto cost formula line 329 fills missing but most present. Need quote lines.
+
+Class ladder roster missing certain classes: Hegemony no carrier class? h_vanguard cruiser has launch, h_dominion battleship launch. Deathless no carrier (roster 3 ships no carrier), no dedicated carrier. Voidsworn has 6 incl dread. Chorus 5. But common "every roster same class ladder" not literally? Data: Hegemony roster lines 114 has 4 no carrier but launch on cruiser/battleship; Deathless roster 126 3 no carrier. Need note owner says same ladder but pack shows exceptions. However audit measure sameness; maybe class ladder is not exactly same but roles compressed. Could be finding: every faction's non-boss roster maps to cp1/2/3-4/4-5 (and Hegemony/Deathless skip dedicated carrier), with shared squadron system. But not damning.
+
+Stat bands per class overlap heavily. Need quantify. Frigates hp 30-56? Void 45, Heg 40, Corsair 46, Chorus 46, Ithar 30, Deathless 56. Shields 0-12? Need cite lines. Destroyer hp 60-110, shields 0-18. Cruiser hp 90-150, sh 0-26. Carrier hp 130-200. Boss 470-650. We can state ranges and cite examples. Need quote numeric exact lines maybe one or two.
+
+Weapon stat lines: expected damage per volley = shots*dmg. Need compute per faction. But traits modify. Base weapon table. Need list expected raw volley and range/acc. We can compute:
+Void: autocannon 15 r4 acc80; flak 9 r2; battery 24 r5 acc72; hbattery 35 r5; lance 20 r7 acc82; torp 42 r6 acc64; turret 16 r5; heavy torp? not void?
+Heg: laser 14 r4 acc80; turbo 18 r5; hturbo 27 r6; ion 12 r6; flak 9.
+Corsair: autocannon 15; scatter 25 r3 acc78; turret 16; torp 42; htorp 68 r6 acc60; flak 9.
+Chorus: tendril 26 r1 acc85; bioplasma 24 r4 acc74; spores 12 r2 acc78; sporeb squadron 20.
+Ithar: shard 18 r4 acc80; pulsar 24 r6 acc80; startorp 38 r5 acc66; turret 16; flak.
+Deathless: gauss 18 r5 acc74; gsentry 9; doom 40 r5 acc78.
+These are different but many in same bands. Need cite lines 3-27. Expected damage per volley maybe compare capital main guns: macro battery 24, heavy 35, turbolaser 18, heavy turbolaser 27, scatter 25, bioplasma 24, pulsar 24, gauss 18, doom 40. Range mostly 4-6; accuracy 72-82. Need quote exact "battery...shots:4,dmg:6,r:5,opt:3,acc:72" etc. Use under 20 words.
+
+Squadron system shared: same fighter/bomber templates, only Chorus spore variant; all squadrons use same sq rules; faction sq field only kind. Data lines 67-70, FACTIONS sq lines 114,117,120,123,126. battle.js deployWings lines 904-912, wingKind 911-912. Same. Hegemony/Ithar/void use fighter; corsair bomber; chorus spore; deathless none. Need cite line 68 fighter, 69 bomber, 70 spore. "FACTIONS...sq:'fighter'" lines.
+
+Admiral cost curves identical: four per faction costs 0,30,45,80. Cite ADMIRALS lines 202-205 and faction Object.assign. Need quote "cost:0" etc. Command pools: same command IDs reused: barrage/hunt/scramble/iron/restore/surge. Data lines 209-233. Six command IDs. Each faction four admirals but commands are recycled. Need quantify. Quote line 214 "cmd:{id:'barrage'" and 218 "cmd:{id:'surge'"; etc. All command effects in battle.js lines 822-862 shared. So same command pool.
+
+Faction-unique mechanics: Move rules unique per faction (line 103-109) but only movement bends. Abilities: some unique: Hegemony ionpulse only, Corsair overburn only, Chorus regrow/frenzy, Ithar blink, Deathless reclaim/phase, Void focus/reload/surge/evasive. But these are per-ship abilities mostly one per faction line. Actually each faction line ships get "something to press" line 137. But abilities not deeply asymmetric. Need finding: "one faction-only mechanic?" There are faction-specific movement and weapon traits and abilities, but they are small nudges. Need mention CREW_MULT/BOARD_MULT/RAM_FAC lines 81-83. Ram only corsair/chorus/void? RAM_FAC={voidsworn:1,corsair:1,chorus:1}; only those can AI bold ram but ramming available all? RAM_FAC used for AI and base damage. Board mult faction. These are numeric nudges. Could include in finding.
+
+Economy: No faction-specific economy in data. Credits, shipyard costs, repair same. LEGACY global. Events not faction-specific except not lists. Campaign_meta no faction economy. All admiral costs same. Need cite line 247 "Shipyard prices −15%" global. No faction resource. "RUN_WORD" only naming. Need state INFERRED no faction economy.
+
+Command pools same: CMD_POW shared line 827; commandFor etc.
+
+Enemy AI FACTION_AI different profiles but player factions? The six factions use same AI profile for enemy if fac; but player isn't AI. It shows intended differences range profiles (hegemony range 3, corsair -2, chorus -1, ithar 2, deathless -3) but these are AI only, not player mechanics. That's a key finding: the only explicit range identity lives in enemy AI, not player fleet. Cite battle.js lines 985-991. Quote "hegemony:{tw:1.15,hurt:1.3,range:3,rw:1.2}" etc. That's damning. But need line under 20 words numeric. Good.
+
+BOSS_FAC scaling different per faction line 127: corsair 1.45, void 1.40, hegemony .95, chorus 1.10, deathless 1, ithar .80. Boss scaling asymmetrical only for enemy boss. This is one mechanic not player. Could mention.
+
+Weapon traits v48 lines 43-56 add differences: las, hellfire, plasma, scrap, rockets, spines, acid, needle, star, gauss. These are faction-specific but mostly numeric/status. Need measure. Need maybe include finding: weapon traits are the main asymmetry but they map one trait family per faction; not decision-changing? Need quantify: 5 factions have 2-3 traits; Void 2, Heg 1, Corsair 2, Chorus 2, Ithar 2, Deathless 1. Traits alter shots/acc/dmg/status. This is small. Cite lines 44-53.
+
+Class stat bands: boss HP 470-650, shields 0-40. Maybe too broad. Need most damning first: same price ladder, shared squadron, admiral costs/commands, weapon stat bands, AI range only, unique mechanics small, no economy, class ladder not same? Need order.
+
+Need Part 2: six factions distinct playstyle identity. Need not use StarCraft/Warhammer terms. Need space frame. Need for each: unit-count profile (swarm/standard/elite), range profile, shield/survivability model, movement character, economy (gains/loses resources differently), win condition, lose condition, prohibition, smallest changes using existing mechanics; flag ENGINE CHANGE if new system. Need concrete. We can propose identities leveraging existing mechanics: shields, armor, regen, reanimate, boarding, ram, squadrons, torpedoes, ion, gauss, blink, move rules, commands, boons. Need six distinct. Need not all require engine. We can assign:
+1 Voidsworn Crusade: elite line-breaker, standard/elite, mid-range broadside, armor+shield balanced, slow gunnery, economy from battle kills? Existing martyr/relic? Win by breaking enemy command/hull; lose if flanked/rear and torpedoes spent. Prohibition: cannot swarm or field cheap screens? They have frigate but can prohibit more than X frigates? Need smallest change: use existing ram? Maybe "cannot take more than one squadron per carrier"? Hmm.
+Need each distinct at StarCraft bar. Need identities:
+
+Voidsworn: elite armored broadside battering ram; few ships, mid/close, armor+shield, slow, economy repairs via kills? Uses existing Martyr relic? But faction-specific? Need economy how gains/loses resources differently. Could propose "economy: salvage from destroyed capital ships only; loses credits when ships die"? Need new engine? If new resource, ENGINE CHANGE. We can use existing credits/renown? Need minimal.
+Maybe define economy using existing systems: Voidsworn gains extra credits from flagship kills? No existing. Need flag ENGINE CHANGE for faction economy differences if new resource. But proposals can include "no new resource; use existing credits but spend differently: shipyard discounts on armor modules, no cheap hulls" etc. That's not engine. However owner wants economy. Could use existing LEGACY? Need per faction economy changes require engine? We can flag if needed.
+
+Need avoid too many new systems. "Smallest set changes using mechanics already present where possible." We can propose data-only changes: hull costs, class access, weapon loadouts, abilities, MOVE_RULES, AI profiles, squadron types, command IDs, boons. Need one or two engine changes where necessary.
+
+Need six factions:
+Voidsworn: Elite, mid-range, shield+armor, slow broadside, economy from surviving (repairs on victory? existing salvage? maybe no), win by closing firing arcs and breaking enemy line; lose if outmaneuvered/rear. Prohibition: no cheap swarm or no carrier-heavy? They have carrier. Maybe "cannot buy more than one frigate per two capital ships" not existing. Better prohibition: "cannot launch strike craft except from carriers; no cheap escort screen" but they have. Need one thing cannot do another can: "cannot blink/teleport or ignore terrain" (Ithar/Deathless can). That's true. But prohibition should be playstyle. Use existing: Voidsworn has no blink, no phase, no ionpulse, no overburn. It cannot reposition through obstacles. Good.
+2 Hegemony Navy: standard ranged gun-line, shield-stripping ion, carrier screen, medium count, long range, shields, disciplined movement reverse, economy from station/defend? Win by stripping shields and holding range; lose if closed on. Prohibition: cannot brawl/ram? They lack overburn/ram? All can ram but no RAM_FAC. Hmm.
+3 Ashfall Corsairs: swarm/raider, close range, thin shields high evasion, fast movement sideslip, economy from loot/credits (existing ledger/salvage), win by torpedo alpha and boarding/ram, lose if prolonged. Prohibition: cannot hold a gun line / no long-range lance? They have torp range 6. But no lance. Good.
+4 Chorus: swarm, short range, no shields regen hull, movement pivot free, economy from biomass? Existing regrow and feast; win by attrition/boarding, lose to burst. Prohibition: no shields/no shield abilities.
+5 Ithar: elite, long range, shield-heavy fragile hull, fast blink, economy? use fewer ships high cost; win by kiting and shield burst, lose when shields down. Prohibition: no armor/regen? no ram? They can ram but RAM_FAC absent. Good.
+6 Deathless: standard/elite, mid-close, no shields high armor/reanimate, slow phase through terrain, economy from reclaim/reanimation, win by grinding, lose to focus/fire. Prohibition: no shields/no shield surge? They have no shield.
+
+Need specify unit-count profile: swarm/standard/elite. Could assign Void elite, Heg standard, Corsair swarm, Chorus swarm, Ithar elite, Deathless standard. But two swarm/two elite fine.
+
+Need "range profile": Void mid; Heg long; Corsair close; Chorus close; Ithar long; Deathless mid-close.
+
+Shield/survivability: Void shields+armor; Heg shields; Corsair evasion thin shields; Chorus no shields regen; Ithar strong shields weak hull; Deathless armor/reanimate no shields.
+
+Movement character: Void slow broadside; Heg reverse; Corsair sideslip; Chorus pivot; Ithar blink/fan sails; Deathless phase through terrain.
+
+Economy: Need distinct. We can propose using existing credits/repair:
+
+Void: high hull costs, repairs expensive; gains credits from destroying enemy capital ships? Existing credits from battles only. Could use "salvage from kills" new? flag? Hmm.
+Maybe use existing boons/relics: Void uses martyr/armorweave, but economy not unique. Need propose "economy: pays premium for armor/repair, no cheap hulls; gains renown from flagship kills" but renown not battle. Need engine change for per-faction reward. We can flag ENGINE CHANGE for economy differences: a faction-specific salvage/repair ledger. But need smallest. We can propose data-only: change shipyard price multipliers per faction? Is there existing price? SECTOR_CONDS price global; LEGACY wrights global. No per-faction. So ENGINE CHANGE? Actually data could add FAC_ECON and modify shipyard code in campaign/other files not shown. But pack only data/battle/campaign_meta. Shipyard code not in pack. We can flag "ENGINE CHANGE: per-faction price/repair modifiers in shipyard." But maybe too many. Need one sentence.
+Could make economy differences via existing battle resources: repair between battles, credits from battles. Need code not present? campaign_meta references shipyard but not code. Since not in pack, can't cite. But proposal can say data-only if existing shipyard reads faction? Not present. Flag engine change.
+
+Need "win condition/lose condition" as battle/run conditions: use existing encounter types. E.g., Void win by Decapitation/flagship; lose if forced to Breakthrough? Hmm. Need distinct win conditions at faction level maybe run. We can say "win condition: kill enemy command ship in Decapitation; lose condition: lose own flagship before escorts break." That's using existing encounter. Hegemony win by Hold station/Relay; Corsair by Intercept/breakthrough loot; Chorus by rout/attrition; Ithar by Hunt/kite; Deathless by defend/grind. But encounter types are shared; assigning preference is okay.
+
+Need "one thing it cannot do that another faction can (prohibition)": Use existing abilities absent. E.g., Void cannot blink/phase; Hegemony cannot ram effectively? All can but no RAM_FAC. Need data: RAM_FAC only void/corsair/chorus. But Hegemony can still ram? RAM_FAC false -> base no 1.2 and recoil .5. They can but weaker. Prohibition not absolute. Better "cannot field a dedicated carrier hull" (Hegemony no carrier class; uses launch cruisers/battleship) is true? It can launch via h_vanguard/h_dominion. Not dedicated. Deathless cannot launch squadrons at all. That's a real prohibition: Deathless sq:null and no launch. Good. Ithar cannot use armor? ar 0 for frig/destroyer; but cruiser .05 boss .2. Not absolute. Chorus cannot use shields (sh:0 all). Corsair cannot use lance weapons (no lance in roster? c_raider autocannon, c_reaver torp/scatter, c_marauder scatter/torp/flak, c_hulk turret, boss scatter/htorp/flak; no lance). Good. Void cannot blink/phase (no blink/phase abilities). Hegemony cannot use torpedoes? Check h roster: no torp? h_interdictor ion/turbo; h_vanguard turbo/ion; h_dominion hturbo/ion/flak; h_boss hturbo/turbo/ion/flak. No torp. Good prohibition: Hegemony has no torpedo tubes. Deathless no squadrons. Chorus no shields. Corsair no lance. Ithar no armor/regen? Ithar has no regen/hullRegen? HULLS i no regen; ar low. Prohibition: cannot regenerate hull or reanimate; no hull repair passive. Void no blink/phase. Good.
+
+Need "smallest set of changes" data-only: adjust hull roster, costs, weapon loadouts, MOVE_RULES, abilities, FACTION_AI maybe not player. Need mention existing mechanics. For each propose 3-5 bullet changes.
+
+Need Part2 ending: three changes first across all factions and proof with simulation data. Need cite battle.js simulation telemetry? There is B.usage telemetry line 336, tel, run_end. We can propose using existing sim hooks env BOSS_SCALE, NOCOMPACT, etc. Need "game's own simulation data" — battle.js has B.usage tracking fire arcs, moves, abilities, commands; tel('command'), run_end. Need use: B.usage.fire/moves/ab/ord/cmd, B.boonStats, battle outcomes, run stats. Also B.usage.cant? line 336. Need simulate same encounter seeds per faction? startBattle seed line 287. Use fixed seeds and genEnemyFleet budgets. Need metrics: faction mirror win rates, action entropy, range-band histogram, command timing, squadron share, repair share, kill causes. Need prove differences: distributions diverge, not win rate only. Use fixed seeds and no player input? There is AI for enemy but player? Need headless sims? There are process_env and NOCOMPACT etc. But no explicit sim bot for player. The pack has AI only enemy; but B.usage for player implies human? Could use AI_LEVEL? Hmm. Need say use existing battle.js telemetry B.usage plus run_end stats; add no engine? Need "with game's own simulation data" use B.usage and tel. If player sim not present, INFERRED. Need mention if no sim harness in pack, need build. But final proof method can be: run headless battles with fixed seeds, same budgets, each faction as player mirrored; collect B.usage fields. Need perhaps "ENGINE CHANGE: headless player-policy harness" if not in pack. But maybe existing AI can be reused? FACTION_AI only enemy. Could use AI as player? Not exposed. Flag.
+
+Need citations exact quotes under 20 words. Need ensure quotes are exact lines. Need not quote entire long lines? "under 20 words" if quote segment. Use line numbers. Need cite file and line for every claim. For numeric claims quote exact line under 20 words. Could use semicolon separated.
+
+Need max 10 findings. We can structure table. Each finding with OBS/INF and citations. Need most damning first. Let's craft 10:
+
+Price ladder identical at bottom: all frigates cost 70 and destroyers 130; cruisers cluster 190-250. Cite data.js 61,72,78,84,90,96 and 62,73,79,85,91,97. Quote "cost:70" and "cost:130" maybe exact. Also line 329 auto formula. Finding: no economic identity.
+
+Admiral cost curve and command pool shared: every faction has four admirals at 0/30/45/80; command IDs recycled among six. Cite data.js 202-205, 214-233; battle.js 822-862. Quote "cost:0" "cost:30" etc. Need exact line: 202 cost:0; 203 cost:30; 204 cost:45; 205 cost:80. Then 214 kassar cost:0. Good. Command pools quote line 214 "cmd:{id:'barrage'"; 218 "cmd:{id:'surge'"; 221 "cmd:{id:'restore'".
+
+Shared squadron system: one fighter/bomber template; only Chorus spore; faction sq field chooses one. Cite data.js 68-70 and 114/117/120/123/126; battle.js 904-912. Quote "fighter...guns:T" line 68; "bomber...bombs:T" line 69; "sq:'fighter'" line 114.
+
+Weapon stat bands overlap: capital main guns 18-40 raw volley, range 4-6, acc 72-82; traits only adjust. Cite data.js 5,6,11,12,14,17,19,21,23. Quote "shots:4,dmg:6,r:5,opt:3,acc:72" line 5; "shots:2,dmg:9,r:5...acc:74" line 11; "shots:2,dmg:12,r:6...acc:80" line 19; "shots:1,dmg:40,r:5...acc:78" line 23. Need expected volley numbers: 4*6=24; 2*9=18; 2*12=24; 40. We can say expected raw volleys 18-40. But need cite numeric quote. Good.
+
+Stat bands per class overlap: frigates hp 30-56, shields 0-12; destroyers 60-110, shields 0-18; cruisers 90-150, shields 0-26. Cite lines 61,72,78,84,90,96 etc. Quote "hp:45,sh:10" line 61; "hp:30,sh:12" line 90; "hp:56,sh:0" line 96. Need under 20 words. Good. This shows small nudges.
+
+Faction-only mechanics exist but are shallow: MOVE_RULES one bend per faction; weapon traits one family; abilities one per line. Cite data.js 103-109, 43-56, 130-145. Quote "slip:1...Sideslips cost 1" line 106; "pivot:1...first turn...no movement" line 107; "over:0...Passes through rocks" line 109. But finding: these are single-rule modifiers, not decision systems.
+
+AI range identity only for enemies: FACTION_AI explicit range profiles, not player rules. Cite battle.js 985-991. Quote "hegemony...range:3" line 987; "corsair...range:-2" line 988; "deathless...range:-3" line 991. This is damning.
+
+Boss scaling asymmetrical only: BOSS_FAC values .80-1.45. Cite battle.js 127. Quote "corsair:1.45,voidsworn:1.40,hegemony:.95" line 127. This is only faction-specific scaling.
+
+No faction economy: global credits, shipyard discount, repair/relic apply same; no faction resource. Cite data.js 247 "Shipyard prices −15%"; 192 "credits"; campaign_meta 187 renown formula. Need quote "Shipyard prices −15%." line 247; "META.renown=(META.renown||0)+ren" line 187. Mark INFERRED.
+
+Class ladder not actually uniform but role-equivalent; Hegemony lacks carrier hull, Deathless lacks carrier/squadrons, but cp/cost slots fill. Cite data.js 114 roster h no carrier; 126 roster d 3; 81 c_hulk; 87 b_brood. Quote "roster:['h_picket','h_interdictor','h_vanguard','h_dominion']" line 114; "roster:['d_scythe','d_jackal','d_harvester']" line 126. This is maybe not sameness but exception. Need max 10. Good.
+
+Need include OBSERVED/INFERRED. All observed except economy no faction? Could be INFERRED.
+
+Need Part1 maybe mention "expected damage per volley" table? We can include compact table in finding 4 or separate. But max 10 findings. Could include table in finding 4 with per faction main guns expected. Need citations. Good.
+
+Need Part2 detailed. Need maybe table for each faction with fields. But final answer oververbosity desired 5, but user asks massive. Need be thorough. We can do bullets per faction. Need not exceed too much but enough.
+
+Need ensure "Do not use vocabulary from StarCraft, Warhammer or any other franchise in proposals themselves" Avoid "zerg, protoss, terran, tyranid, ork, necron, eldar" in proposals. Can mention benchmarks in Part1? The rules say referring as benchmarks fine. We won't use. Avoid "kiting" maybe common not franchise? It's okay but maybe avoid? "hit-and-fade" okay. Avoid "gunline"? fine. Avoid "alpha strike"? common. Avoid "tank". Space ships. Use "hull", "shield", "squadron".
+
+Need "StarCraft bar" phrase maybe in prompt; can say "at the requested bar" not use terms. Fine.
+
+Need cite every claim in Part1. Part2 proposals don't need citations? The instruction says cite file and line for every claim in Part1. Part2 smallest changes can cite lines but not mandatory? Better cite mechanics lines. Use parenthetical citations. Need not quote numeric? If numeric in Part2 maybe cite. But Part1 rule numeric quote. For Part2, can cite line references.
+
+Need "ENGINE CHANGE" flag with one sentence. Need identify new systems:
+
+Per-faction economy modifiers (shipyard/repair) require engine change if not present.
+
+Faction-specific deployment/formation? maybe not.
+
+Player-side AI/sim harness? final proof maybe.
+
+Squadron control differences? existing.
+
+"Boarding capture" existing.
+
+"Shield facing" existing.
+Need minimal sets:
+Voidsworn: Data-only: restrict roster to cp>=2? But they have frigate. Could make frigate cost higher? Need "elite" profile. Change costs: warden 90, harrow 150, etc. But price ladder already. Data-only. Add faction trait: broadside rake already. Maybe give all line ships focus? Existing. Prohibition no blink. Win flagship. Economy: repair premium. ENGINE CHANGE for price/repair.
+Hegemony: Data-only: remove/limit torpedo (already none), increase ion shield strip, make carriers launch from cruisers, longer range. Prohibition no torpedoes. Economy: station contracts? ENGINE CHANGE.
+Corsair: Data-only: cheap raider swarm, reduce cruiser, increase torpedo reload, boarding mult. Prohibition no lance. Economy: loot credits from captures? Boarding capture existing, but credits on capture? not existing. ENGINE CHANGE.
+Chorus: Data-only: no shields already, regen, free pivot, swarm brood. Prohibition no shields. Economy: biomass from destroyed hulls? regrow existing; no new resource. Win attrition.
+Ithar: Data-only: fewer high-cost ships, shields, blink, long range. Prohibition no passive hull regen. Economy: high shield repair, expensive hull. ENGINE CHANGE maybe.
+Deathless: Data-only: no squadrons already, armor/reanimate, phase. Prohibition no squadrons. Economy: reanimation reclaim existing. Win grind. No engine? Good.
+
+Need define "economy" without new resource maybe:
+
+Void: "pays more for hulls and repairs, but can sell armor? no." Hmm. Need be concrete.
+Could use existing credits but propose modifiers. That requires engine change. We can flag one common "ENGINE CHANGE: faction economy hooks in shipyard/repair/reward code" that supports all six. Then each faction's economy uses that. That is efficient. One sentence: "ENGINE CHANGE: a per-faction economy modifier table read by shipyard price, repair, and battle reward code." Then all factions can have modifiers. Good.
+
+Need "three changes first across all factions" maybe:
+
+Replace shared class ladder with faction roster gates and costs (data-only) so count profiles differ.
+
+Replace shared command pool with six faction-specific command effects and cooldowns; make admiral cost curves reflect doctrine.
+
+Split squadron system into faction-specific launch/control/roles or remove for Deathless; use existing sq templates.
+Then proof sim. Need maybe first change should be "economy hooks"? Hmm.
+
+Need proof with simulation data:
+
+Use fixed seeds, same fleet power budgets, mirror matches vs each other. Collect B.usage fields: fire arc counts, moves, abilities, orders, commands, ram/board/cap/overrun, cant reasons. Also battle outcomes, round lengths, damage by killCause, shield vs hull, squadron damage. Use run_end stats. Metrics:
+
+Action entropy per faction: distribution of fire arcs, moves per activation, ability usage, command tier at use.
+
+Range histogram: distance at firing; should separate long/mid/close.
+
+Unit-count profile: ships deployed by cp; squadron share.
+
+Survivability: % damage absorbed by shields vs armor vs regen; deaths per battle.
+
+Economy: credits gained/spent, repairs, losses.
+
+Win/loss conditions: encounter type win rates, average rounds, routed vs destroyed.
+Proof criterion: not just win rates near 50; require pairwise Jensen-Shannon divergence or effect size in metric vectors above threshold, and mirror win rates within 45-55. Use same seeds. Need mention no player-policy sim harness in pack; ENGINE CHANGE if needed. The pack has B.usage and tel. Need cite battle.js 336 and campaign_meta 185. Quote? Part2 maybe no quote required. But could cite.
+
+Need "Not checked" list. Need list what not examined: UI files scene3d? Not in pack; shipyard code; Persist; map generation beyond battle; save/load; events effects implementations; boons full code? Actually BOONS data but effect application in battle partially; not all. Need list: no economy/shipyard implementation, no player autoplayer, no rendering, no map screen, no save/load, no event resolvers, no full boon/relic effect code beyond battle references, no exact sim harness. Good.
+
+Need produce final answer. Need be careful with exact quotes under 20 words. Let's draft.
+
+Part1 table:
+Finding 1 OBSERVED: Bottom price ladder is identical. Cite data.js:61 "cost:70" etc. But quote exact line "...,cost:70}," maybe includes many. Under 20 words: "hp:45,sh:10...cost:70" line 61. For all, line 72 "hp:40,sh:10...cost:70"; line 78 "hp:46,sh:8...cost:70"; line 84 "hp:46,sh:0...cost:70"; line 90 "hp:30,sh:12...cost:70"; line 96 "hp:56,sh:0...cost:70". Destroyers line 62 "cost:130"; 73 "cost:130"; etc. State "all six frigates cost 70; all six destroyers cost 130." Need quote one example plus line list. Good.
+
+Finding 2: Admiral costs/commands. Quote line 202 "cost:0" etc. But every faction? Need cite data.js 214 "cost:0"; 215 "cost:30"; 216 "cost:45"; 217 "cost:80" for Hegemony. Then 218 etc. State all four per faction at 0/30/45/80. Quote line 214 "cost:0,cmd:{id:'barrage'". Under 20 words? It is long but segment. Good.
+
+Finding 3: Squadron. Quote data.js:68 "fighter...hp:18...guns:T" and 69 "bomber...hp:28...bombs:T". And FACTIONS sq. Good.
+
+Finding 4: Weapons. Need table maybe:
+Faction main capital raw volley:
+Void macro 24 r5 acc72; lance 20 r7 acc82; hbattery 35 r5 acc72
+Heg turbo 18 r5 acc74; hturbo 27 r6 acc72; ion 12 r6 acc80
+Corsair scatter 25 r3 acc78; htorp 68 r6 acc60; torp 42 r6 acc64
+Chorus bioplasma 24 r4 acc74; tendril 26 r1 acc85
+Ithar pulsar 24 r6 acc80; startorp 38 r5 acc66; shard 18 r4 acc80
+Deathless gauss 18 r5 acc74; doom 40 r5 acc78
+Need cite data.js lines 5,6,11,12,14,15,17,19,20,21,23. State capital expected raw volleys mostly 18-40, ranges 4-6, acc 60-82. Good.
+
+Finding 5: Stat bands. Frigates hp 30-56 sh0-12; destroyers hp60-110 sh0-18; cruisers hp90-150 sh0-26. Cite lines. Good.
+
+Finding 6: Unique mechanics are one-rule bends. Cite MOVE_RULES lines 103-109; WTRAITS 43-53; ABILITIES 130-145. State each faction has exactly one movement rule, 1-3 weapon traits, and one signature line ability; no faction-only resource/economy. Observed.
+
+Finding 7: AI range profiles only. Cite battle.js 985-991. Good.
+
+Finding 8: Boss scaling. Cite battle.js 127. Good.
+
+Finding 9: No faction economy. Cite data.js 247; campaign_meta 187. Mark INFERRED because code not present? Observed data no faction-specific. "No faction-specific credit/repair/shipyard modifier appears; global discounts." Observed.
+
+Finding 10: Class ladder exceptions. Cite data.js 114 and 126. State two factions lack dedicated carrier and Deathless lacks squadrons. This cuts against "same ladder" but doesn't create asymmetry because cp/cost slots fill. Observed.
+
+Need maybe mention "SECTOR_POOL" etc? not needed.
+
+Part2: Need maybe table columns. But six factions with 10 fields. That's long. Use compact bullet per faction:
+Voidsworn — armored line-breaker (elite)
+
+Unit count: elite...
+
+Range...
+
+Shield...
+
+Movement...
+
+Economy...
+
+Win...
+
+Lose...
+
+Prohibition...
+
+Smallest changes...
+Need include ENGINE CHANGE if economy. Maybe one global engine change note before table: "ENGINE CHANGE (shared): faction economy modifiers..." But each economy uses it. Good.
+
+Need ensure each "smallest changes" uses existing mechanics: cite data lines maybe. For Void: "Keep broadside/rake MOVE_RULES line 104; give focus to line ships? existing ability line 133; restrict cheap frigates by cost; no blink."
+Hegemony: "Use ion line 13, ionpulse line 138, reverse line 105; remove torpedo; make h_vanguard/h_dominion launch only."
+Corsair: "Use scrap/rockets lines 47-48, overburn line 139, boarding mult line 82; lower raider cost; no lance."
+Chorus: "Use no shields lines 84-88, regen line 84, pivot line 107, frenzy/regrow lines 140-141; no shield modules? MOD_NEED? They can take capacitor? MOD_NAMES chorus has shield mods. Prohibition no shields would need filter modules. ENGINE? Could data filter. Good."
+Ithar: "Use blink line 142, fan sails line 108, shields, no hull regen; high cost."
+Deathless: "Use phase line 109, reanimate line 96, reclaim line 144; no squadrons (already sq:null line 126), no shields."
+
+Need "one thing cannot do":
+Void cannot blink/phase (Ithar/Deathless can).
+Hegemony cannot fire torpedoes (Void/Corsair/Ithar have torpedo weapons). Data: no torp in h roster.
+Corsair cannot use lance weapons (Void/Heg/Deathless/Ithar have lance/doom/pulsar? pulsar kind lance).
+Chorus cannot use shields (sh:0).
+Ithar cannot passively regrow hull (no regen in HULLS; no hullRegen).
+Deathless cannot launch squadrons (sq:null, no launch). Good.
+
+Need "economy (how it gains and loses resources differently)" with shared engine change. Define:
+
+Void: gains credits mainly from flagship kills; pays +25% repair; loses credits on ship loss? Hmm. Need not too complex. "Gains battle credits normally but pays premium for repair and armor refits; no cheap hulls." Good.
+
+Hegemony: "Gains extra from defend/hold objectives; pays less for shield refits, more for hull repair."
+
+Corsair: "Gains extra credits from boarding captures and salvage; loses credits when ships are destroyed (no salvage)."
+
+Chorus: "Gains biomass? no new resource. Uses credits? To avoid new resource, "gains hull regen instead of credits; repairs free but slow; shipyard hulls expensive." But economy needs gain/lose. Could say "no credit bonus; converts battle damage into free regen; loses maximum hull when sections break."
+
+Ithar: "High shield recharge, expensive hull replacement; gains extra from avoiding damage? no."
+
+Deathless: "Reanimates losses; pays less for repair, more for new hulls."
+This requires per-faction modifiers engine change. Good.
+
+Need final three changes:
+
+Data-only roster/cost gates to create count profiles: cap/raise prices, remove shared tiers.
+
+Data-only command pool replacement: six faction-specific commands, change CMD_POW and ADMIRALS.
+
+Data-only squadron/launch split: Deathless none; Corsair/Chorus swarm; Hegemony/Ithar/Void screen; adjust wingKind and hangar.
+Maybe economy hooks first? But "three changes first across all factions" maybe include economy. Hmm. We need "three changes you would make first across all factions." I'd choose:
+
+Replace shared price/class ladder with faction rosters/cost gates (so unit-count profile).
+
+Replace shared command pool and admiral cost curve with six doctrines (so decisions).
+
+Add per-faction economy hooks in shipyard/repair/reward (ENGINE CHANGE) because economy identity missing. But proof? Hmm. Could choose squadron as third. But economy is important. Need three. Maybe:
+
+Roster/cost gates.
+
+Command pool + AI range profiles applied to player? Hmm.
+
+Economy hooks.
+Squadrons can be part of roster. Good.
+
+Proof sim: Use fixed seeds and metrics. Need mention if no headless player policy, add engine change. But final "prove with game's own simulation data" can say "The pack exposes B.usage and tel; run headless fixed-seed battles; if no player policy exists, ENGINE CHANGE: headless policy harness." This is okay.
+
+Need "Not checked" list. Good.
+
+Need maybe include "OBSERVED/INFERRED" in each finding. Good.
+
+Need avoid overlong but enough. Desired oververbosity 5. This will be long. Need final answer only.
+
+Let's ensure exact quote line 5: "battery:{n:'Macro battery',k:'battery',shots:4,dmg:6,r:5,opt:3,acc:72,fall:8,crit:5}," Contains 4:6 etc. Under 20 words? Quote "shots:4,dmg:6,r:5,opt:3,acc:72" is 1 word? Fine.
+Line 11 "turbo:{n:'Turbolaser',k:'battery',shots:2,dmg:9,r:5,opt:3,acc:74" quote "shots:2,dmg:9,r:5,opt:3,acc:74".
+Line 19 "pulsar...shots:2,dmg:12,r:6,opt:5,acc:80" quote.
+Line 23 "doom...shots:1,dmg:40,r:5,opt:4,acc:78". Good.
+Line 61 "hp:45,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:20...cost:70". quote "hp:45,sh:10...cost:70" maybe ellipsis not exact? Better quote "cost:70" only. But need numeric. Use "hp:45,sh:10" line 61. For cost use "cost:70". Good.
+Line 72 "hp:40,sh:10" line.
+Line 90 "hp:30,sh:12".
+Line 96 "hp:56,sh:0".
+Destroyers line 62 "hp:78,sh:14"; 73 "hp:74,sh:18"; 79 "hp:68,sh:10"; 85 "hp:82,sh:0"; 91 "hp:60,sh:16"; 97 "hp:110,sh:0". Good.
+Cruisers line 63 "hp:120,sh:20"; 74 "hp:140,sh:24"; 80 "hp:120,sh:16"; 86 "hp:150,sh:0"; 92 "hp:90,sh:26"; 98 "hp:145,sh:0". Good.
+
+Need "expected damage per volley" table maybe not all. Need compute raw volley not traits. Traits can modify. In finding 4 mention "before traits". Good.
+
+Need Part1 "any mechanic that only one faction has": In finding 6 mention "No faction-only resource; Deathless reanimate only? Actually reanimate true only deathless hulls lines 96-99; h_undying heat gives enemy. Chorus regen? Only chorus and some Deathless regen; reanimate only Deathless. Ithar blink only. Hegemony ionpulse only. Corsair overburn only. Void focus/nova? Nova on Void boss and Heg boss/Deathless boss; not unique. Need state unique mechanics exist: Deathless reanimate, Ithar blink, Hegemony ionpulse, Corsair overburn, Chorus regrow/frenzy; but they are single buttons. Cite lines 138-144 and 96. Good.
+
+Need "one faction has" in Part1 maybe finding 6 says "Yes, but narrow: reanimate only Deathless line 96; blink only Ithar line 142; ionpulse only Hegemony line 138; overburn only Corsair line 139." Observed. Good.
+
+Need Part2 "using mechanics already present where possible" cite. Good.
+
+Potential issue: "Chorus no shields" but MODULES capacitor can add shields? Data line 156 capacitor +30% shield; MOD_NEED capacitor shields; MOD_NAMES chorus has Membrane bloom line 260. So Chorus can take shield modules? HULLS b sh:0; shMax=0; capacitor shPct .3 of 0 = 0. So no effect. But MOD_NEED says shields; maybe offer logic skips? BOON_NEED s_cap shields. Not shown. Prohibition no shields okay.
+
+Ithar no passive hull regen: HULLS i no regen; but modules damcon/relic spore can. Prohibition "no built-in hull regen" not absolute. Fine.
+
+Deathless no squadrons: FACTIONS sq:null line 126; no launch in hulls. Good.
+
+Need "unit-count profile" use swarm/standard/elite exactly. Good.
+
+Need "win condition/lose condition" maybe run-level. Fine.
+
+Need final proof metrics. Mention "same seed line battle.js:287" and "B.usage line 336". Quote? Part2 not require quote, but cite. Use no quote maybe. Good.
+
+Need answer length maybe 4000-5000 words? Oververbosity 5. But request huge. Aim ~3500 words. Need not too verbose.
+
+Let's compose final with headings.
+
+Need maybe note "Part 1 findings, most damning first" table. Include "OBS/INF". Good.
+
+Need "Not checked" at end. Good.
+
+Need avoid "naval" terms? Use "hull", "ship", "fleet". Avoid "naval". We can say "space frame". Good.
+
+Need no franchise vocab in proposals. Avoid "Zerg" etc. Good.
+
+Let's write.
+
+Double-check citations:
+
+data.js line 247 "wrights:{n:'Master shipwrights',d:'Shipyard prices \u221215%.'" quote "Shipyard prices \u221215%." Good.
+
+campaign_meta line 187 has "META.renown=(META.renown||0)+ren;" quote. Good.
+
+battle.js 336 B.usage line exact "B.usage={fire:{},aim:0,ab:{},ord:{},cmd:0,moves:0,cant:{}};" Good.
+
+Need maybe cite battle.js 985-991 quote "hegemony:{tw:1.15,hurt:1.3,range:3,rw:1.2}" exact line 987. Good.
+
+Need "BOSS_FAC" line 127 exact "const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80};" quote under 20 words? It is 10 words. Good.
+
+Need "command pool" quote line 214 "cmd:{id:'barrage'" and 218 "cmd:{id:'surge'". Good.
+
+Need "all six frigates cost 70" cite lines: 61,72,78,84,90,96. Good.
+Need "all six destroyers cost 130" lines 62,73,79,85,91,97. Good.
+Need "cruisers 190-250" lines 63 cost200; 74 250; 80 190; 86 190; 92 250; 98 250. Good.
+
+Need "carriers 250-310" lines 64 260; 81 250; 87 310; 93 310. Hegemony no carrier; deathless none. Good.
+
+Need "admiral costs all 0/30/45/80" cite first faction lines 202-205 and second 214-217 etc. Good.
+
+Need "every faction has four admirals" line 208 comment "four per faction"; lines 209-233. Good.
+
+Need "shared command IDs" line 209-233. Good.
+
+Need "squadron system" line 68-70. Good.
+
+Need "fighter wing" shared; line 68. Good.
+
+Need "Deathless sq:null" line 126. Good.
+
+Need "Hegemony no carrier" line 114. Good.
+
+Need "class ladder exceptions" maybe finding 10.
+
+Part2 each "Smallest changes" can cite data lines. Use "data.js:104" etc. Good.
+
+Need final "Not checked" section titled exactly. Good.
+
+Let's now draft final.
+
+PART 1 — Measure the sameness (most damning first)
+#	Finding	Evidence and exact lines	Status
+1	The bottom price ladder is identical across all six factions. Every frigate costs 70; every destroyer costs 130. Cruisers cluster at 190–250. This is a shared budget script with renamed hulls.	data.js:61 cost:70; 72 cost:70; 78 cost:70; 84 cost:70; 90 cost:70; 96 cost:70. Destroyers: data.js:62 cost:130; 73 cost:130; 79 cost:130; 85 cost:130; 91 cost:130; 97 cost:130.	OBSERVED
+2	Admiral cost curves and the command pool are shared, not faction-shaped. Each faction has four admirals at 0/30/45/80, and command IDs are recycled among a small shared set.	data.js:202 cost:0; 203 cost:30; 204 cost:45; 205 cost:80. Same for Hegemony: data.js:214 cost:0,cmd:{id:'barrage'; 215 cost:30; 216 cost:45; 217 cost:80. Commands reuse barrage, hunt, scramble, iron, restore, surge across factions: data.js:209–233; shared implementation battle.js:822–862.	OBSERVED
+3	Squadrons are one shared system with cosmetic faction hooks. The game has one fighter and one bomber template; Chorus gets one spore variant. Faction sq only selects which shared template a carrier launches.	data.js:68 fighter...hp:18...guns:T; 69 bomber...hp:28...bombs:T; 70 spore...sporeb:T. Faction sq fields: data.js:114 sq:'fighter'; 117 sq:'bomber'; 120 sq:'spore'; 123 sq:'fighter'; 126 sq:null. Launch/control logic: battle.js:904–912.	OBSERVED
+4	Weapon stat lines occupy narrow shared bands. Before faction traits, capital main guns are mostly expected raw volleys of 18–40, range 4–6, accuracy 60–82. Traits adjust these numbers and add status riders, but do not create different firing decisions.	data.js:5 shots:4,dmg:6,r:5,opt:3,acc:72 = 24 raw; 11 shots:2,dmg:9,r:5,opt:3,acc:74 = 18 raw; 19 shots:2,dmg:12,r:6,opt:5,acc:80 = 24 raw; 23 shots:1,dmg:40,r:5,opt:4,acc:78 = 40 raw. Trait table: data.js:43–53; faction trait map: data.js:54–56.	OBSERVED
+5	Stat bands per class overlap heavily. Frigates are hp 30–56, shields 0–12; destroyers hp 60–110, shields 0–18; cruisers hp 90–150, shields 0–26. The differences are nudges inside shared bands.	data.js:61 hp:45,sh:10; 72 hp:40,sh:10; 78 hp:46,sh:8; 84 hp:46,sh:0; 90 hp:30,sh:12; 96 hp:56,sh:0. Destroyers: 62 hp:78,sh:14; 73 hp:74,sh:18; 79 hp:68,sh:10; 85 hp:82,sh:0; 91 hp:60,sh:16; 97 hp:110,sh:0.	OBSERVED
+6	Faction-only mechanics exist, but they are single-rule bends or one button. Each faction gets one movement rule, a small weapon-trait family, and one signature line-ship ability. None is a faction-wide resource, build path, or economy.	Movement: data.js:104 rake:.2; 105 rev:1; 106 slip:1; 107 pivot:1; 108 evadeAt:2; 109 over:0. Abilities: data.js:138–144: ionpulse, overburn, frenzy, regrow, blink, phase, reclaim. Unique examples: data.js:96 reanimate:true only on Deathless hulls; battle.js:702 reanimation check.	OBSERVED
+7	The clearest range identities live in enemy AI only, not in player faction rules. Hegemony AI holds range 3; Corsair AI closes to −2; Deathless AI advances to −3. A player fleet does not receive those doctrinal rules.	battle.js:987 hegemony...range:3; 988 corsair...range:-2; 989 chorus...range:-1; 990 ithar...range:2; 991 deathless...range:-3.	OBSERVED
+8	Boss scaling is one of the few truly faction-specific numeric tables, and it is enemy-side only. Corsair bosses scale 1.45; Ithar bosses scale .80.	battle.js:127 corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80.	OBSERVED
+9	No faction economy exists in the pack. Credits, renown, shipyard discounts, and repair are global. There is no per-faction resource, price curve, salvage rule, or repair rule.	data.js:247 Shipyard prices \u221215%. is a global legacy upgrade; campaign_meta.js:187 META.renown=(META.renown||0)+ren; is global. No faction-specific credit/repair/reward table appears.	INFERRED
+10	The class ladder is not literally identical, but the exceptions do not create asymmetry. Hegemony has no dedicated carrier hull; Deathless has only three hulls and no squadron field. Those are roster gaps, not different decision systems.	data.js:114 roster:['h_picket','h_interdictor','h_vanguard','h_dominion']; 126 roster:['d_scythe','d_jackal','d_harvester']; 126 sq:null.	OBSERVED
+PART 2 — Propose asymmetry
+Shared engine note: the pack has no per-faction economy hook. To make the economies below real: ENGINE CHANGE — add a faction economy modifier table read by shipyard price, repair cost, and battle reward code. One sentence: this system reads a faction id and applies different credit gain, repair, and purchase modifiers.
+
+Voidsworn Crusade — armored line-breaker, elite
+Unit-count profile: elite. Few capital hulls, frigates are escorts, not the plan.
+
+Range profile: mid-range broadside and lance; strong at 3–5 hexes, poor at knife range and poor while chasing.
+
+Shield/survivability: shields plus armor; survives by facing and bracing, not evasion.
+
+Movement: slow, deliberate, broadside-facing. Keep rake and low speed; make turning the central decision.
+
+Economy: gains normal battle credits but pays premium for hull repair and armor refits; no cheap replacement swarm.
+
+Win condition: break the enemy command ship or flagship in a decisive line fight.
+
+Lose condition: gets flanked, rear-arc hit, or forced to chase fast targets.
+
+Prohibition: cannot blink, phase, or ignore terrain; Ithar and Deathless can.
+
+Smallest changes: keep broadside rake data.js:104; push frigate cost above 70 and restrict frigate count; give line cruisers focus/surge only; keep no blink/phase. Use existing focus data.js:133, surge data.js:135, and armor modules data.js:152.
+
+Hegemony Navy — disciplined long-range shield-stripper, standard
+Unit-count profile: standard. A gun line with escorts and launch-capable cruisers/battleships, not a dedicated carrier fleet.
+
+Range profile: long. Prefer 3–6 hexes; punish close brawlers before they arrive.
+
+Shield/survivability: shield-heavy, hull-fragile when shields fail; relies on facings and shield refill.
+
+Movement: reverse thrusters and formation discipline. Keep rev:1 data.js:105.
+
+Economy: gains extra from station-defence and relay objectives; pays less for shield refits, more for hull replacement.
+
+Win condition: strip shields with ion fire, hold range, and win by station/relay control or fleet break.
+
+Lose condition: closed on by ram/boarding or forced to chase.
+
+Prohibition: cannot fire torpedoes; Hegemony rosters contain no torpedo weapon.
+
+Smallest changes: keep ion data.js:13, ionpulse data.js:138, and reverse movement; remove any torpedo access; make h_vanguard/h_dominion launch the only squadron source. Use CMD_POW battle.js:827 to make iron stronger for Hegemony.
+
+Ashfall Corsairs — close-range raider swarm
+Unit-count profile: swarm. Cheap raiders and reavers; cruisers are support, not the core.
+
+Range profile: close. Scatter, rockets, torpedoes, boarding, and ram pressure.
+
+Shield/survivability: thin shields, high evasion, low armor; survive by not being hit and by trading cheap hulls.
+
+Movement: sideslip and overburn. Keep slip:1 data.js:106 and overburn data.js:139.
+
+Economy: gains extra credits from boarding captures and salvage; loses value when hulls are destroyed without capture.
+
+Win condition: close, board or ram a key ship, and break the enemy before repairs matter.
+
+Lose condition: long-range gun line holds them off or point defence strips rockets.
+
+Prohibition: cannot use lance weapons; Corsair rosters have no lance.
+
+Smallest changes: keep scrap and rockets data.js:47–48; lower raider/reaver costs; raise BOARD_MULT battle.js:82; keep no lance. Use existing reload data.js:132 and overburn data.js:139.
+
+The Chorus — short-range attrition swarm
+Unit-count profile: swarm. Many cheap drone-spawn and spitters; brood-mothers are mobile spawners.
+
+Range profile: close. Tendrils and bio-plasma; spores for defence.
+
+Shield/survivability: no shields at all; hull regeneration and section repair. Survives by outlasting, not by avoiding.
+
+Movement: free first pivot. Keep pivot:1 data.js:107.
+
+Economy: converts battle damage into free regeneration; pays full price for new hulls and cannot buy shield refits.
+
+Win condition: grind enemy hulls down and win by rout/attrition.
+
+Lose condition: burst damage kills a ship before regeneration matters, or fire/acid bypasses the grind.
+
+Prohibition: cannot use shields; all Chorus hulls have sh:0.
+
+Smallest changes: keep no shields data.js:84–88; keep regrow, frenzy, regen data.js:84–87; keep pivot; make shield modules unavailable to Chorus. Use existing regrow data.js:141 and frenzy data.js:140.
+
+The Ithar — long-range shield-skirmisher, elite
+Unit-count profile: elite. Few, expensive, high-shield ships.
+
+Range profile: long. Pulsar lances, star torpedoes, and blink to keep distance.
+
+Shield/survivability: strong shields, weak hull and little armor; survives by shield cycling and evasion.
+
+Movement: blink and fan sails. Keep evadeAt:2 data.js:108 and blink data.js:142.
+
+Economy: pays premium for hull replacement, but shield repair/recharge is cheap; gains by avoiding hull damage.
+
+Win condition: skirmish, strip shields, and kill a flagship in a Hunt or Decapitation fight.
+
+Lose condition: shields are broken and the fragile hull is caught.
+
+Prohibition: cannot passively regrow hull; Ithar hulls have no regen or reanimate.
+
+Smallest changes: keep high shields and low hull data.js:90–94; keep blink and surge; remove hull-regeneration access; raise costs and lower hull counts. Use existing surge data.js:135 and blink data.js:142.
+
+The Deathless Dynasty — armored grinding advance, standard/elite
+Unit-count profile: standard to elite. Few, tough, expensive hulls.
+
+Range profile: mid to close. Gauss and doom arcs; no torpedo reliance.
+
+Shield/survivability: no shields; high armor, regeneration, and reanimation. Survives by refusing to die.
+
+Movement: phase through terrain and ships. Keep over:0 data.js:109.
+
+Economy: pays less for repair/reanimation, more for new hulls; losses are partly recovered through reanimation.
+
+Win condition: advance, grind, and win defend/attrition fights.
+
+Lose condition: focused fire kills sections before reanimation, or fast fleets avoid the grind.
+
+Prohibition: cannot launch squadrons; data.js:126 sq:null and Deathless hulls have no launch.
+
+Smallest changes: keep reanimate:true data.js:96, phase data.js:143, reclaim data.js:144, and over:0; remove squadron access entirely; keep no shields. Use existing gsentry/gauss data.js:21–22.
+
+Three changes I would make first
+Replace the shared price/class ladder with faction roster gates and cost curves. Data-only: change hull costs, roster access, and class counts so Voidsworn/Ithar are elite, Corsair/Chorus are swarm, Hegemony/Deathless are standard. This attacks findings 1, 5, and 10.
+
+Replace the recycled command pool with six faction-specific commands and admiral curves. Data-only: new ADMIRALS.cmd entries and CMD_POW values in battle.js:827. This attacks finding 2.
+
+Add the per-faction economy hook. ENGINE CHANGE — a faction economy table read by shipyard, repair, and reward code. Without it, “economy” remains a proposal, not a game rule. This attacks finding 9.
+
+How to prove the factions became different with the game’s own simulation data
+Use fixed battle seeds (battle.js:287) and fixed fleet-power budgets (battle.js:133) to run mirror matches and cross-faction matches. Collect the existing telemetry: B.usage already records fire arcs, aimed shots, abilities, orders, commands, moves, and failed actions (battle.js:336); tel('command') records command use (battle.js:849); run_end records faction, sector, and fleet stats (campaign_meta.js:185). Prove difference with distributions, not just win rates:
+
+Range histogram: distance at firing should separate Hegemony/Ithar (long) from Corsair/Chorus (close).
+
+Unit-count profile: average hulls and squadron share per battle should separate elite, standard, and swarm factions.
+
+Survivability split: percentage of damage absorbed by shields vs armor vs regeneration/reanimation should separate Ithar/Hegemony from Chorus/Deathless.
+
+Action entropy: distribution of fire arcs, moves, abilities, and commands should differ; if every faction uses the same command at the same round, the change failed.
+
+Economy ledger: credits gained, repair spend, hull losses, and replacement spend should diverge by faction.
+
+Win/loss cause: routed, flagship killed, station lost, transports escaped, and reanimation count should map to each faction’s stated win/lose condition.
+
+Acceptance criterion: pairwise metric vectors diverge beyond noise while mirror win rates remain roughly balanced. If a faction only wins more but uses the same range, same command timing, and same hull-count curve, it is still a costume.
+
+Not checked
+I did not examine shipyard purchase code, repair implementation, map/sector UI code, save/load, rendering/animation code, event resolver code, full boon/relic effect application beyond battle references, squadron UI control code, persistence, or any player-side autoplay/simulation harness. The pack contains no explicit player-policy simulator; the proof method above would need one or would need to reuse the enemy AI with a new harness.PART 1, MEASURE THE SAMENESS. From the pack only, quantify how similar the factions are today: the class ladder and price ladder per faction, stat bands per class, weapon stat lines per faction (expected damage per volley, range, accuracy), the squadron system, admiral cost curves and command pools, and any mechanic that only one faction has. Cite file and line for every claim. Maximum 10 findings, most damning first.
+
+PART 2, PROPOSE ASYMMETRY. Give each of the six factions a distinct playstyle identity at the StarCraft bar. For each: unit-count profile (swarm, standard, elite), range profile, shield and survivability model, movement character, economy, win condition, lose condition, one prohibition (something it cannot do that another faction can), and the smallest change set that gets it there using mechanics already in the pack. Flag anything needing a new engine system as ENGINE CHANGE. End with the three changes you would make first, and how you would prove with simulation data that the factions had actually become different.
+We need answer huge. Need audit pack only. Need be red team. Need cite file line exact quote under 20 words numeric where claim numeric. Max 10 findings most damning first. Then proposals six factions distinct. Need use file lines. Need not use franchise vocab in proposals. Refer benchmarks okay but don't borrow terms. Need end three first changes and proof sim data. End "Not checked". Need be concise enough but detailed.
+
+We need analyze data. Need Part1 quantify sameness. We need citations file and line. There are two files data.js and battle.js and campaign_meta maybe. Annex not line numbers? Need cite original file lines. Use data.js line numbers. Need quotes exact under 20 words where claim numeric. Mark OBSERVED/INFERRED. Max 10 findings.
+
+Key observations:
+
+All factions share core hull classes: Frigate cp1 cost70, Destroyer cp2 cost130, Cruiser cp3/4 cp? cost190/200/250, Carrier cp4/5 cost250/260/310, boss cp10-12. Price ladder identical for frigate and destroyer: data lines 61,72,78,84,90,96 all 70? Need cite. Frigates all 70 at lines 61,72,78,84,90,96. Destroyers 130 lines 62,73,79,85,91,97. Cruisers: 200/250/190/190/250/250. Carriers 260/250/310/250. Boss varied. But core cost ladder identical lower tiers. Also auto cost formula line 329 fills missing but most present. Need quote lines.
+
+Class ladder roster missing certain classes: Hegemony no carrier class? h_vanguard cruiser has launch, h_dominion battleship launch. Deathless no carrier (roster 3 ships no carrier), no dedicated carrier. Voidsworn has 6 incl dread. Chorus 5. But common "every roster same class ladder" not literally? Data: Hegemony roster lines 114 has 4 no carrier but launch on cruiser/battleship; Deathless roster 126 3 no carrier. Need note owner says same ladder but pack shows exceptions. However audit measure sameness; maybe class ladder is not exactly same but roles compressed. Could be finding: every faction's non-boss roster maps to cp1/2/3-4/4-5 (and Hegemony/Deathless skip dedicated carrier), with shared squadron system. But not damning.
+
+Stat bands per class overlap heavily. Need quantify. Frigates hp 30-56? Void 45, Heg 40, Corsair 46, Chorus 46, Ithar 30, Deathless 56. Shields 0-12? Need cite lines. Destroyer hp 60-110, shields 0-18. Cruiser hp 90-150, sh 0-26. Carrier hp 130-200. Boss 470-650. We can state ranges and cite examples. Need quote numeric exact lines maybe one or two.
+
+Weapon stat lines: expected damage per volley = shots*dmg. Need compute per faction. But traits modify. Base weapon table. Need list expected raw volley and range/acc. We can compute:
+Void: autocannon 15 r4 acc80; flak 9 r2; battery 24 r5 acc72; hbattery 35 r5; lance 20 r7 acc82; torp 42 r6 acc64; turret 16 r5; heavy torp? not void?
+Heg: laser 14 r4 acc80; turbo 18 r5; hturbo 27 r6; ion 12 r6; flak 9.
+Corsair: autocannon 15; scatter 25 r3 acc78; turret 16; torp 42; htorp 68 r6 acc60; flak 9.
+Chorus: tendril 26 r1 acc85; bioplasma 24 r4 acc74; spores 12 r2 acc78; sporeb squadron 20.
+Ithar: shard 18 r4 acc80; pulsar 24 r6 acc80; startorp 38 r5 acc66; turret 16; flak.
+Deathless: gauss 18 r5 acc74; gsentry 9; doom 40 r5 acc78.
+These are different but many in same bands. Need cite lines 3-27. Expected damage per volley maybe compare capital main guns: macro battery 24, heavy 35, turbolaser 18, heavy turbolaser 27, scatter 25, bioplasma 24, pulsar 24, gauss 18, doom 40. Range mostly 4-6; accuracy 72-82. Need quote exact "battery...shots:4,dmg:6,r:5,opt:3,acc:72" etc. Use under 20 words.
+
+Squadron system shared: same fighter/bomber templates, only Chorus spore variant; all squadrons use same sq rules; faction sq field only kind. Data lines 67-70, FACTIONS sq lines 114,117,120,123,126. battle.js deployWings lines 904-912, wingKind 911-912. Same. Hegemony/Ithar/void use fighter; corsair bomber; chorus spore; deathless none. Need cite line 68 fighter, 69 bomber, 70 spore. "FACTIONS...sq:'fighter'" lines.
+
+Admiral cost curves identical: four per faction costs 0,30,45,80. Cite ADMIRALS lines 202-205 and faction Object.assign. Need quote "cost:0" etc. Command pools: same command IDs reused: barrage/hunt/scramble/iron/restore/surge. Data lines 209-233. Six command IDs. Each faction four admirals but commands are recycled. Need quantify. Quote line 214 "cmd:{id:'barrage'" and 218 "cmd:{id:'surge'"; etc. All command effects in battle.js lines 822-862 shared. So same command pool.
+
+Faction-unique mechanics: Move rules unique per faction (line 103-109) but only movement bends. Abilities: some unique: Hegemony ionpulse only, Corsair overburn only, Chorus regrow/frenzy, Ithar blink, Deathless reclaim/phase, Void focus/reload/surge/evasive. But these are per-ship abilities mostly one per faction line. Actually each faction line ships get "something to press" line 137. But abilities not deeply asymmetric. Need finding: "one faction-only mechanic?" There are faction-specific movement and weapon traits and abilities, but they are small nudges. Need mention CREW_MULT/BOARD_MULT/RAM_FAC lines 81-83. Ram only corsair/chorus/void? RAM_FAC={voidsworn:1,corsair:1,chorus:1}; only those can AI bold ram but ramming available all? RAM_FAC used for AI and base damage. Board mult faction. These are numeric nudges. Could include in finding.
+
+Economy: No faction-specific economy in data. Credits, shipyard costs, repair same. LEGACY global. Events not faction-specific except not lists. Campaign_meta no faction economy. All admiral costs same. Need cite line 247 "Shipyard prices −15%" global. No faction resource. "RUN_WORD" only naming. Need state INFERRED no faction economy.
+
+Command pools same: CMD_POW shared line 827; commandFor etc.
+
+Enemy AI FACTION_AI different profiles but player factions? The six factions use same AI profile for enemy if fac; but player isn't AI. It shows intended differences range profiles (hegemony range 3, corsair -2, chorus -1, ithar 2, deathless -3) but these are AI only, not player mechanics. That's a key finding: the only explicit range identity lives in enemy AI, not player fleet. Cite battle.js lines 985-991. Quote "hegemony:{tw:1.15,hurt:1.3,range:3,rw:1.2}" etc. That's damning. But need line under 20 words numeric. Good.
+
+BOSS_FAC scaling different per faction line 127: corsair 1.45, void 1.40, hegemony .95, chorus 1.10, deathless 1, ithar .80. Boss scaling asymmetrical only for enemy boss. This is one mechanic not player. Could mention.
+
+Weapon traits v48 lines 43-56 add differences: las, hellfire, plasma, scrap, rockets, spines, acid, needle, star, gauss. These are faction-specific but mostly numeric/status. Need measure. Need maybe include finding: weapon traits are the main asymmetry but they map one trait family per faction; not decision-changing? Need quantify: 5 factions have 2-3 traits; Void 2, Heg 1, Corsair 2, Chorus 2, Ithar 2, Deathless 1. Traits alter shots/acc/dmg/status. This is small. Cite lines 44-53.
+
+Class stat bands: boss HP 470-650, shields 0-40. Maybe too broad. Need most damning first: same price ladder, shared squadron, admiral costs/commands, weapon stat bands, AI range only, unique mechanics small, no economy, class ladder not same? Need order.
+
+Need Part 2: six factions distinct playstyle identity. Need not use StarCraft/Warhammer terms. Need space frame. Need for each: unit-count profile (swarm/standard/elite), range profile, shield/survivability model, movement character, economy (gains/loses resources differently), win condition, lose condition, prohibition, smallest changes using existing mechanics; flag ENGINE CHANGE if new system. Need concrete. We can propose identities leveraging existing mechanics: shields, armor, regen, reanimate, boarding, ram, squadrons, torpedoes, ion, gauss, blink, move rules, commands, boons. Need six distinct. Need not all require engine. We can assign:
+1 Voidsworn Crusade: elite line-breaker, standard/elite, mid-range broadside, armor+shield balanced, slow gunnery, economy from battle kills? Existing martyr/relic? Win by breaking enemy command/hull; lose if flanked/rear and torpedoes spent. Prohibition: cannot swarm or field cheap screens? They have frigate but can prohibit more than X frigates? Need smallest change: use existing ram? Maybe "cannot take more than one squadron per carrier"? Hmm.
+Need each distinct at StarCraft bar. Need identities:
+
+Voidsworn: elite armored broadside battering ram; few ships, mid/close, armor+shield, slow, economy repairs via kills? Uses existing Martyr relic? But faction-specific? Need economy how gains/loses resources differently. Could propose "economy: salvage from destroyed capital ships only; loses credits when ships die"? Need new engine? If new resource, ENGINE CHANGE. We can use existing credits/renown? Need minimal.
+Maybe define economy using existing systems: Voidsworn gains extra credits from flagship kills? No existing. Need flag ENGINE CHANGE for faction economy differences if new resource. But proposals can include "no new resource; use existing credits but spend differently: shipyard discounts on armor modules, no cheap hulls" etc. That's not engine. However owner wants economy. Could use existing LEGACY? Need per faction economy changes require engine? We can flag if needed.
+
+Need avoid too many new systems. "Smallest set changes using mechanics already present where possible." We can propose data-only changes: hull costs, class access, weapon loadouts, abilities, MOVE_RULES, AI profiles, squadron types, command IDs, boons. Need one or two engine changes where necessary.
+
+Need six factions:
+Voidsworn: Elite, mid-range, shield+armor, slow broadside, economy from surviving (repairs on victory? existing salvage? maybe no), win by closing firing arcs and breaking enemy line; lose if outmaneuvered/rear. Prohibition: no cheap swarm or no carrier-heavy? They have carrier. Maybe "cannot buy more than one frigate per two capital ships" not existing. Better prohibition: "cannot launch strike craft except from carriers; no cheap escort screen" but they have. Need one thing cannot do another can: "cannot blink/teleport or ignore terrain" (Ithar/Deathless can). That's true. But prohibition should be playstyle. Use existing: Voidsworn has no blink, no phase, no ionpulse, no overburn. It cannot reposition through obstacles. Good.
+2 Hegemony Navy: standard ranged gun-line, shield-stripping ion, carrier screen, medium count, long range, shields, disciplined movement reverse, economy from station/defend? Win by stripping shields and holding range; lose if closed on. Prohibition: cannot brawl/ram? They lack overburn/ram? All can ram but no RAM_FAC. Hmm.
+3 Ashfall Corsairs: swarm/raider, close range, thin shields high evasion, fast movement sideslip, economy from loot/credits (existing ledger/salvage), win by torpedo alpha and boarding/ram, lose if prolonged. Prohibition: cannot hold a gun line / no long-range lance? They have torp range 6. But no lance. Good.
+4 Chorus: swarm, short range, no shields regen hull, movement pivot free, economy from biomass? Existing regrow and feast; win by attrition/boarding, lose to burst. Prohibition: no shields/no shield abilities.
+5 Ithar: elite, long range, shield-heavy fragile hull, fast blink, economy? use fewer ships high cost; win by kiting and shield burst, lose when shields down. Prohibition: no armor/regen? no ram? They can ram but RAM_FAC absent. Good.
+6 Deathless: standard/elite, mid-close, no shields high armor/reanimate, slow phase through terrain, economy from reclaim/reanimation, win by grinding, lose to focus/fire. Prohibition: no shields/no shield surge? They have no shield.
+
+Need specify unit-count profile: swarm/standard/elite. Could assign Void elite, Heg standard, Corsair swarm, Chorus swarm, Ithar elite, Deathless standard. But two swarm/two elite fine.
+
+Need "range profile": Void mid; Heg long; Corsair close; Chorus close; Ithar long; Deathless mid-close.
+
+Shield/survivability: Void shields+armor; Heg shields; Corsair evasion thin shields; Chorus no shields regen; Ithar strong shields weak hull; Deathless armor/reanimate no shields.
+
+Movement character: Void slow broadside; Heg reverse; Corsair sideslip; Chorus pivot; Ithar blink/fan sails; Deathless phase through terrain.
+
+Economy: Need distinct. We can propose using existing credits/repair:
+
+Void: high hull costs, repairs expensive; gains credits from destroying enemy capital ships? Existing credits from battles only. Could use "salvage from kills" new? flag? Hmm.
+Maybe use existing boons/relics: Void uses martyr/armorweave, but economy not unique. Need propose "economy: pays premium for armor/repair, no cheap hulls; gains renown from flagship kills" but renown not battle. Need engine change for per-faction reward. We can flag ENGINE CHANGE for economy differences: a faction-specific salvage/repair ledger. But need smallest. We can propose data-only: change shipyard price multipliers per faction? Is there existing price? SECTOR_CONDS price global; LEGACY wrights global. No per-faction. So ENGINE CHANGE? Actually data could add FAC_ECON and modify shipyard code in campaign/other files not shown. But pack only data/battle/campaign_meta. Shipyard code not in pack. We can flag "ENGINE CHANGE: per-faction price/repair modifiers in shipyard." But maybe too many. Need one sentence.
+Could make economy differences via existing battle resources: repair between battles, credits from battles. Need code not present? campaign_meta references shipyard but not code. Since not in pack, can't cite. But proposal can say data-only if existing shipyard reads faction? Not present. Flag engine change.
+
+Need "win condition/lose condition" as battle/run conditions: use existing encounter types. E.g., Void win by Decapitation/flagship; lose if forced to Breakthrough? Hmm. Need distinct win conditions at faction level maybe run. We can say "win condition: kill enemy command ship in Decapitation; lose condition: lose own flagship before escorts break." That's using existing encounter. Hegemony win by Hold station/Relay; Corsair by Intercept/breakthrough loot; Chorus by rout/attrition; Ithar by Hunt/kite; Deathless by defend/grind. But encounter types are shared; assigning preference is okay.
+
+Need "one thing it cannot do that another faction can (prohibition)": Use existing abilities absent. E.g., Void cannot blink/phase; Hegemony cannot ram effectively? All can but no RAM_FAC. Need data: RAM_FAC only void/corsair/chorus. But Hegemony can still ram? RAM_FAC false -> base no 1.2 and recoil .5. They can but weaker. Prohibition not absolute. Better "cannot field a dedicated carrier hull" (Hegemony no carrier class; uses launch cruisers/battleship) is true? It can launch via h_vanguard/h_dominion. Not dedicated. Deathless cannot launch squadrons at all. That's a real prohibition: Deathless sq:null and no launch. Good. Ithar cannot use armor? ar 0 for frig/destroyer; but cruiser .05 boss .2. Not absolute. Chorus cannot use shields (sh:0 all). Corsair cannot use lance weapons (no lance in roster? c_raider autocannon, c_reaver torp/scatter, c_marauder scatter/torp/flak, c_hulk turret, boss scatter/htorp/flak; no lance). Good. Void cannot blink/phase (no blink/phase abilities). Hegemony cannot use torpedoes? Check h roster: no torp? h_interdictor ion/turbo; h_vanguard turbo/ion; h_dominion hturbo/ion/flak; h_boss hturbo/turbo/ion/flak. No torp. Good prohibition: Hegemony has no torpedo tubes. Deathless no squadrons. Chorus no shields. Corsair no lance. Ithar no armor/regen? Ithar has no regen/hullRegen? HULLS i no regen; ar low. Prohibition: cannot regenerate hull or reanimate; no hull repair passive. Void no blink/phase. Good.
+
+Need "smallest set of changes" data-only: adjust hull roster, costs, weapon loadouts, MOVE_RULES, abilities, FACTION_AI maybe not player. Need mention existing mechanics. For each propose 3-5 bullet changes.
+
+Need Part2 ending: three changes first across all factions and proof with simulation data. Need cite battle.js simulation telemetry? There is B.usage telemetry line 336, tel, run_end. We can propose using existing sim hooks env BOSS_SCALE, NOCOMPACT, etc. Need "game's own simulation data" — battle.js has B.usage tracking fire arcs, moves, abilities, commands; tel('command'), run_end. Need use: B.usage.fire/moves/ab/ord/cmd, B.boonStats, battle outcomes, run stats. Also B.usage.cant? line 336. Need simulate same encounter seeds per faction? startBattle seed line 287. Use fixed seeds and genEnemyFleet budgets. Need metrics: faction mirror win rates, action entropy, range-band histogram, command timing, squadron share, repair share, kill causes. Need prove differences: distributions diverge, not win rate only. Use fixed seeds and no player input? There is AI for enemy but player? Need headless sims? There are process_env and NOCOMPACT etc. But no explicit sim bot for player. The pack has AI only enemy; but B.usage for player implies human? Could use AI_LEVEL? Hmm. Need say use existing battle.js telemetry B.usage plus run_end stats; add no engine? Need "with game's own simulation data" use B.usage and tel. If player sim not present, INFERRED. Need mention if no sim harness in pack, need build. But final proof method can be: run headless battles with fixed seeds, same budgets, each faction as player mirrored; collect B.usage fields. Need perhaps "ENGINE CHANGE: headless player-policy harness" if not in pack. But maybe existing AI can be reused? FACTION_AI only enemy. Could use AI as player? Not exposed. Flag.
+
+Need citations exact quotes under 20 words. Need ensure quotes are exact lines. Need not quote entire long lines? "under 20 words" if quote segment. Use line numbers. Need cite file and line for every claim. For numeric claims quote exact line under 20 words. Could use semicolon separated.
+
+Need max 10 findings. We can structure table. Each finding with OBS/INF and citations. Need most damning first. Let's craft 10:
+
+Price ladder identical at bottom: all frigates cost 70 and destroyers 130; cruisers cluster 190-250. Cite data.js 61,72,78,84,90,96 and 62,73,79,85,91,97. Quote "cost:70" and "cost:130" maybe exact. Also line 329 auto formula. Finding: no economic identity.
+
+Admiral cost curve and command pool shared: every faction has four admirals at 0/30/45/80; command IDs recycled among six. Cite data.js 202-205, 214-233; battle.js 822-862. Quote "cost:0" "cost:30" etc. Need exact line: 202 cost:0; 203 cost:30; 204 cost:45; 205 cost:80. Then 214 kassar cost:0. Good. Command pools quote line 214 "cmd:{id:'barrage'"; 218 "cmd:{id:'surge'"; 221 "cmd:{id:'restore'".
+
+Shared squadron system: one fighter/bomber template; only Chorus spore; faction sq field chooses one. Cite data.js 68-70 and 114/117/120/123/126; battle.js 904-912. Quote "fighter...guns:T" line 68; "bomber...bombs:T" line 69; "sq:'fighter'" line 114.
+
+Weapon stat bands overlap: capital main guns 18-40 raw volley, range 4-6, acc 72-82; traits only adjust. Cite data.js 5,6,11,12,14,17,19,21,23. Quote "shots:4,dmg:6,r:5,opt:3,acc:72" line 5; "shots:2,dmg:9,r:5...acc:74" line 11; "shots:2,dmg:12,r:6...acc:80" line 19; "shots:1,dmg:40,r:5...acc:78" line 23. Need expected volley numbers: 4*6=24; 2*9=18; 2*12=24; 40. We can say expected raw volleys 18-40. But need cite numeric quote. Good.
+
+Stat bands per class overlap: frigates hp 30-56, shields 0-12; destroyers 60-110, shields 0-18; cruisers 90-150, shields 0-26. Cite lines 61,72,78,84,90,96 etc. Quote "hp:45,sh:10" line 61; "hp:30,sh:12" line 90; "hp:56,sh:0" line 96. Need under 20 words. Good. This shows small nudges.
+
+Faction-only mechanics exist but are shallow: MOVE_RULES one bend per faction; weapon traits one family; abilities one per line. Cite data.js 103-109, 43-56, 130-145. Quote "slip:1...Sideslips cost 1" line 106; "pivot:1...first turn...no movement" line 107; "over:0...Passes through rocks" line 109. But finding: these are single-rule modifiers, not decision systems.
+
+AI range identity only for enemies: FACTION_AI explicit range profiles, not player rules. Cite battle.js 985-991. Quote "hegemony...range:3" line 987; "corsair...range:-2" line 988; "deathless...range:-3" line 991. This is damning.
+
+Boss scaling asymmetrical only: BOSS_FAC values .80-1.45. Cite battle.js 127. Quote "corsair:1.45,voidsworn:1.40,hegemony:.95" line 127. This is only faction-specific scaling.
+
+No faction economy: global credits, shipyard discount, repair/relic apply same; no faction resource. Cite data.js 247 "Shipyard prices −15%"; 192 "credits"; campaign_meta 187 renown formula. Need quote "Shipyard prices −15%." line 247; "META.renown=(META.renown||0)+ren" line 187. Mark INFERRED.
+
+Class ladder not actually uniform but role-equivalent; Hegemony lacks carrier hull, Deathless lacks carrier/squadrons, but cp/cost slots fill. Cite data.js 114 roster h no carrier; 126 roster d 3; 81 c_hulk; 87 b_brood. Quote "roster:['h_picket','h_interdictor','h_vanguard','h_dominion']" line 114; "roster:['d_scythe','d_jackal','d_harvester']" line 126. This is maybe not sameness but exception. Need max 10. Good.
+
+Need include OBSERVED/INFERRED. All observed except economy no faction? Could be INFERRED.
+
+Need Part1 maybe mention "expected damage per volley" table? We can include compact table in finding 4 or separate. But max 10 findings. Could include table in finding 4 with per faction main guns expected. Need citations. Good.
+
+Need Part2 detailed. Need maybe table for each faction with fields. But final answer oververbosity desired 5, but user asks massive. Need be thorough. We can do bullets per faction. Need not exceed too much but enough.
+
+Need ensure "Do not use vocabulary from StarCraft, Warhammer or any other franchise in proposals themselves" Avoid "zerg, protoss, terran, tyranid, ork, necron, eldar" in proposals. Can mention benchmarks in Part1? The rules say referring as benchmarks fine. We won't use. Avoid "kiting" maybe common not franchise? It's okay but maybe avoid? "hit-and-fade" okay. Avoid "gunline"? fine. Avoid "alpha strike"? common. Avoid "tank". Space ships. Use "hull", "shield", "squadron".
+
+Need "StarCraft bar" phrase maybe in prompt; can say "at the requested bar" not use terms. Fine.
+
+Need cite every claim in Part1. Part2 proposals don't need citations? The instruction says cite file and line for every claim in Part1. Part2 smallest changes can cite lines but not mandatory? Better cite mechanics lines. Use parenthetical citations. Need not quote numeric? If numeric in Part2 maybe cite. But Part1 rule numeric quote. For Part2, can cite line references.
+
+Need "ENGINE CHANGE" flag with one sentence. Need identify new systems:
+
+Per-faction economy modifiers (shipyard/repair) require engine change if not present.
+
+Faction-specific deployment/formation? maybe not.
+
+Player-side AI/sim harness? final proof maybe.
+
+Squadron control differences? existing.
+
+"Boarding capture" existing.
+
+"Shield facing" existing.
+Need minimal sets:
+Voidsworn: Data-only: restrict roster to cp>=2? But they have frigate. Could make frigate cost higher? Need "elite" profile. Change costs: warden 90, harrow 150, etc. But price ladder already. Data-only. Add faction trait: broadside rake already. Maybe give all line ships focus? Existing. Prohibition no blink. Win flagship. Economy: repair premium. ENGINE CHANGE for price/repair.
+Hegemony: Data-only: remove/limit torpedo (already none), increase ion shield strip, make carriers launch from cruisers, longer range. Prohibition no torpedoes. Economy: station contracts? ENGINE CHANGE.
+Corsair: Data-only: cheap raider swarm, reduce cruiser, increase torpedo reload, boarding mult. Prohibition no lance. Economy: loot credits from captures? Boarding capture existing, but credits on capture? not existing. ENGINE CHANGE.
+Chorus: Data-only: no shields already, regen, free pivot, swarm brood. Prohibition no shields. Economy: biomass from destroyed hulls? regrow existing; no new resource. Win attrition.
+Ithar: Data-only: fewer high-cost ships, shields, blink, long range. Prohibition no passive hull regen. Economy: high shield repair, expensive hull. ENGINE CHANGE maybe.
+Deathless: Data-only: no squadrons already, armor/reanimate, phase. Prohibition no squadrons. Economy: reanimation reclaim existing. Win grind. No engine? Good.
+
+Need define "economy" without new resource maybe:
+
+Void: "pays more for hulls and repairs, but can sell armor? no." Hmm. Need be concrete.
+Could use existing credits but propose modifiers. That requires engine change. We can flag one common "ENGINE CHANGE: faction economy hooks in shipyard/repair/reward code" that supports all six. Then each faction's economy uses that. That is efficient. One sentence: "ENGINE CHANGE: a per-faction economy modifier table read by shipyard price, repair, and battle reward code." Then all factions can have modifiers. Good.
+
+Need "three changes first across all factions" maybe:
+
+Replace shared class ladder with faction roster gates and costs (data-only) so count profiles differ.
+
+Replace shared command pool with six faction-specific command effects and cooldowns; make admiral cost curves reflect doctrine.
+
+Split squadron system into faction-specific launch/control/roles or remove for Deathless; use existing sq templates.
+Then proof sim. Need maybe first change should be "economy hooks"? Hmm.
+
+Need proof with simulation data:
+
+Use fixed seeds, same fleet power budgets, mirror matches vs each other. Collect B.usage fields: fire arc counts, moves, abilities, orders, commands, ram/board/cap/overrun, cant reasons. Also battle outcomes, round lengths, damage by killCause, shield vs hull, squadron damage. Use run_end stats. Metrics:
+
+Action entropy per faction: distribution of fire arcs, moves per activation, ability usage, command tier at use.
+
+Range histogram: distance at firing; should separate long/mid/close.
+
+Unit-count profile: ships deployed by cp; squadron share.
+
+Survivability: % damage absorbed by shields vs armor vs regen; deaths per battle.
+
+Economy: credits gained/spent, repairs, losses.
+
+Win/loss conditions: encounter type win rates, average rounds, routed vs destroyed.
+Proof criterion: not just win rates near 50; require pairwise Jensen-Shannon divergence or effect size in metric vectors above threshold, and mirror win rates within 45-55. Use same seeds. Need mention no player-policy sim harness in pack; ENGINE CHANGE if needed. The pack has B.usage and tel. Need cite battle.js 336 and campaign_meta 185. Quote? Part2 maybe no quote required. But could cite.
+
+Need "Not checked" list. Need list what not examined: UI files scene3d? Not in pack; shipyard code; Persist; map generation beyond battle; save/load; events effects implementations; boons full code? Actually BOONS data but effect application in battle partially; not all. Need list: no economy/shipyard implementation, no player autoplayer, no rendering, no map screen, no save/load, no event resolvers, no full boon/relic effect code beyond battle references, no exact sim harness. Good.
+
+Need produce final answer. Need be careful with exact quotes under 20 words. Let's draft.
+
+Part1 table:
+Finding 1 OBSERVED: Bottom price ladder is identical. Cite data.js:61 "cost:70" etc. But quote exact line "...,cost:70}," maybe includes many. Under 20 words: "hp:45,sh:10...cost:70" line 61. For all, line 72 "hp:40,sh:10...cost:70"; line 78 "hp:46,sh:8...cost:70"; line 84 "hp:46,sh:0...cost:70"; line 90 "hp:30,sh:12...cost:70"; line 96 "hp:56,sh:0...cost:70". Destroyers line 62 "cost:130"; 73 "cost:130"; etc. State "all six frigates cost 70; all six destroyers cost 130." Need quote one example plus line list. Good.
+
+Finding 2: Admiral costs/commands. Quote line 202 "cost:0" etc. But every faction? Need cite data.js 214 "cost:0"; 215 "cost:30"; 216 "cost:45"; 217 "cost:80" for Hegemony. Then 218 etc. State all four per faction at 0/30/45/80. Quote line 214 "cost:0,cmd:{id:'barrage'". Under 20 words? It is long but segment. Good.
+
+Finding 3: Squadron. Quote data.js:68 "fighter...hp:18...guns:T" and 69 "bomber...hp:28...bombs:T". And FACTIONS sq. Good.
+
+Finding 4: Weapons. Need table maybe:
+Faction main capital raw volley:
+Void macro 24 r5 acc72; lance 20 r7 acc82; hbattery 35 r5 acc72
+Heg turbo 18 r5 acc74; hturbo 27 r6 acc72; ion 12 r6 acc80
+Corsair scatter 25 r3 acc78; htorp 68 r6 acc60; torp 42 r6 acc64
+Chorus bioplasma 24 r4 acc74; tendril 26 r1 acc85
+Ithar pulsar 24 r6 acc80; startorp 38 r5 acc66; shard 18 r4 acc80
+Deathless gauss 18 r5 acc74; doom 40 r5 acc78
+Need cite data.js lines 5,6,11,12,14,15,17,19,20,21,23. State capital expected raw volleys mostly 18-40, ranges 4-6, acc 60-82. Good.
+
+Finding 5: Stat bands. Frigates hp 30-56 sh0-12; destroyers hp60-110 sh0-18; cruisers hp90-150 sh0-26. Cite lines. Good.
+
+Finding 6: Unique mechanics are one-rule bends. Cite MOVE_RULES lines 103-109; WTRAITS 43-53; ABILITIES 130-145. State each faction has exactly one movement rule, 1-3 weapon traits, and one signature line ability; no faction-only resource/economy. Observed.
+
+Finding 7: AI range profiles only. Cite battle.js 985-991. Good.
+
+Finding 8: Boss scaling. Cite battle.js 127. Good.
+
+Finding 9: No faction economy. Cite data.js 247; campaign_meta 187. Mark INFERRED because code not present? Observed data no faction-specific. "No faction-specific credit/repair/shipyard modifier appears; global discounts." Observed.
+
+Finding 10: Class ladder exceptions. Cite data.js 114 and 126. State two factions lack dedicated carrier and Deathless lacks squadrons. This cuts against "same ladder" but doesn't create asymmetry because cp/cost slots fill. Observed.
+
+Need maybe mention "SECTOR_POOL" etc? not needed.
+
+Part2: Need maybe table columns. But six factions with 10 fields. That's long. Use compact bullet per faction:
+Voidsworn — armored line-breaker (elite)
+
+Unit count: elite...
+
+Range...
+
+Shield...
+
+Movement...
+
+Economy...
+
+Win...
+
+Lose...
+
+Prohibition...
+
+Smallest changes...
+Need include ENGINE CHANGE if economy. Maybe one global engine change note before table: "ENGINE CHANGE (shared): faction economy modifiers..." But each economy uses it. Good.
+
+Need ensure each "smallest changes" uses existing mechanics: cite data lines maybe. For Void: "Keep broadside/rake MOVE_RULES line 104; give focus to line ships? existing ability line 133; restrict cheap frigates by cost; no blink."
+Hegemony: "Use ion line 13, ionpulse line 138, reverse line 105; remove torpedo; make h_vanguard/h_dominion launch only."
+Corsair: "Use scrap/rockets lines 47-48, overburn line 139, boarding mult line 82; lower raider cost; no lance."
+Chorus: "Use no shields lines 84-88, regen line 84, pivot line 107, frenzy/regrow lines 140-141; no shield modules? MOD_NEED? They can take capacitor? MOD_NAMES chorus has shield mods. Prohibition no shields would need filter modules. ENGINE? Could data filter. Good."
+Ithar: "Use blink line 142, fan sails line 108, shields, no hull regen; high cost."
+Deathless: "Use phase line 109, reanimate line 96, reclaim line 144; no squadrons (already sq:null line 126), no shields."
+
+Need "one thing cannot do":
+Void cannot blink/phase (Ithar/Deathless can).
+Hegemony cannot fire torpedoes (Void/Corsair/Ithar have torpedo weapons). Data: no torp in h roster.
+Corsair cannot use lance weapons (Void/Heg/Deathless/Ithar have lance/doom/pulsar? pulsar kind lance).
+Chorus cannot use shields (sh:0).
+Ithar cannot passively regrow hull (no regen in HULLS; no hullRegen).
+Deathless cannot launch squadrons (sq:null, no launch). Good.
+
+Need "economy (how it gains and loses resources differently)" with shared engine change. Define:
+
+Void: gains credits mainly from flagship kills; pays +25% repair; loses credits on ship loss? Hmm. Need not too complex. "Gains battle credits normally but pays premium for repair and armor refits; no cheap hulls." Good.
+
+Hegemony: "Gains extra from defend/hold objectives; pays less for shield refits, more for hull repair."
+
+Corsair: "Gains extra credits from boarding captures and salvage; loses credits when ships are destroyed (no salvage)."
+
+Chorus: "Gains biomass? no new resource. Uses credits? To avoid new resource, "gains hull regen instead of credits; repairs free but slow; shipyard hulls expensive." But economy needs gain/lose. Could say "no credit bonus; converts battle damage into free regen; loses maximum hull when sections break."
+
+Ithar: "High shield recharge, expensive hull replacement; gains extra from avoiding damage? no."
+
+Deathless: "Reanimates losses; pays less for repair, more for new hulls."
+This requires per-faction modifiers engine change. Good.
+
+Need final three changes:
+
+Data-only roster/cost gates to create count profiles: cap/raise prices, remove shared tiers.
+
+Data-only command pool replacement: six faction-specific commands, change CMD_POW and ADMIRALS.
+
+Data-only squadron/launch split: Deathless none; Corsair/Chorus swarm; Hegemony/Ithar/Void screen; adjust wingKind and hangar.
+Maybe economy hooks first? But "three changes first across all factions" maybe include economy. Hmm. We need "three changes you would make first across all factions." I'd choose:
+
+Replace shared price/class ladder with faction rosters/cost gates (so unit-count profile).
+
+Replace shared command pool and admiral cost curve with six doctrines (so decisions).
+
+Add per-faction economy hooks in shipyard/repair/reward (ENGINE CHANGE) because economy identity missing. But proof? Hmm. Could choose squadron as third. But economy is important. Need three. Maybe:
+
+Roster/cost gates.
+
+Command pool + AI range profiles applied to player? Hmm.
+
+Economy hooks.
+Squadrons can be part of roster. Good.
+
+Proof sim: Use fixed seeds and metrics. Need mention if no headless player policy, add engine change. But final "prove with game's own simulation data" can say "The pack exposes B.usage and tel; run headless fixed-seed battles; if no player policy exists, ENGINE CHANGE: headless policy harness." This is okay.
+
+Need "Not checked" list. Good.
+
+Need maybe include "OBSERVED/INFERRED" in each finding. Good.
+
+Need avoid overlong but enough. Desired oververbosity 5. This will be long. Need final answer only.
+
+Let's ensure exact quote line 5: "battery:{n:'Macro battery',k:'battery',shots:4,dmg:6,r:5,opt:3,acc:72,fall:8,crit:5}," Contains 4:6 etc. Under 20 words? Quote "shots:4,dmg:6,r:5,opt:3,acc:72" is 1 word? Fine.
+Line 11 "turbo:{n:'Turbolaser',k:'battery',shots:2,dmg:9,r:5,opt:3,acc:74" quote "shots:2,dmg:9,r:5,opt:3,acc:74".
+Line 19 "pulsar...shots:2,dmg:12,r:6,opt:5,acc:80" quote.
+Line 23 "doom...shots:1,dmg:40,r:5,opt:4,acc:78". Good.
+Line 61 "hp:45,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:20...cost:70". quote "hp:45,sh:10...cost:70" maybe ellipsis not exact? Better quote "cost:70" only. But need numeric. Use "hp:45,sh:10" line 61. For cost use "cost:70". Good.
+Line 72 "hp:40,sh:10" line.
+Line 90 "hp:30,sh:12".
+Line 96 "hp:56,sh:0".
+Destroyers line 62 "hp:78,sh:14"; 73 "hp:74,sh:18"; 79 "hp:68,sh:10"; 85 "hp:82,sh:0"; 91 "hp:60,sh:16"; 97 "hp:110,sh:0". Good.
+Cruisers line 63 "hp:120,sh:20"; 74 "hp:140,sh:24"; 80 "hp:120,sh:16"; 86 "hp:150,sh:0"; 92 "hp:90,sh:26"; 98 "hp:145,sh:0". Good.
+
+Need "expected damage per volley" table maybe not all. Need compute raw volley not traits. Traits can modify. In finding 4 mention "before traits". Good.
+
+Need Part1 "any mechanic that only one faction has": In finding 6 mention "No faction-only resource; Deathless reanimate only? Actually reanimate true only deathless hulls lines 96-99; h_undying heat gives enemy. Chorus regen? Only chorus and some Deathless regen; reanimate only Deathless. Ithar blink only. Hegemony ionpulse only. Corsair overburn only. Void focus/nova? Nova on Void boss and Heg boss/Deathless boss; not unique. Need state unique mechanics exist: Deathless reanimate, Ithar blink, Hegemony ionpulse, Corsair overburn, Chorus regrow/frenzy; but they are single buttons. Cite lines 138-144 and 96. Good.
+
+Need "one faction has" in Part1 maybe finding 6 says "Yes, but narrow: reanimate only Deathless line 96; blink only Ithar line 142; ionpulse only Hegemony line 138; overburn only Corsair line 139." Observed. Good.
+
+Need Part2 "using mechanics already present where possible" cite. Good.
+
+Potential issue: "Chorus no shields" but MODULES capacitor can add shields? Data line 156 capacitor +30% shield; MOD_NEED capacitor shields; MOD_NAMES chorus has Membrane bloom line 260. So Chorus can take shield modules? HULLS b sh:0; shMax=0; capacitor shPct .3 of 0 = 0. So no effect. But MOD_NEED says shields; maybe offer logic skips? BOON_NEED s_cap shields. Not shown. Prohibition no shields okay.
+
+Ithar no passive hull regen: HULLS i no regen; but modules damcon/relic spore can. Prohibition "no built-in hull regen" not absolute. Fine.
+
+Deathless no squadrons: FACTIONS sq:null line 126; no launch in hulls. Good.
+
+Need "unit-count profile" use swarm/standard/elite exactly. Good.
+
+Need "win condition/lose condition" maybe run-level. Fine.
+
+Need final proof metrics. Mention "same seed line battle.js:287" and "B.usage line 336". Quote? Part2 not require quote, but cite. Use no quote maybe. Good.
+
+Need answer length maybe 4000-5000 words? Oververbosity 5. But request huge. Aim ~3500 words. Need not too verbose.
+
+Let's compose final with headings.
+
+Need maybe note "Part 1 findings, most damning first" table. Include "OBS/INF". Good.
+
+Need "Not checked" at end. Good.
+
+Need avoid "naval" terms? Use "hull", "ship", "fleet". Avoid "naval". We can say "space frame". Good.
+
+Need no franchise vocab in proposals. Avoid "Zerg" etc. Good.
+
+Let's write.
+
+Double-check citations:
+
+data.js line 247 "wrights:{n:'Master shipwrights',d:'Shipyard prices \u221215%.'" quote "Shipyard prices \u221215%." Good.
+
+campaign_meta line 187 has "META.renown=(META.renown||0)+ren;" quote. Good.
+
+battle.js 336 B.usage line exact "B.usage={fire:{},aim:0,ab:{},ord:{},cmd:0,moves:0,cant:{}};" Good.
+
+Need maybe cite battle.js 985-991 quote "hegemony:{tw:1.15,hurt:1.3,range:3,rw:1.2}" exact line 987. Good.
+
+Need "BOSS_FAC" line 127 exact "const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80};" quote under 20 words? It is 10 words. Good.
+
+Need "command pool" quote line 214 "cmd:{id:'barrage'" and 218 "cmd:{id:'surge'". Good.
+
+Need "all six frigates cost 70" cite lines: 61,72,78,84,90,96. Good.
+Need "all six destroyers cost 130" lines 62,73,79,85,91,97. Good.
+Need "cruisers 190-250" lines 63 cost200; 74 250; 80 190; 86 190; 92 250; 98 250. Good.
+
+Need "carriers 250-310" lines 64 260; 81 250; 87 310; 93 310. Hegemony no carrier; deathless none. Good.
+
+Need "admiral costs all 0/30/45/80" cite first faction lines 202-205 and second 214-217 etc. Good.
+
+Need "every faction has four admirals" line 208 comment "four per faction"; lines 209-233. Good.
+
+Need "shared command IDs" line 209-233. Good.
+
+Need "squadron system" line 68-70. Good.
+
+Need "fighter wing" shared; line 68. Good.
+
+Need "Deathless sq:null" line 126. Good.
+
+Need "Hegemony no carrier" line 114. Good.
+
+Need "class ladder exceptions" maybe finding 10.
+
+Part2 each "Smallest changes" can cite data lines. Use "data.js:104" etc. Good.
+
+Need final "Not checked" section titled exactly. Good.
+
+Let's now draft final.
+
+PART 1 — Measure the sameness (most damning first)
+#	Finding	Evidence and exact lines	Status
+1	The bottom price ladder is identical across all six factions. Every frigate costs 70; every destroyer costs 130. Cruisers cluster at 190–250. This is a shared budget script with renamed hulls.	data.js:61 cost:70; 72 cost:70; 78 cost:70; 84 cost:70; 90 cost:70; 96 cost:70. Destroyers: data.js:62 cost:130; 73 cost:130; 79 cost:130; 85 cost:130; 91 cost:130; 97 cost:130.	OBSERVED
+2	Admiral cost curves and the command pool are shared, not faction-shaped. Each faction has four admirals at 0/30/45/80, and command IDs are recycled among a small shared set.	data.js:202 cost:0; 203 cost:30; 204 cost:45; 205 cost:80. Same for Hegemony: data.js:214 cost:0,cmd:{id:'barrage'; 215 cost:30; 216 cost:45; 217 cost:80. Commands reuse barrage, hunt, scramble, iron, restore, surge across factions: data.js:209–233; shared implementation battle.js:822–862.	OBSERVED
+3	Squadrons are one shared system with cosmetic faction hooks. The game has one fighter and one bomber template; Chorus gets one spore variant. Faction sq only selects which shared template a carrier launches.	data.js:68 fighter...hp:18...guns:T; 69 bomber...hp:28...bombs:T; 70 spore...sporeb:T. Faction sq fields: data.js:114 sq:'fighter'; 117 sq:'bomber'; 120 sq:'spore'; 123 sq:'fighter'; 126 sq:null. Launch/control logic: battle.js:904–912.	OBSERVED
+4	Weapon stat lines occupy narrow shared bands. Before faction traits, capital main guns are mostly expected raw volleys of 18–40, range 4–6, accuracy 60–82. Traits adjust these numbers and add status riders, but do not create different firing decisions.	data.js:5 shots:4,dmg:6,r:5,opt:3,acc:72 = 24 raw; 11 shots:2,dmg:9,r:5,opt:3,acc:74 = 18 raw; 19 shots:2,dmg:12,r:6,opt:5,acc:80 = 24 raw; 23 shots:1,dmg:40,r:5,opt:4,acc:78 = 40 raw. Trait table: data.js:43–53; faction trait map: data.js:54–56.	OBSERVED
+5	Stat bands per class overlap heavily. Frigates are hp 30–56, shields 0–12; destroyers hp 60–110, shields 0–18; cruisers hp 90–150, shields 0–26. The differences are nudges inside shared bands.	data.js:61 hp:45,sh:10; 72 hp:40,sh:10; 78 hp:46,sh:8; 84 hp:46,sh:0; 90 hp:30,sh:12; 96 hp:56,sh:0. Destroyers: 62 hp:78,sh:14; 73 hp:74,sh:18; 79 hp:68,sh:10; 85 hp:82,sh:0; 91 hp:60,sh:16; 97 hp:110,sh:0.	OBSERVED
+6	Faction-only mechanics exist, but they are single-rule bends or one button. Each faction gets one movement rule, a small weapon-trait family, and one signature line-ship ability. None is a faction-wide resource, build path, or economy.	Movement: data.js:104 rake:.2; 105 rev:1; 106 slip:1; 107 pivot:1; 108 evadeAt:2; 109 over:0. Abilities: data.js:138–144: ionpulse, overburn, frenzy, regrow, blink, phase, reclaim. Unique examples: data.js:96 reanimate:true only on Deathless hulls; battle.js:702 reanimation check.	OBSERVED
+7	The clearest range identities live in enemy AI only, not in player faction rules. Hegemony AI holds range 3; Corsair AI closes to −2; Deathless AI advances to −3. A player fleet does not receive those doctrinal rules.	battle.js:987 hegemony...range:3; 988 corsair...range:-2; 989 chorus...range:-1; 990 ithar...range:2; 991 deathless...range:-3.	OBSERVED
+8	Boss scaling is one of the few truly faction-specific numeric tables, and it is enemy-side only. Corsair bosses scale 1.45; Ithar bosses scale .80.	battle.js:127 corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80.	OBSERVED
+9	No faction economy exists in the pack. Credits, renown, shipyard discounts, and repair are global. There is no per-faction resource, price curve, salvage rule, or repair rule.	data.js:247 Shipyard prices \u221215%. is a global legacy upgrade; campaign_meta.js:187 META.renown=(META.renown||0)+ren; is global. No faction-specific credit/repair/reward table appears.	INFERRED
+10	The class ladder is not literally identical, but the exceptions do not create asymmetry. Hegemony has no dedicated carrier hull; Deathless has only three hulls and no squadron field. Those are roster gaps, not different decision systems.	data.js:114 roster:['h_picket','h_interdictor','h_vanguard','h_dominion']; 126 roster:['d_scythe','d_jackal','d_harvester']; 126 sq:null.	OBSERVED
+PART 2 — Propose asymmetry
+Shared engine note: the pack has no per-faction economy hook. To make the economies below real: ENGINE CHANGE — add a faction economy modifier table read by shipyard price, repair cost, and battle reward code. One sentence: this system reads a faction id and applies different credit gain, repair, and purchase modifiers.
+
+Voidsworn Crusade — armored line-breaker, elite
+Unit-count profile: elite. Few capital hulls, frigates are escorts, not the plan.
+
+Range profile: mid-range broadside and lance; strong at 3–5 hexes, poor at knife range and poor while chasing.
+
+Shield/survivability: shields plus armor; survives by facing and bracing, not evasion.
+
+Movement: slow, deliberate, broadside-facing. Keep rake and low speed; make turning the central decision.
+
+Economy: gains normal battle credits but pays premium for hull repair and armor refits; no cheap replacement swarm.
+
+Win condition: break the enemy command ship or flagship in a decisive line fight.
+
+Lose condition: gets flanked, rear-arc hit, or forced to chase fast targets.
+
+Prohibition: cannot blink, phase, or ignore terrain; Ithar and Deathless can.
+
+Smallest changes: keep broadside rake data.js:104; push frigate cost above 70 and restrict frigate count; give line cruisers focus/surge only; keep no blink/phase. Use existing focus data.js:133, surge data.js:135, and armor modules data.js:152.
+
+Hegemony Navy — disciplined long-range shield-stripper, standard
+Unit-count profile: standard. A gun line with escorts and launch-capable cruisers/battleships, not a dedicated carrier fleet.
+
+Range profile: long. Prefer 3–6 hexes; punish close brawlers before they arrive.
+
+Shield/survivability: shield-heavy, hull-fragile when shields fail; relies on facings and shield refill.
+
+Movement: reverse thrusters and formation discipline. Keep rev:1 data.js:105.
+
+Economy: gains extra from station-defence and relay objectives; pays less for shield refits, more for hull replacement.
+
+Win condition: strip shields with ion fire, hold range, and win by station/relay control or fleet break.
+
+Lose condition: closed on by ram/boarding or forced to chase.
+
+Prohibition: cannot fire torpedoes; Hegemony rosters contain no torpedo weapon.
+
+Smallest changes: keep ion data.js:13, ionpulse data.js:138, and reverse movement; remove any torpedo access; make h_vanguard/h_dominion launch the only squadron source. Use CMD_POW battle.js:827 to make iron stronger for Hegemony.
+
+Ashfall Corsairs — close-range raider swarm
+Unit-count profile: swarm. Cheap raiders and reavers; cruisers are support, not the core.
+
+Range profile: close. Scatter, rockets, torpedoes, boarding, and ram pressure.
+
+Shield/survivability: thin shields, high evasion, low armor; survive by not being hit and by trading cheap hulls.
+
+Movement: sideslip and overburn. Keep slip:1 data.js:106 and overburn data.js:139.
+
+Economy: gains extra credits from boarding captures and salvage; loses value when hulls are destroyed without capture.
+
+Win condition: close, board or ram a key ship, and break the enemy before repairs matter.
+
+Lose condition: long-range gun line holds them off or point defence strips rockets.
+
+Prohibition: cannot use lance weapons; Corsair rosters have no lance.
+
+Smallest changes: keep scrap and rockets data.js:47–48; lower raider/reaver costs; raise BOARD_MULT battle.js:82; keep no lance. Use existing reload data.js:132 and overburn data.js:139.
+
+The Chorus — short-range attrition swarm
+Unit-count profile: swarm. Many cheap drone-spawn and spitters; brood-mothers are mobile spawners.
+
+Range profile: close. Tendrils and bio-plasma; spores for defence.
+
+Shield/survivability: no shields at all; hull regeneration and section repair. Survives by outlasting, not by avoiding.
+
+Movement: free first pivot. Keep pivot:1 data.js:107.
+
+Economy: converts battle damage into free regeneration; pays full price for new hulls and cannot buy shield refits.
+
+Win condition: grind enemy hulls down and win by rout/attrition.
+
+Lose condition: burst damage kills a ship before regeneration matters, or fire/acid bypasses the grind.
+
+Prohibition: cannot use shields; all Chorus hulls have sh:0.
+
+Smallest changes: keep no shields data.js:84–88; keep regrow, frenzy, regen data.js:84–87; keep pivot; make shield modules unavailable to Chorus. Use existing regrow data.js:141 and frenzy data.js:140.
+
+The Ithar — long-range shield-skirmisher, elite
+Unit-count profile: elite. Few, expensive, high-shield ships.
+
+Range profile: long. Pulsar lances, star torpedoes, and blink to keep distance.
+
+Shield/survivability: strong shields, weak hull and little armor; survives by shield cycling and evasion.
+
+Movement: blink and fan sails. Keep evadeAt:2 data.js:108 and blink data.js:142.
+
+Economy: pays premium for hull replacement, but shield repair/recharge is cheap; gains by avoiding hull damage.
+
+Win condition: skirmish, strip shields, and kill a flagship in a Hunt or Decapitation fight.
+
+Lose condition: shields are broken and the fragile hull is caught.
+
+Prohibition: cannot passively regrow hull; Ithar hulls have no regen or reanimate.
+
+Smallest changes: keep high shields and low hull data.js:90–94; keep blink and surge; remove hull-regeneration access; raise costs and lower hull counts. Use existing surge data.js:135 and blink data.js:142.
+
+The Deathless Dynasty — armored grinding advance, standard/elite
+Unit-count profile: standard to elite. Few, tough, expensive hulls.
+
+Range profile: mid to close. Gauss and doom arcs; no torpedo reliance.
+
+Shield/survivability: no shields; high armor, regeneration, and reanimation. Survives by refusing to die.
+
+Movement: phase through terrain and ships. Keep over:0 data.js:109.
+
+Economy: pays less for repair/reanimation, more for new hulls; losses are partly recovered through reanimation.
+
+Win condition: advance, grind, and win defend/attrition fights.
+
+Lose condition: focused fire kills sections before reanimation, or fast fleets avoid the grind.
+
+Prohibition: cannot launch squadrons; data.js:126 sq:null and Deathless hulls have no launch.
+
+Smallest changes: keep reanimate:true data.js:96, phase data.js:143, reclaim data.js:144, and over:0; remove squadron access entirely; keep no shields. Use existing gsentry/gauss data.js:21–22.
+
+Three changes I would make first
+Replace the shared price/class ladder with faction roster gates and cost curves. Data-only: change hull costs, roster access, and class counts so Voidsworn/Ithar are elite, Corsair/Chorus are swarm, Hegemony/Deathless are standard. This attacks findings 1, 5, and 10.
+
+Replace the recycled command pool with six faction-specific commands and admiral curves. Data-only: new ADMIRALS.cmd entries and CMD_POW values in battle.js:827. This attacks finding 2.
+
+Add the per-faction economy hook. ENGINE CHANGE — a faction economy table read by shipyard, repair, and reward code. Without it, “economy” remains a proposal, not a game rule. This attacks finding 9.
+
+How to prove the factions became different with the game’s own simulation data
+Use fixed battle seeds (battle.js:287) and fixed fleet-power budgets (battle.js:133) to run mirror matches and cross-faction matches. Collect the existing telemetry: B.usage already records fire arcs, aimed shots, abilities, orders, commands, moves, and failed actions (battle.js:336); tel('command') records command use (battle.js:849); run_end records faction, sector, and fleet stats (campaign_meta.js:185). Prove difference with distributions, not just win rates:
+
+Range histogram: distance at firing should separate Hegemony/Ithar (long) from Corsair/Chorus (close).
+
+Unit-count profile: average hulls and squadron share per battle should separate elite, standard, and swarm factions.
+
+Survivability split: percentage of damage absorbed by shields vs armor vs regeneration/reanimation should separate Ithar/Hegemony from Chorus/Deathless.
+
+Action entropy: distribution of fire arcs, moves, abilities, and commands should differ; if every faction uses the same command at the same round, the change failed.
+
+Economy ledger: credits gained, repair spend, hull losses, and replacement spend should diverge by faction.
+
+Win/loss cause: routed, flagship killed, station lost, transports escaped, and reanimation count should map to each faction’s stated win/lose condition.
+
+Acceptance criterion: pairwise metric vectors diverge beyond noise while mirror win rates remain roughly balanced. If a faction only wins more but uses the same range, same command timing, and same hull-count curve, it is still a costume.
+
+Not checked
+I did not examine shipyard purchase code, repair implementation, map/sector UI code, save/load, rendering/animation code, event resolver code, full boon/relic effect application beyond battle references, squadron UI control code, persistence, or any player-side autoplay/simulation harness. The pack contains no explicit player-policy simulator; the proof method above would need one or would need to reuse the enemy AI with a new harness.

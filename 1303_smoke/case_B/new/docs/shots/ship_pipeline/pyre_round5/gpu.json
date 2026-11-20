@@ -1,0 +1,189 @@
+{
+  "active_probe_sha256": "d9b23058d616b77fbf19bf1b81298ba2210e92bed9c2b7f77ec2b2067380ec20",
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "blank": {
+    "draw_calls": 0.0,
+    "frame_median_ms": 0.491,
+    "frame_p99_ms": 0.78,
+    "frames": 360.0,
+    "gpu_median_ms": 0.395000010728836,
+    "label": "empty",
+    "render_cpu_median_ms": 0.105999998748302,
+    "warmup": 100.0
+  },
+  "capture_probe_sha256": "ef8d3cb4859ce4136c5a3840d680d8c310092ab35bc1282c97ec929d3c4b4256",
+  "fleet_layout": "5 by 4 shared copies; spacing 1.15 lengths; camera r=8 lengths",
+  "godot": {
+    "build": "official",
+    "hash": "ed1daf0bf001b61586d9930840f2f1394092c079",
+    "hex": 263938.0,
+    "major": 4.0,
+    "minor": 7.0,
+    "patch": 2.0,
+    "status": "stable",
+    "string": "4.7.2-stable (official)",
+    "timestamp": 0.0
+  },
+  "normal_proof": "raw and high-pass donor only; local micro-normal excluded from both",
+  "renderer": "forward_plus",
+  "resolution": [
+    1920.0,
+    1080.0
+  ],
+  "rows": [
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 158.0,
+        "frame_median_ms": 3.118,
+        "frame_p99_ms": 3.21,
+        "frames": 360.0,
+        "gpu_median_ms": 2.87700009346008,
+        "label": "today_20",
+        "render_cpu_median_ms": 0.270999997854233,
+        "warmup": 100.0
+      },
+      "geometry": {
+        "raw_bounds": [
+          1.04101479053497,
+          0.409542322158813,
+          0.536779165267944
+        ],
+        "triangles": 256468.0,
+        "world_length": 41.6
+      },
+      "material_crops": {},
+      "route": "today",
+      "single": {
+        "draw_calls": 54.0,
+        "frame_median_ms": 0.717,
+        "frame_p99_ms": 1.05,
+        "frames": 360.0,
+        "gpu_median_ms": 0.572000026702881,
+        "label": "today_1",
+        "render_cpu_median_ms": 0.162000000476837,
+        "warmup": 100.0
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 10.0,
+        "frame_median_ms": 4.39,
+        "frame_p99_ms": 4.675,
+        "frames": 360.0,
+        "gpu_median_ms": 4.17500019073486,
+        "label": "V1_20",
+        "render_cpu_median_ms": 0.153999999165535,
+        "warmup": 100.0
+      },
+      "geometry": {
+        "raw_bounds": [
+          1.04101502895355,
+          0.405977010726929,
+          0.516829073429108
+        ],
+        "triangles": 307477.0,
+        "world_length": 41.6
+      },
+      "material_crops": {
+        "bow": {
+          "normal": [
+            -0.0336659885942936,
+            0.0,
+            0.999433100223541
+          ],
+          "target": [
+            12.8745079040527,
+            -5.00390958786011,
+            6.55495023727417
+          ]
+        },
+        "panel": {
+          "normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "target": [
+            2.60985922813416,
+            -1.09272682666779,
+            7.99220085144043
+          ]
+        }
+      },
+      "route": "V1",
+      "single": {
+        "draw_calls": 3.0,
+        "frame_median_ms": 0.747,
+        "frame_p99_ms": 1.058,
+        "frames": 360.0,
+        "gpu_median_ms": 0.633000016212463,
+        "label": "V1_1",
+        "render_cpu_median_ms": 0.137999996542931,
+        "warmup": 100.0
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 18.0,
+        "frame_median_ms": 3.476,
+        "frame_p99_ms": 3.62,
+        "frames": 360.0,
+        "gpu_median_ms": 3.24799990653992,
+        "label": "V2_20",
+        "render_cpu_median_ms": 0.155000001192093,
+        "warmup": 100.0
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.999999940395355,
+          0.33794766664505,
+          0.315056145191193
+        ],
+        "triangles": 289047.0,
+        "world_length": 41.6
+      },
+      "material_crops": {
+        "bow": {
+          "normal": [
+            0.543929696083069,
+            0.0407669469714165,
+            0.838139891624451
+          ],
+          "target": [
+            12.092812538147,
+            -2.82106518745422,
+            4.07333183288574
+          ]
+        },
+        "panel": {
+          "normal": [
+            -0.0509913675487041,
+            0.561271250247955,
+            0.826059579849243
+          ],
+          "target": [
+            -0.635488569736481,
+            -0.436832308769226,
+            4.96639347076416
+          ]
+        }
+      },
+      "route": "V2",
+      "single": {
+        "draw_calls": 6.0,
+        "frame_median_ms": 0.719,
+        "frame_p99_ms": 1.052,
+        "frames": 360.0,
+        "gpu_median_ms": 0.58899998664856,
+        "label": "V2_1",
+        "render_cpu_median_ms": 0.11599999666214,
+        "warmup": 100.0
+      }
+    }
+  ],
+  "textures": "BC7 colour/ORM; BC5 normal; mipmaps; 100 warm-up, 360 measured frames",
+  "vsync": "disabled"
+}

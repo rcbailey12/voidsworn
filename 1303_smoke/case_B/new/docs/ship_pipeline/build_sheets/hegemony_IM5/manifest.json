@@ -1,0 +1,1351 @@
+{
+ "code": "hegemony_IM5",
+ "sheet_version": 1,
+ "routes_note": "kit = the Hegemony parts kit (tools/blender/kits/hegemony/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "I1",
+   "kind": "gun",
+   "what": "ion cannon, stepped accelerator and blue emitter (fixed)",
+   "count": 1,
+   "route": "hand-built",
+   "source": "designed",
+   "inventory": [
+    "ion_trench"
+   ],
+   "turret": false
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 1.1 x 1.45",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 1.1 x 1.45",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 1.1 x 1.45",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 1.1 x 1.45",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E5",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 1.1 x 1.45",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E6",
+   "kind": "engine",
+   "what": "engine, rectangular nozzle 1.1 x 1.45",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "HP",
+   "kind": "gun",
+   "what": "heavy plasma lance, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lances"
+   ],
+   "turret": true,
+   "pivot_object": "HP_turret",
+   "arc_lo": 30.0,
+   "arc_hi": 150.0
+  },
+  {
+   "id": "HS",
+   "kind": "gun",
+   "what": "heavy plasma lance, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lances"
+   ],
+   "turret": true,
+   "pivot_object": "HS_turret",
+   "arc_lo": -150.0,
+   "arc_hi": -30.0
+  },
+  {
+   "id": "T1",
+   "kind": "gun",
+   "what": "plasma lance, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bridge_lance"
+   ],
+   "turret": true,
+   "pivot_object": "T1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "F1",
+   "kind": "gun",
+   "what": "picket lasers, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "pickets"
+   ],
+   "turret": true,
+   "pivot_object": "F1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "A1",
+   "kind": "antenna",
+   "what": "sensor fin, 0.5 tall, 2.4 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "sensor_fin"
+   ]
+  },
+  {
+   "id": "CB1",
+   "kind": "capbank",
+   "what": "capacitor bank (4 cells)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "capbanks"
+   ]
+  },
+  {
+   "id": "CB2",
+   "kind": "capbank",
+   "what": "capacitor bank (3 cells)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "capbanks"
+   ]
+  },
+  {
+   "id": "HX1",
+   "kind": "exchanger",
+   "what": "heat exchanger",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "exchangers"
+   ]
+  },
+  {
+   "id": "HX2",
+   "kind": "exchanger",
+   "what": "heat exchanger",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "exchangers"
+   ]
+  },
+  {
+   "id": "HX3",
+   "kind": "exchanger",
+   "what": "heat exchanger",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "exchangers"
+   ]
+  },
+  {
+   "id": "HX4",
+   "kind": "exchanger",
+   "what": "heat exchanger",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "exchangers"
+   ]
+  },
+  {
+   "id": "PT0p",
+   "kind": "pipe",
+   "what": "power trunk, 3.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT0s",
+   "kind": "pipe",
+   "what": "power trunk, 3.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT1p",
+   "kind": "pipe",
+   "what": "power trunk, 4.6 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT1s",
+   "kind": "pipe",
+   "what": "power trunk, 4.6 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT2p",
+   "kind": "pipe",
+   "what": "power trunk, 1.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT2s",
+   "kind": "pipe",
+   "what": "power trunk, 1.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT3p",
+   "kind": "pipe",
+   "what": "power trunk, 5.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT3s",
+   "kind": "pipe",
+   "what": "power trunk, 5.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT4p",
+   "kind": "pipe",
+   "what": "power trunk, 4.4 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "PT4s",
+   "kind": "pipe",
+   "what": "power trunk, 4.4 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "trunks"
+   ]
+  },
+  {
+   "id": "CL0p",
+   "kind": "pipe",
+   "what": "coolant line, 0.8 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL0s",
+   "kind": "pipe",
+   "what": "coolant line, 0.8 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL1p",
+   "kind": "pipe",
+   "what": "coolant line, 1.0 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL1s",
+   "kind": "pipe",
+   "what": "coolant line, 1.0 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL2p",
+   "kind": "pipe",
+   "what": "coolant line, 1.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL2s",
+   "kind": "pipe",
+   "what": "coolant line, 1.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL3p",
+   "kind": "pipe",
+   "what": "coolant line, 1.0 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL3s",
+   "kind": "pipe",
+   "what": "coolant line, 1.0 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL4p",
+   "kind": "pipe",
+   "what": "coolant line, 1.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL4s",
+   "kind": "pipe",
+   "what": "coolant line, 1.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL5p",
+   "kind": "pipe",
+   "what": "coolant line, 1.8 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL5s",
+   "kind": "pipe",
+   "what": "coolant line, 1.8 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL6p",
+   "kind": "pipe",
+   "what": "coolant line, 3.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "CL6s",
+   "kind": "pipe",
+   "what": "coolant line, 3.2 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "coolant_lines"
+   ]
+  },
+  {
+   "id": "WC1",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.20",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "WC2",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.20",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "WC3",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.20",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "WC4",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.20",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "Q1p",
+   "kind": "thruster",
+   "what": "retro thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2p",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q3p",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "W1p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W2p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W3p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W4p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W5p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W6p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W7p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W8p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W9p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W10p",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2p",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V3p",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V4p",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.1",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "H70p",
+   "kind": "hatch",
+   "what": "square hatch 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H71p",
+   "kind": "hatch",
+   "what": "square hatch 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "L0pf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L0pa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L1pf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L1pa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L2pf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L2pa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L3pf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L3pa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L4pf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L4pa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L5pf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L5pa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "Q1s",
+   "kind": "thruster",
+   "what": "retro thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2s",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q3s",
+   "kind": "thruster",
+   "what": "attitude thruster, two rectangular nozzles",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "W1s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W2s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W3s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W4s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W5s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W6s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W7s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W8s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W9s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "W10s",
+   "kind": "slit",
+   "what": "vision slit 0.5 x 0.10",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "windows"
+   ]
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V2s",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V3s",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "V4s",
+   "kind": "vent",
+   "what": "louvre panel 0.3 x 1.1",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "H70s",
+   "kind": "hatch",
+   "what": "square hatch 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H71s",
+   "kind": "hatch",
+   "what": "square hatch 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "L0sf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L0sa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L1sf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L1sa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L2sf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L2sa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L3sf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L3sa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L4sf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L4sa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L5sf",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "L5sa",
+   "kind": "latch",
+   "what": "module latch row (4 clamps)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "latches"
+   ]
+  },
+  {
+   "id": "H1",
+   "kind": "hatch",
+   "what": "square hatch 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H2",
+   "kind": "hatch",
+   "what": "square hatch 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H3",
+   "kind": "hatch",
+   "what": "square hatch 0.8",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H4",
+   "kind": "hatch",
+   "what": "square hatch 0.8",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "H5",
+   "kind": "hatch",
+   "what": "square hatch 0.8",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "HB1",
+   "kind": "hatchbox",
+   "what": "framed deck box 1.0 x 0.9",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lift_heads"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the broad wedge with its canyon",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bow face round the ion trench",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bridge deck, bow",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bridge deck, mid",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bridge deck, stern",
+   "route": "hand-built"
+  },
+  {
+   "name": "Belly armour step",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 17.6 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "17.6 to 46.4 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 2",
+   "stations": "46.4 to 70.8 percent",
+   "bounded_by": [
+    "B-2",
+    "B-3"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 3",
+   "stations": "70.8 to 86.8 percent",
+   "bounded_by": [
+    "B-3",
+    "B-4"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "86.8 to 100.0 percent",
+   "bounded_by": [
+    "B-4"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

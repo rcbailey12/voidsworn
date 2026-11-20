@@ -1,0 +1,433 @@
+{
+ "source": "data.js @ pin 264f441d43a54e3679950dcc4457133b40811807",
+ "tables": {
+  "W": {
+   "file": "w.json",
+   "count": 25,
+   "bytes": 3985
+  },
+  "ARC_NAME": {
+   "file": "arc_name.json",
+   "count": 5,
+   "bytes": 111
+  },
+  "KIND_NAME": {
+   "file": "kind_name.json",
+   "count": 7,
+   "bytes": 150
+  },
+  "FAC_WNAMES": {
+   "file": "fac_wnames.json",
+   "count": 6,
+   "bytes": 984
+  },
+  "WTRAITS": {
+   "file": "wtraits.json",
+   "count": 10,
+   "bytes": 868
+  },
+  "CLS_NAME": {
+   "file": "cls_name.json",
+   "count": 4,
+   "bytes": 112
+  },
+  "HULLS": {
+   "file": "hulls.json",
+   "count": 51,
+   "bytes": 18909
+  },
+  "MOVE_RULES": {
+   "file": "move_rules.json",
+   "count": 6,
+   "bytes": 773
+  },
+  "FACTIONS": {
+   "file": "factions.json",
+   "count": 6,
+   "bytes": 2276
+  },
+  "SECTOR_POOL": {
+   "file": "sector_pool.json",
+   "count": 3,
+   "bytes": 123
+  },
+  "ABILITIES": {
+   "file": "abilities.json",
+   "count": 13,
+   "bytes": 1723
+  },
+  "ORDERS": {
+   "file": "orders.json",
+   "count": 1,
+   "bytes": 205
+  },
+  "MODULES": {
+   "file": "modules.json",
+   "count": 13,
+   "bytes": 1750
+  },
+  "PERKS": {
+   "file": "perks.json",
+   "count": 14,
+   "bytes": 1592
+  },
+  "RANKS": {
+   "file": "ranks.json",
+   "count": 5,
+   "bytes": 76
+  },
+  "RANK_XP": {
+   "file": "rank_xp.json",
+   "count": 5,
+   "bytes": 29
+  },
+  "RELICS": {
+   "file": "relics.json",
+   "count": 12,
+   "bytes": 1674
+  },
+  "ADMIRALS": {
+   "file": "admirals.json",
+   "count": 24,
+   "bytes": 10396
+  },
+  "LEGACY": {
+   "file": "legacy.json",
+   "count": 12,
+   "bytes": 1584
+  },
+  "SHIP_NAMES": {
+   "file": "ship_names.json",
+   "count": 28,
+   "bytes": 505
+  },
+  "CAP_FIRST": {
+   "file": "cap_first.json",
+   "count": 28,
+   "bytes": 316
+  },
+  "CAP_LAST": {
+   "file": "cap_last.json",
+   "count": 28,
+   "bytes": 323
+  },
+  "MOD_NEED": {
+   "file": "mod_need.json",
+   "count": 7,
+   "bytes": 154
+  },
+  "MOD_NAMES": {
+   "file": "mod_names.json",
+   "count": 5,
+   "bytes": 2198
+  },
+  "RELIC_NAMES": {
+   "file": "relic_names.json",
+   "count": 5,
+   "bytes": 1829
+  },
+  "RUN_WORD": {
+   "file": "run_word.json",
+   "count": 6,
+   "bytes": 140
+  },
+  "EVENTS": {
+   "file": "events.json",
+   "count": 33,
+   "bytes": 25210
+  },
+  "EVENT_FALLBACK": {
+   "file": "event_fallback.json",
+   "count": null,
+   "bytes": 8
+  },
+  "NEM_CLOCK": {
+   "file": "nem_clock.json",
+   "count": null,
+   "bytes": 2
+  },
+  "NEM_WEAK": {
+   "file": "nem_weak.json",
+   "count": 7,
+   "bytes": 735
+  },
+  "NEM_ADAPT": {
+   "file": "nem_adapt.json",
+   "count": 5,
+   "bytes": 638
+  },
+  "NEM_TRAITS": {
+   "file": "nem_traits.json",
+   "count": 14,
+   "bytes": 1206
+  },
+  "NEM_PERSONA": {
+   "file": "nem_persona.json",
+   "count": 8,
+   "bytes": 961
+  },
+  "NEM_FAC": {
+   "file": "nem_fac.json",
+   "count": 6,
+   "bytes": 7875
+  },
+  "NEM_ADAPT_FAC": {
+   "file": "nem_adapt_fac.json",
+   "count": 6,
+   "bytes": 1627
+  },
+  "NEM_LINES": {
+   "file": "nem_lines.json",
+   "count": 4,
+   "bytes": 832
+  },
+  "NEM_BEAT_WORD": {
+   "file": "nem_beat_word.json",
+   "count": 7,
+   "bytes": 177
+  },
+  "FAC_VERBS": {
+   "file": "fac_verbs.json",
+   "count": 6,
+   "bytes": 1429
+  },
+  "WING_STANCES": {
+   "file": "wing_stances.json",
+   "count": 3,
+   "bytes": 440
+  },
+  "WING_PERKS": {
+   "file": "wing_perks.json",
+   "count": 6,
+   "bytes": 492
+  },
+  "WING_XP": {
+   "file": "wing_xp.json",
+   "count": 3,
+   "bytes": 16
+  },
+  "CAPTAINS": {
+   "file": "captains.json",
+   "count": 6,
+   "bytes": 3612
+  },
+  "MORE_SHIP_NAMES": {
+   "file": "more_ship_names.json",
+   "count": 5,
+   "bytes": 973
+  },
+  "FAC_PRICE": {
+   "file": "fac_price.json",
+   "count": 6,
+   "bytes": 409
+  },
+  "FAC_GATES": {
+   "file": "fac_gates.json",
+   "count": 2,
+   "bytes": 254
+  },
+  "HULL_VARIANTS": {
+   "file": "hull_variants.json",
+   "count": 18,
+   "bytes": 5073
+  },
+  "ARC_VARIANT": {
+   "file": "arc_variant.json",
+   "count": 6,
+   "bytes": 171
+  },
+  "FIT_SLOTS": {
+   "file": "fit_slots.json",
+   "count": 3,
+   "bytes": 189
+  },
+  "FAC_WPOOL": {
+   "file": "fac_wpool.json",
+   "count": 6,
+   "bytes": 473
+  },
+  "MASTERY_XP": {
+   "file": "mastery_xp.json",
+   "count": 5,
+   "bytes": 26
+  },
+  "MASTERY_PERKS": {
+   "file": "mastery_perks.json",
+   "count": 5,
+   "bytes": 387
+  },
+  "FAVOUR_TIERS": {
+   "file": "favour_tiers.json",
+   "count": 4,
+   "bytes": 318
+  },
+  "ARCHETYPES": {
+   "file": "archetypes.json",
+   "count": 3,
+   "bytes": 856
+  },
+  "NODE_MODS": {
+   "file": "node_mods.json",
+   "count": 2,
+   "bytes": 251
+  },
+  "SECTOR_CONDS": {
+   "file": "sector_conds.json",
+   "count": 5,
+   "bytes": 891
+  },
+  "HEAT": {
+   "file": "heat.json",
+   "count": 7,
+   "bytes": 705
+  },
+  "RARITY": {
+   "file": "rarity.json",
+   "count": 4,
+   "bytes": 216
+  },
+  "PATRONS": {
+   "file": "patrons.json",
+   "count": 6,
+   "bytes": 1232
+  },
+  "BOONS": {
+   "file": "boons.json",
+   "count": 48,
+   "bytes": 5171
+  },
+  "BOON_NEED": {
+   "file": "boon_need.json",
+   "count": 20,
+   "bytes": 429
+  },
+  "ASPECTS": {
+   "file": "aspects.json",
+   "count": 6,
+   "bytes": 1447
+  },
+  "FAC_WTRAIT": {
+   "file": "fac_wtrait.json",
+   "count": 6,
+   "bytes": 557
+  },
+  "BOONS_EVALUATED": {
+   "file": "boons_evaluated.json",
+   "count": 48,
+   "bytes": 41132
+  },
+  "WTRAITS_SOURCE": {
+   "file": "wtraits_source.json",
+   "count": 10,
+   "bytes": 1314
+  }
+ },
+ "functionValuedFields": [
+  "WTRAITS.las.f",
+  "WTRAITS.hellfire.f",
+  "WTRAITS.plasma.f",
+  "WTRAITS.scrap.f",
+  "WTRAITS.rockets.f",
+  "WTRAITS.spines.f",
+  "WTRAITS.acid.f",
+  "WTRAITS.needle.f",
+  "WTRAITS.star.f",
+  "WTRAITS.gauss.f",
+  "BOONS.i_broad.d",
+  "BOONS.i_broad.fx",
+  "BOONS.i_still.d",
+  "BOONS.i_still.fx",
+  "BOONS.i_plate.d",
+  "BOONS.i_plate.fx",
+  "BOONS.i_brace.d",
+  "BOONS.i_brace.fx",
+  "BOONS.i_line.d",
+  "BOONS.i_line.fx",
+  "BOONS.s_cap.d",
+  "BOONS.s_cap.fx",
+  "BOONS.s_arc.d",
+  "BOONS.s_arc.fx",
+  "BOONS.s_ion.d",
+  "BOONS.s_ion.fx",
+  "BOONS.s_regen.d",
+  "BOONS.s_regen.fx",
+  "BOONS.s_ev.d",
+  "BOONS.s_ev.fx",
+  "BOONS.h_hatch.d",
+  "BOONS.h_hatch.fx",
+  "BOONS.h_wings.d",
+  "BOONS.h_wings.fx",
+  "BOONS.h_chitin.d",
+  "BOONS.h_chitin.fx",
+  "BOONS.h_board.d",
+  "BOONS.h_board.fx",
+  "BOONS.h_feast.d",
+  "BOONS.h_feast.fx",
+  "BOONS.a_lance.d",
+  "BOONS.a_lance.fx",
+  "BOONS.a_aim.d",
+  "BOONS.a_aim.fx",
+  "BOONS.a_crit.d",
+  "BOONS.a_crit.fx",
+  "BOONS.a_long.d",
+  "BOONS.a_long.fx",
+  "BOONS.a_rear.d",
+  "BOONS.a_rear.fx",
+  "BOONS.r_burn.d",
+  "BOONS.r_burn.fx",
+  "BOONS.r_prow.d",
+  "BOONS.r_prow.fx",
+  "BOONS.r_mom.d",
+  "BOONS.r_mom.fx",
+  "BOONS.r_jink.d",
+  "BOONS.r_jink.fx",
+  "BOONS.r_shock.d",
+  "BOONS.r_shock.fx",
+  "BOONS.e_war.d",
+  "BOONS.e_war.fx",
+  "BOONS.e_reload.d",
+  "BOONS.e_reload.fx",
+  "BOONS.e_kindle.d",
+  "BOONS.e_kindle.fx",
+  "BOONS.e_chain.d",
+  "BOONS.e_chain.fx",
+  "BOONS.e_hunt.d",
+  "BOONS.e_hunt.fx",
+  "BOONS.d_jugg.d",
+  "BOONS.d_jugg.fx",
+  "BOONS.d_bastion.d",
+  "BOONS.d_bastion.fx",
+  "BOONS.d_ionlance.d",
+  "BOONS.d_ionlance.fx",
+  "BOONS.d_burnswarm.d",
+  "BOONS.d_burnswarm.fx",
+  "BOONS.d_hunter.d",
+  "BOONS.d_hunter.fx",
+  "BOONS.d_inferno.d",
+  "BOONS.d_inferno.fx",
+  "BOONS.i_wall.d",
+  "BOONS.i_wall.fx",
+  "BOONS.s_chain.d",
+  "BOONS.s_chain.fx",
+  "BOONS.h_brood.d",
+  "BOONS.h_brood.fx",
+  "BOONS.a_mark.d",
+  "BOONS.a_mark.fx",
+  "BOONS.r_slip.d",
+  "BOONS.r_slip.fx",
+  "BOONS.e_spread.d",
+  "BOONS.e_spread.fx",
+  "BOONS.L_iron.d",
+  "BOONS.L_iron.fx",
+  "BOONS.L_storm.d",
+  "BOONS.L_storm.fx",
+  "BOONS.L_hunger.d",
+  "BOONS.L_hunger.fx",
+  "BOONS.L_star.d",
+  "BOONS.L_star.fx",
+  "BOONS.L_rook.d",
+  "BOONS.L_rook.fx",
+  "BOONS.L_ember.d",
+  "BOONS.L_ember.fx"
+ ]
+}

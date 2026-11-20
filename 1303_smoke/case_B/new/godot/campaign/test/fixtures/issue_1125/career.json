@@ -1,0 +1,26 @@
+{
+ "admirals": {},
+ "arc_rewards": {},
+ "chronicle": [],
+ "history": [],
+ "live": {},
+ "medals": {
+  "first_blood": {
+   "count": 1,
+   "first": 1795057381,
+   "note": ""
+  }
+ },
+ "paint_on": {},
+ "totals": {
+  "battles": 0,
+  "captures": 0,
+  "flag_kills": 0,
+  "kills": 0,
+  "lost": 0,
+  "runs": 0,
+  "wins": 0
+ },
+ "v": 1,
+ "won_facs": []
+}

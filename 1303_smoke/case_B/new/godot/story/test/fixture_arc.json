@@ -1,0 +1,36 @@
+{
+  "_about": "Test fixture for arc.gd (not game text). Shapes match godot/story/arc.gd.",
+  "fac": "voidsworn",
+  "arc": "Fixture Arc",
+  "charge": "Test the plumbing.",
+  "prior_loss": "PRIOR-LOSS line.",
+  "prior_win": "PRIOR-WIN line.",
+  "beats": {
+    "1": {
+      "A": {"id": "a", "title": "One A", "rival_line": "", "skim": "Skim for {rival}.",
+        "text": ["Opening A.", "{rival} did this. {rival_deed}", "{He} waits for {him}self."],
+        "options": [
+          {"k": "keep", "l": "Keep it", "s": "{He} notices.", "out": "Kept from {rival_short}.", "r": {"relic": 1, "nemClock": 1}, "flag": "fx_keep"},
+          {"k": "sell", "l": "Sell it", "s": "+60 credits.", "out": "Sold.", "r": {"cred": 60}, "flag": "fx_sell", "fl": {"greed": 1}}]},
+      "B": {"id": "b", "title": "One B", "rival_line": "", "skim": "Skim B.",
+        "text": ["Opening B.", "{rival} did this. {rival_deed}"],
+        "options": [
+          {"k": "keep", "l": "Keep it", "s": "", "out": "Kept.", "r": {"relic": 1}, "flag": "fx_keep"},
+          {"k": "sell", "l": "Sell it", "s": "", "out": "Sold.", "r": {"cred": 60}, "flag": "fx_sell"}]}
+    },
+    "2": {
+      "A": {"id": "a", "title": "Two", "rival_line": "open", "skim": "",
+        "text": ["Beat two.", "{rival_line}", {"t": "KEEP-LINE", "if": "flag:fx_keep"}, {"t": "SELL-LINE", "if": "flag:fx_sell"}, {"t": "LOST-LINE {first_lost}", "if": "lost"}, {"t": "THIRD-COND", "if": "flag:fx_keep"}],
+        "options": [
+          {"k": "x", "l": "Plain", "s": "", "out": "", "r": {"xp": 15}},
+          {"k": "blue", "l": "Blue", "s": "", "out": "", "r": {"relic": -1}, "need": {"flag": "fx_keep"}},
+          {"k": "hidden", "l": "Hidden unless sold", "s": "", "out": "", "r": {}, "if": "flag:fx_sell & !flag:fx_keep"}]}
+    },
+    "3": {
+      "A": {"id": "a", "title": "Three", "rival_line": "final", "skim": "",
+        "text": ["Finale.", "{rival_line}"], "options": [{"k": "z", "l": "Go", "s": "", "out": "", "r": {}}]}
+    }
+  },
+  "win": ["WIN.", {"t": "WIN-KEEP", "if": "flag:fx_keep"}, {"t": "WIN-SELL", "if": "flag:fx_sell"}],
+  "loss": ["LOSS.", {"t": "LOSS-KEEP", "if": "flag:fx_keep"}]
+}

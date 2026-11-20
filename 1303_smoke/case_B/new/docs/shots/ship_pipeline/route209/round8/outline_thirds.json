@@ -1,0 +1,133 @@
+{
+ "note": "outline_thirds.py: overlap per third at the concept camera, and the inner edge distances (px at 1024).",
+ "cells": {
+  "Ab7": {
+   "bow": {
+    "overlap": 90.3,
+    "concept_covered": 97.2,
+    "cell_outside": 7.3,
+    "edge_cell_to_concept_median_px": 8.0,
+    "edge_cell_within_6px": 42.6,
+    "edge_concept_to_cell_median_px": 5.4,
+    "edge_concept_within_6px": 52.6
+   },
+   "midship": {
+    "overlap": 90.6,
+    "concept_covered": 96.1,
+    "cell_outside": 5.9,
+    "edge_cell_to_concept_median_px": 6.4,
+    "edge_cell_within_6px": 48.8,
+    "edge_concept_to_cell_median_px": 3.0,
+    "edge_concept_within_6px": 65.8
+   },
+   "stern": {
+    "overlap": 85.0,
+    "concept_covered": 93.8,
+    "cell_outside": 9.9,
+    "edge_cell_to_concept_median_px": 2.0,
+    "edge_cell_within_6px": 82.0,
+    "edge_concept_to_cell_median_px": 2.2,
+    "edge_concept_within_6px": 72.4
+   },
+   "whole": {
+    "overlap": 89.7
+   }
+  },
+  "Ab8": {
+   "bow": {
+    "overlap": 91.5,
+    "concept_covered": 99.0,
+    "cell_outside": 7.6,
+    "edge_cell_to_concept_median_px": 7.1,
+    "edge_cell_within_6px": 46.4,
+    "edge_concept_to_cell_median_px": 5.0,
+    "edge_concept_within_6px": 55.4
+   },
+   "midship": {
+    "overlap": 90.6,
+    "concept_covered": 96.1,
+    "cell_outside": 5.9,
+    "edge_cell_to_concept_median_px": 6.3,
+    "edge_cell_within_6px": 48.9,
+    "edge_concept_to_cell_median_px": 3.0,
+    "edge_concept_within_6px": 65.8
+   },
+   "stern": {
+    "overlap": 85.0,
+    "concept_covered": 93.8,
+    "cell_outside": 9.9,
+    "edge_cell_to_concept_median_px": 2.0,
+    "edge_cell_within_6px": 81.9,
+    "edge_concept_to_cell_median_px": 2.2,
+    "edge_concept_within_6px": 72.5
+   },
+   "whole": {
+    "overlap": 90.3
+   }
+  },
+  "Ab8try1": {
+   "bow": {
+    "overlap": 93.1,
+    "concept_covered": 98.9,
+    "cell_outside": 6.0,
+    "edge_cell_to_concept_median_px": 7.1,
+    "edge_cell_within_6px": 45.5,
+    "edge_concept_to_cell_median_px": 5.1,
+    "edge_concept_within_6px": 53.7
+   },
+   "midship": {
+    "overlap": 90.6,
+    "concept_covered": 96.1,
+    "cell_outside": 5.9,
+    "edge_cell_to_concept_median_px": 6.3,
+    "edge_cell_within_6px": 48.8,
+    "edge_concept_to_cell_median_px": 3.0,
+    "edge_concept_within_6px": 65.7
+   },
+   "stern": {
+    "overlap": 85.0,
+    "concept_covered": 93.8,
+    "cell_outside": 9.9,
+    "edge_cell_to_concept_median_px": 2.0,
+    "edge_cell_within_6px": 81.9,
+    "edge_concept_to_cell_median_px": 2.2,
+    "edge_concept_within_6px": 72.3
+   },
+   "whole": {
+    "overlap": 91.0
+   }
+  },
+  "Ab8game": {
+   "bow": {
+    "overlap": 91.5,
+    "concept_covered": 99.0,
+    "cell_outside": 7.6,
+    "edge_cell_to_concept_median_px": 7.1,
+    "edge_cell_within_6px": 46.8,
+    "edge_concept_to_cell_median_px": 4.1,
+    "edge_concept_within_6px": 58.1
+   },
+   "midship": {
+    "overlap": 90.7,
+    "concept_covered": 96.2,
+    "cell_outside": 5.9,
+    "edge_cell_to_concept_median_px": 6.3,
+    "edge_cell_within_6px": 49.4,
+    "edge_concept_to_cell_median_px": 3.0,
+    "edge_concept_within_6px": 67.0
+   },
+   "stern": {
+    "overlap": 85.0,
+    "concept_covered": 93.8,
+    "cell_outside": 9.9,
+    "edge_cell_to_concept_median_px": 2.0,
+    "edge_cell_within_6px": 81.9,
+    "edge_concept_to_cell_median_px": 2.2,
+    "edge_concept_within_6px": 72.4
+   },
+   "whole": {
+    "overlap": 90.2
+   }
+  }
+ }
+}

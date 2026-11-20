@@ -1,0 +1,600 @@
+{
+  "S1": {
+    "triangles": 256428,
+    "reimport_triangles": 256428,
+    "reimport": "PASS",
+    "bytes": 28201360,
+    "sha256": "9aa1cdf737a0d73006e751f2d6eb97eca544a7ab51450211fca5a0bc3107ee6e",
+    "hull_triangles": 256428,
+    "native_instances": [],
+    "stage": "S1",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\C19_51\\C19_51_ship.npz",
+    "source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "seconds": 4.07533759996295,
+    "no_decimation": true,
+    "removed_faces": {},
+    "choices": {},
+    "ai_parts": [],
+    "hand_timings": {},
+    "mount_anchors": [],
+    "gun_directions": [],
+    "constrained_replacement_vertices": 0,
+    "retained_geometry": "today A4 unquantised intact mesh; no clean shell or concept paint",
+    "shared_trim_sha256": {
+      "trim_base.png": "81bfc49aca6bb84034f469f42647814e9738dec60e01aca7a3d45999ce0518ea",
+      "trim_emission.png": "e2567bcd486ee2b46c71ce0544c5a89192343c502d3424e68f6ca823d4d284f7",
+      "trim_normal.png": "3b8519d72a81e8a306286488808ed122700783394b606ad1ceae2e4baab681fa",
+      "trim_orm.png": "dcd0b85d6d0c6db2e7798b32b0c9710de516c739a4fb8ccc68806ab02cd08c0c"
+    }
+  },
+  "S2": {
+    "triangles": 256428,
+    "reimport_triangles": 256428,
+    "reimport": "PASS",
+    "bytes": 28222720,
+    "sha256": "68205b1c6d4c4a64dc527c91e0fad91e4453f8d36b6be80c4da520d720485877",
+    "hull_triangles": 256428,
+    "native_instances": [],
+    "stage": "S2",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\C19_51\\C19_51_ship.npz",
+    "source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "seconds": 3.9563395000295714,
+    "no_decimation": true,
+    "removed_faces": {},
+    "choices": {},
+    "ai_parts": [],
+    "hand_timings": {},
+    "mount_anchors": [],
+    "gun_directions": [],
+    "constrained_replacement_vertices": 0,
+    "retained_geometry": "today A4 unquantised intact mesh; no clean shell or concept paint",
+    "shared_trim_sha256": {
+      "trim_base.png": "81bfc49aca6bb84034f469f42647814e9738dec60e01aca7a3d45999ce0518ea",
+      "trim_emission.png": "e2567bcd486ee2b46c71ce0544c5a89192343c502d3424e68f6ca823d4d284f7",
+      "trim_normal.png": "3b8519d72a81e8a306286488808ed122700783394b606ad1ceae2e4baab681fa",
+      "trim_orm.png": "dcd0b85d6d0c6db2e7798b32b0c9710de516c739a4fb8ccc68806ab02cd08c0c"
+    }
+  },
+  "S3": {
+    "triangles": 293308,
+    "reimport_triangles": 293308,
+    "reimport": "PASS",
+    "bytes": 33970704,
+    "sha256": "510beaa101cdf065b1587bb18c5a0ad1bc8e5577bec3dc765fb53faed102af0f",
+    "hull_triangles": 293308,
+    "native_instances": [],
+    "stage": "S3",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\C19_51\\C19_51_ship.npz",
+    "source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "seconds": 6.158490900066681,
+    "no_decimation": true,
+    "removed_faces": {},
+    "choices": {},
+    "ai_parts": [],
+    "hand_timings": {},
+    "mount_anchors": [],
+    "gun_directions": [],
+    "constrained_replacement_vertices": 0,
+    "retained_geometry": "today A4 unquantised intact mesh; no clean shell or concept paint",
+    "shared_trim_sha256": {
+      "trim_base.png": "81bfc49aca6bb84034f469f42647814e9738dec60e01aca7a3d45999ce0518ea",
+      "trim_emission.png": "e2567bcd486ee2b46c71ce0544c5a89192343c502d3424e68f6ca823d4d284f7",
+      "trim_normal.png": "3b8519d72a81e8a306286488808ed122700783394b606ad1ceae2e4baab681fa",
+      "trim_orm.png": "dcd0b85d6d0c6db2e7798b32b0c9710de516c739a4fb8ccc68806ab02cd08c0c"
+    }
+  },
+  "S4a": {
+    "triangles": 305857,
+    "reimport_triangles": 305857,
+    "reimport": "PASS",
+    "bytes": 38595884,
+    "sha256": "227e5726af9440c7acff0108c358d4ca4cdc541aeea5a47594720db1da62221c",
+    "hull_triangles": 305857,
+    "native_instances": [],
+    "stage": "S4a",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\C19_51\\C19_51_ship.npz",
+    "source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "seconds": 8.809457099996507,
+    "no_decimation": true,
+    "removed_faces": {
+      "engine": 3679,
+      "bridge": 7197,
+      "gun": 5139
+    },
+    "choices": {
+      "engine": "hand",
+      "gun": "hand",
+      "bridge": "hand"
+    },
+    "ai_parts": [],
+    "hand_timings": {
+      "bridge": {
+        "construction_seconds": 0.23479410004802048,
+        "cleanup_seconds": 0.0,
+        "detail_seconds": 0.08499360003042966
+      },
+      "engine": {
+        "construction_seconds": 0.4130117000313476,
+        "cleanup_seconds": 0.0,
+        "detail_seconds": 0.023119799909181893
+      },
+      "gun": {
+        "construction_seconds": 0.5611614999361336,
+        "cleanup_seconds": 0.0,
+        "detail_seconds": 1.2199976481497288e-05
+      }
+    },
+    "mount_anchors": [
+      {
+        "part": "bridge_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.1899999976158142,
+          0.0,
+          0.12999999523162842
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "gap": 2.2351741790771484e-08
+      },
+      {
+        "part": "engine_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.4268249273300171,
+          0.0,
+          -0.06400000303983688
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 5.961192073300481e-08
+      },
+      {
+        "part": "gun_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          -0.21599996089935303,
+          -0.04500000178813934
+        ],
+        "normal": [
+          0.0,
+          -1.0,
+          -0.0
+        ],
+        "gap": 4.470348358154297e-08
+      },
+      {
+        "part": "gun_mount.001",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          0.2160000205039978,
+          -0.04500000178813934
+        ],
+        "normal": [
+          -0.0,
+          1.0,
+          0.0
+        ],
+        "gap": 2.0061301952978283e-08
+      }
+    ],
+    "gun_directions": [
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ]
+    ],
+    "constrained_replacement_vertices": 0,
+    "retained_geometry": "today A4 unquantised intact mesh; no clean shell or concept paint",
+    "shared_trim_sha256": {
+      "trim_base.png": "81bfc49aca6bb84034f469f42647814e9738dec60e01aca7a3d45999ce0518ea",
+      "trim_emission.png": "e2567bcd486ee2b46c71ce0544c5a89192343c502d3424e68f6ca823d4d284f7",
+      "trim_normal.png": "3b8519d72a81e8a306286488808ed122700783394b606ad1ceae2e4baab681fa",
+      "trim_orm.png": "dcd0b85d6d0c6db2e7798b32b0c9710de516c739a4fb8ccc68806ab02cd08c0c"
+    }
+  },
+  "S4b": {
+    "triangles": 83207937,
+    "reimport_triangles": 277833,
+    "reimport": "PASS",
+    "bytes": 35806156,
+    "sha256": "173a14e16899b86bc97aade453d3fda35c03529239e36b89127c6b576b4c12eb",
+    "hull_triangles": 277833,
+    "native_instances": [
+      {
+        "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\engine_packed.glb",
+        "position": [
+          -0.4518249273300171,
+          -0.06400000303983688,
+          -0.0
+        ],
+        "yaw": 3.141592653589793
+      },
+      {
+        "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\gun_packed.glb",
+        "position": [
+          0.10500000149011612,
+          -0.04500000178813934,
+          0.23935521610826255
+        ],
+        "yaw": 0,
+        "pitch": 1.5707963267948966
+      },
+      {
+        "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\gun_packed.glb",
+        "position": [
+          0.10500000149011612,
+          -0.04500000178813934,
+          -0.23935527571290732
+        ],
+        "yaw": 0,
+        "pitch": -1.5707963267948966
+      },
+      {
+        "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\bridge_packed.glb",
+        "position": [
+          -0.1899999976158142,
+          0.17049999469518662,
+          -0.0
+        ],
+        "yaw": 0
+      }
+    ],
+    "stage": "S4b",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\C19_51\\C19_51_ship.npz",
+    "source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "seconds": 5.207067000097595,
+    "no_decimation": true,
+    "removed_faces": {
+      "engine": 3679,
+      "bridge": 7197,
+      "gun": 5139
+    },
+    "choices": {
+      "engine": "ai",
+      "gun": "ai",
+      "bridge": "ai"
+    },
+    "ai_parts": [
+      {
+        "part": "engine",
+        "triangles": 22812022,
+        "raw_faces": 22812022,
+        "cleanup_seconds": 10.782886400003918,
+        "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\engine_raw_00001_.glb",
+        "source_dimensions": [
+          0.6943270564079285,
+          0.4352967143058777,
+          0.9762634038925171
+        ],
+        "fitted_godot_dimensions": [
+          0.07199999690055847,
+          0.03210338577628136,
+          0.051207028329372406
+        ],
+        "instances": [
+          {
+            "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\engine_packed.glb",
+            "position": [
+              -0.4518249273300171,
+              -0.06400000303983688,
+              -0.0
+            ],
+            "yaw": 3.141592653589793
+          }
+        ],
+        "intended_gun_axes_only": false
+      },
+      {
+        "part": "gun",
+        "triangles": 17530382,
+        "raw_faces": 17530382,
+        "cleanup_seconds": 8.187054299982265,
+        "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\gun_raw_00001_.glb",
+        "source_dimensions": [
+          0.7552056312561035,
+          0.6155039072036743,
+          0.992725133895874
+        ],
+        "fitted_godot_dimensions": [
+          0.04469333216547966,
+          0.027710510417819023,
+          0.03400000184774399
+        ],
+        "instances": [
+          {
+            "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\gun_packed.glb",
+            "position": [
+              0.10500000149011612,
+              -0.04500000178813934,
+              0.23935521610826255
+            ],
+            "yaw": 0,
+            "pitch": 1.5707963267948966
+          },
+          {
+            "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\gun_packed.glb",
+            "position": [
+              0.10500000149011612,
+              -0.04500000178813934,
+              -0.23935527571290732
+            ],
+            "yaw": 0,
+            "pitch": -1.5707963267948966
+          }
+        ],
+        "intended_gun_axes_only": true
+      },
+      {
+        "part": "bridge",
+        "triangles": 25057318,
+        "raw_faces": 25057318,
+        "cleanup_seconds": 11.869490600074641,
+        "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\bridge_retry1_raw_00001_.glb",
+        "source_dimensions": [
+          0.7938207387924194,
+          0.8063859939575195,
+          0.7983633875846863
+        ],
+        "fitted_godot_dimensions": [
+          0.07227373123168945,
+          0.0729999989271164,
+          0.07186249643564224
+        ],
+        "instances": [
+          {
+            "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\bridge_packed.glb",
+            "position": [
+              -0.1899999976158142,
+              0.17049999469518662,
+              -0.0
+            ],
+            "yaw": 0
+          }
+        ],
+        "intended_gun_axes_only": false
+      }
+    ],
+    "hand_timings": {},
+    "mount_anchors": [
+      {
+        "part": "AI_engine_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.4268249273300171,
+          0.0,
+          -0.06400000303983688
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 5.961192073300481e-08
+      },
+      {
+        "part": "AI_gun_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          -0.21599996089935303,
+          -0.04500000178813934
+        ],
+        "normal": [
+          0.0,
+          -1.0,
+          -0.0
+        ],
+        "gap": 4.470348358154297e-08
+      },
+      {
+        "part": "AI_gun_mount.001",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          0.2160000205039978,
+          -0.04500000178813934
+        ],
+        "normal": [
+          -0.0,
+          1.0,
+          0.0
+        ],
+        "gap": 2.0061301952978283e-08
+      },
+      {
+        "part": "AI_bridge_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.1899999976158142,
+          0.0,
+          0.12999999523162842
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "gap": 2.2351741790771484e-08
+      }
+    ],
+    "gun_directions": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "constrained_replacement_vertices": 0,
+    "retained_geometry": "today A4 unquantised intact mesh; no clean shell or concept paint",
+    "shared_trim_sha256": {
+      "trim_base.png": "81bfc49aca6bb84034f469f42647814e9738dec60e01aca7a3d45999ce0518ea",
+      "trim_emission.png": "e2567bcd486ee2b46c71ce0544c5a89192343c502d3424e68f6ca823d4d284f7",
+      "trim_normal.png": "3b8519d72a81e8a306286488808ed122700783394b606ad1ceae2e4baab681fa",
+      "trim_orm.png": "dcd0b85d6d0c6db2e7798b32b0c9710de516c739a4fb8ccc68806ab02cd08c0c"
+    }
+  },
+  "S5": {
+    "triangles": 305857,
+    "reimport_triangles": 305857,
+    "reimport": "PASS",
+    "bytes": 38596052,
+    "sha256": "9d4b51e00d1bb1b38016b0184bd3333a5309bfbd6c3b0255d760373b2b7ccf79",
+    "hull_triangles": 305857,
+    "native_instances": [],
+    "stage": "S5",
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\C19_51\\C19_51_ship.npz",
+    "source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "seconds": 6.814399000024423,
+    "no_decimation": true,
+    "removed_faces": {
+      "engine": 3679,
+      "bridge": 7197,
+      "gun": 5139
+    },
+    "choices": {
+      "engine": "hand",
+      "gun": "hand",
+      "bridge": "hand"
+    },
+    "ai_parts": [],
+    "hand_timings": {
+      "bridge": {
+        "construction_seconds": 0.15380850003566593,
+        "cleanup_seconds": 0.0,
+        "detail_seconds": 0.05010210000909865
+      },
+      "engine": {
+        "construction_seconds": 0.288666500011459,
+        "cleanup_seconds": 0.0,
+        "detail_seconds": 0.016340999980457127
+      },
+      "gun": {
+        "construction_seconds": 0.2898445000173524,
+        "cleanup_seconds": 0.0,
+        "detail_seconds": 7.00005330145359e-06
+      }
+    },
+    "mount_anchors": [
+      {
+        "part": "bridge_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.1899999976158142,
+          0.0,
+          0.12999999523162842
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "gap": 2.2351741790771484e-08
+      },
+      {
+        "part": "engine_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.4268249273300171,
+          0.0,
+          -0.06400000303983688
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 5.961192073300481e-08
+      },
+      {
+        "part": "gun_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          -0.21599996089935303,
+          -0.04500000178813934
+        ],
+        "normal": [
+          0.0,
+          -1.0,
+          -0.0
+        ],
+        "gap": 4.470348358154297e-08
+      },
+      {
+        "part": "gun_mount.001",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          0.2160000205039978,
+          -0.04500000178813934
+        ],
+        "normal": [
+          -0.0,
+          1.0,
+          0.0
+        ],
+        "gap": 2.0061301952978283e-08
+      }
+    ],
+    "gun_directions": [
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ]
+    ],
+    "constrained_replacement_vertices": 0,
+    "retained_geometry": "today A4 unquantised intact mesh; no clean shell or concept paint",
+    "shared_trim_sha256": {
+      "trim_base.png": "81bfc49aca6bb84034f469f42647814e9738dec60e01aca7a3d45999ce0518ea",
+      "trim_emission.png": "e2567bcd486ee2b46c71ce0544c5a89192343c502d3424e68f6ca823d4d284f7",
+      "trim_normal.png": "3b8519d72a81e8a306286488808ed122700783394b606ad1ceae2e4baab681fa",
+      "trim_orm.png": "dcd0b85d6d0c6db2e7798b32b0c9710de516c739a4fb8ccc68806ab02cd08c0c"
+    }
+  }
+}

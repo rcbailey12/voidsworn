@@ -1,0 +1,2008 @@
+{
+ "class_length": 16.5,
+ "model_length": 16.50462818145752,
+ "triangles": {
+  "outside": 94350,
+  "inside": 708
+ },
+ "objects": {
+  "corsair_A20_hull": {
+   "role": "outside",
+   "triangles": 376,
+   "sha256": "0ec09e435cb671bc35f13d9e084424f81ed310bdfa66368786d120803135db13"
+  },
+  "A20_bowblock": {
+   "role": "outside",
+   "triangles": 434,
+   "sha256": "ab8741e4454925a47537d0375399535177cb75593578fd09e4ff0027bf27d116"
+  },
+  "A20_sill_H1": {
+   "role": "outside",
+   "triangles": 44,
+   "sha256": "13a4eb41fc3d605b286301e47943f1d6216ac8df16d70add249a310f38c5de48"
+  },
+  "A20_lintel_H1": {
+   "role": "outside",
+   "triangles": 44,
+   "sha256": "d53fb8302cbd8ea269a7b6abd81f886b30c62130a325eda1edf9ef1a168cfff5"
+  },
+  "A20_sill_H2": {
+   "role": "outside",
+   "triangles": 44,
+   "sha256": "d7818d5a9189eb3b8c6dc15c785f57d31d48aa6ebf592c7fc8de839a7e1d1414"
+  },
+  "A20_lintel_H2": {
+   "role": "outside",
+   "triangles": 44,
+   "sha256": "87edcddc0b50eb3106c61d82cc381fdabfda1f14a04d91195e0b6d5408e586eb"
+  },
+  "A20_brick_0": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "ea5a39c8960fe43ca10fcef600ae872fb28b86da1a2e4668eaedf4ccc1708460"
+  },
+  "A20_brick_1": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "1fb32e01f363c2ee93f5b5e8f418f55141d319e97e511ef3bb6156de939f8982"
+  },
+  "A20_brick_2": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "cf614ac5d99804636474873b555b66b828aefa9cb069bf7fc130958568014e20"
+  },
+  "A20_brick_3": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "f5242330e6567f4f9c2bcfc87604766f01c0a00fdeb07b646c42a89b8d540573"
+  },
+  "A20_D1": {
+   "role": "outside",
+   "triangles": 44,
+   "sha256": "e2c82137b5dabacd6c0af1a26631f976da142691ecc3ca0e989c687425838527"
+  },
+  "A20_D2": {
+   "role": "outside",
+   "triangles": 44,
+   "sha256": "e9c3937c457a2fab5d5d484d3fc4da89c45d32dd04aaeb3a34215a001f7faf1f"
+  },
+  "A20_D3": {
+   "role": "outside",
+   "triangles": 44,
+   "sha256": "767d524af5bf53b00dd5f369565f678eeb4d3e1030c10276403a7b80c7707440"
+  },
+  "A20_sternframe": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "80b3a7888504d29bb59cac2fc3b188931c47e6149556f2a54f5442720bbb75b6"
+  },
+  "A20_violet_housing": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "9b65640fd3d6902854903404656d99b1b867f979d5b2d5a341491b3d87872b20"
+  },
+  "TP1_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "61ca759f4174b081f5faaab83041856707435c5a39401957c635f697894dcb4e"
+  },
+  "TP1_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "632bd9ce85e9da938584303a1a4e4e63a20c851fd09fc691074422c4da6faba5"
+  },
+  "TP2_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "c8f8463d80e1b6ea89d9c7e23c598735df8f02a85e4869e0a709b888cac975b8"
+  },
+  "TP2_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "55b5d4e52a05fb02fb32ba515b95c8b9c486b68eea6ee0a9971703a10b7b440d"
+  },
+  "TP3_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "0bb1c06e1686e8178f947bc62cf788c03f4d7ebe1cee6cdd180e37e74c750379"
+  },
+  "TP3_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "d5ab6b667e1d040e22073ff1863c0541ac737bf304873a26cfd2f8d0a9f2b5cb"
+  },
+  "TP4_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "0bbe95ce660e84ba148eca11605109fb583ee3c3e9082d2f1f0ce9bd4f7d1884"
+  },
+  "TP4_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "62ceb5ff2136257b9f75fb6cb189148b9c0d9219fe353aa4497dc6242deea84c"
+  },
+  "TP5_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "77ba0eae85181255cd1c6ba2bc3e363566bd4a19be3b8b0f3e5f60452a01a9f2"
+  },
+  "TP5_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "7fb1a96c6e2e82c0f8b48eb095c31c010dafcf09b1115490c0fa18c8dd953376"
+  },
+  "TP6_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "fa3e3e66d4db90d97a4271535af520b4475d0542662cc9e4b1f62a7fe2f75dce"
+  },
+  "TP6_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "bd15838a0bec86259d2fccf6ed058af34076aefa2f0deb11667afcf26e0e9c72"
+  },
+  "HB1_mount_soot": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "2530c07c5af52f0dd2e729f50c2b36adb851ae53ec80bffa69366b02d9016d8a"
+  },
+  "HB1_body_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "f36e5b59550a853a8cdb8af2068a0ee6e6cfc8f4ad967805066de25107717f04"
+  },
+  "HB1_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "7dfba3e7f6c549a16c70fe516a763122b313d17baade8d280334c2ad5572530c"
+  },
+  "HB1_body_steel": {
+   "role": "outside",
+   "triangles": 168,
+   "sha256": "9ff649aace0d20582fada657d5b6a806d829242b4f816d3f02e599b2d0448e22"
+  },
+  "HB2_mount_soot": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "59944e50db5c7177f93e8eef6aa3a01a7ce060e9ed3fb78f119411ec4cf0cf06"
+  },
+  "HB2_body_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "b889131e875804b9a6a275164a4a6a02889310e36cb7bb8164266edfcaf30bd2"
+  },
+  "HB2_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "e6d548c01c544c6a3f959115834d9a00fd44433ecba2c29540b8de9110bbaa1c"
+  },
+  "HB2_body_steel": {
+   "role": "outside",
+   "triangles": 168,
+   "sha256": "363acc76e657493b1d9b83f801a47e65ad305be57a6d9d980b410d8b743f64de"
+  },
+  "HB3_mount_soot": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "aa71b68ac9c6898a8e6da597ad745f40a23c05b93404c41fe9b83e023331144a"
+  },
+  "HB3_body_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "7f2f7fe4c759ea88a1fd08e1e007ccbfc14dd09999329fa7ac14d49678f81935"
+  },
+  "HB3_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "e2168cd60dd9e9214c56e9678764578165e2e04c19640159fd9bf0b84993f2c0"
+  },
+  "HB3_body_steel": {
+   "role": "outside",
+   "triangles": 168,
+   "sha256": "4df8252459c64614abe9e7acd60e86eb464b26da40ebf3b685a9fbc6829cdce7"
+  },
+  "HB4_mount_soot": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "9b8a1d8927eaba912336132cf2f5b4f233db1a15c7349046aa6b8bf7ddf9ee12"
+  },
+  "HB4_body_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "d240c87bc382cd9eed99dc74995e6d04f04ecf0e11c44ac3693a858dfa601b3c"
+  },
+  "HB4_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "1bea947eb9eae779ac2668aaf82acd7485ce171afc564321a62d9575de37616e"
+  },
+  "HB4_body_steel": {
+   "role": "outside",
+   "triangles": 168,
+   "sha256": "0de588bd9c1134316e123903e59b804ca4aad12a825bfdc1429233954a5ceb3e"
+  },
+  "HB5_mount_soot": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "88dad0a1364021f7384e023299e86fb434fef5b00fe9a0438f53170d8fabbd96"
+  },
+  "HB5_body_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "1c1f9943ea0028560af8ef45d1df62884fa705e1996d7b2f1eca120eebc72316"
+  },
+  "HB5_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "c0a7d941932d52287692f734680da0f75d66f8ec8e1f4f92ed5c69706d98e228"
+  },
+  "HB5_body_steel": {
+   "role": "outside",
+   "triangles": 168,
+   "sha256": "3ae036020fd33821f18cfb21e196c19d85d9e00827d2d4c8e90d868b8721868d"
+  },
+  "HB6_mount_soot": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "171035454a7665ca97b40e6cb9ad974022c130b63bc7db822170289ea8e666ce"
+  },
+  "HB6_body_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "355ad49359ac8bc3be76bcc92ec0479cf4f3218fb8f3bbf5ea630cf2d2c6977b"
+  },
+  "HB6_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "1583835b6b407588be96fdefe1ab79f506556176eb69d4d169d5dff93eeb0650"
+  },
+  "HB6_body_steel": {
+   "role": "outside",
+   "triangles": 168,
+   "sha256": "ac2b10c48f6e080d3fe04ce64b7e8611f0d3359af8caaf8ba9ee1b686c341baa"
+  },
+  "HS1_mount_iron": {
+   "role": "outside",
+   "triangles": 160,
+   "sha256": "33339dd092fdaf8b6cdde6f37081b3d6c9776a1ffbb3131b49bde903926af312"
+  },
+  "HS1_body_dark": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "1e772e9310c6fede7cd05279e257971f8adca7eac19385faf46ed8d3db76170b"
+  },
+  "HS1_body_steel": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "4f58fd57c90fb18e83fd2e7d9728972ad9d8a0bbdc82c04dd1b94adff8846309"
+  },
+  "HS1_body_iron": {
+   "role": "outside",
+   "triangles": 176,
+   "sha256": "9b73465c97391ecc80fe811e5bab5123fd0a9803373e69bea0fba7c5cf375a32"
+  },
+  "HS2_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "44e3675759fd267763ccf73da431e7acc01987c83b7bc4f5375f183c6a593720"
+  },
+  "HS2_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "9425fa8f6640ca95c89ec98c50bfb80303b81742795975f4a7e02abdbe82319a"
+  },
+  "HS2_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "fc38d81c8272f9d05c95393e9b312083bad41ee7b4629ea5569adfdffa4642d1"
+  },
+  "HS2_body_iron": {
+   "role": "outside",
+   "triangles": 64,
+   "sha256": "decfad1258f4760b3f4f983049a47f6cb210665f7a8ed40bb4f89c81d830e214"
+  },
+  "VS0_mount_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "99564ce4779e37a4e9e8c94717e888a9b31458cc8928c5cbbfd4248e0d4d9845"
+  },
+  "VS0_mount_iron": {
+   "role": "outside",
+   "triangles": 112,
+   "sha256": "6676f631d1a067af78ba380b77fe63dc994aad67986fee26db97e348597eb18a"
+  },
+  "VS0_body_steel": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "11441b7d7b17c7d77bfb0f80dc0bc512cc3a7357a20e3d3034640aa2f989598d"
+  },
+  "VS1_mount_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "8246c3199005a7139b6cae92921374fb35556d28ed527df0e6bbb5b16bc1e053"
+  },
+  "VS1_mount_iron": {
+   "role": "outside",
+   "triangles": 112,
+   "sha256": "52e80ea1160b7e6132f3072ef3186a18b27b9f000fd6fdf0b5b0d00fd4201136"
+  },
+  "VS1_body_steel": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "074f2949804b0bb32c3798b8031870d63d27ebcf032a35f8136637645b2a5b7c"
+  },
+  "AN1_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "6a3860d95d45aec78cef04e70b36d511db7230bce1c2f384e7ca2e369ddea43c"
+  },
+  "AN1_body_steel": {
+   "role": "outside",
+   "triangles": 104,
+   "sha256": "e61f4095f854f360729619aa31266665bc7912bfbd0f829d6d1bff82ffb83d72"
+  },
+  "AN1_body_iron": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "d16aab704ee4fae60a856ef9b523d63bcfc9350d4effd971a446f4804b4b7ba9"
+  },
+  "corsair_A20_hull_plates_soot": {
+   "role": "outside",
+   "triangles": 1740,
+   "sha256": "07557cf62bfdbc345ed91fa76318a302f088fd86c30c42479a39740bee72dd2f"
+  },
+  "corsair_A20_hull_plates_iron": {
+   "role": "outside",
+   "triangles": 1320,
+   "sha256": "c41a5da73895917ea69875bc48e87da71807a564b563e1efab0578eb2af5a205"
+  },
+  "corsair_A20_hull_plates_pale": {
+   "role": "outside",
+   "triangles": 1152,
+   "sha256": "967373faff5ee784b078ab19e45b40f3cbd661f7ebb8642be3111a84977fab6f"
+  },
+  "corsair_A20_hull_plates_rust": {
+   "role": "outside",
+   "triangles": 912,
+   "sha256": "c80dc4ac6a96b846d063390c42ab98f4f3df239c066cf87bb34b29c65c577b16"
+  },
+  "corsair_A20_hull_plates_soot2": {
+   "role": "outside",
+   "triangles": 804,
+   "sha256": "f6320b626d733155848a88fd38badb048f783a58e2432a2ea0df26d6d3444e80"
+  },
+  "corsair_A20_hull_plates_violet": {
+   "role": "outside",
+   "triangles": 720,
+   "sha256": "4274153ee597deaca8404dfc535c2b111f103feb1b737c9f495d969cfb586871"
+  },
+  "corsair_A20_hull_plates_steel": {
+   "role": "outside",
+   "triangles": 900,
+   "sha256": "7988fe599ddf09fb11463be0d2f161aabfeb97980b79d19a83ca053c67eca14d"
+  },
+  "corsair_A20_hull_rivets": {
+   "role": "outside",
+   "triangles": 13824,
+   "sha256": "fb76f862cccf1786d99d7f2d64eaee8b0347cfb05036e9168d0f8a74921c69f2"
+  },
+  "A20_bowblock_plates_soot": {
+   "role": "outside",
+   "triangles": 180,
+   "sha256": "607248ec22d883310c2c40bdd1a15303a5b3b930b64f326e5ee137aa84238eab"
+  },
+  "A20_bowblock_plates_iron": {
+   "role": "outside",
+   "triangles": 132,
+   "sha256": "5ae6c5aba8362d8b66a05b30bd934bb1c5722ea87d3f89a28e37275990b9e673"
+  },
+  "A20_bowblock_plates_pale": {
+   "role": "outside",
+   "triangles": 204,
+   "sha256": "c11b99161c1bc02e718194a4e33ea22ebd8a37aee770fc70e294759ad607e0cb"
+  },
+  "A20_bowblock_plates_rust": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "8c72e18d575dcd9a0e07ac4d5026b16512e5336ff320f6a80a4c4395b350951a"
+  },
+  "A20_bowblock_plates_soot2": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "07a614447639a4fd0d84245fbcc749f501b25cf5a2c82464ad7dff289e7c7d1e"
+  },
+  "A20_bowblock_plates_violet": {
+   "role": "outside",
+   "triangles": 48,
+   "sha256": "27182fa95a90a49b77f2ab941669cde048fdcfb67ad1e44aa0ad1ac82776b0ff"
+  },
+  "A20_bowblock_plates_steel": {
+   "role": "outside",
+   "triangles": 84,
+   "sha256": "75a6fd44259e9603d8d3e274a1a213d2d59491b1c621be7d61d1dc2186adbe16"
+  },
+  "A20_bowblock_rivets": {
+   "role": "outside",
+   "triangles": 2016,
+   "sha256": "42410bcb22a41d945a02a88ef9815075a51af400d7218c282040d5ab9d270056"
+  },
+  "A20_sill_H1_plates_soot": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "83d6bd075c241ffaeed70d70021368f34468f4da0dd5c7b8b8d2f57a2f828de2"
+  },
+  "A20_sill_H1_plates_iron": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "e414854be5cf5b72dbd9e2ed23778f682d723d9c0781c275cef2cd1a1bb4f20a"
+  },
+  "A20_sill_H1_plates_pale": {
+   "role": "outside",
+   "triangles": 48,
+   "sha256": "6081fc03cb0de8af465dcfcef49377554b0921ab40410d3d8a2dea956a588bca"
+  },
+  "A20_sill_H1_plates_steel": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "c6a9723e00e4456e3ba9d0ff39b64b6a0957b90b86a3a3ca063c1747379d0d8c"
+  },
+  "A20_lintel_H1_plates_soot": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "9051e78da0019158c790d1d72be998488771a6ac618d9ec6a17da2751608840c"
+  },
+  "A20_lintel_H1_plates_iron": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "3d1e9070bb903b81215136c4adbd456da301864ddc1bf808a9cac60902928e25"
+  },
+  "A20_lintel_H1_plates_pale": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "9312156c1a162afad028e1e6a2d49a602e5dd3153c7b7ba388f310dc9012e0dd"
+  },
+  "A20_lintel_H1_plates_rust": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "42c45f118699135abf4f72dd181c66ccfdb06450644ba5338ec80c4f81a0dee5"
+  },
+  "A20_lintel_H1_rivets": {
+   "role": "outside",
+   "triangles": 192,
+   "sha256": "302ddb3a97232c8e2f5f42f4c2e9accdfe11a8774a5df5dbba427bd9017be142"
+  },
+  "A20_sill_H2_plates_soot": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "e4f1511be97880268046454d9bd80f3daf3cee469a4e71326daa8bd9bb0c0acb"
+  },
+  "A20_sill_H2_plates_iron": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "606a95c2850211099a9f0d32e393af7554e86b6483d9b0af22d3ed4a97f6d4d8"
+  },
+  "A20_sill_H2_plates_pale": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "1e2f49e3bf68af0c710d7c3886009fdcc4d70e05e3e264c3a58ee3fb9e34c172"
+  },
+  "A20_sill_H2_plates_rust": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "3d91b9a00186ff8503148e3f17c30313c562000fdad37a984b5638be21b17d30"
+  },
+  "A20_sill_H2_plates_violet": {
+   "role": "outside",
+   "triangles": 48,
+   "sha256": "7f570ada72522b0882df9646bce3ff90f5e4b71c5295fea709b140d01c91e080"
+  },
+  "A20_sill_H2_rivets": {
+   "role": "outside",
+   "triangles": 384,
+   "sha256": "e9d316b94ec8969dfe9553718d10088efd16b0a995bbc432a611d1c746cb432d"
+  },
+  "A20_lintel_H2_plates_soot": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "d6bd23f2406966334feb40ff00061e77501ffff660eecc12331d0ab91c3f7b72"
+  },
+  "A20_lintel_H2_plates_iron": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "6b690ac747925a05ad5f473f3a1cfb653f93cfd5b5d699f53f36eb63220d1668"
+  },
+  "A20_lintel_H2_rivets": {
+   "role": "outside",
+   "triangles": 192,
+   "sha256": "2005bfee939e2de9c18a2480b43305cf3ff5084ee8feb5c1bd6b3513261557b2"
+  },
+  "A20_brick_0_plates_soot": {
+   "role": "outside",
+   "triangles": 84,
+   "sha256": "0f619a9278b61dce9aee49749330ca177b6c62f1aa2b8e7c4a21ffac070a62f2"
+  },
+  "A20_brick_0_plates_iron": {
+   "role": "outside",
+   "triangles": 48,
+   "sha256": "9748a237d0819df6f7199d8815705a3ace96d97001237f68c39a2b134bec2cf6"
+  },
+  "A20_brick_0_plates_pale": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "0c68bc062b95bf9115e469185084085bc3d12ae617cc37bcece0c752ab0d0f1a"
+  },
+  "A20_brick_0_plates_rust": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "a736c75f1247796d08a6d4429e9c1367e7a57bac1918f2ce5ee26ed2afc38117"
+  },
+  "A20_brick_0_plates_steel": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "8cb38aa10bf0e5a72d62b585256d9b2660893d4723974df7fff9e6cbddc814d8"
+  },
+  "A20_brick_0_rivets": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "5cb72acb7b0dce7ddab4f42fdb0eaa1e6250e81c41007d68682a2f190944abd3"
+  },
+  "A20_brick_1_plates_soot": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "cec13d3df46fdb55ea0e10d40e2047c0a364748661fb3f7e4297d44b8f81bad8"
+  },
+  "A20_brick_1_plates_iron": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "cfb7b55a867cc0f1d6d95284de898631cebeea91419ab818327fd31d725eb9a9"
+  },
+  "A20_brick_1_plates_pale": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "bc46b73883235cb1e1eadddc5d5575bc3c3fae73ee13c6d9eaad92bcc2744945"
+  },
+  "A20_brick_1_plates_rust": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "eaa97271e8b0d27704031c9600ada98ff5a15f69189cfe439e5bee0935063e5b"
+  },
+  "A20_brick_1_plates_soot2": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "23c354a0212a772008ec589c3a16b5141d698383d38026de475cb72a420171a6"
+  },
+  "A20_brick_1_plates_violet": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "b35a092f33c9fca8d7a6ddc0c2dc2d9ca4bf004552a6ddabd4dd9cd7a02bb643"
+  },
+  "A20_brick_1_plates_steel": {
+   "role": "outside",
+   "triangles": 108,
+   "sha256": "19efa37ecf56cc1780da1888f1ae65675d8f1fb3da9a9da6f178acf8c5746f8e"
+  },
+  "A20_brick_1_rivets": {
+   "role": "outside",
+   "triangles": 576,
+   "sha256": "e43061f5aead4fb01ac1c5e6d461e1fb90fecf2a820472cdcb9c38c10cc5cd4b"
+  },
+  "A20_brick_2_plates_soot": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "96f09fd3648f804bb71d81154b227a8fb5d3effeee16dc03a5d73c27c88010cf"
+  },
+  "A20_brick_2_plates_iron": {
+   "role": "outside",
+   "triangles": 48,
+   "sha256": "9f3fab3e7949cec54005b00741687fe6a887b234f1d671297f6a52b7b0948c1c"
+  },
+  "A20_brick_2_plates_pale": {
+   "role": "outside",
+   "triangles": 132,
+   "sha256": "5b75c2be2207300a5d2c6054b81d249166dab63283a7b5eeec0cd31d7ea02d6b"
+  },
+  "A20_brick_2_plates_rust": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "e0f48d3362ee88d0fc04132a861211c8914777d72c75646854fdc15567752716"
+  },
+  "A20_brick_2_plates_soot2": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "b78dbf0bc4e195bd565554b3fb4dab0dc61d672effbf3fb83f6c82f3091bad65"
+  },
+  "A20_brick_2_plates_violet": {
+   "role": "outside",
+   "triangles": 72,
+   "sha256": "4838e46870c20ae40b321bd2c11fa09c6aa30076175ed1e507b30aa714ee030d"
+  },
+  "A20_brick_2_plates_steel": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "70e75d5724b27d67f977f3ea462bd5edd30705965434971cc2080e5a563e27ed"
+  },
+  "A20_brick_2_rivets": {
+   "role": "outside",
+   "triangles": 960,
+   "sha256": "510e0f4e9cb7eddc047b48a54768b91e8ef89e3a0de0de29f89a79ab9b5a60f3"
+  },
+  "A20_brick_3_plates_soot": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "adb0e2f977164109825f806431815421dca602fb81aca9bda61f50099af90f23"
+  },
+  "A20_brick_3_plates_iron": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "e46281545462f07318b6055d08f34e9cadae6b5f13903008db525d6491e4fbbe"
+  },
+  "A20_brick_3_plates_rust": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "17dcf28f0a047252210517bcb92a378d4cb15b5465e71c9152b9da7acabae3c1"
+  },
+  "A20_brick_3_plates_soot2": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "464c8ee8c712a653d63b402478462f8c30505f6bf0485a69b611ca039a8679bd"
+  },
+  "A20_brick_3_plates_violet": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "fae766cdd971257fd91182eb2ee8ead654fe1ef7f5cfb761e734fd38d0989445"
+  },
+  "A20_brick_3_rivets": {
+   "role": "outside",
+   "triangles": 288,
+   "sha256": "b100a808969cb7aba4b887d0074e5014e287a9fa4cbca17b7525e709d21f8c2c"
+  },
+  "A20_D1_plates_soot": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "de4fd2b0cebbcdd6d6ed3c9af359991a82d5d5d2be898dae473676210e64ea16"
+  },
+  "A20_D1_plates_iron": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "6d9b5576f9b7ead97f3950137e18ae216b699d3a5604fcacabef67971249b1f7"
+  },
+  "A20_D1_plates_pale": {
+   "role": "outside",
+   "triangles": 84,
+   "sha256": "54fbb20154f1055903be9c5d8303cc460573dd019cc6cde0a879669e5565f052"
+  },
+  "A20_D1_plates_soot2": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "d9fa9aacfb2917ad61dafd9befa5757afeec725d55da7acbe4d5c14f813e2286"
+  },
+  "A20_D1_plates_violet": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "2bf51a99e1c59c3e5c1fdcb522813061fc43aa8394afde194db5d2d0f2dfe4d3"
+  },
+  "A20_D1_rivets": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "ca4d83b84fcd3347a75b6cc61b1c7bb1d70b108a09ccada2dd652fce4e5050a3"
+  },
+  "A20_D2_plates_soot": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "6918e38b89978cdd7f0871bdc7980624554991044ac7dbcd0de7664e3bfc6564"
+  },
+  "A20_D2_plates_iron": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "4146d35b8e2813303efaaddc2f56ef2169223af92917f550043315d3c59a6d03"
+  },
+  "A20_D2_plates_pale": {
+   "role": "outside",
+   "triangles": 84,
+   "sha256": "dd9a62038889c77b6c591dfc7f3f9c8b7db7f723b20b122e9d0f447803d40831"
+  },
+  "A20_D2_plates_rust": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "a25d029468a53de44310301356413d03fd7b187a7a65ceb16746622a15f99c77"
+  },
+  "A20_D2_plates_soot2": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "167345b525a27eb375e7253ac028cad54e23f1ebdaa2dcbba467fcc07af61d38"
+  },
+  "A20_D2_plates_violet": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "90f2e4e327b5eb432aaa872a7b7549b4641feb33b62287b995f54197d8c7c6e3"
+  },
+  "A20_D2_plates_steel": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "f97e875ea1c913e8e89599ecc9c8f77da418cfb72f72210fb8d3ee8a60fcff88"
+  },
+  "A20_D2_rivets": {
+   "role": "outside",
+   "triangles": 1056,
+   "sha256": "51bc56d75cbfadbe7da7c4b544f4fa3c088ebbc8e91fa159f881775f3250093e"
+  },
+  "A20_D3_plates_soot": {
+   "role": "outside",
+   "triangles": 180,
+   "sha256": "0192b26216426c6caf865e171fd049192e1a239b37dea9c7020324454bd21790"
+  },
+  "A20_D3_plates_iron": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "108a56c9962405f5dfa55e0bfe7e0c5a7e18b6a666380fd9832e9879cfba0a7b"
+  },
+  "A20_D3_plates_pale": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "5f1c4ed9af6825265852fea15d67f0aa8e993017ccfcbb29c7e02bb5f659fe8d"
+  },
+  "A20_D3_plates_rust": {
+   "role": "outside",
+   "triangles": 72,
+   "sha256": "b557edf2ec06475500141ee6335961c1064df0bc4fc44df859a960b8f77bc407"
+  },
+  "A20_D3_plates_soot2": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "46c844976557ae8b22a707ad64a18c43119000903277adf117f24359720afd24"
+  },
+  "A20_D3_plates_violet": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "f7d658e80fc81fdfab8e0fce0f1564c868f150d2f371683be1d358a281f007ed"
+  },
+  "A20_D3_plates_steel": {
+   "role": "outside",
+   "triangles": 144,
+   "sha256": "4c969f087d2d7024ec99c9b4d1ee1e5fe753db48d6a45df9a522a7ed2fc68a97"
+  },
+  "A20_D3_rivets": {
+   "role": "outside",
+   "triangles": 1824,
+   "sha256": "f34840b218232c709accf8e7bb54ddd68c9129a55c5ba1faf6e55e1c05390324"
+  },
+  "A20_sternframe_plates_soot": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "bb4a478d53a4045506fac9c72be8cf083efd4931dd9ee96ffadc83790e130078"
+  },
+  "A20_sternframe_plates_iron": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "e250c77f716871b0a581687fd35b3d3e621d09e6babf1ea9e9a2a56a2eb714ca"
+  },
+  "A20_sternframe_plates_pale": {
+   "role": "outside",
+   "triangles": 72,
+   "sha256": "7394924d65a8d3820cf1be87548ea12c24b13b70f9c63aba47633d29d818e7b9"
+  },
+  "A20_sternframe_plates_rust": {
+   "role": "outside",
+   "triangles": 84,
+   "sha256": "3659a73a9de3aa3b6fa55dec83faab06db13efb2d8653c06335ffee6780b8f73"
+  },
+  "A20_sternframe_plates_soot2": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "84ded3b577bc64d716943c8b3a02600fc4927f9ce4cd5b077e262b8425632e3e"
+  },
+  "A20_sternframe_plates_violet": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "97506bfeb34ad42051fbe7cfda52e148916e41d3b85dd642acbbeca5f567ea86"
+  },
+  "A20_sternframe_plates_steel": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "e556ad48899defaf46e194137f4927f5bc548b6bad6545ede0f77682bc0c41cb"
+  },
+  "A20_sternframe_rivets": {
+   "role": "outside",
+   "triangles": 864,
+   "sha256": "4de93c200dbb24125833d255bcc30fc193189322e9e43f6fbf1d2eb844e40a9f"
+  },
+  "A20_violet_housing_plates_violet": {
+   "role": "outside",
+   "triangles": 576,
+   "sha256": "84914b315d23260a476b124de4c33459a5cdb038d1b35ed599bd888413b2068f"
+  },
+  "A20_violet_housing_plates_lilac": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "8d876d8d342e5e623319fbe36a94c0372f4ef77146dd55b135f89f0999b3cb53"
+  },
+  "A20_violet_housing_rivets": {
+   "role": "outside",
+   "triangles": 1824,
+   "sha256": "b9eff6458189bd2fe68a048148a5ee6e596349fdacb60024e8b84bebb6e15039"
+  },
+  "A20_cheek_H1": {
+   "role": "outside",
+   "triangles": 52,
+   "sha256": "c875e6925959c38bdbef256b680fcc381df2dee3e61b8a850c6754ba93632d58"
+  },
+  "A20_cheek_H1_wrap0": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "2ddfaac75a57ba6c57992a67e7388b6e6cec84f98a396530ccd5eb307ff01532"
+  },
+  "A20_cheek_H1_wrap1": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "a372ee8d67400c9c25b5a15965f78003928850b76736bb11937cdc9db47f13ac"
+  },
+  "A20_cheek_H1_wrap2": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "118f33a2d5836fdc1e8bbc383e456f20d69784563d972919e1eaa7931a8b9936"
+  },
+  "A20_cheek_H2": {
+   "role": "outside",
+   "triangles": 52,
+   "sha256": "c9fa024a74c21a442e951573850427287cf99fdcae1847a6e93e4b5967f813c3"
+  },
+  "A20_cheek_H2_wrap0": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "9b83c8f63badcc23363d761fb236093146f075ac16497a3464a154fab2d4ef55"
+  },
+  "A20_cheek_H2_wrap1": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "f1af5edc8ca91ddf367c5bc2f8ae47d546f0f048114f9797aacfae221b3aff90"
+  },
+  "A20_cheek_H2_wrap2": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "0c344858f3dddf60446158ec8fbf7e7493fb2df91ab236ca13c8a09694a5a194"
+  },
+  "A20_cheek_H1_plates_soot": {
+   "role": "outside",
+   "triangles": 360,
+   "sha256": "8774e7ec2b9989eaec60750ad0d0500cffcb95b56d6f7b8c496423b3b7098e45"
+  },
+  "A20_cheek_H1_plates_iron": {
+   "role": "outside",
+   "triangles": 132,
+   "sha256": "1ccaecb5e950385ed4f48baf82fa93ca287745d20089a0f8810363adfa82c442"
+  },
+  "A20_cheek_H1_plates_pale": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "99a19a6738edf4ccc0f333337b590e137f672674110f394948a11500c9befed9"
+  },
+  "A20_cheek_H1_plates_rust": {
+   "role": "outside",
+   "triangles": 204,
+   "sha256": "61cfee2a7bb3d74654361e576ecf713db4cde2fc99ae0529ad579cde8deeaeed"
+  },
+  "A20_cheek_H1_plates_soot2": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "442319d750497bb6f9305a2a8625e4e0e3d4b79339c6e7d7910dee4ecc3fa319"
+  },
+  "A20_cheek_H1_plates_violet": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "fb1235fe0e98baa3e50fcba5e018b3ec7dfb28a8e12241912cbfe5ffc5594e63"
+  },
+  "A20_cheek_H1_plates_steel": {
+   "role": "outside",
+   "triangles": 168,
+   "sha256": "231b23915ece8a2026d7c9943d2dd9ae5eaa83f1a3ca1e02ddc195dca33a7684"
+  },
+  "A20_cheek_H1_rivets": {
+   "role": "outside",
+   "triangles": 2880,
+   "sha256": "2db948f003338be46ca6c7b7577c3d2d9ddeac60c7c71edafa1370ceb6bd1efa"
+  },
+  "A20_cheek_H2_plates_soot": {
+   "role": "outside",
+   "triangles": 192,
+   "sha256": "9d439d4588e1d981082aa7fcbdf39716f31548f07ac97b999125c3bb8d1bdd3b"
+  },
+  "A20_cheek_H2_plates_iron": {
+   "role": "outside",
+   "triangles": 240,
+   "sha256": "2d19a4671f110bc9880e0b42b3f020a6ce33d9e0616847414bd355bf70ac7c18"
+  },
+  "A20_cheek_H2_plates_pale": {
+   "role": "outside",
+   "triangles": 180,
+   "sha256": "d147cb728aca1542fc5b965ea7db0b9d36b7d08db8a5c277c672fb5ce59f1ca5"
+  },
+  "A20_cheek_H2_plates_rust": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "ae754822869c087596c4fb8c88d5bf2bcc0eed1d86fbf7e4be5a8b26a3f466dc"
+  },
+  "A20_cheek_H2_plates_soot2": {
+   "role": "outside",
+   "triangles": 144,
+   "sha256": "164b8367e6b0864b86d44499658a615978d85c83300f0d5cdb89aff455b0cf59"
+  },
+  "A20_cheek_H2_plates_violet": {
+   "role": "outside",
+   "triangles": 144,
+   "sha256": "960d95730f467c7d802f28ac362362366271209cdf0a03b69a90d5407a962e3a"
+  },
+  "A20_cheek_H2_plates_steel": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "940cd528fea10730109a53168fba33cb93667f8d0b109d92fa91808f4b3770d8"
+  },
+  "A20_cheek_H2_rivets": {
+   "role": "outside",
+   "triangles": 1824,
+   "sha256": "611c5183d62cf124b22712fb55f447c1f7d0bd40431427b70f4dca8692324007"
+  },
+  "A20_H1_liner_back": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "8fcb83c13a21f38e655996cbe42559a12d345ebcbb7f2522dddb9dae560ad886"
+  },
+  "A20_H1_liner_roof": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "dd7aac19598dde27e619dc6f165188e3672d80dad8a31ee6762db61c688126e5"
+  },
+  "A20_H1_liner_floor": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "22691fd58023d9cab4f1a8c31437db3dcdd5bb6310f9cc0c89273dfae23b70ce"
+  },
+  "A20_H1_liner_wall1": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "b344357b5f5000f0bfdb2928e8df99f65b6eae7f15f9708a4e4c3a17b5c35669"
+  },
+  "A20_H1_liner_wall0": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "b6acd9de91b006ed94812b8e50edadd8150a398dc834977ab16d856946de28b2"
+  },
+  "H1_mount_iron": {
+   "role": "outside",
+   "triangles": 148,
+   "sha256": "c6f7b8c0b2c5ff243d362dc380239cedb77ed155438202609054d0109fa851fd"
+  },
+  "H1_mount_rust": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "24a13e67d39f189402b09075472109ef86acb0073d16d989a87fe3374cfe4ba4"
+  },
+  "H1_mount_soot": {
+   "role": "outside",
+   "triangles": 36,
+   "sha256": "b6ebfa68fc5e3952ddeee2e5725af739050a6ed4a0aa27b7feae8b43e352fa81"
+  },
+  "H1_mount_dark": {
+   "role": "outside",
+   "triangles": 448,
+   "sha256": "d1a5fbf1817bd3515ddd001dd595eb0ad414bcc2799fd96d0d17a810080fbabe"
+  },
+  "H1_mount_lamp": {
+   "role": "outside",
+   "triangles": 84,
+   "sha256": "437cd91857ff7463542f7984eff4afc467721774c932d6cb01eca316a1355f19"
+  },
+  "A20_H2_liner_back": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "bdc2432484bfbeecf5af0783d434088b561c62dbac06ce164074f344ad4bdefe"
+  },
+  "A20_H2_liner_roof": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "1d355ff0d12ab58adb9074c6b2e96d67ea9c05c403f627006bfa1d643ea75d59"
+  },
+  "A20_H2_liner_floor": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "4ecbfcfd110b2ed9cd0523c5a1bc97238d9ab2edf353c6c5f0f6a084d59c5692"
+  },
+  "A20_H2_liner_wall1": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "9d71f2c2f847df2b770e825b6ddf1f93bb9015fe73b3473a25f5240cde73ef23"
+  },
+  "A20_H2_liner_wall0": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "2ebf56237449139ac1d720b7a535317d92c27dc38fbcb3992a9aeb466cb173ed"
+  },
+  "H2_mount_iron": {
+   "role": "outside",
+   "triangles": 136,
+   "sha256": "b029d620e58dbabec3816d9b366ab1582815d7c356f9422128bb2be1e60e2163"
+  },
+  "H2_mount_rust": {
+   "role": "outside",
+   "triangles": 24,
+   "sha256": "50d4e6ee9de9820a546cfcc23b98dc860675bea4cdbb48648fa76a8b761492d7"
+  },
+  "H2_mount_soot": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "5617afee64677335e715552fae0d67cf06e00435bea732679a1c3da98cbea536"
+  },
+  "H2_mount_dark": {
+   "role": "outside",
+   "triangles": 420,
+   "sha256": "c367d5f3dcbed1005f6413404c4c4e27e6162c4eefc11c442bc6d6f3aee07515"
+  },
+  "H2_mount_lamp": {
+   "role": "outside",
+   "triangles": 84,
+   "sha256": "ead117fbe43e90238b5d5007beee8bfc87f1167be48b4dd9458477c37aa91ed7"
+  },
+  "C1_body_soot": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "d4b9e07c1e9ee88643a51352260bf974c3a8fb1f9a7506108e6b1e9cf1987203"
+  },
+  "C1_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "8f19ab79f5ff9ab9ec0ee0ade127bfff194ec3e72a45bdd9c3dab96cf5d2fa13"
+  },
+  "C1_body_iron": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "4fb0e6535fef591f88ed66b7e24a68d78ed2b5ab9c8e71f337467604d078b960"
+  },
+  "C1_body_rust": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "aca67ea8485d5b3d787ca425c45ad144ad920a0e5b6fcd62ed9f28fb8e7000e3"
+  },
+  "C1_body_steel": {
+   "role": "outside",
+   "triangles": 208,
+   "sha256": "dfdff5962a9a5cd90ace6ba732242c905015a5965ae5e042390abf5ba4317c97"
+  },
+  "C1_body_ember": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "5224f2e6f5f2dbde6d94935c2cf79fba78f77beb509012d38bb6db7f18558f86"
+  },
+  "C1_mount_iron": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "a4cd6294f58e15079cde56dfafec7f4e7b5f2d9edd124f23ce8d635cd89a4dee"
+  },
+  "C1_mount_steel": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "d638ca6062291cc0c8941e98944b8de9e23c5a15245f3f492eaf742a26ef26a5"
+  },
+  "C1_body_pale": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "fbb7fe756249513c67b804fab11ca1b86970b91c70e19b3fe612c2cc717f4905"
+  },
+  "C2_body_soot": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "012b66e70da14420ff14f003ead28699772abf0df9962af0add3ce033cf9811d"
+  },
+  "C2_body_dark": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "b9b7250984197ba75e1f043348f43f1b2e1533f7f27af4a83d6bd1a41666a69f"
+  },
+  "C2_body_iron": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "187da1f76575445b1ee8117a1d49cbcd8e0aa3545cb1cbbe2d67007c9619f9cc"
+  },
+  "C2_body_pale": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "5c555afd1be2a94f594bd75a4b9f6a2462684c53888f10120d5239f856f31cc7"
+  },
+  "C2_body_steel": {
+   "role": "outside",
+   "triangles": 208,
+   "sha256": "8642fe5aaaa7075d7b83334b35d43468eec62c7facca70113f99fbd35f4cfa52"
+  },
+  "C2_body_ember": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "091856806bc20f0d03df2e4d2bceecfd9c029d5e4d0ea784c8831554fea49ee6"
+  },
+  "C2_mount_iron": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "d007949e3e3366f80edb62e81273b2a69eafc4b1bf8b2f2ff71192b13e9f9443"
+  },
+  "C2_mount_steel": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "855776a50d20814084e88d0cc1e84cd2153f24732dbde6921d39c9a72b565b57"
+  },
+  "C2_body_rust": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "ea63f036c3e63b205908b11a8bb13dd13762c2abe163d5c471825e22ae836f76"
+  },
+  "I1_mount_soot": {
+   "role": "outside",
+   "triangles": 312,
+   "sha256": "49f6dbc6cb263d0111b4b56d7193a54886094a0e36dfaf76339348188e1a74ab"
+  },
+  "I1_mount_dark": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "722ca06d9b8150552b0f2149ba63215ab19b47c56c3a4e3d5ee8dca976c3d4cc"
+  },
+  "I1_mount_iron": {
+   "role": "outside",
+   "triangles": 2160,
+   "sha256": "9310cb4ea7379735777791cfeb1319c32d516319a808e138c5064b1cf85978c9"
+  },
+  "I1_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "78fa93c12be9df1aa3ae8c3398025e8ba77aaa7bae5085025948d329934fd828"
+  },
+  "I2_mount_soot": {
+   "role": "outside",
+   "triangles": 312,
+   "sha256": "e8af0af2134982b156612bb8d43cb83a8d4a446fb23fb6b1be249e52f5e17f3b"
+  },
+  "I2_mount_dark": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "791c8deb89417d367fc906fd4f17db9b5491a7a4018d51c5be674dac7c79a395"
+  },
+  "I2_mount_iron": {
+   "role": "outside",
+   "triangles": 2160,
+   "sha256": "1e26c756bf5446d93db61cd67f4840507e340021e7d86da3452fffc076d06dcc"
+  },
+  "I2_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "70eb5fd5fbb1d7b8b8b67466cc76aaf27edb2987d2572bbfcdc2f2aa7672701a"
+  },
+  "FP0_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "ad4c662416033ac0a1c608cc71fbb6dbb606cbea3234282409de5d392707d29a"
+  },
+  "FP0_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "e82d61dcca937e74a12ff0b2af535bc30873b7f4c89403515e56039d6bef7098"
+  },
+  "FP1_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "469bb9d467c6ed212f2bb9dec12028c70b4e84d73d95e3a099b10647567ffb8a"
+  },
+  "FP1_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "c3e335cdf32ac1179b9aa42a1df4129cdc8b8ebd7299bc6667e6e8ccbcbef604"
+  },
+  "FP2_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "88124ee06a7cb51fd581546f7297f94ead06b0ee85ffb55e3b6d349f199a2578"
+  },
+  "FP2_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "3a0b918444ddb401bd484a36bb78109156798343b51c004d8ff181e551b0ffe5"
+  },
+  "FP3_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "9b4a16aec9be4deeb52d3f3a6de8692eda4e381f441eeef32e259a0a35612ab4"
+  },
+  "FP3_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "a3f493df56c93af003d9df13b4bb093e5587a2dab0977420461ed33279ea1047"
+  },
+  "FP4_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "256a8d092595540aa71fb848cc725a3bb98ffa623334e6f86ee3a88692a606c4"
+  },
+  "FP4_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "dd663a9bb392eb98cf55899ee12e9012b0a29459127a01306eb7fe4fa5d835d1"
+  },
+  "FP5_slab": {
+   "role": "outside",
+   "triangles": 12,
+   "sha256": "614e8b21dc13d1132493a589c30a34eae97c8246f5fdfc774ce256466456f8d8"
+  },
+  "FP5_rivets": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "ad3dcca58402c14909ca129f9e093cdac6f2cf8d9cb8cfcb7154f8c68d4310f8"
+  },
+  "I3_mount_soot": {
+   "role": "outside",
+   "triangles": 312,
+   "sha256": "69d09755bf639df886bf1a159d2fadc9ab4507a1bed41cc66a53a51747953974"
+  },
+  "I3_mount_dark": {
+   "role": "outside",
+   "triangles": 96,
+   "sha256": "81aab637578afd8a1de549fc6f5978841ad5c49ace942fb2e0b63de3081ea4f4"
+  },
+  "I3_mount_iron": {
+   "role": "outside",
+   "triangles": 1776,
+   "sha256": "5f42f532a0951b8476f4f0b583f2ec20f2436b704965af47382b2ef68778d75b"
+  },
+  "I3_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "cd8b044da01f59d4fbc5789e49f9c9e45bb66d004a7f5c0b17650fd2b653ec12"
+  },
+  "I3_body_steel": {
+   "role": "outside",
+   "triangles": 188,
+   "sha256": "1e36d5acff1b2ad4f6fa16f0fa600bbebf240a5e6c61f5f521f4520a28930024"
+  },
+  "J1_housing": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "de0cc995cc9f1ef8c9b4fe9f225bf5c6b6a6e689635d2fcb33940fe68e857d47"
+  },
+  "J1_mount_iron": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "db4260898535da23ccaa4e576d80b7fdcab8d2b67fb9f6bbf8eb84a8553148f8"
+  },
+  "J1_mount_steel": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "a27f0faf98975b0045bfdad88f7214fc53e6fceaa536bff00421cb671cc13437"
+  },
+  "J1_body_steel": {
+   "role": "outside",
+   "triangles": 464,
+   "sha256": "f7187fa110f330c3fff7e4ff3486ba3555332b81ee01ee685c674c7da9df0e36"
+  },
+  "J1_body_soot": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "a78902465e927f4fca6fe6a5c90ff88aa70b84c7ddfc6b55cb38b53a0d872f20"
+  },
+  "J1_body_iron": {
+   "role": "outside",
+   "triangles": 604,
+   "sha256": "454a4f44c507b7fbee218a384babc23c7097083abf2f27d59129e33bf7fc80b3"
+  },
+  "J2_housing": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "3c06384ac4ec9fe4931de58fa983b52b7c9e697aa116b9129e8e63f30d2b83f1"
+  },
+  "J2_mount_iron": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "030e2f2e497d1e6798bcc821544b3e80b7c454ca987a8cc411a6565e417e212e"
+  },
+  "J2_mount_steel": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "66cde529eed6579f5c5ea7a9709333ac3c7c57f36191267a77f3ba19ad61a911"
+  },
+  "J2_body_steel": {
+   "role": "outside",
+   "triangles": 464,
+   "sha256": "d7e16182a88d7f6c68e806e87d82ae980cb58394fe7e21d9f341ebd3e378736a"
+  },
+  "J2_body_soot": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "8fabff4325e280c7a95bb37b3e0a2e9390137628118d1b5b7292ffc93517612c"
+  },
+  "J2_body_iron": {
+   "role": "outside",
+   "triangles": 604,
+   "sha256": "c4eec4a1fe7fbb6d9934a6bba010aea7e083ee1348f2137dee98364008eff582"
+  },
+  "J3_housing": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "6efabd2bec4a27bae1c91e2e90be966ff53b6cca9ae483c1fdc941a996bd685c"
+  },
+  "J3_mount_iron": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "5e375d590dc4f48c88c106006a6cd06e2f5ac277ddd5256ccb63777d423ead02"
+  },
+  "J3_mount_steel": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "1dbe98db54e1ebd41bbacd95b6549f90070121b15c914adb7fabff3b72b17cdb"
+  },
+  "J3_body_steel": {
+   "role": "outside",
+   "triangles": 464,
+   "sha256": "0efd30baf9ae5f28c7d0c82858ffbd01249bc210494ce442208d2d5a38d08067"
+  },
+  "J3_body_soot": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "72568d13d46300e56a6122da3262cd06a8d674011e8bcbe92ebfd24f94e92148"
+  },
+  "J3_body_iron": {
+   "role": "outside",
+   "triangles": 604,
+   "sha256": "29da92b751fca3528bfdf6d20969de2d0faa5aa9e4c398c5ff1ed55887407a6b"
+  },
+  "J4_housing": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "16ef47eb5e19951a72e4e40cc28a4806a2658b77c1030eeee7dfa723eaf41c12"
+  },
+  "J4_mount_iron": {
+   "role": "outside",
+   "triangles": 156,
+   "sha256": "290733200ebdee91cf85034daea0ad6389b5cc5804e35c5c6ad108cb5df109e7"
+  },
+  "J4_mount_steel": {
+   "role": "outside",
+   "triangles": 120,
+   "sha256": "4921ff27c25414d48a2ab8644e00216823975bdc8372e4df8759c2b626eba67d"
+  },
+  "J4_body_steel": {
+   "role": "outside",
+   "triangles": 464,
+   "sha256": "ac1f5f47c8b315025e2f7e9cea6dcea3326ab406d136f2d3f709933ca4ca2e6d"
+  },
+  "J4_body_soot": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "38f657bcd2fc4063a1aa16726e41b8205de404063b8b2e638f07032a8188e729"
+  },
+  "J4_body_iron": {
+   "role": "outside",
+   "triangles": 604,
+   "sha256": "a04f5133464f941e8674c4ce352c86d827d104570ce930f0722870302c07dcb9"
+  },
+  "D1_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "445fadae8dac96674f0dec5b4d8cee6f03b9fd058c1a7d2e5ae1cb829f074848"
+  },
+  "D1_body_steel": {
+   "role": "outside",
+   "triangles": 600,
+   "sha256": "c265d0a05cf4214e9d26c130645d26e8bbf1a8f63589247647aa7bfa90d929ed"
+  },
+  "D1_body_dish": {
+   "role": "outside",
+   "triangles": 912,
+   "sha256": "c1fc8e77ff4399f2398951d5e68b5ca9ccce4e647b2e6e3a703cde784ec34d15"
+  },
+  "D2_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "df33c15dd2d3ad582235c613fcda153986c5234a6f0d423877254f30ea13981d"
+  },
+  "D2_body_steel": {
+   "role": "outside",
+   "triangles": 600,
+   "sha256": "bbc8ad1e467ae3f08f9d20e6259efd3c4a8f2c55d934c9b2eeb5367668b375e4"
+  },
+  "D2_body_dish": {
+   "role": "outside",
+   "triangles": 912,
+   "sha256": "6766a2f530b2d2e2ecd339b733b75303471b4616f734b34c2c86a7c3fdbd6904"
+  },
+  "A20_bell_cradle": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "1aba06c0a3afcf025d1960a51f8ce076389433e4684832206b51040fba9f5bfd"
+  },
+  "SB1_body_steel": {
+   "role": "outside",
+   "triangles": 952,
+   "sha256": "35fc2163ee04bce257ea5eeff96ef95c3b70c06c08ca22fed533519b3aa64231"
+  },
+  "SB1_body_dark": {
+   "role": "outside",
+   "triangles": 400,
+   "sha256": "fe7817b999ce541ff040e3586c6423249957c53890f6a4e44f8223475d39015c"
+  },
+  "SB1_body_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "dcc42478444604a1ff4afa753a4d0858c8c060fc012dd04e60577106ab20ad7a"
+  },
+  "SB1_mount_soot": {
+   "role": "outside",
+   "triangles": 420,
+   "sha256": "7fda2daaa2e26e555717818cacec47a09e1e5558d6cf3f052c162eee1caae1f8"
+  },
+  "SB1_mount_iron": {
+   "role": "outside",
+   "triangles": 448,
+   "sha256": "161cb091283f72df2f1e92e29a70953bd2720ada92586535cc3d7247d591cd51"
+  },
+  "SB1_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "9a2f84d8290a163b5e9cea36d4e87524df9a2297c9115d00c068f7b1f0107c55"
+  },
+  "A20_barbette_T1": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "61bf6f4283807ff7c650e76140ca57985e26baf29e662347abdf9ce290942b6a"
+  },
+  "A20_barbette_T2": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "9cadc41cfcad76b223ece22d79fa75a2d6e201a3285f3fffa0f49f0294b339f5"
+  },
+  "T1_mount_iron": {
+   "role": "outside",
+   "triangles": 180,
+   "sha256": "2269d128575a7b3f5d7b87290c1f51bd3c353c63452c90a5a88287d8513efd74"
+  },
+  "T1_mount_steel": {
+   "role": "outside",
+   "triangles": 160,
+   "sha256": "2600f981051c7dd5f7042c22ca2345b38fea1731bc04a7b3a4b278a805edf0d0"
+  },
+  "T1_turn_soot": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "de896e618a01e341611766f1aa6054633192f72cffd77a532f01639208a140d7"
+  },
+  "T1_turn_iron": {
+   "role": "outside",
+   "triangles": 416,
+   "sha256": "1ec65af3212b99224857371adb71110622686f193efa6aa2b4a0ec62f96a2606"
+  },
+  "T1_turn_dark": {
+   "role": "outside",
+   "triangles": 308,
+   "sha256": "209d33dc3915af11266b8c2bff81571c77b32e67bfd9b7209f693d672a7b5ef5"
+  },
+  "T1_turn_steel": {
+   "role": "outside",
+   "triangles": 628,
+   "sha256": "ec79a51c39b08fa1b50f515c7de4b82881248e07de8b6afa85beb7b435c27237"
+  },
+  "T2_mount_iron": {
+   "role": "outside",
+   "triangles": 180,
+   "sha256": "e301e47fdbb238411a9d23f75f0cfe193e438a3b40e64b52006d1f0c59a8e164"
+  },
+  "T2_mount_steel": {
+   "role": "outside",
+   "triangles": 160,
+   "sha256": "74894406c1cf592c4502331119b55f43c9dfefd0bb2ebd6f633261a3f4a0276d"
+  },
+  "T2_turn_soot": {
+   "role": "outside",
+   "triangles": 60,
+   "sha256": "ae10b84c469b84b4c25e21267a23d7be89a9b0ab98fb79813d65a791ce9271c3"
+  },
+  "T2_turn_iron": {
+   "role": "outside",
+   "triangles": 416,
+   "sha256": "609270c266717a60f7eaee93f4046377e5cff1c62e0f7cec6980ecc913b2866c"
+  },
+  "T2_turn_dark": {
+   "role": "outside",
+   "triangles": 308,
+   "sha256": "ad87ac673e93f89ff72ff1200a2db0f4f8edf93ad9ed2d9430b389c064ef93cf"
+  },
+  "T2_turn_rust": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "a074d8969e3a1bc6f63c8f0da7b93b4f5c10fd3d392d688bbc705919ae0954d6"
+  },
+  "T2_turn_steel": {
+   "role": "outside",
+   "triangles": 628,
+   "sha256": "fc5f508972c3a39020660adc23d64f840a72d0c9e869f13f55a6664d1ed8a93c"
+  },
+  "E1_body_steel": {
+   "role": "outside",
+   "triangles": 952,
+   "sha256": "10736bf700b3e5663ab9905e031d6000de69ba29bbd0053c90435c12ab07a993"
+  },
+  "E1_body_ember": {
+   "role": "outside",
+   "triangles": 280,
+   "sha256": "35d973786dc3ede18977ce347ab9bc59f6178a59e816e4fb9561616282777ed1"
+  },
+  "E1_body_glow": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "67763b7293274b554b9a21f5bd0cd14e5cd5473f7cd2c02c7e2ba1019fc417e1"
+  },
+  "E1_body_dark": {
+   "role": "outside",
+   "triangles": 64,
+   "sha256": "86de00e498978f08754cf1e846cb2381bbee75ca29b678f0e0f577704e9b9d50"
+  },
+  "E1_body_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "a71632ff28fd3060b0349b1e2748c38d9a6b09725500c8022cb09a71b29634c6"
+  },
+  "E1_mount_soot": {
+   "role": "outside",
+   "triangles": 420,
+   "sha256": "dbc09f75d6bfe9465aa1e97add73fd2b1e5be45cbc17cf4080b2e9b271e97070"
+  },
+  "E1_mount_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "d978c470dde533bf0e6e1fd9577ee5707473258e6a72d0e0d78cd496be3e7742"
+  },
+  "E1_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "1e5f326c74af5587775ecad0e264a8c3556b5742fb8b3ffb3b7c4691d01f3282"
+  },
+  "E2_body_steel": {
+   "role": "outside",
+   "triangles": 952,
+   "sha256": "b1f632866710bd1bec49e278e0652c8edb5c4766f9f8b4e82b2227bbfdae83a5"
+  },
+  "E2_body_ember": {
+   "role": "outside",
+   "triangles": 280,
+   "sha256": "dea12e4811f694048d520631f6bea507677b418cf44492eca517d5c8c8305f08"
+  },
+  "E2_body_glow": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "2d4ca44f0eab6c35b7b1834e93e060f1ef3be18c999b1653b377830122005245"
+  },
+  "E2_body_dark": {
+   "role": "outside",
+   "triangles": 64,
+   "sha256": "fdc60d1d7e5c0b6f96d7c81bb3a64661f466e41df832916573bc981161e0b95c"
+  },
+  "E2_body_iron": {
+   "role": "outside",
+   "triangles": 448,
+   "sha256": "c44d0c30ce8d0794d1ddd3b9de4c528224b5cf14e434e5062eed3bdf98867223"
+  },
+  "E2_mount_soot": {
+   "role": "outside",
+   "triangles": 420,
+   "sha256": "dafb1f5f3ab60602d9b5fe350f61dce11c5b9bd838d5ccc72f1361014787b769"
+  },
+  "E2_mount_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "770cebf9453559e8b574e1028f4cb097f775fd2816846e101d5d9922c54e1aea"
+  },
+  "E2_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "db1f6cd65028eed33e5c2366157fcc93a0dafd2134bce89485c6c16cf65fac88"
+  },
+  "E3_body_steel": {
+   "role": "outside",
+   "triangles": 952,
+   "sha256": "557767725fdd33f4550d49c20a0413973738920acc688c5bc2b4680f616603ba"
+  },
+  "E3_body_ember": {
+   "role": "outside",
+   "triangles": 280,
+   "sha256": "3e3ab460e63dbdcac7575d2ca4fd50d0873b18de219e479da4aaf66b1af9dc7b"
+  },
+  "E3_body_glow": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "fe39c96488cdf1be43b77e58ca37065b8420d83a472f2c70ee2db4e31a7025dd"
+  },
+  "E3_body_dark": {
+   "role": "outside",
+   "triangles": 64,
+   "sha256": "b5fe80731f0698058dbdc3b7058526a919b11dbcf382d59d1b96337f345de286"
+  },
+  "E3_body_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "7a0ce81f907f3daac0a74377edb954b6757d1f71b7e64c97b68b98f9316423ee"
+  },
+  "E3_mount_soot": {
+   "role": "outside",
+   "triangles": 420,
+   "sha256": "7553c4a00f4829652f6df98601132e5ace6c81144b6aba5a86f06f15fe64fb12"
+  },
+  "E3_mount_iron": {
+   "role": "outside",
+   "triangles": 448,
+   "sha256": "8b6604402826c996693f518d86416412cb57b30df59eb44d159382d5adb29a18"
+  },
+  "E3_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "5276b3f2dabc98826873ef56ce8499667de726c90b169fd539ef943e4a42c9e0"
+  },
+  "E4_body_steel": {
+   "role": "outside",
+   "triangles": 952,
+   "sha256": "f7af61d3caadb7bb638f5c260f9928d7fec1066cec43a4d9d904677fc1f194bb"
+  },
+  "E4_body_ember": {
+   "role": "outside",
+   "triangles": 280,
+   "sha256": "48464441c8f8aef7055ca509ae6f2d4258943712a6bd00e920973b130971b987"
+  },
+  "E4_body_glow": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "92a850ca9eeb76be918d912ab9bb81d790a86b7dc8118c3541ff2c9584c3bcda"
+  },
+  "E4_body_dark": {
+   "role": "outside",
+   "triangles": 64,
+   "sha256": "68a6010baf4a57643c176afbeb8f55be440ee815a45c49c26b2ee51418530aa2"
+  },
+  "E4_body_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "59f7fb15b9087cca8564eda539613ca55e103176f2b917fc980635cca4b365bb"
+  },
+  "E4_mount_soot": {
+   "role": "outside",
+   "triangles": 420,
+   "sha256": "90ac3f6dd551661a6f82aec085e051b1d5100574b77235f3712a66b803720852"
+  },
+  "E4_mount_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "ad2dfaf4062d3a380f09906bfe07c85332bbdeadb146177280567cd2920ff982"
+  },
+  "E4_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "59b020712d8d1a4fe53788e29ed8f64d53a6f2ad210cead96e80b0f3191801d9"
+  },
+  "E5_body_steel": {
+   "role": "outside",
+   "triangles": 952,
+   "sha256": "c37437617759b4fbc340cb652b19f06f8cf847ce99d39c0d41694aacc999ef68"
+  },
+  "E5_body_ember": {
+   "role": "outside",
+   "triangles": 280,
+   "sha256": "913431469c4020e2286e1080349ef34239bd17e22a2c4d604741ea8ff4b97211"
+  },
+  "E5_body_glow": {
+   "role": "outside",
+   "triangles": 56,
+   "sha256": "cdb7f26dd594530d88d123809ae365bd120e641978a49c121e34d2bb9ec31d3d"
+  },
+  "E5_body_dark": {
+   "role": "outside",
+   "triangles": 64,
+   "sha256": "329ef3ff6072c995b2a05ae9c9e0d92657ffd1834edebc297ddc7349b5007ba2"
+  },
+  "E5_body_iron": {
+   "role": "outside",
+   "triangles": 672,
+   "sha256": "d5bde64d3e218610457d550a204b8adba19015cb24e35f9fcfe2b22a66171577"
+  },
+  "E5_mount_soot": {
+   "role": "outside",
+   "triangles": 420,
+   "sha256": "d3f0ad88016731d4ce3ec2c7ba388d755d22feafc850ad18433361d14b429f84"
+  },
+  "E5_mount_iron": {
+   "role": "outside",
+   "triangles": 448,
+   "sha256": "e17cc084bb6c9f5f74643999a78c116cc343f3c50680ee3e2dd50e34caec0b7a"
+  },
+  "E5_mount_steel": {
+   "role": "outside",
+   "triangles": 128,
+   "sha256": "7e5ad7f943d49377d3a6bbdfbbc568a655209a18990c93f96f557b6dbf0cf188"
+  },
+  "Q1_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "ce397791b7080f1ca7561e7c8c58f1189e117e3aad586dea60409167324ce826"
+  },
+  "Q1_body_steel": {
+   "role": "outside",
+   "triangles": 320,
+   "sha256": "8faa2c61e29c4476c589dbf82db7f5b003d2c66a35cc88619d27fc7639032878"
+  },
+  "Q2_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "c3a66288c7558add588e3c5c455f3c0c2110cc760fe09ca4743fae0735d37db0"
+  },
+  "Q2_body_steel": {
+   "role": "outside",
+   "triangles": 320,
+   "sha256": "72e406e19460223808376eb0423747b2970fc7a3caa53be90f5266d3af403073"
+  },
+  "Q3_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "25470fba63d494333ed1956b6afb7c24bf0426b55224ad33a37514a1a14d1f14"
+  },
+  "Q3_body_steel": {
+   "role": "outside",
+   "triangles": 320,
+   "sha256": "56600316d5ea80a2f2ab2b12a940705b1065f676036f74ac4bc81d92002467dc"
+  },
+  "Q4_mount_iron": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "ee4de4d83e7925127001887fecec7687297aaf42e06e47b2786344ea1c99fe72"
+  },
+  "Q4_body_steel": {
+   "role": "outside",
+   "triangles": 320,
+   "sha256": "cabe0f624a42316f00cad3caa9e904ef884e3afecfebf0f2dfde2b09d01d7e6e"
+  },
+  "L0_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "1d8a891291ca3a62e447a1394d0f436cec26ad461c9b73e6afe659c4ebe0508a"
+  },
+  "L0_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "654e1c6294aabf3804604d534185de4bf81510abf47ff08c08777ce9f2f3d91f"
+  },
+  "L0_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "cc41ab5b5b57e7f2bf31c65e48cc8bc4d2829c9a83aa4b9de4edf431ea0149b2"
+  },
+  "L1_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "a2822e22e82e0b1b536d1e7851afb3ca822733fa8995e335d71f147df86ca76e"
+  },
+  "L1_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "fe8c40590d0e1cb0bb7524b1293038b331139d867f382bba1c0a1b8009c590c8"
+  },
+  "L1_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "895113b332ab892c8f712d1fa598f44bf12a2f7fdb55744ff0b2f28234aa5476"
+  },
+  "L2_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "79fdfa1788f80440c5ee709f8f69ae1e8291f5cfe6eea08b527a688d6ceab02f"
+  },
+  "L2_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "99ef66201f2d5a306da4381b8619b4c038cddf57fd85f13873d8e4bbeaa8aaf3"
+  },
+  "L2_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "c5df2ff42e527830fbd25dfdb97416f23aeb4d7db0a3d8613e10c8939517357c"
+  },
+  "L3_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "c2339158975dd6012c13e9531878d45d32da045a4290f46eac6cd655e8887c7b"
+  },
+  "L3_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "02332fcfac2470058097f792eaaf1b776a2b9d52021cdc33766f6cd9bce34ca1"
+  },
+  "L3_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "633e9f5e88e47dfcdb4f72bae81fff46835df75a8e125eaa0517c62012a4581c"
+  },
+  "L4_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "8c36025f1c3afbad75fac0c0b79c9a92a6d4f0c486c4b018b5b938c3e65d251e"
+  },
+  "L4_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "686b62894b75757bc3379dc4dfcc979cda2e17833b27141bd84a464b52422555"
+  },
+  "L4_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "c0a466e6434b868915cdd2676d35cae011349e05b6a96faa18d715adab893a66"
+  },
+  "L5_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "5cd9493bf8c67607bdae2c7edf91ef0ec7db6f7bb21ac7be46742be234ef5cee"
+  },
+  "L5_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "5fb049495338b753af7f110e06586b97068ceb4f433d539b5c4ad760b217c927"
+  },
+  "L5_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "ae9381a7125f65d41df561c4ac704f7106e7f37db27979b585cef55048a19b9f"
+  },
+  "L6_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "351a9140fda1a7ea4ab355ef81579423988eda0feb14fe03cb0e30321dc94f8c"
+  },
+  "L6_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "36bfd6cb72827b6d67bc18feaf3f9110d234befe30da9b54eeb72319d9dcfd95"
+  },
+  "L6_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "b7b093a1e5a70579f8064373bd5f91e3442cc9ca2a83b42403e580af7445411c"
+  },
+  "L7_mount_iron": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "78d92658e11c8d3bbb8d5f52123ed3dab604a5db5f0ef83cb213042fe67e7ba8"
+  },
+  "L7_body_light": {
+   "role": "outside",
+   "triangles": 40,
+   "sha256": "ab1b1c089a5257b2d0944ae6d256f92450333f1f81da29ff0a83e1ceddc95906"
+  },
+  "L7_body_steel": {
+   "role": "outside",
+   "triangles": 28,
+   "sha256": "d4d0d7a254587d262adf944340ae35620d13b4332d79b4d591f191f61d678cf3"
+  },
+  "in_deck_lower": {
+   "role": "inside",
+   "triangles": 44,
+   "sha256": "a8dd66c7f936f6963acbb6e8f99172c240e9943d0a15f55243f8b9bcb75ea685"
+  },
+  "in_deck_upper": {
+   "role": "inside",
+   "triangles": 44,
+   "sha256": "3f578f6067b07978890516578ebdaac7541d24f8b39db9f16b6d5526d0aa204d"
+  },
+  "in_deck_lower_fore": {
+   "role": "inside",
+   "triangles": 44,
+   "sha256": "8aba63e0a157a4edbeb9bf9e169c827504cf7b62c5ef813800ac009655768727"
+  },
+  "in_deck_upper_fore": {
+   "role": "inside",
+   "triangles": 44,
+   "sha256": "93a62af86bc620623017c85dafb1f7866d74be2a710b8849b36e9364dee5a0f6"
+  },
+  "in_bh_F0": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "308caae7e83e7e17bd73722ac74389340f7116e54dc279c47a010018fee1cc1f"
+  },
+  "in_bh_F1": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "6e7ed537b00f84a5330900a7f8703c0c89ebd1483d4aafa58ec8e692e34ac953"
+  },
+  "in_bh_F2": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "d2e517245111d6314aa1ee55a38ea84de6b347795fbb2709e6fda2f2f0ef4155"
+  },
+  "in_bh_F3": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "292d9681ba3a708e79b430dfe543e3fb41bca2bab18dafe79c693119debf50b6"
+  },
+  "in_bh_F4": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "cefdb3b1dee382708a9f1e1b6164743bb62e24eaf2fddb5bb6a62f50a36aac73"
+  },
+  "in_bh_F5": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "091401a186bf48d0f2936cd44d19b93214af0ed09f0d6a5ffa6809432695aa36"
+  },
+  "in_H1_hangar_lower": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "071f51cd2ea34b09ab5e9ce2b338018c1dfa402699532e526dff87c15f018e5d"
+  },
+  "in_H1_hangar_upper": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "086b6f65ec89928e771516880e884479a03b8539dc68b89a040bd8119d34e087"
+  },
+  "in_H2_hangar_lower": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "aa26e2df190bc43f12293eaf0ea4ac026cd0434c0f4e9ab29d78c871908db298"
+  },
+  "in_H2_hangar_upper": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "9cd41bdf300af7ffd7c9b0c344f5bc9b3041da1dbcd41ac4643425e614265bae"
+  },
+  "in_loot_hold_fore": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "cbd32ee462d55505ba854e6204315e708d6ea942e4ead1d7107871ac75cae1a4"
+  },
+  "in_loot_hold_body": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "2c8384ec3f83cdf3261c34680167a74770ebf7ea5e36ec0e827d9fb23831135f"
+  },
+  "in_kennel_deck": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "50272d874929ba4d0d4cedb39686a2fc4c8b6d982ee6c4925154fe2238cc47f8"
+  },
+  "in_turret_magazine_fore": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "1d5e5107aa72d0c01aa30f60b103710369d2c1d03bf8ddb3c3425f023681c49d"
+  },
+  "in_core": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "1dcf86effb84504fc699a8f07586e3d8673efab8516ef7f63bb50c3a5581185f"
+  },
+  "in_crew_decks": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "ea4229c79a7a2d112c96c5111c114fb513bf286945975c48132aaec4419eabff"
+  },
+  "in_turret_magazine_aft": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "7f3005f3b573e57bafcb5d30568f2edd478a2be3f6396d5d5257a0cc2a96710f"
+  },
+  "in_machinery": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "77d6cc362bb39c4ef1b537596dee0c0905a640512c65159c40c21e1bca8d1cca"
+  },
+  "in_engine_room": {
+   "role": "inside",
+   "triangles": 28,
+   "sha256": "36e046e5ab19328e9fec92d7cce44938b11a908d2f96d3c8074c6852a6249308"
+  }
+ },
+ "fit_counts": {
+  "CLASH": 0,
+  "MOUNT": 0,
+  "ARC": 0,
+  "SENSOR": 0,
+  "SWEEP": 0,
+  "EXHAUST": 0,
+  "EXIT": 0,
+  "LANE": 0
+ },
+ "exterior_meshes": 374,
+ "exterior_materials": 15,
+ "device": "CPU"
+}

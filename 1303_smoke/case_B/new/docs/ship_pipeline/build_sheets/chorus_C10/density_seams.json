@@ -1,0 +1,63 @@
+{
+  "note": "Issue 921 v7, actual CPU build; mesh density reported without a new gate",
+  "seams": {
+    "machines": 13,
+    "on_seam": []
+  },
+  "preserved_authored_insides": true,
+  "density": {
+    "rule": "R224: a part kind more than 25 percent under the hull is flagged (mesh half; the paint half is stage 5)",
+    "types": {
+      "hull": {
+        "area": 475.21,
+        "triangles": 135535,
+        "tris_per_unit2": 285.2,
+        "edges_per_unit2": 76.4
+      },
+      "spinal": {
+        "area": 223.78,
+        "triangles": 71300,
+        "tris_per_unit2": 318.6,
+        "edges_per_unit2": 32.2,
+        "tris_per_unit2_vs_hull": 1.12,
+        "edges_per_unit2_vs_hull": 0.42
+      },
+      "gun": {
+        "area": 73.63,
+        "triangles": 15631,
+        "tris_per_unit2": 212.3,
+        "edges_per_unit2": 124.3,
+        "tris_per_unit2_vs_hull": 0.74,
+        "edges_per_unit2_vs_hull": 1.63
+      },
+      "brood": {
+        "area": 162.72,
+        "triangles": 49020,
+        "tris_per_unit2": 301.3,
+        "edges_per_unit2": 173.8,
+        "tris_per_unit2_vs_hull": 1.06,
+        "edges_per_unit2_vs_hull": 2.27
+      },
+      "thruster": {
+        "area": 4.01,
+        "triangles": 2304,
+        "tris_per_unit2": 574.1,
+        "edges_per_unit2": 259.2,
+        "tris_per_unit2_vs_hull": 2.01,
+        "edges_per_unit2_vs_hull": 3.39
+      },
+      "engine": {
+        "area": 20.24,
+        "triangles": 7832,
+        "tris_per_unit2": 387.0,
+        "edges_per_unit2": 197.1,
+        "tris_per_unit2_vs_hull": 1.36,
+        "edges_per_unit2_vs_hull": 2.58
+      }
+    },
+    "mesh_flags": [
+      "spinal: edges_per_unit2 32.2 is 0.42 of the hull's 76.4",
+      "gun: tris_per_unit2 212.3 is 0.74 of the hull's 285.2"
+    ]
+  }
+}

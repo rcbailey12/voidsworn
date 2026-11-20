@@ -1,0 +1,72 @@
+== seed 4242, 1920x1080
+PASS  1_battle_start at 1920x1080 (UI scale 1.00): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 1920x1080 (UI scale 1.00): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Cordon destroyer (out of reach)
+PASS  3_enemy_clicked at 1920x1080 (UI scale 1.00): 9 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 1920x1080 (UI scale 1.00): 9 parts, 7 top bar buttons
+PASS  6_enemy_turn at 1920x1080 (UI scale 1.00): 8 parts, 6 top bar buttons
+6 checks, 0 failed (window 1920x1080, UI scale 1.000)
+== seed 4242, 2560x1440
+PASS  1_battle_start at 2560x1440 (UI scale 1.33): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 2560x1440 (UI scale 1.33): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Cordon destroyer (out of reach)
+PASS  3_enemy_clicked at 2560x1440 (UI scale 1.33): 9 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 2560x1440 (UI scale 1.33): 9 parts, 7 top bar buttons
+PASS  6_enemy_turn at 2560x1440 (UI scale 1.33): 8 parts, 6 top bar buttons
+6 checks, 0 failed (window 2560x1440, UI scale 1.333)
+== seed 4242, 3840x2160
+PASS  1_battle_start at 3840x2160 (UI scale 2.00): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 3840x2160 (UI scale 2.00): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Cordon destroyer (out of reach)
+PASS  3_enemy_clicked at 3840x2160 (UI scale 2.00): 9 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 3840x2160 (UI scale 2.00): 9 parts, 7 top bar buttons
+PASS  6_enemy_turn at 3840x2160 (UI scale 2.00): 8 parts, 6 top bar buttons
+6 checks, 0 failed (window 3840x2160, UI scale 2.000)
+== seed 4242, 1280x720
+PASS  1_battle_start at 1280x720 (UI scale 0.67): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 1280x720 (UI scale 0.67): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Cordon destroyer (out of reach)
+PASS  3_enemy_clicked at 1280x720 (UI scale 0.67): 9 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 1280x720 (UI scale 0.67): 9 parts, 7 top bar buttons
+PASS  6_enemy_turn at 1280x720 (UI scale 0.67): 8 parts, 6 top bar buttons
+6 checks, 0 failed (window 1280x720, UI scale 0.667)
+== scenario s14, 1920x1080
+PASS  1_battle_start at 1920x1080 (UI scale 1.00): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 1920x1080 (UI scale 1.00): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Glasswright prism (in reach, odds shown)
+PASS  3_enemy_clicked at 1920x1080 (UI scale 1.00): 8 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 1920x1080 (UI scale 1.00): 8 parts, 7 top bar buttons
+PASS  5_enemy_targeted: Glasswright prism targeted after a move, 1 guns bear
+PASS  5_enemy_targeted at 1920x1080 (UI scale 1.00): 8 parts, 7 top bar buttons
+PASS  6_enemy_turn at 1920x1080 (UI scale 1.00): 7 parts, 6 top bar buttons
+8 checks, 0 failed (window 1920x1080, UI scale 1.000)
+== scenario s14, 2560x1440
+PASS  1_battle_start at 2560x1440 (UI scale 1.33): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 2560x1440 (UI scale 1.33): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Glasswright prism (in reach, odds shown)
+PASS  3_enemy_clicked at 2560x1440 (UI scale 1.33): 8 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 2560x1440 (UI scale 1.33): 8 parts, 7 top bar buttons
+PASS  5_enemy_targeted: Glasswright prism targeted after a move, 1 guns bear
+PASS  5_enemy_targeted at 2560x1440 (UI scale 1.33): 8 parts, 7 top bar buttons
+PASS  6_enemy_turn at 2560x1440 (UI scale 1.33): 7 parts, 6 top bar buttons
+8 checks, 0 failed (window 2560x1440, UI scale 1.333)
+== scenario s14, 3840x2160
+PASS  1_battle_start at 3840x2160 (UI scale 2.00): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 3840x2160 (UI scale 2.00): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Glasswright prism (in reach, odds shown)
+PASS  3_enemy_clicked at 3840x2160 (UI scale 2.00): 8 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 3840x2160 (UI scale 2.00): 8 parts, 7 top bar buttons
+PASS  5_enemy_targeted: Glasswright prism targeted after a move, 1 guns bear
+PASS  5_enemy_targeted at 3840x2160 (UI scale 2.00): 8 parts, 7 top bar buttons
+PASS  6_enemy_turn at 3840x2160 (UI scale 2.00): 7 parts, 6 top bar buttons
+8 checks, 0 failed (window 3840x2160, UI scale 2.000)
+== scenario s14, 1280x720
+PASS  1_battle_start at 1280x720 (UI scale 0.67): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 1280x720 (UI scale 0.67): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Glasswright prism (in reach, odds shown)
+PASS  3_enemy_clicked at 1280x720 (UI scale 0.67): 8 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 1280x720 (UI scale 0.67): 8 parts, 7 top bar buttons
+PASS  5_enemy_targeted: Glasswright prism targeted after a move, 1 guns bear
+PASS  5_enemy_targeted at 1280x720 (UI scale 0.67): 8 parts, 7 top bar buttons
+PASS  6_enemy_turn at 1280x720 (UI scale 0.67): 7 parts, 6 top bar buttons
+8 checks, 0 failed (window 1280x720, UI scale 0.667)

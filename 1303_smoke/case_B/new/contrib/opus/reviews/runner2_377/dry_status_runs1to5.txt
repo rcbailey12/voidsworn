@@ -1,0 +1,11 @@
+dry runs started Thu 11/12/2026  0:48:59.49
+run1 refuse: exit 0 at  0:49:22.66
+C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_004900
+run2 timecap: exit 0 at  0:50:41.00
+C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_004923
+run3 merge rerun, setting yes: exit 0 at  0:53:46.05
+C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_005041
+run4 merge with the 541 fault: exit 10 at  0:54:08.35
+C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_005346
+run5 codex stand-in: exit 0 at  0:54:19.40
+all done Thu 11/12/2026  0:54:19.40

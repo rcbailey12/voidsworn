@@ -1,0 +1,755 @@
+tables
+exported 138 tables (92 read by the port, all present), sha256 8979ec019ec1f878 | skipped (code, not data): RNG_S SPEED UID UNKNOWN_IDS SAVED_RUN RUN ARENA B CUT SOLID TERRAIN_META
+
+golden prng 1001
+prng 1001 10000 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\prng_1001.txt
+
+Godot prng 1001
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+prng 1001 10000 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\prng_1001.txt
+
+compare prng 1001
+10000 lines identical
+PASS
+
+golden prng 7
+prng 7 10000 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\prng_7.txt
+
+Godot prng 7
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+prng 7 10000 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\prng_7.txt
+
+compare prng 7
+10000 lines identical
+PASS
+
+golden prng 4242424242
+prng 4242424242 10000 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\prng_4242424242.txt
+
+Godot prng 4242424242
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+prng 4242424242 10000 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\prng_4242424242.txt
+
+compare prng 4242424242
+10000 lines identical
+PASS
+
+golden math
+math 316090 values -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\math.txt
+
+Godot math
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+math 316090 values, differences from Node: none
+
+golden s1
+scenario s1 138 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s1.jsonl
+
+Godot s1
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s1 138 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s1.jsonl
+
+compare s1
+138 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s2
+scenario s2 155 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s2.jsonl
+
+Godot s2
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s2 155 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s2.jsonl
+
+compare s2
+155 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s3
+scenario s3 144 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s3.jsonl
+
+Godot s3
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s3 144 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s3.jsonl
+
+compare s3
+144 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s4
+scenario s4 322 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s4.jsonl
+
+Godot s4
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s4 322 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s4.jsonl
+
+compare s4
+322 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s5
+scenario s5 369 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s5.jsonl
+
+Godot s5
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s5 369 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s5.jsonl
+
+compare s5
+369 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s6
+scenario s6 206 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s6.jsonl
+
+Godot s6
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s6 206 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s6.jsonl
+
+compare s6
+206 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s7
+scenario s7 400 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s7.jsonl
+
+Godot s7
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s7 400 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s7.jsonl
+
+compare s7
+400 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s8
+scenario s8 191 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s8.jsonl
+
+Godot s8
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s8 191 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s8.jsonl
+
+compare s8
+191 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s9
+scenario s9 423 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s9.jsonl
+
+Godot s9
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s9 423 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s9.jsonl
+
+compare s9
+423 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s10
+scenario s10 229 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s10.jsonl
+
+Godot s10
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s10 229 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s10.jsonl
+
+compare s10
+229 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s11
+scenario s11 153 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s11.jsonl
+
+Godot s11
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s11 153 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s11.jsonl
+
+compare s11
+153 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s12
+scenario s12 179 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s12.jsonl
+
+Godot s12
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s12 179 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s12.jsonl
+
+compare s12
+179 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s13
+scenario s13 200 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s13.jsonl
+
+Godot s13
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s13 200 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s13.jsonl
+
+compare s13
+200 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s14
+scenario s14 119 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s14.jsonl
+
+Godot s14
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s14 119 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s14.jsonl
+
+compare s14
+119 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s15
+scenario s15 168 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s15.jsonl
+
+Godot s15
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s15 168 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s15.jsonl
+
+compare s15
+168 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s16
+scenario s16 255 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s16.jsonl
+
+Godot s16
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s16 255 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s16.jsonl
+
+compare s16
+255 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s17
+scenario s17 159 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s17.jsonl
+
+Godot s17
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s17 159 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s17.jsonl
+
+compare s17
+159 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s18
+scenario s18 234 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s18.jsonl
+
+Godot s18
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s18 234 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s18.jsonl
+
+compare s18
+234 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s19
+scenario s19 246 records end none -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s19.jsonl
+
+Godot s19
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s19 246 records end none -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s19.jsonl
+
+compare s19
+246 records identical (state hash and PRNG state after every action, activation and round), result: end none
+PASS
+
+golden s20
+scenario s20 140 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s20.jsonl
+
+Godot s20
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s20 140 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s20.jsonl
+
+compare s20
+140 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s21
+scenario s21 214 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s21.jsonl
+
+Godot s21
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s21 214 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s21.jsonl
+
+compare s21
+214 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s22
+scenario s22 157 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s22.jsonl
+
+Godot s22
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s22 157 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s22.jsonl
+
+compare s22
+157 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s23
+scenario s23 580 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s23.jsonl
+
+Godot s23
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s23 580 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s23.jsonl
+
+compare s23
+580 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s24
+scenario s24 488 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s24.jsonl
+
+Godot s24
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s24 488 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s24.jsonl
+
+compare s24
+488 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s25
+scenario s25 292 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s25.jsonl
+
+Godot s25
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s25 292 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s25.jsonl
+
+compare s25
+292 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s26
+scenario s26 200 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s26.jsonl
+
+Godot s26
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s26 200 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s26.jsonl
+
+compare s26
+200 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s27
+scenario s27 277 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s27.jsonl
+
+Godot s27
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s27 277 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s27.jsonl
+
+compare s27
+277 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s28
+scenario s28 285 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s28.jsonl
+
+Godot s28
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s28 285 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s28.jsonl
+
+compare s28
+285 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s29
+scenario s29 127 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s29.jsonl
+
+Godot s29
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s29 127 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s29.jsonl
+
+compare s29
+127 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s30
+scenario s30 331 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s30.jsonl
+
+Godot s30
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s30 331 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s30.jsonl
+
+compare s30
+331 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s31
+scenario s31 193 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s31.jsonl
+
+Godot s31
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s31 193 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s31.jsonl
+
+compare s31
+193 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s32
+scenario s32 75 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s32.jsonl
+
+Godot s32
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s32 75 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s32.jsonl
+
+compare s32
+75 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s33
+scenario s33 208 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s33.jsonl
+
+Godot s33
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s33 208 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s33.jsonl
+
+compare s33
+208 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s34
+scenario s34 162 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s34.jsonl
+
+Godot s34
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s34 162 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s34.jsonl
+
+compare s34
+162 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s35
+scenario s35 198 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s35.jsonl
+
+Godot s35
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s35 198 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s35.jsonl
+
+compare s35
+198 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s36
+scenario s36 185 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s36.jsonl
+
+Godot s36
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s36 185 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s36.jsonl
+
+compare s36
+185 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s37
+scenario s37 269 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s37.jsonl
+
+Godot s37
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s37 269 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s37.jsonl
+
+compare s37
+269 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s38
+scenario s38 330 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s38.jsonl
+
+Godot s38
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s38 330 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s38.jsonl
+
+compare s38
+330 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s39
+scenario s39 546 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s39.jsonl
+
+Godot s39
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s39 546 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s39.jsonl
+
+compare s39
+546 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s40
+scenario s40 315 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s40.jsonl
+
+Godot s40
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s40 315 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s40.jsonl
+
+compare s40
+315 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s41
+scenario s41 185 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s41.jsonl
+
+Godot s41
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s41 185 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s41.jsonl
+
+compare s41
+185 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s42
+scenario s42 154 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s42.jsonl
+
+Godot s42
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s42 154 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s42.jsonl
+
+compare s42
+154 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s43
+scenario s43 194 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s43.jsonl
+
+Godot s43
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s43 194 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s43.jsonl
+
+compare s43
+194 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s44
+scenario s44 102 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s44.jsonl
+
+Godot s44
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s44 102 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s44.jsonl
+
+compare s44
+102 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s45
+scenario s45 172 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s45.jsonl
+
+Godot s45
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s45 172 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s45.jsonl
+
+compare s45
+172 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s46
+scenario s46 106 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s46.jsonl
+
+Godot s46
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s46 106 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s46.jsonl
+
+compare s46
+106 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s47
+scenario s47 125 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s47.jsonl
+
+Godot s47
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s47 125 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s47.jsonl
+
+compare s47
+125 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s48
+scenario s48 119 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s48.jsonl
+
+Godot s48
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s48 119 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s48.jsonl
+
+compare s48
+119 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s49
+scenario s49 57 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s49.jsonl
+
+Godot s49
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s49 57 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s49.jsonl
+
+compare s49
+57 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s50
+scenario s50 123 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s50.jsonl
+
+Godot s50
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s50 123 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s50.jsonl
+
+compare s50
+123 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s51
+scenario s51 133 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s51.jsonl
+
+Godot s51
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s51 133 records end loss -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s51.jsonl
+
+compare s51
+133 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+PASS
+
+golden s52
+scenario s52 162 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s52.jsonl
+
+Godot s52
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s52 162 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s52.jsonl
+
+compare s52
+162 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s53
+scenario s53 99 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s53.jsonl
+
+Godot s53
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s53 99 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s53.jsonl
+
+compare s53
+99 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden s54
+scenario s54 71 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\s54.jsonl
+
+Godot s54
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario s54 71 records end win -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\s54.jsonl
+
+compare s54
+71 records identical (state hash and PRNG state after every action, activation and round), result: end win
+PASS
+
+golden threat s4
+threat s4 3 hexes -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\threat_s4.json
+
+Godot threat s4
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario __t 197 records end none -> user://threat_tmp.jsonl
+threat s4 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\threat_s4.json
+
+golden threat s19
+threat s19 3 hexes -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\threat_s19.json
+
+Godot threat s19
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario __t 106 records end none -> user://threat_tmp.jsonl
+threat s19 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\threat_s19.json
+
+golden threat s23
+threat s23 3 hexes -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\golden\threat_s23.json
+
+Godot threat s23
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+scenario __t 305 records end none -> user://threat_tmp.jsonl
+threat s23 -> C:\Users\rcbai\AppData\Local\Temp\voidsworn_issue129\parity\rules\test\out\threat_s23.json
+
+threads and hard stop
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: NOT PORTED: thread_test fake rule
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] np (res://rules/rules.gd:113)
+       [1] halt_check (res://rules/test/thread_test.gd:59)
+       [2] _init (res://rules/test/thread_test.gd:82)
+BATTLE HALTED (hard stop): NOT PORTED: thread_test fake rule
+ERROR: battle config kind must be a String or null, got Dictionary ({ "bad": 1 }): dropped
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _clean_cfg (res://rules/battle_api.gd:160)
+       [1] _i_new_battle (res://rules/battle_api.gd:170)
+       [2] new_battle (res://rules/battle_api.gd:168)
+       [3] halt_check (res://rules/test/thread_test.gd:72)
+       [4] _init (res://rules/test/thread_test.gd:82)
+BATTLE HALTED (hard stop): rules script error: battle config kind must be a String or null, got Dictionary ({ "bad": 1 }): dropped (variant_utility.cpp:1023 push_error)
+ERROR: battle config fac must name a faction, got <null>: the battle cannot be set up
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _clean_cfg (res://rules/battle_api.gd:160)
+       [1] _i_new_battle (res://rules/battle_api.gd:170)
+       [2] new_battle (res://rules/battle_api.gd:168)
+       [3] halt_check (res://rules/test/thread_test.gd:74)
+       [4] _init (res://rules/test/thread_test.gd:82)
+BATTLE HALTED (hard stop): battle config fac must name a faction, got <null>: the battle cannot be set up
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 958 events, 59 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 9, 1483 events, 95 reads during enemy steps on a worker)
+
+PASS: all CI rules parity checks

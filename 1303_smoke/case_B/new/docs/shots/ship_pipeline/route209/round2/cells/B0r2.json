@@ -1,0 +1,43 @@
+{
+ "cell": "B0r2",
+ "build_seconds": 8.4,
+ "audit": {
+  "problems": [],
+  "parts": 0,
+  "crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0249,
+  "T2_rays_missed": 3,
+  "T2_jag": 0.0324
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "generations": [
+  {
+   "part": "whole hull",
+   "source": "C15s_23_trellis.glb",
+   "tris_raw": 570189,
+   "tris": 299999,
+   "yaw": 22.0
+  }
+ ],
+ "triangles": 1113164,
+ "objects": 26,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}

@@ -1,0 +1,21 @@
+{
+ "problems": [],
+ "parts": 203,
+ "crossing_break_lines": [],
+ "structure_across_seams": [
+  "HB5"
+ ],
+ "guns_with_normals": 2,
+ "guns_into_ship": 0,
+ "guns": 2,
+ "break_lines": {
+  "t_lines": [
+   -0.242356262499381,
+   -0.03332398609366489,
+   0.1375371789683987
+  ],
+  "l_line": [],
+  "l_lines": []
+ },
+ "result": "PASS"
+}

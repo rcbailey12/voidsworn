@@ -1,0 +1,216 @@
+{
+ "out": "s68",
+ "budget_s": 1150,
+ "items": [
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_voidsworn_4_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_voidsworn_4_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "eye",
+   "seed": 11,
+   "src": "e64/nem_voidsworn_4_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "eye",
+   "seed": 23,
+   "src": "e64/nem_voidsworn_4_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_voidsworn_5_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_voidsworn_5_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "eye",
+   "seed": 11,
+   "src": "e64/nem_voidsworn_5_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "eye",
+   "seed": 23,
+   "src": "e64/nem_voidsworn_5_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_voidsworn_6_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_voidsworn_6_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "eye",
+   "seed": 11,
+   "src": "e64/nem_voidsworn_6_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "eye",
+   "seed": 23,
+   "src": "e64/nem_voidsworn_6_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_hegemony_5_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_hegemony_5_v64_s51_00001_.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "e64/nem_hegemony_5_v64_s51_00001_.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "e64/nem_hegemony_5_v64_s51_00001_.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "eye",
+   "seed": 11,
+   "src": "e64/nem_hegemony_5_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "eye",
+   "seed": 23,
+   "src": "e64/nem_hegemony_5_v64_s51_00001_.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_chorus_1_v64_s37_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_chorus_1_v64_s37_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "carapace",
+   "seed": 11,
+   "src": "e64/nem_chorus_1_v64_s37_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "carapace",
+   "seed": 23,
+   "src": "e64/nem_chorus_1_v64_s37_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_deathless_1_v64_s37_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_deathless_1_v64_s37_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "machine",
+   "seed": 11,
+   "src": "e64/nem_deathless_1_v64_s37_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "machine",
+   "seed": 23,
+   "src": "e64/nem_deathless_1_v64_s37_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_deathless_2.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_deathless_2.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "machine",
+   "seed": 11,
+   "src": "ncrop68/nem_deathless_2.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "machine",
+   "seed": 23,
+   "src": "ncrop68/nem_deathless_2.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}

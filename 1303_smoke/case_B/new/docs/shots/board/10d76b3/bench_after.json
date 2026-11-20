@@ -1,0 +1,134 @@
+{
+  "bench20_belt_cine": {
+    "avg_ms": 4.65,
+    "frames": 1290,
+    "low1_ms": 20.19,
+    "worst_ms": 31.09
+  },
+  "bench20_belt_tac": {
+    "avg_ms": 4.6,
+    "frames": 1305,
+    "low1_ms": 5.46,
+    "worst_ms": 6.73
+  },
+  "boneyard_graveyard_cine": {
+    "avg_ms": 4.61,
+    "frames": 1303,
+    "low1_ms": 5.5,
+    "worst_ms": 5.6
+  },
+  "boneyard_graveyard_tac": {
+    "avg_ms": 4.65,
+    "frames": 1292,
+    "low1_ms": 5.62,
+    "worst_ms": 5.77
+  },
+  "deadstar_cine": {
+    "avg_ms": 3.97,
+    "frames": 1512,
+    "low1_ms": 4.94,
+    "worst_ms": 5.14
+  },
+  "deadstar_tac": {
+    "avg_ms": 4.0,
+    "frames": 1501,
+    "low1_ms": 4.96,
+    "worst_ms": 5.17
+  },
+  "deep_storm_cine": {
+    "avg_ms": 3.63,
+    "frames": 1655,
+    "low1_ms": 4.73,
+    "worst_ms": 10.51
+  },
+  "deep_storm_tac": {
+    "avg_ms": 3.67,
+    "frames": 1634,
+    "low1_ms": 4.39,
+    "worst_ms": 4.52
+  },
+  "frontier_belt_cine": {
+    "avg_ms": 3.94,
+    "frames": 1523,
+    "low1_ms": 4.49,
+    "worst_ms": 5.61
+  },
+  "frontier_belt_tac": {
+    "avg_ms": 4.0,
+    "frames": 1500,
+    "low1_ms": 5.71,
+    "worst_ms": 6.33
+  },
+  "frontier_station_cine": {
+    "avg_ms": 3.6,
+    "frames": 1667,
+    "low1_ms": 6.89,
+    "worst_ms": 8.36
+  },
+  "frontier_station_tac": {
+    "avg_ms": 3.6,
+    "frames": 1669,
+    "low1_ms": 4.15,
+    "worst_ms": 4.25
+  },
+  "nebula_crystal_belt_cine": {
+    "avg_ms": 3.74,
+    "frames": 1606,
+    "low1_ms": 4.33,
+    "worst_ms": 4.5
+  },
+  "nebula_crystal_belt_tac": {
+    "avg_ms": 3.79,
+    "frames": 1583,
+    "low1_ms": 4.51,
+    "worst_ms": 4.58
+  },
+  "nebula_storm_cine": {
+    "avg_ms": 3.6,
+    "frames": 1668,
+    "low1_ms": 4.17,
+    "worst_ms": 4.21
+  },
+  "nebula_storm_tac": {
+    "avg_ms": 3.62,
+    "frames": 1656,
+    "low1_ms": 4.21,
+    "worst_ms": 4.32
+  },
+  "open_iron_cine": {
+    "avg_ms": 3.63,
+    "frames": 1656,
+    "low1_ms": 4.12,
+    "worst_ms": 4.24
+  },
+  "open_iron_tac": {
+    "avg_ms": 3.68,
+    "frames": 1632,
+    "low1_ms": 4.21,
+    "worst_ms": 4.39
+  },
+  "world_belt_ice_cine": {
+    "avg_ms": 3.66,
+    "frames": 1638,
+    "low1_ms": 4.35,
+    "worst_ms": 4.48
+  },
+  "world_belt_ice_tac": {
+    "avg_ms": 3.71,
+    "frames": 1619,
+    "low1_ms": 4.39,
+    "worst_ms": 4.47
+  },
+  "world_planet_cine": {
+    "avg_ms": 3.45,
+    "frames": 1742,
+    "low1_ms": 4.48,
+    "worst_ms": 13.96
+  },
+  "world_planet_tac": {
+    "avg_ms": 3.49,
+    "frames": 1719,
+    "low1_ms": 3.97,
+    "worst_ms": 4.09
+  }
+}

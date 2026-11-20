@@ -1,0 +1,22 @@
+{
+ "ship": "chorus_CS1BA2",
+ "name": "Sealed Gills spore swarm, the Chorus spore swarm craft (the Chorus)",
+ "faction": "chorus",
+ "game_ship": "spore",
+ "game_code": "chorus_CS1BA2",
+ "sheet": "chorus_CS1BA2",
+ "concept": "contrib/muse/design/squadron_concepts_2026_11/chorus/round_4/CS1BA2.jpg",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "none",
+ "cell": "CS1BA2",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/chorus_CS1BA2/ (design file tools/blender/build_sheets/ships/chorus_CS1BA2.py; issue 793). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, the seam, the small inside and the length (LENGTH 1.6, CLS_LEN Squadron; drawn 3.84 on the board, scale.md) come from it through tools/blender/build_sheets/contract.py. game_ship spore is the data.js wing (the Chorus launch spore swarms, data.js FACTIONS chorus sq 'spore'); game_code is a placeholder: the game builds every craft in code today (godot/render/squadron_craft.gd, drawn by squadron_wing.gd) and no glb route for a sheet craft exists yet, so no stage 7 install until the Board opens that job. bake none: the Chorus has no paint stack yet.",
+ "parts": []
+}

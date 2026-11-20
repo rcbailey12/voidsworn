@@ -1,0 +1,35 @@
+{
+ "swarm": {
+  "d": "Many light hulls. Broadsides and flak shine; lances are wasted on them.",
+  "names": {
+   "voidsworn": "Frontier flotilla",
+   "hegemony": "Picket screen",
+   "corsair": "Wolfpack",
+   "chorus": "Brood swarm",
+   "ithar": "Sliver flight",
+   "deathless": "Mote cloud"
+  }
+ },
+ "heavy": {
+  "d": "Few, big hulls. Bring lances, torpedoes and a flank.",
+  "names": {
+   "voidsworn": "Bastion line",
+   "hegemony": "Line of battle",
+   "corsair": "Hulk convoy",
+   "chorus": "Bloat pod",
+   "ithar": "Prism line",
+   "deathless": "Phalanx"
+  }
+ },
+ "carrier": {
+  "d": "Built around a carrier and its wings. Fighters and flak pay off.",
+  "names": {
+   "voidsworn": "Hearth group",
+   "hegemony": "Carrier group",
+   "corsair": "Hulk den",
+   "chorus": "Brood cluster",
+   "ithar": "Aperture host",
+   "deathless": "Repair host"
+  }
+ }
+}

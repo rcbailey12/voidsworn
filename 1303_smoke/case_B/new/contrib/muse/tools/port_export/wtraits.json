@@ -1,0 +1,42 @@
+{
+ "las": {
+  "d": "holds its aim at long range",
+  "f": "__FUNCTION__"
+ },
+ "hellfire": {
+  "d": "sets the target burning",
+  "f": "__FUNCTION__"
+ },
+ "plasma": {
+  "d": "a quarter burns through shields",
+  "f": "__FUNCTION__"
+ },
+ "scrap": {
+  "d": "an extra shot, wild aim, lucky crits",
+  "f": "__FUNCTION__"
+ },
+ "rockets": {
+  "d": "a rocket salvo: hard to dodge, but point defense can shoot rockets down",
+  "f": "__FUNCTION__"
+ },
+ "spines": {
+  "d": "each hit strips 3% armor (down to 15% less)",
+  "f": "__FUNCTION__"
+ },
+ "acid": {
+  "d": "acid eats 4 hull a turn for 2 turns, through shields and armor",
+  "f": "__FUNCTION__"
+ },
+ "needle": {
+  "d": "precise: better aim and more criticals",
+  "f": "__FUNCTION__"
+ },
+ "star": {
+  "d": "fast: hard to dodge",
+  "f": "__FUNCTION__"
+ },
+ "gauss": {
+  "d": "ignores half of armor",
+  "f": "__FUNCTION__"
+ }
+}

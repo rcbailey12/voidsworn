@@ -1,0 +1,225 @@
+{
+ "shots": [
+  {
+   "bearing": 0.0,
+   "turret": "turA",
+   "target_bearing": 0.0,
+   "barrel_bearing": 0.0,
+   "reaches": true,
+   "yaw": 0.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 0.0,
+   "turret": "turB",
+   "target_bearing": 0.0,
+   "barrel_bearing": 0.0,
+   "reaches": true,
+   "yaw": 0.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 45.0,
+   "turret": "turB",
+   "target_bearing": 43.8,
+   "barrel_bearing": 43.8,
+   "reaches": true,
+   "yaw": 43.8,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 45.0,
+   "turret": "turA",
+   "target_bearing": 46.64,
+   "barrel_bearing": 46.64,
+   "reaches": true,
+   "yaw": 46.64,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 90.0,
+   "turret": "turB",
+   "target_bearing": 88.27,
+   "barrel_bearing": 72.0,
+   "reaches": false,
+   "yaw": 72.0,
+   "edge": 72.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 90.0,
+   "turret": "turA",
+   "target_bearing": 92.25,
+   "barrel_bearing": 92.25,
+   "reaches": true,
+   "yaw": 92.25,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 150.0,
+   "turret": "turA",
+   "target_bearing": 151.09,
+   "barrel_bearing": 120.0,
+   "reaches": false,
+   "yaw": 120.0,
+   "edge": 120.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 150.0,
+   "turret": "turB",
+   "target_bearing": 149.11,
+   "barrel_bearing": 149.11,
+   "reaches": true,
+   "yaw": -210.89,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 180.0,
+   "turret": "turA",
+   "target_bearing": 180.0,
+   "barrel_bearing": 120.0,
+   "reaches": false,
+   "yaw": 120.0,
+   "edge": 120.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 180.0,
+   "turret": "turB",
+   "target_bearing": 180.0,
+   "barrel_bearing": -180.0,
+   "reaches": true,
+   "yaw": -180.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": -60.0,
+   "turret": "turB",
+   "target_bearing": -58.52,
+   "barrel_bearing": -58.52,
+   "reaches": true,
+   "yaw": -58.52,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": -60.0,
+   "turret": "turA",
+   "target_bearing": -61.99,
+   "barrel_bearing": -61.99,
+   "reaches": true,
+   "yaw": -61.99,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": -120.0,
+   "turret": "turA",
+   "target_bearing": -121.91,
+   "barrel_bearing": -120.0,
+   "reaches": false,
+   "yaw": -120.0,
+   "edge": -120.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": -120.0,
+   "turret": "turB",
+   "target_bearing": -118.48,
+   "barrel_bearing": -118.48,
+   "reaches": true,
+   "yaw": -118.48,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": -175.0,
+   "turret": "turA",
+   "target_bearing": -175.19,
+   "barrel_bearing": 120.0,
+   "reaches": false,
+   "yaw": 120.0,
+   "edge": 120.0,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": -175.0,
+   "turret": "turB",
+   "target_bearing": -174.84,
+   "barrel_bearing": -174.84,
+   "reaches": true,
+   "yaw": -174.84,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 100.0,
+   "turret": "turA",
+   "target_bearing": 102.2,
+   "barrel_bearing": 102.2,
+   "reaches": true,
+   "yaw": 102.2,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 100.0,
+   "turret": "turB",
+   "target_bearing": 98.28,
+   "barrel_bearing": 102.32,
+   "reaches": false,
+   "yaw": -257.68,
+   "edge": -257.68,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 20.0,
+   "turret": "turB",
+   "target_bearing": 19.42,
+   "barrel_bearing": 19.42,
+   "reaches": true,
+   "yaw": 19.42,
+   "muzzle_offset": 0.0
+  },
+  {
+   "bearing": 20.0,
+   "turret": "turA",
+   "target_bearing": 20.8,
+   "barrel_bearing": 20.8,
+   "reaches": true,
+   "yaw": 20.8,
+   "muzzle_offset": 0.0
+  }
+ ],
+ "turrets": [
+  {
+   "name": "turret_0",
+   "id": "turA",
+   "arc": [
+    -120.0,
+    120.0
+   ],
+   "reach": [
+    -120.0,
+    120.0
+   ],
+   "full": false,
+   "blocked_deg": 0
+  },
+  {
+   "name": "turret_1",
+   "id": "turB",
+   "arc": [
+    -180.0,
+    180.0
+   ],
+   "reach": [
+    -257.677734375,
+    72.001953125
+   ],
+   "full": false,
+   "blocked_deg": 30
+  }
+ ],
+ "max_rate_deg_s": 225.0,
+ "max_step_change_deg": 0.24,
+ "worst_bearing_error_deg": 0.0,
+ "turret_step_us_per_frame": 6.8,
+ "failures": 0
+}

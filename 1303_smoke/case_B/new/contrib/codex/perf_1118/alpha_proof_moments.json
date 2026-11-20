@@ -1,0 +1,94 @@
+{
+  "about": "Issue 1070 alpha exterior shader comparison on the I15_11 Glasswright hull. Use the same fixed-clock Glasswright macro hit with normal and reduced flashing.",
+  "cameras": [
+    170,
+    26
+  ],
+  "cell": [
+    384,
+    216
+  ],
+  "crop": {
+    "170": [
+      384,
+      216
+    ],
+    "60": [
+      768,
+      432
+    ],
+    "26": [
+      1152,
+      648
+    ]
+  },
+  "rows": [
+    {
+      "id": "I15_11_macro_fragments",
+      "group": "hull hit fragments",
+      "label": "I15_11 Glasswrights, one macro shell",
+      "tgt": [
+        "ithar",
+        "Cruiser"
+      ],
+      "tgt_at": [
+        24,
+        -30
+      ],
+      "kind": "battery",
+      "weapon": "hbattery",
+      "on": "hull",
+      "shield_left": 0,
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          12
+        ],
+        [
+          "impact",
+          0.35,
+          6
+        ]
+      ],
+      "key": 1,
+      "crit": true
+    },
+    {
+      "id": "I15_11_macro_fragments_reduced",
+      "group": "hull hit fragments",
+      "label": "I15_11 Glasswrights, one macro shell",
+      "tgt": [
+        "ithar",
+        "Cruiser"
+      ],
+      "tgt_at": [
+        24,
+        -30
+      ],
+      "kind": "battery",
+      "weapon": "hbattery",
+      "on": "hull",
+      "shield_left": 0,
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          12
+        ],
+        [
+          "impact",
+          0.35,
+          6
+        ]
+      ],
+      "key": 1,
+      "crit": true,
+      "fx": {
+        "reduce_flashing": true
+      }
+    }
+  ]
+}

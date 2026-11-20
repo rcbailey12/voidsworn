@@ -1,0 +1,34 @@
+{
+ "out": "e64",
+ "budget_s": 600,
+ "items": [
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 83,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a stark white war council chamber high in orbit, a tall arched window onto black space and a pale blue banded gas giant with soft cloud stripes. New pose and framing: standing straight with her hands clasped behind her back, turned three-quarter from the window, half-body. Key light: cold white light from the gas giant at her side and blue implant glow. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 97,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a stark white war council chamber high in orbit, a tall arched window onto black space and a pale blue banded gas giant with soft cloud stripes. New pose and framing: standing straight with her hands clasped behind her back, turned three-quarter from the window, half-body. Key light: cold white light from the gas giant at her side and blue implant glow. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 109,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a stark white war council chamber high in orbit, a tall arched window onto black space and a pale blue banded gas giant with soft cloud stripes. New pose and framing: standing straight with her hands clasped behind her back, turned three-quarter from the window, half-body. Key light: cold white light from the gas giant at her side and blue implant glow. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 127,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a stark white war council chamber high in orbit, a tall arched window onto black space and a pale blue banded gas giant with soft cloud stripes. New pose and framing: standing straight with her hands clasped behind her back, turned three-quarter from the window, half-body. Key light: cold white light from the gas giant at her side and blue implant glow. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}

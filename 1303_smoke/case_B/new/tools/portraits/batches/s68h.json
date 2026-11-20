@@ -1,0 +1,230 @@
+{
+ "out": "s68",
+ "budget_s": 1150,
+ "items": [
+  {
+   "id": "nem_corsair_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_ithar_2.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_ithar_2.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop68/nem_ithar_2.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "porcelain",
+   "seed": 23,
+   "src": "ncrop68/nem_ithar_2.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_voidsworn_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_voidsworn_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop68/nem_voidsworn_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop68/nem_voidsworn_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}

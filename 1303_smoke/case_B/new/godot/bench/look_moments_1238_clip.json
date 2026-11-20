@@ -1,0 +1,186 @@
+{
+ "about": "Issue 1238 clip (with look_bench --sound and --write-movie): each death runs 5.5 s at the middle camera; the strip is a contact sheet, the movie is the picture.",
+ "cameras": [
+  60
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "60": [
+   1920,
+   1080
+  ]
+ },
+ "rows": [
+  {
+   "id": "d1238_chorus_cruiser",
+   "group": "deaths",
+   "label": "issue 1238 death: Chorus cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "fx": {
+    "kill_slowmo": true
+   },
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "event",
+     1.0,
+     1
+    ],
+    [
+     "event",
+     2.0,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     3.5,
+     1
+    ],
+    [
+     "event",
+     4.5,
+     1
+    ],
+    [
+     "event",
+     5.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "d1238_chorus_titan",
+   "group": "deaths",
+   "label": "issue 1238 death: Chorus Bio-Titan",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Bio-titan"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "fx": {
+    "kill_slowmo": true
+   },
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "event",
+     1.0,
+     1
+    ],
+    [
+     "event",
+     2.0,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     3.5,
+     1
+    ],
+    [
+     "event",
+     4.5,
+     1
+    ],
+    [
+     "event",
+     5.5,
+     1
+    ]
+   ]
+  },
+  {
+   "id": "d1238_glass_cruiser",
+   "group": "deaths",
+   "label": "issue 1238 death: Glasswright cruiser",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "ithar",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "fx": {
+    "kill_slowmo": true
+   },
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "event",
+     1.0,
+     1
+    ],
+    [
+     "event",
+     2.0,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     3.5,
+     1
+    ],
+    [
+     "event",
+     4.5,
+     1
+    ],
+    [
+     "event",
+     5.5,
+     1
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,190 @@
+{
+ "cell": "B3r2",
+ "build_seconds": 134.9,
+ "audit": {
+  "problems": [],
+  "parts": 52,
+  "crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0168,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0172
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "generations": [
+  {
+   "part": "casemate_0p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 29999,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_0s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 29999,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_1p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 29999,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_1s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 29999,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "drums_f",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 40000,
+   "stretch": [
+    0.049,
+    0.126,
+    0.101
+   ]
+  },
+  {
+   "part": "drums_sp",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 40000,
+   "stretch": [
+    0.09,
+    0.083,
+    0.09
+   ]
+  },
+  {
+   "part": "drums_ss",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 40000,
+   "stretch": [
+    0.09,
+    0.083,
+    0.09
+   ]
+  },
+  {
+   "part": "drums_mp",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 40000,
+   "stretch": [
+    0.085,
+    0.063,
+    0.107
+   ]
+  },
+  {
+   "part": "drums_ms",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 40000,
+   "stretch": [
+    0.085,
+    0.063,
+    0.107
+   ]
+  },
+  {
+   "part": "drums_a",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 40000,
+   "stretch": [
+    0.074,
+    0.158,
+    0.101
+   ]
+  },
+  {
+   "part": "bowguns",
+   "source": "p_bowguns.glb",
+   "tris_raw": 585581,
+   "tris": 24000,
+   "stretch": [
+    0.134,
+    0.188,
+    0.109
+   ]
+  },
+  {
+   "part": "cargo_p",
+   "source": "p_cargo.glb",
+   "tris_raw": 586874,
+   "tris": 40000,
+   "stretch": [
+    0.129,
+    0.085,
+    0.273
+   ]
+  },
+  {
+   "part": "cargo_s",
+   "source": "p_cargo.glb",
+   "tris_raw": 586874,
+   "tris": 40000,
+   "stretch": [
+    0.129,
+    0.085,
+    0.273
+   ]
+  },
+  {
+   "part": "sternblock",
+   "source": "p_sternblock.glb",
+   "tris_raw": 591672,
+   "tris": 49999,
+   "stretch": [
+    0.071,
+    0.207,
+    0.165
+   ]
+  }
+ ],
+ "triangles": 637187,
+ "objects": 455,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}

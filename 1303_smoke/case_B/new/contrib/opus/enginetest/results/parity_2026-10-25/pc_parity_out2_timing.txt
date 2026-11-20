@@ -1,0 +1,26 @@
+
+[1/5] Exporting the game's data tables for Godot...
+[2/5] Random numbers: first 10,000 draws from 3 seeds...
+  seed 1001: PASS 
+  seed 7: PASS 
+  seed 4242424242: PASS 
+[3/5] Math functions the rules use (sin, cos, atan2, exp, hypot, round) on 243,721 inputs...
+  PASS 
+[4/5] Seeded battles, every activation compared (state hash, PRNG state)...
+  battle s1: PASS 
+  battle s2: PASS 
+  battle s3: PASS 
+  battle s4: PASS 
+  battle s5: PASS 
+[5/5] Enemy think time in the two 10-against-10 sector 3 battles (report only; game bar: worst under about 0.5 s)...
+  s4: 27 enemy activations
+    Node   think per activation: average 0.036 s, worst 0.051 s (turn 3); per round: average 0.241 s, worst 0.358 s
+    Godot  think per activation: average 0.138 s, worst 0.331 s (turn 32); per round: average 0.933 s, worst 1.378 s
+    Godot/Node: 3.9x on average. Worst enemy think is inside the 0.5 s bar
+  s5: 45 enemy activations
+    Node   think per activation: average 0.032 s, worst 0.060 s (turn 62); per round: average 0.203 s, worst 0.326 s
+    Godot  think per activation: average 0.100 s, worst 0.267 s (turn 21); per round: average 0.644 s, worst 1.377 s
+    Godot/Node: 3.2x on average. Worst enemy think is inside the 0.5 s bar
+
+PASS: the Godot port matches the game's rules exactly. 
+

@@ -1,0 +1,258 @@
+{
+ "out": "n8s",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "nem_corsair_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_3.png",
+   "prompt": "Add one large old healed burn to this furred creature: a patch of fur burned away on one side of the face and neck, scorched bare puckered skin beneath. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_3.png",
+   "prompt": "Replace one of this creature's eyes with a crude bolted-on iron plate with rivets and a small glowing red lens, raw scarred skin and torn fur round it. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_3.png",
+   "prompt": "Add a deep old claw scar running through one of this creature's eyes from brow to muzzle, the fur parted along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_5.png",
+   "prompt": "Add one large old healed burn to this furred creature: a patch of fur burned away on one side of the face and neck, scorched bare puckered skin beneath. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_5.png",
+   "prompt": "Replace one of this creature's eyes with a crude bolted-on iron plate with rivets and a small glowing red lens, raw scarred skin and torn fur round it. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_5.png",
+   "prompt": "Add a deep old claw scar running through one of this creature's eyes from brow to muzzle, the fur parted along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_1.png",
+   "prompt": "Add an old burn scar to this being: a patch of darkened, scorched skin on one side of the face and neck where the faint light patterns are broken and dark. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_1.png",
+   "prompt": "Add a web of fine cracks across this being's light-storing skin on one side of the face and neck, soft light leaking from the cracks. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_2.png",
+   "prompt": "Add an old burn scar to this being: a patch of darkened, scorched skin on one side of the face and neck where the faint light patterns are broken and dark. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_2.png",
+   "prompt": "Add a web of fine cracks across this being's light-storing skin on one side of the face and neck, soft light leaking from the cracks. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_3.png",
+   "prompt": "Add an old burn scar to this being: a patch of darkened, scorched skin on one side of the face and neck where the faint light patterns are broken and dark. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_3",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_3.png",
+   "prompt": "Add a web of fine cracks across this being's light-storing skin on one side of the face and neck, soft light leaking from the cracks. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_4.png",
+   "prompt": "Add an old burn scar to this being: a patch of darkened, scorched skin on one side of the face and neck where the faint light patterns are broken and dark. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_4",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_4.png",
+   "prompt": "Add a web of fine cracks across this being's light-storing skin on one side of the face and neck, soft light leaking from the cracks. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_5.png",
+   "prompt": "Add an old burn scar to this being: a patch of darkened, scorched skin on one side of the face and neck where the faint light patterns are broken and dark. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_5",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_5.png",
+   "prompt": "Add a web of fine cracks across this being's light-storing skin on one side of the face and neck, soft light leaking from the cracks. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_6.png",
+   "prompt": "Add an old burn scar to this being: a patch of darkened, scorched skin on one side of the face and neck where the faint light patterns are broken and dark. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_6",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_6.png",
+   "prompt": "Add a web of fine cracks across this being's light-storing skin on one side of the face and neck, soft light leaking from the cracks. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_1.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_1.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_1.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_2.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_2.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_2.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_4.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_4.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_4.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_5.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_5.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_5.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_6.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_6.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_6.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  }
+ ]
+}

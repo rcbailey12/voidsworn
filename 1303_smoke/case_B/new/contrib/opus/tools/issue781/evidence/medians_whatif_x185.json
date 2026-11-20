@@ -1,0 +1,33 @@
+{
+ "fitted": {
+  "px": 341858,
+  "concept_median": [
+   52,
+   47,
+   47
+  ],
+  "paint_median": [
+   66,
+   62,
+   60
+  ]
+ },
+ "battle": {
+  "px": 127150,
+  "paint_median": [
+   34,
+   34,
+   36
+  ]
+ },
+ "before_battle_2048": [
+  26,
+  27,
+  28
+ ],
+ "target_battle": [
+  39,
+  37,
+  38
+ ]
+}

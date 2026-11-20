@@ -1,0 +1,151 @@
+{
+  "renderer": "forward_plus",
+  "resolution": "1920x1080",
+  "states": [
+    {
+      "fleet_rows": 3,
+      "frames": 240,
+      "name": "sector_1",
+      "next_jumps": 3,
+      "p50_ms": 2.843,
+      "p95_ms": 3.294,
+      "region": "boneyard",
+      "sector": 1,
+      "seed": 344,
+      "texture_bytes": 649807872
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "sector_2",
+      "next_jumps": 4,
+      "p50_ms": 3.642,
+      "p95_ms": 4.087,
+      "region": "world",
+      "sector": 2.0,
+      "seed": 344,
+      "texture_bytes": 974927872
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "sector_3",
+      "next_jumps": 3,
+      "p50_ms": 3.718,
+      "p95_ms": 4.241,
+      "region": "nebula",
+      "sector": 3.0,
+      "seed": 344,
+      "texture_bytes": 1293817344
+    },
+    {
+      "fleet_rows": 3,
+      "frames": 240,
+      "name": "region_boneyard",
+      "next_jumps": 3,
+      "p50_ms": 2.903,
+      "p95_ms": 3.477,
+      "region": "boneyard",
+      "sector": 1,
+      "seed": 6,
+      "texture_bytes": 1555373568
+    },
+    {
+      "fleet_rows": 3,
+      "frames": 240,
+      "name": "region_nebula",
+      "next_jumps": 2,
+      "p50_ms": 3.053,
+      "p95_ms": 3.86,
+      "region": "nebula",
+      "sector": 1,
+      "seed": 3,
+      "texture_bytes": 1693861376
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "region_world",
+      "next_jumps": 4,
+      "p50_ms": 3.242,
+      "p95_ms": 3.772,
+      "region": "world",
+      "sector": 1,
+      "seed": 2,
+      "texture_bytes": 1832349184
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "region_frontier",
+      "next_jumps": 4,
+      "p50_ms": 3.258,
+      "p95_ms": 3.81,
+      "region": "frontier",
+      "sector": 1,
+      "seed": 10,
+      "texture_bytes": 1973065216
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "region_deep",
+      "next_jumps": 3,
+      "p50_ms": 3.338,
+      "p95_ms": 3.933,
+      "region": "deep",
+      "sector": 1,
+      "seed": 1,
+      "texture_bytes": 2112953344
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "four_routes_1",
+      "next_jumps": 4,
+      "p50_ms": 3.211,
+      "p95_ms": 4.242,
+      "region": "world",
+      "sector": 1,
+      "seed": 2,
+      "texture_bytes": 2112953344
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "four_routes_2",
+      "next_jumps": 4,
+      "p50_ms": 3.196,
+      "p95_ms": 3.6,
+      "region": "world",
+      "sector": 1,
+      "seed": 2,
+      "texture_bytes": 2112953344
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "four_routes_3",
+      "next_jumps": 4,
+      "p50_ms": 3.181,
+      "p95_ms": 3.508,
+      "region": "world",
+      "sector": 1,
+      "seed": 2,
+      "texture_bytes": 2112953344
+    },
+    {
+      "fleet_rows": 2,
+      "frames": 240,
+      "name": "four_routes_4",
+      "next_jumps": 4,
+      "p50_ms": 3.144,
+      "p95_ms": 3.477,
+      "region": "world",
+      "sector": 1,
+      "seed": 2,
+      "texture_bytes": 2112953344
+    }
+  ],
+  "vsync": "off"
+}

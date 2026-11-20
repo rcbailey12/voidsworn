@@ -1,0 +1,22 @@
+{
+ "ship": "corsair_KB1CC",
+ "name": "Wide Glacis bomber, the Hullbreaker bomber wing craft (Ashfall Hullbreakers)",
+ "faction": "hullbreakers",
+ "game_ship": "bomber",
+ "game_code": "corsair_KB1CC",
+ "sheet": "corsair_KB1CC",
+ "concept": "contrib/muse/design/squadron_concepts_2026_11/hullbreakers/round_3/KB1CC.jpg",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "KB1CC",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/corsair_KB1CC/ (design file tools/blender/build_sheets/ships/corsair_KB1CC.py; issue 793). The sheet is the one home of the design (RULEBOOK 0.9, R225). Stage 7 uses the bomber rules and writes an Ashfall Hullbreaker bomber entry under its own export code. The Hullbreaker paint stack applies geometry masks, trim and decals. Its LENGTH 1.6 craft setting keeps the sheet's large modelled plates and dark seams, paints the main armour rust red, keeps frame edges and rails dark iron, and maps the few trophy plates to dark grey salvaged metal (R274, R279; issue 853 run 2). No purple or pale tiles; larger ships keep the original stack settings.",
+ "parts": []
+}

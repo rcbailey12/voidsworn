@@ -1,0 +1,62 @@
+{
+ "out": "v64b",
+ "budget_s": 1000,
+ "items": [
+  {
+   "id": "nem_corsair_4",
+   "kind": "h6fix",
+   "seed": 11,
+   "src": "v64b/nem_corsair_4_nohorn_s23_00001_.png",
+   "prompt": "Change only the head of this creature: take away the small spike on the crown of its head and the round metal discs and rivets on its cheek and jaw. The whole head is covered in the same dull matte grey-brown scales grown from the skin, like a pangolin's, with dark leathery skin in the creases; the crown of the head is smooth and rounded. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "h6fix",
+   "seed": 23,
+   "src": "v64b/nem_corsair_4_nohorn_s23_00001_.png",
+   "prompt": "Change only the head of this creature: take away the small spike on the crown of its head and the round metal discs and rivets on its cheek and jaw. The whole head is covered in the same dull matte grey-brown scales grown from the skin, like a pangolin's, with dark leathery skin in the creases; the crown of the head is smooth and rounded. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "h6scale",
+   "seed": 11,
+   "src": "v64b/nem_corsair_4_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes dull matte grey-brown scales grown from the skin, like a pangolin's or old tortoiseshell, uneven and organic, with dark leathery skin in the creases between them. The crown of the head is smooth and rounded and the mouth is framed only by its own jaw and teeth. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "h6scale",
+   "seed": 23,
+   "src": "v64b/nem_corsair_4_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes dull matte grey-brown scales grown from the skin, like a pangolin's or old tortoiseshell, uneven and organic, with dark leathery skin in the creases between them. The crown of the head is smooth and rounded and the mouth is framed only by its own jaw and teeth. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "h6fix",
+   "seed": 11,
+   "src": "v64b/nem_corsair_6_nohorn_s11_00001_.png",
+   "prompt": "Take away both curved growths on top of this creature's head and the hooked metal fitting above it, so the crown of the head is smooth and rounded under the same dull matte grey-brown scales. Keep its scaled face, glowing eyes and bared teeth exactly. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "h6fix",
+   "seed": 23,
+   "src": "v64b/nem_corsair_6_nohorn_s11_00001_.png",
+   "prompt": "Take away both curved growths on top of this creature's head and the hooked metal fitting above it, so the crown of the head is smooth and rounded under the same dull matte grey-brown scales. Keep its scaled face, glowing eyes and bared teeth exactly. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "h6scale",
+   "seed": 11,
+   "src": "v64b/nem_corsair_6_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes dull matte grey-brown scales grown from the skin, like a pangolin's or old tortoiseshell, uneven and organic, with dark leathery skin in the creases between them. The crown of the head is smooth and rounded and the mouth is framed only by its own jaw and teeth. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "h6scale",
+   "seed": 23,
+   "src": "v64b/nem_corsair_6_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes dull matte grey-brown scales grown from the skin, like a pangolin's or old tortoiseshell, uneven and organic, with dark leathery skin in the creases between them. The crown of the head is smooth and rounded and the mouth is framed only by its own jaw and teeth. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+  "engine": "godot",
+  "renderer": "forward_plus",
+  "mode": "main",
+  "ships": 6,
+  "width": 3840,
+  "height": 2160,
+  "seconds": 20.0,
+  "frames": 9194,
+  "avg_ms": 2.175,
+  "p99_ms": 3.126,
+  "max_ms": 7.419,
+  "fps_avg": 459.68,
+  "load_s": 3.519,
+  "gpu_mem_mb": 1508.5,
+  "notes": "effects: 14 instanced kinds (one draw each) for 6 ships; effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) 0.117 ms average; engine-measured 3D render time per frame: GPU 1.49 ms, render CPU 0.20 ms; frame breakdown (CPU wall time per frame, averages over the run): physics steps 0.00 ms (0.15 ticks per frame); node processing 0.16 ms (every _process and particle node, effect script 0.12 ms of it); tree flush and render sync 0.03 ms; render-server draw 1.96 ms (scene update 0.06, 3D view render CPU 0.20, rest 1.69: GPU frame wait, particle update, 2D, present); between frames 0.03 ms (OS events, input); 77 draw calls, 78 objects, 189 nodes in the tree; shader warm-up after load took 0.1 s (every effect, fade and chunk state drawn once, until pipeline compiles stop); adapter NVIDIA GeForce RTX 5080, driver vulkan 1.4.351; render target 3840x2160 (from --res) in a SubViewport with MSAA 4x, shown in a 3840x2130 window; vsync mode 0 (0 = off); gpu_mem_mb is Performance RENDER_VIDEO_MEM_USED at the end (peak during run 1509 MB); textures loaded uncompressed (RGB8 with mipmaps), as GLTFDocument gives them at runtime",
+  "lights_active_avg": 9.3,
+  "lights_active_max": 13
+}

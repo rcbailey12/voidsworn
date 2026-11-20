@@ -1,0 +1,694 @@
+{
+  "about": "Issue 928 R303 bare-hull impact proof. Fixed look bench, Sunward source cruiser, actual faction target hulls.",
+  "cameras": [
+    170,
+    60
+  ],
+  "cell": [
+    256,
+    180
+  ],
+  "crop": {
+    "170": [
+      256,
+      180
+    ],
+    "60": [
+      640,
+      450
+    ]
+  },
+  "rows": [
+    {
+      "id": "C15s_23_torpedo",
+      "label": "C15s_23 torpedo",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "corsair",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "torp",
+      "weapon": "torp",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "C15s_23_heavy",
+      "label": "C15s_23 heavy",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "corsair",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "battery",
+      "weapon": "hbattery",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "C15s_23_light",
+      "label": "C15s_23 light autocannon",
+      "att": [
+        "hegemony",
+        "Cruiser"
+      ],
+      "tgt": [
+        "corsair",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "battery",
+      "weapon": "autocannon",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "H9_23_torpedo",
+      "label": "H9_23 torpedo",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "hegemony",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "torp",
+      "weapon": "torp",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "H9_23_heavy",
+      "label": "H9_23 heavy",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "hegemony",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "battery",
+      "weapon": "hbattery",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "H9_23_light",
+      "label": "H9_23 light autocannon",
+      "att": [
+        "hegemony",
+        "Cruiser"
+      ],
+      "tgt": [
+        "hegemony",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "battery",
+      "weapon": "autocannon",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "D21_23_torpedo",
+      "label": "D21_23 torpedo",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "deathless",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "torp",
+      "weapon": "torp",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "D21_23_heavy",
+      "label": "D21_23 heavy",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "deathless",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "battery",
+      "weapon": "hbattery",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "D21_23_light",
+      "label": "D21_23 light autocannon",
+      "att": [
+        "hegemony",
+        "Cruiser"
+      ],
+      "tgt": [
+        "deathless",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "battery",
+      "weapon": "autocannon",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "I15_11_torpedo",
+      "label": "I15_11 material",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "ithar",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "torp",
+      "weapon": "torp",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "B21_11_torpedo",
+      "label": "B21_11 material",
+      "att": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "tgt": [
+        "chorus",
+        "Cruiser"
+      ],
+      "do": "volley",
+      "kind": "torp",
+      "weapon": "torp",
+      "on": "hull",
+      "shield_left": 0,
+      "focus": "target",
+      "shots": 1,
+      "windows": [
+        [
+          "impact",
+          -0.05,
+          1
+        ],
+        [
+          "impact",
+          0,
+          1
+        ],
+        [
+          "impact",
+          0.03333333333333333,
+          1
+        ],
+        [
+          "impact",
+          0.1,
+          1
+        ],
+        [
+          "impact",
+          0.3,
+          1
+        ],
+        [
+          "impact",
+          0.6,
+          1
+        ],
+        [
+          "impact",
+          1.5,
+          1
+        ],
+        [
+          "impact",
+          3.5,
+          1
+        ]
+      ]
+    }
+  ]
+}

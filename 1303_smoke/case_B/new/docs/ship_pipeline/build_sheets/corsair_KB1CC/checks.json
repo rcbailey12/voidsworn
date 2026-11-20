@@ -1,0 +1,32 @@
+{
+ "length_from_game": 1.6,
+ "model_length": 1.599,
+ "length_side": 1.601,
+ "length_top": 1.602,
+ "length_disagreement_percent": 0.07,
+ "model_vs_game_percent": 0.06,
+ "beam_top": 1.922,
+ "beam_bow": 1.922,
+ "beam_disagreement_percent": 0.0,
+ "height_side": 0.398,
+ "height_bow": 0.399,
+ "height_disagreement_percent": 0.07,
+ "widest_at_station_percent": 18.2,
+ "hull_beam": 0.98,
+ "hull_depth": 0.35,
+ "L_to_B_hull": 1.63,
+ "L_to_H_hull": 4.57,
+ "PASS": true,
+ "outline_iou_percent": 79.5,
+ "mass_outline_iou_percent": 79.7,
+ "concept_camera": {
+  "az": 1.329733475354416,
+  "el": 19.041276321265514,
+  "roll": -3.1808204107497695,
+  "dist": 62.4174394970198,
+  "mm": 1045.8639567821292,
+  "sx": 0.029570289344652143,
+  "sy": -0.003479649960997249
+ },
+ "outline_note": "R304 run 3 geometry, fixed historical outline camera; reported, not gated"
+}

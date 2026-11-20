@@ -1,0 +1,4654 @@
+{
+  "pass_unchanged": true,
+  "objects": {
+    "core_01|liner|True": {
+      "vertices": 3972,
+      "triangles": 6020,
+      "inside": true,
+      "sha256": "bd648e976cbac7d498af051596911272e0aba9767c94541006819964eeef44b7"
+    },
+    "core_01|plate2|False": {
+      "vertices": 1728,
+      "triangles": 3168,
+      "inside": false,
+      "sha256": "2830d37333bc0d93281ee6e5a6af2465dbf9df6ea7a2accc9e3bc94fed92437c"
+    },
+    "core_01|glazing|False": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": false,
+      "sha256": "409c0691ffc7e671afadc9e2a921fbdf9b8f39bb46c7a5bc497cef433a9046b5"
+    },
+    "core_01|edge|False": {
+      "vertices": 2784,
+      "triangles": 4424,
+      "inside": false,
+      "sha256": "5f108850d70caf4337a1c143c7ba96b923352c3194462c1223ec851549a75eef"
+    },
+    "core_01|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "54ea923c9c34041929d6e3d6683fb0414c251ee095065708b70117d42c844f93"
+    },
+    "core_01|plate|False": {
+      "vertices": 8160,
+      "triangles": 14960,
+      "inside": false,
+      "sha256": "3266e3430caea4254f8f6294390560ac292e6f08af908fa600091ea598ae4f63"
+    },
+    "core_01|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "1216c0354a3d2d67064d60b0c0f76f641a5f1c7da413f58763861076fbb1001e"
+    },
+    "core_01|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "10b02b1f36bd7be82696cb12866eed821342f1381005ff2e2236e840c966ca12"
+    },
+    "core_01|trim|False": {
+      "vertices": 3312,
+      "triangles": 6436,
+      "inside": false,
+      "sha256": "3ff67dc9baef96b426202b8a4a9d0c17c2f8a7d1855a6733a4f7bb1b621c0476"
+    },
+    "core_01|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "c47c07f3e3fb59db59e3f1567667183c7844c3680b20e451744e739a98aa3e54"
+    },
+    "core_02|liner|True": {
+      "vertices": 3972,
+      "triangles": 6020,
+      "inside": true,
+      "sha256": "46ec1e0a61721c21f8d1275820052ef73a517f3521b50f9c1c6b08439e6dfbac"
+    },
+    "core_02|plate2|False": {
+      "vertices": 1728,
+      "triangles": 3168,
+      "inside": false,
+      "sha256": "9ef90f08b562c526572e8e53b52939b5bb0c842768200ccf3e08d3b7aab4b4e8"
+    },
+    "core_02|glazing|False": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": false,
+      "sha256": "6e0ad1825a4ff80d8f77add54ad287cc414b737d87ae508c5f5935b07c2172f3"
+    },
+    "core_02|edge|False": {
+      "vertices": 2784,
+      "triangles": 4424,
+      "inside": false,
+      "sha256": "b802454af4274dec28bd218ae23b299b44aa87506dbb800c95a5deed8b635118"
+    },
+    "core_02|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "c8bf440e0386efb7243ec1d28ecc837b439ba44c8b19f70f10ff3d5ea9a0604f"
+    },
+    "core_02|plate|False": {
+      "vertices": 8160,
+      "triangles": 14960,
+      "inside": false,
+      "sha256": "11e4be87021d2368554bbab329db2486f6b6214f56cd08e459c27d9c08e62142"
+    },
+    "core_02|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "e9676c5e96daf8709a626a5b7209b7af2fe5a3419db07480aaf102669b50d429"
+    },
+    "core_02|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "db97f6b11e4d746f6f4233fe2afd3d0041e42681505138e9c6cb4f42af57753e"
+    },
+    "core_02|trim|False": {
+      "vertices": 3312,
+      "triangles": 6436,
+      "inside": false,
+      "sha256": "c71f986cfb13a2ae6ed5b0525049ddf86f4d98c0b90acb934574b64440ef63d1"
+    },
+    "core_02|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "25fb1256b6daf4d343825ebbb7634cf5dd57b4bce37dd25d0ff779d73577487d"
+    },
+    "core_03|liner|True": {
+      "vertices": 3788,
+      "triangles": 5744,
+      "inside": true,
+      "sha256": "11227cfe3bc02c21cf34da770a87171b7cfb71a64d14de0628e651cff0e3feb5"
+    },
+    "core_03|plate2|False": {
+      "vertices": 1680,
+      "triangles": 3080,
+      "inside": false,
+      "sha256": "c3d1a35899f4429c20282cddb91ba21f8b9f8e3b69b06289122fdc80f15dce25"
+    },
+    "core_03|glazing|False": {
+      "vertices": 600,
+      "triangles": 900,
+      "inside": false,
+      "sha256": "18010bf16d70b8f8fbf7dbfc2564c548b2d75ed5aead35708a06f098816cd8af"
+    },
+    "core_03|edge|False": {
+      "vertices": 2728,
+      "triangles": 4332,
+      "inside": false,
+      "sha256": "77f787e9438538d3e547eec3d7516e740916955b720568b20e99691f041eb58d"
+    },
+    "core_03|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "4c246fb49b4cd9a8213b8efae84477db60a03612933c84860c733ba86bcaea65"
+    },
+    "core_03|plate|False": {
+      "vertices": 7776,
+      "triangles": 14256,
+      "inside": false,
+      "sha256": "124bad729c42a505657b178e510dca4c0246d90f98feac0e4719fa43031c6eb8"
+    },
+    "core_03|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "1924376ce7768cf6c131450888bbe63b82b73f39451f89f09d32b6d5044a8128"
+    },
+    "core_03|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "4e14c854e3f1f349faf0cddc6a2a16cbeadde0a0e092172e79349d2327c6ecba"
+    },
+    "core_03|frame|False": {
+      "vertices": 128,
+      "triangles": 216,
+      "inside": false,
+      "sha256": "584bcac986b3d974220dc0c9841eecad2e1a0de30479b2f08cc320cc17266d9f"
+    },
+    "core_03|trim|False": {
+      "vertices": 3216,
+      "triangles": 6252,
+      "inside": false,
+      "sha256": "e28f2a5f59b62193aea5b401842d7c93a4bb53816c3d74cc72459bd7ee32ac51"
+    },
+    "core_03|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "fb4307372aeb41a5450e9f3e478fdb07e61df66a387e475d75225f3cd9c49d9f"
+    },
+    "core_04|liner|True": {
+      "vertices": 3972,
+      "triangles": 6020,
+      "inside": true,
+      "sha256": "d19e4dc170eab48e8ecdfbedc4a21db03473be03448bba183f35502661338bc6"
+    },
+    "core_04|plate2|False": {
+      "vertices": 1728,
+      "triangles": 3168,
+      "inside": false,
+      "sha256": "3ab900b58cfbe66961b6842bd0510b591f1fb243bec0625aab2bcc7d1771b258"
+    },
+    "core_04|glazing|False": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": false,
+      "sha256": "f5f08cfa7e74e3149a80e2cf61f6b3147310d78c54f00219aba45f2ace420c0d"
+    },
+    "core_04|edge|False": {
+      "vertices": 2784,
+      "triangles": 4424,
+      "inside": false,
+      "sha256": "9e1f666130715b3c3732f6cbb2555f2962e54cb1f767de9aa0ab64037a71da7e"
+    },
+    "core_04|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "1048e563f078596ad4e880a94e5514a7b5ca92bea67c8fb70b95cf518d76c139"
+    },
+    "core_04|plate|False": {
+      "vertices": 8160,
+      "triangles": 14960,
+      "inside": false,
+      "sha256": "7edf1cfcb6bd428dc1342bdb15e88e847ab80e0258fbecb1b55053a81e685619"
+    },
+    "core_04|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "4f1b22e91019252ac33c9ab46be4d12c539f48734b478943af08a68f1b5c18e1"
+    },
+    "core_04|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "fb4cbb7f78b190871f26275c3d04154035842ee9f357ee562b434f96c81d3c83"
+    },
+    "core_04|trim|False": {
+      "vertices": 3312,
+      "triangles": 6436,
+      "inside": false,
+      "sha256": "dba7f4b2a69997a6b3a4d0a5aa81217df5a536d0afb77b2dfac572aa3e6592dc"
+    },
+    "core_04|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "9656fa3ea86b7fda6cbb0a1ec555041ec156a110e481baa3b7dbd0edcfa6249b"
+    },
+    "core_05|liner|True": {
+      "vertices": 3732,
+      "triangles": 5660,
+      "inside": true,
+      "sha256": "b529a42e0a1a624e74aca28ed8260e0ddcfbefd7d41944fac70d14d0102287a2"
+    },
+    "core_05|plate2|False": {
+      "vertices": 1584,
+      "triangles": 2904,
+      "inside": false,
+      "sha256": "5aa035e01fd271be6cd41120a6723436725e7e2895c8ad9906c7c601d1a96e81"
+    },
+    "core_05|glazing|False": {
+      "vertices": 592,
+      "triangles": 888,
+      "inside": false,
+      "sha256": "6e90ee87ac554af1b9f544179b8f99ff33cd6e349915584e11d97c853032c238"
+    },
+    "core_05|edge|False": {
+      "vertices": 2668,
+      "triangles": 4236,
+      "inside": false,
+      "sha256": "98b015911ca45093e0358819ba23e189ff7c993511c24adf15f555365346a2e0"
+    },
+    "core_05|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "aeba086aa4e9866332b3f18994765b621ac0637d85d057bae03f0edd1ffca176"
+    },
+    "core_05|plate|False": {
+      "vertices": 7680,
+      "triangles": 14080,
+      "inside": false,
+      "sha256": "13fe8a8e959d6b9326fa912c2da59614bf4196beb893ab4829f52de7b4516681"
+    },
+    "core_05|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "dd63fc785d1df0e5d8093596a4e2d62985b68dcafc179546a45a9f29af19f757"
+    },
+    "core_05|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "02ea14809a81b78caf3d92aaba7ab61ed97d7d83a6b2e5c030492cb8d961c4ab"
+    },
+    "core_05|frame|False": {
+      "vertices": 128,
+      "triangles": 216,
+      "inside": false,
+      "sha256": "77751219bbd9b96048b481aa4e39fcba539b8eef985778c197f09ce2bbf586d7"
+    },
+    "core_05|trim|False": {
+      "vertices": 2880,
+      "triangles": 5600,
+      "inside": false,
+      "sha256": "9a1a9ede8c6171679c955adf4d4e5e8c795263928f31baa73bbafac960ce5a8e"
+    },
+    "core_05|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "82fb84f677603941747d5468824bea6247926141c4dad9804f3f8af984c07c3f"
+    },
+    "core_06|liner|True": {
+      "vertices": 3684,
+      "triangles": 5588,
+      "inside": true,
+      "sha256": "516eccb78f366eb849bbfffe230cb4c51eac4b84165ba8073633fdbe5887a407"
+    },
+    "core_06|plate2|False": {
+      "vertices": 1632,
+      "triangles": 2992,
+      "inside": false,
+      "sha256": "3c559f64ed2d7281fbbfd9da846cb8d27349f5dd2cf47a2d90c989539f599821"
+    },
+    "core_06|glazing|False": {
+      "vertices": 544,
+      "triangles": 816,
+      "inside": false,
+      "sha256": "12cf62a8e4b317c25d44fff4e17622982fc02af99cb3b774e17d2562cc2dddca"
+    },
+    "core_06|edge|False": {
+      "vertices": 2560,
+      "triangles": 4052,
+      "inside": false,
+      "sha256": "1fe0b9daf204f47acdee990c344d1b0fc1596ba80dd64c3643a7fc0a1b9cdb60"
+    },
+    "core_06|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "a798e456f7c0c963749e1b1c17560b4eae304d0ec18c803ffb07fd85e3891166"
+    },
+    "core_06|plate|False": {
+      "vertices": 7632,
+      "triangles": 13992,
+      "inside": false,
+      "sha256": "b3897856889762fa8a18eaa168f7309e7936e63b684ebe3f2bb7eb039de6741c"
+    },
+    "core_06|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "42203bd58dd349ee866f4f2d36bf5e37c82b003b7d0a4cf2e35620cd90ecc8a7"
+    },
+    "core_06|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "ad55fbf1fd0955960d606a4121414a033b1e2d567cb4f17c62951efffdb14e2e"
+    },
+    "core_06|trim|False": {
+      "vertices": 2880,
+      "triangles": 5600,
+      "inside": false,
+      "sha256": "4db77d46308b942f23cc00d7b8555459425213c5910f141766fd0bb4b3cdf0bb"
+    },
+    "core_06|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "a0dfe92024a0a49c11625958e8c21fe2a20899980e6eec55976dedba20daca71"
+    },
+    "core_07|liner|True": {
+      "vertices": 3772,
+      "triangles": 5720,
+      "inside": true,
+      "sha256": "8abb0e1eb52981134473977be7bcf70d8deb8bf478586f22ed3598a57c996349"
+    },
+    "core_07|plate2|False": {
+      "vertices": 1584,
+      "triangles": 2904,
+      "inside": false,
+      "sha256": "2a389d7399cee5d76e79072dceab2be77c62767884fdc2d59e6de57686049b94"
+    },
+    "core_07|glazing|False": {
+      "vertices": 600,
+      "triangles": 900,
+      "inside": false,
+      "sha256": "c65ee402073330820d3a9d3b3d9c01d05ad2d6fa29035043ffc218bc797c6510"
+    },
+    "core_07|edge|False": {
+      "vertices": 2712,
+      "triangles": 4312,
+      "inside": false,
+      "sha256": "4aa902ea72adf81cb43590ab9afc0208ca7e88d605cf6d79bb38a7b3f81f13e3"
+    },
+    "core_07|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "47f9b9e332ac4b25e19d9564f26270654ce9c084cd403be48795a9c12ad5504a"
+    },
+    "core_07|plate|False": {
+      "vertices": 7776,
+      "triangles": 14256,
+      "inside": false,
+      "sha256": "4f4c32bba94e05ff22a1ca6f08d7421a4f28ed59eaf0adbe631d841b2c65b4b2"
+    },
+    "core_07|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "56368284fe717a030c98ba7dacbb96d7449b5a59db32590f57645412f8088939"
+    },
+    "core_07|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "4bbbc27c2cdb03871a85954576b2173feaa876be7e8c16da0c3914f2f9f6d7d6"
+    },
+    "core_07|frame|False": {
+      "vertices": 128,
+      "triangles": 216,
+      "inside": false,
+      "sha256": "0f60399b3f1e52455e5eed2006274475ebee6385b12e89aa450997f7070adf39"
+    },
+    "core_07|trim|False": {
+      "vertices": 2976,
+      "triangles": 5784,
+      "inside": false,
+      "sha256": "d0e707e1469ede7a097e190ef8e35cfd9b1ac9cbeff1e21b87aaba9ee37f2b4e"
+    },
+    "core_07|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "a449b7758c9619ad04150a6b913931e985816ba41032c3b125c195a5cfa81cf7"
+    },
+    "core_08|liner|True": {
+      "vertices": 3700,
+      "triangles": 5612,
+      "inside": true,
+      "sha256": "df8c9eb5800df7919abdba8cbf9b3d12bc2334f13d1eaff12bad1848c6c1ff5e"
+    },
+    "core_08|plate2|False": {
+      "vertices": 1608,
+      "triangles": 2948,
+      "inside": false,
+      "sha256": "fa98cd3475fe1a4f6e3a0e2156bb3d9b83b358a2ba7f2973556b8e7405664528"
+    },
+    "core_08|glazing|False": {
+      "vertices": 584,
+      "triangles": 876,
+      "inside": false,
+      "sha256": "641eed1be93fc9d26d075863a385b412517a4f623aa87c94e2f8ef555da8f92c"
+    },
+    "core_08|edge|False": {
+      "vertices": 2704,
+      "triangles": 4292,
+      "inside": false,
+      "sha256": "0a59f3bd8178e7e951a03a12b37b0138f7c8526c9f2e34b34fab8e96657576b2"
+    },
+    "core_08|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "f16f953135e6f0ac2a1524369bf8c7730b4e1a901e68a9308f53e1a68f4d14ef"
+    },
+    "core_08|plate|False": {
+      "vertices": 7632,
+      "triangles": 13992,
+      "inside": false,
+      "sha256": "d05902b192f238f6627a0ee5c55380ad548bf9a1dfcacd107b1aed45d623633d"
+    },
+    "core_08|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "2f0063582a943c50abb00e21363600217be005c21f43df10dbf04700b0ce36c6"
+    },
+    "core_08|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "182b8e85708490bc36ce6f394ea1666facd6b07486683403bc9f342a101a9ec6"
+    },
+    "core_08|frame|False": {
+      "vertices": 128,
+      "triangles": 216,
+      "inside": false,
+      "sha256": "e1e5763900d2efce5abd6badc280c327a176725ffb91afde1a9f4f9cf1b376bf"
+    },
+    "core_08|trim|False": {
+      "vertices": 3216,
+      "triangles": 6252,
+      "inside": false,
+      "sha256": "bca161ced027f30e579e42f86a93448e0b7d757539ba3783ff17a306631ba3d4"
+    },
+    "core_08|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "7b4dc510be861761f7cced7afe5fa804f0f73a952767b8e4ad7b9abf2b52ed09"
+    },
+    "core_09|liner|True": {
+      "vertices": 3684,
+      "triangles": 5588,
+      "inside": true,
+      "sha256": "12647a743f0b629d9a437176e4d1e1f90bf22d480c6bd0ed45d034c81fbfe790"
+    },
+    "core_09|plate2|False": {
+      "vertices": 1608,
+      "triangles": 2948,
+      "inside": false,
+      "sha256": "43a696346f84d2503ca0c9667cc21c8b470e10efd5b39517d048ffd358a3c3ba"
+    },
+    "core_09|glazing|False": {
+      "vertices": 568,
+      "triangles": 852,
+      "inside": false,
+      "sha256": "3aa00929266dbc484456b5a9d743e6fd023ed19654c8021100fb77be015c749e"
+    },
+    "core_09|edge|False": {
+      "vertices": 2560,
+      "triangles": 4068,
+      "inside": false,
+      "sha256": "c511e3c61be1227aedca75fd27f259563ec06aa68444e38812ae26ef0e3df15a"
+    },
+    "core_09|deck|True": {
+      "vertices": 568,
+      "triangles": 852,
+      "inside": true,
+      "sha256": "7fe95b942f43089b1f245895816d9ba4883ec76e86e52af242724087e860c721"
+    },
+    "core_09|plate|False": {
+      "vertices": 7584,
+      "triangles": 13904,
+      "inside": false,
+      "sha256": "b0e85252ee6d1bf28088fb96b55bfe5df43d46f3883cc0b25401e8fe15361d61"
+    },
+    "core_09|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "186cf9ae558026d4ac3256d83ca824f5dfa8249f2465d3f5b6944c86d2d1ac2c"
+    },
+    "core_09|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "7963b5ef28bddb77911abe1962abf3b98e69f0cf21c191279c2a09821322e18e"
+    },
+    "core_09|frame|False": {
+      "vertices": 208,
+      "triangles": 356,
+      "inside": false,
+      "sha256": "9eb7596c29a0fa08e6c2fa0a61d6001e4b04cd95ace767e3a7525f6570e0de4a"
+    },
+    "core_09|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "60e6c66970a34316971fd5401062c006763fcdac948a3d11684897ea704a219e"
+    },
+    "core_09|trim|False": {
+      "vertices": 2352,
+      "triangles": 4548,
+      "inside": false,
+      "sha256": "78f0b1a3c219cb284d136b7f739bec551beff2eb030bdb898762a215cc6327e1"
+    },
+    "observation_window|viewport|False": {
+      "vertices": 68,
+      "triangles": 132,
+      "inside": false,
+      "sha256": "4c9aab57cf24b9512075ae13377fda61cdb1f768101aa025fea0e9e1f11bb435"
+    },
+    "observation_window|edge|False": {
+      "vertices": 168,
+      "triangles": 328,
+      "inside": false,
+      "sha256": "19a89d35d0e78d128f5cf9e4999a84232c865d5ff29d6106ebefe60101cc0191"
+    },
+    "observation_window|trim|False": {
+      "vertices": 96,
+      "triangles": 184,
+      "inside": false,
+      "sha256": "7ec0f1be51d3d0a431508ebaa45dd5fe02888d805213bc88ac13e5e7bc88c6e2"
+    },
+    "bearing_00|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "8995cdbfe761b024531a816dbec6c9a4799b9d12fcd33f50993854467407b7af"
+    },
+    "habitat_1_slot_00|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "6fd5c1a43ff6adec56661189cd4bd38c5be8fe39ae8fc1ff4e1ca9baf63d077c"
+    },
+    "habitat_1_slot_00|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "506d791caf15244cbb36266e756f1244caa5bbf542164d61cd6faa831967b8e0"
+    },
+    "habitat_1_slot_00|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "c387ad6ae104232014481f91ce00328cc1ea45774b250636ff920d4540d439d5"
+    },
+    "habitat_1_slot_00|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "f3bd28cf4ff1a179cfbe2a2085b24f468936a227d66b460a19faeb83e23d5ab8"
+    },
+    "habitat_1_slot_00|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "b046630b19d9fd0882c4f80aee750a4ba0a0c033165df74c0f9236cae595c4a5"
+    },
+    "habitat_1_slot_00|edge|False": {
+      "vertices": 666,
+      "triangles": 1196,
+      "inside": false,
+      "sha256": "98c7a7dabbac1e4ecda3ab8e53dafacc35f20eb25e80152e5074f1a1d8ab530f"
+    },
+    "habitat_1_slot_00|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "fddc23d25f18bb946dc4df97c5b73416c1106b514bd531a1f72102ed37e659e8"
+    },
+    "habitat_1_slot_00|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "08a029194a5b6dc6bc3dac121753a05175f289bc493e789390aeddc1c3dad5af"
+    },
+    "habitat_1_slot_00|frame|False": {
+      "vertices": 208,
+      "triangles": 348,
+      "inside": false,
+      "sha256": "2826a377384793598aecc8fabce4d5d1b4262af6bcad950a62a5c1f41604876c"
+    },
+    "habitat_1_slot_00|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "46fbfa6a89758acd11a109b5c41046d21ac91e2a297416b6aeb1d90515ec5afa"
+    },
+    "habitat_1_slot_00|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "e8fa75454f1c6e08de533bdf837c6eedf83bff5516c95e46ff23b043acbc49a0"
+    },
+    "bearing_01|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "ac9fe0b129c72aa4348f984f5f8ff0b36ec59efdcb7419d4602ea0176c3fe5fd"
+    },
+    "habitat_1_slot_01|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "b5624c901675899e141e3146374c357d8a0bc4a53b6b9b4d06002b8448eef119"
+    },
+    "habitat_1_slot_01|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "3ad4fcdd9dfa429a062421b8992d369c84e89d36a9f756214f6c5126dd022c5e"
+    },
+    "habitat_1_slot_01|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "e780036079506b488edb05ca1c79beaa55a9f83f6de1a84dd350737c5edf2bff"
+    },
+    "habitat_1_slot_01|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "c1f011d80de7fc59e9cbef7363b4ba162bc6c8166bf698eee00624ec087a0e67"
+    },
+    "habitat_1_slot_01|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "3190bc5d071ca5901a15c3ce6d600e95bc124beea28dac1e02e747db6e0f5745"
+    },
+    "habitat_1_slot_01|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "e6abe3c1c0576fd444709c878a02fe6c27fe20259aacb360750ed64052f9756c"
+    },
+    "habitat_1_slot_01|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "fc49ee7c5f233881ba4d377305d0b784fc72184f889d9d32424d2c6851007f17"
+    },
+    "habitat_1_slot_01|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "56a2adcf80643b5bd694e37224152f29ed77b7cbc3d2941bc35169eb81800add"
+    },
+    "habitat_1_slot_01|frame|False": {
+      "vertices": 144,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "06c6fd6c0893fcf47bd27ab5a15b884ed2e68ff0ede949124ce8f5b1e78db2f0"
+    },
+    "habitat_1_slot_01|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "d06b046d9257edb46fad090a820829c9ac350a621c6affe98d3fcc837eb8c7a3"
+    },
+    "habitat_1_slot_01|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "a283683f68d9b6299b312ada03ba82a946d4861f2f27438a6eb72389d2694cbd"
+    },
+    "bearing_02|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "89b9e7882ecb5d2ba46acfd881749e2f0e89ed64df63b0b3baf9cdf2f9f90c00"
+    },
+    "habitat_2_slot_02|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "5322bebd78a76285f43b47c8b80643ab3cbb27f158957a7ca92ca85899a0065f"
+    },
+    "habitat_2_slot_02|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "92526d283f42b5ba24f95edd0a26a396a99a7d463dfe735bb59b416a7be80382"
+    },
+    "habitat_2_slot_02|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "d6fd13401770a66819f4463ae4c0d7b43566b6e48977290d42dbccf6bf80bbac"
+    },
+    "habitat_2_slot_02|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "8aafa17f470ce962242fe5451b4d9ad12e3d8a7af8d450ba1ae9f98919903c56"
+    },
+    "habitat_2_slot_02|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "1d73adaea2f9176ab4cb48651a2d8b35bb60e65c0a4dd6e4d46b8cd5cc470fa0"
+    },
+    "habitat_2_slot_02|edge|False": {
+      "vertices": 666,
+      "triangles": 1196,
+      "inside": false,
+      "sha256": "180ff533f0af435f360114e0880347716d2d074700997893bff8a0e426b53414"
+    },
+    "habitat_2_slot_02|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "df58e65a31f698f7f812e034243655014d55276e671a9ee488b0312746efa90f"
+    },
+    "habitat_2_slot_02|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "62481cd76e2abf64478b95379a88978491ed2e0df600e47dd7c383f91d620a16"
+    },
+    "habitat_2_slot_02|frame|False": {
+      "vertices": 208,
+      "triangles": 348,
+      "inside": false,
+      "sha256": "72e4f939430d1ed58e17df40c7c627deb633392c9bf2a582bb1aa740c6cd1a17"
+    },
+    "habitat_2_slot_02|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "9ba2a48122172462590a1ba9aae50af31b3199f36d488ec277df1bf8a0c69a09"
+    },
+    "habitat_2_slot_02|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "dee9a3db1c49fd3de680d5d00c1f556de455843953486e96fcd9c6f4deaa8094"
+    },
+    "bearing_03|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "488c2f3f6d1b84c018780cff2f6d56da4df84ddb0d9c8f857ae703a0397923c8"
+    },
+    "habitat_2_slot_03|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "761d6d0bd806a5c75a44fc63780d287d3db43306742efcd8430f99f226b8bc39"
+    },
+    "habitat_2_slot_03|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "3462e443580a32b9cd25d527d185574242bf042e818e1f09fbd72f40ccc703ad"
+    },
+    "habitat_2_slot_03|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "f359e980a6734794464bdf0923923a43fa442b1a2d096880307d0622e72236f4"
+    },
+    "habitat_2_slot_03|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "3c40c33fea3a7bec05a1c478ab1d18dc74f4171dfdea1a7b752b6d39d1c14602"
+    },
+    "habitat_2_slot_03|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "328051af04558548ce5639b8e0dff8522014f8dcb871f18f9c72534f765a4c03"
+    },
+    "habitat_2_slot_03|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "186bf29f86dc11a45f0bdf9a499c655e2b65c421655c8eef478bd1cb3d7712f3"
+    },
+    "habitat_2_slot_03|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "ca9b929e087b4bef8a4955bf4d4465bb0288b5328cf0d82f68cb8bd54c40861e"
+    },
+    "habitat_2_slot_03|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "b6463edf591b7778462c721a297409935eab943e990cbe0a4734ea62c63bc41a"
+    },
+    "habitat_2_slot_03|frame|False": {
+      "vertices": 144,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "ecadfc7f7e46076acc2ea73e0fe85e36645f853c22c385550cec9f0f44e815a0"
+    },
+    "habitat_2_slot_03|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "a026447e06e915c1dddcd7912da86debd59c3da3c632d0354b4d7890ea04e27e"
+    },
+    "habitat_2_slot_03|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "5e1cbf2b3c931202161a1158cf1781183efa1ea19309328f4ef7afab8b6beda6"
+    },
+    "bearing_04|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "a3905858b010555ea4b670afd56fe06d33d31c6dcddc2bab858bca13158093a1"
+    },
+    "habitat_3_slot_04|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "ac8ff2fcaba9e47ce831cb826e67e39878fde2533e772c790c629633e91b49b5"
+    },
+    "habitat_3_slot_04|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "5437f50efe09e785f589738c26d4f191936ac67292a7f0c60466cb9282ecc6b2"
+    },
+    "habitat_3_slot_04|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "c5fd65bdaa3adf6805474d9e947ada867b91d3dc4671f36d32947a4b11c18846"
+    },
+    "habitat_3_slot_04|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "88c751c0835ebc630f41f56e809a448bba5434ffada04f8cee54b692c43c5066"
+    },
+    "habitat_3_slot_04|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "8f7917d203d002a978c1a2a12bff3ee2daf979bb9dc6f0b80bda2023e9587b84"
+    },
+    "habitat_3_slot_04|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "71f1b3ad4f808030c448a11983e6623928acd480bfb8458abb3419360080753d"
+    },
+    "habitat_3_slot_04|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "11f19d2f8e3267944f3b5f679569516434b81dacb7471a4e9723e2ddaf4b00b3"
+    },
+    "habitat_3_slot_04|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "45868840cd0da09bcbb3bcf735c5284a6c6e61da8eec9c57fca926b67f7ca5bd"
+    },
+    "habitat_3_slot_04|frame|False": {
+      "vertices": 144,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "3af4c2a9d784dced231e1ca8df1d39ed812d1888934ef6b1c67d2fff90b4677d"
+    },
+    "habitat_3_slot_04|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "fe9b93ea1459b19f65a3a2b1bfd547b65d10dc1e88de33a6e8d1dc84ae99ca60"
+    },
+    "habitat_3_slot_04|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "9042b8b387ee2034e9afb2442804dbf8c8151ea4e66f4ef713c27e3793c703bd"
+    },
+    "bearing_05|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "aea7e93b70b61f01b63af7837104a3bc6f261f076fbe8b99bc37d95537cd87fd"
+    },
+    "habitat_3_slot_05|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "0366dfcc40ef712796a238d2d6e6df874fe5ffd3431efe66650121cf70363d58"
+    },
+    "habitat_3_slot_05|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "a12006a12c673eedb602e5d493d92bdf096d94989fccd91704b295abd6d63129"
+    },
+    "habitat_3_slot_05|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "89afcd21a02436b64ffafe1a1e9643cae50fd67ddc7c7cabf9dc7f1c336eb174"
+    },
+    "habitat_3_slot_05|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "14d5869a8312d91656689f42e491996742e33549c13b1dbf4533518b9836a2d1"
+    },
+    "habitat_3_slot_05|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "66e127071b1a4849f7c7e701c5668508b82261fe2079ff1adc8a8ca6d00fa886"
+    },
+    "habitat_3_slot_05|edge|False": {
+      "vertices": 666,
+      "triangles": 1196,
+      "inside": false,
+      "sha256": "88e4e3a8b1a7c8377f9df0b9f325fca0c9f84864b333a059396d10b120988c85"
+    },
+    "habitat_3_slot_05|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "0e6fc85b3bf4e7224a588438e9ca356f410c2e74205e45a4d5167eeb5db07dd4"
+    },
+    "habitat_3_slot_05|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "611c01ab94d38e4bf0c8befdc91b76425960ce92b9eeb3315866584e201633dd"
+    },
+    "habitat_3_slot_05|frame|False": {
+      "vertices": 208,
+      "triangles": 348,
+      "inside": false,
+      "sha256": "6c40191467a4d08834f0c0f9d22d1679a0e43c0c6103b15c94417c2a7abf260b"
+    },
+    "habitat_3_slot_05|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "b2225ead683e1d83b39c128daf09d7a9175ff5df1d50de471fcaeef723d7178e"
+    },
+    "habitat_3_slot_05|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "afd4df1f5f66ffe01897dc18c148d310f3b18063adb531a75c28f516c35869a5"
+    },
+    "bearing_06|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "ec0c9041d43e93d0054739b0bb20f3154d4adc2317c0abdd8f39b5cca6a8e30c"
+    },
+    "habitat_4_slot_06|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "931e51e654bd062c21c3072f57f809710066cef01be9589d096b321d600911f5"
+    },
+    "habitat_4_slot_06|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "54c9ff17d016df43fd23bcc6acf0e66bc4f2ae3a24e309d1ddf7ecaf1a4500d8"
+    },
+    "habitat_4_slot_06|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "1e8d26f9a9ddf76a978bc8767fa086cf60c6cdabc549c918bea00f326d11ff9f"
+    },
+    "habitat_4_slot_06|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "f3f9223412902883a784f6dbf83763360d880e80674bb1795bef846b30079bd1"
+    },
+    "habitat_4_slot_06|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "be6412306f66a3e3e8e7dcb54b618fce9bbdf1e7f2b4919e6288a63cce4ea57e"
+    },
+    "habitat_4_slot_06|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "2570d7808a7198780b8ad6844403d54f7c8d428108519d4e4f0b2b80e0edba72"
+    },
+    "habitat_4_slot_06|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "68aefe29377b4875c175b8ed06e71b91fdceafa9b4797c791e9d7228d84757f9"
+    },
+    "habitat_4_slot_06|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "3b1af4552149bf97a1478a93d3ff33bfe060dee0522840acda15a17cb28bcdcf"
+    },
+    "habitat_4_slot_06|frame|False": {
+      "vertices": 144,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "10070eaf9a8ca24cdb36fe1726470f349460a02beec6ee91dce969732a46dbaa"
+    },
+    "habitat_4_slot_06|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "589254a0cbc029b4d0c3aca55bdc073e31618f8fb84345f0ea848a1eab45f184"
+    },
+    "habitat_4_slot_06|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "c5221a864a51e9088ee35bc6fe56cbb092aa3ddc095851cb3ada03565ac26ec3"
+    },
+    "bearing_07|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "4816192121bdb2752f6a58286e4842809efe727ecd31db27e31a73232a0fee41"
+    },
+    "habitat_4_slot_07|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "4120b0aa164fb28d9a6c0c7313104e73905d6a8b984e3417c3639d2653d58dbe"
+    },
+    "habitat_4_slot_07|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "bd8da00564ea8f63e7c78abfac3f16e9925c45d7e2013770bb235f383ba653a0"
+    },
+    "habitat_4_slot_07|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "d3199dae5d5e1385defc02d1aa7deea788ffcf4685e0610624ee166c6d126eea"
+    },
+    "habitat_4_slot_07|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "3d90199a5f51b5cf7c3963e33676352dea88c02ab8c63902a1809864a6653989"
+    },
+    "habitat_4_slot_07|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "e7d2bc841e38665a1cfec4e77325b5c7901b2f230c336d7287cae3abb6c1f366"
+    },
+    "habitat_4_slot_07|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "51e9f9dea64019cd53873c2751fcddc36bc67871525a57421fe7ec5262f864df"
+    },
+    "habitat_4_slot_07|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "69e799e5191a1519c1dec129f909056a405d1d9bd11b51da5301e27cd7980414"
+    },
+    "habitat_4_slot_07|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "a5876532e463aff13ae3979b18aecf47707e8aa9a4b7e7256d6c2f897d7e7275"
+    },
+    "habitat_4_slot_07|frame|False": {
+      "vertices": 144,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "87ee977bdb986ef50f12350f2e6cec97f1929026eeaaab83e227af6befeec0d4"
+    },
+    "habitat_4_slot_07|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "8a59addec45f547b7ec53254d27b8ec04d82638d439db485ca5119461346f0ce"
+    },
+    "habitat_4_slot_07|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "caad403867a1b85dec52b4b357b45166ae0ab2ba42b861bb25cacbaa017dfdd2"
+    },
+    "bearing_08|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "3efd08026ebc89c1f8bdf41c136ed139332cadd487adaefa9e39a3d4f9d65194"
+    },
+    "habitat_5_slot_08|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "6501f42b48576e095cbc4f90d2668f2e1d2ddf7ae7dfc677ef0a459647e972c8"
+    },
+    "habitat_5_slot_08|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "4febe126430782db7633daca4a86880ece7d349f5ebdab5cf3126dcaf6e20e14"
+    },
+    "habitat_5_slot_08|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "78a9f5da0d815d1e5231a8149939754c02d211b0faace1affedaa3a1f9797cab"
+    },
+    "habitat_5_slot_08|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "b954df47783a6e7181377bde68da3daed1b5371e90e3ce74ee6b1da3e315b57a"
+    },
+    "habitat_5_slot_08|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "4f8ccf8d75007ccfcb2b23c258169aef75f6302611d38ac10dd454981ff95b10"
+    },
+    "habitat_5_slot_08|edge|False": {
+      "vertices": 666,
+      "triangles": 1196,
+      "inside": false,
+      "sha256": "a943e7e5d1fc91c7c58fe6420906ff560218b468be78566f2eb535e5da0c1c6e"
+    },
+    "habitat_5_slot_08|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "fb76ee3c9a15b2ef57113fedf6445d164b853d36f7a14c39b11f95eb2d47c30e"
+    },
+    "habitat_5_slot_08|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "68a5b63a37461a8ddfa3a0b66ce94194e131e67899114f30745f8143812e2224"
+    },
+    "habitat_5_slot_08|frame|False": {
+      "vertices": 208,
+      "triangles": 348,
+      "inside": false,
+      "sha256": "fba607ad21fcec41fa9ed70ba2ac81e821b72dab8e0bbc6ed55aeadb0386dec2"
+    },
+    "habitat_5_slot_08|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "4f9f7016bc48a652e0c48dc6ce81a9251c0275c2ccd7cb3b32baf44bc54dcb8c"
+    },
+    "habitat_5_slot_08|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "4cc536c3c7fbe4b319fb49ea27354432cc67af42f03ed51a346f35a21e4323bb"
+    },
+    "bearing_09|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "fdfa9d47148558c9f1f27f5b91e025de11a28e324233902e1fe144a7a398d38c"
+    },
+    "habitat_5_slot_09|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "a041ffb8543f22420ebd86d1baad1a323610bca93225cda77d3a65eebb71fddb"
+    },
+    "habitat_5_slot_09|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "0e29e367b8600e2159855ead91a630ba5cce97c1f321f8191de080da3dff7494"
+    },
+    "habitat_5_slot_09|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "d510b9560bd6b171c06f94f6c94314b69a4d884791e0c8cc1a5d6a47875ed984"
+    },
+    "habitat_5_slot_09|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "91625495c5086d0e13c06196695712bb4a53070f6de73828dcb7eba94538282a"
+    },
+    "habitat_5_slot_09|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "2084f4e9e9f64f6aef3fafcc3dff560deef6fbec11f3efa4c093261708c3ad5a"
+    },
+    "habitat_5_slot_09|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "3eaa52ad51981c3a3af55bca27e5d4c9930e7abd343798224bd6bcb16d462167"
+    },
+    "habitat_5_slot_09|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "b57387ec4d1c7286096f9eb067de4b409c2ffbcf2435b3bbe4d214458ada6d52"
+    },
+    "habitat_5_slot_09|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "5cb5d95b38e879ec4806648a594e135b3c431dd304926a04c600f555dc9add18"
+    },
+    "habitat_5_slot_09|frame|False": {
+      "vertices": 144,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "229b34ebb58d411280bffa1063387f26790083606b572ba3a93a7c6e4c002157"
+    },
+    "habitat_5_slot_09|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "05bc52e0d27480e097cf605cde5d3bff53768629ddad124f69b348903769e522"
+    },
+    "habitat_5_slot_09|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "ebb2386d449b9751c799e90f7778a8edd232c76bd59bc0b87af7f116952216b5"
+    },
+    "bearing_10|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "bb4ba65601dfb71fca914eade5d8c6134cc02b81d351bc0be1f794013083ef6c"
+    },
+    "habitat_6_slot_10|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "7f6818bf73dcf0756cd862221e0510ffca7b3cac532397a7e3ee7427d35e9efe"
+    },
+    "habitat_6_slot_10|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "7a3cac0b068d14c919a7124fc327ac512cc9fed319d7bf1b80990ecc5afa12c4"
+    },
+    "habitat_6_slot_10|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "cf6e0904ad8ac387443b76dda69f28e06f245fa0b67a27902b2ef2c28211ba37"
+    },
+    "habitat_6_slot_10|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "ee657c437342c931c16f3b83a1e4fb5b6c62d7309e297edf0714711b5eb9b5dc"
+    },
+    "habitat_6_slot_10|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "369141b3cb317254c9163bc6b620684731e2102ddc7620b0f6b3be0f4799fe7c"
+    },
+    "habitat_6_slot_10|edge|False": {
+      "vertices": 666,
+      "triangles": 1196,
+      "inside": false,
+      "sha256": "e191651c315cf618f3196517d04b8cfb00da7caf819fab706689588d610a5520"
+    },
+    "habitat_6_slot_10|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "2690ae101a27b87109ab7d73d50713672c93ba0a2f1e88458638a50112e3bf5a"
+    },
+    "habitat_6_slot_10|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "9361133fed1f951bee71df1774f098dc86e379924a3e3c97936b31b708be5dd0"
+    },
+    "habitat_6_slot_10|frame|False": {
+      "vertices": 208,
+      "triangles": 348,
+      "inside": false,
+      "sha256": "55a787bab5f1d9a1449c2f5c82800aaa76ccb802f0aef09fae507513a41fe301"
+    },
+    "habitat_6_slot_10|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "db36265cd8299c31237adf043e137b2241313d6e10c7e27e451ec39542077369"
+    },
+    "habitat_6_slot_10|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "d13356efb841d515c109056d91c14514ed0c0d06f80cf6fd5e9eb813eb32f5fd"
+    },
+    "spoke_1|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "c8283b305264254b847312fc74e1bf9ae988dcb6981074be205ec352312bbb83"
+    },
+    "spoke_1|liner|True": {
+      "vertices": 24,
+      "triangles": 36,
+      "inside": true,
+      "sha256": "462df8fca215498d4cb7a9774ce852b5453d7920354a3faf2a2583bbf937e3be"
+    },
+    "spoke_1|trim|False": {
+      "vertices": 2184,
+      "triangles": 4240,
+      "inside": false,
+      "sha256": "b3475f5de453df447d401ab3a9c3eb2e602543cda563d8003ff1d0f69a9ae111"
+    },
+    "spoke_1|plate|False": {
+      "vertices": 504,
+      "triangles": 924,
+      "inside": false,
+      "sha256": "8bfb31a9838fa2c14ebaa4dd9b7586bf059951a330328daa5929b73bdfc78d3d"
+    },
+    "spoke_1|edge|False": {
+      "vertices": 1512,
+      "triangles": 2664,
+      "inside": false,
+      "sha256": "ccc5062ae3243e629948a8d71e015018b27df0dec5fec28f65be8111d69c1b65"
+    },
+    "spoke_1|plate2|False": {
+      "vertices": 72,
+      "triangles": 132,
+      "inside": false,
+      "sha256": "5aa9abbf86c0443231555518220626092b158493b370f70d94bdb9261b0e6472"
+    },
+    "spoke_1|recess|False": {
+      "vertices": 400,
+      "triangles": 784,
+      "inside": false,
+      "sha256": "36257171cadd3b788940e8e04e28bd8f3fcc6d7f4120090f2c97c456f49a5333"
+    },
+    "spoke_1|frame|True": {
+      "vertices": 32,
+      "triangles": 48,
+      "inside": true,
+      "sha256": "ffb332234adf2e0fc7e15a92caec9b7a3db4ceefc4a5780dd3ba25156f604321"
+    },
+    "spoke_1|rack|True": {
+      "vertices": 64,
+      "triangles": 96,
+      "inside": true,
+      "sha256": "bd18f7fb10da8e8a8d811e5dcfb9b8c61ab9dee574a6d14b0badf8e2c0bc8c87"
+    },
+    "spoke_2|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "52f01eb34943e064bd0be55df9c3c74e1ee60f065cdcccf78a7b928313b0e313"
+    },
+    "spoke_2|liner|True": {
+      "vertices": 24,
+      "triangles": 36,
+      "inside": true,
+      "sha256": "03cdaf426d7ca02fd98e98cfee03c6fa50d5014a154c0313f341b89d6bee7edc"
+    },
+    "spoke_2|trim|False": {
+      "vertices": 2184,
+      "triangles": 4240,
+      "inside": false,
+      "sha256": "a54ca166c65de36489d668845658c0b2e827e04cea0b501cc152db4ac8eb4d2c"
+    },
+    "spoke_2|plate|False": {
+      "vertices": 504,
+      "triangles": 924,
+      "inside": false,
+      "sha256": "7e481ba02034f1e3eece7f2646dff79f51844a985bb83ae4e443d0f77859bc5a"
+    },
+    "spoke_2|edge|False": {
+      "vertices": 1512,
+      "triangles": 2664,
+      "inside": false,
+      "sha256": "23146c1178f7bb2806edd1f790908d40993d5ce7c794595ce8cbcead2920f797"
+    },
+    "spoke_2|plate2|False": {
+      "vertices": 72,
+      "triangles": 132,
+      "inside": false,
+      "sha256": "6b904d40faeace1bbbb3f61a3af259a9fb7c869a73e4ba561a5faaa91a9dd110"
+    },
+    "spoke_2|recess|False": {
+      "vertices": 400,
+      "triangles": 784,
+      "inside": false,
+      "sha256": "53c9dbaa96fc149955a3e73858a05c29410c54591057a90b590f1693ac8ddbef"
+    },
+    "spoke_2|frame|True": {
+      "vertices": 32,
+      "triangles": 48,
+      "inside": true,
+      "sha256": "ab080231182ed48b45eccacc3b059255d511dba2c885ec5d43bd98b0426cf667"
+    },
+    "spoke_2|rack|True": {
+      "vertices": 64,
+      "triangles": 96,
+      "inside": true,
+      "sha256": "c6ddf9aaa173b33d62c47efc192d762d61c9ccfa5e32644299f5d02e30ec9ef0"
+    },
+    "spoke_3|liner|True": {
+      "vertices": 48,
+      "triangles": 88,
+      "inside": true,
+      "sha256": "2b5b18f4696a9afd1fc3e7e06cc749e87a982aecefa9cf119adb0ea96737daf5"
+    },
+    "spoke_3|edge|False": {
+      "vertices": 64,
+      "triangles": 112,
+      "inside": false,
+      "sha256": "284bcb038ba0590b2ec7572c6a3ee51d01c311f4a2404b8265a990774f6370f6"
+    },
+    "spoke_3|plate2|False": {
+      "vertices": 240,
+      "triangles": 440,
+      "inside": false,
+      "sha256": "54cd3888858d85df59f162bc52a3d53aac306e85cf18b6a4f7fdf85956c44ca3"
+    },
+    "spoke_3|frame|False": {
+      "vertices": 240,
+      "triangles": 400,
+      "inside": false,
+      "sha256": "fdf298ff1dc705d88a47e0b6763a46c4116cfb645f56224244f5ed94732061e2"
+    },
+    "arm_1|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "5453915aa3143af80e789b8ae88c5ecdb06a2b0ffb74aed647f707d1c83bf3f5"
+    },
+    "arm_1|liner|True": {
+      "vertices": 220,
+      "triangles": 424,
+      "inside": true,
+      "sha256": "80fd918d8f1321e8b085f06ecb7afa668ffa611aa7431b72261bf1bf5ecc7373"
+    },
+    "arm_1|trim|False": {
+      "vertices": 4204,
+      "triangles": 8228,
+      "inside": false,
+      "sha256": "daf01a2a22f3589133b3ea490d5ed4c67584d4e9620f48424daabe048fb7e429"
+    },
+    "arm_1|plate|False": {
+      "vertices": 648,
+      "triangles": 1188,
+      "inside": false,
+      "sha256": "8d615ab30f00e33881b42d8da29ef7c3bc45054a5e4686bda8d4b1c60cd0a32d"
+    },
+    "arm_1|edge|False": {
+      "vertices": 2740,
+      "triangles": 4816,
+      "inside": false,
+      "sha256": "9b21833651f27c02c2639465149c13a3f3b6d6cbf5e520ae4105e46fd4c32702"
+    },
+    "arm_1|plate2|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "94a9ebfb55ece4324ad33583c80d9be712b81f2f6e0d67e472b201122eb2a4bd"
+    },
+    "arm_1|recess|False": {
+      "vertices": 500,
+      "triangles": 980,
+      "inside": false,
+      "sha256": "fbaba29d434623ec0a70ac2f866457b84e4e589d5923dea7bbaad8a0a0c61da3"
+    },
+    "arm_1|frame|True": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": true,
+      "sha256": "16250db45948c4c79f3ad872f94856845631be8649717cf66e63c2da1a3e3930"
+    },
+    "arm_1|rack|True": {
+      "vertices": 80,
+      "triangles": 120,
+      "inside": true,
+      "sha256": "5e6e785c93b4c840abd6ff267dc866e0525aa9e2f38507fab68b6292bb1ecc7a"
+    },
+    "arm_1|glazing|False": {
+      "vertices": 96,
+      "triangles": 144,
+      "inside": false,
+      "sha256": "612a729b1890059e79924962366b8ea98284e01ff70d758edcc5a5a85f386a4e"
+    },
+    "arm_1|recess|True": {
+      "vertices": 196,
+      "triangles": 388,
+      "inside": true,
+      "sha256": "5c03e63a185344d99f3848dcf9f2bd45422cd711a82c94105defa2127d19ea09"
+    },
+    "arm_2|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "f64dd1c4ccb10e58f76c24da0ea335dd4242a74e98368c3a08f5a4e4c0ae8d0c"
+    },
+    "arm_2|liner|True": {
+      "vertices": 220,
+      "triangles": 424,
+      "inside": true,
+      "sha256": "c7b42c4f3269a4d83d2ab712115fd7ba11f421475fc7bcdfcd5f81024b7e431b"
+    },
+    "arm_2|trim|False": {
+      "vertices": 3864,
+      "triangles": 7564,
+      "inside": false,
+      "sha256": "dbee74c334489850e0b194a62d10c35c91add3b3174a920e668549a4d6dbf81f"
+    },
+    "arm_2|plate|False": {
+      "vertices": 648,
+      "triangles": 1188,
+      "inside": false,
+      "sha256": "edfabcc6006ff8e9562d9e24c765df53df6afc5b771434218c932607262394c0"
+    },
+    "arm_2|edge|False": {
+      "vertices": 2388,
+      "triangles": 4220,
+      "inside": false,
+      "sha256": "d36e6d714b371e518228e10aca2db2b14222c2056264f42d1b052ba594e75edf"
+    },
+    "arm_2|plate2|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "f8abe11cfc76a7babf90ab467241e996700deff5a00df0b8d9d0ecddc3e41e39"
+    },
+    "arm_2|recess|False": {
+      "vertices": 500,
+      "triangles": 980,
+      "inside": false,
+      "sha256": "3f9a39f250a5fea7d9b316fca7ad849ec32f980ca842f3446b61c264422c472b"
+    },
+    "arm_2|frame|True": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": true,
+      "sha256": "d927d5984d6ebbb381e5a12b67817189175a768980b233873246f088bf920271"
+    },
+    "arm_2|rack|True": {
+      "vertices": 80,
+      "triangles": 120,
+      "inside": true,
+      "sha256": "54da97a680b443323f6afa4399257941f1d2d1ab74ec318c3f4fab15ba4dc303"
+    },
+    "arm_2|glazing|False": {
+      "vertices": 96,
+      "triangles": 144,
+      "inside": false,
+      "sha256": "d9b37720fa21d3a329ff356c95b67515f60d555605b984e4a705e5288fdc614e"
+    },
+    "arm_2|recess|True": {
+      "vertices": 196,
+      "triangles": 388,
+      "inside": true,
+      "sha256": "46e1edc3954e3a04216eefb07950833bf96c0f2a18809f757b11b2c3dbd0779f"
+    },
+    "arm_3|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "67762b08042a0966e0f88ceadcf62d602a800d88dd82304b0860779b897976c3"
+    },
+    "arm_3|liner|True": {
+      "vertices": 220,
+      "triangles": 424,
+      "inside": true,
+      "sha256": "e1b161be091276992352e64540273211b0feb05dd744a14b8846a34e8dc64f33"
+    },
+    "arm_3|trim|False": {
+      "vertices": 4252,
+      "triangles": 8316,
+      "inside": false,
+      "sha256": "fa49fd57b22362a8926a78344d79983a9a8570d8e28b1dc1b9e4e1531caada96"
+    },
+    "arm_3|plate|False": {
+      "vertices": 648,
+      "triangles": 1188,
+      "inside": false,
+      "sha256": "a73f91b6a4208c26047ac420425e75e2a20827d19763b1211c3bdf0b2f1f9017"
+    },
+    "arm_3|edge|False": {
+      "vertices": 2756,
+      "triangles": 4840,
+      "inside": false,
+      "sha256": "b175edd417a4c5c0954fc225681f7c33e4c8388b6f29e97afa5795e8eb6ec9f4"
+    },
+    "arm_3|plate2|False": {
+      "vertices": 576,
+      "triangles": 1056,
+      "inside": false,
+      "sha256": "6c9d61ff1c515c15a42775cbfafe6118504c2a4e523e6e21d4e53629617270b5"
+    },
+    "arm_3|recess|False": {
+      "vertices": 516,
+      "triangles": 1004,
+      "inside": false,
+      "sha256": "cff62e08862166a6ee490e17351bbfa05680e711fcbe2eea464ab792842a6947"
+    },
+    "arm_3|frame|True": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": true,
+      "sha256": "a294a0be8210b37498a7b764a88d2d488bef3cad2cc16ccd11aa8ab38d754826"
+    },
+    "arm_3|rack|True": {
+      "vertices": 80,
+      "triangles": 120,
+      "inside": true,
+      "sha256": "6e8406b5b66ff358febfeee3ef6e09c8347641f1426e8be15733f9cdb2a16f1e"
+    },
+    "arm_3|glazing|False": {
+      "vertices": 96,
+      "triangles": 144,
+      "inside": false,
+      "sha256": "4357d4c151ff0f91d965e95fafa9e6f8d9494424da0f39cfed66b3b74414ce77"
+    },
+    "arm_3|recess|True": {
+      "vertices": 196,
+      "triangles": 388,
+      "inside": true,
+      "sha256": "1babf9b8ebb8682177d2d9c730d3a43e121320f8c16f427cf68aed16a5e62235"
+    },
+    "arm_4|deck|True": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": true,
+      "sha256": "ddc3d4eddd68e2d0d973f122d6487f3bed5385b14873a76dcc47f0aae9427bfc"
+    },
+    "arm_4|liner|True": {
+      "vertices": 24,
+      "triangles": 36,
+      "inside": true,
+      "sha256": "b8403c524463d4cf09275e994db4ba7a8e94e8107a13bb125f23441ab6dc2034"
+    },
+    "arm_4|trim|False": {
+      "vertices": 1176,
+      "triangles": 2280,
+      "inside": false,
+      "sha256": "26166818a018e1efeb282e7a79fadc0f8fc75d0c497b878d9865438c624dcdee"
+    },
+    "arm_4|plate|False": {
+      "vertices": 264,
+      "triangles": 484,
+      "inside": false,
+      "sha256": "8a1c7877e4a321f6116fc4612a58c974038d101c7fc45805521bb29df8b867ec"
+    },
+    "arm_4|edge|False": {
+      "vertices": 864,
+      "triangles": 1512,
+      "inside": false,
+      "sha256": "bc3b50ead3c116aa3c96736c910f35cfaeecf7ce69b8da5697c4b23a06c4cf07"
+    },
+    "arm_4|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "b49c4a02acc373898781b2dca16bd08007de58bea4d8551d2e1b53b09ee56dfe"
+    },
+    "arm_4|recess|False": {
+      "vertices": 200,
+      "triangles": 392,
+      "inside": false,
+      "sha256": "89cfeeda48e992549f25f670ccb34061dc448f1033e82b17f1847843f9bb076d"
+    },
+    "arm_4|frame|True": {
+      "vertices": 208,
+      "triangles": 360,
+      "inside": true,
+      "sha256": "e0bbcbc6f5384584c6b6bdf43f7927f1f5d39bd5a585ca2ac2dd379291982dd3"
+    },
+    "arm_4|rack|True": {
+      "vertices": 32,
+      "triangles": 48,
+      "inside": true,
+      "sha256": "6e5e66c89847453cef0d57469b42b7f2900c8db264b6e277ba2a09685988c440"
+    },
+    "service_finger_1|edge|False": {
+      "vertices": 240,
+      "triangles": 416,
+      "inside": false,
+      "sha256": "e714a60ff52200fa51b0c618575168609fd76f8827d8d2c11f4e818f9de0f8a4"
+    },
+    "service_finger_1|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "3a7a4e2b803f317d48e69ce26f4cfa15055fbc03c28c5bd194b0ab5c48e54c68"
+    },
+    "service_finger_1|recess|False": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": false,
+      "sha256": "9665543a444cd351f0599dba3b0833bb879b641e714741ef21bf28fb7956aa6c"
+    },
+    "service_finger_1|glazing|False": {
+      "vertices": 160,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "be86f00554895ddfd7a1cdcf786c86609096ec19d72c55f54cb39358a834057a"
+    },
+    "service_finger_2|edge|False": {
+      "vertices": 240,
+      "triangles": 400,
+      "inside": false,
+      "sha256": "c570f9b8239080e3ff0985977a84bb429e7aa5b2582bbabc53d54bd7a50d9e4d"
+    },
+    "service_finger_2|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "385486acddfd97289336d19d7925f6e2c8961ce78f0e983fc6c7c6d5ef2efbb8"
+    },
+    "service_finger_3|edge|False": {
+      "vertices": 240,
+      "triangles": 416,
+      "inside": false,
+      "sha256": "939a71846ff9fba13384201a109663bcc742ec25b65f8f5720dc60a615926092"
+    },
+    "service_finger_3|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "185057f4bde3887b7eba9d5ddfd09e14a64783c94c6ef59f131292d29cb8304d"
+    },
+    "service_finger_3|recess|False": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": false,
+      "sha256": "7eb158eddb3995050d49e354e23cd517e521c0757a5d77412986b634d44a8992"
+    },
+    "service_finger_3|glazing|False": {
+      "vertices": 160,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "4f9d582757e962f0f96914f3aed742950e85caf623893f8b554efeba4ca1fe91"
+    },
+    "service_finger_4|edge|False": {
+      "vertices": 240,
+      "triangles": 400,
+      "inside": false,
+      "sha256": "b081ad6487b48ff4fa02c6d12052a24d2f949e17a24590abb5cfcda18f83097e"
+    },
+    "service_finger_4|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "c363e10db64bae389e9772dfcc30fe0910421327d0acc9a057cdb5a622ad5716"
+    },
+    "service_finger_5|edge|False": {
+      "vertices": 240,
+      "triangles": 400,
+      "inside": false,
+      "sha256": "1345605c44176a8775566fd510e9051cf7b891a960a07522a88e0fe929e84693"
+    },
+    "service_finger_5|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "4da44c4dae92eba02f74ab15a4cfc973d54265b50f214bc6d7772224d82c0709"
+    },
+    "service_finger_6|edge|False": {
+      "vertices": 240,
+      "triangles": 416,
+      "inside": false,
+      "sha256": "4f98ebab87d36c482c6d3bfc872837d5e564472f4b2f33eebcca118174439cab"
+    },
+    "service_finger_6|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "922f36439730aa3067a751fffe1a6da94cc478305f952549711e41e1c5d166da"
+    },
+    "service_finger_6|recess|False": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": false,
+      "sha256": "093deaf3b78ad36416e5cbaf560664919a07ff5a7f83dbde4bf921a38262306c"
+    },
+    "service_finger_6|glazing|False": {
+      "vertices": 160,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "96c831158bded748e801c128c68e1c9e9a70cfaedb4b131d432fe637b4d549a4"
+    },
+    "ring_attitude_control|trim|False": {
+      "vertices": 2400,
+      "triangles": 4720,
+      "inside": false,
+      "sha256": "47e1a9f85ff2f748825e11e72fbc7b08c8a84f910bd60aae520794c029476a71"
+    },
+    "ring_attitude_control|edge|False": {
+      "vertices": 1088,
+      "triangles": 2112,
+      "inside": false,
+      "sha256": "218bd573e321d7adc4b90aa56b53e1efa6fc10b4157585c2f4d1ea3ac38dbfb8"
+    },
+    "ring_attitude_control|recess|False": {
+      "vertices": 1088,
+      "triangles": 2112,
+      "inside": false,
+      "sha256": "18fbc85e8de03fe0a0a9a068d6b00dcd097e16c71facf9c03b9c6991bfc17e38"
+    },
+    "equipment_deck|plate2|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "0452ad7f9e75c99c56532830a7ce7b417d62098afbb181dfbf3d7c1c4c1b5168"
+    },
+    "equipment_deck|trim|False": {
+      "vertices": 1800,
+      "triangles": 3440,
+      "inside": false,
+      "sha256": "6ada5978606468d0c9bc22f61c411efd2560546fb3baed4e62920cfc19945592"
+    },
+    "equipment_deck|edge|False": {
+      "vertices": 2920,
+      "triangles": 4920,
+      "inside": false,
+      "sha256": "bcc8d87653cd7a3c2a28fa6a979883a270216b877365bcc589bfaed78b496c1c"
+    },
+    "tower_1|trim|False": {
+      "vertices": 1744,
+      "triangles": 3336,
+      "inside": false,
+      "sha256": "0f3eff60dedfedcb568afc02eb8f6b10a567260c03abbc8abd628ec32ccef9c0"
+    },
+    "tower_1|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "6ba8b4742daf1c951533696738ab57a532ae33cd0106a35ea6257656a854ce19"
+    },
+    "tower_1|edge|False": {
+      "vertices": 7302,
+      "triangles": 13292,
+      "inside": false,
+      "sha256": "70d2ba972eab8fbbc7654f0a9f75df18660b0a61cb7f8eb8a25eb2a0a44a87d1"
+    },
+    "tower_1|recess|False": {
+      "vertices": 1248,
+      "triangles": 1872,
+      "inside": false,
+      "sha256": "2b9bb96ed8c92808a7d7cea9ec5b60c29353d5add44bd9cf3682c9142258b821"
+    },
+    "tower_1|plate|False": {
+      "vertices": 3488,
+      "triangles": 6540,
+      "inside": false,
+      "sha256": "2f72c00b9be4df78afd6d66d80a3048f227fd2d95b01df45f1027305a0e6dcba"
+    },
+    "tower_1|plate2|False": {
+      "vertices": 2040,
+      "triangles": 3948,
+      "inside": false,
+      "sha256": "59fcd6641535a19ba0cec333901dab8bbe466f5ecd199d7faa6372cb5a89a4f0"
+    },
+    "tower_1|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "e2af807e0bd71ba8cf9857337faadb69c35e965729fab8f67ef2eb36a122f158"
+    },
+    "tower_1|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "e9016e2db9ffcd24f731c700e00ab5b835a11e2b37c5447e8f8c965453a9d0cb"
+    },
+    "tower_1|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "ff6b315b9911545dce574bd25ea0ca7e381a49f4a4cd367e3c63d39b827f1f7a"
+    },
+    "tower_1|frame|False": {
+      "vertices": 176,
+      "triangles": 296,
+      "inside": false,
+      "sha256": "0b7fb763901928b1096f4844ace2f50a17369754578e378e2810004557b67585"
+    },
+    "tower_2|trim|False": {
+      "vertices": 1920,
+      "triangles": 3672,
+      "inside": false,
+      "sha256": "082972327949eb9ad488908c46cfc3f943f55c365a5ab93d68423f610b911226"
+    },
+    "tower_2|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "682518f9726fc92d4c099a0ee49605fdc6c697939eb814394012e2db0eced85d"
+    },
+    "tower_2|edge|False": {
+      "vertices": 8532,
+      "triangles": 15504,
+      "inside": false,
+      "sha256": "f4bed707043c5a86577df8210d203a73db7299ff489c5871d13ce7d1a90a5327"
+    },
+    "tower_2|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "bcc6a4f1e6379a891a4089162abb51ed01594a46ed42c251517d1af856a56e55"
+    },
+    "tower_2|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "911c1741eb0f4be595ca06ca3247afb3b4b0cca502900c9fdb3f742f6498ea62"
+    },
+    "tower_2|plate2|False": {
+      "vertices": 1984,
+      "triangles": 3840,
+      "inside": false,
+      "sha256": "ad0b49ffc5c729070c4290ad3faf5e6903d2f414a5072e337a539a95ae5716b9"
+    },
+    "tower_2|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "43141c0a89caef7568915ab1c0b0e97fbc26ba0dc4c66371a7c14d79fb07e8ac"
+    },
+    "tower_2|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "4af399907a96893d2678d1869e507eb0d39cbfcfb16af1d30443213cbc4023fc"
+    },
+    "tower_2|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "6be4e0fd312c6ee99673e72aa714f2c1b54eebf892900243f6f2658beb993259"
+    },
+    "tower_3|trim|False": {
+      "vertices": 1872,
+      "triangles": 3580,
+      "inside": false,
+      "sha256": "5a83e43d8e5fb03721d46db832b3765f821c3d85fc8a8c494798a16e593bb216"
+    },
+    "tower_3|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "5941ce97cd2ca6d8f5abf862799356f458448f65a7f4de206b1deb3acce0c8d4"
+    },
+    "tower_3|edge|False": {
+      "vertices": 7412,
+      "triangles": 13484,
+      "inside": false,
+      "sha256": "de49c7c82979dde99d4fddee29e4bf1e327bdb6093b0c32128f29f192b681540"
+    },
+    "tower_3|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "742dc759e9361aad203fbb2b2bf35834a1cbc6838d63ad164c44c3e8d9e5efe7"
+    },
+    "tower_3|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "484218fb3548a5d13dd7bc0bbed6fd74aefbdd5028d3dc94680f9b4431446782"
+    },
+    "tower_3|plate2|False": {
+      "vertices": 3268,
+      "triangles": 6384,
+      "inside": false,
+      "sha256": "0bbb8022ebc50fe773e42f9d2e848fcf899b8ac35687e8da327d13ebe696911e"
+    },
+    "tower_3|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "24189d2f2b00061965629bf92b7d2130406bb0759cff4879b33fc67580f7c624"
+    },
+    "tower_3|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "8d3fbd0e38bea8e7e7ebab2d4ce2485e474a409952fc8ad4336e1d76504f6692"
+    },
+    "tower_3|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "1f807e75a8ca4532c948e4a76c1473be08ae327a5b1d7b74b7efa8bf909f9011"
+    },
+    "tower_4|trim|False": {
+      "vertices": 2304,
+      "triangles": 4408,
+      "inside": false,
+      "sha256": "f20e65a042303063a74399cc921946fd1c46cac8188150d60bce1cf6ea0f53cf"
+    },
+    "tower_4|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "5596074b7004d60226d2d7afeb75eceda27be5157f1d1fc8f260391c7d2179e4"
+    },
+    "tower_4|edge|False": {
+      "vertices": 7444,
+      "triangles": 13540,
+      "inside": false,
+      "sha256": "ee9efe3837332a6016b6b84b62be42fad5912a0752d62d22c03758e01a1489c0"
+    },
+    "tower_4|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "c0d4b6db3e5fb4e915be4831a50c8a2a4afe8284a5d8bc82598c29b0511c0c7c"
+    },
+    "tower_4|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "7f41469aaa2260a70117ee603795555b459da6e53268d24f3d5ff82f251db4e6"
+    },
+    "tower_4|plate2|False": {
+      "vertices": 1984,
+      "triangles": 3840,
+      "inside": false,
+      "sha256": "feb979e50358267af69f1aac1d174d303753949e5dc9b99dc6dc2d336110a8d9"
+    },
+    "tower_4|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "6b44bfd2c452a3f7f102b35f263ed8579e7fdb1c9f172d1a5f0b5cb831e44176"
+    },
+    "tower_4|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "9a58bb6041b516ab56e0082d8262e2ae9a30a069f62d1869c61ee945b7aee10c"
+    },
+    "tower_4|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "c39ba7b79c6dfb2a1126198bcfa6df1ea434d99ee51e0de91f36abaaa1685e11"
+    },
+    "tower_5|trim|False": {
+      "vertices": 2592,
+      "triangles": 5016,
+      "inside": false,
+      "sha256": "cf441cba1e3600d5a5c2a4746c9fa7cc05344708475f800e2c4e4c215a6ae13b"
+    },
+    "tower_5|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "1e1ffde40c05a0f50c94893c676bdb6a37037758ec21ebb82bf14619eb91a7a1"
+    },
+    "tower_5|edge|False": {
+      "vertices": 7540,
+      "triangles": 13708,
+      "inside": false,
+      "sha256": "633a08c7286256043a62d9f3e14636868ec3289ca71ff559ec66a85e1dbea487"
+    },
+    "tower_5|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "b87699e02a1f69b0bd499169bc5c515e87bec55e7155bc1c256b4a228a6ea27b"
+    },
+    "tower_5|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "aac39b19f30ae788997d638caad965b530efdd292814f89931a4d8b7cb226e1d"
+    },
+    "tower_5|plate2|False": {
+      "vertices": 1984,
+      "triangles": 3840,
+      "inside": false,
+      "sha256": "13f141eaf5075820efe8c5f86e07b648a89ff5b7f74bb42950a0bbe25df424e2"
+    },
+    "tower_5|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "260da24e389f393c56cd793ca03000a891ebdfd8c56833d456bc84aa066934e0"
+    },
+    "tower_5|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "21442a3fac5a234ac7d0111f34eb671efc15425d8be234a7edbf57350273d1f8"
+    },
+    "tower_5|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "7425d5eeb75e54cd156c10a2af6487b7747f54de365f84aa17052a74d952e4f0"
+    },
+    "radiator_1|trim|False": {
+      "vertices": 584,
+      "triangles": 1144,
+      "inside": false,
+      "sha256": "c5f6ef456e7b050fa4ee5dd231e1aa6c9c86b9f9713b04bfedd26c0a2e45abe1"
+    },
+    "radiator_1|edge|False": {
+      "vertices": 352,
+      "triangles": 548,
+      "inside": false,
+      "sha256": "d60d2a1202407531adbdf4fb1cf2090a62ef1956b35e4b7ac0a4d316fb4923fc"
+    },
+    "radiator_1|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "77650743675526e101b7a7520fae0497b6a517872a31669a31403204bbfb2c5a"
+    },
+    "radiator_2|trim|False": {
+      "vertices": 584,
+      "triangles": 1144,
+      "inside": false,
+      "sha256": "7882057b50adbdad545747308d50dbb736ac652aeed62494058ce4df2566bd13"
+    },
+    "radiator_2|edge|False": {
+      "vertices": 352,
+      "triangles": 548,
+      "inside": false,
+      "sha256": "8ce83b01f50a81162bb8eb61a027de4fb3e41d98d495e81c4568fd9809d263a1"
+    },
+    "radiator_2|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "9caf2a8a944da3f4b6a37c4abec0761c05d92aa05212d13db47f3954b685625f"
+    },
+    "radiator_3|trim|False": {
+      "vertices": 584,
+      "triangles": 1144,
+      "inside": false,
+      "sha256": "7861f564c9df22268d9054b0e1cbe284d830b0d9fcde4a7dc6017e328b3a910c"
+    },
+    "radiator_3|edge|False": {
+      "vertices": 352,
+      "triangles": 548,
+      "inside": false,
+      "sha256": "e1c602833bd17d5acd01d4eff512a56a92f9143ba4e1d9ecbca05478dc660cea"
+    },
+    "radiator_3|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "5033edd3fca1ad1d2b14369dde7e8993e2fa84032d4add9777b8a5efc493352c"
+    },
+    "radiator_4|trim|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "95a2aceaf4b492afe5b9e4ef3e00c0c98316b3dde3059229b254878c81bd2d00"
+    },
+    "radiator_4|edge|False": {
+      "vertices": 304,
+      "triangles": 464,
+      "inside": false,
+      "sha256": "a0eadd53426f17f7dd2ec66b0b8bc1b53eae6711e780504b9eb5bb36a2d64c39"
+    },
+    "radiator_4|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "9133a116914e8d2d2d61835742ebc6882716ed54f677d14ed45c68b8c358fc46"
+    },
+    "cargo_1|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "a19c6f27d48e2ccf71d3fd4f7d719e7f60c55bab1383a78eb1fea46c55beee7d"
+    },
+    "cargo_1|trim|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "b928dbe0d1b75bba227f955b148d564eb376fdd5452091219096cd2d00f7ce16"
+    },
+    "cargo_1|frame|False": {
+      "vertices": 16,
+      "triangles": 28,
+      "inside": false,
+      "sha256": "29a545d9bcdab9bac21bf245d4edaf5ca38ffdc583de7203b9d98b65cd17e76f"
+    },
+    "cargo_2|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "1e1f72dd8c9a70baab1208ba81fd3ee7e842634e35298da6d8ddd5251979c7d5"
+    },
+    "cargo_2|trim|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "4af6e9c3061b66570cdeb5c5a9d1392109ba7da292ecdd5c7f81bfbf657be1e4"
+    },
+    "cargo_2|frame|False": {
+      "vertices": 16,
+      "triangles": 28,
+      "inside": false,
+      "sha256": "f768784990e13bdf1273f37412a64bcacadba0af5604ad99c35661d3f3a61800"
+    },
+    "cargo_3|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "c937737d3f982b2a69059f463bda2dd6c4449626e98d3416cca68dae7b882ee1"
+    },
+    "cargo_3|trim|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "b8e45ba3b7dc69c1c61ad2be6898a9451ea2eb7763d1774d19cce7ab056667e0"
+    },
+    "cargo_3|frame|False": {
+      "vertices": 16,
+      "triangles": 28,
+      "inside": false,
+      "sha256": "151b09e4cf9548857583d4b39f3d00552a2c5f8e5b572672df00deb0bd8e1b49"
+    },
+    "folded_plate|edge|False": {
+      "vertices": 18,
+      "triangles": 32,
+      "inside": false,
+      "sha256": "837b1e53b486c6dc0c3993d93ef34f12b40375c02fa6ab9395d3d63d9c9c598c"
+    },
+    "folded_plate|frame|False": {
+      "vertices": 96,
+      "triangles": 164,
+      "inside": false,
+      "sha256": "ec0c9eae0b4281e6c829b7e40c1352b048962bdb33f20fd91a68ae87d8dd9e86"
+    },
+    "emergency_lights|blue|False": {
+      "vertices": 720,
+      "triangles": 1080,
+      "inside": false,
+      "sha256": "0ba3879baf1700af3b1666d619a166713715de06368fc881585ed005b3db953c"
+    },
+    "emergency_lights|battery|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "2ebc27193e50342234705621cd4f46fc205f60a420794c852fde2a402d2c527a"
+    }
+  },
+  "baseline_objects": {
+    "core_01|liner|True": {
+      "vertices": 3972,
+      "triangles": 6020,
+      "inside": true,
+      "sha256": "bd648e976cbac7d498af051596911272e0aba9767c94541006819964eeef44b7"
+    },
+    "core_01|plate2|False": {
+      "vertices": 1728,
+      "triangles": 3168,
+      "inside": false,
+      "sha256": "2830d37333bc0d93281ee6e5a6af2465dbf9df6ea7a2accc9e3bc94fed92437c"
+    },
+    "core_01|glazing|False": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": false,
+      "sha256": "409c0691ffc7e671afadc9e2a921fbdf9b8f39bb46c7a5bc497cef433a9046b5"
+    },
+    "core_01|edge|False": {
+      "vertices": 2784,
+      "triangles": 4424,
+      "inside": false,
+      "sha256": "5f108850d70caf4337a1c143c7ba96b923352c3194462c1223ec851549a75eef"
+    },
+    "core_01|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "54ea923c9c34041929d6e3d6683fb0414c251ee095065708b70117d42c844f93"
+    },
+    "core_01|plate|False": {
+      "vertices": 8160,
+      "triangles": 14960,
+      "inside": false,
+      "sha256": "3266e3430caea4254f8f6294390560ac292e6f08af908fa600091ea598ae4f63"
+    },
+    "core_01|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "1216c0354a3d2d67064d60b0c0f76f641a5f1c7da413f58763861076fbb1001e"
+    },
+    "core_01|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "10b02b1f36bd7be82696cb12866eed821342f1381005ff2e2236e840c966ca12"
+    },
+    "core_01|trim|False": {
+      "vertices": 3312,
+      "triangles": 6436,
+      "inside": false,
+      "sha256": "3ff67dc9baef96b426202b8a4a9d0c17c2f8a7d1855a6733a4f7bb1b621c0476"
+    },
+    "core_01|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "c47c07f3e3fb59db59e3f1567667183c7844c3680b20e451744e739a98aa3e54"
+    },
+    "core_02|liner|True": {
+      "vertices": 3972,
+      "triangles": 6020,
+      "inside": true,
+      "sha256": "46ec1e0a61721c21f8d1275820052ef73a517f3521b50f9c1c6b08439e6dfbac"
+    },
+    "core_02|plate2|False": {
+      "vertices": 1728,
+      "triangles": 3168,
+      "inside": false,
+      "sha256": "9ef90f08b562c526572e8e53b52939b5bb0c842768200ccf3e08d3b7aab4b4e8"
+    },
+    "core_02|glazing|False": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": false,
+      "sha256": "6e0ad1825a4ff80d8f77add54ad287cc414b737d87ae508c5f5935b07c2172f3"
+    },
+    "core_02|edge|False": {
+      "vertices": 2784,
+      "triangles": 4424,
+      "inside": false,
+      "sha256": "b802454af4274dec28bd218ae23b299b44aa87506dbb800c95a5deed8b635118"
+    },
+    "core_02|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "c8bf440e0386efb7243ec1d28ecc837b439ba44c8b19f70f10ff3d5ea9a0604f"
+    },
+    "core_02|plate|False": {
+      "vertices": 8160,
+      "triangles": 14960,
+      "inside": false,
+      "sha256": "11e4be87021d2368554bbab329db2486f6b6214f56cd08e459c27d9c08e62142"
+    },
+    "core_02|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "e9676c5e96daf8709a626a5b7209b7af2fe5a3419db07480aaf102669b50d429"
+    },
+    "core_02|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "db97f6b11e4d746f6f4233fe2afd3d0041e42681505138e9c6cb4f42af57753e"
+    },
+    "core_02|trim|False": {
+      "vertices": 3312,
+      "triangles": 6436,
+      "inside": false,
+      "sha256": "c71f986cfb13a2ae6ed5b0525049ddf86f4d98c0b90acb934574b64440ef63d1"
+    },
+    "core_02|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "25fb1256b6daf4d343825ebbb7634cf5dd57b4bce37dd25d0ff779d73577487d"
+    },
+    "core_03|liner|True": {
+      "vertices": 3788,
+      "triangles": 5744,
+      "inside": true,
+      "sha256": "11227cfe3bc02c21cf34da770a87171b7cfb71a64d14de0628e651cff0e3feb5"
+    },
+    "core_03|plate2|False": {
+      "vertices": 1680,
+      "triangles": 3080,
+      "inside": false,
+      "sha256": "c3d1a35899f4429c20282cddb91ba21f8b9f8e3b69b06289122fdc80f15dce25"
+    },
+    "core_03|glazing|False": {
+      "vertices": 600,
+      "triangles": 900,
+      "inside": false,
+      "sha256": "18010bf16d70b8f8fbf7dbfc2564c548b2d75ed5aead35708a06f098816cd8af"
+    },
+    "core_03|edge|False": {
+      "vertices": 2708,
+      "triangles": 4292,
+      "inside": false,
+      "sha256": "e42bd8e2cdeed158cbe4f2374025ed9691b28727557821efc22384602d9aa217"
+    },
+    "core_03|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "4c246fb49b4cd9a8213b8efae84477db60a03612933c84860c733ba86bcaea65"
+    },
+    "core_03|plate|False": {
+      "vertices": 7776,
+      "triangles": 14256,
+      "inside": false,
+      "sha256": "124bad729c42a505657b178e510dca4c0246d90f98feac0e4719fa43031c6eb8"
+    },
+    "core_03|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "1924376ce7768cf6c131450888bbe63b82b73f39451f89f09d32b6d5044a8128"
+    },
+    "core_03|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "4e14c854e3f1f349faf0cddc6a2a16cbeadde0a0e092172e79349d2327c6ecba"
+    },
+    "core_03|trim|False": {
+      "vertices": 3216,
+      "triangles": 6252,
+      "inside": false,
+      "sha256": "e28f2a5f59b62193aea5b401842d7c93a4bb53816c3d74cc72459bd7ee32ac51"
+    },
+    "core_03|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "fb4307372aeb41a5450e9f3e478fdb07e61df66a387e475d75225f3cd9c49d9f"
+    },
+    "core_04|liner|True": {
+      "vertices": 3972,
+      "triangles": 6020,
+      "inside": true,
+      "sha256": "d19e4dc170eab48e8ecdfbedc4a21db03473be03448bba183f35502661338bc6"
+    },
+    "core_04|plate2|False": {
+      "vertices": 1728,
+      "triangles": 3168,
+      "inside": false,
+      "sha256": "3ab900b58cfbe66961b6842bd0510b591f1fb243bec0625aab2bcc7d1771b258"
+    },
+    "core_04|glazing|False": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": false,
+      "sha256": "f5f08cfa7e74e3149a80e2cf61f6b3147310d78c54f00219aba45f2ace420c0d"
+    },
+    "core_04|edge|False": {
+      "vertices": 2784,
+      "triangles": 4424,
+      "inside": false,
+      "sha256": "9e1f666130715b3c3732f6cbb2555f2962e54cb1f767de9aa0ab64037a71da7e"
+    },
+    "core_04|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "1048e563f078596ad4e880a94e5514a7b5ca92bea67c8fb70b95cf518d76c139"
+    },
+    "core_04|plate|False": {
+      "vertices": 8160,
+      "triangles": 14960,
+      "inside": false,
+      "sha256": "7edf1cfcb6bd428dc1342bdb15e88e847ab80e0258fbecb1b55053a81e685619"
+    },
+    "core_04|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "4f1b22e91019252ac33c9ab46be4d12c539f48734b478943af08a68f1b5c18e1"
+    },
+    "core_04|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "fb4cbb7f78b190871f26275c3d04154035842ee9f357ee562b434f96c81d3c83"
+    },
+    "core_04|trim|False": {
+      "vertices": 3312,
+      "triangles": 6436,
+      "inside": false,
+      "sha256": "dba7f4b2a69997a6b3a4d0a5aa81217df5a536d0afb77b2dfac572aa3e6592dc"
+    },
+    "core_04|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "9656fa3ea86b7fda6cbb0a1ec555041ec156a110e481baa3b7dbd0edcfa6249b"
+    },
+    "core_05|liner|True": {
+      "vertices": 3732,
+      "triangles": 5660,
+      "inside": true,
+      "sha256": "b529a42e0a1a624e74aca28ed8260e0ddcfbefd7d41944fac70d14d0102287a2"
+    },
+    "core_05|plate2|False": {
+      "vertices": 1584,
+      "triangles": 2904,
+      "inside": false,
+      "sha256": "5aa035e01fd271be6cd41120a6723436725e7e2895c8ad9906c7c601d1a96e81"
+    },
+    "core_05|glazing|False": {
+      "vertices": 592,
+      "triangles": 888,
+      "inside": false,
+      "sha256": "6e90ee87ac554af1b9f544179b8f99ff33cd6e349915584e11d97c853032c238"
+    },
+    "core_05|edge|False": {
+      "vertices": 2648,
+      "triangles": 4196,
+      "inside": false,
+      "sha256": "e95b3445efeff4d2fe1317ab4565509e6c900dd51222cd3cde316d82940f8e05"
+    },
+    "core_05|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "aeba086aa4e9866332b3f18994765b621ac0637d85d057bae03f0edd1ffca176"
+    },
+    "core_05|plate|False": {
+      "vertices": 7680,
+      "triangles": 14080,
+      "inside": false,
+      "sha256": "13fe8a8e959d6b9326fa912c2da59614bf4196beb893ab4829f52de7b4516681"
+    },
+    "core_05|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "dd63fc785d1df0e5d8093596a4e2d62985b68dcafc179546a45a9f29af19f757"
+    },
+    "core_05|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "02ea14809a81b78caf3d92aaba7ab61ed97d7d83a6b2e5c030492cb8d961c4ab"
+    },
+    "core_05|trim|False": {
+      "vertices": 2880,
+      "triangles": 5600,
+      "inside": false,
+      "sha256": "9a1a9ede8c6171679c955adf4d4e5e8c795263928f31baa73bbafac960ce5a8e"
+    },
+    "core_05|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "82fb84f677603941747d5468824bea6247926141c4dad9804f3f8af984c07c3f"
+    },
+    "core_06|liner|True": {
+      "vertices": 3684,
+      "triangles": 5588,
+      "inside": true,
+      "sha256": "516eccb78f366eb849bbfffe230cb4c51eac4b84165ba8073633fdbe5887a407"
+    },
+    "core_06|plate2|False": {
+      "vertices": 1632,
+      "triangles": 2992,
+      "inside": false,
+      "sha256": "3c559f64ed2d7281fbbfd9da846cb8d27349f5dd2cf47a2d90c989539f599821"
+    },
+    "core_06|glazing|False": {
+      "vertices": 544,
+      "triangles": 816,
+      "inside": false,
+      "sha256": "12cf62a8e4b317c25d44fff4e17622982fc02af99cb3b774e17d2562cc2dddca"
+    },
+    "core_06|edge|False": {
+      "vertices": 2560,
+      "triangles": 4052,
+      "inside": false,
+      "sha256": "1fe0b9daf204f47acdee990c344d1b0fc1596ba80dd64c3643a7fc0a1b9cdb60"
+    },
+    "core_06|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "a798e456f7c0c963749e1b1c17560b4eae304d0ec18c803ffb07fd85e3891166"
+    },
+    "core_06|plate|False": {
+      "vertices": 7632,
+      "triangles": 13992,
+      "inside": false,
+      "sha256": "b3897856889762fa8a18eaa168f7309e7936e63b684ebe3f2bb7eb039de6741c"
+    },
+    "core_06|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "42203bd58dd349ee866f4f2d36bf5e37c82b003b7d0a4cf2e35620cd90ecc8a7"
+    },
+    "core_06|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "ad55fbf1fd0955960d606a4121414a033b1e2d567cb4f17c62951efffdb14e2e"
+    },
+    "core_06|trim|False": {
+      "vertices": 2880,
+      "triangles": 5600,
+      "inside": false,
+      "sha256": "4db77d46308b942f23cc00d7b8555459425213c5910f141766fd0bb4b3cdf0bb"
+    },
+    "core_06|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "a0dfe92024a0a49c11625958e8c21fe2a20899980e6eec55976dedba20daca71"
+    },
+    "core_07|liner|True": {
+      "vertices": 3772,
+      "triangles": 5720,
+      "inside": true,
+      "sha256": "8abb0e1eb52981134473977be7bcf70d8deb8bf478586f22ed3598a57c996349"
+    },
+    "core_07|plate2|False": {
+      "vertices": 1584,
+      "triangles": 2904,
+      "inside": false,
+      "sha256": "2a389d7399cee5d76e79072dceab2be77c62767884fdc2d59e6de57686049b94"
+    },
+    "core_07|glazing|False": {
+      "vertices": 600,
+      "triangles": 900,
+      "inside": false,
+      "sha256": "c65ee402073330820d3a9d3b3d9c01d05ad2d6fa29035043ffc218bc797c6510"
+    },
+    "core_07|edge|False": {
+      "vertices": 2692,
+      "triangles": 4272,
+      "inside": false,
+      "sha256": "18ab59a7e516e30dcc3f693c5b5b3de56d2f53aa19c594f345fdeafd872e58e2"
+    },
+    "core_07|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "47f9b9e332ac4b25e19d9564f26270654ce9c084cd403be48795a9c12ad5504a"
+    },
+    "core_07|plate|False": {
+      "vertices": 7776,
+      "triangles": 14256,
+      "inside": false,
+      "sha256": "4f4c32bba94e05ff22a1ca6f08d7421a4f28ed59eaf0adbe631d841b2c65b4b2"
+    },
+    "core_07|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "56368284fe717a030c98ba7dacbb96d7449b5a59db32590f57645412f8088939"
+    },
+    "core_07|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "4bbbc27c2cdb03871a85954576b2173feaa876be7e8c16da0c3914f2f9f6d7d6"
+    },
+    "core_07|trim|False": {
+      "vertices": 2976,
+      "triangles": 5784,
+      "inside": false,
+      "sha256": "d0e707e1469ede7a097e190ef8e35cfd9b1ac9cbeff1e21b87aaba9ee37f2b4e"
+    },
+    "core_07|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "a449b7758c9619ad04150a6b913931e985816ba41032c3b125c195a5cfa81cf7"
+    },
+    "core_08|liner|True": {
+      "vertices": 3700,
+      "triangles": 5612,
+      "inside": true,
+      "sha256": "df8c9eb5800df7919abdba8cbf9b3d12bc2334f13d1eaff12bad1848c6c1ff5e"
+    },
+    "core_08|plate2|False": {
+      "vertices": 1608,
+      "triangles": 2948,
+      "inside": false,
+      "sha256": "fa98cd3475fe1a4f6e3a0e2156bb3d9b83b358a2ba7f2973556b8e7405664528"
+    },
+    "core_08|glazing|False": {
+      "vertices": 584,
+      "triangles": 876,
+      "inside": false,
+      "sha256": "641eed1be93fc9d26d075863a385b412517a4f623aa87c94e2f8ef555da8f92c"
+    },
+    "core_08|edge|False": {
+      "vertices": 2684,
+      "triangles": 4252,
+      "inside": false,
+      "sha256": "e692d69c3e252d917b689a06ba1a907c87741b4e89327844c80b4b4fc3fc33a2"
+    },
+    "core_08|deck|True": {
+      "vertices": 640,
+      "triangles": 960,
+      "inside": true,
+      "sha256": "f16f953135e6f0ac2a1524369bf8c7730b4e1a901e68a9308f53e1a68f4d14ef"
+    },
+    "core_08|plate|False": {
+      "vertices": 7632,
+      "triangles": 13992,
+      "inside": false,
+      "sha256": "d05902b192f238f6627a0ee5c55380ad548bf9a1dfcacd107b1aed45d623633d"
+    },
+    "core_08|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "2f0063582a943c50abb00e21363600217be005c21f43df10dbf04700b0ce36c6"
+    },
+    "core_08|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "182b8e85708490bc36ce6f394ea1666facd6b07486683403bc9f342a101a9ec6"
+    },
+    "core_08|trim|False": {
+      "vertices": 3216,
+      "triangles": 6252,
+      "inside": false,
+      "sha256": "bca161ced027f30e579e42f86a93448e0b7d757539ba3783ff17a306631ba3d4"
+    },
+    "core_08|recess|False": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": false,
+      "sha256": "7b4dc510be861761f7cced7afe5fa804f0f73a952767b8e4ad7b9abf2b52ed09"
+    },
+    "core_09|liner|True": {
+      "vertices": 3684,
+      "triangles": 5588,
+      "inside": true,
+      "sha256": "12647a743f0b629d9a437176e4d1e1f90bf22d480c6bd0ed45d034c81fbfe790"
+    },
+    "core_09|plate2|False": {
+      "vertices": 1608,
+      "triangles": 2948,
+      "inside": false,
+      "sha256": "43a696346f84d2503ca0c9667cc21c8b470e10efd5b39517d048ffd358a3c3ba"
+    },
+    "core_09|glazing|False": {
+      "vertices": 568,
+      "triangles": 852,
+      "inside": false,
+      "sha256": "3aa00929266dbc484456b5a9d743e6fd023ed19654c8021100fb77be015c749e"
+    },
+    "core_09|edge|False": {
+      "vertices": 2540,
+      "triangles": 4028,
+      "inside": false,
+      "sha256": "8e54f1d0a5627a0c37251bf2f93f8e8183923d92df070ca06fe7066a21039307"
+    },
+    "core_09|deck|True": {
+      "vertices": 568,
+      "triangles": 852,
+      "inside": true,
+      "sha256": "7fe95b942f43089b1f245895816d9ba4883ec76e86e52af242724087e860c721"
+    },
+    "core_09|plate|False": {
+      "vertices": 7584,
+      "triangles": 13904,
+      "inside": false,
+      "sha256": "b0e85252ee6d1bf28088fb96b55bfe5df43d46f3883cc0b25401e8fe15361d61"
+    },
+    "core_09|frame|True": {
+      "vertices": 512,
+      "triangles": 896,
+      "inside": true,
+      "sha256": "186cf9ae558026d4ac3256d83ca824f5dfa8249f2465d3f5b6944c86d2d1ac2c"
+    },
+    "core_09|rack|True": {
+      "vertices": 128,
+      "triangles": 192,
+      "inside": true,
+      "sha256": "7963b5ef28bddb77911abe1962abf3b98e69f0cf21c191279c2a09821322e18e"
+    },
+    "core_09|frame|False": {
+      "vertices": 80,
+      "triangles": 140,
+      "inside": false,
+      "sha256": "403b2d9deee48e28917376d5b874a808690c6e973f8e242ecde0166a4d84f79d"
+    },
+    "core_09|recess|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "60e6c66970a34316971fd5401062c006763fcdac948a3d11684897ea704a219e"
+    },
+    "core_09|trim|False": {
+      "vertices": 2352,
+      "triangles": 4548,
+      "inside": false,
+      "sha256": "78f0b1a3c219cb284d136b7f739bec551beff2eb030bdb898762a215cc6327e1"
+    },
+    "observation_window|viewport|False": {
+      "vertices": 68,
+      "triangles": 132,
+      "inside": false,
+      "sha256": "4c9aab57cf24b9512075ae13377fda61cdb1f768101aa025fea0e9e1f11bb435"
+    },
+    "observation_window|edge|False": {
+      "vertices": 168,
+      "triangles": 328,
+      "inside": false,
+      "sha256": "19a89d35d0e78d128f5cf9e4999a84232c865d5ff29d6106ebefe60101cc0191"
+    },
+    "observation_window|trim|False": {
+      "vertices": 96,
+      "triangles": 184,
+      "inside": false,
+      "sha256": "7ec0f1be51d3d0a431508ebaa45dd5fe02888d805213bc88ac13e5e7bc88c6e2"
+    },
+    "bearing_00|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "8995cdbfe761b024531a816dbec6c9a4799b9d12fcd33f50993854467407b7af"
+    },
+    "habitat_1_slot_00|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "6fd5c1a43ff6adec56661189cd4bd38c5be8fe39ae8fc1ff4e1ca9baf63d077c"
+    },
+    "habitat_1_slot_00|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "506d791caf15244cbb36266e756f1244caa5bbf542164d61cd6faa831967b8e0"
+    },
+    "habitat_1_slot_00|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "c387ad6ae104232014481f91ce00328cc1ea45774b250636ff920d4540d439d5"
+    },
+    "habitat_1_slot_00|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "f3bd28cf4ff1a179cfbe2a2085b24f468936a227d66b460a19faeb83e23d5ab8"
+    },
+    "habitat_1_slot_00|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "b046630b19d9fd0882c4f80aee750a4ba0a0c033165df74c0f9236cae595c4a5"
+    },
+    "habitat_1_slot_00|edge|False": {
+      "vertices": 656,
+      "triangles": 1176,
+      "inside": false,
+      "sha256": "288305afc632dfc2cc7559af1ff8e5649b5d47ab7afa1d3c1a147a8b5f5bdb3f"
+    },
+    "habitat_1_slot_00|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "fddc23d25f18bb946dc4df97c5b73416c1106b514bd531a1f72102ed37e659e8"
+    },
+    "habitat_1_slot_00|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "08a029194a5b6dc6bc3dac121753a05175f289bc493e789390aeddc1c3dad5af"
+    },
+    "habitat_1_slot_00|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "46fbfa6a89758acd11a109b5c41046d21ac91e2a297416b6aeb1d90515ec5afa"
+    },
+    "habitat_1_slot_00|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "e8fa75454f1c6e08de533bdf837c6eedf83bff5516c95e46ff23b043acbc49a0"
+    },
+    "bearing_01|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "ac9fe0b129c72aa4348f984f5f8ff0b36ec59efdcb7419d4602ea0176c3fe5fd"
+    },
+    "habitat_1_slot_01|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "b5624c901675899e141e3146374c357d8a0bc4a53b6b9b4d06002b8448eef119"
+    },
+    "habitat_1_slot_01|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "3ad4fcdd9dfa429a062421b8992d369c84e89d36a9f756214f6c5126dd022c5e"
+    },
+    "habitat_1_slot_01|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "e780036079506b488edb05ca1c79beaa55a9f83f6de1a84dd350737c5edf2bff"
+    },
+    "habitat_1_slot_01|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "c1f011d80de7fc59e9cbef7363b4ba162bc6c8166bf698eee00624ec087a0e67"
+    },
+    "habitat_1_slot_01|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "3190bc5d071ca5901a15c3ce6d600e95bc124beea28dac1e02e747db6e0f5745"
+    },
+    "habitat_1_slot_01|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "e6abe3c1c0576fd444709c878a02fe6c27fe20259aacb360750ed64052f9756c"
+    },
+    "habitat_1_slot_01|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "fc49ee7c5f233881ba4d377305d0b784fc72184f889d9d32424d2c6851007f17"
+    },
+    "habitat_1_slot_01|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "56a2adcf80643b5bd694e37224152f29ed77b7cbc3d2941bc35169eb81800add"
+    },
+    "habitat_1_slot_01|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "d06b046d9257edb46fad090a820829c9ac350a621c6affe98d3fcc837eb8c7a3"
+    },
+    "habitat_1_slot_01|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "a283683f68d9b6299b312ada03ba82a946d4861f2f27438a6eb72389d2694cbd"
+    },
+    "bearing_02|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "89b9e7882ecb5d2ba46acfd881749e2f0e89ed64df63b0b3baf9cdf2f9f90c00"
+    },
+    "habitat_2_slot_02|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "5322bebd78a76285f43b47c8b80643ab3cbb27f158957a7ca92ca85899a0065f"
+    },
+    "habitat_2_slot_02|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "92526d283f42b5ba24f95edd0a26a396a99a7d463dfe735bb59b416a7be80382"
+    },
+    "habitat_2_slot_02|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "d6fd13401770a66819f4463ae4c0d7b43566b6e48977290d42dbccf6bf80bbac"
+    },
+    "habitat_2_slot_02|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "8aafa17f470ce962242fe5451b4d9ad12e3d8a7af8d450ba1ae9f98919903c56"
+    },
+    "habitat_2_slot_02|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "1d73adaea2f9176ab4cb48651a2d8b35bb60e65c0a4dd6e4d46b8cd5cc470fa0"
+    },
+    "habitat_2_slot_02|edge|False": {
+      "vertices": 656,
+      "triangles": 1176,
+      "inside": false,
+      "sha256": "241bd24cd552a6d1162c2b996602872c1199f5994b572ed926555e134741f100"
+    },
+    "habitat_2_slot_02|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "df58e65a31f698f7f812e034243655014d55276e671a9ee488b0312746efa90f"
+    },
+    "habitat_2_slot_02|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "62481cd76e2abf64478b95379a88978491ed2e0df600e47dd7c383f91d620a16"
+    },
+    "habitat_2_slot_02|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "9ba2a48122172462590a1ba9aae50af31b3199f36d488ec277df1bf8a0c69a09"
+    },
+    "habitat_2_slot_02|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "dee9a3db1c49fd3de680d5d00c1f556de455843953486e96fcd9c6f4deaa8094"
+    },
+    "bearing_03|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "488c2f3f6d1b84c018780cff2f6d56da4df84ddb0d9c8f857ae703a0397923c8"
+    },
+    "habitat_2_slot_03|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "761d6d0bd806a5c75a44fc63780d287d3db43306742efcd8430f99f226b8bc39"
+    },
+    "habitat_2_slot_03|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "3462e443580a32b9cd25d527d185574242bf042e818e1f09fbd72f40ccc703ad"
+    },
+    "habitat_2_slot_03|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "f359e980a6734794464bdf0923923a43fa442b1a2d096880307d0622e72236f4"
+    },
+    "habitat_2_slot_03|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "3c40c33fea3a7bec05a1c478ab1d18dc74f4171dfdea1a7b752b6d39d1c14602"
+    },
+    "habitat_2_slot_03|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "328051af04558548ce5639b8e0dff8522014f8dcb871f18f9c72534f765a4c03"
+    },
+    "habitat_2_slot_03|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "186bf29f86dc11a45f0bdf9a499c655e2b65c421655c8eef478bd1cb3d7712f3"
+    },
+    "habitat_2_slot_03|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "ca9b929e087b4bef8a4955bf4d4465bb0288b5328cf0d82f68cb8bd54c40861e"
+    },
+    "habitat_2_slot_03|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "b6463edf591b7778462c721a297409935eab943e990cbe0a4734ea62c63bc41a"
+    },
+    "habitat_2_slot_03|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "a026447e06e915c1dddcd7912da86debd59c3da3c632d0354b4d7890ea04e27e"
+    },
+    "habitat_2_slot_03|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "5e1cbf2b3c931202161a1158cf1781183efa1ea19309328f4ef7afab8b6beda6"
+    },
+    "bearing_04|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "a3905858b010555ea4b670afd56fe06d33d31c6dcddc2bab858bca13158093a1"
+    },
+    "habitat_3_slot_04|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "ac8ff2fcaba9e47ce831cb826e67e39878fde2533e772c790c629633e91b49b5"
+    },
+    "habitat_3_slot_04|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "5437f50efe09e785f589738c26d4f191936ac67292a7f0c60466cb9282ecc6b2"
+    },
+    "habitat_3_slot_04|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "c5fd65bdaa3adf6805474d9e947ada867b91d3dc4671f36d32947a4b11c18846"
+    },
+    "habitat_3_slot_04|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "88c751c0835ebc630f41f56e809a448bba5434ffada04f8cee54b692c43c5066"
+    },
+    "habitat_3_slot_04|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "8f7917d203d002a978c1a2a12bff3ee2daf979bb9dc6f0b80bda2023e9587b84"
+    },
+    "habitat_3_slot_04|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "71f1b3ad4f808030c448a11983e6623928acd480bfb8458abb3419360080753d"
+    },
+    "habitat_3_slot_04|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "11f19d2f8e3267944f3b5f679569516434b81dacb7471a4e9723e2ddaf4b00b3"
+    },
+    "habitat_3_slot_04|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "45868840cd0da09bcbb3bcf735c5284a6c6e61da8eec9c57fca926b67f7ca5bd"
+    },
+    "habitat_3_slot_04|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "fe9b93ea1459b19f65a3a2b1bfd547b65d10dc1e88de33a6e8d1dc84ae99ca60"
+    },
+    "habitat_3_slot_04|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "9042b8b387ee2034e9afb2442804dbf8c8151ea4e66f4ef713c27e3793c703bd"
+    },
+    "bearing_05|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "aea7e93b70b61f01b63af7837104a3bc6f261f076fbe8b99bc37d95537cd87fd"
+    },
+    "habitat_3_slot_05|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "0366dfcc40ef712796a238d2d6e6df874fe5ffd3431efe66650121cf70363d58"
+    },
+    "habitat_3_slot_05|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "a12006a12c673eedb602e5d493d92bdf096d94989fccd91704b295abd6d63129"
+    },
+    "habitat_3_slot_05|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "89afcd21a02436b64ffafe1a1e9643cae50fd67ddc7c7cabf9dc7f1c336eb174"
+    },
+    "habitat_3_slot_05|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "14d5869a8312d91656689f42e491996742e33549c13b1dbf4533518b9836a2d1"
+    },
+    "habitat_3_slot_05|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "66e127071b1a4849f7c7e701c5668508b82261fe2079ff1adc8a8ca6d00fa886"
+    },
+    "habitat_3_slot_05|edge|False": {
+      "vertices": 656,
+      "triangles": 1176,
+      "inside": false,
+      "sha256": "571e3f805ee851398fb25fc7c1ba11e20dc08f6b99a11f652c8cee5b28d9baa1"
+    },
+    "habitat_3_slot_05|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "0e6fc85b3bf4e7224a588438e9ca356f410c2e74205e45a4d5167eeb5db07dd4"
+    },
+    "habitat_3_slot_05|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "611c01ab94d38e4bf0c8befdc91b76425960ce92b9eeb3315866584e201633dd"
+    },
+    "habitat_3_slot_05|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "b2225ead683e1d83b39c128daf09d7a9175ff5df1d50de471fcaeef723d7178e"
+    },
+    "habitat_3_slot_05|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "afd4df1f5f66ffe01897dc18c148d310f3b18063adb531a75c28f516c35869a5"
+    },
+    "bearing_06|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "ec0c9041d43e93d0054739b0bb20f3154d4adc2317c0abdd8f39b5cca6a8e30c"
+    },
+    "habitat_4_slot_06|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "931e51e654bd062c21c3072f57f809710066cef01be9589d096b321d600911f5"
+    },
+    "habitat_4_slot_06|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "54c9ff17d016df43fd23bcc6acf0e66bc4f2ae3a24e309d1ddf7ecaf1a4500d8"
+    },
+    "habitat_4_slot_06|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "1e8d26f9a9ddf76a978bc8767fa086cf60c6cdabc549c918bea00f326d11ff9f"
+    },
+    "habitat_4_slot_06|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "f3f9223412902883a784f6dbf83763360d880e80674bb1795bef846b30079bd1"
+    },
+    "habitat_4_slot_06|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "be6412306f66a3e3e8e7dcb54b618fce9bbdf1e7f2b4919e6288a63cce4ea57e"
+    },
+    "habitat_4_slot_06|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "2570d7808a7198780b8ad6844403d54f7c8d428108519d4e4f0b2b80e0edba72"
+    },
+    "habitat_4_slot_06|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "68aefe29377b4875c175b8ed06e71b91fdceafa9b4797c791e9d7228d84757f9"
+    },
+    "habitat_4_slot_06|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "3b1af4552149bf97a1478a93d3ff33bfe060dee0522840acda15a17cb28bcdcf"
+    },
+    "habitat_4_slot_06|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "589254a0cbc029b4d0c3aca55bdc073e31618f8fb84345f0ea848a1eab45f184"
+    },
+    "habitat_4_slot_06|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "c5221a864a51e9088ee35bc6fe56cbb092aa3ddc095851cb3ada03565ac26ec3"
+    },
+    "bearing_07|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "4816192121bdb2752f6a58286e4842809efe727ecd31db27e31a73232a0fee41"
+    },
+    "habitat_4_slot_07|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "4120b0aa164fb28d9a6c0c7313104e73905d6a8b984e3417c3639d2653d58dbe"
+    },
+    "habitat_4_slot_07|plate2|False": {
+      "vertices": 144,
+      "triangles": 264,
+      "inside": false,
+      "sha256": "bd8da00564ea8f63e7c78abfac3f16e9925c45d7e2013770bb235f383ba653a0"
+    },
+    "habitat_4_slot_07|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "d3199dae5d5e1385defc02d1aa7deea788ffcf4685e0610624ee166c6d126eea"
+    },
+    "habitat_4_slot_07|plate|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "3d90199a5f51b5cf7c3963e33676352dea88c02ab8c63902a1809864a6653989"
+    },
+    "habitat_4_slot_07|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "e7d2bc841e38665a1cfec4e77325b5c7901b2f230c336d7287cae3abb6c1f366"
+    },
+    "habitat_4_slot_07|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "51e9f9dea64019cd53873c2751fcddc36bc67871525a57421fe7ec5262f864df"
+    },
+    "habitat_4_slot_07|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "69e799e5191a1519c1dec129f909056a405d1d9bd11b51da5301e27cd7980414"
+    },
+    "habitat_4_slot_07|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "a5876532e463aff13ae3979b18aecf47707e8aa9a4b7e7256d6c2f897d7e7275"
+    },
+    "habitat_4_slot_07|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "8a59addec45f547b7ec53254d27b8ec04d82638d439db485ca5119461346f0ce"
+    },
+    "habitat_4_slot_07|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "caad403867a1b85dec52b4b357b45166ae0ab2ba42b861bb25cacbaa017dfdd2"
+    },
+    "bearing_08|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "3efd08026ebc89c1f8bdf41c136ed139332cadd487adaefa9e39a3d4f9d65194"
+    },
+    "habitat_5_slot_08|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "6501f42b48576e095cbc4f90d2668f2e1d2ddf7ae7dfc677ef0a459647e972c8"
+    },
+    "habitat_5_slot_08|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "4febe126430782db7633daca4a86880ece7d349f5ebdab5cf3126dcaf6e20e14"
+    },
+    "habitat_5_slot_08|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "78a9f5da0d815d1e5231a8149939754c02d211b0faace1affedaa3a1f9797cab"
+    },
+    "habitat_5_slot_08|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "b954df47783a6e7181377bde68da3daed1b5371e90e3ce74ee6b1da3e315b57a"
+    },
+    "habitat_5_slot_08|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "4f8ccf8d75007ccfcb2b23c258169aef75f6302611d38ac10dd454981ff95b10"
+    },
+    "habitat_5_slot_08|edge|False": {
+      "vertices": 656,
+      "triangles": 1176,
+      "inside": false,
+      "sha256": "350e27d006f1ec2f41fc60ac915d0919005bb8cfe49c3ce3c5ebd08829b4b728"
+    },
+    "habitat_5_slot_08|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "fb76ee3c9a15b2ef57113fedf6445d164b853d36f7a14c39b11f95eb2d47c30e"
+    },
+    "habitat_5_slot_08|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "68a5b63a37461a8ddfa3a0b66ce94194e131e67899114f30745f8143812e2224"
+    },
+    "habitat_5_slot_08|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "4f9f7016bc48a652e0c48dc6ce81a9251c0275c2ccd7cb3b32baf44bc54dcb8c"
+    },
+    "habitat_5_slot_08|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "4cc536c3c7fbe4b319fb49ea27354432cc67af42f03ed51a346f35a21e4323bb"
+    },
+    "bearing_09|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "fdfa9d47148558c9f1f27f5b91e025de11a28e324233902e1fe144a7a398d38c"
+    },
+    "habitat_5_slot_09|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "a041ffb8543f22420ebd86d1baad1a323610bca93225cda77d3a65eebb71fddb"
+    },
+    "habitat_5_slot_09|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "0e29e367b8600e2159855ead91a630ba5cce97c1f321f8191de080da3dff7494"
+    },
+    "habitat_5_slot_09|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "d510b9560bd6b171c06f94f6c94314b69a4d884791e0c8cc1a5d6a47875ed984"
+    },
+    "habitat_5_slot_09|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "91625495c5086d0e13c06196695712bb4a53070f6de73828dcb7eba94538282a"
+    },
+    "habitat_5_slot_09|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "2084f4e9e9f64f6aef3fafcc3dff560deef6fbec11f3efa4c093261708c3ad5a"
+    },
+    "habitat_5_slot_09|edge|False": {
+      "vertices": 648,
+      "triangles": 1164,
+      "inside": false,
+      "sha256": "3eaa52ad51981c3a3af55bca27e5d4c9930e7abd343798224bd6bcb16d462167"
+    },
+    "habitat_5_slot_09|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "b57387ec4d1c7286096f9eb067de4b409c2ffbcf2435b3bbe4d214458ada6d52"
+    },
+    "habitat_5_slot_09|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "5cb5d95b38e879ec4806648a594e135b3c431dd304926a04c600f555dc9add18"
+    },
+    "habitat_5_slot_09|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "05bc52e0d27480e097cf605cde5d3bff53768629ddad124f69b348903769e522"
+    },
+    "habitat_5_slot_09|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "ebb2386d449b9751c799e90f7778a8edd232c76bd59bc0b87af7f116952216b5"
+    },
+    "bearing_10|edge|False": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": false,
+      "sha256": "bb4ba65601dfb71fca914eade5d8c6134cc02b81d351bc0be1f794013083ef6c"
+    },
+    "habitat_6_slot_10|liner|True": {
+      "vertices": 88,
+      "triangles": 168,
+      "inside": true,
+      "sha256": "7f6818bf73dcf0756cd862221e0510ffca7b3cac532397a7e3ee7427d35e9efe"
+    },
+    "habitat_6_slot_10|plate|False": {
+      "vertices": 432,
+      "triangles": 792,
+      "inside": false,
+      "sha256": "7a3cac0b068d14c919a7124fc327ac512cc9fed319d7bf1b80990ecc5afa12c4"
+    },
+    "habitat_6_slot_10|glazing|False": {
+      "vertices": 152,
+      "triangles": 228,
+      "inside": false,
+      "sha256": "cf6e0904ad8ac387443b76dda69f28e06f245fa0b67a27902b2ef2c28211ba37"
+    },
+    "habitat_6_slot_10|plate2|False": {
+      "vertices": 96,
+      "triangles": 176,
+      "inside": false,
+      "sha256": "ee657c437342c931c16f3b83a1e4fb5b6c62d7309e297edf0714711b5eb9b5dc"
+    },
+    "habitat_6_slot_10|recess|False": {
+      "vertices": 308,
+      "triangles": 600,
+      "inside": false,
+      "sha256": "369141b3cb317254c9163bc6b620684731e2102ddc7620b0f6b3be0f4799fe7c"
+    },
+    "habitat_6_slot_10|edge|False": {
+      "vertices": 656,
+      "triangles": 1176,
+      "inside": false,
+      "sha256": "c64812d7c6b9de0f8968b6db5f8caca86fe4d5d069663e990fbbef60ac85780d"
+    },
+    "habitat_6_slot_10|trim|False": {
+      "vertices": 1776,
+      "triangles": 3456,
+      "inside": false,
+      "sha256": "2690ae101a27b87109ab7d73d50713672c93ba0a2f1e88458638a50112e3bf5a"
+    },
+    "habitat_6_slot_10|frame|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "9361133fed1f951bee71df1774f098dc86e379924a3e3c97936b31b708be5dd0"
+    },
+    "habitat_6_slot_10|rack|True": {
+      "vertices": 48,
+      "triangles": 72,
+      "inside": true,
+      "sha256": "db36265cd8299c31237adf043e137b2241313d6e10c7e27e451ec39542077369"
+    },
+    "habitat_6_slot_10|deck|True": {
+      "vertices": 44,
+      "triangles": 84,
+      "inside": true,
+      "sha256": "d13356efb841d515c109056d91c14514ed0c0d06f80cf6fd5e9eb813eb32f5fd"
+    },
+    "spoke_1|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "c8283b305264254b847312fc74e1bf9ae988dcb6981074be205ec352312bbb83"
+    },
+    "spoke_1|liner|True": {
+      "vertices": 24,
+      "triangles": 36,
+      "inside": true,
+      "sha256": "462df8fca215498d4cb7a9774ce852b5453d7920354a3faf2a2583bbf937e3be"
+    },
+    "spoke_1|trim|False": {
+      "vertices": 2184,
+      "triangles": 4240,
+      "inside": false,
+      "sha256": "b3475f5de453df447d401ab3a9c3eb2e602543cda563d8003ff1d0f69a9ae111"
+    },
+    "spoke_1|plate|False": {
+      "vertices": 504,
+      "triangles": 924,
+      "inside": false,
+      "sha256": "8bfb31a9838fa2c14ebaa4dd9b7586bf059951a330328daa5929b73bdfc78d3d"
+    },
+    "spoke_1|edge|False": {
+      "vertices": 1512,
+      "triangles": 2664,
+      "inside": false,
+      "sha256": "ccc5062ae3243e629948a8d71e015018b27df0dec5fec28f65be8111d69c1b65"
+    },
+    "spoke_1|plate2|False": {
+      "vertices": 72,
+      "triangles": 132,
+      "inside": false,
+      "sha256": "5aa9abbf86c0443231555518220626092b158493b370f70d94bdb9261b0e6472"
+    },
+    "spoke_1|recess|False": {
+      "vertices": 400,
+      "triangles": 784,
+      "inside": false,
+      "sha256": "36257171cadd3b788940e8e04e28bd8f3fcc6d7f4120090f2c97c456f49a5333"
+    },
+    "spoke_1|frame|True": {
+      "vertices": 32,
+      "triangles": 48,
+      "inside": true,
+      "sha256": "ffb332234adf2e0fc7e15a92caec9b7a3db4ceefc4a5780dd3ba25156f604321"
+    },
+    "spoke_1|rack|True": {
+      "vertices": 64,
+      "triangles": 96,
+      "inside": true,
+      "sha256": "bd18f7fb10da8e8a8d811e5dcfb9b8c61ab9dee574a6d14b0badf8e2c0bc8c87"
+    },
+    "spoke_2|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "52f01eb34943e064bd0be55df9c3c74e1ee60f065cdcccf78a7b928313b0e313"
+    },
+    "spoke_2|liner|True": {
+      "vertices": 24,
+      "triangles": 36,
+      "inside": true,
+      "sha256": "03cdaf426d7ca02fd98e98cfee03c6fa50d5014a154c0313f341b89d6bee7edc"
+    },
+    "spoke_2|trim|False": {
+      "vertices": 2184,
+      "triangles": 4240,
+      "inside": false,
+      "sha256": "a54ca166c65de36489d668845658c0b2e827e04cea0b501cc152db4ac8eb4d2c"
+    },
+    "spoke_2|plate|False": {
+      "vertices": 504,
+      "triangles": 924,
+      "inside": false,
+      "sha256": "7e481ba02034f1e3eece7f2646dff79f51844a985bb83ae4e443d0f77859bc5a"
+    },
+    "spoke_2|edge|False": {
+      "vertices": 1512,
+      "triangles": 2664,
+      "inside": false,
+      "sha256": "23146c1178f7bb2806edd1f790908d40993d5ce7c794595ce8cbcead2920f797"
+    },
+    "spoke_2|plate2|False": {
+      "vertices": 72,
+      "triangles": 132,
+      "inside": false,
+      "sha256": "6b904d40faeace1bbbb3f61a3af259a9fb7c869a73e4ba561a5faaa91a9dd110"
+    },
+    "spoke_2|recess|False": {
+      "vertices": 400,
+      "triangles": 784,
+      "inside": false,
+      "sha256": "53c9dbaa96fc149955a3e73858a05c29410c54591057a90b590f1693ac8ddbef"
+    },
+    "spoke_2|frame|True": {
+      "vertices": 32,
+      "triangles": 48,
+      "inside": true,
+      "sha256": "ab080231182ed48b45eccacc3b059255d511dba2c885ec5d43bd98b0426cf667"
+    },
+    "spoke_2|rack|True": {
+      "vertices": 64,
+      "triangles": 96,
+      "inside": true,
+      "sha256": "c6ddf9aaa173b33d62c47efc192d762d61c9ccfa5e32644299f5d02e30ec9ef0"
+    },
+    "spoke_3|liner|True": {
+      "vertices": 48,
+      "triangles": 88,
+      "inside": true,
+      "sha256": "2b5b18f4696a9afd1fc3e7e06cc749e87a982aecefa9cf119adb0ea96737daf5"
+    },
+    "spoke_3|edge|False": {
+      "vertices": 64,
+      "triangles": 112,
+      "inside": false,
+      "sha256": "284bcb038ba0590b2ec7572c6a3ee51d01c311f4a2404b8265a990774f6370f6"
+    },
+    "spoke_3|plate2|False": {
+      "vertices": 240,
+      "triangles": 440,
+      "inside": false,
+      "sha256": "54cd3888858d85df59f162bc52a3d53aac306e85cf18b6a4f7fdf85956c44ca3"
+    },
+    "arm_1|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "5453915aa3143af80e789b8ae88c5ecdb06a2b0ffb74aed647f707d1c83bf3f5"
+    },
+    "arm_1|liner|True": {
+      "vertices": 220,
+      "triangles": 424,
+      "inside": true,
+      "sha256": "80fd918d8f1321e8b085f06ecb7afa668ffa611aa7431b72261bf1bf5ecc7373"
+    },
+    "arm_1|trim|False": {
+      "vertices": 4204,
+      "triangles": 8228,
+      "inside": false,
+      "sha256": "daf01a2a22f3589133b3ea490d5ed4c67584d4e9620f48424daabe048fb7e429"
+    },
+    "arm_1|plate|False": {
+      "vertices": 648,
+      "triangles": 1188,
+      "inside": false,
+      "sha256": "8d615ab30f00e33881b42d8da29ef7c3bc45054a5e4686bda8d4b1c60cd0a32d"
+    },
+    "arm_1|edge|False": {
+      "vertices": 2740,
+      "triangles": 4816,
+      "inside": false,
+      "sha256": "9b21833651f27c02c2639465149c13a3f3b6d6cbf5e520ae4105e46fd4c32702"
+    },
+    "arm_1|plate2|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "94a9ebfb55ece4324ad33583c80d9be712b81f2f6e0d67e472b201122eb2a4bd"
+    },
+    "arm_1|recess|False": {
+      "vertices": 500,
+      "triangles": 980,
+      "inside": false,
+      "sha256": "fbaba29d434623ec0a70ac2f866457b84e4e589d5923dea7bbaad8a0a0c61da3"
+    },
+    "arm_1|frame|True": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": true,
+      "sha256": "16250db45948c4c79f3ad872f94856845631be8649717cf66e63c2da1a3e3930"
+    },
+    "arm_1|rack|True": {
+      "vertices": 80,
+      "triangles": 120,
+      "inside": true,
+      "sha256": "5e6e785c93b4c840abd6ff267dc866e0525aa9e2f38507fab68b6292bb1ecc7a"
+    },
+    "arm_1|glazing|False": {
+      "vertices": 96,
+      "triangles": 144,
+      "inside": false,
+      "sha256": "612a729b1890059e79924962366b8ea98284e01ff70d758edcc5a5a85f386a4e"
+    },
+    "arm_1|recess|True": {
+      "vertices": 196,
+      "triangles": 388,
+      "inside": true,
+      "sha256": "5c03e63a185344d99f3848dcf9f2bd45422cd711a82c94105defa2127d19ea09"
+    },
+    "arm_2|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "f64dd1c4ccb10e58f76c24da0ea335dd4242a74e98368c3a08f5a4e4c0ae8d0c"
+    },
+    "arm_2|liner|True": {
+      "vertices": 220,
+      "triangles": 424,
+      "inside": true,
+      "sha256": "c7b42c4f3269a4d83d2ab712115fd7ba11f421475fc7bcdfcd5f81024b7e431b"
+    },
+    "arm_2|trim|False": {
+      "vertices": 3864,
+      "triangles": 7564,
+      "inside": false,
+      "sha256": "dbee74c334489850e0b194a62d10c35c91add3b3174a920e668549a4d6dbf81f"
+    },
+    "arm_2|plate|False": {
+      "vertices": 648,
+      "triangles": 1188,
+      "inside": false,
+      "sha256": "edfabcc6006ff8e9562d9e24c765df53df6afc5b771434218c932607262394c0"
+    },
+    "arm_2|edge|False": {
+      "vertices": 2388,
+      "triangles": 4220,
+      "inside": false,
+      "sha256": "d36e6d714b371e518228e10aca2db2b14222c2056264f42d1b052ba594e75edf"
+    },
+    "arm_2|plate2|False": {
+      "vertices": 384,
+      "triangles": 704,
+      "inside": false,
+      "sha256": "f8abe11cfc76a7babf90ab467241e996700deff5a00df0b8d9d0ecddc3e41e39"
+    },
+    "arm_2|recess|False": {
+      "vertices": 500,
+      "triangles": 980,
+      "inside": false,
+      "sha256": "3f9a39f250a5fea7d9b316fca7ad849ec32f980ca842f3446b61c264422c472b"
+    },
+    "arm_2|frame|True": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": true,
+      "sha256": "d927d5984d6ebbb381e5a12b67817189175a768980b233873246f088bf920271"
+    },
+    "arm_2|rack|True": {
+      "vertices": 80,
+      "triangles": 120,
+      "inside": true,
+      "sha256": "54da97a680b443323f6afa4399257941f1d2d1ab74ec318c3f4fab15ba4dc303"
+    },
+    "arm_2|glazing|False": {
+      "vertices": 96,
+      "triangles": 144,
+      "inside": false,
+      "sha256": "d9b37720fa21d3a329ff356c95b67515f60d555605b984e4a705e5288fdc614e"
+    },
+    "arm_2|recess|True": {
+      "vertices": 196,
+      "triangles": 388,
+      "inside": true,
+      "sha256": "46e1edc3954e3a04216eefb07950833bf96c0f2a18809f757b11b2c3dbd0779f"
+    },
+    "arm_3|deck|True": {
+      "vertices": 8,
+      "triangles": 12,
+      "inside": true,
+      "sha256": "67762b08042a0966e0f88ceadcf62d602a800d88dd82304b0860779b897976c3"
+    },
+    "arm_3|liner|True": {
+      "vertices": 220,
+      "triangles": 424,
+      "inside": true,
+      "sha256": "e1b161be091276992352e64540273211b0feb05dd744a14b8846a34e8dc64f33"
+    },
+    "arm_3|trim|False": {
+      "vertices": 4252,
+      "triangles": 8316,
+      "inside": false,
+      "sha256": "fa49fd57b22362a8926a78344d79983a9a8570d8e28b1dc1b9e4e1531caada96"
+    },
+    "arm_3|plate|False": {
+      "vertices": 648,
+      "triangles": 1188,
+      "inside": false,
+      "sha256": "a73f91b6a4208c26047ac420425e75e2a20827d19763b1211c3bdf0b2f1f9017"
+    },
+    "arm_3|edge|False": {
+      "vertices": 2756,
+      "triangles": 4840,
+      "inside": false,
+      "sha256": "b175edd417a4c5c0954fc225681f7c33e4c8388b6f29e97afa5795e8eb6ec9f4"
+    },
+    "arm_3|plate2|False": {
+      "vertices": 576,
+      "triangles": 1056,
+      "inside": false,
+      "sha256": "6c9d61ff1c515c15a42775cbfafe6118504c2a4e523e6e21d4e53629617270b5"
+    },
+    "arm_3|recess|False": {
+      "vertices": 516,
+      "triangles": 1004,
+      "inside": false,
+      "sha256": "cff62e08862166a6ee490e17351bbfa05680e711fcbe2eea464ab792842a6947"
+    },
+    "arm_3|frame|True": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": true,
+      "sha256": "a294a0be8210b37498a7b764a88d2d488bef3cad2cc16ccd11aa8ab38d754826"
+    },
+    "arm_3|rack|True": {
+      "vertices": 80,
+      "triangles": 120,
+      "inside": true,
+      "sha256": "6e8406b5b66ff358febfeee3ef6e09c8347641f1426e8be15733f9cdb2a16f1e"
+    },
+    "arm_3|glazing|False": {
+      "vertices": 96,
+      "triangles": 144,
+      "inside": false,
+      "sha256": "4357d4c151ff0f91d965e95fafa9e6f8d9494424da0f39cfed66b3b74414ce77"
+    },
+    "arm_3|recess|True": {
+      "vertices": 196,
+      "triangles": 388,
+      "inside": true,
+      "sha256": "1babf9b8ebb8682177d2d9c730d3a43e121320f8c16f427cf68aed16a5e62235"
+    },
+    "arm_4|deck|True": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": true,
+      "sha256": "ddc3d4eddd68e2d0d973f122d6487f3bed5385b14873a76dcc47f0aae9427bfc"
+    },
+    "arm_4|liner|True": {
+      "vertices": 24,
+      "triangles": 36,
+      "inside": true,
+      "sha256": "b8403c524463d4cf09275e994db4ba7a8e94e8107a13bb125f23441ab6dc2034"
+    },
+    "arm_4|trim|False": {
+      "vertices": 1176,
+      "triangles": 2280,
+      "inside": false,
+      "sha256": "26166818a018e1efeb282e7a79fadc0f8fc75d0c497b878d9865438c624dcdee"
+    },
+    "arm_4|plate|False": {
+      "vertices": 264,
+      "triangles": 484,
+      "inside": false,
+      "sha256": "8a1c7877e4a321f6116fc4612a58c974038d101c7fc45805521bb29df8b867ec"
+    },
+    "arm_4|edge|False": {
+      "vertices": 864,
+      "triangles": 1512,
+      "inside": false,
+      "sha256": "bc3b50ead3c116aa3c96736c910f35cfaeecf7ce69b8da5697c4b23a06c4cf07"
+    },
+    "arm_4|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "b49c4a02acc373898781b2dca16bd08007de58bea4d8551d2e1b53b09ee56dfe"
+    },
+    "arm_4|recess|False": {
+      "vertices": 200,
+      "triangles": 392,
+      "inside": false,
+      "sha256": "89cfeeda48e992549f25f670ccb34061dc448f1033e82b17f1847843f9bb076d"
+    },
+    "arm_4|frame|True": {
+      "vertices": 208,
+      "triangles": 360,
+      "inside": true,
+      "sha256": "e0bbcbc6f5384584c6b6bdf43f7927f1f5d39bd5a585ca2ac2dd379291982dd3"
+    },
+    "arm_4|rack|True": {
+      "vertices": 32,
+      "triangles": 48,
+      "inside": true,
+      "sha256": "6e5e66c89847453cef0d57469b42b7f2900c8db264b6e277ba2a09685988c440"
+    },
+    "service_finger_1|edge|False": {
+      "vertices": 240,
+      "triangles": 416,
+      "inside": false,
+      "sha256": "e714a60ff52200fa51b0c618575168609fd76f8827d8d2c11f4e818f9de0f8a4"
+    },
+    "service_finger_1|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "3a7a4e2b803f317d48e69ce26f4cfa15055fbc03c28c5bd194b0ab5c48e54c68"
+    },
+    "service_finger_1|recess|False": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": false,
+      "sha256": "9665543a444cd351f0599dba3b0833bb879b641e714741ef21bf28fb7956aa6c"
+    },
+    "service_finger_1|glazing|False": {
+      "vertices": 160,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "be86f00554895ddfd7a1cdcf786c86609096ec19d72c55f54cb39358a834057a"
+    },
+    "service_finger_2|edge|False": {
+      "vertices": 240,
+      "triangles": 400,
+      "inside": false,
+      "sha256": "c570f9b8239080e3ff0985977a84bb429e7aa5b2582bbabc53d54bd7a50d9e4d"
+    },
+    "service_finger_2|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "385486acddfd97289336d19d7925f6e2c8961ce78f0e983fc6c7c6d5ef2efbb8"
+    },
+    "service_finger_3|edge|False": {
+      "vertices": 240,
+      "triangles": 416,
+      "inside": false,
+      "sha256": "939a71846ff9fba13384201a109663bcc742ec25b65f8f5720dc60a615926092"
+    },
+    "service_finger_3|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "185057f4bde3887b7eba9d5ddfd09e14a64783c94c6ef59f131292d29cb8304d"
+    },
+    "service_finger_3|recess|False": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": false,
+      "sha256": "7eb158eddb3995050d49e354e23cd517e521c0757a5d77412986b634d44a8992"
+    },
+    "service_finger_3|glazing|False": {
+      "vertices": 160,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "4f9d582757e962f0f96914f3aed742950e85caf623893f8b554efeba4ca1fe91"
+    },
+    "service_finger_4|edge|False": {
+      "vertices": 240,
+      "triangles": 400,
+      "inside": false,
+      "sha256": "b081ad6487b48ff4fa02c6d12052a24d2f949e17a24590abb5cfcda18f83097e"
+    },
+    "service_finger_4|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "c363e10db64bae389e9772dfcc30fe0910421327d0acc9a057cdb5a622ad5716"
+    },
+    "service_finger_5|edge|False": {
+      "vertices": 240,
+      "triangles": 400,
+      "inside": false,
+      "sha256": "1345605c44176a8775566fd510e9051cf7b891a960a07522a88e0fe929e84693"
+    },
+    "service_finger_5|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "4da44c4dae92eba02f74ab15a4cfc973d54265b50f214bc6d7772224d82c0709"
+    },
+    "service_finger_6|edge|False": {
+      "vertices": 240,
+      "triangles": 416,
+      "inside": false,
+      "sha256": "4f98ebab87d36c482c6d3bfc872837d5e564472f4b2f33eebcca118174439cab"
+    },
+    "service_finger_6|trim|False": {
+      "vertices": 192,
+      "triangles": 368,
+      "inside": false,
+      "sha256": "922f36439730aa3067a751fffe1a6da94cc478305f952549711e41e1c5d166da"
+    },
+    "service_finger_6|recess|False": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": false,
+      "sha256": "093deaf3b78ad36416e5cbaf560664919a07ff5a7f83dbde4bf921a38262306c"
+    },
+    "service_finger_6|glazing|False": {
+      "vertices": 160,
+      "triangles": 240,
+      "inside": false,
+      "sha256": "96c831158bded748e801c128c68e1c9e9a70cfaedb4b131d432fe637b4d549a4"
+    },
+    "ring_attitude_control|trim|False": {
+      "vertices": 2400,
+      "triangles": 4720,
+      "inside": false,
+      "sha256": "47e1a9f85ff2f748825e11e72fbc7b08c8a84f910bd60aae520794c029476a71"
+    },
+    "ring_attitude_control|edge|False": {
+      "vertices": 1088,
+      "triangles": 2112,
+      "inside": false,
+      "sha256": "218bd573e321d7adc4b90aa56b53e1efa6fc10b4157585c2f4d1ea3ac38dbfb8"
+    },
+    "ring_attitude_control|recess|False": {
+      "vertices": 1088,
+      "triangles": 2112,
+      "inside": false,
+      "sha256": "18fbc85e8de03fe0a0a9a068d6b00dcd097e16c71facf9c03b9c6991bfc17e38"
+    },
+    "equipment_deck|plate2|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "0452ad7f9e75c99c56532830a7ce7b417d62098afbb181dfbf3d7c1c4c1b5168"
+    },
+    "equipment_deck|trim|False": {
+      "vertices": 1800,
+      "triangles": 3440,
+      "inside": false,
+      "sha256": "6ada5978606468d0c9bc22f61c411efd2560546fb3baed4e62920cfc19945592"
+    },
+    "equipment_deck|edge|False": {
+      "vertices": 2920,
+      "triangles": 4920,
+      "inside": false,
+      "sha256": "bcc8d87653cd7a3c2a28fa6a979883a270216b877365bcc589bfaed78b496c1c"
+    },
+    "tower_1|trim|False": {
+      "vertices": 1744,
+      "triangles": 3336,
+      "inside": false,
+      "sha256": "0f3eff60dedfedcb568afc02eb8f6b10a567260c03abbc8abd628ec32ccef9c0"
+    },
+    "tower_1|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "6ba8b4742daf1c951533696738ab57a532ae33cd0106a35ea6257656a854ce19"
+    },
+    "tower_1|edge|False": {
+      "vertices": 7292,
+      "triangles": 13272,
+      "inside": false,
+      "sha256": "b0062e1ae4dbdfb3c67053038e1a1a7ce69c8ec7a7fa5b8a96ba49ebe0b00cb6"
+    },
+    "tower_1|recess|False": {
+      "vertices": 1248,
+      "triangles": 1872,
+      "inside": false,
+      "sha256": "2b9bb96ed8c92808a7d7cea9ec5b60c29353d5add44bd9cf3682c9142258b821"
+    },
+    "tower_1|plate|False": {
+      "vertices": 3488,
+      "triangles": 6540,
+      "inside": false,
+      "sha256": "2f72c00b9be4df78afd6d66d80a3048f227fd2d95b01df45f1027305a0e6dcba"
+    },
+    "tower_1|plate2|False": {
+      "vertices": 2008,
+      "triangles": 3884,
+      "inside": false,
+      "sha256": "dc241df1105e3e3cc75d2f6a8c903872c247dc4eb1b40fca289705748c5dca06"
+    },
+    "tower_1|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "e2af807e0bd71ba8cf9857337faadb69c35e965729fab8f67ef2eb36a122f158"
+    },
+    "tower_1|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "e9016e2db9ffcd24f731c700e00ab5b835a11e2b37c5447e8f8c965453a9d0cb"
+    },
+    "tower_1|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "ff6b315b9911545dce574bd25ea0ca7e381a49f4a4cd367e3c63d39b827f1f7a"
+    },
+    "tower_1|frame|False": {
+      "vertices": 48,
+      "triangles": 84,
+      "inside": false,
+      "sha256": "3b2f3fe78c4b8338fd2c8631a69328d79d3211db0ade54d63005417370887ae3"
+    },
+    "tower_2|trim|False": {
+      "vertices": 1920,
+      "triangles": 3672,
+      "inside": false,
+      "sha256": "082972327949eb9ad488908c46cfc3f943f55c365a5ab93d68423f610b911226"
+    },
+    "tower_2|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "682518f9726fc92d4c099a0ee49605fdc6c697939eb814394012e2db0eced85d"
+    },
+    "tower_2|edge|False": {
+      "vertices": 8532,
+      "triangles": 15504,
+      "inside": false,
+      "sha256": "f4bed707043c5a86577df8210d203a73db7299ff489c5871d13ce7d1a90a5327"
+    },
+    "tower_2|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "bcc6a4f1e6379a891a4089162abb51ed01594a46ed42c251517d1af856a56e55"
+    },
+    "tower_2|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "911c1741eb0f4be595ca06ca3247afb3b4b0cca502900c9fdb3f742f6498ea62"
+    },
+    "tower_2|plate2|False": {
+      "vertices": 1984,
+      "triangles": 3840,
+      "inside": false,
+      "sha256": "ad0b49ffc5c729070c4290ad3faf5e6903d2f414a5072e337a539a95ae5716b9"
+    },
+    "tower_2|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "43141c0a89caef7568915ab1c0b0e97fbc26ba0dc4c66371a7c14d79fb07e8ac"
+    },
+    "tower_2|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "4af399907a96893d2678d1869e507eb0d39cbfcfb16af1d30443213cbc4023fc"
+    },
+    "tower_2|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "6be4e0fd312c6ee99673e72aa714f2c1b54eebf892900243f6f2658beb993259"
+    },
+    "tower_3|trim|False": {
+      "vertices": 1872,
+      "triangles": 3580,
+      "inside": false,
+      "sha256": "5a83e43d8e5fb03721d46db832b3765f821c3d85fc8a8c494798a16e593bb216"
+    },
+    "tower_3|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "5941ce97cd2ca6d8f5abf862799356f458448f65a7f4de206b1deb3acce0c8d4"
+    },
+    "tower_3|edge|False": {
+      "vertices": 7412,
+      "triangles": 13484,
+      "inside": false,
+      "sha256": "de49c7c82979dde99d4fddee29e4bf1e327bdb6093b0c32128f29f192b681540"
+    },
+    "tower_3|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "742dc759e9361aad203fbb2b2bf35834a1cbc6838d63ad164c44c3e8d9e5efe7"
+    },
+    "tower_3|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "484218fb3548a5d13dd7bc0bbed6fd74aefbdd5028d3dc94680f9b4431446782"
+    },
+    "tower_3|plate2|False": {
+      "vertices": 3268,
+      "triangles": 6384,
+      "inside": false,
+      "sha256": "0bbb8022ebc50fe773e42f9d2e848fcf899b8ac35687e8da327d13ebe696911e"
+    },
+    "tower_3|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "24189d2f2b00061965629bf92b7d2130406bb0759cff4879b33fc67580f7c624"
+    },
+    "tower_3|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "8d3fbd0e38bea8e7e7ebab2d4ce2485e474a409952fc8ad4336e1d76504f6692"
+    },
+    "tower_3|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "1f807e75a8ca4532c948e4a76c1473be08ae327a5b1d7b74b7efa8bf909f9011"
+    },
+    "tower_4|trim|False": {
+      "vertices": 2304,
+      "triangles": 4408,
+      "inside": false,
+      "sha256": "f20e65a042303063a74399cc921946fd1c46cac8188150d60bce1cf6ea0f53cf"
+    },
+    "tower_4|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "5596074b7004d60226d2d7afeb75eceda27be5157f1d1fc8f260391c7d2179e4"
+    },
+    "tower_4|edge|False": {
+      "vertices": 7444,
+      "triangles": 13540,
+      "inside": false,
+      "sha256": "ee9efe3837332a6016b6b84b62be42fad5912a0752d62d22c03758e01a1489c0"
+    },
+    "tower_4|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "c0d4b6db3e5fb4e915be4831a50c8a2a4afe8284a5d8bc82598c29b0511c0c7c"
+    },
+    "tower_4|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "7f41469aaa2260a70117ee603795555b459da6e53268d24f3d5ff82f251db4e6"
+    },
+    "tower_4|plate2|False": {
+      "vertices": 1984,
+      "triangles": 3840,
+      "inside": false,
+      "sha256": "feb979e50358267af69f1aac1d174d303753949e5dc9b99dc6dc2d336110a8d9"
+    },
+    "tower_4|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "6b44bfd2c452a3f7f102b35f263ed8579e7fdb1c9f172d1a5f0b5cb831e44176"
+    },
+    "tower_4|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "9a58bb6041b516ab56e0082d8262e2ae9a30a069f62d1869c61ee945b7aee10c"
+    },
+    "tower_4|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "c39ba7b79c6dfb2a1126198bcfa6df1ea434d99ee51e0de91f36abaaa1685e11"
+    },
+    "tower_5|trim|False": {
+      "vertices": 2592,
+      "triangles": 5016,
+      "inside": false,
+      "sha256": "cf441cba1e3600d5a5c2a4746c9fa7cc05344708475f800e2c4e4c215a6ae13b"
+    },
+    "tower_5|liner|True": {
+      "vertices": 1568,
+      "triangles": 3104,
+      "inside": true,
+      "sha256": "1e1ffde40c05a0f50c94893c676bdb6a37037758ec21ebb82bf14619eb91a7a1"
+    },
+    "tower_5|edge|False": {
+      "vertices": 7540,
+      "triangles": 13708,
+      "inside": false,
+      "sha256": "633a08c7286256043a62d9f3e14636868ec3289ca71ff559ec66a85e1dbea487"
+    },
+    "tower_5|recess|False": {
+      "vertices": 1280,
+      "triangles": 1920,
+      "inside": false,
+      "sha256": "b87699e02a1f69b0bd499169bc5c515e87bec55e7155bc1c256b4a228a6ea27b"
+    },
+    "tower_5|plate|False": {
+      "vertices": 3584,
+      "triangles": 6720,
+      "inside": false,
+      "sha256": "aac39b19f30ae788997d638caad965b530efdd292814f89931a4d8b7cb226e1d"
+    },
+    "tower_5|plate2|False": {
+      "vertices": 1984,
+      "triangles": 3840,
+      "inside": false,
+      "sha256": "13f141eaf5075820efe8c5f86e07b648a89ff5b7f74bb42950a0bbe25df424e2"
+    },
+    "tower_5|deck|True": {
+      "vertices": 1040,
+      "triangles": 2064,
+      "inside": true,
+      "sha256": "260da24e389f393c56cd793ca03000a891ebdfd8c56833d456bc84aa066934e0"
+    },
+    "tower_5|frame|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "21442a3fac5a234ac7d0111f34eb671efc15425d8be234a7edbf57350273d1f8"
+    },
+    "tower_5|rack|True": {
+      "vertices": 384,
+      "triangles": 576,
+      "inside": true,
+      "sha256": "7425d5eeb75e54cd156c10a2af6487b7747f54de365f84aa17052a74d952e4f0"
+    },
+    "radiator_1|trim|False": {
+      "vertices": 584,
+      "triangles": 1144,
+      "inside": false,
+      "sha256": "c5f6ef456e7b050fa4ee5dd231e1aa6c9c86b9f9713b04bfedd26c0a2e45abe1"
+    },
+    "radiator_1|edge|False": {
+      "vertices": 352,
+      "triangles": 548,
+      "inside": false,
+      "sha256": "d60d2a1202407531adbdf4fb1cf2090a62ef1956b35e4b7ac0a4d316fb4923fc"
+    },
+    "radiator_1|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "77650743675526e101b7a7520fae0497b6a517872a31669a31403204bbfb2c5a"
+    },
+    "radiator_2|trim|False": {
+      "vertices": 584,
+      "triangles": 1144,
+      "inside": false,
+      "sha256": "7882057b50adbdad545747308d50dbb736ac652aeed62494058ce4df2566bd13"
+    },
+    "radiator_2|edge|False": {
+      "vertices": 352,
+      "triangles": 548,
+      "inside": false,
+      "sha256": "8ce83b01f50a81162bb8eb61a027de4fb3e41d98d495e81c4568fd9809d263a1"
+    },
+    "radiator_2|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "9caf2a8a944da3f4b6a37c4abec0761c05d92aa05212d13db47f3954b685625f"
+    },
+    "radiator_3|trim|False": {
+      "vertices": 584,
+      "triangles": 1144,
+      "inside": false,
+      "sha256": "7861f564c9df22268d9054b0e1cbe284d830b0d9fcde4a7dc6017e328b3a910c"
+    },
+    "radiator_3|edge|False": {
+      "vertices": 352,
+      "triangles": 548,
+      "inside": false,
+      "sha256": "e1c602833bd17d5acd01d4eff512a56a92f9143ba4e1d9ecbca05478dc660cea"
+    },
+    "radiator_3|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "5033edd3fca1ad1d2b14369dde7e8993e2fa84032d4add9777b8a5efc493352c"
+    },
+    "radiator_4|trim|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "95a2aceaf4b492afe5b9e4ef3e00c0c98316b3dde3059229b254878c81bd2d00"
+    },
+    "radiator_4|edge|False": {
+      "vertices": 304,
+      "triangles": 464,
+      "inside": false,
+      "sha256": "a0eadd53426f17f7dd2ec66b0b8bc1b53eae6711e780504b9eb5bb36a2d64c39"
+    },
+    "radiator_4|liner|True": {
+      "vertices": 32,
+      "triangles": 56,
+      "inside": true,
+      "sha256": "9133a116914e8d2d2d61835742ebc6882716ed54f677d14ed45c68b8c358fc46"
+    },
+    "cargo_1|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "a19c6f27d48e2ccf71d3fd4f7d719e7f60c55bab1383a78eb1fea46c55beee7d"
+    },
+    "cargo_1|trim|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "b928dbe0d1b75bba227f955b148d564eb376fdd5452091219096cd2d00f7ce16"
+    },
+    "cargo_1|frame|False": {
+      "vertices": 16,
+      "triangles": 28,
+      "inside": false,
+      "sha256": "29a545d9bcdab9bac21bf245d4edaf5ca38ffdc583de7203b9d98b65cd17e76f"
+    },
+    "cargo_2|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "1e1f72dd8c9a70baab1208ba81fd3ee7e842634e35298da6d8ddd5251979c7d5"
+    },
+    "cargo_2|trim|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "4af6e9c3061b66570cdeb5c5a9d1392109ba7da292ecdd5c7f81bfbf657be1e4"
+    },
+    "cargo_2|frame|False": {
+      "vertices": 16,
+      "triangles": 28,
+      "inside": false,
+      "sha256": "f768784990e13bdf1273f37412a64bcacadba0af5604ad99c35661d3f3a61800"
+    },
+    "cargo_3|plate2|False": {
+      "vertices": 24,
+      "triangles": 44,
+      "inside": false,
+      "sha256": "c937737d3f982b2a69059f463bda2dd6c4449626e98d3416cca68dae7b882ee1"
+    },
+    "cargo_3|trim|False": {
+      "vertices": 120,
+      "triangles": 220,
+      "inside": false,
+      "sha256": "b8e45ba3b7dc69c1c61ad2be6898a9451ea2eb7763d1774d19cce7ab056667e0"
+    },
+    "cargo_3|frame|False": {
+      "vertices": 16,
+      "triangles": 28,
+      "inside": false,
+      "sha256": "151b09e4cf9548857583d4b39f3d00552a2c5f8e5b572672df00deb0bd8e1b49"
+    },
+    "folded_plate|edge|False": {
+      "vertices": 16,
+      "triangles": 24,
+      "inside": false,
+      "sha256": "a1ab5d5005153d3e4908f0a291c529a67b6980533af655f83f843ae9e0dde950"
+    },
+    "emergency_lights|blue|False": {
+      "vertices": 720,
+      "triangles": 1080,
+      "inside": false,
+      "sha256": "0ba3879baf1700af3b1666d619a166713715de06368fc881585ed005b3db953c"
+    },
+    "emergency_lights|battery|False": {
+      "vertices": 40,
+      "triangles": 60,
+      "inside": false,
+      "sha256": "2ebc27193e50342234705621cd4f46fc205f60a420794c852fde2a402d2c527a"
+    }
+  },
+  "changed_objects": [
+    "core_03|edge|False",
+    "core_03|frame|False",
+    "core_05|edge|False",
+    "core_05|frame|False",
+    "core_07|edge|False",
+    "core_07|frame|False",
+    "core_08|edge|False",
+    "core_08|frame|False",
+    "core_09|edge|False",
+    "core_09|frame|False",
+    "habitat_1_slot_00|edge|False",
+    "habitat_1_slot_00|frame|False",
+    "habitat_1_slot_01|frame|False",
+    "habitat_2_slot_02|edge|False",
+    "habitat_2_slot_02|frame|False",
+    "habitat_2_slot_03|frame|False",
+    "habitat_3_slot_04|frame|False",
+    "habitat_3_slot_05|edge|False",
+    "habitat_3_slot_05|frame|False",
+    "habitat_4_slot_06|frame|False",
+    "habitat_4_slot_07|frame|False",
+    "habitat_5_slot_08|edge|False",
+    "habitat_5_slot_08|frame|False",
+    "habitat_5_slot_09|frame|False",
+    "habitat_6_slot_10|edge|False",
+    "habitat_6_slot_10|frame|False",
+    "spoke_3|frame|False",
+    "tower_1|edge|False",
+    "tower_1|plate2|False",
+    "tower_1|frame|False",
+    "folded_plate|edge|False",
+    "folded_plate|frame|False"
+  ],
+  "allowed_changed_objects": [
+    "core_03|edge|False",
+    "core_03|frame|False",
+    "core_05|edge|False",
+    "core_05|frame|False",
+    "core_07|edge|False",
+    "core_07|frame|False",
+    "core_08|edge|False",
+    "core_08|frame|False",
+    "core_09|edge|False",
+    "core_09|frame|False",
+    "folded_plate|edge|False",
+    "folded_plate|frame|False",
+    "habitat_1_slot_00|edge|False",
+    "habitat_1_slot_00|frame|False",
+    "habitat_1_slot_01|edge|False",
+    "habitat_1_slot_01|frame|False",
+    "habitat_2_slot_02|edge|False",
+    "habitat_2_slot_02|frame|False",
+    "habitat_2_slot_03|edge|False",
+    "habitat_2_slot_03|frame|False",
+    "habitat_3_slot_04|edge|False",
+    "habitat_3_slot_04|frame|False",
+    "habitat_3_slot_05|edge|False",
+    "habitat_3_slot_05|frame|False",
+    "habitat_4_slot_06|edge|False",
+    "habitat_4_slot_06|frame|False",
+    "habitat_4_slot_07|edge|False",
+    "habitat_4_slot_07|frame|False",
+    "habitat_5_slot_08|edge|False",
+    "habitat_5_slot_08|frame|False",
+    "habitat_5_slot_09|edge|False",
+    "habitat_5_slot_09|frame|False",
+    "habitat_6_slot_10|edge|False",
+    "habitat_6_slot_10|frame|False",
+    "spoke_3|frame|False",
+    "tower_1|edge|False",
+    "tower_1|frame|False",
+    "tower_1|plate2|False"
+  ],
+  "unchanged_objects": 357,
+  "bounds_unchanged": true,
+  "baseline_triangles": 695876,
+  "triangles": 701304,
+  "inside_triangles": 110428,
+  "baseline_inside_triangles": 110428,
+  "source": "review.build() against review.build(repair_loose=True); paint changes no geometry"
+}

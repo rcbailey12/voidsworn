@@ -1,0 +1,12 @@
+[
+  {
+    "camera": 170,
+    "nebula_mean_abs_rgb_delta_255": 0.8562019354423869,
+    "nebula_p99_abs_rgb_delta_255": 24.0
+  },
+  {
+    "camera": 60,
+    "nebula_mean_abs_rgb_delta_255": 0.4539285943930041,
+    "nebula_p99_abs_rgb_delta_255": 10.0
+  }
+]

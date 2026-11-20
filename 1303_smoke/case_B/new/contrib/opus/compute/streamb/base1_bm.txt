@@ -1,0 +1,3 @@
+bossmatrix s1 {"vex":"64% r10.1","malek":"69% r9.4","ashgrove":"71% r10.9 (carrier)","thale":"76% r13.4","kassar":"90% r9.4 (carrier)","vorn":"77% r10.3","reyes":"86% r10.7 (carrier)","maren":"88% r15.8 (carrier)","grax":"54% r8.6","sable":"68% r8.1","mott":"72% r8.4 (carrier)","vesh":"73% r12.0 (carrier)","matriarch":"65% r12.0 (carrier)","razormaw":"77% r8.8","mending":"88% r8.9","voice":"81% r8.7","aelith":"80% r11.0 (carrier)","vaelen":"78% r9.1","thorne":"73% r11.8","mirelle":"67% r10.7","nekhet":"79% r14.2","sekhmar":"61% r12.0","anuket":"86% r9.8","khepra":"78% r11.3"}
+by boss {"hegemony":"51%","corsair":"85%","chorus":"75%","ithar":"71%","deathless":"83%","voidsworn":"85%"}
+carrier fleets 78% gun fleets 73%

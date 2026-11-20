@@ -1,0 +1,96 @@
+{
+ "about": "Issue 538 death regression: full source pixels around core and wreck; presentation crops are labelled.",
+ "cameras": [
+  170
+ ],
+ "cell": [
+  640,
+  480
+ ],
+ "crop": {
+  "170": [
+   640,
+   480
+  ]
+ },
+ "rows": [
+  {
+   "id": "d_cruiser",
+   "group": "deaths",
+   "label": "death, big class: Sunward cruiser (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "split",
+     0.3,
+     1
+    ],
+    [
+     "split",
+     1.1,
+     1
+    ],
+    [
+     "split",
+     4.6,
+     1
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_capital",
+   "group": "deaths",
+   "label": "death, capital: Hegemony super-dreadnought (cut)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "cut",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     1
+    ],
+    [
+     "split",
+     0.3,
+     1
+    ],
+    [
+     "split",
+     1.1,
+     1
+    ],
+    [
+     "split",
+     4.6,
+     1
+    ]
+   ],
+   "key": 8
+  }
+ ]
+}

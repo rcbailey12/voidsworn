@@ -1,0 +1,5 @@
+{
+ "note": "Round 8 step 1: the concept's near (port) bow deck edge, traced by eye on the concept at 1024 px (pixel x, y), from the stem aft to where the sponson hides it. Used by tools/blender/r209/fit8.py as a named line beside the outline (try 2).",
+ "deck_edge_port": [[45, 540], [70, 544], [100, 546], [130, 540], [160, 533], [200, 527], [240, 520], [280, 515], [320, 508], [360, 503], [400, 499], [440, 494], [480, 490], [500, 488]],
+ "casemate_turret_centres": {"casF": [265, 580], "casA": [430, 545]}
+}

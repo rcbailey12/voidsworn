@@ -1,0 +1,22 @@
+{
+ "ship": "voidsworn_S8",
+ "name": "Daybreak-class dreadnought, the Sunward flagship (Sunward Crusade)",
+ "faction": "voidsworn",
+ "game_ship": "ascendant",
+ "game_code": "V1b_r_23",
+ "sheet": "voidsworn_S8",
+ "concept": "contrib/codex/design/concept_round5_2026_11/voidsworn_S8_beauty.jpg",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "S8",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/voidsworn_S8/ (design file tools/blender/build_sheets/ships/voidsworn_S8.py; issue 738). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, seams, insides, hard points and the ship length (LENGTH 27.0, the Dreadnought class length) come from it through tools/blender/build_sheets/contract.py; this file only names the sheet, the game ids, the concept and the recipe settings. No parts list here: the sheet places every part. game_code V1b_r_23 is the Dreadnought folder the game picks for voidsworn (godot/render/hull_table.gd AI_HULLS); an install replaces the old hull there, copied aside first. bake stack (issue 756): stage 5 paints it with the Sunward kit's paint stack (tools/blender/kits/voidsworn/stack.py, through tools/blender/r209/bake_sheet.py; the direction is contrib/muse/design/paint_direction_2026_11/sunward.md, approved by Ryan Nov 14 2026); the colour zones are the sheet's. The sheet was accepted by Ryan on Nov 14 2026 (R254).",
+ "parts": []
+}

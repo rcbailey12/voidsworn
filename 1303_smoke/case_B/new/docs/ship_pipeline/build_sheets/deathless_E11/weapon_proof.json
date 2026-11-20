@@ -1,0 +1,193 @@
+{
+ "code": "deathless_E11",
+ "source": "tools/blender/build_sheets/ships/deathless_E11.py",
+ "source_sha256": "86909795582dd5c22e9dbc7c45405093e12efd8836950fb2021c3cccb2bbc8a6",
+ "weapon_match": {
+  "code": "deathless_E11",
+  "result": "PASS",
+  "problems": [],
+  "slots": [
+   {
+    "slot": 0,
+    "weapon": "gauss",
+    "arc": "T",
+    "shots": 3,
+    "mounts": [
+     {
+      "id": "T1",
+      "type": "nullcannon",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     }
+    ]
+   },
+   {
+    "slot": 1,
+    "weapon": "gauss",
+    "arc": "T",
+    "shots": 3,
+    "mounts": [
+     {
+      "id": "T2",
+      "type": "nullcannon",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     }
+    ]
+   },
+   {
+    "slot": 2,
+    "weapon": "doom",
+    "arc": "F",
+    "shots": 1,
+    "mounts": [
+     {
+      "id": "A1",
+      "type": "corona_arc",
+      "mount": "fixed",
+      "barrels": 1,
+      "muzzles": 1
+     }
+    ]
+   },
+   {
+    "slot": 3,
+    "weapon": "flak",
+    "arc": "T",
+    "shots": 3,
+    "mounts": [
+     {
+      "id": "F1",
+      "type": "shredder",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 5
+     }
+    ]
+   }
+  ]
+ },
+ "fit": {
+  "CLASH": 0,
+  "MOUNT": 0,
+  "ARC": 0,
+  "SENSOR": 0,
+  "SWEEP": 0,
+  "EXHAUST": 0,
+  "EXIT": 0,
+  "LANE": 0
+ },
+ "stages": {
+  "contract": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 2.3
+  },
+  "build": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.0
+  },
+  "audit": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.3
+  },
+  "audit_selftest": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 3.5
+  },
+  "stage5": {
+   "ok": true,
+   "route": "unpainted sandbox: stage 4 geometry unchanged, no paint jobs"
+  },
+  "lod": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 7.2
+  },
+  "export": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.8
+  },
+  "export_check": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 2.8
+  },
+  "export_selftest": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 47.9
+  },
+  "export_data": {
+   "hardpoints": {
+    "board": 2,
+    "breach": 8,
+    "core": 1,
+    "engine": 3,
+    "rcs": 4,
+    "gun": 10
+   },
+   "ship_length": 1.0
+  }
+ },
+ "budget": {
+  "triangles": 117298,
+  "surfaces": 13,
+  "interior_triangles": 7677,
+  "lods": {
+   "lod0": {
+    "triangles": 117298,
+    "objects": 258,
+    "materials": 18
+   },
+   "lod1": {
+    "triangles": 114922,
+    "objects": 220,
+    "materials": 11
+   },
+   "lod2": {
+    "triangles": 58354,
+    "objects": 186,
+    "materials": 11
+   },
+   "lod3": {
+    "triangles": 19477,
+    "objects": 166,
+    "materials": 10
+   }
+  },
+  "scene_gate": "not measured in this CPU sandbox proof"
+ },
+ "stage6_godot_lod_readback": "all four mesh nodes load with the exported triangle counts",
+ "game_firing_and_turning": {
+  "code": "deathless_E11",
+  "failures": 0,
+  "turrets": 3,
+  "volleys": 10
+ },
+ "authored_interiors": {
+  "failures": 0,
+  "triangles": 7677
+ },
+ "destruction": {
+  "failures": 0,
+  "machines": 11,
+  "machines_split": 0,
+  "inside_triangles": 3715,
+  "inside_outside_hull": 0
+ },
+ "export_selftest": {
+  "result": "PASS",
+  "cases": 18
+ },
+ "limitations": [
+  "unpainted sandbox geometry; the Board queues PC paint jobs",
+  "no measured performance or scene gate claim"
+ ]
+}

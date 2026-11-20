@@ -1,0 +1,14 @@
+{
+ "strike": {
+  "n": "Strike",
+  "d": "Default. Wings hit the best target in reach, ships first for bombers."
+ },
+ "screen": {
+  "n": "Screen",
+  "d": "Wings stay within 2 hexes of their carrier, hunt enemy craft first, and shoot down torpedoes aimed at ships beside them."
+ },
+ "hunt": {
+  "n": "Hunt",
+  "d": "Wings range 4 hexes further and go for crippled ships (+20% damage below half hull), but fly exposed (10 easier to hit)."
+ }
+}

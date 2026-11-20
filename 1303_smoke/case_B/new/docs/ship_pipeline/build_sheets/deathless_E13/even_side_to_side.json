@@ -1,0 +1,47 @@
+{
+ "issue": 783,
+ "ruling": "R256 (Ryan, Nov 15 2026 07:02 CST): \"let's make sure that the paint actually is even on each side, it's not consistent now\"",
+ "method": "top view, bow up, port left, light the same on both sides; the port half mirrored onto the starboard half (tools/blender/build_sheets/studies/mirror_check.py; 720 px, 16 samples blockout, 24 samples painted with the battle lift 2.2). Painted: stage 5 run in the cloud sandbox (tools/blender/r209/bake_sheet.py, maps 1024, 8 samples, CPU), main at ad62af7d before, this branch after.",
+ "measures": {
+  "mean_diff": "mean largest channel difference of a ship pixel from its mirror twin, 0 to 255",
+  "share_over_24": "share of ship pixels over 24 of 255",
+  "green_unmatched_share": "share of corona light pixels with no twin within 1 px"
+ },
+ "blockout": {
+  "before": {
+   "ship_px": 66100,
+   "mean_diff": 7.48,
+   "share_over_24": 0.0452,
+   "green_px": 5255,
+   "green_unmatched_px": 1042,
+   "green_unmatched_share": 0.1983
+  },
+  "after": {
+   "ship_px": 66094,
+   "mean_diff": 2.25,
+   "share_over_24": 0.0085,
+   "green_px": 6179,
+   "green_unmatched_px": 80,
+   "green_unmatched_share": 0.0129
+  }
+ },
+ "painted": {
+  "before": {
+   "ship_px": 66102,
+   "mean_diff": 13.02,
+   "share_over_24": 0.113,
+   "green_px": 2308,
+   "green_unmatched_px": 705,
+   "green_unmatched_share": 0.3055
+  },
+  "after": {
+   "ship_px": 66096,
+   "mean_diff": 2.84,
+   "share_over_24": 0.0082,
+   "green_px": 2725,
+   "green_unmatched_px": 179,
+   "green_unmatched_share": 0.0657
+  }
+ },
+ "left": "what is left after: sub-pixel edges and render noise, the core cage bars (a 6-sided rod twisted 0.0075 units differently per side) and the four attitude thrusters (kit.py thruster frame, see README)"
+}

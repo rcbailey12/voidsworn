@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "routes": [
+    "today",
+    "V1",
+    "Raw",
+    "V2",
+    "V3"
+  ],
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "world_length": 41.6,
+  "screenshots": 76,
+  "source_game_unchanged": true,
+  "gun_axes": "forward or outward on authored replacements",
+  "capture_scripts_sha256": {
+    "ROUND4.md": "2e35d29d14f65ef5e929db1b8b4acc2f52cb3ed4ff518b0959d7cd4c0c1d5510",
+    "round4_build.py": "7be5e1096b0be1988fa42e5ec67dea4812038222c80024c7b3e4a34ef2b1d89c",
+    "round4_hand.py": "d60794c46cd7d07e326ea862ef88c4c8bb9f161109679778348ee07303e8c0eb",
+    "round4_material.py": "52649c8fc2601f7d6bd96c787840db535d2a7b7a6f77e9d87ed7ee961c854bab",
+    "round4_probe.gd": "ef8d3cb4859ce4136c5a3840d680d8c310092ab35bc1282c97ec929d3c4b4256",
+    "round4_raw.py": "b25dd21717a449fe64a1497fc7ef1e5b4e70340e1dd1a3c7458ae3960bd1ca6e",
+    "round4_reference.py": "e810cbefa2db603fb16ec9b1d534c89d5a549c18f71a08d986cdf2c38ea906d6",
+    "round4_run.py": "2004fcf9e07e5f2e4e06ed96c431095db6d2140414cc2e68028689cbf3b85c13"
+  },
+  "high_pass": "low-frequency normal deviation reduced; geometry waves are not claimed fixed",
+  "verifier_sha256": "2004fcf9e07e5f2e4e06ed96c431095db6d2140414cc2e68028689cbf3b85c13"
+}

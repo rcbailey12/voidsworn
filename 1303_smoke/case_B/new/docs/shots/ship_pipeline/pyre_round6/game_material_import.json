@@ -1,0 +1,23 @@
+{
+  "probe_sha256": "013c6794db487e8bfac569684134cdf780151c61422a25cc63e269bbb9931df1",
+  "rows": [
+    {
+      "materials": [
+        {
+          "raw_import_specular": 0.5,
+          "specular": 0.119999997317791
+        }
+      ],
+      "route": "V3"
+    },
+    {
+      "materials": [
+        {
+          "raw_import_specular": 0.5,
+          "specular": 0.119999997317791
+        }
+      ],
+      "route": "V1"
+    }
+  ]
+}

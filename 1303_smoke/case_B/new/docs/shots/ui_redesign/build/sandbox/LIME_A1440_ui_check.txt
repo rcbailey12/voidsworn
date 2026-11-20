@@ -1,0 +1,22 @@
+PASS  opening: hover facts match live card/panel queries (1 bearing weapons)
+PASS  opening: checking tips leaves battle state and RNG unchanged
+PASS  1_battle_start at 2560x1440 (UI scale 1.33): 6 parts, 5 top bar buttons
+PASS  2_move_preview at 2560x1440 (UI scale 1.33): 7 parts, 5 top bar buttons
+PASS  3_enemy_clicked: Cordon destroyer (in reach, odds shown)
+PASS  3_enemy_clicked at 2560x1440 (UI scale 1.33): 7 parts, 5 top bar buttons
+PASS  4_tip_card_and_legend at 2560x1440 (UI scale 1.33): 7 parts, 5 top bar buttons
+PASS  planned move: hover facts match live card/panel queries (1 bearing weapons)
+PASS  planned move: checking tips leaves battle state and RNG unchanged
+PASS  5a_planned_move_odds: a move planned, the pointer on Fleet Marshal Petra Valk
+PASS  5a_planned_move_odds at 2560x1440 (UI scale 1.33): 7 parts, 5 top bar buttons
+PASS  after move: hover facts match live card/panel queries (3 bearing weapons)
+PASS  after move: checking tips leaves battle state and RNG unchanged
+PASS  5_enemy_targeted: Fleet Marshal Petra Valk targeted after a move, 1 guns bear
+PASS  5_enemy_targeted at 2560x1440 (UI scale 1.33): 7 parts, 5 top bar buttons
+PASS  enemy turn clears firing warning and hover tip
+PASS  6_enemy_turn at 2560x1440 (UI scale 1.33): 7 parts, 5 top bar buttons
+PASS  7_menu_focus: the menu's first button has keyboard focus and a visible focus ring (Resume)
+PASS  7_menu_focus at 2560x1440 (UI scale 1.33): 6 parts, 5 top bar buttons
+PASS  7_menu_focus: after a toggle the keyboard stays on its row (Firing arcs: off)
+PASS  7_menu_focus: Esc closes the menu and no button keeps the keyboard
+21 checks, 0 failed (window 2560x1440, UI scale 1.333)

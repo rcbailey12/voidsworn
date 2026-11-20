@@ -1,0 +1,8 @@
+{
+ "library": "test_lib",
+ "note": "Test library for the issue 550 fixture only; not a real part library. Schema: docs/ship_pipeline/build_sheets/manifest_schema.md",
+ "entries": [
+  {"id": "reviewed_dish", "what": "listening dish", "file": "none (fixture)", "reviewed": {"by": "fixture reviewer", "date": "2026-11-13", "ref": "contrib/opus/tools/fixtures/build_manifest_mismatch/README.md"}},
+  {"id": "unreviewed_claw", "what": "boarding claw", "file": "none (fixture)", "reviewed": {"by": "", "date": "", "ref": ""}}
+ ]
+}

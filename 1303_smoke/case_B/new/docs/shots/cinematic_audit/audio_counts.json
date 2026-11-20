@@ -1,0 +1,167 @@
+[
+  {
+    "round": 1,
+    "starts": 18,
+    "distinct_cues": 10,
+    "counts": {
+      "ui_round": 1,
+      "ui_select": 1,
+      "ui_your": 1,
+      "engine": 6,
+      "gun_las": 2,
+      "shield": 2,
+      "lance_ion": 1,
+      "gun_plasma": 1,
+      "hit": 2,
+      "shield_break": 1
+    }
+  },
+  {
+    "round": 2,
+    "starts": 24,
+    "distinct_cues": 10,
+    "counts": {
+      "ui_round": 1,
+      "engine": 6,
+      "torp_heavy": 1,
+      "gun_las": 3,
+      "lance_ion": 1,
+      "hit": 6,
+      "shield_break": 2,
+      "gun_plasma": 2,
+      "shield": 1,
+      "hit_heavy": 1
+    }
+  },
+  {
+    "round": 3,
+    "starts": 27,
+    "distinct_cues": 12,
+    "counts": {
+      "ui_round": 1,
+      "engine": 5,
+      "torp_heavy": 1,
+      "gun_las": 3,
+      "hit": 7,
+      "shield_break": 2,
+      "lance_ion": 1,
+      "gun_plasma": 2,
+      "death_run": 1,
+      "boom_s": 1,
+      "chunk_cool": 1,
+      "shield": 2
+    }
+  },
+  {
+    "round": 4,
+    "starts": 18,
+    "distinct_cues": 8,
+    "counts": {
+      "ui_round": 1,
+      "engine": 4,
+      "lance_ion": 1,
+      "hit": 6,
+      "shield_break": 1,
+      "gun_plasma": 2,
+      "gun_las": 2,
+      "shield": 1
+    }
+  },
+  {
+    "round": 5,
+    "starts": 15,
+    "distinct_cues": 8,
+    "counts": {
+      "shield_break": 1,
+      "ui_round": 1,
+      "engine": 3,
+      "gun_plasma": 2,
+      "gun_las": 2,
+      "hit": 4,
+      "shield": 1,
+      "lance_ion": 1
+    }
+  },
+  {
+    "round": 6,
+    "starts": 19,
+    "distinct_cues": 11,
+    "counts": {
+      "shield_break": 3,
+      "ui_round": 1,
+      "engine": 3,
+      "gun_plasma": 2,
+      "lance_ion": 1,
+      "hit": 3,
+      "death_run": 1,
+      "boom_s": 1,
+      "chunk_cool": 1,
+      "gun_las": 1,
+      "shield": 2
+    }
+  },
+  {
+    "round": 7,
+    "starts": 18,
+    "distinct_cues": 8,
+    "counts": {
+      "ui_round": 1,
+      "hit": 3,
+      "engine": 4,
+      "gun_las": 2,
+      "shield": 3,
+      "shield_break": 2,
+      "gun_plasma": 2,
+      "lance_ion": 1
+    }
+  },
+  {
+    "round": 8,
+    "starts": 21,
+    "distinct_cues": 9,
+    "counts": {
+      "ui_round": 1,
+      "hit": 5,
+      "engine": 4,
+      "gun_las": 2,
+      "shield": 2,
+      "shield_break": 2,
+      "gun_plasma": 2,
+      "hit_heavy": 2,
+      "death_run": 1
+    }
+  },
+  {
+    "round": 9,
+    "starts": 16,
+    "distinct_cues": 12,
+    "counts": {
+      "ui_round": 1,
+      "boom_s": 2,
+      "chunk_cool": 2,
+      "engine": 2,
+      "gun_las": 1,
+      "shield": 1,
+      "hit": 1,
+      "shield_break": 2,
+      "death_run": 1,
+      "lance_ion": 1,
+      "hit_heavy": 1,
+      "gun_plasma": 1
+    }
+  },
+  {
+    "round": 10,
+    "starts": 10,
+    "distinct_cues": 7,
+    "counts": {
+      "ui_round": 1,
+      "hit_heavy": 1,
+      "engine": 2,
+      "gun_plasma": 1,
+      "hit": 3,
+      "lance_ion": 1,
+      "death_run": 1
+    }
+  }
+]

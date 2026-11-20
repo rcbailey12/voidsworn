@@ -1,0 +1,146 @@
+{
+ "out": "v64b",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "corsair_grax",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/corsair_grax_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_grax",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/corsair_grax_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_sable",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/corsair_sable_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_sable",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/corsair_sable_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_mott",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/corsair_mott_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_mott",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/corsair_mott_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_vesh",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/corsair_vesh_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_vesh",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/corsair_vesh_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_1_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_1_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_2_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_2_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_3_v8_s61_oil_zi2i_s61_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_3_v8_s61_oil_zi2i_s61_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_4_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. Also turn the bright white moon behind it into a black disc ringed by a thin band of pale light. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_4_v8_s11_oil_zi2i_s11_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. Also turn the bright white moon behind it into a black disc ringed by a thin band of pale light. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_5_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_5_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "horn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_6_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "horn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_6_v8_s51_oil_zi2i_s51_00001_.png",
+   "prompt": "Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  }
+ ]
+}

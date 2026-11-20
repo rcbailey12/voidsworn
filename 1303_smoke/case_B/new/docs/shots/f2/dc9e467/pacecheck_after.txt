@@ -1,0 +1,7 @@
+  s26: PASS  enemy time a round: mean 13.5 s, worst 22.5 s over 6 rounds (win); moves 38, median 2.7 s, longest 3.7 s; enemy move share 10.1 s a round
+     by round: [22.5, 13.1, 17.7, 10.8, 10.3, 6.6]
+  s23: PASS  enemy time a round: mean 31.9 s, worst 47.6 s over 11 rounds (loss); moves 157, median 2.6 s, longest 4.5 s; enemy move share 24.5 s a round
+     by round: [47.6, 43.2, 38.0, 40.4, 37.0, 30.7, 26.6, 29.1, 26.3, 23.8, 8.5]
+  s24: PASS  enemy time a round: mean 14.8 s, worst 51.5 s over 15 rounds (loss); moves 95, median 2.6 s, longest 4.5 s; enemy move share 10.1 s a round
+     by round: [51.5, 46.9, 31.2, 23.2, 10.0, 8.8, 8.3, 8.0, 5.7, 5.1, 4.9, 7.7, 2.9, 2.9, 4.9]
+PASS: every move meets the movement ruling (R64).

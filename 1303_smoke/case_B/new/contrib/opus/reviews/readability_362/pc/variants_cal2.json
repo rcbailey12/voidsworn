@@ -1,0 +1,10 @@
+[
+ {"name": "k100", "tune": {}},
+ {"name": "k070", "tune": {"read": {"*": {"lift_k": 0.7}}}},
+ {"name": "k140", "tune": {"read": {"*": {"lift_k": 1.4}}}},
+ {"name": "k200", "tune": {"read": {"*": {"lift_k": 2.0}}}},
+ {"name": "a20", "tune": {"rim": {"alpha": 20.0}}},
+ {"name": "a45", "tune": {"rim": {"alpha": 45.0}}},
+ {"name": "s4", "tune": {"rim": {"spec": 4.0}}},
+ {"name": "s16", "tune": {"rim": {"spec": 16.0, "energy": 0.5}}}
+]

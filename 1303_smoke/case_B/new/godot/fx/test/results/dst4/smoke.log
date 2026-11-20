@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+FX_SMOKE flashes counted=17 worst_per_second=3
+FX_SMOKE particles=14856 lights=1 wrecks=6 errors=0

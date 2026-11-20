@@ -1,0 +1,24 @@
+[turret] turret_0 (turA) on T560_fx: arc -120 to 120, trains -120.0 to 120.0 from rest
+[turret] turret_1 (turB) on T560_fx: arc -180 to 180, trains -257.7 to 72.0 from rest; 30 degrees of its arc are kept clear of the ship
+[turret] turA target    0.00 barrel    0.00 yaw    0.00 muzzle off 0.0000
+[turret] turB target    0.00 barrel    0.00 yaw    0.00 muzzle off 0.0000
+[turret] turB target   43.80 barrel   43.80 yaw   43.80 muzzle off 0.0000
+[turret] turA target   46.64 barrel   46.64 yaw   46.64 muzzle off 0.0000
+[turret] turB target   88.27 barrel   72.00 yaw   72.00 (outside its reach: edge 72.00) muzzle off 0.0000
+[turret] turA target   92.25 barrel   92.25 yaw   92.25 muzzle off 0.0000
+[turret] turA target  151.09 barrel  120.00 yaw  120.00 (outside its reach: edge 120.00) muzzle off 0.0000
+[turret] turB target  149.11 barrel  149.11 yaw -210.89 muzzle off 0.0000
+[turret] turA target  180.00 barrel  120.00 yaw  120.00 (outside its reach: edge 120.00) muzzle off 0.0000
+[turret] turB target  180.00 barrel -180.00 yaw -180.00 muzzle off 0.0000
+[turret] turB target  -58.52 barrel  -58.52 yaw  -58.52 muzzle off 0.0000
+[turret] turA target  -61.99 barrel  -61.99 yaw  -61.99 muzzle off 0.0000
+[turret] turA target -121.91 barrel -120.00 yaw -120.00 (outside its reach: edge -120.00) muzzle off 0.0000
+[turret] turB target -118.48 barrel -118.48 yaw -118.48 muzzle off 0.0000
+[turret] turA target -175.19 barrel  120.00 yaw  120.00 (outside its reach: edge 120.00) muzzle off 0.0000
+[turret] turB target -174.84 barrel -174.84 yaw -174.84 muzzle off 0.0000
+[turret] turA target  102.20 barrel  102.20 yaw  102.20 muzzle off 0.0000
+[turret] turB target   98.28 barrel  102.32 yaw -257.68 (outside its reach: edge -257.68) muzzle off 0.0000
+[turret] turB target   19.42 barrel   19.42 yaw   19.42 muzzle off 0.0000
+[turret] turA target   20.80 barrel   20.80 yaw   20.80 muzzle off 0.0000
+[turret] max rate 225.0 deg/s, max step change 0.24 deg, worst bearing error 0.0 deg, turret step 6.8 us a frame
+TURRET_CHECK PASS: 0 failures

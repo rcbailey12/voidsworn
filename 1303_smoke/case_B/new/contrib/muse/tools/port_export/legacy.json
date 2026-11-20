@@ -1,0 +1,78 @@
+{
+ "u_carrier": {
+  "n": "Carrier hulls",
+  "d": "Carrier hulls appear in shipyards.",
+  "cost": 30,
+  "group": "Shipyards"
+ },
+ "u_battleship": {
+  "n": "Battleship hulls",
+  "d": "Battleship-class hulls appear in shipyards.",
+  "cost": 60,
+  "group": "Shipyards"
+ },
+ "u_dread": {
+  "n": "Dreadnought hulls",
+  "d": "Sunward Crusade fleets may take one Daybreak-class dreadnought.",
+  "cost": 120,
+  "group": "Shipyards",
+  "req": "u_battleship"
+ },
+ "chest1": {
+  "n": "War chest I",
+  "d": "+75 starting credits.",
+  "cost": 20,
+  "group": "Supply"
+ },
+ "chest2": {
+  "n": "War chest II",
+  "d": "+75 more starting credits.",
+  "cost": 40,
+  "group": "Supply",
+  "req": "chest1"
+ },
+ "chest3": {
+  "n": "War chest III",
+  "d": "+75 more starting credits.",
+  "cost": 65,
+  "group": "Supply",
+  "req": "chest2"
+ },
+ "cmd1": {
+  "n": "Command authority I",
+  "d": "+2 fleet command points.",
+  "cost": 35,
+  "group": "Command"
+ },
+ "cmd2": {
+  "n": "Command authority II",
+  "d": "+2 more fleet command points.",
+  "cost": 70,
+  "group": "Command",
+  "req": "cmd1"
+ },
+ "vets": {
+  "n": "Veteran officers",
+  "d": "Starting captains begin at Commander rank with a perk.",
+  "cost": 50,
+  "group": "Command"
+ },
+ "founder": {
+  "n": "Founders’ salvage",
+  "d": "Begin each run with a random piece of salvage.",
+  "cost": 60,
+  "group": "Supply"
+ },
+ "wrights": {
+  "n": "Master shipwrights",
+  "d": "Shipyard prices −15%.",
+  "cost": 45,
+  "group": "Supply"
+ },
+ "salvagers": {
+  "n": "Recovery crews",
+  "d": "+20% credits from battles.",
+  "cost": 40,
+  "group": "Supply"
+ }
+}

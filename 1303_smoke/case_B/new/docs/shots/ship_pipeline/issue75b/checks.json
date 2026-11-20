@@ -1,0 +1,241 @@
+{
+  "standing_command": "node contrib/opus/tools/run_all_checks.js --json",
+  "standing_node": "v24.14.0",
+  "standing_result": "PASS",
+  "standing_count": 24,
+  "checks": [
+    {
+      "check": "b1_tests",
+      "result": "PASS",
+      "seconds": 0.12,
+      "detail": "exit 0; B1 tests: 39 ok, 0 FAIL",
+      "exitCode": 0
+    },
+    {
+      "check": "b3_tests",
+      "result": "PASS",
+      "seconds": 0.14,
+      "detail": "exit 0; B3 tests: 17 ok, 0 FAIL",
+      "exitCode": 0
+    },
+    {
+      "check": "b4_tests",
+      "result": "PASS",
+      "seconds": 0.49,
+      "detail": "exit 0; B4 tests: 29 ok, 0 FAIL",
+      "exitCode": 0
+    },
+    {
+      "check": "backlog_tests",
+      "result": "PASS",
+      "seconds": 0.13,
+      "detail": "exit 0; Backlog tests: 11 ok, 0 FAIL",
+      "exitCode": 0
+    },
+    {
+      "check": "campaign_start_test",
+      "result": "PASS",
+      "seconds": 0.11,
+      "detail": "exit 0; Campaign start tests: 6 ok, 0 FAIL",
+      "exitCode": 0
+    },
+    {
+      "check": "effect_caps_tests",
+      "result": "PASS",
+      "seconds": 0.06,
+      "detail": "exit 0; PASS: 215 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged.",
+      "exitCode": 0
+    },
+    {
+      "check": "free_exit_tests",
+      "result": "PASS",
+      "seconds": 0.12,
+      "detail": "exit 0; PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save.",
+      "exitCode": 0
+    },
+    {
+      "check": "inheritance_tests",
+      "result": "PASS",
+      "seconds": 0.08,
+      "detail": "exit 0; PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP.",
+      "exitCode": 0
+    },
+    {
+      "check": "ion_tests",
+      "result": "PASS",
+      "seconds": 0.09,
+      "detail": "exit 0; Ion tests: 4 ok, 0 FAIL",
+      "exitCode": 0
+    },
+    {
+      "check": "lineage_tests",
+      "result": "PASS",
+      "seconds": 0.07,
+      "detail": "exit 0; PASS: Glasswright XP, tiers, locks, capstones, saves and per-line resets; other factions unchanged.",
+      "exitCode": 0
+    },
+    {
+      "check": "nemesis_clash_tests",
+      "result": "PASS",
+      "seconds": 0.17,
+      "detail": "exit 0; PASS: 12330 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion.",
+      "exitCode": 0
+    },
+    {
+      "check": "r1_tests",
+      "result": "PASS",
+      "seconds": 39.84,
+      "detail": "exit 0; R1 tests: 30 ok, 0 FAIL",
+      "exitCode": 0
+    },
+    {
+      "check": "shadow_xp_tests",
+      "result": "PASS",
+      "seconds": 0.07,
+      "detail": "exit 0; PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP.",
+      "exitCode": 0
+    },
+    {
+      "check": "story_beat3_tests",
+      "result": "PASS",
+      "seconds": 0.1,
+      "detail": "exit 0; PASS: six authored nodes and reward sets, 24 spotlights, decision results, saved choices, and win/loss learning screens.",
+      "exitCode": 0
+    },
+    {
+      "check": "naming_lint_game.test",
+      "result": "PASS",
+      "seconds": 0.31,
+      "detail": "exit 0; naming_lint_game.test: pass",
+      "exitCode": 0
+    },
+    {
+      "check": "naming_lint_game",
+      "result": "PASS",
+      "seconds": 30.95,
+      "detail": "0 hard (baseline 0), 1 word",
+      "exitCode": 0,
+      "hardHits": 0
+    },
+    {
+      "check": "checks",
+      "result": "PASS",
+      "seconds": 0.11,
+      "detail": "0 FAIL, 14 CHECK",
+      "exitCode": 0
+    },
+    {
+      "check": "fleet_invariants",
+      "result": "PASS",
+      "seconds": 0.4,
+      "detail": "exit 0; fleet_invariants: 18144 fleets generated, 18145 checks, 0 failures",
+      "exitCode": 0
+    },
+    {
+      "check": "save_fuzz",
+      "result": "PASS",
+      "seconds": 0.08,
+      "detail": "exit 0; save_fuzz: 300 seeded rounds + garbage + round-trip, 0 failures",
+      "exitCode": 0
+    },
+    {
+      "check": "softlock_sweep",
+      "result": "PASS",
+      "seconds": 17.26,
+      "detail": "exit 0; softlock_sweep total: 0 failures",
+      "exitCode": 0
+    },
+    {
+      "check": "table_xref",
+      "result": "PASS",
+      "seconds": 0.07,
+      "detail": "exit 0; WARN id collision: spore exists in both HULLS and RELICS",
+      "exitCode": 0
+    },
+    {
+      "check": "findings_tests",
+      "result": "PASS",
+      "seconds": 1.41,
+      "detail": "34 passed, 46 failed; known: KIT-1, KIT-2, KIT-3, KIT-4, ADM-1, RWD-2, BF-3, BF-6, BF-9, BF-10, ROS-4, ROS-5, ROS-6, ROS-9, WPN-2, WPN-5, SQ-1, MOD-2, MOD-4, BN-1, BN-2, BN-5, ECO-2, EVT-1, PROG-6, RWD-5, RWD-7, NEM-3, NEM-4, NEM-5, NEM-6, BF-2, BF-7, BF-8, ECO-3, ECO-4, DRIFT-5, UI-7, PP-2, BF-1, AI-1, AI-3, AI-4, AI-5, UI-5, UI-8; unexpected: none",
+      "exitCode": 1,
+      "passed": 34,
+      "failed": 46,
+      "knownFailures": [
+        "KIT-1",
+        "KIT-2",
+        "KIT-3",
+        "KIT-4",
+        "ADM-1",
+        "RWD-2",
+        "BF-3",
+        "BF-6",
+        "BF-9",
+        "BF-10",
+        "ROS-4",
+        "ROS-5",
+        "ROS-6",
+        "ROS-9",
+        "WPN-2",
+        "WPN-5",
+        "SQ-1",
+        "MOD-2",
+        "MOD-4",
+        "BN-1",
+        "BN-2",
+        "BN-5",
+        "ECO-2",
+        "EVT-1",
+        "PROG-6",
+        "RWD-5",
+        "RWD-7",
+        "NEM-3",
+        "NEM-4",
+        "NEM-5",
+        "NEM-6",
+        "BF-2",
+        "BF-7",
+        "BF-8",
+        "ECO-3",
+        "ECO-4",
+        "DRIFT-5",
+        "UI-7",
+        "PP-2",
+        "BF-1",
+        "AI-1",
+        "AI-3",
+        "AI-4",
+        "AI-5",
+        "UI-5",
+        "UI-8"
+      ],
+      "unexpectedFailures": []
+    },
+    {
+      "check": "oracle_drift_guard",
+      "result": "PASS",
+      "seconds": 0.2,
+      "detail": "exit 0; constants: 107 entries compared, 95 matched, 12 differed, 38 browser-only, 0 godot-only",
+      "exitCode": 0
+    },
+    {
+      "check": "fixture_check",
+      "result": "PASS",
+      "seconds": 0.17,
+      "detail": "exit 0; fixture_check: 21/21 cases passing",
+      "exitCode": 0
+    }
+  ],
+  "parity": {
+    "result": "PASS",
+    "node": "v22.11.0",
+    "godot": "4.7.2",
+    "prng_seeds": 3,
+    "draws_per_seed": 10000,
+    "math_values": 316090,
+    "seeded_battles": 50,
+    "threat_maps": 3,
+    "threads": "PASS",
+    "hard_stop": "PASS",
+    "transcript_sha256": "55e0aa889def454b2c333dbfc317960ff5e477646cc5f8db231936a6058c0f9b"
+  }
+}

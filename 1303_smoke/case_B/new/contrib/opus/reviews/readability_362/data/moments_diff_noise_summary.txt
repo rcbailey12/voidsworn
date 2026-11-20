@@ -1,0 +1,7 @@
+PR 327 looks                 cells  288  diff over tol    0  max diff   0.00  off_hull over tol   0  max off_hull  0.00  mean off_hull 0.000
+death beats (issue 462)      cells  120  diff over tol    0  max diff   0.00  off_hull over tol   0  max off_hull  0.00  mean off_hull 0.000
+deaths                       cells  288  diff over tol    0  max diff   0.00  off_hull over tol   0  max off_hull  0.00  mean off_hull 0.000
+one weapon, every weight     cells  144  diff over tol    0  max diff   0.00  off_hull over tol   0  max off_hull  0.00  mean off_hull 0.000
+shield states                cells  108  diff over tol    0  max diff   0.00  off_hull over tol   0  max off_hull  0.00  mean off_hull 0.000
+weapon on hull               cells  720  diff over tol    0  max diff   0.00  off_hull over tol   0  max off_hull  0.00  mean off_hull 0.000
+weapon on shield             cells  720  diff over tol    0  max diff   0.00  off_hull over tol   0  max off_hull  0.00  mean off_hull 0.000

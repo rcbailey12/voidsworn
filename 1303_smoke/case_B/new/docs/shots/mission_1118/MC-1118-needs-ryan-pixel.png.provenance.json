@@ -1,0 +1,36 @@
+{
+  "source_commit": "abc615a0b0e29889e5f337cb343a6183c3a3c47f",
+  "source_dirty": true,
+  "source_diff_sha256": "be2152392b15c41853d388af23837923f68ac2a63d8b6061e8a338936962b64d",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-1118-needs-ryan-pixel.png",
+  "date": "2026-11-18T03:10:12Z",
+  "sources": [
+    {
+      "source_commit": "abc615a0b0e29889e5f337cb343a6183c3a3c47f",
+      "source_dirty": true,
+      "source_diff_sha256": "be2152392b15c41853d388af23837923f68ac2a63d8b6061e8a338936962b64d",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "053b9372b377d58efa4380ff03983607695e0d19ec68cfc1393c9962f4f56647"
+  ],
+  "stamp_template_sha256": "053b9372b377d58efa4380ff03983607695e0d19ec68cfc1393c9962f4f56647",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAApklEQVR4nO3VsQ0AMAzDsLRbgP5/b5/QSB7gTfDZtwMUbrICyAlK3gkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCjJwgIyfIyAkycoKMnCAjJ8jICTJygoycICMnyMgJMnKCqXysYgCAC1U5RgAAAABJRU5ErkJggg=="
+  ],
+  "image_sha256": "0d5b6edca2a8f573536be5f44829e83f42e92179cbfcee4b6351cdcfb19a1bc5"
+}

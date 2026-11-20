@@ -1,0 +1,1530 @@
+{
+ "totalRuns": 12600,
+ "errors": 0,
+ "timeouts": 146,
+ "overall": {
+  "n": 12600,
+  "wins": 8298,
+  "rate": 0.66,
+  "ci": [
+   0.65,
+   0.67
+  ]
+ },
+ "byFaction": {
+  "chorus": {
+   "n": 2100,
+   "wins": 1810,
+   "rate": 0.86,
+   "ci": [
+    0.85,
+    0.88
+   ]
+  },
+  "corsair": {
+   "n": 2100,
+   "wins": 1348,
+   "rate": 0.64,
+   "ci": [
+    0.62,
+    0.66
+   ]
+  },
+  "deathless": {
+   "n": 2100,
+   "wins": 1487,
+   "rate": 0.71,
+   "ci": [
+    0.69,
+    0.73
+   ]
+  },
+  "hegemony": {
+   "n": 2100,
+   "wins": 1340,
+   "rate": 0.64,
+   "ci": [
+    0.62,
+    0.66
+   ]
+  },
+  "ithar": {
+   "n": 2100,
+   "wins": 1222,
+   "rate": 0.58,
+   "ci": [
+    0.56,
+    0.6
+   ]
+  },
+  "voidsworn": {
+   "n": 2100,
+   "wins": 1091,
+   "rate": 0.52,
+   "ci": [
+    0.5,
+    0.54
+   ]
+  }
+ },
+ "byAI": {
+  "standard": {
+   "n": 1800,
+   "wins": 1448,
+   "rate": 0.8,
+   "ci": [
+    0.79,
+    0.82
+   ]
+  },
+  "veteran": {
+   "n": 10800,
+   "wins": 6850,
+   "rate": 0.63,
+   "ci": [
+    0.63,
+    0.64
+   ]
+  }
+ },
+ "reach": {
+  "S2": {
+   "n": 10627,
+   "rate": 0.84,
+   "ci": [
+    0.84,
+    0.85
+   ]
+  },
+  "S3": {
+   "n": 8900,
+   "rate": 0.71,
+   "ci": [
+    0.7,
+    0.71
+   ]
+  }
+ },
+ "battleClasses": {
+  "1:battle": {
+   "n": 37274,
+   "winRate": 0.97,
+   "winCI": [
+    0.97,
+    0.97
+   ],
+   "lostMean": 0.2,
+   "lostCI": [
+    0.19,
+    0.2
+   ],
+   "roundsMean": 4.07,
+   "roundsCI": [
+    4.05,
+    4.09
+   ],
+   "timeouts": 35
+  },
+  "1:boss": {
+   "n": 11304,
+   "winRate": 0.94,
+   "winCI": [
+    0.94,
+    0.94
+   ],
+   "lostMean": 0.43,
+   "lostCI": [
+    0.42,
+    0.45
+   ],
+   "roundsMean": 6.66,
+   "roundsCI": [
+    6.6,
+    6.72
+   ],
+   "timeouts": 18
+  },
+  "1:elite": {
+   "n": 4421,
+   "winRate": 0.89,
+   "winCI": [
+    0.88,
+    0.9
+   ],
+   "lostMean": 0.49,
+   "lostCI": [
+    0.47,
+    0.51
+   ],
+   "roundsMean": 4.7,
+   "roundsCI": [
+    4.62,
+    4.77
+   ],
+   "timeouts": 8
+  },
+  "1:elite:nem": {
+   "n": 9606,
+   "winRate": 0.87,
+   "winCI": [
+    0.86,
+    0.88
+   ],
+   "lostMean": 0.6,
+   "lostCI": [
+    0.58,
+    0.61
+   ],
+   "roundsMean": 4.91,
+   "roundsCI": [
+    4.85,
+    4.97
+   ],
+   "timeouts": 16
+  },
+  "2:battle": {
+   "n": 18856,
+   "winRate": 0.95,
+   "winCI": [
+    0.94,
+    0.95
+   ],
+   "lostMean": 0.44,
+   "lostCI": [
+    0.43,
+    0.46
+   ],
+   "roundsMean": 3.74,
+   "roundsCI": [
+    3.71,
+    3.77
+   ],
+   "timeouts": 14
+  },
+  "2:boss": {
+   "n": 9461,
+   "winRate": 0.94,
+   "winCI": [
+    0.94,
+    0.95
+   ],
+   "lostMean": 0.55,
+   "lostCI": [
+    0.53,
+    0.57
+   ],
+   "roundsMean": 5.91,
+   "roundsCI": [
+    5.85,
+    5.97
+   ],
+   "timeouts": 16
+  },
+  "2:elite": {
+   "n": 5125,
+   "winRate": 0.88,
+   "winCI": [
+    0.87,
+    0.88
+   ],
+   "lostMean": 0.74,
+   "lostCI": [
+    0.71,
+    0.77
+   ],
+   "roundsMean": 4.09,
+   "roundsCI": [
+    4.02,
+    4.15
+   ],
+   "timeouts": 4
+  },
+  "2:elite:nem": {
+   "n": 8772,
+   "winRate": 0.9,
+   "winCI": [
+    0.89,
+    0.9
+   ],
+   "lostMean": 0.75,
+   "lostCI": [
+    0.72,
+    0.77
+   ],
+   "roundsMean": 4.36,
+   "roundsCI": [
+    4.3,
+    4.41
+   ],
+   "timeouts": 5
+  },
+  "3:battle": {
+   "n": 15520,
+   "winRate": 0.97,
+   "winCI": [
+    0.97,
+    0.97
+   ],
+   "lostMean": 0.29,
+   "lostCI": [
+    0.28,
+    0.3
+   ],
+   "roundsMean": 2.98,
+   "roundsCI": [
+    2.96,
+    3.01
+   ],
+   "timeouts": 4
+  },
+  "3:boss": {
+   "n": 8556,
+   "winRate": 0.97,
+   "winCI": [
+    0.97,
+    0.97
+   ],
+   "lostMean": 0.44,
+   "lostCI": [
+    0.43,
+    0.46
+   ],
+   "roundsMean": 5.2,
+   "roundsCI": [
+    5.14,
+    5.27
+   ],
+   "timeouts": 20
+  },
+  "3:elite": {
+   "n": 4387,
+   "winRate": 0.94,
+   "winCI": [
+    0.93,
+    0.95
+   ],
+   "lostMean": 0.5,
+   "lostCI": [
+    0.47,
+    0.53
+   ],
+   "roundsMean": 3.25,
+   "roundsCI": [
+    3.19,
+    3.31
+   ],
+   "timeouts": 1
+  },
+  "3:elite:nem": {
+   "n": 7697,
+   "winRate": 0.95,
+   "winCI": [
+    0.94,
+    0.95
+   ],
+   "lostMean": 0.6,
+   "lostCI": [
+    0.58,
+    0.63
+   ],
+   "roundsMean": 3.7,
+   "roundsCI": [
+    3.64,
+    3.75
+   ],
+   "timeouts": 5
+  }
+ },
+ "nemesis": {
+  "meeting1": {
+   "n": 12006,
+   "winRate": 0.88,
+   "winCI": [
+    0.87,
+    0.88
+   ],
+   "adaptB": 0.21,
+   "adaptA": 0.37,
+   "revGain": 1.4,
+   "fedB": 0.12
+  },
+  "meeting2": {
+   "n": 9494,
+   "winRate": 0.91,
+   "winCI": [
+    0.91,
+    0.92
+   ],
+   "adaptB": 1.48,
+   "adaptA": 1.6,
+   "revGain": 0.41,
+   "fedB": 0.39
+  },
+  "meeting3": {
+   "n": 4575,
+   "winRate": 0.95,
+   "winCI": [
+    0.94,
+    0.95
+   ],
+   "adaptB": 2.3,
+   "adaptA": 2.33,
+   "revGain": 0.02,
+   "fedB": 0.49
+  },
+  "byAdapt": {
+   "adapt0": {
+    "n": 9606,
+    "winRate": 0.87,
+    "winCI": [
+     0.86,
+     0.88
+    ]
+   },
+   "adapt1": {
+    "n": 7809,
+    "winRate": 0.9,
+    "winCI": [
+     0.9,
+     0.91
+    ]
+   },
+   "adapt2+": {
+    "n": 8660,
+    "winRate": 0.94,
+    "winCI": [
+     0.93,
+     0.94
+    ]
+   }
+  },
+  "byRev": {
+   "rev0": {
+    "n": 11818,
+    "winRate": 0.88,
+    "winCI": [
+     0.87,
+     0.88
+    ]
+   },
+   "rev1": {
+    "n": 4566,
+    "winRate": 0.9,
+    "winCI": [
+     0.9,
+     0.91
+    ]
+   },
+   "rev2": {
+    "n": 9691,
+    "winRate": 0.93,
+    "winCI": [
+     0.93,
+     0.94
+    ]
+   }
+  }
+ },
+ "economy": {
+  "start": [
+   120,
+   120,
+   120,
+   12600
+  ],
+  "endOfSector1": [
+   405.06,
+   401.98,
+   408.15,
+   12595
+  ],
+  "endOfSector2": [
+   501.02,
+   496.72,
+   505.31,
+   10566
+  ]
+ },
+ "regroup": {
+  "shipyardVisits": 47625,
+  "repairShare": 0.04,
+  "hullShare": 0.7,
+  "modShare": 0.21,
+  "mkShare": 0.05,
+  "binds": 199,
+  "bindRate": 0,
+  "medianWorstMissing": 0,
+  "medianPurse": 378,
+  "medianMissingFrac": 0,
+  "transits": 19527,
+  "transitShortfall": 0.31
+ },
+ "boons": [
+  {
+   "id": "s_ion",
+   "offered": 14911,
+   "picked": 563,
+   "pickRate": 0.04,
+   "runsWithPick": 563,
+   "winRateWithPick": 0.88
+  },
+  {
+   "id": "e_hunt",
+   "offered": 14839,
+   "picked": 3017,
+   "pickRate": 0.2,
+   "runsWithPick": 3017,
+   "winRateWithPick": 0.9
+  },
+  {
+   "id": "a_long",
+   "offered": 14789,
+   "picked": 836,
+   "pickRate": 0.06,
+   "runsWithPick": 836,
+   "winRateWithPick": 0.92
+  },
+  {
+   "id": "i_plate",
+   "offered": 14737,
+   "picked": 573,
+   "pickRate": 0.04,
+   "runsWithPick": 573,
+   "winRateWithPick": 0.86
+  },
+  {
+   "id": "i_line",
+   "offered": 14057,
+   "picked": 1228,
+   "pickRate": 0.09,
+   "runsWithPick": 1228,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "s_chain",
+   "offered": 13960,
+   "picked": 1677,
+   "pickRate": 0.12,
+   "runsWithPick": 1677,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "i_wall",
+   "offered": 12120,
+   "picked": 2602,
+   "pickRate": 0.21,
+   "runsWithPick": 2602,
+   "winRateWithPick": 0.8
+  },
+  {
+   "id": "r_shock",
+   "offered": 12085,
+   "picked": 478,
+   "pickRate": 0.04,
+   "runsWithPick": 478,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "a_rear",
+   "offered": 12057,
+   "picked": 3036,
+   "pickRate": 0.25,
+   "runsWithPick": 3036,
+   "winRateWithPick": 0.87
+  },
+  {
+   "id": "e_kindle",
+   "offered": 11988,
+   "picked": 4737,
+   "pickRate": 0.4,
+   "runsWithPick": 4737,
+   "winRateWithPick": 0.87
+  },
+  {
+   "id": "r_slip",
+   "offered": 11579,
+   "picked": 956,
+   "pickRate": 0.08,
+   "runsWithPick": 956,
+   "winRateWithPick": 0.82
+  },
+  {
+   "id": "r_mom",
+   "offered": 11409,
+   "picked": 1284,
+   "pickRate": 0.11,
+   "runsWithPick": 1284,
+   "winRateWithPick": 0.9
+  },
+  {
+   "id": "h_board",
+   "offered": 10001,
+   "picked": 5344,
+   "pickRate": 0.53,
+   "runsWithPick": 5344,
+   "winRateWithPick": 0.78
+  },
+  {
+   "id": "r_burn",
+   "offered": 9259,
+   "picked": 3082,
+   "pickRate": 0.33,
+   "runsWithPick": 3082,
+   "winRateWithPick": 0.88
+  },
+  {
+   "id": "a_aim",
+   "offered": 8902,
+   "picked": 5010,
+   "pickRate": 0.56,
+   "runsWithPick": 5010,
+   "winRateWithPick": 0.81
+  },
+  {
+   "id": "s_ev",
+   "offered": 7855,
+   "picked": 5615,
+   "pickRate": 0.71,
+   "runsWithPick": 5615,
+   "winRateWithPick": 0.82
+  },
+  {
+   "id": "r_prow",
+   "offered": 7665,
+   "picked": 4601,
+   "pickRate": 0.6,
+   "runsWithPick": 4601,
+   "winRateWithPick": 0.8
+  },
+  {
+   "id": "s_regen",
+   "offered": 7600,
+   "picked": 244,
+   "pickRate": 0.03,
+   "runsWithPick": 244,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "a_crit",
+   "offered": 7148,
+   "picked": 5889,
+   "pickRate": 0.82,
+   "runsWithPick": 5889,
+   "winRateWithPick": 0.78
+  },
+  {
+   "id": "s_arc",
+   "offered": 6756,
+   "picked": 6255,
+   "pickRate": 0.93,
+   "runsWithPick": 6255,
+   "winRateWithPick": 0.79
+  },
+  {
+   "id": "a_mark",
+   "offered": 6661,
+   "picked": 152,
+   "pickRate": 0.02,
+   "runsWithPick": 152,
+   "winRateWithPick": 0.9
+  },
+  {
+   "id": "e_chain",
+   "offered": 6603,
+   "picked": 6514,
+   "pickRate": 0.99,
+   "runsWithPick": 6514,
+   "winRateWithPick": 0.82
+  },
+  {
+   "id": "i_brace",
+   "offered": 6484,
+   "picked": 6433,
+   "pickRate": 0.99,
+   "runsWithPick": 6433,
+   "winRateWithPick": 0.73
+  },
+  {
+   "id": "r_jink",
+   "offered": 6037,
+   "picked": 5664,
+   "pickRate": 0.94,
+   "runsWithPick": 5664,
+   "winRateWithPick": 0.8
+  },
+  {
+   "id": "s_cap",
+   "offered": 5858,
+   "picked": 2553,
+   "pickRate": 0.44,
+   "runsWithPick": 2553,
+   "winRateWithPick": 0.78
+  },
+  {
+   "id": "i_still",
+   "offered": 5684,
+   "picked": 3167,
+   "pickRate": 0.56,
+   "runsWithPick": 3167,
+   "winRateWithPick": 0.72
+  },
+  {
+   "id": "e_spread",
+   "offered": 4513,
+   "picked": 44,
+   "pickRate": 0.01,
+   "runsWithPick": 44,
+   "winRateWithPick": 0.86
+  },
+  {
+   "id": "e_reload",
+   "offered": 4453,
+   "picked": 227,
+   "pickRate": 0.05,
+   "runsWithPick": 227,
+   "winRateWithPick": 0.91
+  },
+  {
+   "id": "a_lance",
+   "offered": 4452,
+   "picked": 2555,
+   "pickRate": 0.57,
+   "runsWithPick": 2555,
+   "winRateWithPick": 0.84
+  },
+  {
+   "id": "h_feast",
+   "offered": 3638,
+   "picked": 189,
+   "pickRate": 0.05,
+   "runsWithPick": 189,
+   "winRateWithPick": 0.86
+  },
+  {
+   "id": "h_chitin",
+   "offered": 3527,
+   "picked": 302,
+   "pickRate": 0.09,
+   "runsWithPick": 302,
+   "winRateWithPick": 0.89
+  },
+  {
+   "id": "e_war",
+   "offered": 3513,
+   "picked": 1381,
+   "pickRate": 0.39,
+   "runsWithPick": 1381,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "h_brood",
+   "offered": 3341,
+   "picked": 638,
+   "pickRate": 0.19,
+   "runsWithPick": 638,
+   "winRateWithPick": 0.91
+  },
+  {
+   "id": "d_jugg",
+   "offered": 3219,
+   "picked": 2172,
+   "pickRate": 0.67,
+   "runsWithPick": 2172,
+   "winRateWithPick": 0.82
+  },
+  {
+   "id": "h_hatch",
+   "offered": 3040,
+   "picked": 879,
+   "pickRate": 0.29,
+   "runsWithPick": 879,
+   "winRateWithPick": 0.9
+  },
+  {
+   "id": "L_storm",
+   "offered": 3030,
+   "picked": 2476,
+   "pickRate": 0.82,
+   "runsWithPick": 2476,
+   "winRateWithPick": 0.92
+  },
+  {
+   "id": "d_hunter",
+   "offered": 2852,
+   "picked": 2815,
+   "pickRate": 0.99,
+   "runsWithPick": 2815,
+   "winRateWithPick": 0.84
+  },
+  {
+   "id": "L_ember",
+   "offered": 2784,
+   "picked": 2784,
+   "pickRate": 1,
+   "runsWithPick": 2784,
+   "winRateWithPick": 0.98
+  },
+  {
+   "id": "L_rook",
+   "offered": 2657,
+   "picked": 2443,
+   "pickRate": 0.92,
+   "runsWithPick": 2443,
+   "winRateWithPick": 0.93
+  },
+  {
+   "id": "d_bastion",
+   "offered": 2657,
+   "picked": 455,
+   "pickRate": 0.17,
+   "runsWithPick": 455,
+   "winRateWithPick": 0.77
+  },
+  {
+   "id": "i_broad",
+   "offered": 2632,
+   "picked": 957,
+   "pickRate": 0.36,
+   "runsWithPick": 957,
+   "winRateWithPick": 0.8
+  },
+  {
+   "id": "d_ionlance",
+   "offered": 2525,
+   "picked": 254,
+   "pickRate": 0.1,
+   "runsWithPick": 254,
+   "winRateWithPick": 0.93
+  },
+  {
+   "id": "L_iron",
+   "offered": 2517,
+   "picked": 2153,
+   "pickRate": 0.86,
+   "runsWithPick": 2153,
+   "winRateWithPick": 0.9
+  },
+  {
+   "id": "d_burnswarm",
+   "offered": 2424,
+   "picked": 87,
+   "pickRate": 0.04,
+   "runsWithPick": 87,
+   "winRateWithPick": 0.94
+  },
+  {
+   "id": "h_wings",
+   "offered": 2288,
+   "picked": 1784,
+   "pickRate": 0.78,
+   "runsWithPick": 1784,
+   "winRateWithPick": 0.8
+  },
+  {
+   "id": "L_star",
+   "offered": 1914,
+   "picked": 943,
+   "pickRate": 0.49,
+   "runsWithPick": 943,
+   "winRateWithPick": 0.94
+  },
+  {
+   "id": "d_inferno",
+   "offered": 1214,
+   "picked": 455,
+   "pickRate": 0.37,
+   "runsWithPick": 455,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "L_hunger",
+   "offered": 902,
+   "picked": 876,
+   "pickRate": 0.97,
+   "runsWithPick": 876,
+   "winRateWithPick": 0.96
+  }
+ ],
+ "modules": [
+  {
+   "id": "damcon",
+   "offered": 19710,
+   "picked": 4308,
+   "pickRate": 0.22,
+   "runsWithPick": 3096,
+   "winRateWithPick": 0.97
+  },
+  {
+   "id": "prow",
+   "offered": 19596,
+   "picked": 5224,
+   "pickRate": 0.27,
+   "runsWithPick": 3636,
+   "winRateWithPick": 0.93
+  },
+  {
+   "id": "auspex",
+   "offered": 19564,
+   "picked": 8520,
+   "pickRate": 0.44,
+   "runsWithPick": 5489,
+   "winRateWithPick": 0.84
+  },
+  {
+   "id": "cogitator",
+   "offered": 19536,
+   "picked": 7536,
+   "pickRate": 0.39,
+   "runsWithPick": 5022,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "drive",
+   "offered": 19486,
+   "picked": 4540,
+   "pickRate": 0.23,
+   "runsWithPick": 3195,
+   "winRateWithPick": 0.96
+  },
+  {
+   "id": "gyro",
+   "offered": 19389,
+   "picked": 6720,
+   "pickRate": 0.35,
+   "runsWithPick": 4560,
+   "winRateWithPick": 0.89
+  },
+  {
+   "id": "capacitor",
+   "offered": 10809,
+   "picked": 2393,
+   "pickRate": 0.22,
+   "runsWithPick": 1956,
+   "winRateWithPick": 0.86
+  },
+  {
+   "id": "loaders",
+   "offered": 10796,
+   "picked": 1662,
+   "pickRate": 0.15,
+   "runsWithPick": 1379,
+   "winRateWithPick": 0.94
+  },
+  {
+   "id": "regen",
+   "offered": 10766,
+   "picked": 3154,
+   "pickRate": 0.29,
+   "runsWithPick": 2538,
+   "winRateWithPick": 0.83
+  },
+  {
+   "id": "flakplus",
+   "offered": 9908,
+   "picked": 2576,
+   "pickRate": 0.26,
+   "runsWithPick": 1973,
+   "winRateWithPick": 0.97
+  },
+  {
+   "id": "crystal",
+   "offered": 9321,
+   "picked": 1611,
+   "pickRate": 0.17,
+   "runsWithPick": 1363,
+   "winRateWithPick": 0.91
+  },
+  {
+   "id": "magazine",
+   "offered": 5699,
+   "picked": 1269,
+   "pickRate": 0.22,
+   "runsWithPick": 1057,
+   "winRateWithPick": 0.9
+  },
+  {
+   "id": "hangar",
+   "offered": 5663,
+   "picked": 1168,
+   "pickRate": 0.21,
+   "runsWithPick": 916,
+   "winRateWithPick": 0.93
+  }
+ ],
+ "relics": [
+  {
+   "id": "armourweave",
+   "offered": 18868,
+   "picked": 7,
+   "pickRate": 0,
+   "runsWithPick": 7,
+   "winRateWithPick": 1
+  },
+  {
+   "id": "banner",
+   "offered": 17377,
+   "picked": 1884,
+   "pickRate": 0.11,
+   "runsWithPick": 1884,
+   "winRateWithPick": 0.91
+  },
+  {
+   "id": "martyr",
+   "offered": 17082,
+   "picked": 1880,
+   "pickRate": 0.11,
+   "runsWithPick": 1880,
+   "winRateWithPick": 0.91
+  },
+  {
+   "id": "salvage",
+   "offered": 13446,
+   "picked": 5860,
+   "pickRate": 0.44,
+   "runsWithPick": 5860,
+   "winRateWithPick": 0.88
+  },
+  {
+   "id": "compass",
+   "offered": 13418,
+   "picked": 5898,
+   "pickRate": 0.44,
+   "runsWithPick": 5898,
+   "winRateWithPick": 0.89
+  },
+  {
+   "id": "cogitator",
+   "offered": 13270,
+   "picked": 5900,
+   "pickRate": 0.44,
+   "runsWithPick": 5900,
+   "winRateWithPick": 0.89
+  },
+  {
+   "id": "coils",
+   "offered": 13179,
+   "picked": 5763,
+   "pickRate": 0.44,
+   "runsWithPick": 5763,
+   "winRateWithPick": 0.89
+  },
+  {
+   "id": "phylactery",
+   "offered": 13154,
+   "picked": 5809,
+   "pickRate": 0.44,
+   "runsWithPick": 5809,
+   "winRateWithPick": 0.91
+  },
+  {
+   "id": "spore",
+   "offered": 10079,
+   "picked": 8163,
+   "pickRate": 0.81,
+   "runsWithPick": 8163,
+   "winRateWithPick": 0.87
+  },
+  {
+   "id": "ledger",
+   "offered": 9632,
+   "picked": 8680,
+   "pickRate": 0.9,
+   "runsWithPick": 8679,
+   "winRateWithPick": 0.85
+  },
+  {
+   "id": "logbook",
+   "offered": 8915,
+   "picked": 8915,
+   "pickRate": 1,
+   "runsWithPick": 8914,
+   "winRateWithPick": 0.84
+  },
+  {
+   "id": "lattice",
+   "offered": 7196,
+   "picked": 5170,
+   "pickRate": 0.72,
+   "runsWithPick": 5170,
+   "winRateWithPick": 0.84
+  }
+ ],
+ "hulls": [
+  {
+   "id": "b_drone",
+   "offered": 9202,
+   "picked": 3622,
+   "pickRate": 0.39,
+   "runsWithPick": 1751,
+   "winRateWithPick": 0.92
+  },
+  {
+   "id": "b_spitter",
+   "offered": 9202,
+   "picked": 2904,
+   "pickRate": 0.32,
+   "runsWithPick": 1634,
+   "winRateWithPick": 0.92
+  },
+  {
+   "id": "b_razor",
+   "offered": 9202,
+   "picked": 5971,
+   "pickRate": 0.65,
+   "runsWithPick": 1967,
+   "winRateWithPick": 0.92
+  },
+  {
+   "id": "d_scythe",
+   "offered": 8232,
+   "picked": 3795,
+   "pickRate": 0.46,
+   "runsWithPick": 1681,
+   "winRateWithPick": 0.83
+  },
+  {
+   "id": "d_jackal",
+   "offered": 8232,
+   "picked": 4212,
+   "pickRate": 0.51,
+   "runsWithPick": 1817,
+   "winRateWithPick": 0.81
+  },
+  {
+   "id": "d_harvester",
+   "offered": 8232,
+   "picked": 2230,
+   "pickRate": 0.27,
+   "runsWithPick": 1521,
+   "winRateWithPick": 0.86
+  },
+  {
+   "id": "h_picket",
+   "offered": 7831,
+   "picked": 3595,
+   "pickRate": 0.46,
+   "runsWithPick": 1630,
+   "winRateWithPick": 0.76
+  },
+  {
+   "id": "h_interdictor",
+   "offered": 7831,
+   "picked": 4301,
+   "pickRate": 0.55,
+   "runsWithPick": 1793,
+   "winRateWithPick": 0.74
+  },
+  {
+   "id": "h_vanguard",
+   "offered": 7831,
+   "picked": 2406,
+   "pickRate": 0.31,
+   "runsWithPick": 1508,
+   "winRateWithPick": 0.83
+  },
+  {
+   "id": "c_raider",
+   "offered": 7794,
+   "picked": 2992,
+   "pickRate": 0.38,
+   "runsWithPick": 1519,
+   "winRateWithPick": 0.78
+  },
+  {
+   "id": "c_reaver",
+   "offered": 7794,
+   "picked": 2616,
+   "pickRate": 0.34,
+   "runsWithPick": 1435,
+   "winRateWithPick": 0.79
+  },
+  {
+   "id": "c_marauder",
+   "offered": 7794,
+   "picked": 4959,
+   "pickRate": 0.64,
+   "runsWithPick": 1750,
+   "winRateWithPick": 0.77
+  },
+  {
+   "id": "i_wisp",
+   "offered": 7667,
+   "picked": 2996,
+   "pickRate": 0.39,
+   "runsWithPick": 1539,
+   "winRateWithPick": 0.73
+  },
+  {
+   "id": "i_blade",
+   "offered": 7667,
+   "picked": 3656,
+   "pickRate": 0.48,
+   "runsWithPick": 1719,
+   "winRateWithPick": 0.69
+  },
+  {
+   "id": "i_song",
+   "offered": 7667,
+   "picked": 2659,
+   "pickRate": 0.35,
+   "runsWithPick": 1591,
+   "winRateWithPick": 0.75
+  },
+  {
+   "id": "warden",
+   "offered": 6899,
+   "picked": 2133,
+   "pickRate": 0.31,
+   "runsWithPick": 1258,
+   "winRateWithPick": 0.74
+  },
+  {
+   "id": "harrow",
+   "offered": 6899,
+   "picked": 2511,
+   "pickRate": 0.36,
+   "runsWithPick": 1411,
+   "winRateWithPick": 0.68
+  },
+  {
+   "id": "penitent",
+   "offered": 6899,
+   "picked": 3969,
+   "pickRate": 0.58,
+   "runsWithPick": 1588,
+   "winRateWithPick": 0.69
+  },
+  {
+   "id": "b_razor_e",
+   "offered": 853,
+   "picked": 75,
+   "pickRate": 0.09,
+   "runsWithPick": 75,
+   "winRateWithPick": 0.99
+  },
+  {
+   "id": "c_marauder_g",
+   "offered": 833,
+   "picked": 85,
+   "pickRate": 0.1,
+   "runsWithPick": 85,
+   "winRateWithPick": 0.99
+  },
+  {
+   "id": "d_jackal_h",
+   "offered": 766,
+   "picked": 3,
+   "pickRate": 0,
+   "runsWithPick": 3,
+   "winRateWithPick": 1
+  },
+  {
+   "id": "h_interdictor_e",
+   "offered": 600,
+   "picked": 10,
+   "pickRate": 0.02,
+   "runsWithPick": 10,
+   "winRateWithPick": 1
+  },
+  {
+   "id": "vs_penitent_l",
+   "offered": 454,
+   "picked": 51,
+   "pickRate": 0.11,
+   "runsWithPick": 51,
+   "winRateWithPick": 1
+  }
+ ],
+ "events": [
+  {
+   "id": "veterans",
+   "times": 290,
+   "noEnabled": 0
+  },
+  {
+   "id": "mutiny",
+   "times": 286,
+   "noEnabled": 0
+  },
+  {
+   "id": "storm",
+   "times": 277,
+   "noEnabled": 0
+  },
+  {
+   "id": "tithe",
+   "times": 272,
+   "noEnabled": 0
+  },
+  {
+   "id": "astropath",
+   "times": 268,
+   "noEnabled": 0
+  },
+  {
+   "id": "broker",
+   "times": 267,
+   "noEnabled": 0
+  },
+  {
+   "id": "spawn",
+   "times": 264,
+   "noEnabled": 0
+  },
+  {
+   "id": "convoy",
+   "times": 263,
+   "noEnabled": 0
+  },
+  {
+   "id": "squall",
+   "times": 263,
+   "noEnabled": 0
+  },
+  {
+   "id": "dock",
+   "times": 261,
+   "noEnabled": 0
+  },
+  {
+   "id": "bait",
+   "times": 260,
+   "noEnabled": 0
+  },
+  {
+   "id": "well",
+   "times": 260,
+   "noEnabled": 0
+  },
+  {
+   "id": "defector",
+   "times": 258,
+   "noEnabled": 0
+  },
+  {
+   "id": "haven",
+   "times": 255,
+   "noEnabled": 0
+  },
+  {
+   "id": "saboteur",
+   "times": 254,
+   "noEnabled": 0
+  },
+  {
+   "id": "derelict",
+   "times": 252,
+   "noEnabled": 0
+  },
+  {
+   "id": "auction",
+   "times": 252,
+   "noEnabled": 0
+  },
+  {
+   "id": "scout",
+   "times": 252,
+   "noEnabled": 0
+  },
+  {
+   "id": "merc",
+   "times": 250,
+   "noEnabled": 0
+  },
+  {
+   "id": "wright",
+   "times": 249,
+   "noEnabled": 0
+  },
+  {
+   "id": "beacon",
+   "times": 245,
+   "noEnabled": 0
+  },
+  {
+   "id": "battlefield",
+   "times": 245,
+   "noEnabled": 0
+  },
+  {
+   "id": "reactor",
+   "times": 244,
+   "noEnabled": 0
+  },
+  {
+   "id": "lament",
+   "times": 243,
+   "noEnabled": 0
+  },
+  {
+   "id": "cache",
+   "times": 231,
+   "noEnabled": 0
+  },
+  {
+   "id": "pilot",
+   "times": 229,
+   "noEnabled": 0
+  },
+  {
+   "id": "seer",
+   "times": 223,
+   "noEnabled": 0
+  },
+  {
+   "id": "moon",
+   "times": 214,
+   "noEnabled": 0
+  },
+  {
+   "id": "tomb",
+   "times": 211,
+   "noEnabled": 0
+  },
+  {
+   "id": "deserters",
+   "times": 210,
+   "noEnabled": 0
+  },
+  {
+   "id": "shrine",
+   "times": 158,
+   "noEnabled": 0
+  },
+  {
+   "id": "tombhome",
+   "times": 31,
+   "noEnabled": 0
+  }
+ ],
+ "shipsFielded": [
+  {
+   "id": "d_jackal",
+   "battles": 54150
+  },
+  {
+   "id": "b_razor",
+   "battles": 53534
+  },
+  {
+   "id": "d_scythe",
+   "battles": 37752
+  },
+  {
+   "id": "c_reaver",
+   "battles": 31142
+  },
+  {
+   "id": "i_blade",
+   "battles": 30071
+  },
+  {
+   "id": "warden",
+   "battles": 29690
+  },
+  {
+   "id": "h_picket",
+   "battles": 29168
+  },
+  {
+   "id": "b_drone",
+   "battles": 29007
+  },
+  {
+   "id": "i_wisp",
+   "battles": 28271
+  },
+  {
+   "id": "c_marauder",
+   "battles": 28080
+  },
+  {
+   "id": "h_interdictor",
+   "battles": 27404
+  },
+  {
+   "id": "penitent",
+   "battles": 24974
+  },
+  {
+   "id": "d_harvester",
+   "battles": 24572
+  },
+  {
+   "id": "i_song",
+   "battles": 24490
+  },
+  {
+   "id": "h_vanguard",
+   "battles": 24475
+  },
+  {
+   "id": "b_spitter",
+   "battles": 23281
+  },
+  {
+   "id": "harrow",
+   "battles": 22674
+  },
+  {
+   "id": "c_raider",
+   "battles": 19563
+  },
+  {
+   "id": "c_hulk",
+   "battles": 12084
+  },
+  {
+   "id": "b_brood",
+   "battles": 6562
+  },
+  {
+   "id": "cathedral",
+   "battles": 6315
+  },
+  {
+   "id": "i_carrier",
+   "battles": 6271
+  },
+  {
+   "id": "h_dominion",
+   "battles": 5790
+  },
+  {
+   "id": "reliquary",
+   "battles": 4413
+  },
+  {
+   "id": "c_marauder_g",
+   "battles": 98
+  },
+  {
+   "id": "b_razor_e",
+   "battles": 86
+  },
+  {
+   "id": "vs_penitent_l",
+   "battles": 55
+  },
+  {
+   "id": "h_interdictor_e",
+   "battles": 10
+  },
+  {
+   "id": "d_jackal_h",
+   "battles": 3
+  }
+ ],
+ "prizes": {
+  "add": 3522,
+  "ransom": 908,
+  "strip": 1872
+ },
+ "salvage": {
+  "cred": 55819,
+  "mod": 75651,
+  "tow": 109
+ },
+ "boonDeclines": 0,
+ "verbUses": 25808
+}

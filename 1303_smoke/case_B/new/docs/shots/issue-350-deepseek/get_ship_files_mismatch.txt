@@ -1,0 +1,6 @@
+SHIP_FILES source: C:\Users\rcbai\Downloads\voidsworn_test\build\godot
+SHIP_FILES repo:   C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-350-deepseek\20261109_234151\repo
+SHIP_FILES: 1 of 252 files do not match the manifest
+MISMATCH wrong B16_23/B16_23_emissive.jpg d22d5284a62e660bff834baf33be9e8d775ac5fa465013553116323776a94ca4
+SHIP_FILES: one or more files do not match godot/assets/ships/manifest.json (see the MISMATCH lines above)
+EXIT=1

@@ -1,0 +1,27 @@
+{
+ "out": "s68",
+ "budget_s": 300,
+ "items": [
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 37,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 51,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 61,
+   "src": "ncrop68/nem_corsair_2.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+  "source_commit": "1b5861b5ca0f6090b6ec8d25035cb568f6e7774e",
+  "source_dirty": true,
+  "source_diff_sha256": "0fd53a7f3d1f1fa2e4f4f8f27732faec0bcfce41bb4bdff0ee8bbafd08f0bf2d",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-1117-now-desktop.png",
+  "date": "2026-11-17T23:57:01Z",
+  "sources": [
+    {
+      "source_commit": "1b5861b5ca0f6090b6ec8d25035cb568f6e7774e",
+      "source_dirty": true,
+      "source_diff_sha256": "0fd53a7f3d1f1fa2e4f4f8f27732faec0bcfce41bb4bdff0ee8bbafd08f0bf2d",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "c20c204dcd0b74a785f41db0c888a80b9157c0fd84136195e4bcf4b09a62f88d"
+  ],
+  "stamp_template_sha256": "c20c204dcd0b74a785f41db0c888a80b9157c0fd84136195e4bcf4b09a62f88d",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABj0lEQVR4nO3VMQ0AIADAMOAjwb9efgywo1Wwb3OfPQCgZP0OAICXOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBECOOQGQY04A5JgTADnmBMCouaf4AOJhSC+bAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "762acfdc74a5a8de1d1b801d576802ddcf9690d1e575fcb9119c437c166af7e9"
+}

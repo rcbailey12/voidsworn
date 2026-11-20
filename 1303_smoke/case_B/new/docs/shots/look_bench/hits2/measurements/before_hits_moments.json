@@ -1,0 +1,916 @@
+{
+ "about": "Issue 538: single hits at camera 170, true source pixels. Separate weapon and target sizes remain those of hull_table and fx_weapons until issue 710 lands.",
+ "cameras": [
+  170
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ]
+ },
+ "rows": [
+  {
+   "id": "h2_las",
+   "group": "hits pass 2",
+   "label": "las",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_macro",
+   "group": "hits pass 2",
+   "label": "macro",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_lance",
+   "group": "hits pass 2",
+   "label": "lance",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_torpedo",
+   "group": "hits pass 2",
+   "label": "torpedo",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_rockets",
+   "group": "hits pass 2",
+   "label": "rockets",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "htorp",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_star_missile",
+   "group": "hits pass 2",
+   "label": "star_missile",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "startorp",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_plasma",
+   "group": "hits pass 2",
+   "label": "plasma",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hturbo",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_prism",
+   "group": "hits pass 2",
+   "label": "prism",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "shard",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_gauss",
+   "group": "hits pass 2",
+   "label": "gauss",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_ion",
+   "group": "hits pass 2",
+   "label": "ion",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "ion",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_arc",
+   "group": "hits pass 2",
+   "label": "arc",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "doom",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "h2_bio",
+   "group": "hits pass 2",
+   "label": "bio",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "bioplasma",
+   "on": "hull",
+   "focus": "target",
+   "shots": 1,
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     1
+    ],
+    [
+     "impact",
+     0.03,
+     1
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ],
+    [
+     "impact",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "w_torp_void_shield",
+   "group": "weapon on shield",
+   "label": "torpedo (voidsworn) on a shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "d_cruiser",
+   "group": "deaths",
+   "label": "death, big class: Sunward cruiser (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_capital",
+   "group": "deaths",
+   "label": "death, capital: Hegemony super-dreadnought (cut)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "cut",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  }
+ ]
+}

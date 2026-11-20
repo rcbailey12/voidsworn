@@ -1,0 +1,27 @@
+{
+  "shipped": {
+    "sheets": 12,
+    "diffs": 12,
+    "firsts": 12
+  },
+  "periods": {
+    "sheets": 12,
+    "diffs": 12,
+    "firsts": 12
+  },
+  "cap_rocks": {
+    "sheets": 12,
+    "diffs": 12,
+    "firsts": 12
+  },
+  "periods_rocks": {
+    "sheets": 12,
+    "diffs": 12,
+    "firsts": 12
+  },
+  "gas_flat": {
+    "sheets": 6,
+    "diffs": 6,
+    "firsts": 6
+  }
+}

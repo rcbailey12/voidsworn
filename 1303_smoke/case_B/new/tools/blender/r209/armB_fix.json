@@ -1,0 +1,46 @@
+{
+"p_casemate": {
+"yaw": 175
+},
+"p_drumrack": {
+"yaw": 0
+},
+"p_bowguns": {
+"yaw": -10
+},
+"b1_s0": {
+"auto": 1,
+"nose": 1
+},
+"b1_s1": {
+"auto": 1
+},
+"b1_s2": {
+"auto": 1
+},
+"b2_s0": {
+"auto": 1,
+"nose": 1
+},
+"b2_s1": {
+"auto": 1
+},
+"b2_s2": {
+"auto": 1
+},
+"b2_s3": {
+"auto": 1
+},
+"b2_s4": {
+"auto": 1
+},
+"b2_s5": {
+"auto": 1
+},
+"p_cargo": {
+"auto": 1
+},
+"p_sternblock": {
+"yaw": -53
+}
+}

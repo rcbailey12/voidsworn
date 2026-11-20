@@ -1,0 +1,334 @@
+{
+  "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+  "source_dirty": false,
+  "source_diff_sha256": "",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "deathless.jpg",
+  "date": "2026-11-18T14:30:33Z",
+  "sources": [
+    {
+      "source_commit": "a298bcf5f2d08f51ecb0fd2e3a1cfd8fc6133252",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "eclipse_installed_cam170.png",
+      "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-18T14:03:42Z",
+      "image_sha256": "c18060bd0856114c8b1b72c1e02a23915a37096812097b8e7a21043b969f2e8e",
+      "sources": [
+        {
+          "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "paint_beauty.png",
+      "source_commit": "608fe532da32231c5b078b9ec7d85d19368440f5",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-11-15T09:48:54Z",
+      "image_sha256": "640c7b0d33b532bb5e8e03e780107c6ca08dbeb807b4c74dfdb81b530ce10e27",
+      "sources": [
+        {
+          "source_commit": "608fe532da32231c5b078b9ec7d85d19368440f5",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "threequarter.jpg",
+      "source_commit": "bdb656b0934509434fc641b88e0b3ea353d2eb8e",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "sheet built",
+      "date": "2026-11-15T19:25:25Z",
+      "image_sha256": "71631b1a6290f09561ab5f7540b876a6b50592880df60a0cb8ebf8434d7e27b6",
+      "sources": [
+        {
+          "source_commit": "bdb656b0934509434fc641b88e0b3ea353d2eb8e",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "sheet built"
+        }
+      ]
+    },
+    {
+      "picture_name": "E12_core_beauty.jpg",
+      "source_commit": "49427b0b8df58af7ec99255c95221256b9585952",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-11-16T15:34:41Z",
+      "image_sha256": "93fc24cb71bd6f4fafff7fc88cd7d6ca609706d19cccb21395c59e854c10f643",
+      "sources": [
+        {
+          "source_commit": "49427b0b8df58af7ec99255c95221256b9585952",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "paint_beauty.png",
+      "source_commit": "9890a936935ab96e962ba6e15f1fb04186824661",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "paint proof",
+      "date": "2026-11-15T00:59:08Z",
+      "image_sha256": "2fc80fd4795d2ace8afa24aba76a6226da1573641a8b9d57a9c1d782935f0460",
+      "sources": [
+        {
+          "source_commit": "9890a936935ab96e962ba6e15f1fb04186824661",
+          "source_dirty": false,
+          "source_diff_sha256": "",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    432,
+    720
+  ],
+  "strip_size": [
+    432,
+    98
+  ],
+  "strip_sha256": [
+    "0c4c3bc07e10c5371cb216c85cf5d39b541c869617fb3ebcef310917656ac30a"
+  ],
+  "stamp_template_sha256": "efaa7e6092e14eb8aae9e023a8ef1adf809b0ca432fb125d19f6fe45ecf65e3a",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAbAAAABiCAIAAAC+rRHtAAABO0lEQVR4nO3UMQHAMAzAsKz/zgEYf5I9YhgSBB9+3u8fAGaOCADLEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLEEAFiiAAxRIAYIkAMESCGCBBDBIghAsQQAWKIADFEgBgiQAwRIIYIEEMEiCECxBABYogAMUSAGCJADBEghggQQwSIIQLMugaQAQfvd13PAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "133f5e29d06a4a7cbfa2d50a102744d1befd33c2d45fa294c27b7960e5ce1c1c",
+  "source_files": [
+    {
+      "code": "D9_23",
+      "source_path": "board/issue-1044/shots/eclipse_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        356,
+        138,
+        468,
+        192
+      ],
+      "exact_source": {
+        "picture_name": "eclipse_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "c18060bd0856114c8b1b72c1e02a23915a37096812097b8e7a21043b969f2e8e",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "E13",
+      "source_path": "ecl1314out/E13/paint/paint_beauty.png",
+      "source_revision_label": "608fe532",
+      "crop": null,
+      "exact_source": {
+        "picture_name": "paint_beauty.png",
+        "source_commit": "608fe532da32231c5b078b9ec7d85d19368440f5",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-11-15T09:48:54Z",
+        "image_sha256": "640c7b0d33b532bb5e8e03e780107c6ca08dbeb807b4c74dfdb81b530ce10e27",
+        "sources": [
+          {
+            "source_commit": "608fe532da32231c5b078b9ec7d85d19368440f5",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "D20_23",
+      "source_path": "board/issue-1044/shots/eclipse_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        793,
+        94,
+        953,
+        204
+      ],
+      "exact_source": {
+        "picture_name": "eclipse_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "c18060bd0856114c8b1b72c1e02a23915a37096812097b8e7a21043b969f2e8e",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "E14",
+      "source_path": "docs/ship_pipeline/build_sheets/deathless_E14/threequarter.jpg",
+      "source_revision_label": "bdb656b0",
+      "crop": null,
+      "exact_source": {
+        "picture_name": "threequarter.jpg",
+        "source_commit": "bdb656b0934509434fc641b88e0b3ea353d2eb8e",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "sheet built",
+        "date": "2026-11-15T19:25:25Z",
+        "image_sha256": "71631b1a6290f09561ab5f7540b876a6b50592880df60a0cb8ebf8434d7e27b6",
+        "sources": [
+          {
+            "source_commit": "bdb656b0934509434fc641b88e0b3ea353d2eb8e",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "sheet built"
+          }
+        ]
+      }
+    },
+    {
+      "code": "D21_23",
+      "source_path": "board/issue-1044/shots/eclipse_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        300,
+        372,
+        521,
+        502
+      ],
+      "exact_source": {
+        "picture_name": "eclipse_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "c18060bd0856114c8b1b72c1e02a23915a37096812097b8e7a21043b969f2e8e",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "E12",
+      "source_path": "docs/ship_pipeline/build_sheets/deathless_E12/paint/E12_core_beauty.jpg",
+      "source_revision_label": "49427b0b",
+      "crop": [
+        857,
+        135,
+        1265,
+        364
+      ],
+      "exact_source": {
+        "picture_name": "E12_core_beauty.jpg",
+        "source_commit": "49427b0b8df58af7ec99255c95221256b9585952",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-11-16T15:34:41Z",
+        "image_sha256": "93fc24cb71bd6f4fafff7fc88cd7d6ca609706d19cccb21395c59e854c10f643",
+        "sources": [
+          {
+            "source_commit": "49427b0b8df58af7ec99255c95221256b9585952",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    },
+    {
+      "code": "D22_23",
+      "source_path": "board/issue-1044/shots/eclipse_installed_cam170.png",
+      "source_revision_label": "4fd5e520",
+      "crop": [
+        666,
+        294,
+        1070,
+        573
+      ],
+      "exact_source": {
+        "picture_name": "eclipse_installed_cam170.png",
+        "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "installed in game",
+        "date": "2026-11-18T14:03:42Z",
+        "image_sha256": "c18060bd0856114c8b1b72c1e02a23915a37096812097b8e7a21043b969f2e8e",
+        "sources": [
+          {
+            "source_commit": "4fd5e5203173595918ca64b4d09d812b487c3c64",
+            "source_diff_sha256": "",
+            "source_dirty": false,
+            "stage": "installed in game"
+          }
+        ]
+      }
+    },
+    {
+      "code": "E11",
+      "source_path": "eclmain1115out/E11/paint/paint_beauty.png",
+      "source_revision_label": "9890a936",
+      "crop": null,
+      "exact_source": {
+        "picture_name": "paint_beauty.png",
+        "source_commit": "9890a936935ab96e962ba6e15f1fb04186824661",
+        "source_dirty": false,
+        "source_diff_sha256": "",
+        "stage": "paint proof",
+        "date": "2026-11-15T00:59:08Z",
+        "image_sha256": "2fc80fd4795d2ace8afa24aba76a6226da1573641a8b9d57a9c1d782935f0460",
+        "sources": [
+          {
+            "source_commit": "9890a936935ab96e962ba6e15f1fb04186824661",
+            "source_dirty": false,
+            "source_diff_sha256": "",
+            "stage": "paint proof"
+          }
+        ]
+      }
+    }
+  ],
+  "comparison": "Existing pictures cropped and scaled. Each cell identifies the original stage."
+}

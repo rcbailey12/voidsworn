@@ -1,0 +1,32 @@
+{
+ "ion": {
+  "n": "Ion season",
+  "d": "Ion storms sweep every battlefield, and shields recharge 25% slower on both sides.",
+  "regen": 0.75,
+  "terr": "storm"
+ },
+ "dark": {
+  "n": "Dark sector",
+  "d": "Thick nebulae choke every battlefield: more hexes where shots go wide (−15 to hit inside).",
+  "terr": "neb"
+ },
+ "wreck": {
+  "n": "Wreck belt",
+  "d": "Old battle wreckage everywhere: more debris hexes (−10 to hit inside), and salvage adds 15% to every battle’s pay.",
+  "terr": "debris",
+  "cred": 0.15
+ },
+ "war": {
+  "n": "War zone",
+  "d": "Every fight here draws reinforcements for one side or the other, and pays 20% more credits.",
+  "cred": 0.2,
+  "war": 1
+ },
+ "scarce": {
+  "n": "Scarcity",
+  "d": "Supply lines are cut: shipyards charge 20% more and repairs restore 25% less, but battles pay 25% more credits.",
+  "cred": 0.25,
+  "price": 1.2,
+  "repair": 0.75
+ }
+}

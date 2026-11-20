@@ -1,0 +1,314 @@
+{
+ "i_broad": {
+  "p": "iron",
+  "n": "Thunder Broadside",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "i_still": {
+  "p": "iron",
+  "n": "Anchored Volley",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "i_plate": {
+  "p": "iron",
+  "n": "Unbent Plating",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "i_brace": {
+  "p": "iron",
+  "n": "Iron Discipline",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "i_line": {
+  "p": "iron",
+  "n": "Unbroken Line",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "s_cap": {
+  "p": "storm",
+  "n": "Capacitor Surge",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "s_arc": {
+  "p": "storm",
+  "n": "Arc Discharge",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "s_ion": {
+  "p": "storm",
+  "n": "Ion Lash",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "s_regen": {
+  "p": "storm",
+  "n": "Storm Mantle",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "s_ev": {
+  "p": "storm",
+  "n": "Lightning Reflex",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "h_hatch": {
+  "p": "hunger",
+  "n": "Swarm Hatch",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "h_wings": {
+  "p": "hunger",
+  "n": "Ravenous Wings",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "h_chitin": {
+  "p": "hunger",
+  "n": "Hardened Chitin",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "h_board": {
+  "p": "hunger",
+  "n": "Boarding Frenzy",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "h_feast": {
+  "p": "hunger",
+  "n": "Feast on the Fallen",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "a_lance": {
+  "p": "star",
+  "n": "Starlight Lances",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "a_aim": {
+  "p": "star",
+  "n": "Silent Aim",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "a_crit": {
+  "p": "star",
+  "n": "Killing Light",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "a_long": {
+  "p": "star",
+  "n": "Long Silence",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "a_rear": {
+  "p": "star",
+  "n": "Blind Spot",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "r_burn": {
+  "p": "rook",
+  "n": "Afterburners",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "r_prow": {
+  "p": "rook",
+  "n": "Battering Prow",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "r_mom": {
+  "p": "rook",
+  "n": "Momentum",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "r_jink": {
+  "p": "rook",
+  "n": "Evasive Burn",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "r_shock": {
+  "p": "rook",
+  "n": "Shockwave",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "e_war": {
+  "p": "ember",
+  "n": "Incendiary Warheads",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "e_reload": {
+  "p": "ember",
+  "n": "Hot Tubes",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "e_kindle": {
+  "p": "ember",
+  "n": "Kindling",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "e_chain": {
+  "p": "ember",
+  "n": "Chain Reaction",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "e_hunt": {
+  "p": "ember",
+  "n": "Funeral Pyre",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "d_jugg": {
+  "duo": [
+   "iron",
+   "rook"
+  ],
+  "n": "Juggernaut",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "d_bastion": {
+  "duo": [
+   "iron",
+   "storm"
+  ],
+  "n": "Fortress",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "d_ionlance": {
+  "duo": [
+   "storm",
+   "star"
+  ],
+  "n": "Ion Lance",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "d_burnswarm": {
+  "duo": [
+   "hunger",
+   "ember"
+  ],
+  "n": "Burning Swarm",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "d_hunter": {
+  "duo": [
+   "star",
+   "rook"
+  ],
+  "n": "Hunter's Line",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "d_inferno": {
+  "duo": [
+   "ember",
+   "iron"
+  ],
+  "n": "Broadside Inferno",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "i_wall": {
+  "p": "iron",
+  "n": "Shield Wall",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "s_chain": {
+  "p": "storm",
+  "n": "Chain Lightning",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "h_brood": {
+  "p": "hunger",
+  "n": "Brood Harvest",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "a_mark": {
+  "p": "star",
+  "n": "Marked for Death",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "r_slip": {
+  "p": "rook",
+  "n": "Slip the Net",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "e_spread": {
+  "p": "ember",
+  "n": "Spread Pattern",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "L_iron": {
+  "p": "iron",
+  "leg": 1,
+  "n": "Unbreakable",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "L_storm": {
+  "p": "storm",
+  "leg": 1,
+  "n": "Eye of the Storm",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "L_hunger": {
+  "p": "hunger",
+  "leg": 1,
+  "n": "The Endless Swarm",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "L_star": {
+  "p": "star",
+  "leg": 1,
+  "n": "One Clean Line",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "L_rook": {
+  "p": "rook",
+  "leg": 1,
+  "n": "Unstoppable",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ },
+ "L_ember": {
+  "p": "ember",
+  "leg": 1,
+  "n": "Pyre of Stars",
+  "d": "__FUNCTION__",
+  "fx": "__FUNCTION__"
+ }
+}

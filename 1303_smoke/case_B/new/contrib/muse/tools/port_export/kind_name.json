@@ -1,0 +1,9 @@
+{
+ "battery": "Battery",
+ "lance": "Lance",
+ "torp": "Torpedo",
+ "flak": "Point defense",
+ "bio": "Bio-weapon",
+ "gauss": "Null",
+ "sq": "Squadron"
+}

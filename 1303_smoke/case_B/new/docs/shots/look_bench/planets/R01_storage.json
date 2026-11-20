@@ -1,0 +1,45 @@
+{
+  "size": [
+    8192,
+    4096
+  ],
+  "texture_resource_bytes": 39680106,
+  "largest_file_bytes": 2104667,
+  "source_files_verified": 34,
+  "source_read_at_utc": "2026-11-15T00:06:21.205509+00:00",
+  "loss": "Colour: WebP quality 90. Height: rounded to 11 bits, maximum 16/65535 error. Roughness and clouds: rounded to six bits, maximum 2/255 error. No spatial reduction.",
+  "maps": {
+    "colour": {
+      "pixel_sha256": "b45b79bdba683c60987db82f64e359fbc0905fb8d161b2cc5a08c132199c6245",
+      "source_pixel_sha256": "9e5d873ee506e837268581a892a32ff0bc755155ac9dd6b8cab9fdc5b55020aa",
+      "max_channel_error": [
+        46,
+        16,
+        42
+      ]
+    },
+    "relief": {
+      "pixel_sha256": "2f75b46dcb9b17e025030e67509fcf580a56f983ca2330e87cd10ce07b29ca5d",
+      "source_pixel_sha256": "d640b4cade3c71b7526dcbe1671d6c854bac3f0c6dc8330e0aac35b6d85a4096",
+      "max_channel_error": [
+        1,
+        255,
+        2,
+        2
+      ],
+      "max_height_error_steps": 16
+    },
+    "roughness": {
+      "pixel_sha256": "fcbb0cbcc863ddb4afc3aa857b4e02fd5ac7b242ed56b842c8b655ec2cea48c2",
+      "source_pixel_sha256": "8b79ca72dc3582bf3d93c2cc93798e3ce922d9368f0459b13e9065ef8924a808",
+      "max_channel_error": [
+        2
+      ]
+    }
+  },
+  "cold_remix_seconds": 26.3148922000546,
+  "cold_encode_seconds": 65.2611710999627,
+  "cold_pack_seconds": 1.637,
+  "export_pck_round_trip": "PASS: all three 8K decoded pixel hashes match after real Godot PCK export",
+  "final_remix_reproduces_captured_pixel_hashes": true
+}

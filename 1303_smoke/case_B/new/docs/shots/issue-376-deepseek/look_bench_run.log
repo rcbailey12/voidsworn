@@ -1,0 +1,165 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] loaded 85cc746c6465a059e100958a76f16d2d2b2b9f6d3083a1481dac0b10be5c2422 4096x2048 in 618 ms (worker)
+[world] loaded 68286506a1f676c949792a55b6d6dfa0191e5160fd3a4efea33187a591e6e033 4096x2048 in 700 ms (worker)
+[world] loaded a879f897ac82fd6caae6ee66bd6b63a9dfe4598e36d1cd444cd6f3a4365227c4 1024x512 in 700 ms (worker)
+[world] loaded 33cad9f1b217a745a4fd4ad3f30581b33f689f8ddf7224d82286f035f254d5f9 1024x512 in 700 ms (worker)
+[world] loaded 21fa569075915e4c28178e3b9b14d7af5591855ed5189b215ff59e484028c027 4096x2048 in 94 ms (worker)
+[world] loaded 86a8e752b1140c19f58021a91dcf0ff170155a28e5e796001a603c2f8e57810e 1024x512 in 97 ms (worker)
+[world] loaded dbbcf042d7e67b557e78f51e890502358dc095e36afa77cbac2191ce712cd4ef 1024x512 in 95 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[look_bench] warm pass done
+[look_bench] w_hbattery_void_hull at 170: 12 cells
+[look_bench] w_hbattery_void_hull at 60: 12 cells
+[look_bench] w_hbattery_void_hull at 26: 12 cells
+[look_bench] late shaders after warm-up (issue 376): 0; pipelines compiled in this run: 342
+[look_bench] stills: 3, warnings: 0
+LOOK_BENCH_DONE
+ERROR: 5 shaders of type SceneForwardClusteredShaderRD were never freed
+   at: ~ShaderRD (servers/rendering/renderer_rd/shader_rd.cpp:1236)
+WARNING: 60 RIDs of type "UniformBuffer" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8686)
+WARNING: 80 RIDs of type "IndexArray" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8686)
+WARNING: 80 RIDs of type "IndexBuffer" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8686)
+WARNING: 208 RIDs of type "VertexBuffer" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8686)
+WARNING: 7 RIDs of type "Texture" were leaked.
+   at: finalize (servers/rendering/rendering_device.cpp:8900)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Shader (scene/resources/shader.cpp:306)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~BaseMaterial3D (scene/resources/material.cpp:3983)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Shader (scene/resources/shader.cpp:306)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~BaseMaterial3D (scene/resources/material.cpp:3983)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~ArrayMesh (scene/resources/mesh.cpp:2365)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Material (scene/resources/material.cpp:190)
+ERROR: Parameter "RenderingServer::get_singleton()" is null.
+   at: ~Shader (scene/resources/shader.cpp:306)
+ERROR: Parameter "RenderingServer::get_singleton()" 

@@ -1,0 +1,71 @@
+{
+  "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+  "source_dirty": true,
+  "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "ion_paint_cam170.jpg",
+  "date": "2026-11-17T07:09:12Z",
+  "sources": [
+    {
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "whole.png",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "paint proof",
+      "date": "2026-11-17T07:00:31Z",
+      "image_sha256": "34cc53aaa6fc0d142e902925e14fd9b903d6c8e2918b9bdb7012ae1872536b14",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+          "stage": "paint proof"
+        }
+      ]
+    },
+    {
+      "picture_name": "cam170.png",
+      "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+      "source_dirty": true,
+      "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+      "stage": "paint proof",
+      "date": "2026-11-17T07:00:27Z",
+      "image_sha256": "24665e38749c73532069cd525f14be111863dc9d42ca630b154a07d0885d609a",
+      "sources": [
+        {
+          "source_commit": "51ec81bb2746576a5ebabd0aed7f813da109005b",
+          "source_dirty": true,
+          "source_diff_sha256": "f44a7917ee52802cd90a8dc1cbe600aee7e6c75b4b791847ea850bf4d1eda706",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    564,
+    720
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "30fe5e903c43bb63c64e293a4931935a9644ee7b42337c43f9aff550fc996e6d"
+  ],
+  "stamp_template_sha256": "9e5d438cab9008ac30cf974b82650ac1aac3b665c273b74ed60b03f0db1e3bd0",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAIAAADIod6XAAABkUlEQVR4nO3VIQEAIQDAQPgEOCz9U76nABN3CeY21z4DAEq+1wEAcDMnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAyDEnAHLMCYAccwIgx5wAGDU/edgBC1NSCHcAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "3293f2494faf2b65e030dc92393d32745cdc122803d0175939f7e455971ebc16"
+}

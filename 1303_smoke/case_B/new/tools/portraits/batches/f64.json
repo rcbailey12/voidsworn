@@ -1,0 +1,69 @@
+{
+ "out": "f64",
+ "budget_s": 900,
+ "items": [
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "burn",
+   "seed": 37,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "burn",
+   "seed": 51,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "cyber",
+   "seed": 37,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "cyber",
+   "seed": 51,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "eye",
+   "seed": 37,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "eye",
+   "seed": 51,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+  }
+ ]
+}

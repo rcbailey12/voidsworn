@@ -1,0 +1,45 @@
+Workhorse deepseek arm (issue #377): Runner 2: a failed run opens no pull request, unwanted files are refused, pushes do not erase earlier runs
+
+Dry run report (issue 377, scenario refuse): the stand-in model ran its fixed script. copy ship and gen files in and force-add them; a new .uid file, force-added; re-save a tracked .import file; a 9 MB file; one edit inside Deliver to, one outside; look.
+
+## Checks run by the runner
+
+```
+runner checks skipped: dry run with WORK_SKIP_CHECKS=1
+```
+
+## Run stats (runner)
+
+```
+arm: deepseek
+model: deepseek/deepseek-flash
+opencode exit: 0
+started: 2026-11-12T00:56:19
+agent finished: 2026-11-12T00:56:28 (0.2 minutes)
+pushed: 
+steps (model calls): 7
+tool calls: 6 (failed: 0)
+tokens: input 7000, output 700, reasoning 0, cache read 0, cache write 0
+cost OpenCode estimated from its price table (USD): 0.0015
+balance before: dry
+balance after: dry
+real charge (balance before minus after): unknown (read it on the provider console)
+```
+
+Refs #377
+
+## Runner (issue 377)
+
+Refused by the runner, not committed (5; copies kept on the PC in the run's out\refused):
+- A contrib/opus/tools/big377.bin: 9.0 MB, over the 8 MB limit (WORK_MAX_FILE_MB)
+- A godot/assets/ships/B16_23/B16_23_hull.glb: ship files under godot/assets/ships/B16_23/ (PC-built, never committed)
+- M godot/fx/atlases/weapons/muzzle/muzzle_flow.png.import: a re-saved .import file (Godot rewrites these on import)
+- A godot/gen/hull_probe.tres: under godot/gen (built on the PC, never committed)
+- A tools/pc/probe377.gd.uid: a new .uid file (Godot makes these)
+
+Warning: changed outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+- A contrib/opus/tools/scope377_probe.txt
+- A tools/pc/probe377.gd
+
+Earlier tip of runner377/issue-377-deepseek kept: ed6940907758082480e57c22135363e7bcd4d8bb is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.
+Run-Number: 3

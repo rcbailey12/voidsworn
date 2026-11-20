@@ -1,0 +1,704 @@
+{
+ "cell": "Ab6",
+ "route": "round 6: round 5 hull traced from B0 + Hullbreaker kit weapons (kits/hullbreakers) + Hullbreaker paint + B0 detail baked + concept paint baked",
+ "build_seconds": 99.5,
+ "geometry_seconds": 15.3,
+ "audit": {
+  "problems": [],
+  "parts": 1207,
+  "crossing_break_lines": [],
+  "plates_crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0108,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0111
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "block_triangles": 11400,
+ "plate_triangles": 10936,
+ "plates": 56,
+ "hero_parts": [],
+ "hero_triangles": 0,
+ "generations": [
+  {
+   "kit": "hullbreakers",
+   "sockets": [
+    {
+     "name": "casF",
+     "part": "casemate",
+     "pos": [
+      0.338,
+      0.1204,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "casF_s",
+     "part": "casemate",
+     "pos": [
+      0.338,
+      -0.1203,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      -0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "casA",
+     "part": "casemate",
+     "pos": [
+      0.232,
+      0.1209,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "casA_s",
+     "part": "casemate",
+     "pos": [
+      0.232,
+      -0.1209,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      -0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "bow",
+     "part": "bow_battery",
+     "pos": [
+      0.29,
+      0.0,
+      0.0498
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackF",
+     "part": "drum_rack",
+     "pos": [
+      0.238,
+      0.0,
+      0.0449
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackM",
+     "part": "drum_rack",
+     "pos": [
+      0.104,
+      0.137,
+      0.053
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackM_s",
+     "part": "drum_rack",
+     "pos": [
+      0.104,
+      -0.137,
+      0.053
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackA",
+     "part": "drum_rack",
+     "pos": [
+      -0.214,
+      0.0,
+      0.03
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackW",
+     "part": "drum_rack",
+     "pos": [
+      -0.052,
+      0.134,
+      0.0499
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackW_s",
+     "part": "drum_rack",
+     "pos": [
+      -0.052,
+      -0.134,
+      0.05
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "turA",
+     "part": "turret",
+     "pos": [
+      -0.332,
+      0.0,
+      0.03
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "turS",
+     "part": "turret",
+     "pos": [
+      -0.448,
+      0.0,
+      0.046
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkID",
+     "part": "marking",
+     "pos": [
+      0.448,
+      0.0923,
+      -0.072
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkID_s",
+     "part": "marking",
+     "pos": [
+      0.448,
+      -0.0923,
+      -0.072
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag",
+     "part": "marking",
+     "pos": [
+      0.302,
+      0.114,
+      -0.04
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag_s",
+     "part": "marking",
+     "pos": [
+      0.302,
+      -0.1139,
+      -0.04
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag2",
+     "part": "marking",
+     "pos": [
+      0.17,
+      0.1715,
+      -0.03
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag2_s",
+     "part": "marking",
+     "pos": [
+      0.17,
+      -0.1715,
+      -0.03
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkDisc",
+     "part": "marking",
+     "pos": [
+      0.44,
+      0.0,
+      -0.0305
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "lamps",
+     "part": "marking",
+     "pos": [
+      -0.262,
+      0.0944,
+      0.024
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "lamps_s",
+     "part": "marking",
+     "pos": [
+      -0.262,
+      -0.0943,
+      0.024
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    }
+   ],
+   "guns_badly_aimed": []
+  }
+ ],
+ "hand_parts": 1226,
+ "proxies": 0,
+ "bake": {
+  "b0_faces_turned": 0,
+  "b0_triangles_faces": 570189,
+  "b0_faces_kept": 386352,
+  "trim_outside": 0.01,
+  "bake_device": "OPTIX",
+  "bake_hi_seconds": 7.2,
+  "bake_lo_seconds": 7.3,
+  "bake_ao_seconds": 13.7,
+  "detail_pixels_inverted_share": 0.0963,
+  "detail_pixels_clamped_share": 0.0553,
+  "b0ao_miss_share": 0.4433,
+  "normal_tilt_mean_deg_detail": 5.79,
+  "normal_tilt_mean_deg_raw": 28.8,
+  "b0_bake_total_seconds": 42.8,
+  "parts_bake_joined_seconds": 15.1,
+  "paint_bake_seconds": 37.3,
+  "paint_bake_hull": {
+   "albedo": 10.3,
+   "orm": 9.1
+  },
+  "paint_bake_parts": {
+   "albedo": 7.0,
+   "orm": 6.8
+  }
+ },
+ "res": 4096,
+ "parts_res": 4096,
+ "kit_notes": [
+  {
+   "kit": "hullbreakers",
+   "sockets": [
+    {
+     "name": "casF",
+     "part": "casemate",
+     "pos": [
+      0.338,
+      0.1204,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "casF_s",
+     "part": "casemate",
+     "pos": [
+      0.338,
+      -0.1203,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      -0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "casA",
+     "part": "casemate",
+     "pos": [
+      0.232,
+      0.1209,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "casA_s",
+     "part": "casemate",
+     "pos": [
+      0.232,
+      -0.1209,
+      -0.058
+     ],
+     "aim": [
+      0.25,
+      -0.968,
+      0.0
+     ]
+    },
+    {
+     "name": "bow",
+     "part": "bow_battery",
+     "pos": [
+      0.29,
+      0.0,
+      0.0498
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackF",
+     "part": "drum_rack",
+     "pos": [
+      0.238,
+      0.0,
+      0.0449
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackM",
+     "part": "drum_rack",
+     "pos": [
+      0.104,
+      0.137,
+      0.053
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackM_s",
+     "part": "drum_rack",
+     "pos": [
+      0.104,
+      -0.137,
+      0.053
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackA",
+     "part": "drum_rack",
+     "pos": [
+      -0.214,
+      0.0,
+      0.03
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackW",
+     "part": "drum_rack",
+     "pos": [
+      -0.052,
+      0.134,
+      0.0499
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "rackW_s",
+     "part": "drum_rack",
+     "pos": [
+      -0.052,
+      -0.134,
+      0.05
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "turA",
+     "part": "turret",
+     "pos": [
+      -0.332,
+      0.0,
+      0.03
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "turS",
+     "part": "turret",
+     "pos": [
+      -0.448,
+      0.0,
+      0.046
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkID",
+     "part": "marking",
+     "pos": [
+      0.448,
+      0.0923,
+      -0.072
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkID_s",
+     "part": "marking",
+     "pos": [
+      0.448,
+      -0.0923,
+      -0.072
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag",
+     "part": "marking",
+     "pos": [
+      0.302,
+      0.114,
+      -0.04
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag_s",
+     "part": "marking",
+     "pos": [
+      0.302,
+      -0.1139,
+      -0.04
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag2",
+     "part": "marking",
+     "pos": [
+      0.17,
+      0.1715,
+      -0.03
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkTag2_s",
+     "part": "marking",
+     "pos": [
+      0.17,
+      -0.1715,
+      -0.03
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "mkDisc",
+     "part": "marking",
+     "pos": [
+      0.44,
+      0.0,
+      -0.0305
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "lamps",
+     "part": "marking",
+     "pos": [
+      -0.262,
+      0.0944,
+      0.024
+     ],
+     "aim": [
+      1.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "name": "lamps_s",
+     "part": "marking",
+     "pos": [
+      -0.262,
+      -0.0943,
+      0.024
+     ],
+     "aim": [
+      1.0,
+      -0.0,
+      0.0
+     ]
+    }
+   ],
+   "guns_badly_aimed": []
+  }
+ ],
+ "triangles": 125616,
+ "objects": 1252,
+ "surfaces": 4,
+ "draw_calls_merged": 4
+}

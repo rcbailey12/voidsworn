@@ -1,0 +1,80 @@
+{
+ "emissive": {
+  "threshold": 0.8,
+  "lights": {
+   "map": {
+    "max": 0.7758,
+    "blue_over_green_px": 0
+   },
+   "p3_window": {
+    "max": 0.62,
+    "blue_over_green": false
+   },
+   "p3_vent": {
+    "max": 0.45,
+    "blue_over_green": false
+   },
+   "p3_bore": {
+    "max": 0.66,
+    "blue_over_green": false
+   },
+   "p3_frost": {
+    "max": 0.72,
+    "blue_over_green": false
+   }
+  },
+  "pass": true
+ },
+ "frost": {
+  "cap": 0.06,
+  "views": {
+   "paint_top": {
+    "ship_px": 54744,
+    "frost_px": 78,
+    "share": 0.0014
+   },
+   "paint_side": {
+    "ship_px": 37651,
+    "frost_px": 7,
+    "share": 0.0002
+   },
+   "paint_side_s": {
+    "ship_px": 37157,
+    "frost_px": 10,
+    "share": 0.0003
+   }
+  },
+  "pass_": true
+ },
+ "lift": {
+  "lift": 1.45,
+  "hue_before": 29.66,
+  "hue_after": 29.66,
+  "median_albedo_lin": [
+   0.02956,
+   0.02843,
+   0.02732
+  ]
+ },
+ "median": {
+  "battle_median_srgb": [
+   34,
+   35,
+   37
+  ],
+  "iron_band": [
+   [
+    25,
+    22,
+    21
+   ],
+   [
+    82,
+    81,
+    81
+   ]
+  ],
+  "inside_band": true,
+  "ember_share": 0.0416
+ }
+}

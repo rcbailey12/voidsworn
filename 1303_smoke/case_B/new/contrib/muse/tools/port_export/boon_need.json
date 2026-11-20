@@ -1,0 +1,22 @@
+{
+ "h_brood": "carrier",
+ "a_mark": "lance",
+ "e_spread": "torp",
+ "L_hunger": "carrier",
+ "L_star": "lance",
+ "i_still": "still",
+ "s_cap": "shields",
+ "s_regen": "shields",
+ "d_bastion": "shields",
+ "i_broad": "broad",
+ "d_inferno": "broad",
+ "e_war": "torp",
+ "e_reload": "torp",
+ "a_lance": "lance",
+ "d_ionlance": "lance",
+ "h_hatch": "carrier",
+ "h_wings": "sq",
+ "h_chitin": "sq",
+ "h_feast": "sq",
+ "d_burnswarm": "sq"
+}

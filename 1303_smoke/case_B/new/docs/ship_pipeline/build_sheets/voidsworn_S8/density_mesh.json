@@ -1,0 +1,84 @@
+{
+ "types": {
+  "hull": {
+   "triangles": 42542,
+   "area": 1.14701,
+   "tris_per_unit2": 37089.6,
+   "edges_per_unit2": 41954.4
+  },
+  "gun": {
+   "triangles": 27728,
+   "area": 0.17804,
+   "tris_per_unit2": 155737.6,
+   "edges_per_unit2": 84440.3,
+   "tris_per_unit2_vs_hull": 4.2,
+   "edges_per_unit2_vs_hull": 2.01
+  },
+  "slit": {
+   "triangles": 1176,
+   "area": 0.00308,
+   "tris_per_unit2": 381216.5,
+   "edges_per_unit2": 326757.0,
+   "tris_per_unit2_vs_hull": 10.28,
+   "edges_per_unit2_vs_hull": 7.79
+  },
+  "radiator": {
+   "triangles": 6168,
+   "area": 0.17896,
+   "tris_per_unit2": 34465.5,
+   "edges_per_unit2": 34979.6,
+   "tris_per_unit2_vs_hull": 0.93,
+   "edges_per_unit2_vs_hull": 0.83
+  },
+  "engine": {
+   "triangles": 12936,
+   "area": 0.22003,
+   "tris_per_unit2": 58791.4,
+   "edges_per_unit2": 39739.6,
+   "tris_per_unit2_vs_hull": 1.59,
+   "edges_per_unit2_vs_hull": 0.95
+  },
+  "thruster": {
+   "triangles": 1264,
+   "area": 0.00929,
+   "tris_per_unit2": 136055.7,
+   "edges_per_unit2": 78145.9,
+   "tris_per_unit2_vs_hull": 3.67,
+   "edges_per_unit2_vs_hull": 1.86
+  },
+  "vent": {
+   "triangles": 1200,
+   "area": 0.0204,
+   "tris_per_unit2": 58814.9,
+   "edges_per_unit2": 52933.4,
+   "tris_per_unit2_vs_hull": 1.59,
+   "edges_per_unit2_vs_hull": 1.26
+  },
+  "lamp": {
+   "triangles": 1344,
+   "area": 0.00324,
+   "tris_per_unit2": 415144.4,
+   "edges_per_unit2": 380549.1,
+   "tris_per_unit2_vs_hull": 11.19,
+   "edges_per_unit2_vs_hull": 9.07
+  },
+  "hatch": {
+   "triangles": 3040,
+   "area": 0.00806,
+   "tris_per_unit2": 377304.4,
+   "edges_per_unit2": 281985.4,
+   "tris_per_unit2_vs_hull": 10.17,
+   "edges_per_unit2_vs_hull": 6.72
+  },
+  "hatchbox": {
+   "triangles": 560,
+   "area": 0.00784,
+   "tris_per_unit2": 71387.0,
+   "edges_per_unit2": 61188.8,
+   "tris_per_unit2_vs_hull": 1.92,
+   "edges_per_unit2_vs_hull": 1.46
+  }
+ },
+ "flags": [],
+ "rule": "R224: a part type more than 25 percent under the hull is flagged (mesh half; the paint half runs at stage 5)"
+}

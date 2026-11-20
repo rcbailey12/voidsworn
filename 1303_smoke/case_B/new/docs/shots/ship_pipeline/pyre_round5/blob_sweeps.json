@@ -1,0 +1,37 @@
+{
+  "basis": "Round 5 captures re-scored against the unchanged round 4 reference. Region order is stern, midship, bow. Below cells judge model construction; the side drawing is a locator because no underside reference exists. Paint cannot separate fused geometry.",
+  "V1": {
+    "top": [
+      "REBUILD: ragged old fittings beside the authored bridge and engine",
+      "REBUILD: cylinders and weapon roots still merge into the deck",
+      "REBUILD: crossed prongs and rounded, fused prow equipment"
+    ],
+    "side": [
+      "REBUILD: old stubs and uneven joins around the clean engine bells",
+      "REBUILD: torn panel edges and fused roots beside the authored gun pair",
+      "REBUILD: rounded hunting gear, soft pipe ends and wavy armour"
+    ],
+    "below_inspect": [
+      "REBUILD: blended engine-root machinery and pipe transitions",
+      "REBUILD: belly equipment and plate roots remain a single fused mass",
+      "REBUILD: blended prongs and irregular underside armour joins"
+    ]
+  },
+  "V2": {
+    "top": [
+      "REBUILD: fragmented exhaust cluster and detached rear blocks",
+      "REBUILD: bridge, machinery and pipes fuse into the main slab",
+      "REBUILD: indistinct weapons and dishes above the slab nose"
+    ],
+    "side": [
+      "REBUILD: torn bells, hanging fragments and uneven engine roots",
+      "REBUILD: wavy side slab and merged equipment silhouettes",
+      "REBUILD: detached blocks, floating strips and indistinct claws"
+    ],
+    "below_inspect": [
+      "REBUILD: lumpy engine roots and loose shell fragments",
+      "REBUILD: broad belly bulges and fused service blocks",
+      "REBUILD: slab nose and fused lower equipment"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+# faction tune t2 (PC lane B, Oct 27): bossmatrix 40 (200 runs per admiral, SEED 5201 to 5206), fmatrix 64 per cell (SEED 6101 to 6106, paired with pass 3), varmatrix 96 razorfiend
+bossmatrix s1 {"vex":"61% r10.1","malek":"53% r10.0","ashgrove":"56% r11.6 (carrier)","thale":"72% r13.5"}
+by boss {"hegemony":"41%","corsair":"86%","chorus":"61%","ithar":"46%","deathless":"68%"}
+bossmatrix s1 {"kassar":"82% r9.4 (carrier)","vorn":"78% r10.2","reyes":"76% r11.4 (carrier)","maren":"78% r16.8 (carrier)"}
+by boss {"voidsworn":"93%","corsair":"93%","chorus":"67%","ithar":"67%","deathless":"71%"}
+bossmatrix s1 {"grax":"65% r7.8","sable":"47% r8.8","mott":"56% r9.2 (carrier)","vesh":"70% r12.1 (carrier)"}
+by boss {"voidsworn":"79%","hegemony":"39%","chorus":"39%","ithar":"57%","deathless":"82%"}
+bossmatrix s1 {"matriarch":"64% r11.7 (carrier)","razormaw":"80% r8.5","mending":"68% r9.5","voice":"78% r8.2"}
+by boss {"voidsworn":"83%","hegemony":"58%","corsair":"73%","ithar":"61%","deathless":"89%"}
+bossmatrix s1 {"aelith":"78% r12.5 (carrier)","vaelen":"74% r9.4","thorne":"71% r12.5","mirelle":"70% r11.2"}
+by boss {"voidsworn":"89%","hegemony":"40%","corsair":"86%","chorus":"84%","deathless":"66%"}
+bossmatrix s1 {"nekhet":"77% r13.6","sekhmar":"62% r11.9","anuket":"85% r10.3","khepra":"70% r11.9"}
+by boss {"voidsworn":"86%","hegemony":"81%","corsair":"74%","chorus":"61%","ithar":"63%"}
+VAR b_razor_e {"base":{"win":73,"hull":35,"lost":2.35,"rounds":7,"dealt":132,"died":38},"variant":{"win":79,"hull":39,"lost":2.22,"rounds":7.3,"dealt":139,"died":24}}
+voidsworn   53  39  52  50  52  53  avg 50
+hegemony    66  66  80  61  70  52  avg 66
+corsair     47  53  58  53  53  66  avg 55
+chorus      50  63  59  64  67  59  avg 60
+ithar       56  61  67  41  59  55  avg 56
+deathless   55  84  61  34  81  55  avg 62
+as enemy {'voidsworn': 46, 'hegemony': 39, 'corsair': 37, 'chorus': 50, 'ithar': 36, 'deathless': 43}
+strength {'voidsworn': 47.9, 'hegemony': 52.4, 'corsair': 46.0, 'chorus': 55.2, 'ithar': 46.2, 'deathless': 52.3}
+# arc variant candidates vc3a, vc3b (varmatrix 96, battle)
+VAR vs_penitent_l {"base":{"win":81,"hull":37,"lost":2.02,"rounds":6.2,"dealt":131,"died":65},"variant":{"win":65,"hull":31,"lost":2.47,"rounds":7.1,"dealt":174,"died":39}}
+VAR d_jackal_h {"base":{"win":82,"hull":42,"lost":1.1,"rounds":7.5,"dealt":86,"died":32},"variant":{"win":84,"hull":45,"lost":1.03,"rounds":7.3,"dealt":112,"died":29}}
+VAR vs_penitent_l {"base":{"win":76,"hull":33,"lost":2.21,"rounds":6.5,"dealt":129,"died":69},"variant":{"win":65,"hull":31,"lost":2.32,"rounds":6.9,"dealt":162,"died":40}}
+VAR d_jackal_h {"base":{"win":83,"hull":42,"lost":1.06,"rounds":7.5,"dealt":86,"died":31},"variant":{"win":84,"hull":46,"lost":0.97,"rounds":7.7,"dealt":97,"died":29}}
+# pass 3 tuning confirmation (PC lane B, main 47a101a rules): bossmatrix 40 malek,sable; varmatrix 96 all six (unpaired captains)
+bossmatrix s1 {"malek":"60% r9.3","sable":"63% r7.7"}
+by boss {"hegemony":"57%","corsair":"93%","chorus":"49%","ithar":"35%","deathless":"78%","voidsworn":"83%"}
+VAR vs_penitent_l {"base":{"win":77,"hull":36,"lost":2.02,"rounds":6.4,"dealt":126,"died":66},"variant":{"win":80,"hull":37,"lost":1.99,"rounds":6.2,"dealt":186,"died":26}}
+VAR h_interdictor_e {"base":{"win":68,"hull":29,"lost":1.54,"rounds":6,"dealt":104,"died":49},"variant":{"win":83,"hull":31,"lost":1.34,"rounds":6,"dealt":128,"died":31}}
+VAR c_marauder_g {"base":{"win":61,"hull":23,"lost":2.81,"rounds":6.7,"dealt":81,"died":81},"variant":{"win":63,"hull":21,"lost":3.13,"rounds":6.8,"dealt":165,"died":49}}
+VAR b_razor_e {"base":{"win":73,"hull":35,"lost":2.36,"rounds":7,"dealt":131,"died":39},"variant":{"win":79,"hull":39,"lost":2.22,"rounds":7.3,"dealt":139,"died":24}}
+VAR d_jackal_h {"base":{"win":78,"hull":38,"lost":1.17,"rounds":7.4,"dealt":87,"died":31},"variant":{"win":89,"hull":46,"lost":0.93,"rounds":7.3,"dealt":110,"died":24}}
+VAR i_carrier_a {"base":{"win":58,"hull":29,"lost":1.92,"rounds":8.8,"dealt":231,"died":66},"variant":{"win":64,"hull":33,"lost":1.66,"rounds":8.4,"dealt":293,"died":39}}

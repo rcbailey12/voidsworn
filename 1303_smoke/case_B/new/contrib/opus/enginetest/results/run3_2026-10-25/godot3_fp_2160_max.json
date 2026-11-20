@@ -1,0 +1,22 @@
+{
+  "engine": "godot",
+  "renderer": "forward_plus",
+  "mode": "max",
+  "ships": 6,
+  "width": 3840,
+  "height": 2160,
+  "seconds": 20.0,
+  "frames": 3000,
+  "avg_ms": 6.666,
+  "p99_ms": 9.099,
+  "max_ms": 12.535,
+  "fps_avg": 150.01,
+  "load_s": 5.495,
+  "gpu_mem_mb": 3376.2,
+  "notes": "max mode: assets/hi not found, today's assets used; sky: env/sky_deadstar_8k.png; max: SSAO, SSIL, SSR, SDFGI (6 cascades), TAA on top of MSAA 4x, 8192 shadow atlas with soft (PCSS) key shadows, tiling detail normals on the hulls; no screen-space contact shadows in Godot; rich: soft particles (flame, smoke and glow sprites fade into hull depth; hand-written, reads the depth texture); rich: volumetric fog (FogVolume with fog shaders) for breach venting, smoke rings and the fireball; rich: breach holes with depth by parallax occlusion mapping (hand-written), a light per gun and per impact; max: detail normal layer on 7 hull materials; effects: 14 instanced kinds (one draw each) for 6 ships; max: colour grading with Environment adjustments (contrast, saturation, a cool-shadow warm-highlight curve); env: 206 asteroids (200 instanced in 8 MultiMeshes, 6 big rocks), dust haze in volumetric fog; effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) 0.437 ms average; engine-measured 3D render time per frame: GPU 5.79 ms, render CPU 0.68 ms; frame breakdown (averages): process step 8.22 ms, physics step 1.07 ms at 0.47 ticks per frame, render-server frame setup 0.31 ms, 158 draw calls, 765 objects, 2250 nodes in the tree; shader warm-up after load took 0.3 s (every effect, fade and chunk state drawn once, until pipeline compiles stop); adapter NVIDIA GeForce RTX 5080, driver vulkan 1.4.351; render target 3840x2160 (from --res) in a SubViewport with MSAA 4x, shown in a 3840x2130 window; vsync mode 0 (0 = off); gpu_mem_mb is Performance RENDER_VIDEO_MEM_USED at the end (peak during run 3376 MB); textures loaded uncompressed (RGB8 with mipmaps), as GLTFDocument gives them at runtime",
+  "lights_active_avg": 21.2,
+  "lights_active_max": 28,
+  "physics_ms_avg": 1.067,
+  "physics_ms_p99": 1.957,
+  "bodies_max": 586
+}

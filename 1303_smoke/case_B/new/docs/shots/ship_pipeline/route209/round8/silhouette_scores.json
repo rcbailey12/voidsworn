@@ -1,0 +1,26 @@
+{
+ "Ab7": {
+  "overlap": 89.7,
+  "concept_covered": 96.3,
+  "cell_outside": 7.2,
+  "triangles": 100824
+ },
+ "Ab8": {
+  "overlap": 90.3,
+  "concept_covered": 97.2,
+  "cell_outside": 7.3,
+  "triangles": 101460
+ },
+ "Ab8try1": {
+  "overlap": 91.0,
+  "concept_covered": 97.1,
+  "cell_outside": 6.5,
+  "triangles": 100988
+ },
+ "Ab8game": {
+  "overlap": 90.2,
+  "concept_covered": 97.2,
+  "cell_outside": 7.3,
+  "triangles": 102708
+ }
+}

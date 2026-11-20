@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "variants": 4,
+  "exports": 3,
+  "screenshots": 36,
+  "source_game_unchanged": true,
+  "verifier_sha256": "d6ea9a4ea677585b4614ecee475593cd74da8d7170818835c8d690fd113a5a35",
+  "adapter": "NVIDIA GeForce RTX 5080"
+}

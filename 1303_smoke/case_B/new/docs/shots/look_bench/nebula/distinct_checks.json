@@ -1,0 +1,572 @@
+{
+  "preservation_from_run3": {
+    "nebula_fog_unchanged": true,
+    "mask_unchanged": true,
+    "nebula_palette_unchanged": true,
+    "faction_endpoint_cap": 0.25,
+    "noise_sha256": "92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691",
+    "world_sha256": "3c2858eb78e699a90fe1fae512ac97a6c6070e7f97834e117b7c9f097af9272b",
+    "ion_sha256": "b2ef84bf85c1f8ba12b778bc3ebf5f360cd65270a8adbdaba8258dda3669fdd0"
+  },
+  "ship_manifest_files_verified": 252,
+  "standing_initial_rows": [
+    {
+      "check": "b1_tests",
+      "result": "PASS",
+      "seconds": 0.39,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "b3_tests",
+      "result": "PASS",
+      "seconds": 0.23,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "b4_tests",
+      "result": "PASS",
+      "seconds": 0.7,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "backlog_tests",
+      "result": "PASS",
+      "seconds": 0.2,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "build_manifest_tests",
+      "result": "PASS",
+      "seconds": 0.36,
+      "detail": "PASS build_manifest_tests: 19 build sheet manifest(s) match their sheets (chorus_C10, chorus_C11, chorus_CS1BA2, corsair_A16, corsair_A17, corsair_A18, corsair_A19, corsair_A20, corsair_KB1CC, deathless_E11, deathless_E12, deathless_E13, deathless_E14, hegemony_H10, hegemony_HF1D, hegemony_IM5, voidsworn_S8, voidsworn_SB4, voidsworn_SF3); the broken fixture is refused for all 7 planted faults; every single-fault A16 copy is refused for its own reason"
+    },
+    {
+      "check": "campaign_start_test",
+      "result": "PASS",
+      "seconds": 0.36,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "capstone_mastery_tests",
+      "result": "PASS",
+      "seconds": 0.11,
+      "detail": "PASS: capstone mastery opens at 320, 440 and 600 XP only after the level 8 evolution, and shows its effect."
+    },
+    {
+      "check": "checks_truth_tests",
+      "result": "PASS",
+      "seconds": 0.08,
+      "detail": "PASS: the checks runner result words behave as issue 358 requires"
+    },
+    {
+      "check": "chorus_eat_core_tests",
+      "result": "PASS",
+      "seconds": 0.11,
+      "detail": "PASS: Chorus core eat offer, eat, refuse, save round trip and non-Chorus runs match R78 Q15."
+    },
+    {
+      "check": "cinder_prizes_tests",
+      "result": "PASS",
+      "seconds": 0.15,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "core_sync_tests",
+      "result": "PASS",
+      "seconds": 0.12,
+      "detail": "PASS: core sync tiers at 4/12/25, rare/epic and duo gains, resumed picks, full sync, gifts and all debrief endings."
+    },
+    {
+      "check": "doc_check_tests",
+      "result": "PASS",
+      "seconds": 0.95,
+      "detail": "PASS: 137 paths named in the entry documents and playbooks exist, HANDOFF section 0 names no ruling range, 82 READMEs state no stale scenario count (godot/rules/test/scenarios.json holds 281) or latest record, and the two stale entry-document claims stay gone"
+    },
+    {
+      "check": "effect_caps_tests",
+      "result": "PASS",
+      "seconds": 0.08,
+      "detail": "PASS: 227 sum fixtures, 4 derive fixtures, all effect kinds covered and single effects unchanged."
+    },
+    {
+      "check": "env_reconcile_tests",
+      "result": "FAIL",
+      "seconds": 0.11,
+      "detail": "FAIL storm layers 1.7 times faster, veil reversed (section 2)"
+    },
+    {
+      "check": "free_exit_tests",
+      "result": "PASS",
+      "seconds": 0.21,
+      "detail": "PASS: 32 free exits across moon, tomb, haven, every eligible faction, zero and 120 credits, return to map and save."
+    },
+    {
+      "check": "fx_death_spawn_tests",
+      "result": "PASS",
+      "seconds": 3.96,
+      "detail": "PASS: the death spawn behaviour check passed on the real hull"
+    },
+    {
+      "check": "fx_late_shader_tests",
+      "result": "PASS",
+      "seconds": 1.24,
+      "detail": "PASS: the late shader behaviour check passed"
+    },
+    {
+      "check": "gen_open_work_tests",
+      "result": "PASS",
+      "seconds": 0.3,
+      "detail": "PASS: 13 open work generator tests (offline)"
+    },
+    {
+      "check": "gpu_slots_tests",
+      "result": "PASS",
+      "seconds": 18.78,
+      "detail": "PASS GPU slot checks (8 groups)"
+    },
+    {
+      "check": "hardpoint_contract_tests",
+      "result": "PASS",
+      "seconds": 0.27,
+      "detail": "PASS the hard point contract tables and standing gate behave"
+    },
+    {
+      "check": "heat_tests",
+      "result": "PASS",
+      "seconds": 0.13,
+      "detail": "PASS: Heat opens after the first loss and pays 2 XP per point to the flown line and 1 to the shadow pool."
+    },
+    {
+      "check": "inheritance_tests",
+      "result": "PASS",
+      "seconds": 0.19,
+      "detail": "PASS: paid inheritance matches win, loss and abandon profiles, affordability, tree progress and capped shadow XP."
+    },
+    {
+      "check": "ion_tests",
+      "result": "PASS",
+      "seconds": 0.31,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "lineage_tests",
+      "result": "PASS",
+      "seconds": 0.28,
+      "detail": "PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets."
+    },
+    {
+      "check": "memory_lint_tests",
+      "result": "PASS",
+      "seconds": 0.32,
+      "detail": "PASS: 169 cited ruling ids all have a contrib/opus/FINDINGS.md row; 14 rows from R281 on name where they landed; 0 known baseline item(s); 10 fixture assertions pass; HANDOFF section 0 22 lines (target about 50); LOOP 25 LATEST lines (target 15 or fewer)"
+    },
+    {
+      "check": "nemesis_121_tests",
+      "result": "PASS",
+      "seconds": 0.55,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "nemesis_122_tests",
+      "result": "PASS",
+      "seconds": 0.72,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "nemesis_395_tests",
+      "result": "PASS",
+      "seconds": 0.34,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "nemesis_clash_tests",
+      "result": "PASS",
+      "seconds": 0.29,
+      "detail": "PASS: 12482 Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, 30 commander pairs (#121)."
+    },
+    {
+      "check": "nemesis_teach_tests",
+      "result": "PASS",
+      "seconds": 0.12,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "paint_sheet_camera_tests",
+      "result": "PASS",
+      "seconds": 1.29,
+      "detail": "PASS paint sheet camera: 19 saved cameras and clip edge cases"
+    },
+    {
+      "check": "r1_tests",
+      "result": "PASS",
+      "seconds": 114.32,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "reporting_238_tests",
+      "result": "PASS",
+      "seconds": 0.38,
+      "detail": "PASS MP8 danger bands"
+    },
+    {
+      "check": "runner_job_tests",
+      "result": "PASS",
+      "seconds": 6.93,
+      "detail": "PASS runner job checks (13 groups)"
+    },
+    {
+      "check": "runner_stall_tests",
+      "result": "PASS",
+      "seconds": 21.12,
+      "detail": "PASS runner stall checks (11 groups)"
+    },
+    {
+      "check": "shadow_xp_tests",
+      "result": "PASS",
+      "seconds": 0.11,
+      "detail": "PASS: quarter and heir half rates, both debriefs, saves, faction scope and lossless capped XP."
+    },
+    {
+      "check": "shield_pool_tests",
+      "result": "PASS",
+      "seconds": 0.23,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "squadron_auto_tests",
+      "result": "PASS",
+      "seconds": 0.22,
+      "detail": "PASS: automatic opening flight, shared AI, Classic rounds, replacements, reserves, cooldown, blocked hexes, dead carriers and optional orders."
+    },
+    {
+      "check": "story_beat3_tests",
+      "result": "PASS",
+      "seconds": 0.32,
+      "detail": "PASS: authored beat 3 screens, all five reward keys, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry."
+    },
+    {
+      "check": "ui_spec_tests",
+      "result": "PASS",
+      "seconds": 0.31,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "weapon_match_tests",
+      "result": "PASS",
+      "seconds": 0.38,
+      "detail": "PASS weapon match self-test (36 planted faults, 19 sheet ships in the table)"
+    },
+    {
+      "check": "progression_telemetry_test",
+      "result": "PASS",
+      "seconds": 0.18,
+      "detail": "PASS: simulated batch medians per line, old saves, #122 rates read, and the Godot twin."
+    },
+    {
+      "check": "tree_effects_test",
+      "result": "PASS",
+      "seconds": 159.87,
+      "detail": "PASS: 222 tree fixtures fired their pick; 0 waiting rows are inert; 3 corrected Hullbreakers rows behave as their text says"
+    },
+    {
+      "check": "tree_handoff_test",
+      "result": "PASS",
+      "seconds": 0.17,
+      "detail": "PASS: real campaign picks reach the battle for all six factions (four skills each):"
+    },
+    {
+      "check": "tree_table_walk_test",
+      "result": "PASS",
+      "seconds": 0.75,
+      "detail": "PASS: 288 effect rows reach B.tree through lineagePick, newRun and startBattle; 0 dated waiting rows make no promise; 288 rows walked"
+    },
+    {
+      "check": "tree_last_rows_test",
+      "result": "PASS",
+      "seconds": 3.75,
+      "detail": "PASS: issue 529, the last seven tree rows and the you-may prompts move their numbers"
+    },
+    {
+      "check": "oracle_copy_test",
+      "result": "PASS",
+      "seconds": 0.29,
+      "detail": "PASS: no oracle folders exist and both committed tables equal a fresh export from the root game files"
+    },
+    {
+      "check": "runner_selftest",
+      "result": "PASS",
+      "seconds": 230.3,
+      "detail": "PASS runner687+722: 37 checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage."
+    },
+    {
+      "check": "nem_assign_enum",
+      "result": "PASS",
+      "seconds": 0.6,
+      "detail": "PASS: all issue 120 enumeration checks"
+    },
+    {
+      "check": "nem_direct_reads_report",
+      "result": "PASS",
+      "seconds": 0.6,
+      "detail": "PASS: report only, 202 direct save reads outside godot/campaign (main 9, render 7, scenes 48, story 41, tools 3, ui 92, world 2)"
+    },
+    {
+      "check": "naming_lint_game.test",
+      "result": "PASS",
+      "seconds": 0.37,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "naming_lint_game",
+      "result": "PASS",
+      "seconds": 59.29,
+      "detail": "PASS: naming lint within the baseline"
+    },
+    {
+      "check": "checks",
+      "result": "PASS",
+      "seconds": 0.16,
+      "detail": "PASS: within the pack baseline"
+    },
+    {
+      "check": "fleet_invariants",
+      "result": "PASS",
+      "seconds": 0.52,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "save_fuzz",
+      "result": "PASS",
+      "seconds": 0.11,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "softlock_sweep",
+      "result": "PASS",
+      "seconds": 24.12,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "table_xref",
+      "result": "PASS",
+      "seconds": 0.09,
+      "detail": "PASS: exit 0"
+    },
+    {
+      "check": "findings_tests",
+      "result": "KNOWN",
+      "seconds": 1.25,
+      "detail": "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5"
+    },
+    {
+      "check": "oracle_drift_guard",
+      "result": "KNOWN",
+      "seconds": 1.17,
+      "detail": "KNOWN: 12 constant difference(s) within the baseline"
+    },
+    {
+      "check": "fixture_check",
+      "result": "PASS",
+      "seconds": 0.38,
+      "detail": "PASS fixture corrupt2 pair"
+    }
+  ],
+  "environment_guard_final_rerun": [
+    {
+      "check": "env_reconcile_tests",
+      "result": "PASS",
+      "seconds": 0.62,
+      "detail": "PASS: exit 0"
+    }
+  ],
+  "current_coverage_passed": 58,
+  "known_baselines": [
+    {
+      "check": "findings_tests",
+      "result": "KNOWN",
+      "seconds": 1.25,
+      "detail": "KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5"
+    },
+    {
+      "check": "oracle_drift_guard",
+      "result": "KNOWN",
+      "seconds": 1.17,
+      "detail": "KNOWN: 12 constant difference(s) within the baseline"
+    }
+  ],
+  "nebula_geometry": {
+    "frame_median": null,
+    "geometry": [
+      {
+        "cards": 31,
+        "edge_at_x11": 0.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 17.0000003483147,
+        "route": "today",
+        "tier": "max"
+      },
+      {
+        "cards": 31,
+        "edge_at_x11": 0.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 17.0000003483147,
+        "route": "today",
+        "tier": "high"
+      },
+      {
+        "cards": 19,
+        "edge_at_x11": 0.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 17.0000003483147,
+        "route": "today",
+        "tier": "low"
+      },
+      {
+        "cards": 13,
+        "edge_at_x11": 1.0,
+        "fog_height": 38.5,
+        "fog_volumes": 3,
+        "one_hex_soft_span": 83.0000025508926,
+        "route": "fog",
+        "tier": "max"
+      },
+      {
+        "cards": 31,
+        "edge_at_x11": 1.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 83.0000025508926,
+        "route": "fog",
+        "tier": "high"
+      },
+      {
+        "cards": 19,
+        "edge_at_x11": 1.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 83.0000025508926,
+        "route": "fog",
+        "tier": "low"
+      }
+    ],
+    "gpu_median": null,
+    "kind": "CPU preparation only",
+    "map_case": "nebula",
+    "noise_bytes": 2097152,
+    "noise_sha256": "92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691",
+    "patches": {
+      "neb": {
+        "hexes": 6,
+        "patches": [
+          1,
+          4,
+          1
+        ]
+      },
+      "storm": {
+        "hexes": 0,
+        "patches": []
+      }
+    },
+    "route": "fog",
+    "seed": 4207
+  },
+  "storm_geometry_before_colour_only_change": {
+    "frame_median": null,
+    "geometry": [
+      {
+        "cards": 121,
+        "edge_at_x11": 0.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 17.0000003483147,
+        "route": "today",
+        "tier": "max"
+      },
+      {
+        "cards": 121,
+        "edge_at_x11": 0.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 17.0000003483147,
+        "route": "today",
+        "tier": "high"
+      },
+      {
+        "cards": 75,
+        "edge_at_x11": 0.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 17.0000003483147,
+        "route": "today",
+        "tier": "low"
+      },
+      {
+        "cards": 52,
+        "edge_at_x11": 1.0,
+        "fog_height": 38.5,
+        "fog_volumes": 3,
+        "one_hex_soft_span": 83.0000025508926,
+        "route": "fog",
+        "tier": "max"
+      },
+      {
+        "cards": 121,
+        "edge_at_x11": 1.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 83.0000025508926,
+        "route": "fog",
+        "tier": "high"
+      },
+      {
+        "cards": 75,
+        "edge_at_x11": 1.0,
+        "fog_height": null,
+        "fog_volumes": 0,
+        "one_hex_soft_span": 83.0000025508926,
+        "route": "fog",
+        "tier": "low"
+      }
+    ],
+    "gpu_median": null,
+    "kind": "CPU preparation only",
+    "map_case": "storm",
+    "noise_bytes": 2097152,
+    "noise_sha256": "92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691",
+    "patches": {
+      "neb": {
+        "hexes": 4,
+        "patches": [
+          4
+        ]
+      },
+      "storm": {
+        "hexes": 23,
+        "patches": [
+          13,
+          5,
+          5
+        ]
+      }
+    },
+    "route": "fog",
+    "seed": 4207
+  },
+  "final_scale_summary": "[scale] SCALE_CHECK PASS: 0 of 53 objects fail outside the KNOWN list, 4 KNOWN rows (the sizes in docs/playbooks/scale.md)",
+  "initial_env_failures": [
+    "FAIL storm layers 1.7 times faster, veil reversed (section 2)",
+    "FAIL storm layers 1.7 times faster, veil reversed (section 2)",
+    "FAIL filaments at 3.6 times the frequency and 2.5 times the extra drift (section 2)",
+    "FAIL storm glow pulse: 2 s, plus or minus 10 percent (section 3)",
+    "FAIL flash response full within 8 u, gone at 12 u, weight 0.3; sheet glow weight 0.10 (section 4)",
+    "FAIL sheet glow spread 500 (1/e at 22.4 u, 1.3 hexes; section 4)"
+  ],
+  "scope_companions_required_by_rulebook_12_1": [
+    "contrib/opus/tools/env_reconcile_tests.js",
+    "contrib/opus/briefs/nebula_motion_spec.md"
+  ]
+}

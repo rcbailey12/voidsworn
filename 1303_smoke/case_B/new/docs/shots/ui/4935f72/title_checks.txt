@@ -1,0 +1,4 @@
+[title-layout] window 1280x720 title 56px text 918 wide, fits, playtest line on screen, menu on screen (bottom 574), 9 of 9 menu buttons take keyboard focus, focus on "Continue run" PASS
+[title-layout] window 1920x1080 title 84px text 1376 wide, fits, playtest line on screen, menu on screen (bottom 860), 9 of 9 menu buttons take keyboard focus, focus on "Continue run" PASS
+[title-layout] window 2560x1440 title 112px text 1834 wide, fits, playtest line on screen, menu on screen (bottom 1144), 9 of 9 menu buttons take keyboard focus, focus on "Continue run" PASS
+[title-layout] window 3840x2160 title 168px text 2753 wide, fits, playtest line on screen, menu on screen (bottom 1718), 9 of 9 menu buttons take keyboard focus, focus on "Continue run" PASS

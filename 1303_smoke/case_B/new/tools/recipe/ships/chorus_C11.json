@@ -1,0 +1,22 @@
+{
+ "ship": "chorus_C11",
+ "name": "The bladeback, the Chorus cruiser (The Chorus)",
+ "faction": "chorus",
+ "game_ship": "b_razor",
+ "game_code": "B21_11",
+ "sheet": "chorus_C11",
+ "concept": "contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "C11",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "The C11 build sheet owns the geometry, 14.5-unit cruiser length, insides, seams and hard points. Stage 3 fits its concept camera. Stage 5 uses the shared Chorus stack with the standard 4096-pixel atlases at 64 samples. Stage 6 reads the painted sheet. Stage 7 writes the 2048-pixel maps for B21_11; install only into an isolated review project until the finish is approved.",
+ "parts": []
+}

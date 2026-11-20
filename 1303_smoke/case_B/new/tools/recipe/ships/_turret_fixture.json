@@ -1,0 +1,15 @@
+{
+ "ship": "T560_fx",
+ "name": "Turret test ship (issue 560, not production art)",
+ "faction": "hullbreakers",
+ "game_ship": "c_marauder",
+ "game_code": "T560_fx",
+ "length_world": 14.5,
+ "notes": "Issue 560: the turret test ship built by tools/recipe/turret_fixture.py (a small test hull with the recipe kit's turret parts, fixed casemates and a bow tube). Its export is the game check's fixture, godot/render/test/fixtures/T560_fx/. Weapons are c_marauder's from data.js: scatter P, scatter S, torp F, flak T.",
+ "parts": [
+  {"name": "casP", "part": "casemate", "seat": "flank", "pos": [0.05, 0, -0.015], "aim": [0.139, 0.99, 0.0], "size": 0.02, "pair": true, "slot": 0, "slot_s": 1},
+  {"name": "bow", "part": "bow_battery", "seat": "abs", "pos": [0.5, 0, -0.004], "aim": [1, 0, 0], "size": 0.01, "slot": 2},
+  {"name": "turA", "part": "turret", "seat": "top", "pos": [0.2, 0.0, 0.0], "aim": [1.0, 0.0, 0.0], "size": 0.018, "pair": false, "variant": 0, "extra": {"elev": 14}, "slot": 3},
+  {"name": "turB", "part": "turret", "seat": "top", "pos": [-0.22, 0.0, 0.0], "aim": [1.0, 0.0, 0.0], "size": 0.016, "pair": false, "variant": 1, "extra": {"elev": 10}, "slot": 3}
+ ]
+}

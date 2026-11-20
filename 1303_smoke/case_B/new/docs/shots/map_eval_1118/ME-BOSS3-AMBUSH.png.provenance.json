@@ -1,0 +1,36 @@
+{
+  "source_commit": "d278088a5adf73a07335e1c38accaf7670fab181",
+  "source_dirty": true,
+  "source_diff_sha256": "43e47094f5d0140b2afe9c3f54c663cbc7ca51f138e5cd4b86a8d06f227fa4de",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "ME-BOSS3-AMBUSH.png",
+  "date": "2026-11-18T15:03:42Z",
+  "sources": [
+    {
+      "source_commit": "d278088a5adf73a07335e1c38accaf7670fab181",
+      "source_dirty": true,
+      "source_diff_sha256": "43e47094f5d0140b2afe9c3f54c663cbc7ca51f138e5cd4b86a8d06f227fa4de",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    590,
+    564,
+    688
+  ],
+  "strip_size": [
+    564,
+    98
+  ],
+  "strip_sha256": [
+    "94296ade7b171be90bcb4d5617e740494cfbf68c87e4581f4fc9e7dda6c3bc58"
+  ],
+  "stamp_template_sha256": "94296ade7b171be90bcb4d5617e740494cfbf68c87e4581f4fc9e7dda6c3bc58",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAjQAAABiCAYAAABHw0nAAAAB0ElEQVR4nO3WsQ3AIADAMMrK1K3/PwpHMFSR7Asy5lnvtwcAQNj8OwAA4JahAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAQJ6hAQDyDA0AkGdoAIA8QwMA5BkaACDP0AAAeYYGAMgzNABAnqEBAPIMDQCQZ2gAgDxDAwDkGRoAIM/QAAB5hgYAyDM0AECeoQEA8gwNAJBnaACAPEMDAOQZGgAgz9AAAHmGBgDIMzQAwKg7jwEB9+tXEHgAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "1ddf32cd304125df21ff05c6dc36230610dacbc56d3109d8143ae19631fba3ad"
+}

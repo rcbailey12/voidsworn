@@ -1,0 +1,1467 @@
+You are auditing the campaign economy of Voidsworn, a turn-based hex-fleet tactics roguelite set in deep space (browser, desktop and phones, solo developer). This pack contains the game's content, meta-progression and campaign source with line numbers, plus extracted census tables and the results of a large simulation run as annexes.
+
+YOUR ONE TASK: a campaign economy audit. Cover: every source of income (battle rewards, salvage, capture, event outcomes) and every sink (hull purchases, repairs, modules, relics, refits); the renown curve and what it buys (admiral unlocks and anything else); the Legacy/meta progression economy, including anything that accrues and is never spent; shop and shipyard pricing against the simulation annex's evidence about battle length, losses and win rates; how the economy's pressure changes from sector 1 to sector 3; and any place where the numbers make one strategy strictly correct (for example never repairing, always selling, or hoarding). Quantify from the pack wherever you can: prices, rates, thresholds, expected earnings per battle versus expected costs per battle. Where a system exists in the data but is never wired to a cost or a reward in the code you can see, that is a finding.
+
+RULES:
+- Judge only what is in this pack. No web search, no outside knowledge of this game.
+- Every finding must name the file, the line number, and quote the exact line (under 20 words). Sources below have line numbers prefixed to every line; cite those numbers.
+- Mark every finding OBSERVED or INFERRED. Never claim a function, variable or line exists unless it appears in this pack.
+- Maximum 10 findings, most important first. Be red team: adversarial, specific, no praise padding.
+- End with a section titled "Not checked" listing what in the pack you did not examine.
+
+=== SOURCES BEGIN ===
+
+===== FILE: data.js (448 lines) =====
+1: // ======================= DATA =======================
+2: const W = {
+3:   autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80,fall:8,crit:5},
+4:   flak:{n:'Flak battery',k:'flak',shots:3,dmg:3,r:2,opt:2,acc:80,fall:10,vsSq:3,vsCap:.6},
+5:   battery:{n:'Macro battery',k:'battery',shots:4,dmg:6,r:5,opt:3,acc:72,fall:8,crit:5},
+6:   hbattery:{n:'Heavy macro battery',k:'battery',shots:5,dmg:7,r:5,opt:3,acc:72,fall:8,crit:6},
+7:   lance:{n:'Lance array',k:'lance',shots:1,dmg:20,r:7,opt:6,acc:82,fall:6,pierce:.6,crit:10},
+8:   torp:{n:'Torpedo salvo',k:'torp',shots:1,dmg:42,r:6,opt:6,acc:64,fall:0,pierce:.3,crit:15,cd:2,evMult:2},
+9:   turret:{n:'Dorsal turret',k:'battery',shots:2,dmg:8,r:5,opt:3,acc:74,fall:8,crit:5},
+10:   laser:{n:'Laser cannon',k:'battery',shots:2,dmg:7,r:4,opt:3,acc:80,fall:8,crit:5},
+11:   turbo:{n:'Turbolaser',k:'battery',shots:2,dmg:9,r:5,opt:3,acc:74,fall:8,crit:5},
+12:   hturbo:{n:'Heavy turbolaser',k:'battery',shots:3,dmg:9,r:6,opt:4,acc:72,fall:7,crit:6},
+13:   ion:{n:'Ion cannon',k:'lance',shots:1,dmg:12,r:6,opt:5,acc:80,fall:6,ion:2.5,crit:4},
+14:   scatter:{n:'Scatter cannons',k:'battery',shots:5,dmg:5,r:3,opt:2,acc:78,fall:10,crit:6},
+15:   htorp:{n:'Heavy torpedoes',k:'torp',shots:2,dmg:34,r:6,opt:6,acc:60,fall:0,pierce:.3,crit:15,cd:2,evMult:2},
+16:   tendril:{n:'Boarding tendrils',k:'bio',shots:2,dmg:13,r:1,opt:1,acc:85,fall:0,pierce:.5,crit:12},
+17:   bioplasma:{n:'Bio-plasma',k:'bio',shots:2,dmg:12,r:4,opt:3,acc:74,fall:8,pierce:.2,crit:8},
+18:   spores:{n:'Spore mines',k:'flak',shots:3,dmg:4,r:2,opt:2,acc:78,fall:8,vsSq:3,vsCap:.6},
+19:   pulsar:{n:'Pulsar lance',k:'lance',shots:2,dmg:12,r:6,opt:5,acc:80,fall:6,pierce:.6,crit:10},
+20:   startorp:{n:'Star torpedo',k:'torp',shots:1,dmg:38,r:5,opt:5,acc:66,fall:0,pierce:.4,crit:15,cd:2,evMult:2},
+21:   gauss:{n:'Gauss flayer',k:'gauss',shots:3,dmg:6,r:5,opt:3,acc:74,fall:8,pierce:0.6,crit:5},
+22:   gsentry:{n:'Gauss sentries',k:'flak',shots:3,dmg:3,r:2,opt:2,acc:80,fall:10,vsSq:3,vsCap:.6},
+23:   doom:{n:'Doom arc',k:'lance',shots:1,dmg:40,r:5,opt:4,acc:78,fall:6,pierce:.6,crit:12,cd:2},
+24:   shard:{n:'Shuriken cannon',k:'battery',shots:3,dmg:6,r:4,opt:2,acc:80,fall:8,crit:6,vsSq:1.6},
+25:   guns:{n:'Interceptor guns',k:'sq',shots:3,dmg:4,r:1,opt:1,acc:82,fall:0,vsSq:2.2,vsCap:.5},
+26:   bombs:{n:'Bomb payload',k:'sq',shots:2,dmg:9,r:1,opt:1,acc:78,fall:0,pierce:.6,vsSq:.2,crit:10},
+27:   sporeb:{n:'Spore burst',k:'sq',shots:2,dmg:10,r:1,opt:1,acc:78,fall:0,pierce:.6,vsSq:.3,crit:8},
+28: };
+29: const ARC_NAME = {F:'Prow',P:'Port broadside',S:'Starboard broadside',T:'Turret (all arcs)',R:'Rear'};
+30: const KIND_NAME = {battery:'Battery',lance:'Lance',torp:'Torpedo',flak:'Point defense',bio:'Bio-weapon',gauss:'Gauss',sq:'Squadron'};
+31: 
+32: // Ship templates. size = draw scale; cp = command points.
+33: // v46: each faction names (and draws) its guns its own way; the numbers underneath are unchanged until the v47 mechanics pass
+34: const FAC_WNAMES={
+35:   voidsworn:{autocannon:'Las-repeater',battery:'Las-battery',hbattery:'Heavy las-broadside',turret:'Las-turret',lance:'Penance lance',torp:'Hellfire torpedo',flak:'Censer flak'},
+36:   hegemony:{laser:'Plasma cannon',turbo:'Plasma lance',hturbo:'Heavy plasma lance',ion:'Ion cannon',flak:'Picket lasers'},
+37:   corsair:{autocannon:'Autocannon',scatter:'Scrap scatter gun',turret:'Junk turret',torp:'Rattle-rocket pod',htorp:'Heavy rocket pod',flak:'Chaff guns'},
+38:   chorus:{bioplasma:'Spine volley',tendril:'Boarding tendrils',spores:'Spore cloud',sporeb:'Acid sacs'},
+39:   ithar:{shard:'Prism shards',pulsar:'Pulsar lance',startorp:'Star torpedo',turret:'Needle beam',flak:'Mirror veil'},
+40:   deathless:{gauss:'Gauss flayer',doom:'Doom arc',gsentry:'Gauss pylon',flak:'Gauss shredder'}};
+41: function wName(fac,id){ return (FAC_WNAMES[fac]&&FAC_WNAMES[fac][id])||(W[id]&&W[id].n)||id; }
+42: // v48 faction weapon traits: same hulls and budgets, but each faction's guns behave differently
+43: const WTRAITS={
+44:   las:{d:'holds its aim at long range',f:w=>{ w.fall=Math.ceil(w.fall/2); w.acc+=4; }},
+45:   hellfire:{d:'sets the target burning',f:w=>{ w.ignite=1; }},
+46:   plasma:{d:'a quarter burns through shields',f:w=>{ w.pierce=Math.max(w.pierce||0,.25); w.dmg+=1; }},
+47:   scrap:{d:'an extra shot, wild aim, lucky crits',f:w=>{ w.shots+=1; w.acc-=12; w.crit=(w.crit||0)+3; }},
+48:   rockets:{d:'a rocket salvo: hard to dodge, but point defense can shoot rockets down',f:w=>{ w.shots*=3; w.dmg=Math.round(w.dmg/2.9); w.acc+=2; w.evMult=1.5; w.rockets=1; }},
+49:   spines:{d:'each hit strips 3% armor (down to 15% less)',f:w=>{ w.shred=.03; }},
+50:   acid:{d:'acid eats 4 hull a turn for 2 turns, through shields and armor',f:w=>{ w.acid=1; }},
+51:   needle:{d:'precise: better aim and more criticals',f:w=>{ w.acc+=6; w.crit=(w.crit||0)+8; }},
+52:   star:{d:'fast: hard to dodge',f:w=>{ w.evMult=1.2; }},
+53:   gauss:{d:'ignores half of armor',f:w=>{ w.armorPierce=.5; }}};
+54: const FAC_WTRAIT={voidsworn:{autocannon:'las',battery:'las',hbattery:'las',turret:'las',torp:'hellfire'},hegemony:{laser:'plasma',turbo:'plasma',hturbo:'plasma'},
+55:   corsair:{autocannon:'scrap',scatter:'scrap',turret:'scrap',torp:'rockets',htorp:'rockets'},chorus:{bioplasma:'spines',tendril:'acid',sporeb:'acid'},
+56:   ithar:{shard:'needle',turret:'needle',startorp:'star'},deathless:{gauss:'gauss',doom:'gauss'}};
+57: function nameWeapons(fac,list){ for(const w of list){ w.n=wName(fac,w.id); const tk=!(typeof process!=='undefined'&&process.env&&process.env.NOTRAITS)&&FAC_WTRAIT[fac]&&FAC_WTRAIT[fac][w.id]; if(tk&&WTRAITS[tk]&&!w.trait){ w.trait=tk; WTRAITS[tk].f(w); } } return list; }
+58: 
+59: const HULLS = {
+60:   // ---- player: Voidsworn gothic fleet
+61:   warden:{n:'Warden-class frigate',cls:'Frigate',fac:'voidsworn',size:.5,cp:1,hp:45,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:20,w:[['autocannon','F'],['flak','T']],ab:'evasive',slots:1,cost:70},
+62:   harrow:{n:'Harrow-class destroyer',cls:'Destroyer',fac:'voidsworn',size:.6,cp:2,hp:78,sh:14,rg:6,ar:.15,sp:4,tn:2,ev:12,w:[['torp','F'],['turret','T']],ab:'reload',slots:1,cost:130},
+63:   penitent:{n:'Penitent-class cruiser',cls:'Cruiser',fac:'voidsworn',size:.76,cp:3,hp:120,sh:20,rg:8,ar:.2,sp:3,tn:2,ev:5,w:[['battery','P'],['battery','S'],['lance','F']],ab:'focus',slots:2,cost:200},
+64:   reliquary:{n:'Reliquary-class carrier',cls:'Carrier',fac:'voidsworn',size:.84,cp:4,hp:130,sh:22,rg:9,ar:.15,sp:2,tn:1,ev:0,w:[['turret','T'],['flak','T']],ab:'launch',hangar:2,slots:2,cost:260},
+65:   cathedral:{n:'Cathedral-class battleship',cls:'Battleship',fac:'voidsworn',size:.95,cp:5,hp:220,sh:30,rg:12,ar:.3,sp:2,tn:1,ev:0,w:[['hbattery','P'],['hbattery','S'],['lance','F'],['flak','T']],ab:'surge',slots:3,cost:340},
+66:   ascendant:{n:'Ascendant-class dreadnought',cls:'Dreadnought',fac:'voidsworn',size:1.18,cp:8,hp:370,sh:32,rg:15,ar:.35,sp:1,tn:1,ev:0,w:[['hbattery','P'],['hbattery','S'],['turret','T'],['flak','T']],ab:'nova',slots:3,cost:520,unique:true},
+67:   // ---- squadrons (shared)
+68:   fighter:{n:'Fighter wing',cls:'Squadron',size:.34,cp:0,hp:18,sh:0,rg:0,ar:0,sp:6,tn:9,ev:35,w:[['guns','T']],sq:'fighter'},
+69:   bomber:{n:'Bomber wing',cls:'Squadron',size:.34,cp:0,hp:28,sh:0,rg:0,ar:0,sp:5,tn:9,ev:25,w:[['bombs','T']],sq:'bomber'},
+70:   spore:{n:'Spore swarm',cls:'Squadron',fac:'chorus',size:.34,cp:0,hp:26,sh:0,rg:0,ar:0,sp:5,tn:9,ev:25,w:[['sporeb','T']],sq:'bomber'},
+71:   // ---- Hegemony Navy
+72:   h_picket:{n:'Hegemony picket',cls:'Frigate',fac:'hegemony',size:.5,cp:1,hp:40,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:18,w:[['laser','F'],['flak','T']],ab:'evasive'},
+73:   h_interdictor:{n:'Interdictor destroyer',cls:'Destroyer',fac:'hegemony',size:.6,cp:2,hp:74,sh:18,rg:7,ar:.15,sp:4,tn:2,ev:10,w:[['ion','F'],['turbo','T']],ab:'ionpulse'},
+74:   h_vanguard:{n:'Vanguard star cruiser',cls:'Cruiser',fac:'hegemony',size:.78,cp:4,hp:140,sh:24,rg:10,ar:.2,sp:3,tn:1,ev:4,w:[['turbo','T'],['turbo','T'],['ion','F']],ab:'launch',hangar:1},
+75:   h_dominion:{n:'Dominion star dreadnought',cls:'Battleship',fac:'hegemony',size:.98,cp:6,hp:230,sh:32,rg:12,ar:.25,sp:2,tn:1,ev:0,w:[['hturbo','P'],['hturbo','S'],['ion','F'],['flak','T']],ab:'launch',hangar:1},
+76:   h_boss:{n:'The Iron Mandate',cls:'Super-dreadnought',fac:'hegemony',size:1.3,cp:12,hp:560,sh:40,rg:10,ar:.3,sp:1,tn:1,ev:0,w:[['hturbo','P'],['hturbo','S'],['turbo','T'],['ion','F'],['flak','T']],ab:'nova',boss:true},
+77:   // ---- Ashfall Corsairs
+78:   c_raider:{n:'Corsair raider',cls:'Frigate',fac:'corsair',size:.48,cp:1,hp:46,sh:8,rg:4,ar:.05,sp:6,tn:3,ev:28,w:[['autocannon','T']],ab:'overburn'},
+79:   c_reaver:{n:'Corsair reaver',cls:'Destroyer',fac:'corsair',size:.6,cp:2,hp:68,sh:10,rg:5,ar:.1,sp:5,tn:2,ev:15,w:[['torp','F'],['scatter','S']],ab:'reload'},
+80:   c_marauder:{n:'Corsair marauder',cls:'Cruiser',fac:'corsair',size:.74,cp:3,hp:120,sh:16,rg:7,ar:.15,sp:4,tn:2,ev:6,w:[['scatter','P'],['scatter','S'],['torp','F'],['flak','T']],ab:'overburn'},
+81:   c_hulk:{n:'Corsair hulk-carrier',cls:'Carrier',fac:'corsair',size:.86,cp:4,hp:170,sh:16,rg:6,ar:.2,sp:2,tn:1,ev:0,w:[['turret','T'],['turret','T']],ab:'launch',hangar:2},
+82:   c_boss:{n:"Warlord's Pyre-Barge",cls:'Battle-barge',fac:'corsair',size:1.22,cp:10,hp:600,sh:30,rg:8,ar:.25,sp:2,tn:1,ev:0,w:[['scatter','P'],['scatter','S'],['htorp','F'],['flak','T']],ab:'launch',hangar:2,boss:true},
+83:   // ---- The Chorus (bio-swarm)
+84:   b_drone:{n:'Chorus drone-spawn',cls:'Frigate',fac:'chorus',size:.48,cp:1,hp:46,sh:0,rg:0,ar:.05,sp:5,tn:3,ev:15,w:[['tendril','T']],ab:'regrow',regen:5},
+85:   b_spitter:{n:'Chorus spitter',cls:'Destroyer',fac:'chorus',size:.6,cp:2,hp:82,sh:0,rg:0,ar:.1,sp:4,tn:2,ev:8,w:[['bioplasma','T'],['bioplasma','F']],ab:'regrow',regen:6},
+86:   b_razor:{n:'Chorus razorfiend',cls:'Cruiser',fac:'chorus',size:.76,cp:3,hp:150,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:4,w:[['tendril','T'],['bioplasma','F']],ab:'frenzy',regen:9},
+87:   b_brood:{n:'Chorus brood-mother',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:200,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:10},
+88:   b_boss:{n:'Hive Leviathan',cls:'Bio-titan',fac:'chorus',size:1.3,cp:12,hp:650,sh:0,rg:0,ar:.25,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['bioplasma','F'],['tendril','T'],['spores','T']],ab:'launch',hangar:3,regen:20,boss:true},
+89:   // ---- The Ithar (elder race)
+90:   i_wisp:{n:'Ithar wisp',cls:'Frigate',fac:'ithar',size:.46,cp:1,hp:30,sh:12,rg:6,ar:0,sp:7,tn:3,ev:28,w:[['shard','F']],ab:'blink'},
+91:   i_blade:{n:'Ithar shadowblade',cls:'Destroyer',fac:'ithar',size:.58,cp:2,hp:60,sh:16,rg:8,ar:0,sp:6,tn:3,ev:24,w:[['shard','F'],['startorp','F']],ab:'blink'},
+92:   i_song:{n:'Ithar songship',cls:'Cruiser',fac:'ithar',size:.74,cp:4,hp:90,sh:26,rg:10,ar:.05,sp:5,tn:2,ev:16,w:[['pulsar','F'],['pulsar','F'],['turret','T']],ab:'surge'},
+93:   i_carrier:{n:'Ithar wraithcarrier',cls:'Carrier',fac:'ithar',size:.84,cp:5,hp:140,sh:28,rg:10,ar:.05,sp:4,tn:2,ev:12,w:[['pulsar','F'],['turret','T']],ab:'launch',hangar:2},
+94:   i_boss:{n:'Worldsong Ark',cls:'Ark',fac:'ithar',size:1.26,cp:11,hp:470,sh:34,rg:14,ar:.2,sp:3,tn:2,ev:6,w:[['pulsar','F'],['pulsar','F'],['pulsar','T'],['turret','T'],['flak','T']],ab:'surge',boss:true},
+95:   // ---- The Deathless Dynasty
+96:   d_scythe:{n:'Deathless scythe',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:3,reanimate:true},
+97:   d_jackal:{n:'Deathless jackal',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:110,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:3,reanimate:true},
+98:   d_harvester:{n:'Deathless harvester',cls:'Cruiser',fac:'deathless',size:.82,cp:4,hp:145,sh:0,rg:0,ar:.3,sp:2,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T']],ab:'reclaim',regen:4,reanimate:true},
+99:   d_boss:{n:'The Undying Throne',cls:'Tomb-ark',fac:'deathless',size:1.3,cp:12,hp:480,sh:0,rg:0,ar:.35,sp:1,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['flak','T']],ab:'nova',regen:8,boss:true},
+100: };
+101: 
+102: // v50 drives: how each faction bends the thruster rules (battle.js MOVE_BASE). n/d show in the ship panel and codex.
+103: const MOVE_RULES={
+104:   voidsworn:{rake:.2,n:'Broadside doctrine',d:'Port and starboard guns hit 20% harder after moving 2+ hexes (others get 10%).'},
+105:   hegemony:{rev:1,n:'Retro thrusters',d:'Backing off one hex costs 1 movement instead of 2.'},
+106:   corsair:{slip:1,n:'Bolted burners',d:'Sideslips cost 1 movement instead of 2.'},
+107:   chorus:{pivot:1,n:'Living hull',d:'The first turn each round costs no movement.'},
+108:   ithar:{evadeAt:2,evade:10,n:'Fan sails',d:'After moving 2+ hexes, enemies get \u221210 to hit it (others need 3 hexes for \u22125).'},
+109:   deathless:{over:0,n:'Phase drive',d:'Passes through rocks, wrecks and enemy ships at no extra cost.'}};
+110: const FACTIONS = {
+111:   voidsworn:{n:'Voidsworn Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',blurb:'Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.'},
+112:   hegemony:{n:'Hegemony Navy',hull:'#c4ccd5',trim:'#3a78d0',glow:'#5fa0ff',style:'wedge',
+113:     blurb:'An imperial war-machine of wedge-hulled destroyers. Ion cannons strip shields; carriers launch fighter screens.',
+114:     roster:['h_picket','h_interdictor','h_vanguard','h_dominion'],boss:'h_boss',sq:'fighter'},
+115:   corsair:{n:'Ashfall Corsairs',hull:'#6a2c22',trim:'#b8402a',glow:'#e0402c',style:'junk',
+116:     blurb:'Pirate raiders in stolen hulls. Fast, thin shields, and far too many torpedoes.',
+117:     roster:['c_raider','c_reaver','c_marauder','c_hulk'],boss:'c_boss',sq:'bomber'},
+118:   chorus:{n:'The Chorus',hull:'#57364c',trim:'#a4913a',glow:'#d6d24a',style:'bio',
+119:     blurb:'A hungering bio-swarm. No shields at all, but their flesh knits back together every round.',
+120:     roster:['b_drone','b_spitter','b_razor','b_brood'],boss:'b_boss',sq:'spore'},
+121:   ithar:{n:'The Ithar',hull:'#eef3f1',trim:'#d7c88a',glow:'#9fffd2',style:'sail',
+122:     blurb:'An ancient, dying elder race. Blindingly fast, heavily shielded, fragile once the shields fall.',
+123:     roster:['i_wisp','i_blade','i_song','i_carrier'],boss:'i_boss',sq:'fighter'},
+124:   deathless:{n:'The Deathless Dynasty',hull:'#1d2220',trim:'#1fbf4a',glow:'#3dff6a',style:'tomb',
+125:     blurb:'Machine necropolis-ships. Gauss weapons tear through shields, and wrecks sometimes stand back up.',
+126:     roster:['d_scythe','d_jackal','d_harvester'],boss:'d_boss',sq:null},
+127: };
+128: const SECTOR_POOL = [['corsair','hegemony'],['chorus','ithar','hegemony'],['deathless','chorus','ithar']];
+129: 
+130: const ABILITIES = {
+131:   evasive:{n:'Evasive burn',d:'+25 evasion until your next turn and +2 movement now.',cd:3},
+132:   reload:{n:'Reload torpedoes',d:'Torpedo tubes are ready to fire again immediately.',cd:3},
+133:   focus:{n:'Concentrated fire',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
+134:   launch:{n:'Launch squadron',d:'Carriers start each battle with their wings in flight. This launches a replacement for a lost wing into an adjacent hex; each carrier has one spare wing per hangar slot.',cd:1},
+135:   surge:{n:'Shield surge',d:'Every shield facing restored to full strength.',cd:4},
+136:   nova:{n:'Nova cannon',d:'Spinal shell: 40 damage to a hex 3\u20139 away and 20 to everything adjacent. Hits friends too.',cd:3,target:true},
+137:   // faction abilities: every faction's line ships get something to press besides fire and brace
+138:   ionpulse:{n:'Ion pulse',d:'Every enemy ship within 4 hexes loses half of each shield facing.',cd:3},
+139:   overburn:{n:'Overburn',d:'+3 movement now, and a ram this turn hits 50% harder.',cd:3},
+140:   frenzy:{n:'Blood frenzy',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
+141:   regrow:{n:'Rapid regrowth',d:'Regrow 25% of this ship\u2019s hull right now.',cd:3},
+142:   blink:{n:'Phase jump',d:'Jump to any open hex within 3, straight past rocks and ships. Tap the hex.',cd:3,target:true},
+143:   phase:{n:'Dimensional shift',d:'+25 evasion until your next turn and +2 movement now.',cd:3},
+144:   reclaim:{n:'Reanimation beam',d:'Restore 20% hull to your most damaged ship within 3 hexes (this one included).',cd:3},
+145: };
+146: const ORDERS = {
+147:   brace:{n:'Brace for impact',d:'Instead of firing: hull damage \u221240% until your next turn. The ship can move first, but can\u2019t brace after it has fired, and bracing ends its turn.'},
+148: };
+149: 
+150: // fx keys: hpPct shPct regenPct armor speed turns ev aim crit dmgPct broadPct lancePct torpPct sqPct sqHp battShots flakPlus torpCd hangar hullRegen cdMod lastStand rearPct huntPct bracePlus longAim
+151: const MODULES = {
+152:   prow:{n:'Reinforced prow',d:'+15% hull, +5% armor.',fx:{hpPct:.15,armor:.05},cost:70},
+153:   auspex:{n:'Auspex array',d:'+10 aim for every weapon.',fx:{aim:10},cost:80},
+154:   drive:{n:'Plasma drive',d:'+1 speed.',fx:{speed:1},cost:75},
+155:   gyro:{n:'Gyro-stabilisers',d:'+1 turn allowance, +5 evasion.',fx:{turns:1,ev:5},cost:60},
+156:   capacitor:{n:'Void shield capacitor',d:'+30% shield strength.',fx:{shPct:.3},cost:80},
+157:   regen:{n:'Shield regenerator',d:'+50% shield regeneration.',fx:{regenPct:.5},cost:70},
+158:   loaders:{n:'Macro loaders',d:'Battery weapons fire +1 shot.',fx:{battShots:1},cost:90},
+159:   crystal:{n:'Lance focusing crystal',d:'Lance damage +25%.',fx:{lancePct:.25},cost:80},
+160:   magazine:{n:'Torpedo magazine',d:'Torpedo reload time \u22121 turn, +15% torpedo damage.',fx:{torpCd:1,torpPct:.15},cost:85},
+161:   flakplus:{n:'Flak batteries',d:'Point defense +2 shots and +1 range.',fx:{flakPlus:1},cost:55},
+162:   damcon:{n:'Damage control crews',d:'Repair 4% hull at the start of each of your turns.',fx:{hullRegenPct:.04},cost:85},
+163:   hangar:{n:'Hangar expansion',d:'Carriers only: +1 squadron in flight.',fx:{hangar:1},cost:90,only:'launch'},
+164:   cogitator:{n:'Targeting cogitator',d:'+10% critical chance.',fx:{crit:10},cost:75},
+165: };
+166: 
+167: const PERKS = {
+168:   gunnery:{n:'Gunnery master',d:'+10 aim.',fx:{aim:10}},
+169:   killer:{n:'Killer instinct',d:'+10% critical chance.',fx:{crit:10}},
+170:   deflector:{n:'Deflector savant',d:'+40% shield regeneration.',fx:{regenPct:.4}},
+171:   ironhull:{n:'Iron hull',d:'+15% max hull.',fx:{hpPct:.15}},
+172:   helm:{n:'Born helmsman',d:'+1 speed.',fx:{speed:1}},
+173:   steady:{n:'Steady hand',d:'Ignore the first 2 hexes of long-range penalty.',fx:{longAim:2}},
+174:   broad:{n:'Broadside specialist',d:'Broadside weapons +15% damage.',fx:{broadPct:.15}},
+175:   lanceadept:{n:'Lance adept',d:'Lance and torpedo damage +15%.',fx:{lancePct:.15,torpPct:.15}},
+176:   stubborn:{n:'Stubborn',d:'Brace for impact blocks an extra 15%.',fx:{bracePlus:.15}},
+177:   rapid:{n:'Rapid cycling',d:'Ability cooldowns \u22121.',fx:{cdMod:1}},
+178:   wing:{n:'Wing commander',d:'Squadrons launched by this ship deal +30% damage.',fx:{sqPct:.3}},
+179:   hunter:{n:'Hunter',d:'+20% damage against ships below half hull.',fx:{huntPct:.2}},
+180:   laststand:{n:'Last stand',d:'Once per battle, survive a killing blow at 1 hull.',fx:{lastStand:1}},
+181:   flanker:{n:'Flanker',d:'+20% damage on rear-arc hits.',fx:{rearPct:.2}},
+182: };
+183: const RANKS = ['Lieutenant','Commander','Captain','Commodore','Fleet captain'];
+184: const RANK_XP = [0,30,80,160,280];
+185: 
+186: const RELICS = {
+187:   martyr:{n:'Reliquary of the Martyr',d:'When one of your ships is destroyed, every other ship repairs 15% of its hull.',run:{avenge:.15}},
+188:   cogitator:{n:'Archeotech rangefinder',d:'Each ship\u2019s first attack in every battle hits 95% of the time.',run:{firstSure:1}},
+189:   lattice:{n:'Xeno shield lattice',d:'Shields +15% across the fleet.',fx:{shPct:.15}},
+190:   spore:{n:'Tamed spore culture',d:'Every ship regenerates 3 hull per turn.',fx:{hullRegen:3}},
+191:   phylactery:{n:'Deathless phylactery',d:'The first of your ships destroyed each battle reawakens at 25% hull.',run:{revive:1}},
+192:   ledger:{n:'Smuggler\u2019s ledger',d:'+25% credits from battles.',run:{credPct:.25}},
+193:   compass:{n:'Wraithbone compass',d:'+1 speed across the fleet.',fx:{speed:1}},
+194:   banner:{n:'Captured war banner',d:'Every enemy ship one of your ships destroys gives that ship +15% damage for the rest of the battle (up to +45%).',run:{bloodied:.15}},
+195:   salvage:{n:'Salvage rig',d:'After each battle, gain 15 credits and repair 8% hull.',run:{salvage:1}},
+196:   coils:{n:'Blessed plasma coils',d:'Ability cooldowns \u22121 across the fleet.',fx:{cdMod:1}},
+197:   logbook:{n:'Log of Admiral Rhel',d:'+30% captain experience.',run:{xpPct:.3}},
+198:   armourweave:{n:'Adamant armourweave',d:'+6% armor across the fleet.',fx:{armor:.06}},
+199: };
+200: 
+201: const ADMIRALS = {
+202:   vex:{n:'Admiral Castellan Vex',doc:'Line of battle',d:'Broadside weapons deal +15% damage.',fx:{broadPct:.15},start:['penitent','harrow','warden'],cost:0},
+203:   malek:{n:'Inquisitor-Captain Malek Draven',doc:'Hunter-killer',d:'Torpedoes reload a turn faster. +20% damage on rear-arc hits.',fx:{torpCd:1,rearPct:.2},start:['harrow','harrow','warden','warden'],cost:30},
+204:   ashgrove:{n:'Commodore Sera Ashgrove',doc:'Carrier doctrine',d:'Squadrons deal +25% damage and carriers hold +1 wing.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['reliquary','harrow','warden'],cost:45},
+205:   thale:{n:'High Admiral Oryn Thale',doc:'Iron doctrine',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['cathedral','warden'],cost:80},
+206: };
+207: 
+208: // ---------- faction admirals: four per faction, own ships, own Command ----------
+209: Object.assign(ADMIRALS.vex,{fac:'voidsworn',cmd:{id:'barrage',n:'Fire for effect',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}});
+210: Object.assign(ADMIRALS.malek,{fac:'voidsworn',cmd:{id:'hunt',n:"Hunter's salvo",d:'Torpedoes reload at once and every ship deals +30% damage this round.'}});
+211: Object.assign(ADMIRALS.ashgrove,{fac:'voidsworn',cmd:{id:'scramble',n:'Scramble all wings',d:'Every carrier launches an extra wing (even past its hangar limit), then all squadrons strike again at once with +50% damage this round.'}});
+212: Object.assign(ADMIRALS.thale,{fac:'voidsworn',cmd:{id:'iron',n:'Iron wall',d:'All shields refill and your ships take 40% less hull damage this round.'}});
+213: Object.assign(ADMIRALS,{
+214:   kassar:{fac:'hegemony',n:'Grand Admiral Ilsa Kassar',doc:'Fire discipline',d:'Batteries fire one extra shot per volley.',fx:{battShots:1},start:['h_vanguard','h_interdictor'],cost:0,cmd:{id:'barrage',n:'Synchronized broadside',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
+215:   vorn:{fac:'hegemony',n:'Commodore Dace Vorn',doc:'Interdiction',d:'+10 aim and +10% critical-hit chance.',fx:{aim:10,crit:10},start:['h_interdictor','h_interdictor','h_picket','h_picket'],cost:30,cmd:{id:'hunt',n:'Interdiction strike',d:'Every ship deals +30% damage this round.'}},
+216:   reyes:{fac:'hegemony',n:'Fleet Marshal Corin Reyes',doc:'Strike group',d:'Squadrons deal +25% damage and star cruisers hold +1 wing.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['h_vanguard','h_picket','h_picket'],cost:45,cmd:{id:'scramble',n:'Launch the strike group',d:'Every carrier launches an extra wing (even past its hangar limit), then all squadrons strike again at once with +50% damage this round.'}},
+217:   maren:{fac:'hegemony',n:'Line Admiral Oskar Maren',doc:'Armored column',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['h_dominion','h_picket','h_picket'],cost:80,cmd:{id:'iron',n:'Shield wall protocol',d:'All shields refill and your ships take 40% less hull damage this round.'}},
+218:   grax:{fac:'corsair',n:'Warlord Grax Ironjaw',doc:'Ram and board',d:'+1 speed for every ship and +10% damage.',fx:{speed:1,dmgPct:.1},start:['c_marauder','c_reaver','c_raider'],cost:0,cmd:{id:'surge',n:'Full burn',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
+219:   sable:{fac:'corsair',n:'Sable Venn, the Smiling Knife',doc:'Knife work',d:'+20% damage on rear-arc hits and +10% crit chance.',fx:{rearPct:.2,crit:10},start:['c_reaver','c_reaver','c_raider','c_raider'],cost:30,cmd:{id:'hunt',n:'Knife in the dark',d:'Torpedoes reload at once and every ship deals +30% damage this round.'}},
+220:   mott:{fac:'corsair',n:'Old Mott Brannigan',doc:'Junkyard carriers',d:'Squadrons deal +25% damage and hulks hold +1 wing.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['c_hulk','c_reaver'],cost:45,cmd:{id:'scramble',n:'Release the swarm',d:'Every carrier launches an extra wing (even past its hangar limit), then all squadrons strike again at once with +50% damage this round.'}},
+221:   vesh:{fac:'corsair',n:'Vesh the Collector',doc:'Scrap armor',d:'Ships patch 5% of their hull each round and have +10% armor.',fx:{hullRegenPct:.05,armor:.1},start:['c_hulk','c_marauder'],cost:80,cmd:{id:'restore',n:'Patch and pray',d:'Every ship repairs 25% of its hull and patches damaged sections, even destroyed ones.'}},
+222:   matriarch:{fac:'chorus',n:'The Matriarch of Nine Throats',doc:'Brood swarm',d:'Spore swarms deal +25% damage and broods hold +1 swarm.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['b_brood','b_drone'],cost:0,cmd:{id:'scramble',n:'Spawning surge',d:'Every brood releases an extra swarm (even past its limit), then all swarms strike again at once with +50% damage this round.'}},
+223:   razormaw:{fac:'chorus',n:'Razormaw',doc:'Hunter pack',d:'+1 speed and +15% damage on rear-arc hits.',fx:{speed:1,rearPct:.15},start:['b_razor','b_spitter','b_drone'],cost:30,cmd:{id:'surge',n:'Blood frenzy',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
+224:   mending:{fac:'chorus',n:'The Mending Choir',doc:'Regrowth',d:'Ships regrow 6% of their hull each round.',fx:{hullRegenPct:.06},start:['b_razor','b_razor'],cost:45,cmd:{id:'restore',n:'Regrowth tide',d:'Every ship regrows 25% of its hull and heals damaged sections, even destroyed ones.'}},
+225:   voice:{fac:'chorus',n:'Voice of the Deep',doc:'Acid chorus',d:'+15% damage with every weapon.',fx:{dmgPct:.15},start:['b_razor','b_spitter','b_drone','b_drone'],cost:80,cmd:{id:'barrage',n:'Discordant volley',d:'Every ship spits a free volley at the best target it can reach, right now.'}},
+226:   aelith:{fac:'ithar',n:'Aelith Dawnsail',doc:'Wing-mistress',d:'Squadrons deal +25% damage and carriers hold +1 wing.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['i_carrier','i_wisp'],cost:0,cmd:{id:'scramble',n:'Starling flight',d:'Every carrier launches an extra wing (even past its hangar limit), then all squadrons strike again at once with +50% damage this round.'}},
+227:   vaelen:{fac:'ithar',n:'Seraph Vaelen',doc:'Lance choir',d:'Lances deal +20% damage and gain +10 aim.',fx:{lancePct:.2,aim:10},start:['i_song','i_blade'],cost:30,cmd:{id:'barrage',n:'Chord of light',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
+228:   thorne:{fac:'ithar',n:'Thorne of the Veil',doc:'Veil tactics',d:'+8 evasion for every ship.',fx:{ev:8},start:['i_blade','i_blade','i_wisp','i_wisp'],cost:45,cmd:{id:'surge',n:'Phase drift',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
+229:   mirelle:{fac:'ithar',n:'Mirelle Starwarden',doc:'Prism hulls',d:'All ships +15% shields, and shields recharge 20% faster.',fx:{shPct:.15,regenPct:.2},start:['i_song','i_wisp','i_wisp'],cost:80,cmd:{id:'iron',n:'Prism ward',d:'All shields refill and your ships take 40% less hull damage this round.'}},
+230:   nekhet:{fac:'deathless',n:'Overlord Nekhet the Undying',doc:'Eternal legion',d:'Ships regrow 6% of their hull each round.',fx:{hullRegenPct:.06},start:['d_harvester','d_jackal'],cost:0,cmd:{id:'restore',n:'Reanimation protocol',d:'Every ship rebuilds 25% of its hull and mends damaged sections, even destroyed ones.'}},
+231:   sekhmar:{fac:'deathless',n:'Sekhmar the Reaper',doc:'Reaping arcs',d:'Doom arcs deal +20% damage and every weapon +10%.',fx:{lancePct:.2,dmgPct:.1},start:['d_harvester','d_scythe','d_scythe'],cost:30,cmd:{id:'barrage',n:'Harvest of souls',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
+232:   anuket:{fac:'deathless',n:'Cryptlord Anuket',doc:'Silent hunters',d:'+20% damage on rear-arc hits and +10 evasion.',fx:{rearPct:.2,ev:10},start:['d_jackal','d_jackal','d_scythe','d_scythe'],cost:45,cmd:{id:'hunt',n:'Tomb-blade strike',d:'Every ship deals +30% damage this round.'}},
+233:   khepra:{fac:'deathless',n:'Khepra the Patient',doc:'Living stone',d:'All ships +20% hull.',fx:{hpPct:.2},start:['d_jackal','d_jackal','d_jackal'],cost:80,cmd:{id:'iron',n:'Living stone',d:'All shields refill and your ships take 40% less hull damage this round.'}},
+234: });
+235: 
+236: const LEGACY = {
+237:   u_carrier:{n:'Carrier hulls',d:'Carrier hulls appear in shipyards.',cost:30,group:'Shipyards'},
+238:   u_battleship:{n:'Battleship hulls',d:'Battleship-class hulls appear in shipyards.',cost:60,group:'Shipyards'},
+239:   u_dread:{n:'Dreadnought hulls',d:'Voidsworn fleets may take one Ascendant-class dreadnought.',cost:120,group:'Shipyards',req:'u_battleship'},
+240:   chest1:{n:'War chest I',d:'+75 starting credits.',cost:20,group:'Supply'},
+241:   chest2:{n:'War chest II',d:'+75 more starting credits.',cost:40,group:'Supply',req:'chest1'},
+242:   chest3:{n:'War chest III',d:'+75 more starting credits.',cost:65,group:'Supply',req:'chest2'},
+243:   cmd1:{n:'Command authority I',d:'+2 fleet command points.',cost:35,group:'Command'},
+244:   cmd2:{n:'Command authority II',d:'+2 more fleet command points.',cost:70,group:'Command',req:'cmd1'},
+245:   vets:{n:'Veteran officers',d:'Starting captains begin at Commander rank with a perk.',cost:50,group:'Command'},
+246:   founder:{n:'Relic of the founders',d:'Begin each run with a random relic.',cost:60,group:'Supply'},
+247:   wrights:{n:'Master shipwrights',d:'Shipyard prices \u221215%.',cost:45,group:'Supply'},
+248:   salvagers:{n:'Salvage protocols',d:'+20% credits from battles.',cost:40,group:'Supply'},
+249: };
+250: 
+251: const SHIP_NAMES = ['Unyielding Oath','Saint Vesper\u2019s Wrath','Ashen Vigil','Lament of Iron','Bright Censure','Hymn of Ruin','Oathkeeper','Merciless Litany','Cinder Psalm','Pale Crusader','Everwatch','Grave Tithe','Sanctified Fury','Iron Requiem','Dawn of Cinders','Martyr\u2019s Resolve','Judgement Bell','Votive Flame','Sorrow\u2019s Edge','Penance Undying','Relentless Canticle','Obsidian Choir','Hallowed Anvil','Last Benediction','Wrathful Seraph','Cold Absolution','Thorn of Heaven','Vigilant Censer'];
+252: const CAP_FIRST = ['Ilse','Corvin','Maren','Tobias','Anselm','Vera','Casimir','Odile','Lucan','Serafine','Aurek','Helka','Brannoc','Isolde','Garrick','Mireille','Dagan','Thessaly','Rourke','Elsbeth','Konrad','Yara','Osric','Ninette','Halvard','Petra','Lysander','Calla'];
+253: const CAP_LAST = ['Varrow','Kade','Morrow','Ashdown','Quell','Harrowgate','Vane','Stroud','Rennick','Draeger','Holloway','Sable','Wyndham','Corvane','Ostrava','Marchetti','Blackwood','Ferro','Vashti','Kellan','Maddox','Serrano','Ivers','Lachance','Okonkwo','Brandt','Salo','Teague'];
+254: 
+255: // ---------- faction names: same effects, each faction's own words ----------
+256: const MOD_NEED={loaders:'batt',crystal:'lance',magazine:'torp',flakplus:'flak',capacitor:'shields',regen:'shields',hangar:'carrier'};
+257: const MOD_NAMES={
+258:   hegemony:{prow:'Reinforced bow plating',auspex:'Fire-control computer',drive:'Ion drive upgrade',gyro:'Attitude thrusters',capacitor:'Deflector capacitor',regen:'Deflector regenerator',loaders:'Turbolaser cyclers',crystal:'Ion focus lens',magazine:'Proton magazine',flakplus:'Point-defense array',damcon:'Damage control teams',hangar:'Expanded hangar bay',cogitator:'Targeting computer'},
+259:   corsair:{prow:'Scrap ram plating',auspex:'Stolen gun sights',drive:'Overbored thrusters',gyro:'Jury-rigged gyros',capacitor:'Salvaged shield cells',regen:'Hot-wired regenerator',loaders:'Ammo hoppers',crystal:'Cracked lens array',magazine:'Extra torpedo racks',flakplus:'Bolted-on flak',damcon:'Welding gangs',hangar:'Welded-on hangar',cogitator:'Gunner’s lucky charm'},
+260:   chorus:{prow:'Chitin layers',auspex:'Hunting eyes',drive:'Propulsion sacs',gyro:'Fin clusters',capacitor:'Membrane bloom',regen:'Membrane regrowth',loaders:'Spine glands',crystal:'Venom lens',magazine:'Spore bladders',flakplus:'Stinger pores',damcon:'Mending tissue',hangar:'Brood chamber',cogitator:'Predator instinct'},
+261:   ithar:{prow:'Wraithbone keel',auspex:'Farsight crystal',drive:'Solar sail extension',gyro:'Starwind vanes',capacitor:'Prism capacitor',regen:'Dawnlight lattice',loaders:'Shuriken feeders',crystal:'Starlight focus',magazine:'Star torpedo cradle',flakplus:'Shard screen',damcon:'Song of mending',hangar:'Wing cradle',cogitator:'Seer’s sight'},
+262:   deathless:{prow:'Living-metal plating',auspex:'Tomb sight',drive:'Inertialess drive',gyro:'Gravitic vanes',capacitor:'Quantum shield node',regen:'Quantum regenerator',loaders:'Gauss accelerators',crystal:'Doom-arc focus',magazine:'Arc capacitors',flakplus:'Sentry nodes',damcon:'Repair scarabs',hangar:'Scarab hive',cogitator:'Calculus lattice'}};
+263: const RELIC_NAMES={
+264:   hegemony:{martyr:'Medal of the Grand Fleet',cogitator:'Imperial targeting array',lattice:'Deflector matrix prototype',spore:'Captured Chorus culture',ledger:'Smuggler’s ledger',compass:'Hyperdrive motivator',banner:'Captured war banner',salvage:'Salvage rig',coils:'Overclocked reactors',logbook:'Admiralty logbook',armourweave:'Durasteel weave'},
+265:   corsair:{martyr:'Captain’s lucky skull',cogitator:'Stolen Navy rangefinder',lattice:'Ithar shield shard',ledger:'Smuggler’s ledger',compass:'Wraithbone compass',banner:'Trophy war banner',salvage:'Salvage rig',coils:'Hot-rodded reactor',logbook:'Pirate king’s logbook',armourweave:'Scrap armor weave'},
+266:   chorus:{martyr:'Heart of the first brood',cogitator:'Compound eye cluster',lattice:'Stolen shield lattice',spore:'Ancestral spore culture',ledger:'Hoard of the deep',compass:'Migration current',banner:'Prey’s war banner',salvage:'Scavenger gut',coils:'Quickening gland',logbook:'Memory of the hive',armourweave:'Carapace weave'},
+267:   ithar:{martyr:'Tear of the dying star',cogitator:'Seer’s eye',lattice:'Prism lattice',ledger:'Ledger of the exiles',banner:'Banner of the lost world',coils:'Starlight coils',logbook:'Log of the last voyage',armourweave:'Sunstone weave'},
+268:   deathless:{martyr:'Crown of the first dynasty',cogitator:'Calculus engine',phylactery:'Phylactery of the Undying',ledger:'Tithe ledger',compass:'Gravitic compass',banner:'Standard of the conquered',salvage:'Harvest engine',coils:'Chronometron',logbook:'Annals of the dynasty',armourweave:'Living-metal weave'}};
+269: // what a run is called, by faction
+270: const RUN_WORD={voidsworn:'crusade',hegemony:'campaign',corsair:'raid',chorus:'hunt',ithar:'voyage',deathless:'reclamation'};
+271: 
+272: const EVENTS = [
+273:   {id:'derelict',t:'A derelict in the dark',b:'Your auspex finds an ancient gothic warship drifting without power, its hull etched with prayers no one has spoken in ten thousand years.',
+274:    o:[{l:'Send boarding parties',s:'Risky. Could hold archeotech, could hold something awake.',r:'derelictBoard'},
+275:       {l:'Strip the hull from range',s:'+35 credits, no risk.',r:{cred:35}},
+276:       {l:'Leave it to its prayers',s:'Nothing happens.',r:{}}]},
+277:   {id:'beacon',not:['hegemony'],t:'Hegemony distress beacon',b:'A Hegemony supply tender is limping home with a shattered drive. Its captain is broadcasting on every band.',
+278:    o:[{l:'Offer aid',s:'Your crews patch their drive. They pay in kind.',r:{cred:50,xp:10}},
+279:       {l:'Seize the cargo',s:'+100 credits. Their escort might remember your colours.',r:{cred:100,ambush:true}},
+280:       {l:'Ignore it',s:'Nothing happens.',r:{}}]},
+281:   {id:'astropath',t:'The astropath\u2019s vision',b:'Your fleet astropath wakes screaming. She has seen where a relic lies, but reaching it means sailing through a warp-rift.',v:{hegemony:{t:'A ghost signal',b:'Your sensor officer has decoded a ghost signal: an old Navy relic cache, deep inside a hyperspace rift.'},corsair:{t:'The navigator\u2019s hunch',b:'Your half-mad navigator swears she can smell treasure on the far side of a rift. She is usually right. Usually.'},chorus:{t:'A scent in the void',b:'The brood-mind tastes something ancient and delicious beyond a rift in space.'},ithar:{t:'A seer\u2019s dream',b:'Your seer dreams of a lost treasure of your people, sleeping beyond a rift.'},deathless:{t:'A dynastic beacon',b:'An old dynastic beacon pulses from beyond a rift. Something of the dynasty is still out there.'}},
+282:    o:[{l:'Go after it',s:'Gain a relic. A random ship takes heavy damage.',r:{relic:1,dmgOne:.3}},
+283:       {l:'Move on',s:'Nothing happens.',r:{}}]},
+284:   {id:'merc',t:'A mercenary captain',b:'A scarred destroyer captain hails you. Her crew has been paid off and she wants a new cause, for a price.',
+285:    o:[{l:'Hire her (80 credits)',s:'A destroyer of your own kind, with a veteran captain, joins the fleet.',r:{cost:80,ship:'harrow',vet:1}},
+286:       {l:'Decline',s:'Nothing happens.',r:{}}]},
+287:   {id:'storm',t:'Warp storm',b:'A storm front rolls across your jump route, lightning the colour of old blood.',
+288:    o:[{l:'Punch straight through',s:'Every ship takes 10% hull damage.',r:{dmgAll:.1}},
+289:       {l:'Chart a way around (40 credits)',s:'Burn fuel and time instead.',r:{cost:40}}]},
+290:   {id:'seer',not:['ithar'],t:'An Ithar seer',b:'A lone Ithar vessel matches your course. Its seer offers a trade: one of your refits for one of their treasures.',
+291:    o:[{l:'Trade a module for a relic',s:'Lose a random installed module. Gain a relic.',r:{loseMod:1,relic:1}},
+292:       {l:'Refuse politely',s:'Nothing happens.',r:{}}]},
+293:   {id:'wright',t:'The rogue shipwright',b:'A hermit shipwright on an asteroid forge offers to rework one of your hulls. He asks only for the stories of your battles.',
+294:    o:[{l:'Let him work',s:'Your most damaged ship is fully repaired and upgraded one Mark.',r:{upgradeOne:1}},
+295:       {l:'Move on',s:'Nothing happens.',r:{}}]},
+296:   {id:'moon',not:['chorus'],t:'The infested moon',b:'Chorus spores have taken a mining moon. Survivors are signalling from the deep shafts, but a brood is gestating.',
+297:    o:[{l:'Purge the moon',s:'Fight an elite Chorus battle. Win a relic.',r:{fight:'chorus'}},
+298:       {l:'Bombard from orbit and leave',s:'+20 captain experience for every captain.',r:{xp:20}}]},
+299:   {id:'shrine',not:['chorus','deathless'],t:'A void-shrine',b:'An orbital shrine to a forgotten saint hangs over a dead world. Your crews ask to make an offering.',v:{hegemony:{b:'An old orbital shrine hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering.'},corsair:{b:'An orbital shrine to some forgotten saint hangs over a dead world. Even pirates hedge their bets: your crews ask to leave an offering.'},ithar:{t:'A shrine of the old world',b:'A shrine from before your people\u2019s fall hangs over a dead world. Your crews ask to leave an offering.'}},
+300:    o:[{l:'Offer 50 credits',s:'Every ship repairs 30% hull.',r:{cost:50,healAll:.3}},
+301:       {l:'Pray and hope',s:'Even odds: repair 30%, or nothing.',r:{gamble:true}},
+302:       {l:'Leave',s:'Nothing happens.',r:{}}]},
+303:   {id:'deserters',not:['hegemony'],t:'Hegemony deserters',b:'A lifeboat of Hegemony officers begs for asylum. They know how the Navy fights.',
+304:    o:[{l:'Take them in',s:'Your least experienced captain gains 60 experience.',r:{xpLow:60}},
+305:       {l:'Hand them back for the bounty',s:'+60 credits.',r:{cred:60}}]},
+306:   {id:'cache',not:['corsair'],t:'Smuggler cache',b:'A corsair cache hidden in the rings of a gas giant. The locks are primitive.',
+307:    o:[{l:'Crack it open',s:'Gain a random module.',r:{mod:1}},
+308:       {l:'Take the fuel and credits',s:'+45 credits.',r:{cred:45}}]},
+309: ];
+310: 
+311: // ---------- captains and ship names by faction ----------
+312: const CAPTAINS={
+313:   voidsworn:{ranks:RANKS,first:CAP_FIRST,last:CAP_LAST},
+314:   hegemony:{ranks:['Lieutenant','Commander','Captain','Commodore','Rear admiral'],first:['Konrad','Ilsa','Dace','Mara','Oskar','Rhea','Viktor','Lena','Aldric','Petra','Gerold','Sanne','Halvar','Ines','Ruprecht','Katrin'],last:['Reiter','Kassel','Brandt','Vorn','Hollis','Strand','Varga','Kessler','Drexel','Moran','Falk','Lindqvist','Achterberg','Roth','Vandermeer','Haldane']},
+315:   corsair:{ranks:['Mate','Skipper','Captain','Reaver-captain','Warlord'],first:['Rusty','Grim','Mad','One-Eye','Lucky','Red','Scrap','Knuckles','Salt','Patch','Dutch','Sly','Bones','Tiny','Hooks','Jinx'],last:['Krogg','Brannigan','Mallory','Blackwater','Rook','Sharkey','Gutter','Varrick','the Knife','Two-Guns','Tallow','Ironjaw','Spatchcock','Quill','Rattigan','Slade']},
+316:   chorus:{ranks:['Spawn-mind','Brood-node','Throat','Elder throat','Matriarch'],names:['Seventh Mouth','Hollow Song','Deep Murmur','Thrumming Coil','Pale Bloom','Wet Whisper','Ninefold','Grieving Tide','Brine Hymn','Moult','Ashk-of-Many','Sallow Choir','Undertow','Last Spore','Coiled Psalm','Lantern Gut']},
+317:   ithar:{ranks:['Wing','Sail','Seraph','High seraph','Starwarden'],first:['Siriel','Aelith','Vaelen','Thandor','Ilyra','Caelis','Ithrien','Nyssa','Orrin','Saelune','Talvar','Eluned','Faewyn','Liraen','Corvel','Ysolde'],last:['Starglass','Dawnsail','Veilborn','Moonreach','Sunward','Lightwhisper','Skyhollow','Silverwake','Brightmere','Glasswing','Nightbloom','Farcall']},
+318:   deathless:{ranks:['Warden','Overseer','Cryptlord','Overlord','Dynast'],names:['Imhoten','Setekh','Amuneth','Rahotep','Tauret','Menkara','Khepset','Nefrah','Osirak','Ptahmet','Sobekar','Thutem','Wadjen','Hekamun'],epithets:['the Hollow','the Patient','the Silent','the Undying','of the Ninth Tomb','the Unbroken','the Pale','the Ever-Watching','the Iron-Hearted','of the Sunless Court']}};
+319: const MORE_SHIP_NAMES={
+320:   hegemony:['HNS Steadfast','HNS Arbiter','HNS Ironclad','HNS Resolute','HNS Bastion','HNS Ascendancy','HNS Vindicator','HNS Castellan','HNS Paragon','HNS Unflinching'],
+321:   corsair:['Bilge Rat','Salt Debt','Last Laugh','Nine Lives','Scrapjaw','Black Ledger','Gilded Liar','Rattletrap','Widow\u2019s Wager','Low Tide'],
+322:   chorus:['Shrieking Coil','Brood Vessel Om','Mournful Gut','Spine Choir','Hive-node Vesk','Crawling Hymn','Wet Psalm','Gnawing Bloom','Tide of Teeth','Hollowsong'],
+323:   ithar:['Glass Requiem','Morningveil','Starfall','Quiet Wing','Lumen Arc','Silver Lament','Aurora\u2019s Grace','Farlight','Moonsorrow','Petal Storm'],
+324:   deathless:['Tomb of Nine Kings','Ankh of Ash','Silent Procession','Dust Eternal','The Unsleeping','Obelisk of Night','Crypt of Teeth','Sunless Barge','Pale Sovereign','Ever-Watch']};
+325: // every faction's hulls get a shipyard price, refit slots and their boss flag (only the Voidsworn set had them;
+326: // other factions showed 'Buy for NaN', had no refit slots, and the Voidsworn dreadnought wasn't marked as a boss)
+327: for(const [fid,F] of Object.entries(FACTIONS)){ if(F.boss&&HULLS[F.boss]) HULLS[F.boss].boss=true;
+328:   for(const id of F.roster){ const h=HULLS[id]; if(!h||h.sq) continue; const cp=h.cp||1;
+329:     if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3; } }
+330: 
+331: // ---------- progression between runs ----------
+332: // Hull variants: bought once with renown, then sold in your faction's shipyards beside the standard hull
+333: const HULL_VARIANTS={
+334:   vs_harrow_t:{base:'harrow',n:'Harrow torpedo-destroyer',d:'Twin prow torpedo tubes and no turret: a one-shot assassin.',w:[['torp','F'],['torp','F']],cost:20},
+335:   vs_penitent_g:{base:'penitent',n:'Penitent gun-cruiser',d:'Swaps the prow lance for a dorsal macro battery: guns in every arc.',w:[['battery','P'],['battery','S'],['battery','T']],cost:25},
+336:   h_picket_i:{base:'h_picket',n:'Picket interceptor',d:'Turret laser and +6 evasion: screens wherever it points.',w:[['laser','T'],['flak','T']],mod:{ev:24},cost:15},
+337:   h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar; a third turbolaser turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
+338:   c_reaver_t:{base:'c_reaver',n:'Reaver gunboat',d:'Scatter cannons on a turret instead of one broadside.',w:[['torp','F'],['scatter','T']],cost:15},
+339:   c_hulk_g:{base:'c_hulk',n:'Gun-hulk',d:'No hangar; scatter broadsides, a turret and 20 more hull.',w:[['scatter','P'],['scatter','S'],['turret','T']],mod:{ab:null,hangar:0,hp:190},cost:25},
+340:   b_spitter_s:{base:'b_spitter',n:'Spitter stinger',d:'Trades a prow gun for boarding tendrils: brutal up close.',w:[['bioplasma','T'],['tendril','T']],cost:15},
+341:   b_razor_s:{base:'b_razor',n:'Razorfiend stalker',d:'Two tendril clusters, +1 speed and +8 evasion.',w:[['tendril','T'],['tendril','T']],mod:{sp:5,ev:12},cost:25},
+342:   i_wisp_l:{base:'i_wisp',n:'Wisp lancer',d:'A pulsar lance in place of the shuriken cannon.',w:[['pulsar','F']],cost:15},
+343:   i_song_w:{base:'i_song',n:'Songship warden',d:'One lance on a turret, 30% more shields.',w:[['pulsar','T'],['turret','T']],mod:{sh:34},cost:25},
+344:   d_scythe_s:{base:'d_scythe',n:'Scythe sentinel',d:'Adds gauss sentries: shoots down squadrons and boarders’ craft.',w:[['gauss','T'],['gsentry','T']],cost:15},
+345:   d_harvester_t:{base:'d_harvester',n:'Harvester tomb-turret',d:'Its doom arc sits on a turret: it no longer has to turn to fire.',w:[['gauss','T'],['doom','T'],['gsentry','T']],cost:30}};
+346: for(const [id,v] of Object.entries(HULL_VARIANTS)){ const b=HULLS[v.base]; HULLS[id]=Object.assign({},b,{n:v.n,w:v.w,variant:id,base:v.base},v.mod||{}); if(HULLS[id].ab===null) delete HULLS[id].ab; }
+347: // Admiral mastery: every admiral levels up as you fly with them, in any faction
+348: const MASTERY_XP=[0,6,16,30,50];
+349: const MASTERY_PERKS=[
+350:   null,
+351:   {n:'Alternate fleet',d:'Choose a second starting fleet for this admiral.'},
+352:   {n:'Wider counsel',d:'Your flagship is offered four aspects instead of three.'},
+353:   {n:'Second Command',d:'Choose between two Commands before the run.'},
+354:   {n:'Flag captain',d:'Your flagship starts at Mk II, its captain a Captain with a perk.'}];
+355: // Patron favour: grows with every boon you take from a patron
+356: const FAVOUR_TIERS=[{at:0,n:'Watching'},{at:4,n:'Favoured',d:'Their boons are rare more often.'},{at:12,n:'Devoted',d:'If they watch your run, you start with one of their boons.'},{at:25,n:'Chosen',d:'Their boons are never common.'}];
+357: // Heat: optional rules after your first victory; each level adds 10% renown
+358: // enemy fleet archetypes: the same budget spent three different ways, named per faction and shown on the map
+359: const ARCHETYPES={
+360:   swarm:{d:'Many light hulls. Broadsides and flak shine; lances are wasted on them.',names:{voidsworn:'Zealot flotilla',hegemony:'Picket screen',corsair:'Wolfpack',chorus:'Brood swarm',ithar:'Wisp flight',deathless:'Scythe harvest'}},
+361:   heavy:{d:'Few, big hulls. Bring lances, torpedoes and a flank.',names:{voidsworn:'Cathedral line',hegemony:'Line of battle',corsair:'Hulk convoy',chorus:'Titan pod',ithar:'Songline',deathless:'Phalanx'}},
+362:   carrier:{d:'Built around a carrier and its wings. Fighters and flak pay off.',names:{voidsworn:'Reliquary group',hegemony:'Carrier group',corsair:'Raider nest',chorus:'Hive cluster',ithar:'Wraith host',deathless:'Harvest ark'}}};
+363: // node modifiers: a twist on one fight, shown on the map
+364: const NODE_MODS={
+365:   bounty:{n:'Bounty',short:'Bounty',d:'A price on this fleet: +50% credits, and they bring 10% more ships.'},
+366:   veteran:{n:'Veteran captain',short:'Veteran',d:'Their largest ship has an elite captain.'}};
+367: // sector conditions: each sector of a run has one, shown on the sector map and applied to every fight there
+368: const SECTOR_CONDS={
+369:   ion:{n:'Ion season',d:'Ion storms sweep every battlefield, and shields recharge 25% slower on both sides.',regen:.75,terr:'storm'},
+370:   dark:{n:'Dark sector',d:'Thick nebulae choke every battlefield: more hexes where shots go wide (\u221215 to hit inside).',terr:'neb'},
+371:   wreck:{n:'Wreck belt',d:'Old battle wreckage everywhere: more debris hexes (\u221210 to hit inside), and salvage adds 15% to every battle\u2019s pay.',terr:'debris',cred:.15},
+372:   war:{n:'War zone',d:'Every fight here draws reinforcements for one side or the other, and pays 20% more credits.',cred:.2,war:1},
+373:   scarce:{n:'Scarcity',d:'Supply lines are cut: shipyards charge 20% more and repairs restore 25% less, but battles pay 25% more credits.',cred:.25,price:1.2,repair:.75}};
+374: const HEAT={
+375:   h_flag:{n:'Vengeful flagships',d:'Sector flagships have 20% more hull.',w:1},
+376:   h_hunted:{n:'Hunted',d:'Enemy fleets are 15% larger.',w:2},
+377:   h_elite:{n:'Veteran escorts',d:'One ship in every enemy fleet is an elite.',w:1},
+378:   h_undying:{n:'Undying foes',d:'Any enemy ship may reassemble once when destroyed.',w:2},
+379:   h_coffers:{n:'Lean coffers',d:'Shipyard prices are 25% higher.',w:1},
+380:   h_repair:{n:'Short supplies',d:'Every repair restores half as much.',w:1},
+381:   h_cmd:{n:'Slow orders',d:'Your Command reaches full power a round later.',w:1}};
+382: 
+383: // ---------- Patrons, boons and flagship aspects ----------
+384: // Each run four of six patrons watch the crusade. Battles on the map carry a patron's sigil; win there and that patron offers three boons, take one.
+385: // Boons change rules, not just numbers; rarity scales their strength (Common x1, Rare x1.5, Epic x2). Two patrons' boons together unlock duo boons.
+386: const RARITY=[{n:'Common',m:1,col:'#cfc6b0'},{n:'Rare',m:1.5,col:'#62ccff'},{n:'Epic',m:2,col:'#c58bff'}];
+387: const PATRONS={
+388:   iron:{n:'Kharon, the Iron Saint',short:'Kharon',col:'#e0b04a',glyph:'K',theme:'Broadsides, armor and holding the line',quote:'Stand. Fire. Stand again.'},
+389:   storm:{n:'Vyre, the Storm Queen',short:'Vyre',col:'#5fd4ff',glyph:'V',theme:'Shields, ion fire and lightning',quote:'Every shield is a promise. Break theirs.'},
+390:   hunger:{n:'The Hunger Below',short:'The Hunger',col:'#7ddc6a',glyph:'H',theme:'Squadrons, boarding and feeding on the fallen',quote:'More mouths. More wings. More.'},
+391:   star:{n:'Astra, the Silent Star',short:'Astra',col:'#b48cff',glyph:'A',theme:'Lances, precision and critical hits',quote:'One clean line of light is enough.'},
+392:   rook:{n:'Rook, the Breaker',short:'Rook',col:'#ff6b5a',glyph:'R',theme:'Rams, speed and momentum',quote:'Faster. Closer. Through them.'},
+393:   ember:{n:'The Ember Choir',short:'The Choir',col:'#ff9f3a',glyph:'E',theme:'Torpedoes, fire and chain explosions',quote:'Sing, and let the void burn with you.'}};
+394: const boonPct=x=>Math.round(x*100)+'%';
+395: const BOONS={
+396:   // Kharon
+397:   i_broad:{p:'iron',n:'Thunder Broadside',d:m=>`Broadside guns deal +${boonPct(.2*m)} damage.`,fx:m=>({broadPct:.2*m})},
+398:   i_still:{p:'iron',n:'Anchored Volley',d:m=>`A ship that hasn't moved this activation deals +${boonPct(.25*m)} damage with broadsides and batteries.`,fx:m=>({stillPct:.25*m})},
+399:   i_plate:{p:'iron',n:"Saint's Plating",d:m=>`+${boonPct(.08*m)} armor across the fleet.`,fx:m=>({armor:.08*m})},
+400:   i_brace:{p:'iron',n:'Iron Discipline',d:m=>`Bracing blocks an extra ${boonPct(.1*m)}, and braced ships strike back: every enemy attack that hits one takes ${Math.round(18*m)} damage in return.`,fx:m=>({riposte:Math.round(18*m),bracePlus:.1*m})},
+401:   i_line:{p:'iron',n:'Unbroken Line',d:m=>`Ships next to another of your ships take ${boonPct(.12*m)} less hull damage.`,fx:m=>({lineGuard:.12*m})},
+402:   // Vyre
+403:   s_cap:{p:'storm',n:'Capacitor Surge',d:m=>`Shields +${boonPct(.2*m)} across the fleet.`,fx:m=>({shPct:.2*m})},
+404:   s_arc:{p:'storm',n:'Arc Discharge',d:m=>`When your fire knocks out an enemy shield facing, its generator shorts for ${Math.round(9*m)} hull damage.`,fx:m=>({arcShort:Math.round(9*m)})},
+405:   s_ion:{p:'storm',n:'Ion Lash',d:m=>`Your weapons strip ${boonPct(.22*m)} more shield per hit.`,fx:m=>({ionPlus:.22*m})},
+406:   s_regen:{p:'storm',n:'Storm Mantle',d:m=>`Each turn, every shield facing on every ship restores an extra ${boonPct(.18*m)} of its strength.`,fx:m=>({stormRegen:.18*m})},
+407:   s_ev:{p:'storm',n:'Lightning Reflex',d:m=>`+${Math.round(6*m)} evasion across the fleet.`,fx:m=>({ev:Math.round(6*m)})},
+408:   // The Hunger
+409:   h_hatch:{p:'hunger',n:'Swarm Hatch',d:m=>`Carriers field ${m>=1.5?'two extra wings':'an extra wing'}.`,fx:m=>({hangar:m>=1.5?2:1})},
+410:   h_wings:{p:'hunger',n:'Ravenous Wings',d:m=>`Squadrons deal +${boonPct(.25*m)} damage.`,fx:m=>({sqPct:.25*m})},
+411:   h_chitin:{p:'hunger',n:'Hardened Chitin',d:m=>`Squadrons have +${boonPct(.3*m)} hull.`,fx:m=>({sqHp:.3*m})},
+412:   h_board:{p:'hunger',n:'Boarding Frenzy',d:m=>`Boarding parties fight as ${boonPct(.25*m)} more crew, and a failed boarding always sabotages a system.`,fx:m=>({boardPct:.25*m})},
+413:   h_feast:{p:'hunger',n:'Feast on the Fallen',d:m=>`When your squadron destroys a target, its carrier gains a spare wing and repairs ${boonPct(.05*m)} hull.`,fx:m=>({feast:.05*m})},
+414:   // Astra
+415:   a_lance:{p:'star',n:'Starlight Lances',d:m=>`Lances deal +${boonPct(.35*m)} damage.`,fx:m=>({lancePct:.35*m})},
+416:   a_aim:{p:'star',n:'Silent Aim',d:m=>`+${Math.round(5*m)} aim for every weapon.`,fx:m=>({aim:Math.round(5*m)})},
+417:   a_crit:{p:'star',n:'Killing Light',d:m=>`+${Math.round(6*m)}% critical chance, criticals deal x${+(1.5+.25*m).toFixed(2)}, and every critical hit wrecks a ship system.`,fx:m=>({crit:Math.round(6*m),critMul:.25*m,critSys:1})},
+418:   a_long:{p:'star',n:'Long Silence',d:m=>`Ignore the first ${Math.floor(m*1.5)} hex${Math.floor(m*1.5)>1?'es':''} of long-range penalty.`,fx:m=>({longAim:Math.floor(m*1.5)})},
+419:   a_rear:{p:'star',n:'Blind Spot',d:m=>`Hits on an enemy's rear arc deal +${boonPct(.25*m)} damage.`,fx:m=>({rearPct:.25*m})},
+420:   // Rook
+421:   r_burn:{p:'rook',n:'Afterburners',d:m=>`+${m>=2?2:1} speed across the fleet${m>=1.5?`, and +${m>=2?10:6} evasion`:''}.`,fx:m=>({speed:m>=2?2:1,ev:m>=2?10:m>=1.5?6:0})},
+422:   r_prow:{p:'rook',n:'Battering Prow',d:m=>`Rams deal +${boonPct(.35*m)} damage and can take up to ${boonPct(.4+.1*m)} of a ship's hull; recoil halved.`,fx:m=>({ramPct:.35*m,ramCap:.1*m,ramGuard:.5})},
+423:   r_mom:{p:'rook',n:'Momentum',d:m=>`Ships deal +${boonPct(.05*m)} damage for each hex they moved this activation (up to 4).`,fx:m=>({momPct:.05*m})},
+424:   r_jink:{p:'rook',n:'Evasive Burn',d:m=>`Ships that moved 3+ hexes are ${Math.round(15*m)} harder to hit until their next turn.`,fx:m=>({burnEv:Math.round(15*m)})},
+425:   r_shock:{p:'rook',n:'Shockwave',d:m=>`Rams also hit every other enemy next to the target for ${boonPct(.25*m)} of the ram damage.`,fx:m=>({ramSplash:.25*m})},
+426:   // The Ember Choir
+427:   e_war:{p:'ember',n:'Choir Warheads',d:m=>`Torpedoes deal +${boonPct(.25*m)} damage.`,fx:m=>({torpPct:.25*m})},
+428:   e_reload:{p:'ember',n:'Hymn of Reloading',d:m=>`Torpedoes reload ${m>=1.5?2:1} turn${m>=1.5?'s':''} faster.`,fx:m=>({torpCd:m>=1.5?2:1})},
+429:   e_kindle:{p:'ember',n:'Kindling',d:m=>`Hull hits have a ${boonPct(.12*m)} chance to start a fire (fires burn ${6+Math.round(4*m)} a turn for 2 turns).`,fx:m=>({igniteCh:.12*m,fireDmg:Math.round(4*m)})},
+430:   e_chain:{p:'ember',n:'Chain Reaction',d:m=>`Enemy ships you destroy explode, dealing ${Math.round(20*m)} damage to every enemy within 2 hexes.`,fx:m=>({chainBoom:Math.round(20*m)})},
+431:   e_hunt:{p:'ember',n:'Funeral Pyre',d:m=>`+${boonPct(.2*m)} damage against ships below half hull, and ships you hit while below half can no longer regrow hull or reanimate.`,fx:m=>({huntPct:.2*m,pyre:1})},
+432:   // Duo boons: need a boon from each of two patrons
+433:   d_jugg:{duo:['iron','rook'],n:'Juggernaut',d:()=>'Rams deal +50% damage and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramGuard:1})},
+434:   d_bastion:{duo:['iron','storm'],n:'Bastion',d:()=>'Bracing also refills every shield facing and blocks an extra 10% of hull damage.',fx:()=>({bastion:1,bracePlus:.1})},
+435:   d_ionlance:{duo:['storm','star'],n:'Ion Lance',d:()=>'Lances strip double shield per hit.',fx:()=>({ionLance:1})},
+436:   d_burnswarm:{duo:['hunger','ember'],n:'Burning Swarm',d:()=>'Squadron hits have a 30% chance to start a fire.',fx:()=>({sqIgnite:.3})},
+437:   d_hunter:{duo:['star','rook'],n:"Hunter's Line",d:()=>'Ships that moved 3+ hexes gain +25% critical chance.',fx:()=>({momCrit:25})},
+438:   d_inferno:{duo:['ember','iron'],n:'Broadside Inferno',d:()=>'Broadside hits have a 40% chance to start a fire, and your fires burn hotter (10 a turn) and a turn longer.',fx:()=>({broadIgnite:.4,fireLong:1,fireDmg:4})}};
+439: // boons that only matter if the fleet has the right kit; offers skip them when it doesn't
+440: const BOON_NEED={i_still:'still',s_cap:'shields',s_regen:'shields',d_bastion:'shields',i_broad:'broad',d_inferno:'broad',e_war:'torp',e_reload:'torp',a_lance:'lance',d_ionlance:'lance',h_hatch:'carrier',h_wings:'sq',h_chitin:'sq',h_feast:'sq',d_burnswarm:'sq'};
+441: // the flagship's aspect is picked at the start of a run, from three offered at random
+442: const ASPECTS={
+443:   lancer:{n:'Aspect of the Spear',d:'Your flagship’s forward guns deal +50% damage and reach 1 hex further, and it can turn once more each round to bring them to bear.',fx:{prowPct:.5,prowRange:1,turns:1}},
+444:   hive:{n:'Aspect of the Hive',d:'Your flagship launches a squadron wing at the start of every battle (+1 wing if it is already a carrier), and its wings deal +30% damage.',fx:{hive:1,sqPct:.3}},
+445:   ram:{n:'Aspect of the Ram',d:'Your flagship rams for +60% damage, can take up to 60% of a ship’s hull, takes no recoil, and has +1 speed.',fx:{ramPct:.6,ramCap:.2,ramGuard:1,speed:1}},
+446:   bulwark:{n:'Aspect of the Bulwark',d:'Your flagship has +70% hull and shields, ships next to it take 25% less hull damage, and enemy ships within 4 hexes that can fire on it must.',fx:{hpPct:.7,shPct:.7,guardAura:.25,taunt:4}},
+447:   storm:{n:'Aspect of the Storm',d:'Your flagship’s weapons strip 50% more shield per hit, and its shields recharge twice as fast.',fx:{ionPlus:.5,regenPct:1}},
+448:   admiral:{n:'Aspect of the Admiral',d:'Your Admiral’s Command starts one power level higher (full power from round 2), and your flagship gets +10 aim.',fx:{cmdTier:1,aim:10}}};
+
+===== FILE: campaign_meta.js (209 lines) =====
+1: // ======================= UI: shell, title, meta =======================
+2: const app=document.getElementById('app');
+3: const tipEl=document.getElementById('tip');
+4: const ACT={};
+5: app.addEventListener('click',e=>{ const el=e.target.closest('[data-act]'); if(!el||el.disabled) return; const fn=ACT[el.dataset.act]; if(fn) fn(el.dataset.arg,el,e); });
+6: function show(html){ hideTip(); closeModal(); app.innerHTML=html; }
+7: function modal(html){ closeModal(); const m=document.createElement('div'); m.className='modal'; m.id='modal'; m.innerHTML=`<div class="box" role="dialog" aria-modal="true">${html}</div>`;
+8:   m.addEventListener('click',e=>{ const el=e.target.closest('[data-act]'); if(!el||el.disabled) return; const fn=ACT[el.dataset.act]; if(fn) fn(el.dataset.arg,el,e); });
+9:   document.body.appendChild(m); const b=m.querySelector('button'); if(b) b.focus(); }
+10: function closeModal(){ const m=document.getElementById('modal'); if(m) m.remove(); }
+11: function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),Math.min(9000,Math.max(2200,String(msg).length*60))); } // long messages stay long enough to read
+12: // touch screens: say tap, not click or hover
+13: function touchWords(h){ if(!(typeof G!=='undefined'&&G.mobile)||typeof h!=='string') return h;
+14:   return h.replace(/Right-click to cancel/g,'Tap elsewhere to cancel').replace(/\b[Rr]ight-click(ing)?\b/g,'tapping elsewhere').replace(/Click to fire/g,'Tap again to fire').replace(/Tap a gold hex to move/g,'Tap a gold hex twice to move').replace(/a red-ringed enemy to fire/g,'a red-ringed enemy twice to fire').replace(/\bClick\b/g,'Tap').replace(/\bclick\b/g,'tap').replace(/\bHover\b/g,'Tap').replace(/\bhover\b/g,'tap'); }
+15: function showTip(html,x,y){ tipEl.innerHTML=touchWords(html); tipEl.style.display='block';
+16:   if(typeof G!=='undefined'&&G.mobile){ // phone: a fixed card just above the bottom panel, never under the finger
+17:     tipEl.style.left='8px'; tipEl.style.maxWidth=(innerWidth-16)+'px'; const r=tipEl.getBoundingClientRect(), pn=document.getElementById('panel'), pt=pn&&pn.offsetParent?pn.getBoundingClientRect().top:innerHeight;
+18:     tipEl.style.top=Math.max(8,pt-r.height-8)+'px'; return; }
+19:   tipEl.style.maxWidth=''; const r=tipEl.getBoundingClientRect();
+20:   let lx=x+18, ly=y+14; if(lx+r.width>innerWidth-8) lx=x-r.width-14; if(ly+r.height>innerHeight-8) ly=innerHeight-r.height-8; tipEl.style.left=lx+'px'; tipEl.style.top=ly+'px'; }
+21: function hideTip(){ tipEl.style.display='none'; }
+22: const roman=n=>['','I','II','III','IV'][n]||n;
+23: function pct(n){ return Math.round(n*100)+'%'; }
+24: function hpBar(hp,max){ const f=clamp(hp/max,0,1); return `<div class="bar${f<.35?' low':''}"><i style="width:${f*100}%"></i></div>`; }
+25: 
+26: // ---------- title ----------
+27: function titleScreen(){
+28:   RUN=null; B=null;
+29:   show(`<div class="screen title"><div class="inner">
+30:     <h1>Voidsworn</h1>
+31:     <p class="sub">Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.</p>
+32:     <div class="menu">
+33:       ${SAVED_RUN?`<button class="primary" data-act="continueRun">Continue run</button>`:''}
+34:       <button class="${SAVED_RUN?'':'primary'}" data-act="newRunScreen">New run</button>
+35:       <button data-act="legacy">Progression${(META.renown||0)>=15?' <span class="gilt num">\u25cf</span>':''}</button>
+36:       <button data-act="help">How to play</button>
+37:     </div>
+38:     <div class="renown num">${META.stats.best?`Best: sector ${roman(Math.min(3,META.stats.best))}${META.stats.wins?` \u00b7 ${META.stats.wins} full victor${META.stats.wins>1?'ies':'y'}`:''}`:''}</div>
+39:   </div></div>`);
+40: }
+41: ACT.title=()=>titleScreen();
+42: ACT.continueRun=()=>{ RUN=JSON.parse(JSON.stringify(SAVED_RUN)); mapScreen(); };
+43: ACT.newRunScreen=()=>{
+44:   if(SAVED_RUN){ modal(`<h2>Abandon the current run?</h2><p class="muted">Starting over ends your saved run. Your best result so far is kept either way.</p>
+45:     <div class="row"><button class="primary" data-act="abandonRun">Abandon and start over</button><button data-act="closeModal">Keep it</button></div>`); return; }
+46:   admiralScreen();
+47: };
+48: ACT.closeModal=()=>closeModal();
+49: ACT.abandonRun=()=>{ RUN=JSON.parse(JSON.stringify(SAVED_RUN)); endRun(false,true); };
+50: 
+51: let pickedAdmiral='vex';
+52: function admiralScreen(){
+53:   const mine=Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===pickedFaction);
+54:   if(!mine.some(([id])=>id===pickedAdmiral)||!META.admirals[pickedAdmiral]) pickedAdmiral=(mine.find(([id])=>META.admirals[id])||mine[0])[0];
+55:   const cards=mine.map(([id,a])=>{ const un=!!META.admirals[id];
+56:     const fleet=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
+57:     return `<div class="card ${pickedAdmiral===id?'sel':''} ${un?'':'locked'}">
+58:       <h3>${esc(a.n)}</h3><p class="gilt">${esc(a.doc)}</p><p>${esc(a.d)}</p>
+59:       ${masteryBar(id)}
+60:       <p><span class="dim">Starting fleet:</span> ${esc(fleet)}</p>${a.cmd?`<p><span class="dim">Command:</span> <b class="gilt">${esc(a.cmd.n)}</b>. ${esc(cmdDesc(a.cmd,0,pickedFaction))} <span class="dim">Gets stronger each round you hold it.</span></p>`:''}
+61:       <div class="foot">${un?`<button class="${pickedAdmiral===id?'primary':''}" data-act="pickAdmiral" data-arg="${id}">${pickedAdmiral===id?'Selected':'Select'}</button>`:`<span class="muted">Unlock for ${a.cost} renown in Legacy</span>`}</div></div>`; }).join('');
+62:   show(`<div class="screen"><div class="page">
+63:     <h2 class="gothic">Choose your faction</h2>
+64:     <p class="lede">Your faction sets your ships and shipyards. Each run you face three of the other five, in a random order, with rival raiders along the way.</p>
+65:     <div class="facs" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px">${RUN_FACTIONS.map(f=>`<button class="facpick${pickedFaction===f?' on':''}" data-act="pickFaction" data-arg="${f}">${esc(FACTIONS[f].n)}</button>`).join('')}</div>
+66:     <h2 class="gothic">Choose your admiral</h2>
+67:     <p class="lede">Your admiral sets the fleet you start with and a doctrine that shapes every battle.</p>
+68:     <div class="cards">${cards}</div>
+69:     ${runOptionsHtml()}
+70:     <div class="row" style="margin-top:22px"><button class="primary" data-act="startRun">Launch the ${runWord(pickedFaction)}</button><button data-act="title">Back</button></div>
+71:   </div></div>`);
+72: }
+73: ACT.pickAdmiral=a=>{ if(pickedAdmiral!==a){ runOpt.alt=false; runOpt.cmdAlt=false; } pickedAdmiral=a; admiralScreen(); };
+74: let pickedFaction=(META.opts&&META.opts.lastFac)||'voidsworn';
+75: ACT.pickFaction=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };
+76: ACT.startRun=()=>{ const ml=masteryLevel(pickedAdmiral); newRun(pickedAdmiral,pickedFaction,{alt:runOpt.alt&&ml>=1,cmdAlt:runOpt.cmdAlt&&ml>=3,heat:(META.stats.wins||0)>0?runOpt.heat.slice():[]});
+77:   try{ tel('run_start',{fac:RUN.fac,foes:RUN.foes,admiral:pickedAdmiral,patrons:RUN.patrons,mastery:RUN.mastery,alt:!!RUN.altFleet,cmd:RUN.cmdOverride?RUN.cmdOverride.id:null,heat:RUN.heat,gift:RUN.giftBoon||null}); }catch(e){} aspectScreen(); };
+78: // ---------- run options: mastery unlocks and Heat ----------
+79: const runOpt={alt:false,cmdAlt:false,heat:[]};
+80: function masteryBar(id){ const l=masteryLevel(id), x=masteryXP(id), nx=MASTERY_XP[l+1]; const f=nx?Math.min(1,(x-MASTERY_XP[l])/(nx-MASTERY_XP[l])):1;
+81:   return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">Mastery ${l}/4</span> <span class="dim num">${nx?`${x}/${nx}: next ${esc(MASTERY_PERKS[l+1].n.toLowerCase())}`:'mastered'}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`; }
+82: function runOptionsHtml(){ const id=pickedAdmiral, a=ADMIRALS[id], ml=masteryLevel(id), parts=[];
+83:   if(ml>=1){ const ap=altFleetPlan(id,pickedFaction), alt=ap.fleet.map(t=>HULLS[t].n).join(', ')+(ap.mod?` (the carrier starts with a ${MODULES[ap.mod].n.toLowerCase()})`:''), std=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
+84:     parts.push(`<div class="card"><h3>Starting fleet</h3><button class="choice ${!runOpt.alt?'sel':''}" data-act="optAlt" data-arg="0"><b>Standard</b><small>${esc(std)}</small></button><button class="choice ${runOpt.alt?'sel':''}" data-act="optAlt" data-arg="1"><b>Alternate</b><small>${esc(alt)}</small></button></div>`); }
+85:   if(ml>=3&&a.cmd){ const c2=altCommand(id); if(c2) parts.push(`<div class="card"><h3>Command</h3><button class="choice ${!runOpt.cmdAlt?'sel':''}" data-act="optCmd" data-arg="0"><b>${esc(a.cmd.n)}</b><small>${esc(cmdDesc(a.cmd,0,pickedFaction))}</small></button><button class="choice ${runOpt.cmdAlt?'sel':''}" data-act="optCmd" data-arg="1"><b>${esc(c2.n)}</b><small>${esc(cmdDesc(c2,0,pickedFaction))}</small></button></div>`); }
+86:   if((META.stats.wins||0)>0){ const hl=heatLevel(runOpt.heat), best=(META.heatBest||{})[pickedFaction]||0;
+87:     parts.push(`<div class="card"><h3>Heat <span class="gilt num">${hl}</span> <span class="dim" style="font-size:14px">+${hl*10}% renown${best?` \u00b7 best win with this faction: Heat ${best}`:''}</span></h3><p class="dim" style="font-size:13.5px">Optional rules that make the run harder. Pick any.</p>${Object.entries(HEAT).map(([k,h])=>`<button class="choice ${runOpt.heat.includes(k)?'sel':''}" data-act="optHeat" data-arg="${k}"><b>${esc(h.n)} <span class="dim">+${h.w}</span></b><small>${esc(h.d)}</small></button>`).join('')}</div>`); }
+88:   else parts.push(`<div class="card locked"><h3>Heat</h3><p class="dim">Win a run to unlock Heat: optional rules that make runs harder and pay more renown.</p></div>`);
+89:   return `<h2 class="gothic" style="margin-top:22px">Run options</h2><div class="cards">${parts.join('')}</div>`; }
+90: ACT.optAlt=v=>{ runOpt.alt=v==='1'; admiralScreen(); };
+91: ACT.optCmd=v=>{ runOpt.cmdAlt=v==='1'; admiralScreen(); };
+92: ACT.optHeat=k=>{ const i=runOpt.heat.indexOf(k); if(i>=0) runOpt.heat.splice(i,1); else runOpt.heat.push(k); admiralScreen(); };
+93: // like choosing a weapon aspect: three random aspects for the flagship, and the pick shapes the whole run
+94: function aspectScreen(){ const f=ensureFlagship(), opts=shuffle(Object.keys(ASPECTS)).slice(0,(RUN.mastery||0)>=2?4:3); window._aspOffer=opts;
+95:   show(`<div class="screen"><div class="page"><h2 class="gothic">Choose your flagship's aspect</h2>
+96:     <p class="lede">The <b>${esc(f.name)}</b> (${esc(HULLS[f.tpl].n)}) carries your flag. Pick one aspect for it; it lasts the whole run, and passes to your next-largest ship if the flagship falls.</p>
+97:     <div class="cards">${opts.map(k=>`<div class="card"><h3>${esc(ASPECTS[k].n)}</h3><p>${esc(ASPECTS[k].d)}</p><div class="foot"><button class="primary" data-act="pickAspect" data-arg="${k}">Take this aspect</button></div></div>`).join('')}</div>
+98:     ${RUN.giftBoon?`<p class="gilt" style="margin-top:14px">A gift from ${esc(PATRONS[BOONS[RUN.giftBoon].p].n)}, who counts you Devoted: <b>${esc(BOONS[RUN.giftBoon].n)}</b>.</p>`:''}${RUN.heat&&RUN.heat.length?`<p class="blood" style="margin-top:8px">Heat ${heatLevel(RUN.heat)}: ${RUN.heat.map(k=>esc(HEAT[k].n)).join(', ')}.</p>`:''}
+99:     <p class="dim" style="margin-top:16px">Patrons watching this ${runWord()}: ${RUN.patrons.map(p=>`<b style="color:${PATRONS[p].col}">${esc(PATRONS[p].n)}</b> (${esc(PATRONS[p].theme.toLowerCase())})`).join('; ')}. Win battles marked with their sigil to earn their boons.</p>
+100:   </div></div>`); }
+101: ACT.pickAspect=k=>{ if(!ASPECTS[k]||!RUN) return; changeFleet(()=>{ RUN.aspect=k; ensureFlagship(); }); try{ tel('aspect_pick',{id:k,offered:window._aspOffer,fac:RUN.fac}); }catch(e){} saveRun(); introModal(); };
+102: function introModal(){
+103:   mapScreen();
+104:   const F=FACTIONS[RUN.map.fac];
+105:   modal(`<h2>Sector I</h2><p>The ${runWord()} crosses into contested space. Long-range auspex confirms <b>${esc(F.n)}</b> activity along every jump route.</p><p class="muted">${esc(F.blurb)}</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}
+106:     <p class="muted">Pick a route across the sector map. Battles marked with a patron’s sigil pay out that patron’s boons, so the route you choose shapes your build. The flagship of the sector waits at the far end.</p><button class="primary" data-act="closeModal">Plot a course</button>`);
+107: }
+108: 
+109: // ---------- progression: what carries between runs ----------
+110: let progTab='variants';
+111: function favFirst(){ const lf=(META.opts&&META.opts.lastFac)||'voidsworn'; return [lf,...RUN_FACTIONS.filter(f=>f!==lf)]; } // your current faction first
+112: function legacyScreen(){
+113:   const tabs=[['variants','Hull variants'],['mastery','Admiral mastery'],['favour','Patron favour'],['heat','Heat'],['fallen','Hall of the fallen']];
+114:   let body='';
+115:   if(progTab==='variants'){ body=`<p class="lede">Spend renown to add a variant hull to your faction's shipyards. It sits beside the standard hull whenever that hull is in stock. <span class="gilt num">You have ${META.renown||0} renown.</span> Renown comes from every run: battles, elites, flagships and sectors reached, plus 10% per Heat level.</p>`+
+116:       favFirst().map(f=>{ const vs=Object.entries(HULL_VARIANTS).filter(([vid,v])=>HULLS[v.base].fac===f); return `<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${vs.map(([vid,v])=>{ const own=!!(META.variants||{})[vid], t=HULLS[vid];
+117:         return `<div class="card ${own?'sel':''}"><h3>${esc(v.n)}</h3><p class="dim" style="font-size:13.5px">Variant of the ${esc(HULLS[v.base].n)}</p><p>${esc(v.d)}</p><p class="num" style="font-size:13.5px">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}. ${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><div class="foot">${own?'<span class="verd">In your shipyards</span>':`<button ${(META.renown||0)>=v.cost?'':'disabled'} data-act="buyVariant" data-arg="${vid}">Unlock for ${v.cost} renown</button>`}</div></div>`; }).join('')}</div>`; }).join(''); }
+118:   if(progTab==='mastery'){ body=`<p class="lede">Every run levels up the admiral who led it: 1 per battle won, 2 per elite, 5 per flagship and 10 for a victory.</p><div class="cards">${MASTERY_PERKS.slice(1).map((m,i)=>`<div class="card"><h3>Level ${i+1}: ${esc(m.n)}</h3><p>${esc(m.d)}</p><p class="dim num">${MASTERY_XP[i+1]} mastery</p></div>`).join('')}</div>`+
+119:       favFirst().map(f=>`<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===f).map(([id,a])=>`<div class="card"><h3>${esc(a.n)}</h3><p class="gilt" style="font-size:14px">${esc(a.doc)}</p>${masteryBar(id)}</div>`).join('')}</div>`).join(''); }
+120:   if(progTab==='favour'){ body=`<p class="lede">Every boon you take raises that patron's favour (rare boons count double, epic triple).</p><div class="cards">${FAVOUR_TIERS.slice(1).map(t=>`<div class="card"><h3>${esc(t.n)} <span class="dim num">${t.at}+</span></h3><p>${esc(t.d)}</p></div>`).join('')}</div><div style="margin-top:14px">`+
+121:       Object.entries(PATRONS).map(([p,P])=>{ const f=favourOf(p), t=favourTier(p), nx=FAVOUR_TIERS[t+1]; return `<div class="favrow"><div class="sg" style="background:${P.col}">${P.glyph}</div><div><b>${esc(P.n)}</b><div class="dim" style="font-size:13px">${esc(P.theme)}</div></div><div class="num" style="text-align:right"><b style="color:${P.col}">${esc(FAVOUR_TIERS[t].n)}</b><div class="dim" style="font-size:12.5px">${f}${nx?` / ${nx.at}`:''}</div></div></div>`; }).join('')+'</div>'; }
+122:   if(progTab==='heat'){ const wins=META.stats.wins||0; body=`<p class="lede">${wins?'Heat is open. Pick rules on the admiral screen before a run; each level adds 10% renown.':'Win a run to open Heat.'}</p><div class="cards">${Object.entries(HEAT).map(([k,h])=>`<div class="card"><h3>${esc(h.n)} <span class="dim">+${h.w}</span></h3><p>${esc(h.d)}</p></div>`).join('')}</div>
+123:       <h3 style="margin:20px 0 8px">Best Heat won</h3><div class="cards">${RUN_FACTIONS.map(f=>`<div class="card"><h3>${esc(FACTIONS[f].n)}</h3><p class="num ${(META.heatBest||{})[f]?'gilt':'dim'}">${(META.heatBest||{})[f]?'Heat '+META.heatBest[f]:((META.stats.wonFacs||[]).includes(f)?'Won at Heat 0':'Not yet won')}</p></div>`).join('')}</div>`; }
+124:   if(progTab==='fallen'){ const fallen=(META.fallen||[]).slice(-40).reverse(); body=fallen.length?`<div class="cards">${fallen.map(f=>`<div class="card"><h3>${esc(f.name)}</h3><p>${esc(rankName(f))} of the ${esc(f.ship)}</p><p class="dim">Lost in sector ${roman(f.sector)}</p></div>`).join('')}</div>`:'<p class="muted">No captain has died yet.</p>'; }
+125:   show(`<div class="screen"><div class="page">
+126:     <h2 class="gothic">Progression</h2>
+127:     <p class="muted num">Runs launched: ${META.stats.runs}. Deepest sector reached: ${META.stats.best||0}. Runs won: ${META.stats.wins}. Renown: <span class="gilt">${META.renown||0}</span>.</p>
+128:     <div class="progtabs">${tabs.map(([k,n])=>`<button class="${progTab===k?'on':''}" data-act="progTab" data-arg="${k}">${n}</button>`).join('')}</div>
+129:     ${body}
+130:     <div class="row" style="margin-top:24px"><button class="primary" data-act="title">Back to title</button></div>
+131:   </div></div>`);
+132: }
+133: ACT.legacy=()=>legacyScreen();
+134: ACT.progTab=k=>{ progTab=k; legacyScreen(); };
+135: ACT.buyVariant=id=>{ const v=HULL_VARIANTS[id]; META.variants=META.variants||{}; if(!v||META.variants[id]||(META.renown||0)<v.cost) return; META.renown-=v.cost; META.variants[id]=true; try{ tel('variant_buy',{id,cost:v.cost}); }catch(e){} Persist.save({meta:true}); legacyScreen(); };
+136: ACT.buyLegacy=id=>{ const u=LEGACY[id]; if(META.unlocked[id]||META.renown<u.cost) return; META.renown-=u.cost; META.unlocked[id]=true; Persist.save({meta:true}); legacyScreen(); };
+137: ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(META.admirals[id]||META.renown<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; Persist.save({meta:true}); legacyScreen(); };
+138: 
+139: // ---------- help ----------
+140: function helpScreen(){
+141:   show(touchWords(`<div class="screen"><div class="page" style="max-width:820px">
+142:     <h2 class="gothic">How to play</h2>
+143:     <p class="lede">Voidsworn is a roguelite. Each run crosses three sectors, each ending in a flagship battle. Ships and captains you lose are gone for the run; every faction, admiral and ship is available from the start.</p>
+144:     <p>What carries between runs (Progression, on the title screen): <b>renown</b> buys hull variants for your shipyards; each <b>admiral</b> levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; <b>patrons</b> grow fond of you as you take their boons, offering rarer boons and eventually a gift at the start of a run; and after your first victory, <b>Heat</b> lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight.</p>
+145:     <h3 class="gilt" style="margin:18px 0 6px">Your turn</h3>
+146:     <p>Every ship can move, turn and fire each of its weapons once per turn, in any order. Click a ship, then click a highlighted hex to move. Moving forward costs 1 movement. Turning 60\u00b0 also costs 1 movement and uses one of the ship\u2019s turns; big ships only get one turn per round, so plan their heading early. Press <kbd>Q</kbd> and <kbd>E</kbd> to turn in place.</p>
+147:     <p>Thrusters keep you from getting boxed in. A ship can slip into either forward-diagonal hex, or back off one hex, without changing its heading (2 movement each; a slow ship can always spend its whole move on one hop). It can climb over a rock or wreck, or dive under an enemy ship, for +1 movement, but cannot stop there. Each faction bends one of these rules: see the Helm panel.</p>
+148:     <p>Ships fight on the move. Tap an enemy your guns can't reach yet and the ship burns to the best spot and fires as it arrives.</p>
+149:     <p>Moving matters. A ship that did not move last turn gets hit more easily (+10 to hit). One that moved 3+ hexes is harder to hit (\u22125). Port and starboard guns hit 10% harder on a raking pass, after moving 2+ hexes.</p>
+150:     <h3 class="gilt" style="margin:18px 0 6px">Firing arcs</h3>
+151:     <p>Weapons only fire into their arc. Prow weapons cover the 120\u00b0 in front, port and starboard broadsides each cover a wide 120\u00b0 cone to the side, and turrets fire anywhere. The tinted hexes around a selected ship show where its guns reach: amber for the prow, teal for broadsides. Click an enemy to fire everything that can reach it, or press a number key to fire a single weapon.</p>
+152:     <h3 class="gilt" style="margin:18px 0 6px">Shields and flanking</h3>
+153:     <p>Each ship has four shield facings: prow, port, starboard and rear. Damage hits the facing that points at the attacker, and shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; gauss weapons mostly ignore them.</p>
+154:     <h3 class="gilt" style="margin:18px 0 6px">Different fights</h3>
+155:     <p>Each fight on the sector map is labelled with its goal. Engagements and ambushes end when one fleet breaks. In <b>Hold the station</b> you keep enemies off a friendly station until round 6 ends. In a <b>Hunt</b> their flagship runs and jumps out after round 6. In an <b>Intercept</b> you destroy transports before they cross the field. In a <b>Breakthrough</b> you get half your fleet off the far edge. Missing a Hunt or Intercept still pays half; losing the station or a breakthrough means a retreat, not the end of the run. Tap the chip under the top bar in battle for the rules and the coloured hexes.</p>
+156:     <p>Some fights change partway through: reinforcements for either side, or a solar flare that knocks out every shield for a round. You always get a round of warning.</p>
+157:     <h3 class="gilt" style="margin:18px 0 6px">Brace, abilities and Command</h3>
+158:     <p>Brace is the alternative to firing: a ship that hasn\u2019t fired can brace to take 40% less hull damage until your next turn (it can still move first). To ram, point your bow at an enemy ship with at least one clear hex between you and enough movement left to cross the gap: a red lane shows when a ram is ready, and red-ringed move hexes line one up. A longer run-up hits harder; a ram can\u2019t take more than 40% of a healthy ship\u2019s hull without boons. Boarding an adjacent enemy can capture it for your fleet; enemy boarders can cripple your ships, but never take them. Carriers start every battle with their wings already flying; the wings fight on their own unless you order them: tap a wing, then tap an enemy ship to strike it or one of your ships to guard it. The carrier\u2019s launch only replaces wings you lose. Most hulls have an ability with a cooldown, and each faction has its own: Hegemony ion pulses, Corsair overburn, Chorus regrowth and frenzy, Ithar phase jumps, Deathless reanimation beams, and the Voidsworn\u2019s burns, reloads and shield surges. Enemy flagships carry a Command too: they announce it a round ahead, so you can brace or scatter. Once per battle, your admiral\u2019s Command is a fleet-wide signature move. It gets stronger each round you hold it (power 1 in round 1, 2 in round 2, full power from round 3, and losing a ship charges it a level), so the choice is a smaller boost now or a bigger one later, if the fight lasts that long. The ship panel shows exactly what the next level adds.</p>
+159:     <h3 class="gilt" style="margin:18px 0 6px">Patrons, boons and your flagship</h3>
+160:     <p>Each run, four of six patrons watch your run. Battles on the map carry a patron\u2019s sigil: win there and that patron offers three boons, and you take one. Boons change the rules (fires, chain explosions, rams that shake the whole formation) and come in Common, Rare and Epic strength. Hold boons from two patrons and a duo boon can appear. At the start of a run you also pick one of three aspects for your flagship, which shapes how it fights for the whole run. Each sector\u2019s enemies have a set strength, so a stronger fleet feels stronger; a battered fleet meets slightly smaller ones.</p>
+161:     <h3 class="gilt" style="margin:18px 0 6px">Between battles</h3>
+162:     <p>Hull damage carries between battles. Shipyards sell hulls, refits and repairs, and can upgrade a ship\u2019s Mark. Captains earn experience and pick a perk at each promotion. Relics are fleet-wide bonuses that last for the run.</p>
+163:     <h3 class="gilt keysonly" style="margin:18px 0 6px">Keys</h3>
+164:     <p class="keysonly"><kbd>Tab</kbd> next ship, <kbd>Q</kbd>/<kbd>E</kbd> turn, <kbd>1</kbd>\u2013<kbd>6</kbd> arm a weapon, <kbd>B</kbd> brace, <kbd>A</kbd> toggle arcs, <kbd>Esc</kbd> or right-click to cancel, <kbd>Enter</kbd> end turn.</p>
+165:     <div class="row" style="margin-top:24px"><button class="primary" data-act="title">Back</button></div>
+166:   </div></div>`));
+167: }
+168: ACT.help=()=>helpScreen();
+169: 
+170: // ---------- run end ----------
+171: const WIN_TITLE={voidsworn:'The crusade endures',hegemony:'The Hegemony stands',corsair:'The loot is yours',chorus:'The Chorus swells',ithar:'The Ithar endure',deathless:'The Dynasty rises'};
+172: function runRecap(victory){ const s=RUN.stats, mins=RUN.t0?Math.max(1,Math.round((Date.now()-RUN.t0)/60000)):null;
+173:   const tile=(n,l)=>`<div class="rtile"><b class="num">${n}</b><span>${l}</span></div>`;
+174:   const tiles=`<div class="rtiles">${tile(s.battles,'battles won')}${tile(s.bosses,'flagships destroyed')}${tile(s.kills,'enemy ships destroyed')}${tile(s.lost||0,'ships lost')}${mins?tile(mins<90?mins+'m':(mins/60).toFixed(1)+'h','played'):''}</div>`;
+175:   const fl=(RUN.fleet||[]).filter(x=>x.hp>0), score=x=>x.car?x.car.dealt+x.car.kills*40:0, best=fl.slice().sort((a,b)=>score(b)-score(a))[0];
+176:   const row=x=>{ const c=x.car||{dealt:0,kills:0,battles:0}; return `<div class="rrow${x===best&&score(x)>0?' star':''}"><div><b>${esc(x.name)}</b> <span class="dim">${esc(HULLS[x.tpl].n)}</span><div class="dim" style="font-size:12px">${esc(rankName(x.cap))} ${esc(x.cap.name)}</div></div><div class="num">${c.kills} kills<br><span class="dim">${c.dealt} dmg</span></div></div>`; };
+177:   const stand=best&&score(best)>0?`<p class="standout">Standout ship: <b class="gilt">${esc(best.name)}</b>, ${best.car.kills} kills and ${best.car.dealt} damage across ${best.car.battles} battle${best.car.battles>1?'s':''}.</p>`:'';
+178:   const fleet=fl.length?`<h3 class="rhead">${victory?'The fleet that finished it':'Still flying'}</h3><div class="rfleet">${fl.sort((a,b)=>score(b)-score(a)).map(row).join('')}</div>`:'';
+179:   return tiles+stand+fleet; }
+180: function nextFacPick(){ const won=(META.stats.wonFacs||[]), pool=RUN_FACTIONS.filter(f=>f!==RUN.fac&&!won.includes(f)); return pick(pool.length?pool:RUN_FACTIONS.filter(f=>f!==RUN.fac)); }
+181: function endRun(victory, abandoned){
+182:   const s=RUN.stats;
+183:   const prevBest=META.stats.best||0; META.stats.best=Math.max(prevBest, RUN.sector); if(victory){ META.stats.wins++; META.stats.wonFacs=META.stats.wonFacs||[]; if(!META.stats.wonFacs.includes(RUN.fac)) META.stats.wonFacs.push(RUN.fac); }
+184:   for(const f of RUN.fallen) META.fallen.push(f); if(META.fallen.length>80) META.fallen=META.fallen.slice(-80);
+185:   try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}
+186:   // what carries forward: renown (more with Heat), admiral mastery, and a Heat record for this faction
+187:   const hl=heatLevel(RUN.heat), ren=Math.round((typeof runRenown==='function'?runRenown():0)*(1+.1*hl)); META.renown=(META.renown||0)+ren;
+188:   const mx0=masteryLevel(RUN.admiral), mxGain=s.battles+s.elites*2+s.bosses*5+(victory?10:0); META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
+189:   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
+190:   RUN.carry={ren,mxGain,mx0,mx1,hl};
+191:   RUN.over=true; SAVED_RUN=null; Persist.save();
+192:   const nf=victory?nextFacPick():null, NF=nf&&FACTIONS[nf];
+193:   const cy=RUN.carry, nextLv=MASTERY_PERKS[Math.min(4,cy.mx1+1)];
+194:   const carryHtml=`<div class="nextfac" style="border-color:var(--gilt)"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Carried forward</div>
+195:     <p style="margin:4px 0"><b class="gilt num">+${cy.ren} renown</b>${cy.hl?` <span class="dim">(Heat ${cy.hl}: +${cy.hl*10}%)</span>`:''} \u00b7 you now have ${META.renown}. Spend it on hull variants in Progression.</p>
+196:     <p style="margin:4px 0">${esc(ADMIRALS[RUN.admiral].n)}: <b class="num">+${cy.mxGain} mastery</b>${cy.mx1>cy.mx0?` <span class="gilt">Level ${cy.mx1} reached: ${esc(MASTERY_PERKS[cy.mx1].n)}. ${esc(MASTERY_PERKS[cy.mx1].d)}</span>`:cy.mx1<4?` <span class="dim">(${masteryXP(RUN.admiral)}/${MASTERY_XP[cy.mx1+1]} to ${esc(nextLv.n)})</span>`:' <span class="dim">(mastered)</span>'}</p></div>`;
+197:   const lines=`${carryHtml}${runRecap(victory)}
+198:     ${RUN.fallen.length?`<p class="muted">Captains lost this run: ${RUN.fallen.map(f=>esc(f.name)).join(', ')}.</p>`:''}
+199:     ${victory?`<p class="gilt num" style="font-size:18px">${META.stats.wins>1?`Victories so far: ${META.stats.wins}`:'Your first victory.'} Won with: ${(META.stats.wonFacs||[]).map(f=>esc(FACTIONS[f].n)).join(', ')}.</p>`:`<p class="gilt num" style="font-size:20px">${RUN.sector>prevBest?`New best: sector ${roman(RUN.sector)}`:`Best so far: sector ${roman(Math.min(3,META.stats.best))}`}</p>`}
+200:     ${NF?`<div class="nextfac"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Next run</div><b>Try the ${esc(NF.n.replace(/^The /,''))}</b><p class="muted" style="margin:4px 0 0">${esc(NF.blurb||'')}</p></div>`:''}`;
+201:   const sub=victory?`Three sectors broken, three flagships burning behind you. ${esc(ADMIRALS[RUN.admiral]?ADMIRALS[RUN.admiral].n:'Your admiral')} brings the ${esc(FACTIONS[RUN.fac]?FACTIONS[RUN.fac].n.replace(/^The /,''):'fleet')} home.`:abandoned?'The fleet stands down. Its deeds are recorded.':'The last hull goes dark in sector '+roman(RUN.sector)+'. The survivors will tell it differently.';
+202:   show(`<div class="screen title recap"><div class="inner" style="max-width:720px">
+203:     <h1 style="font-size:clamp(44px,8vw,104px)">${victory?(WIN_TITLE[RUN.fac]||'Victory'):abandoned?'Run abandoned':'The fleet is lost'}</h1>
+204:     <div class="sub">${sub}</div>
+205:     ${lines}
+206:     <div class="menu" style="margin-top:22px">${NF?`<button class="primary" data-act="nextFac" data-arg="${nf}">Play as ${esc(NF.n)}</button><button data-act="newRunScreen">Pick a faction</button>`:`<button class="primary" data-act="newRunScreen">New run</button>`}<button data-act="title">Title screen</button></div></div></div>`);
+207:   RUN=null;
+208: }
+209: ACT.nextFac=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };
+
+===== FILE: campaign_run.js (321 lines) =====
+1: // ======================= UI: run (map, fleet, shipyard, events, rewards) =======================
+2: const NODE_INFO={battle:{n:'Battle',d:'A standard engagement.'},elite:{n:'Elite fleet',d:'Tougher enemies with veteran captains. Drops a relic.'},
+3:   shipyard:{n:'Shipyard',d:'Buy hulls and refits, repair, upgrade Marks.'},drydock:{n:'Drydock',d:'Free repairs for the whole fleet.'},field:{n:'Field repairs',d:'Every ship patches 20% of its hull, no cost.'},
+4:   event:{n:'Unknown signal',d:'Something is out there. Could be anything.'},boss:{n:'Sector flagship',d:'The sector\u2019s command ship and its escort.'}};
+5: function nodeIcon(type,x,y,col){
+6:   const s=`stroke="${col}" stroke-width="2.2" fill="none" stroke-linecap="round"`;
+7:   if(type==='battle') return `<path d="M${x-7} ${y-7}L${x+7} ${y+7}M${x+7} ${y-7}L${x-7} ${y+7}M${x-8} ${y+3}l5 5M${x+8} ${y+3}l-5 5" ${s}/>`;
+8:   if(type==='elite') return `<path d="M${x-7} ${y-7}L${x+7} ${y+7}M${x+7} ${y-7}L${x-7} ${y+7}" ${s}/><path d="M${x} ${y-12}l3 4h-6z" fill="${col}"/>`;
+9:   if(type==='shipyard') return `<path d="M${x-8} ${y-2}h10v-4h4v12h-4v-4h-10z M${x-2} ${y+6}v4" ${s}/>`;
+10:   if(type==='drydock') return `<path d="M${x} ${y-8}v16M${x-8} ${y}h16" ${s}/>`;
+11:   if(type==='event') return `<text x="${x}" y="${y+6}" text-anchor="middle" font-size="18" font-weight="700" fill="${col}" font-family="var(--ui)">?</text>`;
+12:   if(type==='field') return `<path d="M${x-7} ${y+7}L${x+2} ${y-2}M${x+1} ${y-8}a5.5 5.5 0 1 0 7 7l-3.5-.5-3-3z" ${s}/>`;
+13:   if(type==='boss') return `<path d="M${x-11} ${y+6}l-2-12 7 6 6-9 6 9 7-6-2 12z" ${s} fill="${col}" fill-opacity=".25"/>`;
+14:   return '';
+15: }
+16: // a node's payout, shown on the map: a patron's sigil for a boon, a small tag otherwise
+17: function archLabel(n,fac){ const A=n&&n.arch&&ARCHETYPES[effArch(n.arch,fac)]; return A?(A.names[fac]||A.names.hegemony):''; }
+18: function rewardLabel(rw){ if(!rw) return ''; if(rw.k==='boon'&&PATRONS[rw.p]) return 'Boon of '+PATRONS[rw.p].short; return rw.k==='mod'?'Refit':rw.k==='cred'?'Credits':rw.k==='repair'?'Repairs':''; }
+19: function rewardBadge(n,x,y,r,av){ const rw=n.rw; if(!rw||n.done) return ''; const bx=x+r*.78, by=y-r*.78, ty=n.enc&&ENCOUNTERS[n.enc]?y+r+29:y+r+15;
+20:   if(rw.k==='boon'&&PATRONS[rw.p]){ const P=PATRONS[rw.p]; return `<circle cx="${bx}" cy="${by}" r="10" fill="${P.col}" stroke="#0f1626" stroke-width="2"/><text x="${bx}" y="${by+4.5}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f1626" font-family="var(--ui)">${P.glyph}</text><text x="${x}" y="${ty}" text-anchor="middle" font-size="11.5" fill="${av?P.col:'#8a8474'}" font-family="var(--ui)">${esc(P.short)}${rw.min?' \u2605':''}</text>`; }
+21:   const lab=rewardLabel(rw); return lab?`<text x="${x}" y="${ty}" text-anchor="middle" font-size="11.5" fill="${av?'#bfb6a0':'#6f6a5e'}" font-family="var(--ui)">${lab}</text>`:''; }
+22: function boonLine(b,small){ const B0=BOONS[b.id]; if(!B0) return ''; const P=B0.p?PATRONS[B0.p]:null, R=RARITY[b.r||0], col=P?P.col:'#f0b35a';
+23:   return `<div style="margin-bottom:6px;border-left:3px solid ${col};padding-left:8px"><b>${esc(B0.n)}</b> <span style="color:${R.col};font-size:12px">${B0.duo?'Duo':R.n}</span><div class="muted" style="font-size:${small?13:14}px">${esc(B0.d(R.m))}</div></div>`; }
+24: const MAP_NAME={belt:'asteroid belt',station:'orbital station',planet:'planet edge',storm:'ion storm',graveyard:'ship graveyard'};
+25: function mapScreen(){
+26:   B=null;
+27:   const m=RUN.map, avail=new Set(availableNodes()), F=FACTIONS[m.fac];
+28:   const port=innerWidth<720&&innerHeight>innerWidth;
+29:   const PX=n=>port?34+n.y*380:60+n.col*130, PY=n=>port?60+n.col*130:34+n.y*380;
+30:   const byId={}; for(const c of m.cols) for(const n of c) byId[n.id]=n;
+31:   for(const n of Object.values(byId)) if(!n.done&&!n.enc&&(n.type==='battle'||n.type==='elite')) Object.assign(n,rollEncounter(n.type,n.col)); // older saves
+32:   if(!m.region&&typeof pickRegion==='function'){ try{ m.region=pickRegion(m.fac); m.biome=rollBiome(m.region); for(const n of Object.values(byId)) if(!n.done){ n.map=regionMap(m.region,n.col,m.cols.length); fitEncounter(n); } saveRun(); }catch(e){} } // v47: runs started before regions
+33:   ensurePatrons(); for(const n of Object.values(byId)) if(!n.done&&!n.rw&&(n.type==='battle'||n.type==='elite'||n.type==='boss')) n.rw=rollNodeReward(n.type);
+34:   if(nodeSeeds(Object.values(byId))) saveRun(); // v53: each fight node carries its battle seed in the save, so a mid-battle reload replays the same fight
+35:   const edges=m.edges.map(([a,b])=>{ const A=byId[a],Bn=byId[b]; const trav=A.done&&(Bn.done||RUN.pos===b);
+36:     return `<line x1="${PX(A)}" y1="${PY(A)}" x2="${PX(Bn)}" y2="${PY(Bn)}" stroke="${trav?'#d0a64b':RUN.pos===a&&avail.has(b)?'rgba(208,166,75,.55)':'rgba(230,220,196,.13)'}" stroke-width="${trav?3:2}" ${RUN.pos===a&&avail.has(b)?'stroke-dasharray="6 5"':''}/>`; }).join('');
+37:   const nodes=Object.values(byId).map(n=>{ const x=PX(n), y=PY(n), av=avail.has(n.id), cur=RUN.pos===n.id, r=n.type==='boss'?26:19;
+38:     const col = n.done?'#7d7768': n.type==='elite'||n.type==='boss'?'#e07a70': av?'#e6dcc4':'#8a8474';
+39:     return `<g class="node ${av?'avail':''}" ${av?`data-act="enterNode" data-arg="${n.id}" tabindex="0" role="button" aria-label="${NODE_INFO[n.type].n}"`:''}>
+40:       <title>${NODE_INFO[n.type].n}${n.map&&MAP_NAME[n.map]&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?' ('+MAP_NAME[n.map]+')':''}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?' '+archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))+'.':''}${n.mod&&NODE_MODS[n.mod]?' '+NODE_MODS[n.mod].n+': '+NODE_MODS[n.mod].d:''}</title>
+41:       <circle cx="${x}" cy="${y}" r="${r}" fill="${n.done?'#1b2436':'#182133'}" class="ring" stroke="${cur?'#d0a64b':av?'rgba(208,166,75,.8)':'rgba(230,220,196,.18)'}" stroke-width="${cur||av?2.5:1.5}"/>
+42:       ${av?`<circle cx="${x}" cy="${y}" r="${r+6}" fill="none" stroke="rgba(208,166,75,.35)" stroke-width="1"><animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="2.4s" repeatCount="indefinite"/></circle>`:''}
+43:       ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${n.map&&MAP_NAME[n.map]&&!n.done&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?`<text x="${x}" y="${y-r-7}" text-anchor="middle" font-size="10.5" fill="#7f8fa6" font-family="var(--ui)">${MAP_NAME[n.map]}</text>`:''}${rewardBadge(n,x,y,r,av)}</g>`; }).join('');
+44:   const fleet=RUN.fleet.map(s=>{ const d=derive(s); return `<div class="shiprow"><span>${esc(s.name)}</span><span class="dim num">${s.hp}/${d.maxHp}</span>
+45:     <span class="dim" style="grid-column:1/-1;font-size:13px">${HULLS[s.tpl].cls} Mk ${roman(s.mk)}, ${rankName(s.cap)} ${esc(s.cap.name)}${s.cap.pending?' <span class="gilt">(promotion ready)</span>':''}</span>${hpBar(s.hp,d.maxHp)}</div>`; }).join('');
+46:   const relics=RUN.relics.length?RUN.relics.map(r=>`<div style="margin-bottom:6px"><b>${esc(relicName(r))}</b><div class="muted" style="font-size:14px">${esc(RELICS[r].d)}</div></div>`).join(''):'<p class="dim">None yet. Elite fleets and flagships carry them.</p>';
+47:   const pend=RUN.fleet.some(s=>s.cap.pending);
+48:   show(`<div class="mapwrap">
+49:     <div class="mapmain">
+50:       <div class="row wrap"><h2>Sector ${roman(RUN.sector)}${m.region&&REGIONS[m.region]?`: ${esc(REGIONS[m.region].n)}`:''}</h2><span class="spacer"></span><button data-act="saveQuit">Save and quit</button></div>
+51:       <p class="muted" style="margin:6px 0 0;max-width:75ch">Hostile presence: <b class="blood">${esc(F.n)}</b>. ${esc(F.blurb)}</p>${(()=>{ const c=sectorCond(); return c?`<p style="margin:6px 0 0;max-width:75ch"><span class="gilt">Sector condition: <b>${esc(c.n)}</b>.</span> <span class="muted">${esc(c.d)}</span></p>`:''; })()}
+52:       <svg viewBox="0 0 ${port?450:900} ${port?900:450}" style="width:100%;max-width:1400px;max-height:calc(100vh - 230px)" role="img" aria-label="Sector map">${edges}${nodes}</svg>
+53:       <div class="legend">${Object.entries(NODE_INFO).map(([k,v])=>`<span class="row" style="gap:6px"><svg width="26" height="26" viewBox="0 0 30 30" aria-hidden="true">${nodeIcon(k,15,15,k==='elite'||k==='boss'?'#e07a70':'#e6dcc4')}</svg>${v.n}</span>`).join('')}</div>
+54:       ${(()=>{ const nx=[...avail].map(id=>byId[id]).filter(n=>n&&n.enc&&ENCOUNTERS[n.enc]); const seen=new Set(); const rows=nx.filter(n=>{ const k=n.enc+'|'+rewardLabel(n.rw)+'|'+n.type+'|'+(n.arch||'')+'|'+(n.mod||''); return !seen.has(k)&&seen.add(k); });
+55:         return rows.length?`<div class="encprev">${rows.map(n=>`<div><b class="gilt">${ENCOUNTERS[n.enc].n}</b>${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?` <span class="blood">\u00b7 ${esc(archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac)))}</span>`:''}${n.mod&&NODE_MODS[n.mod]?` <span class="gilt">\u00b7 ${esc(NODE_MODS[n.mod].n)}</span>`:''}${n.type==='elite'?' <span class="blood">(elite)</span>':''}${n.shape&&n.shape!=='open'?` <span class="dim">\u00b7 ${SHAPES[n.shape].toLowerCase()}</span>`:''}<div class="muted">${ENCOUNTERS[n.enc].d}</div>${n.arch&&ARCHETYPES[n.arch]?`<div class="muted" style="font-size:13px">${esc(ARCHETYPES[effArch(n.arch,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))].d)}</div>`:''}${n.mod&&NODE_MODS[n.mod]?`<div class="gilt" style="font-size:13px">${esc(NODE_MODS[n.mod].d)}</div>`:''}${n.rw?`<div style="font-size:13px;margin-top:2px;color:${n.rw.k==='boon'&&PATRONS[n.rw.p]?PATRONS[n.rw.p].col:'#bfb6a0'}">Reward: ${rewardLabel(n.rw)}${n.rw.min?' (rare or better)':''}</div>`:''}</div>`).join('')}</div>`:''; })()}      <p class="dim" style="margin-top:10px">Choose a pulsing node to jump there. You can only move forward along the lines.</p>
+56:     </div>
+57:     <aside class="side">
+58:       <div class="row"><div><div class="dim" style="font-size:13px">Credits</div><div class="gilt num" style="font-size:24px">${RUN.credits}</div></div><span class="spacer"></span>
+59:       <div style="text-align:right"><div class="dim" style="font-size:13px">Command points</div><div class="num" style="font-size:24px">${fleetCP()}<span class="dim">/${RUN.cpCap}</span></div></div></div>
+60:       <p class="dim" style="font-size:14px;margin:6px 0 0">Admiral: ${esc(ADMIRALS[RUN.admiral].n)}, ${esc(ADMIRALS[RUN.admiral].doc.toLowerCase())}</p>
+61:       <h3>Fleet</h3>${fleet}
+62:       <button class="${pend?'primary':''}" style="width:100%;margin-top:12px" data-act="fleetScreen">${pend?'Promote captains and refit':'Manage fleet and refits'}</button>
+63:       ${RUN.inventory.length?`<p class="dim" style="font-size:14px">${RUN.inventory.length} refit${RUN.inventory.length>1?'s':''} in the hold.</p>`:''}
+64:       ${RUN.aspect&&ASPECTS[RUN.aspect]?`<h3>Flagship</h3><p style="margin:0 0 4px"><b>${esc((flagshipOf()||{}).name||'')}</b> <span class="gilt">${esc(ASPECTS[RUN.aspect].n)}</span></p><p class="muted" style="font-size:14px;margin:0">${esc(ASPECTS[RUN.aspect].d)}</p>`:''}
+65:       <h3>Boons</h3>${(RUN.boons||[]).length?RUN.boons.map(b=>boonLine(b,true)).join(''):'<p class="dim">None yet. Win at a node with a patron\u2019s sigil to earn one.</p>'}
+66:       <p class="dim" style="font-size:13px">Patrons this run: ${RUN.patrons.map(p=>`<span style="color:${PATRONS[p].col}">${esc(PATRONS[p].short)}</span>`).join(', ')}</p>
+67:       <h3>Relics</h3>${relics}
+68:     </aside></div>`);
+69: }
+70: ACT.saveQuit=()=>{ saveRun(); titleScreen(); };
+71: ACT.enterNode=id=>{
+72:   if(!availableNodes().includes(id)) return;
+73:   const n=findNode(id); RUN.pos=id; RUN.curNode=id;
+74:   tel('node',{type:n.type,col:n.col});
+75:   if(n.type==='battle'||n.type==='elite'||n.type==='boss'){
+76:     let kind=n.type, fac=nodeFaction(n);
+77:     if(RUN.ambush && kind==='battle'){ kind='elite'; fac=RUN.fac==='hegemony'?RUN.map.fac:'hegemony'; RUN.ambush=false; toast('The Hegemony escort you robbed has found you.'); }
+78:     battleScreen({kind,fac,col:n.col,node:id});
+79:   }
+80:   else if(n.type==='event') eventScreen(n);
+81:   else if(n.type==='shipyard') shipyardScreen(n);
+82:   else if(n.type==='drydock') drydockScreen(n);
+83:   else if(n.type==='field') fieldRepairs(n);
+84: };
+85: function completeNode(){ const n=findNode(RUN.curNode); if(n) n.done=true; RUN.curNode=null; saveRun(); }
+86: 
+87: // ---------- fleet management ----------
+88: function shipCard(s, opts={}){
+89:   const t=HULLS[s.tpl], d=derive(s), c=s.cap;
+90:   const nextXp=RANK_XP[c.rank+1];
+91:   const weap=d.weapons.map(w=>`<div class="dim" style="font-size:14px">${esc(w.n)} <span class="pill">${w.arc==='T'?'Turret':ARC_NAME[w.arc]}</span> ${w.shots}\u00d7${w.dmg}, range ${w.r}${w.cd?`, reload ${w.cd}`:''}</div>`).join('');
+92:   const slots=[]; for(let i=0;i<t.slots;i++){ const m=s.mods[i];
+93:     slots.push(m?`<div class="row" style="justify-content:space-between;font-size:14px;margin:3px 0"><span><b>${esc(modName(m))}</b> <span class="dim">${esc(MODULES[m].d)}</span></span>${opts.refit?`<button class="small" data-act="unequip" data-arg="${s.uid}:${i}">Remove</button>`:''}</div>`:`<div class="dim" style="font-size:14px;margin:3px 0">Empty refit slot</div>`); }
+94:   return `<div class="card"><div class="row"><h3>${esc(s.name)}</h3><span class="spacer"></span><span class="pill g">Mk ${roman(s.mk)}</span></div>
+95:     <p style="margin:0">${t.n}</p>
+96:     <div class="row num" style="font-size:14px;margin-top:6px"><span>Hull ${s.hp}/${d.maxHp}</span><span class="spacer"></span><span class="dim">${t.cp} CP</span></div>${hpBar(s.hp,d.maxHp)}
+97:     <div class="stats num" style="grid-template-columns:auto 1fr auto 1fr"><b>Shields</b><span style="white-space:nowrap">${d.shMax}, +${d.regen}/turn</span><b>Armor</b><span>${pct(d.armor)}</span><b>Speed</b><span>${d.speed}</span><b>Turns</b><span>${d.turns}</span><b>Evasion</b><span>${d.ev}</span></div>
+98:     ${t.ab?`<p style="margin:0 0 6px;font-size:14px"><span class="gilt">${ABILITIES[t.ab].n}.</span> <span class="dim">${esc(ABILITIES[t.ab].d)}</span></p>`:''}
+99:     ${weap}
+100:     <div class="sect"><h4>${rankName(c)} ${esc(c.name)}</h4>
+101:       <div class="dim num" style="font-size:13px">${nextXp?`${c.xp}/${nextXp} experience to ${rankName(Object.assign({},c,{rank:c.rank+1}))}`:`${c.xp} experience, highest rank`}</div>
+102:       <div>${c.perks.map(p=>`<span class="pill v" title="${esc(PERKS[p].d)}">${esc(PERKS[p].n)}</span>`).join('')||'<span class="dim" style="font-size:14px">No perks yet.</span>'}</div>
+103:       ${c.pending?`<button class="primary small" style="margin-top:6px" data-act="promote" data-arg="${s.uid}">Choose promotion perk</button>`:''}
+104:     </div>
+105:     <div class="sect"><h4>Refits</h4>${slots.join('')}</div>
+106:     ${opts.extra||''}</div>`;
+107: }
+108: function fleetScreen(back){
+109:   const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>s.mods.length<HULLS[s.tpl].slots && (!MODULES[m].only||HULLS[s.tpl].ab===MODULES[m].only));
+110:     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot row wrap">${opts.length?opts.map(s=>`<button class="small" data-act="equip" data-arg="${i}:${s.uid}">Fit to ${esc(s.name)}</button>`).join(''):'<span class="dim">No free compatible slot. Remove a refit first.</span>'}</div></div>`; }).join('');
+111:   show(`<div class="screen"><div class="page">
+112:     <div class="row"><h2 class="gothic">Fleet</h2><span class="spacer"></span><button class="primary" data-act="${back==='shipyard'?'backShipyard':'backMap'}">Done</button></div>
+113:     <p class="lede">Refits can be moved between ships freely. Mark upgrades and repairs happen at shipyards and drydocks.</p>
+114:     ${inv?`<h3 style="margin:0 0 10px">In the hold</h3><div class="cards" style="margin-bottom:22px">${inv}</div>`:''}
+115:     <div class="cards">${RUN.fleet.map(s=>shipCard(s,{refit:true})).join('')}</div>
+116:   </div></div>`);
+117:   RUN._fleetBack=back;
+118: }
+119: ACT.fleetScreen=()=>fleetScreen('map');
+120: ACT.backMap=()=>{ saveRun(); mapScreen(); };
+121: ACT.equip=arg=>{ const [i,uid]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[+i]; if(!s||!m) return;
+122:   changeShip(s,sh=>sh.mods.push(m)); RUN.inventory.splice(+i,1); fleetScreen(RUN._fleetBack); };
+123: ACT.unequip=arg=>{ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
+124: ACT.promote=uid=>promoteModal(uid, ()=>fleetScreen(RUN._fleetBack));
+125: function promoteModal(uid, after){
+126:   const s=RUN.fleet.find(x=>x.uid===uid); if(!s||!s.cap.pending){ after(); return; }
+127:   if(!s.cap.offer) s.cap.offer=shuffle(Object.keys(PERKS).filter(p=>!s.cap.perks.includes(p) && (p!=='wing'||HULLS[s.tpl].ab==='launch'))).slice(0,2);
+128:   window._promoteAfter=after;
+129:   modal(`<h2>Promotion</h2><p>${esc(s.cap.name)} of the <i>${esc(s.name)}</i> is now ${rankName(s.cap)}. Choose one perk.</p>
+130:     ${s.cap.offer.map(p=>`<button class="choice" data-act="takePerk" data-arg="${uid}:${p}"><b>${esc(PERKS[p].n)}</b><small>${esc(PERKS[p].d)}</small></button>`).join('')}`);
+131: }
+132: ACT.takePerk=arg=>{ const [uid,p]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return;
+133:   changeShip(s,sh=>{ sh.cap.perks.push(p); sh.cap.pending--; sh.cap.offer=null; }); closeModal();
+134:   if(s.cap.pending>0) promoteModal(uid, window._promoteAfter); else window._promoteAfter(); };
+135: 
+136: // ---------- shipyard ----------
+137: function shipyardStock(n){
+138:   if(n.stock) return n.stock;
+139:   const hulls=['warden','harrow','penitent']; if(META.unlocked.u_carrier) hulls.push('reliquary'); if(META.unlocked.u_battleship) hulls.push('cathedral'); if(META.unlocked.u_dread) hulls.push('ascendant');
+140:   const own=[...new Set(hulls.map(h=>equivHull(h,RUN.fac)))]; hulls.length=0; hulls.push(...own);
+141:   const pickH=shuffle(hulls.slice()).slice(0,3).sort((a,b)=>(HULLS[a].cp||1)-(HULLS[b].cp||1)); // each yard has its own few hulls
+142:   /* hull variants you've unlocked are sold beside their standard hull */ for(const h of pickH.slice()){ for(const [vid,v] of Object.entries(HULL_VARIANTS)) if(v.base===h&&META.variants&&META.variants[vid]) pickH.splice(pickH.indexOf(h)+1,0,vid); }
+143:   n.stock={hulls:pickH, mods:shuffle(modulePool()).slice(0,3), sold:[]};
+144:   return n.stock;
+145: }
+146: let yardNode=null;
+147: function shipyardScreen(n){
+148:   yardNode=n; const st=shipyardStock(n), pm=priceMult();
+149:   const cp=fleetCP();
+150:   const hulls=st.hulls.map(h=>{ const t=HULLS[h], cost=Math.round(t.cost*pm); const fits=cp+t.cp<=RUN.cpCap; const uniq=t.unique&&RUN.fleet.some(s=>s.tpl===h);
+151:     return `<div class="card"><h3>${t.n}${t.variant?' <span class="pill g">Variant</span>':''}</h3>${t.variant?`<p class="gilt" style="font-size:14px">${esc(HULL_VARIANTS[t.variant].d)}</p>`:''}<p class="num">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}, turns ${t.tn}.</p><p>${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><p class="dim">Ability: ${t.ab?ABILITIES[t.ab].n:'none'}</p>
+152:       <div class="foot"><button ${RUN.credits>=cost&&fits&&!uniq?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}</button> ${!fits?'<span class="dim">Not enough command points</span>':uniq?'<span class="dim">Only one allowed</span>':''}</div></div>`; }).join('');
+153:   const mods=st.mods.map((m,i)=>{ const sold=st.sold.includes(i), cost=Math.round(MODULES[m].cost*pm);
+154:     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot">${sold?'<span class="verd">Bought</span>':`<button ${RUN.credits>=cost?'':'disabled'} data-act="buyMod" data-arg="${i}">Buy for ${cost}</button>`}</div></div>`; }).join('');
+155:   const ships=RUN.fleet.map(s=>{ const d=derive(s), miss=d.maxHp-s.hp, rc=Math.ceil(miss/2*pm), mc=mkCost(s), sell=Math.round(HULLS[s.tpl].cost*.35);
+156:     return shipCard(s,{extra:`<div class="sect row wrap">
+157:       <button class="small" ${miss>0&&RUN.credits>=rc?'':'disabled'} data-act="repair" data-arg="${s.uid}">${miss>0?`Repair ${miss} for ${rc}`:'Fully repaired'}</button>
+158:       <button class="small" ${s.mk<3&&RUN.credits>=mc?'':'disabled'} data-act="upgradeMk" data-arg="${s.uid}">${s.mk<3?`Mk ${roman(s.mk+1)} for ${mc}`:'Max Mark'}</button>
+159:       <button class="small danger" ${RUN.fleet.length>1?'':'disabled'} data-act="sellShip" data-arg="${s.uid}">Decommission (+${sell})</button></div>`}); }).join('');
+160:   const allMiss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), allCost=Math.ceil(allMiss/2*pm);
+161:   show(`<div class="screen"><div class="page">
+162:     <div class="row wrap"><h2 class="gothic">Shipyard</h2><span class="spacer"></span><span class="gilt num" style="font-size:22px">${RUN.credits} credits</span>
+163:       <span class="num">${cp}/${RUN.cpCap} CP</span><button data-act="yardFleet">Refits</button><button class="primary" data-act="leaveYard">Leave shipyard</button></div>
+164:     <p class="lede">Repairs cost 1 credit per 2 hull. A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh lieutenant.</p>
+165:     <div class="row" style="margin-bottom:14px"><button ${allMiss>0&&RUN.credits>=allCost?'':'disabled'} data-act="repairAll">${allMiss>0?`Repair entire fleet for ${allCost}`:'Fleet fully repaired'}</button></div>
+166:     <div class="cards">${ships}</div>
+167:     <h3 style="margin:26px 0 10px">Hulls for sale</h3><div class="cards">${hulls}</div>
+168:     <h3 style="margin:26px 0 10px">Refits for sale</h3><div class="cards">${mods}</div>
+169:   </div></div>`);
+170: }
+171: ACT.yardFleet=()=>fleetScreen('shipyard');
+172: ACT.backShipyard=()=>shipyardScreen(yardNode);
+173: ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
+174: ACT.buyHull=h=>{ const t=HULLS[h], cost=Math.round(t.cost*priceMult()); if(RUN.credits<cost||fleetCP()+t.cp>RUN.cpCap) return; RUN.credits-=cost; try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); RUN.fleet.push(s); toast(`The ${s.name} joins the fleet.`); shipyardScreen(yardNode); };
+175: ACT.buyMod=i=>{ const st=yardNode.stock, m=st.mods[+i], cost=Math.round(MODULES[m].cost*priceMult()); if(st.sold.includes(+i)||RUN.credits<cost) return; RUN.credits-=cost; try{ tel('shop',{k:'mod',id:m,cost}); }catch(e){} st.sold.push(+i); RUN.inventory.push(m); toast(`${modName(m)} is in the hold. Fit it from Refits.`); shipyardScreen(yardNode); };
+176: ACT.repair=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), d=derive(s), miss=d.maxHp-s.hp, c=Math.ceil(miss/2*priceMult()); if(RUN.credits<c) return; RUN.credits-=c; s.hp=d.maxHp; shipyardScreen(yardNode); };
+177: ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), c=Math.ceil(miss/2*pm); if(RUN.credits<c) return; RUN.credits-=c; RUN.fleet.forEach(s=>s.hp=derive(s).maxHp); shipyardScreen(yardNode); };
+178: ACT.upgradeMk=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), c=mkCost(s); if(s.mk>=3||RUN.credits<c) return; RUN.credits-=c; try{ tel('shop',{k:'mk',id:s.tpl,cost:c}); }catch(e){} changeShip(s,sh=>sh.mk++); toast(`${s.name} refitted to Mk ${roman(s.mk)}.`); shipyardScreen(yardNode); };
+179: ACT.sellShip=uid=>{ if(RUN.fleet.length<=1) return; const s=RUN.fleet.find(x=>x.uid===uid);
+180:   modal(`<h2>Decommission the ${esc(s.name)}?</h2><p class="muted">Its captain retires and its refits return to the hold. You receive ${Math.round(HULLS[s.tpl].cost*.35)} credits.</p><div class="row"><button class="primary danger" data-act="sellConfirm" data-arg="${uid}">Decommission</button><button data-act="closeModal">Keep it</button></div>`); };
+181: ACT.sellConfirm=uid=>{ const i=RUN.fleet.findIndex(x=>x.uid===uid); if(i<0) return; const s=RUN.fleet[i]; RUN.inventory.push(...s.mods); RUN.credits+=Math.round(HULLS[s.tpl].cost*.35); RUN.fleet.splice(i,1); closeModal(); shipyardScreen(yardNode); };
+182: 
+183: // ---------- drydock ----------
+184: function drydockScreen(n){
+185:   const lines=RUN.fleet.map(s=>{ const d=derive(s), miss=d.maxHp-s.hp, fix=Math.ceil(miss*.6*repairMult()); s.hp+=fix; return fix?`<li>${esc(s.name)}: +${fix} hull</li>`:''; }).join('');
+186:   completeNode(); mapScreen();
+187:   modal(`<h2>Drydock</h2><p>Your crews work around the clock under a friendly station\u2019s floodlights. Repair teams restore 60% of every ship\u2019s missing hull.</p>
+188:     ${lines?`<ul class="num">${lines}</ul>`:'<p class="muted">The fleet was already in good order.</p>'}<div class="row"><button class="primary" data-act="closeModal">Continue</button><button data-act="fleetFromModal">Manage fleet</button></div>`);
+189: }
+190: ACT.fleetFromModal=()=>{ closeModal(); fleetScreen('map'); };
+191: 
+192: // ---------- events ----------
+193: let curEvent=null;
+194: function eventScreen(n){
+195:   RUN.seenEvents=RUN.seenEvents||[];
+196:   const fits=e=>!(e.not&&e.not.includes(RUN.fac)); let pool=EVENTS.filter(e=>fits(e)&&!RUN.seenEvents.includes(e.id)); if(!pool.length){ RUN.seenEvents=[]; pool=EVENTS.filter(fits); }
+197:   const ev=pick(pool); RUN.seenEvents.push(ev.id); curEvent=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{}); /* each faction tells it in its own words */
+198:   mapScreen();
+199:   modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost; const ok=!cost||RUN.credits>=cost;
+200:     return `<button class="choice" ${ok?'':'disabled'} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${esc(o.s)}${!ok?' (not enough credits)':''}</small></button>`; }).join('')}`);
+201: }
+202: function randShip(){ return pick(RUN.fleet); }
+203: function applyOutcome(r){
+204:   const out=[];
+205:   if(r==='derelictBoard'){ if(rnd()<.6){ const m=randomModule(); RUN.inventory.push(m); RUN.credits+=40; out.push(`Your boarding parties return with a ${modName(m)} and 40 credits of salvage.`); }
+206:     else { const s=randShip(), d=derive(s), dm=Math.round(d.maxHp*.25); s.hp=Math.max(1,s.hp-dm); RUN.credits+=20; out.push(`Something was awake. The ${s.name} takes ${dm} hull damage covering the retreat. You salvage 20 credits.`); } return out; }
+207:   if(r.cost){ RUN.credits-=r.cost; }
+208:   if(r.cred){ RUN.credits+=r.cred; out.push(`+${r.cred} credits.`); }
+209:   if(r.xp){ RUN.fleet.forEach(s=>addXp(s,r.xp)); out.push(`Every captain gains ${r.xp} experience.`); }
+210:   if(r.xpLow){ const s=[...RUN.fleet].sort((a,b)=>a.cap.xp-b.cap.xp)[0]; addXp(s,r.xpLow); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpLow} experience.`); }
+211:   if(r.loseMod){ const withMod=RUN.fleet.filter(s=>s.mods.length); if(withMod.length){ const s=pick(withMod); let m; changeShip(s,sh=>{ m=sh.mods.splice(Math.floor(rnd()*sh.mods.length),1)[0]; }); out.push(`The ${s.name} gives up its ${modName(m)}.`); } else if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`You hand over the ${modName(m)} from the hold.`); } else out.push('You have no refits to give. The seer smiles and gives anyway.'); }
+212:   if(r.relic){ const rl=randomRelic(); if(rl){ RUN.relics.push(rl); changeFleet(()=>{}); out.push(`Relic gained: ${relicName(rl)}. ${RELICS[rl].d}`); } else { RUN.credits+=80; out.push('No relics left to find. +80 credits instead.'); } }
+213:   if(r.dmgOne){ const s=randShip(), d=derive(s), dm=Math.round(d.maxHp*r.dmgOne); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); }
+214:   if(r.dmgAll){ RUN.fleet.forEach(s=>{ s.hp=Math.max(1,s.hp-Math.round(derive(s).maxHp*r.dmgAll)); }); out.push(`Every ship takes ${pct(r.dmgAll)} hull damage.`); }
+215:   if(r.ship){ const tp=equivHull(r.ship,RUN.fac); if(fleetCP()+HULLS[tp].cp<=RUN.cpCap){ const s=newShip(tp,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=r.cost||0; out.push('You don\u2019t have the command points to take her on. Your credits are returned.'); } }
+216:   if(r.upgradeOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; changeShip(s,sh=>{ if(sh.mk<3) sh.mk++; }); s.hp=derive(s).maxHp; out.push(`The ${s.name} leaves the forge fully repaired at Mk ${roman(s.mk)}.`); }
+217:   if(r.healAll){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*r.healAll)); }); out.push(`Every ship repairs ${pct(r.healAll)} of its hull.`); }
+218:   if(r.gamble){ if(rnd()<.5){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.3)); }); out.push('The saint answers. Every ship repairs 30% of its hull.'); } else out.push('Silence. The void keeps its own counsel.'); }
+219:   if(r.mod){ const m=randomModule(); RUN.inventory.push(m); out.push(`Found: ${modName(m)}. It\u2019s in the hold.`); }
+220:   if(r.ambush){ RUN.ambush=true; }
+221:   if(!out.length && !r.fight) out.push('You move on.');
+222:   return out;
+223: }
+224: ACT.eventChoice=i=>{
+225:   const o=curEvent.o[+i]; if(o.r&&o.r.cost&&RUN.credits<o.r.cost) return;
+226:   if(o.r&&o.r.fight){ closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:findNode(RUN.curNode).col+1,node:RUN.curNode,eventRelic:true}); return; }
+227:   const lines=applyOutcome(o.r);
+228:   completeNode(); mapScreen();
+229:   modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="closeModal">Continue</button>`);
+230: };
+231: 
+232: // ---------- rewards ----------
+233: function rewardFlow(summary){
+234:   const cfg=summary.cfg, s=RUN.sector, rf=runFx();
+235:   RUN.stats.battles++; if(cfg.kind==='elite') RUN.stats.elites++; if(cfg.kind==='boss') RUN.stats.bosses++;
+236:   const kindMult=cfg.kind==='boss'?3:cfg.kind==='elite'?1.6:1;
+237:   const scnd=sectorCond(); let credits=Math.round((25+12*s+3*(cfg.col||0))*kindMult*(1+(rf.credPct||0)+((scnd&&scnd.cred)||0))); if(cfg.mod==='bounty') credits=Math.round(credits*1.5);
+238:   if(summary.partial) credits=Math.round(credits/2); // the objective got away: half pay
+239:   if(rf.salvage){ credits+=15; RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.08)); }); }
+240:   RUN.credits+=credits;
+241:   // the node's payout: a patron's boon (pick 1 of 3), a refit (pick 1 of 3), or credits or repairs
+242:   const node=cfg.node&&findNode(cfg.node); ensurePatrons(); const rw=(node&&node.rw)||(cfg.kind==='battle'?{k:'boon',p:pick(RUN.patrons)}:{k:'boon',p:pick(RUN.patrons),min:1});
+243:   const fl0=RUN.flagUid; ensureFlagship(); const flagMoved=fl0&&RUN.flagUid!==fl0&&flagshipOf();
+244:   let extra=''; if(rw.k==='cred'){ const v=35+10*s; RUN.credits+=v; extra=`<p class="gilt">Salvage: +${v} credits.</p>`; }
+245:   if(rw.k==='repair'){ RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.25*repairMult())); }); extra='<p class="verd">Field repairs: every ship repairs 25% of its hull.</p>'; }
+246:   window._rewardCfg=cfg; window._rw=rw; window._boonOffer=null; window._modOffer=null;
+247:   window._relicChoice=(cfg.kind==='elite'||cfg.kind==='boss')?shuffle(Object.keys(RELICS).filter(r=>!RUN.relics.includes(r)&&relicUseful(r))).slice(0,cfg.kind==='boss'?3:2):[];
+248:   const xpLines=summary.xp.map(x=>`<li>${esc(x.cap)} of the ${esc(x.ship)}: +${x.xp} experience${x.up?` <span class="gilt">promoted to ${RANKS[x.rank]}</span>`:''}</li>`).join('');
+249:   const lost=summary.lost.length?`<p class="blood">Lost: ${summary.lost.map(l=>`the ${esc(l.ship)} and ${esc(l.cap)}`).join(', ')}.</p>`:'';
+250:   window._wrecks=(summary.wrecks||[]).map(w=>Object.assign(w,{yield:salvageYield(w)}));
+251:   const next=window._wrecks.length?'<button class="primary" data-act="salvageStep">Salvage the field</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a boon</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
+252:   modal(`<h2>${cfg.kind==='boss'?'Flagship destroyed':'Victory'}</h2>
+253:     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra}
+254:     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Boons in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No boon triggered this battle. Check the Fleet boons section on a ship to see what sets each one off.</p>':''; })()}
+255:     ${flagMoved?`<p class="gilt">The admiral transfers the flag to the ${esc(flagMoved.name)}. Its aspect goes with it.</p>`:''}
+256:     ${xpLines?`<ul class="num" style="padding-left:18px">${xpLines}</ul>`:''}${next}`);
+257: }
+258: // v52 salvage: pick one wreck from the ships you actually destroyed. What it yields depends on what it carried; Corsairs can tow small hulls home as prizes.
+259: const CAUSE_WORD=Object.fromEntries(Object.entries(KILL_CAUSES).map(([k,c])=>[k,c.w])); // v53: words come from the shared KILL_CAUSES list (battle.js)
+260: function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODULES[m], wk=w.wk||[];
+261:   const pickM=[wk.includes('lance')&&'crystal',(wk.includes('torp')||wk.includes('htorp')||wk.includes('startorp'))&&'magazine',(wk.includes('battery')||wk.includes('hbattery'))&&'loaders',wk.includes('flak')&&'flakplus',w.ab==='launch'&&'hangar',(wk.includes('gauss')||wk.includes('needle')||wk.includes('shard'))&&'cogitator',w.regen&&'damcon',w.sh>=20&&'capacitor',(wk.includes('turret')||wk.includes('autocannon'))&&'auspex'].filter(Boolean).filter(has);
+262:   // a wreck that was flayed or dissolved has little left to strip
+263:   const intact=!(KILL_CAUSES[w.cause]&&KILL_CAUSES[w.cause].scrap), m=intact&&pickM.length?pickM[0]:null, cred=Math.round((10+9*w.cp)*(intact?1:1.3));
+264:   const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'?true:false;
+265:   return {mod:m,cred,tow}; }
+266: ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];
+267:   modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
+268:     return `<div class="choice" style="cursor:default"><b>${esc(w.name)}</b> <span class="dim">${esc(w.cls||'')}${F?', '+esc(F.n):''}</span><small>${esc(CAUSE_WORD[w.cause]||'destroyed')}${w.by?` by the ${esc(w.by)}`:''}.</small>
+269:       <div class="orders" style="margin-top:6px">${y.mod?`<button data-act="takeSalvage" data-arg="${i}:mod">Strip it: <b>${esc(modName(y.mod))}</b><small>${esc(MODULES[y.mod].d)}</small></button>`:''}<button data-act="takeSalvage" data-arg="${i}:cred">Scrap it<small>+${y.cred} credits</small></button>${y.tow?`<button data-act="takeSalvage" data-arg="${i}:tow">Tow it home<small>Joins your fleet at 35% hull</small></button>`:''}</div></div>`; }).join('')}`); };
+270: ACT.takeSalvage=a=>{ const [i,k]=String(a).split(':'), w=(window._wrecks||[])[+i]; if(!w){ closeModal(); return ACT.rewardNext(); } const y=w.yield;
+271:   if(k==='mod'&&y.mod){ RUN.inventory.push(y.mod); toast(`${modName(y.mod)} stripped from the ${w.name} and stowed in the hold.`); }
+272:   else if(k==='tow'&&y.tow){ try{ const sh=newShip(w.tpl); sh.name=w.name; sh.hp=Math.max(1,Math.round(derive(sh).maxHp*.35)); RUN.fleet.push(sh); toast(`The ${w.name} is under tow. Patch her up at a shipyard.`); }catch(e){ RUN.credits+=y.cred; } }
+273:   else { RUN.credits+=y.cred; toast(`The ${w.name} is broken up for scrap: +${y.cred} credits.`); }
+274:   try{ tel('salvage_pick',{k,cause:w.cause,cls:w.cls,mod:y.mod||null}); }catch(e){} window._wrecks=[]; saveRun&&saveRun(); closeModal(); ACT.rewardNext(); };
+275: ACT.rewardNext=()=>{ const rw=window._rw||{}; closeModal();
+276:   if(rw.k==='boon') return boonStep(rw.p,rw.min||0);
+277:   if(rw.k==='mod'){ const opts=shuffle(modulePool()).slice(0,3); window._modOffer=opts;
+278:     modal(`<h2>Salvaged refits</h2><p>Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.</p>${opts.map(m=>`<button class="choice" data-act="takeMod" data-arg="${m}"><b>${esc(modName(m))}</b><small>${esc(MODULES[m].d)}</small></button>`).join('')}`); return; }
+279:   relicStep(); };
+280: ACT.takeMod=m=>{ RUN.inventory.push(m); try{ tel('reward_pick',{k:'mod',id:m,offered:window._modOffer}); }catch(e){} toast(`${modName(m)} stowed in the hold.`); closeModal(); relicStep(); };
+281: // a patron offers three boons; rarity shows how strong each one is
+282: function boonStep(p,minR){ const P=PATRONS[p]; if(!P){ relicStep(); return; } const offer=rollBoonOffer(p,minR); window._boonOffer=offer;
+283:   if(!offer.length){ RUN.credits+=60; toast('Nothing left to offer. +60 credits.'); relicStep(); return; }
+284:   modal(`<div class="boonhead" style="border-color:${P.col}"><span class="sigil" style="background:${P.col}">${P.glyph}</span><div><h2 style="margin:0;color:${P.col}">${esc(P.n)}</h2><div class="muted" style="font-size:14px">${esc(P.theme)}</div></div></div>
+285:     <p class="muted" style="font-style:italic;margin:8px 0 12px">“${esc(P.quote)}”</p>
+286:     ${offer.map((o,i)=>{ const b=BOONS[o.id], R=RARITY[o.r||0], duo=b.duo; return `<button class="choice boon" data-act="takeBoon" data-arg="${i}" style="border-left:4px solid ${duo?PATRONS[duo[0]].col:P.col}">
+287:       <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}`); }
+288: ACT.takeBoon=i=>{ const o=(window._boonOffer||[])[+i]; if(!o) return; changeFleet(()=>{ RUN.boons=RUN.boons||[]; RUN.boons.push({id:o.id,r:o.r||0}); });
+289:   { const ps=BOONS[o.id].p?[BOONS[o.id].p]:(BOONS[o.id].duo||[]); META.favour=META.favour||{}; for(const p of ps){ const t0=favourTier(p); META.favour[p]=(META.favour[p]||0)+1+(o.r||0); const t1=favourTier(p); if(t1>t0) setTimeout(()=>toast(`${PATRONS[p].n} now counts you ${FAVOUR_TIERS[t1].n}: ${FAVOUR_TIERS[t1].d}`),900); } }
+290:   try{ tel('boon_pick',{id:o.id,r:o.r||0,p:BOONS[o.id].p||'duo',offered:(window._boonOffer||[]).map(x=>x.id+':'+(x.r||0)),sector:RUN.sector}); }catch(e){}
+291:   toast(`${BOONS[o.id].n} gained.`); closeModal(); relicStep(); };
+292: function relicStep(){
+293:   const rc=window._relicChoice;
+294:   if(rc && rc.length){
+295:     modal(`<h2>${window._rewardCfg.kind==='boss'?'The flagship\u2019s vault':'Spoils of the elite'}</h2><p>Choose a relic. Relics last for the rest of the run.</p>
+296:       ${rc.map(r=>`<button class="choice" data-act="takeRelic" data-arg="${r}"><b>${esc(relicName(r))}</b><small>${esc(RELICS[r].d)}</small></button>`).join('')}`);
+297:     return;
+298:   }
+299:   promotionsStep();
+300: }
+301: ACT.takeRelic=r=>{ changeFleet(()=>RUN.relics.push(r)); window._relicChoice=null; closeModal(); promotionsStep(); };
+302: function promotionsStep(){
+303:   const s=RUN.fleet.find(x=>x.cap.pending>0);
+304:   if(s){ promoteModal(s.uid, promotionsStep); return; }
+305:   afterBattle();
+306: }
+307: function afterBattle(){
+308:   const cfg=window._rewardCfg;
+309:   completeNode();
+310:   if(cfg.kind==='boss'){
+311:     if(RUN.sector>=3){ endRun(true); return; }
+312:     RUN.sector++; RUN.cpCap+=3; RUN.map=genSector(RUN.sector); RUN.pos=null;
+313:     RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.4*repairMult())); });
+314:     saveRun(); mapScreen();
+315:     const F=FACTIONS[RUN.map.fac];
+316:     modal(`<h2>Sector ${roman(RUN.sector)}${RUN.map.region&&REGIONS[RUN.map.region]?`: ${esc(REGIONS[RUN.map.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
+317:       <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
+318:     return;
+319:   }
+320:   mapScreen();
+321: }
+
+===== FILE: core.js (302 lines) =====
+1: // ======================= CORE =======================
+2: // v41: seeded rules randomness (mulberry32). Each battle reseeds from B.seed, so a seed plus the same moves replays a fight;
+3: // the simulator takes SEED from the environment so whole runs repeat exactly. Cosmetic effects keep Math.random.
+4: let RNG_S=(Math.random()*4294967296)>>>0;
+5: function rndSeed(s){ RNG_S=(s>>>0); }
+6: function rnd(){ RNG_S=(RNG_S+0x6D2B79F5)|0; let t=Math.imul(RNG_S^(RNG_S>>>15),1|RNG_S); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }
+7: const ri = (a,b) => a + Math.floor(rnd()*(b-a+1));
+8: const pick = a => a[Math.floor(rnd()*a.length)];
+9: const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+10: const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+11: const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+12: let SPEED = 1;
+13: const wait = ms => new Promise(r=>setTimeout(r, ms*SPEED));
+14: let UID = 1;
+15: const newId = () => 'x'+Date.now().toString(36)+(UID++);
+16: 
+17: // ---------- hex math (pointy-top, axial) ----------
+18: const DIRS = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]]; // facing i -> angle i*60deg on screen
+19: const hkey = (q,r) => q+','+r;
+20: function hdist(a,b){const dq=a.q-b.q, dr=a.r-b.r; return (Math.abs(dq)+Math.abs(dr)+Math.abs(dq+dr))/2;}
+21: function axPx(q,r){return {x:Math.sqrt(3)*(q+r/2), y:1.5*r};}
+22: function angTo(a,b){const pa=axPx(a.q,a.r), pb=axPx(b.q,b.r); return Math.atan2(pb.y-pa.y,pb.x-pa.x)*180/Math.PI;}
+23: function relAng(u,t){let d=angTo(u,t)-u.facing*60; d=((d%360)+540)%360-180; return d;}
+24: function inArc(u,t,arc){
+25:   if(arc==='T') return true;
+26:   const a=relAng(u,t), A=Math.abs(a);
+27:   if(arc==='F') return A<=60.5;
+28:   if(arc==='R') return A>=119.5;
+29:   if(arc==='S') return a>=29.5 && a<=150.5;
+30:   if(arc==='P') return a<=-29.5 && a>=-150.5;
+31:   return false;
+32: }
+33: function shieldQuad(t,att){const b=relAng(t,att), A=Math.abs(b); if(A<50) return 0; if(A>130) return 2; return b>0?1:3;}
+34: const QUAD_NAME = ['prow','starboard','rear','port'];
+35: function cubeRound(x,z){let y=-x-z, rx=Math.round(x), rz=Math.round(z), ry=Math.round(y);
+36:   const dx=Math.abs(rx-x), dy=Math.abs(ry-y), dz=Math.abs(rz-z);
+37:   if(dx>dy&&dx>dz) rx=-ry-rz; else if(dy<=dz) rz=-rx-ry;
+38:   return {q:rx,r:rz};}
+39: function hexLine(a,b){const N=hdist(a,b), out=[]; for(let i=0;i<=N;i++){const t=N?i/N:0;
+40:   out.push(cubeRound(a.q+(b.q-a.q)*t+1e-6, a.r+(b.r-a.r)*t+1e-6));} return out;}
+41: function faceToward(a,b){const ang=angTo(a,b); return ((Math.round(ang/60)%6)+6)%6;}
+42: 
+43: // ---------- persistence ----------
+44: const STORE_KEY='voidsworn.v1';
+45: const SAVE_VERSION=2;
+46: function defaultMeta(){return {v:SAVE_VERSION,renown:0,unlocked:{},admirals:{vex:true},fallen:[],stats:{runs:0,best:0,wins:0},opts:{},tel:[],updated:0,mastery:{},favour:{},variants:{},heatBest:{}};}
+47: // older saves get the fields newer code expects
+48: function migrateMeta(m){ if(!m.v||m.v<2){ m.opts=m.opts||{}; m.tel=m.tel||[]; m.v=2; } m.mastery=m.mastery||{}; m.favour=m.favour||{}; m.variants=m.variants||{}; m.heatBest=m.heatBest||{};
+49:   // first load after progression arrived: credit the runs already played (from the run log) to mastery and favour
+50:   if(!m.backfilled){ m.backfilled=1; try{ let adm=null; for(const e of (m.tel||[])){
+51:       if(e.ev==='run_start'&&e.admiral) adm=e.admiral;
+52:       else if(e.ev==='battle_end'&&adm&&e.result==='win') m.mastery[adm]=(m.mastery[adm]||0)+(e.kind==='boss'?5:e.kind==='elite'?2:1);
+53:       else if(e.ev==='run_end'){ if(adm&&e.victory) m.mastery[adm]=(m.mastery[adm]||0)+10; adm=null; const st=e.stats||{}; m._back=(m._back||0)+(st.battles||0)*2+(st.elites||0)*4+(st.bosses||0)*15+Math.floor((st.kills||0)/4)+((e.sector||1)-1)*5; }
+54:       else if(e.ev==='boon_pick'&&e.id&&typeof BOONS!=='undefined'&&BOONS[e.id]){ const ps=BOONS[e.id].p?[BOONS[e.id].p]:(BOONS[e.id].duo||[]); for(const p of ps) m.favour[p]=(m.favour[p]||0)+1+(e.r||0); } } m.renown=(m.renown||0)+Math.min(60,m._back||0); delete m._back; /* a capped credit for runs already flown, so there is something to unlock right away */ }catch(err){} }
+55:   // v41: older builds logged run_end without a faction, so early victories never reached wonFacs; recover them from the run's run_start
+56:   if(!m.wonFix41){ m.wonFix41=1; try{ let fac=null; const won=new Set((m.stats&&m.stats.wonFacs)||[]); for(const e of (m.tel||[])){ if(e.ev==='run_start'&&e.fac) fac=e.fac; else if(e.ev==='run_end'){ if(e.victory&&(e.fac||fac)) won.add(e.fac||fac); fac=null; } } if(m.stats) m.stats.wonFacs=[...won]; }catch(e){} }
+57:   return m; }
+58: function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
+59:   if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return normalizeRun(r); }
+60: // v53: the one place that knows every field a RUN carries. newRun sets the real starting values; this fills anything an older or partial save lacks
+61: function runDefaults(){ return {fac:'voidsworn',foes:null,admiral:'vex',credits:0,cpCap:10,sector:1,relics:[],inventory:[],fleet:[],pos:null,stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},t0:0,fallen:[],ambush:false,over:false,boons:[],patrons:[],aspect:null,flagUid:null,
+62:   heat:[],mastery:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0}; }
+63: function normalizeRun(r){ if(!r||typeof r!=='object') return r; const d=runDefaults(); for(const k in d) if(r[k]==null) r[k]=d[k];
+64:   for(const k of ['relics','inventory','fleet','fallen','boons','patrons','heat','reserve','seenEvents','regionsUsed','condsUsed']) if(!Array.isArray(r[k])) r[k]=[];
+65:   if(typeof r.stats!=='object'||Array.isArray(r.stats)) r.stats={}; for(const k in d.stats) if(typeof r.stats[k]!=='number') r.stats[k]=0;
+66:   r.fleet=r.fleet.filter(s=>s&&typeof s==='object'); for(const s of r.fleet){ if(!Array.isArray(s.mods)) s.mods=[]; if(!s.mk) s.mk=1; if(!s.cap||typeof s.cap!=='object') s.cap={fac:r.fac,name:'Captain',xp:0,rank:0,perks:[],pending:0}; if(!Array.isArray(s.cap.perks)) s.cap.perks=[]; }
+67:   return r; }
+68: // v53: a save is only trusted when its run has a fleet array and a map, and its meta is a plain object with the expected containers
+69: function saneMeta(m){ if(!m||typeof m!=='object'||Array.isArray(m)) return false; for(const k of ['unlocked','admirals','stats','opts','mastery','favour','variants','heatBest']) if(m[k]!=null&&(typeof m[k]!=='object'||Array.isArray(m[k]))) return false; for(const k of ['tel','fallen']) if(m[k]!=null&&!Array.isArray(m[k])) return false; return m.renown==null||typeof m.renown==='number'; }
+70: function saneRun(r){ return r==null||!!r.none||(typeof r==='object'&&Array.isArray(r.fleet)&&!!r.map&&Array.isArray(r.map.cols)); }
+71: function saneSave(o){ return !!o&&typeof o==='object'&&!Array.isArray(o)&&(o.meta==null||saneMeta(o.meta))&&saneRun(o.run); }
+72: // a renamed module, perk or relic id in an old save is logged once and skipped instead of throwing
+73: const UNKNOWN_IDS=new Set(); function unknownId(kind,id){ const k=kind+':'+id; if(!UNKNOWN_IDS.has(k)){ UNKNOWN_IDS.add(k); try{ console.warn('Unknown '+kind+' id skipped:',id); if(typeof tel==='function') tel('unknown_id',{kind,id:String(id).slice(0,40)}); }catch(e){} } return null; }
+74: let META = defaultMeta();
+75: let SAVED_RUN = null;
+76: let onPersistLoaded = ()=>{};
+77: const Persist = {
+78:   db:null, uid:null, writing:false, pending:false,
+79:   loadLocal(){ let s=null, o=null; try{ s=localStorage.getItem(STORE_KEY); }catch(e){} try{ if(s) o=JSON.parse(s); }catch(e){ o=null; } // v41: a damaged save falls back to the backup copy
+80:     if(s&&!saneSave(o)){ try{ const b=localStorage.getItem(STORE_KEY+'.bak'), ob=b?JSON.parse(b):null; if(saneSave(ob)){ o=ob; this.recovered=true; } }catch(e){} } // v53: a save that parses but is malformed (fleet not an array, broken meta) also falls back
+81:     if(o&&typeof o==='object'&&!saneSave(o)){ if(!saneRun(o.run)) o.run=null; if(o.meta!=null&&!saneMeta(o.meta)) o.meta=null; } // no good backup either: keep whichever half is sound
+82:     try{ if(o&&typeof o==='object'){
+83:       if(o.meta){ META=migrateMeta(Object.assign(defaultMeta(),o.meta)); if(typeof mergeLocalTel==='function') mergeLocalTel(); } SAVED_RUN=migrateRun((o.run&&!o.run.none)?o.run:null); } }catch(e){} },
+84:   saveLocal(){ const data=JSON.stringify({meta:META, run:SAVED_RUN});
+85:     try{ const prev=localStorage.getItem(STORE_KEY); if(prev&&prev!==data){ try{ JSON.parse(prev); localStorage.setItem(STORE_KEY+'.bak',prev); }catch(e){} } }catch(e){} // v41: keep the last good save one step behind
+86:     try{ localStorage.setItem(STORE_KEY, data); this.failed=false; }
+87:     catch(e){ if(!this.failed&&typeof toast==='function') toast('This device could not save locally (storage full?). Your cloud save still updates.'); this.failed=true; } },
+88:   async connect(){
+89:     try{
+90:       if(!window.claude || typeof window.claude.use!=='function') return;
+91:       const [db,user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+92:       if(!db || !user) return;
+93:       const id = await user.id(); if(!id) return;
+94:       this.db=db; this.uid=id;
+95:       const snap = await db.doc('data/users/'+id+'/save').get();
+96:       if(snap.exists){
+97:         const d = JSON.parse(JSON.stringify(snap.data()||{}));
+98:         if(!saneSave(d)){ console.warn('Cloud save malformed; keeping this device\'s save'); if(META.updated) this.push(); return; }
+99:         // v53: meta (unlocks, renown, settings) and the run resolve on separate stamps, so a purchase or a report on one device never rolls back a newer run from another
+100:         const rm = d.meta||{}, lRunAt=META.runAt||META.updated||0, rRunAt=rm.runAt||rm.updated||0, lRun=SAVED_RUN;
+101:         const takeMeta=(rm.updated||0) > (META.updated||0), takeRun=rRunAt > lRunAt;
+102:         if(takeMeta||takeRun){
+103:           if(takeMeta){ META = migrateMeta(Object.assign(defaultMeta(), rm)); if(typeof mergeLocalTel==='function') mergeLocalTel(); }
+104:           if(takeRun){ SAVED_RUN = migrateRun((d.run && !d.run.none) ? d.run : null); META.runAt=rRunAt; } else { SAVED_RUN=lRun; META.runAt=lRunAt; }
+105:           this.saveLocal(); onPersistLoaded();
+106:         }
+107:         if((!takeMeta&&(META.updated||0) > (rm.updated||0)) || (!takeRun&&lRunAt > rRunAt)) this.push();
+108:       } else if(META.updated) this.push();
+109:     }catch(e){ console.warn('Cloud save unavailable', e); this.db=null; }
+110:   },
+111:   async push(){
+112:     if(!this.db) return;
+113:     if(this.writing){ this.pending=true; return; }
+114:     this.writing=true;
+115:     try{ await this.db.doc('data/users/'+this.uid+'/save').set({meta:META, run:SAVED_RUN||{none:true}}); }
+116:     catch(e){ console.warn('Cloud save failed', e); }
+117:     this.writing=false;
+118:     if(this.pending){ this.pending=false; this.push(); }
+119:   },
+120:   // v53: a run write stamps both meta and run; {meta:true} (purchases, problem reports) stamps meta only. Telemetry, error and stall paths call saveLocal() and stamp nothing
+121:   save(opt){ const now=Date.now(); META.updated=now; if(!(opt&&opt.meta)) META.runAt=now; this.saveLocal(); this.push(); }
+122: };
+123: 
+124: // ---------- run state ----------
+125: let RUN = null;
+126: function capName(fac){ const C=CAPTAINS[fac]||CAPTAINS.voidsworn; const used=new Set((typeof RUN!=='undefined'&&RUN&&RUN.fleet?RUN.fleet:[]).map(s=>s.cap&&s.cap.name.split(' ')[0])); let n='';
+127:   for(let i=0;i<8;i++){ n=C.names?pick(C.names)+(C.epithets?' '+pick(C.epithets):''):pick(C.first)+' '+pick(C.last); if(!used.has(n.split(' ')[0])) break; } return n; } // avoid repeating a first name within the fleet
+128: function rankName(c){ const R=((CAPTAINS[(c&&c.fac)||'voidsworn'])||CAPTAINS.voidsworn).ranks; return R[Math.max(0,Math.min(R.length-1,(c&&c.rank)||0))]; }
+129: function factionOfTpl(tpl){ const h=HULLS[tpl]; if(h&&h.fac) return h.fac; for(const [f,F2] of Object.entries(FACTIONS)) if((F2.roster||[]).includes(tpl)||F2.boss===tpl) return f; return 'voidsworn'; }
+130: function shipName(fac){ const used=new Set((RUN?RUN.fleet:[]).map(s=>s.name)); const base=!fac||fac==='voidsworn'?SHIP_NAMES:[...((typeof FNAMES!=='undefined'&&FNAMES[fac])||[]),...(MORE_SHIP_NAMES[fac]||[])]; const pool=(base.length?base:SHIP_NAMES).filter(n=>!used.has(n)); return pick(pool.length?pool:SHIP_NAMES); }
+131: function newCaptain(vet,fac){ const c={fac:fac||'voidsworn',name:capName(fac), xp:0, rank:0, perks:[], pending:0};
+132:   if(vet){ c.xp=RANK_XP[1]; c.rank=1; c.perks=[pick(Object.keys(PERKS))]; } return c; }
+133: function newShip(tpl, vet){ const fac=factionOfTpl(tpl); const s={uid:newId(), tpl, name:shipName(fac), mk:1, hp:0, mods:[], cap:newCaptain(vet,fac)}; s.hp=derive(s).maxHp; return s; }
+134: 
+135: function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; } return o;}
+136: function fleetFxList(){ const l=[]; if(RUN){ for(const r of RUN.relics) if(RELICS[r]?RELICS[r].fx:unknownId('relic',r)) l.push(RELICS[r].fx); if(ADMIRALS[RUN.admiral]) l.push(ADMIRALS[RUN.admiral].fx); for(const b of (RUN.boons||[])) if(BOONS[b.id]) l.push(BOONS[b.id].fx(RARITY[b.r||0].m)); } return l; }
+137: // ---------- patrons and boons ----------
+138: function ensurePatrons(){ if(!RUN) return; if(!RUN.patrons||!RUN.patrons.length) RUN.patrons=shuffle(Object.keys(PATRONS)).slice(0,4); if(!RUN.boons) RUN.boons=[]; }
+139: function hasBoon(id){ return !!(RUN&&RUN.boons&&RUN.boons.some(b=>b.id===id)); }
+140: function boonPatrons(){ return new Set((RUN&&RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].p).filter(Boolean)); }
+141: function rollRarity(minR,s,p){ const ft=p?favourTier(p):0, x=rnd(), rare=.24+.06*((s||1)-1)+(ft>=1?.12:0), epic=.06+.03*((s||1)-1)+(ft>=1?.03:0); let r=x<epic?2:x<epic+rare?1:0; if(ft>=3) r=Math.max(r,1); return Math.max(minR||0,r); }
+142: // three boons from one patron; a duo boon can take a slot once you hold boons from both of its patrons
+143: function fleetKit(){ const k={}; for(const sh of (RUN&&RUN.fleet)||[]){ const d=derive(sh); for(const w of d.weapons){ if(w.k==='torp') k.torp=1; if(w.k==='lance') k.lance=1; if(w.k==='battery') k.batt=1; if(w.k==='flak') k.flak=1; if(w.arc==='P'||w.arc==='S') k.broad=1; if(w.arc==='P'||w.arc==='S'||w.k==='battery') k.still=1; } if((HULLS[sh.tpl].sh||0)>0) k.shields=1; if(HULLS[sh.tpl].hangar) k.carrier=1; if(d.hangar) k.sq=1; } return k; }
+144: function boonUseful(id,kit){ const n=BOON_NEED[id]; return !n||!!kit[n]; }
+145: function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1, have=boonPatrons(), kit=fleetKit();
+146:   let pool=Object.keys(BOONS).filter(id=>BOONS[id].p===p&&!hasBoon(id)); pool=shuffle(pool); const junk=pool.filter(id=>!boonUseful(id,kit)); pool=pool.filter(id=>boonUseful(id,kit));
+147:   const duos=Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.duo&&!hasBoon(id)&&boonUseful(id,kit)&&b.duo.includes(p)&&b.duo.every(q=>have.has(q)||q===p)&&b.duo.some(q=>q!==p&&have.has(q)); });
+148:   const out=pool.slice(0,3).map(id=>({id,r:rollRarity(minR,s,p)}));
+149:   if(duos.length&&(out.length<3||rnd()<.45)){ const d={id:pick(duos),r:0}; if(out.length>=3) out[2]=d; else out.push(d); }
+150:   if(out.length<3){ const extra=shuffle(Object.keys(BOONS).filter(id=>BOONS[id].p&&BOONS[id].p!==p&&RUN.patrons.includes(BOONS[id].p)&&!hasBoon(id)&&boonUseful(id,kit)&&!out.some(o=>o.id===id))); while(out.length<3&&extra.length) out.push({id:extra.pop(),r:rollRarity(minR,s)}); while(out.length<3&&junk.length) out.push({id:junk.pop(),r:rollRarity(minR,s)}); }
+151:   return out; }
+152: // what a map node pays out: usually a patron's boon (its sigil shows on the map), sometimes a refit, credits or repairs
+153: function rollNodeReward(type){ ensurePatrons(); const p=pick(RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
+154: function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
+155: function ensureFlagship(){ if(!RUN||!RUN.fleet||!RUN.fleet.length) return null; if(!flagshipOf()){ const f=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1)||derive(b).maxHp-derive(a).maxHp)[0]; RUN.flagUid=f.uid; return f; } return flagshipOf(); }
+156: function runFx(){ const o={}; if(RUN) for(const r of RUN.relics){ const x=RELICS[r]?RELICS[r].run:unknownId('relic',r); if(x) for(const k in x) o[k]=(o[k]||0)+x[k]; } if(RUN && META.unlocked.salvagers) o.credPct=(o.credPct||0)+.2; return o; }
+157: function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); w.cd=b.cd||0;
+158:   if(b.k==='battery'&&fx.battShots) w.shots+=fx.battShots;
+159:   if(b.k==='flak'&&fx.flakPlus){ w.shots+=2*fx.flakPlus; w.r+=fx.flakPlus; w.opt+=fx.flakPlus; }
+160:   if(b.k==='torp'&&fx.torpCd) w.cd=Math.max(1,w.cd-fx.torpCd);
+161:   if(arc==='F'&&fx.prowRange){ w.r+=fx.prowRange; w.opt+=fx.prowRange; }
+162:   return w; }
+163: function derive(ship){
+164:   const t=HULLS[ship.tpl];
+165:   const asp=RUN&&RUN.aspect&&ship.uid===RUN.flagUid&&ASPECTS[RUN.aspect]?[ASPECTS[RUN.aspect].fx]:[];
+166:   const fx=sumFx([...fleetFxList(), ...ship.mods.map(m=>MODULES[m]?MODULES[m].fx:unknownId('module',m)), ...ship.cap.perks.map(p=>PERKS[p]?PERKS[p].fx:unknownId('perk',p)), ...asp]);
+167:   const mk=ship.mk||1, mm=1+.2*(mk-1);
+168:   const maxHp=Math.round(t.hp*mm*(1+(fx.hpPct||0)));
+169:   return {
+170:     maxHp, shMax:Math.round(t.sh*mm*(1+(fx.shPct||0))), regen:Math.round(t.rg*mm*(1+(fx.regenPct||0))),
+171:     armor:Math.min(.6,t.ar+(fx.armor||0)), speed:t.sp+(fx.speed||0), turns:t.tn+(fx.turns||0), ev:t.ev+(fx.ev||0),
+172:     aim:fx.aim||0, crit:fx.crit||0, dmg:1+.15*(mk-1)+(fx.dmgPct||0), fx,
+173:     hangar:t.hangar?t.hangar+(fx.hangar||0)+(fx.hive||0):(fx.hive||0),
+174:     hullRegen:(fx.hullRegen||0)+Math.round((fx.hullRegenPct||0)*maxHp)+Math.round((t.regen||0)*mm),
+175:     weapons:nameWeapons(t.fac,t.w.map(([id,arc])=>mkWeapon(id,arc,fx))),
+176:   };
+177: }
+178: function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; ship.hp=clamp(ship.hp+(after-before),1,after); }
+179: function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>{ const a=derive(s).maxHp; s.hp=clamp(s.hp+(a-b[i]),1,a); }); }
+180: function fleetCP(){ return RUN.fleet.reduce((a,s)=>a+HULLS[s.tpl].cp,0); }
+181: function priceMult(){ const c=sectorCond(); return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1)*((c&&c.price)||1); }
+182: function heatOn(k){ return !!(typeof RUN!=='undefined'&&RUN&&RUN.heat&&RUN.heat.includes(k)); }
+183: function repairMult(){ const c=sectorCond(); return (heatOn('h_repair')?.5:1)*((c&&c.repair)||1); }
+184: function mkCost(s){ return Math.round((40*HULLS[s.tpl].cp*s.mk+30)*priceMult()); }
+185: function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
+186:   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
+187: // refits your fleet can actually use: no lance crystals for a fleet without lances, no shield parts for a shieldless one
+188: function modulePool(){ const kit=fleetKit(), all=Object.keys(MODULES), ok=all.filter(m=>!MOD_NEED[m]||kit[MOD_NEED[m]]); return ok.length>=3?ok:all; }
+189: function randomModule(){ return pick(modulePool()); }
+190: function modName(m){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (MOD_NAMES[f]&&MOD_NAMES[f][m])||MODULES[m].n; }
+191: function relicName(r){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (RELIC_NAMES[f]&&RELIC_NAMES[f][r])||RELICS[r].n; }
+192: function runWord(fac){ return RUN_WORD[fac||(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn']||'run'; }
+193: function relicUseful(r){ return !(r==='lattice'&&!fleetKit().shields); } // no shield relic for a shieldless fleet
+194: function randomRelic(){ const pool=Object.keys(RELICS).filter(r=>!RUN.relics.includes(r)&&relicUseful(r)); return pool.length?pick(pool):null; }
+195: 
+196: // ---------- factions in a campaign ----------
+197: const RUN_FACTIONS=['voidsworn','hegemony','corsair','chorus','ithar','deathless'];
+198: // the hull in a faction's roster closest in strength to a Voidsworn hull; carriers map to carriers
+199: function equivHull(tpl,fac){ if(!fac||fac==='voidsworn'||HULLS[tpl].fac===fac) return tpl; const T=HULLS[tpl]; const ros=((FACTIONS[fac]&&FACTIONS[fac].roster)||[]).filter(h=>HULLS[h]&&!HULLS[h].boss);
+200:   if(!ros.length) return tpl; let pool=T.ab==='launch'?ros.filter(h=>HULLS[h].ab==='launch'):ros; if(!pool.length) pool=ros;
+201:   return pool.reduce((a,h)=>{ const dh=Math.abs(HULLS[h].cp-T.cp), da=Math.abs(HULLS[a].cp-T.cp); return dh<da||(dh===da&&HULLS[h].cp>HULLS[a].cp)?h:a; },pool[0]); } // ties go to the stronger hull
+202: // about one ordinary fight in five comes from a rival faction outside the sector's main enemy
+203: function nodeFaction(n){ const main=RUN.map.fac; if(!RUN.foes||n.type!=='battle') return main; let h=0; for(const ch of String(n.id)+RUN.sector) h=(h*31+ch.charCodeAt(0))>>>0; return h%5===0?RUN.foes[3+(h>>3)%2]:main; }
+204: // ---------- sector map generation ----------
+205: function genSector(s){
+206:   const fac = (RUN&&RUN.foes&&RUN.foes[s-1]) || pick(SECTOR_POOL[s-1]);
+207:   const cols=[]; const COLS=7;
+208:   for(let c=0;c<COLS;c++){
+209:     let n = c===0||c===COLS-1 ? 1 : ri(2,4);
+210:     const col=[];
+211:     for(let i=0;i<n;i++){
+212:       let type;
+213:       if(c===0) type=s>=2?'shipyard':'battle'; /* after a sector boss the fleet docks before its next fight */
+214:       else if(c===COLS-1) type='boss';
+215:       else if(c===COLS-2) type=pick(['shipyard','drydock','field']); // always a rest stop before the boss
+216:       else { const x=rnd(); type = x<.48?'battle':x<.61?'elite':x<.78?'event':x<.9?'shipyard':'drydock'; if(c===1&&(type==='elite'||type==='drydock')) type='battle'; }
+217:       col.push({id:c+'-'+i, col:c, row:i, n, y:(i+.5)/n, type, done:false});
+218:     }
+219:     cols.push(col);
+220:   }
+221:   // the column before the rest stop always offers an elite: a step up before the flagship, for those who want it
+222:   { const c4=cols[COLS-3]; if(!c4.some(n=>n.type==='elite')){ const b=c4.find(n=>n.type==='battle')||c4.find(n=>n.type==='event'); if(b) b.type='elite'; } }
+223:   // guarantee a shipyard in the middle and a rest stop before the boss
+224:   if(!cols[3].some(n=>n.type==='shipyard')) pick(cols[3]).type='shipyard';
+225:   if(!cols[COLS-2].some(n=>n.type==='drydock'||n.type==='shipyard')) cols[COLS-2][0].type='drydock';
+226:   // node budgets: every column before the boss holds a fight, rest stops stay scarce and drydocks only sit before the boss
+227:   for(let c2=1;c2<COLS-2;c2++){ const col=cols[c2];
+228:     if(c2<COLS-2) for(const n of col) if(n.type==='drydock') n.type=rnd()<.5?'battle':'event';
+229:     let rests=col.filter(n=>n.type==='shipyard'||n.type==='drydock'); while(rests.length>1){ rests.pop().type='battle'; rests=col.filter(n=>n.type==='shipyard'||n.type==='drydock'); }
+230:     if(!col.some(n=>n.type==='battle'||n.type==='elite')){ const cand=col.filter(n=>n.type!=='shipyard'&&n.type!=='drydock'); (cand.length?pick(cand):col[col.length-1]).type='battle'; } }
+231:   { const c3=ri(2,COLS-3), col=cols[c3], fights=col.filter(n=>n.type==='battle'||n.type==='elite'); const cand=col.filter(n=>n.type==='event'||(n.type==='battle'&&fights.length>1)); if(cand.length) pick(cand).type='field'; }
+232:   for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite') Object.assign(n,rollEncounter(n.type,n.col)); // shown on the map
+233:   if(typeof RUN!=='undefined'&&RUN) for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'||n.type==='boss') n.rw=rollNodeReward(n.type);
+234:   // every column after the first offers at least one fight that isn't a plain Engagement, and no two neighbours share a fight type
+235:   for(let c2=1;c2<COLS-1;c2++){ const f=cols[c2].filter(n=>n.type==='battle'||n.type==='elite'); if(f.length&&!f.some(n=>ENC_SPECIAL.includes(n.enc))){ const n=pick(f), e=pick(ENC_SPECIAL); n.enc=e; n.shape=pick(ENCOUNTERS[e].shapes); }
+236:     for(let i=1;i<f.length;i++) if(f[i].enc===f[i-1].enc){ const e=pick(ENC_POOL.filter(x=>x!==f[i].enc)); f[i].enc=e; f[i].shape=pick(ENCOUNTERS[e].shapes); } }
+237:   const edges=[];
+238:   for(let c=0;c<COLS-1;c++){
+239:     const A=cols[c], B=cols[c+1];
+240:     for(const a of A){ const near=[...B].sort((x,y)=>Math.abs(x.y-a.y)-Math.abs(y.y-a.y));
+241:       edges.push([a.id,near[0].id]); if(near[1] && rnd()<.45 && Math.abs(near[1].y-a.y)<.5) edges.push([a.id,near[1].id]); }
+242:     for(const b of B){ if(!edges.some(e=>e[1]===b.id)){ const near=[...A].sort((x,y)=>Math.abs(x.y-b.y)-Math.abs(y.y-b.y))[0]; edges.push([near.id,b.id]); } }
+243:   }
+244:   // fleet archetypes and node modifiers on ordinary fights (bosses keep their own escort)
+245:   for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'){ const x=rnd(); n.arch=x<.25?'swarm':x<.47?'heavy':x<.62?'carrier':null; const y=rnd(); n.mod=n.col>=2&&y<.14?'bounty':n.col>=2&&n.type==='battle'&&y<.26?'veteran':null; }
+246:   // one condition per sector, never the same twice in a run
+247:   let cond=null; try{ const used=(RUN&&RUN.condsUsed)||[], pool=Object.keys(SECTOR_CONDS).filter(k=>!used.includes(k)); cond=pick(pool.length?pool:Object.keys(SECTOR_CONDS)); if(RUN){ RUN.condsUsed=used.concat(cond); } }catch(e){ cond=null; }
+248:   let region=null; try{ region=pickRegion(fac); for(const col of cols) for(const n of col){ n.map=regionMap(region,n.col,COLS); fitEncounter(n); } }catch(e){ region=null; }
+249:   let biome=null; try{ biome=rollBiome(region); }catch(e){}
+250:   return {fac, cols, edges, cond, region, biome};
+251: }
+252: function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
+253: 
+254: // ---------- progression helpers ----------
+255: function masteryXP(id){ return (META.mastery&&META.mastery[id])||0; }
+256: function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<MASTERY_XP.length;i++) if(x>=MASTERY_XP[i]) l=i; return l; }
+257: function favourOf(p){ return (META.favour&&META.favour[p])||0; }
+258: function favourTier(p){ const f=favourOf(p); let t=0; FAVOUR_TIERS.forEach((x,i)=>{ if(f>=x.at) t=i; }); return t; }
+259: function heatLevel(list){ return (list||[]).reduce((a,k)=>a+((HEAT[k]&&HEAT[k].w)||0),0); }
+260: // an admiral's alternate fleet: split the biggest hull into two mid-size ones, or merge the two smallest into one larger hull
+261: // v41: the alternate fleet keeps the same command points and never loses a carrier (a carrier admiral's passive and Command need one)
+262: function altFleetPlan(admiralId,fac){ const base=ADMIRALS[admiralId].start.map(t=>equivHull(t,fac)), ros=FACTIONS[fac].roster.filter(h=>HULLS[h]&&!HULLS[h].boss&&!HULLS[h].unique);
+263:   const cp=t=>HULLS[t].cp||1, car=t=>HULLS[t].ab==='launch', sum=l=>l.reduce((s,t)=>s+cp(t),0), key=l=>l.slice().sort().join(','), by=c=>ros.filter(h=>!car(h)&&cp(h)===c)[0];
+264:   const need=base.filter(car).length, total=sum(base), nc=base.filter(t=>!car(t)).sort((x,y)=>cp(y)-cp(x)), splits=[], merges=[];
+265:   for(const L of nc){ const c=cp(L); for(let x=Math.ceil(c/2);x<c;x++){ const A=by(x), Bh=by(c-x); if(A&&Bh){ const out=base.slice(); out.splice(out.indexOf(L),1,A,Bh); splits.push(out); } } }
+266:   const sm=nc.slice().reverse(); for(let i=0;i+1<sm.length;i++){ const H=by(cp(sm[i])+cp(sm[i+1])); if(H){ const out=base.slice(); out.splice(out.indexOf(sm[i]),1); out.splice(out.indexOf(sm[i+1]),1,H); merges.push(out); } }
+267:   const big=nc.length&&cp(nc[0])>=4, cands=big?[...splits,...merges]:[...merges,...splits];
+268:   const ok=cands.find(o=>sum(o)===total&&o.filter(car).length>=need&&key(o)!==key(base));
+269:   if(ok) return {fleet:ok,mod:null};
+270:   // nothing to reshuffle (a carrier plus one escort): the carrier gets a hangar expansion instead
+271:   return {fleet:base,mod:need&&MODULES.hangar?'hangar':null}; }
+272: function altFleet(admiralId,fac){ return altFleetPlan(admiralId,fac).fleet; }
+273: // a second Command: the next distinct Command among this faction's admirals
+274: function altCommand(admiralId){ const a=ADMIRALS[admiralId], fac=a.fac||'voidsworn', ids=Object.keys(ADMIRALS).filter(k=>(ADMIRALS[k].fac||'voidsworn')===fac), i=ids.indexOf(admiralId);
+275:   for(let k=1;k<ids.length;k++){ const c=ADMIRALS[ids[(i+k)%ids.length]].cmd; if(c&&a.cmd&&c.id!==a.cmd.id) return c; } return null; }
+276: function newRun(admiralId,fac,opt){
+277:   opt=opt||{}; const adm=ADMIRALS[admiralId]; fac=RUN_FACTIONS.includes(fac)?fac:'voidsworn';
+278:   RUN = {fac, foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)), admiral:admiralId, credits:120, cpCap:10, sector:1, relics:[], inventory:[], fleet:[], pos:null,
+279:     stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null};
+280:   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
+281:   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
+282:   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
+283:   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);
+284:   const plan=opt.alt&&RUN.mastery>=1?altFleetPlan(admiralId,fac):null, start=plan?plan.fleet:adm.start.map(t=>equivHull(t,fac)); RUN.altFleet=!!plan;
+285:   for(const t of start) RUN.fleet.push(newShip(t, !!META.unlocked.vets));
+286:   if(plan&&plan.mod){ const c=RUN.fleet.find(s=>HULLS[s.tpl].ab==='launch'); if(c){ c.mods.push(plan.mod); c.hp=derive(c).maxHp; } }
+287:   if(opt.cmdAlt&&RUN.mastery>=3){ const c=altCommand(admiralId); if(c) RUN.cmdOverride=c; }
+288:   RUN.cpCap=Math.max(RUN.cpCap, fleetCP()+3); ensureFlagship();
+289:   if(RUN.mastery>=4){ const f=flagshipOf(); if(f){ f.mk=Math.max(f.mk||1,2); f.cap.rank=Math.max(f.cap.rank,2); f.cap.xp=Math.max(f.cap.xp,RANK_XP[2]); if(f.cap.perks.length<2) f.cap.perks.push(pick(Object.keys(PERKS).filter(p=>!f.cap.perks.includes(p)))); f.hp=derive(f).maxHp; } }
+290:   // a Devoted patron sends a gift: one common boon from the first devoted patron watching this run
+291:   { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
+292:   RUN.map=genSector(1);
+293:   META.stats.runs++;
+294:   saveRun();
+295: }
+296: function saveRun(){ SAVED_RUN = RUN && !RUN.over ? JSON.parse(JSON.stringify(RUN)) : null; Persist.save(); }
+297: function availableNodes(){
+298:   const m=RUN.map;
+299:   if(!RUN.pos) return m.cols[0].map(n=>n.id);
+300:   return m.edges.filter(e=>e[0]===RUN.pos).map(e=>e[1]);
+301: }
+302: function findNode(id){ for(const c of RUN.map.cols) for(const n of c) if(n.id===id) return n; return null; }
+
+===== ANNEX: census tables and simulation summary (documents, cite by name) =====
+
+--- census_hulls.csv ---
+id,name,class,faction,size,cp,hp,shields,range,armor,speed,turn,evade,slots,cost,ability,weapons
+warden,Warden-class frigate,Frigate,voidsworn,0.5,1,45,10,5,0.1,5,3,20,1,70,evasive,autocannon:F;flak:T
+harrow,Harrow-class destroyer,Destroyer,voidsworn,0.6,2,78,14,6,0.15,4,2,12,1,130,reload,torp:F;turret:T
+penitent,Penitent-class cruiser,Cruiser,voidsworn,0.76,3,120,20,8,0.2,3,2,5,2,200,focus,battery:P;battery:S;lance:F
+reliquary,Reliquary-class carrier,Carrier,voidsworn,0.84,4,130,22,9,0.15,2,1,0,2,260,launch,turret:T;flak:T
+cathedral,Cathedral-class battleship,Battleship,voidsworn,0.95,5,220,30,12,0.3,2,1,0,3,340,surge,hbattery:P;hbattery:S;lance:F;flak:T
+ascendant,Ascendant-class dreadnought,Dreadnought,voidsworn,1.18,8,370,32,15,0.35,1,1,0,3,520,nova,hbattery:P;hbattery:S;turret:T;flak:T
+fighter,Fighter wing,Squadron,,0.34,0,18,0,0,0,6,9,35,,,,guns:T
+bomber,Bomber wing,Squadron,,0.34,0,28,0,0,0,5,9,25,,,,bombs:T
+spore,Spore swarm,Squadron,chorus,0.34,0,26,0,0,0,5,9,25,,,,sporeb:T
+h_picket,Hegemony picket,Frigate,hegemony,0.5,1,40,10,5,0.1,5,3,18,1,70,evasive,laser:F;flak:T
+h_interdictor,Interdictor destroyer,Destroyer,hegemony,0.6,2,74,18,7,0.15,4,2,10,1,130,ionpulse,ion:F;turbo:T
+h_vanguard,Vanguard star cruiser,Cruiser,hegemony,0.78,4,140,24,10,0.2,3,1,4,2,250,launch,turbo:T;turbo:T;ion:F
+h_dominion,Dominion star dreadnought,Battleship,hegemony,0.98,6,230,32,12,0.25,2,1,0,3,370,launch,hturbo:P;hturbo:S;ion:F;flak:T
+h_boss,The Iron Mandate,Super-dreadnought,hegemony,1.3,12,560,40,10,0.3,1,1,0,,,nova,hturbo:P;hturbo:S;turbo:T;ion:F;flak:T
+c_raider,Corsair raider,Frigate,corsair,0.48,1,46,8,4,0.05,6,3,28,1,70,overburn,autocannon:T
+c_reaver,Corsair reaver,Destroyer,corsair,0.6,2,68,10,5,0.1,5,2,15,1,130,reload,torp:F;scatter:S
+c_marauder,Corsair marauder,Cruiser,corsair,0.74,3,120,16,7,0.15,4,2,6,2,190,overburn,scatter:P;scatter:S;torp:F;flak:T
+c_hulk,Corsair hulk-carrier,Carrier,corsair,0.86,4,170,16,6,0.2,2,1,0,2,250,launch,turret:T;turret:T
+c_boss,Warlord's Pyre-Barge,Battle-barge,corsair,1.22,10,600,30,8,0.25,2,1,0,,,launch,scatter:P;scatter:S;htorp:F;flak:T
+b_drone,Chorus drone-spawn,Frigate,chorus,0.48,1,46,0,0,0.05,5,3,15,1,70,regrow,tendril:T
+b_spitter,Chorus spitter,Destroyer,chorus,0.6,2,82,0,0,0.1,4,2,8,1,130,regrow,bioplasma:T;bioplasma:F
+b_razor,Chorus razorfiend,Cruiser,chorus,0.76,3,150,0,0,0.2,4,2,4,2,190,frenzy,tendril:T;bioplasma:F
+b_brood,Chorus brood-mother,Carrier,chorus,0.9,5,200,0,0,0.2,2,1,0,3,310,launch,bioplasma:F;spores:T
+b_boss,Hive Leviathan,Bio-titan,chorus,1.3,12,650,0,0,0.25,2,1,0,,,launch,bioplasma:F;bioplasma:F;tendril:T;spores:T
+i_wisp,Ithar wisp,Frigate,ithar,0.46,1,30,12,6,0,7,3,28,1,70,blink,shard:F
+i_blade,Ithar shadowblade,Destroyer,ithar,0.58,2,60,16,8,0,6,3,24,1,130,blink,shard:F;startorp:F
+i_song,Ithar songship,Cruiser,ithar,0.74,4,90,26,10,0.05,5,2,16,2,250,surge,pulsar:F;pulsar:F;turret:T
+i_carrier,Ithar wraithcarrier,Carrier,ithar,0.84,5,140,28,10,0.05,4,2,12,3,310,launch,pulsar:F;turret:T
+i_boss,Worldsong Ark,Ark,ithar,1.26,11,470,34,14,0.2,3,2,6,,,surge,pulsar:F;pulsar:F;pulsar:T;turret:T;flak:T
+d_scythe,Deathless scythe,Frigate,deathless,0.5,1,56,0,0,0.2,4,2,14,1,70,phase,gauss:T
+d_jackal,Deathless jackal,Destroyer,deathless,0.62,2,110,0,0,0.25,3,2,6,1,130,phase,gauss:T;gauss:F
+d_harvester,Deathless harvester,Cruiser,deathless,0.82,4,145,0,0,0.3,2,1,0,2,250,reclaim,gauss:T;gauss:T;doom:F;gsentry:T
+d_boss,The Undying Throne,Tomb-ark,deathless,1.3,12,480,0,0,0.35,1,1,0,,,nova,gauss:T;gauss:T;doom:F;flak:T
+vs_harrow_t,Harrow torpedo-destroyer,Destroyer,voidsworn,0.6,2,78,14,6,0.15,4,2,12,1,130,reload,torp:F;torp:F
+vs_penitent_g,Penitent gun-cruiser,Cruiser,voidsworn,0.76,3,120,20,8,0.2,3,2,5,2,200,focus,battery:P;battery:S;battery:T
+h_picket_i,Picket interceptor,Frigate,hegemony,0.5,1,40,10,5,0.1,5,3,24,1,70,evasive,laser:T;flak:T
+h_vanguard_g,Vanguard gunship,Cruiser,hegemony,0.78,4,140,24,10,0.2,3,1,4,2,250,,turbo:T;turbo:T;turbo:T;ion:F
+c_reaver_t,Reaver gunboat,Destroyer,corsair,0.6,2,68,10,5,0.1,5,2,15,1,130,reload,torp:F;scatter:T
+c_hulk_g,Gun-hulk,Carrier,corsair,0.86,4,190,16,6,0.2,2,1,0,2,250,,scatter:P;scatter:S;turret:T
+b_spitter_s,Spitter stinger,Destroyer,chorus,0.6,2,82,0,0,0.1,4,2,8,1,130,regrow,bioplasma:T;tendril:T
+b_razor_s,Razorfiend stalker,Cruiser,chorus,0.76,3,150,0,0,0.2,5,2,12,2,190,frenzy,tendril:T;tendril:T
+i_wisp_l,Wisp lancer,Frigate,ithar,0.46,1,30,12,6,0,7,3,28,1,70,blink,pulsar:F
+i_song_w,Songship warden,Cruiser,ithar,0.74,4,90,34,10,0.05,5,2,16,2,250,surge,pulsar:T;turret:T
+d_scythe_s,Scythe sentinel,Frigate,deathless,0.5,1,56,0,0,0.2,4,2,14,1,70,phase,gauss:T;gsentry:T
+d_harvester_t,Harvester tomb-turret,Cruiser,deathless,0.82,4,145,0,0,0.3,2,1,0,2,250,reclaim,gauss:T;doom:T;gsentry:T
+
+--- census_relics.csv ---
+id,name,description,effect_json
+martyr,Reliquary of the Martyr,"When one of your ships is destroyed, every other ship repairs 15% of its hull.","{""avenge"":0.15}"
+cogitator,Archeotech rangefinder,Each ship’s first attack in every battle hits 95% of the time.,"{""firstSure"":1}"
+lattice,Xeno shield lattice,Shields +15% across the fleet.,"{""shPct"":0.15}"
+spore,Tamed spore culture,Every ship regenerates 3 hull per turn.,"{""hullRegen"":3}"
+phylactery,Deathless phylactery,The first of your ships destroyed each battle reawakens at 25% hull.,"{""revive"":1}"
+ledger,Smuggler’s ledger,+25% credits from battles.,"{""credPct"":0.25}"
+compass,Wraithbone compass,+1 speed across the fleet.,"{""speed"":1}"
+banner,Captured war banner,Every enemy ship one of your ships destroys gives that ship +15% damage for the rest of the battle (up to +45%).,"{""bloodied"":0.15}"
+salvage,Salvage rig,"After each battle, gain 15 credits and repair 8% hull.","{""salvage"":1}"
+coils,Blessed plasma coils,Ability cooldowns −1 across the fleet.,"{""cdMod"":1}"
+logbook,Log of Admiral Rhel,+30% captain experience.,"{""xpPct"":0.3}"
+armourweave,Adamant armourweave,+6% armor across the fleet.,"{""armor"":0.06}"
+
+--- census_modules.csv ---
+id,name,cost,description,fx_json
+prow,Reinforced prow,70,"+15% hull, +5% armor.","{""hpPct"":0.15,""armor"":0.05}"
+auspex,Auspex array,80,+10 aim for every weapon.,"{""aim"":10}"
+drive,Plasma drive,75,+1 speed.,"{""speed"":1}"
+gyro,Gyro-stabilisers,60,"+1 turn allowance, +5 evasion.","{""turns"":1,""ev"":5}"
+capacitor,Void shield capacitor,80,+30% shield strength.,"{""shPct"":0.3}"
+regen,Shield regenerator,70,+50% shield regeneration.,"{""regenPct"":0.5}"
+loaders,Macro loaders,90,Battery weapons fire +1 shot.,"{""battShots"":1}"
+crystal,Lance focusing crystal,80,Lance damage +25%.,"{""lancePct"":0.25}"
+magazine,Torpedo magazine,85,"Torpedo reload time −1 turn, +15% torpedo damage.","{""torpCd"":1,""torpPct"":0.15}"
+flakplus,Flak batteries,55,Point defense +2 shots and +1 range.,"{""flakPlus"":1}"
+damcon,Damage control crews,85,Repair 4% hull at the start of each of your turns.,"{""hullRegenPct"":0.04}"
+hangar,Hangar expansion,90,Carriers only: +1 squadron in flight.,"{""hangar"":1}"
+cogitator,Targeting cogitator,75,+10% critical chance.,"{""crit"":10}"
+
+--- census_admirals.csv ---
+id,name,faction,cost,doctrine,description,command_id,command_name,start_fleet
+vex,Admiral Castellan Vex,voidsworn,0,Line of battle,Broadside weapons deal +15% damage.,barrage,Fire for effect,penitent;harrow;warden
+malek,Inquisitor-Captain Malek Draven,voidsworn,30,Hunter-killer,Torpedoes reload a turn faster. +20% damage on rear-arc hits.,hunt,Hunter's salvo,harrow;harrow;warden;warden
+ashgrove,Commodore Sera Ashgrove,voidsworn,45,Carrier doctrine,Squadrons deal +25% damage and carriers hold +1 wing.,scramble,Scramble all wings,reliquary;harrow;warden
+thale,High Admiral Oryn Thale,voidsworn,80,Iron doctrine,All ships +15% hull and +10% shields.,iron,Iron wall,cathedral;warden
+kassar,Grand Admiral Ilsa Kassar,hegemony,0,Fire discipline,Batteries fire one extra shot per volley.,barrage,Synchronized broadside,h_vanguard;h_interdictor
+vorn,Commodore Dace Vorn,hegemony,30,Interdiction,+10 aim and +10% critical-hit chance.,hunt,Interdiction strike,h_interdictor;h_interdictor;h_picket;h_picket
+reyes,Fleet Marshal Corin Reyes,hegemony,45,Strike group,Squadrons deal +25% damage and star cruisers hold +1 wing.,scramble,Launch the strike group,h_vanguard;h_picket;h_picket
+maren,Line Admiral Oskar Maren,hegemony,80,Armored column,All ships +15% hull and +10% shields.,iron,Shield wall protocol,h_dominion;h_picket;h_picket
+grax,Warlord Grax Ironjaw,corsair,0,Ram and board,+1 speed for every ship and +10% damage.,surge,Full burn,c_marauder;c_reaver;c_raider
+sable,"Sable Venn, the Smiling Knife",corsair,30,Knife work,+20% damage on rear-arc hits and +10% crit chance.,hunt,Knife in the dark,c_reaver;c_reaver;c_raider;c_raider
+mott,Old Mott Brannigan,corsair,45,Junkyard carriers,Squadrons deal +25% damage and hulks hold +1 wing.,scramble,Release the swarm,c_hulk;c_reaver
+vesh,Vesh the Collector,corsair,80,Scrap armor,Ships patch 5% of their hull each round and have +10% armor.,restore,Patch and pray,c_hulk;c_marauder
+matriarch,The Matriarch of Nine Throats,chorus,0,Brood swarm,Spore swarms deal +25% damage and broods hold +1 swarm.,scramble,Spawning surge,b_brood;b_drone
+razormaw,Razormaw,chorus,30,Hunter pack,+1 speed and +15% damage on rear-arc hits.,surge,Blood frenzy,b_razor;b_spitter;b_drone
+mending,The Mending Choir,chorus,45,Regrowth,Ships regrow 6% of their hull each round.,restore,Regrowth tide,b_razor;b_razor
+voice,Voice of the Deep,chorus,80,Acid chorus,+15% damage with every weapon.,barrage,Discordant volley,b_razor;b_spitter;b_drone;b_drone
+aelith,Aelith Dawnsail,ithar,0,Wing-mistress,Squadrons deal +25% damage and carriers hold +1 wing.,scramble,Starling flight,i_carrier;i_wisp
+vaelen,Seraph Vaelen,ithar,30,Lance choir,Lances deal +20% damage and gain +10 aim.,barrage,Chord of light,i_song;i_blade
+thorne,Thorne of the Veil,ithar,45,Veil tactics,+8 evasion for every ship.,surge,Phase drift,i_blade;i_blade;i_wisp;i_wisp
+mirelle,Mirelle Starwarden,ithar,80,Prism hulls,"All ships +15% shields, and shields recharge 20% faster.",iron,Prism ward,i_song;i_wisp;i_wisp
+nekhet,Overlord Nekhet the Undying,deathless,0,Eternal legion,Ships regrow 6% of their hull each round.,restore,Reanimation protocol,d_harvester;d_jackal
+sekhmar,Sekhmar the Reaper,deathless,30,Reaping arcs,Doom arcs deal +20% damage and every weapon +10%.,barrage,Harvest of souls,d_harvester;d_scythe;d_scythe
+anuket,Cryptlord Anuket,deathless,45,Silent hunters,+20% damage on rear-arc hits and +10 evasion.,hunt,Tomb-blade strike,d_jackal;d_jackal;d_scythe;d_scythe
+khepra,Khepra the Patient,deathless,80,Living stone,All ships +20% hull.,iron,Living stone,d_jackal;d_jackal;d_jackal
+
+--- simulation summary: sim_matrix.md ---
+# Sim matrix at scale, plus harness defects
+
+Run Oct 23, 2026, on repo main at eca489e, at the owner's request while his other model quotas reset. Method: the game's own harness (sim3d.js under Node 24), every mode run once at the sizes below, output kept verbatim in the run log. Balance numbers are bot versus bot with the harness's standard bot on both sides unless a mode says otherwise; treat them as directional, not as human play.
+
+## Correctness: the net is clean
+
+- fuzz 300 battles: exceptions 0, invariant breaks 0, average 6.6 rounds.
+- booncheck: all pass (every boon and aspect spot-checked by the harness produces its stated effect, including duo boon offers at 25 of 60 once both patrons are held).
+- cmdcheck: all pass (all 24 admirals' Commands fire, respect the once-per-battle rule, and keep weapon state).
+- progcheck: PASSED. rulecheck: PASSED.
+- capcheck: displayed capture odds match rolled odds (shown 82% vs rolled 82.3%; shown 59% vs rolled 59.4%; the 100% cases roll 100%).
+- stalecheck: no stale-unit actions across battle boundaries; battles differ as expected.
+- mapcheck, 300 sectors: every pre-boss column offers a fight (0 missing), and all 900 pre-boss nodes are rest nodes (drydock 306, field 297, shipyard 297).
+- enccount, 300 sectors: encounter offers are near-uniform across the eight types (rout 331, flagship 315, ambush 299, hold 298, defend 296, intercept 288, break 275, hunt 264).
+- budgetcheck: enemy budgets scale from about 4.0 CP at sector 1 column 0 to about 19.8 at sector 3 column 6 under the new formula, consistently above the old flat numbers in every cell.
+
+## Faction and fleet matrices
+
+fmatrix 12 (FLEET_LISTS fleets, 432 battles, 3 timeouts): row win rates against the field are compressed (most cells 58 to 83), with two outliers worth a look: Hegemony fleet lists beat Voidsworn lists in 100% of reps, and Chorus lists beat Voidsworn only 17% of the time. Per-hull damage dealt: the Deathless harvester is the top hull by a wide margin (31,819 damage over 152 deployments), then the Chorus brood (21,861 over 84) and the Hegemony vanguard (17,419 over 85). Per-weapon total damage: gauss first (50,154 over 4,451 shots), turret second by volume (32,243 over 2,937 shots), squadron bombs third (26,722). Boarding is nearly absent in this mode (player 6, enemy 0 across 432 battles).
+
+matrix 10 sk (admiral starting fleets, 360 battles, 0 timeouts): average win rates by attacking faction: Corsair 98, Ithar 90, Chorus 88, Voidsworn 80, Hegemony 55, Deathless 50. Per battle: 6.9 rounds, 1.9 rams, 0.5 boardings, 0.20 captures, 17.0 sections lost. Note the inversion against fmatrix for Hegemony (strongest fleet lists there, second weakest starting fleets here): the two modes draw fleets from different sources, so neither table should be used to tune the other.
+
+bossmatrix 8 (sector 1 boss, each admiral's fleet converted to their own faction): admiral win rates spread from 38% (Grax) and 40% (Sekhmar) to 98% (Maren) and 98% (Voice), with Vesh and Mending at 90%. By boss faction, the player win rate is: Hegemony boss 51%, Chorus 63%, Deathless 71%, Ithar 74%, Corsair 76%, Voidsworn 80%. Carrier fleets average 74%, gun fleets 67%. Read together: at sector 1 the admiral pick alone is worth roughly 30 points of boss win rate, which makes the admiral screen a hidden difficulty setting, and the Hegemony boss is the sector 1 wall.
+
+## Campaign shape (campaign 30, harness patched, see defects)
+
+Thirty runs per cell with the harness's fixed per-sector fleets:
+
+| Cell | Win | Rounds | Hull left | Ships lost | Anim wait (new clock) |
+|---|---|---|---|---|---|
+| S1 battle (col 1) | 100% | 4.1 | 75% | 0.6 | 40s |
+| S1 battle (col 4) | 100% | 4.9 | 66% | 1.0 | 49s |
+| S1 elite | 73% | 6.4 | 38% | 2.1 | 60s |
+| S1 boss | 77% | 10.0 | 35% | 2.2 | 73s |
+| S2 battle (col 1) | 93% | 6.9 | 54% | 2.4 | 79s |
+| S2 battle (col 4) | 83% | 7.1 | 47% | 2.4 | 83s |
+| S2 elite | 57% | 8.1 | 23% | 3.8 | 95s |
+| S2 boss | 87% | 9.9 | 40% | 3.0 | 93s |
+| S3 battle (col 1) | 93% | 5.8 | 65% | 1.9 | 94s |
+| S3 battle (col 4) | 83% | 7.2 | 51% | 2.6 | 114s |
+| S3 elite | 53% | 7.5 | 40% | 3.2 | 120s |
+| S3 boss | 100% | 9.6 | 64% | 1.9 | 109s |
+
+Zero timeouts in all 360 battles. The shape confirms the council gamer lens at three times its sample: sector 1 battles are a formality, the elite cells are the wall (S2 elite is the single hardest cell in the game for these fleets), and the S3 boss 100% is an artifact of the scripted dreadnought fleet rather than a soft boss. Animation wait is the other confirmed problem: even on the new clock, elite and boss fights in sectors 2 and 3 carry 95 to 120 seconds of pure animation time (the old clock prices the same fights at 160 to 213 seconds).
+
+## Archetypes (archmatrix, reduced)
+
+archMatrix at its default size did not finish (see defects). A reduced run (n=1, 480 battles aggregated, sector 2, column 3) gives player win rates by enemy archetype: none 90% (6.3 rounds, 4.2 enemy ships), heavy 89% (6.5 rounds, 3.3 ships), carrier 87% (6.7 rounds, 3.5 ships), swarm 85% (5.8 rounds, 5.9 ships). No archetype is an outlier; swarm fields the most ships and still loses most often, which is a mild surprise worth a human look before any tuning.
+
+## Harness defects found by this run (tooling, not game code)
+
+1. campaignSim crashes intermittently. It pre-registers objective bookkeeping only for the objectives it picks itself (rout, flagship, hold, and rout for bosses), but the campaign battle it launches can roll any of the eight encounter types. When the rolled type is ambush, defend, intercept, break or hunt, the post-battle accounting reads an undefined entry and throws a TypeError, killing the whole run. OBSERVED at sim3d.js campaignSim, the line that increments OBJS_SEEN for B.obj.type after a win. The one-line guard used for the rerun (in a scratch copy only, the repo file was not edited): register the entry before incrementing, i.e. `(OBJS_SEEN[B.obj.type]=OBJS_SEEN[B.obj.type]||{n:0,w:0}).w++`. Until that lands, campaign results will keep dying at random depending on the encounter roll, which is a plausible explanation for flaky campaign numbers in past sessions.
+2. archMatrix is impractical at its default workload: 4 archetypes x 24 admirals x 5 enemy factions x n battles is 1,920 battles at n=4, and it produced no output inside a 20-minute limit. Either the default n needs to come down or the mode needs progress output so a long run is distinguishable from a hung one.
+
+## Not checked
+
+Human play (all numbers are the harness bot on both sides, whose player-side decisions are documented in the engineer lens report to differ from the veteran AI the enemy uses). The campaign table uses the harness's fixed fleets, not admiral starting fleets or grown fleets. fmatrix and matrix disagree by construction (different fleet sources) and were not reconciled here. No mode was run at Heat above 0.

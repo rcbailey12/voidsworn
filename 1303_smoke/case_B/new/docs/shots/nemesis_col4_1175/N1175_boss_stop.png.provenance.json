@@ -1,0 +1,36 @@
+{
+	"covered_pixels": [
+		"iVBORw0KGgoAAAANSUhEUgAAAT4AAAAxCAYAAABDGcVRAAAAAXNSR0IArs4c6QAAAMJJREFUeJzt1DERwCAAwMBSA9yx4V8odVGG/CvIlDHXPg9AyHs7AOBvxgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfECO8QE5xgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfECO8QE5xgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfECO8QE5xgfkGB+QY3xAjvEBOcYH5BgfkGN8QI7xATnGB+QYH5BjfEDOB5BgAZvSbNY5AAAAAElFTkSuQmCC"
+	],
+	"date": "2026-11-19T18:10:37Z",
+	"image_sha256": "f9a0bf22bdc7759f787d7ff3aea5d4e8a7295fa8ac83f877bb22994eca6a95c4",
+	"inputs": [],
+	"picture_name": "N1175_boss_stop.png",
+	"schema": 1,
+	"source_commit": "8a786829bfb52525ea95c8df03055cb8577b386d",
+	"source_diff_sha256": "c7fea8b45057010b824bcd418cd2a44f9083638261f27d7f2c916a827f19f6b0",
+	"source_dirty": true,
+	"sources": [
+		{
+			"source_commit": "8a786829bfb52525ea95c8df03055cb8577b386d",
+			"source_diff_sha256": "c7fea8b45057010b824bcd418cd2a44f9083638261f27d7f2c916a827f19f6b0",
+			"source_dirty": true,
+			"stage": "installed in game"
+		}
+	],
+	"stage": "installed in game",
+	"stamp_box": [
+		0,
+		671,
+		318,
+		720
+	],
+	"stamp_template_sha256": "d3141f048b6e1b697da4749fdb695c566b2b59a369aeb357af8a43f29d45b12a",
+	"strip_sha256": [
+		"d3141f048b6e1b697da4749fdb695c566b2b59a369aeb357af8a43f29d45b12a"
+	],
+	"strip_size": [
+		318,
+		49
+	]
+}

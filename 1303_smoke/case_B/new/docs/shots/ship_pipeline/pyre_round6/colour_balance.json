@@ -1,0 +1,88 @@
+{
+  "rows": [
+    {
+      "route": "today",
+      "share_percent": {
+        "soot_dark": 54.835614921958594,
+        "rust": 27.714844470683737,
+        "red_trim": 17.31301427991587,
+        "lit_red": 0.1365263274417918
+      },
+      "median_srgb_luma": 91.62979999999999
+    },
+    {
+      "route": "V3",
+      "share_percent": {
+        "soot_dark": 98.63897605867213,
+        "rust": 0.331441063432178,
+        "red_trim": 1.029582877895702,
+        "lit_red": 0.0
+      },
+      "median_srgb_luma": 26.1404,
+      "median_delta_from_reference": -4.0578,
+      "S10_fail": false,
+      "S10_target": true,
+      "S6_rust_band": false,
+      "S8_trim_max": true
+    },
+    {
+      "route": "V1",
+      "share_percent": {
+        "soot_dark": 99.68152866242038,
+        "rust": 0.21713954834973945,
+        "red_trim": 0.1013317892298784,
+        "lit_red": 0.0
+      },
+      "median_srgb_luma": 25.353,
+      "median_delta_from_reference": -4.719199999999997,
+      "S10_fail": false,
+      "S10_target": true,
+      "S6_rust_band": false,
+      "S8_trim_max": true
+    },
+    {
+      "route": "reference_V3",
+      "share_percent": {
+        "soot_dark": 85.37229908285403,
+        "rust": 13.663920410383959,
+        "red_trim": 0.9598942950411937,
+        "lit_red": 0.00388621172081455
+      },
+      "median_srgb_luma": 30.1982
+    },
+    {
+      "route": "reference_V1",
+      "share_percent": {
+        "soot_dark": 85.408027540881,
+        "rust": 13.62178233315077,
+        "red_trim": 0.9662780690086848,
+        "lit_red": 0.003912056959549331
+      },
+      "median_srgb_luma": 30.0722
+    }
+  ],
+  "anchors_srgb": [
+    [
+      40.0,
+      39.0,
+      38.0
+    ],
+    [
+      106.0,
+      44.0,
+      34.0
+    ],
+    [
+      184.0,
+      64.0,
+      42.0
+    ],
+    [
+      224.0,
+      64.0,
+      44.0
+    ]
+  ],
+  "method": "Unchanged round 5 classifier and warm-hue gate; ship pixels only; each art copy fitted to its variant width",
+  "standard": "Issue 188 S6, S8 and S10; binding at 1080p. Colour shares alone cannot approve paint."
+}

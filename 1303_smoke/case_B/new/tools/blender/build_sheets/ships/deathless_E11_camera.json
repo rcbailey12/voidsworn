@@ -1,0 +1,21 @@
+{
+ "az": -28.281567392062275,
+ "el": 22.90899277743786,
+ "roll": -13.092641334534193,
+ "dist": 58.52779660057096,
+ "mm": 98.895918587461,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.11446091060815976,
+ "sy": 0.10129605437090286,
+ "res": [
+  1920,
+  1280
+ ],
+ "iou": 0.8286,
+ "body_iou": 0.8324,
+ "note": "E11 sheet: view angles found by a coarse grid over azimuth, elevation and roll on the thinned mesh, then fit.py refined all seven camera numbers (never the ship); concept mask: luminance over 28, closed, holes filled, largest shape (the escort left out)"
+}

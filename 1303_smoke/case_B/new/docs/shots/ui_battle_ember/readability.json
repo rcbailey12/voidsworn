@@ -1,0 +1,3431 @@
+{
+ "E1": {
+  "code": "LEDGER",
+  "words": 59,
+  "board_tags": [
+   "Unyielding Oath",
+   "Fleet Marshal Petra Valk"
+  ],
+  "smallest_px": 17.0,
+  "smallest_big_shoulders_px": 28.0,
+  "strengths": [
+   "TEXT",
+   "TEXT2",
+   "TEXT3"
+  ],
+  "brightest_bg": "E1_bg5.png (mean luminance 0.0004)",
+  "darkest_bg": "E1_bg2.png (mean luminance 0.0002)",
+  "lowest_contrast": {
+   "word": "Log  L",
+   "strength": "TEXT3",
+   "ratio": 5.81
+  },
+  "under_4_5": [],
+  "overlaps": [],
+  "pass": true,
+  "words_detail": [
+   {
+    "t": "Round 1",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.15,
+      "p99": 11.15
+     },
+     "dark": {
+      "worst": 10.81,
+      "p99": 11.14
+     }
+    },
+    "min_worst": 10.81
+   },
+   {
+    "t": "Your turn",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.95,
+      "p99": 8.95
+     },
+     "dark": {
+      "worst": 8.47,
+      "p99": 8.58
+     }
+    },
+    "min_worst": 8.47
+   },
+   {
+    "t": "3 of 3 ships to act",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.01,
+      "p99": 11.06
+     },
+     "dark": {
+      "worst": 10.63,
+      "p99": 10.81
+     }
+    },
+    "min_worst": 10.63
+   },
+   {
+    "t": "Objective: break their fleet",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.01,
+      "p99": 11.15
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 11.07
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "UNYIELDING OATH",
+    "size": 64.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.68,
+      "p99": 17.03
+     },
+     "dark": {
+      "worst": 16.33,
+      "p99": 17.01
+     }
+    },
+    "min_worst": 16.33
+   },
+   {
+    "t": "Vigil-class cruiser",
+    "size": 21.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.91,
+      "p99": 17.11
+     },
+     "dark": {
+      "worst": 16.7,
+      "p99": 17.01
+     }
+    },
+    "min_worst": 16.7
+   },
+   {
+    "t": "Hull",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.46,
+      "p99": 6.51
+     },
+     "dark": {
+      "worst": 6.3,
+      "p99": 6.35
+     }
+    },
+    "min_worst": 6.3
+   },
+   {
+    "t": "135",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.89,
+      "p99": 17.21
+     },
+     "dark": {
+      "worst": 16.6,
+      "p99": 16.81
+     }
+    },
+    "min_worst": 16.6
+   },
+   {
+    "t": " / 135",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.87,
+      "p99": 11.08
+     },
+     "dark": {
+      "worst": 10.88,
+      "p99": 11.2
+     }
+    },
+    "min_worst": 10.87
+   },
+   {
+    "t": "Move 0 of 4",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.94,
+      "p99": 11.07
+     },
+     "dark": {
+      "worst": 10.82,
+      "p99": 11.07
+     }
+    },
+    "min_worst": 10.82
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.95,
+      "p99": 10.07
+     },
+     "dark": {
+      "worst": 9.66,
+      "p99": 9.84
+     }
+    },
+    "min_worst": 9.66
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.93,
+      "p99": 10.12
+     },
+     "dark": {
+      "worst": 9.59,
+      "p99": 9.84
+     }
+    },
+    "min_worst": 9.59
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 10.06,
+      "p99": 10.18
+     },
+     "dark": {
+      "worst": 9.65,
+      "p99": 9.78
+     }
+    },
+    "min_worst": 9.65
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 10.01,
+      "p99": 10.13
+     },
+     "dark": {
+      "worst": 9.6,
+      "p99": 9.71
+     }
+    },
+    "min_worst": 9.6
+   },
+   {
+    "t": "The enemy fleet is focusing its fire on this ship.",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.72,
+      "p99": 17.06
+     },
+     "dark": {
+      "worst": 16.44,
+      "p99": 16.91
+     }
+    },
+    "min_worst": 16.44
+   },
+   {
+    "t": "Sear battery",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.89,
+      "p99": 17.22
+     },
+     "dark": {
+      "worst": 16.79,
+      "p99": 17.12
+     }
+    },
+    "min_worst": 16.79
+   },
+   {
+    "t": "P 1-5",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.76,
+      "p99": 10.88
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 10.77
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "out of range",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.62,
+      "p99": 10.69
+     },
+     "dark": {
+      "worst": 10.56,
+      "p99": 10.99
+     }
+    },
+    "min_worst": 10.56
+   },
+   {
+    "t": "Sear battery",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.63,
+      "p99": 17.09
+     },
+     "dark": {
+      "worst": 16.62,
+      "p99": 16.91
+     }
+    },
+    "min_worst": 16.62
+   },
+   {
+    "t": "S 1-5",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.07,
+      "p99": 11.22
+     },
+     "dark": {
+      "worst": 10.81,
+      "p99": 11.07
+     }
+    },
+    "min_worst": 10.81
+   },
+   {
+    "t": "out of range",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.69,
+      "p99": 10.69
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 10.92
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "Oath lance",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.09,
+      "p99": 17.31
+     },
+     "dark": {
+      "worst": 16.72,
+      "p99": 17.14
+     }
+    },
+    "min_worst": 16.72
+   },
+   {
+    "t": "F 1-7",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.93,
+      "p99": 11.2
+     },
+     "dark": {
+      "worst": 11.06,
+      "p99": 11.06
+     }
+    },
+    "min_worst": 10.93
+   },
+   {
+    "t": "92%",
+    "size": 22.0,
+    "face": "AzeretMono",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.54,
+      "p99": 8.73
+     },
+     "dark": {
+      "worst": 8.28,
+      "p99": 8.48
+     }
+    },
+    "min_worst": 8.28
+   },
+   {
+    "t": "Target",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.39,
+      "p99": 6.49
+     },
+     "dark": {
+      "worst": 6.42,
+      "p99": 6.58
+     }
+    },
+    "min_worst": 6.39
+   },
+   {
+    "t": "FLEET MARSHAL PETRA VALK",
+    "size": 34.0,
+    "face": "BigShoulders",
+    "col": "ff6050",
+    "strength": "ff6050",
+    "contrast": {
+     "bright": {
+      "worst": 6.61,
+      "p99": 6.87
+     },
+     "dark": {
+      "worst": 6.6,
+      "p99": 6.8
+     }
+    },
+    "min_worst": 6.6
+   },
+   {
+    "t": "92%",
+    "size": 64.0,
+    "face": "AzeretMono",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.48,
+      "p99": 8.68
+     },
+     "dark": {
+      "worst": 8.49,
+      "p99": 8.64
+     }
+    },
+    "min_worst": 8.48
+   },
+   {
+    "t": "to hit with the Oath lance",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.41,
+      "p99": 17.02
+     },
+     "dark": {
+      "worst": 16.55,
+      "p99": 16.95
+     }
+    },
+    "min_worst": 16.41
+   },
+   {
+    "t": "About 16 damage: 7 to its prow shield, 8 to hull.",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.61,
+      "p99": 10.94
+     },
+     "dark": {
+      "worst": 10.68,
+      "p99": 10.84
+     }
+    },
+    "min_worst": 10.61
+   },
+   {
+    "t": "FIRE THE OATH LANCE",
+    "size": 34.0,
+    "face": "BigShoulders",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.48,
+      "p99": 8.74
+     },
+     "dark": {
+      "worst": 8.44,
+      "p99": 8.57
+     }
+    },
+    "min_worst": 8.44
+   },
+   {
+    "t": "Enter",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.54,
+      "p99": 8.83
+     },
+     "dark": {
+      "worst": 8.61,
+      "p99": 8.62
+     }
+    },
+    "min_worst": 8.54
+   },
+   {
+    "t": "Brace",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.22,
+      "p99": 17.24
+     },
+     "dark": {
+      "worst": 16.89,
+      "p99": 17.42
+     }
+    },
+    "min_worst": 16.89
+   },
+   {
+    "t": "B",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.02,
+      "p99": 11.14
+     },
+     "dark": {
+      "worst": 10.8,
+      "p99": 10.88
+     }
+    },
+    "min_worst": 10.8
+   },
+   {
+    "t": "Concentrated fire",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.81,
+      "p99": 17.11
+     },
+     "dark": {
+      "worst": 16.52,
+      "p99": 16.78
+     }
+    },
+    "min_worst": 16.52
+   },
+   {
+    "t": "Turn",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.14,
+      "p99": 17.34
+     },
+     "dark": {
+      "worst": 16.6,
+      "p99": 16.8
+     }
+    },
+    "min_worst": 16.6
+   },
+   {
+    "t": "Q E",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.76,
+      "p99": 10.93
+     },
+     "dark": {
+      "worst": 10.68,
+      "p99": 10.73
+     }
+    },
+    "min_worst": 10.68
+   },
+   {
+    "t": "Command",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.39,
+      "p99": 6.51
+     },
+     "dark": {
+      "worst": 6.28,
+      "p99": 6.38
+     }
+    },
+    "min_worst": 6.28
+   },
+   {
+    "t": "Fire for effect",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.79,
+      "p99": 17.22
+     },
+     "dark": {
+      "worst": 16.62,
+      "p99": 16.78
+     }
+    },
+    "min_worst": 16.62
+   },
+   {
+    "t": "C",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.2,
+      "p99": 11.21
+     },
+     "dark": {
+      "worst": 11.34,
+      "p99": 11.34
+     }
+    },
+    "min_worst": 11.2
+   },
+   {
+    "t": "End ship",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.69,
+      "p99": 11.0
+     },
+     "dark": {
+      "worst": 10.58,
+      "p99": 10.76
+     }
+    },
+    "min_worst": 10.58
+   },
+   {
+    "t": "Space",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.69,
+      "p99": 11.05
+     },
+     "dark": {
+      "worst": 10.74,
+      "p99": 10.76
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "UNYIELDING OATH",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.81,
+      "p99": 17.13
+     },
+     "dark": {
+      "worst": 16.61,
+      "p99": 16.78
+     }
+    },
+    "min_worst": 16.61
+   },
+   {
+    "t": "135",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.81,
+      "p99": 16.91
+     },
+     "dark": {
+      "worst": 16.8,
+      "p99": 17.0
+     }
+    },
+    "min_worst": 16.8
+   },
+   {
+    "t": "UNPAID DEBT",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.72,
+      "p99": 16.91
+     },
+     "dark": {
+      "worst": 16.63,
+      "p99": 16.78
+     }
+    },
+    "min_worst": 16.63
+   },
+   {
+    "t": "85",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.22,
+      "p99": 17.42
+     },
+     "dark": {
+      "worst": 17.22,
+      "p99": 17.42
+     }
+    },
+    "min_worst": 17.22
+   },
+   {
+    "t": "IRON DUSK",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.81,
+      "p99": 17.01
+     },
+     "dark": {
+      "worst": 16.7,
+      "p99": 16.78
+     }
+    },
+    "min_worst": 16.7
+   },
+   {
+    "t": "50",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.43,
+      "p99": 16.74
+     },
+     "dark": {
+      "worst": 17.01,
+      "p99": 17.42
+     }
+    },
+    "min_worst": 16.43
+   },
+   {
+    "t": "Menu",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.03,
+      "p99": 10.33
+     },
+     "dark": {
+      "worst": 10.2,
+      "p99": 11.02
+     }
+    },
+    "min_worst": 10.03
+   },
+   {
+    "t": "Esc",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.04,
+      "p99": 10.55
+     },
+     "dark": {
+      "worst": 10.68,
+      "p99": 11.01
+     }
+    },
+    "min_worst": 10.04
+   },
+   {
+    "t": "3",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.41,
+      "p99": 16.83
+     },
+     "dark": {
+      "worst": 17.32,
+      "p99": 17.34
+     }
+    },
+    "min_worst": 16.41
+   },
+   {
+    "t": "Heat",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.11,
+      "p99": 6.37
+     },
+     "dark": {
+      "worst": 5.86,
+      "p99": 6.11
+     }
+    },
+    "min_worst": 5.86
+   },
+   {
+    "t": "Hegemony Navy, 2 ships",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.25,
+      "p99": 16.02
+     },
+     "dark": {
+      "worst": 14.97,
+      "p99": 15.87
+     }
+    },
+    "min_worst": 14.97
+   },
+   {
+    "t": "Dossier",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.24,
+      "p99": 6.39
+     },
+     "dark": {
+      "worst": 5.89,
+      "p99": 6.04
+     }
+    },
+    "min_worst": 5.89
+   },
+   {
+    "t": "Fleet Marshal Petra Valk",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.65,
+      "p99": 16.89
+     },
+     "dark": {
+      "worst": 15.22,
+      "p99": 15.98
+     }
+    },
+    "min_worst": 15.22
+   },
+   {
+    "t": "Nemesis",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "ff6050",
+    "strength": "ff6050",
+    "contrast": {
+     "bright": {
+      "worst": 6.28,
+      "p99": 6.7
+     },
+     "dark": {
+      "worst": 6.07,
+      "p99": 6.43
+     }
+    },
+    "min_worst": 6.07
+   },
+   {
+    "t": "Log  L",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.08,
+      "p99": 6.25
+     },
+     "dark": {
+      "worst": 5.81,
+      "p99": 6.18
+     }
+    },
+    "min_worst": 5.81
+   },
+   {
+    "t": "Fleet Marshal Petra Valk: \"Every move you can make has been planned for.\"",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.03,
+      "p99": 10.93
+     },
+     "dark": {
+      "worst": 10.1,
+      "p99": 10.46
+     }
+    },
+    "min_worst": 10.03
+   },
+   {
+    "t": "Fleet Marshal Petra Valk: \"All reserve squadrons, jump in now. Encircle them.\"",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.02,
+      "p99": 10.74
+     },
+     "dark": {
+      "worst": 10.09,
+      "p99": 10.46
+     }
+    },
+    "min_worst": 10.02
+   },
+   {
+    "t": "Contact: Hegemony Navy. 2 ships on the scanners.",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.08,
+      "p99": 16.98
+     },
+     "dark": {
+      "worst": 15.62,
+      "p99": 15.7
+     }
+    },
+    "min_worst": 15.08
+   }
+  ]
+ },
+ "E2": {
+  "code": "CROSSING",
+  "words": 68,
+  "board_tags": [
+   "Unyielding Oath",
+   "Fleet Marshal Petra Valk"
+  ],
+  "smallest_px": 17.0,
+  "smallest_big_shoulders_px": 28.0,
+  "strengths": [
+   "TEXT",
+   "TEXT2",
+   "TEXT3"
+  ],
+  "brightest_bg": "E2_bg0.png (mean luminance 0.0003)",
+  "darkest_bg": "E2_bg2.png (mean luminance 0.0001)",
+  "lowest_contrast": {
+   "word": "Command",
+   "strength": "TEXT3",
+   "ratio": 6.03
+  },
+  "under_4_5": [],
+  "overlaps": [],
+  "pass": true,
+  "words_detail": [
+   {
+    "t": "Round 1",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.81,
+      "p99": 10.98
+     },
+     "dark": {
+      "worst": 10.81,
+      "p99": 11.14
+     }
+    },
+    "min_worst": 10.81
+   },
+   {
+    "t": "Your turn",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.52,
+      "p99": 8.67
+     },
+     "dark": {
+      "worst": 8.47,
+      "p99": 8.58
+     }
+    },
+    "min_worst": 8.47
+   },
+   {
+    "t": "3 of 3 ships to act",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.81,
+      "p99": 11.12
+     },
+     "dark": {
+      "worst": 10.61,
+      "p99": 10.76
+     }
+    },
+    "min_worst": 10.61
+   },
+   {
+    "t": "Objective: break their fleet",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.82,
+      "p99": 11.07
+     },
+     "dark": {
+      "worst": 10.63,
+      "p99": 11.07
+     }
+    },
+    "min_worst": 10.63
+   },
+   {
+    "t": "UNYIELDING OATH",
+    "size": 58.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.33,
+      "p99": 16.95
+     },
+     "dark": {
+      "worst": 16.43,
+      "p99": 17.02
+     }
+    },
+    "min_worst": 16.33
+   },
+   {
+    "t": "Vigil-class cruiser",
+    "size": 21.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.53,
+      "p99": 16.99
+     },
+     "dark": {
+      "worst": 16.7,
+      "p99": 17.01
+     }
+    },
+    "min_worst": 16.53
+   },
+   {
+    "t": "Hull",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.38,
+      "p99": 6.54
+     },
+     "dark": {
+      "worst": 6.3,
+      "p99": 6.35
+     }
+    },
+    "min_worst": 6.3
+   },
+   {
+    "t": "135",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.91,
+      "p99": 17.32
+     },
+     "dark": {
+      "worst": 16.72,
+      "p99": 16.82
+     }
+    },
+    "min_worst": 16.72
+   },
+   {
+    "t": " / 135",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.0,
+      "p99": 11.14
+     },
+     "dark": {
+      "worst": 10.88,
+      "p99": 11.2
+     }
+    },
+    "min_worst": 10.88
+   },
+   {
+    "t": "Move 0 of 4",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.88,
+      "p99": 11.2
+     },
+     "dark": {
+      "worst": 10.82,
+      "p99": 11.07
+     }
+    },
+    "min_worst": 10.82
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.77,
+      "p99": 9.96
+     },
+     "dark": {
+      "worst": 9.59,
+      "p99": 9.66
+     }
+    },
+    "min_worst": 9.59
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.82,
+      "p99": 10.0
+     },
+     "dark": {
+      "worst": 9.69,
+      "p99": 9.76
+     }
+    },
+    "min_worst": 9.69
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.7,
+      "p99": 9.95
+     },
+     "dark": {
+      "worst": 9.93,
+      "p99": 10.06
+     }
+    },
+    "min_worst": 9.7
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 10.12,
+      "p99": 10.24
+     },
+     "dark": {
+      "worst": 9.83,
+      "p99": 10.12
+     }
+    },
+    "min_worst": 9.83
+   },
+   {
+    "t": "The enemy fleet is focusing its fire on this ship.",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.53,
+      "p99": 17.02
+     },
+     "dark": {
+      "worst": 16.34,
+      "p99": 16.9
+     }
+    },
+    "min_worst": 16.34
+   },
+   {
+    "t": "Sear battery",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.0,
+      "p99": 17.3
+     },
+     "dark": {
+      "worst": 16.63,
+      "p99": 17.06
+     }
+    },
+    "min_worst": 16.63
+   },
+   {
+    "t": "P 1-5",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.2,
+      "p99": 11.34
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 10.75
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "out of range",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.81,
+      "p99": 11.06
+     },
+     "dark": {
+      "worst": 10.75,
+      "p99": 11.11
+     }
+    },
+    "min_worst": 10.75
+   },
+   {
+    "t": "Sear battery",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.11,
+      "p99": 17.33
+     },
+     "dark": {
+      "worst": 16.62,
+      "p99": 16.9
+     }
+    },
+    "min_worst": 16.62
+   },
+   {
+    "t": "S 1-5",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.0,
+      "p99": 11.27
+     },
+     "dark": {
+      "worst": 10.81,
+      "p99": 11.01
+     }
+    },
+    "min_worst": 10.81
+   },
+   {
+    "t": "out of range",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.01,
+      "p99": 11.19
+     },
+     "dark": {
+      "worst": 10.74,
+      "p99": 11.06
+     }
+    },
+    "min_worst": 10.74
+   },
+   {
+    "t": "Oath lance",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.84,
+      "p99": 17.2
+     },
+     "dark": {
+      "worst": 16.72,
+      "p99": 17.12
+     }
+    },
+    "min_worst": 16.72
+   },
+   {
+    "t": "F 1-7",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.86,
+      "p99": 11.01
+     },
+     "dark": {
+      "worst": 10.81,
+      "p99": 11.14
+     }
+    },
+    "min_worst": 10.81
+   },
+   {
+    "t": "92%",
+    "size": 22.0,
+    "face": "AzeretMono",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.49,
+      "p99": 8.73
+     },
+     "dark": {
+      "worst": 8.44,
+      "p99": 8.68
+     }
+    },
+    "min_worst": 8.44
+   },
+   {
+    "t": "Brace",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.92,
+      "p99": 17.19
+     },
+     "dark": {
+      "worst": 17.3,
+      "p99": 17.34
+     }
+    },
+    "min_worst": 16.92
+   },
+   {
+    "t": "B",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.06,
+      "p99": 11.08
+     },
+     "dark": {
+      "worst": 11.22,
+      "p99": 11.22
+     }
+    },
+    "min_worst": 11.06
+   },
+   {
+    "t": "Concentrated fire",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.82,
+      "p99": 17.2
+     },
+     "dark": {
+      "worst": 16.61,
+      "p99": 16.99
+     }
+    },
+    "min_worst": 16.61
+   },
+   {
+    "t": "Turn",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.22,
+      "p99": 17.32
+     },
+     "dark": {
+      "worst": 16.43,
+      "p99": 16.74
+     }
+    },
+    "min_worst": 16.43
+   },
+   {
+    "t": "Q E",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.13,
+      "p99": 11.27
+     },
+     "dark": {
+      "worst": 10.63,
+      "p99": 10.75
+     }
+    },
+    "min_worst": 10.63
+   },
+   {
+    "t": "UNYIELDING OATH",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.91,
+      "p99": 17.22
+     },
+     "dark": {
+      "worst": 16.62,
+      "p99": 17.1
+     }
+    },
+    "min_worst": 16.62
+   },
+   {
+    "t": "135",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.53,
+      "p99": 17.53
+     },
+     "dark": {
+      "worst": 17.42,
+      "p99": 17.51
+     }
+    },
+    "min_worst": 17.42
+   },
+   {
+    "t": "UNPAID DEBT",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.92,
+      "p99": 17.24
+     },
+     "dark": {
+      "worst": 16.6,
+      "p99": 16.99
+     }
+    },
+    "min_worst": 16.6
+   },
+   {
+    "t": "85",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.53,
+      "p99": 17.53
+     },
+     "dark": {
+      "worst": 17.42,
+      "p99": 17.42
+     }
+    },
+    "min_worst": 17.42
+   },
+   {
+    "t": "IRON DUSK",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.88,
+      "p99": 16.9
+     },
+     "dark": {
+      "worst": 16.61,
+      "p99": 16.91
+     }
+    },
+    "min_worst": 16.61
+   },
+   {
+    "t": "50",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.53,
+      "p99": 17.53
+     },
+     "dark": {
+      "worst": 17.42,
+      "p99": 17.53
+     }
+    },
+    "min_worst": 17.42
+   },
+   {
+    "t": "Menu",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.11,
+      "p99": 11.13
+     },
+     "dark": {
+      "worst": 10.88,
+      "p99": 11.2
+     }
+    },
+    "min_worst": 10.88
+   },
+   {
+    "t": "Esc",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.85,
+      "p99": 10.86
+     },
+     "dark": {
+      "worst": 11.06,
+      "p99": 11.2
+     }
+    },
+    "min_worst": 10.85
+   },
+   {
+    "t": "3",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.22,
+      "p99": 17.24
+     },
+     "dark": {
+      "worst": 17.42,
+      "p99": 17.42
+     }
+    },
+    "min_worst": 17.22
+   },
+   {
+    "t": "Heat",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.34,
+      "p99": 6.34
+     },
+     "dark": {
+      "worst": 6.31,
+      "p99": 6.39
+     }
+    },
+    "min_worst": 6.31
+   },
+   {
+    "t": "Hegemony Navy, 2 ships",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.09,
+      "p99": 17.19
+     },
+     "dark": {
+      "worst": 16.51,
+      "p99": 16.72
+     }
+    },
+    "min_worst": 16.51
+   },
+   {
+    "t": "Dossier",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.34,
+      "p99": 6.34
+     },
+     "dark": {
+      "worst": 6.32,
+      "p99": 6.38
+     }
+    },
+    "min_worst": 6.32
+   },
+   {
+    "t": "Fleet Marshal Petra Valk",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.81,
+      "p99": 17.11
+     },
+     "dark": {
+      "worst": 16.53,
+      "p99": 16.79
+     }
+    },
+    "min_worst": 16.53
+   },
+   {
+    "t": "Nemesis",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "ff6050",
+    "strength": "ff6050",
+    "contrast": {
+     "bright": {
+      "worst": 7.03,
+      "p99": 7.03
+     },
+     "dark": {
+      "worst": 6.56,
+      "p99": 6.71
+     }
+    },
+    "min_worst": 6.56
+   },
+   {
+    "t": "Target",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.28,
+      "p99": 6.35
+     },
+     "dark": {
+      "worst": 6.28,
+      "p99": 6.47
+     }
+    },
+    "min_worst": 6.28
+   },
+   {
+    "t": "FLEET MARSHAL PETRA VALK",
+    "size": 44.0,
+    "face": "BigShoulders",
+    "col": "ff6050",
+    "strength": "ff6050",
+    "contrast": {
+     "bright": {
+      "worst": 6.64,
+      "p99": 6.75
+     },
+     "dark": {
+      "worst": 6.56,
+      "p99": 6.8
+     }
+    },
+    "min_worst": 6.56
+   },
+   {
+    "t": "Hull",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.28,
+      "p99": 6.34
+     },
+     "dark": {
+      "worst": 6.5,
+      "p99": 6.62
+     }
+    },
+    "min_worst": 6.28
+   },
+   {
+    "t": "168",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.01,
+      "p99": 17.22
+     },
+     "dark": {
+      "worst": 16.6,
+      "p99": 16.72
+     }
+    },
+    "min_worst": 16.6
+   },
+   {
+    "t": " / 168",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.86,
+      "p99": 11.14
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 10.94
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "23",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.83,
+      "p99": 10.01
+     },
+     "dark": {
+      "worst": 9.6,
+      "p99": 9.71
+     }
+    },
+    "min_worst": 9.6
+   },
+   {
+    "t": "23",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.71,
+      "p99": 9.83
+     },
+     "dark": {
+      "worst": 9.94,
+      "p99": 10.24
+     }
+    },
+    "min_worst": 9.71
+   },
+   {
+    "t": "23",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.59,
+      "p99": 9.61
+     },
+     "dark": {
+      "worst": 9.55,
+      "p99": 9.78
+     }
+    },
+    "min_worst": 9.55
+   },
+   {
+    "t": "23",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.71,
+      "p99": 9.85
+     },
+     "dark": {
+      "worst": 9.82,
+      "p99": 9.99
+     }
+    },
+    "min_worst": 9.71
+   },
+   {
+    "t": "92%",
+    "size": 88.0,
+    "face": "AzeretMono",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.58,
+      "p99": 8.73
+     },
+     "dark": {
+      "worst": 8.45,
+      "p99": 8.68
+     }
+    },
+    "min_worst": 8.45
+   },
+   {
+    "t": "to hit with the Oath lance",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.7,
+      "p99": 17.19
+     },
+     "dark": {
+      "worst": 16.61,
+      "p99": 17.12
+     }
+    },
+    "min_worst": 16.61
+   },
+   {
+    "t": "About 16 damage: 7 to its prow shield, 8 to hull.",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.69,
+      "p99": 11.06
+     },
+     "dark": {
+      "worst": 10.56,
+      "p99": 10.94
+     }
+    },
+    "min_worst": 10.56
+   },
+   {
+    "t": "Log  L",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.54,
+      "p99": 6.54
+     },
+     "dark": {
+      "worst": 6.45,
+      "p99": 6.58
+     }
+    },
+    "min_worst": 6.45
+   },
+   {
+    "t": "Fleet Marshal Petra Valk: \"Every move you can make has",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.74,
+      "p99": 11.0
+     },
+     "dark": {
+      "worst": 11.0,
+      "p99": 11.06
+     }
+    },
+    "min_worst": 10.74
+   },
+   {
+    "t": "been planned for.\"",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.27,
+      "p99": 11.32
+     },
+     "dark": {
+      "worst": 11.28,
+      "p99": 11.34
+     }
+    },
+    "min_worst": 11.27
+   },
+   {
+    "t": "Fleet Marshal Petra Valk: \"All reserve squadrons, jump in",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.74,
+      "p99": 11.2
+     },
+     "dark": {
+      "worst": 10.88,
+      "p99": 11.27
+     }
+    },
+    "min_worst": 10.74
+   },
+   {
+    "t": "now. Encircle them.\"",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.27,
+      "p99": 11.29
+     },
+     "dark": {
+      "worst": 10.88,
+      "p99": 11.34
+     }
+    },
+    "min_worst": 10.88
+   },
+   {
+    "t": "Contact: Hegemony Navy. 2 ships on the scanners.",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.72,
+      "p99": 17.1
+     },
+     "dark": {
+      "worst": 17.01,
+      "p99": 17.4
+     }
+    },
+    "min_worst": 16.72
+   },
+   {
+    "t": "FIRE THE OATH LANCE",
+    "size": 34.0,
+    "face": "BigShoulders",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.05,
+      "p99": 8.54
+     },
+     "dark": {
+      "worst": 7.85,
+      "p99": 8.43
+     }
+    },
+    "min_worst": 7.85
+   },
+   {
+    "t": "Enter",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.63,
+      "p99": 8.8
+     },
+     "dark": {
+      "worst": 8.04,
+      "p99": 8.32
+     }
+    },
+    "min_worst": 8.04
+   },
+   {
+    "t": "Command",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.2,
+      "p99": 6.39
+     },
+     "dark": {
+      "worst": 6.03,
+      "p99": 6.23
+     }
+    },
+    "min_worst": 6.03
+   },
+   {
+    "t": "Fire for effect",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.87,
+      "p99": 16.62
+     },
+     "dark": {
+      "worst": 15.99,
+      "p99": 16.81
+     }
+    },
+    "min_worst": 15.87
+   },
+   {
+    "t": "C",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.85,
+      "p99": 10.89
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 10.88
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "End ship",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.57,
+      "p99": 10.86
+     },
+     "dark": {
+      "worst": 10.49,
+      "p99": 10.94
+     }
+    },
+    "min_worst": 10.49
+   },
+   {
+    "t": "Space",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.68,
+      "p99": 11.14
+     },
+     "dark": {
+      "worst": 10.6,
+      "p99": 10.85
+     }
+    },
+    "min_worst": 10.6
+   }
+  ]
+ },
+ "E3": {
+  "code": "FOOTING",
+  "words": 59,
+  "board_tags": [
+   "Unyielding Oath",
+   "Fleet Marshal Petra Valk"
+  ],
+  "smallest_px": 17.0,
+  "smallest_big_shoulders_px": 28.0,
+  "strengths": [
+   "TEXT",
+   "TEXT2",
+   "TEXT3"
+  ],
+  "brightest_bg": "E3_bg0.png (mean luminance 0.0006)",
+  "darkest_bg": "E3_bg2.png (mean luminance 0.0002)",
+  "lowest_contrast": {
+   "word": "Heat",
+   "strength": "TEXT3",
+   "ratio": 5.85
+  },
+  "under_4_5": [],
+  "overlaps": [],
+  "pass": true,
+  "words_detail": [
+   {
+    "t": "UNYIELDING OATH",
+    "size": 58.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.63,
+      "p99": 17.21
+     },
+     "dark": {
+      "worst": 16.22,
+      "p99": 16.8
+     }
+    },
+    "min_worst": 16.22
+   },
+   {
+    "t": "Vigil-class cruiser",
+    "size": 21.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.8,
+      "p99": 17.21
+     },
+     "dark": {
+      "worst": 16.52,
+      "p99": 16.9
+     }
+    },
+    "min_worst": 16.52
+   },
+   {
+    "t": "Hull",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.5,
+      "p99": 6.58
+     },
+     "dark": {
+      "worst": 6.24,
+      "p99": 6.3
+     }
+    },
+    "min_worst": 6.24
+   },
+   {
+    "t": "135",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.81,
+      "p99": 17.22
+     },
+     "dark": {
+      "worst": 16.79,
+      "p99": 17.12
+     }
+    },
+    "min_worst": 16.79
+   },
+   {
+    "t": " / 135",
+    "size": 26.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.0,
+      "p99": 11.0
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 10.94
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "Move 0 of 4",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.88,
+      "p99": 11.14
+     },
+     "dark": {
+      "worst": 10.74,
+      "p99": 11.0
+     }
+    },
+    "min_worst": 10.74
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 10.07,
+      "p99": 10.13
+     },
+     "dark": {
+      "worst": 9.77,
+      "p99": 9.9
+     }
+    },
+    "min_worst": 9.77
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 10.12,
+      "p99": 10.13
+     },
+     "dark": {
+      "worst": 10.06,
+      "p99": 10.18
+     }
+    },
+    "min_worst": 10.06
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 10.0,
+      "p99": 10.07
+     },
+     "dark": {
+      "worst": 9.71,
+      "p99": 9.77
+     }
+    },
+    "min_worst": 9.71
+   },
+   {
+    "t": "20",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "92b8e8",
+    "strength": "92b8e8",
+    "contrast": {
+     "bright": {
+      "worst": 9.88,
+      "p99": 9.99
+     },
+     "dark": {
+      "worst": 9.66,
+      "p99": 9.71
+     }
+    },
+    "min_worst": 9.66
+   },
+   {
+    "t": "The enemy fleet is focusing its fire on this ship.",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.9,
+      "p99": 17.19
+     },
+     "dark": {
+      "worst": 16.7,
+      "p99": 17.02
+     }
+    },
+    "min_worst": 16.7
+   },
+   {
+    "t": "Sear battery",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.72,
+      "p99": 17.21
+     },
+     "dark": {
+      "worst": 16.62,
+      "p99": 17.27
+     }
+    },
+    "min_worst": 16.62
+   },
+   {
+    "t": "P 1-5",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.75,
+      "p99": 11.01
+     },
+     "dark": {
+      "worst": 10.56,
+      "p99": 10.82
+     }
+    },
+    "min_worst": 10.56
+   },
+   {
+    "t": "out of range",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.68,
+      "p99": 10.86
+     },
+     "dark": {
+      "worst": 10.75,
+      "p99": 11.12
+     }
+    },
+    "min_worst": 10.68
+   },
+   {
+    "t": "Sear battery",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.01,
+      "p99": 17.31
+     },
+     "dark": {
+      "worst": 16.7,
+      "p99": 17.02
+     }
+    },
+    "min_worst": 16.7
+   },
+   {
+    "t": "S 1-5",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.85,
+      "p99": 10.87
+     },
+     "dark": {
+      "worst": 10.69,
+      "p99": 10.95
+     }
+    },
+    "min_worst": 10.69
+   },
+   {
+    "t": "out of range",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.75,
+      "p99": 10.94
+     },
+     "dark": {
+      "worst": 10.85,
+      "p99": 10.93
+     }
+    },
+    "min_worst": 10.75
+   },
+   {
+    "t": "Oath lance",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.91,
+      "p99": 17.15
+     },
+     "dark": {
+      "worst": 16.44,
+      "p99": 17.02
+     }
+    },
+    "min_worst": 16.44
+   },
+   {
+    "t": "F 1-7",
+    "size": 17.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.81,
+      "p99": 10.87
+     },
+     "dark": {
+      "worst": 10.82,
+      "p99": 11.08
+     }
+    },
+    "min_worst": 10.81
+   },
+   {
+    "t": "92%",
+    "size": 22.0,
+    "face": "AzeretMono",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.58,
+      "p99": 8.68
+     },
+     "dark": {
+      "worst": 8.49,
+      "p99": 8.59
+     }
+    },
+    "min_worst": 8.49
+   },
+   {
+    "t": "Brace",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 17.11,
+      "p99": 17.42
+     },
+     "dark": {
+      "worst": 16.63,
+      "p99": 17.23
+     }
+    },
+    "min_worst": 16.63
+   },
+   {
+    "t": "B",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.01,
+      "p99": 11.12
+     },
+     "dark": {
+      "worst": 11.2,
+      "p99": 11.21
+     }
+    },
+    "min_worst": 11.01
+   },
+   {
+    "t": "Concentrated fire",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.62,
+      "p99": 17.21
+     },
+     "dark": {
+      "worst": 16.7,
+      "p99": 16.9
+     }
+    },
+    "min_worst": 16.62
+   },
+   {
+    "t": "Turn",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.99,
+      "p99": 17.22
+     },
+     "dark": {
+      "worst": 16.61,
+      "p99": 16.63
+     }
+    },
+    "min_worst": 16.61
+   },
+   {
+    "t": "Q E",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.93,
+      "p99": 11.14
+     },
+     "dark": {
+      "worst": 10.81,
+      "p99": 10.87
+     }
+    },
+    "min_worst": 10.81
+   },
+   {
+    "t": "Command",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.43,
+      "p99": 6.51
+     },
+     "dark": {
+      "worst": 6.31,
+      "p99": 6.46
+     }
+    },
+    "min_worst": 6.31
+   },
+   {
+    "t": "Fire for effect",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.93,
+      "p99": 17.22
+     },
+     "dark": {
+      "worst": 16.7,
+      "p99": 17.0
+     }
+    },
+    "min_worst": 16.7
+   },
+   {
+    "t": "C",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.2,
+      "p99": 11.22
+     },
+     "dark": {
+      "worst": 11.14,
+      "p99": 11.2
+     }
+    },
+    "min_worst": 11.14
+   },
+   {
+    "t": "Target",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.28,
+      "p99": 6.39
+     },
+     "dark": {
+      "worst": 6.27,
+      "p99": 6.42
+     }
+    },
+    "min_worst": 6.27
+   },
+   {
+    "t": "FLEET MARSHAL PETRA VALK",
+    "size": 36.0,
+    "face": "BigShoulders",
+    "col": "ff6050",
+    "strength": "ff6050",
+    "contrast": {
+     "bright": {
+      "worst": 6.55,
+      "p99": 6.71
+     },
+     "dark": {
+      "worst": 6.55,
+      "p99": 6.74
+     }
+    },
+    "min_worst": 6.55
+   },
+   {
+    "t": "92%",
+    "size": 64.0,
+    "face": "AzeretMono",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.43,
+      "p99": 8.68
+     },
+     "dark": {
+      "worst": 8.39,
+      "p99": 8.69
+     }
+    },
+    "min_worst": 8.39
+   },
+   {
+    "t": "to hit with the Oath lance",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.43,
+      "p99": 16.91
+     },
+     "dark": {
+      "worst": 16.41,
+      "p99": 16.71
+     }
+    },
+    "min_worst": 16.41
+   },
+   {
+    "t": "About 16 damage: 7 to its prow shield, 8 to hull.",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.68,
+      "p99": 11.07
+     },
+     "dark": {
+      "worst": 10.73,
+      "p99": 10.75
+     }
+    },
+    "min_worst": 10.68
+   },
+   {
+    "t": "FIRE THE OATH LANCE",
+    "size": 34.0,
+    "face": "BigShoulders",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.53,
+      "p99": 8.68
+     },
+     "dark": {
+      "worst": 8.48,
+      "p99": 8.79
+     }
+    },
+    "min_worst": 8.48
+   },
+   {
+    "t": "Enter",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 8.71,
+      "p99": 8.8
+     },
+     "dark": {
+      "worst": 8.84,
+      "p99": 8.95
+     }
+    },
+    "min_worst": 8.71
+   },
+   {
+    "t": "End ship",
+    "size": 20.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.0,
+      "p99": 11.0
+     },
+     "dark": {
+      "worst": 11.2,
+      "p99": 11.34
+     }
+    },
+    "min_worst": 11.0
+   },
+   {
+    "t": "Space",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.2,
+      "p99": 11.34
+     },
+     "dark": {
+      "worst": 11.01,
+      "p99": 11.27
+     }
+    },
+    "min_worst": 11.01
+   },
+   {
+    "t": "Round 1",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.03,
+      "p99": 10.47
+     },
+     "dark": {
+      "worst": 10.11,
+      "p99": 10.88
+     }
+    },
+    "min_worst": 10.03
+   },
+   {
+    "t": "Your turn",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "ff8a3a",
+    "strength": "ff8a3a",
+    "contrast": {
+     "bright": {
+      "worst": 7.97,
+      "p99": 8.34
+     },
+     "dark": {
+      "worst": 7.82,
+      "p99": 8.11
+     }
+    },
+    "min_worst": 7.82
+   },
+   {
+    "t": "3 of 3 ships to act",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.2,
+      "p99": 10.88
+     },
+     "dark": {
+      "worst": 9.76,
+      "p99": 10.25
+     }
+    },
+    "min_worst": 9.76
+   },
+   {
+    "t": "Objective: break their fleet",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.1,
+      "p99": 10.55
+     },
+     "dark": {
+      "worst": 9.78,
+      "p99": 10.76
+     }
+    },
+    "min_worst": 9.78
+   },
+   {
+    "t": "UNYIELDING OATH",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.39,
+      "p99": 16.22
+     },
+     "dark": {
+      "worst": 15.76,
+      "p99": 16.62
+     }
+    },
+    "min_worst": 15.39
+   },
+   {
+    "t": "135",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.49,
+      "p99": 16.61
+     },
+     "dark": {
+      "worst": 15.22,
+      "p99": 16.23
+     }
+    },
+    "min_worst": 15.22
+   },
+   {
+    "t": "UNPAID DEBT",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.49,
+      "p99": 16.39
+     },
+     "dark": {
+      "worst": 15.91,
+      "p99": 16.53
+     }
+    },
+    "min_worst": 15.49
+   },
+   {
+    "t": "85",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.5,
+      "p99": 16.98
+     },
+     "dark": {
+      "worst": 15.87,
+      "p99": 16.7
+     }
+    },
+    "min_worst": 15.87
+   },
+   {
+    "t": "IRON DUSK",
+    "size": 28.0,
+    "face": "BigShoulders",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.24,
+      "p99": 16.12
+     },
+     "dark": {
+      "worst": 15.62,
+      "p99": 16.31
+     }
+    },
+    "min_worst": 15.24
+   },
+   {
+    "t": "50",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.44,
+      "p99": 16.8
+     },
+     "dark": {
+      "worst": 14.94,
+      "p99": 15.36
+     }
+    },
+    "min_worst": 14.94
+   },
+   {
+    "t": "Menu",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 11.1,
+      "p99": 11.17
+     },
+     "dark": {
+      "worst": 10.2,
+      "p99": 11.02
+     }
+    },
+    "min_worst": 10.2
+   },
+   {
+    "t": "Esc",
+    "size": 18.0,
+    "face": "AzeretMono",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.72,
+      "p99": 10.72
+     },
+     "dark": {
+      "worst": 10.68,
+      "p99": 11.04
+     }
+    },
+    "min_worst": 10.68
+   },
+   {
+    "t": "3",
+    "size": 19.0,
+    "face": "AzeretMono",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.7,
+      "p99": 16.09
+     },
+     "dark": {
+      "worst": 17.42,
+      "p99": 17.42
+     }
+    },
+    "min_worst": 15.7
+   },
+   {
+    "t": "Heat",
+    "size": 19.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 6.39,
+      "p99": 6.41
+     },
+     "dark": {
+      "worst": 5.85,
+      "p99": 6.08
+     }
+    },
+    "min_worst": 5.85
+   },
+   {
+    "t": "Hegemony Navy, 2 ships",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.6,
+      "p99": 16.6
+     },
+     "dark": {
+      "worst": 14.97,
+      "p99": 15.87
+     }
+    },
+    "min_worst": 14.97
+   },
+   {
+    "t": "Dossier",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 5.93,
+      "p99": 5.93
+     },
+     "dark": {
+      "worst": 5.89,
+      "p99": 6.03
+     }
+    },
+    "min_worst": 5.89
+   },
+   {
+    "t": "Fleet Marshal Petra Valk",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 16.85,
+      "p99": 16.98
+     },
+     "dark": {
+      "worst": 15.22,
+      "p99": 15.98
+     }
+    },
+    "min_worst": 15.22
+   },
+   {
+    "t": "Nemesis",
+    "size": 19.0,
+    "face": "Barlow Medium",
+    "col": "ff6050",
+    "strength": "ff6050",
+    "contrast": {
+     "bright": {
+      "worst": 6.98,
+      "p99": 7.0
+     },
+     "dark": {
+      "worst": 6.07,
+      "p99": 6.43
+     }
+    },
+    "min_worst": 6.07
+   },
+   {
+    "t": "Log  L",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "969084",
+    "strength": "TEXT3",
+    "contrast": {
+     "bright": {
+      "worst": 5.99,
+      "p99": 6.27
+     },
+     "dark": {
+      "worst": 5.89,
+      "p99": 6.08
+     }
+    },
+    "min_worst": 5.89
+   },
+   {
+    "t": "Fleet Marshal Petra Valk: \"Every move you can make has been planned for.\"",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 9.95,
+      "p99": 10.31
+     },
+     "dark": {
+      "worst": 9.76,
+      "p99": 10.62
+     }
+    },
+    "min_worst": 9.76
+   },
+   {
+    "t": "Fleet Marshal Petra Valk: \"All reserve squadrons, jump in now. Encircle them.\"",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "c4beb0",
+    "strength": "TEXT2",
+    "contrast": {
+     "bright": {
+      "worst": 10.15,
+      "p99": 10.41
+     },
+     "dark": {
+      "worst": 9.84,
+      "p99": 10.69
+     }
+    },
+    "min_worst": 9.84
+   },
+   {
+    "t": "Contact: Hegemony Navy. 2 ships on the scanners.",
+    "size": 18.0,
+    "face": "Barlow",
+    "col": "f0eade",
+    "strength": "TEXT",
+    "contrast": {
+     "bright": {
+      "worst": 15.38,
+      "p99": 16.47
+     },
+     "dark": {
+      "worst": 15.37,
+      "p99": 16.54
+     }
+    },
+    "min_worst": 15.37
+   }
+  ]
+ }
+}

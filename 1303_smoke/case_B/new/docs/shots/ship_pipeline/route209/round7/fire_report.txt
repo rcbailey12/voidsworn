@@ -1,0 +1,18 @@
+[fire] ship code=C15s_23 a4=true weapon hard points for slot 0: 4
+[fire] hp_w0_scatter_P_0 muzzle at (9.21, -1.2, -6.03), nearest effect mount 6.68 world units away (0.288 ship lengths)
+[fire] hp_w0_scatter_P_1 muzzle at (8.83, -1.2, -6.13), nearest effect mount 6.61 world units away (0.285 ship lengths)
+[fire] hp_w0_scatter_P_2 muzzle at (6.34, -1.2, -6.06), nearest effect mount 6.13 world units away (0.264 ship lengths)
+[fire] hp_w0_scatter_P_3 muzzle at (5.98, -1.2, -6.15), nearest effect mount 6.23 world units away (0.268 ship lengths)
+[fire] SMOKE_OFFSET mean 6.41 worst 6.68 world units; ship length 23.20; effect mounts [(6.496, 1.907326, -0.78248), (2.32, 1.907326, -0.639301), (-1.856, 1.907326, -3.439585), (-6.032, 0.0, -6.181212)]
+[vent] variant after look=''
+[fire] ship code=C15s_23 a4=true weapon hard points for slot 0: 4
+[fire] hp_w0_scatter_P_0 muzzle at (9.21, -1.2, -6.03), nearest effect mount 6.68 world units away (0.288 ship lengths)
+[fire] hp_w0_scatter_P_1 muzzle at (8.83, -1.2, -6.13), nearest effect mount 6.61 world units away (0.285 ship lengths)
+[fire] hp_w0_scatter_P_2 muzzle at (6.34, -1.2, -6.06), nearest effect mount 6.13 world units away (0.264 ship lengths)
+[fire] hp_w0_scatter_P_3 muzzle at (5.98, -1.2, -6.15), nearest effect mount 6.23 world units away (0.268 ship lengths)
+[fire] SMOKE_OFFSET mean 6.41 worst 6.68 world units; ship length 23.20; effect mounts [(6.496, 1.907326, -0.78248), (2.32, 1.907326, -0.639301), (-1.856, 1.907326, -3.439585), (-6.032, 0.0, -6.181212)]
+[vent] after game frames=45
+[vent] after battle frames=45
+[vent] after close frames=45
+[vent] stray none after
+VENT_DONE

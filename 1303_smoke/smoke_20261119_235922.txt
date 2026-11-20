@@ -1,0 +1,7 @@
+smoke1303 start Thu 11/19/2026 23:59:22.49 pin 1ae2e422f213e946db93a821d55b5cda2aca3a6d 
+PASS A: head outside tools_live refused, exit 2  
+PASS B: full run done PASS, exit 0, attempt C:\Users\rcbai\Downloads\voidsworn_test\opus1303\out_20261120_000129_23626  
+PASS C: short pin refused, done FAILED, exit 1, attempt C:\Users\rcbai\Downloads\voidsworn_test\opus1303neg\out_20261120_001749_20978  
+PASS D: leftover JW_TOOLS, JW_HASHES and PC_REAL_PROFILE cleared, done PASS, attempt C:\Users\rcbai\Downloads\voidsworn_test\opus1303d\out_20261120_001755_21  
+PASS E: steps 1 and 2 both ran v1 after the pointer moved to v2; the control step ran v2  
+smoke1303 end Fri 11/20/2026  0:18:00.43: 5 of 5 cases passed 

@@ -1,0 +1,4 @@
+export Sun 11/01/2026 19:11:39.23 from C:\Users\rcbai\Downloads\voidsworn_test\build\godot 
+OK: C:\Users\rcbai\Downloads\voidsworn_test\build\export\Voidsworn.exe 
+[export-check] OK []
+[botrun] SUMMARY 2 runs, 0 wins, 0 errors, 0 softlocks, 104.6 s real time (average 52.3 s)

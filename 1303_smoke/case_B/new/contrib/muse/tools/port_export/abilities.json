@@ -1,0 +1,69 @@
+{
+ "evasive": {
+  "n": "Evasive burn",
+  "d": "+25 evasion until your next turn and +2 movement now.",
+  "cd": 3
+ },
+ "reload": {
+  "n": "Reload torpedoes",
+  "d": "Torpedo tubes are ready to fire again immediately.",
+  "cd": 3
+ },
+ "focus": {
+  "n": "Concentrated fire",
+  "d": "All of this ship’s weapons deal +30% damage this turn.",
+  "cd": 3
+ },
+ "launch": {
+  "n": "Launch squadron",
+  "d": "Carriers start each battle with their wings in flight. This launches a replacement for a lost wing into an adjacent hex; each carrier has one spare wing per hangar slot.",
+  "cd": 1
+ },
+ "surge": {
+  "n": "Shield surge",
+  "d": "Every shield facing restored to full strength.",
+  "cd": 4
+ },
+ "nova": {
+  "n": "Spinal cannon",
+  "d": "Spinal shell: 40 damage to a hex 3–9 away and 20 to everything adjacent. Hits friends too.",
+  "cd": 3,
+  "target": true
+ },
+ "ionpulse": {
+  "n": "Ion pulse",
+  "d": "Every enemy ship within 4 hexes loses half of each shield facing.",
+  "cd": 3
+ },
+ "overburn": {
+  "n": "Overburn",
+  "d": "+3 movement now, and a ram this turn hits 50% harder.",
+  "cd": 3
+ },
+ "frenzy": {
+  "n": "Blood frenzy",
+  "d": "All of this ship’s weapons deal +30% damage this turn.",
+  "cd": 3
+ },
+ "regrow": {
+  "n": "Rapid regrowth",
+  "d": "Regrow 25% of this ship’s hull right now.",
+  "cd": 3
+ },
+ "blink": {
+  "n": "Phase jump",
+  "d": "Jump to any open hex within 3, straight past rocks and ships. Tap the hex.",
+  "cd": 3,
+  "target": true
+ },
+ "phase": {
+  "n": "Fold skip",
+  "d": "+25 evasion until your next turn and +2 movement now.",
+  "cd": 3
+ },
+ "reclaim": {
+  "n": "Repair swarm",
+  "d": "Restore 20% hull to your most damaged ship within 3 hexes (this one included).",
+  "cd": 3
+ }
+}

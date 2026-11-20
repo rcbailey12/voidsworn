@@ -1,0 +1,71 @@
+{
+  "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+  "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+  "source_dirty": true,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "STORM982_c60_quality.jpg",
+  "date": "2026-11-17T17:11:19Z",
+  "sources": [
+    {
+      "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+      "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "storm_max_c60_bolt.jpg",
+      "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+      "source_dirty": true,
+      "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+      "stage": "installed in game",
+      "date": "2026-11-17T17:08:09Z",
+      "image_sha256": "3772094375fe0518d711ce76ee1bbd3f4444d5c7fb994a378cad10c57f64f660",
+      "sources": [
+        {
+          "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+          "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "storm_low_c60_bolt.jpg",
+      "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+      "source_dirty": true,
+      "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+      "stage": "installed in game",
+      "date": "2026-11-17T17:08:39Z",
+      "image_sha256": "424fb579c98e7aa626f82eff0a54b937ef9cce9020199473e93f42d6c92d4703",
+      "sources": [
+        {
+          "source_commit": "c05737b2aa257af1890ce2583f972218cf30593e",
+          "source_diff_sha256": "b2bce90699d6e48df0acffbca3c6cb8bd028e6d0c89b1d443deb22ea138420e8",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    622,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    98
+  ],
+  "strip_sha256": [
+    "5f325f343dcdd8a94250cce5d68757197a791c49fc0982faefb30a39a3c125df"
+  ],
+  "stamp_template_sha256": "62452f79584bd7f6c6feeb2acb9c8022f5dcd338a2faab0d33a38bab99b1cb92",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAABiCAIAAABFzJnDAAABnUlEQVR4nO3XMREAIAADMUABCyv+ZaKCnxIDHf8697kDAPhvBRsAgOgCQMfTBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARuMB+h8BB2CM+58AAAAASUVORK5CYII="
+  ],
+  "image_sha256": "7d8a8bc133213eb6235fd518a69ee2f1abd488d1aec616cce4c918b1dffcc6c3"
+}

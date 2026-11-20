@@ -1,0 +1,258 @@
+{
+ "out": "s68",
+ "budget_s": 1150,
+ "items": [
+  {
+   "id": "nem_chorus_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_chorus_2_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_2",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_chorus_2_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_2",
+   "kind": "carapace",
+   "seed": 11,
+   "src": "e64/nem_chorus_2_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_2",
+   "kind": "carapace",
+   "seed": 23,
+   "src": "e64/nem_chorus_2_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_chorus_3_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_3",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_chorus_3_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_3",
+   "kind": "carapace",
+   "seed": 11,
+   "src": "e64/nem_chorus_3_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_3",
+   "kind": "carapace",
+   "seed": 23,
+   "src": "e64/nem_chorus_3_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_chorus_4_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_4",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_chorus_4_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_4",
+   "kind": "carapace",
+   "seed": 11,
+   "src": "e64/nem_chorus_4_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_4",
+   "kind": "carapace",
+   "seed": 23,
+   "src": "e64/nem_chorus_4_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_chorus_5_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_5",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_chorus_5_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_5",
+   "kind": "carapace",
+   "seed": 11,
+   "src": "e64/nem_chorus_5_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_5",
+   "kind": "carapace",
+   "seed": 23,
+   "src": "e64/nem_chorus_5_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_chorus_6_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_6",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_chorus_6_v64_s23_00001_.png",
+   "prompt": "Add a large old burn wound to this organism: a patch of scorched, blistered, blackened flesh on one side, healed over with waxy pink scar tissue. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_6",
+   "kind": "carapace",
+   "seed": 11,
+   "src": "e64/nem_chorus_6_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_6",
+   "kind": "carapace",
+   "seed": 23,
+   "src": "e64/nem_chorus_6_v64_s23_00001_.png",
+   "prompt": "Add one deep half-healed wound to this organism's own shell or skin on one side of its body: a jagged split edged with raw pink tissue and a little dull yellow ooze, a few short cracks around it. The damage stays on the organism's body; the background does not change. No lightning, no glowing lines, no beams, no rays. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_deathless_3_v64_s23_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_deathless_3_v64_s23_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "machine",
+   "seed": 11,
+   "src": "e64/nem_deathless_3_v64_s23_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "machine",
+   "seed": 23,
+   "src": "e64/nem_deathless_3_v64_s23_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_deathless_4_v64_s11_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_deathless_4_v64_s11_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "machine",
+   "seed": 11,
+   "src": "e64/nem_deathless_4_v64_s11_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "machine",
+   "seed": 23,
+   "src": "e64/nem_deathless_4_v64_s11_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_deathless_5_v64_s23_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_deathless_5_v64_s23_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "machine",
+   "seed": 11,
+   "src": "e64/nem_deathless_5_v64_s23_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "machine",
+   "seed": 23,
+   "src": "e64/nem_deathless_5_v64_s23_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "e64/nem_deathless_6_v64_s11_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "burn",
+   "seed": 23,
+   "src": "e64/nem_deathless_6_v64_s11_00001_.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "machine",
+   "seed": 11,
+   "src": "e64/nem_deathless_6_v64_s11_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "machine",
+   "seed": 23,
+   "src": "e64/nem_deathless_6_v64_s11_00001_.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}

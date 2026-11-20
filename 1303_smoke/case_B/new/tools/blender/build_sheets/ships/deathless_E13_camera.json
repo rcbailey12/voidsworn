@@ -1,0 +1,21 @@
+{
+ "az": 78.56,
+ "el": 56.16,
+ "roll": -17.26,
+ "dist": 30.55558105984447,
+ "mm": 131.91606358716405,
+ "target": [
+  -0.8548634951133308,
+  -0.013388990573500112,
+  0.20009201180447259
+ ],
+ "sx": 0.01925961521466321,
+ "sy": 0.09572092478385315,
+ "res": [
+  1920,
+  1280
+ ],
+ "iou": 0.511,
+ "body_iou": 0.4985,
+ "note": "E13 camera of record (issue 739): the beauty's view from above and ahead of the port beam, the nose lower left and the engine ring upper right. Angles from a coarse grid held to the picture's axis (the bow 148 degrees round from screen right, within 25), refined by fit.py on the wider first layout; after the massing round (the fan slimmed and flattened to the concept sheet's measured proportions) the angles were held and fit.py fitted the framing only (--fix-angles, never the ship). A free fit after the massing round swings round to a bow view (azimuth 14, IoU 54.3) that no longer shows the beauty's broad fan, so the held angles stay. The cut-out (luminance over 14, closed, filled) leaves out the engine's light ring and its glow: the game draws that light, the hull has no such mesh."
+}

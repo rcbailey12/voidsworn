@@ -1,0 +1,22 @@
+Saved manifest before: 747ffb51f69ff0139a18d75906c44ca4a6c867e340ca85e56f3a3c9fff47d2cc
+Saved manifest after: aeb99b05371a5fef003b2a5e379269428923307211f75305c8d95a54b0775cee
+
+Saved Godot results: changed battles
+Later differences count changed records after the first, aligned by turn index.
+FAIL battle s9
+  turn 0, round 1, after tick player; unit x06 (player penitent)
+  state.units[1].q: 3 -> 6
+  later changed records: 401; total records: 402 -> 344
+FAIL battle s24
+  turn 0, round 1, after tick player; unit x08 (player reliquary)
+  state.units[1].q: 1 -> -1
+  later changed records: 621; total records: 499 -> 622
+FAIL battle s36
+  turn 0, round 1, after tick player; unit x09 (player reliquary)
+  state.units[2].q: 1 -> 0
+  later changed records: 357; total records: 218 -> 358
+FAIL battle s39
+  turn 0, round 1, after tick player; unit x08 (player penitent)
+  state.units[1].q: 6 -> 10
+  later changed records: 390; total records: 385 -> 391
+FAIL: saved Godot results; 284 battles checked, 4 changed, 0 other files changed, 4 failures; 12.993 s

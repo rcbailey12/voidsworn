@@ -1,0 +1,7 @@
+{
+ "note": "20-ship gallery bench, Ryan's PC (RTX 5080), Forward+, max quality, 30 s. fps_1pct_low is the frame rate in the slowest 1% of frames.",
+ "r2_same_session_before_207759e": {"1080p": [60.5, 64.0], "4k": [37.7, 39.4]},
+ "r2_same_session_after_30d3db0": {"1080p": [63.2, 64.3], "4k": [39.1, 39.2]},
+ "r3b_after_496c53e": {"1080p": [73.7, 77.1], "4k": [43.7, 44.1]},
+ "r4_after_53c1b51": {"1080p": [74.2, 74.8], "4k": [44.3, 45.3], "fps_avg_1080p": [302.1, 304.5], "fps_avg_4k": [158.8, 160.7], "worst_frame_ms": [41.4, 52.7, 40.4, 55.0]}
+}

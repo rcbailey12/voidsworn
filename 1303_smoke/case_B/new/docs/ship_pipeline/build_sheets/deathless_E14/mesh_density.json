@@ -1,0 +1,92 @@
+{
+ "rule": "R224: a part kind more than 25 percent under the hull is flagged (mesh half; the paint half is stage 5)",
+ "types": {
+  "hull": {
+   "area": 278.64,
+   "triangles": 25476,
+   "tris_per_unit2": 91.4,
+   "edges_per_unit2": 82.2
+  },
+  "corewin": {
+   "area": 1.8,
+   "triangles": 528,
+   "tris_per_unit2": 293.7,
+   "edges_per_unit2": 240.3,
+   "tris_per_unit2_vs_hull": 3.21,
+   "edges_per_unit2_vs_hull": 2.92
+  },
+  "strut": {
+   "area": 3.85,
+   "triangles": 736,
+   "tris_per_unit2": 191.0,
+   "edges_per_unit2": 149.5,
+   "tris_per_unit2_vs_hull": 2.09,
+   "edges_per_unit2_vs_hull": 1.82
+  },
+  "core": {
+   "area": 3.71,
+   "triangles": 1760,
+   "tris_per_unit2": 473.8,
+   "edges_per_unit2": 297.2,
+   "tris_per_unit2_vs_hull": 5.18,
+   "edges_per_unit2_vs_hull": 3.62
+  },
+  "spinal": {
+   "area": 35.84,
+   "triangles": 6208,
+   "tris_per_unit2": 173.2,
+   "edges_per_unit2": 91.5,
+   "tris_per_unit2_vs_hull": 1.89,
+   "edges_per_unit2_vs_hull": 1.11
+  },
+  "engine": {
+   "area": 21.67,
+   "triangles": 3032,
+   "tris_per_unit2": 139.9,
+   "edges_per_unit2": 66.8,
+   "tris_per_unit2_vs_hull": 1.53,
+   "edges_per_unit2_vs_hull": 0.81
+  },
+  "thruster": {
+   "area": 0.97,
+   "triangles": 448,
+   "tris_per_unit2": 461.8,
+   "edges_per_unit2": 395.9,
+   "tris_per_unit2_vs_hull": 5.05,
+   "edges_per_unit2_vs_hull": 4.82
+  },
+  "lamp": {
+   "area": 2.91,
+   "triangles": 560,
+   "tris_per_unit2": 192.7,
+   "edges_per_unit2": 165.2,
+   "tris_per_unit2_vs_hull": 2.11,
+   "edges_per_unit2_vs_hull": 2.01
+  },
+  "vent": {
+   "area": 1.48,
+   "triangles": 376,
+   "tris_per_unit2": 254.4,
+   "edges_per_unit2": 227.4,
+   "tris_per_unit2_vs_hull": 2.78,
+   "edges_per_unit2_vs_hull": 2.77
+  },
+  "hatch": {
+   "area": 0.48,
+   "triangles": 408,
+   "tris_per_unit2": 844.3,
+   "edges_per_unit2": 711.9,
+   "tris_per_unit2_vs_hull": 9.24,
+   "edges_per_unit2_vs_hull": 8.66
+  },
+  "hatchbox": {
+   "area": 1.37,
+   "triangles": 1120,
+   "tris_per_unit2": 818.6,
+   "edges_per_unit2": 701.7,
+   "tris_per_unit2_vs_hull": 8.96,
+   "edges_per_unit2_vs_hull": 8.54
+  }
+ },
+ "mesh_flags": []
+}

@@ -1,0 +1,98 @@
+{
+ "f3_r2/bench_after_1080_1.json": {
+  "fps_1pct_low": 63.2,
+  "fps_avg": 250.4,
+  "avg_ms": 3.993,
+  "p99_ms": 15.826,
+  "max_ms": 44.719,
+  "gpu_ms": 2.575
+ },
+ "f3_r2/bench_after_1080_2.json": {
+  "fps_1pct_low": 64.3,
+  "fps_avg": 255.0,
+  "avg_ms": 3.922,
+  "p99_ms": 15.547,
+  "max_ms": 56.023,
+  "gpu_ms": 2.562
+ },
+ "f3_r2/bench_after_4k_1.json": {
+  "fps_1pct_low": 39.1,
+  "fps_avg": 137.5,
+  "avg_ms": 7.273,
+  "p99_ms": 25.593,
+  "max_ms": 46.579,
+  "gpu_ms": 6.355
+ },
+ "f3_r2/bench_after_4k_2.json": {
+  "fps_1pct_low": 39.2,
+  "fps_avg": 137.6,
+  "avg_ms": 7.269,
+  "p99_ms": 25.536,
+  "max_ms": 47.433,
+  "gpu_ms": 6.382
+ },
+ "f3_r2/bench_before_1080_1.json": {
+  "fps_1pct_low": 60.5,
+  "fps_avg": 251.3,
+  "avg_ms": 3.98,
+  "p99_ms": 16.538,
+  "max_ms": 53.628,
+  "gpu_ms": 2.556
+ },
+ "f3_r2/bench_before_1080_2.json": {
+  "fps_1pct_low": 64.0,
+  "fps_avg": 254.3,
+  "avg_ms": 3.933,
+  "p99_ms": 15.636,
+  "max_ms": 40.978,
+  "gpu_ms": 2.6
+ },
+ "f3_r2/bench_before_4k_1.json": {
+  "fps_1pct_low": 37.7,
+  "fps_avg": 137.9,
+  "avg_ms": 7.251,
+  "p99_ms": 26.558,
+  "max_ms": 48.692,
+  "gpu_ms": 6.361
+ },
+ "f3_r2/bench_before_4k_2.json": {
+  "fps_1pct_low": 39.4,
+  "fps_avg": 138.2,
+  "avg_ms": 7.234,
+  "p99_ms": 25.405,
+  "max_ms": 50.012,
+  "gpu_ms": 6.336
+ },
+ "f3_r3b/bench_after_1080_1.json": {
+  "fps_1pct_low": 73.7,
+  "fps_avg": 305.3,
+  "avg_ms": 3.275,
+  "p99_ms": 13.56,
+  "max_ms": 40.015,
+  "gpu_ms": 2.431
+ },
+ "f3_r3b/bench_after_1080_2.json": {
+  "fps_1pct_low": 77.1,
+  "fps_avg": 306.2,
+  "avg_ms": 3.266,
+  "p99_ms": 12.972,
+  "max_ms": 51.882,
+  "gpu_ms": 2.425
+ },
+ "f3_r3b/bench_after_4k_1.json": {
+  "fps_1pct_low": 43.7,
+  "fps_avg": 158.2,
+  "avg_ms": 6.32,
+  "p99_ms": 22.907,
+  "max_ms": 44.145,
+  "gpu_ms": 5.883
+ },
+ "f3_r3b/bench_after_4k_2.json": {
+  "fps_1pct_low": 44.1,
+  "fps_avg": 159.4,
+  "avg_ms": 6.273,
+  "p99_ms": 22.653,
+  "max_ms": 43.159,
+  "gpu_ms": 5.843
+ }
+}

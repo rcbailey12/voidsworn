@@ -1,0 +1,21 @@
+{
+ "az": 123.64572951950393,
+ "el": 55.58566297879792,
+ "roll": -5.569444990455902,
+ "dist": 61.12460119374453,
+ "mm": 1123.2256432535241,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.029902824941257122,
+ "sy": 0.009312587165198692,
+ "res": [
+  1080,
+  720
+ ],
+ "iou": 0.9083,
+ "body_iou": 0.9113,
+ "note": "SF3 beauty (one three-quarter picture, no true views): a coarse grid over the view angles (contrib/opus/tools/issue738/grid.py), then fit.py refined all seven camera numbers (never the craft); concept mask: contrib/opus/tools/issue738/mask.py, largest shape (the name label left out)"
+}

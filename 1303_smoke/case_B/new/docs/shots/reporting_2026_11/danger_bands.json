@@ -1,0 +1,232 @@
+{
+  "item": "MP8 danger bands against measured bot outcomes",
+  "seed": 1,
+  "runs_per_faction": 12,
+  "factions": [
+    "voidsworn",
+    "hegemony",
+    "corsair",
+    "chorus",
+    "ithar",
+    "deathless"
+  ],
+  "fights": 763,
+  "fights_by_kind": {
+    "battle": 403,
+    "elite": 204,
+    "boss": 156
+  },
+  "ai": "veteran",
+  "policy": "baseline",
+  "bands_source": "godot/ui/campaign/map_intel.gd BANDS",
+  "bands": [
+    {
+      "band": "Easy",
+      "lower": 0.8,
+      "fights": 261,
+      "wins": 255,
+      "losses": 6,
+      "retreats": 0,
+      "win_rate": 0.9770114942528736,
+      "ci": [
+        0.9507619201529212,
+        0.9894227034107487
+      ]
+    },
+    {
+      "band": "Even",
+      "lower": 1.05,
+      "fights": 220,
+      "wins": 212,
+      "losses": 8,
+      "retreats": 0,
+      "win_rate": 0.9636363636363636,
+      "ci": [
+        0.9298976425743848,
+        0.9814611039678128
+      ]
+    },
+    {
+      "band": "Hard",
+      "lower": 1.4,
+      "fights": 172,
+      "wins": 160,
+      "losses": 12,
+      "retreats": 0,
+      "win_rate": 0.9302325581395349,
+      "ci": [
+        0.8820233606410363,
+        0.9596432301998113
+      ]
+    },
+    {
+      "band": "Deadly",
+      "lower": 99,
+      "fights": 110,
+      "wins": 85,
+      "losses": 25,
+      "retreats": 0,
+      "win_rate": 0.7727272727272727,
+      "ci": [
+        0.6859933250234248,
+        0.8410547839279603
+      ]
+    }
+  ],
+  "logistic_fit": {
+    "A": 4.138646387332512,
+    "B": -1.2631077252839762,
+    "auc": 0.7716319673936991,
+    "fights": 763,
+    "probabilities_at_old_cut_points": [
+      {
+        "ratio": 0.8,
+        "p": 0.9580394958923577
+      },
+      {
+        "ratio": 1.05,
+        "p": 0.9433413362853442
+      },
+      {
+        "ratio": 1.4,
+        "p": 0.9145339657687378
+      }
+    ],
+    "ratio_at_probability": [
+      {
+        "p": 0.9,
+        "ratio": 1.5370199794794348
+      },
+      {
+        "p": 0.75,
+        "ratio": 2.406789253055144
+      },
+      {
+        "p": 0.6,
+        "ratio": 2.955552566496291
+      },
+      {
+        "p": 0.5,
+        "ratio": 3.2765585266308523
+      },
+      {
+        "p": 0.4,
+        "ratio": 3.5975644867654135
+      },
+      {
+        "p": 0.25,
+        "ratio": 4.146327800206561
+      },
+      {
+        "p": 0.1,
+        "ratio": 5.016097073782269
+      }
+    ]
+  },
+  "bands_non_boss": [
+    {
+      "band": "Easy",
+      "lower": 0.8,
+      "fights": 242,
+      "wins": 236,
+      "losses": 6,
+      "retreats": 0,
+      "win_rate": 0.9752066115702479,
+      "ci": [
+        0.9469730625221764,
+        0.9885886975705012
+      ]
+    },
+    {
+      "band": "Even",
+      "lower": 1.05,
+      "fights": 154,
+      "wins": 146,
+      "losses": 8,
+      "retreats": 0,
+      "win_rate": 0.948051948051948,
+      "ci": [
+        0.9008488431490657,
+        0.9734453860021847
+      ]
+    },
+    {
+      "band": "Hard",
+      "lower": 1.4,
+      "fights": 126,
+      "wins": 117,
+      "losses": 9,
+      "retreats": 0,
+      "win_rate": 0.9285714285714286,
+      "ci": [
+        0.8698134381416338,
+        0.9619692878876204
+      ]
+    },
+    {
+      "band": "Deadly",
+      "lower": 99,
+      "fights": 85,
+      "wins": 68,
+      "losses": 17,
+      "retreats": 0,
+      "win_rate": 0.8,
+      "ci": [
+        0.7028443198871105,
+        0.8712110775843444
+      ]
+    }
+  ],
+  "logistic_fit_non_boss": {
+    "A": 3.7330595227331695,
+    "B": -0.9457402061412657,
+    "auc": 0.7467151675485009,
+    "fights": 607,
+    "probabilities_at_old_cut_points": [
+      {
+        "ratio": 0.8,
+        "p": 0.9514996063132923
+      },
+      {
+        "ratio": 1.05,
+        "p": 0.939347937309038
+      },
+      {
+        "ratio": 1.4,
+        "p": 0.9175127873714136
+      }
+    ],
+    "ratio_at_probability": [
+      {
+        "p": 0.9,
+        "ratio": 1.6239501455302847
+      },
+      {
+        "p": 0.75,
+        "ratio": 2.7855929323486444
+      },
+      {
+        "p": 0.6,
+        "ratio": 3.5185079295740134
+      },
+      {
+        "p": 0.5,
+        "ratio": 3.9472357191670038
+      },
+      {
+        "p": 0.4,
+        "ratio": 4.375963508759995
+      },
+      {
+        "p": 0.25,
+        "ratio": 5.108878505985364
+      },
+      {
+        "p": 0.1,
+        "ratio": 6.270521292803722
+      }
+    ]
+  },
+  "note": "Retreats count as not won. Timeouts are left out (the sim maps a non-boss timeout to a retreat). Boss fights are one per run; the non-boss block leaves them out.",
+  "elapsed_s": 75.164
+}

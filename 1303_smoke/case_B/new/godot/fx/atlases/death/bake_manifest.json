@@ -1,0 +1,81 @@
+{
+  "flash": {
+    "frames": 16,
+    "grid": 4,
+    "tile": 512,
+    "flow_range_uv": 0.125,
+    "max_alpha": 211,
+    "nonempty_frames": 16
+  },
+  "vent": {
+    "frames": 16,
+    "grid": 4,
+    "tile": 512,
+    "flow_range_uv": 0.125,
+    "max_alpha": 231,
+    "nonempty_frames": 16
+  },
+  "cool": {
+    "frames": 16,
+    "grid": 4,
+    "tile": 512,
+    "flow_range_uv": 0.125,
+    "max_alpha": 212,
+    "nonempty_frames": 16
+  },
+  "source": {
+    "records": [
+      {
+        "kind": "flash",
+        "resolution": 64,
+        "frames": 16,
+        "simulation_frames": 32,
+        "buoyancy": 0,
+        "gravity": [
+          0,
+          0,
+          0
+        ],
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ]
+      },
+      {
+        "kind": "vent",
+        "resolution": 64,
+        "frames": 16,
+        "simulation_frames": 32,
+        "buoyancy": 0,
+        "gravity": [
+          0,
+          0,
+          0
+        ],
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ]
+      },
+      {
+        "kind": "cool",
+        "resolution": 64,
+        "frames": 16,
+        "simulation_frames": 32,
+        "buoyancy": 0,
+        "gravity": [
+          0,
+          0,
+          0
+        ],
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ]
+      }
+    ],
+    "seconds": 64.13116216659546
+  },
+  "size_classes": {
+    "small": 1024,
+    "cruiser": 1536,
+    "capital": 2048
+  }
+}

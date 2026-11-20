@@ -1,0 +1,19 @@
+# admiral band 1 confirmation, PC lane B, Oct 27, code = main 6b1571e data (band 1), sector 1 bossmatrix 40 = 200 runs per admiral, SEED 5201 to 5206 per group
+bossmatrix s1 {"vex":"58% r10.3","malek":"50% r10.2","ashgrove":"50% r11.3 (carrier)","thale":"71% r13.4"}
+by boss {"hegemony":"29%","corsair":"84%","chorus":"65%","ithar":"39%","deathless":"68%"}
+carrier fleets 50% gun fleets 60%
+bossmatrix s1 {"kassar":"81% r9.8 (carrier)","vorn":"78% r10.4","reyes":"80% r11.3 (carrier)","maren":"74% r16.8 (carrier)"}
+by boss {"voidsworn":"91%","corsair":"94%","chorus":"71%","ithar":"66%","deathless":"69%"}
+carrier fleets 78% gun fleets 78%
+bossmatrix s1 {"grax":"64% r8.1","sable":"55% r8.7","mott":"63% r9.1 (carrier)","vesh":"68% r11.9 (carrier)"}
+by boss {"voidsworn":"82%","hegemony":"43%","chorus":"39%","ithar":"57%","deathless":"89%"}
+carrier fleets 65% gun fleets 59%
+bossmatrix s1 {"matriarch":"69% r11.9 (carrier)","razormaw":"81% r8.3","mending":"90% r8.6","voice":"84% r8.5"}
+by boss {"voidsworn":"88%","hegemony":"68%","corsair":"78%","ithar":"78%","deathless":"93%"}
+carrier fleets 69% gun fleets 85%
+bossmatrix s1 {"aelith":"68% r13.0 (carrier)","vaelen":"74% r9.3","thorne":"65% r12.8","mirelle":"68% r10.6"}
+by boss {"voidsworn":"82%","hegemony":"41%","corsair":"83%","chorus":"80%","deathless":"57%"}
+carrier fleets 68% gun fleets 69%
+bossmatrix s1 {"nekhet":"77% r13.2","sekhmar":"62% r11.8","anuket":"84% r9.9","khepra":"69% r12.2"}
+by boss {"voidsworn":"89%","hegemony":"81%","corsair":"73%","chorus":"64%","ithar":"57%"}
+carrier fleets NaN% gun fleets 73%

@@ -1,0 +1,22 @@
+{
+ "engine": "babylon",
+ "renderer": "webgl2",
+ "mode": "max",
+ "width": 2560,
+ "height": 1440,
+ "seconds": 20,
+ "frames": 7620,
+ "avg_ms": 2.624,
+ "p99_ms": 8.293,
+ "max_ms": 11.6,
+ "fps_avg": 381.044,
+ "load_s": 6.316,
+ "gpu_mem_mb": null,
+ "notes": "Babylon 9.30.0; Chromium via Playwright, GL renderer: ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002C02) Direct3D11 vs_5_0 ps_5_0, D3D11); MSAA 4x, HDR, bloom, ACES, 4 shadow cascades of 2048; frame time = time between requestAnimationFrame callbacks; median 2.4 ms; GPU timer query average 2.696 ms per frame; load_s from navigation start to the first presented frame with all six ships and the sky; browser launch took 0.66 s more; gpu_mem_mb: WebGL has no GPU memory counter; nvidia-smi total memory used: 1638 MB before launch, 3787 MB peak (+2149 MB); 6 ships; shaders pre-warmed for 0.10 s after load_s, before the warm-up; JS work per frame (update plus render calls): worst 1% 8.149 ms, max 11.3 ms; worst frames (scene t s: frame ms / JS work ms): 9.95: 11.6/11.3, 20.09: 11.0/10.9, 15.60: 10.5/10.4, 15.54: 10.4/10.2, 7.12: 10.3/10.2, 11.52: 10.2/10.2, 17.22: 9.9/9.7, 18.07: 9.9/9.7; event lights: ClusteredLightContainer, 64 lights; rich lights: 68 point lights in the scene, 18.883 distinct event lights lit at once on average, 27 at most; environment: dead-star sky, 206 rocks; 1 shader compiles and 0 heap drops (GC) during the bench, listed in the trace; physics: 380 Havok bodies, step 0.056 ms per frame on average, 1 ms at most; per-second trace in babylon930_max_1440_trace.json",
+ "vsync": false,
+ "refresh_hz": null,
+ "dropped_frames": null,
+ "dropped_pct": null,
+ "physics_step_avg_ms": 0.056,
+ "physics_step_max_ms": 1
+}

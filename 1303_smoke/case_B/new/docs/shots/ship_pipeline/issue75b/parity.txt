@@ -1,0 +1,75 @@
+exported 137 tables (91 read by the port, all present), sha256 b58e9bf72edd1416 | skipped (code, not data): RNG_S SPEED UID UNKNOWN_IDS SAVED_RUN RUN ARENA B CUT SOLID TERRAIN_META
+  seed 1001: PASS
+  seed 7: PASS
+  seed 4242424242: PASS
+  math: PASS (math 316090 values, differences from Node: none)
+  battle s1: PASS (138 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s2: PASS (155 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s3: PASS (144 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s4: PASS (322 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s5: PASS (369 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s6: PASS (206 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s7: PASS (400 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s8: PASS (191 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s9: PASS (423 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s10: PASS (229 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s11: PASS (153 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s12: PASS (179 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s13: PASS (200 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s14: PASS (119 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s15: PASS (168 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s16: PASS (255 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s17: PASS (159 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s18: PASS (234 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s19: PASS (246 records identical (state hash and PRNG state after every action, activation and round), result: end none)
+  battle s20: PASS (140 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s21: PASS (214 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s22: PASS (157 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s23: PASS (580 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s24: PASS (488 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s25: PASS (292 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s26: PASS (200 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s27: PASS (277 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s28: PASS (285 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s29: PASS (127 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s30: PASS (331 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s31: PASS (193 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s32: PASS (75 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s33: PASS (208 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s34: PASS (162 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s35: PASS (198 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s36: PASS (185 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s37: PASS (269 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s38: PASS (330 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s39: PASS (546 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s40: PASS (315 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s41: PASS (185 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s42: PASS (154 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s43: PASS (194 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s44: PASS (102 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s45: PASS (172 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s46: PASS (106 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s47: PASS (125 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s48: PASS (119 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s49: PASS (57 records identical (state hash and PRNG state after every action, activation and round), result: end win)
+  battle s50: PASS (123 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  threat map s4: PASS (ui3d.js computeThreat, rounds 1 to 3)
+  threat map s19: PASS (ui3d.js computeThreat, rounds 1 to 3)
+  threat map s23: PASS (ui3d.js computeThreat, rounds 1 to 3)
+  hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+  thread test s4: PASS (over after round 6, 958 events, 59 reads during enemy steps on a worker)
+  thread test s23: PASS (over after round 9, 1483 events, 95 reads during enemy steps on a worker)
+Enemy think time (report only; game bar: worst under about 0.5 s):
+  s4: 38 enemy activations
+    Node   think per activation: average 0.030 s, worst 0.053 s (round 2); per round: average 0.165 s, worst 0.322 s
+    Godot  think per activation: average 0.121 s, worst 0.369 s (round 2); per round: average 0.655 s, worst 1.654 s
+    Godot/Node: 4.0x on average. Worst enemy think is inside the 0.5 s bar
+  s5: 49 enemy activations
+    Node   think per activation: average 0.028 s, worst 0.058 s (round 3); per round: average 0.154 s, worst 0.315 s
+    Godot  think per activation: average 0.106 s, worst 0.300 s (round 2); per round: average 0.580 s, worst 1.384 s
+    Godot/Node: 3.8x on average. Worst enemy think is inside the 0.5 s bar
+  s23: 50 enemy activations
+    Node   think per activation: average 0.030 s, worst 0.060 s (round 4); per round: average 0.215 s, worst 0.373 s
+    Godot  think per activation: average 0.093 s, worst 0.438 s (round 2); per round: average 0.666 s, worst 1.603 s
+    Godot/Node: 3.1x on average. Worst enemy think is inside the 0.5 s bar
+PASS: the Godot port matches the game's rules exactly.

@@ -1,0 +1,29 @@
+{
+ "hegemony": {},
+ "voidsworn": {
+  "Carrier": 1.25
+ },
+ "corsair": {
+  "Frigate": 0.8,
+  "Destroyer": 0.85,
+  "Cruiser": 1.05,
+  "Carrier": 1.15
+ },
+ "chorus": {
+  "Frigate": 0.65,
+  "Destroyer": 0.75,
+  "Cruiser": 1,
+  "Carrier": 1.2
+ },
+ "ithar": {
+  "Frigate": 1.3,
+  "Destroyer": 1.3,
+  "Cruiser": 1.15,
+  "Carrier": 1.1
+ },
+ "deathless": {
+  "Frigate": 1.45,
+  "Destroyer": 1.5,
+  "Cruiser": 1.55
+ }
+}

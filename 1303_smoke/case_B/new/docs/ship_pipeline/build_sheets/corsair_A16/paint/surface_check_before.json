@@ -1,0 +1,66 @@
+{
+ "ok": false,
+ "totals": {
+  "room": 6844,
+  "bare": 0
+ },
+ "views": {
+  "top": {
+   "stack": 98529,
+   "glow": 0,
+   "liner": 0,
+   "room": 1281,
+   "bare": 0
+  },
+  "below": {
+   "stack": 96370,
+   "glow": 0,
+   "liner": 0,
+   "room": 3438,
+   "bare": 0
+  },
+  "port": {
+   "stack": 64187,
+   "glow": 0,
+   "liner": 0,
+   "room": 1076,
+   "bare": 0
+  },
+  "starboard": {
+   "stack": 64426,
+   "glow": 0,
+   "liner": 0,
+   "room": 838,
+   "bare": 0
+  },
+  "bow": {
+   "stack": 28661,
+   "glow": 0,
+   "liner": 0,
+   "room": 31,
+   "bare": 0
+  },
+  "stern": {
+   "stack": 28513,
+   "glow": 0,
+   "liner": 0,
+   "room": 180,
+   "bare": 0
+  }
+ },
+ "seen_from_outside": {
+  "in_gun_deck": 2404,
+  "in_warlord_hall": 1371,
+  "in_shell_magazine_s": 1242,
+  "in_shell_magazine_p": 674,
+  "in_bridge": 398,
+  "in_engine_room": 216,
+  "in_bh_F5": 2,
+  "in_bh_F1": 1
+ },
+ "objects": {
+  "stack": 400,
+  "room": 24
+ },
+ "res": 640
+}

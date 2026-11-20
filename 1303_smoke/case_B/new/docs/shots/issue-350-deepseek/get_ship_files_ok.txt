@@ -1,0 +1,4 @@
+SHIP_FILES source: C:\Users\rcbai\Downloads\voidsworn_test\build\godot
+SHIP_FILES repo:   C:\Users\rcbai\Downloads\voidsworn_test\work217\issue-350-deepseek\20261109_234151\repo
+SHIP_FILES OK: 252 files match godot/assets/ships/manifest.json
+EXIT=0

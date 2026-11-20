@@ -1,0 +1,28 @@
+[attach] slab: 25 points walked, worst 0.0000 past the limit 0.2880, 0 off the hull; authored {  }; skipped 0; {  }
+ATTACH FAIL: ring station top (ray) is 1.406 from the hull (limit 0.216)
+ATTACH FAIL: ring station top (ray) is 4.436 from the hull (limit 0.216)
+ATTACH FAIL: ring station top (ray) is 4.771 from the hull (limit 0.216)
+ATTACH FAIL: ring station top (ray) is 1.706 from the hull (limit 0.216)
+ATTACH FAIL: ring mount (ray) is 1.406 from the hull (limit 0.216)
+ATTACH FAIL: ring mount (ray) is 4.436 from the hull (limit 0.216)
+ATTACH FAIL: ring mount (ray) is 4.771 from the hull (limit 0.216)
+ATTACH FAIL: ring mount (ray) is 1.706 from the hull (limit 0.216)
+[attach] ring: 25 points walked, worst 4.7708 past the limit 0.2160, 8 off the hull; authored {  }; skipped 0; {  }
+ATTACH FAIL: tower station port (ray) is 6.629 from the hull (limit 0.192)
+ATTACH FAIL: tower station port (ray) is 6.629 from the hull (limit 0.192)
+ATTACH FAIL: tower station port (ray) is 6.629 from the hull (limit 0.192)
+ATTACH FAIL: tower station port (ray) is 6.737 from the hull (limit 0.192)
+ATTACH FAIL: tower station stb (ray) is 6.683 from the hull (limit 0.192)
+ATTACH FAIL: tower station stb (ray) is 6.525 from the hull (limit 0.192)
+ATTACH FAIL: tower station stb (ray) is 6.525 from the hull (limit 0.192)
+ATTACH FAIL: tower station stb (ray) is 6.683 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.629 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.629 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.629 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.737 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.683 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.525 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.525 from the hull (limit 0.192)
+ATTACH FAIL: tower mount (ray) is 6.683 from the hull (limit 0.192)
+[attach] tower: 25 points walked, worst 6.7368 past the limit 0.1920, 16 off the hull; authored {  }; skipped 0; {  }
+ATTACH_CHECK FAIL: 3 hulls, 24 failures, 0 effects skipped by the walk

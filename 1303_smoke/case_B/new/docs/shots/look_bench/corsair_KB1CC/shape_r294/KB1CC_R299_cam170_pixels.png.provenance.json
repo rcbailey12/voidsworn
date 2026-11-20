@@ -1,0 +1,54 @@
+{
+  "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+  "source_dirty": true,
+  "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+  "stage": "paint proof",
+  "schema": 1,
+  "picture_name": "KB1CC_R299_cam170_pixels.png",
+  "date": "2026-11-17T04:08:51Z",
+  "sources": [
+    {
+      "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+      "source_dirty": true,
+      "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+      "stage": "paint proof"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "KB1CC_R299_cam170.jpg",
+      "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+      "source_dirty": true,
+      "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+      "stage": "paint proof",
+      "date": "2026-11-16T23:49:37Z",
+      "image_sha256": "d1f592142ddfc0b982cedac7fbe6ba696acd90147f1d7a885d8a3671289f528b",
+      "sources": [
+        {
+          "source_commit": "d832730eea4e87a7583a0b01468681d66af9a118",
+          "source_dirty": true,
+          "source_diff_sha256": "7fa2671851ec997c46251d5d9e9d4b61797d9116b7c0db44c766f3629f126ae1",
+          "stage": "paint proof"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    311,
+    282,
+    360
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "cb77edd52884138f6049c5502b0d859daaec4a217172aee3fe63bbf1211a8794"
+  ],
+  "stamp_template_sha256": "cb77edd52884138f6049c5502b0d859daaec4a217172aee3fe63bbf1211a8794",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAARoAAAAxCAIAAACKzfGsAAAAP0lEQVR4nO3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDPBqIfAAGtUm9VAAAAAElFTkSuQmCC"
+  ],
+  "image_sha256": "6c29142940cada750866284211e03f90b3fd49a3d61e52186a9607ad30d7560c"
+}

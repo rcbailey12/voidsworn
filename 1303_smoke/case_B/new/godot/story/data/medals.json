@@ -1,0 +1,17 @@
+{
+  "_about": "Medals for the Career tab (R37). Earned once each (the count of times is kept too) from things the game already tracks. Stored in the career profile (user://voidsworn_career.json); they never change campaign or battle rules. glyph is a single character drawn inside the medal's crest; col its colour.",
+  "medals": [
+    {"id": "first_blood", "n": "First Blood", "d": "Win a battle.", "glyph": "I", "col": "#cfc6b0"},
+    {"id": "flag_breaker", "n": "Flagship Breaker", "d": "Destroy a sector flagship.", "glyph": "F", "col": "#d0a64b"},
+    {"id": "lightning", "n": "Lightning Strike", "d": "Win a battle in 3 rounds or fewer.", "glyph": "L", "col": "#9fd4ff"},
+    {"id": "last_stand", "n": "Last Stand", "d": "Win a battle with only one of your ships still fighting.", "glyph": "1", "col": "#e27f74"},
+    {"id": "unbroken", "n": "Unbroken", "d": "Clear a whole sector without losing a ship.", "glyph": "U", "col": "#5fb3a6"},
+    {"id": "prize_master", "n": "Prize Master", "d": "Capture 3 enemy ships in one run.", "glyph": "P", "col": "#f0b35a"},
+    {"id": "nemesis_slain", "n": "Nemesis Slain", "d": "Destroy your Nemesis's flagship in his last fight.", "glyph": "N", "col": "#c58bff"},
+    {"id": "victor", "n": "Victor", "d": "Win a run.", "glyph": "V", "col": "#d0a64b"},
+    {"id": "heat_victor", "n": "Forged in Heat", "d": "Win a run with Heat on.", "glyph": "H", "col": "#ff7a2a"},
+    {"id": "centurion", "n": "Centurion", "d": "Destroy 100 enemy ships across your career.", "glyph": "C", "col": "#cfc6b0"},
+    {"id": "long_service", "n": "Long Service", "d": "Finish 10 runs, win or lose.", "glyph": "X", "col": "#7d7768"},
+    {"id": "six_banners", "n": "Six Banners", "d": "Win a run with every faction.", "glyph": "6", "col": "#62ccff"}
+  ]
+}

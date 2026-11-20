@@ -1,0 +1,4013 @@
+{
+ "cells": {
+  "baseline": {
+   "ALL": {
+    "n": 6600,
+    "wins": 4218,
+    "rate": 0.6391,
+    "ci": [
+     0.6274,
+     0.6506
+    ]
+   },
+   "voidsworn": {
+    "n": 1100,
+    "wins": 548,
+    "rate": 0.4982,
+    "ci": [
+     0.4687,
+     0.5277
+    ]
+   },
+   "corsair": {
+    "n": 1100,
+    "wins": 685,
+    "rate": 0.6227,
+    "ci": [
+     0.5937,
+     0.6509
+    ]
+   },
+   "deathless": {
+    "n": 1100,
+    "wins": 766,
+    "rate": 0.6964,
+    "ci": [
+     0.6685,
+     0.7228
+    ]
+   },
+   "hegemony": {
+    "n": 1100,
+    "wins": 666,
+    "rate": 0.6055,
+    "ci": [
+     0.5763,
+     0.6339
+    ]
+   },
+   "ithar": {
+    "n": 1100,
+    "wins": 618,
+    "rate": 0.5618,
+    "ci": [
+     0.5323,
+     0.5909
+    ]
+   },
+   "chorus": {
+    "n": 1100,
+    "wins": 935,
+    "rate": 0.85,
+    "ci": [
+     0.8277,
+     0.8699
+    ]
+   }
+  },
+  "rusher": {
+   "ALL": {
+    "n": 6600,
+    "wins": 2427,
+    "rate": 0.3677,
+    "ci": [
+     0.3562,
+     0.3794
+    ]
+   },
+   "voidsworn": {
+    "n": 1100,
+    "wins": 367,
+    "rate": 0.3336,
+    "ci": [
+     0.3064,
+     0.362
+    ]
+   },
+   "corsair": {
+    "n": 1100,
+    "wins": 304,
+    "rate": 0.2764,
+    "ci": [
+     0.2507,
+     0.3035
+    ]
+   },
+   "deathless": {
+    "n": 1100,
+    "wins": 414,
+    "rate": 0.3764,
+    "ci": [
+     0.3482,
+     0.4054
+    ]
+   },
+   "hegemony": {
+    "n": 1100,
+    "wins": 478,
+    "rate": 0.4345,
+    "ci": [
+     0.4055,
+     0.464
+    ]
+   },
+   "ithar": {
+    "n": 1100,
+    "wins": 386,
+    "rate": 0.3509,
+    "ci": [
+     0.3233,
+     0.3796
+    ]
+   },
+   "chorus": {
+    "n": 1100,
+    "wins": 478,
+    "rate": 0.4345,
+    "ci": [
+     0.4055,
+     0.464
+    ]
+   }
+  },
+  "turtle": {
+   "ALL": {
+    "n": 6600,
+    "wins": 4382,
+    "rate": 0.6639,
+    "ci": [
+     0.6525,
+     0.6752
+    ]
+   },
+   "voidsworn": {
+    "n": 1100,
+    "wins": 569,
+    "rate": 0.5173,
+    "ci": [
+     0.4877,
+     0.5467
+    ]
+   },
+   "corsair": {
+    "n": 1100,
+    "wins": 752,
+    "rate": 0.6836,
+    "ci": [
+     0.6556,
+     0.7104
+    ]
+   },
+   "deathless": {
+    "n": 1100,
+    "wins": 781,
+    "rate": 0.71,
+    "ci": [
+     0.6825,
+     0.736
+    ]
+   },
+   "hegemony": {
+    "n": 1100,
+    "wins": 723,
+    "rate": 0.6573,
+    "ci": [
+     0.6287,
+     0.6847
+    ]
+   },
+   "ithar": {
+    "n": 1100,
+    "wins": 613,
+    "rate": 0.5573,
+    "ci": [
+     0.5278,
+     0.5864
+    ]
+   },
+   "chorus": {
+    "n": 1100,
+    "wins": 944,
+    "rate": 0.8582,
+    "ci": [
+     0.8363,
+     0.8776
+    ]
+   }
+  },
+  "hunter": {
+   "ALL": {
+    "n": 6600,
+    "wins": 3932,
+    "rate": 0.5958,
+    "ci": [
+     0.5839,
+     0.6075
+    ]
+   },
+   "voidsworn": {
+    "n": 1100,
+    "wins": 494,
+    "rate": 0.4491,
+    "ci": [
+     0.4199,
+     0.4786
+    ]
+   },
+   "corsair": {
+    "n": 1100,
+    "wins": 658,
+    "rate": 0.5982,
+    "ci": [
+     0.5689,
+     0.6268
+    ]
+   },
+   "deathless": {
+    "n": 1100,
+    "wins": 693,
+    "rate": 0.63,
+    "ci": [
+     0.6011,
+     0.658
+    ]
+   },
+   "hegemony": {
+    "n": 1100,
+    "wins": 607,
+    "rate": 0.5518,
+    "ci": [
+     0.5223,
+     0.581
+    ]
+   },
+   "ithar": {
+    "n": 1100,
+    "wins": 579,
+    "rate": 0.5264,
+    "ci": [
+     0.4968,
+     0.5557
+    ]
+   },
+   "chorus": {
+    "n": 1100,
+    "wins": 901,
+    "rate": 0.8191,
+    "ci": [
+     0.7952,
+     0.8407
+    ]
+   }
+  }
+ },
+ "paired": {
+  "rusher": {
+   "voidsworn": {
+    "n": 1100,
+    "bothWin": 256,
+    "bothLoss": 441,
+    "polOnlyWin": 111,
+    "baseOnlyWin": 292,
+    "delta": -0.1645,
+    "deltaCI": [
+     -0.2003,
+     -0.1288
+    ]
+   },
+   "corsair": {
+    "n": 1100,
+    "bothWin": 237,
+    "bothLoss": 348,
+    "polOnlyWin": 67,
+    "baseOnlyWin": 448,
+    "delta": -0.3464,
+    "deltaCI": [
+     -0.3868,
+     -0.3059
+    ]
+   },
+   "deathless": {
+    "n": 1100,
+    "bothWin": 336,
+    "bothLoss": 256,
+    "polOnlyWin": 78,
+    "baseOnlyWin": 430,
+    "delta": -0.32,
+    "deltaCI": [
+     -0.3602,
+     -0.2798
+    ]
+   },
+   "hegemony": {
+    "n": 1100,
+    "bothWin": 357,
+    "bothLoss": 313,
+    "polOnlyWin": 121,
+    "baseOnlyWin": 309,
+    "delta": -0.1709,
+    "deltaCI": [
+     -0.2079,
+     -0.134
+    ]
+   },
+   "ithar": {
+    "n": 1100,
+    "bothWin": 287,
+    "bothLoss": 383,
+    "polOnlyWin": 99,
+    "baseOnlyWin": 331,
+    "delta": -0.2109,
+    "deltaCI": [
+     -0.2479,
+     -0.174
+    ]
+   },
+   "chorus": {
+    "n": 1100,
+    "bothWin": 433,
+    "bothLoss": 120,
+    "polOnlyWin": 45,
+    "baseOnlyWin": 502,
+    "delta": -0.4155,
+    "deltaCI": [
+     -0.4571,
+     -0.3738
+    ]
+   }
+  },
+  "turtle": {
+   "voidsworn": {
+    "n": 1100,
+    "bothWin": 399,
+    "bothLoss": 382,
+    "polOnlyWin": 170,
+    "baseOnlyWin": 149,
+    "delta": 0.0191,
+    "deltaCI": [
+     -0.0127,
+     0.0509
+    ]
+   },
+   "corsair": {
+    "n": 1100,
+    "bothWin": 545,
+    "bothLoss": 208,
+    "polOnlyWin": 207,
+    "baseOnlyWin": 140,
+    "delta": 0.0609,
+    "deltaCI": [
+     0.0277,
+     0.0941
+    ]
+   },
+   "deathless": {
+    "n": 1100,
+    "bothWin": 629,
+    "bothLoss": 182,
+    "polOnlyWin": 152,
+    "baseOnlyWin": 137,
+    "delta": 0.0136,
+    "deltaCI": [
+     -0.0167,
+     0.0439
+    ]
+   },
+   "hegemony": {
+    "n": 1100,
+    "bothWin": 513,
+    "bothLoss": 224,
+    "polOnlyWin": 210,
+    "baseOnlyWin": 153,
+    "delta": 0.0518,
+    "deltaCI": [
+     0.0179,
+     0.0858
+    ]
+   },
+   "ithar": {
+    "n": 1100,
+    "bothWin": 445,
+    "bothLoss": 314,
+    "polOnlyWin": 168,
+    "baseOnlyWin": 173,
+    "delta": -0.0045,
+    "deltaCI": [
+     -0.0374,
+     0.0284
+    ]
+   },
+   "chorus": {
+    "n": 1100,
+    "bothWin": 846,
+    "bothLoss": 67,
+    "polOnlyWin": 98,
+    "baseOnlyWin": 89,
+    "delta": 0.0082,
+    "deltaCI": [
+     -0.0162,
+     0.0325
+    ]
+   }
+  },
+  "hunter": {
+   "voidsworn": {
+    "n": 1100,
+    "bothWin": 438,
+    "bothLoss": 496,
+    "polOnlyWin": 56,
+    "baseOnlyWin": 110,
+    "delta": -0.0491,
+    "deltaCI": [
+     -0.072,
+     -0.0261
+    ]
+   },
+   "corsair": {
+    "n": 1100,
+    "bothWin": 576,
+    "bothLoss": 333,
+    "polOnlyWin": 82,
+    "baseOnlyWin": 109,
+    "delta": -0.0245,
+    "deltaCI": [
+     -0.0492,
+     0.0001
+    ]
+   },
+   "deathless": {
+    "n": 1100,
+    "bothWin": 633,
+    "bothLoss": 274,
+    "polOnlyWin": 60,
+    "baseOnlyWin": 133,
+    "delta": -0.0664,
+    "deltaCI": [
+     -0.0911,
+     -0.0416
+    ]
+   },
+   "hegemony": {
+    "n": 1100,
+    "bothWin": 527,
+    "bothLoss": 354,
+    "polOnlyWin": 80,
+    "baseOnlyWin": 139,
+    "delta": -0.0536,
+    "deltaCI": [
+     -0.08,
+     -0.0273
+    ]
+   },
+   "ithar": {
+    "n": 1100,
+    "bothWin": 491,
+    "bothLoss": 394,
+    "polOnlyWin": 88,
+    "baseOnlyWin": 127,
+    "delta": -0.0355,
+    "deltaCI": [
+     -0.0616,
+     -0.0093
+    ]
+   },
+   "chorus": {
+    "n": 1100,
+    "bothWin": 856,
+    "bothLoss": 120,
+    "polOnlyWin": 45,
+    "baseOnlyWin": 79,
+    "delta": -0.0309,
+    "deltaCI": [
+     -0.0508,
+     -0.0111
+    ]
+   }
+  }
+ },
+ "reach": {
+  "baseline": {
+   "voidsworn": {
+    "S2": {
+     "n": 775,
+     "rate": 0.7045,
+     "ci": [
+      0.6769,
+      0.7308
+     ]
+    },
+    "S3": {
+     "n": 590,
+     "rate": 0.5364,
+     "ci": [
+      0.5068,
+      0.5657
+     ]
+    }
+   },
+   "corsair": {
+    "S2": {
+     "n": 903,
+     "rate": 0.8209,
+     "ci": [
+      0.7971,
+      0.8424
+     ]
+    },
+    "S3": {
+     "n": 751,
+     "rate": 0.6827,
+     "ci": [
+      0.6546,
+      0.7096
+     ]
+    }
+   },
+   "deathless": {
+    "S2": {
+     "n": 945,
+     "rate": 0.8591,
+     "ci": [
+      0.8373,
+      0.8784
+     ]
+    },
+    "S3": {
+     "n": 803,
+     "rate": 0.73,
+     "ci": [
+      0.703,
+      0.7554
+     ]
+    }
+   },
+   "hegemony": {
+    "S2": {
+     "n": 897,
+     "rate": 0.8155,
+     "ci": [
+      0.7914,
+      0.8373
+     ]
+    },
+    "S3": {
+     "n": 740,
+     "rate": 0.6727,
+     "ci": [
+      0.6444,
+      0.6998
+     ]
+    }
+   },
+   "ithar": {
+    "S2": {
+     "n": 886,
+     "rate": 0.8055,
+     "ci": [
+      0.781,
+      0.8278
+     ]
+    },
+    "S3": {
+     "n": 696,
+     "rate": 0.6327,
+     "ci": [
+      0.6038,
+      0.6607
+     ]
+    }
+   },
+   "chorus": {
+    "S2": {
+     "n": 1020,
+     "rate": 0.9273,
+     "ci": [
+      0.9104,
+      0.9412
+     ]
+    },
+    "S3": {
+     "n": 961,
+     "rate": 0.8736,
+     "ci": [
+      0.8527,
+      0.892
+     ]
+    }
+   }
+  },
+  "rusher": {
+   "voidsworn": {
+    "S2": {
+     "n": 832,
+     "rate": 0.7564,
+     "ci": [
+      0.7301,
+      0.7808
+     ]
+    },
+    "S3": {
+     "n": 531,
+     "rate": 0.4827,
+     "ci": [
+      0.4533,
+      0.5123
+     ]
+    }
+   },
+   "corsair": {
+    "S2": {
+     "n": 903,
+     "rate": 0.8209,
+     "ci": [
+      0.7971,
+      0.8424
+     ]
+    },
+    "S3": {
+     "n": 511,
+     "rate": 0.4645,
+     "ci": [
+      0.4352,
+      0.4941
+     ]
+    }
+   },
+   "deathless": {
+    "S2": {
+     "n": 956,
+     "rate": 0.8691,
+     "ci": [
+      0.8479,
+      0.8877
+     ]
+    },
+    "S3": {
+     "n": 620,
+     "rate": 0.5636,
+     "ci": [
+      0.5342,
+      0.5927
+     ]
+    }
+   },
+   "hegemony": {
+    "S2": {
+     "n": 941,
+     "rate": 0.8555,
+     "ci": [
+      0.8334,
+      0.875
+     ]
+    },
+    "S3": {
+     "n": 647,
+     "rate": 0.5882,
+     "ci": [
+      0.5588,
+      0.6169
+     ]
+    }
+   },
+   "ithar": {
+    "S2": {
+     "n": 902,
+     "rate": 0.82,
+     "ci": [
+      0.7962,
+      0.8416
+     ]
+    },
+    "S3": {
+     "n": 568,
+     "rate": 0.5164,
+     "ci": [
+      0.4868,
+      0.5458
+     ]
+    }
+   },
+   "chorus": {
+    "S2": {
+     "n": 981,
+     "rate": 0.8918,
+     "ci": [
+      0.8721,
+      0.9088
+     ]
+    },
+    "S3": {
+     "n": 671,
+     "rate": 0.61,
+     "ci": [
+      0.5808,
+      0.6384
+     ]
+    }
+   }
+  },
+  "turtle": {
+   "voidsworn": {
+    "S2": {
+     "n": 860,
+     "rate": 0.7818,
+     "ci": [
+      0.7565,
+      0.8052
+     ]
+    },
+    "S3": {
+     "n": 637,
+     "rate": 0.5791,
+     "ci": [
+      0.5497,
+      0.6079
+     ]
+    }
+   },
+   "corsair": {
+    "S2": {
+     "n": 975,
+     "rate": 0.8864,
+     "ci": [
+      0.8662,
+      0.9038
+     ]
+    },
+    "S3": {
+     "n": 829,
+     "rate": 0.7536,
+     "ci": [
+      0.7273,
+      0.7782
+     ]
+    }
+   },
+   "deathless": {
+    "S2": {
+     "n": 985,
+     "rate": 0.8955,
+     "ci": [
+      0.876,
+      0.9122
+     ]
+    },
+    "S3": {
+     "n": 838,
+     "rate": 0.7618,
+     "ci": [
+      0.7358,
+      0.7861
+     ]
+    }
+   },
+   "hegemony": {
+    "S2": {
+     "n": 965,
+     "rate": 0.8773,
+     "ci": [
+      0.8566,
+      0.8954
+     ]
+    },
+    "S3": {
+     "n": 787,
+     "rate": 0.7155,
+     "ci": [
+      0.6881,
+      0.7413
+     ]
+    }
+   },
+   "ithar": {
+    "S2": {
+     "n": 914,
+     "rate": 0.8309,
+     "ci": [
+      0.8076,
+      0.8519
+     ]
+    },
+    "S3": {
+     "n": 713,
+     "rate": 0.6482,
+     "ci": [
+      0.6195,
+      0.6758
+     ]
+    }
+   },
+   "chorus": {
+    "S2": {
+     "n": 1034,
+     "rate": 0.94,
+     "ci": [
+      0.9244,
+      0.9526
+     ]
+    },
+    "S3": {
+     "n": 975,
+     "rate": 0.8864,
+     "ci": [
+      0.8662,
+      0.9038
+     ]
+    }
+   }
+  },
+  "hunter": {
+   "voidsworn": {
+    "S2": {
+     "n": 746,
+     "rate": 0.6782,
+     "ci": [
+      0.65,
+      0.7051
+     ]
+    },
+    "S3": {
+     "n": 556,
+     "rate": 0.5055,
+     "ci": [
+      0.4759,
+      0.5349
+     ]
+    }
+   },
+   "corsair": {
+    "S2": {
+     "n": 885,
+     "rate": 0.8045,
+     "ci": [
+      0.7801,
+      0.8269
+     ]
+    },
+    "S3": {
+     "n": 721,
+     "rate": 0.6555,
+     "ci": [
+      0.6269,
+      0.683
+     ]
+    }
+   },
+   "deathless": {
+    "S2": {
+     "n": 898,
+     "rate": 0.8164,
+     "ci": [
+      0.7924,
+      0.8381
+     ]
+    },
+    "S3": {
+     "n": 736,
+     "rate": 0.6691,
+     "ci": [
+      0.6407,
+      0.6963
+     ]
+    }
+   },
+   "hegemony": {
+    "S2": {
+     "n": 885,
+     "rate": 0.8045,
+     "ci": [
+      0.7801,
+      0.8269
+     ]
+    },
+    "S3": {
+     "n": 691,
+     "rate": 0.6282,
+     "ci": [
+      0.5992,
+      0.6563
+     ]
+    }
+   },
+   "ithar": {
+    "S2": {
+     "n": 868,
+     "rate": 0.7891,
+     "ci": [
+      0.764,
+      0.8122
+     ]
+    },
+    "S3": {
+     "n": 666,
+     "rate": 0.6055,
+     "ci": [
+      0.5763,
+      0.6339
+     ]
+    }
+   },
+   "chorus": {
+    "S2": {
+     "n": 1005,
+     "rate": 0.9136,
+     "ci": [
+      0.8956,
+      0.9288
+     ]
+    },
+    "S3": {
+     "n": 931,
+     "rate": 0.8464,
+     "ci": [
+      0.8239,
+      0.8665
+     ]
+    }
+   }
+  }
+ },
+ "nemesis": {
+  "baseline": {
+   "voidsworn": {
+    "meetings": 1801,
+    "perRun": 1.6373,
+    "fightWinRate": 0.8501,
+    "fightWinCI": [
+     0.8329,
+     0.8658
+    ]
+   },
+   "corsair": {
+    "meetings": 2491,
+    "perRun": 2.2645,
+    "fightWinRate": 0.9193,
+    "fightWinCI": [
+     0.908,
+     0.9294
+    ]
+   },
+   "deathless": {
+    "meetings": 2311,
+    "perRun": 2.1009,
+    "fightWinRate": 0.8983,
+    "fightWinCI": [
+     0.8853,
+     0.91
+    ]
+   },
+   "hegemony": {
+    "meetings": 2161,
+    "perRun": 1.9645,
+    "fightWinRate": 0.8667,
+    "fightWinCI": [
+     0.8517,
+     0.8804
+    ]
+   },
+   "ithar": {
+    "meetings": 2117,
+    "perRun": 1.9245,
+    "fightWinRate": 0.8753,
+    "fightWinCI": [
+     0.8605,
+     0.8887
+    ]
+   },
+   "chorus": {
+    "meetings": 2525,
+    "perRun": 2.2955,
+    "fightWinRate": 0.9473,
+    "fightWinCI": [
+     0.9379,
+     0.9554
+    ]
+   },
+   "byMeeting": {
+    "m1": {
+     "n": 6249,
+     "winRate": 0.8678,
+     "winCI": [
+      0.8592,
+      0.876
+     ],
+     "adaptB": 0.2021,
+     "revGain": 1.3732
+    },
+    "m2": {
+     "n": 4835,
+     "winRate": 0.91,
+     "winCI": [
+      0.9016,
+      0.9178
+     ],
+     "adaptB": 1.4745,
+     "revGain": 0.4194
+    },
+    "m3": {
+     "n": 2322,
+     "winRate": 0.944,
+     "winCI": [
+      0.9339,
+      0.9527
+     ],
+     "adaptB": 2.2597,
+     "revGain": 0.0146
+    }
+   },
+   "byAdapt": {
+    "adapt0": {
+     "n": 5029,
+     "winRate": 0.8586,
+     "winCI": [
+      0.8487,
+      0.868
+     ]
+    },
+    "adapt1": {
+     "n": 3998,
+     "winRate": 0.8994,
+     "winCI": [
+      0.8897,
+      0.9084
+     ]
+    },
+    "adapt2+": {
+     "n": 4379,
+     "winRate": 0.9365,
+     "winCI": [
+      0.9289,
+      0.9434
+     ]
+    }
+   }
+  },
+  "rusher": {
+   "voidsworn": {
+    "meetings": 1312,
+    "perRun": 1.1927,
+    "fightWinRate": 0.7462,
+    "fightWinCI": [
+     0.7219,
+     0.769
+    ]
+   },
+   "corsair": {
+    "meetings": 1614,
+    "perRun": 1.4673,
+    "fightWinRate": 0.7701,
+    "fightWinCI": [
+     0.749,
+     0.79
+    ]
+   },
+   "deathless": {
+    "meetings": 1598,
+    "perRun": 1.4527,
+    "fightWinRate": 0.7728,
+    "fightWinCI": [
+     0.7517,
+     0.7927
+    ]
+   },
+   "hegemony": {
+    "meetings": 1528,
+    "perRun": 1.3891,
+    "fightWinRate": 0.7579,
+    "fightWinCI": [
+     0.7357,
+     0.7787
+    ]
+   },
+   "ithar": {
+    "meetings": 1453,
+    "perRun": 1.3209,
+    "fightWinRate": 0.8156,
+    "fightWinCI": [
+     0.7948,
+     0.8347
+    ]
+   },
+   "chorus": {
+    "meetings": 1631,
+    "perRun": 1.4827,
+    "fightWinRate": 0.7983,
+    "fightWinCI": [
+     0.7781,
+     0.817
+    ]
+   },
+   "byMeeting": {
+    "m1": {
+     "n": 5877,
+     "winRate": 0.7977,
+     "winCI": [
+      0.7872,
+      0.8078
+     ],
+     "adaptB": 0.4773,
+     "revGain": 1.3003
+    },
+    "m2": {
+     "n": 2787,
+     "winRate": 0.7309,
+     "winCI": [
+      0.7141,
+      0.747
+     ],
+     "adaptB": 1.6405,
+     "revGain": 0.3412
+    },
+    "m3": {
+     "n": 472,
+     "winRate": 0.7987,
+     "winCI": [
+      0.7602,
+      0.8324
+     ],
+     "adaptB": 2.2436,
+     "revGain": 0.0254
+    }
+   },
+   "byAdapt": {
+    "adapt0": {
+     "n": 3458,
+     "winRate": 0.8343,
+     "winCI": [
+      0.8215,
+      0.8463
+     ]
+    },
+    "adapt1": {
+     "n": 3246,
+     "winRate": 0.7363,
+     "winCI": [
+      0.7209,
+      0.7512
+     ]
+    },
+    "adapt2+": {
+     "n": 2432,
+     "winRate": 0.7512,
+     "winCI": [
+      0.7337,
+      0.768
+     ]
+    }
+   }
+  },
+  "turtle": {
+   "voidsworn": {
+    "meetings": 1902,
+    "perRun": 1.7291,
+    "fightWinRate": 0.8502,
+    "fightWinCI": [
+     0.8334,
+     0.8655
+    ]
+   },
+   "corsair": {
+    "meetings": 2487,
+    "perRun": 2.2609,
+    "fightWinRate": 0.9208,
+    "fightWinCI": [
+     0.9095,
+     0.9308
+    ]
+   },
+   "deathless": {
+    "meetings": 2284,
+    "perRun": 2.0764,
+    "fightWinRate": 0.9002,
+    "fightWinCI": [
+     0.8872,
+     0.9118
+    ]
+   },
+   "hegemony": {
+    "meetings": 2193,
+    "perRun": 1.9936,
+    "fightWinRate": 0.871,
+    "fightWinCI": [
+     0.8563,
+     0.8843
+    ]
+   },
+   "ithar": {
+    "meetings": 2076,
+    "perRun": 1.8873,
+    "fightWinRate": 0.881,
+    "fightWinCI": [
+     0.8664,
+     0.8942
+    ]
+   },
+   "chorus": {
+    "meetings": 2426,
+    "perRun": 2.2055,
+    "fightWinRate": 0.9477,
+    "fightWinCI": [
+     0.9381,
+     0.9558
+    ]
+   },
+   "byMeeting": {
+    "m1": {
+     "n": 6326,
+     "winRate": 0.8887,
+     "winCI": [
+      0.8807,
+      0.8962
+     ],
+     "adaptB": 0.2567,
+     "revGain": 1.4216
+    },
+    "m2": {
+     "n": 5005,
+     "winRate": 0.8913,
+     "winCI": [
+      0.8824,
+      0.8996
+     ],
+     "adaptB": 1.5387,
+     "revGain": 0.4156
+    },
+    "m3": {
+     "n": 2037,
+     "winRate": 0.9416,
+     "winCI": [
+      0.9305,
+      0.951
+     ],
+     "adaptB": 2.3073,
+     "revGain": 0.0241
+    }
+   },
+   "byAdapt": {
+    "adapt0": {
+     "n": 4774,
+     "winRate": 0.8823,
+     "winCI": [
+      0.8728,
+      0.8911
+     ]
+    },
+    "adapt1": {
+     "n": 4095,
+     "winRate": 0.8857,
+     "winCI": [
+      0.8756,
+      0.8951
+     ]
+    },
+    "adapt2+": {
+     "n": 4499,
+     "winRate": 0.9251,
+     "winCI": [
+      0.917,
+      0.9324
+     ]
+    }
+   }
+  },
+  "hunter": {
+   "voidsworn": {
+    "meetings": 1802,
+    "perRun": 1.6382,
+    "fightWinRate": 0.813,
+    "fightWinCI": [
+     0.7943,
+     0.8303
+    ]
+   },
+   "corsair": {
+    "meetings": 2430,
+    "perRun": 2.2091,
+    "fightWinRate": 0.9049,
+    "fightWinCI": [
+     0.8926,
+     0.916
+    ]
+   },
+   "deathless": {
+    "meetings": 2265,
+    "perRun": 2.0591,
+    "fightWinRate": 0.8879,
+    "fightWinCI": [
+     0.8742,
+     0.9002
+    ]
+   },
+   "hegemony": {
+    "meetings": 2108,
+    "perRun": 1.9164,
+    "fightWinRate": 0.8472,
+    "fightWinCI": [
+     0.8313,
+     0.862
+    ]
+   },
+   "ithar": {
+    "meetings": 2090,
+    "perRun": 1.9,
+    "fightWinRate": 0.8742,
+    "fightWinCI": [
+     0.8593,
+     0.8877
+    ]
+   },
+   "chorus": {
+    "meetings": 2495,
+    "perRun": 2.2682,
+    "fightWinRate": 0.9419,
+    "fightWinCI": [
+     0.932,
+     0.9504
+    ]
+   },
+   "byMeeting": {
+    "m1": {
+     "n": 6220,
+     "winRate": 0.8543,
+     "winCI": [
+      0.8454,
+      0.8629
+     ],
+     "adaptB": 0.1912,
+     "revGain": 1.3476
+    },
+    "m2": {
+     "n": 4694,
+     "winRate": 0.8899,
+     "winCI": [
+      0.8806,
+      0.8985
+     ],
+     "adaptB": 1.4546,
+     "revGain": 0.3794
+    },
+    "m3": {
+     "n": 2276,
+     "winRate": 0.9433,
+     "winCI": [
+      0.9331,
+      0.9521
+     ],
+     "adaptB": 2.2764,
+     "revGain": 0.0167
+    }
+   },
+   "byAdapt": {
+    "adapt0": {
+     "n": 5066,
+     "winRate": 0.8447,
+     "winCI": [
+      0.8344,
+      0.8544
+     ]
+    },
+    "adapt1": {
+     "n": 3898,
+     "winRate": 0.8887,
+     "winCI": [
+      0.8784,
+      0.8982
+     ]
+    },
+    "adapt2+": {
+     "n": 4226,
+     "winRate": 0.9217,
+     "winCI": [
+      0.9132,
+      0.9294
+     ]
+    }
+   }
+  }
+ },
+ "regroup": {
+  "baseline": {
+   "voidsworn": {
+    "visits": 3464,
+    "binds": 22,
+    "bindRate": 0.0064
+   },
+   "corsair": {
+    "visits": 4016,
+    "binds": 7,
+    "bindRate": 0.0017
+   },
+   "deathless": {
+    "visits": 4218,
+    "binds": 21,
+    "bindRate": 0.005
+   },
+   "hegemony": {
+    "visits": 4016,
+    "binds": 36,
+    "bindRate": 0.009
+   },
+   "ithar": {
+    "visits": 3879,
+    "binds": 6,
+    "bindRate": 0.0015
+   },
+   "chorus": {
+    "visits": 4704,
+    "binds": 3,
+    "bindRate": 0.0006
+   },
+   "ALL": {
+    "visits": 24297,
+    "binds": 95,
+    "bindRate": 0.0039,
+    "repairShare": 0.0407,
+    "hullShare": 0.7103,
+    "modShare": 0.1997,
+    "mkShare": 0.0494,
+    "medianWorstMissing": 0,
+    "medianPurse": 378
+   }
+  },
+  "rusher": {
+   "voidsworn": {
+    "visits": 4389,
+    "binds": 17,
+    "bindRate": 0.0039
+   },
+   "corsair": {
+    "visits": 4298,
+    "binds": 3,
+    "bindRate": 0.0007
+   },
+   "deathless": {
+    "visits": 4603,
+    "binds": 9,
+    "bindRate": 0.002
+   },
+   "hegemony": {
+    "visits": 4903,
+    "binds": 19,
+    "bindRate": 0.0039
+   },
+   "ithar": {
+    "visits": 4423,
+    "binds": 9,
+    "bindRate": 0.002
+   },
+   "chorus": {
+    "visits": 4865,
+    "binds": 0,
+    "bindRate": 0
+   },
+   "ALL": {
+    "visits": 27481,
+    "binds": 57,
+    "bindRate": 0.0021,
+    "repairShare": 0.1063,
+    "hullShare": 0.8937,
+    "modShare": 0,
+    "mkShare": 0,
+    "medianWorstMissing": 0,
+    "medianPurse": 417
+   }
+  },
+  "turtle": {
+   "voidsworn": {
+    "visits": 4356,
+    "binds": 83,
+    "bindRate": 0.0191
+   },
+   "corsair": {
+    "visits": 5144,
+    "binds": 34,
+    "bindRate": 0.0066
+   },
+   "deathless": {
+    "visits": 5157,
+    "binds": 66,
+    "bindRate": 0.0128
+   },
+   "hegemony": {
+    "visits": 4872,
+    "binds": 77,
+    "bindRate": 0.0158
+   },
+   "ithar": {
+    "visits": 4666,
+    "binds": 53,
+    "bindRate": 0.0114
+   },
+   "chorus": {
+    "visits": 5698,
+    "binds": 8,
+    "bindRate": 0.0014
+   },
+   "ALL": {
+    "visits": 29893,
+    "binds": 321,
+    "bindRate": 0.0107,
+    "repairShare": 0.0427,
+    "hullShare": 0.6615,
+    "modShare": 0.2275,
+    "mkShare": 0.0683,
+    "medianWorstMissing": 1,
+    "medianPurse": 276
+   }
+  },
+  "hunter": {
+   "voidsworn": {
+    "visits": 3044,
+    "binds": 14,
+    "bindRate": 0.0046
+   },
+   "corsair": {
+    "visits": 3664,
+    "binds": 4,
+    "bindRate": 0.0011
+   },
+   "deathless": {
+    "visits": 3681,
+    "binds": 18,
+    "bindRate": 0.0049
+   },
+   "hegemony": {
+    "visits": 3561,
+    "binds": 18,
+    "bindRate": 0.0051
+   },
+   "ithar": {
+    "visits": 3532,
+    "binds": 9,
+    "bindRate": 0.0025
+   },
+   "chorus": {
+    "visits": 4390,
+    "binds": 2,
+    "bindRate": 0.0005
+   },
+   "ALL": {
+    "visits": 21872,
+    "binds": 65,
+    "bindRate": 0.003,
+    "repairShare": 0.0383,
+    "hullShare": 0.7117,
+    "modShare": 0.1974,
+    "mkShare": 0.0526,
+    "medianWorstMissing": 0,
+    "medianPurse": 398
+   }
+  }
+ },
+ "boons": {
+  "baseline": [
+   {
+    "id": "a_long",
+    "offered": 7795,
+    "picked": 460,
+    "pickRate": 0.059
+   },
+   {
+    "id": "e_hunt",
+    "offered": 7600,
+    "picked": 1500,
+    "pickRate": 0.1974
+   },
+   {
+    "id": "s_ion",
+    "offered": 7571,
+    "picked": 244,
+    "pickRate": 0.0322
+   },
+   {
+    "id": "i_plate",
+    "offered": 7491,
+    "picked": 294,
+    "pickRate": 0.0392
+   },
+   {
+    "id": "i_line",
+    "offered": 7197,
+    "picked": 615,
+    "pickRate": 0.0855
+   },
+   {
+    "id": "s_chain",
+    "offered": 7113,
+    "picked": 831,
+    "pickRate": 0.1168
+   },
+   {
+    "id": "r_shock",
+    "offered": 6325,
+    "picked": 231,
+    "pickRate": 0.0365
+   },
+   {
+    "id": "a_rear",
+    "offered": 6262,
+    "picked": 1612,
+    "pickRate": 0.2574
+   },
+   {
+    "id": "e_kindle",
+    "offered": 6202,
+    "picked": 2443,
+    "pickRate": 0.3939
+   },
+   {
+    "id": "i_wall",
+    "offered": 6167,
+    "picked": 1256,
+    "pickRate": 0.2037
+   },
+   {
+    "id": "r_slip",
+    "offered": 6036,
+    "picked": 499,
+    "pickRate": 0.0827
+   },
+   {
+    "id": "r_mom",
+    "offered": 5863,
+    "picked": 644,
+    "pickRate": 0.1098
+   },
+   {
+    "id": "h_board",
+    "offered": 5441,
+    "picked": 2818,
+    "pickRate": 0.5179
+   },
+   {
+    "id": "r_burn",
+    "offered": 4744,
+    "picked": 1675,
+    "pickRate": 0.3531
+   },
+   {
+    "id": "a_aim",
+    "offered": 4719,
+    "picked": 2612,
+    "pickRate": 0.5535
+   },
+   {
+    "id": "r_prow",
+    "offered": 4052,
+    "picked": 2418,
+    "pickRate": 0.5967
+   },
+   {
+    "id": "s_regen",
+    "offered": 3949,
+    "picked": 119,
+    "pickRate": 0.0301
+   },
+   {
+    "id": "s_ev",
+    "offered": 3945,
+    "picked": 2844,
+    "pickRate": 0.7209
+   },
+   {
+    "id": "a_crit",
+    "offered": 3723,
+    "picked": 3082,
+    "pickRate": 0.8278
+   },
+   {
+    "id": "a_mark",
+    "offered": 3516,
+    "picked": 102,
+    "pickRate": 0.029
+   },
+   {
+    "id": "e_chain",
+    "offered": 3418,
+    "picked": 3369,
+    "pickRate": 0.9857
+   },
+   {
+    "id": "s_arc",
+    "offered": 3358,
+    "picked": 3128,
+    "pickRate": 0.9315
+   },
+   {
+    "id": "i_brace",
+    "offered": 3311,
+    "picked": 3295,
+    "pickRate": 0.9952
+   },
+   {
+    "id": "r_jink",
+    "offered": 3151,
+    "picked": 2939,
+    "pickRate": 0.9327
+   },
+   {
+    "id": "s_cap",
+    "offered": 3038,
+    "picked": 1335,
+    "pickRate": 0.4394
+   },
+   {
+    "id": "i_still",
+    "offered": 2969,
+    "picked": 1619,
+    "pickRate": 0.5453
+   },
+   {
+    "id": "a_lance",
+    "offered": 2239,
+    "picked": 1320,
+    "pickRate": 0.5895
+   },
+   {
+    "id": "e_spread",
+    "offered": 2237,
+    "picked": 15,
+    "pickRate": 0.0067
+   },
+   {
+    "id": "e_reload",
+    "offered": 2191,
+    "picked": 112,
+    "pickRate": 0.0511
+   },
+   {
+    "id": "h_feast",
+    "offered": 1885,
+    "picked": 101,
+    "pickRate": 0.0536
+   },
+   {
+    "id": "h_chitin",
+    "offered": 1826,
+    "picked": 152,
+    "pickRate": 0.0832
+   },
+   {
+    "id": "e_war",
+    "offered": 1783,
+    "picked": 701,
+    "pickRate": 0.3932
+   },
+   {
+    "id": "h_brood",
+    "offered": 1764,
+    "picked": 329,
+    "pickRate": 0.1865
+   },
+   {
+    "id": "d_jugg",
+    "offered": 1687,
+    "picked": 1177,
+    "pickRate": 0.6977
+   },
+   {
+    "id": "h_hatch",
+    "offered": 1596,
+    "picked": 482,
+    "pickRate": 0.302
+   },
+   {
+    "id": "L_storm",
+    "offered": 1582,
+    "picked": 1286,
+    "pickRate": 0.8129
+   },
+   {
+    "id": "L_ember",
+    "offered": 1482,
+    "picked": 1482,
+    "pickRate": 1
+   },
+   {
+    "id": "d_hunter",
+    "offered": 1462,
+    "picked": 1448,
+    "pickRate": 0.9904
+   },
+   {
+    "id": "L_rook",
+    "offered": 1384,
+    "picked": 1270,
+    "pickRate": 0.9176
+   },
+   {
+    "id": "i_broad",
+    "offered": 1367,
+    "picked": 484,
+    "pickRate": 0.3541
+   },
+   {
+    "id": "d_burnswarm",
+    "offered": 1329,
+    "picked": 36,
+    "pickRate": 0.0271
+   },
+   {
+    "id": "d_ionlance",
+    "offered": 1302,
+    "picked": 142,
+    "pickRate": 0.1091
+   },
+   {
+    "id": "d_bastion",
+    "offered": 1274,
+    "picked": 226,
+    "pickRate": 0.1774
+   },
+   {
+    "id": "L_iron",
+    "offered": 1237,
+    "picked": 1082,
+    "pickRate": 0.8747
+   },
+   {
+    "id": "h_wings",
+    "offered": 1199,
+    "picked": 941,
+    "pickRate": 0.7848
+   },
+   {
+    "id": "L_star",
+    "offered": 975,
+    "picked": 502,
+    "pickRate": 0.5149
+   },
+   {
+    "id": "d_inferno",
+    "offered": 606,
+    "picked": 221,
+    "pickRate": 0.3647
+   },
+   {
+    "id": "L_hunger",
+    "offered": 468,
+    "picked": 452,
+    "pickRate": 0.9658
+   }
+  ],
+  "rusher": [
+   {
+    "id": "e_hunt",
+    "offered": 4719,
+    "picked": 624,
+    "pickRate": 0.1322
+   },
+   {
+    "id": "e_kindle",
+    "offered": 4195,
+    "picked": 1392,
+    "pickRate": 0.3318
+   },
+   {
+    "id": "a_long",
+    "offered": 4076,
+    "picked": 103,
+    "pickRate": 0.0253
+   },
+   {
+    "id": "s_ion",
+    "offered": 3800,
+    "picked": 88,
+    "pickRate": 0.0232
+   },
+   {
+    "id": "i_line",
+    "offered": 3780,
+    "picked": 274,
+    "pickRate": 0.0725
+   },
+   {
+    "id": "i_plate",
+    "offered": 3756,
+    "picked": 141,
+    "pickRate": 0.0375
+   },
+   {
+    "id": "s_chain",
+    "offered": 3754,
+    "picked": 296,
+    "pickRate": 0.0788
+   },
+   {
+    "id": "h_board",
+    "offered": 3604,
+    "picked": 1764,
+    "pickRate": 0.4895
+   },
+   {
+    "id": "a_rear",
+    "offered": 3586,
+    "picked": 675,
+    "pickRate": 0.1882
+   },
+   {
+    "id": "i_wall",
+    "offered": 3496,
+    "picked": 686,
+    "pickRate": 0.1962
+   },
+   {
+    "id": "r_shock",
+    "offered": 3255,
+    "picked": 97,
+    "pickRate": 0.0298
+   },
+   {
+    "id": "r_mom",
+    "offered": 3081,
+    "picked": 265,
+    "pickRate": 0.086
+   },
+   {
+    "id": "r_slip",
+    "offered": 3048,
+    "picked": 223,
+    "pickRate": 0.0732
+   },
+   {
+    "id": "a_aim",
+    "offered": 3042,
+    "picked": 1573,
+    "pickRate": 0.5171
+   },
+   {
+    "id": "r_burn",
+    "offered": 2760,
+    "picked": 877,
+    "pickRate": 0.3178
+   },
+   {
+    "id": "s_ev",
+    "offered": 2709,
+    "picked": 1831,
+    "pickRate": 0.6759
+   },
+   {
+    "id": "e_chain",
+    "offered": 2644,
+    "picked": 2627,
+    "pickRate": 0.9936
+   },
+   {
+    "id": "a_crit",
+    "offered": 2573,
+    "picked": 2144,
+    "pickRate": 0.8333
+   },
+   {
+    "id": "r_prow",
+    "offered": 2537,
+    "picked": 1477,
+    "pickRate": 0.5822
+   },
+   {
+    "id": "s_arc",
+    "offered": 2396,
+    "picked": 2229,
+    "pickRate": 0.9303
+   },
+   {
+    "id": "i_brace",
+    "offered": 2367,
+    "picked": 2348,
+    "pickRate": 0.992
+   },
+   {
+    "id": "r_jink",
+    "offered": 2145,
+    "picked": 2013,
+    "pickRate": 0.9385
+   },
+   {
+    "id": "s_regen",
+    "offered": 2121,
+    "picked": 55,
+    "pickRate": 0.0259
+   },
+   {
+    "id": "s_cap",
+    "offered": 1807,
+    "picked": 700,
+    "pickRate": 0.3874
+   },
+   {
+    "id": "i_still",
+    "offered": 1805,
+    "picked": 937,
+    "pickRate": 0.5191
+   },
+   {
+    "id": "a_mark",
+    "offered": 1785,
+    "picked": 21,
+    "pickRate": 0.0118
+   },
+   {
+    "id": "a_lance",
+    "offered": 1348,
+    "picked": 719,
+    "pickRate": 0.5334
+   },
+   {
+    "id": "h_feast",
+    "offered": 997,
+    "picked": 39,
+    "pickRate": 0.0391
+   },
+   {
+    "id": "h_chitin",
+    "offered": 980,
+    "picked": 61,
+    "pickRate": 0.0622
+   },
+   {
+    "id": "h_hatch",
+    "offered": 890,
+    "picked": 240,
+    "pickRate": 0.2697
+   },
+   {
+    "id": "h_brood",
+    "offered": 876,
+    "picked": 134,
+    "pickRate": 0.153
+   },
+   {
+    "id": "e_reload",
+    "offered": 870,
+    "picked": 17,
+    "pickRate": 0.0195
+   },
+   {
+    "id": "e_spread",
+    "offered": 854,
+    "picked": 2,
+    "pickRate": 0.0023
+   },
+   {
+    "id": "d_jugg",
+    "offered": 818,
+    "picked": 506,
+    "pickRate": 0.6186
+   },
+   {
+    "id": "d_hunter",
+    "offered": 797,
+    "picked": 789,
+    "pickRate": 0.99
+   },
+   {
+    "id": "e_war",
+    "offered": 786,
+    "picked": 253,
+    "pickRate": 0.3219
+   },
+   {
+    "id": "h_wings",
+    "offered": 782,
+    "picked": 629,
+    "pickRate": 0.8043
+   },
+   {
+    "id": "i_broad",
+    "offered": 678,
+    "picked": 216,
+    "pickRate": 0.3186
+   },
+   {
+    "id": "d_ionlance",
+    "offered": 536,
+    "picked": 31,
+    "pickRate": 0.0578
+   },
+   {
+    "id": "d_bastion",
+    "offered": 520,
+    "picked": 69,
+    "pickRate": 0.1327
+   },
+   {
+    "id": "L_storm",
+    "offered": 512,
+    "picked": 423,
+    "pickRate": 0.8262
+   },
+   {
+    "id": "d_burnswarm",
+    "offered": 510,
+    "picked": 14,
+    "pickRate": 0.0275
+   },
+   {
+    "id": "L_ember",
+    "offered": 481,
+    "picked": 481,
+    "pickRate": 1
+   },
+   {
+    "id": "L_rook",
+    "offered": 456,
+    "picked": 417,
+    "pickRate": 0.9145
+   },
+   {
+    "id": "L_iron",
+    "offered": 386,
+    "picked": 339,
+    "pickRate": 0.8782
+   },
+   {
+    "id": "L_star",
+    "offered": 330,
+    "picked": 152,
+    "pickRate": 0.4606
+   },
+   {
+    "id": "d_inferno",
+    "offered": 278,
+    "picked": 94,
+    "pickRate": 0.3381
+   },
+   {
+    "id": "L_hunger",
+    "offered": 146,
+    "picked": 139,
+    "pickRate": 0.9521
+   }
+  ],
+  "turtle": [
+   {
+    "id": "e_hunt",
+    "offered": 7192,
+    "picked": 1297,
+    "pickRate": 0.1803
+   },
+   {
+    "id": "a_long",
+    "offered": 6993,
+    "picked": 355,
+    "pickRate": 0.0508
+   },
+   {
+    "id": "s_ion",
+    "offered": 6735,
+    "picked": 201,
+    "pickRate": 0.0298
+   },
+   {
+    "id": "i_plate",
+    "offered": 6696,
+    "picked": 254,
+    "pickRate": 0.0379
+   },
+   {
+    "id": "i_line",
+    "offered": 6543,
+    "picked": 600,
+    "pickRate": 0.0917
+   },
+   {
+    "id": "s_chain",
+    "offered": 6446,
+    "picked": 690,
+    "pickRate": 0.107
+   },
+   {
+    "id": "a_rear",
+    "offered": 5800,
+    "picked": 1437,
+    "pickRate": 0.2478
+   },
+   {
+    "id": "e_kindle",
+    "offered": 5791,
+    "picked": 2304,
+    "pickRate": 0.3979
+   },
+   {
+    "id": "r_shock",
+    "offered": 5705,
+    "picked": 224,
+    "pickRate": 0.0393
+   },
+   {
+    "id": "i_wall",
+    "offered": 5650,
+    "picked": 1196,
+    "pickRate": 0.2117
+   },
+   {
+    "id": "r_slip",
+    "offered": 5451,
+    "picked": 401,
+    "pickRate": 0.0736
+   },
+   {
+    "id": "r_mom",
+    "offered": 5336,
+    "picked": 573,
+    "pickRate": 0.1074
+   },
+   {
+    "id": "h_board",
+    "offered": 5060,
+    "picked": 2618,
+    "pickRate": 0.5174
+   },
+   {
+    "id": "a_aim",
+    "offered": 4434,
+    "picked": 2477,
+    "pickRate": 0.5586
+   },
+   {
+    "id": "r_burn",
+    "offered": 4321,
+    "picked": 1485,
+    "pickRate": 0.3437
+   },
+   {
+    "id": "s_ev",
+    "offered": 3845,
+    "picked": 2705,
+    "pickRate": 0.7035
+   },
+   {
+    "id": "r_prow",
+    "offered": 3720,
+    "picked": 2245,
+    "pickRate": 0.6035
+   },
+   {
+    "id": "s_regen",
+    "offered": 3581,
+    "picked": 113,
+    "pickRate": 0.0316
+   },
+   {
+    "id": "a_crit",
+    "offered": 3515,
+    "picked": 2896,
+    "pickRate": 0.8239
+   },
+   {
+    "id": "e_chain",
+    "offered": 3313,
+    "picked": 3282,
+    "pickRate": 0.9906
+   },
+   {
+    "id": "s_arc",
+    "offered": 3281,
+    "picked": 3058,
+    "pickRate": 0.932
+   },
+   {
+    "id": "i_brace",
+    "offered": 3196,
+    "picked": 3179,
+    "pickRate": 0.9947
+   },
+   {
+    "id": "a_mark",
+    "offered": 3066,
+    "picked": 72,
+    "pickRate": 0.0235
+   },
+   {
+    "id": "r_jink",
+    "offered": 2969,
+    "picked": 2790,
+    "pickRate": 0.9397
+   },
+   {
+    "id": "s_cap",
+    "offered": 2732,
+    "picked": 1133,
+    "pickRate": 0.4147
+   },
+   {
+    "id": "i_still",
+    "offered": 2696,
+    "picked": 1463,
+    "pickRate": 0.5427
+   },
+   {
+    "id": "a_lance",
+    "offered": 2142,
+    "picked": 1179,
+    "pickRate": 0.5504
+   },
+   {
+    "id": "e_spread",
+    "offered": 2130,
+    "picked": 11,
+    "pickRate": 0.0052
+   },
+   {
+    "id": "e_reload",
+    "offered": 2081,
+    "picked": 100,
+    "pickRate": 0.0481
+   },
+   {
+    "id": "e_war",
+    "offered": 1691,
+    "picked": 634,
+    "pickRate": 0.3749
+   },
+   {
+    "id": "h_chitin",
+    "offered": 1680,
+    "picked": 143,
+    "pickRate": 0.0851
+   },
+   {
+    "id": "h_feast",
+    "offered": 1659,
+    "picked": 101,
+    "pickRate": 0.0609
+   },
+   {
+    "id": "h_brood",
+    "offered": 1501,
+    "picked": 281,
+    "pickRate": 0.1872
+   },
+   {
+    "id": "d_jugg",
+    "offered": 1466,
+    "picked": 983,
+    "pickRate": 0.6705
+   },
+   {
+    "id": "d_hunter",
+    "offered": 1385,
+    "picked": 1368,
+    "pickRate": 0.9877
+   },
+   {
+    "id": "h_hatch",
+    "offered": 1369,
+    "picked": 402,
+    "pickRate": 0.2936
+   },
+   {
+    "id": "L_storm",
+    "offered": 1275,
+    "picked": 1065,
+    "pickRate": 0.8353
+   },
+   {
+    "id": "L_ember",
+    "offered": 1254,
+    "picked": 1254,
+    "pickRate": 1
+   },
+   {
+    "id": "i_broad",
+    "offered": 1212,
+    "picked": 428,
+    "pickRate": 0.3531
+   },
+   {
+    "id": "L_rook",
+    "offered": 1167,
+    "picked": 1072,
+    "pickRate": 0.9186
+   },
+   {
+    "id": "d_ionlance",
+    "offered": 1159,
+    "picked": 89,
+    "pickRate": 0.0768
+   },
+   {
+    "id": "h_wings",
+    "offered": 1107,
+    "picked": 876,
+    "pickRate": 0.7913
+   },
+   {
+    "id": "d_bastion",
+    "offered": 1094,
+    "picked": 181,
+    "pickRate": 0.1654
+   },
+   {
+    "id": "L_iron",
+    "offered": 1092,
+    "picked": 938,
+    "pickRate": 0.859
+   },
+   {
+    "id": "d_burnswarm",
+    "offered": 1077,
+    "picked": 21,
+    "pickRate": 0.0195
+   },
+   {
+    "id": "L_star",
+    "offered": 804,
+    "picked": 377,
+    "pickRate": 0.4689
+   },
+   {
+    "id": "d_inferno",
+    "offered": 568,
+    "picked": 204,
+    "pickRate": 0.3592
+   },
+   {
+    "id": "L_hunger",
+    "offered": 380,
+    "picked": 365,
+    "pickRate": 0.9605
+   }
+  ],
+  "hunter": [
+   {
+    "id": "a_long",
+    "offered": 8025,
+    "picked": 345,
+    "pickRate": 0.043
+   },
+   {
+    "id": "s_ion",
+    "offered": 7554,
+    "picked": 286,
+    "pickRate": 0.0379
+   },
+   {
+    "id": "e_kindle",
+    "offered": 7439,
+    "picked": 1555,
+    "pickRate": 0.209
+   },
+   {
+    "id": "i_plate",
+    "offered": 7260,
+    "picked": 305,
+    "pickRate": 0.042
+   },
+   {
+    "id": "a_rear",
+    "offered": 7081,
+    "picked": 987,
+    "pickRate": 0.1394
+   },
+   {
+    "id": "s_chain",
+    "offered": 7061,
+    "picked": 854,
+    "pickRate": 0.1209
+   },
+   {
+    "id": "i_line",
+    "offered": 7051,
+    "picked": 586,
+    "pickRate": 0.0831
+   },
+   {
+    "id": "r_shock",
+    "offered": 6470,
+    "picked": 228,
+    "pickRate": 0.0352
+   },
+   {
+    "id": "i_wall",
+    "offered": 6085,
+    "picked": 1227,
+    "pickRate": 0.2016
+   },
+   {
+    "id": "r_slip",
+    "offered": 6057,
+    "picked": 549,
+    "pickRate": 0.0906
+   },
+   {
+    "id": "r_mom",
+    "offered": 5887,
+    "picked": 673,
+    "pickRate": 0.1143
+   },
+   {
+    "id": "h_board",
+    "offered": 5568,
+    "picked": 2567,
+    "pickRate": 0.461
+   },
+   {
+    "id": "e_chain",
+    "offered": 5308,
+    "picked": 2651,
+    "pickRate": 0.4994
+   },
+   {
+    "id": "r_burn",
+    "offered": 4766,
+    "picked": 1634,
+    "pickRate": 0.3428
+   },
+   {
+    "id": "a_aim",
+    "offered": 4218,
+    "picked": 2763,
+    "pickRate": 0.655
+   },
+   {
+    "id": "s_regen",
+    "offered": 3997,
+    "picked": 132,
+    "pickRate": 0.033
+   },
+   {
+    "id": "r_prow",
+    "offered": 3995,
+    "picked": 2368,
+    "pickRate": 0.5927
+   },
+   {
+    "id": "s_ev",
+    "offered": 3950,
+    "picked": 2747,
+    "pickRate": 0.6954
+   },
+   {
+    "id": "a_crit",
+    "offered": 3585,
+    "picked": 3115,
+    "pickRate": 0.8689
+   },
+   {
+    "id": "s_arc",
+    "offered": 3377,
+    "picked": 3050,
+    "pickRate": 0.9032
+   },
+   {
+    "id": "e_hunt",
+    "offered": 3374,
+    "picked": 3352,
+    "pickRate": 0.9935
+   },
+   {
+    "id": "i_brace",
+    "offered": 3270,
+    "picked": 3176,
+    "pickRate": 0.9713
+   },
+   {
+    "id": "r_jink",
+    "offered": 3159,
+    "picked": 2858,
+    "pickRate": 0.9047
+   },
+   {
+    "id": "s_cap",
+    "offered": 2958,
+    "picked": 1284,
+    "pickRate": 0.4341
+   },
+   {
+    "id": "i_still",
+    "offered": 2910,
+    "picked": 1584,
+    "pickRate": 0.5443
+   },
+   {
+    "id": "a_mark",
+    "offered": 2728,
+    "picked": 847,
+    "pickRate": 0.3105
+   },
+   {
+    "id": "e_reload",
+    "offered": 2191,
+    "picked": 123,
+    "pickRate": 0.0561
+   },
+   {
+    "id": "e_spread",
+    "offered": 2182,
+    "picked": 14,
+    "pickRate": 0.0064
+   },
+   {
+    "id": "a_lance",
+    "offered": 2066,
+    "picked": 1435,
+    "pickRate": 0.6946
+   },
+   {
+    "id": "h_feast",
+    "offered": 1911,
+    "picked": 120,
+    "pickRate": 0.0628
+   },
+   {
+    "id": "h_chitin",
+    "offered": 1862,
+    "picked": 174,
+    "pickRate": 0.0934
+   },
+   {
+    "id": "e_war",
+    "offered": 1825,
+    "picked": 522,
+    "pickRate": 0.286
+   },
+   {
+    "id": "h_brood",
+    "offered": 1755,
+    "picked": 328,
+    "pickRate": 0.1869
+   },
+   {
+    "id": "d_jugg",
+    "offered": 1653,
+    "picked": 1104,
+    "pickRate": 0.6679
+   },
+   {
+    "id": "h_hatch",
+    "offered": 1574,
+    "picked": 494,
+    "pickRate": 0.3139
+   },
+   {
+    "id": "L_storm",
+    "offered": 1472,
+    "picked": 1200,
+    "pickRate": 0.8152
+   },
+   {
+    "id": "L_ember",
+    "offered": 1446,
+    "picked": 1334,
+    "pickRate": 0.9225
+   },
+   {
+    "id": "d_hunter",
+    "offered": 1429,
+    "picked": 1429,
+    "pickRate": 1
+   },
+   {
+    "id": "d_ionlance",
+    "offered": 1375,
+    "picked": 119,
+    "pickRate": 0.0865
+   },
+   {
+    "id": "L_rook",
+    "offered": 1304,
+    "picked": 1196,
+    "pickRate": 0.9172
+   },
+   {
+    "id": "i_broad",
+    "offered": 1279,
+    "picked": 475,
+    "pickRate": 0.3714
+   },
+   {
+    "id": "d_bastion",
+    "offered": 1273,
+    "picked": 233,
+    "pickRate": 0.183
+   },
+   {
+    "id": "d_burnswarm",
+    "offered": 1251,
+    "picked": 46,
+    "pickRate": 0.0368
+   },
+   {
+    "id": "h_wings",
+    "offered": 1176,
+    "picked": 895,
+    "pickRate": 0.7611
+   },
+   {
+    "id": "L_iron",
+    "offered": 1154,
+    "picked": 991,
+    "pickRate": 0.8588
+   },
+   {
+    "id": "L_star",
+    "offered": 955,
+    "picked": 557,
+    "pickRate": 0.5832
+   },
+   {
+    "id": "d_inferno",
+    "offered": 657,
+    "picked": 187,
+    "pickRate": 0.2846
+   },
+   {
+    "id": "L_hunger",
+    "offered": 430,
+    "picked": 419,
+    "pickRate": 0.9744
+   }
+  ]
+ },
+ "admirals": {
+  "voidsworn": {
+   "pooled": {
+    "vex": {
+     "n": 726,
+     "wins": 403,
+     "rate": 0.5551,
+     "ci": [
+      0.5188,
+      0.5909
+     ],
+     "reachS3": 0.6116,
+     "reachS3CI": [
+      0.5756,
+      0.6463
+     ],
+     "battlesPerRun": 10.4187,
+     "shipsLostPerRun": 5.0826,
+     "shipsLostPerBattle": 0.4878,
+     "nemMeetingsPerRun": 1.7934,
+     "nemWinRate": 0.8825,
+     "nemWinCI": [
+      0.8639,
+      0.8989
+     ],
+     "nemFights": 1302,
+     "timeouts": 6,
+     "errors": 0
+    },
+    "malek": {
+     "n": 726,
+     "wins": 214,
+     "rate": 0.2948,
+     "ci": [
+      0.2627,
+      0.3289
+     ],
+     "reachS3": 0.3416,
+     "reachS3CI": [
+      0.308,
+      0.3768
+     ],
+     "battlesPerRun": 7.8774,
+     "shipsLostPerRun": 5.9132,
+     "shipsLostPerBattle": 0.7507,
+     "nemMeetingsPerRun": 1.2782,
+     "nemWinRate": 0.7802,
+     "nemWinCI": [
+      0.7524,
+      0.8056
+     ],
+     "nemFights": 928,
+     "timeouts": 6,
+     "errors": 0
+    },
+    "ashgrove": {
+     "n": 724,
+     "wins": 270,
+     "rate": 0.3729,
+     "ci": [
+      0.3385,
+      0.4087
+     ],
+     "reachS3": 0.4323,
+     "reachS3CI": [
+      0.3967,
+      0.4687
+     ],
+     "battlesPerRun": 8.9144,
+     "shipsLostPerRun": 4.7666,
+     "shipsLostPerBattle": 0.5347,
+     "nemMeetingsPerRun": 1.511,
+     "nemWinRate": 0.8163,
+     "nemWinCI": [
+      0.7922,
+      0.8381
+     ],
+     "nemFights": 1094,
+     "timeouts": 10,
+     "errors": 0
+    },
+    "thale": {
+     "n": 724,
+     "wins": 563,
+     "rate": 0.7776,
+     "ci": [
+      0.7459,
+      0.8064
+     ],
+     "reachS3": 0.8163,
+     "reachS3CI": [
+      0.7864,
+      0.8428
+     ],
+     "battlesPerRun": 12.2334,
+     "shipsLostPerRun": 5.308,
+     "shipsLostPerBattle": 0.4339,
+     "nemMeetingsPerRun": 2.1727,
+     "nemWinRate": 0.8722,
+     "nemWinCI": [
+      0.8548,
+      0.8878
+     ],
+     "nemFights": 1573,
+     "timeouts": 13,
+     "errors": 0
+    }
+   },
+   "firstOnly": {
+    "vex": {
+     "n": 451,
+     "wins": 262,
+     "rate": 0.5809,
+     "ci": [
+      0.5349,
+      0.6256
+     ],
+     "reachS3": 0.6408,
+     "reachS3CI": [
+      0.5955,
+      0.6837
+     ],
+     "battlesPerRun": 10.6563,
+     "shipsLostPerRun": 5.1086,
+     "shipsLostPerBattle": 0.4794,
+     "nemMeetingsPerRun": 1.847,
+     "nemWinRate": 0.892,
+     "nemWinCI": [
+      0.869,
+      0.9113
+     ],
+     "nemFights": 833,
+     "timeouts": 4,
+     "errors": 0
+    },
+    "malek": {
+     "n": 451,
+     "wins": 128,
+     "rate": 0.2838,
+     "ci": [
+      0.2442,
+      0.3271
+     ],
+     "reachS3": 0.337,
+     "reachS3CI": [
+      0.2949,
+      0.3819
+     ],
+     "battlesPerRun": 7.8869,
+     "shipsLostPerRun": 5.98,
+     "shipsLostPerBattle": 0.7582,
+     "nemMeetingsPerRun": 1.2927,
+     "nemWinRate": 0.7753,
+     "nemWinCI": [
+      0.7397,
+      0.8073
+     ],
+     "nemFights": 583,
+     "timeouts": 5,
+     "errors": 0
+    },
+    "ashgrove": {
+     "n": 449,
+     "wins": 174,
+     "rate": 0.3875,
+     "ci": [
+      0.3436,
+      0.4334
+     ],
+     "reachS3": 0.4543,
+     "reachS3CI": [
+      0.4089,
+      0.5006
+     ],
+     "battlesPerRun": 9.2071,
+     "shipsLostPerRun": 4.9131,
+     "shipsLostPerBattle": 0.5336,
+     "nemMeetingsPerRun": 1.5791,
+     "nemWinRate": 0.8124,
+     "nemWinCI": [
+      0.782,
+      0.8394
+     ],
+     "nemFights": 709,
+     "timeouts": 5,
+     "errors": 0
+    },
+    "thale": {
+     "n": 449,
+     "wins": 338,
+     "rate": 0.7528,
+     "ci": [
+      0.7108,
+      0.7904
+     ],
+     "reachS3": 0.804,
+     "reachS3CI": [
+      0.7648,
+      0.8381
+     ],
+     "battlesPerRun": 12.1804,
+     "shipsLostPerRun": 5.4165,
+     "shipsLostPerBattle": 0.4447,
+     "nemMeetingsPerRun": 2.1626,
+     "nemWinRate": 0.861,
+     "nemWinCI": [
+      0.8378,
+      0.8813
+     ],
+     "nemFights": 971,
+     "timeouts": 8,
+     "errors": 0
+    }
+   }
+  },
+  "corsair": {
+   "pooled": {
+    "grax": {
+     "n": 725,
+     "wins": 415,
+     "rate": 0.5724,
+     "ci": [
+      0.5361,
+      0.608
+     ],
+     "reachS3": 0.6055,
+     "reachS3CI": [
+      0.5695,
+      0.6404
+     ],
+     "battlesPerRun": 10.16,
+     "shipsLostPerRun": 4.2097,
+     "shipsLostPerBattle": 0.4143,
+     "nemMeetingsPerRun": 2.0897,
+     "nemWinRate": 0.9234,
+     "nemWinCI": [
+      0.9089,
+      0.9358
+     ],
+     "nemFights": 1515,
+     "timeouts": 0,
+     "errors": 0
+    },
+    "sable": {
+     "n": 725,
+     "wins": 353,
+     "rate": 0.4869,
+     "ci": [
+      0.4507,
+      0.5233
+     ],
+     "reachS3": 0.5297,
+     "reachS3CI": [
+      0.4933,
+      0.5657
+     ],
+     "battlesPerRun": 9.5903,
+     "shipsLostPerRun": 6.1738,
+     "shipsLostPerBattle": 0.6438,
+     "nemMeetingsPerRun": 1.9448,
+     "nemWinRate": 0.9092,
+     "nemWinCI": [
+      0.8931,
+      0.9231
+     ],
+     "nemFights": 1410,
+     "timeouts": 0,
+     "errors": 0
+    },
+    "mott": {
+     "n": 725,
+     "wins": 446,
+     "rate": 0.6152,
+     "ci": [
+      0.5792,
+      0.6499
+     ],
+     "reachS3": 0.7048,
+     "reachS3CI": [
+      0.6706,
+      0.7369
+     ],
+     "battlesPerRun": 11.3145,
+     "shipsLostPerRun": 5.6648,
+     "shipsLostPerBattle": 0.5007,
+     "nemMeetingsPerRun": 2.3434,
+     "nemWinRate": 0.917,
+     "nemWinCI": [
+      0.9029,
+      0.9292
+     ],
+     "nemFights": 1699,
+     "timeouts": 9,
+     "errors": 0
+    },
+    "vesh": {
+     "n": 725,
+     "wins": 571,
+     "rate": 0.7876,
+     "ci": [
+      0.7563,
+      0.8158
+     ],
+     "reachS3": 0.8359,
+     "reachS3CI": [
+      0.8071,
+      0.861
+     ],
+     "battlesPerRun": 12.2179,
+     "shipsLostPerRun": 5.7297,
+     "shipsLostPerBattle": 0.469,
+     "nemMeetingsPerRun": 2.4938,
+     "nemWinRate": 0.9264,
+     "nemWinCI": [
+      0.9135,
+      0.9376
+     ],
+     "nemFights": 1808,
+     "timeouts": 8,
+     "errors": 0
+    }
+   },
+   "firstOnly": {
+    "grax": {
+     "n": 450,
+     "wins": 262,
+     "rate": 0.5822,
+     "ci": [
+      0.5361,
+      0.6269
+     ],
+     "reachS3": 0.6089,
+     "reachS3CI": [
+      0.5631,
+      0.6529
+     ],
+     "battlesPerRun": 10.1911,
+     "shipsLostPerRun": 4.1111,
+     "shipsLostPerBattle": 0.4034,
+     "nemMeetingsPerRun": 2.0844,
+     "nemWinRate": 0.935,
+     "nemWinCI": [
+      0.9173,
+      0.949
+     ],
+     "nemFights": 938,
+     "timeouts": 0,
+     "errors": 0
+    },
+    "sable": {
+     "n": 450,
+     "wins": 213,
+     "rate": 0.4733,
+     "ci": [
+      0.4276,
+      0.5195
+     ],
+     "reachS3": 0.5178,
+     "reachS3CI": [
+      0.4717,
+      0.5636
+     ],
+     "battlesPerRun": 9.5311,
+     "shipsLostPerRun": 6.3133,
+     "shipsLostPerBattle": 0.6624,
+     "nemMeetingsPerRun": 1.9067,
+     "nemWinRate": 0.9103,
+     "nemWinCI": [
+      0.8893,
+      0.9276
+     ],
+     "nemFights": 858,
+     "timeouts": 0,
+     "errors": 0
+    },
+    "mott": {
+     "n": 450,
+     "wins": 267,
+     "rate": 0.5933,
+     "ci": [
+      0.5473,
+      0.6377
+     ],
+     "reachS3": 0.6822,
+     "reachS3CI": [
+      0.6378,
+      0.7235
+     ],
+     "battlesPerRun": 11.1,
+     "shipsLostPerRun": 5.6178,
+     "shipsLostPerBattle": 0.5061,
+     "nemMeetingsPerRun": 2.2911,
+     "nemWinRate": 0.9117,
+     "nemWinCI": [
+      0.8929,
+      0.9276
+     ],
+     "nemFights": 1031,
+     "timeouts": 5,
+     "errors": 0
+    },
+    "vesh": {
+     "n": 450,
+     "wins": 358,
+     "rate": 0.7956,
+     "ci": [
+      0.7559,
+      0.8302
+     ],
+     "reachS3": 0.8333,
+     "reachS3CI": [
+      0.7961,
+      0.8649
+     ],
+     "battlesPerRun": 12.1578,
+     "shipsLostPerRun": 5.6889,
+     "shipsLostPerBattle": 0.4679,
+     "nemMeetingsPerRun": 2.4756,
+     "nemWinRate": 0.921,
+     "nemWinCI": [
+      0.9037,
+      0.9354
+     ],
+     "nemFights": 1114,
+     "timeouts": 4,
+     "errors": 0
+    }
+   }
+  },
+  "deathless": {
+   "pooled": {
+    "nekhet": {
+     "n": 725,
+     "wins": 577,
+     "rate": 0.7959,
+     "ci": [
+      0.765,
+      0.8236
+     ],
+     "reachS3": 0.8386,
+     "reachS3CI": [
+      0.8101,
+      0.8636
+     ],
+     "battlesPerRun": 12.2441,
+     "shipsLostPerRun": 2.8193,
+     "shipsLostPerBattle": 0.2303,
+     "nemMeetingsPerRun": 2.269,
+     "nemWinRate": 0.9094,
+     "nemWinCI": [
+      0.8946,
+      0.9224
+     ],
+     "nemFights": 1645,
+     "timeouts": 21,
+     "errors": 0
+    },
+    "sekhmar": {
+     "n": 725,
+     "wins": 453,
+     "rate": 0.6248,
+     "ci": [
+      0.589,
+      0.6593
+     ],
+     "reachS3": 0.6662,
+     "reachS3CI": [
+      0.6311,
+      0.6996
+     ],
+     "battlesPerRun": 10.8593,
+     "shipsLostPerRun": 4.2041,
+     "shipsLostPerBattle": 0.3871,
+     "nemMeetingsPerRun": 1.9807,
+     "nemWinRate": 0.8753,
+     "nemWinCI": [
+      0.8573,
+      0.8914
+     ],
+     "nemFights": 1436,
+     "timeouts": 20,
+     "errors": 0
+    },
+    "anuket": {
+     "n": 725,
+     "wins": 517,
+     "rate": 0.7131,
+     "ci": [
+      0.6791,
+      0.7448
+     ],
+     "reachS3": 0.7503,
+     "reachS3CI": [
+      0.7176,
+      0.7805
+     ],
+     "battlesPerRun": 11.5462,
+     "shipsLostPerRun": 3.5738,
+     "shipsLostPerBattle": 0.3095,
+     "nemMeetingsPerRun": 2.1379,
+     "nemWinRate": 0.929,
+     "nemWinCI": [
+      0.9152,
+      0.9408
+     ],
+     "nemFights": 1550,
+     "timeouts": 3,
+     "errors": 0
+    },
+    "khepra": {
+     "n": 725,
+     "wins": 435,
+     "rate": 0.6,
+     "ci": [
+      0.5639,
+      0.635
+     ],
+     "reachS3": 0.64,
+     "reachS3CI": [
+      0.6044,
+      0.6741
+     ],
+     "battlesPerRun": 10.7214,
+     "shipsLostPerRun": 3.6097,
+     "shipsLostPerBattle": 0.3367,
+     "nemMeetingsPerRun": 1.9614,
+     "nemWinRate": 0.8833,
+     "nemWinCI": [
+      0.8655,
+      0.8989
+     ],
+     "nemFights": 1422,
+     "timeouts": 9,
+     "errors": 0
+    }
+   },
+   "firstOnly": {
+    "nekhet": {
+     "n": 450,
+     "wins": 351,
+     "rate": 0.78,
+     "ci": [
+      0.7394,
+      0.8158
+     ],
+     "reachS3": 0.8289,
+     "reachS3CI": [
+      0.7913,
+      0.8609
+     ],
+     "battlesPerRun": 12.1711,
+     "shipsLostPerRun": 2.8489,
+     "shipsLostPerBattle": 0.2341,
+     "nemMeetingsPerRun": 2.26,
+     "nemWinRate": 0.9174,
+     "nemWinCI": [
+      0.8989,
+      0.9328
+     ],
+     "nemFights": 1017,
+     "timeouts": 16,
+     "errors": 0
+    },
+    "sekhmar": {
+     "n": 450,
+     "wins": 275,
+     "rate": 0.6111,
+     "ci": [
+      0.5653,
+      0.655
+     ],
+     "reachS3": 0.6578,
+     "reachS3CI": [
+      0.6128,
+      0.7001
+     ],
+     "battlesPerRun": 10.8111,
+     "shipsLostPerRun": 4.2289,
+     "shipsLostPerBattle": 0.3912,
+     "nemMeetingsPerRun": 1.9511,
+     "nemWinRate": 0.8759,
+     "nemWinCI": [
+      0.8524,
+      0.896
+     ],
+     "nemFights": 878,
+     "timeouts": 14,
+     "errors": 0
+    },
+    "anuket": {
+     "n": 450,
+     "wins": 322,
+     "rate": 0.7156,
+     "ci": [
+      0.6722,
+      0.7553
+     ],
+     "reachS3": 0.7578,
+     "reachS3CI": [
+      0.7161,
+      0.7951
+     ],
+     "battlesPerRun": 11.5889,
+     "shipsLostPerRun": 3.5889,
+     "shipsLostPerBattle": 0.3097,
+     "nemMeetingsPerRun": 2.1444,
+     "nemWinRate": 0.9337,
+     "nemWinCI": [
+      0.9162,
+      0.9477
+     ],
+     "nemFights": 965,
+     "timeouts": 3,
+     "errors": 0
+    },
+    "khepra": {
+     "n": 450,
+     "wins": 268,
+     "rate": 0.5956,
+     "ci": [
+      0.5496,
+      0.6399
+     ],
+     "reachS3": 0.6356,
+     "reachS3CI": [
+      0.5901,
+      0.6787
+     ],
+     "battlesPerRun": 10.6178,
+     "shipsLostPerRun": 3.4778,
+     "shipsLostPerBattle": 0.3275,
+     "nemMeetingsPerRun": 1.96,
+     "nemWinRate": 0.873,
+     "nemWinCI": [
+      0.8494,
+      0.8934
+     ],
+     "nemFights": 882,
+     "timeouts": 7,
+     "errors": 0
+    }
+   }
+  },
+  "hegemony": {
+   "pooled": {
+    "kassar": {
+     "n": 725,
+     "wins": 495,
+     "rate": 0.6828,
+     "ci": [
+      0.648,
+      0.7156
+     ],
+     "reachS3": 0.7393,
+     "reachS3CI": [
+      0.7062,
+      0.7699
+     ],
+     "battlesPerRun": 11.5269,
+     "shipsLostPerRun": 4.5834,
+     "shipsLostPerBattle": 0.3976,
+     "nemMeetingsPerRun": 2.0786,
+     "nemWinRate": 0.9051,
+     "nemWinCI": [
+      0.8893,
+      0.9189
+     ],
+     "nemFights": 1507,
+     "timeouts": 7,
+     "errors": 0
+    },
+    "vorn": {
+     "n": 725,
+     "wins": 338,
+     "rate": 0.4662,
+     "ci": [
+      0.4302,
+      0.5026
+     ],
+     "reachS3": 0.5297,
+     "reachS3CI": [
+      0.4933,
+      0.5657
+     ],
+     "battlesPerRun": 9.7131,
+     "shipsLostPerRun": 5.7752,
+     "shipsLostPerBattle": 0.5946,
+     "nemMeetingsPerRun": 1.7379,
+     "nemWinRate": 0.8437,
+     "nemWinCI": [
+      0.8226,
+      0.8627
+     ],
+     "nemFights": 1260,
+     "timeouts": 0,
+     "errors": 0
+    },
+    "reyes": {
+     "n": 725,
+     "wins": 499,
+     "rate": 0.6883,
+     "ci": [
+      0.6536,
+      0.7209
+     ],
+     "reachS3": 0.7352,
+     "reachS3CI": [
+      0.7019,
+      0.766
+     ],
+     "battlesPerRun": 11.4455,
+     "shipsLostPerRun": 4.7421,
+     "shipsLostPerBattle": 0.4143,
+     "nemMeetingsPerRun": 2.08,
+     "nemWinRate": 0.9019,
+     "nemWinCI": [
+      0.8858,
+      0.9159
+     ],
+     "nemFights": 1508,
+     "timeouts": 1,
+     "errors": 0
+    },
+    "maren": {
+     "n": 725,
+     "wins": 438,
+     "rate": 0.6041,
+     "ci": [
+      0.5681,
+      0.6391
+     ],
+     "reachS3": 0.6938,
+     "reachS3CI": [
+      0.6593,
+      0.7263
+     ],
+     "battlesPerRun": 11.1366,
+     "shipsLostPerRun": 5.3572,
+     "shipsLostPerBattle": 0.4811,
+     "nemMeetingsPerRun": 2.0634,
+     "nemWinRate": 0.8055,
+     "nemWinCI": [
+      0.7847,
+      0.8247
+     ],
+     "nemFights": 1496,
+     "timeouts": 16,
+     "errors": 0
+    }
+   },
+   "firstOnly": {
+    "kassar": {
+     "n": 450,
+     "wins": 308,
+     "rate": 0.6844,
+     "ci": [
+      0.6401,
+      0.7257
+     ],
+     "reachS3": 0.7378,
+     "reachS3CI": [
+      0.6952,
+      0.7763
+     ],
+     "battlesPerRun": 11.5756,
+     "shipsLostPerRun": 4.64,
+     "shipsLostPerBattle": 0.4008,
+     "nemMeetingsPerRun": 2.0911,
+     "nemWinRate": 0.9054,
+     "nemWinCI": [
+      0.885,
+      0.9225
+     ],
+     "nemFights": 941,
+     "timeouts": 5,
+     "errors": 0
+    },
+    "vorn": {
+     "n": 450,
+     "wins": 202,
+     "rate": 0.4489,
+     "ci": [
+      0.4036,
+      0.4951
+     ],
+     "reachS3": 0.5178,
+     "reachS3CI": [
+      0.4717,
+      0.5636
+     ],
+     "battlesPerRun": 9.6044,
+     "shipsLostPerRun": 5.8756,
+     "shipsLostPerBattle": 0.6118,
+     "nemMeetingsPerRun": 1.7067,
+     "nemWinRate": 0.8372,
+     "nemWinCI": [
+      0.8095,
+      0.8617
+     ],
+     "nemFights": 768,
+     "timeouts": 0,
+     "errors": 0
+    },
+    "reyes": {
+     "n": 450,
+     "wins": 315,
+     "rate": 0.7,
+     "ci": [
+      0.6561,
+      0.7405
+     ],
+     "reachS3": 0.7467,
+     "reachS3CI": [
+      0.7045,
+      0.7846
+     ],
+     "battlesPerRun": 11.6089,
+     "shipsLostPerRun": 4.7667,
+     "shipsLostPerBattle": 0.4106,
+     "nemMeetingsPerRun": 2.1378,
+     "nemWinRate": 0.8992,
+     "nemWinCI": [
+      0.8785,
+      0.9166
+     ],
+     "nemFights": 962,
+     "timeouts": 0,
+     "errors": 0
+    },
+    "maren": {
+     "n": 450,
+     "wins": 279,
+     "rate": 0.62,
+     "ci": [
+      0.5743,
+      0.6637
+     ],
+     "reachS3": 0.7,
+     "reachS3CI": [
+      0.6561,
+      0.7405
+     ],
+     "battlesPerRun": 11.24,
+     "shipsLostPerRun": 5.3378,
+     "shipsLostPerBattle": 0.4749,
+     "nemMeetingsPerRun": 2.0867,
+     "nemWinRate": 0.8083,
+     "nemWinCI": [
+      0.7819,
+      0.8322
+     ],
+     "nemFights": 939,
+     "timeouts": 7,
+     "errors": 0
+    }
+   }
+  },
+  "ithar": {
+   "pooled": {
+    "aelith": {
+     "n": 726,
+     "wins": 524,
+     "rate": 0.7218,
+     "ci": [
+      0.6881,
+      0.7531
+     ],
+     "reachS3": 0.7879,
+     "reachS3CI": [
+      0.7567,
+      0.8161
+     ],
+     "battlesPerRun": 11.9986,
+     "shipsLostPerRun": 4.4766,
+     "shipsLostPerBattle": 0.3731,
+     "nemMeetingsPerRun": 2.1956,
+     "nemWinRate": 0.9003,
+     "nemWinCI": [
+      0.8846,
+      0.914
+     ],
+     "nemFights": 1594,
+     "timeouts": 6,
+     "errors": 0
+    },
+    "vaelen": {
+     "n": 726,
+     "wins": 478,
+     "rate": 0.6584,
+     "ci": [
+      0.6232,
+      0.692
+     ],
+     "reachS3": 0.7204,
+     "reachS3CI": [
+      0.6866,
+      0.7518
+     ],
+     "battlesPerRun": 11.4683,
+     "shipsLostPerRun": 4.1529,
+     "shipsLostPerBattle": 0.3621,
+     "nemMeetingsPerRun": 2.0854,
+     "nemWinRate": 0.9174,
+     "nemWinCI": [
+      0.9025,
+      0.9303
+     ],
+     "nemFights": 1514,
+     "timeouts": 6,
+     "errors": 0
+    },
+    "thorne": {
+     "n": 724,
+     "wins": 271,
+     "rate": 0.3743,
+     "ci": [
+      0.3398,
+      0.4101
+     ],
+     "reachS3": 0.4613,
+     "reachS3CI": [
+      0.4253,
+      0.4977
+     ],
+     "battlesPerRun": 9.366,
+     "shipsLostPerRun": 5.8439,
+     "shipsLostPerBattle": 0.6239,
+     "nemMeetingsPerRun": 1.6727,
+     "nemWinRate": 0.8497,
+     "nemWinCI": [
+      0.8285,
+      0.8687
+     ],
+     "nemFights": 1211,
+     "timeouts": 12,
+     "errors": 0
+    },
+    "mirelle": {
+     "n": 724,
+     "wins": 341,
+     "rate": 0.471,
+     "ci": [
+      0.4349,
+      0.5074
+     ],
+     "reachS3": 0.5428,
+     "reachS3CI": [
+      0.5064,
+      0.5788
+     ],
+     "battlesPerRun": 10.0704,
+     "shipsLostPerRun": 5.2279,
+     "shipsLostPerBattle": 0.5191,
+     "nemMeetingsPerRun": 1.7942,
+     "nemWinRate": 0.846,
+     "nemWinCI": [
+      0.8254,
+      0.8646
+     ],
+     "nemFights": 1299,
+     "timeouts": 4,
+     "errors": 0
+    }
+   },
+   "firstOnly": {
+    "aelith": {
+     "n": 451,
+     "wins": 325,
+     "rate": 0.7206,
+     "ci": [
+      0.6775,
+      0.76
+     ],
+     "reachS3": 0.7849,
+     "reachS3CI": [
+      0.7447,
+      0.8204
+     ],
+     "battlesPerRun": 11.9579,
+     "shipsLostPerRun": 4.4346,
+     "shipsLostPerBattle": 0.3709,
+     "nemMeetingsPerRun": 2.1885,
+     "nemWinRate": 0.8997,
+     "nemWinCI": [
+      0.8794,
+      0.9169
+     ],
+     "nemFights": 987,
+     "timeouts": 4,
+     "errors": 0
+    },
+    "vaelen": {
+     "n": 451,
+     "wins": 296,
+     "rate": 0.6563,
+     "ci": [
+      0.6113,
+      0.6987
+     ],
+     "reachS3": 0.7184,
+     "reachS3CI": [
+      0.6752,
+      0.7579
+     ],
+     "battlesPerRun": 11.4412,
+     "shipsLostPerRun": 4.1109,
+     "shipsLostPerBattle": 0.3593,
+     "nemMeetingsPerRun": 2.0843,
+     "nemWinRate": 0.9128,
+     "nemWinCI": [
+      0.893,
+      0.9292
+     ],
+     "nemFights": 940,
+     "timeouts": 3,
+     "errors": 0
+    },
+    "thorne": {
+     "n": 449,
+     "wins": 166,
+     "rate": 0.3697,
+     "ci": [
+      0.3263,
+      0.4153
+     ],
+     "reachS3": 0.4588,
+     "reachS3CI": [
+      0.4132,
+      0.505
+     ],
+     "battlesPerRun": 9.4365,
+     "shipsLostPerRun": 5.951,
+     "shipsLostPerBattle": 0.6306,
+     "nemMeetingsPerRun": 1.7038,
+     "nemWinRate": 0.8601,
+     "nemWinCI": [
+      0.8337,
+      0.8829
+     ],
+     "nemFights": 765,
+     "timeouts": 7,
+     "errors": 0
+    },
+    "mirelle": {
+     "n": 449,
+     "wins": 209,
+     "rate": 0.4655,
+     "ci": [
+      0.4198,
+      0.5117
+     ],
+     "reachS3": 0.539,
+     "reachS3CI": [
+      0.4927,
+      0.5846
+     ],
+     "battlesPerRun": 10.0535,
+     "shipsLostPerRun": 5.2494,
+     "shipsLostPerBattle": 0.5222,
+     "nemMeetingsPerRun": 1.8018,
+     "nemWinRate": 0.8591,
+     "nemWinCI": [
+      0.8334,
+      0.8814
+     ],
+     "nemFights": 809,
+     "timeouts": 3,
+     "errors": 0
+    }
+   }
+  },
+  "chorus": {
+   "pooled": {
+    "matriarch": {
+     "n": 725,
+     "wins": 613,
+     "rate": 0.8455,
+     "ci": [
+      0.8174,
+      0.87
+     ],
+     "reachS3": 0.8717,
+     "reachS3CI": [
+      0.8454,
+      0.8941
+     ],
+     "battlesPerRun": 12.4841,
+     "shipsLostPerRun": 4.9076,
+     "shipsLostPerBattle": 0.3931,
+     "nemMeetingsPerRun": 2.3117,
+     "nemWinRate": 0.9451,
+     "nemWinCI": [
+      0.9331,
+      0.955
+     ],
+     "nemFights": 1676,
+     "timeouts": 22,
+     "errors": 0
+    },
+    "razormaw": {
+     "n": 725,
+     "wins": 613,
+     "rate": 0.8455,
+     "ci": [
+      0.8174,
+      0.87
+     ],
+     "reachS3": 0.8676,
+     "reachS3CI": [
+      0.841,
+      0.8903
+     ],
+     "battlesPerRun": 12.3738,
+     "shipsLostPerRun": 4.3738,
+     "shipsLostPerBattle": 0.3535,
+     "nemMeetingsPerRun": 2.2924,
+     "nemWinRate": 0.9579,
+     "nemWinCI": [
+      0.9471,
+      0.9665
+     ],
+     "nemFights": 1662,
+     "timeouts": 7,
+     "errors": 0
+    },
+    "mending": {
+     "n": 725,
+     "wins": 632,
+     "rate": 0.8717,
+     "ci": [
+      0.8454,
+      0.8941
+     ],
+     "reachS3": 0.8897,
+     "reachS3CI": [
+      0.8648,
+      0.9104
+     ],
+     "battlesPerRun": 12.5903,
+     "shipsLostPerRun": 5.1283,
+     "shipsLostPerBattle": 0.4073,
+     "nemMeetingsPerRun": 2.2993,
+     "nemWinRate": 0.9454,
+     "nemWinCI": [
+      0.9334,
+      0.9553
+     ],
+     "nemFights": 1667,
+     "timeouts": 5,
+     "errors": 0
+    },
+    "voice": {
+     "n": 725,
+     "wins": 609,
+     "rate": 0.84,
+     "ci": [
+      0.8115,
+      0.8649
+     ],
+     "reachS3": 0.869,
+     "reachS3CI": [
+      0.8424,
+      0.8916
+     ],
+     "battlesPerRun": 12.4345,
+     "shipsLostPerRun": 4.6566,
+     "shipsLostPerBattle": 0.3745,
+     "nemMeetingsPerRun": 2.269,
+     "nemWinRate": 0.9459,
+     "nemWinCI": [
+      0.9339,
+      0.9558
+     ],
+     "nemFights": 1645,
+     "timeouts": 6,
+     "errors": 0
+    }
+   },
+   "firstOnly": {
+    "matriarch": {
+     "n": 450,
+     "wins": 375,
+     "rate": 0.8333,
+     "ci": [
+      0.7961,
+      0.8649
+     ],
+     "reachS3": 0.8667,
+     "reachS3CI": [
+      0.8321,
+      0.895
+     ],
+     "battlesPerRun": 12.5044,
+     "shipsLostPerRun": 4.9111,
+     "shipsLostPerBattle": 0.3927,
+     "nemMeetingsPerRun": 2.3356,
+     "nemWinRate": 0.9429,
+     "nemWinCI": [
+      0.9272,
+      0.9554
+     ],
+     "nemFights": 1051,
+     "timeouts": 13,
+     "errors": 0
+    },
+    "razormaw": {
+     "n": 450,
+     "wins": 386,
+     "rate": 0.8578,
+     "ci": [
+      0.8225,
+      0.887
+     ],
+     "reachS3": 0.8778,
+     "reachS3CI": [
+      0.8443,
+      0.9049
+     ],
+     "battlesPerRun": 12.3956,
+     "shipsLostPerRun": 4.3444,
+     "shipsLostPerBattle": 0.3505,
+     "nemMeetingsPerRun": 2.2667,
+     "nemWinRate": 0.9657,
+     "nemWinCI": [
+      0.9527,
+      0.9752
+     ],
+     "nemFights": 1020,
+     "timeouts": 4,
+     "errors": 0
+    },
+    "mending": {
+     "n": 450,
+     "wins": 388,
+     "rate": 0.8622,
+     "ci": [
+      0.8273,
+      0.891
+     ],
+     "reachS3": 0.8822,
+     "reachS3CI": [
+      0.8492,
+      0.9088
+     ],
+     "battlesPerRun": 12.5289,
+     "shipsLostPerRun": 5.1133,
+     "shipsLostPerBattle": 0.4081,
+     "nemMeetingsPerRun": 2.28,
+     "nemWinRate": 0.9405,
+     "nemWinCI": [
+      0.9244,
+      0.9534
+     ],
+     "nemFights": 1026,
+     "timeouts": 4,
+     "errors": 0
+    },
+    "voice": {
+     "n": 450,
+     "wins": 383,
+     "rate": 0.8511,
+     "ci": [
+      0.8153,
+      0.881
+     ],
+     "reachS3": 0.8733,
+     "reachS3CI": [
+      0.8394,
+      0.9009
+     ],
+     "battlesPerRun": 12.4333,
+     "shipsLostPerRun": 4.54,
+     "shipsLostPerBattle": 0.3651,
+     "nemMeetingsPerRun": 2.2844,
+     "nemWinRate": 0.9484,
+     "nemWinCI": [
+      0.9332,
+      0.9604
+     ],
+     "nemFights": 1028,
+     "timeouts": 5,
+     "errors": 0
+    }
+   }
+  }
+ },
+ "errors": 0,
+ "timeouts": 373,
+ "totalRuns": 26400
+}

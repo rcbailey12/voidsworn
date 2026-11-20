@@ -1,0 +1,2204 @@
+{
+ "i_broad": {
+  "p": "iron",
+  "duo": null,
+  "leg": false,
+  "n": "Thunder Broadside",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "broadPct": 0.2
+    },
+    "d": "Broadside guns deal +20% damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "broadPct": 0.30000000000000004
+    },
+    "d": "Broadside guns deal +30% damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "broadPct": 0.4
+    },
+    "d": "Broadside guns deal +40% damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "broadPct": 0.2
+    },
+    "d": "Broadside guns deal +20% damage."
+   }
+  ]
+ },
+ "i_still": {
+  "p": "iron",
+  "duo": null,
+  "leg": false,
+  "n": "Anchored Volley",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "stillPct": 0.25
+    },
+    "d": "A ship that hasn't moved this activation deals +25% damage with broadsides and batteries."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "stillPct": 0.375
+    },
+    "d": "A ship that hasn't moved this activation deals +38% damage with broadsides and batteries."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "stillPct": 0.5
+    },
+    "d": "A ship that hasn't moved this activation deals +50% damage with broadsides and batteries."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "stillPct": 0.25
+    },
+    "d": "A ship that hasn't moved this activation deals +25% damage with broadsides and batteries."
+   }
+  ]
+ },
+ "i_plate": {
+  "p": "iron",
+  "duo": null,
+  "leg": false,
+  "n": "Unbent Plating",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "armor": 0.08
+    },
+    "d": "+8% armor across the fleet."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "armor": 0.12
+    },
+    "d": "+12% armor across the fleet."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "armor": 0.16
+    },
+    "d": "+16% armor across the fleet."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "armor": 0.08
+    },
+    "d": "+8% armor across the fleet."
+   }
+  ]
+ },
+ "i_brace": {
+  "p": "iron",
+  "duo": null,
+  "leg": false,
+  "n": "Iron Discipline",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "riposte": 18,
+     "bracePlus": 0.1
+    },
+    "d": "Bracing blocks an extra 10%, and braced ships strike back: every enemy attack that hits one takes 18 damage in return."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "riposte": 27,
+     "bracePlus": 0.15000000000000002
+    },
+    "d": "Bracing blocks an extra 15%, and braced ships strike back: every enemy attack that hits one takes 27 damage in return."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "riposte": 36,
+     "bracePlus": 0.2
+    },
+    "d": "Bracing blocks an extra 20%, and braced ships strike back: every enemy attack that hits one takes 36 damage in return."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "riposte": 18,
+     "bracePlus": 0.1
+    },
+    "d": "Bracing blocks an extra 10%, and braced ships strike back: every enemy attack that hits one takes 18 damage in return."
+   }
+  ]
+ },
+ "i_line": {
+  "p": "iron",
+  "duo": null,
+  "leg": false,
+  "n": "Unbroken Line",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "lineGuard": 0.12,
+     "lineEv": 0
+    },
+    "d": "Ships next to another of your ships take 12% less hull damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "lineGuard": 0.18,
+     "lineEv": 0
+    },
+    "d": "Ships next to another of your ships take 18% less hull damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "lineGuard": 0.24,
+     "lineEv": 5
+    },
+    "d": "Ships next to another of your ships take 24% less hull damage. Epic: they are also 5 harder to hit."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "lineGuard": 0.12,
+     "lineEv": 0
+    },
+    "d": "Ships next to another of your ships take 12% less hull damage."
+   }
+  ]
+ },
+ "s_cap": {
+  "p": "storm",
+  "duo": null,
+  "leg": false,
+  "n": "Capacitor Surge",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "shPct": 0.2
+    },
+    "d": "Shields +20% across the fleet."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "shPct": 0.30000000000000004
+    },
+    "d": "Shields +30% across the fleet."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "shPct": 0.4
+    },
+    "d": "Shields +40% across the fleet."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "shPct": 0.2
+    },
+    "d": "Shields +20% across the fleet."
+   }
+  ]
+ },
+ "s_arc": {
+  "p": "storm",
+  "duo": null,
+  "leg": false,
+  "n": "Arc Discharge",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "arcShort": 9
+    },
+    "d": "When your fire knocks out an enemy shield facing, its generator shorts for 9 hull damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "arcShort": 14
+    },
+    "d": "When your fire knocks out an enemy shield facing, its generator shorts for 14 hull damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "arcShort": 18
+    },
+    "d": "When your fire knocks out an enemy shield facing, its generator shorts for 18 hull damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "arcShort": 9
+    },
+    "d": "When your fire knocks out an enemy shield facing, its generator shorts for 9 hull damage."
+   }
+  ]
+ },
+ "s_ion": {
+  "p": "storm",
+  "duo": null,
+  "leg": false,
+  "n": "Ion Lash",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "ionPlus": 0.22
+    },
+    "d": "Your weapons strip 22% more shield per hit."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "ionPlus": 0.33
+    },
+    "d": "Your weapons strip 33% more shield per hit."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "ionPlus": 0.44
+    },
+    "d": "Your weapons strip 44% more shield per hit."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "ionPlus": 0.22
+    },
+    "d": "Your weapons strip 22% more shield per hit."
+   }
+  ]
+ },
+ "s_regen": {
+  "p": "storm",
+  "duo": null,
+  "leg": false,
+  "n": "Storm Mantle",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "stormRegen": 0.18
+    },
+    "d": "Each turn, every shield facing on every ship restores an extra 18% of its strength."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "stormRegen": 0.27
+    },
+    "d": "Each turn, every shield facing on every ship restores an extra 27% of its strength."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "stormRegen": 0.36
+    },
+    "d": "Each turn, every shield facing on every ship restores an extra 36% of its strength."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "stormRegen": 0.18
+    },
+    "d": "Each turn, every shield facing on every ship restores an extra 18% of its strength."
+   }
+  ]
+ },
+ "s_ev": {
+  "p": "storm",
+  "duo": null,
+  "leg": false,
+  "n": "Lightning Reflex",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "ev": 6
+    },
+    "d": "+6 evasion across the fleet."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "ev": 9
+    },
+    "d": "+9 evasion across the fleet."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "ev": 12
+    },
+    "d": "+12 evasion across the fleet."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "ev": 6
+    },
+    "d": "+6 evasion across the fleet."
+   }
+  ]
+ },
+ "h_hatch": {
+  "p": "hunger",
+  "duo": null,
+  "leg": false,
+  "n": "Swarm Hatch",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "hangar": 1
+    },
+    "d": "Carriers field an extra wing."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "hangar": 2
+    },
+    "d": "Carriers field two extra wings."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "hangar": 2
+    },
+    "d": "Carriers field two extra wings."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "hangar": 1
+    },
+    "d": "Carriers field an extra wing."
+   }
+  ]
+ },
+ "h_wings": {
+  "p": "hunger",
+  "duo": null,
+  "leg": false,
+  "n": "Ravenous Wings",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "sqPct": 0.25
+    },
+    "d": "Squadrons deal +25% damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "sqPct": 0.375
+    },
+    "d": "Squadrons deal +38% damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "sqPct": 0.5
+    },
+    "d": "Squadrons deal +50% damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "sqPct": 0.25
+    },
+    "d": "Squadrons deal +25% damage."
+   }
+  ]
+ },
+ "h_chitin": {
+  "p": "hunger",
+  "duo": null,
+  "leg": false,
+  "n": "Hardened Chitin",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "sqHp": 0.3
+    },
+    "d": "Squadrons have +30% hull."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "sqHp": 0.44999999999999996
+    },
+    "d": "Squadrons have +45% hull."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "sqHp": 0.6
+    },
+    "d": "Squadrons have +60% hull."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "sqHp": 0.3
+    },
+    "d": "Squadrons have +30% hull."
+   }
+  ]
+ },
+ "h_board": {
+  "p": "hunger",
+  "duo": null,
+  "leg": false,
+  "n": "Boarding Frenzy",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "boardPct": 0.25
+    },
+    "d": "Boarding parties fight as 25% more crew, and a failed boarding always sabotages a system."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "boardPct": 0.375
+    },
+    "d": "Boarding parties fight as 38% more crew, and a failed boarding always sabotages a system."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "boardPct": 0.5
+    },
+    "d": "Boarding parties fight as 50% more crew, and a failed boarding always sabotages a system."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "boardPct": 0.25
+    },
+    "d": "Boarding parties fight as 25% more crew, and a failed boarding always sabotages a system."
+   }
+  ]
+ },
+ "h_feast": {
+  "p": "hunger",
+  "duo": null,
+  "leg": false,
+  "n": "Feast on the Fallen",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "feast": 0.05
+    },
+    "d": "When your squadron destroys a target, its carrier gains a spare wing and repairs 5% hull."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "feast": 0.07500000000000001
+    },
+    "d": "When your squadron destroys a target, its carrier gains a spare wing and repairs 8% hull."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "feast": 0.1
+    },
+    "d": "When your squadron destroys a target, its carrier gains a spare wing and repairs 10% hull."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "feast": 0.05
+    },
+    "d": "When your squadron destroys a target, its carrier gains a spare wing and repairs 5% hull."
+   }
+  ]
+ },
+ "a_lance": {
+  "p": "star",
+  "duo": null,
+  "leg": false,
+  "n": "Starlight Lances",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "lancePct": 0.35
+    },
+    "d": "Lances deal +35% damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "lancePct": 0.5249999999999999
+    },
+    "d": "Lances deal +52% damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "lancePct": 0.7
+    },
+    "d": "Lances deal +70% damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "lancePct": 0.35
+    },
+    "d": "Lances deal +35% damage."
+   }
+  ]
+ },
+ "a_aim": {
+  "p": "star",
+  "duo": null,
+  "leg": false,
+  "n": "Silent Aim",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "aim": 5
+    },
+    "d": "+5 aim for every weapon."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "aim": 8
+    },
+    "d": "+8 aim for every weapon."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "aim": 10
+    },
+    "d": "+10 aim for every weapon."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "aim": 5
+    },
+    "d": "+5 aim for every weapon."
+   }
+  ]
+ },
+ "a_crit": {
+  "p": "star",
+  "duo": null,
+  "leg": false,
+  "n": "Killing Light",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "crit": 6,
+     "critMul": 0.25,
+     "critSys": 1
+    },
+    "d": "+6% critical chance, criticals deal x1.75, and every critical hit wrecks a ship system."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "crit": 9,
+     "critMul": 0.375,
+     "critSys": 1
+    },
+    "d": "+9% critical chance, criticals deal x1.88, and every critical hit wrecks a ship system."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "crit": 12,
+     "critMul": 0.5,
+     "critSys": 1
+    },
+    "d": "+12% critical chance, criticals deal x2, and every critical hit wrecks a ship system."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "crit": 6,
+     "critMul": 0.25,
+     "critSys": 1
+    },
+    "d": "+6% critical chance, criticals deal x1.75, and every critical hit wrecks a ship system."
+   }
+  ]
+ },
+ "a_long": {
+  "p": "star",
+  "duo": null,
+  "leg": false,
+  "n": "Long Silence",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "longAim": 1,
+     "lanceRange": 0
+    },
+    "d": "Ignore the first 1 hex of long-range penalty."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "longAim": 2,
+     "lanceRange": 0
+    },
+    "d": "Ignore the first 2 hexes of long-range penalty."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "longAim": 3,
+     "lanceRange": 1
+    },
+    "d": "Ignore the first 3 hexes of long-range penalty. Epic: lances reach 1 hex further."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "longAim": 1,
+     "lanceRange": 0
+    },
+    "d": "Ignore the first 1 hex of long-range penalty."
+   }
+  ]
+ },
+ "a_rear": {
+  "p": "star",
+  "duo": null,
+  "leg": false,
+  "n": "Blind Spot",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "rearPct": 0.25
+    },
+    "d": "Hits on an enemy's rear arc deal +25% damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "rearPct": 0.375
+    },
+    "d": "Hits on an enemy's rear arc deal +38% damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "rearPct": 0.5
+    },
+    "d": "Hits on an enemy's rear arc deal +50% damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "rearPct": 0.25
+    },
+    "d": "Hits on an enemy's rear arc deal +25% damage."
+   }
+  ]
+ },
+ "r_burn": {
+  "p": "rook",
+  "duo": null,
+  "leg": false,
+  "n": "Afterburners",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "speed": 1,
+     "ev": 0
+    },
+    "d": "+1 speed across the fleet."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "speed": 1,
+     "ev": 6
+    },
+    "d": "+1 speed across the fleet, and +6 evasion."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "speed": 2,
+     "ev": 10
+    },
+    "d": "+2 speed across the fleet, and +10 evasion."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "speed": 1,
+     "ev": 0
+    },
+    "d": "+1 speed across the fleet."
+   }
+  ]
+ },
+ "r_prow": {
+  "p": "rook",
+  "duo": null,
+  "leg": false,
+  "n": "Battering Prow",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "ramPct": 0.35,
+     "ramCap": 0.1,
+     "ramGuard": 0.5
+    },
+    "d": "Rams deal +35% damage and can take up to 50% of a ship's hull; recoil halved."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "ramPct": 0.5249999999999999,
+     "ramCap": 0.15000000000000002,
+     "ramGuard": 0.5
+    },
+    "d": "Rams deal +52% damage and can take up to 55% of a ship's hull; recoil halved."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "ramPct": 0.7,
+     "ramCap": 0.2,
+     "ramGuard": 0.5
+    },
+    "d": "Rams deal +70% damage and can take up to 60% of a ship's hull; recoil halved."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "ramPct": 0.35,
+     "ramCap": 0.1,
+     "ramGuard": 0.5
+    },
+    "d": "Rams deal +35% damage and can take up to 50% of a ship's hull; recoil halved."
+   }
+  ]
+ },
+ "r_mom": {
+  "p": "rook",
+  "duo": null,
+  "leg": false,
+  "n": "Momentum",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "momPct": 0.05
+    },
+    "d": "Ships deal +5% damage for each hex they moved this activation (up to 4)."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "momPct": 0.07500000000000001
+    },
+    "d": "Ships deal +8% damage for each hex they moved this activation (up to 4)."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "momPct": 0.1
+    },
+    "d": "Ships deal +10% damage for each hex they moved this activation (up to 4)."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "momPct": 0.05
+    },
+    "d": "Ships deal +5% damage for each hex they moved this activation (up to 4)."
+   }
+  ]
+ },
+ "r_jink": {
+  "p": "rook",
+  "duo": null,
+  "leg": false,
+  "n": "Evasive Burn",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "burnEv": 15
+    },
+    "d": "Ships that moved 3+ hexes are 15 harder to hit until their next turn."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "burnEv": 23
+    },
+    "d": "Ships that moved 3+ hexes are 23 harder to hit until their next turn."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "burnEv": 30
+    },
+    "d": "Ships that moved 3+ hexes are 30 harder to hit until their next turn."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "burnEv": 15
+    },
+    "d": "Ships that moved 3+ hexes are 15 harder to hit until their next turn."
+   }
+  ]
+ },
+ "r_shock": {
+  "p": "rook",
+  "duo": null,
+  "leg": false,
+  "n": "Shockwave",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "ramSplash": 0.25
+    },
+    "d": "Rams also hit every other enemy next to the target for 25% of the ram damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "ramSplash": 0.375
+    },
+    "d": "Rams also hit every other enemy next to the target for 38% of the ram damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "ramSplash": 0.5
+    },
+    "d": "Rams also hit every other enemy next to the target for 50% of the ram damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "ramSplash": 0.25
+    },
+    "d": "Rams also hit every other enemy next to the target for 25% of the ram damage."
+   }
+  ]
+ },
+ "e_war": {
+  "p": "ember",
+  "duo": null,
+  "leg": false,
+  "n": "Incendiary Warheads",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "torpPct": 0.25
+    },
+    "d": "Torpedoes deal +25% damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "torpPct": 0.375
+    },
+    "d": "Torpedoes deal +38% damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "torpPct": 0.5
+    },
+    "d": "Torpedoes deal +50% damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "torpPct": 0.25
+    },
+    "d": "Torpedoes deal +25% damage."
+   }
+  ]
+ },
+ "e_reload": {
+  "p": "ember",
+  "duo": null,
+  "leg": false,
+  "n": "Hot Tubes",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "torpCd": 1
+    },
+    "d": "Torpedoes reload 1 turn faster."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "torpCd": 2
+    },
+    "d": "Torpedoes reload 2 turns faster."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "torpCd": 2
+    },
+    "d": "Torpedoes reload 2 turns faster."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "torpCd": 1
+    },
+    "d": "Torpedoes reload 1 turn faster."
+   }
+  ]
+ },
+ "e_kindle": {
+  "p": "ember",
+  "duo": null,
+  "leg": false,
+  "n": "Kindling",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "igniteCh": 0.12,
+     "fireDmg": 4
+    },
+    "d": "Hull hits have a 12% chance to start a fire (fires burn 10 a turn for 2 turns)."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "igniteCh": 0.18,
+     "fireDmg": 6
+    },
+    "d": "Hull hits have a 18% chance to start a fire (fires burn 12 a turn for 2 turns)."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "igniteCh": 0.24,
+     "fireDmg": 8
+    },
+    "d": "Hull hits have a 24% chance to start a fire (fires burn 14 a turn for 2 turns)."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "igniteCh": 0.12,
+     "fireDmg": 4
+    },
+    "d": "Hull hits have a 12% chance to start a fire (fires burn 10 a turn for 2 turns)."
+   }
+  ]
+ },
+ "e_chain": {
+  "p": "ember",
+  "duo": null,
+  "leg": false,
+  "n": "Chain Reaction",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "chainBoom": 20,
+     "chainFire": 0
+    },
+    "d": "Enemy ships you destroy explode, dealing 20 damage to every enemy within 2 hexes."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "chainBoom": 30,
+     "chainFire": 0
+    },
+    "d": "Enemy ships you destroy explode, dealing 30 damage to every enemy within 2 hexes."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "chainBoom": 40,
+     "chainFire": 1
+    },
+    "d": "Enemy ships you destroy explode, dealing 40 damage to every enemy within 2 hexes. Epic: the blast sets them burning."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "chainBoom": 20,
+     "chainFire": 0
+    },
+    "d": "Enemy ships you destroy explode, dealing 20 damage to every enemy within 2 hexes."
+   }
+  ]
+ },
+ "e_hunt": {
+  "p": "ember",
+  "duo": null,
+  "leg": false,
+  "n": "Funeral Pyre",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "huntPct": 0.2,
+     "pyre": 1
+    },
+    "d": "+20% damage against ships below half hull, and ships you hit while below half can no longer regrow hull or reanimate."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "huntPct": 0.30000000000000004,
+     "pyre": 1
+    },
+    "d": "+30% damage against ships below half hull, and ships you hit while below half can no longer regrow hull or reanimate."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "huntPct": 0.4,
+     "pyre": 1
+    },
+    "d": "+40% damage against ships below half hull, and ships you hit while below half can no longer regrow hull or reanimate."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "huntPct": 0.2,
+     "pyre": 1
+    },
+    "d": "+20% damage against ships below half hull, and ships you hit while below half can no longer regrow hull or reanimate."
+   }
+  ]
+ },
+ "d_jugg": {
+  "p": null,
+  "duo": [
+   "iron",
+   "rook"
+  ],
+  "leg": false,
+  "n": "Juggernaut",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "ramPct": 0.5,
+     "ramGuard": 1
+    },
+    "d": "Rams deal +50% damage and the rammer takes no recoil."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "ramPct": 0.5,
+     "ramGuard": 1
+    },
+    "d": "Rams deal +50% damage and the rammer takes no recoil."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "ramPct": 0.5,
+     "ramGuard": 1
+    },
+    "d": "Rams deal +50% damage and the rammer takes no recoil."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "ramPct": 0.5,
+     "ramGuard": 1
+    },
+    "d": "Rams deal +50% damage and the rammer takes no recoil."
+   }
+  ]
+ },
+ "d_bastion": {
+  "p": null,
+  "duo": [
+   "iron",
+   "storm"
+  ],
+  "leg": false,
+  "n": "Fortress",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "bastion": 1,
+     "bracePlus": 0.1
+    },
+    "d": "Bracing also refills every shield facing and blocks an extra 10% of hull damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "bastion": 1,
+     "bracePlus": 0.1
+    },
+    "d": "Bracing also refills every shield facing and blocks an extra 10% of hull damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "bastion": 1,
+     "bracePlus": 0.1
+    },
+    "d": "Bracing also refills every shield facing and blocks an extra 10% of hull damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "bastion": 1,
+     "bracePlus": 0.1
+    },
+    "d": "Bracing also refills every shield facing and blocks an extra 10% of hull damage."
+   }
+  ]
+ },
+ "d_ionlance": {
+  "p": null,
+  "duo": [
+   "storm",
+   "star"
+  ],
+  "leg": false,
+  "n": "Ion Lance",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "ionLance": 1
+    },
+    "d": "Lances strip double shield per hit."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "ionLance": 1
+    },
+    "d": "Lances strip double shield per hit."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "ionLance": 1
+    },
+    "d": "Lances strip double shield per hit."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "ionLance": 1
+    },
+    "d": "Lances strip double shield per hit."
+   }
+  ]
+ },
+ "d_burnswarm": {
+  "p": null,
+  "duo": [
+   "hunger",
+   "ember"
+  ],
+  "leg": false,
+  "n": "Burning Swarm",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "sqIgnite": 0.3
+    },
+    "d": "Squadron hits have a 30% chance to start a fire."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "sqIgnite": 0.3
+    },
+    "d": "Squadron hits have a 30% chance to start a fire."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "sqIgnite": 0.3
+    },
+    "d": "Squadron hits have a 30% chance to start a fire."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "sqIgnite": 0.3
+    },
+    "d": "Squadron hits have a 30% chance to start a fire."
+   }
+  ]
+ },
+ "d_hunter": {
+  "p": null,
+  "duo": [
+   "star",
+   "rook"
+  ],
+  "leg": false,
+  "n": "Hunter's Line",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "momCrit": 25
+    },
+    "d": "Ships that moved 3+ hexes gain +25% critical chance."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "momCrit": 25
+    },
+    "d": "Ships that moved 3+ hexes gain +25% critical chance."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "momCrit": 25
+    },
+    "d": "Ships that moved 3+ hexes gain +25% critical chance."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "momCrit": 25
+    },
+    "d": "Ships that moved 3+ hexes gain +25% critical chance."
+   }
+  ]
+ },
+ "d_inferno": {
+  "p": null,
+  "duo": [
+   "ember",
+   "iron"
+  ],
+  "leg": false,
+  "n": "Broadside Inferno",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "broadIgnite": 0.4,
+     "fireLong": 1,
+     "fireDmg": 4
+    },
+    "d": "Broadside hits have a 40% chance to start a fire, and your fires burn hotter (10 a turn) and a turn longer."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "broadIgnite": 0.4,
+     "fireLong": 1,
+     "fireDmg": 4
+    },
+    "d": "Broadside hits have a 40% chance to start a fire, and your fires burn hotter (10 a turn) and a turn longer."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "broadIgnite": 0.4,
+     "fireLong": 1,
+     "fireDmg": 4
+    },
+    "d": "Broadside hits have a 40% chance to start a fire, and your fires burn hotter (10 a turn) and a turn longer."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "broadIgnite": 0.4,
+     "fireLong": 1,
+     "fireDmg": 4
+    },
+    "d": "Broadside hits have a 40% chance to start a fire, and your fires burn hotter (10 a turn) and a turn longer."
+   }
+  ]
+ },
+ "i_wall": {
+  "p": "iron",
+  "duo": null,
+  "leg": false,
+  "n": "Shield Wall",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "wallBrace": 1
+    },
+    "d": "Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "wallBrace": 1
+    },
+    "d": "Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "wallBrace": 1
+    },
+    "d": "Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "wallBrace": 1
+    },
+    "d": "Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn."
+   }
+  ]
+ },
+ "s_chain": {
+  "p": "storm",
+  "duo": null,
+  "leg": false,
+  "n": "Chain Lightning",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "chainSh": 1
+    },
+    "d": "When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "chainSh": 1
+    },
+    "d": "When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "chainSh": 1
+    },
+    "d": "When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "chainSh": 1
+    },
+    "d": "When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength."
+   }
+  ]
+ },
+ "h_brood": {
+  "p": "hunger",
+  "duo": null,
+  "leg": false,
+  "n": "Brood Harvest",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "broodTithe": 1
+    },
+    "d": "Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "broodTithe": 1
+    },
+    "d": "Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "broodTithe": 1
+    },
+    "d": "Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "broodTithe": 1
+    },
+    "d": "Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it."
+   }
+  ]
+ },
+ "a_mark": {
+  "p": "star",
+  "duo": null,
+  "leg": false,
+  "n": "Marked for Death",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "markLance": 1
+    },
+    "d": "Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "markLance": 1
+    },
+    "d": "Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "markLance": 1
+    },
+    "d": "Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "markLance": 1
+    },
+    "d": "Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends."
+   }
+  ]
+ },
+ "r_slip": {
+  "p": "rook",
+  "duo": null,
+  "leg": false,
+  "n": "Slip the Net",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "fade": 1
+    },
+    "d": "Your ships may move after firing, up to half the movement they had left (without climbing over or diving under)."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "fade": 1
+    },
+    "d": "Your ships may move after firing, up to half the movement they had left (without climbing over or diving under)."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "fade": 1
+    },
+    "d": "Your ships may move after firing, up to half the movement they had left (without climbing over or diving under)."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "fade": 1
+    },
+    "d": "Your ships may move after firing, up to half the movement they had left (without climbing over or diving under)."
+   }
+  ]
+ },
+ "e_spread": {
+  "p": "ember",
+  "duo": null,
+  "leg": false,
+  "n": "Spread Pattern",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "spread": 0.3
+    },
+    "d": "Torpedoes that run wide still burst: every enemy within 1 hex of the aim hex takes 30% of one torpedo’s damage."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "spread": 0.3
+    },
+    "d": "Torpedoes that run wide still burst: every enemy within 1 hex of the aim hex takes 30% of one torpedo’s damage."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "spread": 0.3
+    },
+    "d": "Torpedoes that run wide still burst: every enemy within 1 hex of the aim hex takes 30% of one torpedo’s damage."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "spread": 0.3
+    },
+    "d": "Torpedoes that run wide still burst: every enemy within 1 hex of the aim hex takes 30% of one torpedo’s damage."
+   }
+  ]
+ },
+ "L_iron": {
+  "p": "iron",
+  "duo": null,
+  "leg": true,
+  "n": "Unbreakable",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "lastStand": 1
+    },
+    "d": "Legendary. Every ship survives its first killing blow each battle at 1 hull."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "lastStand": 1
+    },
+    "d": "Legendary. Every ship survives its first killing blow each battle at 1 hull."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "lastStand": 1
+    },
+    "d": "Legendary. Every ship survives its first killing blow each battle at 1 hull."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "lastStand": 1
+    },
+    "d": "Legendary. Every ship survives its first killing blow each battle at 1 hull."
+   }
+  ]
+ },
+ "L_storm": {
+  "p": "storm",
+  "duo": null,
+  "leg": true,
+  "n": "Eye of the Storm",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "stormRegen": 1
+    },
+    "d": "Legendary. Every shield facing on every ship refills completely at the start of each of your turns."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "stormRegen": 1
+    },
+    "d": "Legendary. Every shield facing on every ship refills completely at the start of each of your turns."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "stormRegen": 1
+    },
+    "d": "Legendary. Every shield facing on every ship refills completely at the start of each of your turns."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "stormRegen": 1
+    },
+    "d": "Legendary. Every shield facing on every ship refills completely at the start of each of your turns."
+   }
+  ]
+ },
+ "L_hunger": {
+  "p": "hunger",
+  "duo": null,
+  "leg": true,
+  "n": "The Endless Swarm",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "hangar": 2,
+     "endless": 1
+    },
+    "d": "Legendary. Carriers field two more wings and never run out of spares."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "hangar": 2,
+     "endless": 1
+    },
+    "d": "Legendary. Carriers field two more wings and never run out of spares."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "hangar": 2,
+     "endless": 1
+    },
+    "d": "Legendary. Carriers field two more wings and never run out of spares."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "hangar": 2,
+     "endless": 1
+    },
+    "d": "Legendary. Carriers field two more wings and never run out of spares."
+   }
+  ]
+ },
+ "L_star": {
+  "p": "star",
+  "duo": null,
+  "leg": true,
+  "n": "One Clean Line",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "lanceSure": 1
+    },
+    "d": "Legendary. Lances always hit (95%) and pass straight through shields."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "lanceSure": 1
+    },
+    "d": "Legendary. Lances always hit (95%) and pass straight through shields."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "lanceSure": 1
+    },
+    "d": "Legendary. Lances always hit (95%) and pass straight through shields."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "lanceSure": 1
+    },
+    "d": "Legendary. Lances always hit (95%) and pass straight through shields."
+   }
+  ]
+ },
+ "L_rook": {
+  "p": "rook",
+  "duo": null,
+  "leg": true,
+  "n": "Unstoppable",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "ramPct": 0.5,
+     "ramCap": 0.3,
+     "ramGuard": 1
+    },
+    "d": "Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "ramPct": 0.5,
+     "ramCap": 0.3,
+     "ramGuard": 1
+    },
+    "d": "Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "ramPct": 0.5,
+     "ramCap": 0.3,
+     "ramGuard": 1
+    },
+    "d": "Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "ramPct": 0.5,
+     "ramCap": 0.3,
+     "ramGuard": 1
+    },
+    "d": "Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil."
+   }
+  ]
+ },
+ "L_ember": {
+  "p": "ember",
+  "duo": null,
+  "leg": true,
+  "n": "Pyre of Stars",
+  "tiers": [
+   {
+    "r": 0,
+    "rarity": "Common",
+    "m": 1,
+    "fx": {
+     "chainBoom": 40
+    },
+    "d": "Legendary. Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes."
+   },
+   {
+    "r": 1,
+    "rarity": "Rare",
+    "m": 1.5,
+    "fx": {
+     "chainBoom": 40
+    },
+    "d": "Legendary. Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes."
+   },
+   {
+    "r": 2,
+    "rarity": "Epic",
+    "m": 2,
+    "fx": {
+     "chainBoom": 40
+    },
+    "d": "Legendary. Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes."
+   },
+   {
+    "r": 3,
+    "rarity": "Legendary",
+    "m": 1,
+    "fx": {
+     "chainBoom": 40
+    },
+    "d": "Legendary. Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes."
+   }
+  ]
+ }
+}

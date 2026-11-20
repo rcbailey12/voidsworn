@@ -1,0 +1,14 @@
+{
+ "ship": "deathless_E12_turreted",
+ "name": "Turreted zenith (E12)",
+ "faction": "eclipse",
+ "game_ship": "d_harvester_t",
+ "game_code": "d_harvester_t",
+ "sheet": "deathless_E12",
+ "concept": "contrib/muse/design/concept_round8c_2026_11/deathless_E12_beauty.jpg",
+ "hull": "sheet_hull",
+ "bake": "stack",
+ "cell": "E12_turreted",
+ "parts": [],
+ "notes": "The E12 sheet replaces the fore cannon and fixed arc with its existing arc projector on the fore saddle's traverse foot. One aft null cannon remains. The base D21_23 is unchanged."
+}

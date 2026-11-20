@@ -1,0 +1,128 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 67 cues, 67 clip sets, loaded in 386 ms
+[world] baked 41bddf4ec97a586e10167a412e5568edef996bc8b3bfa95dc42ecaa7cf2050ed 4096x2048 in 8799 ms (worker)
+[world] baked 2a2fa2f080559a98a04c9727f34c5527bcbfc832723ce52c60b38b60c4692c59 4096x2048 in 11280 ms (worker)
+[world] baked bfb4738e12f25bdd8a19c9fafdb46a36b2d27eb2035fbc28a774a3851dd563b0 1024x512 in 12277 ms (worker)
+[world] baked 26c1181c33b392ff3d4d2783c3b165db5d7839e1f8a6d1ff2864b00c4ee86708 1024x512 in 12705 ms (worker)
+[world] baked b351a636418c33bf0ffe40726a5994c46913188dc02a9a1908c00c8d7ae8e372 4096x2048 in 2463 ms (worker)
+[world] baked 29401d682e61fa49e4e6528678e4cd92ca91656b15e25bddc555da5525e9fa5f 1024x512 in 1836 ms (worker)
+[world] baked 914e4bdca78d949a26ea118bc365eef1a29b909d3237be3f7bb0657cafac18c1 1024x512 in 1913 ms (worker)
+[scene_gate] base built in 25333 ms (ready after 25333 ms)
+[scene_gate] 1 base gpu 2.484 frame 5.372 cpu 1.103 dc 286+569 prims 3024086+5431046
+[sfx] 67 cues, 67 clip sets, loaded in 297 ms
+[scene_gate] shadows_off built in 10526 ms (ready after 10527 ms)
+[scene_gate] 1 shadows_off gpu 1.886 frame 4.969 cpu 0.833 dc 286+0 prims 3023173+0
+[sfx] 67 cues, 67 clip sets, loaded in 300 ms
+[scene_gate] msaa_2x built in 10717 ms (ready after 10716 ms)
+[scene_gate] 1 msaa_2x gpu 2.265 frame 5.328 cpu 1.128 dc 284+569 prims 3023324+5431266
+[sfx] 67 cues, 67 clip sets, loaded in 289 ms
+[scene_gate] msaa_off built in 10494 ms (ready after 10493 ms)
+[scene_gate] 1 msaa_off gpu 1.844 frame 5.429 cpu 1.151 dc 284+569 prims 3023990+5430882
+[sfx] 67 cues, 67 clip sets, loaded in 279 ms
+[scene_gate] fx_off built in 6573 ms (ready after 6572 ms)
+[scene_gate] 1 fx_off gpu 2.310 frame 3.800 cpu 0.906 dc 237+547 prims 2903450+5426678
+[sfx] 67 cues, 67 clip sets, loaded in 280 ms
+[scene_gate] post_off built in 10504 ms (ready after 10504 ms)
+[scene_gate] 1 post_off gpu 1.785 frame 5.084 cpu 1.038 dc 285+569 prims 3023167+5430682
+[sfx] 67 cues, 67 clip sets, loaded in 296 ms
+[scene_gate] hud_off built in 10551 ms (ready after 10551 ms)
+[scene_gate] 1 hud_off gpu 2.487 frame 4.829 cpu 0.898 dc 285+569 prims 3022531+5430758
+[sfx] 67 cues, 67 clip sets, loaded in 280 ms
+[scene_gate] world_off built in 10545 ms (ready after 10544 ms)
+[scene_gate] 1 world_off gpu 1.575 frame 5.487 cpu 1.117 dc 228+522 prims 1536279+4725794
+[sfx] 67 cues, 67 clip sets, loaded in 296 ms
+[scene_gate] ships_off built in 10589 ms (ready after 10588 ms)
+[scene_gate] 1 ships_off gpu 1.473 frame 2.100 cpu 0.421 dc 73+47 prims 1607566+705280
+[sfx] 67 cues, 67 clip sets, loaded in 296 ms
+[scene_gate] half_res built in 10753 ms (ready after 10753 ms)
+[scene_gate] 1 half_res gpu 1.459 frame 5.524 cpu 1.197 dc 291+569 prims 3024610+5431018
+[sfx] 67 cues, 67 clip sets, loaded in 284 ms
+[scene_gate] fleet_x2 built in 10948 ms (ready after 10948 ms)
+[scene_gate] 1 fleet_x2 gpu 3.140 frame 6.074 cpu 1.483 dc 330+805 prims 4199066+10152900
+[sfx] 67 cues, 67 clip sets, loaded in 272 ms
+[scene_gate] deaths built in 10690 ms (ready after 10690 ms)
+[scene_gate] 1 deaths gpu 2.550 frame 5.688 cpu 1.257 dc 315+609 prims 3279419+5953738
+[sfx] 67 cues, 67 clip sets, loaded in 276 ms
+[scene_gate] floor built in 6544 ms (ready after 6544 ms)
+[scene_gate] 1 floor gpu 0.592 frame 0.923 cpu 0.139 dc 2+0 prims 6552+0
+[sfx] 67 cues, 67 clip sets, loaded in 276 ms
+[scene_gate] floor built in 6483 ms (ready after 6483 ms)
+[scene_gate] 2 floor gpu 0.592 frame 0.929 cpu 0.142 dc 2+0 prims 6552+0
+[sfx] 67 cues, 67 clip sets, loaded in 294 ms
+[scene_gate] deaths built in 10612 ms (ready after 10612 ms)
+[scene_gate] 2 deaths gpu 2.561 frame 6.006 cpu 1.330 dc 367+638 prims 3293807+5952910
+[sfx] 67 cues, 67 clip sets, loaded in 277 ms
+[scene_gate] fleet_x2 built in 10716 ms (ready after 10716 ms)
+[scene_gate] 2 fleet_x2 gpu 3.181 frame 6.395 cpu 1.535 dc 388+831 prims 4205374+10151992
+[sfx] 67 cues, 67 clip sets, loaded in 284 ms
+[scene_gate] half_res built in 10674 ms (ready after 10674 ms)
+[scene_gate] 2 half_res gpu 1.489 frame 6.156 cpu 1.360 dc 342+598 prims 3031562+5431230
+[sfx] 67 cues, 67 clip sets, loaded in 293 ms
+[scene_gate] ships_off built in 10657 ms (ready after 10658 ms)
+[scene_gate] 2 ships_off gpu 1.462 frame 2.116 cpu 0.448 dc 106+47 prims 1608128+705280
+[sfx] 67 cues, 67 clip sets, loaded in 283 ms
+[scene_gate] world_off built in 10710 ms (ready after 10709 ms)
+[scene_gate] 2 world_off gpu 1.601 frame 5.442 cpu 1.104 dc 285+541 prims 1543806+4724722
+[sfx] 67 cues, 67 clip sets, loaded in 283 ms
+[scene_gate] hud_off built in 10824 ms (ready after 10824 ms)
+[scene_gate] 2 hud_off gpu 2.502 frame 5.477 cpu 1.054 dc 341+598 prims 3032826+5430874
+[sfx] 67 cues, 67 clip sets, loaded in 290 ms
+[scene_gate] post_off built in 10824 ms (ready after 10823 ms)
+[scene_gate] 2 post_off gpu 1.798 frame 5.540 cpu 1.167 dc 341+598 prims 3031569+5430762
+[sfx] 67 cues, 67 clip sets, loaded in 298 ms
+[scene_gate] fx_off built in 6717 ms (ready after 6717 ms)
+[scene_gate] 2 fx_off gpu 2.294 frame 3.843 cpu 0.921 dc 237+547 prims 2903466+5426670
+[sfx] 67 cues, 67 clip sets, loaded in 286 ms
+[scene_gate] msaa_off built in 10775 ms (ready after 10774 ms)
+[scene_gate] 2 msaa_off gpu 1.850 frame 6.462 cpu 1.437 dc 344+598 prims 3031386+5430810
+[sfx] 67 cues, 67 clip sets, loaded in 291 ms
+[scene_gate] msaa_2x built in 10830 ms (ready after 10830 ms)
+[scene_gate] 2 msaa_2x gpu 2.253 frame 5.802 cpu 1.279 dc 342+598 prims 3031593+5430798
+[sfx] 67 cues, 67 clip sets, loaded in 288 ms
+[scene_gate] shadows_off built in 10924 ms (ready after 10924 ms)
+[scene_gate] 2 shadows_off gpu 1.930 frame 5.246 cpu 0.910 dc 338+0 prims 3032581+0
+[sfx] 67 cues, 67 clip sets, loaded in 308 ms
+[scene_gate] base built in 10787 ms (ready after 10787 ms)
+[scene_gate] 2 base gpu 2.519 frame 6.606 cpu 1.474 dc 343+598 prims 3031628+5431282
+[sfx] 67 cues, 67 clip sets, loaded in 285 ms
+[scene_gate] base built in 10665 ms (ready after 10665 ms)
+[scene_gate] 3 base gpu 2.490 frame 5.528 cpu 1.172 dc 272+546 prims 3018093+5439686
+[sfx] 67 cues, 67 clip sets, loaded in 291 ms
+[scene_gate] shadows_off built in 10788 ms (ready after 10787 ms)
+[scene_gate] 3 shadows_off gpu 1.898 frame 4.963 cpu 0.824 dc 272+0 prims 3019278+0
+[sfx] 67 cues, 67 clip sets, loaded in 288 ms
+[scene_gate] msaa_2x built in 10640 ms (ready after 10640 ms)
+[scene_gate] 3 msaa_2x gpu 2.251 frame 5.373 cpu 1.139 dc 273+547 prims 3019339+5439918
+[sfx] 67 cues, 67 clip sets, loaded in 291 ms
+[scene_gate] msaa_off built in 10656 ms (ready after 10656 ms)
+[scene_gate] 3 msaa_off gpu 1.823 frame 5.688 cpu 1.231 dc 272+547 prims 3019280+5438710
+[sfx] 67 cues, 67 clip sets, loaded in 303 ms
+[scene_gate] fx_off built in 6636 ms (ready after 6636 ms)
+[scene_gate] 3 fx_off gpu 2.298 frame 4.230 cpu 1.009 dc 237+547 prims 2903462+5426678
+[sfx] 67 cues, 67 clip sets, loaded in 300 ms
+[scene_gate] post_off built in 10757 ms (ready after 10757 ms)
+[scene_gate] 3 post_off gpu 1.792 frame 5.629 cpu 1.158 dc 273+547 prims 3019324+5439626
+[sfx] 67 cues, 67 clip sets, loaded in 277 ms
+[scene_gate] hud_off built in 10662 ms (ready after 10662 ms)
+[scene_gate] 3 hud_off gpu 2.482 frame 4.758 cpu 0.875 dc 272+547 prims 3019323+5438694
+[sfx] 67 cues, 67 clip sets, loaded in 285 ms
+[scene_gate] world_off built in 10748 ms (ready after 10749 ms)
+[scene_gate] 3 world_off gpu 1.560 frame 5.101 cpu 1.016 dc 216+500 prims 1531477+4733870
+[sfx] 67 cues, 67 clip sets, loaded in 293 ms
+[scene_gate] ships_off built in 10661 ms (ready after 10660 ms)
+[scene_gate] 3 ships_off gpu 1.474 frame 2.142 cpu 0.496 dc 84+47 prims 1607682+705280
+[sfx] 67 cues, 67 clip sets, loaded in 276 ms
+[scene_gate] half_res built in 10673 ms (ready after 10673 ms)
+[scene_gate] 3 half_res gpu 1.445 frame 5.454 cpu 1.158 dc 272+548 prims 3019317+5439474
+[sfx] 67 cues, 67 clip sets, loaded in 292 ms
+[scene_gate] fleet_x2 built in 10820 ms (ready after 10820 ms)
+[scene_gate] 3 fleet_x2 gpu 3.145 frame 5.775 cpu 1.412 dc 324+802 prims 4193425+10160684
+[sfx] 67 cues, 67 clip sets, loaded in 280 ms
+[scene_gate] deaths built in 10756 ms (ready after 10756 ms)
+[scene_gate] 3 deaths gpu 2.552 frame 5.651 cpu 1.219 dc 311+607 prims 3280425+5962390
+[sfx] 67 cues, 67 clip sets, loaded in 305 ms
+[scene_gate] floor built in 6631 ms (ready after 6630 ms)
+[scene_gate] 3 floor gpu 0.594 frame 0.961 cpu 0.143 dc 2+0 prims 6552+0
+[scene_gate] DONE

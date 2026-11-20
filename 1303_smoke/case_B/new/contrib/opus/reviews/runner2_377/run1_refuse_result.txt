@@ -1,0 +1,18 @@
+started Thu 11/12/2026  0:49:00.37 (dryrun) 
+issue #377 prepared for the deepseek arm
+agent running  0:49:04.38 
+opencode exit 0 at  0:49:14.32 
+REFUSED 5 file(s): not committed, copies kept in out\refused (never deleted):
+  A contrib/opus/tools/big377.bin: 9.0 MB, over the 8 MB limit (WORK_MAX_FILE_MB)
+  A godot/assets/ships/B16_23/B16_23_hull.glb: ship files under godot/assets/ships/b16_23/ (PC-built, never committed)
+  M godot/fx/atlases/weapons/muzzle/muzzle_flow.png.import: a re-saved .import file (Godot rewrites these on import)
+  A godot/gen/hull_probe.tres: under godot/gen (built on the PC, never committed)
+  A tools/pc/probe377.gd.uid: a new .uid file (Godot makes these)
+WARNING: 2 changed file(s) outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+  A contrib/opus/tools/scope377_probe.txt
+  A tools/pc/probe377.gd
+commit 813aeb535 (run 1 of runner377/issue-377-deepseek) carries the staged change (3 files)
+pushed diff checked: GitHub's runner377/issue-377-deepseek (813aeb535) carries exactly out\diffstat.txt (3 files)
+pushed runner377/issue-377-deepseek 
+run folder size: 0.03 GB (repo copy 0.02 GB, out 9.0 MB) in C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_004900
+repo copy kept: remove_repo_copy_after_push is not yes in C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\runner_settings.txt

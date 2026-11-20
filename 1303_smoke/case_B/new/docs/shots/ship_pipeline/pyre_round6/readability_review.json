@@ -1,0 +1,26 @@
+{
+  "basis": "Agent visual review of final 1080p and 4K colour, greyscale and blurred battle sheets, close material crops, actual game and paint/clay nine-cell sheets. This is a visual judgement, separate from evidence integrity.",
+  "binding_resolution": [1920, 1080],
+  "blur_sigma_pixels": 7.5,
+  "V3": {
+    "overall": "FAIL",
+    "construction_clean_cells": 7,
+    "preferred_median_band": "PASS: 26.14 versus 30.20, within five levels",
+    "trim_maximum": "PASS: 1.03 percent, near the one-percent working target",
+    "rust_working_band": "FAIL: 0.33 percent versus the standard's 5 to 15 percent working band",
+    "blur": "Calmer open faces. Upper mass and side pods remain distinct, but the upper value forms one long band. Bow and rear fitting breaks are weaker than the reference's separate value clusters. Full form-break condition not earned.",
+    "close": "Clean separate parts, but the coat remains plain beside the reference. Close material richness is unfinished.",
+    "pick": "Best next working hull: cut preserves separate construction and clears both performance ceilings. Two bow construction cells still need work."
+  },
+  "V1": {
+    "overall": "FAIL",
+    "construction_clean_cells": 0,
+    "preferred_median_band": "PASS: 25.35 versus 30.07, within five levels",
+    "trim_maximum": "PASS maximum: 0.10 percent, below the one-percent working target",
+    "rust_working_band": "FAIL: 0.22 percent versus the standard's 5 to 15 percent working band",
+    "blur": "Fused equipment merges into the dark hull and the large forms remain hard to name. Geometry failure first under S12.",
+    "close": "Paint exposes torn panel edges, fused roots and smooth blended equipment. These need construction repair.",
+    "performance": "FAIL: 307477 triangles and more than 3.9 GPU ms at twenty ships"
+  },
+  "shipping_adoption": "None. Keep today's shipping ship."
+}

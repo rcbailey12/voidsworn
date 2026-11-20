@@ -1,0 +1,47 @@
+{
+  "default": "egg",
+  "project_setting": "rendering/effects/shield_shape",
+  "environment_override": "VS_SHIELD_SHAPE=fitted",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fixed_fps": 60,
+  "seed_global": 2070,
+  "seed_effects": 11,
+  "standard": {
+    "cell": [
+      300,
+      200
+    ],
+    "crop170": [
+      300,
+      200
+    ],
+    "crop60": [
+      600,
+      400
+    ]
+  },
+  "glass_whole": {
+    "cell": [
+      512,
+      384
+    ],
+    "crop170": [
+      512,
+      384
+    ],
+    "crop60": [
+      1280,
+      960
+    ]
+  },
+  "stages": "installed in game",
+  "offset_seconds": [
+    0,
+    0.1,
+    0.3,
+    0.6
+  ]
+}

@@ -1,0 +1,84 @@
+{
+ "code": "hegemony_IM5",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "hturbo",
+   "arc": "P",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "HP",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "hturbo",
+   "arc": "S",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "HS",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "turbo",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 3,
+   "weapon": "ion",
+   "arc": "F",
+   "shots": 1,
+   "mounts": [
+    {
+     "id": "I1",
+     "type": "ion_trench",
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  },
+  {
+   "slot": 4,
+   "weapon": "flak",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "F1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ],
+ "game_ship": "h_boss",
+ "variant": ""
+}

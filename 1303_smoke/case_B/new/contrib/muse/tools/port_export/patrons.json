@@ -1,0 +1,50 @@
+{
+ "iron": {
+  "n": "K-1 Kharon, the Unbent",
+  "short": "Kharon",
+  "col": "#e0b04a",
+  "glyph": "K",
+  "theme": "Broadsides, armor and holding the line",
+  "quote": "Stand. Fire. Stand again."
+ },
+ "storm": {
+  "n": "V-2 Vyre, the Storm Queen",
+  "short": "Vyre",
+  "col": "#5fd4ff",
+  "glyph": "V",
+  "theme": "Shields, ion fire and lightning",
+  "quote": "Every shield is a promise. Break theirs."
+ },
+ "hunger": {
+  "n": "H-3 Crucible, \"the Hunger Below\"",
+  "short": "Crucible",
+  "col": "#7ddc6a",
+  "glyph": "H",
+  "theme": "Squadrons, boarding and feeding on the fallen",
+  "quote": "More mouths. More wings. More."
+ },
+ "star": {
+  "n": "A-4 Astra, the Silent Star",
+  "short": "Astra",
+  "col": "#b48cff",
+  "glyph": "A",
+  "theme": "Lances, precision and critical hits",
+  "quote": "One clean line of light is enough."
+ },
+ "rook": {
+  "n": "R-5 Rook, the Breaker",
+  "short": "Rook",
+  "col": "#ff6b5a",
+  "glyph": "R",
+  "theme": "Rams, speed and momentum",
+  "quote": "Faster. Closer. Through them."
+ },
+ "ember": {
+  "n": "S-6 Seren, the Last Flame",
+  "short": "Seren",
+  "col": "#ff9f3a",
+  "glyph": "S",
+  "theme": "Torpedoes, fire and chain explosions",
+  "quote": "Burn, and let the dark burn with you."
+ }
+}

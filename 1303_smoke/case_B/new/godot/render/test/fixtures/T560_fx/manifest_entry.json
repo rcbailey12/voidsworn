@@ -1,0 +1,24 @@
+{
+ "name": "Turret test ship (issue 560, not production art)",
+ "faction": "corsair",
+ "cls": "Cruiser",
+ "band": "M",
+ "length_world": 14.5,
+ "hardpoints": {
+  "gun": 5,
+  "engine": 1,
+  "breach": 5,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "breaches": 5,
+ "turrets": 2,
+ "files": {
+  "T560_fx.glb": {
+   "bytes": 117608,
+   "sha256": "0d6090554083636de41b555e43f5b6cfeca2ed70b8cdd54daf3c7d248baff8f1"
+  }
+ },
+ "pc_path": "godot/assets/ships/T560_fx/"
+}

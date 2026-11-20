@@ -1,0 +1,100 @@
+{
+ "types": {
+  "hull": {
+   "triangles": 23376,
+   "area": 2.35317,
+   "tris_per_unit2": 9933.9,
+   "edges_per_unit2": 8210.2
+  },
+  "spinal": {
+   "triangles": 1136,
+   "area": 0.04082,
+   "tris_per_unit2": 27831.4,
+   "edges_per_unit2": 23225.5,
+   "tris_per_unit2_vs_hull": 2.8,
+   "edges_per_unit2_vs_hull": 2.83
+  },
+  "bay": {
+   "triangles": 616,
+   "area": 0.03551,
+   "tris_per_unit2": 17347.5,
+   "edges_per_unit2": 14869.3,
+   "tris_per_unit2_vs_hull": 1.75,
+   "edges_per_unit2_vs_hull": 1.81
+  },
+  "engine": {
+   "triangles": 3600,
+   "area": 0.34546,
+   "tris_per_unit2": 10420.8,
+   "edges_per_unit2": 8568.2,
+   "tris_per_unit2_vs_hull": 1.05,
+   "edges_per_unit2_vs_hull": 1.04
+  },
+  "gun": {
+   "triangles": 7592,
+   "area": 0.14474,
+   "tris_per_unit2": 52451.8,
+   "edges_per_unit2": 37501.1,
+   "tris_per_unit2_vs_hull": 5.28,
+   "edges_per_unit2_vs_hull": 4.57
+  },
+  "antenna": {
+   "triangles": 208,
+   "area": 0.02226,
+   "tris_per_unit2": 9345.4,
+   "edges_per_unit2": 8042.5,
+   "tris_per_unit2_vs_hull": 0.94,
+   "edges_per_unit2_vs_hull": 0.98
+  },
+  "thruster": {
+   "triangles": 2184,
+   "area": 0.01499,
+   "tris_per_unit2": 145699.8,
+   "edges_per_unit2": 124885.5,
+   "tris_per_unit2_vs_hull": 14.67,
+   "edges_per_unit2_vs_hull": 15.21
+  },
+  "slit": {
+   "triangles": 1400,
+   "area": 0.00868,
+   "tris_per_unit2": 161205.3,
+   "edges_per_unit2": 138176.0,
+   "tris_per_unit2_vs_hull": 16.23,
+   "edges_per_unit2_vs_hull": 16.83
+  },
+  "vent": {
+   "triangles": 4592,
+   "area": 0.07909,
+   "tris_per_unit2": 58063.9,
+   "edges_per_unit2": 49769.1,
+   "tris_per_unit2_vs_hull": 5.85,
+   "edges_per_unit2_vs_hull": 6.06
+  },
+  "hatch": {
+   "triangles": 1792,
+   "area": 0.06773,
+   "tris_per_unit2": 26458.1,
+   "edges_per_unit2": 22678.4,
+   "tris_per_unit2_vs_hull": 2.66,
+   "edges_per_unit2_vs_hull": 2.76
+  },
+  "latch": {
+   "triangles": 2800,
+   "area": 0.04472,
+   "tris_per_unit2": 62615.6,
+   "edges_per_unit2": 53670.5,
+   "tris_per_unit2_vs_hull": 6.3,
+   "edges_per_unit2_vs_hull": 6.54
+  },
+  "hatchbox": {
+   "triangles": 112,
+   "area": 0.01208,
+   "tris_per_unit2": 9273.5,
+   "edges_per_unit2": 7948.7,
+   "tris_per_unit2_vs_hull": 0.93,
+   "edges_per_unit2_vs_hull": 0.97
+  }
+ },
+ "flags": [],
+ "rule": "R224: a part type more than 25 percent under the hull is flagged (mesh half; the paint half runs at stage 5)"
+}

@@ -1,0 +1,116 @@
+PART 1, MEASURE THE SAMENESS. From the pack only, quantify how similar the factions are today: the class ladder and price ladder per faction, stat bands per class, weapon stat lines per faction (expected damage per volley, range, accuracy), the squadron system, admiral cost curves and command pools, and any mechanic that only one faction has. Cite file and line for every claim. Maximum 10 findings, most damning first.
+
+PART 2, PROPOSE ASYMMETRY. Give each of the six factions a distinct playstyle identity at the StarCraft bar. For each: unit-count profile (swarm, standard, elite), range profile, shield and survivability model, movement character, economy, win condition, lose condition, one prohibition (something it cannot do that another faction can), and the smallest change set that gets it there using mechanics already in the pack. Flag anything needing a new engine system as ENGINE CHANGE. End with the three changes you would make first, and how you would prove with simulation data that the factions had actually become different.
+
+
+Thinking completed
+PART 1: MEASURE THE SAMENESS
+The current codebase implements six factions as statistical reskins of a single underlying ruleset. The mechanics, progression, and AI logic are universally shared, with asymmetry limited to localized text strings and minor scalar tweaks.
+1. Identical Admiral Cost Curves and Command Pools
+Every faction unlocks admirals at the exact same renown thresholds, drawing from a shared pool of six mechanical Commands that are merely renamed for flavor.
+OBSERVED | data.js:214-215 | Quote: cost:0,cmd:{id:'barrage'... cost:30,cmd:{id:'hunt'
+2. Uniform Class Ladders and Credit Pricing
+Frigates universally cost 70 credits (1 Command Point) and Destroyers cost 130 credits (2 CP) across almost all factions, enforcing an identical early-game economy and fleet composition curve.
+OBSERVED | census_hulls.csv | Quote: Frigate... 1,70... Destroyer... 2,130
+3. Shared Global Weapon Statistics
+Factions do not have unique weapons; they draw from a single global table and apply minor +stat traits. Base damage, range, and accuracy are mathematically identical.
+OBSERVED | data.js:3 | Quote: autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80
+4. Identical Squadron Leash and Combat Logic
+Squadrons use the exact same spatial leash, strike, and guard logic regardless of faction, merely swapping bomber, fighter, or spore skins.
+OBSERVED | battle.js:872 | Quote: const SQ_LEASH=8; // hexes a squadron may range
+5. Narrow Stat Bands per Class
+Hull points and speeds are tightly clustered by class rather than by faction. Frigates universally sit between 30-56 HP; Destroyers between 60-110 HP.
+OBSERVED | census_hulls.csv | Quote: Frigate... 0.5,1,45... 0.5,1,40... 0.48,1,46
+6. Copy-Pasted Ship Abilities
+Active abilities like launching craft, surging shields, or reloading tubes are mechanically identical across factions, differentiated only by localized UI strings.
+OBSERVED | data.js:134 | Quote: launch:{n:'Launch squadron',d:'Carriers start each battle
+7. Shared Module and Perk Pools
+Every faction accesses the exact same ship modules and captain perks, with asymmetry limited to localized text mappings.
+OBSERVED | data.js:258 | Quote: hegemony:{prow:'Reinforced bow plating',auspex:'Fire-control
+8. Uniform Boss Scaling
+Sector flagships use the same global scaling multipliers for hull and damage, with only minor faction-specific scalar tweaks applied on top.
+OBSERVED | battle.js:127 | Quote: const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.95
+9. Identical Economy and Progression Formulas
+Every faction earns renown, buys hull variants, and unlocks difficulty modifiers using the exact same mathematical formulas and legacy trees.
+OBSERVED | campaign_meta.js:187 | Quote: META.renown=(META.renown||0)+ren;
+10. Shared AI Evaluation Logic
+The enemy AI uses the exact same base threat and offense evaluation functions, relying on minor scalar tweaks for threat weight and preferred range rather than distinct tactical doctrines.
+INFERRED | battle.js:986 | Quote: voidsworn:{tw:1,hurt:1,range:0,rw:0},
+PART 2: PROPOSE ASYMMETRY
+To achieve benchmark-level asymmetry, factions must differ in decisions, prohibitions, and resource loops, not just decimals.
+1. Voidsworn (The Anchor Line)
+Unit-Count: Standard.
+Range Profile: Mid-to-Long lateral batteries.
+Shield & Survivability: High directional void-shields and heavy armor.
+Movement Character: Slow, deliberate; heavily rewarded for holding static firing positions.
+Economy: Steady credit income; low repair costs.
+Win Condition: Break the enemy fleet in a sustained line battle.
+Lose Condition: Flagship destroyed or lateral arrays flanked.
+Prohibition: Cannot use phase jumps or sideslip thrusters. They must commit to their vector.
+Smallest Change Set: Lock the faction to the stillPct (Anchored Volley) baseline trait (data.js:398). Remove slip and blink from their drive rules (data.js:103).
+2. Hegemony (The Screen & Strip)
+Unit-Count: Standard capitals + high squadron count.
+Range Profile: Long-range ion projection.
+Shield & Survivability: Massive shield capacity, extremely low armor.
+Movement Character: Tactical backing (retro-thrusters) to maintain optimal firing distance.
+Economy: High credit sink to constantly replace destroyed fighter wings.
+Win Condition: Strip enemy shields and let bombers execute the hulls.
+Lose Condition: Carriers isolated, or shields neutralized by ion storms/flares.
+Prohibition: Cannot board enemy ships. They rely entirely on remote projection.
+Smallest Change Set: Add if(u.fac==='hegemony') return false; to boardTargets (battle.js:652). Implement a global rule where Hegemony ships take double hull damage once their shields drop to 0.
+3. Corsairs (The Boarding Swarm)
+Unit-Count: Swarm (many cheap, fragile hulls).
+Range Profile: Short/Melee closing speed.
+Shield & Survivability: High evasion, low HP/shields.
+Movement Character: Aggressive ramming and high-speed interception.
+Economy: Gains credits and fleet repairs only via capturing ships and looting wrecks.
+Win Condition: Capture the enemy flagship or loot enough credits to out-buy them.
+Lose Condition: Swarm thinned out before reaching boarding range.
+Prohibition: Cannot field heavy battleships or spinal artillery.
+Smallest Change Set: Remove Battleship/Dreadnought hulls from their shipyards. Modify boardUnit (battle.js:667) to grant fleet-wide credits and hull repair on successful capture.
+4. Chorus (The Digestive Swarm)
+Unit-Count: Massive Swarm.
+Range Profile: Melee/Tendril range.
+Shield & Survivability: Zero shields, extreme hull regeneration, acid damage over time.
+Movement Character: Free pivot, relentless advance ignoring formation.
+Economy: Cannot use shipyards; heals by consuming enemy wrecks.
+Win Condition: Overwhelm via attrition and biological digestion.
+Lose Condition: Burst damage outpaces regeneration.
+Prohibition: Cannot repair at shipyards between battles.
+Smallest Change Set: Disable shipyard healing for Chorus. In killUnit (battle.js:698), if an enemy dies, nearby Chorus ships regain 20% HP (repurposing the existing avenge relic logic, data.js:187).
+5. Ithar (The Glass Skirmishers)
+Unit-Count: Elite (few, very expensive ships).
+Range Profile: Extreme precision lances.
+Shield & Survivability: Massive shields, paper hulls.
+Movement Character: Phase jumps, hit-and-fade skirmishing.
+Economy: High shield capacitor costs; hull repairs are exorbitant.
+Win Condition: Alpha-strike and vanish before return fire lands.
+Lose Condition: Caught in sustained brawls or solar flares.
+Prohibition: Cannot Brace for impact. They rely on shields and speed, not structural bracing.
+Smallest Change Set: Add if(u.fac==='ithar') return false; to canOrder for 'brace' (battle.js:795). Increase their shield recharge rate globally but make hull repairs 50% more expensive.
+6. Deathless (The Undying Phalanx)
+Unit-Count: Standard (but effectively higher due to reanimation).
+Range Profile: Mid-range gauss projection.
+Shield & Survivability: Zero shields, extreme armor, reanimation.
+Movement Character: Phase drive (ignores obstacles and wrecks).
+Economy: Wrecks are tactical resources that stand back up.
+Win Condition: Grind the enemy down with immortal hulls.
+Lose Condition: Acid or armor-piercing weapons (which halt reanimation).
+Prohibition: Immune to crew loss and boarding. They have no biological crew to capture or kill.
+Smallest Change Set: Set crewMax: 0 for Deathless hulls (battle.js:117). Make them immune to boardUnit but highly vulnerable to acid damage over time (battle.js:367).
+The Three Changes to Make First
+Enforce Hard Prohibitions: Disable Bracing for Ithar and Boarding for Hegemony. This instantly forces divergent tactical decisions using existing boolean checks in canOrder and boardTargets.
+Tie Chorus Healing to Kills (The "Feed" Mechanic): Repurpose the avenge relic logic to trigger on any enemy death near a Chorus ship, replacing generic shipyard repairs with a combat-loop mechanic.
+Implement Faction-Specific AI Ranges: Hardcode FACTION_AI (battle.js:985) to strictly enforce the range profiles (e.g., Ithar kites at range 4+, Corsairs rush to range 0) so the enemy factions play by their own asymmetrical rules.
+Proving Asymmetry with Simulation Data
+The codebase already supports headless simulations (referenced in battle.js:78). To prove the factions have actually become different, run 10,000 headless battles and track three specific telemetry clusters:
+Average Engagement Range at Time of Death: Ithar should cluster at range 4+, Corsairs at range 0-1, Voidsworn at range 2-3.
+Shield vs. Hull Damage Taken Ratio: Hegemony should show 80%+ shield damage absorption; Deathless and Chorus should show 100% hull/armor damage.
+Resource Delta per Battle: Corsairs should show high variance (massive credit spikes from captures, or total bankruptcy); Voidsworn should show a flat, predictable curve.
+If the statistical distributions for these metrics overlap significantly between factions, the asymmetry pass has failed.
+Not checked
+3D rendering, asset pipelines, and visual effects (fx3d, animExplode).
+Audio triggers and sound effect mapping.
+Cloud save architecture and telemetry endpoints (tel()).
+Exact mathematical balance of the 30+ boons, duo-boons, and patron favor tiers.
+Touch-screen UI layout, CSS styling, and mobile viewport scaling.

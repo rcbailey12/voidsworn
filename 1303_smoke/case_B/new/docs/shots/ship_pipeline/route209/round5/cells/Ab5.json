@@ -1,0 +1,72 @@
+{
+ "cell": "Ab5",
+ "route": "round 5 hull traced from B0 (concept silhouette gate, layered armour) + hand-rebuilt parts + B0 detail baked + concept paint baked",
+ "build_seconds": 1180.4,
+ "geometry_seconds": 3.3,
+ "audit": {
+  "problems": [],
+  "parts": 405,
+  "crossing_break_lines": [],
+  "plates_crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0108,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0111
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "block_triangles": 11400,
+ "plate_triangles": 10936,
+ "plates": 56,
+ "hero_parts": [],
+ "hero_triangles": 0,
+ "generations": [],
+ "hand_parts": 408,
+ "proxies": 0,
+ "bake": {
+  "b0_faces_turned": 0,
+  "b0_triangles_faces": 570189,
+  "b0_faces_kept": 386352,
+  "trim_outside": 0.01,
+  "bake_device": "OPTIX",
+  "bake_hi_seconds": 8.1,
+  "bake_lo_seconds": 7.5,
+  "bake_ao_seconds": 11.0,
+  "detail_pixels_inverted_share": 0.0963,
+  "detail_pixels_clamped_share": 0.0553,
+  "b0ao_miss_share": 0.4433,
+  "normal_tilt_mean_deg_detail": 5.79,
+  "normal_tilt_mean_deg_raw": 28.8,
+  "b0_bake_total_seconds": 41.2,
+  "paint_bake_seconds": 1092.7,
+  "paint_bake_hull": {
+   "albedo": 10.4,
+   "orm": 10.0
+  },
+  "paint_bake_parts": {
+   "albedo": 532.2,
+   "orm": 538.4
+  }
+ },
+ "res": 4096,
+ "parts_res": 2048,
+ "triangles": 87088,
+ "objects": 434,
+ "surfaces": 4,
+ "draw_calls_merged": 4
+}

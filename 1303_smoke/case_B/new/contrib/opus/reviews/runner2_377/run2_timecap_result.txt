@@ -1,0 +1,13 @@
+started Thu 11/12/2026  0:49:23.17 (dryrun) 
+issue #377 prepared for the deepseek arm
+agent running  0:49:32.27 
+opencode exit 124 at  0:50:33.51 
+PARTIAL RUN, stopped at the time cap of 60 s: the work goes to runner377/issue-377-deepseek-partial, which opens no pull request 
+refuse list: nothing refused
+WARNING: 1 changed file(s) outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+  A tools/pc/partial377.txt
+commit e1c08a4b9 (run 1 of runner377/issue-377-deepseek-partial) carries the staged change (1 files)
+pushed diff checked: GitHub's runner377/issue-377-deepseek-partial (e1c08a4b9) carries exactly out\diffstat.txt (1 files)
+pushed runner377/issue-377-deepseek-partial 
+run folder size: 0.01 GB (repo copy 0.01 GB, out 0.0 MB) in C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_004923
+repo copy kept: remove_repo_copy_after_push is not yes in C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\runner_settings.txt

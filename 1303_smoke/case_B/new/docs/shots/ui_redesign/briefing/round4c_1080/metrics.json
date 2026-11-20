@@ -1,0 +1,2502 @@
+{
+	"renderer": "forward_plus",
+	"resolution": "1920x1080",
+	"states": [
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "3-1",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0457063466310501,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.17061710357666,
+							"length": 2.00694185495377,
+							"position": "(-2.001859, 1.579255, -1.945484)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0301016420125961,
+							"length": 2.01452510356903,
+							"position": "(-2.670332, 1.372417, 1.830782)"
+						}
+					]
+				},
+				{
+					"id": "3-3",
+					"kind": "elite",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.00783776119351387,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.133423000574112,
+							"length": 2.05734652280808,
+							"position": "(-1.838462, 1.253389, -1.900469)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.12848362326622,
+							"length": 2.15462543964386,
+							"position": "(-2.650949, 1.423107, 1.684323)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-1",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0372159034013748,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0959976017475128,
+							"length": 2.07503007650375,
+							"position": "(-2.058357, 1.494036, -1.94419)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0797043144702911,
+							"length": 1.91587762832642,
+							"position": "(-2.659117, 1.350915, 1.819217)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Battle-barge",
+							"heading": -0.0428527891635895,
+							"length": 9.00000023841858,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "sector_1",
+			"next_jumps": 3,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.527,
+			"p95_ms": 4.089,
+			"rail_overlaps": [],
+			"region": "boneyard",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 29350612,
+				"instanced_triangles": 1856323,
+				"instanced_vertices": 2007863,
+				"unique_meshes": 115
+			},
+			"sector": 1,
+			"seed": 344,
+			"texture_bytes": 728119296
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0262831896543503,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0195582211017609,
+							"length": 2.17916542291641,
+							"position": "(-1.974617, 1.402627, -1.731123)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0658110901713371,
+							"length": 2.12114852666855,
+							"position": "(-2.569297, 1.347652, 1.750242)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0386514998972416,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0542044341564178,
+							"length": 1.93970055580139,
+							"position": "(-2.191333, 1.450455, -1.946406)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0405945032835007,
+							"length": 2.28561155796051,
+							"position": "(-2.375328, 1.597536, 1.639122)"
+						}
+					]
+				},
+				{
+					"id": "1-3",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.00729686766862869,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.173729658126831,
+							"length": 1.82167072296143,
+							"position": "(-2.121272, 1.504297, -1.778283)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0778264999389648,
+							"length": 2.2188291311264,
+							"position": "(-2.750186, 1.57173, 1.848214)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0213046595454216,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0811246261000633,
+							"length": 1.91245661973953,
+							"position": "(-1.866319, 1.382431, -1.866618)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.119075208902359,
+							"length": 2.1664524435997,
+							"position": "(-2.720826, 1.530768, 1.870941)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.00585181266069412,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.1014024913311,
+							"length": 2.11050364971161,
+							"position": "(-1.965075, 1.478194, -1.632084)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.118118822574615,
+							"length": 1.84875705242157,
+							"position": "(-2.462639, 1.523851, 1.819717)"
+						}
+					]
+				},
+				{
+					"id": "4-1",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0179233066737652,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0875751227140427,
+							"length": 2.22511262893677,
+							"position": "(-1.87345, 1.497291, -1.850222)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.164730668067932,
+							"length": 2.1480527639389,
+							"position": "(-2.573024, 1.280156, 1.827577)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.043700709939003,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0172801613807678,
+							"length": 2.2264456987381,
+							"position": "(-1.891483, 1.315819, -1.855396)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.10775551199913,
+							"length": 2.18336935043335,
+							"position": "(-2.675521, 1.329229, 1.833184)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Super-dreadnought",
+							"heading": -0.05943513661623,
+							"length": 9.0000002861023,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 2,
+			"frames": 240,
+			"name": "sector_2",
+			"next_jumps": 4,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 4.38,
+			"p95_ms": 4.955,
+			"rail_overlaps": [],
+			"region": "world",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 1165320,
+				"instanced_triangles": 36960,
+				"instanced_vertices": 29499,
+				"unique_meshes": 136
+			},
+			"sector": 2.0,
+			"seed": 344,
+			"texture_bytes": 1031385088
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0653886497020721,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.170861214399338,
+							"length": 1.89787591695786,
+							"position": "(-1.947719, 1.430328, -1.6016)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.143512055277824,
+							"length": 2.27871840000153,
+							"position": "(-2.735005, 1.440158, 1.63067)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": 0.0277014002203941,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.160464808344841,
+							"length": 1.97823110818863,
+							"position": "(-2.069475, 1.388078, -1.840855)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.147101879119873,
+							"length": 1.98926434516907,
+							"position": "(-2.498637, 1.63527, 1.920694)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": 0.0598166957497597,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.105655640363693,
+							"length": 1.92097837924957,
+							"position": "(-2.247351, 1.623693, -1.63315)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0212593227624893,
+							"length": 2.01431155204773,
+							"position": "(-2.642734, 1.488721, 1.944718)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0557013526558876,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.161151915788651,
+							"length": 2.18168991804123,
+							"position": "(-1.81829, 1.55505, -1.910098)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.166576340794563,
+							"length": 2.05126929283142,
+							"position": "(-2.650043, 1.528827, 1.748955)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0171543210744858,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0590120255947113,
+							"length": 1.86097024679184,
+							"position": "(-2.11536, 1.572345, -1.820587)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0611997693777084,
+							"length": 1.98033810853958,
+							"position": "(-2.52241, 1.432199, 1.806389)"
+						}
+					]
+				},
+				{
+					"id": "2-2",
+					"kind": "battle",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0197955220937729,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.170232474803925,
+							"length": 2.16582992076874,
+							"position": "(-2.246716, 1.433507, -1.747992)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0734730660915375,
+							"length": 2.25781344175339,
+							"position": "(-2.496507, 1.592348, 1.859059)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.00377024710178375,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.126592874526978,
+							"length": 2.13952759504318,
+							"position": "(-1.979958, 1.601852, -1.86968)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.156815707683563,
+							"length": 2.02229214906693,
+							"position": "(-2.569715, 1.306043, 1.841511)"
+						}
+					]
+				},
+				{
+					"id": "3-3",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.010605450719595,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.130834430456162,
+							"length": 1.97828240394592,
+							"position": "(-2.143378, 1.610109, -1.885269)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.132217824459076,
+							"length": 2.04896997213364,
+							"position": "(-2.478856, 1.604227, 1.940537)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.00993716344237328,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.178807824850082,
+							"length": 2.01131051778793,
+							"position": "(-2.079632, 1.454804, -1.958324)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0562432855367661,
+							"length": 2.2629262804985,
+							"position": "(-2.422394, 1.470041, 1.998076)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Bio-titan",
+							"heading": -0.0464641451835632,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 2,
+			"frames": 240,
+			"name": "sector_3",
+			"next_jumps": 3,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 4.597,
+			"p95_ms": 5.065,
+			"rail_overlaps": [],
+			"region": "nebula",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 12144,
+				"instanced_triangles": 132,
+				"instanced_vertices": 264,
+				"unique_meshes": 46
+			},
+			"sector": 3.0,
+			"seed": 344,
+			"texture_bytes": 1372653056
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0581841394305229,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0127981305122375,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						}
+					]
+				},
+				{
+					"id": "3-3",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.00783776119351387,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.133423000574112,
+							"length": 2.05734652280808,
+							"position": "(-1.838462, 1.253389, -1.900469)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.12848362326622,
+							"length": 2.15462543964386,
+							"position": "(-2.650949, 1.423107, 1.684323)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Tomb-ark",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "region_boneyard",
+			"next_jumps": 3,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.695,
+			"p95_ms": 4.396,
+			"rail_overlaps": [],
+			"region": "boneyard",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 29350612,
+				"instanced_triangles": 1856323,
+				"instanced_vertices": 2007863,
+				"unique_meshes": 115
+			},
+			"sector": 1,
+			"seed": 6,
+			"texture_bytes": 1634209280
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "elite",
+					"level": 2,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0127981305122375,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.118116348981857,
+							"length": 2.25567978620529,
+							"position": "(-2.762451, 1.500047, 1.962649)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "2-3",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0644230395555496,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "3-1",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0457063466310501,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.17061710357666,
+							"length": 2.00694185495377,
+							"position": "(-2.001859, 1.579255, -1.945484)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0301016420125961,
+							"length": 2.01452510356903,
+							"position": "(-2.670332, 1.372417, 1.830782)"
+						}
+					]
+				},
+				{
+					"id": "4-1",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0372159034013748,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0959976017475128,
+							"length": 2.07503007650375,
+							"position": "(-2.058357, 1.494036, -1.94419)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0797043144702911,
+							"length": 1.91587762832642,
+							"position": "(-2.659117, 1.350915, 1.819217)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0456456243991852,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0429306477308273,
+							"length": 2.23839528560638,
+							"position": "(-2.242452, 1.363049, -1.786708)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.110504150390625,
+							"length": 2.21447534561157,
+							"position": "(-2.735629, 1.266958, 1.630786)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Bio-titan",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "region_nebula",
+			"next_jumps": 2,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.434,
+			"p95_ms": 4.065,
+			"rail_overlaps": [],
+			"region": "nebula",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 12144,
+				"instanced_triangles": 132,
+				"instanced_vertices": 264,
+				"unique_meshes": 46
+			},
+			"sector": 1,
+			"seed": 3,
+			"texture_bytes": 1772697088
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0581841394305229,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-3",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0601399764418602,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0127981305122375,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0438322834670544,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0751588344573975,
+							"length": 2.11793084144592,
+							"position": "(-1.932518, 1.614723, -1.799889)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.145085096359253,
+							"length": 1.96886568069458,
+							"position": "(-2.473377, 1.614223, 1.657686)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0456456243991852,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0429306477308273,
+							"length": 2.23839528560638,
+							"position": "(-2.242452, 1.363049, -1.786708)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.110504150390625,
+							"length": 2.21447534561157,
+							"position": "(-2.735629, 1.266958, 1.630786)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Bio-titan",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "region_world",
+			"next_jumps": 4,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.62,
+			"p95_ms": 4.247,
+			"rail_overlaps": [],
+			"region": "world",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 1165320,
+				"instanced_triangles": 36960,
+				"instanced_vertices": 29499,
+				"unique_meshes": 136
+			},
+			"sector": 1,
+			"seed": 2,
+			"texture_bytes": 1911184896
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-3",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0601399764418602,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0127981305122375,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "2-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0239321552217007,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.101445347070694,
+							"length": 2.2460248708725,
+							"position": "(-2.083903, 1.509731, -1.843365)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0438322834670544,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0751588344573975,
+							"length": 2.11793084144592,
+							"position": "(-1.932518, 1.614723, -1.799889)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.145085096359253,
+							"length": 1.96886568069458,
+							"position": "(-2.473377, 1.614223, 1.657686)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "elite",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-1",
+					"kind": "battle",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0372159034013748,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0959976017475128,
+							"length": 2.07503007650375,
+							"position": "(-2.058357, 1.494036, -1.94419)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0797043144702911,
+							"length": 1.91587762832642,
+							"position": "(-2.659117, 1.350915, 1.819217)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 3,
+					"members": [
+						{
+							"class": "Super-dreadnought",
+							"heading": -0.0428527891635895,
+							"length": 9.0000002861023,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 4,
+			"frames": 240,
+			"name": "region_frontier",
+			"next_jumps": 4,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.657,
+			"p95_ms": 4.389,
+			"rail_overlaps": [],
+			"region": "frontier",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 1744520,
+				"instanced_triangles": 1315168,
+				"instanced_vertices": 661007,
+				"unique_meshes": 33
+			},
+			"sector": 1,
+			"seed": 10,
+			"texture_bytes": 2050459136
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0581841394305229,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "elite",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0495221763849258,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.00933711230754852,
+							"length": 2.11541502475739,
+							"position": "(-2.774876, 1.459399, 1.792871)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 3,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0438322834670544,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0751588344573975,
+							"length": 2.11793084144592,
+							"position": "(-1.932518, 1.614723, -1.799889)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.145085096359253,
+							"length": 1.96886568069458,
+							"position": "(-2.473377, 1.614223, 1.657686)"
+						}
+					]
+				},
+				{
+					"id": "3-3",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.00783776119351387,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.133423000574112,
+							"length": 2.05734652280808,
+							"position": "(-1.838462, 1.253389, -1.900469)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.12848362326622,
+							"length": 2.15462543964386,
+							"position": "(-2.650949, 1.423107, 1.684323)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0456456243991852,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0429306477308273,
+							"length": 2.23839528560638,
+							"position": "(-2.242452, 1.363049, -1.786708)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.110504150390625,
+							"length": 2.21447534561157,
+							"position": "(-2.735629, 1.266958, 1.630786)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Tomb-ark",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 2,
+			"frames": 240,
+			"name": "region_deep",
+			"next_jumps": 3,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.632,
+			"p95_ms": 4.253,
+			"rail_overlaps": [],
+			"region": "deep",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 6394852,
+				"instanced_triangles": 393011,
+				"instanced_vertices": 357589,
+				"unique_meshes": 22
+			},
+			"sector": 1,
+			"seed": 1,
+			"texture_bytes": 2190347264
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0581841394305229,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-3",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0601399764418602,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0127981305122375,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0438322834670544,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0751588344573975,
+							"length": 2.11793084144592,
+							"position": "(-1.932518, 1.614723, -1.799889)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.145085096359253,
+							"length": 1.96886568069458,
+							"position": "(-2.473377, 1.614223, 1.657686)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0456456243991852,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0429306477308273,
+							"length": 2.23839528560638,
+							"position": "(-2.242452, 1.363049, -1.786708)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.110504150390625,
+							"length": 2.21447534561157,
+							"position": "(-2.735629, 1.266958, 1.630786)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Bio-titan",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "four_routes_1",
+			"next_jumps": 4,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.686,
+			"p95_ms": 4.407,
+			"rail_overlaps": [],
+			"region": "world",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 1165320,
+				"instanced_triangles": 36960,
+				"instanced_vertices": 29499,
+				"unique_meshes": 136
+			},
+			"sector": 1,
+			"seed": 2,
+			"texture_bytes": 2190347264
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0581841394305229,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-3",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0601399764418602,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0127981305122375,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0438322834670544,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0751588344573975,
+							"length": 2.11793084144592,
+							"position": "(-1.932518, 1.614723, -1.799889)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.145085096359253,
+							"length": 1.96886568069458,
+							"position": "(-2.473377, 1.614223, 1.657686)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0456456243991852,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0429306477308273,
+							"length": 2.23839528560638,
+							"position": "(-2.242452, 1.363049, -1.786708)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.110504150390625,
+							"length": 2.21447534561157,
+							"position": "(-2.735629, 1.266958, 1.630786)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Bio-titan",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "four_routes_2",
+			"next_jumps": 4,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.529,
+			"p95_ms": 3.998,
+			"rail_overlaps": [],
+			"region": "world",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 1165320,
+				"instanced_triangles": 36960,
+				"instanced_vertices": 29499,
+				"unique_meshes": 136
+			},
+			"sector": 1,
+			"seed": 2,
+			"texture_bytes": 2190347264
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0581841394305229,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-3",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0601399764418602,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0127981305122375,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0438322834670544,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0751588344573975,
+							"length": 2.11793084144592,
+							"position": "(-1.932518, 1.614723, -1.799889)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.145085096359253,
+							"length": 1.96886568069458,
+							"position": "(-2.473377, 1.614223, 1.657686)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0456456243991852,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0429306477308273,
+							"length": 2.23839528560638,
+							"position": "(-2.242452, 1.363049, -1.786708)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.110504150390625,
+							"length": 2.21447534561157,
+							"position": "(-2.735629, 1.266958, 1.630786)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Bio-titan",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "four_routes_3",
+			"next_jumps": 4,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.688,
+			"p95_ms": 4.268,
+			"rail_overlaps": [],
+			"region": "world",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 1165320,
+				"instanced_triangles": 36960,
+				"instanced_vertices": 29499,
+				"unique_meshes": 136
+			},
+			"sector": 1,
+			"seed": 2,
+			"texture_bytes": 2190347264
+		},
+		{
+			"fight_groups": [
+				{
+					"id": "0-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0473117753863335,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0147569924592972,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.00312384217977524,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-2",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0581841394305229,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "1-3",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": 0.0601399764418602,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				},
+				{
+					"id": "2-0",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0127981305122375,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0776201188564301,
+							"length": 2.10406595468521,
+							"position": "(-2.184496, 1.604931, -1.65103)"
+						}
+					]
+				},
+				{
+					"id": "2-1",
+					"kind": "battle",
+					"level": 1,
+					"members": [
+						{
+							"class": "Frigate",
+							"heading": -0.0495221763849258,
+							"length": 4.40000004768372,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.0187342166900635,
+							"length": 1.90056824684143,
+							"position": "(-1.827975, 1.451774, -1.809285)"
+						}
+					]
+				},
+				{
+					"id": "3-0",
+					"kind": "battle",
+					"level": 2,
+					"members": [
+						{
+							"class": "Destroyer",
+							"heading": -0.0438322834670544,
+							"length": 4.79999980926514,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0751588344573975,
+							"length": 2.11793084144592,
+							"position": "(-1.932518, 1.614723, -1.799889)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.145085096359253,
+							"length": 1.96886568069458,
+							"position": "(-2.473377, 1.614223, 1.657686)"
+						}
+					]
+				},
+				{
+					"id": "4-0",
+					"kind": "battle",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": -0.0142516493797302,
+							"length": 5.40000013113022,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0768363475799561,
+							"length": 2.12410616874695,
+							"position": "(-2.006776, 1.259654, -1.707296)"
+						},
+						{
+							"class": "Frigate",
+							"heading": -0.158566385507584,
+							"length": 2.16506172418594,
+							"position": "(-2.796018, 1.411103, 1.809895)"
+						}
+					]
+				},
+				{
+					"id": "4-2",
+					"kind": "elite",
+					"level": 4,
+					"members": [
+						{
+							"class": "Cruiser",
+							"heading": 0.0456456243991852,
+							"length": 5.59999989271164,
+							"position": "(0.35, 1.8, 0.0)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.0429306477308273,
+							"length": 2.23839528560638,
+							"position": "(-2.242452, 1.363049, -1.786708)"
+						},
+						{
+							"class": "Frigate",
+							"heading": 0.110504150390625,
+							"length": 2.21447534561157,
+							"position": "(-2.735629, 1.266958, 1.630786)"
+						}
+					]
+				},
+				{
+					"id": "6-0",
+					"kind": "boss",
+					"level": 4,
+					"members": [
+						{
+							"class": "Bio-titan",
+							"heading": -0.0428527891635895,
+							"length": 8.99999971389771,
+							"position": "(0.35, 1.8, 0.0)"
+						}
+					]
+				}
+			],
+			"fleet_rows": 3,
+			"frames": 240,
+			"name": "four_routes_4",
+			"next_jumps": 4,
+			"orders_overflow_px": 0.0,
+			"p50_ms": 3.623,
+			"p95_ms": 4.184,
+			"rail_overlaps": [],
+			"region": "world",
+			"scenery_geometry": {
+				"estimated_mesh_bytes": 1165320,
+				"instanced_triangles": 36960,
+				"instanced_vertices": 29499,
+				"unique_meshes": 136
+			},
+			"sector": 1,
+			"seed": 2,
+			"texture_bytes": 2190347264
+		}
+	],
+	"vsync": "off"
+}

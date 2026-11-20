@@ -1,0 +1,27 @@
+[Fri 11/20/2026  0:17:50.15] job start
+tools: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc
+runner files match the Board hashes (5 checked)
+tool preflight 2026-11-20T06:17:51Z
+found godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe
+all tools found
+[Fri 11/20/2026  0:17:51.46] ready: GPU label 1303
+head C:\Users\rcbai\Downloads\voidsworn_test\opus1303\src_1ae2e422\tools\pc\jobs\opus_job_head.bat
+head: OPUS_JOB_HEAD_PREMERGE=1, running a pre-merge copy (smoke only); job_wrap from tools_live
+verified 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat
+verified 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1
+watchdog pinned for this job: C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1 (tools_live version d64cd49994b9)
+watchdog 6a3cd167fe64e9c3cf9c44140f840b1f25794582a966fa7a59ddb289b1dc4f42 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\tmo.bat
+watchdog 93768e46a4cef4e24633f557880744749085c2815f7abea142b16b4556c63932 C:\Users\rcbai\Downloads\voidsworn_test\tools_live\d64cd49994b9\pc\run_timeout.ps1
+profile: every Godot start gets a throwaway profile from the watchdog
+a pin must be a full 40-character commit, got: 1ae2e422
+At C:\Users\rcbai\Downloads\voidsworn_test\opus1303\src_1ae2e422\tools\pc\jobs\opus_job_head.ps1:77 char:44
++ ... ]{40}\z') { throw "a pin must be a full 40-character commit, got: $C" ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (a pin must be a..., got: 1ae2e422:String) [], RuntimeException
+    + FullyQualifiedErrorId : a pin must be a full 40-character commit, got: 1ae2e422
+ 
+FAILED: checkout new 1ae2e422
+[Fri 11/20/2026  0:17:53.75] skipped import: an earlier step failed
+Ryan's real options unchanged (battle_opts.json, board_look.cfg)
+done FAILED: checkout new 1ae2e422
+all done Fri 11/20/2026  0:17:54.36

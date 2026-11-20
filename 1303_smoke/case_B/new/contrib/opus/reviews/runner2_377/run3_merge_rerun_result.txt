@@ -1,0 +1,12 @@
+started Thu 11/12/2026  0:50:41.52 (dryrun) 
+issue #377 prepared for the deepseek arm
+agent running  0:53:29.99 
+opencode exit 0 at  0:53:37.59 
+refuse list: nothing refused
+WARNING: 1 changed file(s) outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+  A tools/pc/work/merge377_note.txt
+commit ed6940907 (run 2 of runner377/issue-377-deepseek) carries the staged change (3 files); earlier tip 813aeb535 kept as its parent, so the push needs no force
+pushed diff checked: GitHub's runner377/issue-377-deepseek (ed6940907) carries exactly out\diffstat.txt (3 files)
+pushed runner377/issue-377-deepseek 
+run folder size: 0.01 GB (repo copy 0.01 GB, out 0.0 MB) in C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_005041
+dry run: the setting is on and the push was checked, so a real run would now remove C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_005041\repo (0.01 GB) and keep out\; nothing removed

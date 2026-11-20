@@ -1,0 +1,7 @@
+ godot/fx/fx.gd         | 36 ++++---------------------------
+ godot/fx/fx_breach.gd  |  5 -----
+ godot/fx/fx_death.gd   | 58 +++++++++++++-------------------------------------
+ godot/fx/fx_hull.gd    | 58 ++++++++++++++------------------------------------
+ godot/fx/fx_ship.gd    | 13 +++++------
+ godot/fx/fx_weapons.gd | 10 ++++-----
+ 6 files changed, 45 insertions(+), 135 deletions(-)

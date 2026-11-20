@@ -1,0 +1,31 @@
+{
+ "bench_before_1080": {
+  "fps_1pct_low": 64.6,
+  "fps_avg": 271.0,
+  "gpu_ms": 2.536,
+  "p99_ms": 15.482,
+  "max_ms": 45.114
+ },
+ "bench_1080": {
+  "fps_1pct_low": 63.5,
+  "fps_avg": 262.5,
+  "gpu_ms": 2.629,
+  "p99_ms": 15.754,
+  "max_ms": 43.356
+ },
+ "bench_before_4k": {
+  "fps_1pct_low": 39.6,
+  "fps_avg": 147.2,
+  "gpu_ms": 6.187,
+  "p99_ms": 25.254,
+  "max_ms": 48.905
+ },
+ "bench_4k": {
+  "fps_1pct_low": 41.7,
+  "fps_avg": 145.5,
+  "gpu_ms": 6.264,
+  "p99_ms": 24.009,
+  "max_ms": 40.255
+ },
+ "note": "20-ship gallery bench, Ryan PC (RTX 5080), Forward+, max quality, 30 s, run f3b r4 on a0dfd5b; before = the effects from d0138fe on the same base in the same session. Earlier same-session pairs: r2 1080p 66.7 to 65.3, 4K 41.1 to 41.3; r3 1080p 65.5 to 61.4, 4K 40.4 to 39.0."
+}

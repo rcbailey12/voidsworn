@@ -1,0 +1,46 @@
+{
+ "code": "voidsworn_S9",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "autocannon",
+   "arc": "F",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "A1",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 3,
+     "muzzles": 3
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "flak",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "F1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "F2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ],
+ "game_ship": "warden",
+ "variant": ""
+}

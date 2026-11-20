@@ -1,0 +1,75 @@
+[Mon 10/26/2026 13:49:12.19] started 
+=== parity.bat ===
+
+[1/5] Exporting the game's data tables for Godot...
+[2/5] Random numbers: first 10,000 draws from 3 seeds...
+  seed 1001: PASS 
+  seed 7: PASS 
+  seed 4242424242: PASS 
+[3/5] Math functions the rules use (sin, cos, atan2, exp, hypot, round, pow) on 283,730 inputs...
+  PASS 
+[4/5] Seeded battles, every activation compared (state hash, PRNG state): s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 s24 s25 s26 s27 s28 s29 s30 s31
+  battle s1: PASS 
+  battle s2: PASS 
+  battle s3: PASS 
+  battle s4: PASS 
+  battle s5: PASS 
+  battle s6: PASS 
+  battle s7: PASS 
+  battle s8: PASS 
+  battle s9: PASS 
+  battle s10: PASS 
+  battle s11: PASS 
+  battle s12: PASS 
+  battle s13: PASS 
+  battle s14: PASS 
+  battle s15: PASS 
+  battle s16: PASS 
+  battle s17: PASS 
+  battle s18: PASS 
+  battle s19: PASS 
+  battle s20: PASS 
+  battle s21: PASS 
+  battle s22: PASS 
+  battle s23: PASS 
+  battle s24: PASS 
+  battle s25: PASS 
+  battle s26: PASS 
+  battle s27: PASS 
+  battle s28: PASS 
+  battle s29: PASS 
+  battle s30: PASS 
+  battle s31: PASS 
+[4b] Threat overlay (ui3d.js computeThreat) against api.threat_map, rounds 1 to 3...
+  threat map s4: PASS 
+  threat map s19: PASS 
+  threat map s23: PASS 
+[5/5] Enemy think time in the timing battles (report only; game bar: worst under about 0.5 s)...
+  s4: 36 enemy activations
+    Node   think per activation: average 0.029 s, worst 0.046 s (round 2); per round: average 0.176 s, worst 0.301 s
+    Godot  think per activation: average 0.111 s, worst 0.312 s (round 2); per round: average 0.664 s, worst 1.618 s
+    Godot/Node: 3.8x on average. Worst enemy think is inside the 0.5 s bar
+  s5: 43 enemy activations
+    Node   think per activation: average 0.030 s, worst 0.055 s (round 5); per round: average 0.164 s, worst 0.319 s
+    Godot  think per activation: average 0.098 s, worst 0.302 s (round 2); per round: average 0.528 s, worst 1.204 s
+    Godot/Node: 3.2x on average. Worst enemy think is inside the 0.5 s bar
+  s23: 64 enemy activations
+    Node   think per activation: average 0.033 s, worst 0.084 s (round 5); per round: average 0.178 s, worst 0.362 s
+    Godot  think per activation: average 0.117 s, worst 0.537 s (round 1); per round: average 0.622 s, worst 1.695 s
+    Godot/Node: 3.5x on average. Worst enemy think MISSES the 0.5 s bar (report only)
+
+PASS: the Godot port matches the game's rules exactly. 
+
+'"C:\Users\rcbai\Downloads\voidsworn_test\build_b\parity_campaign.bat"' is not recognized as an internal or external command,
+operable program or batch file.
+=== parity_sweep.bat 200 2 ===
+
+[1/4] Exporting the game's data tables for Godot...
+[2/4] Making 200 random battles (seed 2)...
+[3/4] Playing them in the game's rules (Node) and in the Godot port...
+  started 13:54:21.44, finished 14:11:48.37
+[4/4] Comparing every battle, record by record...
+sweep: 200 battles, 200 identical at every record (37694 records), 0 differ; endings: win 119, none 16, loss 65
+PASS
+
+[Mon 10/26/2026 13:49:12.19] finished 

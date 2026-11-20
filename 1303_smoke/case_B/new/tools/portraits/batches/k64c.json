@@ -1,0 +1,237 @@
+{
+ "out": "k64c",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "gw_h1",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    51
+   ]
+  },
+  {
+   "id": "gw_h2",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    51
+   ]
+  },
+  {
+   "id": "gw_h3",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    51
+   ]
+  },
+  {
+   "id": "gw_h1_s11_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "k64c/gw_h1_qie_s11_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h1_s11_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "k64c/gw_h1_qie_s11_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h1_s23_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "k64c/gw_h1_qie_s23_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h1_s23_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "k64c/gw_h1_qie_s23_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h1_s51_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64c/gw_h1_qie_s51_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h1_s51_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64c/gw_h1_qie_s51_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h2_s11_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "k64c/gw_h2_qie_s11_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h2_s11_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "k64c/gw_h2_qie_s11_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h2_s23_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "k64c/gw_h2_qie_s23_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h2_s23_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "k64c/gw_h2_qie_s23_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h2_s51_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64c/gw_h2_qie_s51_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h2_s51_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64c/gw_h2_qie_s51_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h3_s11_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "k64c/gw_h3_qie_s11_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h3_s11_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "k64c/gw_h3_qie_s11_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h3_s23_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "k64c/gw_h3_qie_s23_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h3_s23_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "k64c/gw_h3_qie_s23_00001_.png",
+   "denoise": 0.65
+  },
+  {
+   "id": "gw_h3_s51_p55",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64c/gw_h3_qie_s51_00001_.png",
+   "denoise": 0.55
+  },
+  {
+   "id": "gw_h3_s51_p65",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the crystal of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64c/gw_h3_qie_s51_00001_.png",
+   "denoise": 0.65
+  }
+ ]
+}

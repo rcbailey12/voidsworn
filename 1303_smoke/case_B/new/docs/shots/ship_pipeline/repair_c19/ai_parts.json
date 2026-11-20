@@ -1,0 +1,100 @@
+{
+  "engine": {
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\repo\\docs\\ship_pipeline\\c19_example\\views_left.webp",
+    "box": [
+      810,
+      506,
+      980,
+      630
+    ],
+    "original_pixels": [
+      170,
+      124
+    ],
+    "clean_image": "engine_clean.png",
+    "edit_seconds": 51.11059820000082,
+    "mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\engine_raw_00001_.glb",
+    "generation_seconds": 150.09420430008322,
+    "resolution": 1536,
+    "decimated": false
+  },
+  "gun": {
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\repo\\docs\\ship_pipeline\\c19_example\\views_left.webp",
+    "box": [
+      645,
+      610,
+      743,
+      677
+    ],
+    "original_pixels": [
+      98,
+      67
+    ],
+    "clean_image": "gun_clean.png",
+    "edit_seconds": 48.05231620010454,
+    "mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\gun_raw_00001_.glb",
+    "generation_seconds": 84.05610390007496,
+    "resolution": 1536,
+    "decimated": false
+  },
+  "bridge": {
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\repo\\docs\\ship_pipeline\\c19_example\\views_left.webp",
+    "box": [
+      416,
+      391,
+      575,
+      480
+    ],
+    "original_pixels": [
+      159,
+      89
+    ],
+    "edit_seconds": 45.046571400016546,
+    "generation_seconds": 102.32380270003341,
+    "resolution": 1536,
+    "decimated": false,
+    "previous_attempts": [
+      {
+        "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\repo\\docs\\ship_pipeline\\c19_example\\views_left.webp",
+        "box": [
+          416,
+          391,
+          575,
+          480
+        ],
+        "original_pixels": [
+          159,
+          89
+        ],
+        "clean_image": "bridge_clean.png",
+        "edit_seconds": 42.04433720000088,
+        "mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\bridge_raw_00001_.glb",
+        "generation_seconds": 45.21616269997321,
+        "resolution": 1536,
+        "decimated": false
+      }
+    ],
+    "retry_reason": "first cleanup invented a tall naval-looking lattice tower",
+    "clean_image": "bridge_retry1_clean.png",
+    "mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\bridge_retry1_raw_00001_.glb"
+  },
+  "midships": {
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\repo\\docs\\ship_pipeline\\c19_example\\views_left.webp",
+    "box": [
+      369,
+      473,
+      596,
+      615
+    ],
+    "original_pixels": [
+      227,
+      142
+    ],
+    "clean_image": "midships_clean.png",
+    "edit_seconds": 45.068627200089395,
+    "mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\midships_raw_00001_.glb",
+    "generation_seconds": 87.05596530006733,
+    "resolution": 1536,
+    "decimated": false
+  }
+}

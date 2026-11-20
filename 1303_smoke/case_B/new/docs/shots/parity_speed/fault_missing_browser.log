@@ -1,0 +1,5 @@
+Withheld golden/s2.jsonl in a throwaway output folder.
+  battle s1: PASS (120 records identical (state hash and PRNG state after every action, activation and round), result: end loss)
+  battle s2: FAIL (batch exit 0, browser exit 0)
+missing or empty record file: <home>\AppData\Local\Temp\parity978-worker-smoke\golden\s2.jsonl
+Exit: 1

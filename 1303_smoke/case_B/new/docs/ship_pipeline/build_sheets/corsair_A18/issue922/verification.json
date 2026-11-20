@@ -1,0 +1,314 @@
+{
+  "result": "PASS A18 checks; standing suite has one runner timeout",
+  "head_unchanged": "28db3a88d76588f9f7f602dc4074d74ceae95c39",
+  "contract": true,
+  "fit": true,
+  "weapon_match": true,
+  "build_manifest": true,
+  "geometry": true,
+  "export": true,
+  "export_selftest": true,
+  "godot_engine_nozzles": 3,
+  "authored_interiors": true,
+  "death_seams": true,
+  "budget": {
+    "battle_draw_calls_whole_probe": 26,
+    "camera170_crop": [
+      640,
+      360
+    ],
+    "camera_distance": 170,
+    "camera_pitch": 0.98,
+    "effect_nozzles": 3,
+    "engine_hardpoints": 3,
+    "nozzles_from_kit": true,
+    "result": "PASS",
+    "stage": "paint proof",
+    "surfaces": 15,
+    "triangles": 186136,
+    "viewport": [
+      1920,
+      1080
+    ]
+  },
+  "standing_passed": 59,
+  "standing_failed": [
+    {
+      "check": "runner_selftest",
+      "result": "FAIL",
+      "seconds": 601.12,
+      "detail": "FAIL: timed out after 600 s"
+    }
+  ],
+  "pictures_verified": [
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/beauty_vs_blockout.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/bow.jpg",
+      "size": [
+        247,
+        284
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/cells.jpg",
+      "size": [
+        578,
+        720
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/cutaway.jpg",
+      "size": [
+        420,
+        334
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/fit_view.jpg",
+      "size": [
+        1280,
+        421
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_after_camera170.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_after_concept_camera.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_after_engine_detail.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_after_game_camera170.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_after_game_engines.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_before_camera170.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_before_concept_camera.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_before_engine_detail.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_before_game_camera170.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_before_game_engines.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_compare_camera170.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_compare_concept_camera.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_compare_engine_detail.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_concept.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_concept_vs_after.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/issue922/A18_game_camera170_compare.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/paint/A18_paint_engines.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/paint/A18_paint_full.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/preview.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/sheet.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/side.jpg",
+      "size": [
+        420,
+        334
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/side_by_side.jpg",
+      "size": [
+        428,
+        720
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/stern.jpg",
+      "size": [
+        247,
+        264
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/threequarter.jpg",
+      "size": [
+        800,
+        500
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/top.jpg",
+      "size": [
+        427,
+        510
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/underside.jpg",
+      "size": [
+        247,
+        510
+      ],
+      "stage": "sheet built"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/weapon_autocannon.jpg",
+      "size": [
+        400,
+        280
+      ],
+      "stage": "paint proof"
+    },
+    {
+      "path": "docs/ship_pipeline/build_sheets/corsair_A18/weapon_review.jpg",
+      "size": [
+        1280,
+        720
+      ],
+      "stage": "sheet built"
+    }
+  ],
+  "not_run": [
+    "playable build install",
+    "scene gate"
+  ],
+  "source": "CPU bake 2048 maps, 16 samples; CPU render 32 samples; production Godot FX at radius 170"
+}

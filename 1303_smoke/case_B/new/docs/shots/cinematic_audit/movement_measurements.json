@@ -1,0 +1,431 @@
+[
+  {
+    "picture": "m01_frigate_straight.jpg",
+    "class": "Frigate",
+    "kind": "straight",
+    "duration_s": 2.5500000000001,
+    "to_95pct_peak_s": 0.516666666666665,
+    "95_to_5pct_stop_s": 0.43333333333335,
+    "peak_world_units_s": 36.21130478139169,
+    "peak_pixels_s": 238.3708224740421,
+    "peak_yaw_deg_s": 0.02131019022264893,
+    "max_roll_deg": 0.00028066758599831944,
+    "path": [
+      {
+        "f": 5.0,
+        "q": 2.0,
+        "r": 17.0
+      },
+      {
+        "f": 5.0,
+        "q": 3.0,
+        "r": 16.0
+      },
+      {
+        "f": 5.0,
+        "q": 4.0,
+        "r": 15.0
+      },
+      {
+        "f": 5.0,
+        "q": 5.0,
+        "r": 14.0
+      }
+    ],
+    "score": 4.0
+  },
+  {
+    "picture": "m02_cruiser_straight.jpg",
+    "class": "Cruiser",
+    "kind": "straight",
+    "duration_s": 3.95000000000005,
+    "to_95pct_peak_s": 1.06666666666672,
+    "95_to_5pct_stop_s": 0.8499999999999499,
+    "peak_world_units_s": 27.55339335222138,
+    "peak_pixels_s": 174.20837439869436,
+    "peak_yaw_deg_s": 0.027867171816699517,
+    "max_roll_deg": 0.00028948004747688977,
+    "path": [
+      {
+        "f": 5.0,
+        "q": 0.0,
+        "r": 18.0
+      },
+      {
+        "f": 5.0,
+        "q": 1.0,
+        "r": 17.0
+      },
+      {
+        "f": 5.0,
+        "q": 2.0,
+        "r": 16.0
+      },
+      {
+        "f": 5.0,
+        "q": 3.0,
+        "r": 15.0
+      }
+    ],
+    "score": 4.0
+  },
+  {
+    "picture": "m03_dreadnought_straight.jpg",
+    "class": "Dreadnought",
+    "kind": "straight",
+    "duration_s": 4.24999999999976,
+    "to_95pct_peak_s": 1.54999999999991,
+    "95_to_5pct_stop_s": 1.21666666666659,
+    "peak_world_units_s": 23.284112109648387,
+    "peak_pixels_s": 133.82370807886346,
+    "peak_yaw_deg_s": 0.04425962581556727,
+    "max_roll_deg": 0.00024153628519342014,
+    "path": [
+      {
+        "f": 5.0,
+        "q": 0.0,
+        "r": 20.0
+      },
+      {
+        "f": 5.0,
+        "q": 1.0,
+        "r": 19.0
+      },
+      {
+        "f": 5.0,
+        "q": 2.0,
+        "r": 18.0
+      }
+    ],
+    "score": 3.0
+  },
+  {
+    "picture": "m04_frigate_turn.jpg",
+    "class": "Frigate",
+    "kind": "turn",
+    "duration_s": 3.33333333333346,
+    "to_95pct_peak_s": 0.800000000000005,
+    "95_to_5pct_stop_s": 0.6666666666666998,
+    "peak_world_units_s": 23.528470868570594,
+    "peak_pixels_s": 152.09495462840854,
+    "peak_yaw_deg_s": 178.62365358931424,
+    "max_roll_deg": 2.1172324976477195,
+    "path": [
+      {
+        "f": 0,
+        "q": 1.0,
+        "r": 18.0,
+        "rot": true
+      },
+      {
+        "f": 5,
+        "q": 1.0,
+        "r": 18.0,
+        "rot": true
+      },
+      {
+        "f": 4,
+        "q": 1.0,
+        "r": 18.0,
+        "rot": true
+      },
+      {
+        "f": 4,
+        "q": 1.0,
+        "r": 17.0
+      },
+      {
+        "f": 4,
+        "q": 1.0,
+        "r": 16.0
+      },
+      {
+        "f": 4,
+        "q": 1.0,
+        "r": 15.0
+      }
+    ],
+    "score": 9.0
+  },
+  {
+    "picture": "m05_cruiser_turn.jpg",
+    "class": "Cruiser",
+    "kind": "turn",
+    "duration_s": 4.16666666666643,
+    "to_95pct_peak_s": 1.71666666666657,
+    "95_to_5pct_stop_s": 1.3666666666665903,
+    "peak_world_units_s": 17.820615839049406,
+    "peak_pixels_s": 136.54444193224742,
+    "peak_yaw_deg_s": 191.74089528653474,
+    "max_roll_deg": 2.9509516412791,
+    "path": [
+      {
+        "f": 4,
+        "q": -1.0,
+        "r": 19.0,
+        "rot": true
+      },
+      {
+        "f": 3,
+        "q": -1.0,
+        "r": 19.0,
+        "rot": true
+      },
+      {
+        "f": 3,
+        "q": -2.0,
+        "r": 19.0
+      },
+      {
+        "f": 3,
+        "q": -3.0,
+        "r": 19.0
+      }
+    ],
+    "score": 6.0
+  },
+  {
+    "picture": "m06_dreadnought_turn.jpg",
+    "class": "Dreadnought",
+    "kind": "turn",
+    "duration_s": 4.59999999999974,
+    "to_95pct_peak_s": 2.03333333333322,
+    "95_to_5pct_stop_s": 1.5999999999998997,
+    "peak_world_units_s": 17.82728075051192,
+    "peak_pixels_s": 100.18428447337686,
+    "peak_yaw_deg_s": 60.8832134312228,
+    "max_roll_deg": 2.961023395540517,
+    "path": [
+      {
+        "f": 4,
+        "q": -1.0,
+        "r": 21.0,
+        "rot": true
+      },
+      {
+        "f": 4,
+        "q": -1.0,
+        "r": 20.0
+      },
+      {
+        "f": 4,
+        "q": -1.0,
+        "r": 19.0
+      }
+    ],
+    "score": 4.0
+  },
+  {
+    "picture": "m07_frigate_final.jpg",
+    "class": "Frigate",
+    "kind": "final",
+    "duration_s": 3.6833333333335,
+    "to_95pct_peak_s": 0.716666666666688,
+    "95_to_5pct_stop_s": 0.6000000000000298,
+    "peak_world_units_s": 26.02506719140639,
+    "peak_pixels_s": 170.79992987024877,
+    "peak_yaw_deg_s": 211.20693442101864,
+    "max_roll_deg": 1.6983193867693855,
+    "path": [
+      {
+        "f": 5.0,
+        "q": 2.0,
+        "r": 17.0
+      },
+      {
+        "f": 5.0,
+        "q": 3.0,
+        "r": 16.0
+      },
+      {
+        "f": 5.0,
+        "q": 4.0,
+        "r": 15.0
+      },
+      {
+        "f": 5.0,
+        "q": 5.0,
+        "r": 14.0
+      },
+      {
+        "f": 0,
+        "q": 5.0,
+        "r": 14.0,
+        "rot": true
+      },
+      {
+        "f": 1,
+        "q": 5.0,
+        "r": 14.0,
+        "rot": true
+      }
+    ],
+    "score": 6.0
+  },
+  {
+    "picture": "m08_cruiser_final.jpg",
+    "class": "Cruiser",
+    "kind": "final",
+    "duration_s": 3.86666666666645,
+    "to_95pct_peak_s": 1.24999999999993,
+    "95_to_5pct_stop_s": 0.9999999999999503,
+    "peak_world_units_s": 23.5578397742952,
+    "peak_pixels_s": 137.03764628686653,
+    "peak_yaw_deg_s": 100.67917402650393,
+    "max_roll_deg": 1.6693380403473728,
+    "path": [
+      {
+        "f": 5.0,
+        "q": 0.0,
+        "r": 18.0
+      },
+      {
+        "f": 5.0,
+        "q": 1.0,
+        "r": 17.0
+      },
+      {
+        "f": 5.0,
+        "q": 2.0,
+        "r": 16.0
+      },
+      {
+        "f": 0,
+        "q": 2.0,
+        "r": 16.0,
+        "rot": true
+      }
+    ],
+    "score": 4.0
+  },
+  {
+    "picture": "m09_dreadnought_final.jpg",
+    "class": "Dreadnought",
+    "kind": "final",
+    "duration_s": 4.29999999999976,
+    "to_95pct_peak_s": 1.89999999999989,
+    "95_to_5pct_stop_s": 1.4999999999999098,
+    "peak_world_units_s": 18.723381890685964,
+    "peak_pixels_s": 100.60023279177442,
+    "peak_yaw_deg_s": 90.18308572517672,
+    "max_roll_deg": 1.7136819763166253,
+    "path": [
+      {
+        "f": 5.0,
+        "q": 0.0,
+        "r": 20.0
+      },
+      {
+        "f": 5.0,
+        "q": 1.0,
+        "r": 19.0
+      },
+      {
+        "f": 0,
+        "q": 1.0,
+        "r": 19.0,
+        "rot": true
+      }
+    ],
+    "score": 3.0
+  },
+  {
+    "picture": "m10_frigate_obstacle.jpg",
+    "class": "Frigate",
+    "kind": "obstacle",
+    "duration_s": 3.11666666666679,
+    "to_95pct_peak_s": 0.583333333333332,
+    "95_to_5pct_stop_s": 0.4833333333333498,
+    "peak_world_units_s": 32.5203963399544,
+    "peak_pixels_s": 276.3361072600934,
+    "peak_yaw_deg_s": 125.34162108163663,
+    "max_roll_deg": 1.5701275149405296,
+    "path": [
+      {
+        "f": 5.0,
+        "over": 1,
+        "q": 2.0,
+        "r": 17.0
+      },
+      {
+        "f": 5.0,
+        "q": 3.0,
+        "r": 16.0
+      },
+      {
+        "f": 5.0,
+        "q": 4.0,
+        "r": 15.0
+      },
+      {
+        "f": 5.0,
+        "q": 5.0,
+        "r": 14.0
+      },
+      {
+        "f": 0,
+        "q": 5.0,
+        "r": 14.0,
+        "rot": true
+      }
+    ],
+    "score": 105.0
+  },
+  {
+    "picture": "m11_cruiser_obstacle.jpg",
+    "class": "Cruiser",
+    "kind": "obstacle",
+    "duration_s": 3.4999999999998,
+    "to_95pct_peak_s": 1.08333333333327,
+    "95_to_5pct_stop_s": 0.8666666666666201,
+    "peak_world_units_s": 27.80538681190215,
+    "peak_pixels_s": 211.41109807792986,
+    "peak_yaw_deg_s": 0.027867171816699517,
+    "max_roll_deg": 0.00020051447815607688,
+    "path": [
+      {
+        "f": 5.0,
+        "over": 1,
+        "q": 0.0,
+        "r": 18.0
+      },
+      {
+        "f": 5.0,
+        "q": 1.0,
+        "r": 17.0
+      },
+      {
+        "f": 5.0,
+        "q": 2.0,
+        "r": 16.0
+      }
+    ],
+    "score": 103.0
+  },
+  {
+    "picture": "m12_dreadnought_obstacle.jpg",
+    "class": "Dreadnought",
+    "kind": "obstacle",
+    "duration_s": 3.71666666666646,
+    "to_95pct_peak_s": 1.58333333333324,
+    "95_to_5pct_stop_s": 1.26666666666659,
+    "peak_world_units_s": 23.520877012953104,
+    "peak_pixels_s": 163.06971570957148,
+    "peak_yaw_deg_s": 0.04753811663246792,
+    "max_roll_deg": 0.0002778815918981989,
+    "path": [
+      {
+        "f": 5.0,
+        "over": 1,
+        "q": 0.0,
+        "r": 20.0
+      },
+      {
+        "f": 5.0,
+        "q": 1.0,
+        "r": 19.0
+      }
+    ],
+    "score": 102.0
+  }
+]

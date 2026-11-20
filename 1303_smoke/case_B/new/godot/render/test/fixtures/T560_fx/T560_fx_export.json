@@ -1,0 +1,585 @@
+{
+ "ship": "T560_fx",
+ "code": "T560_fx",
+ "cell": null,
+ "game_ship": "c_marauder",
+ "faction": "hullbreakers",
+ "cls": "Cruiser",
+ "band": "M",
+ "expected_breach": 5,
+ "unbaked": true,
+ "maps": 0,
+ "triangles": 1436,
+ "turret_triangles": 1172,
+ "turrets": [
+  {
+   "name": "turret_0",
+   "p": [
+    0.2,
+    0.0,
+    0.036
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "triangles": 760,
+   "muzzles": [
+    "hp_w3_flak_T_0"
+   ],
+   "kind": "turret",
+   "id": "turA",
+   "socket": "turA",
+   "slot": 3,
+   "weapon": "flak",
+   "arc_lo": -120.0,
+   "arc_hi": 120.0,
+   "rest_yaw": 0.0,
+   "rest_pitch": 14.0,
+   "turns_about": "local +Y (the mount normal)",
+   "arc_frame": "bearing from the bow, + to port"
+  },
+  {
+   "name": "turret_1",
+   "p": [
+    -0.22,
+    0.0,
+    0.03597
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "triangles": 412,
+   "muzzles": [
+    "hp_w3_flak_T_1"
+   ],
+   "kind": "turret",
+   "id": "turB",
+   "socket": "turB",
+   "slot": 3,
+   "weapon": "flak",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0,
+   "rest_yaw": 0.0,
+   "rest_pitch": 10.0,
+   "turns_about": "local +Y (the mount normal)",
+   "arc_frame": "bearing from the bow, + to port"
+  }
+ ],
+ "surfaces": 3,
+ "destruction": {
+  "version": 1,
+  "seams": [
+   {
+    "p": [
+     -0.15,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ]
+   },
+   {
+    "p": [
+     0.18,
+     0,
+     0
+    ],
+    "n": [
+     1,
+     0,
+     0
+    ]
+   }
+  ],
+  "interior_materials": [
+   "T560_fx_inside_0"
+  ]
+ },
+ "weapons": [
+  {
+   "slot": 0,
+   "weapon": "scatter",
+   "arc": "P",
+   "hard_points": [
+    "hp_w0_scatter_P_0"
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "scatter",
+   "arc": "S",
+   "hard_points": [
+    "hp_w1_scatter_S_0"
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "torp",
+   "arc": "F",
+   "hard_points": [
+    "hp_w2_torp_F_0"
+   ]
+  },
+  {
+   "slot": 3,
+   "weapon": "flak",
+   "arc": "T",
+   "hard_points": [
+    "hp_w3_flak_T_0",
+    "hp_w3_flak_T_1"
+   ]
+  }
+ ],
+ "slots_without_hard_points": [],
+ "hardpoints": {
+  "gun": 5,
+  "engine": 1,
+  "bay": 0,
+  "breach": 5,
+  "core": 1,
+  "rcs": 2,
+  "board": 2
+ },
+ "hard_points": [
+  {
+   "name": "hp_w0_scatter_P_0",
+   "p": [
+    0.05695,
+    0.14351,
+    -0.015
+   ],
+   "fwd": [
+    0.139,
+    0.9903,
+    0.0
+   ],
+   "up": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "P",
+   "arc_deg": 60,
+   "slot": 0,
+   "weapon": "scatter",
+   "radius": 0.0035,
+   "socket": "casP"
+  },
+  {
+   "name": "hp_w1_scatter_S_0",
+   "p": [
+    0.05695,
+    -0.14351,
+    -0.015
+   ],
+   "fwd": [
+    0.139,
+    -0.9903,
+    0.0
+   ],
+   "up": [
+    -0.0,
+    -1.0,
+    0.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "S",
+   "arc_deg": 60,
+   "slot": 1,
+   "weapon": "scatter",
+   "radius": 0.0035,
+   "socket": "casP_s"
+  },
+  {
+   "name": "hp_w2_torp_F_0",
+   "p": [
+    0.504,
+    0.0,
+    -0.004
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "M",
+   "arc": "F",
+   "arc_deg": 30,
+   "slot": 2,
+   "weapon": "torp",
+   "radius": 0.008,
+   "socket": "bow"
+  },
+  {
+   "name": "hp_w3_flak_T_0",
+   "p": [
+    0.26412,
+    0.0,
+    0.05515
+   ],
+   "fwd": [
+    0.9703,
+    0.0,
+    0.2419
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 3,
+   "weapon": "flak",
+   "radius": 0.0036,
+   "socket": "turA",
+   "turret": 0
+  },
+  {
+   "name": "hp_w3_flak_T_1",
+   "p": [
+    -0.15762,
+    0.0,
+    0.0522
+   ],
+   "fwd": [
+    0.9848,
+    0.0,
+    0.1736
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "gun",
+   "size": "S",
+   "arc": "T",
+   "arc_deg": 135,
+   "slot": 3,
+   "weapon": "flak",
+   "radius": 0.00224,
+   "socket": "turB",
+   "turret": 1
+  },
+  {
+   "name": "hp_eng_0",
+   "p": [
+    -0.515,
+    0.0,
+    -0.01
+   ],
+   "fwd": [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "engine",
+   "radius": 0.03,
+   "engine": "eng0"
+  },
+  {
+   "name": "hp_breach_0",
+   "p": [
+    0.30356,
+    0.05867,
+    -0.0475
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.1275,
+    0.7013,
+    -0.7013
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "prow",
+   "side": "P",
+   "clear": 0.12
+  },
+  {
+   "name": "hp_breach_1",
+   "p": [
+    0.24724,
+    -0.06047,
+    -0.05594
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.1275,
+    -0.7013,
+    -0.7013
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "prow",
+   "side": "S",
+   "clear": 0.1031
+  },
+  {
+   "name": "hp_breach_2",
+   "p": [
+    0.00644,
+    0.0775,
+    -0.0475
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.7071,
+    -0.7071
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "mid",
+   "side": "P",
+   "clear": 0.0438
+  },
+  {
+   "name": "hp_breach_3",
+   "p": [
+    0.06247,
+    -0.06906,
+    -0.05594
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    -0.7071,
+    -0.7071
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "mid",
+   "side": "S",
+   "clear": 0.0368
+  },
+  {
+   "name": "hp_breach_4",
+   "p": [
+    -0.28897,
+    0.06313,
+    -0.05594
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    -0.0471,
+    0.7063,
+    -0.7063
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "breach",
+   "radius": 0.0,
+   "section": "eng",
+   "side": "P",
+   "clear": 0.107
+  },
+  {
+   "name": "hp_core",
+   "p": [
+    -0.03739,
+    0.0,
+    -0.01422
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "core"
+  },
+  {
+   "name": "hp_rcs_0",
+   "p": [
+    0.26,
+    0.08182,
+    0.00313
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "P",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_rcs_1",
+   "p": [
+    0.26,
+    -0.08182,
+    0.00313
+   ],
+   "fwd": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "rcs",
+   "side": "S",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_0",
+   "p": [
+    0.01,
+    0.09,
+    -0.03063
+   ],
+   "fwd": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "P",
+   "radius": 0.0
+  },
+  {
+   "name": "hp_board_1",
+   "p": [
+    0.01,
+    -0.09,
+    -0.03063
+   ],
+   "fwd": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "up": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "frame": "ship (x bow, y port, z up)",
+   "kind": "board",
+   "side": "S",
+   "radius": 0.0
+  }
+ ],
+ "manifest": {
+  "name": "Turret test ship (issue 560, not production art)",
+  "faction": "corsair",
+  "cls": "Cruiser",
+  "band": "M",
+  "length_world": 14.5,
+  "hardpoints": {
+   "gun": 5,
+   "engine": 1,
+   "breach": 5,
+   "core": 1,
+   "rcs": 2,
+   "board": 2
+  },
+  "breaches": 5,
+  "turrets": 2,
+  "files": {
+   "T560_fx.glb": {
+    "bytes": 117608,
+    "sha256": "0d6090554083636de41b555e43f5b6cfeca2ed70b8cdd54daf3c7d248baff8f1"
+   }
+  },
+  "pc_path": "godot/assets/ships/T560_fx/"
+ },
+ "files": {
+  "T560_fx.glb": {
+   "bytes": 117608,
+   "sha256": "0d6090554083636de41b555e43f5b6cfeca2ed70b8cdd54daf3c7d248baff8f1"
+  }
+ },
+ "seconds": 0.8,
+ "not_written": [
+  "<CODE>_wreck.glb (the death pieces)",
+  "<CODE>_damage.glb and the skin_<n> hull patches (breach damage)",
+  "<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)"
+ ]
+}

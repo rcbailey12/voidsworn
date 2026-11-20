@@ -1,0 +1,26 @@
+{
+ "aces": {
+  "n": "Aces",
+  "d": "Wings aim 10 better."
+ },
+ "armored": {
+  "n": "Armored cockpits",
+  "d": "Wings have 25% more hull."
+ },
+ "reserve": {
+  "n": "Deep reserves",
+  "d": "The carrier holds one more spare wing."
+ },
+ "killers": {
+  "n": "Ship killers",
+  "d": "Wings deal 15% more damage to ships."
+ },
+ "pickets": {
+  "n": "Picket pilots",
+  "d": "Screening wings shoot down torpedoes more often."
+ },
+ "jinkers": {
+  "n": "Jinkers",
+  "d": "Wings are 8 harder to hit."
+ }
+}

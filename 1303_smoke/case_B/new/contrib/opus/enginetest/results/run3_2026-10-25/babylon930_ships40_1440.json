@@ -1,0 +1,22 @@
+{
+ "engine": "babylon",
+ "renderer": "webgl2",
+ "mode": "ships40",
+ "width": 2560,
+ "height": 1440,
+ "seconds": 20,
+ "frames": 9413,
+ "avg_ms": 2.124,
+ "p99_ms": 5.238,
+ "max_ms": 10,
+ "fps_avg": 470.704,
+ "load_s": 5.836,
+ "gpu_mem_mb": null,
+ "notes": "Babylon 9.30.0; Chromium via Playwright, GL renderer: ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002C02) Direct3D11 vs_5_0 ps_5_0, D3D11); MSAA 4x, HDR, bloom, ACES, 4 shadow cascades of 2048; frame time = time between requestAnimationFrame callbacks; median 2 ms; GPU timer query average 1.983 ms per frame; load_s from navigation start to the first presented frame with all six ships and the sky; browser launch took 0.70 s more; gpu_mem_mb: WebGL has no GPU memory counter; nvidia-smi total memory used: 1643 MB before launch, 2876 MB peak (+1233 MB); 40 ships; shaders pre-warmed for 0.08 s after load_s, before the warm-up; JS work per frame (update plus render calls): worst 1% 5.032 ms, max 9.7 ms; worst frames (scene t s: frame ms / JS work ms): 19.92: 10.0/9.7, 20.05: 9.6/9.4, 19.86: 9.2/9.0, 6.78: 8.4/8.3, 9.05: 7.8/7.5, 19.98: 7.8/7.6, 20.26: 7.6/7.3, 7.34: 7.4/7.3; event lights: one light per ship; environment: none (assets/env/ missing or not this mode); 0 shader compiles and 0 heap drops (GC) during the bench, listed in the trace; per-second trace in babylon930_ships40_1440_trace.json",
+ "vsync": false,
+ "refresh_hz": null,
+ "dropped_frames": null,
+ "dropped_pct": null,
+ "physics_step_avg_ms": null,
+ "physics_step_max_ms": null
+}

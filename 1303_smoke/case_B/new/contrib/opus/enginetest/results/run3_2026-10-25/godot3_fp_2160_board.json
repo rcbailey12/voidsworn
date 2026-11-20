@@ -1,0 +1,23 @@
+{
+  "engine": "godot",
+  "renderer": "forward_plus",
+  "mode": "board",
+  "ships": 6,
+  "width": 3840,
+  "height": 2160,
+  "seconds": 20.0,
+  "frames": 7319,
+  "avg_ms": 2.733,
+  "p99_ms": 4.481,
+  "max_ms": 6.422,
+  "fps_avg": 365.93,
+  "load_s": 4.609,
+  "gpu_mem_mb": 1712.5,
+  "notes": "sky: env/sky_deadstar_8k.png; effects: 14 instanced kinds (one draw each) for 6 ships; env: 206 asteroids (200 instanced in 8 MultiMeshes, 6 big rocks), dust haze in volumetric fog; effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) 0.304 ms average; engine-measured 3D render time per frame: GPU 1.92 ms, render CPU 0.34 ms; frame breakdown (averages): process step 3.81 ms, physics step 1.17 ms at 0.19 ticks per frame, render-server frame setup 0.15 ms, 161 draw calls, 689 objects, 2211 nodes in the tree; shader warm-up after load took 0.1 s (every effect, fade and chunk state drawn once, until pipeline compiles stop); adapter NVIDIA GeForce RTX 5080, driver vulkan 1.4.351; render target 3840x2160 (from --res) in a SubViewport with MSAA 4x, shown in a 3840x2130 window; vsync mode 0 (0 = off); gpu_mem_mb is Performance RENDER_VIDEO_MEM_USED at the end (peak during run 1713 MB); textures loaded uncompressed (RGB8 with mipmaps), as GLTFDocument gives them at runtime",
+  "lights_active_avg": 9.3,
+  "lights_active_max": 13,
+  "physics_ms_avg": 1.17,
+  "physics_ms_p99": 1.868,
+  "bodies_max": 586,
+  "click_to_ring_frames": 1
+}

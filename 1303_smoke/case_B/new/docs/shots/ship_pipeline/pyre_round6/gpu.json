@@ -1,0 +1,317 @@
+{
+  "active_probe_sha256": "a452c2a232d80a264219580d149ff8b1b2c06211abbbc01e71db31753d175bf8",
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "blank": {
+    "draw_calls": 0.0,
+    "frame_median_ms": 0.499,
+    "frame_p99_ms": 0.822,
+    "frames": 360.0,
+    "gpu_median_ms": 0.384999990463257,
+    "label": "empty",
+    "render_cpu_median_ms": 0.128999993205071,
+    "warmup": 100.0
+  },
+  "capture_probe_sha256": "ef8d3cb4859ce4136c5a3840d680d8c310092ab35bc1282c97ec929d3c4b4256",
+  "fleet_layout": "5 by 4 shared copies; spacing 1.15 lengths; camera r=8 lengths",
+  "godot": {
+    "build": "official",
+    "hash": "ed1daf0bf001b61586d9930840f2f1394092c079",
+    "hex": 263938.0,
+    "major": 4.0,
+    "minor": 7.0,
+    "patch": 2.0,
+    "status": "stable",
+    "string": "4.7.2-stable (official)",
+    "timestamp": 0.0
+  },
+  "material_inputs": {
+    "V1": [
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.119999997317791
+      }
+    ],
+    "V3": [
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.119999997317791
+      }
+    ],
+    "today": [
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      },
+      {
+        "metallic_factor": 1.0,
+        "raw_import_specular": 0.5,
+        "roughness_factor": 1.0,
+        "specular": 0.5
+      }
+    ]
+  },
+  "normal_proof": "raw and high-pass donor only; local micro-normal excluded from both",
+  "renderer": "forward_plus",
+  "resolution": [
+    1920.0,
+    1080.0
+  ],
+  "rows": [
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 158.0,
+        "frame_median_ms": 3.112,
+        "frame_p99_ms": 3.299,
+        "frames": 360.0,
+        "gpu_median_ms": 2.87700009346008,
+        "label": "today_20",
+        "render_cpu_median_ms": 0.270000010728836,
+        "warmup": 100.0
+      },
+      "geometry": {
+        "raw_bounds": [
+          1.04101479053497,
+          0.409542322158813,
+          0.536779165267944
+        ],
+        "triangles": 256468.0,
+        "world_length": 41.6
+      },
+      "material_crops": {},
+      "route": "today",
+      "single": {
+        "draw_calls": 54.0,
+        "frame_median_ms": 0.671,
+        "frame_p99_ms": 1.126,
+        "frames": 360.0,
+        "gpu_median_ms": 0.560000002384186,
+        "label": "today_1",
+        "render_cpu_median_ms": 0.137999996542931,
+        "warmup": 100.0
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 9.0,
+        "frame_median_ms": 2.76,
+        "frame_p99_ms": 3.091,
+        "frames": 360.0,
+        "gpu_median_ms": 2.51600003242493,
+        "label": "V3_20",
+        "render_cpu_median_ms": 0.152999997138977,
+        "warmup": 100.0
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.98199999332428,
+          0.310894846916199,
+          0.354637086391449
+        ],
+        "triangles": 220524.0,
+        "world_length": 41.6
+      },
+      "material_crops": {
+        "bow": {
+          "normal": [
+            0.0328711643815041,
+            0.0,
+            0.999459564685822
+          ],
+          "target": [
+            13.0384321212769,
+            -2.71837019920349,
+            6.45987272262573
+          ]
+        },
+        "panel": {
+          "normal": [
+            -0.00792838726192713,
+            -0.00000041624184632,
+            0.999968588352203
+          ],
+          "target": [
+            -1.32726764678955,
+            -3.63481259346008,
+            6.63436079025269
+          ]
+        }
+      },
+      "route": "V3",
+      "single": {
+        "draw_calls": 3.0,
+        "frame_median_ms": 0.67,
+        "frame_p99_ms": 1.003,
+        "frames": 360.0,
+        "gpu_median_ms": 0.533999979496002,
+        "label": "V3_1",
+        "render_cpu_median_ms": 0.125,
+        "warmup": 100.0
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 10.0,
+        "frame_median_ms": 4.381,
+        "frame_p99_ms": 4.704,
+        "frames": 360.0,
+        "gpu_median_ms": 4.17199993133545,
+        "label": "V1_20",
+        "render_cpu_median_ms": 0.157000005245209,
+        "warmup": 100.0
+      },
+      "geometry": {
+        "raw_bounds": [
+          1.04101502895355,
+          0.405977010726929,
+          0.516829073429108
+        ],
+        "triangles": 307477.0,
+        "world_length": 41.6
+      },
+      "material_crops": {
+        "bow": {
+          "normal": [
+            -0.0336659885942936,
+            0.0,
+            0.999433100223541
+          ],
+          "target": [
+            12.8745079040527,
+            -5.00390958786011,
+            6.55495023727417
+          ]
+        },
+        "panel": {
+          "normal": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "target": [
+            2.60985922813416,
+            -1.09272682666779,
+            7.99220085144043
+          ]
+        }
+      },
+      "route": "V1",
+      "single": {
+        "draw_calls": 3.0,
+        "frame_median_ms": 0.774,
+        "frame_p99_ms": 1.258,
+        "frames": 360.0,
+        "gpu_median_ms": 0.656000018119812,
+        "label": "V1_1",
+        "render_cpu_median_ms": 0.122000001370907,
+        "warmup": 100.0
+      }
+    }
+  ],
+  "textures": "BC7 colour/ORM; BC5 normal; mipmaps; 100 warm-up, 360 measured frames",
+  "vsync": "disabled"
+}

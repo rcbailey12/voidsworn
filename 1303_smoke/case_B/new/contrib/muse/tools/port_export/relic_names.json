@@ -1,0 +1,62 @@
+{
+ "hegemony": {
+  "martyr": "Medal of the Grand Fleet",
+  "cogitator": "Registry targeting array",
+  "lattice": "Deflector matrix prototype",
+  "spore": "Captured Chorus culture",
+  "ledger": "Smuggler’s ledger",
+  "compass": "Jump-drive regulator",
+  "banner": "Captured war banner",
+  "salvage": "Scrap rig",
+  "coils": "Overclocked reactors",
+  "logbook": "Admiralty logbook",
+  "armourweave": "Hardsteel weave"
+ },
+ "corsair": {
+  "martyr": "Dead captain’s harness",
+  "cogitator": "Stolen Navy rangefinder",
+  "lattice": "Glasswright shield shard",
+  "ledger": "Smuggler’s ledger",
+  "compass": "Wake-tracker",
+  "banner": "Trophy war banner",
+  "salvage": "Scrap rig",
+  "coils": "Hot-rodded reactor",
+  "logbook": "Warlord’s kill tally",
+  "armourweave": "Scrap armor weave"
+ },
+ "chorus": {
+  "martyr": "Heart of the first brood",
+  "cogitator": "Heat-tasting pits",
+  "lattice": "Swallowed shield cells",
+  "spore": "Ancestral spore culture",
+  "ledger": "Hoard of the deep",
+  "compass": "Migration current",
+  "banner": "Prey’s war banner",
+  "salvage": "Scavenger gut",
+  "coils": "Quickening gland",
+  "logbook": "Taste of old prey",
+  "armourweave": "Carapace weave"
+ },
+ "ithar": {
+  "martyr": "Tear of the dying star",
+  "cogitator": "Ancestral lens",
+  "lattice": "Prism matrix",
+  "ledger": "Ledger of the exiles",
+  "banner": "Banner of Ardent",
+  "coils": "Starlight coils",
+  "logbook": "Log of the last voyage",
+  "armourweave": "Sunstone weave"
+ },
+ "deathless": {
+  "martyr": "Last image of Ardent",
+  "cogitator": "Calculus engine",
+  "phylactery": "Second Ignition",
+  "ledger": "Siphon ledger",
+  "compass": "Gravitic compass",
+  "banner": "Standard of the conquered",
+  "salvage": "Salvage swarm",
+  "coils": "Long clock",
+  "logbook": "The Archive",
+  "armourweave": "Sunshade weave"
+ }
+}

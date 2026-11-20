@@ -1,0 +1,86 @@
+{
+ "martyr": {
+  "n": "The Chalked Roll",
+  "d": "When one of your ships is destroyed, every other ship repairs 15% of its hull.",
+  "run": {
+   "avenge": 0.15
+  }
+ },
+ "cogitator": {
+  "n": "Founders’ rangefinder",
+  "d": "Each ship’s first attack in every battle hits 95% of the time.",
+  "run": {
+   "firstSure": 1
+  }
+ },
+ "lattice": {
+  "n": "Alien shield matrix",
+  "d": "Shields +15% across the fleet.",
+  "fx": {
+   "shPct": 0.15
+  }
+ },
+ "spore": {
+  "n": "Tamed spore culture",
+  "d": "Every ship regenerates 3 hull per turn.",
+  "fx": {
+   "hullRegen": 3
+  }
+ },
+ "phylactery": {
+  "n": "Eclipse backup frame",
+  "d": "The first of your ships destroyed each battle reawakens at 25% hull.",
+  "run": {
+   "revive": 1
+  }
+ },
+ "ledger": {
+  "n": "Smuggler’s ledger",
+  "d": "+25% credits from battles.",
+  "run": {
+   "credPct": 0.25
+  }
+ },
+ "compass": {
+  "n": "Founders’ compass",
+  "d": "+1 speed across the fleet.",
+  "fx": {
+   "speed": 1
+  }
+ },
+ "banner": {
+  "n": "Captured war banner",
+  "d": "Every enemy ship one of your ships destroys gives that ship +15% damage for the rest of the battle (up to +45%).",
+  "run": {
+   "bloodied": 0.15
+  }
+ },
+ "salvage": {
+  "n": "Scrap rig",
+  "d": "After each battle, gain 15 credits and repair 8% hull.",
+  "run": {
+   "salvage": 1
+  }
+ },
+ "coils": {
+  "n": "Hand-wound plasma coils",
+  "d": "Ability cooldowns −1 across the fleet.",
+  "fx": {
+   "cdMod": 1
+  }
+ },
+ "logbook": {
+  "n": "Log of Admiral Rhel",
+  "d": "+30% captain experience.",
+  "run": {
+   "xpPct": 0.3
+  }
+ },
+ "armourweave": {
+  "n": "Adamant armourweave",
+  "d": "+6% armor across the fleet.",
+  "fx": {
+   "armor": 0.06
+  }
+ }
+}

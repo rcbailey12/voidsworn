@@ -1,0 +1,22 @@
+{
+ "ship": "voidsworn_SF3",
+ "name": "Spire Dart fighter, the Sunward fighter wing craft (Sunward Crusade)",
+ "faction": "voidsworn",
+ "game_ship": "fighter",
+ "game_code": "voidsworn_SF3",
+ "sheet": "voidsworn_SF3",
+ "concept": "contrib/muse/design/squadron_concepts_2026_11/sunward/round_2/SF3.jpg",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "stack",
+ "cell": "SF3",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "Built from the low-fin build sheet docs/ship_pipeline/build_sheets/voidsworn_SF3/ (design file tools/blender/build_sheets/ships/voidsworn_SF3.py). The sheet provides the masses, parts, mounts and length (1.6, drawn at 3.84 on the board). The Sunward paint stack applies the approved satin finish. Stage 7 uses the fighter rules and writes a Sunward fighter entry under its own export code.",
+ "parts": []
+}

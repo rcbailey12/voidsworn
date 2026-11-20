@@ -1,0 +1,45 @@
+{
+ "voidsworn": [
+  "autocannon",
+  "battery",
+  "flak",
+  "hbattery",
+  "lance",
+  "torp",
+  "turret"
+ ],
+ "hegemony": [
+  "flak",
+  "hturbo",
+  "ion",
+  "laser",
+  "turbo"
+ ],
+ "corsair": [
+  "autocannon",
+  "flak",
+  "htorp",
+  "scatter",
+  "torp",
+  "turret"
+ ],
+ "chorus": [
+  "bioplasma",
+  "sporeb",
+  "spores",
+  "tendril"
+ ],
+ "ithar": [
+  "flak",
+  "pulsar",
+  "shard",
+  "startorp",
+  "turret"
+ ],
+ "deathless": [
+  "doom",
+  "flak",
+  "gauss",
+  "gsentry"
+ ]
+}

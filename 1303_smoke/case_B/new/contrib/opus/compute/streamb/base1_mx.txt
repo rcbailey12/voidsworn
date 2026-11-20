@@ -1,0 +1,8 @@
+           void hege cors chor itha deat
+voidsworn    98   96   56   44   36   84   avg 69
+hegemony     90   76   36   36   30   52   avg 53
+corsair     100  100   98   98   98  100   avg 99
+chorus       96  100   62   88   92  100   avg 90
+ithar       100   94   96   80   82   94   avg 91
+deathless    86  100   18   36   54   76   avg 62
+per battle: rounds 6.8, timeouts 0/1800, rams 1.9, boardings 0.5, captures 0.17, sections lost 16.7

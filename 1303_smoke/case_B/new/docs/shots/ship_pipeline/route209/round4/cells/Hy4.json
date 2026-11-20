@@ -1,0 +1,154 @@
+{
+ "cell": "Hy4",
+ "route": "round 4 slab structure (concept silhouette, layered armour) + hand parts + AI hero parts + B0 detail baked + concept paint baked",
+ "build_seconds": 730.9,
+ "geometry_seconds": 41.4,
+ "audit": {
+  "problems": [],
+  "parts": 217,
+  "crossing_break_lines": [],
+  "plates_crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.019,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.03
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "block_triangles": 7284,
+ "plate_triangles": 16456,
+ "plates": 58,
+ "hero_parts": [
+  "hcasemate_0p",
+  "hcasemate_0s",
+  "hcasemate_1p",
+  "hcasemate_1s",
+  "hdrums_sp",
+  "hdrums_ss"
+ ],
+ "hero_triangles": 40000,
+ "generations": [
+  {
+   "part": "hcasemate_0p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.103,
+    0.111,
+    0.103
+   ]
+  },
+  {
+   "part": "hcasemate_0s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.103,
+    0.111,
+    0.103
+   ]
+  },
+  {
+   "part": "hcasemate_1p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.103,
+    0.111,
+    0.103
+   ]
+  },
+  {
+   "part": "hcasemate_1s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.103,
+    0.111,
+    0.103
+   ]
+  },
+  {
+   "part": "hdrums_sp",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 8000,
+   "stretch": [
+    0.089,
+    0.084,
+    0.09
+   ]
+  },
+  {
+   "part": "hdrums_ss",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 8000,
+   "stretch": [
+    0.089,
+    0.084,
+    0.09
+   ]
+  }
+ ],
+ "hand_parts": 216,
+ "proxies": 104,
+ "bake": {
+  "b0_faces_turned": 0,
+  "b0_triangles_faces": 570189,
+  "b0_faces_kept": 389353,
+  "trim_outside": 0.01,
+  "bake_device": "OPTIX",
+  "bake_hi_seconds": 6.4,
+  "bake_lo_seconds": 6.3,
+  "bake_ao_seconds": 9.5,
+  "detail_pixels_inverted_share": 0.0925,
+  "detail_pixels_clamped_share": 0.0598,
+  "b0ao_miss_share": 0.4825,
+  "normal_tilt_mean_deg_detail": 5.51,
+  "normal_tilt_mean_deg_raw": 28.34,
+  "b0_bake_total_seconds": 34.4,
+  "paint_bake_seconds": 636.5,
+  "paint_bake_hull": {
+   "albedo": 7.8,
+   "orm": 7.2
+  },
+  "paint_bake_parts": {
+   "albedo": 236.9,
+   "orm": 235.1,
+   "proxies": {
+    "albedo": 67.0,
+    "orm": 66.6
+   },
+   "generated": {
+    "albedo": 7.1,
+    "orm": 7.0
+   }
+  }
+ },
+ "res": 4096,
+ "parts_res": 2048,
+ "triangles": 111704,
+ "objects": 248,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}

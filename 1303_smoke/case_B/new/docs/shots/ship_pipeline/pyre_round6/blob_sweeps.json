@@ -1,0 +1,37 @@
+{
+  "basis": "Final round 6 paint and neutral clay captures at the same top, side and filled-below cameras against the unchanged round 4 reference. Entries run stern, midship, bow. No underside art exists; below verdicts judge visible construction only.",
+  "V3": {
+    "top": [
+      "CLEAN: distinct engine banks, bridge and service fittings remain",
+      "CLEAN: separate plates, mounted racks and real chain links remain",
+      "REBUILD: dish and scoop scale; blunt bow masses differ from the reference"
+    ],
+    "side": [
+      "CLEAN: separate bells, radiator panels and mounted service banks",
+      "CLEAN: distinct plate stacks, weapon mounts and recessed exchangers",
+      "REBUILD: boxy snout proportions and hunting-gear silhouette"
+    ],
+    "below_inspect": [
+      "CLEAN: separate engine roots and belly housings; small pipe clutter removed",
+      "CLEAN: flat armour, chines and distinct service covers",
+      "CLEAN: separate forward armour and mounted housings"
+    ]
+  },
+  "V1": {
+    "top": [
+      "REBUILD: ragged original fittings beside the authored bridge",
+      "REBUILD: fused cylinders, pipe roots and old weapon bases",
+      "REBUILD: merged prongs and bow machinery"
+    ],
+    "side": [
+      "REBUILD: old stubs and rounded joins around the authored engines",
+      "REBUILD: torn panel edges and fused tank mounts",
+      "REBUILD: rounded hunting gear and blended armour"
+    ],
+    "below_inspect": [
+      "REBUILD: blended engine roots and hanging remnants",
+      "REBUILD: fused belly panels and machinery transitions",
+      "REBUILD: blended prongs, armour and forward housings"
+    ]
+  }
+}
